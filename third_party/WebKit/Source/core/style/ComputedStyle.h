@@ -363,7 +363,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setBitDefaults() {
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_captionSide = static_cast<unsigned>(initialCaptionSide());
-    m_inheritedData.m_listStyleType = initialListStyleType();
+    m_inheritedData.m_listStyleType =
+        static_cast<unsigned>(initialListStyleType());
     m_inheritedData.m_listStylePosition =
         static_cast<unsigned>(initialListStylePosition());
     m_inheritedData.m_textAlign = initialTextAlign();
@@ -2126,12 +2127,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // List style properties.
   // list-style-type
-  static EListStyleType initialListStyleType() { return Disc; }
+  static EListStyleType initialListStyleType() { return EListStyleType::Disc; }
   EListStyleType listStyleType() const {
     return static_cast<EListStyleType>(m_inheritedData.m_listStyleType);
   }
   void setListStyleType(EListStyleType v) {
-    m_inheritedData.m_listStyleType = v;
+    m_inheritedData.m_listStyleType = static_cast<unsigned>(v);
   }
 
   // list-style-position

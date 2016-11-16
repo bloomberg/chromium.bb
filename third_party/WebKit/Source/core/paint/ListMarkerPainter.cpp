@@ -25,13 +25,13 @@ static inline void paintSymbol(GraphicsContext& context,
   context.setStrokeStyle(SolidStroke);
   context.setStrokeThickness(1.0f);
   switch (listStyle) {
-    case Disc:
+    case EListStyleType::Disc:
       context.fillEllipse(marker);
       break;
-    case Circle:
+    case EListStyleType::Circle:
       context.strokeEllipse(marker);
       break;
-    case Square:
+    case EListStyleType::Square:
       context.fillRect(marker);
       break;
     default:

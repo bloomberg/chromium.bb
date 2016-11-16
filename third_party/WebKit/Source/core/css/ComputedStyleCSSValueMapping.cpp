@@ -1481,9 +1481,12 @@ static CSSValue* valueForContentData(const ComputedStyle& style) {
           CSSCustomIdentValue::create(counter->identifier());
       CSSStringValue* separator = CSSStringValue::create(counter->separator());
       CSSValueID listStyleIdent = CSSValueNone;
-      if (counter->listStyle() != NoneListStyle)
+      if (counter->listStyle() != EListStyleType::NoneListStyle) {
+        // TODO(sashab): Change this to use a converter instead of
+        // CSSPrimitiveValueMappings.
         listStyleIdent =
-            static_cast<CSSValueID>(CSSValueDisc + counter->listStyle());
+            CSSIdentifierValue::create(counter->listStyle())->getValueID();
+      }
       CSSIdentifierValue* listStyle =
           CSSIdentifierValue::create(listStyleIdent);
       list->append(*CSSCounterValue::create(identifier, listStyle, separator));

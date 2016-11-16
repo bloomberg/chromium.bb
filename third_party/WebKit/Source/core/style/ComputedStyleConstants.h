@@ -270,7 +270,7 @@ enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };
 
 // The order of this enum must match the order of the list style types in
 // CSSValueKeywords.in.
-enum EListStyleType {
+enum class EListStyleType : unsigned {
   Disc,
   Circle,
   Square,

@@ -1457,172 +1457,172 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EListStyleType e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case ArabicIndic:
+    case EListStyleType::ArabicIndic:
       m_valueID = CSSValueArabicIndic;
       break;
-    case Armenian:
+    case EListStyleType::Armenian:
       m_valueID = CSSValueArmenian;
       break;
-    case Bengali:
+    case EListStyleType::Bengali:
       m_valueID = CSSValueBengali;
       break;
-    case Cambodian:
+    case EListStyleType::Cambodian:
       m_valueID = CSSValueCambodian;
       break;
-    case Circle:
+    case EListStyleType::Circle:
       m_valueID = CSSValueCircle;
       break;
-    case CjkEarthlyBranch:
+    case EListStyleType::CjkEarthlyBranch:
       m_valueID = CSSValueCjkEarthlyBranch;
       break;
-    case CjkHeavenlyStem:
+    case EListStyleType::CjkHeavenlyStem:
       m_valueID = CSSValueCjkHeavenlyStem;
       break;
-    case CJKIdeographic:
+    case EListStyleType::CJKIdeographic:
       m_valueID = CSSValueCjkIdeographic;
       break;
-    case DecimalLeadingZero:
+    case EListStyleType::DecimalLeadingZero:
       m_valueID = CSSValueDecimalLeadingZero;
       break;
-    case DecimalListStyle:
+    case EListStyleType::DecimalListStyle:
       m_valueID = CSSValueDecimal;
       break;
-    case Devanagari:
+    case EListStyleType::Devanagari:
       m_valueID = CSSValueDevanagari;
       break;
-    case Disc:
+    case EListStyleType::Disc:
       m_valueID = CSSValueDisc;
       break;
-    case EthiopicHalehame:
+    case EListStyleType::EthiopicHalehame:
       m_valueID = CSSValueEthiopicHalehame;
       break;
-    case EthiopicHalehameAm:
+    case EListStyleType::EthiopicHalehameAm:
       m_valueID = CSSValueEthiopicHalehameAm;
       break;
-    case EthiopicHalehameTiEt:
+    case EListStyleType::EthiopicHalehameTiEt:
       m_valueID = CSSValueEthiopicHalehameTiEt;
       break;
-    case EthiopicHalehameTiEr:
+    case EListStyleType::EthiopicHalehameTiEr:
       m_valueID = CSSValueEthiopicHalehameTiEr;
       break;
-    case Georgian:
+    case EListStyleType::Georgian:
       m_valueID = CSSValueGeorgian;
       break;
-    case Gujarati:
+    case EListStyleType::Gujarati:
       m_valueID = CSSValueGujarati;
       break;
-    case Gurmukhi:
+    case EListStyleType::Gurmukhi:
       m_valueID = CSSValueGurmukhi;
       break;
-    case Hangul:
+    case EListStyleType::Hangul:
       m_valueID = CSSValueHangul;
       break;
-    case HangulConsonant:
+    case EListStyleType::HangulConsonant:
       m_valueID = CSSValueHangulConsonant;
       break;
-    case KoreanHangulFormal:
+    case EListStyleType::KoreanHangulFormal:
       m_valueID = CSSValueKoreanHangulFormal;
       break;
-    case KoreanHanjaFormal:
+    case EListStyleType::KoreanHanjaFormal:
       m_valueID = CSSValueKoreanHanjaFormal;
       break;
-    case KoreanHanjaInformal:
+    case EListStyleType::KoreanHanjaInformal:
       m_valueID = CSSValueKoreanHanjaInformal;
       break;
-    case Hebrew:
+    case EListStyleType::Hebrew:
       m_valueID = CSSValueHebrew;
       break;
-    case Hiragana:
+    case EListStyleType::Hiragana:
       m_valueID = CSSValueHiragana;
       break;
-    case HiraganaIroha:
+    case EListStyleType::HiraganaIroha:
       m_valueID = CSSValueHiraganaIroha;
       break;
-    case Kannada:
+    case EListStyleType::Kannada:
       m_valueID = CSSValueKannada;
       break;
-    case Katakana:
+    case EListStyleType::Katakana:
       m_valueID = CSSValueKatakana;
       break;
-    case KatakanaIroha:
+    case EListStyleType::KatakanaIroha:
       m_valueID = CSSValueKatakanaIroha;
       break;
-    case Khmer:
+    case EListStyleType::Khmer:
       m_valueID = CSSValueKhmer;
       break;
-    case Lao:
+    case EListStyleType::Lao:
       m_valueID = CSSValueLao;
       break;
-    case LowerAlpha:
+    case EListStyleType::LowerAlpha:
       m_valueID = CSSValueLowerAlpha;
       break;
-    case LowerArmenian:
+    case EListStyleType::LowerArmenian:
       m_valueID = CSSValueLowerArmenian;
       break;
-    case LowerGreek:
+    case EListStyleType::LowerGreek:
       m_valueID = CSSValueLowerGreek;
       break;
-    case LowerLatin:
+    case EListStyleType::LowerLatin:
       m_valueID = CSSValueLowerLatin;
       break;
-    case LowerRoman:
+    case EListStyleType::LowerRoman:
       m_valueID = CSSValueLowerRoman;
       break;
-    case Malayalam:
+    case EListStyleType::Malayalam:
       m_valueID = CSSValueMalayalam;
       break;
-    case Mongolian:
+    case EListStyleType::Mongolian:
       m_valueID = CSSValueMongolian;
       break;
-    case Myanmar:
+    case EListStyleType::Myanmar:
       m_valueID = CSSValueMyanmar;
       break;
-    case NoneListStyle:
+    case EListStyleType::NoneListStyle:
       m_valueID = CSSValueNone;
       break;
-    case Oriya:
+    case EListStyleType::Oriya:
       m_valueID = CSSValueOriya;
       break;
-    case Persian:
+    case EListStyleType::Persian:
       m_valueID = CSSValuePersian;
       break;
-    case SimpChineseFormal:
+    case EListStyleType::SimpChineseFormal:
       m_valueID = CSSValueSimpChineseFormal;
       break;
-    case SimpChineseInformal:
+    case EListStyleType::SimpChineseInformal:
       m_valueID = CSSValueSimpChineseInformal;
       break;
-    case Square:
+    case EListStyleType::Square:
       m_valueID = CSSValueSquare;
       break;
-    case Telugu:
+    case EListStyleType::Telugu:
       m_valueID = CSSValueTelugu;
       break;
-    case Thai:
+    case EListStyleType::Thai:
       m_valueID = CSSValueThai;
       break;
-    case Tibetan:
+    case EListStyleType::Tibetan:
       m_valueID = CSSValueTibetan;
       break;
-    case TradChineseFormal:
+    case EListStyleType::TradChineseFormal:
       m_valueID = CSSValueTradChineseFormal;
       break;
-    case TradChineseInformal:
+    case EListStyleType::TradChineseInformal:
       m_valueID = CSSValueTradChineseInformal;
       break;
-    case UpperAlpha:
+    case EListStyleType::UpperAlpha:
       m_valueID = CSSValueUpperAlpha;
       break;
-    case UpperArmenian:
+    case EListStyleType::UpperArmenian:
       m_valueID = CSSValueUpperArmenian;
       break;
-    case UpperLatin:
+    case EListStyleType::UpperLatin:
       m_valueID = CSSValueUpperLatin;
       break;
-    case UpperRoman:
+    case EListStyleType::UpperRoman:
       m_valueID = CSSValueUpperRoman;
       break;
-    case Urdu:
+    case EListStyleType::Urdu:
       m_valueID = CSSValueUrdu;
       break;
   }
@@ -1632,10 +1632,123 @@ template <>
 inline EListStyleType CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueNone:
-      return NoneListStyle;
+      return EListStyleType::NoneListStyle;
+    case CSSValueArabicIndic:
+      return EListStyleType::ArabicIndic;
+    case CSSValueArmenian:
+      return EListStyleType::Armenian;
+    case CSSValueBengali:
+      return EListStyleType::Bengali;
+    case CSSValueCambodian:
+      return EListStyleType::Cambodian;
+    case CSSValueCircle:
+      return EListStyleType::Circle;
+    case CSSValueCjkEarthlyBranch:
+      return EListStyleType::CjkEarthlyBranch;
+    case CSSValueCjkHeavenlyStem:
+      return EListStyleType::CjkHeavenlyStem;
+    case CSSValueCjkIdeographic:
+      return EListStyleType::CJKIdeographic;
+    case CSSValueDecimalLeadingZero:
+      return EListStyleType::DecimalLeadingZero;
+    case CSSValueDecimal:
+      return EListStyleType::DecimalListStyle;
+    case CSSValueDevanagari:
+      return EListStyleType::Devanagari;
+    case CSSValueDisc:
+      return EListStyleType::Disc;
+    case CSSValueEthiopicHalehame:
+      return EListStyleType::EthiopicHalehame;
+    case CSSValueEthiopicHalehameAm:
+      return EListStyleType::EthiopicHalehameAm;
+    case CSSValueEthiopicHalehameTiEt:
+      return EListStyleType::EthiopicHalehameTiEt;
+    case CSSValueEthiopicHalehameTiEr:
+      return EListStyleType::EthiopicHalehameTiEr;
+    case CSSValueGeorgian:
+      return EListStyleType::Georgian;
+    case CSSValueGujarati:
+      return EListStyleType::Gujarati;
+    case CSSValueGurmukhi:
+      return EListStyleType::Gurmukhi;
+    case CSSValueHangul:
+      return EListStyleType::Hangul;
+    case CSSValueHangulConsonant:
+      return EListStyleType::HangulConsonant;
+    case CSSValueKoreanHangulFormal:
+      return EListStyleType::KoreanHangulFormal;
+    case CSSValueKoreanHanjaFormal:
+      return EListStyleType::KoreanHanjaFormal;
+    case CSSValueKoreanHanjaInformal:
+      return EListStyleType::KoreanHanjaInformal;
+    case CSSValueHebrew:
+      return EListStyleType::Hebrew;
+    case CSSValueHiragana:
+      return EListStyleType::Hiragana;
+    case CSSValueHiraganaIroha:
+      return EListStyleType::HiraganaIroha;
+    case CSSValueKannada:
+      return EListStyleType::Kannada;
+    case CSSValueKatakana:
+      return EListStyleType::Katakana;
+    case CSSValueKatakanaIroha:
+      return EListStyleType::KatakanaIroha;
+    case CSSValueKhmer:
+      return EListStyleType::Khmer;
+    case CSSValueLao:
+      return EListStyleType::Lao;
+    case CSSValueLowerAlpha:
+      return EListStyleType::LowerAlpha;
+    case CSSValueLowerArmenian:
+      return EListStyleType::LowerArmenian;
+    case CSSValueLowerGreek:
+      return EListStyleType::LowerGreek;
+    case CSSValueLowerLatin:
+      return EListStyleType::LowerLatin;
+    case CSSValueLowerRoman:
+      return EListStyleType::LowerRoman;
+    case CSSValueMalayalam:
+      return EListStyleType::Malayalam;
+    case CSSValueMongolian:
+      return EListStyleType::Mongolian;
+    case CSSValueMyanmar:
+      return EListStyleType::Myanmar;
+    case CSSValueOriya:
+      return EListStyleType::Oriya;
+    case CSSValuePersian:
+      return EListStyleType::Persian;
+    case CSSValueSimpChineseFormal:
+      return EListStyleType::SimpChineseFormal;
+    case CSSValueSimpChineseInformal:
+      return EListStyleType::SimpChineseInformal;
+    case CSSValueSquare:
+      return EListStyleType::Square;
+    case CSSValueTelugu:
+      return EListStyleType::Telugu;
+    case CSSValueThai:
+      return EListStyleType::Thai;
+    case CSSValueTibetan:
+      return EListStyleType::Tibetan;
+    case CSSValueTradChineseFormal:
+      return EListStyleType::TradChineseFormal;
+    case CSSValueTradChineseInformal:
+      return EListStyleType::TradChineseInformal;
+    case CSSValueUpperAlpha:
+      return EListStyleType::UpperAlpha;
+    case CSSValueUpperArmenian:
+      return EListStyleType::UpperArmenian;
+    case CSSValueUpperLatin:
+      return EListStyleType::UpperLatin;
+    case CSSValueUpperRoman:
+      return EListStyleType::UpperRoman;
+    case CSSValueUrdu:
+      return EListStyleType::Urdu;
     default:
-      return static_cast<EListStyleType>(m_valueID - CSSValueDisc);
+      break;
   }
+
+  NOTREACHED();
+  return EListStyleType::NoneListStyle;
 }
 
 template <>
