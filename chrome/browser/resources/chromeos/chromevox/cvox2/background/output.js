@@ -1739,13 +1739,24 @@ Output.prototype = {
       // |cur|.
       var hasInlineNode = cur.getSpansInstanceOf(Output.NodeSpan)
           .some(function(s) {
-            return s.node && s.node.display == 'inline';
+            if (!s.node)
+              return false;
+            return s.node.display == 'inline' ||
+                s.node.role == RoleType.inlineTextBox;
           });
 
       // Now, decide whether we should include separators between the previous
       // span and |cur|.
       // Never separate chunks without something already there at this point.
-      if (result.length == 0 || hasInlineNode || prevHasInlineNode)
+
+      // The only case where we know for certain that a separator is not needed
+      // is when the previous and current node are in-lined. In all other cases,
+      // use the surrounding whitespace to ensure we only have one separator
+      // between the node text.
+      if (result.length == 0 || (hasInlineNode && prevHasInlineNode))
+        separator = '';
+      else if (result.toString()[result.length - 1] == Output.SPACE ||
+          cur.toString()[0] == Output.SPACE)
         separator = '';
       else
         separator = Output.SPACE;
