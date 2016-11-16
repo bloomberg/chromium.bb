@@ -936,7 +936,6 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   if (eob == 0) {
     // single eob token
     cost = token_costs[0][0][pt][EOB_TOKEN];
-    c = 0;
   } else {
     if (use_fast_coef_costing) {
       int band_left = *band_count++;
