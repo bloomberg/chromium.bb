@@ -29,6 +29,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "wtf/HashMap.h"
@@ -200,6 +201,8 @@ class CORE_EXPORT ImageResource final
   void destroyDecodedDataIfPossible() override;
   void destroyDecodedDataForFailedRevalidation() override;
 
+  void flushImageIfNeeded(TimerBase*);
+
   float m_devicePixelRatioHeaderValue;
 
   Member<MultipartImageResourceParser> m_multipartParser;
@@ -217,6 +220,10 @@ class CORE_EXPORT ImageResource final
   // Indicates if this ImageResource is either attempting to load a placeholder
   // image, or is a (possibly broken) placeholder image.
   bool m_isPlaceholder;
+
+  Timer<ImageResource> m_flushTimer;
+  double m_lastFlushTime = 0.;
+  Image::SizeAvailability m_sizeAvailable = Image::SizeUnavailable;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

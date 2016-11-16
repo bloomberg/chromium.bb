@@ -31,7 +31,7 @@ function testDone()
 function runTest()
 {
     document.querySelector("iframe").src = loadAndStall() + pngImage() + "&stallAt=45057&stallFor=60";
-    setTimeout(testDone, 500);
+    setTimeout(testDone, 1500);
 }
 
 window.onload = function() {

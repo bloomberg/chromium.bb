@@ -42,6 +42,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -1125,6 +1126,91 @@ TEST(ImageResourceTest,
   image->loader()->cancel();
 }
 
-}  // namespace
+TEST(ImageResourceTest, PeriodicFlushTest) {
+  TestingPlatformSupportWithMockScheduler platform;
+  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+  URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
+                                        "text/html");
+  ResourceRequest request = ResourceRequest(testURL);
+  ImageResource* cachedImage = ImageResource::create(request);
+  cachedImage->setStatus(Resource::Pending);
 
+  Persistent<MockImageResourceClient> client =
+      new MockImageResourceClient(cachedImage);
+
+  // Send the image response.
+  ResourceResponse resourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage2),
+                                    nullAtom, String());
+  resourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
+
+  cachedImage->responseReceived(resourceResponse, nullptr);
+
+  // This is number is sufficiently large amount of bytes necessary for the
+  // image to be created (since the size is known). This was determined by
+  // appending one byte at a time (with flushes) until the image was decoded.
+  size_t meaningfulImageSize = 280;
+  cachedImage->appendData(reinterpret_cast<const char*>(kJpegImage2),
+                          meaningfulImageSize);
+  size_t bytesSent = meaningfulImageSize;
+
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  EXPECT_TRUE(cachedImage->hasImage());
+  EXPECT_EQ(1, client->imageChangedCount());
+
+  platform.runForPeriodSeconds(1.);
+  platform.advanceClockSeconds(1.);
+
+  // Sanity check that we created an image after appending |meaningfulImageSize|
+  // bytes just once.
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  ASSERT_TRUE(cachedImage->hasImage());
+  EXPECT_EQ(1, client->imageChangedCount());
+
+  for (int flushCount = 1; flushCount <= 3; ++flushCount) {
+    // For each of the iteration that appends data, we don't expect
+    // |imageChangeCount()| to change, since the time is adjusted by 0.2001
+    // seconds (it's greater than 0.2 to avoid double precision problems).
+    // After 5 appends, we breach the flush interval and the flush count
+    // increases.
+    for (int i = 0; i < 5; ++i) {
+      SCOPED_TRACE(i);
+      cachedImage->appendData(
+          reinterpret_cast<const char*>(kJpegImage2) + bytesSent, 1);
+
+      EXPECT_FALSE(cachedImage->errorOccurred());
+      ASSERT_TRUE(cachedImage->hasImage());
+      EXPECT_EQ(flushCount, client->imageChangedCount());
+
+      ++bytesSent;
+      platform.runForPeriodSeconds(0.2001);
+    }
+  }
+
+  // Increasing time by a large number only causes one extra flush.
+  platform.runForPeriodSeconds(10.);
+  platform.advanceClockSeconds(10.);
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  ASSERT_TRUE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  EXPECT_EQ(4, client->imageChangedCount());
+
+  // Append the rest of the data and finish (which causes another flush).
+  cachedImage->appendData(
+      reinterpret_cast<const char*>(kJpegImage2) + bytesSent,
+      sizeof(kJpegImage2) - bytesSent);
+  cachedImage->finish();
+
+  EXPECT_FALSE(cachedImage->errorOccurred());
+  ASSERT_TRUE(cachedImage->hasImage());
+  EXPECT_FALSE(cachedImage->getImage()->isNull());
+  EXPECT_EQ(5, client->imageChangedCount());
+  EXPECT_TRUE(client->notifyFinishedCalled());
+  EXPECT_TRUE(cachedImage->getImage()->isBitmapImage());
+  EXPECT_EQ(50, cachedImage->getImage()->width());
+  EXPECT_EQ(50, cachedImage->getImage()->height());
+
+  WTF::setTimeFunctionsForTesting(nullptr);
+}
+
+}  // namespace
 }  // namespace blink
