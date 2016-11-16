@@ -70,6 +70,7 @@ const int kDefaultExpiryTimeMins = 3 * 24 * 60;
 const char kCategoryContentId[] = "id";
 const char kCategoryContentTitle[] = "title";
 const char kCategoryContentProvidedByServer[] = "provided_by_server";
+const char kCategoryContentAllowFetchingMore[] = "allow_fetching_more";
 
 // TODO(treib): Remove after M57.
 const char kDeprecatedSnippetHostsPref[] = "ntp_snippets.hosts";
@@ -1246,6 +1247,10 @@ void RemoteSuggestionsProvider::RestoreCategoriesFromPrefs() {
                     << kCategoryContentProvidedByServer << "': " << *entry;
       continue;
     }
+    bool allow_fetching_more_results = false;
+    // This wasn't always around, so it's okay if it's missing.
+    dict->GetBoolean(kCategoryContentAllowFetchingMore,
+                     &allow_fetching_more_results);
 
     Category category = category_factory()->FromIDValue(id);
     // TODO(tschumann): The following has a bad smell that category
@@ -1255,9 +1260,7 @@ void RemoteSuggestionsProvider::RestoreCategoriesFromPrefs() {
     CategoryInfo info =
         category == articles_category_
             ? BuildArticleCategoryInfo(title)
-            // TODO(tschumann): Persist and load 'allow_fetching_more_results'.
-            : BuildRemoteCategoryInfo(title,
-                                      /*allow_fetching_more_results=*/false);
+            : BuildRemoteCategoryInfo(title, allow_fetching_more_results);
     CategoryContent* content = UpdateCategoryInfo(category, info);
     content->included_in_last_server_response =
         included_in_last_server_response;
@@ -1287,6 +1290,8 @@ void RemoteSuggestionsProvider::StoreCategoriesToPrefs() {
     dict->SetString(kCategoryContentTitle, content.info.title());
     dict->SetBoolean(kCategoryContentProvidedByServer,
                      content.included_in_last_server_response);
+    dict->SetBoolean(kCategoryContentAllowFetchingMore,
+                     content.info.has_more_action());
     list.Append(std::move(dict));
   }
   // Finally, store the result in the pref service.
