@@ -32,8 +32,8 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
   explicit BaseScrollBarThumb(BaseScrollBar* scroll_bar);
   ~BaseScrollBarThumb() override;
 
-  // Sets the size (width or height) of the thumb to the specified value.
-  void SetSize(int size);
+  // Sets the length (width or height) of the thumb to the specified value.
+  void SetLength(int length);
 
   // Retrieves the size (width or height) of the thumb.
   int GetSize() const;
@@ -60,6 +60,9 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
   CustomButton::ButtonState GetState() const;
   // Update our state and schedule a repaint when the mouse moves over us.
   void SetState(CustomButton::ButtonState state);
+  virtual void OnStateChanged();
+
+  bool IsHorizontal() const;
 
   BaseScrollBar* scroll_bar() { return scroll_bar_; }
 

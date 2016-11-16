@@ -62,17 +62,10 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // Scroll the contents by the specified offset (contents coordinates).
   bool ScrollByContentsOffset(int contents_offset);
 
-  // Called when the thumb state has been changed from |old_state| to
-  // |new_state|.
-  void OnThumbStateChanged(CustomButton::ButtonState old_state,
-                           CustomButton::ButtonState new_state);
-
   // View overrides:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
 
@@ -101,7 +94,6 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
  protected:
   BaseScrollBarThumb* GetThumb() const;
-  CustomButton::ButtonState GetThumbTrackState() const;
 
   // Wrapper functions that calls the controller. We need this since native
   // scrollbars wrap around a different scrollbar. When calling the controller
@@ -120,9 +112,6 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
   // Changes to 'pushed' state and starts a timer to scroll repeatedly.
   void ProcessPressEvent(const ui::LocatedEvent& event);
-
-  // Sets state to |state| and stops the repeater.
-  void SetState(CustomButton::ButtonState state);
 
   // Called when the mouse is pressed down in the track area.
   void TrackClicked();
@@ -158,10 +147,6 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
   // The current size of the view port, in pixels.
   int viewport_size_;
-
-  // The state of the scrollbar track. Typically, the track will highlight when
-  // the user presses the mouse on them (during page scrolling).
-  CustomButton::ButtonState thumb_track_state_;
 
   // The last amount of incremental scroll that this scrollbar performed. This
   // is accessed by the callbacks for the auto-repeat up/down buttons to know

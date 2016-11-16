@@ -14,6 +14,7 @@
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/test/test_views.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 
 #if defined(OS_MACOSX)
@@ -128,7 +129,7 @@ ui::MouseEvent TestLeftMouseAt(const gfx::Point& location, ui::EventType type) {
 using test::ScrollViewTestApi;
 
 // Simple test harness for testing a ScrollView directly.
-class ScrollViewTest : public testing::Test {
+class ScrollViewTest : public ViewsTestBase {
  public:
   ScrollViewTest() {}
 

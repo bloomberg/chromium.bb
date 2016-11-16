@@ -7,104 +7,107 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 
 namespace views {
 namespace {
 
-const int kScrollbarWidth = 10;
-const int kThumbInsetInside = 3;
-const int kThumbInsetFromEdge = 1;
-const int kThumbCornerRadius = 2;
-const int kThumbMinimumSize = kScrollbarWidth;
-const int kThumbHoverAlpha = 128;
-const int kThumbDefaultAlpha = 64;
-
-class OverlayScrollBarThumb : public BaseScrollBarThumb,
-                              public gfx::AnimationDelegate {
- public:
-  explicit OverlayScrollBarThumb(BaseScrollBar* scroll_bar);
-  ~OverlayScrollBarThumb() override;
-
- protected:
-  // View overrides:
-  gfx::Size GetPreferredSize() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
-
-  // gfx::AnimationDelegate overrides:
-  void AnimationProgressed(const gfx::Animation* animation) override;
-
- private:
-  double animation_opacity_;
-  DISALLOW_COPY_AND_ASSIGN(OverlayScrollBarThumb);
-};
-
-OverlayScrollBarThumb::OverlayScrollBarThumb(BaseScrollBar* scroll_bar)
-    : BaseScrollBarThumb(scroll_bar),
-      animation_opacity_(0.0) {
-  // This is necessary, otherwise the thumb will be rendered below the views if
-  // those views paint to their own layers.
-  SetPaintToLayer(true);
-  layer()->SetFillsBoundsOpaquely(false);
-}
-
-OverlayScrollBarThumb::~OverlayScrollBarThumb() {
-}
-
-gfx::Size OverlayScrollBarThumb::GetPreferredSize() const {
-  return gfx::Size(kThumbMinimumSize, kThumbMinimumSize);
-}
-
-void OverlayScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
-  gfx::Rect local_bounds(GetLocalBounds());
-  SkPaint paint;
-  int alpha = kThumbDefaultAlpha * animation_opacity_;
-  if (GetState() == CustomButton::STATE_HOVERED) {
-    alpha = kThumbHoverAlpha * animation_opacity_;
-  } else if(GetState() == CustomButton::STATE_PRESSED) {
-    // If we are in pressed state, no need to worry about animation,
-    // just display the deeper color.
-    alpha = kThumbHoverAlpha;
-  }
-
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SkColorSetARGB(alpha, 0, 0, 0));
-  canvas->DrawRoundRect(local_bounds, kThumbCornerRadius, paint);
-}
-
-void OverlayScrollBarThumb::AnimationProgressed(
-    const gfx::Animation* animation) {
-  animation_opacity_ = animation->GetCurrentValue();
-  SchedulePaint();
-}
+// Total thickness of the thumb (matches visuals when hovered).
+const int kThumbThickness = 11;
+// When hovered, the thumb takes up the full width. Otherwise, it's a bit
+// slimmer.
+const int kThumbUnhoveredDifference = 4;
+const int kThumbStroke = 1;
+const float kThumbHoverAlpha = 0.5f;
+const float kThumbDefaultAlpha = 0.3f;
 
 }  // namespace
 
+OverlayScrollBar::Thumb::Thumb(OverlayScrollBar* scroll_bar)
+    : BaseScrollBarThumb(scroll_bar), scroll_bar_(scroll_bar) {
+  SetPaintToLayer(true);
+  // Animate all changes to the layer except the first one.
+  OnStateChanged();
+  layer()->SetAnimator(ui::LayerAnimator::CreateImplicitAnimator());
+}
+
+OverlayScrollBar::Thumb::~Thumb() {}
+
+gfx::Size OverlayScrollBar::Thumb::GetPreferredSize() const {
+  return gfx::Size(kThumbThickness, kThumbThickness);
+}
+
+void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
+  SkPaint fill_paint;
+  fill_paint.setStyle(SkPaint::kFill_Style);
+  fill_paint.setColor(SK_ColorBLACK);
+  gfx::RectF fill_bounds(GetLocalBounds());
+  fill_bounds.Inset(gfx::InsetsF(kThumbStroke, kThumbStroke,
+                                 IsHorizontal() ? 0 : kThumbStroke,
+                                 IsHorizontal() ? kThumbStroke : 0));
+  canvas->DrawRect(fill_bounds, fill_paint);
+
+  SkPaint stroke_paint;
+  stroke_paint.setStyle(SkPaint::kStroke_Style);
+  stroke_paint.setColor(SK_ColorWHITE);
+  stroke_paint.setStrokeWidth(kThumbStroke);
+  gfx::RectF stroke_bounds(fill_bounds);
+  stroke_bounds.Inset(gfx::InsetsF(-0.5f));
+  // The stroke doesn't apply to the far edge of the thumb.
+  SkPath path;
+  path.moveTo(gfx::PointFToSkPoint(stroke_bounds.top_right()));
+  path.lineTo(gfx::PointFToSkPoint(stroke_bounds.origin()));
+  path.lineTo(gfx::PointFToSkPoint(stroke_bounds.bottom_left()));
+  if (IsHorizontal()) {
+    path.moveTo(gfx::PointFToSkPoint(stroke_bounds.bottom_right()));
+    path.close();
+  } else {
+    path.lineTo(gfx::PointFToSkPoint(stroke_bounds.bottom_right()));
+  }
+  canvas->DrawPath(path, stroke_paint);
+}
+
+void OverlayScrollBar::Thumb::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  scroll_bar_->Show();
+  // Don't start the hide countdown if the thumb is still hovered or pressed.
+  if (GetState() == CustomButton::STATE_NORMAL)
+    scroll_bar_->StartHideCountdown();
+}
+
+void OverlayScrollBar::Thumb::OnStateChanged() {
+  if (GetState() == CustomButton::STATE_NORMAL) {
+    gfx::Transform translation;
+    translation.Translate(
+        gfx::Vector2d(IsHorizontal() ? 0 : kThumbUnhoveredDifference,
+                      IsHorizontal() ? kThumbUnhoveredDifference : 0));
+    layer()->SetTransform(translation);
+    layer()->SetOpacity(kThumbDefaultAlpha);
+
+    if (GetWidget())
+      scroll_bar_->StartHideCountdown();
+  } else {
+    layer()->SetTransform(gfx::Transform());
+    layer()->SetOpacity(kThumbHoverAlpha);
+  }
+}
+
 OverlayScrollBar::OverlayScrollBar(bool horizontal)
-    : BaseScrollBar(horizontal, new OverlayScrollBarThumb(this)),
-      animation_(static_cast<OverlayScrollBarThumb*>(GetThumb())) {
+    : BaseScrollBar(horizontal, new Thumb(this)), hide_timer_(false, false) {
   set_notify_enter_exit_on_child(true);
+  SetPaintToLayer(true);
+  layer()->SetMasksToBounds(true);
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 OverlayScrollBar::~OverlayScrollBar() {
 }
 
 gfx::Rect OverlayScrollBar::GetTrackBounds() const {
-  gfx::Rect local_bounds(GetLocalBounds());
-  if (IsHorizontal()) {
-    local_bounds.Inset(kThumbInsetFromEdge, kThumbInsetInside,
-                       kThumbInsetFromEdge, kThumbInsetFromEdge);
-  } else {
-    local_bounds.Inset(kThumbInsetInside, kThumbInsetFromEdge,
-                       kThumbInsetFromEdge, kThumbInsetFromEdge);
-  }
-  gfx::Size track_size = local_bounds.size();
-  track_size.SetToMax(GetThumb()->size());
-  local_bounds.set_size(track_size);
-  return local_bounds;
+  return GetLocalBounds();
 }
 
 int OverlayScrollBar::GetLayoutSize() const {
@@ -112,31 +115,34 @@ int OverlayScrollBar::GetLayoutSize() const {
 }
 
 int OverlayScrollBar::GetContentOverlapSize() const {
-  return kScrollbarWidth;
+  return kThumbThickness;
 }
 
-void OverlayScrollBar::OnMouseEnteredScrollView(const ui::MouseEvent& event) {
-  animation_.Show();
+void OverlayScrollBar::OnMouseEntered(const ui::MouseEvent& event) {
+  Show();
 }
 
-void OverlayScrollBar::OnMouseExitedScrollView(const ui::MouseEvent& event) {
-  animation_.Hide();
+void OverlayScrollBar::OnMouseExited(const ui::MouseEvent& event) {
+  StartHideCountdown();
 }
 
-void OverlayScrollBar::OnGestureEvent(ui::GestureEvent* event) {
-  switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      animation_.Show();
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START:
-    case ui::ET_GESTURE_END:
-      animation_.Hide();
-      break;
-    default:
-      break;
-  }
-  BaseScrollBar::OnGestureEvent(event);
+void OverlayScrollBar::Show() {
+  layer()->SetOpacity(1.0f);
+  hide_timer_.Stop();
+}
+
+void OverlayScrollBar::Hide() {
+  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(200));
+  layer()->SetOpacity(0.0f);
+}
+
+void OverlayScrollBar::StartHideCountdown() {
+  if (IsMouseHovered())
+    return;
+  hide_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(1),
+      base::Bind(&OverlayScrollBar::Hide, base::Unretained(this)));
 }
 
 void OverlayScrollBar::Layout() {

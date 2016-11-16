@@ -6,8 +6,8 @@
 #define UI_VIEWS_CONTROLS_SCROLLBAR_OVERLAY_SCROLL_BAR_H_
 
 #include "base/macros.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 
 namespace views {
 
@@ -20,19 +20,45 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
  protected:
   // BaseScrollBar overrides:
   gfx::Rect GetTrackBounds() const override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // ScrollBar overrides:
   int GetLayoutSize() const override;
   int GetContentOverlapSize() const override;
-  void OnMouseEnteredScrollView(const ui::MouseEvent& event) override;
-  void OnMouseExitedScrollView(const ui::MouseEvent& event) override;
 
   // View overrides:
   void Layout() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
  private:
-  gfx::SlideAnimation animation_;
+  class Thumb : public BaseScrollBarThumb {
+   public:
+    explicit Thumb(OverlayScrollBar* scroll_bar);
+    ~Thumb() override;
+
+   protected:
+    // BaseScrollBarThumb:
+    gfx::Size GetPreferredSize() const override;
+    void OnPaint(gfx::Canvas* canvas) override;
+    void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+    void OnStateChanged() override;
+
+   private:
+    OverlayScrollBar* scroll_bar_;
+
+    DISALLOW_COPY_AND_ASSIGN(Thumb);
+  };
+  friend class Thumb;
+
+  // Shows this (effectively, the thumb) without delay.
+  void Show();
+  // Hides this with a delay.
+  void Hide();
+  // Starts a countdown that hides this when it fires.
+  void StartHideCountdown();
+
+  base::Timer hide_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayScrollBar);
 };
 

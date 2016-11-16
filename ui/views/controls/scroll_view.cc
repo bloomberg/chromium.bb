@@ -456,20 +456,6 @@ bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   return processed;
 }
 
-void ScrollView::OnMouseEntered(const ui::MouseEvent& event) {
-  if (horiz_sb_)
-    horiz_sb_->OnMouseEnteredScrollView(event);
-  if (vert_sb_)
-    vert_sb_->OnMouseEnteredScrollView(event);
-}
-
-void ScrollView::OnMouseExited(const ui::MouseEvent& event) {
-  if (horiz_sb_)
-    horiz_sb_->OnMouseExitedScrollView(event);
-  if (vert_sb_)
-    vert_sb_->OnMouseExitedScrollView(event);
-}
-
 void ScrollView::OnScrollEvent(ui::ScrollEvent* event) {
 #if defined(OS_MACOSX)
   // TODO(tapted): Send |event| to a cc::InputHandler. For now, there's nothing

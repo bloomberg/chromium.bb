@@ -90,9 +90,6 @@ class VIEWS_EXPORT ScrollBar : public View {
   // Default is 0.
   virtual int GetContentOverlapSize() const;
 
-  virtual void OnMouseEnteredScrollView(const ui::MouseEvent& event);
-  virtual void OnMouseExitedScrollView(const ui::MouseEvent& event);
-
  protected:
   // Create new scrollbar, either horizontal or vertical. These are protected
   // since you need to be creating either a NativeScrollBar or a
