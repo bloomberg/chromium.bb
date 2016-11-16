@@ -282,20 +282,28 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   void TriggerAccessibilityAlert(ash::AccessibilityAlert alert) override {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     if (profile) {
+      int msg = 0;
       switch (alert) {
-        case ash::A11Y_ALERT_WINDOW_NEEDED: {
-          AutomationManagerAura::GetInstance()->HandleAlert(
-              profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
+        case ash::A11Y_ALERT_CAPS_ON:
+          msg = IDS_A11Y_ALERT_CAPS_ON;
           break;
-        }
-        case ash::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
-          AutomationManagerAura::GetInstance()->HandleAlert(
-              profile, l10n_util::GetStringUTF8(
-                           IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
+        case ash::A11Y_ALERT_CAPS_OFF:
+          msg = IDS_A11Y_ALERT_CAPS_OFF;
           break;
-        }
+        case ash::A11Y_ALERT_WINDOW_NEEDED:
+          msg = IDS_A11Y_ALERT_WINDOW_NEEDED;
+          break;
+        case ash::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED:
+          msg = IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED;
+          break;
         case ash::A11Y_ALERT_NONE:
+          msg = 0;
           break;
+      }
+
+      if (msg) {
+        AutomationManagerAura::GetInstance()->HandleAlert(
+            profile, l10n_util::GetStringUTF8(msg));
       }
     }
   }

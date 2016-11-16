@@ -14314,6 +14314,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED" desc="The accessible text read when the user enters window overview mode in Ash.">
           Entered window overview mode
         </message>
+        <message name="IDS_A11Y_ALERT_CAPS_OFF" desc="Alert sent to the accessibility api when caps lock is turned off.">
+          caps lock off
+        </message>
+        <message name="IDS_A11Y_ALERT_CAPS_ON" desc="Alert sent to the accessibility api when caps lock is turned on.">
+          caps lock on
+        </message>
       </if>
 
       <message name="IDS_DESKTOP_MEDIA_PICKER_SHARE" desc="Used for Share on buttons">

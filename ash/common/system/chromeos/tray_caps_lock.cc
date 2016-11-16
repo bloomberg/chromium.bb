@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -158,6 +159,10 @@ TrayCapsLock::~TrayCapsLock() {
 
 void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
+
+  // Send an a11y alert.
+  WmShell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
+      enabled ? A11Y_ALERT_CAPS_ON : A11Y_ALERT_CAPS_OFF);
 
   if (tray_view())
     tray_view()->SetVisible(caps_lock_enabled_);

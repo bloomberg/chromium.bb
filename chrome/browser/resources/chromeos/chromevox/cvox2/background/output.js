@@ -116,8 +116,7 @@ Output.SPACE = ' ';
  */
 Output.ROLE_INFO_ = {
   alert: {
-    msgId: 'role_alert',
-    earconId: 'ALERT_NONMODAL'
+    msgId: 'role_alert'
   },
   alertDialog: {
     msgId: 'role_alertdialog',
@@ -398,7 +397,7 @@ Output.RULES = {
       leave: '@exited_container($role)'
     },
     alert: {
-      speak: '!doNotInterrupt $role $descendants $state'
+      speak: '$earcon(ALERT_NONMODAL) $role $descendants $state'
     },
     alertDialog: {
       enter: '$nameFromNode $role $description',
@@ -601,8 +600,8 @@ Output.RULES = {
   },
   alert: {
     default: {
-      speak: '!doNotInterrupt @role_alert ' +
-          '$if($name, $name, $descendants) $earcon(ALERT_NONMODAL) $description'
+      speak: '$earcon(ALERT_NONMODAL) @role_alert ' +
+          '$if($name, $name, $descendants) $description'
     }
   }
 };
