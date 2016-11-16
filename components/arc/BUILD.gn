@@ -131,8 +131,6 @@ mojom("arc_bindings_old_types") {
     "common/enterprise_reporting.mojom",
     "common/intent_helper.mojom",
     "common/net.mojom",
-    "common/scale_factor.mojom",
-    "common/screen_rect.mojom",
     "common/video_accelerator.mojom",
   ]
 
@@ -161,6 +159,8 @@ mojom("arc_bindings") {
     "common/power.mojom",
     "common/print.mojom",
     "common/process.mojom",
+    "common/scale_factor.mojom",
+    "common/screen_rect.mojom",
     "common/storage_manager.mojom",
     "common/tts.mojom",
     "common/video.mojom",
