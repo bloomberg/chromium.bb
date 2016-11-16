@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
+#include <limits.h>
 #include <assert.h>
 #include <X11/Xcursor/Xcursor.h>
 #include <linux/input.h>
@@ -152,8 +153,11 @@ struct weston_wm_window {
 	uint32_t protocols;
 	xcb_atom_t type;
 	int width, height;
-	int x, y;
+	int x;
+	int y;
 	bool pos_dirty;
+	int map_request_x;
+	int map_request_y;
 	struct weston_output_weak_ref legacy_fullscreen_output;
 	int saved_width, saved_height;
 	int decorate;
@@ -1030,12 +1034,16 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	 */
 	assert(!window->shsurf);
 
+	window->map_request_x = window->x;
+	window->map_request_y = window->y;
+
 	if (window->frame_id == XCB_WINDOW_NONE)
 		weston_wm_window_create_frame(window);
 
 	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d, %dx%d @ %d,%d)\n",
 	       window->id, window, window->frame_id,
-	       window->width, window->height, window->x, window->y);
+	       window->width, window->height,
+	       window->map_request_x, window->map_request_y);
 
 	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
 	weston_wm_window_set_net_wm_state(window);
@@ -1283,6 +1291,8 @@ weston_wm_window_create(struct weston_wm *wm,
 	window->x = x;
 	window->y = y;
 	window->pos_dirty = false;
+	window->map_request_x = INT_MIN; /* out of range for valid positions */
+	window->map_request_y = INT_MIN; /* out of range for valid positions */
 	weston_output_weak_ref_init(&window->legacy_fullscreen_output);
 
 	geometry_reply = xcb_get_geometry_reply(wm->conn, geometry_cookie, NULL);
@@ -2581,6 +2591,17 @@ legacy_fullscreen(struct weston_wm *wm,
 }
 
 static bool
+weston_wm_window_is_positioned(struct weston_wm_window *window)
+{
+	if (window->map_request_x == INT_MIN ||
+	    window->map_request_y == INT_MIN)
+		weston_log("XWM warning: win %d did not see map request\n",
+			   window->id);
+
+	return window->map_request_x != 0 || window->map_request_y != 0;
+}
+
+static bool
 weston_wm_window_type_inactive(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
@@ -2670,6 +2691,10 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 			xwayland_interface->set_xwayland(window->shsurf,
 							 window->x,
 							 window->y);
+		} else if (weston_wm_window_is_positioned(window)) {
+			xwayland_interface->set_toplevel_with_position(window->shsurf,
+								       window->map_request_x,
+								       window->map_request_y);
 		} else {
 			xwayland_interface->set_toplevel(window->shsurf);
 		}
