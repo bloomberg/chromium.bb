@@ -138,14 +138,13 @@ class HeaderParser(object):
   multi_line_comment_start_re = re.compile(r'\s*/\*')
   enum_line_re = re.compile(r'^\s*(\w+)(\s*\=\s*([^,\n]+))?,?')
   enum_end_re = re.compile(r'^\s*}\s*;\.*$')
+  generator_error_re = re.compile(r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*$')
   generator_directive_re = re.compile(
       r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]+)$')
   multi_line_generator_directive_start_re = re.compile(
       r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*\(([\.\w]*)$')
-  multi_line_directive_continuation_re = re.compile(
-      r'^\s*//\s+([\.\w]+)$')
-  multi_line_directive_end_re = re.compile(
-      r'^\s*//\s+([\.\w]*)\)$')
+  multi_line_directive_continuation_re = re.compile(r'^\s*//\s+([\.\w]+)$')
+  multi_line_directive_end_re = re.compile(r'^\s*//\s+([\.\w]*)\)$')
 
   optional_class_or_struct_re = r'(class|struct)?'
   enum_name_re = r'(\w+)'
@@ -154,7 +153,7 @@ class HeaderParser(object):
       optional_class_or_struct_re + '\s*' + enum_name_re + '\s*' +
       optional_fixed_type_re + '\s*{\s*$')
 
-  def __init__(self, lines, path=None):
+  def __init__(self, lines, path=''):
     self._lines = lines
     self._path = path
     self._enum_definitions = []
@@ -249,11 +248,17 @@ class HeaderParser(object):
 
   def _ParseRegularLine(self, line):
     enum_start = HeaderParser.enum_start_re.match(line)
+    generator_directive_error = HeaderParser.generator_error_re.match(line)
     generator_directive = HeaderParser.generator_directive_re.match(line)
     multi_line_generator_directive_start = (
         HeaderParser.multi_line_generator_directive_start_re.match(line))
 
-    if generator_directive:
+    if generator_directive_error:
+      raise Exception('Malformed directive declaration in ' + self._path +
+                      '. Use () for multi-line directives. E.g.\n' +
+                      '// GENERATED_JAVA_ENUM_PACKAGE: (\n' +
+                      '//   foo.package)')
+    elif generator_directive:
       directive_name = generator_directive.groups()[0]
       directive_value = generator_directive.groups()[1]
       self._generator_directives.Update(directive_name, directive_value)

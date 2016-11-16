@@ -442,6 +442,17 @@ public class ClassName {
     with self.assertRaises(Exception):
       HeaderParser(test_data).ParseDefinitions()
 
+  def testParseMalformedMultiLineDirectiveMissingBrackets(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE:
+      // test.namespace
+      enum Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    with self.assertRaises(Exception):
+      HeaderParser(test_data).ParseDefinitions()
+
   def testEnumValueAssignmentNoneDefined(self):
     definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', None)
