@@ -21,6 +21,8 @@ class DepotToolsApi(recipe_api.RecipeApi):
   def gn_py_path(self):
     return self.package_repo_resource('gn.py')
 
+  # TODO(dnj): Remove this once everything uses the "gsutil" recipe module
+  # version.
   @property
   def gsutil_py_path(self):
     return self.package_repo_resource('gsutil.py')
