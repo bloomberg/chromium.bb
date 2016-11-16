@@ -10,6 +10,13 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    ":constants",
     "//mojo/common:common_custom_types",
+  ]
+}
+
+mojom("constants") {
+  sources = [
+    "constants.mojom",
   ]
 }

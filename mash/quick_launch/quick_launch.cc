@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -191,7 +192,8 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface("catalog", &catalog);
+  context()->connector()->ConnectToInterface(catalog::mojom::kServiceName,
+                                             &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new QuickLaunchUI(this, context()->connector(), std::move(catalog)),

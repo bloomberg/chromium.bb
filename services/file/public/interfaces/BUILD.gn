@@ -12,4 +12,14 @@ mojom("interfaces") {
   deps = [
     "//components/filesystem/public/interfaces",
   ]
+
+  public_deps = [
+    ":constants",
+  ]
+}
+
+mojom("constants") {
+  sources = [
+    "constants.mojom",
+  ]
 }

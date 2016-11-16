@@ -38,9 +38,10 @@ source_set("service_manager") {
     "//base/third_party/dynamic_annotations",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//services/catalog/public/interfaces",
+    "//services/catalog/public/interfaces:constants",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
+    "//services/tracing/public/interfaces:constants",
   ]
 
   public_deps = [

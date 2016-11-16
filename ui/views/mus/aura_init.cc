@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "services/catalog/public/cpp/resource_loader.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -103,7 +104,7 @@ void AuraInit::InitializeResources(service_manager::Connector* connector) {
 
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
-  connector->ConnectToInterface("catalog", &directory);
+  connector->ConnectToInterface(catalog::mojom::kServiceName, &directory);
   CHECK(loader.OpenFiles(std::move(directory), resource_paths));
   ui::RegisterPathProvider();
   base::File pak_file = loader.TakeFile(resource_file_);

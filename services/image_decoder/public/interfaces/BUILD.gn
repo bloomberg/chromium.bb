@@ -10,6 +10,13 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    ":constants",
     "//skia/public/interfaces",
+  ]
+}
+
+mojom("constants") {
+  sources = [
+    "constants.mojom",
   ]
 }

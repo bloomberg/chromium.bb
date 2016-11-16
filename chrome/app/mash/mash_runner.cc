@@ -22,6 +22,7 @@
 #include "mash/package/mash_packaged_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/native_runner_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -139,7 +140,7 @@ void MashRunner::RunMain() {
   // We need to send a sync messages to the Catalog, so we wait for a completed
   // connection first.
   std::unique_ptr<service_manager::Connection> catalog_connection =
-      context_->connector()->Connect("catalog");
+      context_->connector()->Connect(catalog::mojom::kServiceName);
   {
     base::RunLoop run_loop;
     catalog_connection->AddConnectionCompletedClosure(run_loop.QuitClosure());

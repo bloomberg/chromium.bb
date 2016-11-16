@@ -22,22 +22,23 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_control.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/tracing/public/interfaces/constants.mojom.h"
 
 namespace service_manager {
 
 namespace {
 
-const char kCatalogName[] = "catalog";
-const char kServiceManagerName[] = "service_manager";
 const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
@@ -49,11 +50,11 @@ const char kCapability_ServiceManager[] = "service_manager:service_manager";
 }  // namespace
 
 Identity CreateServiceManagerIdentity() {
-  return Identity(kServiceManagerName, mojom::kRootUserID);
+  return Identity(service_manager::mojom::kServiceName, mojom::kRootUserID);
 }
 
 Identity CreateCatalogIdentity() {
-  return Identity(kCatalogName, mojom::kRootUserID);
+  return Identity(catalog::mojom::kServiceName, mojom::kRootUserID);
 }
 
 InterfaceProviderSpec GetPermissiveInterfaceProviderSpec() {
@@ -66,7 +67,7 @@ InterfaceProviderSpec GetPermissiveInterfaceProviderSpec() {
 
 bool HasCapability(const InterfaceProviderSpec& spec,
                    const std::string& capability) {
-  auto it = spec.requires.find(kServiceManagerName);
+  auto it = spec.requires.find(service_manager::mojom::kServiceName);
   if (it == spec.requires.end())
     return false;
   return it->second.find(capability) != it->second.end();
@@ -94,8 +95,8 @@ class ServiceManager::Instance
         control_binding_(this),
         state_(State::IDLE),
         weak_factory_(this) {
-    if (identity_.name() == kServiceManagerName ||
-        identity_.name() == kCatalogName) {
+    if (identity_.name() == service_manager::mojom::kServiceName ||
+        identity_.name() == catalog::mojom::kServiceName) {
       pid_ = base::Process::Current().Pid();
     }
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
@@ -541,15 +542,16 @@ ServiceManager::ServiceManager(
   spec.provides[kCapability_ServiceManager].insert(
       "service_manager::mojom::ServiceManager");
   spec.requires["*"].insert("service_manager:service_factory");
-  spec.requires["catalog"].insert("service_manager:resolver");
-  spec.requires["tracing"].insert("app");
+  spec.requires[catalog::mojom::kServiceName].insert(
+      "service_manager:resolver");
+  spec.requires[tracing::mojom::kServiceName].insert("app");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = spec;
 
   service_manager_instance_ =
       CreateInstance(Identity(), CreateServiceManagerIdentity(), specs);
   service_manager_instance_->StartWithService(std::move(service));
-  singletons_.insert(kServiceManagerName);
+  singletons_.insert(service_manager::mojom::kServiceName);
   service_context_.reset(new ServiceContext(
       base::MakeUnique<ServiceImpl>(this), std::move(request)));
 
@@ -615,7 +617,7 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
 
   Instance* instance = CreateInstance(
       CreateServiceManagerIdentity(), CreateCatalogIdentity(), specs);
-  singletons_.insert(kCatalogName);
+  singletons_.insert(catalog::mojom::kServiceName);
   instance->StartWithService(std::move(catalog));
 }
 
@@ -685,8 +687,8 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
   // app so it loads the correct store. Since the catalog is itself run as root
   // when this re-enters Connect() it'll be handled by
   // ConnectToExistingInstance().
-  mojom::Resolver* resolver =
-      GetResolver(Identity(kServiceManagerName, params->target().user_id()));
+  mojom::Resolver* resolver = GetResolver(Identity(
+      service_manager::mojom::kServiceName, params->target().user_id()));
 
   std::string name = params->target().name();
   resolver->ResolveMojoName(
@@ -789,7 +791,8 @@ mojom::ServiceFactory* ServiceManager::GetServiceFactory(
   if (it != service_factories_.end())
     return it->second.get();
 
-  Identity source_identity(kServiceManagerName, mojom::kInheritUserID);
+  Identity source_identity(service_manager::mojom::kServiceName,
+                           mojom::kInheritUserID);
   mojom::ServiceFactoryPtr factory;
   ConnectToInterface(this, source_identity, service_factory_identity,
                      &factory);

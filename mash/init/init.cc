@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/tracing/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 
 namespace mash {
@@ -62,7 +63,7 @@ void Init::UserServiceQuit(const std::string& user_id) {
 }
 
 void Init::StartTracing() {
-  context()->connector()->Connect("tracing");
+  context()->connector()->Connect(tracing::mojom::kServiceName);
 }
 
 void Init::StartLogin() {

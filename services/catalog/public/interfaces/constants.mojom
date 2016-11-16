@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/file/public/cpp/constants.h"
+module catalog.mojom;
 
-namespace file {
-
-const char kFileServiceName[] = "file";
-
-}  // namespace file
+const string kServiceName = "catalog";

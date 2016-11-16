@@ -16,10 +16,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -314,7 +316,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
 
   service_manager::mojom::ServiceManagerPtr service_manager;
   context()->connector()->ConnectToInterface(
-      "service_manager", &service_manager);
+      service_manager::mojom::kServiceName, &service_manager);
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
   service_manager::mojom::ServiceManagerListenerRequest request =
@@ -322,7 +324,8 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface("catalog", &catalog);
+  context()->connector()->ConnectToInterface(catalog::mojom::kServiceName,
+                                             &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       this, std::move(request), std::move(catalog));

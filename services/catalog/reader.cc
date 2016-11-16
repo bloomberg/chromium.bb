@@ -16,6 +16,8 @@
 #include "services/catalog/constants.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/manifest_provider.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/interfaces/constants.mojom.h"
 
 namespace catalog {
 namespace {
@@ -87,8 +89,9 @@ void ScanDir(
     // build (e.g. for applications that are packaged into others) and are not
     // valid standalone packages.
     base::FilePath package_path = GetExecutablePath(package_dir, entry->name());
-    if (entry->name() != "service_manager" &&
-        entry->name() != "catalog" && !base::PathExists(package_path)) {
+    if (entry->name() != service_manager::mojom::kServiceName &&
+        entry->name() != catalog::mojom::kServiceName &&
+        !base::PathExists(package_path)) {
       continue;
     }
 

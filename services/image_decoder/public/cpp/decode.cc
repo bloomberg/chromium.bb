@@ -4,7 +4,7 @@
 
 #include "services/image_decoder/public/cpp/decode.h"
 
-#include "services/image_decoder/public/cpp/constants.h"
+#include "services/image_decoder/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -37,7 +37,7 @@ void Decode(service_manager::Connector* connector,
             uint64_t max_size_in_bytes,
             const mojom::ImageDecoder::DecodeImageCallback& callback) {
   mojom::ImageDecoderPtr decoder;
-  connector->ConnectToInterface(kServiceName, &decoder);
+  connector->ConnectToInterface(mojom::kServiceName, &decoder);
   decoder.set_connection_error_handler(
       base::Bind(&OnConnectionError, callback));
   mojom::ImageDecoder* raw_decoder = decoder.get();

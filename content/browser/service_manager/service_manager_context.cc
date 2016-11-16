@@ -28,8 +28,9 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/catalog/store.h"
-#include "services/file/public/cpp/constants.h"
+#include "services/file/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/native_runner.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -217,8 +218,8 @@ ServiceManagerContext::ServiceManagerContext() {
       { kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
       { kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
       { kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
-      { "catalog", IDR_MOJO_CATALOG_MANIFEST },
-      { file::kFileServiceName, IDR_MOJO_FILE_MANIFEST }
+      { catalog::mojom::kServiceName, IDR_MOJO_CATALOG_MANIFEST },
+      { file::mojom::kServiceName, IDR_MOJO_FILE_MANIFEST }
     };
 
     for (size_t i = 0; i < arraysize(kManifests); ++i) {

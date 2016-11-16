@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/catalog/public/cpp/resource_loader.h"
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -106,7 +107,7 @@ void Service::InitializeResources(service_manager::Connector* connector) {
 
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
-  connector->ConnectToInterface("catalog", &directory);
+  connector->ConnectToInterface(catalog::mojom::kServiceName, &directory);
   CHECK(loader.OpenFiles(std::move(directory), resource_paths));
 
   ui::RegisterPathProvider();

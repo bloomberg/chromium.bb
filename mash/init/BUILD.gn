@@ -23,6 +23,7 @@ service("init") {
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
+    "//services/tracing/public/interfaces:constants",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
   ]

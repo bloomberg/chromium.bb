@@ -30,7 +30,7 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "mojo/common/common_type_converters.h"
-#include "services/file/public/cpp/constants.h"
+#include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/public/interfaces/file_system.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -154,7 +154,7 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
   if (connection_state_ == NO_CONNECTION) {
     CHECK(connector_);
     file_service_connection_ =
-        connector_->Connect(file::kFileServiceName);
+        connector_->Connect(file::mojom::kServiceName);
     connection_state_ = CONNECTION_IN_PROGRESS;
     file_service_connection_->AddConnectionCompletedClosure(
         base::Bind(&MojoState::OnUserServiceConnectionComplete,

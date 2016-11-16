@@ -42,7 +42,7 @@
 #include "services/device/device_service.h"
 #include "services/device/public/cpp/constants.h"
 #include "services/file/file_service.h"
-#include "services/file/public/cpp/constants.h"
+#include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -474,7 +474,7 @@ void BrowserContext::Initialize(
           base::Bind(&file::CreateFileService,
                      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
                      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
-      connection->AddEmbeddedService(file::kFileServiceName, info);
+      connection->AddEmbeddedService(file::mojom::kServiceName, info);
     }
   }
 }

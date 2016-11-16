@@ -29,7 +29,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
 #include "services/image_decoder/image_decoder_service.h"
-#include "services/image_decoder/public/cpp/constants.h"
+#include "services/image_decoder/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/geometry/size.h"
@@ -219,7 +219,7 @@ void ChromeContentUtilityClient::RegisterServices(StaticServiceMap* services) {
   content::ServiceInfo image_decoder_info;
   image_decoder_info.factory = base::Bind(&CreateImageDecoderService);
   services->insert(
-      std::make_pair(image_decoder::kServiceName, image_decoder_info));
+      std::make_pair(image_decoder::mojom::kServiceName, image_decoder_info));
 }
 
 void ChromeContentUtilityClient::AddHandler(

@@ -22,6 +22,7 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 
@@ -241,7 +242,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
         FROM_HERE, base::Bind(on_connect_callback_, local_info_, remote_info));
 
     std::string remote_service = remote_info.identity.name();
-    if (remote_service == "service_manager") {
+    if (remote_service == service_manager::mojom::kServiceName) {
       // Only expose the ServiceFactory interface to the Service Manager.
       registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
       return true;

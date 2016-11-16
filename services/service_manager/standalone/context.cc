@@ -44,6 +44,7 @@
 #include "services/service_manager/switches.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/tracing/public/cpp/switches.h"
+#include "services/tracing/public/interfaces/constants.mojom.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -189,7 +190,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   if (enable_stats_collection_bindings ||
       command_line.HasSwitch(switches::kEnableTracing)) {
     Identity source_identity = CreateServiceManagerIdentity();
-    Identity tracing_identity("tracing", mojom::kRootUserID);
+    Identity tracing_identity(tracing::mojom::kServiceName, mojom::kRootUserID);
     tracing::mojom::FactoryPtr factory;
     ConnectToInterface(service_manager(), source_identity, tracing_identity,
                        &factory);

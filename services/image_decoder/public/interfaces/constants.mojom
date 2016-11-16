@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/image_decoder/public/cpp/constants.h"
+module image_decoder.mojom;
 
-namespace image_decoder {
-
-const char kServiceName[] = "image_decoder";
-
-}  // namespace image_decoder
+const string kServiceName = "image_decoder";

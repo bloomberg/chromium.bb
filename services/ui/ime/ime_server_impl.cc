@@ -4,6 +4,7 @@
 
 #include "services/ui/ime/ime_server_impl.h"
 
+#include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 
@@ -16,7 +17,7 @@ IMEServerImpl::~IMEServerImpl() {}
 void IMEServerImpl::Init(service_manager::Connector* connector,
                          bool is_test_config) {
   connector_ = connector;
-  connector_->ConnectToInterface("catalog", &catalog_);
+  connector_->ConnectToInterface(catalog::mojom::kServiceName, &catalog_);
   // TODO(moshayedi): crbug.com/664264. The catalog service should provide
   // different set of entries for test and non-test. Once that is implemented,
   // we won't need this check here.

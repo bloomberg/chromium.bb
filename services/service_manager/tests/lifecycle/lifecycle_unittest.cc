@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 #include "services/service_manager/tests/util.h"
@@ -195,7 +196,7 @@ class LifecycleTest : public test::ServiceTest {
  private:
   std::unique_ptr<InstanceState> TrackInstances() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface("service_manager",
+    connector()->ConnectToInterface(service_manager::mojom::kServiceName,
                                     &service_manager);
     mojom::ServiceManagerListenerPtr listener;
     base::RunLoop loop;

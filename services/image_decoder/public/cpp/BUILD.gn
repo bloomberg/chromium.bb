@@ -6,8 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("cpp") {
   sources = [
-    "constants.cc",
-    "constants.h",
     "decode.cc",
     "decode.h",
   ]
