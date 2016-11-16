@@ -934,7 +934,7 @@ Range* FrameSelection::firstRange() const {
 }
 
 bool FrameSelection::isInPasswordField() const {
-  HTMLTextFormControlElement* textControl = enclosingTextFormControl(start());
+  TextControlElement* textControl = enclosingTextControl(start());
   return isHTMLInputElement(textControl) &&
          toHTMLInputElement(textControl)->type() == InputTypeNames::password;
 }
@@ -1038,8 +1038,7 @@ void FrameSelection::updateAppearance() {
 
 void FrameSelection::notifyLayoutObjectOfSelectionChange(
     EUserTriggered userTriggered) {
-  if (HTMLTextFormControlElement* textControl =
-          enclosingTextFormControl(start()))
+  if (TextControlElement* textControl = enclosingTextControl(start()))
     textControl->selectionChanged(userTriggered == UserTriggered);
 }
 

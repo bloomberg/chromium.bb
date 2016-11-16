@@ -36,7 +36,7 @@
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/DragImage.h"
@@ -351,7 +351,7 @@ void DataTransfer::writeSelection(const FrameSelection& selection) {
   if (!m_dataObject)
     return;
 
-  if (!enclosingTextFormControl(selection.start())) {
+  if (!enclosingTextControl(selection.start())) {
     m_dataObject->setHTMLAndBaseURL(selection.selectedHTMLForClipboard(),
                                     selection.frame()->document()->url());
   }

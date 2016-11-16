@@ -47,11 +47,11 @@ int BaseTextInputType::minLength() const {
 
 bool BaseTextInputType::tooLong(
     const String& value,
-    HTMLTextFormControlElement::NeedsToCheckDirtyFlag check) const {
+    TextControlElement::NeedsToCheckDirtyFlag check) const {
   int max = element().maxLength();
   if (max < 0)
     return false;
-  if (check == HTMLTextFormControlElement::CheckDirtyFlag) {
+  if (check == TextControlElement::CheckDirtyFlag) {
     // Return false for the default value or a value set by a script even if
     // it is longer than maxLength.
     if (!element().hasDirtyValue() || !element().lastChangeWasUserEdit())
@@ -62,11 +62,11 @@ bool BaseTextInputType::tooLong(
 
 bool BaseTextInputType::tooShort(
     const String& value,
-    HTMLTextFormControlElement::NeedsToCheckDirtyFlag check) const {
+    TextControlElement::NeedsToCheckDirtyFlag check) const {
   int min = element().minLength();
   if (min <= 0)
     return false;
-  if (check == HTMLTextFormControlElement::CheckDirtyFlag) {
+  if (check == TextControlElement::CheckDirtyFlag) {
     // Return false for the default value or a value set by a script even if
     // it is shorter than minLength.
     if (!element().hasDirtyValue() || !element().lastChangeWasUserEdit())

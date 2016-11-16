@@ -48,7 +48,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBRElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
@@ -2206,8 +2206,7 @@ bool isEndOfEditableOrNonEditableContent(
   // an inner editor is an only leaf node.
   if (!nextPosition.deepEquivalent().isAfterAnchor())
     return false;
-  return isHTMLTextFormControlElement(
-      nextPosition.deepEquivalent().anchorNode());
+  return isTextControlElement(nextPosition.deepEquivalent().anchorNode());
 }
 
 VisiblePosition leftBoundaryOfLine(const VisiblePosition& c,

@@ -795,8 +795,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       }
       break;
     case CSSSelector::PseudoPlaceholderShown:
-      if (isHTMLTextFormControlElement(element))
-        return toHTMLTextFormControlElement(element).isPlaceholderVisible();
+      if (isTextControlElement(element))
+        return toTextControlElement(element).isPlaceholderVisible();
       break;
     case CSSSelector::PseudoNthChild:
       if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {

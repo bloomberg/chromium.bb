@@ -46,9 +46,9 @@ class BaseTextInputType : public TextFieldInputType {
 
  private:
   bool tooLong(const String&,
-               HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
+               TextControlElement::NeedsToCheckDirtyFlag) const final;
   bool tooShort(const String&,
-                HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
+                TextControlElement::NeedsToCheckDirtyFlag) const final;
   int maxLength() const final;
   int minLength() const final;
   bool patternMismatch(const String&) const final;

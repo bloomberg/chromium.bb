@@ -73,7 +73,7 @@ static inline unsigned computeLengthForAPIValue(const String& text) {
 
 HTMLTextAreaElement::HTMLTextAreaElement(Document& document,
                                          HTMLFormElement* form)
-    : HTMLTextFormControlElement(textareaTag, document, form),
+    : TextControlElement(textareaTag, document, form),
       m_rows(defaultRows),
       m_cols(defaultCols),
       m_wrap(SoftWrap),
@@ -125,7 +125,7 @@ bool HTMLTextAreaElement::isPresentationAttribute(
 
   if (name == wrapAttr)
     return true;
-  return HTMLTextFormControlElement::isPresentationAttribute(name);
+  return TextControlElement::isPresentationAttribute(name);
 }
 
 void HTMLTextAreaElement::collectStyleForPresentationAttribute(
@@ -145,8 +145,8 @@ void HTMLTextAreaElement::collectStyleForPresentationAttribute(
                                               CSSValueNormal);
     }
   } else {
-    HTMLTextFormControlElement::collectStyleForPresentationAttribute(
-        name, value, style);
+    TextControlElement::collectStyleForPresentationAttribute(name, value,
+                                                             style);
   }
 }
 
@@ -203,7 +203,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name,
     UseCounter::count(document(), UseCounter::TextAreaMinLength);
     setNeedsValidityCheck();
   } else {
-    HTMLTextFormControlElement::parseAttribute(name, oldValue, value);
+    TextControlElement::parseAttribute(name, oldValue, value);
   }
 }
 
@@ -266,7 +266,7 @@ void HTMLTextAreaElement::defaultEventHandler(Event* event) {
   else if (layoutObject() && event->isBeforeTextInsertedEvent())
     handleBeforeTextInsertedEvent(static_cast<BeforeTextInsertedEvent*>(event));
 
-  HTMLTextFormControlElement::defaultEventHandler(event);
+  TextControlElement::defaultEventHandler(event);
 }
 
 void HTMLTextAreaElement::handleFocusEvent(Element*, WebFocusType) {
@@ -456,7 +456,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue,
 }
 
 void HTMLTextAreaElement::setInnerEditorValue(const String& value) {
-  HTMLTextFormControlElement::setInnerEditorValue(value);
+  TextControlElement::setInnerEditorValue(value);
   m_valueIsUpToDate = true;
 }
 
@@ -652,7 +652,7 @@ void HTMLTextAreaElement::copyNonAttributePropertiesFromElement(
       static_cast<const HTMLTextAreaElement&>(source);
   setValueCommon(sourceElement.value(), DispatchNoEvent, SetSeletion);
   m_isDirty = sourceElement.m_isDirty;
-  HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
+  TextControlElement::copyNonAttributePropertiesFromElement(source);
 }
 
 }  // namespace blink

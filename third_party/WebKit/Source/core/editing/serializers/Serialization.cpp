@@ -61,7 +61,6 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"

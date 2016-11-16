@@ -45,13 +45,13 @@ namespace blink {
 struct CompositedSelection {
   STACK_ALLOCATED();
   CompositedSelection()
-      : type(NoSelection), isEditable(false), isEmptyTextFormControl(false) {}
+      : type(NoSelection), isEditable(false), isEmptyTextControl(false) {}
 
   SelectionType type;
   CompositedSelectionBound start;
   CompositedSelectionBound end;
   bool isEditable;
-  bool isEmptyTextFormControl;
+  bool isEmptyTextControl;
 };
 
 }  // namespace blink

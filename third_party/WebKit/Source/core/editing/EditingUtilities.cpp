@@ -917,7 +917,7 @@ bool nodeIsUserSelectAll(const Node* node) {
 }
 
 EUserSelect usedValueOfUserSelect(const Node& node) {
-  if (node.isHTMLElement() && toHTMLElement(node).isTextFormControl())
+  if (node.isHTMLElement() && toHTMLElement(node).isTextControl())
     return SELECT_TEXT;
   if (!node.layoutObject())
     return SELECT_NONE;

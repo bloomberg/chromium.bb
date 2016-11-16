@@ -31,7 +31,7 @@ class BLINK_EXPORT WebSelection {
   bool isRange() const { return selectionType() == RangeSelection; }
 
   bool isEditable() const { return m_isEditable; }
-  bool isEmptyTextFormControl() const { return m_isEmptyTextFormControl; }
+  bool isEmptyTextFormControl() const { return m_isEmptyTextControl; }
 
  private:
   SelectionType selectionType() const { return m_selectionType; }
@@ -46,7 +46,7 @@ class BLINK_EXPORT WebSelection {
 
   // Whether the selection resides in an empty text form control. Note that
   // this only applies to caret-type selections.
-  bool m_isEmptyTextFormControl;
+  bool m_isEmptyTextControl;
 };
 
 }  // namespace blink

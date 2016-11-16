@@ -23,25 +23,25 @@
 #include "core/layout/LayoutTextControl.h"
 
 #include "core/dom/StyleChangeReason.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
 
-LayoutTextControl::LayoutTextControl(HTMLTextFormControlElement* element)
+LayoutTextControl::LayoutTextControl(TextControlElement* element)
     : LayoutBlockFlow(element) {
   ASSERT(element);
 }
 
 LayoutTextControl::~LayoutTextControl() {}
 
-HTMLTextFormControlElement* LayoutTextControl::textFormControlElement() const {
-  return toHTMLTextFormControlElement(node());
+TextControlElement* LayoutTextControl::textControlElement() const {
+  return toTextControlElement(node());
 }
 
 HTMLElement* LayoutTextControl::innerEditorElement() const {
-  return textFormControlElement()->innerEditorElement();
+  return textControlElement()->innerEditorElement();
 }
 
 void LayoutTextControl::styleDidChange(StyleDifference diff,
@@ -62,10 +62,10 @@ void LayoutTextControl::styleDidChange(StyleDifference diff,
         SubtreeStyleChange,
         StyleChangeReasonForTracing::create(StyleChangeReason::Control));
   }
-  textFormControlElement()->updatePlaceholderVisibility();
+  textControlElement()->updatePlaceholderVisibility();
 }
 
-static inline void updateUserModifyProperty(HTMLTextFormControlElement& node,
+static inline void updateUserModifyProperty(TextControlElement& node,
                                             ComputedStyle& style) {
   style.setUserModify(node.isDisabledOrReadOnly() ? READ_ONLY
                                                   : READ_WRITE_PLAINTEXT_ONLY);
@@ -79,7 +79,7 @@ void LayoutTextControl::adjustInnerEditorStyle(
   textBlockStyle.setDirection(style()->direction());
   textBlockStyle.setUnicodeBidi(style()->unicodeBidi());
 
-  updateUserModifyProperty(*textFormControlElement(), textBlockStyle);
+  updateUserModifyProperty(*textControlElement(), textBlockStyle);
 }
 
 int LayoutTextControl::textBlockLogicalHeight() const {
@@ -101,7 +101,7 @@ int LayoutTextControl::textBlockLogicalWidth() const {
 void LayoutTextControl::updateFromElement() {
   Element* innerEditor = innerEditorElement();
   if (innerEditor && innerEditor->layoutObject())
-    updateUserModifyProperty(*textFormControlElement(),
+    updateUserModifyProperty(*textControlElement(),
                              innerEditor->layoutObject()->mutableStyleRef());
 }
 
@@ -321,8 +321,7 @@ void LayoutTextControl::addOutlineRects(Vector<LayoutRect>& rects,
 LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(
     bool relayoutChildren,
     SubtreeLayoutScope& layoutScope) {
-  HTMLElement* placeholder =
-      toHTMLTextFormControlElement(node())->placeholderElement();
+  HTMLElement* placeholder = toTextControlElement(node())->placeholderElement();
   LayoutObject* placeholderLayoutObject =
       placeholder ? placeholder->layoutObject() : nullptr;
   if (!placeholderLayoutObject)

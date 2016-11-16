@@ -4814,7 +4814,7 @@ bool Document::execCommand(const String& commandName,
         InvalidStateError, "execCommand is only supported on HTML documents.");
     return false;
   }
-  if (focusedElement() && isHTMLTextFormControlElement(*focusedElement()))
+  if (focusedElement() && isTextControlElement(*focusedElement()))
     UseCounter::count(*this, UseCounter::ExecCommandOnInputOrTextarea);
 
   // We don't allow recursive |execCommand()| to protect against attack code.

@@ -36,7 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 
@@ -110,9 +110,9 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
 
     if (needExtraLineBreak) {
       Node* extraNode;
-      // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
-      if (HTMLTextFormControlElement* textControl =
-              enclosingTextFormControl(nodeToInsert)) {
+      // TODO(tkent): Can we remove TextControlElement dependency?
+      if (TextControlElement* textControl =
+              enclosingTextControl(nodeToInsert)) {
         extraNode = textControl->createPlaceholderBreakElement();
         // The placeholder BR should be the last child.  There might be
         // empty Text nodes at |pos|.

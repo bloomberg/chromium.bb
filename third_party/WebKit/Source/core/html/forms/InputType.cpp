@@ -214,15 +214,13 @@ bool InputType::valueMissing(const String&) const {
   return false;
 }
 
-bool InputType::tooLong(
-    const String&,
-    HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const {
+bool InputType::tooLong(const String&,
+                        TextControlElement::NeedsToCheckDirtyFlag) const {
   return false;
 }
 
-bool InputType::tooShort(
-    const String&,
-    HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const {
+bool InputType::tooShort(const String&,
+                         TextControlElement::NeedsToCheckDirtyFlag) const {
   return false;
 }
 

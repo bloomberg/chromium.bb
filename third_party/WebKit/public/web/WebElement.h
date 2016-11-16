@@ -52,7 +52,6 @@ class WebElement : public WebNode {
   void assign(const WebElement& e) { WebNode::assign(e); }
 
   BLINK_EXPORT bool isFormControlElement() const;
-  BLINK_EXPORT bool isTextFormControlElement() const;
   // If the element is editable, for example by being contenteditable or being
   // an <input> that isn't readonly or disabled.
   BLINK_EXPORT bool isEditable() const;

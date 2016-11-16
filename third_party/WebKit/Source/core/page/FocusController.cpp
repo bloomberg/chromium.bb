@@ -51,7 +51,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FrameTree.h"
@@ -1095,7 +1095,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame,
       selectionStartNode->isDescendantOf(newFocusedElement))
     return;
 
-  if (!enclosingTextFormControl(selectionStartNode))
+  if (!enclosingTextControl(selectionStartNode))
     return;
 
   if (selectionStartNode->isInShadowTree() &&

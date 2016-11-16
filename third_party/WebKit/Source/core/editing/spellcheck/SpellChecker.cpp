@@ -60,19 +60,18 @@ using namespace HTMLNames;
 namespace {
 
 bool isPositionInTextField(const Position& selectionStart) {
-  HTMLTextFormControlElement* textControl =
-      enclosingTextFormControl(selectionStart);
+  TextControlElement* textControl = enclosingTextControl(selectionStart);
   return isHTMLInputElement(textControl) &&
          toHTMLInputElement(textControl)->isTextField();
 }
 
 bool isPositionInTextArea(const Position& position) {
-  HTMLTextFormControlElement* textControl = enclosingTextFormControl(position);
+  TextControlElement* textControl = enclosingTextControl(position);
   return isHTMLTextAreaElement(textControl);
 }
 
 bool isSelectionInTextFormControl(const VisibleSelection& selection) {
-  return !!enclosingTextFormControl(selection.start());
+  return !!enclosingTextControl(selection.start());
 }
 
 static bool isSpellCheckingEnabledFor(const Position& position) {
@@ -80,8 +79,7 @@ static bool isSpellCheckingEnabledFor(const Position& position) {
     return false;
   // TODO(tkent): The following password type check should be done in
   // HTMLElement::spellcheck(). crbug.com/371567
-  if (HTMLTextFormControlElement* textControl =
-          enclosingTextFormControl(position)) {
+  if (TextControlElement* textControl = enclosingTextControl(position)) {
     if (isHTMLInputElement(textControl) &&
         toHTMLInputElement(textControl)->type() == InputTypeNames::password)
       return false;
@@ -204,17 +202,15 @@ void SpellChecker::didBeginEditing(Element* element) {
       frame().document()->lifecycle());
 
   bool isTextField = false;
-  HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
-  if (!isHTMLTextFormControlElement(*element))
-    enclosingHTMLTextFormControlElement =
-        enclosingTextFormControl(Position::firstPositionInNode(element));
-  element = enclosingHTMLTextFormControlElement
-                ? enclosingHTMLTextFormControlElement
-                : element;
+  TextControlElement* enclosingTextControlElement = nullptr;
+  if (!isTextControlElement(*element)) {
+    enclosingTextControlElement =
+        enclosingTextControl(Position::firstPositionInNode(element));
+  }
+  element = enclosingTextControlElement ? enclosingTextControlElement : element;
   Element* parent = element;
-  if (isHTMLTextFormControlElement(*element)) {
-    HTMLTextFormControlElement* textControl =
-        toHTMLTextFormControlElement(element);
+  if (isTextControlElement(*element)) {
+    TextControlElement* textControl = toTextControlElement(element);
     parent = textControl;
     element = textControl->innerEditorElement();
     if (!element)
@@ -791,9 +787,8 @@ void SpellChecker::didEndEditingOnTextField(Element* e) {
   // Remove markers when deactivating a selection in an <input type="text"/>.
   // Prevent new ones from appearing too.
   m_spellCheckRequester->cancelCheck();
-  HTMLTextFormControlElement* textFormControlElement =
-      toHTMLTextFormControlElement(e);
-  HTMLElement* innerEditor = textFormControlElement->innerEditorElement();
+  TextControlElement* textControlElement = toTextControlElement(e);
+  HTMLElement* innerEditor = textControlElement->innerEditorElement();
   DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
   markerTypes.add(DocumentMarker::Grammar);
   for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor))
@@ -878,8 +873,8 @@ void SpellChecker::respondToChangedSelection(
   if (isSelectionInTextFormControl(newSelection)) {
     const Position newStart = newSelection.start();
     newAdjacentWords.setWithoutValidation(
-        HTMLTextFormControlElement::startOfWord(newStart),
-        HTMLTextFormControlElement::endOfWord(newStart));
+        TextControlElement::startOfWord(newStart),
+        TextControlElement::endOfWord(newStart));
   } else {
     if (newSelection.isContentEditable()) {
       newAdjacentWords =
@@ -955,7 +950,7 @@ static Node* findFirstMarkable(Node* node) {
       return node;
     if (node->layoutObject()->isTextControl())
       node = toLayoutTextControl(node->layoutObject())
-                 ->textFormControlElement()
+                 ->textControlElement()
                  ->visiblePositionForIndex(1)
                  .deepEquivalent()
                  .anchorNode();

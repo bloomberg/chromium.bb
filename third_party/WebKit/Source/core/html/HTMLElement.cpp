@@ -55,7 +55,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMenuElement.h"
 #include "core/html/HTMLTemplateElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
@@ -802,7 +801,7 @@ TextDirection HTMLElement::directionality(
     // Skip bdi, script, style and text form controls.
     if (equalIgnoringCase(node->nodeName(), "bdi") ||
         isHTMLScriptElement(*node) || isHTMLStyleElement(*node) ||
-        (node->isElementNode() && toElement(node)->isTextFormControl()) ||
+        (node->isElementNode() && toElement(node)->isTextControl()) ||
         (node->isElementNode() &&
          toElement(node)->shadowPseudoId() == "-webkit-input-placeholder")) {
       node = FlatTreeTraversal::nextSkippingChildren(*node, this);
@@ -1134,7 +1133,7 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event) {
   // <textarea>) or has contentEditable attribute on, we should enter a space or
   // newline even in spatial navigation mode instead of handling it as a "click"
   // action.
-  if (isTextFormControl() || hasEditableStyle(*this))
+  if (isTextControl() || hasEditableStyle(*this))
     return;
   int charCode = event->charCode();
   if (charCode == '\r' || charCode == ' ') {

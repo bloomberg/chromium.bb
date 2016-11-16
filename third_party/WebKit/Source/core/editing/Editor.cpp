@@ -161,16 +161,16 @@ VisibleSelection Editor::selectionForCommand(Event* event) {
     return selection;
   // If the target is a text control, and the current selection is outside of
   // its shadow tree, then use the saved selection for that text control.
-  HTMLTextFormControlElement* textFormControlOfSelectionStart =
-      enclosingTextFormControl(selection.start());
-  HTMLTextFormControlElement* textFromControlOfTarget =
-      isHTMLTextFormControlElement(*event->target()->toNode())
-          ? toHTMLTextFormControlElement(event->target()->toNode())
-          : 0;
-  if (textFromControlOfTarget &&
+  TextControlElement* textControlOfSelectionStart =
+      enclosingTextControl(selection.start());
+  TextControlElement* textControlOfTarget =
+      isTextControlElement(*event->target()->toNode())
+          ? toTextControlElement(event->target()->toNode())
+          : nullptr;
+  if (textControlOfTarget &&
       (selection.start().isNull() ||
-       textFromControlOfTarget != textFormControlOfSelectionStart)) {
-    if (Range* range = textFromControlOfTarget->selection()) {
+       textControlOfTarget != textControlOfSelectionStart)) {
+    if (Range* range = textControlOfTarget->selection()) {
       return createVisibleSelection(
           SelectionInDOMTree::Builder()
               .setBaseAndExtent(EphemeralRange(range))
@@ -1024,7 +1024,7 @@ void Editor::cut(EditorCommandSource source) {
   // TODO(yosin) We should use early return style here.
   if (canDeleteRange(selectedRange())) {
     spellChecker().updateMarkersForWordsAffectedByEditing(true);
-    if (enclosingTextFormControl(frame().selection().start())) {
+    if (enclosingTextControl(frame().selection().start())) {
       String plainText = frame().selectedTextForClipboard();
       Pasteboard::generalPasteboard()->writePlainText(
           plainText, canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace
@@ -1061,7 +1061,7 @@ void Editor::copy() {
   // we need clean layout to obtain the selected content.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (enclosingTextFormControl(frame().selection().start())) {
+  if (enclosingTextControl(frame().selection().start())) {
     Pasteboard::generalPasteboard()->writePlainText(
         frame().selectedTextForClipboard(),
         canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace
@@ -1165,7 +1165,7 @@ static void countEditingEvent(ExecutionContext* executionContext,
     return;
   }
 
-  HTMLTextFormControlElement* control = enclosingTextFormControl(node);
+  TextControlElement* control = enclosingTextControl(node);
   if (isHTMLInputElement(control)) {
     UseCounter::count(executionContext, featureOnInput);
     return;
@@ -1235,7 +1235,7 @@ void Editor::redo() {
 
 void Editor::setBaseWritingDirection(WritingDirection direction) {
   Element* focusedElement = frame().document()->focusedElement();
-  if (isHTMLTextFormControlElement(focusedElement)) {
+  if (isTextControlElement(focusedElement)) {
     if (direction == NaturalWritingDirection)
       return;
     focusedElement->setAttribute(

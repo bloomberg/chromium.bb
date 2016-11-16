@@ -462,7 +462,7 @@ void WebFrameWidgetImpl::setFocus(bool enable) {
         // focused, then the focus element shows with a focus ring but
         // no caret and does respond to keyboard inputs.
         focusedFrame->document()->updateStyleAndLayoutTree();
-        if (element->isTextFormControl()) {
+        if (element->isTextControl()) {
           element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
         } else if (hasEditableStyle(*element)) {
           // updateFocusAppearance() selects all the text of

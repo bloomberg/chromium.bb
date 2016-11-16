@@ -7,7 +7,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"
 #include <ostream>  // NOLINT
@@ -748,7 +748,7 @@ TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContentWithInput) {
   const char* bodyContent = "<input id=sample value=ab>cde";
   setBodyContent(bodyContent);
 
-  Node* text = toHTMLTextFormControlElement(document().getElementById("sample"))
+  Node* text = toTextControlElement(document().getElementById("sample"))
                    ->innerEditorElement()
                    ->firstChild();
 

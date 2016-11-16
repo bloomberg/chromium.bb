@@ -29,20 +29,20 @@
 
 namespace blink {
 
-class HTMLTextFormControlElement;
+class TextControlElement;
 
 class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
  public:
   ~LayoutTextControl() override;
 
-  HTMLTextFormControlElement* textFormControlElement() const;
+  TextControlElement* textControlElement() const;
   virtual PassRefPtr<ComputedStyle> createInnerEditorStyle(
       const ComputedStyle& startStyle) const = 0;
 
   const char* name() const override { return "LayoutTextControl"; }
 
  protected:
-  LayoutTextControl(HTMLTextFormControlElement*);
+  LayoutTextControl(TextControlElement*);
 
   // This convenience function should not be made public because
   // innerEditorElement may outlive the layout tree.

@@ -56,7 +56,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -1893,10 +1893,11 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame,
   selection.type = visibleSelection.getSelectionType();
   selection.isEditable = visibleSelection.isContentEditable();
   if (selection.isEditable) {
-    if (HTMLTextFormControlElement* enclosingTextFormControlElement =
-            enclosingTextFormControl(visibleSelection.rootEditableElement()))
-      selection.isEmptyTextFormControl =
-          enclosingTextFormControlElement->value().isEmpty();
+    if (TextControlElement* enclosingTextControlElement =
+            enclosingTextControl(visibleSelection.rootEditableElement())) {
+      selection.isEmptyTextControl =
+          enclosingTextControlElement->value().isEmpty();
+    }
   }
   selection.start.isTextDirectionRTL |=
       primaryDirectionOf(*visibleSelection.start().anchorNode()) == RTL;

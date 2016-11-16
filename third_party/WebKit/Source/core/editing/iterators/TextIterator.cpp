@@ -45,7 +45,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTextFragment.h"
@@ -501,7 +501,7 @@ static bool hasVisibleTextNode(LayoutText* layoutObject) {
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::handleTextNode() {
   if (excludesAutofilledValue()) {
-    HTMLTextFormControlElement* control = enclosingTextFormControl(m_node);
+    TextControlElement* control = enclosingTextControl(m_node);
     // For security reason, we don't expose suggested value if it is
     // auto-filled.
     if (control && control->isAutofilled())

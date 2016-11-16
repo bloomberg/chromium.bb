@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
@@ -26,13 +26,13 @@
 
 namespace blink {
 
-class HTMLTextFormControlElementTest : public ::testing::Test {
+class TextControlElementTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
   DummyPageHolder& page() const { return *m_dummyPageHolder; }
   Document& document() const { return *m_document; }
-  HTMLTextFormControlElement& textControl() const { return *m_textControl; }
+  TextControlElement& textControl() const { return *m_textControl; }
   HTMLInputElement& input() const { return *m_input; }
 
   int layoutCount() const { return page().frameView().layoutCount(); }
@@ -43,7 +43,7 @@ class HTMLTextFormControlElementTest : public ::testing::Test {
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 
   Persistent<Document> m_document;
-  Persistent<HTMLTextFormControlElement> m_textControl;
+  Persistent<TextControlElement> m_textControl;
   Persistent<HTMLInputElement> m_input;
 };
 
@@ -59,7 +59,7 @@ class DummySpellCheckerClient : public EmptySpellCheckerClient {
   EmptyTextCheckerClient m_emptyTextCheckerClient;
 };
 
-void HTMLTextFormControlElementTest::SetUp() {
+void TextControlElementTest::SetUp() {
   Page::PageClients pageClients;
   fillWithEmptyClients(pageClients);
   m_spellCheckerClient = wrapUnique(new DummySpellCheckerClient);
@@ -71,13 +71,12 @@ void HTMLTextFormControlElementTest::SetUp() {
       "<body><textarea id=textarea></textarea><input id=input /></body>",
       ASSERT_NO_EXCEPTION);
   m_document->view()->updateAllLifecyclePhases();
-  m_textControl =
-      toHTMLTextFormControlElement(m_document->getElementById("textarea"));
+  m_textControl = toTextControlElement(m_document->getElementById("textarea"));
   m_textControl->focus();
   m_input = toHTMLInputElement(m_document->getElementById("input"));
 }
 
-void HTMLTextFormControlElementTest::forceLayoutFlag() {
+void TextControlElementTest::forceLayoutFlag() {
   FrameView& frameView = page().frameView();
   IntRect frameRect = frameView.frameRect();
   frameRect.setWidth(frameRect.width() + 1);
@@ -86,7 +85,7 @@ void HTMLTextFormControlElementTest::forceLayoutFlag() {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 }
 
-TEST_F(HTMLTextFormControlElementTest, SetSelectionRange) {
+TEST_F(TextControlElementTest, SetSelectionRange) {
   EXPECT_EQ(0, textControl().selectionStart());
   EXPECT_EQ(0, textControl().selectionEnd());
 
@@ -99,7 +98,7 @@ TEST_F(HTMLTextFormControlElementTest, SetSelectionRange) {
   EXPECT_EQ(3, textControl().selectionEnd());
 }
 
-TEST_F(HTMLTextFormControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
+TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
   input().focus();
   input().setValue("Hello, input form.");
   input().setSelectionRange(1, 1);
@@ -143,7 +142,7 @@ static VisiblePosition endOfWord(const VisiblePosition& position) {
   return endOfWord(position, RightWordIfOnBoundary);
 }
 
-void testBoundary(Document& document, HTMLTextFormControlElement& textControl) {
+void testBoundary(Document& document, TextControlElement& textControl) {
   document.updateStyleAndLayout();
   for (unsigned i = 0; i < textControl.innerEditorValue().length(); i++) {
     textControl.setSelectionRange(i, i);
@@ -154,30 +153,29 @@ void testBoundary(Document& document, HTMLTextFormControlElement& textControl) {
                         .ascii()
                         .data());
     {
-      SCOPED_TRACE("HTMLTextFormControlElement::startOfWord");
-      testFunctionEquivalence(position, HTMLTextFormControlElement::startOfWord,
+      SCOPED_TRACE("TextControlElement::startOfWord");
+      testFunctionEquivalence(position, TextControlElement::startOfWord,
                               startOfWord);
     }
     {
-      SCOPED_TRACE("HTMLTextFormControlElement::endOfWord");
-      testFunctionEquivalence(position, HTMLTextFormControlElement::endOfWord,
+      SCOPED_TRACE("TextControlElement::endOfWord");
+      testFunctionEquivalence(position, TextControlElement::endOfWord,
                               endOfWord);
     }
     {
-      SCOPED_TRACE("HTMLTextFormControlElement::startOfSentence");
-      testFunctionEquivalence(position,
-                              HTMLTextFormControlElement::startOfSentence,
+      SCOPED_TRACE("TextControlElement::startOfSentence");
+      testFunctionEquivalence(position, TextControlElement::startOfSentence,
                               startOfSentence);
     }
     {
-      SCOPED_TRACE("HTMLTextFormControlElement::endOfSentence");
-      testFunctionEquivalence(
-          position, HTMLTextFormControlElement::endOfSentence, endOfSentence);
+      SCOPED_TRACE("TextControlElement::endOfSentence");
+      testFunctionEquivalence(position, TextControlElement::endOfSentence,
+                              endOfSentence);
     }
   }
 }
 
-TEST_F(HTMLTextFormControlElementTest, WordAndSentenceBoundary) {
+TEST_F(TextControlElementTest, WordAndSentenceBoundary) {
   HTMLElement* innerText = textControl().innerEditorElement();
   {
     SCOPED_TRACE("String is value.");
@@ -203,12 +201,12 @@ TEST_F(HTMLTextFormControlElementTest, WordAndSentenceBoundary) {
   }
 }
 
-TEST_F(HTMLTextFormControlElementTest, IndexForPosition) {
+TEST_F(TextControlElementTest, IndexForPosition) {
   HTMLInputElement* input =
       toHTMLInputElement(document().getElementById("input"));
   input->setValue("Hello");
   HTMLElement* innerEditor = input->innerEditorElement();
-  EXPECT_EQ(5, HTMLTextFormControlElement::indexForPosition(
+  EXPECT_EQ(5, TextControlElement::indexForPosition(
                    innerEditor,
                    Position(innerEditor, PositionAnchorType::AfterAnchor)));
 }

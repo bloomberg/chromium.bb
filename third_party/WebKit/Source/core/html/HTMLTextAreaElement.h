@@ -26,15 +26,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 
 namespace blink {
 
 class BeforeTextInsertedEvent;
 class ExceptionState;
 
-class CORE_EXPORT HTMLTextAreaElement final
-    : public HTMLTextFormControlElement {
+class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -117,7 +116,7 @@ class CORE_EXPORT HTMLTextAreaElement final
   FormControlState saveFormControlState() const override;
   void restoreFormControlState(const FormControlState&) override;
 
-  bool isTextFormControl() const override { return true; }
+  bool isTextControl() const override { return true; }
 
   void childrenChanged(const ChildrenChange&) override;
   void parseAttribute(const QualifiedName&,

@@ -30,8 +30,7 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/layout/LayoutTextFragment.h"
 
 namespace blink {

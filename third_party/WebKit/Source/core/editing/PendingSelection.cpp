@@ -26,7 +26,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/LayoutView.h"
 
 namespace blink {
@@ -67,7 +67,7 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(
       selectionType == SelectionType::CaretSelection &&
       !isLogicalEndOfLine(createVisiblePosition(end, affinity));
   VisibleSelectionInFlatTree selection;
-  if (enclosingTextFormControl(start.computeContainerNode())) {
+  if (enclosingTextControl(start.computeContainerNode())) {
     // TODO(yosin) We should use |PositionMoveType::CodePoint| to avoid
     // ending paint at middle of character.
     PositionInFlatTree endPosition =

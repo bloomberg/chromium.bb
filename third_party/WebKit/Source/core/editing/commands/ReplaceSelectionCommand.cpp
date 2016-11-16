@@ -1629,8 +1629,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
 
     if (selectionEndWasEndOfParagraph ||
         !isEndOfParagraph(endOfInsertedContent) || next.isNull()) {
-      if (HTMLTextFormControlElement* textControl =
-              enclosingTextFormControl(currentRoot)) {
+      if (TextControlElement* textControl = enclosingTextControl(currentRoot)) {
         if (!insertedNodes.lastLeafInserted()->nextSibling()) {
           insertNodeAfter(textControl->createPlaceholderBreakElement(),
                           insertedNodes.lastLeafInserted(), editingState);
@@ -1739,8 +1738,8 @@ bool ReplaceSelectionCommand::shouldPerformSmartReplace() const {
   if (!m_smartReplace)
     return false;
 
-  HTMLTextFormControlElement* textControl = enclosingTextFormControl(
-      positionAtStartOfInsertedContent().deepEquivalent());
+  TextControlElement* textControl =
+      enclosingTextControl(positionAtStartOfInsertedContent().deepEquivalent());
   if (isHTMLInputElement(textControl) &&
       toHTMLInputElement(textControl)->type() == InputTypeNames::password)
     return false;  // Disable smart replace for password fields.

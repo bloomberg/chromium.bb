@@ -99,8 +99,7 @@ void WebFormControlElement::setAutofillValue(const WebString& value) {
                                             nullptr);
     unwrap<Element>()->dispatchScopedEvent(
         Event::createBubble(EventTypeNames::keydown));
-    unwrap<HTMLTextFormControlElement>()->setValue(value,
-                                                   DispatchInputAndChangeEvent);
+    unwrap<TextControlElement>()->setValue(value, DispatchInputAndChangeEvent);
     unwrap<Element>()->dispatchScopedEvent(
         Event::createBubble(EventTypeNames::keyup));
     if (!focused())

@@ -31,7 +31,7 @@
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
@@ -209,7 +209,7 @@ IntRect FrameCaret::absoluteCaretBounds() {
   if (!isActive()) {
     clearCaretRect();
   } else {
-    if (enclosingTextFormControl(caretPosition().position())) {
+    if (enclosingTextControl(caretPosition().position())) {
       if (isVisuallyEquivalentCandidate(caretPosition().position()))
         updateCaretRect(caretPosition());
       else

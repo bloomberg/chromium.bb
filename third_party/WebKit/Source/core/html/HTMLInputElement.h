@@ -26,7 +26,7 @@
 #define HTMLInputElement_h
 
 #include "core/CoreExport.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/html/forms/StepRange.h"
 #include "platform/FileChooser.h"
 
@@ -45,7 +45,7 @@ class ListAttributeTargetObserver;
 class RadioButtonGroupScope;
 struct DateTimeChooserParameters;
 
-class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
+class CORE_EXPORT HTMLInputElement : public TextControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -311,7 +311,7 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   bool supportLabels() const final;
   bool matchesDefaultPseudoClass() const override;
 
-  bool isTextFormControl() const final { return isTextField(); }
+  bool isTextControl() const final { return isTextField(); }
 
   bool canTriggerImplicitSubmission() const final { return isTextField(); }
 

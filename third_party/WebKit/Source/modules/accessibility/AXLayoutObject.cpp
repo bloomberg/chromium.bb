@@ -1746,8 +1746,8 @@ AXObject::AXRange AXLayoutObject::textControlSelection() const {
     return AXRange();
 
   VisibleSelection selection = layout->frame()->selection().selection();
-  HTMLTextFormControlElement* textControl =
-      toLayoutTextControl(layout)->textFormControlElement();
+  TextControlElement* textControl =
+      toLayoutTextControl(layout)->textControlElement();
   ASSERT(textControl);
   int start = textControl->selectionStart();
   int end = textControl->selectionEnd();
@@ -1759,8 +1759,8 @@ AXObject::AXRange AXLayoutObject::textControlSelection() const {
 int AXLayoutObject::indexForVisiblePosition(
     const VisiblePosition& position) const {
   if (getLayoutObject() && getLayoutObject()->isTextControl()) {
-    HTMLTextFormControlElement* textControl =
-        toLayoutTextControl(getLayoutObject())->textFormControlElement();
+    TextControlElement* textControl =
+        toLayoutTextControl(getLayoutObject())->textControlElement();
     return textControl->indexForVisiblePosition(position);
   }
 
@@ -1870,9 +1870,9 @@ void AXLayoutObject::setSelection(const AXRange& selection) {
   // The selection offsets are offsets into the accessible value.
   if (anchorObject == focusObject &&
       anchorObject->getLayoutObject()->isTextControl()) {
-    HTMLTextFormControlElement* textControl =
+    TextControlElement* textControl =
         toLayoutTextControl(anchorObject->getLayoutObject())
-            ->textFormControlElement();
+            ->textControlElement();
     if (selection.anchorOffset <= selection.focusOffset) {
       textControl->setSelectionRange(selection.anchorOffset,
                                      selection.focusOffset,
@@ -2030,7 +2030,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const {
 
   if (m_layoutObject->isTextControl())
     return toLayoutTextControl(m_layoutObject)
-        ->textFormControlElement()
+        ->textControlElement()
         ->visiblePositionForIndex(index);
 
   Node* node = m_layoutObject->node();

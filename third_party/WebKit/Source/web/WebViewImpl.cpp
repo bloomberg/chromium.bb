@@ -2272,7 +2272,7 @@ void WebViewImpl::setFocus(bool enable) {
         // focused, then the focus element shows with a focus ring but
         // no caret and does respond to keyboard inputs.
         focusedFrame->document()->updateStyleAndLayoutTree();
-        if (element->isTextFormControl()) {
+        if (element->isTextControl()) {
           element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
         } else if (hasEditableStyle(*element)) {
           // updateFocusAppearance() selects all the text of
@@ -2712,7 +2712,7 @@ void WebViewImpl::clearFocusedElement() {
   // keystrokes get eaten as a result.
   document->updateStyleAndLayoutTree();
   if (hasEditableStyle(*oldFocusedElement) ||
-      oldFocusedElement->isTextFormControl())
+      oldFocusedElement->isTextControl())
     localFrame->selection().clear();
 }
 
@@ -2723,10 +2723,8 @@ static bool isElementEditable(const Element* element) {
   if (hasEditableStyle(*element))
     return true;
 
-  if (element->isTextFormControl()) {
-    const HTMLTextFormControlElement* input =
-        toHTMLTextFormControlElement(element);
-    if (!input->isDisabledOrReadOnly())
+  if (element->isTextControl()) {
+    if (!toTextControlElement(element)->isDisabledOrReadOnly())
       return true;
   }
 

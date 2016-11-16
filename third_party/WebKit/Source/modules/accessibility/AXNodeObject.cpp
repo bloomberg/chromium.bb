@@ -1269,7 +1269,7 @@ String AXNodeObject::text() const {
 
   if (isNativeTextControl() &&
       (isHTMLTextAreaElement(*node) || isHTMLInputElement(*node)))
-    return toHTMLTextFormControlElement(*node).value();
+    return toTextControlElement(*node).value();
 
   if (!node->isElementNode())
     return String();
@@ -2362,7 +2362,7 @@ String AXNodeObject::nativeTextAlternative(
   }
 
   // 5.1 Text inputs - step 3 (placeholder attribute)
-  if (htmlElement && htmlElement->isTextFormControl()) {
+  if (htmlElement && htmlElement->isTextControl()) {
     nameFrom = AXNameFromPlaceholder;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, placeholderAttr));
@@ -2708,7 +2708,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   // placeholder, 5.1.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (nameFrom != AXNameFromPlaceholder && htmlElement &&
-      htmlElement->isTextFormControl()) {
+      htmlElement->isTextControl()) {
     descriptionFrom = AXDescriptionFromPlaceholder;
     if (descriptionSources) {
       descriptionSources->append(

@@ -35,7 +35,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/StepRange.h"
 
@@ -123,10 +123,9 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual bool valueMissing(const String&) const;
   virtual bool patternMismatch(const String&) const;
   virtual bool tooLong(const String&,
-                       HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
-  virtual bool tooShort(
-      const String&,
-      HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const;
+                       TextControlElement::NeedsToCheckDirtyFlag) const;
+  virtual bool tooShort(const String&,
+                        TextControlElement::NeedsToCheckDirtyFlag) const;
   bool rangeUnderflow(const String&) const;
   bool rangeOverflow(const String&) const;
   bool isInRange(const String&) const;

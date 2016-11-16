@@ -35,7 +35,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/TextControlElement.h"
 #include "platform/graphics/Image.h"
 #include "public/platform/WebRect.h"
 #include "wtf/PassRefPtr.h"
@@ -50,10 +50,6 @@ bool WebElement::isFormControlElement() const {
   return constUnwrap<Element>()->isFormControlElement();
 }
 
-bool WebElement::isTextFormControlElement() const {
-  return constUnwrap<Element>()->isTextFormControl();
-}
-
 // TODO(dglazkov): Remove. Consumers of this code should use
 // Node:hasEditableStyle.  http://crbug.com/612560
 bool WebElement::isEditable() const {
@@ -63,10 +59,8 @@ bool WebElement::isEditable() const {
   if (hasEditableStyle(*element))
     return true;
 
-  if (element->isTextFormControl()) {
-    const HTMLTextFormControlElement* input =
-        toHTMLTextFormControlElement(element);
-    if (!input->isDisabledOrReadOnly())
+  if (element->isTextControl()) {
+    if (!toTextControlElement(element)->isDisabledOrReadOnly())
       return true;
   }
 

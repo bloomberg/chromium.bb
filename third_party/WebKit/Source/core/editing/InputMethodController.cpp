@@ -1043,16 +1043,15 @@ int InputMethodController::textInputFlags() const {
   else if (spellcheck == SpellcheckAttributeFalse)
     flags |= WebTextInputFlagSpellcheckOff;
 
-  if (isHTMLTextFormControlElement(element)) {
-    HTMLTextFormControlElement* formElement =
-        static_cast<HTMLTextFormControlElement*>(element);
-    if (formElement->supportsAutocapitalize()) {
+  if (isTextControlElement(element)) {
+    TextControlElement* textControl = toTextControlElement(element);
+    if (textControl->supportsAutocapitalize()) {
       DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
       DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
       DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
       DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
 
-      const AtomicString& autocapitalize = formElement->autocapitalize();
+      const AtomicString& autocapitalize = textControl->autocapitalize();
       if (autocapitalize == none)
         flags |= WebTextInputFlagAutocapitalizeNone;
       else if (autocapitalize == characters)

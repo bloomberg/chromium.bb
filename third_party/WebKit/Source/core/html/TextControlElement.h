@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef HTMLTextFormControlElement_h
-#define HTMLTextFormControlElement_h
+#ifndef TextControlElement_h
+#define TextControlElement_h
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
@@ -47,15 +47,14 @@ enum TextFieldEventBehavior {
   DispatchInputAndChangeEvent
 };
 
-class CORE_EXPORT HTMLTextFormControlElement
-    : public HTMLFormControlElementWithState {
+class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
  public:
   // Common flag for HTMLInputElement::tooLong(),
   // HTMLTextAreaElement::tooLong(),
   // HTMLInputElement::tooShort() and HTMLTextAreaElement::tooShort().
   enum NeedsToCheckDirtyFlag { CheckDirtyFlag, IgnoreDirtyFlag };
 
-  ~HTMLTextFormControlElement() override;
+  ~TextControlElement() override;
 
   void forwardEvent(Event*);
 
@@ -147,7 +146,7 @@ class CORE_EXPORT HTMLTextFormControlElement
   static Position endOfSentence(const Position&);
 
  protected:
-  HTMLTextFormControlElement(const QualifiedName&, Document&, HTMLFormElement*);
+  TextControlElement(const QualifiedName&, Document&, HTMLFormElement*);
   bool isPlaceholderEmpty() const;
   virtual void updatePlaceholderText() = 0;
 
@@ -213,17 +212,17 @@ class CORE_EXPORT HTMLTextFormControlElement
   int m_cachedSelectionEnd;
   TextFieldSelectionDirection m_cachedSelectionDirection;
 
-  FRIEND_TEST_ALL_PREFIXES(HTMLTextFormControlElementTest, IndexForPosition);
+  FRIEND_TEST_ALL_PREFIXES(TextControlElementTest, IndexForPosition);
 };
 
-inline bool isHTMLTextFormControlElement(const Element& element) {
-  return element.isTextFormControl();
+inline bool isTextControlElement(const Element& element) {
+  return element.isTextControl();
 }
 
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(TextControlElement);
 
-HTMLTextFormControlElement* enclosingTextFormControl(const Position&);
-HTMLTextFormControlElement* enclosingTextFormControl(Node*);
+TextControlElement* enclosingTextControl(const Position&);
+TextControlElement* enclosingTextControl(Node*);
 
 }  // namespace blink
 

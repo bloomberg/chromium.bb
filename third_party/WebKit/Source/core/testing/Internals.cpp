@@ -815,13 +815,13 @@ const AtomicString& Internals::shadowPseudoId(Element* element) {
 }
 
 String Internals::visiblePlaceholder(Element* element) {
-  if (element && isHTMLTextFormControlElement(*element)) {
-    const HTMLTextFormControlElement& textFormControlElement =
-        toHTMLTextFormControlElement(*element);
-    if (!textFormControlElement.isPlaceholderVisible())
+  if (element && isTextControlElement(*element)) {
+    const TextControlElement& textControlElement =
+        toTextControlElement(*element);
+    if (!textControlElement.isPlaceholderVisible())
       return String();
     if (HTMLElement* placeholderElement =
-            textFormControlElement.placeholderElement())
+            textControlElement.placeholderElement())
       return placeholderElement->textContent();
   }
 
