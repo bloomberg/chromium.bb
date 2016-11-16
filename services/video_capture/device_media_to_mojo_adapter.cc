@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/video_capture_device_proxy_impl.h"
+#include "services/video_capture/device_media_to_mojo_adapter.h"
 
 #include "base/logging.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
@@ -12,7 +12,7 @@
 
 namespace video_capture {
 
-VideoCaptureDeviceProxyImpl::VideoCaptureDeviceProxyImpl(
+DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     std::unique_ptr<media::VideoCaptureDevice> device,
     const media::VideoCaptureJpegDecoderFactoryCB&
         jpeg_decoder_factory_callback)
@@ -20,18 +20,17 @@ VideoCaptureDeviceProxyImpl::VideoCaptureDeviceProxyImpl(
       jpeg_decoder_factory_callback_(jpeg_decoder_factory_callback),
       device_running_(false) {}
 
-VideoCaptureDeviceProxyImpl::~VideoCaptureDeviceProxyImpl() {
+DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
   if (device_running_)
     device_->StopAndDeAllocate();
 }
 
-void VideoCaptureDeviceProxyImpl::Start(
-    const VideoCaptureSettings& requested_settings,
-    mojom::VideoFrameReceiverPtr receiver) {
+void DeviceMediaToMojoAdapter::Start(const CaptureSettings& requested_settings,
+                                     mojom::ReceiverPtr receiver) {
   media::VideoCaptureParams params;
   requested_settings.ConvertToMediaVideoCaptureParams(&params);
   receiver.set_connection_error_handler(
-      base::Bind(&VideoCaptureDeviceProxyImpl::OnClientConnectionErrorOrClose,
+      base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
                  base::Unretained(this)));
 
   auto media_receiver =
@@ -51,12 +50,12 @@ void VideoCaptureDeviceProxyImpl::Start(
   device_running_ = true;
 }
 
-void VideoCaptureDeviceProxyImpl::Stop() {
+void DeviceMediaToMojoAdapter::Stop() {
   device_->StopAndDeAllocate();
   device_running_ = false;
 }
 
-void VideoCaptureDeviceProxyImpl::OnClientConnectionErrorOrClose() {
+void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
   if (device_running_) {
     device_->StopAndDeAllocate();
     device_running_ = false;

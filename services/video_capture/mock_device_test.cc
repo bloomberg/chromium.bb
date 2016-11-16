@@ -17,7 +17,7 @@ void MockDeviceTest::SetUp() {
   service_->ConnectToMockDeviceFactory(mojo::GetProxy(&factory_));
 
   // Set up a mock device and add it to the factory
-  mock_device_ = base::MakeUnique<MockVideoCaptureDeviceImpl>(
+  mock_device_ = base::MakeUnique<MockMediaDeviceImpl>(
       mojo::GetProxy(&mock_device_proxy_));
   media::VideoCaptureDeviceDescriptor mock_descriptor;
   mock_descriptor.device_id = "MockDeviceId";
@@ -25,7 +25,7 @@ void MockDeviceTest::SetUp() {
                                                mock_descriptor));
 
   // Obtain the mock device from the factory
-  factory_->CreateDeviceProxy(
+  factory_->CreateDevice(
       mock_descriptor.device_id, mojo::GetProxy(&device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
@@ -36,8 +36,8 @@ void MockDeviceTest::SetUp() {
   requested_settings_.power_line_frequency =
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
-  mock_receiver_ = base::MakeUnique<MockVideoFrameReceiver>(
-      mojo::GetProxy(&mock_receiver_proxy_));
+  mock_receiver_ =
+      base::MakeUnique<MockReceiver>(mojo::GetProxy(&mock_receiver_proxy_));
 }
 
 }  // namespace video_capture

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_VIDEO_CAPTURE_FORMAT_H_
-#define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_VIDEO_CAPTURE_FORMAT_H_
+#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_CAPTURE_SETTINGS_H_
+#define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_CAPTURE_SETTINGS_H_
 
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace video_capture {
 
-// Cpp equivalent of Mojo struct video_capture::mojom::VideoCaptureFormat.
-struct VideoCaptureFormat {
+// Cpp equivalent of Mojo struct video_capture::mojom::CaptureFormat.
+struct I420CaptureFormat {
   gfx::Size frame_size;
   float frame_rate;
 
-  bool operator==(const VideoCaptureFormat& other) const {
+  bool operator==(const I420CaptureFormat& other) const {
     return frame_size == other.frame_size && frame_rate == other.frame_rate;
   }
 
@@ -28,9 +28,9 @@ struct VideoCaptureFormat {
   }
 };
 
-// Cpp equivalent of Mojo struct video_capture::mojom::VideoCaptureSettings.
-struct VideoCaptureSettings {
-  VideoCaptureFormat format;
+// Cpp equivalent of Mojo struct video_capture::mojom::CaptureSettings.
+struct CaptureSettings {
+  I420CaptureFormat format;
   media::ResolutionChangePolicy resolution_change_policy;
   media::PowerLineFrequency power_line_frequency;
 
@@ -44,4 +44,4 @@ struct VideoCaptureSettings {
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_VIDEO_CAPTURE_FORMAT_H_
+#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_CAPTURE_SETTINGS_H_

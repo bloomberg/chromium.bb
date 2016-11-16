@@ -7,10 +7,10 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "services/video_capture/fake_device_test.h"
-#include "services/video_capture/mock_video_frame_receiver.h"
-#include "services/video_capture/public/cpp/video_capture_settings.h"
-#include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
-#include "services/video_capture/video_capture_service_test.h"
+#include "services/video_capture/mock_receiver.h"
+#include "services/video_capture/public/cpp/capture_settings.h"
+#include "services/video_capture/public/interfaces/device_factory.mojom.h"
+#include "services/video_capture/service_test.h"
 
 using testing::_;
 using testing::Invoke;
@@ -34,8 +34,8 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
   base::RunLoop wait_loop;
   const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
-  mojom::VideoFrameReceiverPtr receiver_proxy;
-  MockVideoFrameReceiver receiver(mojo::GetProxy(&receiver_proxy));
+  mojom::ReceiverPtr receiver_proxy;
+  MockReceiver receiver(mojo::GetProxy(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(InvokeWithoutArgs(
           [&wait_loop, &kNumFramesToWaitFor, &num_frames_arrived]() {
@@ -54,11 +54,11 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
 // format and have increasing timestamps.
 TEST_F(FakeDeviceTest, ReceiveFramesFromFakeCaptureDevice) {
   base::RunLoop wait_loop;
-  mojom::VideoFrameReceiverPtr receiver_proxy;
+  mojom::ReceiverPtr receiver_proxy;
   constexpr int num_frames_to_receive = 2;
   FrameInfo received_frame_infos[num_frames_to_receive];
   int received_frame_count = 0;
-  MockVideoFrameReceiver receiver(mojo::GetProxy(&receiver_proxy));
+  MockReceiver receiver(mojo::GetProxy(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(
           Invoke([&received_frame_infos, &received_frame_count,

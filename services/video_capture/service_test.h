@@ -7,22 +7,22 @@
 
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/video_capture/mock_device_descriptor_receiver.h"
-#include "services/video_capture/public/interfaces/video_capture_service.mojom.h"
+#include "services/video_capture/public/interfaces/service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
 
 // Basic test fixture that sets up a connection to the fake device factory.
-class VideoCaptureServiceTest : public service_manager::test::ServiceTest {
+class ServiceTest : public service_manager::test::ServiceTest {
  public:
-  VideoCaptureServiceTest();
-  ~VideoCaptureServiceTest() override;
+  ServiceTest();
+  ~ServiceTest() override;
 
   void SetUp() override;
 
  protected:
-  mojom::VideoCaptureServicePtr service_;
-  mojom::VideoCaptureDeviceFactoryPtr factory_;
+  mojom::ServicePtr service_;
+  mojom::DeviceFactoryPtr factory_;
   MockDeviceDescriptorReceiver descriptor_receiver_;
 };
 

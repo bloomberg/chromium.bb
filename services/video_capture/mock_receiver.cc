@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/mock_video_frame_receiver.h"
+#include "services/video_capture/mock_receiver.h"
 
 namespace video_capture {
 
-MockVideoFrameReceiver::MockVideoFrameReceiver(
-    mojom::VideoFrameReceiverRequest request)
+MockReceiver::MockReceiver(mojom::ReceiverRequest request)
     : binding_(this, std::move(request)) {}
 
-MockVideoFrameReceiver::~MockVideoFrameReceiver() = default;
+MockReceiver::~MockReceiver() = default;
 
-void MockVideoFrameReceiver::OnIncomingCapturedVideoFrame(
+void MockReceiver::OnIncomingCapturedVideoFrame(
     media::mojom::VideoFramePtr frame) {
   OnIncomingCapturedVideoFramePtr(&frame);
 }

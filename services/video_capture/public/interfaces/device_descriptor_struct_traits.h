@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_VIDEO_CAPTURE_DEVICE_DESCRIPTOR_STRUCT_TRAITS_H_
-#define SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_VIDEO_CAPTURE_DEVICE_DESCRIPTOR_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_DEVICE_DESCRIPTOR_STRUCT_TRAITS_H_
+#define SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_DEVICE_DESCRIPTOR_STRUCT_TRAITS_H_
 
 #include "media/capture/video/video_capture_device_descriptor.h"
-#include "services/video_capture/public/interfaces/video_capture_device_descriptor.mojom.h"
+#include "services/video_capture/public/interfaces/device_descriptor.mojom.h"
 
 namespace mojo {
 
@@ -29,7 +29,7 @@ struct EnumTraits<video_capture::mojom::VideoCaptureTransportType,
 };
 
 template <>
-struct StructTraits<video_capture::mojom::VideoCaptureDeviceDescriptorDataView,
+struct StructTraits<video_capture::mojom::DeviceDescriptorDataView,
                     media::VideoCaptureDeviceDescriptor> {
   static const std::string& display_name(
       const media::VideoCaptureDeviceDescriptor& input) {
@@ -56,11 +56,10 @@ struct StructTraits<video_capture::mojom::VideoCaptureDeviceDescriptorDataView,
     return input.transport_type;
   }
 
-  static bool Read(
-      video_capture::mojom::VideoCaptureDeviceDescriptorDataView data,
-      media::VideoCaptureDeviceDescriptor* output);
+  static bool Read(video_capture::mojom::DeviceDescriptorDataView data,
+                   media::VideoCaptureDeviceDescriptor* output);
 };
 
 }  // namespace mojo
 
-#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_VIDEO_CAPTURE_DEVICE_DESCRIPTOR_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_DEVICE_DESCRIPTOR_STRUCT_TRAITS_H_

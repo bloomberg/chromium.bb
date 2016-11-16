@@ -10,19 +10,18 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
+#include "services/video_capture/public/interfaces/device_factory.mojom.h"
 
 namespace video_capture {
 
-class VideoCaptureDeviceProxyImpl;
+class DeviceMediaToMojoAdapter;
 
 // Wraps a media::VideoCaptureDeviceFactory and exposes its functionality
-// through the mojom::VideoCaptureDeviceFactory interface.
+// through the mojom::DeviceFactory interface.
 // Keeps track of device instances that have been created to ensure that
 // it does not create more than one instance of the same
 // media::VideoCaptureDevice at the same time.
-class DeviceFactoryMediaToMojoAdapter
-    : public mojom::VideoCaptureDeviceFactory {
+class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
  public:
   DeviceFactoryMediaToMojoAdapter(
       std::unique_ptr<media::VideoCaptureDeviceFactory> device_factory,
@@ -30,15 +29,15 @@ class DeviceFactoryMediaToMojoAdapter
           jpeg_decoder_factory_callback);
   ~DeviceFactoryMediaToMojoAdapter() override;
 
-  // mojom::VideoCaptureDeviceFactory:
+  // mojom::DeviceFactory:
   void EnumerateDeviceDescriptors(
       const EnumerateDeviceDescriptorsCallback& callback) override;
   void GetSupportedFormats(
       const std::string& device_id,
       const GetSupportedFormatsCallback& callback) override;
-  void CreateDeviceProxy(const std::string& device_id,
-                         mojom::VideoCaptureDeviceProxyRequest proxy_request,
-                         const CreateDeviceProxyCallback& callback) override;
+  void CreateDevice(const std::string& device_id,
+                    mojom::DeviceRequest device_request,
+                    const CreateDeviceCallback& callback) override;
 
  private:
   struct ActiveDeviceEntry {
@@ -47,11 +46,11 @@ class DeviceFactoryMediaToMojoAdapter
     ActiveDeviceEntry(ActiveDeviceEntry&& other);
     ActiveDeviceEntry& operator=(ActiveDeviceEntry&& other);
 
-    std::unique_ptr<VideoCaptureDeviceProxyImpl> device_proxy;
+    std::unique_ptr<DeviceMediaToMojoAdapter> device;
     // TODO(chfremer) Use mojo::Binding<> directly instead of unique_ptr<> when
     // mojo::Binding<> supports move operators.
     // https://crbug.com/644314
-    std::unique_ptr<mojo::Binding<mojom::VideoCaptureDeviceProxy>> binding;
+    std::unique_ptr<mojo::Binding<mojom::Device>> binding;
   };
 
   void OnClientConnectionErrorOrClose(const std::string& device_id);

@@ -6,6 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_FAKE_DEVICE_TEST_H_
 
 #include "services/video_capture/fake_device_descriptor_test.h"
+#include "services/video_capture/public/cpp/capture_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
@@ -26,15 +27,16 @@ class FakeDeviceTest : public FakeDeviceDescriptorTest {
     ~MockSupportedFormatsReceiver();
 
     MOCK_METHOD1(OnGetSupportedFormatsCallback,
-                 void(const std::vector<VideoCaptureFormat>&));
+                 void(const std::vector<I420CaptureFormat>&));
+
    private:
     DISALLOW_COPY_AND_ASSIGN(MockSupportedFormatsReceiver);
   };
 
   MockSupportedFormatsReceiver supported_formats_receiver_;
-  VideoCaptureFormat fake_device_first_supported_format_;
-  VideoCaptureSettings requestable_settings_;
-  mojom::VideoCaptureDeviceProxyPtr fake_device_proxy_;
+  I420CaptureFormat fake_device_first_supported_format_;
+  CaptureSettings requestable_settings_;
+  mojom::DevicePtr fake_device_proxy_;
 };
 
 }  // namespace video_capture

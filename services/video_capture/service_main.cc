@@ -4,9 +4,9 @@
 
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/video_capture/video_capture_service.h"
+#include "services/video_capture/service_impl.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  return service_manager::ServiceRunner(new video_capture::VideoCaptureService)
+  return service_manager::ServiceRunner(new video_capture::ServiceImpl())
       .Run(service_request_handle);
 }

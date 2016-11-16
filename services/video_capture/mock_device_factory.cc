@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
-#include "services/video_capture/device_mock_to_media_adapter.h"
+#include "services/video_capture/device_mojo_mock_to_media_adapter.h"
 
 namespace {
 // Report a single hard-coded supported format to clients.
@@ -26,18 +26,18 @@ MockDeviceFactory::MockDeviceFactory() = default;
 MockDeviceFactory::~MockDeviceFactory() = default;
 
 void MockDeviceFactory::AddMockDevice(
-    mojom::MockVideoCaptureDevicePtr device,
+    mojom::MockMediaDevicePtr device,
     const media::VideoCaptureDeviceDescriptor& descriptor) {
   devices_[descriptor] = std::move(device);
 }
 
 std::unique_ptr<media::VideoCaptureDevice> MockDeviceFactory::CreateDevice(
     const media::VideoCaptureDeviceDescriptor& device_descriptor) {
-  mojom::MockVideoCaptureDevicePtr* device = &(devices_[device_descriptor]);
+  mojom::MockMediaDevicePtr* device = &(devices_[device_descriptor]);
   if (device == nullptr) {
     return nullptr;
   }
-  return base::MakeUnique<DeviceMockToMediaAdapter>(device);
+  return base::MakeUnique<DeviceMojoMockToMediaAdapter>(device);
 }
 
 void MockDeviceFactory::GetDeviceDescriptors(

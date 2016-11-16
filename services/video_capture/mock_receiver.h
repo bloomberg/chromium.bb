@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_MOCK_VIDEO_FRAME_RECEIVER_H_
-#define SERVICES_VIDEO_CAPTURE_MOCK_VIDEO_FRAME_RECEIVER_H_
+#ifndef SERVICES_VIDEO_CAPTURE_MOCK_RECEIVER_H_
+#define SERVICES_VIDEO_CAPTURE_MOCK_RECEIVER_H_
 
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/video_capture/public/interfaces/video_frame_receiver.mojom.h"
+#include "services/video_capture/public/interfaces/receiver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
 
-class MockVideoFrameReceiver : public mojom::VideoFrameReceiver {
+class MockReceiver : public mojom::Receiver {
  public:
-  MockVideoFrameReceiver(mojom::VideoFrameReceiverRequest request);
-  ~MockVideoFrameReceiver() override;
+  MockReceiver(mojom::ReceiverRequest request);
+  ~MockReceiver() override;
 
   // Use forwarding method to work around gmock not supporting move-only types.
   void OnIncomingCapturedVideoFrame(media::mojom::VideoFramePtr frame) override;
@@ -27,9 +27,9 @@ class MockVideoFrameReceiver : public mojom::VideoFrameReceiver {
   MOCK_METHOD1(OnBufferDestroyed, void(int32_t));
 
  private:
-  const mojo::Binding<mojom::VideoFrameReceiver> binding_;
+  const mojo::Binding<mojom::Receiver> binding_;
 };
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_MOCK_VIDEO_FRAME_RECEIVER_H_
+#endif  // SERVICES_VIDEO_CAPTURE_MOCK_RECEIVER_H_

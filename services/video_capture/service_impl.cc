@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/video_capture_service.h"
+#include "services/video_capture/service_impl.h"
 
 #include "base/message_loop/message_loop.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -25,45 +25,42 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
 
 namespace video_capture {
 
-VideoCaptureService::VideoCaptureService() : mock_device_factory_(nullptr) {}
+ServiceImpl::ServiceImpl() : mock_device_factory_(nullptr) {}
 
-VideoCaptureService::~VideoCaptureService() = default;
+ServiceImpl::~ServiceImpl() = default;
 
-bool VideoCaptureService::OnConnect(
-    const service_manager::ServiceInfo& remote_info,
-    service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::VideoCaptureService>(this);
+bool ServiceImpl::OnConnect(const service_manager::ServiceInfo& remote_info,
+                            service_manager::InterfaceRegistry* registry) {
+  registry->AddInterface<mojom::Service>(this);
   return true;
 }
 
-void VideoCaptureService::Create(
-    const service_manager::Identity& remote_identity,
-    mojom::VideoCaptureServiceRequest request) {
+void ServiceImpl::Create(const service_manager::Identity& remote_identity,
+                         mojom::ServiceRequest request) {
   service_bindings_.AddBinding(this, std::move(request));
 }
 
-void VideoCaptureService::ConnectToDeviceFactory(
-    mojom::VideoCaptureDeviceFactoryRequest request) {
+void ServiceImpl::ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) {
   LazyInitializeDeviceFactory();
   factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
 }
 
-void VideoCaptureService::ConnectToFakeDeviceFactory(
-    mojom::VideoCaptureDeviceFactoryRequest request) {
+void ServiceImpl::ConnectToFakeDeviceFactory(
+    mojom::DeviceFactoryRequest request) {
   LazyInitializeFakeDeviceFactory();
   fake_factory_bindings_.AddBinding(fake_device_factory_.get(),
                                     std::move(request));
 }
 
-void VideoCaptureService::ConnectToMockDeviceFactory(
-    mojom::VideoCaptureDeviceFactoryRequest request) {
+void ServiceImpl::ConnectToMockDeviceFactory(
+    mojom::DeviceFactoryRequest request) {
   LazyInitializeMockDeviceFactory();
   mock_factory_bindings_.AddBinding(mock_device_factory_adapter_.get(),
                                     std::move(request));
 }
 
-void VideoCaptureService::AddDeviceToMockFactory(
-    mojom::MockVideoCaptureDevicePtr device,
+void ServiceImpl::AddDeviceToMockFactory(
+    mojom::MockMediaDevicePtr device,
     const media::VideoCaptureDeviceDescriptor& descriptor,
     const AddDeviceToMockFactoryCallback& callback) {
   LazyInitializeMockDeviceFactory();
@@ -71,7 +68,7 @@ void VideoCaptureService::AddDeviceToMockFactory(
   callback.Run();
 }
 
-void VideoCaptureService::LazyInitializeDeviceFactory() {
+void ServiceImpl::LazyInitializeDeviceFactory() {
   if (device_factory_)
     return;
 
@@ -85,7 +82,7 @@ void VideoCaptureService::LazyInitializeDeviceFactory() {
       std::move(media_device_factory), base::Bind(CreateJpegDecoder));
 }
 
-void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
+void ServiceImpl::LazyInitializeFakeDeviceFactory() {
   if (fake_device_factory_)
     return;
 
@@ -94,7 +91,7 @@ void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
       base::Bind(&CreateJpegDecoder));
 }
 
-void VideoCaptureService::LazyInitializeMockDeviceFactory() {
+void ServiceImpl::LazyInitializeMockDeviceFactory() {
   if (mock_device_factory_)
     return;
 

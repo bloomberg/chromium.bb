@@ -18,16 +18,16 @@ interface MockDeviceClient {
 // This interface contains only simplified versions of the methods from
 // media::VideoCaptureDevice that we actually verify in tests.
 //
-// Similar to VideoCaptureDeviceProxy, this interface is an abstraction of a
+// Similar to video_capture.mojom.Device, this interface is an abstraction of a
 // device, but the purpose of the two interfaces is quite different.
-// VideoCaptureDeviceProxy is for production clients of the Mojo service to
-// interact with the devices. MockVideoCaptureDevice is for tests of the Mojo
+// video_capture.mojom.Device is for production clients of the Mojo service to
+// interact with the devices. MockMediaDevice is for tests of the Mojo
 // service to allow verification of calls of the service made to instances of
 // media::VideoCaptureDevice.
 //
 // Instances can be added to the mock factory provided by the
-// VideoCaptureService.
-interface MockVideoCaptureDevice {
+// video_capture.mojom.Service.
+interface MockMediaDevice {
   AllocateAndStart(MockDeviceClient client);
   StopAndDeAllocate();
 };

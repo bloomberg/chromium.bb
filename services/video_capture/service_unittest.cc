@@ -4,8 +4,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
-#include "services/video_capture/video_capture_service_test.h"
+#include "services/video_capture/public/interfaces/device_factory.mojom.h"
+#include "services/video_capture/service_test.h"
 
 using testing::Exactly;
 using testing::_;
@@ -21,7 +21,7 @@ class MockCreateDeviceProxyCallback {
 
 // Tests that an answer arrives from the service when calling
 // EnumerateDeviceDescriptors().
-TEST_F(VideoCaptureServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
+TEST_F(ServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
   base::RunLoop wait_loop;
   EXPECT_CALL(descriptor_receiver_, OnEnumerateDeviceDescriptorsCallback(_))
       .Times(Exactly(1))
@@ -33,7 +33,7 @@ TEST_F(VideoCaptureServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
   wait_loop.Run();
 }
 
-TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
+TEST_F(ServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(descriptor_receiver_, OnEnumerateDeviceDescriptorsCallback(_))
@@ -53,16 +53,16 @@ TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
 
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
-TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
+TEST_F(ServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
-  mojom::VideoCaptureDeviceProxyPtr fake_device_proxy;
+  mojom::DevicePtr fake_device_proxy;
   MockCreateDeviceProxyCallback create_device_proxy_callback;
   EXPECT_CALL(create_device_proxy_callback,
               Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND))
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
-  factory_->CreateDeviceProxy(
+  factory_->CreateDevice(
       invalid_device_id, mojo::GetProxy(&fake_device_proxy),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback)));

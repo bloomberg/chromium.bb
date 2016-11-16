@@ -6,7 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_RECEIVER_MOJO_TO_MEDIA_ADAPTER_H_
 
 #include "media/capture/video/video_frame_receiver.h"
-#include "services/video_capture/public/interfaces/video_frame_receiver.mojom.h"
+#include "services/video_capture/public/interfaces/receiver.mojom.h"
 
 namespace video_capture {
 
@@ -14,7 +14,7 @@ namespace video_capture {
 // a media::VideoFrameReceiver.
 class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
  public:
-  ReceiverMojoToMediaAdapter(mojom::VideoFrameReceiverPtr receiver);
+  ReceiverMojoToMediaAdapter(mojom::ReceiverPtr receiver);
   ~ReceiverMojoToMediaAdapter() override;
 
   // media::VideoFrameReceiver:
@@ -26,7 +26,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   void OnBufferDestroyed(int buffer_id_to_drop) override;
 
  private:
-  mojom::VideoFrameReceiverPtr receiver_;
+  mojom::ReceiverPtr receiver_;
 };
 
 }  // namespace video_capture

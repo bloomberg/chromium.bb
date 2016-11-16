@@ -5,13 +5,13 @@
 #ifndef SERVICES_VIDEO_CAPTURE_FAKE_DEVICE_DESCRIPTOR_TEST_H_
 #define SERVICES_VIDEO_CAPTURE_FAKE_DEVICE_DESCRIPTOR_TEST_H_
 
-#include "services/video_capture/video_capture_service_test.h"
+#include "services/video_capture/service_test.h"
 
 namespace video_capture {
 
 // Test fixture that obtains the descriptor of the fake device by enumerating
 // the devices of the fake device factory.
-class FakeDeviceDescriptorTest : public VideoCaptureServiceTest {
+class FakeDeviceDescriptorTest : public ServiceTest {
  public:
   FakeDeviceDescriptorTest();
   ~FakeDeviceDescriptorTest() override;

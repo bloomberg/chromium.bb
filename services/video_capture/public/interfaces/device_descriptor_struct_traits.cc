@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/public/interfaces/video_capture_device_descriptor_struct_traits.h"
+#include "services/video_capture/public/interfaces/device_descriptor_struct_traits.h"
 
 namespace mojo {
 
@@ -116,9 +116,9 @@ bool EnumTraits<video_capture::mojom::VideoCaptureTransportType,
 }
 
 // static
-bool StructTraits<video_capture::mojom::VideoCaptureDeviceDescriptorDataView,
+bool StructTraits<video_capture::mojom::DeviceDescriptorDataView,
                   media::VideoCaptureDeviceDescriptor>::
-    Read(video_capture::mojom::VideoCaptureDeviceDescriptorDataView data,
+    Read(video_capture::mojom::DeviceDescriptorDataView data,
          media::VideoCaptureDeviceDescriptor* output) {
   if (!data.ReadDisplayName(&(output->display_name)))
     return false;

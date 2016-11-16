@@ -10,8 +10,9 @@
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/video_capture/device_mock_to_media_adapter.h"
-#include "services/video_capture/video_capture_device_proxy_impl.h"
+#include "services/video_capture/device_media_to_mojo_adapter.h"
+#include "services/video_capture/device_mojo_mock_to_media_adapter.h"
+#include "services/video_capture/public/cpp/capture_settings.h"
 
 namespace video_capture {
 
@@ -51,7 +52,7 @@ void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
   media::VideoCaptureFormats media_formats;
   if (LookupDescriptorFromId(device_id, &descriptor))
     device_factory_->GetSupportedFormats(descriptor, &media_formats);
-  std::vector<VideoCaptureFormat> result;
+  std::vector<I420CaptureFormat> result;
   for (const auto& media_format : media_formats) {
     // The Video Capture Service requires devices to deliver frames either in
     // I420 or MJPEG formats.
@@ -60,7 +61,7 @@ void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
         media_format.pixel_format != media::PIXEL_FORMAT_MJPEG) {
       continue;
     }
-    VideoCaptureFormat format;
+    I420CaptureFormat format;
     format.frame_size = media_format.frame_size;
     format.frame_rate = media_format.frame_rate;
     if (base::ContainsValue(result, format))
@@ -70,18 +71,18 @@ void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
   callback.Run(std::move(result));
 }
 
-void DeviceFactoryMediaToMojoAdapter::CreateDeviceProxy(
+void DeviceFactoryMediaToMojoAdapter::CreateDevice(
     const std::string& device_id,
-    mojom::VideoCaptureDeviceProxyRequest proxy_request,
-    const CreateDeviceProxyCallback& callback) {
+    mojom::DeviceRequest device_request,
+    const CreateDeviceCallback& callback) {
   auto active_device_iter = active_devices_by_id_.find(device_id);
   if (active_device_iter != active_devices_by_id_.end()) {
     // The requested device is already in use.
     // Revoke the access and close the device, then bind to the new request.
     ActiveDeviceEntry& device_entry = active_device_iter->second;
     device_entry.binding->Unbind();
-    device_entry.device_proxy->Stop();
-    device_entry.binding->Bind(std::move(proxy_request));
+    device_entry.device->Stop();
+    device_entry.binding->Bind(std::move(device_request));
     device_entry.binding->set_connection_error_handler(base::Bind(
         &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
         base::Unretained(this), device_id));
@@ -104,11 +105,10 @@ void DeviceFactoryMediaToMojoAdapter::CreateDeviceProxy(
 
   // Add entry to active_devices to keep track of it
   ActiveDeviceEntry device_entry;
-  device_entry.device_proxy = base::MakeUnique<VideoCaptureDeviceProxyImpl>(
+  device_entry.device = base::MakeUnique<DeviceMediaToMojoAdapter>(
       std::move(media_device), jpeg_decoder_factory_callback_);
-  device_entry.binding =
-      base::MakeUnique<mojo::Binding<mojom::VideoCaptureDeviceProxy>>(
-          device_entry.device_proxy.get(), std::move(proxy_request));
+  device_entry.binding = base::MakeUnique<mojo::Binding<mojom::Device>>(
+      device_entry.device.get(), std::move(device_request));
   device_entry.binding->set_connection_error_handler(base::Bind(
       &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
       base::Unretained(this), device_id));
@@ -119,7 +119,7 @@ void DeviceFactoryMediaToMojoAdapter::CreateDeviceProxy(
 
 void DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose(
     const std::string& device_id) {
-  active_devices_by_id_[device_id].device_proxy->Stop();
+  active_devices_by_id_[device_id].device->Stop();
   active_devices_by_id_.erase(device_id);
 }
 

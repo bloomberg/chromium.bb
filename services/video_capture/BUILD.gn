@@ -8,9 +8,9 @@ import("//testing/test.gni")
 
 service("video_capture") {
   sources = [
+    "service_impl.cc",
+    "service_impl.h",
     "service_main.cc",
-    "video_capture_service.cc",
-    "video_capture_service.h",
   ]
 
   deps = [
@@ -35,12 +35,14 @@ source_set("lib") {
   sources = [
     "buffer_tracker_factory_impl.cc",
     "buffer_tracker_factory_impl.h",
-    "device_client_media_to_mojo_adapter.cc",
-    "device_client_media_to_mojo_adapter.h",
+    "device_client_media_to_mojo_mock_adapter.cc",
+    "device_client_media_to_mojo_mock_adapter.h",
     "device_factory_media_to_mojo_adapter.cc",
     "device_factory_media_to_mojo_adapter.h",
-    "device_mock_to_media_adapter.cc",
-    "device_mock_to_media_adapter.h",
+    "device_media_to_mojo_adapter.cc",
+    "device_media_to_mojo_adapter.h",
+    "device_mojo_mock_to_media_adapter.cc",
+    "device_mojo_mock_to_media_adapter.h",
     "mock_device_factory.cc",
     "mock_device_factory.h",
     "mojo_shared_memory_buffer_handle.cc",
@@ -49,8 +51,6 @@ source_set("lib") {
     "mojo_shared_memory_buffer_tracker.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
-    "video_capture_device_proxy_impl.cc",
-    "video_capture_device_proxy_impl.h",
   ]
 
   deps = [
@@ -78,13 +78,13 @@ test("video_capture_unittests") {
     "mock_device_test.cc",
     "mock_device_test.h",
     "mock_device_unittest.cc",
-    "mock_video_capture_device_impl.cc",
-    "mock_video_capture_device_impl.h",
-    "mock_video_frame_receiver.cc",
-    "mock_video_frame_receiver.h",
-    "video_capture_service_test.cc",
-    "video_capture_service_test.h",
-    "video_capture_service_unittest.cc",
+    "mock_media_device_impl.cc",
+    "mock_media_device_impl.h",
+    "mock_receiver.cc",
+    "mock_receiver.h",
+    "service_test.cc",
+    "service_test.h",
+    "service_unittest.cc",
   ]
 
   deps = [

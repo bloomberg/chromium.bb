@@ -28,7 +28,7 @@ void FakeDeviceTest::SetUp() {
   base::RunLoop wait_loop;
   EXPECT_CALL(supported_formats_receiver_, OnGetSupportedFormatsCallback(_))
       .WillOnce(Invoke(
-          [this, &wait_loop](const std::vector<VideoCaptureFormat>& formats) {
+          [this, &wait_loop](const std::vector<I420CaptureFormat>& formats) {
             fake_device_first_supported_format_ = formats[0];
             wait_loop.Quit();
           }));
@@ -44,7 +44,7 @@ void FakeDeviceTest::SetUp() {
   requestable_settings_.power_line_frequency =
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
-  factory_->CreateDeviceProxy(
+  factory_->CreateDevice(
       std::move(fake_device_descriptor_.device_id),
       mojo::GetProxy(&fake_device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {

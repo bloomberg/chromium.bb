@@ -9,13 +9,13 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // This format implies a pixel format of I420
 // and a storage type of Mojo Shared Memory.
-struct VideoCaptureFormat {
+struct I420CaptureFormat {
   gfx.mojom.Size frame_size;
   float frame_rate;
 };
 
-struct VideoCaptureSettings {
-  VideoCaptureFormat format;
+struct CaptureSettings {
+  I420CaptureFormat format;
   media.mojom.ResolutionChangePolicy resolution_change_policy;
   media.mojom.PowerLineFrequency power_line_frequency;
 };

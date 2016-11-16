@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_DEVICE_MOCK_TO_MEDIA_ADAPTER_H_
-#define SERVICES_VIDEO_CAPTURE_DEVICE_MOCK_TO_MEDIA_ADAPTER_H_
+#ifndef SERVICES_VIDEO_CAPTURE_DEVICE_MOJO_MOCK_TO_MEDIA_ADAPTER_H_
+#define SERVICES_VIDEO_CAPTURE_DEVICE_MOJO_MOCK_TO_MEDIA_ADAPTER_H_
 
 #include "media/capture/video/video_capture_device.h"
-#include "services/video_capture/public/interfaces/mock_video_capture_device.mojom.h"
+#include "services/video_capture/public/interfaces/mock_device.mojom.h"
 
 namespace video_capture {
 
@@ -14,10 +14,10 @@ namespace video_capture {
 // a media::VideoCaptureDevice. This is useful for plugging a mock devices into
 // the service and testing that the service makes expected calls to the
 // media::VideoCaptureDevice interface.
-class DeviceMockToMediaAdapter : public media::VideoCaptureDevice {
+class DeviceMojoMockToMediaAdapter : public media::VideoCaptureDevice {
  public:
-  DeviceMockToMediaAdapter(mojom::MockVideoCaptureDevicePtr* device);
-  ~DeviceMockToMediaAdapter() override;
+  DeviceMojoMockToMediaAdapter(mojom::MockMediaDevicePtr* device);
+  ~DeviceMojoMockToMediaAdapter() override;
 
   // media::VideoCaptureDevice:
   void AllocateAndStart(const media::VideoCaptureParams& params,
@@ -30,9 +30,9 @@ class DeviceMockToMediaAdapter : public media::VideoCaptureDevice {
   void TakePhoto(TakePhotoCallback callback) override;
 
  private:
-  mojom::MockVideoCaptureDevicePtr* const device_;
+  mojom::MockMediaDevicePtr* const device_;
 };
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_DEVICE_MOCK_TO_MEDIA_ADAPTER_H_
+#endif  // SERVICES_VIDEO_CAPTURE_DEVICE_MOJO_MOCK_TO_MEDIA_ADAPTER_H_

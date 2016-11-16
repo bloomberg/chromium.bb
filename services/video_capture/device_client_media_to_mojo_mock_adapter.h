@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_DEVICE_CLIENT_MEDIA_TO_MOJO_ADAPTER_H_
-#define SERVICES_VIDEO_CAPTURE_DEVICE_CLIENT_MEDIA_TO_MOJO_ADAPTER_H_
+#ifndef SERVICES_VIDEO_CAPTURE_DEVICE_CLIENT_MEDIA_TO_MOJO_MOCK_ADAPTER_H_
+#define SERVICES_VIDEO_CAPTURE_DEVICE_CLIENT_MEDIA_TO_MOJO_MOCK_ADAPTER_H_
 
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/video_capture/public/interfaces/mock_video_capture_device.mojom.h"
+#include "services/video_capture/public/interfaces/mock_device.mojom.h"
 
 namespace video_capture {
 
@@ -16,11 +16,11 @@ namespace video_capture {
 // MockDeviceClient is empty, its purpose is mostly to own the wrapped
 // instance of media::VideoCaptureDevice::Client and keep it alive until the
 // connection is closed.
-class DeviceClientMediaToMojoAdapter : public mojom::MockDeviceClient {
+class DeviceClientMediaToMojoMockAdapter : public mojom::MockDeviceClient {
  public:
-  ~DeviceClientMediaToMojoAdapter() override;
+  ~DeviceClientMediaToMojoMockAdapter() override;
 
-  DeviceClientMediaToMojoAdapter(
+  DeviceClientMediaToMojoMockAdapter(
       std::unique_ptr<media::VideoCaptureDevice::Client> client);
 
  private:
@@ -29,4 +29,4 @@ class DeviceClientMediaToMojoAdapter : public mojom::MockDeviceClient {
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_DEVICE_CLIENT_MEDIA_TO_MOJO_ADAPTER_H_
+#endif  // SERVICES_VIDEO_CAPTURE_DEVICE_CLIENT_MEDIA_TO_MOJO_MOCK_ADAPTER_H_

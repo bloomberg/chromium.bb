@@ -10,21 +10,20 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/video_capture/public/interfaces/video_capture_service.mojom.h"
+#include "services/video_capture/public/interfaces/service.mojom.h"
 
 namespace video_capture {
 
 class DeviceFactoryMediaToMojoAdapter;
 class MockDeviceFactory;
 
-// Implementation of mojom::VideoCaptureService as a Service Manager service.
-class VideoCaptureService
-    : public service_manager::Service,
-      public service_manager::InterfaceFactory<mojom::VideoCaptureService>,
-      public mojom::VideoCaptureService {
+// Implementation of video_capture::mojom::Service as a Service Manager service.
+class ServiceImpl : public service_manager::Service,
+                    public service_manager::InterfaceFactory<mojom::Service>,
+                    public mojom::Service {
  public:
-  VideoCaptureService();
-  ~VideoCaptureService() override;
+  ServiceImpl();
+  ~ServiceImpl() override;
 
   // service_manager::Service:
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -32,17 +31,14 @@ class VideoCaptureService
 
   // service_manager::InterfaceFactory<mojom::VideoCaptureService>:
   void Create(const service_manager::Identity& remote_identity,
-              mojom::VideoCaptureServiceRequest request) override;
+              mojom::ServiceRequest request) override;
 
-  // mojom::VideoCaptureService
-  void ConnectToDeviceFactory(
-      mojom::VideoCaptureDeviceFactoryRequest request) override;
-  void ConnectToFakeDeviceFactory(
-      mojom::VideoCaptureDeviceFactoryRequest request) override;
-  void ConnectToMockDeviceFactory(
-      mojom::VideoCaptureDeviceFactoryRequest request) override;
+  // video_capture::mojom::Service
+  void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
+  void ConnectToFakeDeviceFactory(mojom::DeviceFactoryRequest request) override;
+  void ConnectToMockDeviceFactory(mojom::DeviceFactoryRequest request) override;
   void AddDeviceToMockFactory(
-      mojom::MockVideoCaptureDevicePtr device,
+      mojom::MockMediaDevicePtr device,
       const media::VideoCaptureDeviceDescriptor& descriptor,
       const AddDeviceToMockFactoryCallback& callback) override;
 
@@ -51,10 +47,10 @@ class VideoCaptureService
   void LazyInitializeFakeDeviceFactory();
   void LazyInitializeMockDeviceFactory();
 
-  mojo::BindingSet<mojom::VideoCaptureService> service_bindings_;
-  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> factory_bindings_;
-  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> fake_factory_bindings_;
-  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> mock_factory_bindings_;
+  mojo::BindingSet<mojom::Service> service_bindings_;
+  mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
+  mojo::BindingSet<mojom::DeviceFactory> fake_factory_bindings_;
+  mojo::BindingSet<mojom::DeviceFactory> mock_factory_bindings_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> device_factory_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> fake_device_factory_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> mock_device_factory_adapter_;

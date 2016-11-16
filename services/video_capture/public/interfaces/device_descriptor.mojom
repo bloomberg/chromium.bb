@@ -24,7 +24,7 @@ enum VideoCaptureTransportType {
   OTHER_TRANSPORT
 };
 
-struct VideoCaptureDeviceDescriptor {
+struct DeviceDescriptor {
   string display_name;
   string device_id;
   string model_id;

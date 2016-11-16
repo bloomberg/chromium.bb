@@ -7,10 +7,10 @@
 
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/video_capture/mock_device_descriptor_receiver.h"
-#include "services/video_capture/mock_video_capture_device_impl.h"
-#include "services/video_capture/mock_video_frame_receiver.h"
-#include "services/video_capture/public/cpp/video_capture_settings.h"
-#include "services/video_capture/public/interfaces/video_capture_service.mojom.h"
+#include "services/video_capture/mock_media_device_impl.h"
+#include "services/video_capture/mock_receiver.h"
+#include "services/video_capture/public/cpp/capture_settings.h"
+#include "services/video_capture/public/interfaces/service.mojom.h"
 
 namespace video_capture {
 
@@ -23,16 +23,16 @@ class MockDeviceTest : public service_manager::test::ServiceTest {
   void SetUp() override;
 
  protected:
-  mojom::VideoCaptureServicePtr service_;
-  mojom::VideoCaptureDeviceFactoryPtr factory_;
+  mojom::ServicePtr service_;
+  mojom::DeviceFactoryPtr factory_;
   MockDeviceDescriptorReceiver descriptor_receiver_;
 
-  std::unique_ptr<MockVideoCaptureDeviceImpl> mock_device_;
-  std::unique_ptr<MockVideoFrameReceiver> mock_receiver_;
-  mojom::MockVideoCaptureDevicePtr mock_device_proxy_;
-  mojom::VideoCaptureDeviceProxyPtr device_proxy_;
-  mojom::VideoFrameReceiverPtr mock_receiver_proxy_;
-  VideoCaptureSettings requested_settings_;
+  std::unique_ptr<MockMediaDeviceImpl> mock_device_;
+  std::unique_ptr<MockReceiver> mock_receiver_;
+  mojom::MockMediaDevicePtr mock_device_proxy_;
+  mojom::DevicePtr device_proxy_;
+  mojom::ReceiverPtr mock_receiver_proxy_;
+  CaptureSettings requested_settings_;
 };
 
 }  // namespace video_capture

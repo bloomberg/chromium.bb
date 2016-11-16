@@ -6,13 +6,13 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "mock_video_capture_device.mojom",
-    "video_capture_device_descriptor.mojom",
-    "video_capture_device_factory.mojom",
-    "video_capture_device_proxy.mojom",
-    "video_capture_service.mojom",
-    "video_capture_settings.mojom",
-    "video_frame_receiver.mojom",
+    "capture_settings.mojom",
+    "device.mojom",
+    "device_descriptor.mojom",
+    "device_factory.mojom",
+    "mock_device.mojom",
+    "receiver.mojom",
+    "service.mojom",
   ]
 
   deps = [

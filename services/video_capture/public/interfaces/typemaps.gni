@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//services/video_capture/public/interfaces/video_capture_device_descriptor.typemap",
-  "//services/video_capture/public/interfaces/video_capture_settings.typemap",
+  "//services/video_capture/public/interfaces/device_descriptor.typemap",
+  "//services/video_capture/public/interfaces/capture_settings.typemap",
 ]

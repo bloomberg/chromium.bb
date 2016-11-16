@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_MOCK_VIDEO_CAPTURE_DEVICE_IMPL_H_
-#define SERVICES_VIDEO_CAPTURE_MOCK_VIDEO_CAPTURE_DEVICE_IMPL_H_
+#ifndef SERVICES_VIDEO_CAPTURE_MOCK_MEDIA_DEVICE_IMPL_H_
+#define SERVICES_VIDEO_CAPTURE_MOCK_MEDIA_DEVICE_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/video_capture/public/interfaces/mock_video_capture_device.mojom.h"
+#include "services/video_capture/public/interfaces/mock_device.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
 
-class MockVideoCaptureDeviceImpl : public mojom::MockVideoCaptureDevice {
+class MockMediaDeviceImpl : public mojom::MockMediaDevice {
  public:
-  MockVideoCaptureDeviceImpl(mojom::MockVideoCaptureDeviceRequest request);
-  ~MockVideoCaptureDeviceImpl() override;
+  MockMediaDeviceImpl(mojom::MockMediaDeviceRequest request);
+  ~MockMediaDeviceImpl() override;
 
   // Use forwarding method to work around gmock not supporting move-only types.
   void AllocateAndStart(mojom::MockDeviceClientPtr client) override;
@@ -23,9 +23,9 @@ class MockVideoCaptureDeviceImpl : public mojom::MockVideoCaptureDevice {
   MOCK_METHOD0(StopAndDeAllocate, void());
 
  private:
-  mojo::Binding<mojom::MockVideoCaptureDevice> binding_;
+  mojo::Binding<mojom::MockMediaDevice> binding_;
 };
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_MOCK_VIDEO_CAPTURE_DEVICE_IMPL_H_
+#endif  // SERVICES_VIDEO_CAPTURE_MOCK_MEDIA_DEVICE_IMPL_H_
