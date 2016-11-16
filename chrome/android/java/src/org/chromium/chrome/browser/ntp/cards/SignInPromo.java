@@ -15,6 +15,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
@@ -172,8 +173,9 @@ public class SignInPromo extends OptionalLeaf
     public static class ViewHolder extends StatusCardViewHolder {
         private final int mSeparationSpaceSize;
 
-        public ViewHolder(NewTabPageRecyclerView parent, UiConfig config) {
-            super(parent, config);
+        public ViewHolder(NewTabPageRecyclerView parent, NewTabPageManager newTabPageManager,
+                UiConfig config) {
+            super(parent, newTabPageManager, config);
             mSeparationSpaceSize = parent.getResources().getDimensionPixelSize(
                     R.dimen.ntp_sign_in_promo_margin_top);
         }

@@ -19,7 +19,7 @@ import android.widget.ScrollView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.ContextMenuHandler.TouchDisableableView;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
 import org.chromium.chrome.browser.widget.FadingShadow;
 
 /**
@@ -105,11 +105,6 @@ public class NewTabPageScrollView extends ScrollView implements TouchDisableable
     @Override
     public void setTouchEnabled(boolean enabled) {
         mTouchEnabled = enabled;
-    }
-
-    @Override
-    public View asView() {
-        return this;
     }
 
     @Override

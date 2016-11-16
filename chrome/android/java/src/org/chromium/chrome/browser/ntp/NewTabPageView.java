@@ -28,7 +28,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -43,6 +42,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -132,6 +132,7 @@ public class NewTabPageView extends FrameLayout
     private int mSnapshotWidth;
     private int mSnapshotHeight;
     private int mSnapshotScrollY;
+    private ContextMenuManager mContextMenuManager;
 
     /**
      * Manages the view interaction with the rest of the system.
@@ -270,23 +271,6 @@ public class NewTabPageView extends FrameLayout
         void onLoadingComplete(MostVisitedItem[] mostVisitedItems);
 
         /**
-         * Passes a {@link Callback} along to the activity to be called whenever a ContextMenu is
-         * closed.
-         */
-        void addContextMenuCloseCallback(Callback<Menu> callback);
-
-        /**
-         * Passes a {@link Callback} along to the activity to be removed from the list of Callbacks
-         * called whenever a ContextMenu is closed.
-         */
-        void removeContextMenuCloseCallback(Callback<Menu> callback);
-
-        /**
-         * Makes the activity close any open context menu.
-         */
-        void closeContextMenu();
-
-        /**
          * Handles clicks on the "learn more" link in the footer.
          */
         void onLearnMoreClicked();
@@ -308,6 +292,13 @@ public class NewTabPageView extends FrameLayout
          * displayed to the user.
          */
         boolean isCurrentPage();
+
+        /**
+         * @return The context menu manager. Will be {@code null} if the {@link NewTabPageView} is
+         * not done initialising.
+         */
+        @Nullable
+        ContextMenuManager getContextMenuManager();
     }
 
     /**
@@ -326,8 +317,8 @@ public class NewTabPageView extends FrameLayout
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param scrollPosition The adapter scroll position to initialize to.
      */
-    public void initialize(
-            NewTabPageManager manager, boolean searchProviderHasLogo, int scrollPosition) {
+    public void initialize(NewTabPageManager manager, ChromeActivity activity,
+            boolean searchProviderHasLogo, int scrollPosition) {
         mManager = manager;
         mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
@@ -367,6 +358,8 @@ public class NewTabPageView extends FrameLayout
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
+        mContextMenuManager = new ContextMenuManager(
+                mManager, activity, mUseCardsUi ? mRecyclerView : mScrollView);
 
         mMostVisitedDesign = new MostVisitedDesign(getContext());
         mMostVisitedLayout =
@@ -1018,7 +1011,7 @@ public class NewTabPageView extends FrameLayout
                         offlineAvailable, i, source);
                 View view =
                         mMostVisitedDesign.createMostVisitedItemView(inflater, item, isInitialLoad);
-                item.initView(view, mUseCardsUi ? mRecyclerView : mScrollView);
+                item.initView(view);
             }
 
             mMostVisitedItems[i] = item;
@@ -1224,7 +1217,7 @@ public class NewTabPageView extends FrameLayout
         mUiConfig.updateDisplayStyle();
 
         // Close the Context Menu as it may have moved (https://crbug.com/642688).
-        mManager.closeContextMenu();
+        mContextMenuManager.closeContextMenu();
     }
 
     private int getVerticalScroll() {
@@ -1241,5 +1234,10 @@ public class NewTabPageView extends FrameLayout
     public int getScrollPosition() {
         if (mUseCardsUi) return mRecyclerView.getScrollPosition();
         return RecyclerView.NO_POSITION;
+    }
+
+    /** @return the context menu manager. */
+    public ContextMenuManager getContextMenuManager() {
+        return mContextMenuManager;
     }
 }

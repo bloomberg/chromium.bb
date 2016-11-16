@@ -16,7 +16,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.ntp.ContextMenuHandler;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.FakeMostVisitedSites;
 import org.chromium.chrome.browser.ntp.NTPTileSource;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -183,7 +183,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         View suggestionView = waitForView(suggestionPosition);
 
         // Dismiss the suggestion using the context menu.
-        invokeContextMenu(suggestionView, ContextMenuHandler.ID_REMOVE);
+        invokeContextMenu(suggestionView, ContextMenuManager.ID_REMOVE);
         waitForViewToDetach(suggestionView);
 
         suggestions = mSource.getSuggestionsForCategory(KnownCategories.ARTICLES);

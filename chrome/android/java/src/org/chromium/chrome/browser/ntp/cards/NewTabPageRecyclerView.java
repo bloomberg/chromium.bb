@@ -25,15 +25,16 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.ContextMenuHandler.TouchDisableableView;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ViewUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -123,11 +124,6 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     @Override
     public void setTouchEnabled(boolean enabled) {
         mTouchEnabled = enabled;
-    }
-
-    @Override
-    public View asView() {
-        return this;
     }
 
     @Override
@@ -486,33 +482,28 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * the animation here should be reflected also in
      * {@link #updateViewStateForDismiss(float, ViewHolder)} and reset in
      * {@link CardViewHolder#onBindViewHolder()}.
-     * @param suggestion The item to be dismissed.
      */
-    public void dismissItemWithAnimation(SnippetArticle suggestion) {
-        // We need to recompute the position, as it might have changed.
-        final int position = getNewTabPageAdapter().getSuggestionPosition(suggestion);
+    public void dismissItemWithAnimation(final ViewHolder viewHolder) {
+        // We need to check the position, as the view holder might have been removed.
+        final int position = viewHolder.getAdapterPosition();
         if (position == RecyclerView.NO_POSITION) {
             // The item does not exist anymore, so ignore.
             return;
         }
 
-        final View itemView = mLayoutManager.findViewByPosition(position);
-        if (itemView == null) {
-            // The view is not visible anymore, skip the animation.
-            getNewTabPageAdapter().dismissItem(position);
-            return;
-        }
-
-        final ViewHolder viewHolder = getChildViewHolder(itemView);
         if (!((NewTabPageViewHolder) viewHolder).isDismissable()) {
             // The item is not dismissable (anymore), so ignore.
             return;
         }
 
-        AnimatorSet animation = new AnimatorSet();
-        animation.playTogether(ObjectAnimator.ofFloat(itemView, View.ALPHA, 0f),
-                ObjectAnimator.ofFloat(itemView, View.TRANSLATION_X, (float) itemView.getWidth()));
+        List<Animator> animations = new ArrayList<>();
+        addDismissalAnimators(animations, viewHolder.itemView);
 
+        final ViewHolder dismissSibling = getNewTabPageAdapter().getDismissSibling(viewHolder);
+        if (dismissSibling != null) addDismissalAnimators(animations, dismissSibling.itemView);
+
+        AnimatorSet animation = new AnimatorSet();
+        animation.playTogether(animations);
         animation.setDuration(DISMISS_ANIMATION_TIME_MS);
         animation.setInterpolator(DISMISS_INTERPOLATOR);
         animation.addListener(new AnimatorListenerAdapter() {
@@ -532,7 +523,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
     /**
      * Update the view's state as it is being swiped away. Any changes to the animation here should
-     * be reflected also in {@link #dismissItemWithAnimation(SnippetArticle)} and reset in
+     * be reflected also in {@link #dismissItemWithAnimation(ViewHolder)} and reset in
      * {@link CardViewHolder#onBindViewHolder()}.
      * @param dX The amount of horizontal displacement caused by user's action.
      * @param viewHolder The view holder containing the view to be updated.
@@ -572,5 +563,14 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         animator.setDuration(PEEKING_CARD_ANIMATION_TIME_MS);
         animator.setInterpolator(PEEKING_CARD_INTERPOLATOR);
         animator.start();
+    }
+
+    /**
+     * @param animations in/out list holding the animators to play.
+     * @param view  view to animate.
+     */
+    private void addDismissalAnimators(List<Animator> animations, View view) {
+        animations.add(ObjectAnimator.ofFloat(view, View.ALPHA, 0f));
+        animations.add(ObjectAnimator.ofFloat(view, View.TRANSLATION_X, (float) view.getWidth()));
     }
 }

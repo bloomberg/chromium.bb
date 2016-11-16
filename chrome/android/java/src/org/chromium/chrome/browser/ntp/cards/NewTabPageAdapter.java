@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
+import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -336,7 +337,7 @@ public class NewTabPageAdapter
                 return new NewTabPageViewHolder(SpacingItem.createView(parent));
 
             case ItemViewType.STATUS:
-                return new StatusCardViewHolder(mRecyclerView, mUiConfig);
+                return new StatusCardViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
 
             case ItemViewType.PROGRESS:
                 return new ProgressViewHolder(mRecyclerView);
@@ -345,7 +346,7 @@ public class NewTabPageAdapter
                 return new ActionItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
 
             case ItemViewType.PROMO:
-                return new SignInPromo.ViewHolder(mRecyclerView, mUiConfig);
+                return new SignInPromo.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
 
             case ItemViewType.FOOTER:
                 return new Footer.ViewHolder(mRecyclerView, mNewTabPageManager);
@@ -536,6 +537,9 @@ public class NewTabPageAdapter
 
     private void dismissSection(SuggestionsSection section) {
         assert SnippetsConfig.isSectionDismissalEnabled();
+
+        announceItemRemoved(section.getHeaderText());
+
         mNewTabPageManager.getSuggestionsSource().dismissCategory(section.getCategory());
         removeSection(section);
     }
@@ -559,7 +563,7 @@ public class NewTabPageAdapter
     }
 
     private void dismissPromo() {
-        // TODO(dgn): accessibility announcement.
+        announceItemRemoved(mSigninPromo.getHeader());
         mSigninPromo.dismiss();
     }
 
@@ -636,5 +640,12 @@ public class NewTabPageAdapter
 
         mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
                 R.string.ntp_accessibility_item_removed, suggestionTitle));
+    }
+
+    private void announceItemRemoved(@StringRes int stringToAnnounce) {
+        // In tests the RecyclerView can be null.
+        if (mRecyclerView == null) return;
+
+        announceItemRemoved(mRecyclerView.getResources().getString(stringToAnnounce));
     }
 }

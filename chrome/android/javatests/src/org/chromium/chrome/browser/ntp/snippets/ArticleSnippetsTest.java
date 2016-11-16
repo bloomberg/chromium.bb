@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.BitmapFactory;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.TypedValue;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -21,6 +20,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
@@ -202,6 +202,10 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
      * A NewTabPageManager to initialize our Adapter.
      */
     private class MockNewTabPageManager implements NewTabPageManager {
+        // TODO(dgn): provide a RecyclerView if we need to test the context menu.
+        private ContextMenuManager mContextMenuManager =
+                new ContextMenuManager(this, getActivity(), null);
+
         @Override
         public void getLocalFaviconImageForURL(
                 final String url, int size, final FaviconImageCallback faviconCallback) {
@@ -330,16 +334,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void addContextMenuCloseCallback(Callback<Menu> callback) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void removeContextMenuCloseCallback(Callback<Menu> callback) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void onLearnMoreClicked() {
             throw new UnsupportedOperationException();
         }
@@ -353,13 +347,13 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void addDestructionObserver(DestructionObserver destructionObserver) {}
 
         @Override
-        public void closeContextMenu() {
-            throw new UnsupportedOperationException();
+        public boolean isCurrentPage() {
+            return true;
         }
 
         @Override
-        public boolean isCurrentPage() {
-            return true;
+        public ContextMenuManager getContextMenuManager() {
+            return mContextMenuManager;
         }
     }
 }

@@ -9,12 +9,16 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Item that allows the user to perform an action on the NTP.
@@ -98,12 +102,12 @@ class ActionItem extends OptionalLeaf {
         return ACTION_NONE;
     }
 
-    public static class ViewHolder extends CardViewHolder {
+    public static class ViewHolder extends CardViewHolder implements ContextMenuManager.Delegate {
         private ActionItem mActionListItem;
 
         public ViewHolder(final NewTabPageRecyclerView recyclerView,
                 final NewTabPageManager manager, UiConfig uiConfig) {
-            super(R.layout.new_tab_page_action_card, recyclerView, uiConfig);
+            super(R.layout.new_tab_page_action_card, recyclerView, uiConfig, manager);
 
             itemView.findViewById(R.id.action_button)
                     .setOnClickListener(new View.OnClickListener() {
@@ -131,6 +135,37 @@ class ActionItem extends OptionalLeaf {
         public boolean isDismissable() {
             return SnippetsConfig.isSectionDismissalEnabled()
                     && !mActionListItem.mParentSection.hasSuggestions();
+        }
+
+        @Override
+        protected Delegate getContextMenuDelegate() {
+            return this;
+        }
+
+        @Override
+        public void openItem(int windowDisposition) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void removeItem() {
+            getRecyclerView().dismissItemWithAnimation(this);
+        }
+
+        @Override
+        public String getUrl() {
+            return null;
+        }
+
+        @Override
+        public Set<Integer> getSupportedMenuItems() {
+            Set<Integer> supportedItems = new HashSet<>();
+
+            if (isDismissable()) {
+                supportedItems.add(ContextMenuManager.ID_REMOVE);
+            }
+
+            return supportedItems;
         }
 
         public void onBindViewHolder(ActionItem item) {

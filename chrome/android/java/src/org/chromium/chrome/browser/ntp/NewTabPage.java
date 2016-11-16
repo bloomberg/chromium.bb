@@ -16,7 +16,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -646,22 +645,6 @@ public class NewTabPage
         }
 
         @Override
-        public void addContextMenuCloseCallback(Callback<Menu> callback) {
-            mActivity.addContextMenuCloseCallback(callback);
-
-        }
-
-        @Override
-        public void removeContextMenuCloseCallback(Callback<Menu> callback) {
-            mActivity.removeContextMenuCloseCallback(callback);
-        }
-
-        @Override
-        public void closeContextMenu() {
-            mActivity.closeContextMenu();
-        }
-
-        @Override
         public SuggestionsSource getSuggestionsSource() {
             if (sSuggestionsSourceForTests != null) return sSuggestionsSourceForTests;
             return mSnippetsBridge;
@@ -678,6 +661,12 @@ public class NewTabPage
             if (mIsDestroyed) return false;
             if (mFakeboxDelegate == null) return false;
             return mFakeboxDelegate.isCurrentPage(NewTabPage.this);
+        }
+
+        @Override
+        public ContextMenuManager getContextMenuManager() {
+            assert !mIsDestroyed;
+            return mNewTabPageView.getContextMenuManager();
         }
     };
 
@@ -747,8 +736,8 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
-        mNewTabPageView.initialize(
-                mNewTabPageManager, mSearchProviderHasLogo, getScrollPositionFromNavigationEntry());
+        mNewTabPageView.initialize(mNewTabPageManager, mActivity, mSearchProviderHasLogo,
+                getScrollPositionFromNavigationEntry());
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());

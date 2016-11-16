@@ -289,6 +289,10 @@ public class SuggestionsSection extends InnerNode {
         return mCategoryInfo;
     }
 
+    public String getHeaderText() {
+        return mHeader.getHeaderText();
+    }
+
     /**
      * @return The progress indicator.
      */

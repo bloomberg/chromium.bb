@@ -15,7 +15,6 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v4.text.BidiFormatter;
 import android.text.format.DateUtils;
-import android.view.ContextMenu;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -28,7 +27,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
-import org.chromium.chrome.browser.ntp.ContextMenuHandler;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
@@ -41,13 +41,16 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
  * A class that represents the view for a single card snippet.
  */
 public class SnippetArticleViewHolder
-        extends CardViewHolder implements ImpressionTracker.Listener, ContextMenuHandler.Delegate {
+        extends CardViewHolder implements ImpressionTracker.Listener, ContextMenuManager.Delegate {
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
@@ -78,7 +81,7 @@ public class SnippetArticleViewHolder
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
             UiConfig uiConfig) {
-        super(R.layout.new_tab_page_snippets_card, parent, uiConfig);
+        super(R.layout.new_tab_page_snippets_card, parent, uiConfig, manager);
 
         mNewTabPageManager = manager;
         mThumbnailView = (ImageView) itemView.findViewById(R.id.article_thumbnail);
@@ -120,7 +123,7 @@ public class SnippetArticleViewHolder
 
     @Override
     public void removeItem() {
-        getRecyclerView().dismissItemWithAnimation(mArticle);
+        getRecyclerView().dismissItemWithAnimation(this);
     }
 
     @Override
@@ -129,9 +132,15 @@ public class SnippetArticleViewHolder
     }
 
     @Override
-    protected void createContextMenu(ContextMenu menu) {
-        new ContextMenuHandler(mNewTabPageManager, getRecyclerView(), this)
-                .onCreateContextMenu(menu);
+    public Set<Integer> getSupportedMenuItems() {
+        return new HashSet<>(Arrays.asList(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW,
+                ContextMenuManager.ID_OPEN_IN_NEW_TAB, ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB,
+                ContextMenuManager.ID_REMOVE, ContextMenuManager.ID_SAVE_FOR_OFFLINE));
+    }
+
+    @Override
+    protected Delegate getContextMenuDelegate() {
+        return this;
     }
 
     /**
