@@ -42,13 +42,24 @@ void BitmapImageMetrics::countImageOrientation(
   orientationHistogram.count(orientation);
 }
 
-void BitmapImageMetrics::countGamma(SkColorSpace* colorSpace) {
+void BitmapImageMetrics::countImageGamma(SkColorSpace* colorSpace) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, gammaNamedHistogram,
+      new EnumerationHistogram("Blink.ColorSpace.Source", GammaEnd));
+  gammaNamedHistogram.count(getColorSpaceGamma(colorSpace));
+}
+
+void BitmapImageMetrics::countOutputGamma(SkColorSpace* colorSpace) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, gammaNamedHistogram,
       new EnumerationHistogram("Blink.ColorSpace.Destination", GammaEnd));
+  gammaNamedHistogram.count(getColorSpaceGamma(colorSpace));
+}
 
+BitmapImageMetrics::Gamma BitmapImageMetrics::getColorSpaceGamma(
+    SkColorSpace* colorSpace) {
+  Gamma gamma = GammaNull;
   if (colorSpace) {
-    Gamma gamma;
     if (colorSpace->gammaCloseToSRGB()) {
       gamma = GammaSRGB;
     } else if (colorSpace->gammaIsLinear()) {
@@ -56,11 +67,8 @@ void BitmapImageMetrics::countGamma(SkColorSpace* colorSpace) {
     } else {
       gamma = GammaNonStandard;
     }
-
-    gammaNamedHistogram.count(gamma);
-  } else {
-    gammaNamedHistogram.count(GammaNull);
   }
+  return gamma;
 }
 
 }  // namespace blink

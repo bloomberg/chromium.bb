@@ -48,7 +48,11 @@ class PLATFORM_EXPORT BitmapImageMetrics {
 
   static void countDecodedImageType(const String& type);
   static void countImageOrientation(const ImageOrientationEnum);
-  static void countGamma(SkColorSpace*);
+  static void countImageGamma(SkColorSpace*);
+  static void countOutputGamma(SkColorSpace*);
+
+ private:
+  static Gamma getColorSpaceGamma(SkColorSpace*);
 };
 
 }  // namespace blink

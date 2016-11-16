@@ -362,6 +362,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool m_sizeAvailable = false;
   bool m_isAllDataReceived = false;
   bool m_failed = false;
+  bool m_hasHistogrammedColorSpace = false;
 
   sk_sp<SkColorSpace> m_embeddedColorSpace = nullptr;
   std::unique_ptr<SkColorSpaceXform> m_sourceToOutputDeviceColorTransform;

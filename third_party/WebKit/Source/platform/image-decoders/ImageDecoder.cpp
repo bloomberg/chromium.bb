@@ -174,6 +174,11 @@ ImageFrame* ImageDecoder::frameBufferAtIndex(size_t index) {
     PlatformInstrumentation::didDecodeImage();
   }
 
+  if (!m_hasHistogrammedColorSpace) {
+    BitmapImageMetrics::countImageGamma(m_embeddedColorSpace.get());
+    m_hasHistogrammedColorSpace = true;
+  }
+
   frame->notifyBitmapIfPixelsChanged();
   return frame;
 }
@@ -385,7 +390,7 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
       SkColorSpace::MakeICC(profile.data(), profile.size()).release();
 
   // UMA statistics.
-  BitmapImageMetrics::countGamma(gTargetColorSpace);
+  BitmapImageMetrics::countOutputGamma(gTargetColorSpace);
 }
 
 sk_sp<SkColorSpace> ImageDecoder::colorSpace() const {
@@ -412,6 +417,7 @@ void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
 void ImageDecoder::setColorSpaceAndComputeTransform(
     sk_sp<SkColorSpace> colorSpace) {
   DCHECK(!m_ignoreColorSpace);
+  DCHECK(!m_hasHistogrammedColorSpace);
 
   m_embeddedColorSpace = colorSpace;
 
