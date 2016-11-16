@@ -5,12 +5,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 
 #include "base/memory/ptr_util.h"
-
-namespace {
-// URL used to open offline pages.
-// This variable will be moved to chrome_url_constants.
-const char kChromeUIOfflineURL[] = "chrome://offline/";
-}
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 
 // The backoff time is the following: 10min, 10min, 1h, 2h, 2h..., starting
 // after the first failure.
@@ -85,10 +80,7 @@ const base::FilePath& ReadingListEntry::DistilledPath() const {
 }
 
 const GURL ReadingListEntry::DistilledURL() const {
-  if (distilled_path_.empty()) {
-    return GURL();
-  }
-  return GURL(kChromeUIOfflineURL + distilled_path_.value());
+  return reading_list::DistilledURLForPath(distilled_path_);
 }
 
 base::TimeDelta ReadingListEntry::TimeUntilNextTry() const {

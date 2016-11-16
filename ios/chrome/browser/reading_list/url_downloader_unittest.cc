@@ -13,6 +13,7 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,8 @@ class MockURLDownloader : public URLDownloader {
                                  base::Unretained(this))) {}
 
   void RemoveOfflineFilesDirectory() {
-    base::DeleteFile(OfflineRootDirectoryPath(), true);
+    base::DeleteFile(reading_list::OfflineRootDirectoryPath(base_directory_),
+                     true);
   }
 
   void ClearCompletionTrackers() {
@@ -56,7 +58,8 @@ class MockURLDownloader : public URLDownloader {
   }
 
   bool CheckExistenceOfOfflineURLPagePath(const GURL& url) {
-    return base::PathExists(OfflinePageAbsolutePath(url));
+    return base::PathExists(
+        reading_list::OfflinePageAbsolutePath(base_directory_, url));
   }
 
   void FakeWorking() { working_ = true; }

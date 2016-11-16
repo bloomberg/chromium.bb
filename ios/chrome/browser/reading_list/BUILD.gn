@@ -4,6 +4,8 @@
 
 source_set("reading_list") {
   sources = [
+    "offline_url_utils.cc",
+    "offline_url_utils.h",
     "reading_list_download_service.cc",
     "reading_list_download_service.h",
     "reading_list_download_service_factory.cc",
@@ -49,6 +51,7 @@ source_set("reading_list") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "offline_url_utils_unittest.cc",
     "reading_list_entry_unittest.cc",
     "reading_list_model_storage_unittest.mm",
     "reading_list_model_unittest.cc",
@@ -62,5 +65,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/dom_distiller",
     "//ios/web:test_support",
     "//testing/gtest",
+    "//url",
   ]
 }

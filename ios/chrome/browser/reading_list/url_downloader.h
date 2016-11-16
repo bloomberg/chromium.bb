@@ -21,10 +21,6 @@ namespace dom_distiller {
 class DomDistillerService;
 }
 
-// This string contains the directory name in which offline pages are saved.
-// The directory is located in the profile directory.
-extern const char kReadingListOfflineDirectory[];
-
 // This class downloads and deletes offline versions of URLs using DOM distiller
 // to fetch the page and simplify it. Only one item is downloaded or deleted at
 // a time using a queue of tasks that are handled sequentially. Items (page +
@@ -91,24 +87,10 @@ class URLDownloader {
   // Callback for completed (or failed) deletion, handles calling
   // deleteCompletion and starting the next task.
   void DeleteCompletionHandler(const GURL& url, bool success);
-  // The absolute path of the directory where offline URLs are saved.
-  base::FilePath OfflineRootDirectoryPath();
 
-  // The absolute path of the directory where a specific URL is saved offline.
-  // Contains the page and supporting files (images).
-  base::FilePath OfflineURLDirectoryAbsolutePath(const GURL& url);
-  // The absolute path of the offline webpage for the URL. The file may not
-  // exist.
-  base::FilePath OfflinePageAbsolutePath(const GURL& url);
-  // The relative path to the distilled page. The result is relative to
-  // |OfflineRootDirectoryPath()|.
-  base::FilePath OfflinePagePath(const GURL& url);
   // Creates the offline directory for |url|. Returns true if successful or if
   // the directory already exists.
   bool CreateOfflineURLDirectory(const GURL& url);
-  // The name of the directory containing offline data for |url|.
-  std::string OfflineURLDirectoryID(const GURL& url);
-
   // Saves the |data| for image at |imageURL| to disk, for main URL |url|;
   // puts path of saved file in |path| and returns whether save was successful.
   bool SaveImage(const GURL& url,
