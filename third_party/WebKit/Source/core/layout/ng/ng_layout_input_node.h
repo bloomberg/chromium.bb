@@ -12,6 +12,7 @@ namespace blink {
 
 class NGConstraintSpace;
 class NGFragmentBase;
+class NGLayoutAlgorithm;
 
 // Represents the input to a layout algorithm for a given node. The layout
 // engine should use the style, node type to determine which type of layout
@@ -34,6 +35,9 @@ class CORE_EXPORT NGLayoutInputNode
   NGLayoutInputNodeType Type() const {
     return static_cast<NGLayoutInputNodeType>(type_);
   }
+
+  static NGLayoutAlgorithm* AlgorithmForInputNode(NGLayoutInputNode*,
+                                                  const NGConstraintSpace*);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

@@ -17,11 +17,14 @@ class LayoutObject;
 class NGConstraintSpace;
 class NGFragmentBase;
 class NGLayoutAlgorithm;
+class NGLayoutCoordinator;
 class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
 class CORE_EXPORT NGBox final : public NGLayoutInputNode {
+  friend NGLayoutInputNode;
+
  public:
   explicit NGBox(LayoutObject*);
 
@@ -75,7 +78,7 @@ class CORE_EXPORT NGBox final : public NGLayoutInputNode {
   RefPtr<ComputedStyle> style_;
   Member<NGBox> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
-  Member<NGLayoutAlgorithm> layout_algorithm_;
+  Member<NGLayoutCoordinator> layout_coordinator_;
   Member<NGLayoutAlgorithm> minmax_algorithm_;
   Member<NGPhysicalFragment> fragment_;
 };

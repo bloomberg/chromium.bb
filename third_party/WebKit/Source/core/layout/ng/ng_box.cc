@@ -14,6 +14,7 @@
 #include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -44,24 +45,16 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   if (CanUseNewLayout()) {
-    if (!layout_algorithm_) {
-      // Change the coordinate system of the constraint space.
-      NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
-          FromPlatformWritingMode(Style()->getWritingMode()),
-          Style()->direction(), constraint_space->MutablePhysicalSpace());
+    NGPhysicalFragmentBase* fragment;
 
-      if (HasInlineChildren()) {
-        layout_algorithm_ = new NGInlineLayoutAlgorithm(
-            Style(), toNGInlineBox(FirstChild()), child_constraint_space);
-      } else {
-        layout_algorithm_ = new NGBlockLayoutAlgorithm(
-            Style(), toNGBox(FirstChild()), child_constraint_space);
-      }
-    }
+    // Store a coordinator so Layout can preserve its existing semantic
+    // of returning false until completed.
+    if (!layout_coordinator_)
+      layout_coordinator_ = new NGLayoutCoordinator(this, constraint_space);
 
-    NGPhysicalFragmentBase* fragment = nullptr;
-    if (!layout_algorithm_->Layout(nullptr, &fragment, nullptr))
+    if (!layout_coordinator_->Tick(&fragment))
       return false;
+
     fragment_ = toNGPhysicalFragment(fragment);
 
     if (layout_box_) {
@@ -73,8 +66,8 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   }
   *out = new NGFragment(constraint_space->WritingMode(), Style()->direction(),
                         fragment_.get());
-  // Reset algorithm for future use
-  layout_algorithm_ = nullptr;
+  // Reset coordinator for future use
+  layout_coordinator_ = nullptr;
   return true;
 }
 
@@ -95,7 +88,7 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
                          borderAndPadding;
     return true;
   }
-  DCHECK(!layout_algorithm_)
+  DCHECK(!layout_coordinator_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   if (!minmax_algorithm_) {
     NGConstraintSpaceBuilder builder(
@@ -206,7 +199,7 @@ void NGBox::SetFirstChild(NGLayoutInputNode* child) {
 }
 
 DEFINE_TRACE(NGBox) {
-  visitor->trace(layout_algorithm_);
+  visitor->trace(layout_coordinator_);
   visitor->trace(minmax_algorithm_);
   visitor->trace(fragment_);
   visitor->trace(next_sibling_);

@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutBox;
 class NGFragment;
 class NGLayoutOpportunityIterator;
@@ -123,6 +124,8 @@ class CORE_EXPORT NGConstraintSpace final
   void SetFixedSize(bool inlineFixed, bool blockFixed);
   void SetFragmentationType(NGFragmentationType);
   void SetIsNewFormattingContext(bool is_new_fc);
+
+  NGConstraintSpace* ChildSpace(const ComputedStyle* style) const;
 
   String ToString() const;
 

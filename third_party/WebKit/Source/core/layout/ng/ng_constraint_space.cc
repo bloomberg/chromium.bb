@@ -170,6 +170,12 @@ void NGConstraintSpace::SetIsNewFormattingContext(bool is_new_fc) {
   physical_space_->is_new_fc_ = is_new_fc;
 }
 
+NGConstraintSpace* NGConstraintSpace::ChildSpace(
+    const ComputedStyle* style) const {
+  return new NGConstraintSpace(FromPlatformWritingMode(style->getWritingMode()),
+                               style->direction(), MutablePhysicalSpace());
+}
+
 String NGConstraintSpace::ToString() const {
   return String::format("%s,%s %sx%s",
                         offset_.inline_offset.toString().ascii().data(),

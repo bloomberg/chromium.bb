@@ -15,7 +15,9 @@ namespace blink {
 struct MinAndMaxContentSizes;
 class NGBox;
 class NGConstraintSpace;
+class NGFragmentBase;
 class NGPhysicalFragmentBase;
+class NGPhysicalFragment;
 
 enum NGLayoutStatus { NotFinished, ChildAlgorithmRequired, NewFragment };
 
