@@ -320,10 +320,19 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeSitePerProcessPDFTest);
 };
 
+// TODO(ekaramad): This test is flaky on Windows 7. Enable it when the issue is
+// fixed ((https://crbug.com/666379).
+#if defined(OS_WIN)
+#define MAYBE_EmbeddedPDFInsideCrossOriginFrame \
+  DISABLED_EmbeddedPDFInsideCrossOriginFrame
+#else
+#define MAYBE_EmbeddedPDFInsideCrossOriginFrame \
+  EmbeddedPDFInsideCrossOriginFrame
+#endif
 // This test verifies that when navigating an OOPIF to a page with <embed>-ed
 // PDF, the guest is properly created (https://crbug.com/649856).
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
-                       EmbeddedPDFInsideCrossOriginFrame) {
+                       MAYBE_EmbeddedPDFInsideCrossOriginFrame) {
   // Navigate to a page with an <iframe>.
   GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
