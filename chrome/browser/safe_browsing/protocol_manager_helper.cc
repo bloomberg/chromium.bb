@@ -66,14 +66,10 @@ std::string SafeBrowsingProtocolManagerHelper::ComposeUrl(
     const std::string& client_name,
     const std::string& version,
     const std::string& additional_query,
-    bool is_extended_reporting) {
+    ExtendedReportingLevel reporting_level) {
   std::string url =
       ComposeUrl(prefix, method, client_name, version, additional_query);
-  if (is_extended_reporting) {
-    url.append("&ext=1");
-  } else {
-    url.append("&ext=0");
-  }
+  url.append(base::StringPrintf("&ext=%d", reporting_level));
   return url;
 }
 

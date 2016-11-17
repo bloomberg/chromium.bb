@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -276,14 +277,20 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
       "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
       "pver=3.0" +
           key_param_ + "&ext=0",
-      pm->GetHashUrl(false).spec());
+      pm->GetHashUrl(SBER_LEVEL_OFF).spec());
 
   pm->set_additional_query(kAdditionalQuery);
   EXPECT_EQ(
       "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
       "pver=3.0" +
           key_param_ + "&additional_query&ext=1",
-      pm->GetHashUrl(true).spec());
+      pm->GetHashUrl(SBER_LEVEL_LEGACY).spec());
+
+  EXPECT_EQ(
+      "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&additional_query&ext=2",
+      pm->GetHashUrl(SBER_LEVEL_SCOUT).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
@@ -294,14 +301,20 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
       "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
       "pver=3.0" +
           key_param_ + "&ext=1",
-      pm->UpdateUrl(true).spec());
+      pm->UpdateUrl(SBER_LEVEL_LEGACY).spec());
+
+  EXPECT_EQ(
+      "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&ext=2",
+      pm->UpdateUrl(SBER_LEVEL_SCOUT).spec());
 
   pm->set_additional_query(kAdditionalQuery);
   EXPECT_EQ(
       "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
       "pver=3.0" +
           key_param_ + "&additional_query&ext=0",
-      pm->UpdateUrl(false).spec());
+      pm->UpdateUrl(SBER_LEVEL_OFF).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
@@ -376,7 +389,7 @@ void InvokeGetChunksCallback(
     const std::vector<SBListChunkRanges>& ranges,
     bool database_error,
     SafeBrowsingProtocolManagerDelegate::GetChunksCallback callback) {
-  callback.Run(ranges, database_error, false);
+  callback.Run(ranges, database_error, SBER_LEVEL_OFF);
 }
 
 // |HandleAddChunks| deletes the chunks and asynchronously invokes

@@ -876,27 +876,29 @@ void LocalSafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
 void LocalSafeBrowsingDatabaseManager::OnRequestFullHash(
     SafeBrowsingCheck* check) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  check->is_extended_reporting = GetExtendedReporting();
+  check->extended_reporting_level = GetExtendedReporting();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&LocalSafeBrowsingDatabaseManager::RequestFullHash, this,
                  check));
 }
 
-bool LocalSafeBrowsingDatabaseManager::GetExtendedReporting() {
+ExtendedReportingLevel
+LocalSafeBrowsingDatabaseManager::GetExtendedReporting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Determine if the last used profile is opted into extended reporting.
   // Note: It is possible that the last used profile is not the one triggers
   // the hash request, but not very likely.
-  bool is_extended_reporting = false;
+  ExtendedReportingLevel extended_reporting_level = SBER_LEVEL_OFF;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager) {
     Profile* profile = profile_manager->GetLastUsedProfile();
-    is_extended_reporting =
-        profile && IsExtendedReportingEnabled(*profile->GetPrefs());
+    extended_reporting_level =
+        profile ? GetExtendedReportingLevel(*profile->GetPrefs())
+                : SBER_LEVEL_OFF;
   }
-  return is_extended_reporting;
+  return extended_reporting_level;
 }
 
 void LocalSafeBrowsingDatabaseManager::RequestFullHash(
@@ -911,7 +913,7 @@ void LocalSafeBrowsingDatabaseManager::RequestFullHash(
       check->prefix_hits,
       base::Bind(&LocalSafeBrowsingDatabaseManager::HandleGetHashResults,
                  base::Unretained(this), check),
-      is_download, check->is_extended_reporting);
+      is_download, check->extended_reporting_level);
 }
 
 void LocalSafeBrowsingDatabaseManager::GetAllChunksFromDatabase(
@@ -942,22 +944,23 @@ void LocalSafeBrowsingDatabaseManager::BeforeGetAllChunksFromDatabase(
     GetChunksCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  bool is_extended_reporting = GetExtendedReporting();
+  ExtendedReportingLevel extended_reporting_level = GetExtendedReporting();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&LocalSafeBrowsingDatabaseManager::OnGetAllChunksFromDatabase,
-                 this, lists, database_error, is_extended_reporting, callback));
+                 this, lists, database_error, extended_reporting_level,
+                 callback));
 }
 
 void LocalSafeBrowsingDatabaseManager::OnGetAllChunksFromDatabase(
     const std::vector<SBListChunkRanges>& lists,
     bool database_error,
-    bool is_extended_reporting,
+    ExtendedReportingLevel reporting_level,
     GetChunksCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
-    callback.Run(lists, database_error, is_extended_reporting);
+    callback.Run(lists, database_error, reporting_level);
 }
 
 void LocalSafeBrowsingDatabaseManager::OnAddChunksComplete(

@@ -219,7 +219,7 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
          hit_report.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       url_prefix_, "report", client_name_, version_, std::string(),
-      hit_report.is_extended_reporting);
+      hit_report.extended_reporting_level);
 
   std::string threat_list = "none";
   switch (hit_report.threat_type) {

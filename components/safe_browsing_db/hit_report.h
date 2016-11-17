@@ -7,6 +7,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_HIT_REPORT_H_
 #define COMPONENTS_SAFE_BROWSING_DB_HIT_REPORT_H_
 
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
 
@@ -41,7 +42,7 @@ struct HitReport {
   // Opaque string used for tracking Pver4-based experiments
   std::string population_id;
 
-  bool is_extended_reporting;
+  ExtendedReportingLevel extended_reporting_level;
   bool is_metrics_reporting_active;
 
   std::string post_data;

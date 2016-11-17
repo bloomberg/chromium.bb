@@ -309,8 +309,9 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    hit_report.is_extended_reporting =
-        profile && IsExtendedReportingEnabled(*profile->GetPrefs());
+    hit_report.extended_reporting_level =
+        profile ? GetExtendedReportingLevel(*profile->GetPrefs())
+                : SBER_LEVEL_OFF;
     hit_report.is_metrics_reporting_active =
         ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 
@@ -336,7 +337,7 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Send report if user opted-in extended reporting.
-  if (hit_report.is_extended_reporting) {
+  if (hit_report.extended_reporting_level != SBER_LEVEL_OFF) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread,

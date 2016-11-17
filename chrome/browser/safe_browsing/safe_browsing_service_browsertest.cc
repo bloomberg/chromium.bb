@@ -391,7 +391,7 @@ class TestProtocolManager : public SafeBrowsingProtocolManager {
   void GetFullHash(const std::vector<SBPrefix>& prefixes,
                    SafeBrowsingProtocolManager::FullHashCallback callback,
                    bool is_download,
-                   bool is_extended_reporting) override {
+                   ExtendedReportingLevel reporting_level) override {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(InvokeFullHashCallback, callback, full_hashes_), delay_);

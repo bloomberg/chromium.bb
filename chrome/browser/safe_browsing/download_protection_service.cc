@@ -177,8 +177,9 @@ class DownloadSBClient
         total_type_(total_type),
         dangerous_type_(dangerous_type) {
     Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
-    is_extended_reporting_ =
-        profile && IsExtendedReportingEnabled(*profile->GetPrefs());
+    extended_reporting_level_ =
+        profile ? GetExtendedReportingLevel(*profile->GetPrefs())
+                : SBER_LEVEL_OFF;
   }
 
   virtual void StartCheck() = 0;
@@ -226,7 +227,7 @@ class DownloadSBClient
     hit_report.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
     // TODO(nparker) Populate hit_report.population_id once Pver4 is used here.
     hit_report.post_data = post_data;
-    hit_report.is_extended_reporting = is_extended_reporting_;
+    hit_report.extended_reporting_level = extended_reporting_level_;
     hit_report.is_metrics_reporting_active =
         ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 
@@ -249,7 +250,7 @@ class DownloadSBClient
  private:
   const SBStatsType total_type_;
   const SBStatsType dangerous_type_;
-  bool is_extended_reporting_;
+  ExtendedReportingLevel extended_reporting_level_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSBClient);
 };
@@ -801,7 +802,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // We currently sample 1% whitelisted downloads from users who opted
     // in extended reporting and are not in incognito mode.
     return service_ && is_extended_reporting_ && !is_incognito_ &&
-        base::RandDouble() < service_->whitelist_sample_rate();
+           base::RandDouble() < service_->whitelist_sample_rate();
   }
 
   void CheckWhitelists() {
@@ -945,8 +946,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     ClientDownloadRequest request;
     auto population = is_extended_reporting_
-        ? ChromeUserPopulation::EXTENDED_REPORTING
-        : ChromeUserPopulation::SAFE_BROWSING;
+                          ? ChromeUserPopulation::EXTENDED_REPORTING
+                          : ChromeUserPopulation::SAFE_BROWSING;
     request.mutable_population()->set_user_population(population);
 
     request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
@@ -1326,8 +1327,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
 
     ClientDownloadRequest request;
     auto population = is_extended_reporting_
-        ? ChromeUserPopulation::EXTENDED_REPORTING
-        : ChromeUserPopulation::SAFE_BROWSING;
+                          ? ChromeUserPopulation::EXTENDED_REPORTING
+                          : ChromeUserPopulation::SAFE_BROWSING;
     request.mutable_population()->set_user_population(population);
     request.set_download_type(ClientDownloadRequest::PPAPI_SAVE_REQUEST);
     ClientDownloadRequest::Resource* resource = request.add_resources();

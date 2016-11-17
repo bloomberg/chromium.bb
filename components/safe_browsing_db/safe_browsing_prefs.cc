@@ -52,6 +52,15 @@ bool ExtendedReportingPrefExists(const PrefService& prefs) {
   return prefs.HasPrefPath(GetExtendedReportingPrefName(prefs));
 }
 
+ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs) {
+  if (!IsExtendedReportingEnabled(prefs)) {
+    return SBER_LEVEL_OFF;
+  } else {
+    return IsScout(GetExtendedReportingPrefName(prefs)) ? SBER_LEVEL_SCOUT
+                                                        : SBER_LEVEL_LEGACY;
+  }
+}
+
 const char* GetExtendedReportingPrefName(const PrefService& prefs) {
   // The Scout pref is active if either of the experiment features are on, and
   // ScoutGroupSelected is on as well.

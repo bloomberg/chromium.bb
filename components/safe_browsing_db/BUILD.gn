@@ -79,6 +79,7 @@ static_library("hit_report") {
     "hit_report.h",
   ]
   deps = [
+    ":safe_browsing_prefs",
     ":util",
     "//components/metrics",
     "//url",

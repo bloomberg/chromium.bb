@@ -420,4 +420,38 @@ TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {
             ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
 }
 
+TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
+  // By Default, SBER is off
+  EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
+
+  // Opt-in to Legacy SBER gives Legacy reporting leve.
+  ResetPrefs(/*sber=*/true, /*scout_reporting=*/false, /*scout_group=*/false);
+  EXPECT_EQ(SBER_LEVEL_LEGACY, GetExtendedReportingLevel(prefs_));
+
+  // The value of the Scout pref doesn't change the reporting level if the user
+  // is outside of the Scout Group and/or no experiment is running.
+  // No scout group.
+  ResetPrefs(/*sber=*/true, /*scout_reporting=*/true, /*scout_group=*/false);
+  EXPECT_EQ(SBER_LEVEL_LEGACY, GetExtendedReportingLevel(prefs_));
+  // Scout group but no experiment.
+  ResetPrefs(/*sber=*/true, /*scout_reporting=*/true, /*scout_group=*/true);
+  EXPECT_EQ(SBER_LEVEL_LEGACY, GetExtendedReportingLevel(prefs_));
+
+  // Remaining in the Scout Group and adding an experiment will switch to the
+  // Scout pref to determine reporting level.
+  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/true);
+  // Both reporting prefs off, so reporting is off.
+  ResetPrefs(/*sber=*/false, /*scout_reporting=*/false, /*scout_group=*/true);
+  EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
+  // Legacy pref on when we're using Scout - reporting remains off.
+  ResetPrefs(/*sber=*/true, /*scout_reporting=*/false, /*scout_group=*/true);
+  EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
+  // Turning on Scout gives us Scout level reporting
+  ResetPrefs(/*sber=*/false, /*scout_reporting=*/true, /*scout_group=*/true);
+  EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
+  // .. and the legacy pref doesn't affect this.
+  ResetPrefs(/*sber=*/true, /*scout_reporting=*/true, /*scout_group=*/true);
+  EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
+}
+
 }  // namespace safe_browsing

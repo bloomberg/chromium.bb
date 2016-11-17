@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 
 namespace safe_browsing {
 
@@ -50,7 +51,7 @@ class SafeBrowsingProtocolManagerHelper {
                                 const std::string& client_name,
                                 const std::string& version,
                                 const std::string& additional_query,
-                                bool is_extended_reporting);
+                                ExtendedReportingLevel reporting_level);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SafeBrowsingProtocolManagerHelper);

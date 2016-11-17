@@ -42,6 +42,19 @@ extern const base::Feature kCanShowScoutOptIn;
 // TODO: this is temporary (crbug.com/662944)
 extern const base::Feature kOnlyShowScoutOptIn;
 
+// Enumerates the level of Safe Browsing Extended Reporting that is currently
+// available.
+enum ExtendedReportingLevel {
+  // Extended reporting is off.
+  SBER_LEVEL_OFF = 0,
+  // The Legacy level of extended reporting is available, reporting happens in
+  // response to security incidents.
+  SBER_LEVEL_LEGACY = 1,
+  // The Scout level of extended reporting is available, some data can be
+  // collected to actively detect dangerous apps and sites.
+  SBER_LEVEL_SCOUT = 2,
+};
+
 // Determines which opt-in text should be used based on the currently active
 // preference. Will return either |extended_reporting_resource| if the legacy
 // Extended Reporting pref is active, or |scout_resource| if the Scout pref is
@@ -53,6 +66,9 @@ int ChooseOptInTextResource(const PrefService& prefs,
 // Returns whether the currently active Safe Browsing Extended Reporting
 // preference exists (eg: has been set before).
 bool ExtendedReportingPrefExists(const PrefService& prefs);
+
+// Returns the level of reporting available for the current user.
+ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs);
 
 // Returns the name of the Safe Browsing Extended Reporting pref that is
 // currently in effect. The specific pref in-use may change through experiments.

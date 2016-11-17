@@ -28,6 +28,7 @@
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
@@ -80,7 +81,7 @@ class LocalSafeBrowsingDatabaseManager
     std::vector<SBThreatType> full_hash_results;
 
     SafeBrowsingDatabaseManager::Client* client;
-    bool is_extended_reporting;
+    ExtendedReportingLevel extended_reporting_level;
     bool need_get_hash;
     base::TimeTicks start;  // When check was sent to SB service.
     ListType check_type;    // See comment in constructor.
@@ -216,9 +217,9 @@ class LocalSafeBrowsingDatabaseManager
   // Called on the UI thread to prepare hash request.
   void OnRequestFullHash(SafeBrowsingCheck* check);
 
-  // Called on the UI thread to determine if current profile is opted into
-  // extended reporting.
-  bool GetExtendedReporting();
+  // Called on the UI thread to determine what level of extended reporting the
+  // current profile is opted into.
+  ExtendedReportingLevel GetExtendedReporting();
 
   // Called on the IO thread to request full hash.
   void RequestFullHash(SafeBrowsingCheck* check);
@@ -235,7 +236,7 @@ class LocalSafeBrowsingDatabaseManager
   // Called on the IO thread with the results of all chunks.
   void OnGetAllChunksFromDatabase(const std::vector<SBListChunkRanges>& lists,
                                   bool database_error,
-                                  bool is_extended_reporting,
+                                  ExtendedReportingLevel reporting_level,
                                   GetChunksCallback callback);
 
   // Called on the IO thread after the database reports that it added a chunk.

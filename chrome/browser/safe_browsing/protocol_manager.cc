@@ -200,7 +200,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
     const std::vector<SBPrefix>& prefixes,
     FullHashCallback callback,
     bool is_download,
-    bool is_extended_reporting) {
+    ExtendedReportingLevel reporting_level) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // If we are in GetHash backoff, we need to check if we're past the next
   // allowed time. If we are, we can proceed with the request. If not, we are
@@ -211,7 +211,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
     callback.Run(full_hashes, base::TimeDelta());
     return;
   }
-  GURL gethash_url = GetHashUrl(is_extended_reporting);
+  GURL gethash_url = GetHashUrl(reporting_level);
   std::unique_ptr<net::URLFetcher> fetcher_ptr = net::URLFetcher::Create(
       url_fetcher_id_++, gethash_url, net::URLFetcher::POST, this);
   net::URLFetcher* fetcher = fetcher_ptr.get();
@@ -623,7 +623,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
 void SafeBrowsingProtocolManager::OnGetChunksComplete(
     const std::vector<SBListChunkRanges>& lists,
     bool database_error,
-    bool is_extended_reporting) {
+    ExtendedReportingLevel extended_reporting_level) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
   DCHECK(update_list_data_.empty());
@@ -662,7 +662,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   // deletion of such databases.  http://crbug.com/120219
   UMA_HISTOGRAM_COUNTS("SB2.UpdateRequestSize", update_list_data_.size());
 
-  GURL update_url = UpdateUrl(is_extended_reporting);
+  GURL update_url = UpdateUrl(extended_reporting_level);
   request_ = net::URLFetcher::Create(url_fetcher_id_++, update_url,
                                      net::URLFetcher::POST, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
@@ -736,10 +736,11 @@ void SafeBrowsingProtocolManager::UpdateFinished(bool success, bool back_off) {
   ScheduleNextUpdate(back_off);
 }
 
-GURL SafeBrowsingProtocolManager::UpdateUrl(bool is_extended_reporting) const {
+GURL SafeBrowsingProtocolManager::UpdateUrl(
+    ExtendedReportingLevel reporting_level) const {
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       url_prefix_, "downloads", client_name_, version_, additional_query_,
-      is_extended_reporting);
+      reporting_level);
   return GURL(url);
 }
 
@@ -754,10 +755,11 @@ GURL SafeBrowsingProtocolManager::BackupUpdateUrl(
   return GURL(url);
 }
 
-GURL SafeBrowsingProtocolManager::GetHashUrl(bool is_extended_reporting) const {
+GURL SafeBrowsingProtocolManager::GetHashUrl(
+    ExtendedReportingLevel reporting_level) const {
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       url_prefix_, "gethash", client_name_, version_, additional_query_,
-      is_extended_reporting);
+      reporting_level);
   return GURL(url);
 }
 
