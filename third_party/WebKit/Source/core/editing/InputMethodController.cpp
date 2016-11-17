@@ -676,7 +676,7 @@ void InputMethodController::setComposition(
   m_isDirty = true;
   m_hasComposition = true;
   if (!m_compositionRange)
-    m_compositionRange = Range::create(baseNode->document());
+    m_compositionRange = Range::create(document());
   m_compositionRange->setStart(baseNode, baseOffset);
   m_compositionRange->setEnd(baseNode, extentOffset);
 
@@ -729,7 +729,7 @@ void InputMethodController::setCompositionFromExistingText(
   if (!editable)
     return;
 
-  DCHECK(!editable->document().needsLayoutTreeUpdate());
+  DCHECK(!document().needsLayoutTreeUpdate());
 
   const EphemeralRange range =
       PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
@@ -760,7 +760,7 @@ void InputMethodController::setCompositionFromExistingText(
 
   m_hasComposition = true;
   if (!m_compositionRange)
-    m_compositionRange = Range::create(range.document());
+    m_compositionRange = Range::create(document());
   m_compositionRange->setStart(range.startPosition());
   m_compositionRange->setEnd(range.endPosition());
 }
@@ -800,7 +800,7 @@ bool InputMethodController::setSelectionOffsets(
   if (!rootEditableElement)
     return false;
 
-  DCHECK(!rootEditableElement->document().needsLayoutTreeUpdate());
+  DCHECK(!document().needsLayoutTreeUpdate());
 
   const EphemeralRange range =
       selectionOffsets.createRange(*rootEditableElement);
