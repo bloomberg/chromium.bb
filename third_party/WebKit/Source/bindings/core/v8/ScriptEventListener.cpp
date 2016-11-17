@@ -30,8 +30,10 @@
 
 #include "bindings/core/v8/ScriptEventListener.h"
 
+#include "bindings/core/v8/ScheduledAction.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/WindowProxy.h"
@@ -142,6 +144,19 @@ void getFunctionLocation(v8::Local<v8::Function> function,
   scriptId = String::number(scriptIdValue);
   lineNumber = function->GetScriptLineNumber();
   columnNumber = function->GetScriptColumnNumber();
+}
+
+std::unique_ptr<SourceLocation> getFunctionLocation(
+    ExecutionContext* executionContext,
+    EventListener* listener) {
+  v8::Isolate* isolate = toIsolate(executionContext);
+  v8::HandleScope handleScope(isolate);
+  v8::Local<v8::Object> handler =
+      eventListenerHandler(executionContext, listener);
+  if (handler.IsEmpty())
+    return nullptr;
+  return SourceLocation::fromFunction(
+      eventListenerEffectiveFunction(isolate, handler));
 }
 
 }  // namespace blink

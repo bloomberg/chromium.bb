@@ -43,6 +43,7 @@ namespace blink {
 
 class LocalFrame;
 class ExecutionContext;
+class SourceLocation;
 class WorkerGlobalScope;
 
 class ScheduledAction final
@@ -59,6 +60,7 @@ class ScheduledAction final
   DECLARE_TRACE();
 
   void execute(ExecutionContext*);
+  std::unique_ptr<SourceLocation> handlerLocation();
 
  private:
   ScheduledAction(ScriptState*,

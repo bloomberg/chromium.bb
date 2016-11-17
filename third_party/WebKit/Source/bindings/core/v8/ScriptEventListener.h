@@ -42,6 +42,8 @@ class ExecutionContext;
 class LocalFrame;
 class Node;
 class QualifiedName;
+class ScheduledAction;
+class SourceLocation;
 
 V8LazyEventListener* createAttributeEventListener(
     Node*,
@@ -61,6 +63,8 @@ void getFunctionLocation(v8::Local<v8::Function>,
                          String& scriptId,
                          int& lineNumber,
                          int& columnNumber);
+std::unique_ptr<SourceLocation> getFunctionLocation(ExecutionContext*,
+                                                    EventListener*);
 
 }  // namespace blink
 

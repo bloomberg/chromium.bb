@@ -117,15 +117,6 @@ void reportBlockedEvent(ExecutionContext* context,
       EventListener::JSEventListenerType)
     return;
 
-  V8AbstractEventListener* v8Listener =
-      V8AbstractEventListener::cast(registeredListener->listener());
-  v8::HandleScope handles(v8Listener->isolate());
-  v8::Local<v8::Context> v8Context = toV8Context(context, v8Listener->world());
-  if (v8Context.IsEmpty())
-    return;
-  v8::Context::Scope contextScope(v8Context);
-  v8::Local<v8::Object> handler = v8Listener->getListenerObject(context);
-
   String messageText = String::format(
       "Handling of '%s' input event was delayed for %ld ms due to main thread "
       "being busy. "
@@ -133,14 +124,9 @@ void reportBlockedEvent(ExecutionContext* context,
       "responsive.",
       event->type().getString().utf8().data(), lround(delayedSeconds * 1000));
 
-  v8::Local<v8::Function> function =
-      eventListenerEffectiveFunction(v8Listener->isolate(), handler);
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::fromFunction(function);
-
   PerformanceMonitor::reportGenericViolation(
       context, PerformanceMonitor::kBlockedEvent, messageText, delayedSeconds,
-      location.get());
+      getFunctionLocation(context, registeredListener->listener()).get());
   registeredListener->setBlockedEventWarningEmitted();
 }
 
@@ -698,6 +684,7 @@ bool EventTarget::fireEventListeners(Event* event,
 
     InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this,
                                                                 event);
+    PerformanceMonitor::HandlerCall handlerCall(context, listener);
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.

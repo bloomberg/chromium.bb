@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -169,6 +170,12 @@ void ScheduledAction::createLocalHandlesForArgs(
   handles->reserveCapacity(m_info.Size());
   for (size_t i = 0; i < m_info.Size(); ++i)
     handles->append(m_info.Get(i));
+}
+
+std::unique_ptr<SourceLocation> ScheduledAction::handlerLocation() {
+  v8::HandleScope handles(m_scriptState->isolate());
+  return SourceLocation::fromFunction(
+      v8::Local<v8::Function>::New(m_scriptState->isolate(), m_function.get()));
 }
 
 }  // namespace blink

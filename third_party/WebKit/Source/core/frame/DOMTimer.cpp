@@ -27,6 +27,7 @@
 #include "core/frame/DOMTimer.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/tracing/TraceEvent.h"
@@ -133,6 +134,7 @@ void DOMTimer::fired() {
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
                InspectorTimerFireEvent::data(context, m_timeoutID));
+  PerformanceMonitor::HandlerCall handlerCall(context, m_action);
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
       context, "timerFired", false);
   InspectorInstrumentation::AsyncTask asyncTask(context, this);

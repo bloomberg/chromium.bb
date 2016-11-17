@@ -4,9 +4,12 @@
 
 #include "core/frame/PerformanceMonitor.h"
 
+#include "bindings/core/v8/ScheduledAction.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/EventListener.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLDocumentParser.h"
@@ -14,6 +17,52 @@
 #include "wtf/CurrentTime.h"
 
 namespace blink {
+
+PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
+                                             EventListener* eventListener)
+    : m_context(context),
+      m_performanceMonitor(PerformanceMonitor::instrumentingMonitor(context)),
+      m_eventListener(eventListener),
+      m_violation(kHandler) {
+  start();
+}
+
+PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
+                                             ScheduledAction* scheduledAction)
+    : m_context(context),
+      m_performanceMonitor(PerformanceMonitor::instrumentingMonitor(context)),
+      m_scheduledAction(scheduledAction),
+      m_violation(kRecurringHandler) {
+  start();
+}
+
+void PerformanceMonitor::HandlerCall::start() {
+  if (!m_performanceMonitor || !m_performanceMonitor->m_thresholds[m_violation])
+    return;
+  m_startTime = WTF::monotonicallyIncreasingTime();
+}
+
+PerformanceMonitor::HandlerCall::~HandlerCall() {
+  if (!m_performanceMonitor)
+    return;
+  double threshold = m_performanceMonitor->m_thresholds[m_violation];
+  if (!threshold)
+    return;
+  double time = WTF::monotonicallyIncreasingTime() - m_startTime;
+  if (time < threshold)
+    return;
+
+  String text = String::format("Handler took %ldms of runtime (%ldms allowed)",
+                               lround(time * 1000), lround(threshold * 1000));
+  std::unique_ptr<SourceLocation> location;
+  if (m_eventListener) {
+    location = getFunctionLocation(m_context, m_eventListener.get());
+  } else {
+    location = m_scheduledAction->handlerLocation();
+  }
+  m_performanceMonitor->reportGenericViolation(m_violation, text, time,
+                                               location.get());
+}
 
 // static
 void PerformanceMonitor::willExecuteScript(ExecutionContext* context) {
@@ -98,7 +147,7 @@ void PerformanceMonitor::reportGenericViolation(ExecutionContext* context,
 // static
 PerformanceMonitor* PerformanceMonitor::monitor(
     const ExecutionContext* context) {
-  if (!context->isDocument())
+  if (!context || !context->isDocument())
     return nullptr;
   LocalFrame* frame = toDocument(context)->frame();
   if (!frame)

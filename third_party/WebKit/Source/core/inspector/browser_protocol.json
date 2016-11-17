@@ -4382,7 +4382,7 @@
                 "type": "object",
                 "description": "Violation configuration setting.",
                 "properties": [
-                    { "name": "name", "type": "string", "enum": ["longTask", "longLayout", "blockedEvent", "blockedParser"], "description": "Violation type." },
+                    { "name": "name", "type": "string", "enum": ["longTask", "longLayout", "blockedEvent", "blockedParser", "handler", "recurringHandler"], "description": "Violation type." },
                     { "name": "threshold", "type": "number", "description": "Time threshold to trigger upon." }
                 ]
             }

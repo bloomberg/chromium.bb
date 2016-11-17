@@ -14,10 +14,12 @@ namespace blink {
 
 class DOMWindow;
 class Document;
+class EventListener;
 class ExecutionContext;
 class Frame;
 class LocalFrame;
 class Performance;
+class ScheduledAction;
 class SourceLocation;
 
 // Performance monitor for Web Performance APIs and logging.
@@ -36,7 +38,28 @@ class CORE_EXPORT PerformanceMonitor final
     kLongLayout,
     kBlockedEvent,
     kBlockedParser,
+    kHandler,
+    kRecurringHandler,
     kAfterLast
+  };
+
+  class CORE_EXPORT HandlerCall {
+    STACK_ALLOCATED();
+
+   public:
+    HandlerCall(ExecutionContext*, ScheduledAction*);
+    HandlerCall(ExecutionContext*, EventListener*);
+    ~HandlerCall();
+
+   private:
+    void start();
+
+    Member<ExecutionContext> m_context;
+    Member<PerformanceMonitor> m_performanceMonitor;
+    Member<ScheduledAction> m_scheduledAction;
+    Member<EventListener> m_eventListener;
+    Violation m_violation;
+    double m_startTime = 0;
   };
 
   class CORE_EXPORT Client : public GarbageCollectedMixin {

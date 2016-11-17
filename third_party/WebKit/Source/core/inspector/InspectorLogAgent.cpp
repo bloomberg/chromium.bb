@@ -173,6 +173,10 @@ static PerformanceMonitor::Violation parseViolation(const String& name) {
     return PerformanceMonitor::kBlockedEvent;
   if (name == ViolationSetting::NameEnum::BlockedParser)
     return PerformanceMonitor::kBlockedParser;
+  if (name == ViolationSetting::NameEnum::Handler)
+    return PerformanceMonitor::kHandler;
+  if (name == ViolationSetting::NameEnum::RecurringHandler)
+    return PerformanceMonitor::kRecurringHandler;
   return PerformanceMonitor::kAfterLast;
 }
 
