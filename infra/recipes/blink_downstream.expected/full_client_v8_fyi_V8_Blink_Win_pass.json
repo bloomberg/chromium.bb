@@ -136,7 +136,7 @@
       "--platform",
       "windows-386",
       "--dest-directory",
-      "[SLAVE_BUILD]\\cipd",
+      "[START_DIR]\\cipd",
       "--json-output",
       "/path/to/tmp/json"
     ],
@@ -146,7 +146,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_TEXT@cipd instance_id: 40-chars-fake-of-the-package-instance_id@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"executable\": \"[SLAVE_BUILD]\\\\cipd\\\\cipd\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"executable\": \"[START_DIR]\\\\cipd\\\\cipd\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"instance_id\": \"40-chars-fake-of-the-package-instance_id\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
@@ -154,7 +154,7 @@
   },
   {
     "cmd": [
-      "[SLAVE_BUILD]\\cipd\\cipd",
+      "[START_DIR]\\cipd\\cipd",
       "ensure",
       "--root",
       "[CACHE]\\cipd\\goma",
@@ -297,7 +297,7 @@
       "--target",
       "Release",
       "--results-directory",
-      "[SLAVE_BUILD]\\layout-test-results",
+      "[START_DIR]\\layout-test-results",
       "--build-dir",
       "[BUILDER_CACHE]\\V8_Blink_Win\\src\\out",
       "--json-test-results",
@@ -329,7 +329,7 @@
       "-u",
       "RECIPE_PACKAGE_REPO[build]\\scripts\\slave\\chromium\\archive_layout_test_results.py",
       "--results-dir",
-      "[SLAVE_BUILD]\\layout-test-results",
+      "[START_DIR]\\layout-test-results",
       "--build-dir",
       "[BUILDER_CACHE]\\V8_Blink_Win\\src\\out",
       "--build-number",
@@ -339,7 +339,9 @@
       "--gs-bucket",
       "gs://chromium-layout-test-archives",
       "--staging-dir",
-      "[CACHE]\\chrome_staging"
+      "[CACHE]\\chrome_staging",
+      "--slave-utils-gsutil-py-path",
+      "RECIPE_PACKAGE_REPO[depot_tools]\\gsutil.py"
     ],
     "cwd": "[BUILDER_CACHE]\\V8_Blink_Win",
     "name": "archive_webkit_tests_results",

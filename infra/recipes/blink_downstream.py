@@ -28,6 +28,7 @@ in a forced build with no revision provided).
 from recipe_engine.types import freeze
 
 DEPS = [
+  'build/build',
   'build/chromium',
   'build/chromium_checkout',
   'build/chromium_tests',
