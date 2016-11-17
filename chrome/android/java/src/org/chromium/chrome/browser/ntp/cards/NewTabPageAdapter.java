@@ -360,10 +360,6 @@ public class NewTabPageAdapter
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        if (position == getFirstCardPosition()) {
-            mRecyclerView.onFirstCardShown(holder.itemView);
-        }
-
         mRoot.onBindViewHolder(holder, position);
     }
 

@@ -55,7 +55,7 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
      */
     private final int mCards9PatchAdjustment;
 
-    private final NewTabPageRecyclerView mRecyclerView;
+    protected final NewTabPageRecyclerView mRecyclerView;
 
     private final UiConfig mUiConfig;
     private final MarginResizer mMarginResizer;

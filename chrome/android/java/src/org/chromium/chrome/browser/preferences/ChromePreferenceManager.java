@@ -28,6 +28,8 @@ public class ChromePreferenceManager {
     private static final String SHOW_SIGNIN_PROMO = "show_signin_promo";
     private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
+    private static final String CARDS_IMPRESSION_AFTER_ANIMATION =
+            "cards_impression_after_animation";
     private static final String CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT =
             "contextual_search_promo_open_count";
     private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
@@ -400,6 +402,16 @@ public class ChromePreferenceManager {
     /** Records the number of times the New Tab Page first card animation has been run. */
     public void setNewTabPageFirstCardAnimationRunCount(int value) {
         writeInt(NTP_ANIMATION_RUN_COUNT, value);
+    }
+
+    /** Returns whether the user has triggered a snippet impression after viewing the animation. */
+    public boolean getCardsImpressionAfterAnimation() {
+        return mSharedPreferences.getBoolean(CARDS_IMPRESSION_AFTER_ANIMATION, false);
+    }
+
+    /** Sets whether the user has triggered a snippet impression after viewing the animation. */
+    public void setCardsImpressionAfterAnimation(boolean isScrolled) {
+        writeBoolean(CARDS_IMPRESSION_AFTER_ANIMATION, isScrolled);
     }
 
     /**

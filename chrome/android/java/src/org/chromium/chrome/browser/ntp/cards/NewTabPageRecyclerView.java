@@ -59,6 +59,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     private final int mPeekingCardBounceDistance;
     /** The peeking card animates in the first time it is made visible. */
     private boolean mFirstCardAnimationRun;
+    /** We have tracked that the user has caused an impression after viewing the animation. */
+    private boolean mCardImpressionAfterAnimationTracked;
 
     /**
      * Total height of the items being dismissed.  Tracked to allow the bottom space to compensate
@@ -522,6 +524,15 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     }
 
     /**
+     * @param animations in/out list holding the animators to play.
+     * @param view  view to animate.
+     */
+    private void addDismissalAnimators(List<Animator> animations, View view) {
+        animations.add(ObjectAnimator.ofFloat(view, View.ALPHA, 0f));
+        animations.add(ObjectAnimator.ofFloat(view, View.TRANSLATION_X, (float) view.getWidth()));
+    }
+
+    /**
      * Update the view's state as it is being swiped away. Any changes to the animation here should
      * be reflected also in {@link #dismissItemWithAnimation(ViewHolder)} and reset in
      * {@link CardViewHolder#onBindViewHolder()}.
@@ -539,10 +550,9 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     }
 
     /**
-     * To be triggered when the first card is bound to a view holder. This allows us to hook actions
-     * to be performed when the first card appears.
+     * To be triggered when a snippet is bound to a ViewHolder.
      */
-    public void onFirstCardShown(View cardView) {
+    public void onSnippetBound(View cardView) {
         // We only run if the feature is enabled and once per NTP.
         if (!SnippetsConfig.isIncreasedCardVisibilityEnabled() || mFirstCardAnimationRun) return;
         mFirstCardAnimationRun = true;
@@ -553,8 +563,11 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         // We only show the animation a certain number of times to a user.
         ChromePreferenceManager manager = ChromePreferenceManager.getInstance(getContext());
         int animCount = manager.getNewTabPageFirstCardAnimationRunCount();
-        if (animCount >= CardsVariationParameters.getFirstCardAnimationMaxRuns()) return;
+        if (animCount > CardsVariationParameters.getFirstCardAnimationMaxRuns()) return;
         manager.setNewTabPageFirstCardAnimationRunCount(animCount + 1);
+
+        // We do not show the animation if the user has previously seen it then scrolled.
+        if (manager.getCardsImpressionAfterAnimation()) return;
 
         // The peeking card bounces up twice from its position.
         ObjectAnimator animator = ObjectAnimator.ofFloat(cardView, View.TRANSLATION_Y,
@@ -566,11 +579,14 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     }
 
     /**
-     * @param animations in/out list holding the animators to play.
-     * @param view  view to animate.
+     * To be triggered when a snippet impression is triggered.
      */
-    private void addDismissalAnimators(List<Animator> animations, View view) {
-        animations.add(ObjectAnimator.ofFloat(view, View.ALPHA, 0f));
-        animations.add(ObjectAnimator.ofFloat(view, View.TRANSLATION_X, (float) view.getWidth()));
+    public void onSnippetImpression() {
+        // If the user has seen the first card animation and causes a snippet impression, remember
+        // for future runs.
+        if (!mFirstCardAnimationRun && !mCardImpressionAfterAnimationTracked) return;
+
+        ChromePreferenceManager.getInstance(getContext()).setCardsImpressionAfterAnimation(true);
+        mCardImpressionAfterAnimationTracked = true;
     }
 }

@@ -108,6 +108,7 @@ public class SnippetArticleViewHolder
     public void onImpression() {
         if (mArticle != null && mArticle.trackImpression()) {
             mNewTabPageManager.trackSnippetImpression(mArticle);
+            mRecyclerView.onSnippetImpression();
         }
     }
 
@@ -262,6 +263,8 @@ public class SnippetArticleViewHolder
             mArticle.setOfflineStatusChangeRunnable(offlineChecker);
             offlineChecker.run();
         }
+
+        mRecyclerView.onSnippetBound(itemView);
     }
 
     private static class FetchImageCallback extends Callback<Bitmap> {
