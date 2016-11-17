@@ -672,8 +672,6 @@ component("platform") {
     "fonts/shaping/ShapeResultSpacing.h",
     "fonts/shaping/ShapeResultTestInfo.cpp",
     "fonts/shaping/ShapeResultTestInfo.h",
-    "fonts/shaping/Shaper.cpp",
-    "fonts/shaping/Shaper.h",
     "fonts/skia/FontCacheSkia.cpp",
     "fonts/skia/SkiaTextMetrics.cpp",
     "fonts/skia/SkiaTextMetrics.h",

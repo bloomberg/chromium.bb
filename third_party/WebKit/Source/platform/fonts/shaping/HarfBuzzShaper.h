@@ -34,7 +34,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/fonts/shaping/Shaper.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
@@ -136,7 +135,7 @@ class UnicodeRangeSet;
 //
 // Shaping then continues analogously for the remaining Hiragana Japanese
 // sub-run, and the result is inserted into ShapeResult as well.
-class PLATFORM_EXPORT HarfBuzzShaper final : public Shaper {
+class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
   HarfBuzzShaper(const Font*, const TextRun&);
   PassRefPtr<ShapeResult> shapeResult();
@@ -203,6 +202,9 @@ class PLATFORM_EXPORT HarfBuzzShaper final : public Shaper {
       unsigned startGlyph,
       unsigned numGlyphs,
       hb_buffer_t*);
+
+  const Font* m_font;
+  const TextRun& m_textRun;
 
   std::unique_ptr<UChar[]> m_normalizedBuffer;
   unsigned m_normalizedBufferLength;
