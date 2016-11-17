@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
@@ -83,9 +84,6 @@ class AuraTestBase : public testing::Test,
   }
   ui::mojom::WindowTreeClient* window_tree_client();
 
-  // Resets the PropertyConverter.
-  void SetPropertyConverter(std::unique_ptr<PropertyConverter> helper);
-
   // WindowTreeClientDelegate:
   void OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) override;
   void OnUnembed(Window* root) override;
@@ -128,7 +126,7 @@ class AuraTestBase : public testing::Test,
   bool setup_called_ = false;
   bool teardown_called_ = false;
   base::MessageLoopForUI message_loop_;
-  std::unique_ptr<PropertyConverter> property_converter_;
+  PropertyConverter property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
   std::unique_ptr<WindowTreeHostMus> window_tree_host_mus_;
 

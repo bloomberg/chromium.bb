@@ -5,7 +5,6 @@
 #include "ui/aura/test/aura_test_base.h"
 
 #include "ui/aura/client/window_parenting_client.h"
-#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -34,8 +33,6 @@ AuraTestBase::~AuraTestBase() {
 void AuraTestBase::SetUp() {
   setup_called_ = true;
   testing::Test::SetUp();
-  if (!property_converter_)
-    property_converter_ = base::MakeUnique<PropertyConverter>();
   // ContentTestSuiteBase might have already initialized
   // MaterialDesignController in unit_tests suite.
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
@@ -142,11 +139,6 @@ ui::mojom::WindowTreeClient* AuraTestBase::window_tree_client() {
   return helper_->window_tree_client();
 }
 
-void AuraTestBase::SetPropertyConverter(
-    std::unique_ptr<PropertyConverter> helper) {
-  property_converter_ = std::move(helper);
-}
-
 void AuraTestBase::OnEmbed(
     std::unique_ptr<WindowTreeHostMus> window_tree_host) {}
 
@@ -210,7 +202,7 @@ client::CaptureClient* AuraTestBase::GetCaptureClient() {
 }
 
 PropertyConverter* AuraTestBase::GetPropertyConverter() {
-  return property_converter_.get();
+  return &property_converter_;
 }
 
 AuraTestBaseWithType::AuraTestBaseWithType() {}
