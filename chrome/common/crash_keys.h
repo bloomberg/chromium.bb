@@ -97,6 +97,10 @@ extern const char kThirdPartyModulesLoaded[];
 extern const char kThirdPartyModulesNotLoaded[];
 #endif
 
+// Number of input event send IPC failures. Added to debug
+// crbug.com/615090.
+extern const char kInputEventFilterSendFailure[];
+
 // The user's printers, up to kPrinterInfoCount. Should be set with
 // ScopedPrinterInfo.
 const size_t kPrinterInfoCount = 4;

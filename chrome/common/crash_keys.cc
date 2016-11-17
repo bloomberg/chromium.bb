@@ -60,6 +60,8 @@ const char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
 const char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
 #endif
 
+const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
+
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
 #if defined(OS_CHROMEOS)
@@ -142,6 +144,7 @@ size_t RegisterChromeCrashKeys() {
     { kThirdPartyModulesLoaded, kSmallSize },
     { kThirdPartyModulesNotLoaded, kSmallSize },
 #endif
+    { kInputEventFilterSendFailure, kSmallSize },
 #if defined(OS_CHROMEOS)
     { kNumberOfUsers, kSmallSize },
 #endif

@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -275,7 +276,13 @@ void InputEventFilter::SendMessageOnIOThread(
   if (!sender_)
     return;  // Filter was removed.
 
-  sender_->Send(message.release());
+  bool success = sender_->Send(message.release());
+  if (success)
+    return;
+  static size_t s_send_failure_count_ = 0;
+  s_send_failure_count_++;
+  base::debug::SetCrashKeyValue("input-event-filter-send-failure",
+                                base::IntToString(s_send_failure_count_));
 }
 
 void InputEventFilter::HandleEventOnMainThread(

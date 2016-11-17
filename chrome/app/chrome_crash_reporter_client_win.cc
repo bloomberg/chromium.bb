@@ -52,6 +52,8 @@ constexpr char kHungRendererOutstandingEventType[] =
     "hung-outstanding-event-type";
 constexpr char kHungRendererLastEventType[] = "hung-last-event-type";
 constexpr char kHungRendererReason[] = "hung-reason";
+constexpr char kInputEventFilterSendFailure[] =
+    "input-event-filter-send-failure";
 
 constexpr char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
 constexpr char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
@@ -116,6 +118,7 @@ size_t RegisterCrashKeysHelper() {
       {kHungRendererOutstandingEventType, kSmallSize},
       {kHungRendererLastEventType, kSmallSize},
       {kHungRendererReason, kSmallSize},
+      {kInputEventFilterSendFailure, kSmallSize},
 
       // media/:
       {kHungAudioThreadDetails, kSmallSize},
