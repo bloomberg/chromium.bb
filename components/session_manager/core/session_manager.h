@@ -8,12 +8,15 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/session_manager/session_manager_export.h"
 #include "components/session_manager/session_manager_types.h"
 
 class AccountId;
 
 namespace session_manager {
+
+class SessionManagerObserver;
 
 class SESSION_EXPORT SessionManager {
  public:
@@ -45,6 +48,9 @@ class SESSION_EXPORT SessionManager {
   // we perform additional initialization after the user is logged in but
   // before the session has been started.
   virtual void SessionStarted();
+
+  void AddObserver(SessionManagerObserver* observer);
+  void RemoveObserver(SessionManagerObserver* observer);
 
   SessionState session_state() const { return session_state_; }
   const std::vector<Session>& sessions() const { return sessions_; }
@@ -83,6 +89,8 @@ class SESSION_EXPORT SessionManager {
 
   // Keeps track of user sessions.
   std::vector<Session> sessions_;
+
+  base::ObserverList<SessionManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

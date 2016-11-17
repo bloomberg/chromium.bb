@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 
 namespace session_manager {
@@ -31,14 +32,14 @@ SessionManager* SessionManager::Get() {
 }
 
 void SessionManager::SetSessionState(SessionState state) {
+  if (session_state_ == state)
+    return;
+
   VLOG(1) << "Changing session state to: " << static_cast<int>(state);
 
-  if (session_state_ != state) {
-    // TODO(nkostylev): Notify observers about the state change.
-    // TODO(nkostylev): Add code to process session state change and probably
-    // replace delegate_ if needed.
-    session_state_ = state;
-  }
+  session_state_ = state;
+  for (auto& observer : observers_)
+    observer.OnSessionStateChanged();
 }
 
 void SessionManager::CreateSession(const AccountId& user_account_id,
@@ -59,6 +60,14 @@ bool SessionManager::IsSessionStarted() const {
 
 void SessionManager::SessionStarted() {
   session_started_ = true;
+}
+
+void SessionManager::AddObserver(SessionManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SessionManager::RemoveObserver(SessionManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void SessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,

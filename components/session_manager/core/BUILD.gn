@@ -6,6 +6,7 @@ component("core") {
   sources = [
     "session_manager.cc",
     "session_manager.h",
+    "session_manager_observer.h",
   ]
   deps = [
     "//base",
