@@ -200,12 +200,13 @@ int av1_prob_update_search_subframe(unsigned int ct[][2], aom_prob oldp,
                                     aom_prob *bestp, aom_prob upd, int n) {
   const int old_b = get_cost(ct, oldp, n);
   int bestsavings = 0;
+  const int upd_cost = av1_cost_one(upd) - av1_cost_zero(upd);
   aom_prob newp, bestnewp = oldp;
   const int step = *bestp > oldp ? -1 : 1;
 
   for (newp = *bestp; newp != oldp; newp += step) {
     const int new_b = get_cost(ct, newp, n);
-    const int update_b = prob_diff_update_cost(newp, oldp) + av1_cost_upd256;
+    const int update_b = prob_diff_update_cost(newp, oldp) + upd_cost;
     const int savings = old_b - new_b - update_b;
     if (savings > bestsavings) {
       bestsavings = savings;
@@ -224,6 +225,7 @@ int av1_prob_update_search_model_subframe(unsigned int ct[ENTROPY_NODES]
   int newp;
   const int step_sign = *bestp > oldp[PIVOT_NODE] ? -1 : 1;
   const int step = stepsize * step_sign;
+  const int upd_cost = av1_cost_one(upd) - av1_cost_zero(upd);
   aom_prob bestnewp, newplist[ENTROPY_NODES], oldplist[ENTROPY_NODES];
   av1_model_to_full_probs(oldp, oldplist);
   memcpy(newplist, oldp, sizeof(aom_prob) * UNCONSTRAINED_NODES);
@@ -243,7 +245,7 @@ int av1_prob_update_search_model_subframe(unsigned int ct[ENTROPY_NODES]
     for (i = UNCONSTRAINED_NODES, new_b = 0; i < ENTROPY_NODES; ++i)
       new_b += get_cost(ct[i], newplist[i], n);
     new_b += get_cost(ct[PIVOT_NODE], newplist[PIVOT_NODE], n);
-    update_b = prob_diff_update_cost(newp, oldp[PIVOT_NODE]) + av1_cost_upd256;
+    update_b = prob_diff_update_cost(newp, oldp[PIVOT_NODE]) + upd_cost;
     savings = old_b - new_b - update_b;
     if (savings > bestsavings) {
       bestsavings = savings;
