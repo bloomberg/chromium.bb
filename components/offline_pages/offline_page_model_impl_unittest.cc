@@ -643,14 +643,6 @@ TEST_F(OfflinePageModelImplTest, GetAllPagesStoreEmpty) {
   EXPECT_EQ(0UL, offline_pages.size());
 }
 
-TEST_F(OfflinePageModelImplTest, GetAllPagesStoreFailure) {
-  GetStore()->set_test_scenario(
-      OfflinePageTestStore::TestScenario::LOAD_FAILED);
-  const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
-
-  EXPECT_EQ(0UL, offline_pages.size());
-}
-
 TEST_F(OfflinePageModelImplTest, DeletePageSuccessful) {
   OfflinePageTestStore* store = GetStore();
 
@@ -1202,6 +1194,41 @@ TEST_F(OfflinePageModelImplTest, NewTabPageNamespace) {
 
   histograms().ExpectUniqueSample(histogram_name,
                                   static_cast<int>(SavePageResult::SUCCESS), 1);
+}
+
+TEST_F(OfflinePageModelImplTest, StoreResetSuccessful) {
+  GetStore()->set_test_scenario(
+      OfflinePageTestStore::TestScenario::LOAD_FAILED_RESET_SUCCESS);
+  ResetModel();
+
+  const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
+
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(StoreState::LOADED, GetStore()->state());
+  EXPECT_EQ(0UL, offline_pages.size());
+
+  std::pair<SavePageResult, int64_t> result =
+      SavePage(kTestUrl, ClientId(kDownloadNamespace, "123"));
+
+  EXPECT_EQ(SavePageResult::SUCCESS, result.first);
+}
+
+TEST_F(OfflinePageModelImplTest, StoreResetFailed) {
+  GetStore()->set_test_scenario(
+      OfflinePageTestStore::TestScenario::LOAD_FAILED_RESET_FAILED);
+  ResetModel();
+
+  const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
+
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(StoreState::FAILED_RESET, GetStore()->state());
+  EXPECT_EQ(0UL, offline_pages.size());
+
+  ResetResults();
+  std::pair<SavePageResult, int64_t> result =
+      SavePage(kTestUrl, ClientId(kDownloadNamespace, "123"));
+
+  EXPECT_EQ(SavePageResult::STORE_FAILURE, result.first);
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {

@@ -59,6 +59,7 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   ~OfflinePageMetadataStoreSQL() override;
 
   // Implementation methods.
+  void Initialize(const InitializeCallback& callback) override;
   void GetOfflinePages(const LoadCallback& callback) override;
   void AddOfflinePage(const OfflinePageItem& offline_page,
                       const AddCallback& callback) override;
@@ -73,17 +74,12 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   void SetStateForTesting(StoreState state, bool reset_db);
 
  private:
-  // Used to initialize DB connection.
-  void OpenConnection();
-  void OnOpenConnectionDone(StoreState state);
+  // Used to conclude opening/resetting DB connection.
+  void OnOpenConnectionDone(const InitializeCallback& callback, bool success);
+  void OnResetDone(const ResetCallback& callback, bool success);
 
-  // Used to reset DB connection.
-  void OnResetDone(const ResetCallback& callback, StoreState state);
-
-  // Helper function that checks whether a valid DB connection is present.
-  // Returns true if valid connection is present, otherwise it returns false and
-  // calls the provided callback as a shortcut.
-  bool CheckDb(const base::Closure& callback);
+  // Checks whether a valid DB connection is present and store state is LOADED.
+  bool CheckDb();
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;

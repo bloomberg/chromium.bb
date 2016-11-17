@@ -148,9 +148,16 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void CheckMetadataConsistency();
 
   // Callback for loading pages from the offline page metadata store.
-  void OnLoadDone(const base::TimeTicks& start_time,
-                  OfflinePageMetadataStore::LoadStatus load_status,
-                  const std::vector<OfflinePageItem>& offline_pages);
+  void OnStoreInitialized(const base::TimeTicks& start_time,
+                          int reset_attempts_left,
+                          bool success);
+  void OnStoreResetDone(const base::TimeTicks& start_time,
+                        int reset_attempts_left,
+                        bool success);
+  void OnInitialGetOfflinePagesDone(
+      const base::TimeTicks& start_time,
+      const std::vector<OfflinePageItem>& offline_pages);
+  void FinalizeModelLoad();
 
   // Steps for saving a page offline.
   void OnCreateArchiveDone(const SavePageParams& save_page_params,
@@ -239,7 +246,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                         OfflinePageStorageManager::ClearStorageResult result);
 
   // Post task to clear storage.
-  void PostClearStorageIfNeededTask();
+  void PostClearStorageIfNeededTask(bool delayed);
 
   // Check if |offline_page| should be removed on cache reset by user.
   bool IsRemovedOnCacheReset(const OfflinePageItem& offline_page) const;

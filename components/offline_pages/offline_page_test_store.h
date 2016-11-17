@@ -26,7 +26,8 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   enum class TestScenario {
     SUCCESSFUL,
     WRITE_FAILED,
-    LOAD_FAILED,
+    LOAD_FAILED_RESET_SUCCESS,
+    LOAD_FAILED_RESET_FAILED,
     REMOVE_FAILED,
   };
 
@@ -36,6 +37,7 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   ~OfflinePageTestStore() override;
 
   // OfflinePageMetadataStore overrides:
+  void Initialize(const InitializeCallback& callback) override;
   void GetOfflinePages(const LoadCallback& callback) override;
   void AddOfflinePage(const OfflinePageItem& offline_page,
                       const AddCallback& callback) override;
@@ -63,6 +65,7 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   OfflinePageItem last_saved_page_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TestScenario scenario_;
+  StoreState store_state_;
 
   std::map<int64_t, OfflinePageItem> offline_pages_;
 

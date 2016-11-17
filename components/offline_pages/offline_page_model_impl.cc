@@ -646,7 +646,6 @@ void OfflinePageModelImpl::GetPagesByOnlineURLWhenLoadDone(
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {
-  DCHECK(is_loaded_);
   archive_manager_->GetAllArchives(
       base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -793,7 +792,7 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   if (result == SavePageResult::SUCCESS) {
     DeleteExistingPagesWithSameURL(offline_page);
   } else {
-    PostClearStorageIfNeededTask();
+    PostClearStorageIfNeededTask(false /* delayed */);
   }
 
   DeletePendingArchiver(archiver);
@@ -817,46 +816,83 @@ void OfflinePageModelImpl::OnEnsureArchivesDirCreatedDone(
   UMA_HISTOGRAM_TIMES("OfflinePages.Model.ArchiveDirCreationTime",
                       base::TimeTicks::Now() - start_time);
 
-  store_->GetOfflinePages(base::Bind(&OfflinePageModelImpl::OnLoadDone,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     start_time));
+  const int kResetAttemptsLeft = 1;
+  store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
+                                weak_ptr_factory_.GetWeakPtr(), start_time,
+                                kResetAttemptsLeft));
 }
 
-void OfflinePageModelImpl::OnLoadDone(
+void OfflinePageModelImpl::OnStoreInitialized(const base::TimeTicks& start_time,
+                                              int reset_attempts_left,
+                                              bool success) {
+  if (success) {
+    DCHECK_EQ(store_->state(), StoreState::LOADED);
+    store_->GetOfflinePages(
+        base::Bind(&OfflinePageModelImpl::OnInitialGetOfflinePagesDone,
+                   weak_ptr_factory_.GetWeakPtr(), start_time));
+    return;
+  }
+
+  DCHECK_EQ(store_->state(), StoreState::FAILED_LOADING);
+  // If there are no more reset attempts left, stop here.
+  if (reset_attempts_left == 0) {
+    FinalizeModelLoad();
+    return;
+  }
+
+  // Otherwise reduce the remaining attempts counter and reset store.
+  store_->Reset(base::Bind(&OfflinePageModelImpl::OnStoreResetDone,
+                           weak_ptr_factory_.GetWeakPtr(), start_time,
+                           reset_attempts_left - 1));
+}
+
+void OfflinePageModelImpl::OnStoreResetDone(const base::TimeTicks& start_time,
+                                            int reset_attempts_left,
+                                            bool success) {
+  if (success) {
+    DCHECK_EQ(store_->state(), StoreState::NOT_LOADED);
+    store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
+                                  weak_ptr_factory_.GetWeakPtr(), start_time,
+                                  reset_attempts_left));
+    return;
+  }
+
+  DCHECK_EQ(store_->state(), StoreState::FAILED_RESET);
+  FinalizeModelLoad();
+}
+
+void OfflinePageModelImpl::OnInitialGetOfflinePagesDone(
     const base::TimeTicks& start_time,
-    OfflinePageMetadataStore::LoadStatus load_status,
     const std::vector<OfflinePageItem>& offline_pages) {
   DCHECK(!is_loaded_);
-  is_loaded_ = true;
-
-  // TODO(jianli): rebuild the store upon failure.
-
-  if (load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED)
-    CacheLoadedData(offline_pages);
 
   UMA_HISTOGRAM_TIMES("OfflinePages.Model.ConstructionToLoadedEventTime",
                       base::TimeTicks::Now() - start_time);
 
-  // Create Storage Manager.
-  storage_manager_.reset(new OfflinePageStorageManager(
-      this, GetPolicyController(), archive_manager_.get()));
+  CacheLoadedData(offline_pages);
+  FinalizeModelLoad();
+
+  // Ensure necessary cleanup operations are started.
+  CheckMetadataConsistency();
+}
+
+void OfflinePageModelImpl::FinalizeModelLoad() {
+  is_loaded_ = true;
+
+  // All actions below are meant to be taken regardless of successful load of
+  // the store.
+
+  // Inform observers the load is done.
+  for (Observer& observer : observers_)
+    observer.OfflinePageModelLoaded(this);
 
   // Run all the delayed tasks.
   for (const auto& delayed_task : delayed_tasks_)
     delayed_task.Run();
   delayed_tasks_.clear();
 
-  for (Observer& observer : observers_)
-    observer.OfflinePageModelLoaded(this);
-
-  CheckMetadataConsistency();
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&OfflinePageModelImpl::ClearStorageIfNeeded,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Bind(&OfflinePageModelImpl::OnStorageCleared,
-                                       weak_ptr_factory_.GetWeakPtr())),
-      kStorageManagerStartingDelay);
+  // Clear storage.
+  PostClearStorageIfNeededTask(true /* delayed */);
 }
 
 void OfflinePageModelImpl::InformSavePageDone(const SavePageCallback& callback,
@@ -915,7 +951,7 @@ void OfflinePageModelImpl::OnPagesFoundWithSameURL(
 void OfflinePageModelImpl::OnDeleteOldPagesWithSameURL(
     DeletePageResult result) {
   // TODO(romax) Add UMAs for failure cases.
-  PostClearStorageIfNeededTask();
+  PostClearStorageIfNeededTask(false /* delayed */);
 }
 
 void OfflinePageModelImpl::DeletePendingArchiver(
@@ -1054,6 +1090,11 @@ void OfflinePageModelImpl::CacheLoadedData(
 
 void OfflinePageModelImpl::ClearStorageIfNeeded(
     const ClearStorageCallback& callback) {
+  // Create Storage Manager if necessary.
+  if (!storage_manager_) {
+    storage_manager_.reset(new OfflinePageStorageManager(
+        this, GetPolicyController(), archive_manager_.get()));
+  }
   storage_manager_->ClearPagesIfNeeded(callback);
 }
 
@@ -1068,12 +1109,15 @@ void OfflinePageModelImpl::OnStorageCleared(size_t expired_page_count,
   }
 }
 
-void OfflinePageModelImpl::PostClearStorageIfNeededTask() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+void OfflinePageModelImpl::PostClearStorageIfNeededTask(bool delayed) {
+  base::TimeDelta delay =
+      delayed ? kStorageManagerStartingDelay : base::TimeDelta();
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&OfflinePageModelImpl::ClearStorageIfNeeded,
                             weak_ptr_factory_.GetWeakPtr(),
                             base::Bind(&OfflinePageModelImpl::OnStorageCleared,
-                                       weak_ptr_factory_.GetWeakPtr())));
+                                       weak_ptr_factory_.GetWeakPtr())),
+      delay);
 }
 
 bool OfflinePageModelImpl::IsRemovedOnCacheReset(
