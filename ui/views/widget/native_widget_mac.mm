@@ -143,7 +143,9 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   bridge_->CreateLayer(params.layer_type, translucent);
 }
 
-void NativeWidgetMac::OnWidgetInitDone() {}
+void NativeWidgetMac::OnWidgetInitDone() {
+  OnSizeConstraintsChanged();
+}
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
   return new NativeFrameView(GetWidget());
@@ -601,11 +603,7 @@ ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
   return ui::NativeThemeMac::instance();
 }
 
-void NativeWidgetMac::OnRootViewLayout() {
-  // Ensure possible changes to the non-client view (e.g. Minimum/Maximum size)
-  // propagate through to the NSWindow properties.
-  OnSizeConstraintsChanged();
-}
+void NativeWidgetMac::OnRootViewLayout() {}
 
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
   return false;
