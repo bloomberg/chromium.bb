@@ -587,6 +587,10 @@ void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   [[web_controller_ delegate] openURLWithParams:params];
 }
 
+void WebStateImpl::Stop() {
+  [web_controller_ stopLoading];
+}
+
 const NavigationManager* WebStateImpl::GetNavigationManager() const {
   return &GetNavigationManagerImpl();
 }

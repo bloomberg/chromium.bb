@@ -127,6 +127,9 @@ class WebState : public base::SupportsUserData {
   // navigation should be recorded in the history system (for example, typed).
   virtual void OpenURL(const OpenURLParams& params) = 0;
 
+  // Stops any pending navigation.
+  virtual void Stop() = 0;
+
   // Gets the NavigationManager associated with this WebState. Can never return
   // null.
   virtual const NavigationManager* GetNavigationManager() const = 0;
