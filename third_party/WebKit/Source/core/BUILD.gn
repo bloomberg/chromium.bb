@@ -1259,6 +1259,7 @@ source_set("unit_tests") {
     "loader/ProgressTrackerTest.cpp",
     "loader/TextResourceDecoderBuilderTest.cpp",
     "loader/ThreadableLoaderTest.cpp",
+    "loader/resource/FontResourceTest.cpp",
     "origin_trials/OriginTrialContextTest.cpp",
     "page/ChromeClientTest.cpp",
     "page/ContextMenuControllerTest.cpp",

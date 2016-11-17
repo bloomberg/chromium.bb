@@ -111,7 +111,7 @@ class CORE_EXPORT FontResource final : public Resource {
   Timer<FontResource> m_fontLoadLongLimitTimer;
 
   friend class MemoryCache;
-  FRIEND_TEST_ALL_PREFIXES(ResourceFetcherTest, CacheAwareFontLoading);
+  FRIEND_TEST_ALL_PREFIXES(FontResourceTest, CacheAwareFontLoading);
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Font);

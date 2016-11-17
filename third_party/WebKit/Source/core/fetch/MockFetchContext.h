@@ -7,7 +7,6 @@
 
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "wtf/PtrUtil.h"
@@ -19,6 +18,7 @@ namespace blink {
 class KURL;
 class ResourceRequest;
 class WebTaskRunner;
+struct ResourceLoaderOptions;
 
 // Mocked FetchContext for testing.
 // TODO(toyoshim): Use this class by other unit tests that currently have own
