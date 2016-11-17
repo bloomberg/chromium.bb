@@ -5,10 +5,12 @@
 #ifndef CC_PLAYBACK_DISCARDABLE_IMAGE_MAP_H_
 #define CC_PLAYBACK_DISCARDABLE_IMAGE_MAP_H_
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "cc/base/cc_export.h"
+#include "cc/base/region.h"
 #include "cc/base/rtree.h"
 #include "cc/playback/draw_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -26,6 +28,9 @@ SkRect MapRect(const SkMatrix& matrix, const SkRect& src);
 // rect and get back a list of DrawImages in that rect.
 class CC_EXPORT DiscardableImageMap {
  public:
+  // A map of SkImage id to the region for this image.
+  using ImageToRegionMap = std::unordered_map<uint32_t, Region>;
+
   class CC_EXPORT ScopedMetadataGenerator {
    public:
     ScopedMetadataGenerator(DiscardableImageMap* image_map,
@@ -46,6 +51,7 @@ class CC_EXPORT DiscardableImageMap {
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   const gfx::SizeF& raster_scales,
                                   std::vector<DrawImage>* images) const;
+  Region GetRegionForImage(uint32_t image_id) const;
 
  private:
   friend class ScopedMetadataGenerator;
@@ -55,6 +61,8 @@ class CC_EXPORT DiscardableImageMap {
   void EndGeneratingMetadata();
 
   std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
+  ImageToRegionMap image_id_to_region_;
+
   RTree images_rtree_;
 };
 
