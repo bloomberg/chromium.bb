@@ -47,14 +47,14 @@ static INLINE int aom_daala_read(daala_reader *r, int prob) {
   int bit;
   int p = ((prob << 15) + (256 - prob)) >> 8;
 #if CONFIG_BITSTREAM_DEBUG
-  {
-    const int queue_r = bitstream_queue_get_read();
-    const int frame_idx = bitstream_queue_get_frame_read();
-    if (frame_idx == 3 && queue_r == 72877) {
-      fprintf(stderr, "\n *** bitstream queue at frame_idx_r %d queue_r %d\n",
-              frame_idx, queue_r);
-    }
+/*{
+  const int queue_r = bitstream_queue_get_read();
+  const int frame_idx = bitstream_queue_get_frame_read();
+  if (frame_idx == 0 && queue_r == 0) {
+    fprintf(stderr, "\n *** bitstream queue at frame_idx_r %d queue_r %d\n",
+            frame_idx, queue_r);
   }
+}*/
 #endif
 
   if (prob == 128) {
