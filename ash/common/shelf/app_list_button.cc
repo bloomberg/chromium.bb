@@ -14,7 +14,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -23,7 +22,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -142,53 +140,45 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
 void AppListButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  const gfx::ImageSkia& foreground_image =
-      MaterialDesignController::IsShelfMaterial()
-          ? CreateVectorIcon(kShelfAppListIcon, kShelfIconColor)
-          : *rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia();
 
   if (ash::MaterialDesignController::IsShelfMaterial()) {
-    PaintBackgroundMD(canvas);
-    PaintForegroundMD(canvas, foreground_image);
+    PaintMd(canvas);
   } else {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia& foreground_image =
+        *rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia();
     PaintAppListButton(canvas, foreground_image);
   }
 
   views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
 
-void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
-  // Paint the circular background of AppList button.
-  gfx::Point circle_center = GetCenterPoint();
+void AppListButton::PaintMd(gfx::Canvas* canvas) {
+  gfx::PointF circle_center(GetCenterPoint());
 
-  SkPaint background_paint;
-  background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
-  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  background_paint.setStyle(SkPaint::kFill_Style);
+  // Paint the circular background.
+  SkPaint bg_paint;
+  bg_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
+  bg_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  bg_paint.setStyle(SkPaint::kFill_Style);
+  canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_paint);
 
-  canvas->DrawCircle(circle_center, kAppListButtonRadius, background_paint);
-}
+  // Paint a white ring as the foreground. The ceil/dsf math assures that the
+  // ring draws sharply and is centered at all scale factors.
+  const float kRingOuterRadiusDp = 7.f;
+  const float kRingThicknessDp = 1.5f;
+  const float dsf = canvas->UndoDeviceScaleFactor();
+  circle_center.Scale(dsf);
 
-void AppListButton::PaintForegroundMD(gfx::Canvas* canvas,
-                                      const gfx::ImageSkia& foreground_image) {
-  gfx::Rect foreground_bounds(foreground_image.size());
-  gfx::Rect contents_bounds = GetContentsBounds();
-
-  if (IsHorizontalAlignment(wm_shelf_->GetAlignment())) {
-    foreground_bounds.set_x(
-        (contents_bounds.width() - foreground_bounds.width()) / 2);
-    foreground_bounds.set_y(
-        (contents_bounds.height() - foreground_bounds.height()) / 2);
-  } else {
-    foreground_bounds.set_x(
-        (contents_bounds.height() - foreground_bounds.height()) / 2);
-    foreground_bounds.set_y(
-        (contents_bounds.width() - foreground_bounds.width()) / 2);
-  }
-  canvas->DrawImageInt(foreground_image, foreground_bounds.x(),
-                       foreground_bounds.y());
+  SkPaint fg_paint;
+  fg_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  fg_paint.setStyle(SkPaint::kStroke_Style);
+  fg_paint.setColor(kShelfIconColor);
+  const float thickness = std::ceil(kRingThicknessDp * dsf);
+  const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
+  fg_paint.setStrokeWidth(thickness);
+  // Make sure the center of the circle lands on pixel centers.
+  canvas->DrawCircle(circle_center, radius, fg_paint);
 }
 
 void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
@@ -293,10 +283,16 @@ void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {
 }
 
 gfx::Point AppListButton::GetCenterPoint() const {
-  gfx::Point center = GetContentsBounds().CenterPoint();
-  if (!IsHorizontalAlignment(wm_shelf_->GetAlignment()))
-    center = gfx::Point(center.y(), center.x());
-  return center;
+  // During shelf hide/show animations, width and height may not be equal. Take
+  // the greater of the two as the one that represents the normal size of the
+  // button.
+  int center = std::max(width(), height()) / 2.f;
+  gfx::Point centroid(center, center);
+  // For the left shelf alignment, we need to right-justify. For other shelf
+  // alignments, left/top justification (i.e. no adjustments are necessary).
+  if (SHELF_ALIGNMENT_LEFT == wm_shelf_->GetAlignment())
+    centroid.set_x(width() - center);
+  return centroid;
 }
 
 }  // namespace ash
