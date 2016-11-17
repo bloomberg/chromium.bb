@@ -26,7 +26,7 @@
         margin: 0 8px;
       }
 
-      #success-icon {
+      #successIcon {
         fill: var(--paper-blue-600);
         height: 80px;
         margin: auto;
@@ -38,7 +38,7 @@
       <div class="body">
         <div hidden$="[[!hasImportStatus_(
             importStatusEnum_.SUCCEEDED, importStatus_)]]">
-          <iron-icon id="success-icon" icon="settings:check-circle">
+          <iron-icon id="successIcon" icon="settings:check-circle">
           </iron-icon>
           <div hidden$="[[!prefs.import_bookmarks.value]]">
             <div class="description">$i18n{importSuccess}</div>
@@ -95,7 +95,7 @@
             hidden="[[hasImportStatus_(
                 importStatusEnum_.SUCCEEDED, importStatus_)]]">
         </paper-spinner>
-        <paper-button class="cancel-button" id="cancel"
+        <paper-button id="cancel" class="cancel-button"
             hidden="[[hasImportStatus_(
                 importStatusEnum_.SUCCEEDED, importStatus_)]]"
             disabled="[[hasImportStatus_(
@@ -103,7 +103,7 @@
             on-tap="closeDialog_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button"
+        <paper-button id="import" class="action-button"
             hidden="[[hasImportStatus_(
                 importStatusEnum_.SUCCEEDED, importStatus_)]]"
             disabled="[[shouldDisableImport_(
@@ -112,7 +112,7 @@
           [[getActionButtonText_(selected_)]]
         </paper-button>
 
-        <paper-button class="action-button"
+        <paper-button id="done" class="action-button"
             hidden$="[[!hasImportStatus_(
                 importStatusEnum_.SUCCEEDED, importStatus_)]]"
             on-tap="closeDialog_">$i18n{done}</paper-button>

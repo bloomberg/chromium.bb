@@ -498,6 +498,31 @@ TEST_F('CrSettingsDefaultBrowserTest', 'DefaultBrowserPage', function() {
   settings_default_browser.registerTests();
   mocha.run();
 });
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/import_data_dialog.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsImportDataDialogTest() {}
+
+CrSettingsImportDataDialogTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/import_data_dialog.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'import_data_dialog_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsImportDataDialogTest', 'All', function() {
+  mocha.run();
+});
 GEN('#endif');
 
 /**
