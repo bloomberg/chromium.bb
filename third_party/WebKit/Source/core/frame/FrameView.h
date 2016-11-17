@@ -767,11 +767,10 @@ class CORE_EXPORT FrameView final
   void scrollContentsIfNeeded();
 
   enum ComputeScrollbarExistenceOption { FirstPass, Incremental };
-  void computeScrollbarExistence(
-      bool& newHasHorizontalScrollbar,
-      bool& newHasVerticalScrollbar,
-      const IntSize& docSize,
-      ComputeScrollbarExistenceOption = FirstPass) const;
+  void computeScrollbarExistence(bool& newHasHorizontalScrollbar,
+                                 bool& newHasVerticalScrollbar,
+                                 const IntSize& docSize,
+                                 ComputeScrollbarExistenceOption = FirstPass);
   void updateScrollbarGeometry();
 
   // Called to update the scrollbars to accurately reflect the state of the
@@ -866,6 +865,8 @@ class CORE_EXPORT FrameView final
   IntPoint convertToContainingWidget(const IntPoint&) const override;
   IntPoint convertFromContainingWidget(const IntPoint&) const override;
 
+  void didChangeGlobalRootScroller() override;
+
   void updateWidgetGeometriesIfNeeded();
 
   bool wasViewportResized();
@@ -913,7 +914,7 @@ class CORE_EXPORT FrameView final
   bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
   void adjustScrollbarOpacity();
   void adjustScrollOffsetFromUpdateScrollbars();
-  bool visualViewportSuppliesScrollbars() const;
+  bool visualViewportSuppliesScrollbars();
 
   bool isFrameViewScrollbar(const Widget* child) const {
     return horizontalScrollbar() == child || verticalScrollbar() == child;

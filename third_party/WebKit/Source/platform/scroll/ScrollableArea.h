@@ -121,6 +121,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void didAddScrollbar(Scrollbar&, ScrollbarOrientation);
   virtual void willRemoveScrollbar(Scrollbar&, ScrollbarOrientation);
 
+  // Called when this ScrollableArea becomes or unbecomes the global root
+  // scroller.
+  virtual void didChangeGlobalRootScroller() {}
+
   virtual void contentsResized();
 
   bool hasOverlayScrollbars() const;

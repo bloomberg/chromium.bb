@@ -89,6 +89,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePainter.h"
@@ -1967,18 +1968,18 @@ void FrameView::scrollbarExistenceDidChange() {
   if (!frame().view())
     return;
 
-  bool hasOverlayScrollbars = this->hasOverlayScrollbars();
+  bool usesOverlayScrollbars = ScrollbarTheme::theme().usesOverlayScrollbars();
 
   // FIXME: this call to layout() could be called within FrameView::layout(),
   // but before performLayout(), causing double-layout. See also
   // crbug.com/429242.
-  if (!hasOverlayScrollbars && needsLayout())
+  if (!usesOverlayScrollbars && needsLayout())
     layout();
 
   if (!layoutViewItem().isNull() && layoutViewItem().usesCompositing()) {
     layoutViewItem().compositor()->frameViewScrollbarsExistenceDidChange();
 
-    if (!hasOverlayScrollbars)
+    if (!usesOverlayScrollbars)
       layoutViewItem().compositor()->frameViewDidChangeSize();
   }
 }
@@ -2665,6 +2666,25 @@ FrameView* FrameView::parentFrameView() const {
     return toLocalFrame(parentFrame)->view();
 
   return nullptr;
+}
+
+void FrameView::didChangeGlobalRootScroller() {
+  if (!m_frame->settings() || !m_frame->settings()->viewportEnabled())
+    return;
+
+  // Avoid drawing two sets of scrollbars when visual viewport is enabled.
+  bool hasHorizontalScrollbar = horizontalScrollbar();
+  bool hasVerticalScrollbar = verticalScrollbar();
+  bool shouldHaveHorizontalScrollbar = false;
+  bool shouldHaveVerticalScrollbar = false;
+  computeScrollbarExistence(shouldHaveHorizontalScrollbar,
+                            shouldHaveVerticalScrollbar, contentsSize());
+  m_scrollbarManager.setHasHorizontalScrollbar(shouldHaveHorizontalScrollbar);
+  m_scrollbarManager.setHasVerticalScrollbar(shouldHaveVerticalScrollbar);
+
+  if (hasHorizontalScrollbar != shouldHaveHorizontalScrollbar ||
+      hasVerticalScrollbar != shouldHaveVerticalScrollbar)
+    scrollbarExistenceDidChange();
 }
 
 void FrameView::updateWidgetGeometriesIfNeeded() {
@@ -3491,9 +3511,21 @@ void FrameView::removeChild(Widget* child) {
   m_children.remove(child);
 }
 
-bool FrameView::visualViewportSuppliesScrollbars() const {
-  return m_frame->isMainFrame() && m_frame->settings() &&
-         m_frame->settings()->viewportEnabled();
+bool FrameView::visualViewportSuppliesScrollbars() {
+  // On desktop, we always use the layout viewport's scrollbars.
+  if (!m_frame->settings() || !m_frame->settings()->viewportEnabled() ||
+      !m_frame->document() || !m_frame->host())
+    return false;
+
+  const TopDocumentRootScrollerController& controller =
+      m_frame->host()->globalRootScrollerController();
+
+  if (!controller.globalRootScroller())
+    return false;
+
+  return RootScrollerUtil::scrollableAreaFor(
+             *controller.globalRootScroller()) ==
+         layoutViewportScrollableArea();
 }
 
 AXObjectCache* FrameView::axObjectCache() const {
@@ -3742,8 +3774,9 @@ void FrameView::computeScrollbarExistence(
     bool& newHasHorizontalScrollbar,
     bool& newHasVerticalScrollbar,
     const IntSize& docSize,
-    ComputeScrollbarExistenceOption option) const {
-  if (m_frame->settings() && m_frame->settings()->hideScrollbars()) {
+    ComputeScrollbarExistenceOption option) {
+  if ((m_frame->settings() && m_frame->settings()->hideScrollbars()) ||
+      visualViewportSuppliesScrollbars()) {
     newHasHorizontalScrollbar = false;
     newHasVerticalScrollbar = false;
     return;

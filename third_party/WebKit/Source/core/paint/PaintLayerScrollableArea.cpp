@@ -71,7 +71,9 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/RootScrollerController.h"
+#include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -803,6 +805,22 @@ void PaintLayerScrollableArea::clampScrollOffsetsAfterLayout() {
   setNeedsScrollOffsetClamp(false);
   resetScrollOriginChanged();
   m_scrollbarManager.destroyDetachedScrollbars();
+}
+
+void PaintLayerScrollableArea::didChangeGlobalRootScroller() {
+  // On Android, where the VisualViewport supplies scrollbars, we need to
+  // remove the PLSA's scrollbars. In general, this would be problematic as
+  // that can cause layout but this should only ever apply with overlay
+  // scrollbars.
+  if (!box().frame()->settings() ||
+      !box().frame()->settings()->viewportEnabled())
+    return;
+
+  bool needsHorizontalScrollbar;
+  bool needsVerticalScrollbar;
+  computeScrollbarExistence(needsHorizontalScrollbar, needsVerticalScrollbar);
+  setHasHorizontalScrollbar(needsHorizontalScrollbar);
+  setHasVerticalScrollbar(needsVerticalScrollbar);
 }
 
 bool PaintLayerScrollableArea::shouldPerformScrollAnchoring() const {
@@ -1728,14 +1746,22 @@ void PaintLayerScrollableArea::setTopmostScrollChild(PaintLayer* scrollChild) {
 }
 
 bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
-  if (!layer()->isRootLayer())
-    return false;
-
   LocalFrame* frame = box().frame();
-  if (!frame || !frame->isMainFrame() || !frame->settings())
+  if (!frame || !frame->settings())
     return false;
 
-  return frame->settings()->viewportEnabled();
+  // On desktop, we always use the layout viewport's scrollbars.
+  if (!frame->settings()->viewportEnabled())
+    return false;
+
+  const TopDocumentRootScrollerController& controller =
+      layoutBox()->document().frameHost()->globalRootScrollerController();
+
+  if (!controller.globalRootScroller())
+    return false;
+
+  return RootScrollerUtil::scrollableAreaFor(
+             *controller.globalRootScroller()) == this;
 }
 
 Widget* PaintLayerScrollableArea::getWidget() {

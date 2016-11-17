@@ -685,6 +685,7 @@ std::string TestGraphics2D::TestFlushOffscreenUpdate() {
       "big.setAttribute('style', 'height: ' + offset + '; width: 100%;');"
       "document.body.insertBefore(big, document.body.firstChild);");
   ASSERT_TRUE(WaitUntilViewChanged());
+  ASSERT_SUBTEST_SUCCESS(FlushAndWaitForDone(&dc));
 
   // Allocate a red image chunk
   pp::ImageData chunk(instance_, PP_IMAGEDATAFORMAT_RGBA_PREMUL,

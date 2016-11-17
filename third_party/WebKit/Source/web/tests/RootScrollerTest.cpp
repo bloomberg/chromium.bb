@@ -89,8 +89,13 @@ class RootScrollerTest : public ::testing::Test {
   }
 
   void executeScript(const WebString& code) {
-    mainWebFrame()->executeScript(WebScriptSource(code));
+    executeScript(code, *mainWebFrame());
     mainWebFrame()->view()->updateAllLifecyclePhases();
+  }
+
+  void executeScript(const WebString& code, WebLocalFrame& frame) {
+    frame.executeScript(WebScriptSource(code));
+    frame.view()->updateAllLifecyclePhases();
     runPendingTasks();
   }
 
@@ -929,6 +934,57 @@ TEST_F(RootScrollerTest, DocumentElementHasNoLayoutObject) {
   EXPECT_EQ(
       mainFrameView()->layoutViewportScrollableArea()->layerForScrolling(),
       globalController.rootScrollerLayer());
+}
+
+// On Android, the main scrollbars are owned by the visual viewport and the
+// FrameView's disabled. This functionality should extend to a rootScroller
+// that isn't the main FrameView.
+TEST_F(RootScrollerTest, UseVisualViewportScrollbars) {
+  initialize("root-scroller.html");
+
+  Element* container = mainFrame()->document()->getElementById("container");
+  NonThrowableExceptionState nonThrow;
+  mainFrame()->document()->setRootScroller(container, nonThrow);
+  mainFrameView()->updateAllLifecyclePhases();
+
+  ScrollableArea* containerScroller =
+      static_cast<PaintInvalidationCapableScrollableArea*>(
+          toLayoutBox(container->layoutObject())->getScrollableArea());
+
+  EXPECT_FALSE(containerScroller->horizontalScrollbar());
+  EXPECT_FALSE(containerScroller->verticalScrollbar());
+  EXPECT_GT(containerScroller->maximumScrollOffset().width(), 0);
+  EXPECT_GT(containerScroller->maximumScrollOffset().height(), 0);
+}
+
+// On Android, the main scrollbars are owned by the visual viewport and the
+// FrameView's disabled. This functionality should extend to a rootScroller
+// that's a nested iframe.
+TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
+  initialize("root-scroller-iframe.html");
+
+  Element* iframe = mainFrame()->document()->getElementById("iframe");
+  LocalFrame* childFrame =
+      toLocalFrame(toHTMLFrameOwnerElement(iframe)->contentFrame());
+
+  NonThrowableExceptionState nonThrow;
+  mainFrame()->document()->setRootScroller(iframe, nonThrow);
+
+  WebLocalFrame* childWebFrame =
+      mainWebFrame()->firstChild()->toWebLocalFrame();
+  executeScript(
+      "document.getElementById('container').style.width = '200%';"
+      "document.getElementById('container').style.height = '200%';",
+      *childWebFrame);
+
+  mainFrameView()->updateAllLifecyclePhases();
+
+  ScrollableArea* containerScroller = childFrame->view();
+
+  EXPECT_FALSE(containerScroller->horizontalScrollbar());
+  EXPECT_FALSE(containerScroller->verticalScrollbar());
+  EXPECT_GT(containerScroller->maximumScrollOffset().width(), 0);
+  EXPECT_GT(containerScroller->maximumScrollOffset().height(), 0);
 }
 
 }  // namespace

@@ -322,6 +322,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void updateAfterLayout();
   void clampScrollOffsetsAfterLayout();
 
+  void didChangeGlobalRootScroller() override;
+
   void updateAfterStyleChange(const ComputedStyle*);
   void updateAfterOverflowRecalc();
 

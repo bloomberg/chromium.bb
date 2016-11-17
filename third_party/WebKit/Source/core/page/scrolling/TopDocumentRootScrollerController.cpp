@@ -94,6 +94,11 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
   // changes.
   setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
+  ScrollableArea* oldRootScrollerArea =
+      m_globalRootScroller
+          ? RootScrollerUtil::scrollableAreaFor(*m_globalRootScroller.get())
+          : nullptr;
+
   m_globalRootScroller = target;
 
   setNeedsCompositingInputsUpdateOnGlobalRootScroller();
@@ -104,6 +109,13 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
   // ViewportScrollCallback to swap the target into the layout viewport
   // in RootFrameViewport.
   m_viewportApplyScroll->setScroller(targetScroller);
+
+  // The scrollers may need to stop using their own scrollbars as Android
+  // Chrome's VisualViewport provides the scrollbars for the root scroller.
+  if (oldRootScrollerArea)
+    oldRootScrollerArea->didChangeGlobalRootScroller();
+
+  targetScroller->didChangeGlobalRootScroller();
 }
 
 Document* TopDocumentRootScrollerController::topDocument() const {
