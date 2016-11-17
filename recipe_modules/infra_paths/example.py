@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+
 DEPS = [
   'infra_paths',
   'recipe_engine/path',
@@ -13,7 +15,10 @@ DEPS = [
 
 def RunSteps(api):
   api.step('show cache path', [])
-  api.step.active_result.presentation.step_text = str(api.path['cache'])
+  api.step.active_result.presentation.logs['result'] = [
+    str(api.path['cache']),
+    str(api.infra_paths.default_git_cache_dir),
+  ]
 
 
 def GenTests(api):
