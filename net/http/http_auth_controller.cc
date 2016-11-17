@@ -146,6 +146,7 @@ int HttpAuthController::MaybeGenerateAuthToken(
     const CompletionCallback& callback,
     const NetLogWithSource& net_log) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!auth_info_);
   bool needs_auth = HaveAuth() || SelectPreemptiveAuth(net_log);
   if (!needs_auth)
     return OK;
@@ -227,6 +228,7 @@ int HttpAuthController::HandleAuthChallenge(
   DCHECK(CalledOnValidThread());
   DCHECK(headers.get());
   DCHECK(auth_origin_.is_valid());
+  DCHECK(!auth_info_);
 
   // Give the existing auth handler first try at the authentication headers.
   // This will also evict the entry in the HttpAuthCache if the previous
@@ -277,7 +279,6 @@ int HttpAuthController::HandleAuthChallenge(
   }
 
   identity_.invalid = true;
-
   bool can_send_auth = (target_ != HttpAuth::AUTH_SERVER ||
                         !do_not_send_server_auth);
 
@@ -326,8 +327,6 @@ int HttpAuthController::HandleAuthChallenge(
         // Pass the challenge information back to the client.
         PopulateAuthChallenge();
       }
-    } else {
-      auth_info_ = NULL;
     }
 
     // If we get here and we don't have a handler_, that's because we
@@ -348,6 +347,9 @@ void HttpAuthController::ResetAuth(const AuthCredentials& credentials) {
     identity_.source = HttpAuth::IDENT_SRC_EXTERNAL;
     identity_.invalid = false;
     identity_.credentials = credentials;
+
+    // auth_info_ is no longer necessary.
+    auth_info_ = nullptr;
   }
 
   DCHECK(identity_.source != HttpAuth::IDENT_SRC_PATH_LOOKUP);
