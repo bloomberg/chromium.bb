@@ -48,13 +48,16 @@ void Presentation::setDefaultRequest(PresentationRequest* request) {
 }
 
 PresentationReceiver* Presentation::receiver() {
-  PresentationController* controller = PresentationController::from(*frame());
-  auto* client = controller ? controller->client() : nullptr;
+  if (!frame())
+    return nullptr;
   // TODO(crbug.com/647296): only return something if the Blink instance is
   // running in presentation receiver mode. The flag PresentationReceiver could
   // be used for that.
-  if (!m_receiver)
+  if (!m_receiver) {
+    PresentationController* controller = PresentationController::from(*frame());
+    auto* client = controller ? controller->client() : nullptr;
     m_receiver = new PresentationReceiver(frame(), client);
+  }
   return m_receiver;
 }
 
