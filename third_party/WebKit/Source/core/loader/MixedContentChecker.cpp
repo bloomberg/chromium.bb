@@ -263,10 +263,11 @@ bool MixedContentChecker::shouldBlockFetch(
 
   switch (contextType) {
     case WebMixedContent::ContextType::OptionallyBlockable:
-      client->passiveInsecureContentFound(url);
       allowed = !strictMode;
-      if (allowed)
+      if (allowed) {
+        client->passiveInsecureContentFound(url);
         client->didDisplayInsecureContent();
+      }
       break;
 
     case WebMixedContent::ContextType::Blockable: {
