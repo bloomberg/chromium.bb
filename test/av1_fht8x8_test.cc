@@ -34,6 +34,10 @@ void fht8x8_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
   av1_fht8x8_c(in, out, stride, tx_type);
 }
 
+void iht8x8_ref(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
+  av1_iht8x8_64_add_c(in, out, stride, tx_type);
+}
+
 #if CONFIG_AOM_HIGHBITDEPTH
 typedef void (*IHbdHtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                            int tx_type, int bd);
@@ -60,6 +64,7 @@ class AV1Trans8x8HT : public libaom_test::TransformTestBase,
     pitch_ = 8;
     height_ = 8;
     fwd_txfm_ref = fht8x8_ref;
+    inv_txfm_ref = iht8x8_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
     num_coeffs_ = GET_PARAM(4);
@@ -79,7 +84,14 @@ class AV1Trans8x8HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
+TEST_P(AV1Trans8x8HT, MemCheck) { RunMemCheck(); }
 TEST_P(AV1Trans8x8HT, CoeffCheck) { RunCoeffCheck(); }
+// Note:
+//  TODO(luoyi): Add tx_type, 9-15 for inverse transform.
+//  Need cleanup since same tests may be done in fdct8x8_test.cc
+// TEST_P(AV1Trans8x8HT, AccuracyCheck) { RunAccuracyCheck(0); }
+// TEST_P(AV1Trans8x8HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
+// TEST_P(AV1Trans8x8HT, InvCoeffCheck) { RunInvCoeffCheck(); }
 
 #if CONFIG_AOM_HIGHBITDEPTH
 class AV1HighbdTrans8x8HT : public ::testing::TestWithParam<HighbdHt8x8Param> {
