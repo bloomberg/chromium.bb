@@ -18,14 +18,14 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
 WATERFALL = {
-  'builders': [
-    'GPU Win Builder',
-    'GPU Win Builder (dbg)',
-    'GPU Mac Builder',
-    'GPU Mac Builder (dbg)',
-    'GPU Linux Builder',
-    'GPU Linux Builder (dbg)',
-   ],
+  'builders': {
+    'GPU Win Builder' : {},
+    'GPU Win Builder (dbg)' : {},
+    'GPU Mac Builder' : {},
+    'GPU Mac Builder (dbg)' : {},
+    'GPU Linux Builder' : {},
+    'GPU Linux Builder (dbg)' : {},
+   },
 
   'testers': {
     'Win7 Release (NVIDIA)': {
@@ -122,17 +122,19 @@ WATERFALL = {
 }
 
 FYI_WATERFALL = {
-  'builders': [
-    'GPU Win Builder',
-    'GPU Win Builder (dbg)',
-    'GPU Win x64 Builder',
-    'GPU Win x64 Builder (dbg)',
-    'GPU Mac Builder',
-    'GPU Mac Builder (dbg)',
-    'GPU Linux Builder',
-    'GPU Linux Builder (dbg)',
-    'Linux ChromiumOS Builder',
-   ],
+  'builders': {
+    'GPU Win Builder' : {},
+    'GPU Win Builder (dbg)' : {},
+    'GPU Win x64 Builder' : {},
+    'GPU Win x64 Builder (dbg)' : {},
+    'GPU Mac Builder' : {},
+    'GPU Mac Builder (dbg)' : {},
+    'GPU Linux Builder' : {},
+    'GPU Linux Builder (dbg)' : {},
+    'Linux ChromiumOS Builder' : {
+      'additional_compile_targets' : [ "All" ]
+    },
+  },
 
   'testers': {
     'Win7 Release (NVIDIA)': {
@@ -1414,8 +1416,8 @@ def generate_telemetry_tests(tester_name, tester_config,
 
 def generate_all_tests(waterfall, is_fyi):
   tests = {}
-  for builder in waterfall['builders']:
-    tests[builder] = {}
+  for builder, config in waterfall['builders'].iteritems():
+    tests[builder] = config
   for name, config in waterfall['testers'].iteritems():
     gtests = generate_gtests(name, config, COMMON_GTESTS, is_fyi)
     isolated_scripts = \

@@ -2075,7 +2075,11 @@
   "GPU Win Builder (dbg)": {},
   "GPU Win x64 Builder": {},
   "GPU Win x64 Builder (dbg)": {},
-  "Linux ChromiumOS Builder": {},
+  "Linux ChromiumOS Builder": {
+    "additional_compile_targets": [
+      "All"
+    ]
+  },
   "Linux Debug (NVIDIA)": {
     "gtest_tests": [
       {
