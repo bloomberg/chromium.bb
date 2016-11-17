@@ -26,6 +26,7 @@ namespace offline_pages {
 
 namespace {
 const bool kUserRequest = true;
+const bool kStartOfProcessing = true;
 const int kMinDurationSeconds = 1;
 const int kMaxDurationSeconds = 7 * 24 * 60 * 60;  // 7 days
 const int kDurationBuckets = 50;
@@ -371,7 +372,7 @@ void RequestCoordinator::RemoveRequests(
   }
 
   if (canceled)
-    TryNextRequest();
+    TryNextRequest(!kStartOfProcessing);
 }
 
 void RequestCoordinator::PauseRequests(
@@ -391,7 +392,7 @@ void RequestCoordinator::PauseRequests(
   }
 
   if (canceled)
-    TryNextRequest();
+    TryNextRequest(!kStartOfProcessing);
 }
 
 void RequestCoordinator::ResumeRequests(
@@ -471,7 +472,7 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 // the next request.
 void RequestCoordinator::CompletedRequestCallback(
     const MultipleItemStatuses& status) {
-  TryNextRequest();
+  TryNextRequest(!kStartOfProcessing);
 }
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
@@ -513,7 +514,7 @@ void RequestCoordinator::HandleWatchdogTimeout() {
   Offliner::RequestStatus watchdog_status =
       Offliner::REQUEST_COORDINATOR_TIMED_OUT;
   StopPrerendering(watchdog_status);
-  TryNextRequest();
+  TryNextRequest(!kStartOfProcessing);
 }
 
 // Returns true if the caller should expect a callback, false otherwise. For
@@ -540,7 +541,7 @@ bool RequestCoordinator::StartProcessingInternal(
   // budget.
   operation_start_time_ = base::Time::Now();
 
-  TryNextRequest();
+  TryNextRequest(kStartOfProcessing);
 
   return true;
 }
@@ -584,7 +585,7 @@ RequestCoordinator::TryImmediateStart() {
     return OfflinerImmediateStartStatus::NOT_ACCEPTED;
 }
 
-void RequestCoordinator::TryNextRequest() {
+void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   is_starting_ = true;
   base::TimeDelta processing_time_budget;
   if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
@@ -596,11 +597,20 @@ void RequestCoordinator::TryNextRequest() {
         policy_->GetProcessingTimeBudgetForImmediateLoadInSeconds());
   }
 
+  // Determine connection type. If just starting processing, the best source is
+  // from the current device conditions (they are fresh and motivated starting
+  // processing whereas NetworkChangeNotifier may lag reality).
+  net::NetworkChangeNotifier::ConnectionType connection_type;
+  if (is_start_of_processing)
+    connection_type = current_conditions_->GetNetConnectionType();
+  else
+    connection_type = GetConnectionType();
+
   // If there is no network or no time left in the budget, return to the
   // scheduler. We do not remove the pending scheduler task that was set
   // up earlier in case we run out of time, so the background scheduler
   // will return to us at the next opportunity to run background tasks.
-  if (GetConnectionType() ==
+  if (connection_type ==
           net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE ||
       (base::Time::Now() - operation_start_time_) > processing_time_budget) {
     is_starting_ = false;
@@ -759,7 +769,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
 
   UpdateRequestForCompletedAttempt(request, status);
   if (ShouldTryNextRequest(status))
-    TryNextRequest();
+    TryNextRequest(!kStartOfProcessing);
   else
     scheduler_callback_.Run(true);
 }

@@ -303,7 +303,7 @@ class RequestCoordinator : public KeyedService,
   // of the previous one.
   bool ShouldTryNextRequest(Offliner::RequestStatus previous_request_status);
 
-  void TryNextRequest();
+  void TryNextRequest(bool is_start_of_processing);
 
   // If there is an active request in the list, cancel that request.
   bool CancelActiveRequestIfItMatches(const std::vector<int64_t>& request_ids);
