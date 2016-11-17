@@ -3787,6 +3787,16 @@ interface MIDIPort : EventTarget
     method constructor
     method open
     setter onstatechange
+interface Magnetometer : Sensor
+    attribute @@toStringTag
+    getter reading
+    method constructor
+interface MagnetometerReading : SensorReading
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
 interface MediaDeviceInfo
     attribute @@toStringTag
     getter deviceId

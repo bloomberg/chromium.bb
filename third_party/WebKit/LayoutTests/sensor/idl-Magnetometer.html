@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+  // Test that Magnetometer interface exists
+  assert_true('Magnetometer' in window);
+  // Test that MagnetometerReading interface exists
+  assert_true('MagnetometerReading' in window);
+}, 'Test that the Magnetometer and MagnetometerReading interfaces'
+   + ' are present.');
+
+</script>
