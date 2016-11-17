@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict.h"
 
 #include <utility>
 
@@ -13,16 +13,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/values.h"
+
+#if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "components/policy/core/common/schema.h"
 
 using base::win::RegistryKeyIterator;
 using base::win::RegistryValueIterator;
+#endif  // #if defined(OS_WIN)
 
 namespace policy {
 
 namespace {
 
+#if defined(OS_WIN)
 // Validates that a key is numerical. Used for lists below.
 bool IsKeyNumerical(const std::string& key) {
   int temp = 0;
@@ -60,7 +64,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
         std::unique_ptr<base::Value> converted =
             ConvertValue(**entry, schema.GetItems());
         if (converted)
-          result->Append(converted.release());
+          result->Append(std::move(converted));
       }
       return std::move(result);
     }
@@ -117,7 +121,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
           std::unique_ptr<base::Value> converted =
               ConvertValue(it.value(), schema.GetItems());
           if (converted)
-            result->Append(converted.release());
+            result->Append(std::move(converted));
         }
         return std::move(result);
       }
@@ -143,6 +147,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
                << " to " << schema.type();
   return nullptr;
 }
+#endif  // #if defined(OS_WIN)
 
 }  // namespace
 
@@ -247,6 +252,7 @@ void RegistryDict::Swap(RegistryDict* other) {
   values_.swap(other->values_);
 }
 
+#if defined(OS_WIN)
 void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
   ClearKeys();
   ClearValues();
@@ -336,7 +342,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
         std::unique_ptr<base::Value> converted =
             entry->second->ConvertToJSON(item_schema);
         if (converted)
-          result->Append(converted.release());
+          result->Append(std::move(converted));
       }
       for (RegistryDict::ValueMap::const_iterator entry(values_.begin());
            entry != values_.end(); ++entry) {
@@ -345,7 +351,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
         std::unique_ptr<base::Value> converted =
             ConvertValue(*entry->second, item_schema);
         if (converted)
-          result->Append(converted.release());
+          result->Append(std::move(converted));
       }
       return std::move(result);
     }
@@ -355,5 +361,5 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
 
   return nullptr;
 }
-
+#endif  // #if defined(OS_WIN)
 }  // namespace policy

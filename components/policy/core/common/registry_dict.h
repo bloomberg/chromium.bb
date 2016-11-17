@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_WIN_H_
-#define COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_WIN_H_
-
-#include <windows.h>
+#ifndef COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_H_
+#define COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_H_
 
 #include <map>
 #include <memory>
@@ -15,13 +13,15 @@
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace base {
 class Value;
 }
 
 namespace policy {
-
-class Schema;
 
 // A case-insensitive string comparison functor.
 struct POLICY_EXPORT CaseInsensitiveStringCompare {
@@ -69,6 +69,7 @@ class POLICY_EXPORT RegistryDict {
   // Swap with |other|.
   void Swap(RegistryDict* other);
 
+#if defined(OS_WIN)
   // Read a Windows registry subtree into this registry dictionary object.
   void ReadRegistry(HKEY hive, const base::string16& root);
 
@@ -76,7 +77,8 @@ class POLICY_EXPORT RegistryDict {
   // collisions, the key wins. |schema| is used to determine the expected type
   // for each policy.
   // The returned object is either a base::DictionaryValue or a base::ListValue.
-  std::unique_ptr<base::Value> ConvertToJSON(const Schema& schema) const;
+  std::unique_ptr<base::Value> ConvertToJSON(const class Schema& schema) const;
+#endif
 
   const KeyMap& keys() const { return keys_; }
   const ValueMap& values() const { return values_; }
@@ -90,4 +92,4 @@ class POLICY_EXPORT RegistryDict {
 
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_WIN_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_H_

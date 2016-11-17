@@ -7,8 +7,8 @@
 //
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa374407(v=vs.85).aspx
 
-#ifndef COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_WIN_H_
-#define COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_WIN_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_H_
 
 #include <memory>
 #include <vector>
@@ -41,4 +41,4 @@ POLICY_EXPORT bool ReadFile(const base::FilePath& file_path,
 }  // namespace preg_parser
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_WIN_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_PREG_PARSER_H_

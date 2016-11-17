@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/preg_parser_win.h"
+#include "components/policy/core/common/preg_parser.h"
 
 #include <utility>
 
@@ -12,9 +12,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_load_status.h"
-#include "components/policy/core/common/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -70,7 +71,7 @@ void SetString(RegistryDict* dict,
                  base::WrapUnique<base::Value>(new base::StringValue(value)));
 }
 
-TEST(PRegParserWinTest, TestParseFile) {
+TEST(PRegParserTest, TestParseFile) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
 
@@ -95,7 +96,8 @@ TEST(PRegParserWinTest, TestParseFile) {
       test_data_dir.AppendASCII("chrome/test/data/policy/registry.pol"));
   PolicyLoadStatusSample status;
   ASSERT_TRUE(preg_parser::ReadFile(
-      test_file, L"SOFTWARE\\Policies\\Chromium", &dict, &status));
+      test_file, base::ASCIIToUTF16("SOFTWARE\\Policies\\Chromium"),
+      &dict, &status));
 
   // Build the expected output dictionary.
   RegistryDict expected;

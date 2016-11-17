@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/preg_parser_win.h"
+#include "components/policy/core/common/preg_parser.h"
 
-#include <windows.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -27,13 +27,29 @@
 #include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_load_status.h"
-#include "components/policy/core/common/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict.h"
 
-namespace policy {
-namespace preg_parser {
+#if defined(OS_WIN)
+#include "windows.h"
+#else
+// Registry data type constants.
+#define REG_NONE 0
+#define REG_SZ 1
+#define REG_EXPAND_SZ 2
+#define REG_BINARY 3
+#define REG_DWORD_LITTLE_ENDIAN 4
+#define REG_DWORD_BIG_ENDIAN 5
+#define REG_LINK 6
+#define REG_MULTI_SZ 7
+#define REG_RESOURCE_LIST 8
+#define REG_FULL_RESOURCE_DESCRIPTOR 9
+#define REG_RESOURCE_REQUIREMENTS_LIST 10
+#define REG_QWORD_LITTLE_ENDIAN 11
+#endif
 
-const char kPRegFileHeader[8] =
-    { 'P', 'R', 'e', 'g', '\x01', '\x00', '\x00', '\x00' };
+using RegistryDict = policy::RegistryDict;
+
+namespace {
 
 // Maximum PReg file size we're willing to accept.
 const int64_t kMaxPRegFileSize = 1024 * 1024 * 16;
@@ -44,7 +60,7 @@ const base::char16 kDelimBracketClose = L']';
 const base::char16 kDelimSemicolon = L';';
 
 // Registry path separator.
-const base::char16 kRegistryPathSeparator[] = L"\\";
+const base::string16 kRegistryPathSeparator = base::ASCIIToUTF16("\\");
 
 // Magic strings for the PReg value field to trigger special actions.
 const char kActionTriggerPrefix[] = "**";
@@ -59,7 +75,9 @@ const char kActionTriggerSoft[] = "soft";
 // in which case -1 is returned.
 int NextChar(const uint8_t** cursor, const uint8_t* end) {
   // Only read the character if a full base::char16 is available.
-  if (*cursor + sizeof(base::char16) > end)
+  // This comparison makes sure no overflow can happen.
+  if (*cursor >= end ||
+      static_cast<size_t>(end - *cursor) < sizeof(base::char16))
     return -1;
 
   int result = **cursor | (*(*cursor + 1) << 8);
@@ -75,9 +93,10 @@ bool ReadFieldBinary(const uint8_t** cursor,
   if (size == 0)
     return true;
 
-  const uint8_t* field_end = *cursor + size;
-  if (field_end <= *cursor || field_end > end)
+  // Be careful to prevent possible overflows here (don't do *cursor + size).
+  if (*cursor >= end || static_cast<size_t>(end - *cursor) < size)
     return false;
+  const uint8_t* field_end = *cursor + size;
   std::copy(*cursor, field_end, data);
   *cursor = field_end;
   return true;
@@ -154,8 +173,10 @@ bool DecodePRegValue(uint32_t type,
   return false;
 }
 
-// Adds the record data passed via parameters to |dict| in case the data is
-// relevant policy for Chromium.
+// Adds |value| and |data| to |dict| or an appropriate sub-dictionary indicated
+// by |key_name|. Creates sub-dictionaries if necessary. Also handles special
+// action triggers, see |kActionTrigger*|, that can, for instance, remove an
+// existing value.
 void HandleRecord(const base::string16& key_name,
                   const base::string16& value,
                   uint32_t type,
@@ -205,7 +226,7 @@ void HandleRecord(const base::string16& key_name,
       dict->RemoveKey(key);
   } else if (base::StartsWith(action_trigger, kActionTriggerDel,
                               base::CompareCase::SENSITIVE)) {
-    dict->RemoveValue(
+  dict->RemoveValue(
         value_name.substr(arraysize(kActionTriggerPrefix) - 1 +
                           arraysize(kActionTriggerDel) - 1));
   } else if (base::StartsWith(action_trigger, kActionTriggerDelVals,
@@ -221,6 +242,14 @@ void HandleRecord(const base::string16& key_name,
     LOG(ERROR) << "Bad action trigger " << value_name;
   }
 }
+
+}  // namespace
+
+namespace policy {
+namespace preg_parser {
+
+const char kPRegFileHeader[8] =
+    { 'P', 'R', 'e', 'g', '\x01', '\x00', '\x00', '\x00' };
 
 bool ReadFile(const base::FilePath& file_path,
               const base::string16& root,
@@ -303,9 +332,7 @@ bool ReadFile(const base::FilePath& file_path,
       break;
 
     // Process the record if it is within the |root| subtree.
-    if (base::StartsWith(base::i18n::ToLower(key_name),
-                         base::i18n::ToLower(root),
-                         base::CompareCase::SENSITIVE))
+    if (base::StartsWith(key_name, root, base::CompareCase::INSENSITIVE_ASCII))
       HandleRecord(key_name.substr(root.size()), value, type, data, dict);
   }
 

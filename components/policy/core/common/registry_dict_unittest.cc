@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict.h"
 
 #include <string>
 #include <utility>
@@ -184,6 +184,7 @@ TEST(RegistryDictTest, Swap) {
   EXPECT_FALSE(dict_a.GetKey("two"));
 }
 
+#if defined(OS_WIN)
 TEST(RegistryDictTest, ConvertToJSON) {
   RegistryDict test_dict;
 
@@ -244,7 +245,7 @@ TEST(RegistryDictTest, ConvertToJSON) {
   expected.Set("string-to-int",
                new base::FundamentalValue(static_cast<int>(0)));
   expected_list.reset(new base::ListValue());
-  expected_list->Append(new base::StringValue("value"));
+  expected_list->Append(base::MakeUnique<base::StringValue>("value"));
   expected_subdict.reset(new base::DictionaryValue());
   expected_subdict->Set("key", std::move(expected_list));
   expected.Set("string-to-dict", std::move(expected_subdict));
@@ -287,6 +288,7 @@ TEST(RegistryDictTest, NonSequentialConvertToJSON) {
 
   EXPECT_TRUE(base::Value::Equals(actual.get(), &expected));
 }
+#endif
 
 TEST(RegistryDictTest, KeyValueNameClashes) {
   RegistryDict test_dict;

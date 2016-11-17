@@ -112,10 +112,6 @@ source_set("internal") {
       "policy_types.h",
       "preferences_mac.cc",
       "preferences_mac.h",
-      "preg_parser_win.cc",
-      "preg_parser_win.h",
-      "registry_dict_win.cc",
-      "registry_dict_win.h",
       "remote_commands/remote_command_job.cc",
       "remote_commands/remote_command_job.h",
       "remote_commands/remote_commands_factory.cc",
@@ -159,6 +155,14 @@ source_set("internal") {
         "shlwapi.lib",
         "userenv.lib",
         "ntdsapi.lib",
+      ]
+    }
+    if (is_win || is_chromeos) {
+      sources += [
+        "preg_parser.cc",
+        "preg_parser.h",
+        "registry_dict.cc",
+        "registry_dict.h",
       ]
     }
     if (is_android) {
@@ -310,8 +314,6 @@ if (enable_configuration_policy) {
       "policy_map_unittest.cc",
       "policy_service_impl_unittest.cc",
       "policy_statistics_collector_unittest.cc",
-      "preg_parser_win_unittest.cc",
-      "registry_dict_win_unittest.cc",
       "remote_commands/remote_commands_queue_unittest.cc",
       "remote_commands/remote_commands_service_unittest.cc",
       "schema_map_unittest.cc",
@@ -319,6 +321,12 @@ if (enable_configuration_policy) {
       "schema_registry_unittest.cc",
       "schema_unittest.cc",
     ]
+    if (is_win || is_chromeos) {
+      sources += [
+        "preg_parser_unittest.cc",
+        "registry_dict_unittest.cc",
+      ]
+    }
     if (is_chromeos) {
       sources += [ "proxy_policy_provider_unittest.cc" ]
     } else {
@@ -344,9 +352,8 @@ if (enable_configuration_policy) {
     if (is_mac || is_ios) {
       sources += [ "mac_util_unittest.cc" ]
     }
-
-    if (is_win) {
-      # Needed by policy_loader_win_unittest.cc and preg_parser_win_unittest.cc
+    if (is_win || is_chromeos) {
+      # Needed by policy_loader_win_unittest.cc and preg_parser_unittest.cc
       data = [
         "//chrome/test/data/policy/",
       ]
