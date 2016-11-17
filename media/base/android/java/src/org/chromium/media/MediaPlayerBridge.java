@@ -17,6 +17,7 @@ import android.util.Base64InputStream;
 import android.view.Surface;
 
 import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -260,11 +261,7 @@ public class MediaPlayerBridge {
             } catch (IOException e) {
                 return false;
             } finally {
-                try {
-                    if (fos != null) fos.close();
-                } catch (IOException e) {
-                    // Can't do anything.
-                }
+                StreamUtil.closeQuietly(fos);
             }
         }
 
