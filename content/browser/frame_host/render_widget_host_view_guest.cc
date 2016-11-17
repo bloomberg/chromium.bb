@@ -253,6 +253,12 @@ void RenderWidgetHostViewGuest::Destroy() {
 }
 
 gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
+  // We obtain the reference to native view from the owner RenderWidgetHostView.
+  // If the guest is embedded inside a cross-process frame, it is possible to
+  // reach here after the frame is detached in which case there will be no owner
+  // view.
+  if (!GetOwnerRenderWidgetHostView())
+    return gfx::Size();
   return RenderWidgetHostViewBase::GetPhysicalBackingSize();
 }
 

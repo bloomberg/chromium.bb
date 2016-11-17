@@ -17,6 +17,8 @@ class Size;
 namespace content {
 
 class GuestHost;
+class RenderWidgetHost;
+class SiteInstance;
 
 // Objects implement this interface to get notified about changes in the guest
 // WebContents and to provide necessary functionality.
@@ -93,6 +95,16 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // a BrowserPlugin even when we are using cross process frames for guests. It
   // should be removed after resolving https://crbug.com/642826).
   virtual bool CanUseCrossProcessFrames();
+
+  // Returns the RenderWidgetHost corresponding to the owner frame.
+  virtual RenderWidgetHost* GetOwnerRenderWidgetHost();
+
+  // The site instance of the owner frame.
+  virtual SiteInstance* GetOwnerSiteInstance();
+
+  // Returns true if the corresponding guest is allowed to be embedded inside an
+  // <iframe> which is cross process.
+  virtual bool CanBeEmbeddedInsideCrossProcessFrames();
 };
 
 }  // namespace content

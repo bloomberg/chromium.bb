@@ -169,15 +169,16 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   if (!rfh)
     return;
 
+  guest_view->SetEmbedderFrame(embedder_render_process_id,
+                               embedder_render_frame_id);
+
   base::DictionaryValue attach_params;
   attach_params.SetInteger(guest_view::kElementWidth, element_size.width());
   attach_params.SetInteger(guest_view::kElementHeight, element_size.height());
   auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
   CHECK(manager);
-  manager->AttachGuest(embedder_render_process_id,
-                       element_instance_id,
-                       guest_instance_id,
-                       attach_params);
+  manager->AttachGuest(embedder_render_process_id, element_instance_id,
+                       guest_instance_id, attach_params);
 
   rfh->Send(
       new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(

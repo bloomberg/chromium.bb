@@ -45,7 +45,12 @@ specific_include_rules = {
   ],
   # TODO(kenrb): RenderWidgetHostViewChildFrame should eventually be moved
   # to content/renderer_host, at which time this can be removed.
+  # RenderWidgetHostViewGuest dependency is needed to allow for routing mouse
+  # events to the correct owner RenderWidgetHostViewBase. It should be removed
+  # when all inner WebContents are based on OOPIF structure (as opposed to
+  # BrowserPlugin).
   "render_widget_host_input_event_router.cc": [
     "+content/browser/frame_host/render_widget_host_view_child_frame.h",
+    "+content/browser/frame_host/render_widget_host_view_guest.h",
   ],
 }

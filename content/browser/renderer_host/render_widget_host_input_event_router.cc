@@ -12,6 +12,7 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
@@ -197,7 +198,29 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
   // the embedding renderer and then BrowserPluginGuest.
   if (target && target->IsRenderWidgetHostViewGuest()) {
     ui::LatencyInfo latency_info;
-    root_view->ProcessMouseEvent(*event, latency_info);
+    RenderWidgetHostViewBase* owner_view =
+        static_cast<RenderWidgetHostViewGuest*>(target)
+            ->GetOwnerRenderWidgetHostView();
+    // In case there is nested RenderWidgetHostViewGuests (i.e., PDF inside
+    // <webview>), we will need the owner view of the top-most guest for input
+    // routing.
+    while (owner_view->IsRenderWidgetHostViewGuest()) {
+      owner_view = static_cast<RenderWidgetHostViewGuest*>(owner_view)
+                       ->GetOwnerRenderWidgetHostView();
+    }
+
+    if (owner_view != root_view) {
+      // This happens when the view is embedded inside a cross-process frame
+      // (i.e., owner view is a RenderWidgetHostViewChildFrame).
+      gfx::Point owner_point;
+      if (!root_view->TransformPointToCoordSpaceForView(
+              gfx::Point(event->x, event->y), owner_view, &owner_point)) {
+        return;
+      }
+      event->x = owner_point.x();
+      event->y = owner_point.y();
+    }
+    owner_view->ProcessMouseEvent(*event, latency_info);
     return;
   }
 

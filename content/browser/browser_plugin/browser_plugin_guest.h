@@ -65,6 +65,7 @@ namespace content {
 class BrowserPluginGuestManager;
 class RenderViewHostImpl;
 class RenderWidgetHost;
+class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SiteInstance;
@@ -278,6 +279,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
  private:
   class EmbedderVisibilityObserver;
+
+  // The RenderWidgetHostImpl corresponding to the owner frame of BrowserPlugin.
+  RenderWidgetHostImpl* GetOwnerRenderWidgetHost() const;
 
   void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
                     WebContentsImpl* owner_web_contents);

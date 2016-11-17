@@ -126,20 +126,31 @@ int BrowserPluginGuest::GetGuestProxyRoutingID() {
   if (guest_proxy_routing_id_ != MSG_ROUTING_NONE)
     return guest_proxy_routing_id_;
 
-  // Create a RenderFrameProxyHost for the guest in the embedder renderer
-  // process, so that the embedder can access the guest's window object.
-  // On reattachment, we can reuse the same RenderFrameProxyHost because
-  // the embedder process will always be the same even if the embedder
-  // WebContents changes.
+  // In order to enable the embedder to post messages to the
+  // guest, we need to create a RenderFrameProxyHost in root node of guest
+  // WebContents' frame tree (i.e., create a RenderFrameProxy in the embedder
+  // process which can be used by the embedder to post messages to the guest).
+  // The creation of RFPH for the reverse path, which enables the guest to post
+  // messages to the embedder, will be postponed to when the embedder posts its
+  // first message to the guest.
   //
   // TODO(fsamuel): Make sure this works for transferring guests across
   // owners in different processes. We probably need to clear the
   // |guest_proxy_routing_id_| and perform any necessary cleanup on Detach
   // to enable this.
-  SiteInstance* owner_site_instance = owner_web_contents_->GetSiteInstance();
-  int proxy_routing_id =
-      GetWebContents()->GetFrameTree()->root()->render_manager()->
-          CreateRenderFrameProxy(owner_site_instance);
+  //
+  // TODO(ekaramad): If the guest is embedded inside a cross-process <iframe>
+  // (e.g., <embed>-ed PDF), the reverse proxy will not be created and the
+  // posted message's source attribute will be null which in turn breaks the
+  // two-way messaging between the guest and the embedder. We should either
+  // create a RenderFrameProxyHost for the reverse path, or implement
+  // MimeHandlerViewGuest using OOPIF (https://crbug.com/659750).
+  SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
+  int proxy_routing_id = GetWebContents()
+                             ->GetFrameTree()
+                             ->root()
+                             ->render_manager()
+                             ->CreateRenderFrameProxy(owner_site_instance);
   guest_proxy_routing_id_ = RenderFrameProxyHost::FromID(
       owner_site_instance->GetProcess()->GetID(), proxy_routing_id)
           ->GetRenderViewHost()->GetRoutingID();
@@ -168,6 +179,11 @@ void BrowserPluginGuest::WillDestroy() {
   is_in_destruction_ = true;
   owner_web_contents_ = nullptr;
   attached_ = false;
+}
+
+RenderWidgetHostImpl* BrowserPluginGuest::GetOwnerRenderWidgetHost() const {
+  return static_cast<RenderWidgetHostImpl*>(
+      delegate_->GetOwnerRenderWidgetHost());
 }
 
 void BrowserPluginGuest::Init() {
@@ -241,12 +257,11 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
   RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
       web_contents()->GetRenderWidgetHostView());
+
   // Until the guest is attached, it should not be handling input events.
   if (attached() && rwhv &&
-      rwhv->OnMessageReceivedFromEmbedder(
-          message,
-          RenderWidgetHostImpl::From(
-              embedder_web_contents()->GetRenderViewHost()->GetWidget()))) {
+      rwhv->OnMessageReceivedFromEmbedder(message,
+                                          GetOwnerRenderWidgetHost())) {
     return true;
   }
 
@@ -374,9 +389,9 @@ bool BrowserPluginGuest::IsGuest(RenderViewHostImpl* render_view_host) {
 }
 
 RenderWidgetHostView* BrowserPluginGuest::GetOwnerRenderWidgetHostView() {
-  if (!owner_web_contents_)
-    return nullptr;
-  return owner_web_contents_->GetRenderWidgetHostView();
+  if (RenderWidgetHostImpl* owner = GetOwnerRenderWidgetHost())
+    return owner->GetView();
+  return nullptr;
 }
 
 void BrowserPluginGuest::UpdateVisibility() {
@@ -448,8 +463,8 @@ void BrowserPluginGuest::ResendEventToEmbedder(
     return;
 
   DCHECK(browser_plugin_instance_id_);
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      embedder_web_contents()->GetMainFrame()->GetView());
+  RenderWidgetHostViewBase* view =
+      static_cast<RenderWidgetHostViewBase*>(GetOwnerRenderWidgetHostView());
 
   gfx::Vector2d offset_from_embedder = guest_window_rect_.OffsetFromOrigin();
   if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
@@ -506,7 +521,12 @@ void BrowserPluginGuest::SendMessageToEmbedder(
     pending_messages_.push_back(std::move(msg));
     return;
   }
-  owner_web_contents_->Send(msg.release());
+
+  // If the guest is inside a cross-process frame, it is possible to get here
+  // after the owner frame is detached. Then, the owner RenderWidgetHost will
+  // be null and the message is dropped.
+  if (auto* rwh = GetOwnerRenderWidgetHost())
+    rwh->Send(msg.release());
 }
 
 void BrowserPluginGuest::DragSourceEndedAt(int client_x,

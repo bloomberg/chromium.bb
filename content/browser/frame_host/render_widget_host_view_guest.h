@@ -126,6 +126,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                        InputEventAckState ack_result) override;
 
   bool IsRenderWidgetHostViewGuest() override;
+  RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
  protected:
   friend class RenderWidgetHostView;
@@ -135,8 +136,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       RenderWidgetHost* widget,
       BrowserPluginGuest* guest,
       base::WeakPtr<RenderWidgetHostViewBase> platform_view);
-
-  RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
   // Since we now route GestureEvents directly to the guest renderer, we need
   // a way to make sure that the BrowserPlugin in the embedder gets focused so

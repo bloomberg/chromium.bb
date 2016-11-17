@@ -20,7 +20,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
@@ -117,6 +119,11 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
       return;
 
     guest_->web_contents()->SetAudioMuted(muted);
+  }
+
+  void RenderFrameDeleted(content::RenderFrameHost* rfh) override {
+    guest_->OnRenderFrameHostDeleted(rfh->GetProcess()->GetID(),
+                                     rfh->GetRoutingID());
   }
 
  private:
@@ -400,6 +407,8 @@ WebContents* GuestViewBase::CreateNewGuestWindow(
       create_params);
 }
 
+void GuestViewBase::OnRenderFrameHostDeleted(int process_id, int routing_id) {}
+
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   DCHECK(guest_proxy_routing_id_ == MSG_ROUTING_NONE ||
          guest_proxy_routing_id == guest_proxy_routing_id_);
@@ -416,9 +425,8 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   DidAttachToEmbedder();
 
   // Inform the associated GuestViewContainer that the contentWindow is ready.
-  embedder_web_contents()->Send(new GuestViewMsg_GuestAttached(
-      element_instance_id_,
-      guest_proxy_routing_id));
+  GetOwnerRenderWidgetHost()->Send(new GuestViewMsg_GuestAttached(
+      element_instance_id_, guest_proxy_routing_id));
 
   SendQueuedEvents();
 }
@@ -724,6 +732,32 @@ void GuestViewBase::FindReply(WebContents* source,
                                                       active_match_ordinal,
                                                       final_update);
   }
+}
+
+content::RenderWidgetHost* GuestViewBase::GetOwnerRenderWidgetHost() {
+  // We assume guests live inside an owner RenderFrame but the RenderFrame may
+  // not be cross-process. In case a type of guest should be allowed to be
+  // embedded in a cross-process frame, this method should be overrode for that
+  // specific guest type. For all other guests, the owner RenderWidgetHost is
+  // that of the owner WebContents.
+  if (GetOwnerWebContents() &&
+      GetOwnerWebContents()->GetRenderWidgetHostView()) {
+    return GetOwnerWebContents()
+        ->GetRenderWidgetHostView()
+        ->GetRenderWidgetHost();
+  }
+  return nullptr;
+}
+
+content::SiteInstance* GuestViewBase::GetOwnerSiteInstance() {
+  // We assume guests live inside an owner RenderFrame but the RenderFrame may
+  // not be cross-process. In case a type of guest should be allowed to be
+  // embedded in a cross-process frame, this method should be overrode for that
+  // specific guest type. For all other guests, the owner site instance can be
+  // from the owner WebContents.
+  if (auto* owner_contents = GetOwnerWebContents())
+    return owner_contents->GetSiteInstance();
+  return nullptr;
 }
 
 void GuestViewBase::OnZoomChanged(

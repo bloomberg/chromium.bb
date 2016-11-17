@@ -12,8 +12,11 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
@@ -76,14 +79,52 @@ GuestViewBase* MimeHandlerViewGuest::Create(WebContents* owner_web_contents) {
 
 MimeHandlerViewGuest::MimeHandlerViewGuest(WebContents* owner_web_contents)
     : GuestView<MimeHandlerViewGuest>(owner_web_contents),
-      delegate_(ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(
-          this)) {}
+      delegate_(
+          ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(this)),
+      embedder_frame_process_id_(content::ChildProcessHost::kInvalidUniqueID),
+      embedder_frame_routing_id_(MSG_ROUTING_NONE),
+      embedder_widget_routing_id_(MSG_ROUTING_NONE) {}
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
 
 bool MimeHandlerViewGuest::CanUseCrossProcessFrames() {
   return false;
+}
+
+content::RenderWidgetHost* MimeHandlerViewGuest::GetOwnerRenderWidgetHost() {
+  DCHECK_NE(embedder_widget_routing_id_, MSG_ROUTING_NONE);
+  return content::RenderWidgetHost::FromID(embedder_frame_process_id_,
+                                           embedder_widget_routing_id_);
+}
+
+content::SiteInstance* MimeHandlerViewGuest::GetOwnerSiteInstance() {
+  DCHECK_NE(embedder_frame_routing_id_, MSG_ROUTING_NONE);
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      embedder_frame_process_id_, embedder_frame_routing_id_);
+  return rfh ? rfh->GetSiteInstance() : nullptr;
+}
+
+bool MimeHandlerViewGuest::CanBeEmbeddedInsideCrossProcessFrames() {
+  return true;
+}
+
+void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
+  DCHECK_NE(MSG_ROUTING_NONE, routing_id);
+  DCHECK_EQ(MSG_ROUTING_NONE, embedder_frame_routing_id_);
+
+  embedder_frame_process_id_ = process_id;
+  embedder_frame_routing_id_ = routing_id;
+
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(process_id, routing_id);
+
+  if (rfh && rfh->GetView()) {
+    embedder_widget_routing_id_ =
+        rfh->GetView()->GetRenderWidgetHost()->GetRoutingID();
+  }
+
+  DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
 }
 
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
@@ -240,13 +281,24 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
   return true;
 }
 
+void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
+                                                    int routing_id) {
+  if (process_id == embedder_frame_process_id_ &&
+      routing_id == embedder_frame_routing_id_)
+    Destroy();
+}
+
 void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
   // Assume the embedder WebContents is valid here.
   DCHECK(embedder_web_contents());
 
-  embedder_web_contents()->Send(
-      new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
-          element_instance_id()));
+  // If the guest is embedded inside a cross-process frame and the frame is
+  // removed before the guest is properly loaded, then owner RenderWidgetHost
+  // will be nullptr.
+  if (auto* rwh = GetOwnerRenderWidgetHost()) {
+    rwh->Send(new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
+        element_instance_id()));
+  }
 }
 
 base::WeakPtr<StreamContainer> MimeHandlerViewGuest::GetStream() const {
