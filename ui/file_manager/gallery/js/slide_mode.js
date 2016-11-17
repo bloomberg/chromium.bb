@@ -409,7 +409,13 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.editBarMode_ = util.createChild(this.container_, 'edit-modal');
+  this.editBarMode_ =
+      /** @type {!HTMLElement} */ (document.createElement('div'));
+  this.editBarMode_.className = 'edit-modal';
+  // Edit modal bar should be inserted before the bottom toolbar to make the tab
+  // order and visual position consistent.
+  this.container_.insertBefore(
+      this.editBarMode_, document.querySelector('#bottom-toolbar'));
 
   /**
    * @type {!HTMLElement}
