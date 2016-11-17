@@ -78,6 +78,31 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     return prefs_.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected);
   }
 
+  void ExpectPrefs(bool sber_reporting,
+                   bool scout_reporting,
+                   bool scout_group) {
+    LOG(INFO) << "Pref values: sber=" << sber_reporting
+              << " scout=" << scout_reporting << " scout_group=" << scout_group;
+    EXPECT_EQ(sber_reporting,
+              prefs_.GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
+    EXPECT_EQ(scout_reporting,
+              prefs_.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
+    EXPECT_EQ(scout_group,
+              prefs_.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected));
+  }
+
+  void ExpectPrefsExist(bool sber_reporting,
+                        bool scout_reporting,
+                        bool scout_group) {
+    LOG(INFO) << "Prefs exist: sber=" << sber_reporting
+              << " scout=" << scout_reporting << " scout_group=" << scout_group;
+    EXPECT_EQ(sber_reporting,
+              prefs_.HasPrefPath(prefs::kSafeBrowsingExtendedReportingEnabled));
+    EXPECT_EQ(scout_reporting,
+              prefs_.HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled));
+    EXPECT_EQ(scout_group,
+              prefs_.HasPrefPath(prefs::kSafeBrowsingScoutGroupSelected));
+  }
   TestingPrefServiceSimple prefs_;
 
  private:
@@ -163,10 +188,12 @@ TEST_F(SafeBrowsingPrefsTest, InitPrefs_ForceScoutGroupOnOff) {
   InitPrefs();
   EXPECT_TRUE(IsScoutGroupSelected());
 
-  // ScoutGroup remains on if switches are cleared.
+  // ScoutGroup remains on if switches are cleared, but only if an experiment
+  // is active (since being in the Control group automatically clears the
+  // Scout prefs).
   base::CommandLine::StringVector empty;
   base::CommandLine::ForCurrentProcess()->InitFromArgv(empty);
-  InitPrefs();
+  ResetExperiments(/*can_show_scout=*/true, /*only_show_scout=*/false);
   EXPECT_TRUE(IsScoutGroupSelected());
 
   // Nonsense values are ignored and ScoutGroup is unchanged.
@@ -181,6 +208,202 @@ TEST_F(SafeBrowsingPrefsTest, InitPrefs_ForceScoutGroupOnOff) {
       kSwitchForceScoutGroup, "false");
   InitPrefs();
   EXPECT_FALSE(IsScoutGroupSelected());
+}
+
+// Test all combinations of prefs during initialization when neither experiment
+// is on (ie: control group). In all cases the Scout prefs should be cleared,
+// and the SBER pref may get switched.
+TEST_F(SafeBrowsingPrefsTest, InitPrefs_Control) {
+  // Turn both experiments off.
+  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/false);
+
+  // Default case (everything off) - no change on init.
+  ResetPrefs(false, false, false);
+  InitPrefs();
+  ExpectPrefs(false, false, false);
+  // SBER pref exists because it was set to false above.
+  ExpectPrefsExist(true, false, false);
+
+  // ScoutGroup on - SBER cleared since Scout opt-in was shown but Scout pref
+  // was not chosen. Scout prefs cleared.
+  ResetPrefs(false, false, true);
+  InitPrefs();
+  ExpectPrefs(false, false, false);
+  ExpectPrefsExist(true, false, false);
+
+  // ScoutReporting on without ScoutGroup - SBER turns on since user opted-in to
+  // broader Scout reporting, we can continue collecting the SBER subset. Scout
+  // prefs cleared.
+  ResetPrefs(false, true, false);
+  InitPrefs();
+  ExpectPrefs(true, false, false);
+  ExpectPrefsExist(true, false, false);
+
+  // ScoutReporting and ScoutGroup on - SBER turns on since user opted-in to
+  // broader Scout reporting, we can continue collecting the SBER subset. Scout
+  // prefs cleared.
+  ResetPrefs(false, true, true);
+  InitPrefs();
+  ExpectPrefs(true, false, false);
+  ExpectPrefsExist(true, false, false);
+
+  // SBER on - no change on init since ScoutGroup is off implying that user
+  // never saw Scout opt-in text. Scout prefs remain cleared.
+  ResetPrefs(true, false, false);
+  InitPrefs();
+  ExpectPrefs(true, false, false);
+  ExpectPrefsExist(true, false, false);
+
+  // SBER and ScoutGroup on - SBER cleared. User previously opted-in to SBER
+  // and they saw Scout opt-in text (ie. ScoutGroup on), but chose not to opt-in
+  // to Scout reporting. We want them to re-evaluate their choice of SBER since
+  // the lack of Scout opt-in was a conscious choice. Scout cleared.
+  ResetPrefs(true, false, true);
+  InitPrefs();
+  ExpectPrefs(false, false, false);
+  ExpectPrefsExist(true, false, false);
+
+  // SBER and ScoutReporting on. User has opted-in to broader level of reporting
+  // so SBER stays on. Scout prefs cleared.
+  ResetPrefs(true, true, false);
+  InitPrefs();
+  ExpectPrefs(true, false, false);
+  ExpectPrefsExist(true, false, false);
+
+  // Everything on. User has opted-in to broader level of reporting so SBER
+  // stays on. Scout prefs cleared.
+  ResetPrefs(true, true, true);
+  InitPrefs();
+  ExpectPrefs(true, false, false);
+  ExpectPrefs(true, false, false);
+}
+
+// Tests a unique case where the Extended Reporting pref will be Cleared instead
+// of set to False in order to mimic the state of the Scout reporting pref.
+// This happens when a user is in the OnlyShowScoutOptIn experiment but never
+// encounters a security issue so never sees the Scout opt-in. This user then
+// returns to the Control group having never seen the Scout opt-in, so their
+// Scout Reporting pref is un-set. We want to return their SBER pref to the
+// unset state as well.
+TEST_F(SafeBrowsingPrefsTest, InitPrefs_Control_SberPrefCleared) {
+  // Turn both experiments off.
+  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/false);
+
+  // Set the user's old SBER pref to on to be explicit.
+  prefs_.SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, true);
+  // User is in the OnlyShowScoutOptIn experiment so they go directly to the
+  // Scout Group.
+  prefs_.SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+  // But they never see a security popup or change the setting manually so the
+  // Scout pref remains unset.
+  prefs_.ClearPref(prefs::kSafeBrowsingScoutReportingEnabled);
+
+  InitPrefs();
+
+  // All pref values should be false and unset.
+  ExpectPrefs(false, false, false);
+  ExpectPrefsExist(false, false, false);
+}
+
+// Test all combinations of prefs during initialization when the CanShowScout
+// experiment is on.
+TEST_F(SafeBrowsingPrefsTest, InitPrefs_CanShowScout) {
+  // Turn the CanShowScout experiment on.
+  ResetExperiments(/*can_show_scout=*/true, /*only_show_scout=*/false);
+
+  // Default case (everything off) - ScoutGroup turns on because SBER is off.
+  ResetPrefs(false, false, false);
+  InitPrefs();
+  ExpectPrefs(false, false, true);
+
+  // ScoutGroup on - no change on init since ScoutGroup is already on.
+  ResetPrefs(false, false, true);
+  InitPrefs();
+  ExpectPrefs(false, false, true);
+
+  // ScoutReporting on without ScoutGroup - ScoutGroup turns on because SBER is
+  // off.
+  ResetPrefs(false, true, false);
+  InitPrefs();
+  ExpectPrefs(false, true, true);
+
+  // ScoutReporting and ScoutGroup on - no change on init since ScoutGroup is
+  // already on.
+  ResetPrefs(false, true, true);
+  InitPrefs();
+  ExpectPrefs(false, true, true);
+
+  // SBER on - no change on init. Will wait for first security incident before
+  // turning on ScoutGroup and displaying the Scout opt-in.
+  ResetPrefs(true, false, false);
+  InitPrefs();
+  ExpectPrefs(true, false, false);
+
+  // SBER and ScoutGroup on - no change on init since ScoutGroup is already on.
+  ResetPrefs(true, false, true);
+  InitPrefs();
+  ExpectPrefs(true, false, true);
+
+  // SBER and ScoutReporting on - no change on init because SBER is on.
+  // ScoutGroup will turn on on next security incident.
+  ResetPrefs(true, true, false);
+  InitPrefs();
+  ExpectPrefs(true, true, false);
+
+  // Everything on - no change on init since ScoutGroup is already on.
+  ResetPrefs(true, true, true);
+  InitPrefs();
+  ExpectPrefs(true, true, true);
+}
+
+// Test all combinations of prefs during initialization when the OnlyShowScout
+// experiment is on.
+TEST_F(SafeBrowsingPrefsTest, InitPrefs_OnlyShowScout) {
+  // Turn the OnlyShowScout experiment on.
+  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/true);
+
+  // Default case (everything off) - ScoutGroup turns on.
+  ResetPrefs(false, false, false);
+  InitPrefs();
+  ExpectPrefs(false, false, true);
+
+  // ScoutGroup on - no change on init since ScoutGroup is already on.
+  ResetPrefs(false, false, true);
+  InitPrefs();
+  ExpectPrefs(false, false, true);
+
+  // ScoutReporting on without ScoutGroup - ScoutGroup turns on.
+  ResetPrefs(false, true, false);
+  InitPrefs();
+  ExpectPrefs(false, true, true);
+
+  // ScoutReporting and ScoutGroup on - no change on init since ScoutGroup is
+  // already on.
+  ResetPrefs(false, true, true);
+  InitPrefs();
+  ExpectPrefs(false, true, true);
+
+  // SBER on - ScoutGroup turns on immediately, not waiting for first security
+  // incident.
+  ResetPrefs(true, false, false);
+  InitPrefs();
+  ExpectPrefs(true, false, true);
+
+  // SBER and ScoutGroup on - no change on init since ScoutGroup is already on.
+  ResetPrefs(true, false, true);
+  InitPrefs();
+  ExpectPrefs(true, false, true);
+
+  // SBER and ScoutReporting on - ScoutGroup turns on immediately, not waiting
+  // for first security incident.
+  ResetPrefs(true, true, false);
+  InitPrefs();
+  ExpectPrefs(true, true, true);
+
+  // Everything on - no change on init since ScoutGroup is already on.
+  ResetPrefs(true, true, true);
+  InitPrefs();
+  ExpectPrefs(true, true, true);
 }
 
 TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {

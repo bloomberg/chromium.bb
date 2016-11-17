@@ -67,6 +67,7 @@ const char* GetExtendedReportingPrefName(const PrefService& prefs) {
 }
 
 void InitializeSafeBrowsingPrefs(PrefService* prefs) {
+  // First handle forcing kSafeBrowsingScoutGroupSelected pref via cmd-line.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kSwitchForceScoutGroup)) {
     std::string switch_value =
@@ -77,6 +78,54 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
     } else if (switch_value == kForceScoutGroupValueFalse) {
       prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, false);
     }
+
+    // If the switch is used, don't process the experiment state.
+    return;
+  }
+
+  // Handle the three possible experiment states.
+  if (base::FeatureList::IsEnabled(kOnlyShowScoutOptIn)) {
+    // OnlyShowScoutOptIn immediately turns on ScoutGroupSelected pref.
+    prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+  } else if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
+    // CanShowScoutOptIn will only turn on ScoutGroupSelected pref if the legacy
+    // SBER pref is false. Otherwise the legacy SBER pref will stay on and
+    // continue to be used until the next security incident, at which point
+    // the Scout pref will become the active one.
+    if (!prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled)) {
+      prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+    }
+  } else {
+    // Both experiment features are off, so this is the Control group. We must
+    // handle the possibility that the user was previously in an experiment
+    // group (above) that was reverted. We want to restore the user to a
+    // reasonable state based on the ScoutGroup and ScoutReporting preferences.
+    if (prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled)) {
+      // User opted-in to Scout which is broader than legacy Extended Reporting.
+      // Opt them in to Extended Reporting.
+      prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, true);
+    } else if (prefs->GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
+      // User was in the Scout Group (ie: seeing the Scout opt-in text) but did
+      // NOT opt-in to Scout. Assume this was a conscious choice and remove
+      // their legacy Extended Reporting opt-in as well. The user will have a
+      // chance to evaluate their choice next time they see the opt-in text.
+
+      // We make the Extended Reporting pref mimic the state of the Scout
+      // Reporting pref. So we either Clear it or set it to False.
+      if (prefs->HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled)) {
+        // Scout Reporting pref was explicitly set to false, so set the SBER
+        // pref to false.
+        prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, false);
+      } else {
+        // Scout Reporting pref is unset, so clear the SBER pref.
+        prefs->ClearPref(prefs::kSafeBrowsingExtendedReportingEnabled);
+      }
+    }
+
+    // Also clear both the Scout settings to start over from a clean state and
+    // avoid the above logic from triggering on next restart.
+    prefs->ClearPref(prefs::kSafeBrowsingScoutGroupSelected);
+    prefs->ClearPref(prefs::kSafeBrowsingScoutReportingEnabled);
   }
 }
 
