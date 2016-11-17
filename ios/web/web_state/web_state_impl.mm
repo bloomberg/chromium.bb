@@ -678,10 +678,6 @@ void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {
 
 #pragma mark - NavigationManagerDelegate implementation
 
-void WebStateImpl::GoToOffset(int offset) {
-  [web_controller_ goDelta:offset];
-}
-
 void WebStateImpl::GoToIndex(int index) {
   [web_controller_ goToItemAtIndex:index];
 }

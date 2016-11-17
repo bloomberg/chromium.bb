@@ -299,11 +299,11 @@ bool NavigationManagerImpl::CanGoToOffset(int offset) const {
 }
 
 void NavigationManagerImpl::GoBack() {
-  delegate_->GoToOffset(-1);
+  delegate_->GoToIndex(GetIndexForOffset(-1));
 }
 
 void NavigationManagerImpl::GoForward() {
-  delegate_->GoToOffset(1);
+  delegate_->GoToIndex(GetIndexForOffset(1));
 }
 
 void NavigationManagerImpl::GoToIndex(int index) {
@@ -335,6 +335,10 @@ void NavigationManagerImpl::RemoveTransientURLRewriters() {
 void NavigationManagerImpl::CopyState(
     NavigationManagerImpl* navigation_manager) {
   SetSessionController([navigation_manager->GetSessionController() copy]);
+}
+
+int NavigationManagerImpl::GetIndexForOffset(int offset) const {
+  return [session_controller_ indexOfEntryForDelta:offset];
 }
 
 }  // namespace web

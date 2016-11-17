@@ -133,6 +133,11 @@ class NavigationManagerImpl : public NavigationManager {
   void CopyState(NavigationManagerImpl* navigation_manager);
 
  private:
+  // Returns the navigation index that differs from the current item by the
+  // specified |offset|, skipping redirect navigation items. The index returned
+  // is not guaranteed to be valid.
+  int GetIndexForOffset(int offset) const;
+
   // The primary delegate for this manager.
   NavigationManagerDelegate* delegate_;
 

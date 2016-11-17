@@ -191,9 +191,6 @@ class WebStateImpl;
 // used when deliberately pre-triggering a load without displaying.
 - (void)triggerPendingLoad;
 
-// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
-// bounds.
-- (void)goDelta:(int)delta;
 // Navigates to the item at the given |index|.
 - (void)goToItemAtIndex:(int)index;
 

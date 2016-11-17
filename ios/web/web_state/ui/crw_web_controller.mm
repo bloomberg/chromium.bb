@@ -662,6 +662,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess;
 // Called after URL is finished loading and _loadPhase is set to PAGE_LOADED.
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess;
+// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
+// bounds. Reloads if delta is 0.
+// TODO(crbug.com/661316): Move this method to NavigationManager.
+- (void)goDelta:(int)delta;
 // Loads a new URL if the current entry is not from a pushState() navigation.
 // |fromEntry| is the CRWSessionEntry that was the current entry prior to the
 // navigation.
@@ -2273,14 +2277,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)goDelta:(int)delta {
-  if (delta == 0) {
-    [self reload];
-  } else if ([self.sessionController canGoDelta:delta]) {
-    [self goToItemAtIndex:[self.sessionController indexOfEntryForDelta:delta]];
-  }
-}
-
 - (void)goToItemAtIndex:(int)index {
   NSArray* entries = self.sessionController.entries;
   DCHECK_LT(static_cast<NSUInteger>(index), entries.count);
@@ -2379,6 +2375,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl->SetIsLoading(false);
   // Inform the embedder the load completed.
   [_delegate webDidFinishWithURL:currentURL loadSuccess:loadSuccess];
+}
+
+- (void)goDelta:(int)delta {
+  if (delta == 0) {
+    [self reload];
+  } else if ([self.sessionController canGoDelta:delta]) {
+    [self goToItemAtIndex:[self.sessionController indexOfEntryForDelta:delta]];
+  }
 }
 
 - (void)finishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
