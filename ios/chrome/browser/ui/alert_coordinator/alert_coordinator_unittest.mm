@@ -45,8 +45,6 @@ class AlertCoordinatorTest : public PlatformTest {
     return alert_coordinator_;
   }
 
-  void deleteAlertCoordinator() { alert_coordinator_.reset(); }
-
  private:
   base::scoped_nsobject<AlertCoordinator> alert_coordinator_;
   base::scoped_nsobject<UIWindow> window_;
@@ -136,16 +134,17 @@ TEST_F(AlertCoordinatorTest, ValidateDismissalOnStop) {
   ASSERT_TRUE([viewController.presentedViewController
       isKindOfClass:[UIAlertController class]]);
 
-  id alertMock = [OCMockObject
-      partialMockForObject:viewController.presentedViewController];
-  [[alertMock expect] dismissViewControllerAnimated:NO completion:nil];
+  id viewControllerMock = [OCMockObject partialMockForObject:viewController];
+  [[[viewControllerMock expect] andForwardToRealObject]
+      dismissViewControllerAnimated:NO
+                         completion:nil];
 
   // Action.
   [alertCoordinator stop];
 
   // Test.
   EXPECT_FALSE(alertCoordinator.isVisible);
-  EXPECT_OCMOCK_VERIFY(alertMock);
+  EXPECT_OCMOCK_VERIFY(viewControllerMock);
 }
 
 // Tests that only the expected actions are present on the alert.
@@ -228,4 +227,45 @@ TEST_F(AlertCoordinatorTest, OnlyOneCancelAction) {
   UIAlertAction* action = [alertController.actions objectAtIndex:0];
   EXPECT_EQ(firstButtonTitle, action.title);
   EXPECT_EQ(UIAlertActionStyleCancel, action.style);
+}
+
+TEST_F(AlertCoordinatorTest, NoInteractionActionTest) {
+  // Setup.
+  UIViewController* viewController = getViewController();
+  AlertCoordinator* alertCoordinator = getAlertCoordinator(viewController);
+
+  __block BOOL blockCalled = NO;
+
+  alertCoordinator.noInteractionAction = ^{
+    blockCalled = YES;
+  };
+
+  startAlertCoordinator();
+
+  // Action.
+  [alertCoordinator stop];
+
+  // Test.
+  EXPECT_TRUE(blockCalled);
+}
+
+TEST_F(AlertCoordinatorTest, NoInteractionActionWithCancelTest) {
+  // Setup.
+  UIViewController* viewController = getViewController();
+  AlertCoordinator* alertCoordinator = getAlertCoordinator(viewController);
+
+  __block BOOL blockCalled = NO;
+
+  alertCoordinator.noInteractionAction = ^{
+    blockCalled = YES;
+  };
+
+  startAlertCoordinator();
+
+  // Action.
+  [alertCoordinator executeCancelHandler];
+  [alertCoordinator stop];
+
+  // Test.
+  EXPECT_FALSE(blockCalled);
 }

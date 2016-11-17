@@ -28,6 +28,10 @@
 @property(nonatomic, copy) ProceduralBlock cancelAction;
 // Block called when the alert is about to be displayed.
 @property(nonatomic, copy) ProceduralBlock startAction;
+// Block called when the alert is stopped with |stop| or during dealloc. It is
+// called only if no interaction with the alert (user interaction or call to
+// |-executeCancelHandler|) has occurred.
+@property(nonatomic, copy) ProceduralBlock noInteractionAction;
 
 // Init a coordinator for displaying a alert on this view controller.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

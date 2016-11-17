@@ -16,6 +16,8 @@
   base::scoped_nsobject<NSString> _message;
   base::mac::ScopedBlock<ProceduralBlock> _cancelAction;
   base::mac::ScopedBlock<ProceduralBlock> _startAction;
+  base::mac::ScopedBlock<ProceduralBlock> _noInteractionAction;
+  base::mac::ScopedBlock<ProceduralBlock> _rawCancelAction;
 
   // Title for the alert.
   base::scoped_nsobject<NSString> _title;
@@ -23,6 +25,11 @@
 
 // Redefined to readwrite.
 @property(nonatomic, readwrite, getter=isVisible) BOOL visible;
+
+// Cancel action passed using the public API.
+// It will called from the overridden block stored in the |cancelAction|
+// property.
+@property(nonatomic, copy) ProceduralBlock rawCancelAction;
 
 // Called when the alert is dismissed to perform cleanup.
 - (void)alertDismissed;
@@ -71,6 +78,7 @@
       [UIAlertAction actionWithTitle:title
                                style:style
                              handler:^(UIAlertAction*) {
+                               [weakSelf setNoInteractionAction:nil];
                                if (actionBlock)
                                  actionBlock();
                                [weakSelf alertDismissed];
@@ -80,6 +88,7 @@
 }
 
 - (void)executeCancelHandler {
+  self.noInteractionAction = nil;
   if (self.cancelAction)
     self.cancelAction();
 }
@@ -110,7 +119,13 @@
 }
 
 - (void)stop {
-  [_alertController dismissViewControllerAnimated:NO completion:nil];
+  if (_noInteractionAction) {
+    _noInteractionAction.get()();
+    _noInteractionAction.reset();
+  }
+  [[_alertController presentingViewController]
+      dismissViewControllerAnimated:NO
+                         completion:nil];
   [self alertDismissed];
 }
 
@@ -140,7 +155,17 @@
 }
 
 - (void)setCancelAction:(ProceduralBlock)cancelAction {
-  _cancelAction.reset([cancelAction copy]);
+  base::WeakNSObject<AlertCoordinator> weakSelf(self);
+
+  self.rawCancelAction = cancelAction;
+
+  _cancelAction.reset([^{
+    base::scoped_nsobject<AlertCoordinator> strongSelf([weakSelf retain]);
+    [strongSelf setNoInteractionAction:nil];
+    if ([strongSelf rawCancelAction]) {
+      [strongSelf rawCancelAction]();
+    }
+  } copy]);
 }
 
 - (ProceduralBlock)startAction {
@@ -151,6 +176,22 @@
   _startAction.reset([startAction copy]);
 }
 
+- (ProceduralBlock)noInteractionAction {
+  return _noInteractionAction;
+}
+
+- (void)setNoInteractionAction:(ProceduralBlock)noInteractionAction {
+  _noInteractionAction.reset([noInteractionAction copy]);
+}
+
+- (ProceduralBlock)rawCancelAction {
+  return _rawCancelAction;
+}
+
+- (void)setRawCancelAction:(ProceduralBlock)rawCancelAction {
+  _rawCancelAction.reset([rawCancelAction copy]);
+}
+
 #pragma mark - Private Methods.
 
 - (void)alertDismissed {
@@ -158,6 +199,7 @@
   _cancelButtonAdded = NO;
   _alertController.reset();
   _cancelAction.reset();
+  _noInteractionAction.reset();
 }
 
 - (UIAlertController*)alertControllerWithTitle:(NSString*)title

@@ -51,4 +51,6 @@ TEST(ActionSheetCoordinatorTest, CGRectUsage) {
     EXPECT_TRUE(CGRectEqualToRect(rect, popover.sourceRect));
     EXPECT_EQ(view, popover.sourceView);
   }
+
+  [alertCoordinator stop];
 }
