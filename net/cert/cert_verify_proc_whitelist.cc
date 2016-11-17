@@ -13,6 +13,42 @@ namespace net {
 namespace {
 
 // clang-format off
+// SHA-256 hashes of the subjectPublicKeyInfos of root certificates owned
+// or operated by WoSign, including that of StartCom. For the certificates,
+// see //net/data/ssl/wosign.
+const uint8_t kWosignKeys[][crypto::kSHA256Length] = {
+    { 0x15, 0x28, 0x39, 0x7d, 0xa2, 0x12, 0x89, 0x0a,
+      0x83, 0x0b, 0x0b, 0x95, 0xa5, 0x99, 0x68, 0xce,
+      0xf2, 0x34, 0x77, 0x37, 0x79, 0xdf, 0x51, 0x81,
+      0xcf, 0x10, 0xfa, 0x64, 0x75, 0x34, 0xbb, 0x65 },
+    { 0x38, 0x1a, 0x3f, 0xc7, 0xa8, 0xb0, 0x82, 0xfa,
+      0x28, 0x61, 0x3a, 0x4d, 0x07, 0xf2, 0xc7, 0x55,
+      0x3f, 0x4e, 0x19, 0x18, 0xee, 0x07, 0xca, 0xa9,
+      0xe8, 0xb7, 0xce, 0xde, 0x5a, 0x9c, 0xa0, 0x6a },
+    { 0x7a, 0xed, 0xdd, 0xf3, 0x6b, 0x18, 0xf8, 0xac,
+      0xb7, 0x37, 0x9f, 0xe1, 0xce, 0x18, 0x32, 0x12,
+      0xb2, 0x35, 0x0d, 0x07, 0x88, 0xab, 0xe0, 0xe8,
+      0x24, 0x57, 0xbe, 0x9b, 0xad, 0xad, 0x6d, 0x54 },
+    { 0x9d, 0x98, 0xa1, 0xfb, 0x60, 0x53, 0x8c, 0x4c,
+      0xc4, 0x85, 0x7f, 0xf1, 0xa8, 0xc8, 0x03, 0x4f,
+      0xaf, 0x6f, 0xc5, 0x92, 0x09, 0x3f, 0x61, 0x99,
+      0x94, 0xb2, 0xc8, 0x13, 0xd2, 0x50, 0xb8, 0x64 },
+    { 0xd6, 0xa1, 0x84, 0x43, 0xd3, 0x48, 0xdb, 0x99,
+      0x4f, 0x93, 0x4c, 0xcd, 0x8e, 0x63, 0x5d, 0x83,
+      0x3a, 0x27, 0xac, 0x1e, 0x56, 0xf8, 0xaf, 0xaf,
+      0x7c, 0x97, 0xcb, 0x4f, 0x43, 0xea, 0xb6, 0x8b },
+    { 0xdb, 0x15, 0xc0, 0x06, 0x2b, 0x52, 0x0f, 0x31,
+      0x8a, 0x19, 0xda, 0xcf, 0xec, 0xd6, 0x4f, 0x9e,
+      0x7a, 0x3f, 0xbe, 0x60, 0x9f, 0xd5, 0x86, 0x79,
+      0x6f, 0x20, 0xae, 0x02, 0x8e, 0x8e, 0x30, 0x58 },
+    { 0xe4, 0x2f, 0x24, 0xbd, 0x4d, 0x37, 0xf4, 0xaa,
+      0x2e, 0x56, 0xb9, 0x79, 0xd8, 0x3d, 0x1e, 0x65,
+      0x21, 0x9f, 0xe0, 0xe9, 0xe3, 0xa3, 0x82, 0xa1,
+      0xb3, 0xcb, 0x66, 0xc9, 0x39, 0x55, 0xde, 0x75 },
+};
+
+// SHA-256 hashes of the leaf certificates whitelisted as issued by CNNIC's
+// DV root.
 const uint8_t kCNNICDVWhitelist[][crypto::kSHA256Length] = {
     { 0x00, 0xc5, 0x9f, 0x5e, 0xf3, 0xb4, 0x6d, 0xbc,
       0xa0, 0xa8, 0xbb, 0xa5, 0x0a, 0x72, 0xd4, 0xe1,
@@ -1555,6 +1591,8 @@ const uint8_t kCNNICDVWhitelist[][crypto::kSHA256Length] = {
       0xe4, 0xdf, 0x42, 0x99, 0xfb, 0xe3, 0xf6, 0x81,
       0xaf, 0x3f, 0x5c, 0xf4, 0x22, 0x5a, 0x8e, 0xaf },
 };
+
+// SHA-256 hashes of leaf certificates issued by CNNIC's EV root.
 const uint8_t kCNNICEVWhitelist[][crypto::kSHA256Length] = {
     { 0xb5, 0xef, 0x42, 0xc4, 0xbc, 0xed, 0xf1, 0x7b,
       0xec, 0xc7, 0x5b, 0xf4, 0x63, 0x66, 0x49, 0xce,
@@ -1600,36 +1638,54 @@ const PublicKeyWhitelist* g_whitelist = kBuiltinWhitelist;
 size_t g_whitelist_size = kBuiltinWhitelistSize;
 
 // Comparator to compare a SHA256HashValue with a uint8_t array containing a
-// raw SHA-256 hash.
-// Return value follows memcmp semantics.
-int CompareHashValueToRawHash(const void* key, const void* element) {
+// raw SHA-256 hash. Return value follows memcmp semantics.
+int CompareSHA256HashValueToRawHash(const void* key, const void* element) {
   const SHA256HashValue* search_key =
       reinterpret_cast<const SHA256HashValue*>(key);
   return memcmp(search_key->data, element, sizeof(search_key->data));
+}
+
+// Comparator to compare a (SHA-256) HashValue with a uint8_t array containing
+// a raw SHA-256 hash. Return value follows memcmp semantics.
+int CompareHashValueToRawHash(const void* key, const void* element) {
+  const HashValue* search_key = reinterpret_cast<const HashValue*>(key);
+  return memcmp(search_key->data(), element, search_key->size());
 }
 
 }  // namespace
 
 bool IsNonWhitelistedCertificate(const X509Certificate& cert,
                                  const HashValueVector& public_key_hashes) {
-  if (g_whitelist_size == 0)
-    return false;
-  for (size_t i = 0; i < g_whitelist_size; ++i) {
-    for (const auto& hash : public_key_hashes) {
-      if (hash.tag != HASH_VALUE_SHA256)
-        continue;
+  // 2016-10-21 00:00:00 UTC
+  const base::Time last_wosign_cert =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1477008000);
+
+  for (const auto& hash : public_key_hashes) {
+    if (hash.tag != HASH_VALUE_SHA256)
+      continue;
+
+    // Check for WoSign/StartCom certificates.
+    if (bsearch(&hash, kWosignKeys, arraysize(kWosignKeys),
+                crypto::kSHA256Length, CompareHashValueToRawHash) != nullptr &&
+        (cert.valid_start().is_null() || cert.valid_start().is_max() ||
+         cert.valid_start() > last_wosign_cert)) {
+      return true;
+    }
+
+    // Check the public key whitelist.
+    for (size_t i = 0; i < g_whitelist_size; ++i) {
       if (memcmp(hash.data(), g_whitelist[i].public_key,
                  crypto::kSHA256Length) != 0) {
         continue;
       }
       const SHA256HashValue leaf_hash =
           X509Certificate::CalculateFingerprint256(cert.os_cert_handle());
-      void* result = bsearch(&leaf_hash, g_whitelist[i].whitelist,
-                             g_whitelist[i].whitelist_size,
-                             crypto::kSHA256Length, CompareHashValueToRawHash);
+      void* result = bsearch(
+          &leaf_hash, g_whitelist[i].whitelist, g_whitelist[i].whitelist_size,
+          crypto::kSHA256Length, CompareSHA256HashValueToRawHash);
       if (result == nullptr)
-        return true;
-      return false;
+        return true;  // Hash was not found on the public key whitelist.
+      break;
     }
   }
   return false;
