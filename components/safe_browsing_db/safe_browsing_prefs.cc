@@ -93,4 +93,12 @@ void SetExtendedReportingPref(PrefService* prefs, bool value) {
   prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
 }
 
+void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {
+  // Move the user into the Scout Group if the CanShowScoutOptIn experiment is
+  // enabled.
+  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
+    prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
+  }
+}
+
 }  // namespace safe_browsing

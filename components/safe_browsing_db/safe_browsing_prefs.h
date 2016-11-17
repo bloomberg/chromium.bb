@@ -75,6 +75,11 @@ void RecordExtendedReportingMetrics(const PrefService& prefs);
 // specified value.
 void SetExtendedReportingPref(PrefService* prefs, bool value);
 
+// Called to indicate that a security interstitial is about to be shown to the
+// user. This may trigger the user to begin seeing the Scout opt-in text
+// depending on their experiment state.
+void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs);
+
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_PREFS_H_

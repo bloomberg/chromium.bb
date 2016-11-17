@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/grit/components_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
@@ -64,6 +65,10 @@ void SecurityInterstitialPage::Show() {
       web_contents_, ShouldCreateNewNavigation(), request_url_, this);
   if (!create_view_)
     interstitial_page_->DontCreateViewForTesting();
+
+  // Determine if any prefs need to be updated prior to showing the security
+  // interstitial.
+  safe_browsing::UpdatePrefsBeforeSecurityInterstitial(profile()->GetPrefs());
   interstitial_page_->Show();
 
   controller_->set_interstitial_page(interstitial_page_);

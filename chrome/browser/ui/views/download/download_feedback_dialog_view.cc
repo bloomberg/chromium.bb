@@ -48,6 +48,9 @@ void DownloadFeedbackDialogView::Show(
   // This dialog should only be shown if it hasn't been shown before.
   DCHECK(!safe_browsing::ExtendedReportingPrefExists(*profile->GetPrefs()));
 
+  // Determine if any prefs need to be updated prior to showing the dialog.
+  safe_browsing::UpdatePrefsBeforeSecurityInterstitial(profile->GetPrefs());
+
   // Only one dialog should be shown at a time, so check to see if another one
   // is open. If another one is open, treat this parallel call as if reporting
   // is disabled (to be conservative).
