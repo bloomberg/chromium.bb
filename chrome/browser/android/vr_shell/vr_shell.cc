@@ -375,6 +375,21 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   }
 #endif
   if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+    // Process screen touch events for Cardboard button compatibility.
+    // Also send tap events for controller "touchpad click" events.
+    if (touch_pending_ || controller_->IsButtonUp(
+            gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
+      touch_pending_ = false;
+      std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent());
+      gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
+      gesture->timeStampSeconds =
+          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+      gesture->type = WebInputEvent::GestureTapDown;
+      gesture->data.tapDown.width = 0;
+      gesture->data.tapDown.height = 0;
+      content_input_manager_->ProcessUpdatedGesture(*gesture.get());
+    }
+
     return;
   }
 
