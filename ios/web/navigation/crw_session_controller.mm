@@ -626,14 +626,6 @@ NSString* const kWindowNameKey = @"windowName";
   DCHECK(_pendingEntryIndex == -1 || _pendingEntry);
 }
 
-- (BOOL)canGoBack {
-  return [self canGoDelta:-1];
-}
-
-- (BOOL)canGoForward {
-  return [self canGoDelta:1];
-}
-
 - (BOOL)canGoDelta:(int)delta {
   NSInteger index = [self indexOfEntryForDelta:delta];
   return 0 <= index && static_cast<NSUInteger>(index) < _entries.count;

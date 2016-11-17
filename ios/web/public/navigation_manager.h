@@ -136,6 +136,7 @@ class NavigationManager {
   // Navigation relative to the current item.
   virtual bool CanGoBack() const = 0;
   virtual bool CanGoForward() const = 0;
+  virtual bool CanGoToOffset(int offset) const = 0;
   virtual void GoBack() = 0;
   virtual void GoForward() = 0;
 

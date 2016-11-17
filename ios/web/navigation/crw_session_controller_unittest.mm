@@ -688,61 +688,6 @@ TEST_F(CRWSessionControllerTest, GoDelta) {
   ASSERT_EQ(1, [session_controller_ previousNavigationIndex]);
 }
 
-TEST_F(CRWSessionControllerTest, CanGoBackWithoutCommitedEntry) {
-  EXPECT_FALSE([session_controller_ canGoBack]);
-  EXPECT_FALSE([session_controller_ canGoDelta:-1]);
-}
-
-// Tests that |canGoBack| returns NO if there is a transient entry, but no
-// committed entries.
-TEST_F(CRWSessionControllerTest, CanGoBackWithTransientEntry) {
-  [session_controller_ addTransientEntryWithURL:GURL("http://www.url.com")];
-
-  EXPECT_FALSE([session_controller_ canGoBack]);
-}
-
-// Tests that |canGoBack| returns YES if there is a transient entry and at least
-// one committed entry.
-TEST_F(CRWSessionControllerTest, CanGoBackWithTransientEntryAndCommittedEntry) {
-  [session_controller_ addPendingEntry:GURL("http://www.url.com")
-                              referrer:MakeReferrer("http://www.referer.com")
-                            transition:ui::PAGE_TRANSITION_TYPED
-                     rendererInitiated:NO];
-  [session_controller_ commitPendingEntry];
-  [session_controller_ addTransientEntryWithURL:GURL("http://www.url.com")];
-
-  EXPECT_TRUE([session_controller_ canGoBack]);
-}
-
-TEST_F(CRWSessionControllerTest, CanGoBackWithSingleCommitedEntry) {
-  [session_controller_
-        addPendingEntry:GURL("http://www.url.com")
-               referrer:MakeReferrer("http://www.referer.com")
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:NO];
-  [session_controller_ commitPendingEntry];
-
-  EXPECT_FALSE([session_controller_ canGoBack]);
-  EXPECT_FALSE([session_controller_ canGoDelta:-1]);
-}
-
-TEST_F(CRWSessionControllerTest, CanGoForwardWithoutCommitedEntry) {
-  EXPECT_FALSE([session_controller_ canGoForward]);
-  EXPECT_FALSE([session_controller_ canGoDelta:1]);
-}
-
-TEST_F(CRWSessionControllerTest, CanGoForwardWithSingleCommitedEntry) {
-  [session_controller_
-        addPendingEntry:GURL("http://www.url.com")
-               referrer:MakeReferrer("http://www.referer.com")
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:NO];
-  [session_controller_ commitPendingEntry];
-
-  EXPECT_FALSE([session_controller_ canGoForward]);
-  EXPECT_FALSE([session_controller_ canGoDelta:1]);
-}
-
 // Helper to create a NavigationItem. Caller is responsible for freeing
 // the memory.
 web::NavigationItem* CreateNavigationItem(const std::string& url,

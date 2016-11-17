@@ -287,11 +287,15 @@ bool NavigationManagerImpl::RemoveItemAtIndex(int index) {
 }
 
 bool NavigationManagerImpl::CanGoBack() const {
-  return [session_controller_ canGoBack];
+  return CanGoToOffset(-1);
 }
 
 bool NavigationManagerImpl::CanGoForward() const {
-  return [session_controller_ canGoForward];
+  return CanGoToOffset(1);
+}
+
+bool NavigationManagerImpl::CanGoToOffset(int offset) const {
+  return [session_controller_ canGoDelta:offset];
 }
 
 void NavigationManagerImpl::GoBack() {

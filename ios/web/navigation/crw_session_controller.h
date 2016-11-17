@@ -117,13 +117,9 @@ struct SSLStatus;
 - (void)copyStateFromAndPrune:(CRWSessionController*)otherSession
                  replaceState:(BOOL)replaceState;
 
-// Returns YES if there are entries to go back or forward to, given the
-// current entry.
-- (BOOL)canGoBack;
-- (BOOL)canGoForward;
+// Returns YES if there are entries to go with given delta.
 - (BOOL)canGoDelta:(int)delta;
-// Calls goBack or goForward the appropriate number of times to adjust
-// currentNavigationIndex_ by delta.
+// Navigates to the entry with the given |delta|.
 - (void)goDelta:(int)delta;
 // Sets |currentNavigationIndex_| to the index of |entry| if |entries_| contains
 // |entry|.

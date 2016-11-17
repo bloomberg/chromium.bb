@@ -112,6 +112,7 @@ class NavigationManagerImpl : public NavigationManager {
   bool RemoveItemAtIndex(int index) override;
   bool CanGoBack() const override;
   bool CanGoForward() const override;
+  bool CanGoToOffset(int offset) const override;
   void GoBack() override;
   void GoForward() override;
   void GoToIndex(int index) override;
