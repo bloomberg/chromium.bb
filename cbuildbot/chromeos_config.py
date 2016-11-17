@@ -48,8 +48,14 @@ def GetDefaultWaterfall(build_config, is_release_branch):
 class HWTestList(object):
   """Container for methods to generate HWTest lists."""
 
-  def __init__(self, is_release_branch):
-    self.is_release_branch = is_release_branch
+  def __init__(self, ge_build_config):
+    """Helper class for creating hwtests.
+
+    Args:
+      ge_build_config: Dictionary containing the decoded GE configuration file.
+    """
+    self.is_release_branch = ge_build_config[
+        config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
 
   def DefaultList(self, **kwargs):
     """Returns a default list of HWTestConfig's for a build
@@ -864,14 +870,16 @@ def DefaultSettings(site_params):
   return defaults
 
 
-def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
+def CreateBuilderTemplates(site_config, ge_build_config):
   """CreateBuilderTemplates defines all BuildConfig templates.
 
   Args:
     site_config: A SiteConfig object to add the templates too.
-    hw_test_list: Object to help create lists of standard HW Tests.
-    is_release_branch: True if config for a release branch, False for TOT.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
+  hw_test_list = HWTestList(ge_build_config)
+
   site_config.AddTemplate(
       'default_hw_tests_override',
       hw_tests_override=hw_test_list.DefaultList(
@@ -1482,10 +1490,6 @@ def CreateBoardConfigs(site_config, ge_build_config):
   for board in board_names:
     board_config = config_lib.BuildConfig(boards=[board])
 
-    if board in _internal_boards:
-      board_config.apply(site_config.templates.internal,
-                         site_config.templates.official_chrome,
-                         manifest=constants.OFFICIAL_MANIFEST)
     if board in _brillo_boards:
       board_config.apply(site_config.templates.brillo)
     if board in _lakitu_boards:
@@ -1520,16 +1524,30 @@ def CreateBoardConfigs(site_config, ge_build_config):
 
   return result
 
+def CreateInternalBoardConfigs(site_config, ge_build_config):
+  """Create mixin templates for each board."""
+  result = CreateBoardConfigs(site_config, ge_build_config)
 
-def ToolchainBuilders(site_config, board_configs, hw_test_list):
+  for board in _internal_boards:
+    if board in result:
+      result[board].apply(site_config.templates.internal,
+                          site_config.templates.official_chrome,
+                          manifest=constants.OFFICIAL_MANIFEST)
+
+  return result
+
+
+def ToolchainBuilders(site_config, ge_build_config):
   """Define templates used for toolchain builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
   site_config.AddTemplate(
       'toolchain',
       # Make sure that we are doing a full build and that we are using AFDO.
@@ -1692,15 +1710,17 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
       site_config.templates.llvm_next_toolchain,
   )
 
-def PreCqBuilders(site_config, board_configs, hw_test_list):
+def PreCqBuilders(site_config, ge_build_config):
   """Create all build configs associated with the PreCQ.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
   site_config.AddTemplate(
       'pre_cq',
       site_config.templates.paladin,
@@ -1888,15 +1908,17 @@ def PreCqBuilders(site_config, board_configs, hw_test_list):
   )
 
 
-def AndroidPfqBuilders(site_config, board_configs, hw_test_list):
+def AndroidPfqBuilders(site_config, ge_build_config):
   """Create all build configs associated with the Android PFQ.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
   site_config.AddTemplate(
       'android_pfq',
       site_config.templates.default_hw_tests_override,
@@ -1947,14 +1969,15 @@ def AndroidPfqBuilders(site_config, board_configs, hw_test_list):
   )
 
 
-def _GetConfig(site_config, board_configs):
+def _GetConfig(site_config, ge_build_config):
   """Method with un-refactored build configs/templates.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
 
   site_config.Add(
       'master-chromium-pfq',
@@ -1978,12 +2001,13 @@ def _GetConfig(site_config, board_configs):
       'amd64-generic',
   ])
 
+  external_overrides = config_lib.BuildConfig(
+      manifest=constants.DEFAULT_MANIFEST,
+      useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
+  )
+
   def _AddFullConfigs():
     """Add x86 and arm full configs."""
-    external_overrides = config_lib.BuildConfig(
-        manifest=constants.DEFAULT_MANIFEST,
-        useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
-    )
     site_config.AddForBoards(
         config_lib.CONFIG_TYPE_FULL,
         _all_full_boards,
@@ -2034,15 +2058,17 @@ def _GetConfig(site_config, board_configs):
   _AddFullConfigs()
 
 
-def CqBuilders(site_config, board_configs, hw_test_list):
+def CqBuilders(site_config, ge_build_config):
   """Create all CQ build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
   _paladin_boards = _all_boards
 
   # List of paladin boards where the regular paladin config is important.
@@ -2414,14 +2440,16 @@ def CqBuilders(site_config, board_configs, hw_test_list):
   ShardHWTestsBetweenBuilders('elm-paladin', None)
 
 
-def Incrementals(site_config, board_configs):
+def Incrementals(site_config, ge_build_config):
   """Create all incremental build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+
   site_config.Add(
       'beaglebone-incremental',
       site_config.templates.incremental,
@@ -2494,14 +2522,16 @@ def Incrementals(site_config, board_configs):
   )
 
 
-def ReleaseAfdoTryjobs(site_config, board_configs):
+def ReleaseAfdoTryjobs(site_config, ge_build_config):
   """Create AFDO Performance tryjobs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+
   # Now generate generic release-afdo configs if we haven't created anything
   # more specific above already. release-afdo configs are builders that do AFDO
   # profile collection and optimization in the same builder. Used by developers
@@ -2540,7 +2570,7 @@ def ReleaseAfdoTryjobs(site_config, board_configs):
     )
 
 
-def Informational(site_config, board_configs, hw_test_list):
+def Informational(site_config, ge_build_config):
   """Create all informational builders.
 
   We have a number of informational builders that are built, but whose output is
@@ -2549,9 +2579,11 @@ def Informational(site_config, board_configs, hw_test_list):
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
   _chrome_informational_hwtest_boards = frozenset([
       'peach_pit',
       'tricky',
@@ -2660,14 +2692,16 @@ def Informational(site_config, board_configs, hw_test_list):
   )
 
 
-def ChromePfq(site_config, board_configs):
+def ChromePfq(site_config, ge_build_config):
   """Create all Chrome PFQ build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+
   _chrome_pfq_important_boards = frozenset([
       'cyan',
       'daisy_skate',
@@ -2699,14 +2733,16 @@ def ChromePfq(site_config, board_configs):
   )
 
 
-def FirmwareBuilders(site_config, board_configs):
+def FirmwareBuilders(site_config, ge_build_config):
   """Create all firmware build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+
   _firmware_boards = frozenset([
       'asuka',
       'auron',
@@ -2829,17 +2865,19 @@ def FirmwareBuilders(site_config, board_configs):
     )
 
 
-def ReleaseBuilders(site_config, board_configs, ge_build_config,
-                    is_release_branch):
+def ReleaseBuilders(site_config, ge_build_config):
   """Create all release builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
     ge_build_config: Dictionary containing the decoded GE configuration file.
-    is_release_branch: True if config for a release branch, False for TOT.
   """
+  # TODO: Use this to stop generating unnecessary configs for release branches.
+  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
+
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+
   ### Master release config.
   site_config.Add(
       'master-release',
@@ -2998,27 +3036,22 @@ def AddPayloadTryjobs(site_config):
       )
 
 
-def InsertHwTestsOverrideDefaults(build, hw_test_list):
+def InsertHwTestsOverrideDefaults(build):
   """Insert default hw_tests values for a given build.
 
   Also updates child builds.
 
   Args:
     build: BuildConfig instance to modify in place.
-    hw_test_list: Object to help create lists of standard HW Tests.
   """
   for child in build['child_configs']:
-    InsertHwTestsOverrideDefaults(child, hw_test_list)
+    InsertHwTestsOverrideDefaults(child)
 
   if build['hw_tests_override'] is not None:
     # Explicitly set, no need to insert defaults.
     return
 
-  if not build['hw_tests']:
-    build['hw_tests_override'] = hw_test_list.DefaultList(
-        num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
-        file_bugs=False)
-  else:
+  if build['hw_tests']:
     # Copy over base tests.
     build['hw_tests_override'] = [copy.copy(x) for x in build['hw_tests']]
 
@@ -3035,14 +3068,16 @@ def InsertHwTestsOverrideDefaults(build, hw_test_list):
       if hw_config.suite != constants.HWTEST_AU_SUITE]
 
 
-def InsertWaterfallDefaults(site_config, is_release_branch):
+def InsertWaterfallDefaults(site_config, ge_build_config):
   """Method with un-refactored build configs/templates.
 
   Args:
     site_config: config_lib.SiteConfig containing builds to have their
                  waterfall values updated.
-    is_release_branch: True if config for a release branch, False for TOT.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
+
   for name, c in site_config.iteritems():
     if not c.get('active_waterfall'):
       c['active_waterfall'] = GetDefaultWaterfall(c, is_release_branch)
@@ -3054,7 +3089,7 @@ def InsertWaterfallDefaults(site_config, is_release_branch):
         site_config[name]['active_waterfall'] = waterfall
 
 
-def ApplyCustomOverrides(site_config, hw_test_list):
+def ApplyCustomOverrides(site_config, ge_build_config):
   """Method with to override specific flags for specific builders.
 
   Generally try really hard to avoid putting anything here that isn't
@@ -3064,8 +3099,10 @@ def ApplyCustomOverrides(site_config, hw_test_list):
   Args:
     site_config: config_lib.SiteConfig containing builds to have their
                  waterfall values updated.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  hw_test_list = HWTestList(ge_build_config)
+
   overwritten_configs = {
       'amd64-generic-chromium-pfq': {
           'disk_layout': '2gb-rootfs',
@@ -3186,15 +3223,17 @@ def ApplyCustomOverrides(site_config, hw_test_list):
     site_config[config_name].apply(**overrides)
 
 
-def SpecialtyBuilders(site_config, board_configs, hw_test_list):
+def SpecialtyBuilders(site_config, ge_build_config):
   """Add a variety of specialized builders or tryjobs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    board_configs: Dictionary mapping board names to per-board configurations.
-    hw_test_list: Object to help create lists of standard HW Tests.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
   site_config.AddWithoutTemplate(
       'chromiumos-sdk',
       site_config.templates.full,
@@ -3316,54 +3355,46 @@ def GetConfig():
 
   ge_build_config = config_lib.LoadGEBuildConfigFromFile()
 
-  # TODO: Use this to stop generating unnecessary configs for release branches.
-  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
-
-  hw_test_list = HWTestList(is_release_branch)
-
   # site_config with no templates or build configurations.
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
 
-  CreateBuilderTemplates(site_config, hw_test_list, is_release_branch)
+  CreateBuilderTemplates(site_config, ge_build_config)
 
-  board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  ToolchainBuilders(site_config, ge_build_config)
 
-  ToolchainBuilders(site_config, board_configs, hw_test_list)
-
-  ReleaseBuilders(site_config, board_configs, ge_build_config,
-                  is_release_branch)
+  ReleaseBuilders(site_config, ge_build_config)
 
   AddPayloadTryjobs(site_config)
 
-  SpecialtyBuilders(site_config, board_configs, hw_test_list)
+  SpecialtyBuilders(site_config, ge_build_config)
 
-  PreCqBuilders(site_config, board_configs, hw_test_list)
+  PreCqBuilders(site_config, ge_build_config)
 
-  CqBuilders(site_config, board_configs, hw_test_list)
+  CqBuilders(site_config, ge_build_config)
 
-  Incrementals(site_config, board_configs)
+  Incrementals(site_config, ge_build_config)
 
-  ReleaseAfdoTryjobs(site_config, board_configs)
+  ReleaseAfdoTryjobs(site_config, ge_build_config)
 
-  Informational(site_config, board_configs, hw_test_list)
+  Informational(site_config, ge_build_config)
 
-  ChromePfq(site_config, board_configs)
+  ChromePfq(site_config, ge_build_config)
 
-  FirmwareBuilders(site_config, board_configs)
+  FirmwareBuilders(site_config, ge_build_config)
 
-  AndroidPfqBuilders(site_config, board_configs, hw_test_list)
+  AndroidPfqBuilders(site_config, ge_build_config)
 
   # Fill in templates and build configurations.
-  _GetConfig(site_config, board_configs)
+  _GetConfig(site_config, ge_build_config)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
-    InsertHwTestsOverrideDefaults(build, hw_test_list)
+    InsertHwTestsOverrideDefaults(build)
 
   # Assign waterfalls to builders that don't have them yet.
-  InsertWaterfallDefaults(site_config, is_release_branch)
+  InsertWaterfallDefaults(site_config, ge_build_config)
 
-  ApplyCustomOverrides(site_config, hw_test_list)
+  ApplyCustomOverrides(site_config, ge_build_config)
 
   return site_config
