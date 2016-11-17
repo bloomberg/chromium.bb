@@ -15,6 +15,7 @@
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -35,10 +36,11 @@ class CandidateWindowBorder : public views::BubbleBorder {
   explicit CandidateWindowBorder(gfx::NativeView parent)
       : views::BubbleBorder(views::BubbleBorder::TOP_CENTER,
                             views::BubbleBorder::NO_SHADOW,
-                            SK_ColorTRANSPARENT),
+                            gfx::kPlaceholderColor),
         parent_(parent),
         offset_(0) {
     set_paint_arrow(views::BubbleBorder::PAINT_NONE);
+    set_use_theme_background_color(true);
   }
   ~CandidateWindowBorder() override {}
 
@@ -153,13 +155,9 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   set_parent_window(parent);
   set_margins(gfx::Insets());
 
-  // Set the background and the border of the view.
-  ui::NativeTheme* theme = GetNativeTheme();
-  set_background(
-      views::Background::CreateSolidBackground(theme->GetSystemColor(
-          ui::NativeTheme::kColorId_WindowBackground)));
   SetBorder(views::CreateSolidBorder(
-      1, theme->GetSystemColor(ui::NativeTheme::kColorId_MenuBorderColor)));
+      1, GetNativeTheme()->GetSystemColor(
+             ui::NativeTheme::kColorId_MenuBorderColor)));
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   auxiliary_text_ = new InformationTextArea(gfx::ALIGN_RIGHT, 0);
@@ -199,6 +197,7 @@ views::Widget* CandidateWindowView::InitWidget() {
 
   GetBubbleFrameView()->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new CandidateWindowBorder(parent_window())));
+  GetBubbleFrameView()->OnNativeThemeChanged(widget->GetNativeTheme());
   return widget;
 }
 
