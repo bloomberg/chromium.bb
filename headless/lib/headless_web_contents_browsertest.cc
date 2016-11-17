@@ -8,6 +8,7 @@
 
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/page.h"
+#include "headless/public/devtools/domains/security.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
@@ -73,5 +74,26 @@ class HeadlessWebContentsScreenshotTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsScreenshotTest);
+
+class HeadlessWebContentsSecurityTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public security::ExperimentalObserver {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->GetSecurity()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetSecurity()->GetExperimental()->Enable(
+        security::EnableParams::Builder().Build());
+  }
+
+  void OnSecurityStateChanged(
+      const security::SecurityStateChangedParams& params) override {
+    EXPECT_EQ(security::SecurityState::NEUTRAL, params.GetSecurityState());
+    EXPECT_TRUE(params.HasExplanations());
+
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsSecurityTest);
 
 }  // namespace headless

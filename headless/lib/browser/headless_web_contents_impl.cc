@@ -13,6 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "components/security_state/content/content_utils.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_handle.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -78,6 +81,21 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     DCHECK(new_contents->GetBrowserContext() == browser_context_);
 
     browser_context_->RegisterWebContents(std::move(web_contents));
+  }
+
+  // Return the security style of the given |web_contents|, populating
+  // |security_style_explanations| to explain why the SecurityStyle was chosen.
+  blink::WebSecurityStyle GetSecurityStyle(
+      content::WebContents* web_contents,
+      content::SecurityStyleExplanations* security_style_explanations)
+      override {
+    security_state::SecurityInfo security_info;
+    security_state::GetSecurityInfo(
+        security_state::GetVisibleSecurityState(web_contents),
+        false /* used_policy_installed_certificate */,
+        base::Bind(&content::IsOriginSecure), &security_info);
+    return security_state::GetSecurityStyle(security_info,
+                                            security_style_explanations);
   }
 
  private:
