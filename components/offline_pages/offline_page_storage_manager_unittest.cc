@@ -352,7 +352,8 @@ TEST_F(OfflinePageStorageManagerTest, TestStorageTimeInterval) {
   EXPECT_EQ(0, static_cast<int>(model()->GetRemovedPages().size()));
 
   // Advance clock so we go over the gap, but no expired pages.
-  clock()->Advance(kClearStorageInterval + base::TimeDelta::FromMinutes(1));
+  clock()->Advance(constants::kClearStorageInterval +
+                   base::TimeDelta::FromMinutes(1));
   TryClearPages();
   EXPECT_EQ(0, last_cleared_page_count());
   EXPECT_EQ(2, total_cleared_times());
@@ -360,7 +361,8 @@ TEST_F(OfflinePageStorageManagerTest, TestStorageTimeInterval) {
   EXPECT_EQ(0, static_cast<int>(model()->GetRemovedPages().size()));
 
   // Advance clock so we are still in the gap, should be unnecessary.
-  clock()->Advance(kClearStorageInterval - base::TimeDelta::FromMinutes(1));
+  clock()->Advance(constants::kClearStorageInterval -
+                   base::TimeDelta::FromMinutes(1));
   TryClearPages();
   EXPECT_EQ(0, last_cleared_page_count());
   EXPECT_EQ(3, total_cleared_times());
@@ -377,7 +379,8 @@ TEST_F(OfflinePageStorageManagerTest, TestTwoStepExpiration) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(0, static_cast<int>(model()->GetRemovedPages().size()));
 
-  clock()->Advance(kRemovePageItemInterval + base::TimeDelta::FromDays(1));
+  clock()->Advance(constants::kRemovePageItemInterval +
+                   base::TimeDelta::FromDays(1));
   TryClearPages();
   EXPECT_EQ(10, last_cleared_page_count());
   EXPECT_EQ(2, total_cleared_times());
@@ -423,10 +426,10 @@ TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
   int64_t total_size_before = model()->GetTotalSize();
   int64_t available_space = 300 * (1 << 20);  // 300 MB
   test_archive_manager()->SetValues({available_space, total_size_before});
-  EXPECT_GE(total_size_before,
-            kOfflinePageStorageLimit * (available_space + total_size_before));
+  EXPECT_GE(total_size_before, constants::kOfflinePageStorageLimit *
+                                   (available_space + total_size_before));
   TryClearPages();
-  EXPECT_LE(total_size_before * kOfflinePageStorageClearThreshold,
+  EXPECT_LE(total_size_before * constants::kOfflinePageStorageClearThreshold,
             model()->GetTotalSize());
   EXPECT_EQ(4, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
@@ -434,7 +437,8 @@ TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
   int expired_page_count = last_cleared_page_count();
 
   // After more days, all pages should be expired and .
-  clock()->Advance(kRemovePageItemInterval + base::TimeDelta::FromDays(1));
+  clock()->Advance(constants::kRemovePageItemInterval +
+                   base::TimeDelta::FromDays(1));
   TryClearPages();
   EXPECT_EQ(0, model()->GetTotalSize());
   EXPECT_EQ(5, total_cleared_times());

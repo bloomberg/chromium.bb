@@ -24,14 +24,19 @@ namespace offline_pages {
 
 // Maximum % of total available storage that will be occupied by offline pages
 // before a storage clearup.
-const double kOfflinePageStorageLimit = 0.3;
-// The target % of storage usage we try to reach below when expiring pages.
-const double kOfflinePageStorageClearThreshold = 0.1;
-// The time that the storage cleanup will be triggered again since the last one.
-const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(10);
-// The time that the page record will be removed from the store since the page
-// has been expired.
-const base::TimeDelta kRemovePageItemInterval = base::TimeDelta::FromDays(21);
+struct constants {
+  static constexpr double kOfflinePageStorageLimit = 0.3;
+  // The target % of storage usage we try to reach below when expiring pages.
+  static constexpr double kOfflinePageStorageClearThreshold = 0.1;
+  // The time that the storage cleanup will be triggered again since the last
+  // one.
+  static constexpr base::TimeDelta kClearStorageInterval =
+      base::TimeDelta::FromMinutes(10);
+  // The time that the page record will be removed from the store since the page
+  // has been expired.
+  static constexpr base::TimeDelta kRemovePageItemInterval =
+      base::TimeDelta::FromDays(21);
+};
 
 class ClientPolicyController;
 class OfflinePageModel;

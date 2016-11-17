@@ -18,6 +18,11 @@ using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
 
 namespace offline_pages {
 
+constexpr double constants::kOfflinePageStorageLimit;
+constexpr double constants::kOfflinePageStorageClearThreshold;
+constexpr base::TimeDelta constants::kClearStorageInterval;
+constexpr base::TimeDelta constants::kRemovePageItemInterval;
+
 OfflinePageStorageManager::OfflinePageStorageManager(
     OfflinePageModel* model,
     ClientPolicyController* policy_controller,
@@ -122,7 +127,8 @@ void OfflinePageStorageManager::GetPageIdsToClear(
   for (const auto& page : pages) {
     if (!page.IsExpired()) {
       pages_map[page.client_id.name_space].push_back(page);
-    } else if (clear_time_ - page.expiration_time >= kRemovePageItemInterval) {
+    } else if (clear_time_ - page.expiration_time >=
+               constants::kRemovePageItemInterval) {
       page_ids_to_remove->push_back(page.offline_id);
     }
   }
@@ -159,7 +165,7 @@ void OfflinePageStorageManager::GetPageIdsToClear(
   int64_t total_size = stats.total_archives_size;
   int64_t space_to_release =
       kept_pages_size -
-      (total_size + free_space) * kOfflinePageStorageClearThreshold;
+      (total_size + free_space) * constants::kOfflinePageStorageClearThreshold;
   if (space_to_release > 0) {
     // Here we're sorting the |kept_pages| with oldest first.
     std::sort(kept_pages.begin(), kept_pages.end(),
@@ -187,12 +193,13 @@ OfflinePageStorageManager::ShouldClearPages(
   // If the size of all offline pages is more than limit, or it's larger than a
   // specified percentage of all available storage space on the disk we'll clear
   // all offline pages.
-  if (total_size >= (total_size + free_space) * kOfflinePageStorageLimit)
+  if (total_size >=
+      (total_size + free_space) * constants::kOfflinePageStorageLimit)
     return ClearMode::DEFAULT;
   // If it's been more than the pre-defined interval since the last time we
   // clear the storage, we should clear pages.
   if (last_clear_time_ == base::Time() ||
-      clear_time_ - last_clear_time_ >= kClearStorageInterval) {
+      clear_time_ - last_clear_time_ >= constants::kClearStorageInterval) {
     return ClearMode::DEFAULT;
   }
   // Otherwise there's no need to clear storage right now.
