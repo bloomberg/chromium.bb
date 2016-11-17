@@ -33,7 +33,8 @@
         <div class="layout horizontal"
             hidden$="[[isEditable_(item, '', propertyDict, editFieldTypes)]]">
           <div class="secondary">[[getPropertyValue_(item, propertyDict)]]</div>
-          <cr-policy-network-indicator property="[[propertyDict]]">
+          <cr-policy-network-indicator
+              property="[[getProperty_(item, propertyDict)]]">
           </cr-policy-network-indicator>
         </div>
         <!-- Editable string property value -->

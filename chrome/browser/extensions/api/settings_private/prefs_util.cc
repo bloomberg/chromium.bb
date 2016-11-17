@@ -189,6 +189,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_NUMBER;
 
 #if defined(OS_CHROMEOS)
+  // Accounts / Users / People.
   (*s_whitelist)[chromeos::kAccountsPrefAllowGuest] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kAccountsPrefSupervisedUsersEnabled] =
@@ -199,6 +200,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kAccountsPrefUsers] =
       settings_private::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[::prefs::kEnableAutoScreenLock] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Accessibility.
   (*s_whitelist)[::prefs::kAccessibilitySpokenFeedbackEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kAccessibilityAutoclickEnabled] =
@@ -229,6 +234,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kAccessibilityMonoAudioEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Misc.
   (*s_whitelist)[::prefs::kUse24HourClock] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kLanguagePreferredLanguages] =
@@ -237,13 +244,15 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kStatsReportingPref] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[chromeos::kAllowBluetooth] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kAttestationForContentProtectionEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kWakeOnWifiDarkConnect] =
+
+  // Bluetooth & Internet settings.
+  (*s_whitelist)[chromeos::kAllowBluetooth] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kEnableAutoScreenLock] =
+  (*s_whitelist)[proxy_config::prefs::kUseSharedProxies] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kWakeOnWifiDarkConnect] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Timezone settings.

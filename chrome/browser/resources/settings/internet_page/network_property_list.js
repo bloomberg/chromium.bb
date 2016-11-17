@@ -148,6 +148,15 @@ Polymer({
 
   /**
    * @param {string} key The property key.
+   * @return {*} The managed property dictionary associated with |key|.
+   * @private
+   */
+  getProperty_: function(key) {
+    return this.get(key, this.propertyDict);
+  },
+
+  /**
+   * @param {string} key The property key.
    * @return {string} The text to display for the property value.
    * @private
    */

@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
@@ -8,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/md_select_css.html">
 <link rel="import" href="/prefs/prefs_behavior.html">
@@ -67,13 +69,25 @@
       </div>
     </div>
 
+    <!-- Allow shared proxies -->
+    <div class="settings-box continuation"
+        hidden$="[[!getShowAllowShared_(
+                 networkProperties.ProxySettings.Type)]]">
+      <settings-checkbox id="allowShared"
+          pref="{{prefs.settings.use_shared_proxies}}"
+          no-set-pref label="$i18n{networkProxyAllowShared}"
+          on-change="onAllowSharedProxiesChange_">
+      </settings-checkbox>
+    </div>
+
     <!-- Proxy type dropdown -->
     <div class="settings-box continuation">
       <div class="start">$i18n{networkProxyConnectionType}</div>
       <div class="md-select-wrapper">
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
             value="[[proxy.Type]]"
-            disabled="[[!isProxyEditable_(networkProperties, editable)]]">
+            disabled="[[!isProxyEditable_(networkProperties, editable,
+                      useSharedProxies_)]]">
           <template is="dom-repeat" items="[[proxyTypes_]]">
             <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
           </template>
@@ -87,7 +101,8 @@
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.PAC)]]">
       <div>$i18n{networkProxyAutoConfig}</div>
       <paper-input no-label-float class="middle" value="{{proxy.PAC}}"
-          disabled="[[!isEditable_(networkProperties.ProxySettings.PAC)]]"
+          disabled="[[!isEditable_(networkProperties.ProxySettings.PAC,
+                    useSharedProxies_)]]"
           on-blur="onProxyInputChange_">
       </paper-input>
     </div>
@@ -103,7 +118,8 @@
     <div id="proxyDiv" class="settings-box continuation single-column indent"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.MANUAL)]]">
       <paper-checkbox checked="{{useSameProxy_}}"
-          disabled="[[!isProxyEditable_(networkProperties, editable)]]">
+          disabled="[[!isProxyEditable_(networkProperties, editable,
+                    useSharedProxies_)]]">
         $i18n{networkProxyUseSame}
       </paper-checkbox>
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
@@ -111,7 +127,7 @@
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
                       networkProperties.ProxySettings.Manual.HTTPProxy.Host,
-                      editable)]]"
+                      editable, useSharedProxies_)]]"
             value="{{proxy.Manual.HTTPProxy}}"
             label="$i18n{networkProxy}">
         </network-proxy-input>
@@ -121,7 +137,7 @@
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
                       networkProperties.ProxySettings.Manual.HTTPProxy.Host,
-                      editable)]]"
+                      editable, useSharedProxies_)]]"
             value="{{proxy.Manual.HTTPProxy}}"
             label="$i18n{networkProxyHttp}">
         </network-proxy-input>
@@ -129,7 +145,7 @@
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
                       networkProperties.ProxySettings.Manual.SecureHTTPProxy.Host,
-                      editable)]]"
+                      editable, useSharedProxies_)]]"
             value="{{proxy.Manual.SecureHTTPProxy}}"
             label="$i18n{networkProxyShttp}">
         </network-proxy-input>
@@ -137,7 +153,7 @@
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
                       networkProperties.ProxySettings.Manual.FTPProxy.Host,
-                      editable)]]"
+                      editable, useSharedProxies_)]]"
             value="{{proxy.Manual.FTPProxy}}"
             label="$i18n{networkProxyFtp}">
         </network-proxy-input>
@@ -145,14 +161,15 @@
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
                       networkProperties.ProxySettings.Manual.SOCKS.Host,
-                      editable)]]"
+                      editable, useSharedProxies_)]]"
             value="{{proxy.Manual.SOCKS}}"
             label="$i18n{networkProxySocks}">
         </network-proxy-input>
       </div>
 
       <div id="exceptionsDiv"
-          hidden="[[!isProxyEditable_(networkProperties, editable)]]">
+          hidden="[[!isProxyEditable_(networkProperties, editable,
+                  useSharedProxies_)]]">
         <div>$i18n{networkProxyExceptionList}</div>
         <network-proxy-exclusions on-proxy-change="onProxyExclusionsChange_"
             exclusions="{{proxy.ExcludeDomains}}">
@@ -167,6 +184,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm Allow shared proxies dialog -->
+    <dialog is="cr-dialog" id="confirmAllowSharedDialog"
+        on-cancel="onAllowSharedDialogCancel_">
+      <div class="title">$i18n{networkProxyAllowSharedWarningTitle}</div>
+      <div class="body">$i18n{networkProxyAllowSharedWarningMessage}</div>
+      <div class="button-container">
+        <paper-button class="cancel-button"
+            on-tap="onAllowSharedDialogCancel_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button"
+            on-tap="onAllowSharedDialogConfirm_">
+          $i18n{confirm}
+        </paper-button>
+      </div>
+    </dialog>
   </template>
   <script src="network_proxy.js"></script>
 </dom-module>

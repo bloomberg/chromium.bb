@@ -23,7 +23,7 @@ var SettingsBooleanControlBehaviorImpl = {
       value: false,
       notify: true,
       observer: 'checkedChanged_',
-      reflectToAttribute: true
+      reflectToAttribute: true,
     },
 
     /** Disabled property for the element. */
@@ -31,7 +31,17 @@ var SettingsBooleanControlBehaviorImpl = {
       type: Boolean,
       value: false,
       notify: true,
-      reflectToAttribute: true
+      reflectToAttribute: true,
+    },
+
+    /**
+     * If true, do not automatically set the preference value. This allows the
+     * container to confirm the change first then call either sendPrefChange
+     * or resetToPrefValue accordingly.
+     */
+    noSetPref: {
+      type: Boolean,
+      value: false,
     },
 
     /** The main label. */
@@ -48,8 +58,25 @@ var SettingsBooleanControlBehaviorImpl = {
   },
 
   observers: [
-    'prefValueChanged_(pref.value)'
+    'prefValueChanged_(pref.value)',
   ],
+
+  /** Reset the checked state to match the current pref value. */
+  resetToPrefValue: function() {
+    this.checked = this.getNewValue_(this.pref.value);
+  },
+
+  /** Update the pref to the current |checked| value. */
+  sendPrefChange: function() {
+    /** @type {boolean} */ var newValue = this.getNewValue_(this.checked);
+    // Ensure that newValue is the correct type for the pref type, either
+    // a boolean or a number.
+    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
+      this.set('pref.value', newValue ? 1 : 0);
+      return;
+    }
+    this.set('pref.value', newValue);
+  },
 
   /**
    * Polymer observer for pref.value.
@@ -65,16 +92,9 @@ var SettingsBooleanControlBehaviorImpl = {
    * @private
    */
   checkedChanged_: function() {
-    if (!this.pref)
+    if (!this.pref || this.noSetPref)
       return;
-    /** @type {boolean} */ var newValue = this.getNewValue_(this.checked);
-    // Ensure that newValue is the correct type for the pref type, either
-    // a boolean or a number.
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
-      this.set('pref.value', newValue ? 1 : 0);
-      return;
-    }
-    this.set('pref.value', newValue);
+    this.sendPrefChange();
   },
 
   /**
