@@ -5263,6 +5263,9 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     GLint yoffset,
     GLint zoffset,
     ImageBitmap* bitmap,
+    const IntRect& sourceSubRect,
+    GLsizei depth,
+    GLint unpackImageHeight,
     ExceptionState& exceptionState) {
   const char* funcName = getTexImageFunctionName(functionID);
   if (isContextLost())
@@ -5272,27 +5275,40 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
   WebGLTexture* texture = validateTexImageBinding(funcName, functionID, target);
   if (!texture)
     return;
+
+  bool selectingSubRectangle = false;
+  if (!validateTexImageSubRectangle(funcName, functionID, bitmap, sourceSubRect,
+                                    depth, unpackImageHeight,
+                                    &selectingSubRectangle)) {
+    return;
+  }
+
   TexImageFunctionType functionType;
   if (functionID == TexImage2D)
     functionType = TexImage;
   else
     functionType = TexSubImage;
+
+  GLsizei width = sourceSubRect.width();
+  GLsizei height = sourceSubRect.height();
   if (!validateTexFunc(funcName, functionType, SourceImageBitmap, target, level,
-                       internalformat, bitmap->width(), bitmap->height(), 1, 0,
-                       format, type, xoffset, yoffset, zoffset))
+                       internalformat, width, height, depth, 0, format, type,
+                       xoffset, yoffset, zoffset))
     return;
   ASSERT(bitmap->bitmapImage());
 
-  if (functionID != TexSubImage3D && bitmap->isAccelerated() &&
-      canUseTexImageByGPU(functionID, internalformat, type)) {
+  if (functionID != TexSubImage3D && functionID != TexImage3D &&
+      bitmap->isAccelerated() &&
+      canUseTexImageByGPU(functionID, internalformat, type) &&
+      !selectingSubRectangle) {
     if (functionID == TexImage2D) {
-      texImage2DBase(target, level, internalformat, bitmap->width(),
-                     bitmap->height(), 0, format, type, 0);
+      texImage2DBase(target, level, internalformat, width, height, 0, format,
+                     type, 0);
       texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat,
-                    type, 0, 0, 0, bitmap, getTextureSourceSize(bitmap));
+                    type, 0, 0, 0, bitmap, sourceSubRect);
     } else if (functionID == TexSubImage2D) {
       texImageByGPU(TexSubImage2DByGPU, texture, target, level, GL_RGBA, type,
-                    xoffset, yoffset, 0, bitmap, getTextureSourceSize(bitmap));
+                    xoffset, yoffset, 0, bitmap, sourceSubRect);
     }
     return;
   }
@@ -5317,14 +5333,14 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
       (peekSucceed &&
        pixmap.colorType() == SkColorType::kRGBA_8888_SkColorType);
   bool isPixelDataRGBA = (havePeekableRGBA || !peekSucceed);
-  if (isPixelDataRGBA && format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
+  if (isPixelDataRGBA && format == GL_RGBA && type == GL_UNSIGNED_BYTE &&
+      !selectingSubRectangle) {
     needConversion = false;
   } else {
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
       // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
       type = GL_FLOAT;
     }
-    IntRect sourceImageRect(0, 0, bitmap->width(), bitmap->height());
     // In the case of ImageBitmap, we do not need to apply flipY or
     // premultiplyAlpha.
     bool isPixelDataBGRA =
@@ -5332,12 +5348,12 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     if ((isPixelDataBGRA &&
          !WebGLImageConversion::extractImageData(
              pixelDataPtr, WebGLImageConversion::DataFormat::DataFormatBGRA8,
-             bitmap->size(), sourceImageRect, format, type, false, false,
+             bitmap->size(), sourceSubRect, format, type, false, false,
              data)) ||
         (isPixelDataRGBA &&
          !WebGLImageConversion::extractImageData(
              pixelDataPtr, WebGLImageConversion::DataFormat::DataFormatRGBA8,
-             bitmap->size(), sourceImageRect, format, type, false, false,
+             bitmap->size(), sourceSubRect, format, type, false, false,
              data))) {
       synthesizeGLError(GL_INVALID_VALUE, funcName, "bad image data");
       return;
@@ -5345,18 +5361,20 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
   }
   resetUnpackParameters();
   if (functionID == TexImage2D) {
-    texImage2DBase(target, level, internalformat, bitmap->width(),
-                   bitmap->height(), 0, format, type,
-                   needConversion ? data.data() : pixelDataPtr);
+    texImage2DBase(target, level, internalformat, width, height, 0, format,
+                   type, needConversion ? data.data() : pixelDataPtr);
   } else if (functionID == TexSubImage2D) {
-    contextGL()->TexSubImage2D(target, level, xoffset, yoffset, bitmap->width(),
-                               bitmap->height(), format, type,
+    contextGL()->TexSubImage2D(target, level, xoffset, yoffset, width, height,
+                               format, type,
                                needConversion ? data.data() : pixelDataPtr);
+  } else if (functionID == TexImage3D) {
+    contextGL()->TexImage3D(target, level, internalformat, width, height, depth,
+                            0, format, type,
+                            needConversion ? data.data() : pixelDataPtr);
   } else {
     DCHECK_EQ(functionID, TexSubImage3D);
-    contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset,
-                               bitmap->width(), bitmap->height(), 1, format,
-                               type,
+    contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                               height, depth, format, type,
                                needConversion ? data.data() : pixelDataPtr);
   }
   restoreUnpackParameters();
@@ -5370,7 +5388,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                            ImageBitmap* bitmap,
                                            ExceptionState& exceptionState) {
   texImageHelperImageBitmap(TexImage2D, target, level, internalformat, format,
-                            type, 0, 0, 0, bitmap, exceptionState);
+                            type, 0, 0, 0, bitmap, getTextureSourceSize(bitmap),
+                            1, 0, exceptionState);
 }
 
 void WebGLRenderingContextBase::texParameter(GLenum target,
@@ -5521,7 +5540,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target,
                                               ImageBitmap* bitmap,
                                               ExceptionState& exceptionState) {
   texImageHelperImageBitmap(TexSubImage2D, target, level, 0, format, type,
-                            xoffset, yoffset, 0, bitmap, exceptionState);
+                            xoffset, yoffset, 0, bitmap,
+                            getTextureSourceSize(bitmap), 1, 0, exceptionState);
 }
 
 void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location,

@@ -1040,10 +1040,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     DCHECK(functionName);
     DCHECK(selectingSubRectangle);
     DCHECK(image);
-    *selectingSubRectangle = image &&
-                             !(subRect.x() == 0 && subRect.y() == 0 &&
-                               subRect.width() == image->width() &&
-                               subRect.height() == image->height());
+    int imageWidth = static_cast<int>(image->width());
+    int imageHeight = static_cast<int>(image->height());
+    *selectingSubRectangle =
+        !(subRect.x() == 0 && subRect.y() == 0 &&
+          subRect.width() == imageWidth && subRect.height() == imageHeight);
     // If the source image rect selects anything except the entire
     // contents of the image, assert that we're running WebGL 2.0 or
     // higher, since this should never happen for WebGL 1.0 (even though
@@ -1052,11 +1053,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     DCHECK(!*selectingSubRectangle || isWebGL2OrHigher())
         << "subRect = (" << subRect.width() << " x " << subRect.height()
         << ") @ (" << subRect.x() << ", " << subRect.y() << "), image = ("
-        << (image ? image->width() : -1) << " x "
-        << (image ? image->height() : -1) << ")";
+        << imageWidth << " x " << imageHeight << ")";
 
-    if (subRect.x() < 0 || subRect.y() < 0 || subRect.maxX() > image->width() ||
-        subRect.maxY() > image->height() || subRect.width() < 0 ||
+    if (subRect.x() < 0 || subRect.y() < 0 || subRect.maxX() > imageWidth ||
+        subRect.maxY() > imageHeight || subRect.width() < 0 ||
         subRect.height() < 0) {
       synthesizeGLError(GL_INVALID_OPERATION, functionName,
                         "source sub-rectangle specified via pixel unpack "
@@ -1601,6 +1601,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                  GLint,
                                  GLint,
                                  ImageBitmap*,
+                                 const IntRect&,
+                                 GLsizei,
+                                 GLint,
                                  ExceptionState&);
   static const char* getTexImageFunctionName(TexImageFunctionID);
   IntRect sentinelEmptyRect();
