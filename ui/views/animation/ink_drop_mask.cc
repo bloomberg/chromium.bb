@@ -60,6 +60,7 @@ void CircleInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
   SkPaint paint;
   paint.setAlpha(255);
   paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
 
   ui::PaintRecorder recorder(context, layer()->size());
   recorder.canvas()->DrawCircle(mask_center_, mask_radius_, paint);

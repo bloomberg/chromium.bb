@@ -24,8 +24,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/square_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -160,9 +161,7 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
 
 void AppListButton::PaintBackgroundMD(gfx::Canvas* canvas) {
   // Paint the circular background of AppList button.
-  gfx::Point circle_center = GetContentsBounds().CenterPoint();
-  if (!IsHorizontalAlignment(wm_shelf_->GetAlignment()))
-    circle_center = gfx::Point(circle_center.y(), circle_center.x());
+  gfx::Point circle_center = GetCenterPoint();
 
   SkPaint background_paint;
   background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
@@ -251,15 +250,13 @@ void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
     const {
-  // TODO(mohsen): A circular SquareInkDropRipple is created with equal small
-  // and large sizes to mimic a circular flood fill. Replace with an actual
-  // flood fill when circular flood fills are implemented.
-  gfx::Size ripple_size(2 * kAppListButtonRadius, 2 * kAppListButtonRadius);
-  auto* ink_drop_ripple = new views::SquareInkDropRipple(
-      ripple_size, 0, ripple_size, 0, GetContentsBounds().CenterPoint(),
-      GetInkDropBaseColor(), ink_drop_visible_opacity());
-  ink_drop_ripple->set_activated_shape(views::SquareInkDropRipple::CIRCLE);
-  return base::WrapUnique(ink_drop_ripple);
+  gfx::Point center = GetCenterPoint();
+  gfx::Rect bounds(center.x() - kAppListButtonRadius,
+                   center.y() - kAppListButtonRadius, 2 * kAppListButtonRadius,
+                   2 * kAppListButtonRadius);
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      bounds, GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
 }
 
 void AppListButton::NotifyClick(const ui::Event& event) {
@@ -283,11 +280,23 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
   return std::move(ink_drop);
 }
 
+std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
+  return base::MakeUnique<views::CircleInkDropMask>(
+      GetLocalBounds(), GetCenterPoint(), kAppListButtonRadius);
+}
+
 void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {
   if (draw_background_as_active_ == draw_background_as_active)
     return;
   draw_background_as_active_ = draw_background_as_active;
   SchedulePaint();
+}
+
+gfx::Point AppListButton::GetCenterPoint() const {
+  gfx::Point center = GetContentsBounds().CenterPoint();
+  if (!IsHorizontalAlignment(wm_shelf_->GetAlignment()))
+    center = gfx::Point(center.y(), center.x());
+  return center;
 }
 
 }  // namespace ash
