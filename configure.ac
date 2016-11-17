@@ -380,19 +380,19 @@ if test x$enable_simple_egl_clients = xyes; then
                     [egl glesv2 wayland-client wayland-egl wayland-cursor])
 fi
 
-AC_ARG_ENABLE(simple-dmabuf-intel-client,
-              AS_HELP_STRING([--disable-simple-dmabuf-intel-client],
-                             [do not build the simple dmabuf intel client]),,
-              enable_simple_dmabuf_intel_client="auto")
-if ! test "x$enable_simple_dmabuf_intel_client" = "xno"; then
-  PKG_CHECK_MODULES(SIMPLE_DMABUF_INTEL_CLIENT, [wayland-client libdrm libdrm_intel],
-		    have_simple_dmabuf_intel_client=yes, have_simple_dmabuf_intel_client=no)
-  if test "x$have_simple_dmabuf_intel_client" = "xno" -a "x$enable_simple_dmabuf_intel_client" = "xyes"; then
-    AC_MSG_ERROR([Intel dmabuf client explicitly enabled, but libdrm_intel couldn't be found])
+AC_ARG_ENABLE(simple-dmabuf-drm-client,
+              AS_HELP_STRING([--disable-simple-dmabuf-drm-client],
+                             [do not build the simple dmabuf drm client]),,
+              enable_simple_dmabuf_drm_client="auto")
+if ! test "x$enable_simple_dmabuf_drm_client" = "xno"; then
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_DRM_CLIENT, [wayland-client libdrm libdrm_intel],
+		    have_simple_dmabuf_drm_client=yes, have_simple_dmabuf_drm_client=no)
+  if test "x$have_simple_dmabuf_drm_client" = "xno" -a "x$enable_simple_dmabuf_drm_client" = "xyes"; then
+    AC_MSG_ERROR([DRM dmabuf client explicitly enabled, but libdrm_intel couldn't be found])
   fi
-  enable_simple_dmabuf_intel_client="$have_simple_dmabuf_intel_client"
+  enable_simple_dmabuf_drm_client="$have_simple_dmabuf_drm_client"
 fi
-AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_INTEL_CLIENT, test "x$enable_simple_dmabuf_intel_client" = "xyes")
+AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_DRM_CLIENT, test "x$enable_simple_dmabuf_drm_client" = "xyes")
 
 AC_ARG_ENABLE(simple-dmabuf-v4l-client,
               AS_HELP_STRING([--disable-simple-dmabuf-v4l-client],
