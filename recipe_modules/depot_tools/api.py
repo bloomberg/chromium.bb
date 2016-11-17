@@ -31,3 +31,7 @@ class DepotToolsApi(recipe_api.RecipeApi):
   def ninja_path(self):
     ninja_exe = 'ninja.exe' if self.m.platform.is_win else 'ninja'
     return self.package_repo_resource(ninja_exe)
+
+  @property
+  def presubmit_support_py_path(self):
+    return self.package_repo_resource('presubmit_support.py')

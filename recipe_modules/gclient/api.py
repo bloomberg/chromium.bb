@@ -251,10 +251,11 @@ class GclientApi(recipe_api.RecipeApi):
     alias = self.spec_alias
     prefix = '%sgclient ' % (('[spec: %s] ' % alias) if alias else '')
 
+    gclient_path = self.package_repo_resource(
+        'gclient.bat' if self.m.platform.is_win else 'gclient')
     return self.m.python(prefix + 'revert',
         self.m.path['build'].join('scripts', 'slave', 'gclient_safe_revert.py'),
-        ['.', self.m.path['depot_tools'].join('gclient',
-                                              platform_ext={'win': '.bat'})],
+        ['.', gclient_path],
         infra_step=True,
         **kwargs
     )

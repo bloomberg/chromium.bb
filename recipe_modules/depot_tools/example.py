@@ -30,6 +30,9 @@ def RunSteps(api):
   api.step(
       'ninja_path', ['ls', api.depot_tools.ninja_path])
 
+  api.step(
+      'presubmit_support_py_path',
+      ['ls', api.depot_tools.presubmit_support_py_path])
 
 
 def GenTests(api):

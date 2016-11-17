@@ -42,6 +42,13 @@
     "name": "ninja_path"
   },
   {
+    "cmd": [
+      "ls",
+      "RECIPE_PACKAGE_REPO[depot_tools]/presubmit_support.py"
+    ],
+    "name": "presubmit_support_py_path"
+  },
+  {
     "name": "$result",
     "recipe_result": null,
     "status_code": 0

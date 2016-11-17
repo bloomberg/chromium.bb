@@ -3,7 +3,7 @@
     "cmd": [
       "python",
       "-u",
-      "[DEPOT_TOOLS]/apply_issue.py",
+      "RECIPE_PACKAGE_REPO[depot_tools]/apply_issue.py",
       "-r",
       "[START_DIR]/foo/bar",
       "-i",
