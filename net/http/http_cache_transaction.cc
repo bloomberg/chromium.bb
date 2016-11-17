@@ -902,6 +902,10 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
 
     // Requested cache access mode.
     if (effective_load_flags_ & LOAD_ONLY_FROM_CACHE) {
+      if (effective_load_flags_ & LOAD_BYPASS_CACHE) {
+        // The client has asked for nonsense.
+        return ERR_CACHE_MISS;
+      }
       mode_ = READ;
     } else if (effective_load_flags_ & LOAD_BYPASS_CACHE) {
       mode_ = WRITE;
