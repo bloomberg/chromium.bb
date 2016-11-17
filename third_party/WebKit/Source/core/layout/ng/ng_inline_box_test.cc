@@ -24,7 +24,7 @@ class NGInlineBoxForTest : public NGInlineBox {
   void AppendText(const String& text) {
     unsigned start = text_content_.length();
     text_content_.append(text);
-    items_.emplaceAppend(start, start + text.length(), nullptr);
+    items_.emplace_back(start, start + text.length(), nullptr);
   }
 
   void AppendText(const char16_t* text) {

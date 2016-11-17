@@ -672,7 +672,7 @@ TEST(VectorTest, Optional) {
   EXPECT_EQ(3u, vector->size());
 }
 
-TEST(VectorTest, emplaceAppend) {
+TEST(VectorTest, emplace_back) {
   struct Item {
     Item(int value1, int value2) : value1(value1), value2(value2) {}
     int value1;
@@ -680,8 +680,8 @@ TEST(VectorTest, emplaceAppend) {
   };
 
   Vector<Item> vector;
-  vector.emplaceAppend(1, 2);
-  vector.emplaceAppend(3, 4);
+  vector.emplace_back(1, 2);
+  vector.emplace_back(3, 4);
 
   EXPECT_EQ(2u, vector.size());
   EXPECT_EQ(1, vector[0].value1);

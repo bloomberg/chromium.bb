@@ -946,7 +946,7 @@ class Vector
   template <typename U>
   void append(U&&);
   template <typename... Args>
-  void emplaceAppend(Args&&...);
+  T& emplace_back(Args&&...);
   template <typename U>
   void uncheckedAppend(U&& val);
   template <typename U, size_t otherCapacity, typename V>
@@ -1396,7 +1396,7 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::append(U&& val) {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename... Args>
-ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::emplaceAppend(
+ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
     Args&&... args) {
   static_assert(sizeof...(Args), "grow() must be called instead");
   static_assert(sizeof...(Args) != 1, "append() must be called instead");
@@ -1406,8 +1406,9 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::emplaceAppend(
     expandCapacity(size() + 1);
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
-  new (NotNull, end()) T(std::forward<Args>(args)...);
+  T* t = new (NotNull, end()) T(std::forward<Args>(args)...);
   ++m_size;
+  return *t;
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>

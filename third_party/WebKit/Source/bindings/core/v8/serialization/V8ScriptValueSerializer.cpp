@@ -141,7 +141,7 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable,
     if (m_blobInfoArray) {
       size_t index = m_blobInfoArray->size();
       DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
-      m_blobInfoArray->emplaceAppend(blob->uuid(), blob->type(), blob->size());
+      m_blobInfoArray->emplace_back(blob->uuid(), blob->type(), blob->size());
       writeTag(BlobIndexTag);
       writeUint32(static_cast<uint32_t>(index));
     } else {
@@ -304,8 +304,8 @@ bool V8ScriptValueSerializer::writeFile(File* file,
     file->captureSnapshot(size, lastModifiedMs);
     // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
     double lastModified = lastModifiedMs / msPerSecond;
-    m_blobInfoArray->emplaceAppend(file->uuid(), file->path(), file->name(),
-                                   file->type(), lastModified, size);
+    m_blobInfoArray->emplace_back(file->uuid(), file->path(), file->name(),
+                                  file->type(), lastModified, size);
     writeUint32(static_cast<uint32_t>(index));
   } else {
     writeUTF8String(file->hasBackingFile() ? file->path() : emptyString());

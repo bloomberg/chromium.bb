@@ -20,14 +20,14 @@ void NGLayoutInlineItemsBuilder::Append(const String& string,
                                         const ComputedStyle* style) {
   unsigned start_offset = text_.length();
   text_.append(string);
-  items_->emplaceAppend(start_offset, text_.length(), style);
+  items_->emplace_back(start_offset, text_.length(), style);
 }
 
 void NGLayoutInlineItemsBuilder::Append(UChar32 character,
                                         const ComputedStyle* style) {
   text_.append(character);
   unsigned end_offset = text_.length();
-  items_->emplaceAppend(end_offset - 1, end_offset, style);
+  items_->emplace_back(end_offset - 1, end_offset, style);
 }
 
 void NGLayoutInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,

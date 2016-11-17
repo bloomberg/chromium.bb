@@ -603,8 +603,8 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndex) {
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x69, 0x00});
   WebBlobInfoArray blobInfoArray;
-  blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                              "text/plain", 12);
+  blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                             "text/plain", 12);
   V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
   deserializer.setBlobInfoArray(&blobInfoArray);
   v8::Local<v8::Value> result = deserializer.deserialize();
@@ -626,8 +626,8 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
   }
   {
     WebBlobInfoArray blobInfoArray;
-    blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                "text/plain", 12);
+    blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                               "text/plain", 12);
     V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
     deserializer.setBlobInfoArray(&blobInfoArray);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
@@ -870,8 +870,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x00});
   WebBlobInfoArray blobInfoArray;
-  blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                              "/native/path", "path", "text/plain");
+  blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                             "/native/path", "path", "text/plain");
   V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
   deserializer.setBlobInfoArray(&blobInfoArray);
   v8::Local<v8::Value> result = deserializer.deserialize();
@@ -894,8 +894,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
   }
   {
     WebBlobInfoArray blobInfoArray;
-    blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                "/native/path", "path", "text/plain");
+    blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                               "/native/path", "path", "text/plain");
     V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
     deserializer.setBlobInfoArray(&blobInfoArray);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
@@ -1028,8 +1028,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x01, 0x00, 0x00});
   WebBlobInfoArray blobInfoArray;
-  blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                              "/native/path", "name", "text/plain");
+  blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                             "/native/path", "name", "text/plain");
   V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
   deserializer.setBlobInfoArray(&blobInfoArray);
   v8::Local<v8::Value> result = deserializer.deserialize();

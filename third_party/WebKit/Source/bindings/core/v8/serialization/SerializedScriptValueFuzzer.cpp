@@ -53,10 +53,10 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   pageHolder = DummyPageHolder::create().release();
   pageHolder->frame().settings()->setScriptEnabled(true);
   blobInfoArray = new WebBlobInfoArray();
-  blobInfoArray->emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                               "text/plain", 12);
-  blobInfoArray->emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                               "/native/path", "path", "text/plain");
+  blobInfoArray->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                              "text/plain", 12);
+  blobInfoArray->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                              "/native/path", "path", "text/plain");
   return 0;
 }
 
