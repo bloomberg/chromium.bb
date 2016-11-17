@@ -130,7 +130,6 @@ mojom("arc_bindings_old_types") {
     "common/bitmap.mojom",
     "common/bluetooth.mojom",
     "common/net.mojom",
-    "common/video_accelerator.mojom",
   ]
 
   public_deps = [
@@ -167,6 +166,7 @@ mojom("arc_bindings") {
     "common/storage_manager.mojom",
     "common/tts.mojom",
     "common/video.mojom",
+    "common/video_accelerator.mojom",
     "common/wallpaper.mojom",
   ]
 

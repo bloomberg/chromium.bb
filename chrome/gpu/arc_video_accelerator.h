@@ -78,6 +78,8 @@ class ArcVideoAccelerator {
   };
 
   struct DmabufPlane {
+    DmabufPlane(int32_t offset, int32_t stride)
+        : offset(offset), stride(stride) {}
     int32_t offset;  // in bytes
     int32_t stride;  // in bytes
   };

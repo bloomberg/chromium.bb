@@ -6,6 +6,7 @@
 #define CHROME_GPU_GPU_ARC_VIDEO_SERVICE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -62,7 +63,7 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
   void BindDmabuf(::arc::mojom::PortType port,
                   uint32_t index,
                   mojo::ScopedHandle dmabuf_handle,
-                  mojo::Array<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
+                  std::vector<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
                       dmabuf_planes) override;
   void UseBuffer(::arc::mojom::PortType port,
                  uint32_t index,

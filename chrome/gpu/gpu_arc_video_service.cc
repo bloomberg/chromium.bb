@@ -111,24 +111,6 @@ struct TypeConverter<chromeos::arc::ArcVideoAccelerator::Config,
   }
 };
 
-template <>
-struct TypeConverter<chromeos::arc::ArcVideoAccelerator::DmabufPlane,
-                     arc::mojom::ArcVideoAcceleratorDmabufPlanePtr> {
-  static chromeos::arc::ArcVideoAccelerator::DmabufPlane Convert(
-      const arc::mojom::ArcVideoAcceleratorDmabufPlanePtr& input) {
-    chromeos::arc::ArcVideoAccelerator::DmabufPlane result = {0};
-    if (input->offset < 0 || input->stride < 0) {
-      DVLOG(1) << "Invalid offset/stride: " << input->offset << "/"
-               << input->stride;
-      return result;
-    }
-
-    result.offset = input->offset;
-    result.stride = input->stride;
-    return result;
-  }
-};
-
 }  // namespace mojo
 
 namespace chromeos {
@@ -263,7 +245,7 @@ void GpuArcVideoService::DeprecatedBindDmabuf(::arc::mojom::PortType port,
                                               uint32_t index,
                                               mojo::ScopedHandle dmabuf_handle,
                                               int32_t stride) {
-  mojo::Array<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr> planes(1);
+  std::vector<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr> planes(1);
   planes[0]->offset = 0;
   planes[0]->stride = stride;
 
@@ -274,7 +256,7 @@ void GpuArcVideoService::BindDmabuf(
     ::arc::mojom::PortType port,
     uint32_t index,
     mojo::ScopedHandle dmabuf_handle,
-    mojo::Array<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
+    std::vector<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
         dmabuf_planes) {
   DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
 
@@ -282,8 +264,18 @@ void GpuArcVideoService::BindDmabuf(
   if (!fd.is_valid())
     return;
 
-  std::vector<ArcVideoAccelerator::DmabufPlane> converted_planes =
-      dmabuf_planes.To<std::vector<ArcVideoAccelerator::DmabufPlane>>();
+  std::vector<ArcVideoAccelerator::DmabufPlane> converted_planes;
+  // TODO(yusukes): Use mojo typemaps to simplify the code.
+  for (const auto& input : dmabuf_planes) {
+    if (input->offset < 0 || input->stride < 0) {
+      DVLOG(1) << "Invalid offset/stride: " << input->offset << "/"
+               << input->stride;
+      client_->OnError(
+          ::arc::mojom::VideoAcceleratorService::Result::INVALID_ARGUMENT);
+      return;
+    }
+    converted_planes.emplace_back(input->offset, input->stride);
+  }
 
   accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd),
                            std::move(converted_planes));
