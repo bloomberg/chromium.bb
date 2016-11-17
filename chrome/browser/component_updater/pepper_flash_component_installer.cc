@@ -44,6 +44,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
@@ -305,6 +306,14 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash))
     return;
+
+#if defined(OS_CHROMEOS)
+   const base::Feature kCrosCompUpdates {
+     "CrosCompUpdates", base::FEATURE_DISABLED_BY_DEFAULT
+   };
+   if (!base::FeatureList::IsEnabled(kCrosCompUpdates))
+     return;
+#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ComponentInstallerTraits> traits(
       new FlashComponentInstallerTraits);
