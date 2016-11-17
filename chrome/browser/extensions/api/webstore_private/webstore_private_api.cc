@@ -288,7 +288,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
       if (policy_error == service->GetExtensionsLockedMessage())
         blocked_for_child = true;
     }
-#endif
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     api::webstore_private::Result code =
         blocked_for_child
             ? api::webstore_private::RESULT_BLOCKED_FOR_CHILD_ACCOUNT

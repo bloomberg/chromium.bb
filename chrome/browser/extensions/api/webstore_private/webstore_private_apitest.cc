@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,6 +36,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gl/gl_switches.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 using gpu::GpuFeatureType;
 
@@ -344,6 +349,44 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_InstallTheme) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, EmptyCrx) {
   ASSERT_TRUE(RunInstallTest("empty.html", "empty.crx"));
 }
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+class ExtensionWebstorePrivateApiTestSupervised
+    : public ExtensionWebstorePrivateApiTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionWebstorePrivateApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId, "not_empty");
+  }
+};
+
+// Tests that extension installation is blocked for supervised users.
+// Note: This will have to be updated if we enable SU-initiated installs.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestSupervised,
+                       InstallBlocked) {
+  ASSERT_TRUE(
+      RunInstallTest("begin_install_fail_supervised.html", "extension.crx"));
+}
+
+class ExtensionWebstorePrivateApiTestChild
+    : public ExtensionWebstorePrivateApiTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionWebstorePrivateApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kSupervisedUserId,
+                                    supervised_users::kChildAccountSUID);
+  }
+};
+
+// Tests that extension installation is blocked for child accounts, and
+// attempting to do so produces a special error code.
+// Note: This will have to be updated when we enable child-initiated installs.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChild, InstallBlocked) {
+  ASSERT_TRUE(RunInstallTest("begin_install_fail_child.html", "extension.crx"));
+}
+
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
  protected:
