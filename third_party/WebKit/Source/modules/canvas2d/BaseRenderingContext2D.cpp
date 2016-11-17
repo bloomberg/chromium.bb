@@ -108,6 +108,37 @@ void BaseRenderingContext2D::restoreMatrixClipStack(SkCanvas* c) const {
   validateStateStack();
 }
 
+void BaseRenderingContext2D::unwindStateStack() {
+  if (size_t stackSize = m_stateStack.size()) {
+    if (SkCanvas* skCanvas = existingDrawingCanvas()) {
+      while (--stackSize)
+        skCanvas->restore();
+    }
+  }
+}
+
+void BaseRenderingContext2D::reset() {
+  validateStateStack();
+  unwindStateStack();
+  m_stateStack.resize(1);
+  m_stateStack.first() = CanvasRenderingContext2DState::create();
+  m_path.clear();
+  if (SkCanvas* c = existingDrawingCanvas()) {
+    // The canvas should always have an initial/unbalanced save frame, which
+    // we use to reset the top level matrix and clip here.
+    DCHECK_EQ(c->getSaveCount(), 2);
+    c->restore();
+    c->save();
+    DCHECK(c->getTotalMatrix().isIdentity());
+#if DCHECK_IS_ON()
+    SkIRect clipBounds;
+    DCHECK(c->getClipDeviceBounds(&clipBounds));
+    DCHECK(clipBounds == c->imageInfo().bounds());
+#endif
+  }
+  validateStateStack();
+}
+
 static inline void convertCanvasStyleToUnionType(
     CanvasStyle* style,
     StringOrCanvasGradientOrCanvasPattern& returnValue) {

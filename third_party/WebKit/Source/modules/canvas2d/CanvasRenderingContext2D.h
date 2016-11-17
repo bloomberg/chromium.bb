@@ -210,8 +210,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void dispatchContextRestoredEvent(TimerBase*);
   void tryRestoreContextEvent(TimerBase*);
 
-  void unwindStateStack();
-
   void pruneLocalFontCache(size_t targetSize);
   void schedulePruneLocalFontCacheIfNeeded();
 

@@ -141,15 +141,6 @@ void CanvasRenderingContext2D::setCanvasGetContextResult(
   result.setCanvasRenderingContext2D(this);
 }
 
-void CanvasRenderingContext2D::unwindStateStack() {
-  if (size_t stackSize = m_stateStack.size()) {
-    if (SkCanvas* skCanvas = canvas()->existingDrawingCanvas()) {
-      while (--stackSize)
-        skCanvas->restore();
-    }
-  }
-}
-
 CanvasRenderingContext2D::~CanvasRenderingContext2D() {}
 
 void CanvasRenderingContext2D::dispose() {
@@ -280,25 +271,8 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(TimerBase*) {
 }
 
 void CanvasRenderingContext2D::reset() {
-  validateStateStack();
-  unwindStateStack();
-  m_stateStack.resize(1);
-  m_stateStack.first() = CanvasRenderingContext2DState::create();
-  m_path.clear();
-  if (SkCanvas* c = canvas()->existingDrawingCanvas()) {
-    // The canvas should always have an initial/unbalanced save frame, which
-    // we use to reset the top level matrix and clip here.
-    DCHECK_EQ(c->getSaveCount(), 2);
-    c->restore();
-    c->save();
-    DCHECK(c->getTotalMatrix().isIdentity());
-#if DCHECK_IS_ON()
-    SkIRect clipBounds;
-    DCHECK(c->getClipDeviceBounds(&clipBounds));
-    DCHECK(clipBounds == c->imageInfo().bounds());
-#endif
-  }
-  validateStateStack();
+  // This is a multiple inherritance bootstrap
+  BaseRenderingContext2D::reset();
 }
 
 void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(SkCanvas* c) const {

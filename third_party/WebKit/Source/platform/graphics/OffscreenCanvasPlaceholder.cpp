@@ -67,11 +67,13 @@ void OffscreenCanvasPlaceholder::setPlaceholderFrame(
     std::unique_ptr<WebTaskRunner> taskRunner,
     unsigned resourceId) {
   DCHECK(isPlaceholderRegistered());
+  DCHECK(newFrame);
   releasePlaceholderFrame();
   m_placeholderFrame = std::move(newFrame);
   m_frameDispatcher = std::move(dispatcher);
   m_frameDispatcherTaskRunner = std::move(taskRunner);
   m_placeholderFrameResourceId = resourceId;
+  setSize(m_placeholderFrame->size());
 }
 
 void OffscreenCanvasPlaceholder::releasePlaceholderFrame() {

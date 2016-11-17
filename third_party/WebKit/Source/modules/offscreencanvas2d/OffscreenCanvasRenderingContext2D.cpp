@@ -100,6 +100,11 @@ bool OffscreenCanvasRenderingContext2D::hasImageBuffer() const {
   return !!m_imageBuffer;
 }
 
+void OffscreenCanvasRenderingContext2D::reset() {
+  m_imageBuffer = nullptr;
+  BaseRenderingContext2D::reset();
+}
+
 ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const {
   if (!m_imageBuffer) {
     IntSize surfaceSize(width(), height());

@@ -44,15 +44,6 @@ test(function() {
 }, "Tests whether transferControlToOffscreen throws exception correctly."); 
 
 test(function() {
-    var canvas3 = createCanvas(10, 10);
-    var offscreenCanvas3 = canvas3.transferControlToOffscreen();
-    assert_equals(offscreenCanvas3.width, 10);
-    assert_equals(offscreenCanvas3.height, 10);
-    assert_throws("InvalidStateError", function() { offscreenCanvas3.width = 20; });
-    assert_throws("InvalidStateError", function() { offscreenCanvas3.height = 20; });
-}, "Test if resizing on offscreencanvas transferred from html canvas has thrown exceptions.");
-
-test(function() {
     var canvas4 = createCanvas(10, 10);
     var offscreenCanvas4 = canvas4.transferControlToOffscreen();
     assert_throws("InvalidStateError", function() {

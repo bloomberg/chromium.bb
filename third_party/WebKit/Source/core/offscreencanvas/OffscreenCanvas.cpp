@@ -29,30 +29,28 @@ OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height) {
       IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
 
-void OffscreenCanvas::setWidth(unsigned width, ExceptionState& exceptionState) {
-  // If this OffscreenCanvas is transferred control by an html canvas,
-  // its size is determined by html canvas's size and cannot be resized.
-  if (hasPlaceholderCanvas()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Resizing is not allowed on an "
-                                     "OffscreenCanvas that has been "
-                                     "transferred control from a canvas.");
-    return;
-  }
-  m_size.setWidth(clampTo<int>(width));
+void OffscreenCanvas::setWidth(unsigned width) {
+  IntSize newSize = m_size;
+  newSize.setWidth(clampTo<int>(width));
+  setSize(newSize);
 }
 
-void OffscreenCanvas::setHeight(unsigned height,
-                                ExceptionState& exceptionState) {
-  // Same comment as above.
-  if (hasPlaceholderCanvas()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Resizing is not allowed on an "
-                                     "OffscreenCanvas that has been "
-                                     "transferred control from a canvas.");
-    return;
+void OffscreenCanvas::setHeight(unsigned height) {
+  IntSize newSize = m_size;
+  newSize.setHeight(clampTo<int>(height));
+  setSize(newSize);
+}
+
+void OffscreenCanvas::setSize(const IntSize& size) {
+  if (m_context) {
+    if (m_context->is3d()) {
+      if (size != m_size)
+        m_context->reshape(size.width(), size.height());
+    } else if (m_context->is2d()) {
+      m_context->reset();
+    }
   }
-  m_size.setHeight(clampTo<int>(height));
+  m_size = size;
 }
 
 void OffscreenCanvas::setNeutered() {

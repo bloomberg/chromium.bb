@@ -99,7 +99,7 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   void setWidth(int, ExceptionState&);
   void setHeight(int, ExceptionState&);
 
-  void setSize(const IntSize& newSize);
+  void setSize(const IntSize& newSize) override;
 
   // Called by Document::getCSSCanvasContext as well as above getContext().
   CanvasRenderingContext* getCanvasRenderingContext(

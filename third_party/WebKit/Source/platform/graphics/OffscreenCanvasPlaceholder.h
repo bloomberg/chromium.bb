@@ -13,6 +13,7 @@
 namespace blink {
 
 class Image;
+class IntSize;
 class OffscreenCanvasFrameDispatcher;
 class WebTaskRunner;
 
@@ -25,6 +26,8 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
                            std::unique_ptr<WebTaskRunner>,
                            unsigned resourceId);
   void releasePlaceholderFrame();
+
+  virtual void setSize(const IntSize&) = 0;
 
   static OffscreenCanvasPlaceholder* getPlaceholderById(unsigned placeholderId);
 

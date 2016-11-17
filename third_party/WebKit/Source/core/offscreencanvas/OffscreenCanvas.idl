@@ -10,8 +10,8 @@
     RuntimeEnabled=ExperimentalCanvasFeatures,
     MeasureAs=OffscreenCanvas,
 ] interface OffscreenCanvas : EventTarget {
-    [RaisesException=Setter, EnforceRange] attribute unsigned long width;
-    [RaisesException=Setter, EnforceRange] attribute unsigned long height;
+    [EnforceRange] attribute unsigned long width;
+    [EnforceRange] attribute unsigned long height;
 
     [CallWith=ScriptState, RaisesException] ImageBitmap transferToImageBitmap();
     [RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);

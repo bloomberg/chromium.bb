@@ -37,8 +37,8 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
   // IDL attributes
   unsigned width() const { return m_size.width(); }
   unsigned height() const { return m_size.height(); }
-  void setWidth(unsigned, ExceptionState&);
-  void setHeight(unsigned, ExceptionState&);
+  void setWidth(unsigned);
+  void setHeight(unsigned);
 
   // API Methods
   ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
@@ -47,6 +47,8 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
                               ExceptionState&);
 
   IntSize size() const { return m_size; }
+  void setSize(const IntSize&);
+
   void setPlaceholderCanvasId(int canvasId) {
     m_placeholderCanvasId = canvasId;
   }
