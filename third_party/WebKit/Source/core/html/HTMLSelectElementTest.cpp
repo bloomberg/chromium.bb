@@ -417,7 +417,7 @@ TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
   HTMLOptionElement* option =
       toHTMLOptionElement(select->firstChild()->firstChild());
   EXPECT_EQ(1, select->activeSelectionEndListIndex());
-  select->firstChild()->removeChild(option, ASSERT_NO_EXCEPTION);
+  select->firstChild()->removeChild(option);
   EXPECT_EQ(-1, select->activeSelectionEndListIndex());
   select->appendChild(option, ASSERT_NO_EXCEPTION);
   EXPECT_EQ(1, select->activeSelectionEndListIndex());

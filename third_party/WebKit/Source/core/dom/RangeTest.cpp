@@ -172,7 +172,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
 
   Range* range = Range::create(document(), span2, 0, div, 3);
 
-  div->removeChild(span1, ASSERT_NO_EXCEPTION);
+  div->removeChild(span1);
   text->insertData(0, "bar", ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(range->boundaryPointsValid());
@@ -194,7 +194,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
 
   Range* range = Range::create(document(), span2, 0, div, 3);
 
-  div->removeChild(span1, ASSERT_NO_EXCEPTION);
+  div->removeChild(span1);
   text->deleteData(0, 3, ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(range->boundaryPointsValid());

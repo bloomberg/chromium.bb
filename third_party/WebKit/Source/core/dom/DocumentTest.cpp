@@ -218,8 +218,8 @@ TEST_F(DocumentTest, LinkManifest) {
   link->setAttribute(blink::HTMLNames::relAttr, "manifest");
 
   // Check that link outside of the <head> are ignored.
-  document().head()->removeChild(link, ASSERT_NO_EXCEPTION);
-  document().head()->removeChild(link2, ASSERT_NO_EXCEPTION);
+  document().head()->removeChild(link);
+  document().head()->removeChild(link2);
   EXPECT_EQ(0, document().linkManifest());
   document().body()->appendChild(link);
   EXPECT_EQ(0, document().linkManifest());
