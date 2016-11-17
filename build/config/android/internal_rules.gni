@@ -417,55 +417,6 @@ template("copy_ex") {
   }
 }
 
-template("device_isolate") {
-  testonly = true
-  _runtime_deps_file = "$target_gen_dir/$target_name.runtime_deps"
-  group("${target_name}__write_deps") {
-    forward_variables_from(invoker,
-                           [
-                             "data",
-                             "data_deps",
-                             "deps",
-                             "public_deps",
-                           ])
-    write_runtime_deps = _runtime_deps_file
-  }
-
-  action(target_name) {
-    script = "//build/android/gn/generate_isolate.py"
-    inputs = [
-      _runtime_deps_file,
-    ]
-    outputs = [
-      invoker.output,
-    ]
-    args = [
-      "--output-directory=.",
-      "--out-file",
-      rebase_path(invoker.output, root_build_dir),
-      "--runtime-deps-file",
-      rebase_path(_runtime_deps_file, root_build_dir),
-      "--apply-android-filters",
-      "--apply-device-filters",
-    ]
-    _assert_no_odd_data =
-        defined(invoker.assert_no_odd_data) && invoker.assert_no_odd_data
-    if (_assert_no_odd_data) {
-      args += [ "--assert-no-odd-data" ]
-    }
-    if (defined(invoker.command)) {
-      _isolate_dir = get_path_info(invoker.output, "dir")
-      args += [
-        "--command",
-        rebase_path(invoker.command, _isolate_dir),
-      ]
-    }
-    deps = [
-      ":${invoker.target_name}__write_deps",
-    ]
-  }
-}
-
 # Generates a script in the output bin directory which runs the test
 # target using the test runner script in build/android/test_runner.py.
 template("test_runner_script") {
@@ -474,6 +425,24 @@ template("test_runner_script") {
   _test_type = invoker.test_type
   _incremental_install =
       defined(invoker.incremental_install) && invoker.incremental_install
+
+  _runtime_deps =
+      !defined(invoker.ignore_all_data_deps) || !invoker.ignore_all_data_deps
+
+  if (_runtime_deps) {
+    _runtime_deps_file = "$target_gen_dir/$target_name.runtime_deps"
+    _runtime_deps_target = "${target_name}__write_deps"
+    group(_runtime_deps_target) {
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "public_deps",
+                             ])
+      write_runtime_deps = _runtime_deps_file
+    }
+  }
 
   action(target_name) {
     forward_variables_from(invoker,
@@ -499,6 +468,15 @@ template("test_runner_script") {
       "--output-directory",
       rebase_path(root_build_dir, root_build_dir),
     ]
+
+    if (_runtime_deps) {
+      deps += [ ":$_runtime_deps_target" ]
+      data += [ _runtime_deps_file ]
+      test_runner_args += [
+        "--runtime-deps-path",
+        rebase_path(_runtime_deps_file, root_build_dir),
+      ]
+    }
 
     # apk_target is not used for native executable tests
     # (e.g. breakpad_unittests).
@@ -575,13 +553,6 @@ template("test_runner_script") {
           "@FileArg($_rebased_build_config:deps_info:apk_path)",
         ]
       }
-    }
-    if (defined(invoker.isolate_file)) {
-      data += [ invoker.isolate_file ]
-      test_runner_args += [
-        "--isolate-file-path",
-        rebase_path(invoker.isolate_file, root_build_dir),
-      ]
     }
     if (defined(invoker.shard_timeout)) {
       test_runner_args += [ "--shard-timeout=${invoker.shard_timeout}" ]
