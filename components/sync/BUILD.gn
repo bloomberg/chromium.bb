@@ -35,6 +35,8 @@ static_library("sync") {
     "base/get_session_name_mac.mm",
     "base/get_session_name_win.cc",
     "base/get_session_name_win.h",
+    "base/hash_util.cc",
+    "base/hash_util.h",
     "base/immutable.h",
     "base/invalidation_adapter.cc",
     "base/invalidation_adapter.h",
@@ -829,6 +831,7 @@ source_set("unit_tests") {
     "base/data_type_histogram_unittest.cc",
     "base/enum_set_unittest.cc",
     "base/get_session_name_unittest.cc",
+    "base/hash_util_unittest.cc",
     "base/immutable_unittest.cc",
     "base/nigori_unittest.cc",
     "base/node_ordinal_unittest.cc",
@@ -931,7 +934,6 @@ source_set("unit_tests") {
     "syncable/syncable_enum_conversions_unittest.cc",
     "syncable/syncable_id_unittest.cc",
     "syncable/syncable_unittest.cc",
-    "syncable/syncable_util_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

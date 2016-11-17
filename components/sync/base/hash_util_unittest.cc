@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync/base/hash_util.h"
+
 #include "components/sync/base/model_type.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-namespace syncable {
-namespace {
 
 // Tests that the hashing algorithm has not changed.
-TEST(SyncableUtilTest, GenerateSyncableHash) {
+TEST(SyncHashUtilTest, GenerateSyncableHash) {
   EXPECT_EQ("OyaXV5mEzrPS4wbogmtKvRfekAI=",
             GenerateSyncableHash(BOOKMARKS, "tag1"));
   EXPECT_EQ("iNFQtRFQb+IZcn1kKUJEZDDkLs4=",
@@ -27,6 +26,4 @@ TEST(SyncableUtilTest, GenerateSyncableHash) {
             GenerateSyncableHash(AUTOFILL, "tag2"));
 }
 
-}  // namespace
-}  // namespace syncable
 }  // namespace syncer

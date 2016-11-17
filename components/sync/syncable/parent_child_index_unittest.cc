@@ -8,8 +8,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/syncable/entry_kernel.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -88,7 +88,7 @@ class ParentChildIndexTest : public testing::Test {
     bm->put(ID, GetBookmarkId(n));
     bm->put(PARENT_ID, GetBookmarkRootId());
 
-    bm->put(UNIQUE_BOOKMARK_TAG, syncable::GenerateSyncableBookmarkHash(
+    bm->put(UNIQUE_BOOKMARK_TAG, GenerateSyncableBookmarkHash(
                                      kCacheGuid, bm->ref(ID).GetServerId()));
 
     UniquePosition unique_pos =

@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::EntitySpecifics;
@@ -63,8 +63,8 @@ std::string FakeModelTypeSyncBridge::ClientTagFromKey(const std::string& key) {
 
 // static
 std::string FakeModelTypeSyncBridge::TagHashFromKey(const std::string& key) {
-  return syncable::GenerateSyncableHash(
-      PREFERENCES, FakeModelTypeSyncBridge::ClientTagFromKey(key));
+  return GenerateSyncableHash(PREFERENCES,
+                              FakeModelTypeSyncBridge::ClientTagFromKey(key));
 }
 
 // static

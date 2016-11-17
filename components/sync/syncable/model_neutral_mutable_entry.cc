@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/scoped_kernel_lock.h"

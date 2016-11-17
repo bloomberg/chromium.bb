@@ -5,9 +5,9 @@
 
 #include "components/sync/engine_impl/worker_entity_tracker.h"
 
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -25,7 +25,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
   WorkerEntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("some.sample.tag"),
-        kClientTagHash(syncable::GenerateSyncableHash(PREFERENCES, kClientTag)),
+        kClientTagHash(GenerateSyncableHash(PREFERENCES, kClientTag)),
         kSpecificsHash("somehash"),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)),

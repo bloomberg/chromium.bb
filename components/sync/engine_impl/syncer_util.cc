@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
@@ -273,8 +274,8 @@ std::string GetUniqueBookmarkTagFromUpdate(const sync_pb::SyncEntity& update) {
     return UniquePosition::RandomSuffix();
   }
 
-  return syncable::GenerateSyncableBookmarkHash(
-      update.originator_cache_guid(), update.originator_client_item_id());
+  return GenerateSyncableBookmarkHash(update.originator_cache_guid(),
+                                      update.originator_client_item_id());
 }
 
 UniquePosition GetUpdatePosition(const sync_pb::SyncEntity& update,

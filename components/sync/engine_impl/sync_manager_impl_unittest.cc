@@ -25,6 +25,7 @@
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/base/sync_features.h"
@@ -56,7 +57,6 @@
 #include "components/sync/syncable/read_transaction.h"
 #include "components/sync/syncable/syncable_id.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "components/sync/syncable/write_node.h"
@@ -810,7 +810,7 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
     sync_pb::EntitySpecifics specifics;
     AddDefaultFieldValue(PREFERENCES, &specifics);
     entry.PutServerSpecifics(specifics);
-    const std::string hash = syncable::GenerateSyncableHash(PREFERENCES, "foo");
+    const std::string hash = GenerateSyncableHash(PREFERENCES, "foo");
     entry.PutUniqueClientTag(hash);
     item1 = entry.GetMetahandle();
   }
@@ -1148,7 +1148,7 @@ class SyncManagerTest : public testing::Test,
     UserShare* share = sync_manager_.GetUserShare();
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST,
                                      share->directory.get());
-    const std::string hash = syncable::GenerateSyncableHash(type, client_tag);
+    const std::string hash = GenerateSyncableHash(type, client_tag);
     syncable::MutableEntry entry(&trans, syncable::GET_BY_CLIENT_TAG, hash);
     EXPECT_TRUE(entry.good());
     if (!entry.GetIsUnsynced())
@@ -1887,8 +1887,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 syncable::GenerateSyncableHash(BOOKMARKS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
   // Manually change to the same data. Should not set is_unsynced.
@@ -2027,8 +2026,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetEntitySpecificsNoChange) {
         data, entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 syncable::GenerateSyncableHash(PASSWORDS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, client_tag));
 
@@ -2059,8 +2057,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
         data, entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 syncable::GenerateSyncableHash(PASSWORDS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, client_tag));
 
@@ -2113,8 +2110,7 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   }
   EXPECT_TRUE(entity_specifics.password().has_unencrypted_metadata());
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
-                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, kClientTag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
@@ -2188,8 +2184,7 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
         data, entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
-                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, kClientTag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
@@ -2224,8 +2219,7 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
         data, entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
-                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, kClientTag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
@@ -2276,8 +2270,7 @@ TEST_F(SyncManagerTest,
   entity_specifics.mutable_password()->mutable_unencrypted_metadata()->set_url(
       kUrl);
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
-                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, kClientTag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
@@ -2315,8 +2308,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
     trans.GetCryptographer()->AddKey(real_params);
   }
   MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
-                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
-                 entity_specifics);
+                 GenerateSyncableHash(PASSWORDS, kClientTag), entity_specifics);
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
   // Force a re-encrypt everything. Should trigger an unrecoverable error due
@@ -2359,8 +2351,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
     trans.GetCryptographer()->AddKey(real_params);
   }
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, kClientTag,
-                 syncable::GenerateSyncableHash(BOOKMARKS, kClientTag),
-                 entity_specifics);
+                 GenerateSyncableHash(BOOKMARKS, kClientTag), entity_specifics);
   EXPECT_FALSE(ResetUnsyncedEntry(BOOKMARKS, kClientTag));
 
   // Force a re-encrypt everything. Should trigger an unrecoverable error due
@@ -2383,8 +2374,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 syncable::GenerateSyncableHash(BOOKMARKS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
 
@@ -2418,8 +2408,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 syncable::GenerateSyncableHash(BOOKMARKS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
 
@@ -2474,7 +2463,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
   entity_specifics.mutable_preference()->set_name("name");
   entity_specifics.mutable_preference()->set_value("value");
   MakeServerNode(sync_manager_.GetUserShare(), PREFERENCES, client_tag,
-                 syncable::GenerateSyncableHash(PREFERENCES, client_tag),
+                 GenerateSyncableHash(PREFERENCES, client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, client_tag));
@@ -2509,7 +2498,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   entity_specifics.mutable_preference()->set_name("name");
   entity_specifics.mutable_preference()->set_value("value");
   MakeServerNode(sync_manager_.GetUserShare(), PREFERENCES, client_tag,
-                 syncable::GenerateSyncableHash(PREFERENCES, client_tag),
+                 GenerateSyncableHash(PREFERENCES, client_tag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, client_tag));
@@ -2567,7 +2556,7 @@ TEST_F(SyncManagerTest, SetLongTitle) {
   entity_specifics.mutable_preference()->set_name("name");
   entity_specifics.mutable_preference()->set_value("value");
   MakeServerNode(sync_manager_.GetUserShare(), PREFERENCES, "short_title",
-                 syncable::GenerateSyncableHash(PREFERENCES, kClientTag),
+                 GenerateSyncableHash(PREFERENCES, kClientTag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
   EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
@@ -2627,8 +2616,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     AddDefaultFieldValue(BOOKMARKS, &entity_specifics);
   }
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 syncable::GenerateSyncableHash(BOOKMARKS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
 
   {
     // Verify the data.
@@ -2691,8 +2679,7 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   entity_specifics.mutable_bookmark()->set_url("url");
   entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
-                 syncable::GenerateSyncableHash(BOOKMARKS, client_tag),
-                 entity_specifics);
+                 GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
 
   {
     ReadTransaction read_trans(FROM_HERE, sync_manager_.GetUserShare());

@@ -4,10 +4,8 @@
 
 #include "components/sync/syncable/syncable_util.h"
 
-#include "base/base64.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -90,28 +88,6 @@ bool SyncAssert(bool condition,
     return false;
   }
   return true;
-}
-
-std::string GenerateSyncableHash(ModelType model_type,
-                                 const std::string& client_tag) {
-  // Blank PB with just the field in it has termination symbol,
-  // handy for delimiter.
-  sync_pb::EntitySpecifics serialized_type;
-  AddDefaultFieldValue(model_type, &serialized_type);
-  std::string hash_input;
-  serialized_type.AppendToString(&hash_input);
-  hash_input.append(client_tag);
-
-  std::string encode_output;
-  base::Base64Encode(base::SHA1HashString(hash_input), &encode_output);
-  return encode_output;
-}
-
-std::string GenerateSyncableBookmarkHash(
-    const std::string& originator_cache_guid,
-    const std::string& originator_client_item_id) {
-  return syncable::GenerateSyncableHash(
-      BOOKMARKS, originator_cache_guid + originator_client_item_id);
 }
 
 }  // namespace syncable

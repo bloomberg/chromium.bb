@@ -5,14 +5,14 @@
 #include "components/sync/test/fake_server/unique_client_entity.h"
 
 #include "base/guid.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/test/fake_server/permanent_entity.h"
 
 using std::string;
+using syncer::GenerateSyncableHash;
 using syncer::GetModelTypeFromSpecifics;
 using syncer::ModelType;
-using syncer::syncable::GenerateSyncableHash;
 
 namespace fake_server {
 

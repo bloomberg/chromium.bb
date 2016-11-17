@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_features.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
@@ -17,7 +18,6 @@
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/write_transaction.h"
 
 using std::string;
@@ -236,7 +236,7 @@ BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
   if (tag.empty())
     return INIT_FAILED_PRECONDITION;
 
-  const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
+  const std::string hash = GenerateSyncableHash(model_type, tag);
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_CLIENT_TAG, hash);
@@ -327,7 +327,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
     return INIT_FAILED_EMPTY_TAG;
   }
 
-  const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
+  const std::string hash = GenerateSyncableHash(model_type, tag);
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.

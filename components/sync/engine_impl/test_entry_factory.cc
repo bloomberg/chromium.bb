@@ -4,6 +4,7 @@
 
 #include "components/sync/engine_impl/test_entry_factory.h"
 
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
@@ -12,7 +13,6 @@
 #include "components/sync/syncable/syncable_id.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_id_factory.h"
 
@@ -171,7 +171,7 @@ int64_t TestEntryFactory::CreateSyncedItem(
   entry.PutId(item_id);
   entry.PutCtime(now);
   entry.PutMtime(now);
-  entry.PutUniqueClientTag(syncable::GenerateSyncableHash(model_type, name));
+  entry.PutUniqueClientTag(GenerateSyncableHash(model_type, name));
   entry.PutBaseVersion(version);
   entry.PutIsUnsynced(false);
   entry.PutNonUniqueName(name);

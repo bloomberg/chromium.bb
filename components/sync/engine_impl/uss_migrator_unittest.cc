@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/engine_impl/test_entry_factory.h"
@@ -18,7 +19,6 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/read_node.h"
 #include "components/sync/syncable/read_transaction.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
@@ -31,7 +31,7 @@ namespace {
 const ModelType kModelType = PREFERENCES;
 
 std::string GenerateTagHash(const std::string& tag) {
-  return syncable::GenerateSyncableHash(kModelType, tag);
+  return GenerateSyncableHash(kModelType, tag);
 }
 
 const char kToken1[] = "token1";

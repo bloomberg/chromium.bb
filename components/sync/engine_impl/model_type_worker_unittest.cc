@@ -12,11 +12,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/fake_encryptor.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/single_type_mock_server.h"
@@ -32,7 +32,7 @@ const char kNigoriKeyName[] = "nigori-key";
 const ModelType kModelType = PREFERENCES;
 
 std::string GenerateTagHash(const std::string& tag) {
-  return syncable::GenerateSyncableHash(kModelType, tag);
+  return GenerateSyncableHash(kModelType, tag);
 }
 
 const char kTag1[] = "tag1";

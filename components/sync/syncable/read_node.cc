@@ -5,10 +5,10 @@
 #include "components/sync/syncable/read_node.h"
 
 #include "base/logging.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
-#include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
 
@@ -58,7 +58,7 @@ BaseNode::InitByLookupResult ReadNode::InitByClientTagLookup(
   if (tag.empty())
     return INIT_FAILED_PRECONDITION;
 
-  const std::string hash = syncable::GenerateSyncableHash(model_type, tag);
+  const std::string hash = GenerateSyncableHash(model_type, tag);
 
   entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
                                syncable::GET_BY_CLIENT_TAG, hash);

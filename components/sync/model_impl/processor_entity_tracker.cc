@@ -8,7 +8,6 @@
 #include "base/sha1.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
-#include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
 

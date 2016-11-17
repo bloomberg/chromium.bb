@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/scoped_kernel_lock.h"
 #include "components/sync/syncable/scoped_parent_child_index_updater.h"
 #include "components/sync/syncable/syncable_changes_version.h"
-#include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 
 using std::string;
@@ -81,7 +81,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
   // We need to have a valid position ready before we can index the item.
   if (model_type == BOOKMARKS) {
     // Base the tag off of our cache-guid and local "c-" style ID.
-    std::string unique_tag = syncable::GenerateSyncableBookmarkHash(
+    std::string unique_tag = GenerateSyncableBookmarkHash(
         trans->directory()->cache_guid(), GetId().GetServerId());
     kernel_->put(UNIQUE_BOOKMARK_TAG, unique_tag);
     kernel_->put(UNIQUE_POSITION, UniquePosition::InitialPosition(unique_tag));
