@@ -73,6 +73,7 @@ config("icu_code") {
       "/wd4005",  # Macro redefinition.
       "/wd4068",  # Unknown pragmas.
       "/wd4267",  # Conversion from size_t on 64-bits.
+      # http://bugs.icu-project.org/trac/ticket/12821
       "/wd4333",  # Right shift by too large amount.
     ]
   } else if (is_linux || is_android) {
