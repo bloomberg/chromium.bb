@@ -252,20 +252,21 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
                          int bs) {
+  const int mask_row = mi_row & MAX_MIB_MASK;
+  const int mask_col = mi_col & MAX_MIB_MASK;
+
   // In a split partition all apart from the bottom right has a top right
-  int has_tr = !((mi_row & bs) && (mi_col & bs));
+  int has_tr = !((mask_row & bs) && (mask_col & bs));
 
   // bs > 0 and bs is a power of 2
   assert(bs > 0 && !(bs & (bs - 1)));
-
-  if ((mi_row & MAX_MIB_MASK) == 0) return has_tr;
 
   // For each 4x4 group of blocks, when the bottom right is decoded the blocks
   // to the right have not been decoded therefore the bottom right does
   // not have a top right
   while (bs < MAX_MIB_SIZE) {
-    if (mi_col & bs) {
-      if ((mi_col & (2 * bs)) && (mi_row & (2 * bs))) {
+    if (mask_col & bs) {
+      if ((mask_col & (2 * bs)) && (mask_row & (2 * bs))) {
         has_tr = 0;
         break;
       }
@@ -289,7 +290,7 @@ static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
   // The bottom left square of a Vertical A does not have a top right as it is
   // decoded before the right hand rectangle of the partition
   if (xd->mi[0]->mbmi.partition == PARTITION_VERT_A)
-    if ((mi_row & bs) && !(mi_col & bs)) has_tr = 0;
+    if ((mask_row & bs) && !(mask_col & bs)) has_tr = 0;
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
   return has_tr;
