@@ -1318,11 +1318,10 @@ void WebContentsImpl::NotifyNavigationStateChanged(
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::OnAudioStateChanged(bool is_audio_playing) {
-  SendPageMessage(
-      new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_audio_playing));
+void WebContentsImpl::OnAudioStateChanged(bool is_audible) {
+  SendPageMessage(new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_audible));
 
-  // Notification for UI updates in response to the changed muting state.
+  // Notification for UI updates in response to the changed audio state.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 

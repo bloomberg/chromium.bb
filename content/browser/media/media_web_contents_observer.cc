@@ -43,9 +43,6 @@ void MediaWebContentsObserver::RenderFrameDeleted(
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
-  if (!AudioStreamMonitor::monitoring_available())
-    return;
-
   AudioStreamMonitor* audio_stream_monitor =
       static_cast<WebContentsImpl*>(web_contents())->audio_stream_monitor();
 
@@ -133,16 +130,8 @@ void MediaWebContentsObserver::OnMediaPlaying(
     return;
 
   const MediaPlayerId id(render_frame_host, delegate_id);
-  if (has_audio) {
+  if (has_audio)
     AddMediaPlayerEntry(id, &active_audio_players_);
-
-    // If we don't have audio stream monitoring, allocate the audio power save
-    // blocker here instead of during NotifyNavigationStateChanged().
-    if (!audio_power_save_blocker_ &&
-        !AudioStreamMonitor::monitoring_available()) {
-      CreateAudioPowerSaveBlocker();
-    }
-  }
 
   if (has_video) {
     AddMediaPlayerEntry(id, &active_video_players_);
@@ -212,14 +201,6 @@ void MediaWebContentsObserver::CreateVideoPowerSaveBlocker() {
 }
 
 void MediaWebContentsObserver::MaybeReleasePowerSaveBlockers() {
-  // If there are no more audio players and we don't have audio stream
-  // monitoring, release the audio power save blocker here instead of during
-  // NotifyNavigationStateChanged().
-  if (active_audio_players_.empty() &&
-      !AudioStreamMonitor::monitoring_available()) {
-    audio_power_save_blocker_.reset();
-  }
-
   // If there are no more video players, clear the video power save blocker.
   if (active_video_players_.empty())
     video_power_save_blocker_.reset();

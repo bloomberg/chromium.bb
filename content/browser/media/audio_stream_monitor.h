@@ -34,17 +34,14 @@ class WebContents;
 // to turn on/off repeatedly and annoy the user.  AudioStreamMonitor sends UI
 // update notifications only when needed, but may be queried at any time.
 //
+// When power level monitoring is not available, audibility is approximated
+// with having active audio streams.
+//
 // Each WebContentsImpl owns an AudioStreamMonitor.
 class CONTENT_EXPORT AudioStreamMonitor {
  public:
   explicit AudioStreamMonitor(WebContents* contents);
   ~AudioStreamMonitor();
-
-  // Indicates if audio stream monitoring is available.  It's only available if
-  // AudioOutputController can and will monitor output power levels.
-  static bool monitoring_available() {
-    return media::AudioOutputController::will_monitor_audio_levels();
-  }
 
   // Returns true if audio has recently been audible from the tab.  This is
   // usually called whenever the tab data model is refreshed; but there are
@@ -89,6 +86,13 @@ class CONTENT_EXPORT AudioStreamMonitor {
     kHoldOnMilliseconds = 2000
   };
 
+  // Indicates if monitoring of audio stream power level is available.
+  // It's only available if AudioOutputController can and will monitor
+  // output power levels.
+  static bool power_level_monitoring_available() {
+    return media::AudioOutputController::will_monitor_audio_levels();
+  }
+
   // Helper methods for starting and stopping monitoring which lookup the
   // identified renderer and forward calls to the correct AudioStreamMonitor.
   static void StartMonitoringHelper(
@@ -118,6 +122,11 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // updates through |web_contents_| if needed.  When the indicator is turned
   // on, |off_timer_| is started to re-invoke this method in the future.
   void MaybeToggle();
+
+  // Helper functions to track number of active streams when power level
+  // monitoring is not available.
+  void OnStreamAdded();
+  void OnStreamRemoved();
 
   // The WebContents instance to receive indicator toggle notifications.  This
   // pointer should be valid for the lifetime of AudioStreamMonitor.
@@ -153,6 +162,10 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // Started only when an indicator is toggled on, to turn it off again in the
   // future.
   base::OneShotTimer off_timer_;
+
+  // Number of active streams to be used as a proxy for audibility when power
+  // level monitoring is not available.
+  size_t active_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamMonitor);
 };

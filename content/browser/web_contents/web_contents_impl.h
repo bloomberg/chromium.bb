@@ -325,7 +325,7 @@ class CONTENT_EXPORT WebContentsImpl
   int GetCrashedErrorCode() const override;
   bool IsBeingDestroyed() const override;
   void NotifyNavigationStateChanged(InvalidateTypes changed_flags) override;
-  void OnAudioStateChanged(bool is_audio_playing) override;
+  void OnAudioStateChanged(bool is_audible) override;
   base::TimeTicks GetLastActiveTime() const override;
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
   base::TimeTicks GetLastHiddenTime() const override;
