@@ -766,6 +766,18 @@ Background.prototype = {
   setFocusToRange_: function(range, prevRange) {
     var start = range.start.node;
     var end = range.end.node;
+
+    // First, see if we've crossed a root. Remove once webview handles focus
+    // correctly.
+    if (prevRange && prevRange.start.node && start) {
+      var entered = AutomationUtil.getUniqueAncestors(
+          prevRange.start.node, start);
+      var embeddedObject = entered.find(function(f) {
+        return f.role == RoleType.embeddedObject; });
+      if (embeddedObject && !embeddedObject.state.focused)
+        embeddedObject.focus();
+    }
+
     if (start.state.focused || end.state.focused)
       return;
 
@@ -773,17 +785,6 @@ Background.prototype = {
       return node.state.focusable &&
           AutomationPredicate.linkOrControl(node);
     };
-
-    // First, see if we've crossed a root. Remove once webview handles focus
-    // correctly.
-    if (prevRange && prevRange.start.node) {
-      var entered = AutomationUtil.getUniqueAncestors(
-          prevRange.start.node, start);
-      var embeddedObject = entered.find(function(f) {
-        return f.role == RoleType.embeddedObject; });
-      if (embeddedObject)
-        embeddedObject.focus();
-    }
 
     // Next, try to focus the start or end node.
     if (!AutomationPredicate.structuralContainer(start) &&
