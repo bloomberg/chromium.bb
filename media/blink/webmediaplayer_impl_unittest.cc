@@ -187,37 +187,43 @@ class WebMediaPlayerImplTest : public testing::Test {
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayStateSuspended() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputeBackgroundedPlayState() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
   }
 
   WebMediaPlayerImpl::PlayState ComputeIdlePlayState() {
     wmpi_->is_idle_ = true;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputeIdleSuspendedPlayState() {
     wmpi_->is_idle_ = true;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputeMustSuspendPlayState() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = true;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false);
+  }
+
+  WebMediaPlayerImpl::PlayState ComputeStreamingPlayState(bool must_suspend) {
+    wmpi_->is_idle_ = true;
+    wmpi_->must_suspend_ = must_suspend;
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
   }
 
   void SetDelegateState(WebMediaPlayerImpl::DelegateState state) {
@@ -564,6 +570,27 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Ended) {
 
   state = ComputeIdlePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::ENDED, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_TRUE(state.is_suspended);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_Streaming) {
+  InitializeWebMediaPlayerImpl();
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(true);
+
+  // Streaming media should not suspend, even if paused, idle, and backgrounded.
+  state = ComputeStreamingPlayState(false);
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+
+  // Streaming media should suspend when the tab is closed, regardless.
+  state = ComputeStreamingPlayState(true);
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
 }

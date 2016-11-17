@@ -1607,7 +1607,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   seeking_ = true;
 
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
-  bool is_streaming = (data_source_ && data_source_->IsStreaming());
+  bool is_streaming = data_source_ && data_source_->IsStreaming();
   pipeline_controller_.Start(demuxer_.get(), this, is_streaming, is_static);
 }
 
@@ -1688,15 +1688,17 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   bool is_remote = isRemote();
+  bool is_streaming = false;
 #else
   bool is_remote = false;
+  bool is_streaming = data_source_ && data_source_->IsStreaming();
 #endif
 
   bool is_suspended = pipeline_controller_.IsSuspended();
   bool is_backgrounded =
       IsBackgroundedSuspendEnabled() && delegate_ && delegate_->IsHidden();
-  PlayState state = UpdatePlayState_ComputePlayState(is_remote, is_suspended,
-                                                     is_backgrounded);
+  PlayState state = UpdatePlayState_ComputePlayState(
+      is_remote, is_streaming, is_suspended, is_backgrounded);
   SetDelegateState(state.delegate_state);
   SetMemoryReportingState(state.is_memory_reporting_enabled);
   SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
@@ -1791,6 +1793,7 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
 
 WebMediaPlayerImpl::PlayState
 WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
+                                                     bool is_streaming,
                                                      bool is_suspended,
                                                      bool is_backgrounded) {
   PlayState result;
@@ -1816,10 +1819,10 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
                                hasAudio() && IsResumeBackgroundVideosEnabled();
   bool is_background_playing =
       delegate_ && delegate_->IsPlayingBackgroundVideo();
-  bool background_suspended = is_backgrounded_video &&
+  bool background_suspended = !is_streaming && is_backgrounded_video &&
                               !(can_play_backgrounded && is_background_playing);
   bool background_pause_suspended =
-      is_backgrounded && paused_ && have_future_data;
+      !is_streaming && is_backgrounded && paused_ && have_future_data;
 
   // Idle suspension is allowed prior to have future data since there exist
   // mechanisms to exit the idle state when the player is capable of reaching
@@ -1827,7 +1830,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   //
   // TODO(sandersd): Make the delegate suspend idle players immediately when
   // hidden.
-  bool idle_suspended = is_idle_ && paused_ && !seeking_ && !overlay_enabled_;
+  bool idle_suspended =
+      !is_streaming && is_idle_ && paused_ && !seeking_ && !overlay_enabled_;
 
   // If we're already suspended, see if we can wait for user interaction. Prior
   // to HaveFutureData, we require |is_idle_| to remain suspended. |is_idle_|

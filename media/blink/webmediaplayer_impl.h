@@ -339,6 +339,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_remote,
+                                             bool is_streaming,
                                              bool is_suspended,
                                              bool is_backgrounded);
   void SetDelegateState(DelegateState new_state);
