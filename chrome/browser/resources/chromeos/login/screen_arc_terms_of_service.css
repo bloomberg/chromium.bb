@@ -17,12 +17,21 @@
   text-decoration: none;
 }
 
-#arc-tos h1 {
+#arc-tos h1,
+#arc-tos h2 {
   color: rgba(0, 0, 0, 0.54);
-  font-size: 14px;
-  font-weight: 600;
   margin: 12px 0 8px 0;
   width: 630px;
+}
+
+#arc-tos h1 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#arc-tos h2 {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 #arc-tos input[type='checkbox'] {
