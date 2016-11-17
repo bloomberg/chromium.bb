@@ -42,12 +42,15 @@ public class NonPresentingGvrContextImpl implements NonPresentingGvrContext {
 
     @Override
     public void resume() {
-        mGvrLayout.onResume();
+        mGvrLayout.getGvrApi().resumeTracking();
     }
 
     @Override
     public void pause() {
-        mGvrLayout.onPause();
+        // We can't pause/resume the GvrLayout, because doing so will force us to enter VR. However,
+        // we should be safe not pausing it as we never add it to the view hierarchy, or give it a
+        // presentation view, so there's nothing to pause but the tracking.
+        mGvrLayout.getGvrApi().pauseTracking();
     }
 
     @Override
