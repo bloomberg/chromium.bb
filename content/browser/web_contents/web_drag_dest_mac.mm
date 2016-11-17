@@ -8,6 +8,8 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
@@ -18,6 +20,7 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/point.h"
 
 using blink::WebDragOperationsMask;
 using content::DropData;
@@ -125,14 +128,24 @@ int GetModifierFlags() {
   // we need to send a new enter message in draggingUpdated:.
   currentRVH_ = webContents_->GetRenderViewHost();
 
+  // Create the appropriate mouse locations for WebCore. The draggingLocation
+  // is in window coordinates. Both need to be flipped.
+  NSPoint windowPoint = [info draggingLocation];
+  NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
+  NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
+  gfx::Point transformedPt;
+  currentRWHForDrag_ =
+      [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt]
+          ->GetWeakPtr();
+
   // Fill out a DropData from pasteboard.
   std::unique_ptr<DropData> dropData;
   dropData.reset(new DropData());
   [self populateDropData:dropData.get()
              fromPasteboard:[info draggingPasteboard]];
-  // TODO(paulmeyer): This will need to target the correct specific
-  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
-  currentRVH_->GetWidget()->FilterDropData(dropData.get());
+  // TODO(paulmeyer): Data may be pulled from the pasteboard multiple times per
+  // drag. Ideally, this should only be done once, and filtered as needed.
+  currentRWHForDrag_->FilterDropData(dropData.get());
 
   NSDragOperation mask = [info draggingSourceOperationMask];
 
@@ -157,19 +170,9 @@ int GetModifierFlags() {
 
   dropData_.swap(dropData);
 
-  // Create the appropriate mouse locations for WebCore. The draggingLocation
-  // is in window coordinates. Both need to be flipped.
-  NSPoint windowPoint = [info draggingLocation];
-  NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
-  NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  // TODO(paulmeyer): This will need to target the correct specific
-  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
-  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDragEnter(
-      *dropData_,
-      gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y),
-      static_cast<WebDragOperationsMask>(mask),
-      GetModifierFlags());
+  currentRWHForDrag_->DragTargetDragEnter(
+      *dropData_, transformedPt, gfx::Point(screenPoint.x, screenPoint.y),
+      static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
   // hear back from the renderer. For now, be optimistic:
@@ -191,17 +194,31 @@ int GetModifierFlags() {
   if (delegate_)
     delegate_->OnDragLeave();
 
-  // TODO(paulmeyer): This will need to target the correct specific
-  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
-  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDragLeave();
+  if (currentRWHForDrag_) {
+    currentRWHForDrag_->DragTargetDragLeave();
+    currentRWHForDrag_.reset();
+  }
   dropData_.reset();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
-  DCHECK(currentRVH_);
-  if (currentRVH_ != webContents_->GetRenderViewHost())
+  // Create the appropriate mouse locations for WebCore. The draggingLocation
+  // is in window coordinates. Both need to be flipped.
+  NSPoint windowPoint = [info draggingLocation];
+  NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
+  NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
+  gfx::Point transformedPt;
+  content::RenderWidgetHostImpl* targetRWH =
+      [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
+
+  // TODO(paulmeyer): The dragging delegates may now by invoked multiple times
+  // per drag, even without the drag ever leaving the window.
+  if (targetRWH != currentRWHForDrag_.get()) {
+    if (currentRWHForDrag_)
+      currentRWHForDrag_->DragTargetDragLeave();
     [self draggingEntered:info view:view];
+  }
 
   if (canceled_)
     return NSDragOperationNone;
@@ -212,19 +229,10 @@ int GetModifierFlags() {
     return NSDragOperationNone;
   }
 
-  // Create the appropriate mouse locations for WebCore. The draggingLocation
-  // is in window coordinates.
-  NSPoint windowPoint = [info draggingLocation];
-  NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
-  NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
-  // TODO(paulmeyer): This will need to target the correct specific
-  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
-  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDragOver(
-      gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y),
-      static_cast<WebDragOperationsMask>(mask),
-      GetModifierFlags());
+  targetRWH->DragTargetDragOver(
+      transformedPt, gfx::Point(screenPoint.x, screenPoint.y),
+      static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   if (delegate_)
     delegate_->OnDragOver();
@@ -234,8 +242,20 @@ int GetModifierFlags() {
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
-  if (currentRVH_ != webContents_->GetRenderViewHost())
+  // Create the appropriate mouse locations for WebCore. The draggingLocation
+  // is in window coordinates. Both need to be flipped.
+  NSPoint windowPoint = [info draggingLocation];
+  NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
+  NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
+  gfx::Point transformedPt;
+  content::RenderWidgetHostImpl* targetRWH =
+      [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
+
+  if (targetRWH != currentRWHForDrag_.get()) {
+    if (currentRWHForDrag_)
+      currentRWHForDrag_->DragTargetDragLeave();
     [self draggingEntered:info view:view];
+  }
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
   if ([self onlyAllowsNavigation]) {
@@ -257,20 +277,21 @@ int GetModifierFlags() {
 
   currentRVH_ = NULL;
 
-  // Create the appropriate mouse locations for WebCore. The draggingLocation
-  // is in window coordinates. Both need to be flipped.
-  NSPoint windowPoint = [info draggingLocation];
-  NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
-  NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  // TODO(paulmeyer): This will need to target the correct specific
-  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
-  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDrop(
-      *dropData_, gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y), GetModifierFlags());
+  targetRWH->DragTargetDrop(*dropData_, transformedPt,
+                            gfx::Point(screenPoint.x, screenPoint.y),
+                            GetModifierFlags());
 
   dropData_.reset();
 
   return YES;
+}
+
+- (content::RenderWidgetHostImpl*)
+GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
+             transformedPt:(gfx::Point*)transformedPt {
+  return webContents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
+      webContents_->GetRenderViewHost()->GetWidget()->GetView(),
+      gfx::Point(viewPoint.x, viewPoint.y), transformedPt);
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the

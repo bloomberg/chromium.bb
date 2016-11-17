@@ -244,7 +244,7 @@ void WebContentsViewGuest::StartDragging(
     view->StartDragging(
         drop_data, ops, image, image_offset, event_info, source_rwh);
   } else {
-    embedder_web_contents->SystemDragEnded();
+    embedder_web_contents->SystemDragEnded(source_rwh);
   }
 }
 

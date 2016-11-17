@@ -9,9 +9,11 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace content {
 class RenderViewHost;
+class RenderWidgetHostImpl;
 class WebContentsImpl;
 class WebDragDestDelegate;
 }
@@ -34,6 +36,9 @@ CONTENT_EXPORT
   // Updated asynchronously during a drag to tell us whether or not we should
   // allow the drop.
   NSDragOperation currentOperation_;
+
+  // Tracks the current RenderWidgetHost we're dragging over.
+  base::WeakPtr<content::RenderWidgetHostImpl> currentRWHForDrag_;
 
   // Keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.
@@ -67,8 +72,12 @@ CONTENT_EXPORT
 - (void)draggingExited:(id<NSDraggingInfo>)info;
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
                               view:(NSView*)view;
-- (BOOL)performDragOperation:(id<NSDraggingInfo>)info
-                              view:(NSView*)view;
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)info view:(NSView*)view;
+
+// Helper to call WebWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint().
+- (content::RenderWidgetHostImpl*)
+GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
+             transformedPt:(gfx::Point*)transformedPt;
 
 @end
 

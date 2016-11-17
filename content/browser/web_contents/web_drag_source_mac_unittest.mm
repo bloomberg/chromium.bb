@@ -30,6 +30,7 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
        initWithContents:contentsImpl
                    view:view
                dropData:dropData.get()
+              sourceRWH:contentsImpl->GetRenderViewHost()->GetWidget()
                   image:nil
                  offset:NSZeroPoint
              pasteboard:pasteboard1->get()

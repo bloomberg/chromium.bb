@@ -65,6 +65,7 @@ STATIC_ASSERT_ENUM(NSDragOperationEvery, blink::WebDragOperationEvery);
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (DropData*)dropData;
 - (void)startDragWithDropData:(const DropData&)dropData
+                    sourceRWH:(content::RenderWidgetHostImpl*)sourceRWH
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset;
@@ -191,6 +192,7 @@ void WebContentsViewMac::StartDragging(
   NSPoint offset = NSPointFromCGPoint(
       gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
   [cocoa_view_ startDragWithDropData:drop_data
+                           sourceRWH:source_rwh
                    dragOperationMask:mask
                                image:gfx::NSImageFromImageSkia(image)
                               offset:offset];
@@ -541,19 +543,21 @@ void WebContentsViewMac::CloseTab() {
 }
 
 - (void)startDragWithDropData:(const DropData&)dropData
+                    sourceRWH:(content::RenderWidgetHostImpl*)sourceRWH
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
   if (![self webContents])
     return;
   dragSource_.reset([[WebDragSource alloc]
-      initWithContents:[self webContents]
-                  view:self
-              dropData:&dropData
-                 image:image
-                offset:offset
-            pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
-     dragOperationMask:operationMask]);
+       initWithContents:[self webContents]
+                   view:self
+               dropData:&dropData
+              sourceRWH:sourceRWH
+                  image:image
+                 offset:offset
+             pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
+      dragOperationMask:operationMask]);
   [dragSource_ startDrag];
 }
 

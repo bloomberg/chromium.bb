@@ -562,18 +562,11 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
   if (screen_position_client)
     screen_position_client->ConvertPointFromScreen(window, &client_loc);
 
-  if (!drag_start_rwh_)
-    return;
-
-  if (drag_start_rwh_.get() ==
-      web_contents_->GetRenderViewHost()->GetWidget()) {
-    web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.x(),
-                                     screen_loc.x(), screen_loc.y(), ops);
-  }
-
-  // TODO(paulmeyer): In the OOPIF case, should |client_loc| be converted to the
-  // coordinates local to |drag_start_rwh_|? See crbug.com/647249.
-  drag_start_rwh_->DragSourceEndedAt(client_loc, screen_loc, ops);
+  // TODO(paulmeyer): In the OOPIF case, should |client_loc| be converted to
+  // the coordinates local to |drag_start_rwh_|? See crbug.com/647249.
+  web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.x(),
+                                   screen_loc.x(), screen_loc.y(), ops,
+                                   drag_start_rwh_.get());
 }
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
@@ -894,7 +887,7 @@ void WebContentsViewAura::StartDragging(
     RenderWidgetHostImpl* source_rwh) {
   aura::Window* root_window = GetNativeView()->GetRootWindow();
   if (!aura::client::GetDragDropClient(root_window)) {
-    web_contents_->SystemDragEnded();
+    web_contents_->SystemDragEnded(source_rwh);
     return;
   }
 
@@ -943,7 +936,7 @@ void WebContentsViewAura::StartDragging(
   }
 
   EndDrag(ConvertToWeb(result_op));
-  web_contents_->SystemDragEnded();
+  web_contents_->SystemDragEnded(source_rwh);
 }
 
 void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {

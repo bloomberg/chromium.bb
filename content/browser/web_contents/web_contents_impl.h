@@ -187,7 +187,8 @@ class CONTENT_EXPORT WebContentsImpl
                          int client_y,
                          int screen_x,
                          int screen_y,
-                         blink::WebDragOperation operation);
+                         blink::WebDragOperation operation,
+                         RenderWidgetHost* source_rwh);
 
   // Notification that the RenderViewHost's load state changed.
   void LoadStateChanged(const GURL& url,
@@ -386,7 +387,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool WillNotifyDisconnection() const override;
   RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
-  void SystemDragEnded() override;
+  void SystemDragEnded(RenderWidgetHost* source_rwh) override;
   void UserGestureDone() override;
   void SetClosedByUserGesture(bool value) override;
   bool GetClosedByUserGesture() const override;

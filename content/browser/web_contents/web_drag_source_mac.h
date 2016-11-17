@@ -9,10 +9,12 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
 namespace content {
+class RenderWidgetHostImpl;
 class WebContentsImpl;
 struct DropData;
 }
@@ -55,6 +57,9 @@ CONTENT_EXPORT
 
   // The file UTI associated with the file drag, if any.
   base::ScopedCFTypeRef<CFStringRef> fileUTI_;
+
+  // Tracks the RenderWidgetHost where the current drag started.
+  base::WeakPtr<content::RenderWidgetHostImpl> dragStartRWH_;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given
@@ -63,6 +68,7 @@ CONTENT_EXPORT
 - (id)initWithContents:(content::WebContentsImpl*)contents
                   view:(NSView*)contentsView
               dropData:(const content::DropData*)dropData
+             sourceRWH:(content::RenderWidgetHostImpl*)sourceRWH
                  image:(NSImage*)image
                 offset:(NSPoint)offset
             pasteboard:(NSPasteboard*)pboard
