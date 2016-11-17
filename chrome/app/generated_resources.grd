@@ -13784,7 +13784,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_DESCRIPTION"
                desc="Description of about:flag option to turn on experimental guests using out-of-process iframes">
-               Highly experimental where guests such as &lt;webview> are implemented on the out-of-process iframe infrastructure.
+               Highly experimental where guests such as &amp;lt;webview> are implemented on the out-of-process iframe infrastructure.
       </message>
 
       <!-- Browser Task Scheduler -->
