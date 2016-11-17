@@ -24,7 +24,7 @@ function runTest()
 {
     var image = document.getElementsByTagName('img')[0];
     image.src = loadAndStall() + webpImage() + "&stallAt=2400&stallFor=60";
-    setTimeout(testDone, 500);
+    setTimeout(testDone, 1500);
 }
 
 window.onload = function() {
