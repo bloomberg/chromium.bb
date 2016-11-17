@@ -1400,7 +1400,7 @@ static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame) {
   while (node) {
     if (node->layoutObject()) {
       ECursor cursor = node->layoutObject()->style()->cursor();
-      if (cursor != CURSOR_AUTO ||
+      if (cursor != ECursor::Auto ||
           frame->eventHandler().useHandCursor(node, node->isLink()))
         break;
     }
@@ -1415,8 +1415,8 @@ static bool showsHandCursor(Node* node, LocalFrame* frame) {
     return false;
 
   ECursor cursor = node->layoutObject()->style()->cursor();
-  return cursor == CURSOR_POINTER ||
-         (cursor == CURSOR_AUTO &&
+  return cursor == ECursor::Pointer ||
+         (cursor == ECursor::Auto &&
           frame->eventHandler().useHandCursor(node, node->isLink()));
 }
 

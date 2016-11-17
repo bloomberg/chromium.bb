@@ -450,82 +450,82 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result) {
     }
   }
 
-  switch (style ? style->cursor() : CURSOR_AUTO) {
-    case CURSOR_AUTO: {
+  switch (style ? style->cursor() : ECursor::Auto) {
+    case ECursor::Auto: {
       bool horizontalText = !style || style->isHorizontalWritingMode();
       const Cursor& iBeam =
           horizontalText ? iBeamCursor() : verticalTextCursor();
       return selectAutoCursor(result, node, iBeam);
     }
-    case CURSOR_CROSS:
+    case ECursor::Cross:
       return crossCursor();
-    case CURSOR_POINTER:
+    case ECursor::Pointer:
       return handCursor();
-    case CURSOR_MOVE:
+    case ECursor::Move:
       return moveCursor();
-    case CURSOR_ALL_SCROLL:
+    case ECursor::AllScroll:
       return moveCursor();
-    case CURSOR_E_RESIZE:
+    case ECursor::EResize:
       return eastResizeCursor();
-    case CURSOR_W_RESIZE:
+    case ECursor::WResize:
       return westResizeCursor();
-    case CURSOR_N_RESIZE:
+    case ECursor::NResize:
       return northResizeCursor();
-    case CURSOR_S_RESIZE:
+    case ECursor::SResize:
       return southResizeCursor();
-    case CURSOR_NE_RESIZE:
+    case ECursor::NeResize:
       return northEastResizeCursor();
-    case CURSOR_SW_RESIZE:
+    case ECursor::SwResize:
       return southWestResizeCursor();
-    case CURSOR_NW_RESIZE:
+    case ECursor::NwResize:
       return northWestResizeCursor();
-    case CURSOR_SE_RESIZE:
+    case ECursor::SeResize:
       return southEastResizeCursor();
-    case CURSOR_NS_RESIZE:
+    case ECursor::NsResize:
       return northSouthResizeCursor();
-    case CURSOR_EW_RESIZE:
+    case ECursor::EwResize:
       return eastWestResizeCursor();
-    case CURSOR_NESW_RESIZE:
+    case ECursor::NeswResize:
       return northEastSouthWestResizeCursor();
-    case CURSOR_NWSE_RESIZE:
+    case ECursor::NwseResize:
       return northWestSouthEastResizeCursor();
-    case CURSOR_COL_RESIZE:
+    case ECursor::ColResize:
       return columnResizeCursor();
-    case CURSOR_ROW_RESIZE:
+    case ECursor::RowResize:
       return rowResizeCursor();
-    case CURSOR_TEXT:
+    case ECursor::Text:
       return iBeamCursor();
-    case CURSOR_WAIT:
+    case ECursor::Wait:
       return waitCursor();
-    case CURSOR_HELP:
+    case ECursor::Help:
       return helpCursor();
-    case CURSOR_VERTICAL_TEXT:
+    case ECursor::VerticalText:
       return verticalTextCursor();
-    case CURSOR_CELL:
+    case ECursor::Cell:
       return cellCursor();
-    case CURSOR_CONTEXT_MENU:
+    case ECursor::ContextMenu:
       return contextMenuCursor();
-    case CURSOR_PROGRESS:
+    case ECursor::Progress:
       return progressCursor();
-    case CURSOR_NO_DROP:
+    case ECursor::NoDrop:
       return noDropCursor();
-    case CURSOR_ALIAS:
+    case ECursor::Alias:
       return aliasCursor();
-    case CURSOR_COPY:
+    case ECursor::Copy:
       return copyCursor();
-    case CURSOR_NONE:
+    case ECursor::None:
       return noneCursor();
-    case CURSOR_NOT_ALLOWED:
+    case ECursor::NotAllowed:
       return notAllowedCursor();
-    case CURSOR_DEFAULT:
+    case ECursor::Default:
       return pointerCursor();
-    case CURSOR_ZOOM_IN:
+    case ECursor::ZoomIn:
       return zoomInCursor();
-    case CURSOR_ZOOM_OUT:
+    case ECursor::ZoomOut:
       return zoomOutCursor();
-    case CURSOR_WEBKIT_GRAB:
+    case ECursor::WebkitGrab:
       return grabCursor();
-    case CURSOR_WEBKIT_GRABBING:
+    case ECursor::WebkitGrabbing:
       return grabbingCursor();
   }
   return pointerCursor();

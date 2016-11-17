@@ -214,7 +214,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(
   if (value.isValueList()) {
     const CSSValueList& list = toCSSValueList(value);
     int len = list.length();
-    state.style()->setCursor(CURSOR_AUTO);
+    state.style()->setCursor(ECursor::Auto);
     for (int i = 0; i < len; i++) {
       const CSSValue& item = list.item(i);
       if (item.isCursorImageValue()) {

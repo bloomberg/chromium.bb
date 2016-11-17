@@ -370,7 +370,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_textAlign = initialTextAlign();
     m_inheritedData.m_textTransform = initialTextTransform();
     m_inheritedData.m_textUnderline = false;
-    m_inheritedData.m_cursorStyle = initialCursor();
+    m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
     m_inheritedData.m_whiteSpace = initialWhiteSpace();
     m_inheritedData.m_borderCollapse = initialBorderCollapse();
@@ -2087,11 +2087,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // cursor
-  static ECursor initialCursor() { return CURSOR_AUTO; }
+  static ECursor initialCursor() { return ECursor::Auto; }
   ECursor cursor() const {
     return static_cast<ECursor>(m_inheritedData.m_cursorStyle);
   }
-  void setCursor(ECursor c) { m_inheritedData.m_cursorStyle = c; }
+  void setCursor(ECursor c) {
+    m_inheritedData.m_cursorStyle = static_cast<unsigned>(c);
+  }
 
   // direction
   static TextDirection initialDirection() { return LTR; }
