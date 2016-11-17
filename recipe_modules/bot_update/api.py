@@ -143,10 +143,15 @@ class BotUpdateApi(recipe_api.RecipeApi):
     elif patch_oauth2:
       # TODO(martiniss): remove this hack :(. crbug.com/624212
       if use_site_config_creds:
-        email_file = self.m.path['build'].join(
-            'site_config', '.rietveld_client_email')
-        key_file = self.m.path['build'].join(
-            'site_config', '.rietveld_secret_key')
+        try:
+          build_path = self.m.path['build']
+        except KeyError:  # pragma: no cover | TODO(nodir): cover
+          raise self.m.step.StepFailure(
+              'build path is not defined. This is normal for LUCI builds. '
+              'In LUCI, use_site_config_creds parameter of '
+              'bot_update.ensure_checkout is not supported')
+        email_file = build_path.join('site_config', '.rietveld_client_email')
+        key_file = build_path.join('site_config', '.rietveld_secret_key')
       else: #pragma: no cover
         #TODO(martiniss): make this use path.join, so it works on windows
         email_file = '/creds/rietveld/client_email'
