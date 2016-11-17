@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/common/content_export.h"
 #include "device/sensors/public/cpp/device_light_hardware_buffer.h"
@@ -147,6 +148,7 @@ class CONTENT_EXPORT SensorManagerAndroid {
   base::Lock orientation_absolute_buffer_lock_;
 
   bool is_shutdown_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorManagerAndroid);
 };

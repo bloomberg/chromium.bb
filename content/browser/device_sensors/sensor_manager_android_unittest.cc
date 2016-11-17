@@ -8,8 +8,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/device_sensors/device_sensors_consts.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -66,7 +66,7 @@ class AndroidSensorManagerTest : public testing::Test {
   std::unique_ptr<DeviceMotionHardwareBuffer> motion_buffer_;
   std::unique_ptr<DeviceOrientationHardwareBuffer> orientation_buffer_;
   std::unique_ptr<DeviceOrientationHardwareBuffer> orientation_absolute_buffer_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(AndroidSensorManagerTest, ThreeDeviceMotionSensorsActive) {
