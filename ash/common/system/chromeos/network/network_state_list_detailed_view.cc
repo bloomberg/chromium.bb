@@ -374,7 +374,9 @@ void NetworkStateListDetailedView::Init() {
   CreateScrollableList();
   if (!UseMd())
     CreateNetworkExtra();
-  CreateTitleRow(IDS_ASH_STATUS_TRAY_NETWORK);
+  CreateTitleRow(list_type_ == ListType::LIST_TYPE_NETWORK
+                     ? IDS_ASH_STATUS_TRAY_NETWORK
+                     : IDS_ASH_STATUS_TRAY_VPN);
 
   network_list_view_->set_container(scroll_content());
   Update();
