@@ -219,7 +219,6 @@ void URLLoaderResource::Close() {
   Post(RENDERER, PpapiHostMsg_URLLoader_Close());
 
   // Abort the callbacks, the plugin doesn't want to be called back after this.
-  // TODO(brettw) this should fix bug 69457, mark it fixed. ============
   if (TrackedCallback::IsPending(pending_callback_))
     pending_callback_->PostAbort();
 }
