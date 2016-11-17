@@ -77,11 +77,11 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private final WebContents mWebContents;
 
     /**
-     * The map from GUIDs to profiles that can be used for billing address. This cache avoids
-     * re-reading profiles from disk, which may have changed due to sync, for example.
-     * updateBillingAddress() updates this cache.
+     * The list of profiles that can be used for billing address. This cache avoids re-reading
+     * profiles from disk, which may have changed due to sync, for example. updateBillingAddress()
+     * updates this cache.
      */
-    private final Map<String, AutofillProfile> mProfilesForBillingAddress;
+    private final List<AutofillProfile> mProfilesForBillingAddress;
 
     /** Used for verifying billing address completeness and also editing billing addresses. */
     private final AddressEditor mAddressEditor;
@@ -146,7 +146,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         List<AutofillProfile> profiles =
                 PersonalDataManager.getInstance().getBillingAddressesToSuggest();
-        mProfilesForBillingAddress = new HashMap<>();
+        mProfilesForBillingAddress = new ArrayList<>();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             // 1) Include only local profiles, because GUIDs of server profiles change on every
@@ -156,7 +156,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             if (profile.getIsLocal()
                     && AutofillAddress.checkAddressCompletionStatus(profile)
                             == AutofillAddress.COMPLETE) {
-                mProfilesForBillingAddress.put(profile.getGUID(), profile);
+                mProfilesForBillingAddress.add(profile);
             }
         }
 
@@ -305,8 +305,13 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             @Override
             public void run() {
                 commitChanges(card, isNewCard);
-                instrument.completeInstrument(
-                        card, mProfilesForBillingAddress.get(card.getBillingAddressId()));
+                for (int i = 0; i < mProfilesForBillingAddress.size(); ++i) {
+                    if (TextUtils.equals(mProfilesForBillingAddress.get(i).getGUID(),
+                            card.getBillingAddressId())) {
+                        instrument.completeInstrument(card, mProfilesForBillingAddress.get(i));
+                        break;
+                    }
+                }
                 callback.onResult(instrument);
             }
         });
@@ -323,7 +328,14 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
      */
     public void updateBillingAddressIfComplete(AutofillAddress billingAddress) {
         if (!billingAddress.isComplete()) return;
-        mProfilesForBillingAddress.put(billingAddress.getIdentifier(), billingAddress.getProfile());
+
+        for (int i = 0; i < mProfilesForBillingAddress.size(); ++i) {
+            if (TextUtils.equals(mProfilesForBillingAddress.get(i).getGUID(),
+                        billingAddress.getIdentifier())) {
+                mProfilesForBillingAddress.set(i, billingAddress.getProfile());
+                return;
+            }
+        }
     }
 
     /**
@@ -504,10 +516,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private void addBillingAddressDropdown(EditorModel editor, final CreditCard card) {
         final List<DropdownKeyValue> billingAddresses = new ArrayList<>();
 
-        for (Map.Entry<String, AutofillProfile> address : mProfilesForBillingAddress.entrySet()) {
-            // Key is profile GUID. Value is profile label.
-            billingAddresses.add(
-                    new DropdownKeyValue(address.getKey(), address.getValue().getLabel()));
+        for (int i = 0; i < mProfilesForBillingAddress.size(); ++i) {
+            billingAddresses.add(new DropdownKeyValue(mProfilesForBillingAddress.get(i).getGUID(),
+                    mProfilesForBillingAddress.get(i).getLabel()));
         }
 
         billingAddresses.add(new DropdownKeyValue(BILLING_ADDRESS_ADD_NEW,
@@ -541,11 +552,11 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                             mBillingAddressField.setValue(null);
                         } else {
                             // User has added a new complete address. Add it to the top of the
-                            // dropdown, under the "Select" prompt.
-                            mProfilesForBillingAddress.put(
-                                    billingAddress.getIdentifier(), billingAddress.getProfile());
-                            billingAddresses.add(1, new DropdownKeyValue(
-                                    billingAddress.getIdentifier(), billingAddress.getSublabel()));
+                            // dropdown.
+                            mProfilesForBillingAddress.add(billingAddress.getProfile());
+                            billingAddresses.add(
+                                    0, new DropdownKeyValue(billingAddress.getIdentifier(),
+                                               billingAddress.getSublabel()));
                             mBillingAddressField.setDropdownKeyValues(billingAddresses);
                             mBillingAddressField.setValue(billingAddress.getIdentifier());
                         }

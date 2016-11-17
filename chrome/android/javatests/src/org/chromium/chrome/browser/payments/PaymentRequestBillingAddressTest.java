@@ -19,6 +19,10 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for biling addresses.
  */
 public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
+    // The index at which the option to add a billing address is located in the billing address
+    // selection dropdown.
+    private static final int ADD_BILLING_ADDRESS = 3;
+
     public PaymentRequestBillingAddressTest() {
         super("payment_request_no_shipping_test.html");
     }
@@ -27,12 +31,23 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
+        String profile1 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
+                "310-310-6000", "jon.doe@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                billingAddressId, "" /* serverId */));
+                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa, profile1,
+                "" /* serverId */));
+        String profile2 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "Rob Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
+                "310-310-6000", "jon.doe@gmail.com", "en-US"));
+        String profile3 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "Tom Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
+                "310-310-6000", "jon.doe@gmail.com", "en-US"));
+
+        // Assign use stats so that profile2 has the highest frecency and profile3 has the lowest.
+        helper.setProfileUseStatsForTesting(profile1, 5, 5);
+        helper.setProfileUseStatsForTesting(profile2, 10, 10);
+        helper.setProfileUseStatsForTesting(profile3, 1, 1);
     }
 
     /** Verifies the format of the billing address suggestions when adding a new credit card. */
@@ -49,7 +64,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         // The billing address suggestions should include only the name, address, city, state and
         // zip code of the profile.
         assertTrue(getSpinnerSelectionTextInCardEditor(2).equals(
-                "Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+                "Rob Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 
     /**
@@ -64,9 +79,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
-        // There should only be two suggestions, the saved address and the option to add a new
+        // There should only be 4 suggestions, the 3 saved addresses and the option to add a new
         // address.
-        assertEquals(2, getSpinnerItemCountInCardEditor(2));
+        assertEquals(4, getSpinnerItemCountInCardEditor(2));
     }
 
     /**
@@ -81,14 +96,80 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {"5454 5454 5454 5454", "Bob"}, mEditorTextUpdate);
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {11, 1, 1}, mReadyToEdit);
+
+        // Select the "+ ADD ADDRESS" option for the billing address.
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {11, 1, ADD_BILLING_ADDRESS}, mReadyToEdit);
 
         // Cancel the creation of a new billing address.
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
 
-        // There should still only be two suggestions, the saved address and the option to add a new
-        // address.
-        assertEquals(2, getSpinnerItemCountInCardEditor(2));
+        // There should still only be 4 suggestions, the 3 saved addresses and the option to add a
+        // new address.
+        assertEquals(4, getSpinnerItemCountInCardEditor(2));
+    }
+
+    /**
+     * Verifies that the billing address suggestions are ordered by frecency.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testBillingAddressSortedByFrecency()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Add a payment method.
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // There should be 4 suggestions, the 3 saved addresses and the option to add a new address.
+        assertEquals(4, getSpinnerItemCountInCardEditor(2));
+
+        // The billing address suggestions should be ordered by frecency.
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 0).equals(
+                "Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 1).equals(
+                "Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 2).equals(
+                "Tom Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 3).equals("Add address"));
+    }
+
+    /**
+     * Verifies that the billing address suggestions are ordered by frecency, except for a newly
+     * created address which should be suggested first.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testBillingAddressSortedByFrecency_AddNewAddress()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Add a payment method.
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // Add a new billing address.
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {11, 1, ADD_BILLING_ADDRESS}, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
+                "CA", "90291", "999-999-9999"}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
+
+        // There should be 5 suggestions, the 3 initial addresses, the newly added address and the
+        // option to add a new address.
+        assertEquals(5, getSpinnerItemCountInCardEditor(2));
+
+        // TODO(crbug.com/666048): New billing address label is wrong.
+        // The fist suggestion should be the newly added address.
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 0).equals(
+                "Google, 340 Main St, Los Angeles, CA 90291, United States"));
+
+        // The rest of the billing address suggestions should be ordered by frecency.
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 1).equals(
+                "Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 2).equals(
+                "Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 3).equals(
+                "Tom Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 4).equals("Add address"));
     }
 }
