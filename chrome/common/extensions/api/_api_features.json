@@ -122,10 +122,17 @@
       "chrome://bookmarks/*"
     ]
   }],
-  "bookmarks": {
+  "bookmarks": [{
     "dependencies": ["permission:bookmarks"],
-    "contexts": ["blessed_extension"]
-  },
+    "contexts": ["blessed_extension"],
+    "default_parent": true
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://bookmarks/*"
+    ]
+  }],
   "bookmarks.export": {
     "whitelist": [
       "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900

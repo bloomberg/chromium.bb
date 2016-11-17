@@ -681,18 +681,15 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
   std::unique_ptr<ExtensionAPI> api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
-  SimpleFeature* bookmarks = static_cast<SimpleFeature*>(
-      api->GetFeatureDependency("api:bookmarks"));
-  SimpleFeature* bookmarks_create = static_cast<SimpleFeature*>(
-      api->GetFeatureDependency("api:bookmarks.create"));
+  SimpleFeature* browser_action = static_cast<SimpleFeature*>(
+      api->GetFeatureDependency("api:browserAction"));
+  SimpleFeature* browser_action_set_title = static_cast<SimpleFeature*>(
+      api->GetFeatureDependency("api:browserAction.setTitle"));
 
   struct {
     SimpleFeature* feature;
     // TODO(aa): More stuff to test over time.
-  } test_data[] = {
-    { bookmarks },
-    { bookmarks_create }
-  };
+  } test_data[] = {{browser_action}, {browser_action_set_title}};
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     SimpleFeature* feature = test_data[i].feature;
