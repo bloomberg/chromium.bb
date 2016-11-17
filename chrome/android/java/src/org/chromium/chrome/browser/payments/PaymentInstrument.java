@@ -6,10 +6,9 @@ package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.Drawable;
 
-import org.json.JSONObject;
-
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.payments.mojom.PaymentItem;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.List;
 
@@ -65,7 +64,7 @@ public abstract class PaymentInstrument extends PaymentOption {
      * @param callback     The object that will receive the instrument details.
      */
     public abstract void getInstrumentDetails(String merchantName, String origin, PaymentItem total,
-            List<PaymentItem> cart, JSONObject details, InstrumentDetailsCallback callback);
+            List<PaymentItem> cart, PaymentMethodData details, InstrumentDetailsCallback callback);
 
     /**
      * Cleans up any resources held by the payment instrument. For example, closes server

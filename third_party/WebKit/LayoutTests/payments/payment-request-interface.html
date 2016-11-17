@@ -261,6 +261,22 @@ test(function() {
     new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}]});
 }, 'Duplicate supported payment method identifiers in modifiers should not throw.');
 
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'environment': 'TEST', 'merchantName': 'Merchant Inc', 'merchantId': '123', 'allowedCardNetworks': ['AMEX', 'DISCOVER', 'MASTERCARD', 'VISA'], 'paymentMethodTokenizationParameters': {'tokenizationType': 'GATEWAY_TOKEN', 'parameters': {'key': 'value'}}}}], buildDetails());
+}, 'Android Pay parameters for test environment with gateway token should not throw.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'environment': 'PRODUCTION', 'merchantName': 'Merchant Inc', 'merchantId': '123', 'allowedCardNetworks': ['AMEX', 'DISCOVER', 'MASTERCARD', 'VISA'], 'paymentMethodTokenizationParameters': {'tokenizationType': 'NETWORK_TOKEN', 'parameters': {'key': 'value'}}}}], buildDetails());
+}, 'Android Pay parameters for produciton environment with network token should not throw.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'merchantName': 'Merchant Inc', 'merchantId': '123', 'allowedCardNetworks': ['AMEX', 'DISCOVER', 'MASTERCARD', 'VISA'], 'paymentMethodTokenizationParameters': {'tokenizationType': 'NETWORK_TOKEN', 'parameters': {'key': 'value'}}}}], buildDetails());
+}, 'Android Pay parameters for network token without environment key should not throw.');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'merchantName': []}}], buildDetails());
+}, 'Invalid Android Pay parameters should not throw.');
+
 promise_test(function(t) {
     return promise_rejects(t, null, new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort());
 }, 'abort() without show() should reject with error');

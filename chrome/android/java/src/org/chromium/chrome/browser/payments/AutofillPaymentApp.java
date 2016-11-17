@@ -8,12 +8,11 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 
-import org.json.JSONObject;
-
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,7 +40,7 @@ public class AutofillPaymentApp implements PaymentApp {
 
     @Override
     public void getInstruments(
-            Map<String, JSONObject> unusedMethodData, final InstrumentsCallback callback) {
+            Map<String, PaymentMethodData> unusedMethodData, final InstrumentsCallback callback) {
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         List<CreditCard> cards = pdm.getCreditCardsToSuggest();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());

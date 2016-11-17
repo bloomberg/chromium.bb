@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.json.JSONObject;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public interface PaymentApp {
      *                   mode, merchant identifier, or a public key.
      * @param callback   The object that will receive the list of instruments.
      */
-    void getInstruments(Map<String, JSONObject> methodData, InstrumentsCallback callback);
+    void getInstruments(Map<String, PaymentMethodData> methodData, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",

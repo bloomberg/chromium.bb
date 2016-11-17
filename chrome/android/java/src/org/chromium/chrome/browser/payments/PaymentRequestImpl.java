@@ -9,9 +9,6 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.text.TextUtils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -37,7 +34,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.components.safejson.JsonSanitizer;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
@@ -53,7 +49,6 @@ import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.payments.mojom.PaymentShippingType;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -179,7 +174,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private SectionInformation mUiShippingOptions;
 
-    private Map<String, JSONObject> mMethodData;
+    private Map<String, PaymentMethodData> mMethodData;
     private SectionInformation mShippingAddressesSection;
     private SectionInformation mContactSection;
     private List<PaymentApp> mPendingApps;
@@ -421,27 +416,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         recordSuccessFunnelHistograms("Shown");
     }
 
-    private static Map<String, JSONObject> getValidatedMethodData(
+    private static Map<String, PaymentMethodData> getValidatedMethodData(
             PaymentMethodData[] methodData, CardEditor paymentMethodsCollector) {
         // Payment methodData are required.
         if (methodData == null || methodData.length == 0) return null;
-        Map<String, JSONObject> result = new HashMap<>();
+        Map<String, PaymentMethodData> result = new HashMap<>();
         for (int i = 0; i < methodData.length; i++) {
-            JSONObject data = null;
-            if (!TextUtils.isEmpty(methodData[i].stringifiedData)) {
-                try {
-                    data = new JSONObject(JsonSanitizer.sanitize(methodData[i].stringifiedData));
-                } catch (JSONException | IOException | IllegalStateException e) {
-                    // Payment method specific data should be a JSON object.
-                    // According to the payment request spec[1], for each method data,
-                    // if the data field is supplied but is not a JSON-serializable object,
-                    // then should throw a TypeError. So, we should return null here even if
-                    // only one is bad.
-                    // [1] https://w3c.github.io/browser-payment-api/
-                    return null;
-                }
-            }
-
             String[] methods = methodData[i].supportedMethods;
 
             // Payment methods are required.
@@ -450,7 +430,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             for (int j = 0; j < methods.length; j++) {
                 // Payment methods should be non-empty.
                 if (TextUtils.isEmpty(methods[j])) return null;
-                result.put(methods[j], data);
+                result.put(methods[j], methodData[i]);
             }
 
             paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methods);
@@ -464,10 +444,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mPendingInstruments = new ArrayList<>();
         mPendingAutofillInstruments = new ArrayList<>();
 
-        Map<PaymentApp, Map<String, JSONObject>> queryApps = new HashMap<>();
+        Map<PaymentApp, Map<String, PaymentMethodData>> queryApps = new HashMap<>();
         for (int i = 0; i < mApps.size(); i++) {
             PaymentApp app = mApps.get(i);
-            Map<String, JSONObject> appMethods =
+            Map<String, PaymentMethodData> appMethods =
                     filterMerchantMethodData(mMethodData, app.getAppMethodNames());
             if (appMethods == null) {
                 mPendingApps.remove(app);
@@ -481,15 +461,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // Query instruments after mMerchantSupportsAutofillPaymentInstruments has been initialized,
         // so a fast response from a non-autofill payment app at the front of the app list does not
         // cause NOT_SUPPORTED payment rejection.
-        for (Map.Entry<PaymentApp, Map<String, JSONObject>> q : queryApps.entrySet()) {
+        for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
             q.getKey().getInstruments(q.getValue(), this);
         }
     }
 
     /** Filter out merchant method data that's not relevant to a payment app. Can return null. */
-    private static Map<String, JSONObject> filterMerchantMethodData(
-            Map<String, JSONObject> merchantMethodData, Set<String> appMethods) {
-        Map<String, JSONObject> result = null;
+    private static Map<String, PaymentMethodData> filterMerchantMethodData(
+            Map<String, PaymentMethodData> merchantMethodData, Set<String> appMethods) {
+        Map<String, PaymentMethodData> result = null;
         for (String method : appMethods) {
             if (merchantMethodData.containsKey(method)) {
                 if (result == null) result = new HashMap<>();

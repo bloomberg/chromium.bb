@@ -58,13 +58,6 @@ class MODULES_EXPORT PaymentRequest final
 
   virtual ~PaymentRequest();
 
-  struct MethodData {
-    MethodData(const Vector<String>& methods, const String& data)
-        : supportedMethods(methods), stringifiedData(data) {}
-    Vector<String> supportedMethods;
-    String stringifiedData;
-  };
-
   ScriptPromise show(ScriptState*);
   ScriptPromise abort(ScriptState*);
 

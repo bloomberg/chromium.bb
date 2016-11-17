@@ -12,8 +12,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import org.json.JSONObject;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -36,6 +34,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentItem;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -722,8 +721,8 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public void getInstruments(
-                Map<String, JSONObject> methodData, final InstrumentsCallback instrumentsCallback) {
+        public void getInstruments(Map<String, PaymentMethodData> methodData,
+                InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;
             respond();
         }
@@ -776,7 +775,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
         @Override
         public void getInstrumentDetails(String merchantName, String origin, PaymentItem total,
-                List<PaymentItem> cart, JSONObject details,
+                List<PaymentItem> cart, PaymentMethodData details,
                 InstrumentDetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
                     mMethodName, "{\"transaction\": 1337}");
