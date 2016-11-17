@@ -214,14 +214,6 @@ void EventHandler::clear() {
   m_eventHandlerWillResetCapturingMouseEventsNode = false;
 }
 
-void EventHandler::nodeChildrenWillBeRemoved(ContainerNode& container) {
-  m_mouseEventManager->nodeChildrenWillBeRemoved(container);
-}
-
-void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved) {
-  m_mouseEventManager->nodeWillBeRemoved(nodeToBeRemoved);
-}
-
 void EventHandler::updateSelectionForMouseDrag() {
   m_mouseEventManager->updateSelectionForMouseDrag();
 }

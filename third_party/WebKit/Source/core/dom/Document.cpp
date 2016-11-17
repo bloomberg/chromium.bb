@@ -4095,7 +4095,6 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container) {
   notifyNodeChildrenWillBeRemoved(container);
   if (LocalFrame* frame = this->frame()) {
     frame->selection().nodeChildrenWillBeRemoved(container);
-    frame->eventHandler().nodeChildrenWillBeRemoved(container);
     frame->page()->dragCaretController().nodeChildrenWillBeRemoved(container);
   }
 
@@ -4115,7 +4114,6 @@ void Document::nodeWillBeRemoved(Node& n) {
   notifyNodeWillBeRemoved(n);
 
   if (LocalFrame* frame = this->frame()) {
-    frame->eventHandler().nodeWillBeRemoved(n);
     frame->selection().nodeWillBeRemoved(n);
     frame->page()->dragCaretController().nodeWillBeRemoved(n);
   }

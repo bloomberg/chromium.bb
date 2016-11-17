@@ -6,6 +6,7 @@
 #define MouseEventManager_h
 
 #include "core/CoreExport.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/input/BoundaryEventDispatcher.h"
 #include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
@@ -30,12 +31,15 @@ enum class DragInitiator;
 
 // This class takes care of dispatching all mouse events and keeps track of
 // positions and states of mouse.
-class CORE_EXPORT MouseEventManager
-    : public GarbageCollectedFinalized<MouseEventManager> {
+class CORE_EXPORT MouseEventManager final
+    : public GarbageCollectedFinalized<MouseEventManager>,
+      public SynchronousMutationObserver {
   WTF_MAKE_NONCOPYABLE(MouseEventManager);
+  USING_GARBAGE_COLLECTED_MIXIN(MouseEventManager);
 
  public:
   MouseEventManager(LocalFrame*, ScrollManager*);
+  virtual ~MouseEventManager();
   DECLARE_TRACE();
 
   WebInputEventResult dispatchMouseEvent(EventTarget*,
@@ -88,9 +92,6 @@ class CORE_EXPORT MouseEventManager
       const MouseEventWithHitTestResults&);
   WebInputEventResult handleMouseReleaseEvent(
       const MouseEventWithHitTestResults&);
-
-  void nodeChildrenWillBeRemoved(ContainerNode&);
-  void nodeWillBeRemoved(Node& nodeToBeRemoved);
 
   static DragState& dragState();
 
@@ -178,6 +179,10 @@ class CORE_EXPORT MouseEventManager
   bool tryStartDrag(const MouseEventWithHitTestResults&);
   void clearDragDataTransfer();
   DataTransfer* createDraggingDataTransfer() const;
+
+  // Implementations of |SynchronousMutationObserver|
+  void nodeChildrenWillBeRemoved(ContainerNode&) final;
+  void nodeWillBeRemoved(Node& nodeToBeRemoved) final;
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |MouseEventManager::clear()|.

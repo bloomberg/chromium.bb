@@ -104,12 +104,15 @@ void MouseEventManager::clear() {
   m_fakeMouseMoveEventTimer.stop();
 }
 
+MouseEventManager::~MouseEventManager() = default;
+
 DEFINE_TRACE(MouseEventManager) {
   visitor->trace(m_frame);
   visitor->trace(m_scrollManager);
   visitor->trace(m_nodeUnderMouse);
   visitor->trace(m_mousePressNode);
   visitor->trace(m_clickNode);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 MouseEventManager::MouseEventBoundaryEventDispatcher::
@@ -980,6 +983,7 @@ void MouseEventManager::setMousePressNode(Node* node) {
 }
 
 void MouseEventManager::setClickNode(Node* node) {
+  setContext(node ? node->ownerDocument() : nullptr);
   m_clickNode = node;
 }
 

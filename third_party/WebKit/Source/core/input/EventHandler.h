@@ -88,8 +88,6 @@ class CORE_EXPORT EventHandler final
   DECLARE_TRACE();
 
   void clear();
-  void nodeChildrenWillBeRemoved(ContainerNode&);
-  void nodeWillBeRemoved(Node&);
 
   void updateSelectionForMouseDrag();
   void startMiddleClickAutoscroll(LayoutObject*);
