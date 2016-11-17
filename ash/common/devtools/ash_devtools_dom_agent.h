@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace devtools {
@@ -34,12 +36,26 @@ class ASH_EXPORT AshDevToolsDOMAgent
                            const TreeChangeParams& params) override;
   void OnWindowStackingChanged(WmWindow* window) override;
 
+  WmWindow* GetWindowFromNodeId(int nodeId);
+  views::Widget* GetWidgetFromNodeId(int nodeId);
+  views::View* GetViewFromNodeId(int nodeId);
+
+  int GetNodeIdFromWindow(WmWindow* window);
+  int GetNodeIdFromWidget(views::Widget* widget);
+  int GetNodeIdFromView(views::View* view);
+
  private:
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForView(
+      views::View* view);
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForRootWidget(
+      views::Widget* widget);
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForWindow(
       WmWindow* window);
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
   void AddWindowNode(WmWindow* window);
   void RemoveWindowNode(WmWindow* window);
+  void RemoveWidgetNode(views::Widget* widget);
+  void RemoveViewNode(views::View* view);
   void RemoveObserverFromAllWindows();
   void AddRootWindowObservers();
   void Reset();
@@ -48,6 +64,18 @@ class ASH_EXPORT AshDevToolsDOMAgent
 
   using WindowToNodeIdMap = std::unordered_map<WmWindow*, int>;
   WindowToNodeIdMap window_to_node_id_map_;
+  using NodeIdToWindowMap = std::unordered_map<int, WmWindow*>;
+  NodeIdToWindowMap node_id_to_window_map_;
+
+  using WidgetToNodeIdMap = std::unordered_map<views::Widget*, int>;
+  WidgetToNodeIdMap widget_to_node_id_map_;
+  using NodeIdToWidgetMap = std::unordered_map<int, views::Widget*>;
+  NodeIdToWidgetMap node_id_to_widget_map_;
+
+  using ViewToNodeIdMap = std::unordered_map<views::View*, int>;
+  ViewToNodeIdMap view_to_node_id_map_;
+  using NodeIdToViewMap = std::unordered_map<int, views::View*>;
+  NodeIdToViewMap node_id_to_view_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AshDevToolsDOMAgent);
 };

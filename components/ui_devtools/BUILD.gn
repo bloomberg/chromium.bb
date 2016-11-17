@@ -6,6 +6,8 @@ _inspector_protocol = "//third_party/inspector_protocol"
 import("$_inspector_protocol/inspector_protocol.gni")
 
 _protocol_generated = [
+  "CSS.cpp",
+  "CSS.h",
   "DOM.cpp",
   "DOM.h",
   "Forward.h",

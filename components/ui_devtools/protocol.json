@@ -128,6 +128,78 @@
                     "type": "object"
                 }
             ]
+        },
+        {
+            "commands": [
+                {
+                    "description": "Enables CSS agent for the given page.",
+                    "name": "enable"
+                },
+                {
+                    "description": "Disables CSS agent for the given page.",
+                    "name": "disable"
+                },
+                {
+                    "description": "Returns requested styles for a DOM node identified by <code>nodeId</code>.",
+                    "name": "getMatchedStylesForNode",
+                    "parameters": [
+                        {
+                            "$ref": "DOM.NodeId",
+                            "name": "nodeId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "$ref": "CSSStyle",
+                            "description": "Inline style for the specified DOM node.",
+                            "name": "inlineStyle",
+                            "optional": true
+                        }
+                    ]
+                }
+            ],
+            "domain": "CSS",
+            "types": [
+                {
+                    "id": "CSSProperty",
+                    "properties": [
+                        {
+                            "description": "The property name.",
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "description": "The property value.",
+                            "name": "value",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "object"
+                },
+                {
+                    "description": "CSS style representation.",
+                    "id": "CSSStyle",
+                    "properties": [
+                        {
+                            "description": "CSS properties in the style.",
+                            "items": {
+                                "$ref": "CSSProperty"
+                            },
+                            "name": "cssProperties",
+                            "type": "array"
+                        },
+                        {
+                            "description": "Frontend requires us to pass this. We just pass an empty array.",
+                            "items": {
+                                "type": "string"
+                            },
+                            "name": "shorthandEntries",
+                            "type": "array"
+                        }
+                    ],
+                    "type": "object"
+                }
+            ]
         }
     ],
     "version": {
