@@ -110,6 +110,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
     rdh_.SetDelegate(nullptr);
     net::URLRequestFilter::GetInstance()->ClearHandlers();
 
+    resource_message_filter_->OnChannelClosing();
     rdh_.CancelRequestsForProcess(resource_message_filter_->child_id());
     base::RunLoop().RunUntilIdle();
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(

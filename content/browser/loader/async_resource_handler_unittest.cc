@@ -142,6 +142,8 @@ class AsyncResourceHandlerTest : public ::testing::Test,
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP), context_(true) {}
 
   void TearDown() override {
+    if (filter_)
+      filter_->OnChannelClosing();
     // Prevent memory leaks.
     filter_ = nullptr;
     rdh_.Shutdown();

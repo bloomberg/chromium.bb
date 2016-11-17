@@ -875,6 +875,10 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     request_context->set_network_delegate(&network_delegate_);
   }
 
+  ~ResourceDispatcherHostTest() override {
+    filter_->OnChannelClosing();
+  }
+
   // IPC::Sender implementation
   bool Send(IPC::Message* msg) override {
     accum_.AddMessage(*msg);
@@ -926,6 +930,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   }
 
   void TearDown() override {
+    web_contents_filter_->OnChannelClosing();
     web_contents_observer_.reset();
     web_contents_.reset();
 
@@ -1960,6 +1965,8 @@ TEST_P(ResourceDispatcherHostTest, TestProcessCancel) {
   EXPECT_EQ(4, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->canceled_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
+
+  test_filter->OnChannelClosing();
 }
 
 // Tests whether the correct requests get canceled when a RenderViewHost is
@@ -2210,6 +2217,7 @@ TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   CheckSuccessfulRequest(msgs[1], net::URLRequestTestJob::test_data_3());
 
   EXPECT_TRUE(host_.blocked_loaders_map_.empty());
+  second_filter->OnChannelClosing();
 }
 
 // Tests that blocked requests don't leak when the ResourceDispatcherHost goes
@@ -2255,6 +2263,8 @@ TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  second_filter->OnChannelClosing();
 }
 
 // Test the private helper method "CalculateApproximateMemoryCost()".
@@ -2358,6 +2368,8 @@ TEST_P(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
                          net::URLRequestTestJob::test_data_2());
   CheckSuccessfulRequest(msgs[kMaxRequests + 3],
                          net::URLRequestTestJob::test_data_2());
+
+  second_filter->OnChannelClosing();
 }
 
 // Test that when too many requests are outstanding for a particular
@@ -2423,6 +2435,9 @@ TEST_P(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   CheckFailedRequest(msgs[kMaxRequestsPerProcess + 2],
                      net::URLRequestTestJob::test_data_2(),
                      net::ERR_INSUFFICIENT_RESOURCES);
+
+  second_filter->OnChannelClosing();
+  third_filter->OnChannelClosing();
 }
 
 // Tests that we sniff the mime type for a simple request.
@@ -2822,6 +2837,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
   ASSERT_EQ(2U, msgs.size());
   EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
+
+  second_filter->OnChannelClosing();
 }
 
 // Test transferring two navigations with text/html, to ensure the resource
@@ -2900,6 +2917,8 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
 
   ASSERT_EQ(2U, msgs.size());
   CheckSuccessfulRequest(msgs[0], kResponseBody);
+
+  second_filter->OnChannelClosing();
 }
 
 // Test transferred navigations with text/plain, which causes
@@ -2969,6 +2988,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
   ASSERT_EQ(2U, msgs.size());
   EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
+
+  second_filter->OnChannelClosing();
 }
 
 TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
@@ -3018,6 +3039,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     // Flush all the pending requests to get the response through the
     // MimeTypeResourceHandler.
     while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+    first_filter->OnChannelClosing();
   }
   // The first filter is now deleted, as if the child process died.
 
@@ -3049,6 +3072,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   ASSERT_EQ(2U, msgs.size());
   EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
+
+  second_filter->OnChannelClosing();
 }
 
 TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
@@ -3135,6 +3160,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   ASSERT_EQ(2U, msgs.size());
   EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
+
+  second_filter->OnChannelClosing();
 }
 
 TEST_P(ResourceDispatcherHostTest, UnknownURLScheme) {

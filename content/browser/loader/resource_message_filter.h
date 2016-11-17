@@ -116,6 +116,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   int child_id_;
 
   int process_type_;
+  bool is_channel_closed_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

@@ -289,6 +289,7 @@ class AsyncRevalidationManagerTest : public ::testing::Test {
             base::WrapUnique(new net::TestNetworkDelegate)) {}
 
   void TearDown() override {
+    filter_->OnChannelClosing();
     host_.CancelRequestsForProcess(filter_->child_id());
     host_.Shutdown();
     host_.CancelRequestsForContext(browser_context_->GetResourceContext());
