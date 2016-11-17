@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -41,9 +42,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -133,14 +131,12 @@ public class SnippetArticleViewHolder
     }
 
     @Override
-    public Set<Integer> getSupportedMenuItems() {
+    public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
         if (mArticle.isDownload()) {
-            return new HashSet<>(Arrays.asList(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW,
-                    ContextMenuManager.ID_OPEN_IN_NEW_TAB, ContextMenuManager.ID_REMOVE));
+            if (menuItemId == ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB) return false;
+            if (menuItemId == ContextMenuManager.ID_SAVE_FOR_OFFLINE) return false;
         }
-        return new HashSet<>(Arrays.asList(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW,
-                ContextMenuManager.ID_OPEN_IN_NEW_TAB, ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB,
-                ContextMenuManager.ID_REMOVE, ContextMenuManager.ID_SAVE_FOR_OFFLINE));
+        return true;
     }
 
     @Override

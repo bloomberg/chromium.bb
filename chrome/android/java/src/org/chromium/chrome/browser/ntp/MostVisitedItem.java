@@ -10,12 +10,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 
+import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.ui.mojom.WindowOpenDisposition;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Displays the title, thumbnail, and favicon of a most visited page. The item can be clicked, or
@@ -171,12 +168,8 @@ public class MostVisitedItem implements OnCreateContextMenuListener, OnClickList
                     }
 
                     @Override
-                    public Set<Integer> getSupportedMenuItems() {
-                        return new HashSet<>(Arrays.asList(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW,
-                                ContextMenuManager.ID_OPEN_IN_NEW_TAB,
-                                ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB,
-                                ContextMenuManager.ID_REMOVE,
-                                ContextMenuManager.ID_SAVE_FOR_OFFLINE));
+                    public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
+                        return true;
                     }
                 });
     }

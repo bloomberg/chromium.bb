@@ -10,6 +10,7 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
@@ -17,8 +18,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Item that allows the user to perform an action on the NTP.
@@ -155,14 +154,8 @@ class ActionItem extends OptionalLeaf {
         }
 
         @Override
-        public Set<Integer> getSupportedMenuItems() {
-            Set<Integer> supportedItems = new HashSet<>();
-
-            if (isDismissable()) {
-                supportedItems.add(ContextMenuManager.ID_REMOVE);
-            }
-
-            return supportedItems;
+        public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
+            return menuItemId == ContextMenuManager.ID_REMOVE && isDismissable();
         }
 
         public void onBindViewHolder(ActionItem item) {

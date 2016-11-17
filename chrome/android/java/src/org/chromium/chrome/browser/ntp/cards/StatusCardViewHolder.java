@@ -13,13 +13,11 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * ViewHolder for Status and Promo cards.
@@ -110,14 +108,8 @@ public class StatusCardViewHolder extends CardViewHolder implements ContextMenuM
     }
 
     @Override
-    public Set<Integer> getSupportedMenuItems() {
-        Set<Integer> supportedItems = new HashSet<>();
-
-        if (SnippetsConfig.isSectionDismissalEnabled()) {
-            supportedItems.add(ContextMenuManager.ID_REMOVE);
-        }
-
-        return supportedItems;
+    public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
+        return menuItemId == ContextMenuManager.ID_REMOVE && isDismissable();
     }
 
     @Override

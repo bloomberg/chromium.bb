@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.StringRes;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,21 +22,25 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Takes care of creating, closing a context menu and triaging the item clicks.
  */
 public class ContextMenuManager {
-    @IntDef({ID_OPEN_IN_NEW_WINDOW, ID_OPEN_IN_NEW_TAB, ID_OPEN_IN_INCOGNITO_TAB, ID_REMOVE,
-            ID_SAVE_FOR_OFFLINE})
+    @IntDef({ID_OPEN_IN_NEW_WINDOW, ID_OPEN_IN_NEW_TAB, ID_OPEN_IN_INCOGNITO_TAB,
+            ID_SAVE_FOR_OFFLINE, ID_REMOVE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContextMenuItemId {}
+
+    // The order of the items will be based on the value of their ID. So if new items are added,
+    // the value of the existing ones should be modified so they stay in order.
     public static final int ID_OPEN_IN_NEW_WINDOW = 0;
     public static final int ID_OPEN_IN_NEW_TAB = 1;
     public static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
-    public static final int ID_REMOVE = 3;
-    public static final int ID_SAVE_FOR_OFFLINE = 4;
+    public static final int ID_SAVE_FOR_OFFLINE = 3;
+    public static final int ID_REMOVE = 4;
 
     private final NewTabPageManager mManager;
     private final ChromeActivity mActivity;
@@ -52,8 +57,8 @@ public class ContextMenuManager {
         /** @return whether the current item can be saved offline. */
         String getUrl();
 
-        /** @return IDs of the menu items that are supported. */
-        Set<Integer> getSupportedMenuItems();
+        /** @return whether the given menu item is supported. */
+        boolean isItemSupported(@ContextMenuItemId int menuItemId);
     }
 
     /** Interface for a view that can be set to stop responding to touches. */
@@ -75,35 +80,15 @@ public class ContextMenuManager {
      */
     public void createContextMenu(ContextMenu menu, View associatedView, Delegate delegate) {
         OnMenuItemClickListener listener = new ItemClickListener(delegate);
-        Set<Integer> supportedItems = delegate.getSupportedMenuItems();
         boolean hasItems = false;
 
-        if (shouldShowItem(ID_OPEN_IN_NEW_WINDOW, delegate, supportedItems)) {
-            hasItems = true;
-            addContextMenuItem(menu, ID_OPEN_IN_NEW_WINDOW,
-                    R.string.contextmenu_open_in_other_window, listener);
-        }
+        for (@ContextMenuItemId int itemId : MenuItemLabelMatcher.STRING_MAP.keySet()) {
+            if (!shouldShowItem(itemId, delegate)) continue;
 
-        if (shouldShowItem(ID_OPEN_IN_NEW_TAB, delegate, supportedItems)) {
+            @StringRes
+            int itemString = MenuItemLabelMatcher.STRING_MAP.get(itemId);
+            menu.add(Menu.NONE, itemId, Menu.NONE, itemString).setOnMenuItemClickListener(listener);
             hasItems = true;
-            addContextMenuItem(
-                    menu, ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab, listener);
-        }
-
-        if (shouldShowItem(ID_OPEN_IN_INCOGNITO_TAB, delegate, supportedItems)) {
-            hasItems = true;
-            addContextMenuItem(menu, ID_OPEN_IN_INCOGNITO_TAB,
-                    R.string.contextmenu_open_in_incognito_tab, listener);
-        }
-
-        if (shouldShowItem(ID_SAVE_FOR_OFFLINE, delegate, supportedItems)) {
-            hasItems = true;
-            addContextMenuItem(menu, ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_link, listener);
-        }
-
-        if (shouldShowItem(ID_REMOVE, delegate, supportedItems)) {
-            hasItems = true;
-            addContextMenuItem(menu, ID_REMOVE, R.string.remove, listener);
         }
 
         // No item added. We won't show the menu, so we can skip the rest.
@@ -140,9 +125,8 @@ public class ContextMenuManager {
         mActivity.closeContextMenu();
     }
 
-    private boolean shouldShowItem(
-            @ContextMenuItemId int itemId, Delegate delegate, Set<Integer> supportedItems) {
-        if (!supportedItems.contains(itemId)) return false;
+    private boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {
+        if (!delegate.isItemSupported(itemId)) return false;
 
         switch (itemId) {
             case ID_OPEN_IN_NEW_WINDOW:
@@ -165,12 +149,16 @@ public class ContextMenuManager {
         }
     }
 
-    /**
-     * Convenience method to reduce multi-line function call to single line.
-     */
-    private void addContextMenuItem(ContextMenu menu, @ContextMenuItemId int id, int resourceId,
-            OnMenuItemClickListener listener) {
-        menu.add(Menu.NONE, id, Menu.NONE, resourceId).setOnMenuItemClickListener(listener);
+    private static class MenuItemLabelMatcher {
+        private static final Map<Integer, Integer> STRING_MAP = new TreeMap<Integer, Integer>() {
+            {
+                put(ID_OPEN_IN_NEW_WINDOW, R.string.contextmenu_open_in_other_window);
+                put(ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab);
+                put(ID_OPEN_IN_INCOGNITO_TAB, R.string.contextmenu_open_in_incognito_tab);
+                put(ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_link);
+                put(ID_REMOVE, R.string.remove);
+            }
+        };
     }
 
     private static class ItemClickListener implements OnMenuItemClickListener {

@@ -36,6 +36,7 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -130,7 +131,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets")
+    @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
     public void testAllDismissed() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(3);
         assertEquals(3, mSource.getSuggestionsForCategory(KnownCategories.ARTICLES).size());
@@ -190,6 +191,49 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         assertEquals(9, suggestions.size());
     }
 
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
+    public void testDismissStatusCardWithContextMenu()
+            throws InterruptedException, TimeoutException {
+        setSuggestionsAndWaitForUpdate(0);
+        assertArrayEquals(new int[] {KnownCategories.ARTICLES}, mSource.getCategories());
+
+        // Scroll the status card into view.
+        int cardPosition = getAdapter().getFirstCardPosition();
+        assertEquals(ItemViewType.STATUS, getAdapter().getItemViewType(cardPosition));
+
+        scrollToPosition(cardPosition);
+        View statusCardView = waitForView(cardPosition);
+
+        // Dismiss the status card using the context menu.
+        invokeContextMenu(statusCardView, ContextMenuManager.ID_REMOVE);
+        waitForViewToDetach(statusCardView);
+
+        assertArrayEquals(new int[0], mSource.getCategories());
+    }
+
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("enable-features=NTPSnippets,NTPSuggestionsSectionDismissal")
+    public void testDismissActionItemWithContextMenu()
+            throws InterruptedException, TimeoutException {
+        setSuggestionsAndWaitForUpdate(0);
+        assertArrayEquals(new int[] {KnownCategories.ARTICLES}, mSource.getCategories());
+
+        // Scroll the action item into view.
+        int actionItemPosition = getAdapter().getFirstCardPosition() + 1;
+        assertEquals(ItemViewType.ACTION, getAdapter().getItemViewType(actionItemPosition));
+        scrollToPosition(actionItemPosition);
+        View actionItemView = waitForView(actionItemPosition);
+
+        // Dismiss the action item using the context menu.
+        invokeContextMenu(actionItemView, ContextMenuManager.ID_REMOVE);
+        waitForViewToDetach(actionItemView);
+
+        assertArrayEquals(new int[0], mSource.getCategories());
+    }
+
     private NewTabPageView getNtpView() {
         return mNtp.getNewTabPageView();
     }
@@ -218,25 +262,15 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     private void setSuggestionsAndWaitForUpdate(final int suggestionsCount)
             throws InterruptedException, TimeoutException {
         final FakeSuggestionsSource source = mSource;
-        final NewTabPageAdapter adapter = getAdapter();
-        final CallbackHelper callback = new CallbackHelper();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-                    @Override
-                    public void onItemRangeInserted(int positionStart, int itemCount) {
-                        adapter.unregisterAdapterDataObserver(this);
-                        callback.notifyCalled();
-                    }
-                });
                 source.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
                 source.setSuggestionsForCategory(
                         KnownCategories.ARTICLES, buildSuggestions(suggestionsCount));
             }
         });
-        callback.waitForCallback(0);
         waitForStableRecyclerView();
     }
 
@@ -331,5 +365,9 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                 return true;
             }
         });
+    }
+
+    private static void assertArrayEquals(int[] expected, int[] actual) {
+        assertEquals(Arrays.toString(expected), Arrays.toString(actual));
     }
 }
