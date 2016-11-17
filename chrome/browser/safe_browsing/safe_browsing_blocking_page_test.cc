@@ -88,7 +88,8 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   // result when it is ready.
   // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
   bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
-    if (badurls[gurl.spec()] == SB_THREAT_TYPE_SAFE)
+    if (badurls.find(gurl.spec()) == badurls.end() ||
+        badurls.at(gurl.spec()) == SB_THREAT_TYPE_SAFE)
       return true;
 
     BrowserThread::PostTask(
@@ -111,7 +112,7 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
         client,
         MALWARE,
         expected_threats);
-    sb_check.url_results[0] = badurls[gurl.spec()];
+    sb_check.url_results[0] = badurls.at(gurl.spec());
     sb_check.OnSafeBrowsingResult();
   }
 

@@ -73,6 +73,10 @@ struct V4ProtocolConfig {
 // Different types of threats that SafeBrowsing protects against. This is the
 // type that's returned to the clients of SafeBrowsing in Chromium.
 enum SBThreatType {
+  // This type can be used for lists that can be checked synchronously so a
+  // client callback isn't required, or for whitelists.
+  SB_THREAT_TYPE_UNUSED,
+
   // No threat at all.
   SB_THREAT_TYPE_SAFE,
 
@@ -138,9 +142,9 @@ std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 
 PlatformType GetCurrentPlatformType();
 const ListIdentifier GetAnyIpMalwareId();
+const ListIdentifier GetChromeExtensionMalwareId();
 const ListIdentifier GetChromeUrlApiId();
 const ListIdentifier GetChromeUrlClientIncidentId();
-const ListIdentifier GetChromeUrlMalwareId();
 const ListIdentifier GetUrlMalwareId();
 const ListIdentifier GetUrlMalBinId();
 const ListIdentifier GetUrlSocEngId();

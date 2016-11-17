@@ -32,15 +32,19 @@ ListInfos GetListInfos() {
   // NOTE(vakh): When adding a store here, add the corresponding store-specific
   // histograms also.
   return ListInfos(
-      {ListInfo(true, "UrlMalware.store", GetUrlMalwareId(),
+      {ListInfo(true, "UrlSoceng.store", GetUrlSocEngId(),
+                SB_THREAT_TYPE_URL_PHISHING),
+       ListInfo(true, "UrlMalware.store", GetUrlMalwareId(),
                 SB_THREAT_TYPE_URL_MALWARE),
+       ListInfo(true, "UrlUws.store", GetUrlUwsId(),
+                SB_THREAT_TYPE_URL_UNWANTED),
        ListInfo(true, "UrlMalBin.store", GetUrlMalBinId(),
                 SB_THREAT_TYPE_BINARY_MALWARE_URL),
-       ListInfo(true, "UrlSoceng.store", GetUrlSocEngId(),
-                SB_THREAT_TYPE_URL_PHISHING),
+       ListInfo(true, "ChromeExtMalware.store", GetChromeExtensionMalwareId(),
+                SB_THREAT_TYPE_EXTENSION),
        ListInfo(false, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
-       ListInfo(true, "UrlUws.store", GetUrlUwsId(),
-                SB_THREAT_TYPE_URL_UNWANTED)});
+       ListInfo(true, "AnyIpMalware.store", GetAnyIpMalwareId(),
+                SB_THREAT_TYPE_UNUSED)});
 }
 
 // Returns the severity information about a given SafeBrowsing list. The lowest
@@ -197,7 +201,7 @@ bool V4LocalDatabaseManager::CheckExtensionIDs(
 
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
       client, ClientCallbackType::CHECK_EXTENSION_IDS,
-      StoresToCheck({GetChromeUrlMalwareId()}), extension_ids);
+      StoresToCheck({GetChromeExtensionMalwareId()}), extension_ids);
 
   return HandleCheck(std::move(check));
 }
@@ -451,6 +455,7 @@ SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
       [&list_id](ListInfo const& li) { return li.list_id() == list_id; });
   DCHECK(list_infos_.end() != it);
   DCHECK_NE(SB_THREAT_TYPE_SAFE, it->sb_threat_type());
+  DCHECK_NE(SB_THREAT_TYPE_UNUSED, it->sb_threat_type());
   return it->sb_threat_type();
 }
 

@@ -91,16 +91,16 @@ const ListIdentifier GetAnyIpMalwareId() {
   return ListIdentifier(ANY_PLATFORM, IP_RANGE, MALWARE_THREAT);
 }
 
+const ListIdentifier GetChromeExtensionMalwareId() {
+  return ListIdentifier(CHROME_PLATFORM, CHROME_EXTENSION, MALWARE_THREAT);
+}
+
 const ListIdentifier GetChromeUrlApiId() {
   return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
 const ListIdentifier GetChromeUrlClientIncidentId() {
   return ListIdentifier(CHROME_PLATFORM, URL, CLIENT_INCIDENT);
-}
-
-const ListIdentifier GetChromeUrlMalwareId() {
-  return ListIdentifier(CHROME_PLATFORM, URL, MALWARE_THREAT);
 }
 
 const ListIdentifier GetUrlMalwareId() {

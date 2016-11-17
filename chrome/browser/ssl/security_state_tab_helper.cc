@@ -127,6 +127,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
   if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
           entry->GetURL(), false, entry, web_contents(), false, &threat_type)) {
     switch (threat_type) {
+      case safe_browsing::SB_THREAT_TYPE_UNUSED:
       case safe_browsing::SB_THREAT_TYPE_SAFE:
         break;
       case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
