@@ -76,6 +76,10 @@ if (is_android) {
       "media_player_manager.h",
       "media_resource_getter.cc",
       "media_resource_getter.h",
+      "media_server_crash_listener.cc",
+      "media_server_crash_listener.h",
+      "media_service_throttler.cc",
+      "media_service_throttler.h",
       "media_url_interceptor.h",
       "sdk_media_codec_bridge.cc",
       "sdk_media_codec_bridge.h",
@@ -103,6 +107,7 @@ if (is_android) {
     sources = [
       "media_drm_bridge_unittest.cc",
       "media_player_bridge_unittest.cc",
+      "media_service_throttler_unittest.cc",
       "sdk_media_codec_bridge_unittest.cc",
     ]
 
@@ -125,6 +130,7 @@ if (is_android) {
       "java/src/org/chromium/media/MediaDrmBridge.java",
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
+      "java/src/org/chromium/media/MediaServerCrashListener.java",
     ]
     jni_package = "media"
   }
@@ -132,6 +138,7 @@ if (is_android) {
   android_library("media_java") {
     deps = [
       "//base:base_java",
+      "//content/public/android:content_java_resources",
     ]
 
     java_files = [
@@ -142,6 +149,7 @@ if (is_android) {
       "java/src/org/chromium/media/MediaDrmBridge.java",
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
+      "java/src/org/chromium/media/MediaServerCrashListener.java",
     ]
   }
 }

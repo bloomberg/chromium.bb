@@ -100,6 +100,9 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   void OnScopedSurfaceRequestCompleted(gl::ScopedJavaSurface surface);
 
  private:
+  void CreateMediaPlayer(const media::MediaUrlParams& params,
+                         const media::PipelineStatusCB& init_cb);
+
   // Used when creating |media_player_|.
   void OnDecoderResourcesReleased(int player_id);
 

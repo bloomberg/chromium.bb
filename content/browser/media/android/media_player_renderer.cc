@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "media/base/android/media_service_throttler.h"
 
 // TODO(tguilbert): Remove this ID once MediaPlayerManager has been deleted
 // and MediaPlayerBridge updated. See comment in header file.
@@ -41,6 +43,11 @@ void MediaPlayerRenderer::Initialize(
     media::RendererClient* client,
     const media::PipelineStatusCB& init_cb) {
   DVLOG(1) << __func__;
+
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  renderer_client_ = client;
+
   if (demuxer_stream_provider->GetType() !=
       media::DemuxerStreamProvider::Type::URL) {
     DLOG(ERROR) << "DemuxerStreamProvider is not of Type URL";
@@ -48,9 +55,26 @@ void MediaPlayerRenderer::Initialize(
     return;
   }
 
-  media::MediaUrlParams url_params =
-      demuxer_stream_provider->GetMediaUrlParams();
-  renderer_client_ = client;
+  base::TimeDelta creation_delay =
+      media::MediaServiceThrottler::GetInstance()->GetDelayForClientCreation();
+
+  if (creation_delay.is_zero()) {
+    CreateMediaPlayer(demuxer_stream_provider->GetMediaUrlParams(), init_cb);
+    return;
+  }
+
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&MediaPlayerRenderer::CreateMediaPlayer,
+                 weak_factory_.GetWeakPtr(),
+                 demuxer_stream_provider->GetMediaUrlParams(), init_cb),
+      creation_delay);
+}
+
+void MediaPlayerRenderer::CreateMediaPlayer(
+    const media::MediaUrlParams& url_params,
+    const media::PipelineStatusCB& init_cb) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const std::string user_agent = GetContentClient()->GetUserAgent();
 
