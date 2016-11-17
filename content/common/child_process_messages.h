@@ -176,12 +176,6 @@ IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 
 // Asks the browser to create a block of shared memory for the child process to
 // fill in and pass back to the browser.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_SyncAllocateSharedMemory,
-                            uint32_t /* buffer size */,
-                            base::SharedMemoryHandle)
-
-// Asks the browser to create a block of shared memory for the child process to
-// fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL2_1(ChildProcessHostMsg_SyncAllocateSharedBitmap,
                             uint32_t /* buffer size */,
                             cc::SharedBitmapId,
