@@ -47,6 +47,7 @@ static_library("test_support") {
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//testing/gtest",
+    "//ui/display:test_support",
     "//ui/gl",
   ]
 }
@@ -73,6 +74,7 @@ test("mus_public_unittests") {
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",
     "//testing/gtest",
+    "//ui/display:test_support",
     "//ui/events",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

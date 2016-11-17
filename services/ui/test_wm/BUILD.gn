@@ -6,6 +6,8 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 service("test_wm") {
+  testonly = true
+
   sources = [
     "test_wm.cc",
   ]
@@ -16,6 +18,7 @@ service("test_wm") {
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//ui/display",
+    "//ui/display:test_support",
     "//ui/gfx/geometry/mojo",
   ]
 

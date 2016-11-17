@@ -39,6 +39,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -116,6 +117,16 @@ WindowTreeHostMus* GetWindowTreeHostMus(WindowMus* window) {
 
 bool IsInternalProperty(const void* key) {
   return key == client::kModalKey;
+}
+
+// Helper function to get the device_scale_factor() of the display::Display
+// with |display_id|.
+float ScaleFactorForDisplay(Window* window) {
+  // TODO(riajiang): Change to use display::GetDisplayWithDisplayId() after
+  // https://codereview.chromium.org/2361283002/ is landed.
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(window)
+      .device_scale_factor();
 }
 
 }  // namespace
@@ -205,13 +216,23 @@ void WindowTreeClient::SetClientArea(
     const gfx::Insets& client_area,
     const std::vector<gfx::Rect>& additional_client_areas) {
   DCHECK(tree_);
-  tree_->SetClientArea(WindowMus::Get(window)->server_id(), client_area,
-                       additional_client_areas);
+  float device_scale_factor = ScaleFactorForDisplay(window);
+  std::vector<gfx::Rect> additional_client_areas_in_pixel;
+  for (const gfx::Rect& area : additional_client_areas) {
+    additional_client_areas_in_pixel.push_back(
+        gfx::ConvertRectToPixel(device_scale_factor, area));
+  }
+  tree_->SetClientArea(
+      WindowMus::Get(window)->server_id(),
+      gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
+      additional_client_areas_in_pixel);
 }
 
 void WindowTreeClient::SetHitTestMask(Window* window, const gfx::Rect& mask) {
   DCHECK(tree_);
-  tree_->SetHitTestMask(WindowMus::Get(window)->server_id(), mask);
+  tree_->SetHitTestMask(
+      WindowMus::Get(window)->server_id(),
+      gfx::ConvertRectToPixel(ScaleFactorForDisplay(window), mask));
 }
 
 void WindowTreeClient::ClearHitTestMask(Window* window) {
@@ -942,6 +963,7 @@ void WindowTreeClient::OnClientAreaChanged(
     const gfx::Insets& new_client_area,
     mojo::Array<gfx::Rect> new_additional_client_areas) {
   // TODO: client area.
+  // TODO(riajiang): Convert from pixel to DIP. (http://crbug.com/600815)
   /*
   Window* window = GetWindowByServerId(window_id);
   if (window) {
@@ -1298,6 +1320,8 @@ void WindowTreeClient::WmDisplayModified(const display::Display& display) {
   window_manager_delegate_->OnWmDisplayModified(display);
 }
 
+// TODO(riajiang): Convert between pixel and DIP for window bounds properly.
+// (http://crbug.com/646942)
 void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                    Id window_id,
                                    const gfx::Rect& transit_bounds) {
@@ -1464,8 +1488,11 @@ void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     const gfx::Vector2d& offset,
     const gfx::Insets& hit_area) {
   if (window_manager_internal_client_) {
+    // TODO(riajiang): Figure out if |offset| needs to be converted.
+    // (http://crbugs.com/646932)
     window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-        WindowMus::Get(window)->server_id(), offset.x(), offset.y(), hit_area);
+        WindowMus::Get(window)->server_id(), offset.x(), offset.y(),
+        gfx::ConvertInsetsToDIP(ScaleFactorForDisplay(window), hit_area));
   }
 }
 

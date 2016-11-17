@@ -16,6 +16,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/display/display.h"
+#include "ui/display/test/test_screen.h"
 
 namespace ui {
 namespace test {
@@ -25,11 +26,13 @@ class TestWM : public service_manager::Service,
                public ui::WindowManagerDelegate {
  public:
   TestWM() {}
-  ~TestWM() override {}
+  ~TestWM() override { display::Screen::SetScreenInstance(nullptr); }
 
  private:
   // service_manager::Service:
   void OnStart() override {
+    test_screen_ = base::MakeUnique<display::test::TestScreen>();
+    display::Screen::SetScreenInstance(test_screen_.get());
     window_tree_client_.reset(new ui::WindowTreeClient(this, this));
     window_tree_client_->ConnectAsWindowManager(context()->connector());
   }
@@ -104,6 +107,9 @@ class TestWM : public service_manager::Service,
     // Don't care.
   }
   void OnWmCancelMoveLoop(Window* window) override {}
+
+  // Dummy screen required to be the screen instance.
+  std::unique_ptr<display::test::TestScreen> test_screen_;
 
   ui::Window* root_ = nullptr;
   ui::WindowManagerClient* window_manager_client_ = nullptr;

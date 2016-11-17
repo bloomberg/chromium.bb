@@ -35,6 +35,7 @@ WindowServerTestBase::WindowServerTestBase()
       window_manager_client_(nullptr) {}
 
 WindowServerTestBase::~WindowServerTestBase() {
+  display::Screen::SetScreenInstance(nullptr);
   window_tree_clients_.clear();
 }
 
@@ -80,6 +81,7 @@ void WindowServerTestBase::DeleteWindowTreeClient(
 void WindowServerTestBase::SetUp() {
   WindowServerServiceTestBase::SetUp();
 
+  display::Screen::SetScreenInstance(&test_screen_);
   std::unique_ptr<WindowTreeClient> window_manager_window_tree_client =
       base::MakeUnique<WindowTreeClient>(this, this);
   window_manager_window_tree_client->ConnectAsWindowManager(connector());

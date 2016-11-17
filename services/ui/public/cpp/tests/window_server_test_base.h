@@ -14,6 +14,7 @@
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/display/test/test_screen.h"
 
 namespace ui {
 
@@ -109,6 +110,9 @@ class WindowServerTestBase
   WindowManagerDelegate* window_manager_delegate_;
 
   WindowManagerClient* window_manager_client_;
+
+  // Dummy screen required to be the screen instance.
+  display::test::TestScreen test_screen_;
 
   bool window_tree_client_lost_connection_ = false;
 

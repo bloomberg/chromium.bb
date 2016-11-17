@@ -9,11 +9,14 @@
 
 namespace gfx {
 
+class Insets;
 class Point;
 class PointF;
 class Rect;
 class Size;
 
+GFX_EXPORT gfx::Insets ConvertInsetsToDIP(float scale_factor,
+                                          const gfx::Insets& insets_in_pixel);
 GFX_EXPORT gfx::Point ConvertPointToDIP(float scale_factor,
                                         const gfx::Point& point_in_pixel);
 GFX_EXPORT gfx::PointF ConvertPointToDIP(float scale_factor,
@@ -23,10 +26,12 @@ GFX_EXPORT gfx::Size ConvertSizeToDIP(float scale_factor,
 GFX_EXPORT gfx::Rect ConvertRectToDIP(float scale_factor,
                                       const gfx::Rect& rect_in_pixel);
 
+GFX_EXPORT gfx::Insets ConvertInsetsToPixel(float scale_factor,
+                                            const gfx::Insets& insets_in_dip);
 GFX_EXPORT gfx::Point ConvertPointToPixel(float scale_factor,
-                                          const gfx::Point& point_in_pixel);
+                                          const gfx::Point& point_in_dip);
 GFX_EXPORT gfx::Size ConvertSizeToPixel(float scale_factor,
-                                        const gfx::Size& size_in_pixel);
+                                        const gfx::Size& size_in_dip);
 GFX_EXPORT gfx::Rect ConvertRectToPixel(float scale_factor,
                                         const gfx::Rect& rect_in_dip);
 }  // gfx

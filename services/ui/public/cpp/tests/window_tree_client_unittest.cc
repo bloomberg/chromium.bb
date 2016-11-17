@@ -23,6 +23,7 @@
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -75,9 +76,12 @@ class TestWindowTreeClientDelegate : public WindowTreeClientDelegate {
 class WindowTreeSetup {
  public:
   WindowTreeSetup() : tree_client_(&window_tree_delegate_, nullptr, nullptr) {
+    display::Screen::SetScreenInstance(&test_screen_);
     WindowTreeClientPrivate(&tree_client_).OnEmbed(&window_tree_);
     window_tree_.GetAndClearChangeId(nullptr);
   }
+
+  ~WindowTreeSetup() { display::Screen::SetScreenInstance(nullptr); }
 
   WindowTreeClient* client() {
     return &tree_client_;
@@ -102,6 +106,9 @@ class WindowTreeSetup {
   TestWindowTree window_tree_;
   TestWindowTreeClientDelegate window_tree_delegate_;
   WindowTreeClient tree_client_;
+
+  // Dummy screen required to be the screen instance.
+  display::test::TestScreen test_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeSetup);
 };

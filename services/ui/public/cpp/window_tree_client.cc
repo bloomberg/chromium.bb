@@ -26,7 +26,9 @@
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -34,6 +36,22 @@ namespace ui {
 
 Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
   return (client_id << 16) | local_id;
+}
+
+// Helper function to get the device_scale_factor() of the display::Display
+// with |display_id|.
+float ScaleFactorForDisplay(int64_t display_id) {
+  // TODO(riajiang): Change to use display::GetDisplayWithDisplayId() after
+  // https://codereview.chromium.org/2361283002/ is landed.
+  std::vector<display::Display> displays =
+      display::Screen::GetScreen()->GetAllDisplays();
+  auto iter = std::find_if(displays.begin(), displays.end(),
+                           [display_id](const display::Display& display) {
+                             return display.id() == display_id;
+                           });
+  if (iter != displays.end())
+    return iter->device_scale_factor();
+  return 1.f;
 }
 
 // Helper called to construct a local window object from transport data.
@@ -51,7 +69,10 @@ Window* AddWindowToClient(WindowTreeClient* client,
       window_data->properties
           .To<std::map<std::string, std::vector<uint8_t>>>());
   client->AddWindow(window);
-  private_window.LocalSetBounds(gfx::Rect(), window_data->bounds);
+  private_window.LocalSetBounds(
+      gfx::Rect(),
+      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window->display_id()),
+                            window_data->bounds));
   if (parent)
     WindowPrivate(parent).LocalAddChild(window);
   return window;
@@ -219,7 +240,10 @@ void WindowTreeClient::SetBounds(Window* window,
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::MakeUnique<InFlightBoundsChange>(window, old_bounds));
-  tree_->SetWindowBounds(change_id, server_id(window), bounds);
+  tree_->SetWindowBounds(
+      change_id, server_id(window),
+      gfx::ConvertRectToPixel(ScaleFactorForDisplay(window->display_id()),
+                              bounds));
 }
 
 void WindowTreeClient::SetCapture(Window* window) {
@@ -251,12 +275,25 @@ void WindowTreeClient::SetClientArea(
     const gfx::Insets& client_area,
     const std::vector<gfx::Rect>& additional_client_areas) {
   DCHECK(tree_);
-  tree_->SetClientArea(window_id, client_area, additional_client_areas);
+  float device_scale_factor =
+      ScaleFactorForDisplay(GetWindowByServerId(window_id)->display_id());
+  std::vector<gfx::Rect> additional_client_areas_in_pixel;
+  for (const gfx::Rect& area : additional_client_areas) {
+    additional_client_areas_in_pixel.push_back(
+        gfx::ConvertRectToPixel(device_scale_factor, area));
+  }
+  tree_->SetClientArea(
+      window_id, gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
+      additional_client_areas_in_pixel);
 }
 
 void WindowTreeClient::SetHitTestMask(Id window_id, const gfx::Rect& mask) {
   DCHECK(tree_);
-  tree_->SetHitTestMask(window_id, mask);
+  tree_->SetHitTestMask(
+      window_id,
+      gfx::ConvertRectToPixel(
+          ScaleFactorForDisplay(GetWindowByServerId(window_id)->display_id()),
+          mask));
 }
 
 void WindowTreeClient::ClearHitTestMask(Id window_id) {
@@ -873,11 +910,16 @@ void WindowTreeClient::OnWindowBoundsChanged(Id window_id,
   if (!window)
     return;
 
-  InFlightBoundsChange new_change(window, new_bounds);
+  float device_scale_factor = ScaleFactorForDisplay(window->display_id());
+  gfx::Rect old_bounds_in_dip =
+      gfx::ConvertRectToDIP(device_scale_factor, old_bounds);
+  gfx::Rect new_bounds_in_dip =
+      gfx::ConvertRectToDIP(device_scale_factor, new_bounds);
+
+  InFlightBoundsChange new_change(window, new_bounds_in_dip);
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
-
-  WindowPrivate(window).LocalSetBounds(old_bounds, new_bounds);
+  WindowPrivate(window).LocalSetBounds(old_bounds_in_dip, new_bounds_in_dip);
 }
 
 void WindowTreeClient::OnClientAreaChanged(
@@ -886,9 +928,15 @@ void WindowTreeClient::OnClientAreaChanged(
     mojo::Array<gfx::Rect> new_additional_client_areas) {
   Window* window = GetWindowByServerId(window_id);
   if (window) {
+    float device_scale_factor = ScaleFactorForDisplay(window->display_id());
+    std::vector<gfx::Rect> new_additional_client_areas_in_dip;
+    for (const gfx::Rect& area : new_additional_client_areas) {
+      new_additional_client_areas_in_dip.push_back(
+          gfx::ConvertRectToDIP(device_scale_factor, area));
+    }
     WindowPrivate(window).LocalSetClientArea(
-        new_client_area,
-        new_additional_client_areas.To<std::vector<gfx::Rect>>());
+        gfx::ConvertInsetsToDIP(device_scale_factor, new_client_area),
+        new_additional_client_areas_in_dip);
   }
 }
 
@@ -1269,12 +1317,14 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
   bool result = false;
   if (window) {
     DCHECK(window_manager_delegate_);
-    gfx::Rect bounds = transit_bounds;
+    gfx::Rect transit_bounds_in_dip = gfx::ConvertRectToDIP(
+        ScaleFactorForDisplay(window->display_id()), transit_bounds);
+    gfx::Rect bounds = transit_bounds_in_dip;
     result = window_manager_delegate_->OnWmSetBounds(window, &bounds);
     if (result) {
       // If the resulting bounds differ return false. Returning false ensures
       // the client applies the bounds we set below.
-      result = bounds == transit_bounds;
+      result = bounds == transit_bounds_in_dip;
       window->SetBounds(bounds);
     }
   }
@@ -1422,8 +1472,12 @@ void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     const gfx::Vector2d& offset,
     const gfx::Insets& hit_area) {
   if (window_manager_internal_client_) {
+    // TODO(riajiang): Figure out if |offset| needs to be converted.
+    // (http://crbugs.com/646932)
     window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-        server_id(window), offset.x(), offset.y(), hit_area);
+        server_id(window), offset.x(), offset.y(),
+        gfx::ConvertInsetsToDIP(ScaleFactorForDisplay(window->display_id()),
+                                hit_area));
   }
 }
 

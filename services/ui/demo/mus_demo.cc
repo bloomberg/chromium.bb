@@ -62,9 +62,13 @@ void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
 
 MusDemo::MusDemo() {}
 
-MusDemo::~MusDemo() {}
+MusDemo::~MusDemo() {
+  display::Screen::SetScreenInstance(nullptr);
+}
 
 void MusDemo::OnStart() {
+  screen_ = base::MakeUnique<display::ScreenBase>();
+  display::Screen::SetScreenInstance(screen_.get());
   gpu_service_ = GpuService::Create(context()->connector());
   window_tree_client_ = base::MakeUnique<WindowTreeClient>(this, this);
   window_tree_client_->ConnectAsWindowManager(context()->connector());
