@@ -185,6 +185,8 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
 views::Label* TrayPopupUtils::CreateDefaultLabel() {
   views::Label* label = new views::Label();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetBorder(
+      views::CreateEmptyBorder(0, 0, 0, kTrayPopupLabelRightPadding));
 
   // TODO(bruthig): Fix this so that |label| uses the kBackgroundColor to
   // perform subpixel rendering instead of disabling subpixel rendering.

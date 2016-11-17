@@ -49,6 +49,10 @@ extern const int kTrayPopupLabelHorizontalPadding;
 // row horizontally.
 extern const int kTrayPopupSliderPaddingMD;
 
+// Padding used on right side of labels to keep minimum distance to the next
+// item. This applies to all labels in the system menu.
+extern const int kTrayPopupLabelRightPadding;
+
 extern const int kTrayPopupDetailsIconWidth;
 extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;

@@ -47,6 +47,7 @@ const int kTrayPopupButtonEndMargin = 10;
 const int kTrayPopupUserCardVerticalPadding = 10;
 const int kTrayPopupLabelHorizontalPadding = 4;
 const int kTrayPopupSliderPaddingMD = 16;
+const int kTrayPopupLabelRightPadding = 8;
 
 const int kTrayPopupDetailsIconWidth = 25;
 const int kTrayPopupDetailsLabelExtraLeftMargin = 8;
