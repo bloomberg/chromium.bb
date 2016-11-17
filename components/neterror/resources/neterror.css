@@ -358,17 +358,9 @@ html[subframe] body {
   vertical-align: middle;
 }
 
-#download-button:disabled:before {
-  background: -webkit-image-set(
-      url(../../resources/default_100_percent/neterror/download_disabled.png) 1x,
-      url(../../resources/default_200_percent/neterror/download_disabled.png) 2x)
-    no-repeat;
-}
-
 #download-button:disabled {
-  background: rgb(177, 177, 177);
-  color: rgb(65, 65, 65);
-  opacity: 0.5;
+  background: rgb(180, 206, 249);
+  color: rgb(255, 255, 255);
 }
 
 #buttons::after {
