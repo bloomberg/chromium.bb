@@ -138,6 +138,7 @@ enum PrintSettingsBuckets {
   DEFAULT_MEDIA,
   NON_DEFAULT_MEDIA,
   COPIES,
+  SCALING,
   NON_DEFAULT_MARGINS,
   DISTILL_PAGE_UNUSED,
   PRINT_SETTINGS_BUCKET_BOUNDARY
@@ -237,6 +238,12 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   int copies = 1;
   if (settings.GetInteger(printing::kSettingCopies, &copies) && copies > 1)
     ReportPrintSettingHistogram(COPIES);
+
+  int scaling = 100;
+  if (settings.GetInteger(printing::kSettingScaleFactor, &scaling) &&
+      scaling != 100) {
+    ReportPrintSettingHistogram(SCALING);
+  }
 
   bool collate = false;
   if (settings.GetBoolean(printing::kSettingCollate, &collate) && collate)
