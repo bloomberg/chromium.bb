@@ -44,7 +44,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mDelegate.exitVRIfNecessary();
+                mDelegate.exitVRIfNecessary(false);
             }
         });
     }

@@ -450,9 +450,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (getActivityTab() != null) getActivityTab().setIsAllowedToReturnToExternalApp(false);
 
-        if (mVrShellDelegate.isVrInitialized()) {
-            mVrShellDelegate.close();
-        }
         mTabModelSelectorImpl.saveState();
         StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);
@@ -482,9 +479,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
             }
-            if (!mVrShellDelegate.isInVR() && mVrShellDelegate.isVrIntent(intent)) {
-                mVrShellDelegate.enterVRIfNecessary(false);
-            }
+            if (mVrShellDelegate.isVrIntent(intent)) mVrShellDelegate.enterVRFromIntent(intent);
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");
         }
@@ -727,6 +722,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     launchFirstRunExperience();
                 }
             }
+            return true;
+        } else if (requestCode == VrShellDelegate.EXIT_VR_RESULT) {
+            mVrShellDelegate.onExitVRResult(resultCode);
             return true;
         }
         return false;
@@ -1240,7 +1238,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 
-        if (mVrShellDelegate.exitVRIfNecessary()) return true;
+        if (mVrShellDelegate.exitVRIfNecessary(true)) return true;
 
         if (currentTab == null) {
             recordBackPressedUma("currentTab is null", BACK_PRESSED_TAB_IS_NULL);

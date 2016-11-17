@@ -75,9 +75,9 @@ bool VrShellDelegate::RequestWebVRPresent(
 
   // If/When VRShell is ready for use it will call OnVrShellReady.
   JNIEnv* env = AttachCurrentThread();
-  return Java_VrShellDelegate_enterVRIfNecessary(env,
-                                                 j_vr_shell_delegate_.obj(),
-                                                 true);
+  Java_VrShellDelegate_enterVRIfNecessary(env, j_vr_shell_delegate_.obj(),
+                                          true);
+  return true;
 }
 
 void VrShellDelegate::ExitWebVRPresent() {

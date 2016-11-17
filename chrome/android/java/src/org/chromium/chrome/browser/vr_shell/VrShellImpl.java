@@ -335,11 +335,6 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     }
 
     @Override
-    public void setVrModeEnabled(boolean enabled) {
-        AndroidCompat.setVrModeEnabled(mActivity, enabled);
-    }
-
-    @Override
     public void setWebVrModeEnabled(boolean enabled) {
         nativeSetWebVrMode(mNativeVrShell, enabled);
     }
