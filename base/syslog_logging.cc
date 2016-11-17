@@ -6,6 +6,8 @@
 #include "base/syslog_logging.h"
 
 #if defined(OS_WIN)
+#include "base/win/eventlog_messages.h"
+
 #include <windows.h>
 #elif defined(OS_LINUX)
 #include <syslog.h>
@@ -51,10 +53,8 @@ EventLogMessage::~EventLogMessage() {
       break;
   }
   LPCSTR strings[1] = {message.data()};
-  // TODO(pastarmovj): Register Chrome's event log resource types to make the
-  // entries nicer. 1337 is just a made up event id type.
-  if (!ReportEventA(event_log_handle, log_type, 0, 1337, NULL, 1, 0,
-                    strings, NULL)) {
+  if (!ReportEventA(event_log_handle, log_type, BROWSER_CATEGORY,
+                    MSG_LOG_MESSAGE, NULL, 1, 0, strings, NULL)) {
     stream() << " !!NOT ADDED TO EVENTLOG!!";
   }
   DeregisterEventSource(event_log_handle);
