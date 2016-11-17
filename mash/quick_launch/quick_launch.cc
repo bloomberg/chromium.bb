@@ -97,6 +97,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     if (suggestion_rejected_)
       return;
 
+    if (new_contents.empty())
+      return;
+
     // TODO(beng): it'd be nice if we persisted some history/scoring here.
     for (const auto& name : app_names_) {
       if (base::StartsWith(name, new_contents,
