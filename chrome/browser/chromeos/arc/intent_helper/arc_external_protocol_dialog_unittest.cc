@@ -431,20 +431,6 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithGeoUrlAsFallback) {
   EXPECT_EQ(kChromePackageName, url_and_package.second);
 }
 
-// Test that ShouldIgnoreNavigation accepts CLIENT_REDIRECT qualifier but does
-// not other ones.
-TEST(ArcExternalProtocolDialogTest, TestShouldIgnoreNavigation) {
-  EXPECT_FALSE(ShouldIgnoreNavigationForTesting(
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK)));
-  EXPECT_FALSE(ShouldIgnoreNavigationForTesting(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
-  EXPECT_TRUE(ShouldIgnoreNavigationForTesting(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT |
-      ui::PAGE_TRANSITION_HOME_PAGE)));
-  EXPECT_TRUE(ShouldIgnoreNavigationForTesting(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_HOME_PAGE)));
-}
-
 // Test that GetUrlToNavigateOnDeactivate returns an empty GURL when |handlers|
 // is empty.
 TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateEmpty) {

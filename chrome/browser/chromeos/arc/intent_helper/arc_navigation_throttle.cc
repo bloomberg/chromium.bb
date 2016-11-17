@@ -167,12 +167,15 @@ ArcNavigationThrottle::HandleRequest() {
   // such submissions anyway.
   constexpr bool kAllowFormSubmit = false;
 
+  // Ignore navigations with the CLIENT_REDIRECT qualifier on.
+  constexpr bool kAllowClientRedirect = false;
+
   // We must never handle navigations started within a context menu.
   if (navigation_handle()->WasStartedFromContextMenu())
     return content::NavigationThrottle::PROCEED;
 
   if (ShouldIgnoreNavigation(navigation_handle()->GetPageTransition(),
-                             kAllowFormSubmit))
+                             kAllowFormSubmit, kAllowClientRedirect))
     return content::NavigationThrottle::PROCEED;
 
   if (!ShouldOverrideUrlLoading(starting_gurl_, url))
