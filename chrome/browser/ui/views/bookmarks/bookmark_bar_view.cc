@@ -260,18 +260,37 @@ class BookmarkButton : public BookmarkButtonBase {
                  const base::string16& title)
       : BookmarkButtonBase(listener, title), url_(url) {}
 
+  // views::View:
   bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
+                      base::string16* tooltip_text) const override {
+    const views::TooltipManager* tooltip_manager =
+        GetWidget()->GetTooltipManager();
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
-    *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(
-        GetWidget(), location, url_, GetText());
-    return !tooltip->empty();
+    // Also update when the maximum width for tooltip has changed because the
+    // it may be elided differently.
+    int max_tooltip_width = tooltip_manager->GetMaxWidth(location);
+    if (tooltip_text_.empty() || max_tooltip_width != max_tooltip_width_) {
+      max_tooltip_width_ = max_tooltip_width;
+      tooltip_text_ = BookmarkBarView::CreateToolTipForURLAndTitle(
+          max_tooltip_width_, tooltip_manager->GetFontList(), url_, GetText());
+    }
+    *tooltip_text = tooltip_text_;
+    return !tooltip_text->empty();
+  }
+
+  void SetText(const base::string16& text) override {
+    BookmarkButtonBase::SetText(text);
+    tooltip_text_.empty();
   }
 
   const char* GetClassName() const override { return kViewClassName; }
 
  private:
+  // A cached value of maximum width for tooltip to skip generating
+  // new tooltip text.
+  mutable int max_tooltip_width_ = 0;
+  mutable base::string16 tooltip_text_;
   const GURL& url_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkButton);
@@ -714,13 +733,10 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
 
 // static
 base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
-    const views::Widget* widget,
-    const gfx::Point& screen_loc,
+    int max_width,
+    const gfx::FontList& tt_fonts,
     const GURL& url,
     const base::string16& title) {
-  const views::TooltipManager* tooltip_manager = widget->GetTooltipManager();
-  int max_width = tooltip_manager->GetMaxWidth(screen_loc);
-  const gfx::FontList tt_fonts = tooltip_manager->GetFontList();
   base::string16 result;
 
   // First the title.

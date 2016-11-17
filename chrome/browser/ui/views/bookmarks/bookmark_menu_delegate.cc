@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
@@ -145,8 +146,10 @@ base::string16 BookmarkMenuDelegate::GetTooltipText(
 
   const BookmarkNode* node = i->second;
   if (node->is_url()) {
+    const views::TooltipManager* tooltip_manager = parent_->GetTooltipManager();
     return BookmarkBarView::CreateToolTipForURLAndTitle(
-        parent_, screen_loc, node->url(), node->GetTitle());
+        tooltip_manager->GetMaxWidth(screen_loc),
+        tooltip_manager->GetFontList(), node->url(), node->GetTitle());
   }
   return base::string16();
 }
