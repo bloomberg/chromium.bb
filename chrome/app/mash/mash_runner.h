@@ -20,11 +20,16 @@ class MashRunner {
   MashRunner();
   ~MashRunner();
 
-  void Run();
+  // Returns 0 if the process was initialized correctly, or error code on
+  // failure.
+  int Run();
 
  private:
   void RunMain();
-  void RunChild();
+
+  // Returns 0 if the child process was initialized correctly, or error code on
+  // failure.
+  int RunChild();
 
   void StartChildApp(service_manager::mojom::ServiceRequest service_request);
 

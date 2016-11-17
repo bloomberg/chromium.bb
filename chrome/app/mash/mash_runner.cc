@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -31,7 +32,9 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/runner/host/child_process.h"
 #include "services/service_manager/runner/host/child_process_base.h"
+#include "services/service_manager/runner/init.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -116,11 +119,11 @@ MashRunner::MashRunner() {}
 
 MashRunner::~MashRunner() {}
 
-void MashRunner::Run() {
+int MashRunner::Run() {
   if (IsChild())
-    RunChild();
-  else
-    RunMain();
+    return RunChild();
+  RunMain();
+  return 0;
 }
 
 void MashRunner::RunMain() {
@@ -168,11 +171,19 @@ void MashRunner::RunMain() {
   base::RunLoop().Run();
 }
 
-void MashRunner::RunChild() {
+int MashRunner::RunChild() {
+  base::FilePath path =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kChildProcess);
+  if (base::PathExists(path))
+    return service_manager::ChildProcessMain();
+
+  // If the path doesn't exist - try launching this as a packaged service.
   base::i18n::InitializeICU();
   InitializeResources();
   service_manager::ChildProcessMainWithCallback(
       base::Bind(&MashRunner::StartChildApp, base::Unretained(this)));
+  return 0;
 }
 
 void MashRunner::StartChildApp(
@@ -189,18 +200,11 @@ void MashRunner::StartChildApp(
 }
 
 int MashMain() {
-#if defined(OS_WIN)
+#if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
 #endif
   // TODO(sky): wire this up correctly.
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  logging::InitLogging(settings);
-  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
-  logging::SetLogItems(true,   // Process ID
-                       true,   // Thread ID
-                       true,   // Timestamp
-                       true);  // Tick count
+  service_manager::InitializeLogging();
 
   std::unique_ptr<base::MessageLoop> message_loop;
 #if defined(OS_LINUX)
@@ -219,6 +223,5 @@ int MashMain() {
   }
 
   MashRunner mash_runner;
-  mash_runner.Run();
-  return 0;
+  return mash_runner.Run();
 }
