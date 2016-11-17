@@ -240,12 +240,6 @@ class ArcAuthService : public ArcService,
   // on ARC is stopped.
   void RemoveArcData();
 
-  // Returns current page that has to be shown in OptIn UI.
-  ArcSupportHost::UIPage ui_page() const { return ui_page_; }
-
-  // Returns current page status, relevant to the specific page.
-  const base::string16& ui_page_status() const { return ui_page_status_; }
-
   ArcSupportHost* support_host() { return support_host_.get(); }
 
   void StartArc();
@@ -255,14 +249,8 @@ class ArcAuthService : public ArcService,
   class AccountInfoNotifier;
 
   // TODO(hidehiko): move UI methods/fields to ArcSupportHost.
-  void ShowUI(ArcSupportHost::UIPage page, const base::string16& status);
-  void CloseUI();
-  void SetUIPage(ArcSupportHost::UIPage page, const base::string16& status);
   void SetState(State state);
   void ShutdownBridge();
-  void ShutdownBridgeAndCloseUI();
-  void ShutdownBridgeAndShowUI(ArcSupportHost::UIPage page,
-                               const base::string16& status);
   void OnOptInPreferenceChanged();
   void StartUI();
   void OnAndroidManagementPassed();
@@ -298,8 +286,6 @@ class ArcAuthService : public ArcService,
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
-  ArcSupportHost::UIPage ui_page_ = ArcSupportHost::UIPage::NO_PAGE;
-  base::string16 ui_page_status_;
   bool clear_required_ = false;
   bool reenable_arc_ = false;
   base::OneShotTimer arc_sign_in_timer_;
