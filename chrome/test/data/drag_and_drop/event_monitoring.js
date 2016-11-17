@@ -17,6 +17,9 @@ window.reportDragAndDropEvent = function(ev) {
   if (window.domAutomationController) {
     window.domAutomationController.setAutomationId(0);
     window.domAutomationController.send({
+      client_position: safe(function() {
+        return "(" + ev.clientX + ", " + ev.clientY + ")";
+      }),
       drop_effect: safe(function() { return ev.dataTransfer.dropEffect; }),
       effect_allowed: safe(function() {
         return ev.dataTransfer.effectAllowed;
@@ -30,6 +33,9 @@ window.reportDragAndDropEvent = function(ev) {
       }),
       mime_types: safe(function() {
         return Array.from(ev.dataTransfer.types).sort().join();
+      }),
+      page_position: safe(function() {
+        return "(" + ev.pageX + ", " + ev.pageY + ")";
       }),
       window_name: window.name
     });

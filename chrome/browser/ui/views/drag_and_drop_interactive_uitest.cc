@@ -150,7 +150,7 @@ class DragAndDropSimulator {
     gfx::Point root_location = web_contents_relative_location;
     aura::Window::ConvertPointToTarget(view, view->GetRootWindow(),
                                        &root_location);
-    *out_event_location = root_location;
+    *out_event_root_location = root_location;
   }
 
   // These are ui::DropTargetEvent::source_operations_ being sent when manually
@@ -335,6 +335,10 @@ class DOMDragEventVerifier {
  public:
   DOMDragEventVerifier() {}
 
+  void set_expected_client_position(const std::string& value) {
+    expected_client_position_ = value;
+  }
+
   void set_expected_drop_effect(const std::string& value) {
     expected_drop_effect_ = value;
   }
@@ -347,14 +351,20 @@ class DOMDragEventVerifier {
     expected_mime_types_ = value;
   }
 
+  void set_expected_page_position(const std::string& value) {
+    expected_page_position_ = value;
+  }
+
   // Returns a matcher that will match a std::string (drag event data - e.g.
   // one returned by DOMDragEventWaiter::WaitForNextMatchingEvent) if it matches
   // the expectations of this DOMDragEventVerifier.
   testing::Matcher<std::string> Matches() const {
     return testing::AllOf(
+        FieldMatches("client_position", expected_client_position_),
         FieldMatches("drop_effect", expected_drop_effect_),
         FieldMatches("effect_allowed", expected_effect_allowed_),
-        FieldMatches("mime_types", expected_mime_types_));
+        FieldMatches("mime_types", expected_mime_types_),
+        FieldMatches("page_position", expected_page_position_));
   }
 
  private:
@@ -371,6 +381,8 @@ class DOMDragEventVerifier {
   std::string expected_drop_effect_ = "<no expectation>";
   std::string expected_effect_allowed_ = "<no expectation>";
   std::string expected_mime_types_ = "<no expectation>";
+  std::string expected_client_position_ = "<no expectation>";
+  std::string expected_page_position_ = "<no expectation>";
 
   DISALLOW_COPY_AND_ASSIGN(DOMDragEventVerifier);
 };
@@ -571,9 +583,11 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropTextFromOutside) {
 
   // Setup test expectations.
   DOMDragEventVerifier expected_dom_event_data;
+  expected_dom_event_data.set_expected_client_position("(100, 100)");
   expected_dom_event_data.set_expected_drop_effect("none");
   expected_dom_event_data.set_expected_effect_allowed("all");
   expected_dom_event_data.set_expected_mime_types("text/plain");
+  expected_dom_event_data.set_expected_page_position("(100, 100)");
 
   // Drag text from outside the browser into/over the right frame.
   {
@@ -604,10 +618,12 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
   // Setup test expectations.
   // (dragstart event handler in image_source.html is asking for "copy" only).
   DOMDragEventVerifier expected_dom_event_data;
+  expected_dom_event_data.set_expected_client_position("(100, 100)");
   expected_dom_event_data.set_expected_drop_effect("none");
   expected_dom_event_data.set_expected_effect_allowed("copy");
   expected_dom_event_data.set_expected_mime_types(
       "Files,text/html,text/uri-list");
+  expected_dom_event_data.set_expected_page_position("(100, 100)");
 
   // Start the drag in the left frame.
   DragStartWaiter drag_start_waiter(web_contents());
