@@ -13,9 +13,10 @@ if (is_chrome_branded) {
   _default_ffmpeg_branding = "Chromium"
 }
 
-if (is_chromeos) {
-  _default_ffmpeg_branding = _default_ffmpeg_branding + "OS"
+if (is_chromeos && is_chrome_branded) {
+  _default_ffmpeg_branding = "ChromeOS"
 }
+
 if (is_chromecast) {
   if (is_android) {
     _default_ffmpeg_branding = "Chrome"
@@ -29,7 +30,7 @@ if (is_chromecast) {
 declare_args() {
   # Controls whether we build the Chromium or Google Chrome version of FFmpeg.
   # The Google Chrome version contains additional codecs. Typical values are
-  # Chromium, Chrome, ChromiumOS, and ChromeOS.
+  # Chromium, Chrome, and ChromeOS.
   ffmpeg_branding = _default_ffmpeg_branding
 
   # Set true to build ffmpeg as a shared library. NOTE: this means we should
@@ -42,7 +43,6 @@ declare_args() {
 
 assert(ffmpeg_branding == "Chromium" ||
        ffmpeg_branding == "Chrome" ||
-       ffmpeg_branding == "ChromiumOS" ||
        ffmpeg_branding == "ChromeOS")
 
 if (current_cpu == "x86") {

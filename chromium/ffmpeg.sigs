@@ -31,6 +31,7 @@ AVFrame* av_frame_alloc();
 int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
 const AVCodecDescriptor *avcodec_descriptor_next(const AVCodecDescriptor *prev);
 const AVCodecDescriptor *avcodec_descriptor_get(enum AVCodecID id);
+int avcodec_parameters_to_context(AVCodecContext *codec, const AVCodecParameters *par);
 
 // RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);

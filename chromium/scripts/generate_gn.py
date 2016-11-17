@@ -76,7 +76,7 @@ Attr = enum('ARCHITECTURE', 'TARGET', 'PLATFORM')
 SUPPORT_MATRIX = {
     Attr.ARCHITECTURE:
         set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon', 'mipsel', 'mips64el']),
-    Attr.TARGET: set(['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']),
+    Attr.TARGET: set(['Chromium', 'Chrome', 'ChromeOS']),
     Attr.PLATFORM: set(['android', 'linux', 'win', 'mac'])
 }
 
@@ -468,7 +468,7 @@ def GetAttributeValuesRange(attribute, condition):
   # don't change often. Refactor if we run into trouble.
   platform = condition.PLATFORM
   if attribute == Attr.TARGET and platform != '*' and platform != 'linux':
-    values.difference_update(['ChromiumOS', 'ChromeOS'])
+    values.difference_update(['ChromeOS'])
   if attribute == Attr.ARCHITECTURE and platform == 'win':
     values.intersection_update(['ia32', 'x64'])
   if attribute == Attr.ARCHITECTURE and platform == 'mac':
@@ -601,6 +601,8 @@ def WriteGn(fd, disjoint_sets):
 IGNORED_INCLUDE_FILES = [
     # Chromium generated files
     'config.h',
+    os.path.join('libavcodec', 'bsf_list.c'),
+    os.path.join('libavformat', 'protocol_list.c'),
     os.path.join('libavutil', 'avconfig.h'),
     os.path.join('libavutil', 'ffversion.h'),
 

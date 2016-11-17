@@ -28,6 +28,7 @@
 #include "libavutil/common.h"
 #include "libavutil/display.h"
 #include "libavutil/internal.h"
+#include "libavutil/mastering_display_metadata.h"
 #include "libavutil/md5.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
@@ -346,7 +347,9 @@ static int set_sps(HEVCContext *s, const HEVCSPS *sps, enum AVPixelFormat pix_fm
 
     export_stream_params(s->avctx, &s->ps, sps);
 
-    if (sps->pix_fmt == AV_PIX_FMT_YUV420P || sps->pix_fmt == AV_PIX_FMT_YUVJ420P) {
+    switch (sps->pix_fmt) {
+    case AV_PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUVJ420P:
 #if CONFIG_HEVC_DXVA2_HWACCEL
         *fmt++ = AV_PIX_FMT_DXVA2_VLD;
 #endif
@@ -359,6 +362,18 @@ static int set_sps(HEVCContext *s, const HEVCSPS *sps, enum AVPixelFormat pix_fm
 #if CONFIG_HEVC_VDPAU_HWACCEL
         *fmt++ = AV_PIX_FMT_VDPAU;
 #endif
+        break;
+    case AV_PIX_FMT_YUV420P10:
+#if CONFIG_HEVC_DXVA2_HWACCEL
+        *fmt++ = AV_PIX_FMT_DXVA2_VLD;
+#endif
+#if CONFIG_HEVC_D3D11VA_HWACCEL
+        *fmt++ = AV_PIX_FMT_D3D11VA_VLD;
+#endif
+#if CONFIG_HEVC_VAAPI_HWACCEL
+        *fmt++ = AV_PIX_FMT_VAAPI;
+#endif
+        break;
     }
 
     if (pix_fmt == AV_PIX_FMT_NONE) {
@@ -2436,7 +2451,7 @@ static int hls_decode_entry_wpp(AVCodecContext *avctxt, void *input_ctb_row, int
     return 0;
 }
 
-static int hls_slice_data_wpp(HEVCContext *s, const HEVCNAL *nal)
+static int hls_slice_data_wpp(HEVCContext *s, const H2645NAL *nal)
 {
     const uint8_t *data = nal->data;
     int length          = nal->size;
@@ -2580,6 +2595,57 @@ static int set_side_data(HEVCContext *s)
                                s->sei_hflip, s->sei_vflip);
     }
 
+    // Decrement the mastering display flag when IRAP frame has no_rasl_output_flag=1
+    // so the side data persists for the entire coded video sequence.
+    if (s->sei_mastering_display_info_present > 0 &&
+        IS_IRAP(s) && s->no_rasl_output_flag) {
+        s->sei_mastering_display_info_present--;
+    }
+    if (s->sei_mastering_display_info_present) {
+        // HEVC uses a g,b,r ordering, which we convert to a more natural r,g,b
+        const int mapping[3] = {2, 0, 1};
+        const int chroma_den = 50000;
+        const int luma_den = 10000;
+        int i;
+        AVMasteringDisplayMetadata *metadata =
+            av_mastering_display_metadata_create_side_data(out);
+        if (!metadata)
+            return AVERROR(ENOMEM);
+
+        for (i = 0; i < 3; i++) {
+            const int j = mapping[i];
+            metadata->display_primaries[i][0].num = s->display_primaries[j][0];
+            metadata->display_primaries[i][0].den = chroma_den;
+            metadata->display_primaries[i][1].num = s->display_primaries[j][1];
+            metadata->display_primaries[i][1].den = chroma_den;
+        }
+        metadata->white_point[0].num = s->white_point[0];
+        metadata->white_point[0].den = chroma_den;
+        metadata->white_point[1].num = s->white_point[1];
+        metadata->white_point[1].den = chroma_den;
+
+        metadata->max_luminance.num = s->max_mastering_luminance;
+        metadata->max_luminance.den = luma_den;
+        metadata->min_luminance.num = s->min_mastering_luminance;
+        metadata->min_luminance.den = luma_den;
+        metadata->has_luminance = 1;
+        metadata->has_primaries = 1;
+
+        av_log(s->avctx, AV_LOG_DEBUG, "Mastering Display Metadata:\n");
+        av_log(s->avctx, AV_LOG_DEBUG,
+               "r(%5.4f,%5.4f) g(%5.4f,%5.4f) b(%5.4f %5.4f) wp(%5.4f, %5.4f)\n",
+               av_q2d(metadata->display_primaries[0][0]),
+               av_q2d(metadata->display_primaries[0][1]),
+               av_q2d(metadata->display_primaries[1][0]),
+               av_q2d(metadata->display_primaries[1][1]),
+               av_q2d(metadata->display_primaries[2][0]),
+               av_q2d(metadata->display_primaries[2][1]),
+               av_q2d(metadata->white_point[0]), av_q2d(metadata->white_point[1]));
+        av_log(s->avctx, AV_LOG_DEBUG,
+               "min_luminance=%f, max_luminance=%f\n",
+               av_q2d(metadata->min_luminance), av_q2d(metadata->max_luminance));
+    }
+
     if (s->a53_caption) {
         AVFrameSideData* sd = av_frame_new_side_data(out,
                                                      AV_FRAME_DATA_A53_CC,
@@ -2651,7 +2717,7 @@ fail:
     return ret;
 }
 
-static int decode_nal_unit(HEVCContext *s, const HEVCNAL *nal)
+static int decode_nal_unit(HEVCContext *s, const H2645NAL *nal)
 {
     HEVCLocalContext *lc = s->HEVClc;
     GetBitContext *gb    = &lc->gb;
@@ -2803,8 +2869,8 @@ static int decode_nal_units(HEVCContext *s, const uint8_t *buf, int length)
 
     /* split the input packet into NAL units, so we know the upper bound on the
      * number of slices in the frame */
-    ret = ff_hevc_split_packet(s, &s->pkt, buf, length, s->avctx, s->is_nalff,
-                               s->nal_length_size);
+    ret = ff_h2645_packet_split(&s->pkt, buf, length, s->avctx, s->is_nalff,
+                                s->nal_length_size, s->avctx->codec_id, 1);
     if (ret < 0) {
         av_log(s->avctx, AV_LOG_ERROR,
                "Error splitting the input into NAL units.\n");
@@ -3048,12 +3114,7 @@ static av_cold int hevc_decode_free(AVCodecContext *avctx)
         s->HEVClc = NULL;
     av_freep(&s->HEVClcList[0]);
 
-    for (i = 0; i < s->pkt.nals_allocated; i++) {
-        av_freep(&s->pkt.nals[i].rbsp_buffer);
-        av_freep(&s->pkt.nals[i].skipped_bytes_pos);
-    }
-    av_freep(&s->pkt.nals);
-    s->pkt.nals_allocated = 0;
+    ff_h2645_packet_uninit(&s->pkt);
 
     return 0;
 }
@@ -3096,6 +3157,8 @@ static av_cold int hevc_init_context(AVCodecContext *avctx)
 
     s->context_initialized = 1;
     s->eos = 0;
+
+    ff_hevc_reset_sei(s);
 
     return 0;
 
