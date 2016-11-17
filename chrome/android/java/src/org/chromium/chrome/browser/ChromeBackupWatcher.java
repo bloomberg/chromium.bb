@@ -22,6 +22,8 @@ import org.chromium.components.signin.ChromeSigninController;
 public class ChromeBackupWatcher {
     private BackupManager mBackupManager;
 
+    private static final String FIRST_BACKUP_DONE = "first_backup_done";
+
     @VisibleForTesting
     @CalledByNative
     static ChromeBackupWatcher createChromeBackupWatcher() {
@@ -35,6 +37,11 @@ public class ChromeBackupWatcher {
         mBackupManager = new BackupManager(context);
         // Watch the Java preferences that are backed up.
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        // If we have never done a backup do one immediately.
+        if (!sharedPrefs.getBoolean(FIRST_BACKUP_DONE, false)) {
+            mBackupManager.dataChanged();
+            sharedPrefs.edit().putBoolean(FIRST_BACKUP_DONE, true).apply();
+        }
         sharedPrefs.registerOnSharedPreferenceChangeListener(
                 new SharedPreferences.OnSharedPreferenceChangeListener() {
 
