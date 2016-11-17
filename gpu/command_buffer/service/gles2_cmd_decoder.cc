@@ -12199,11 +12199,11 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY &&
          target != GL_TEXTURE_EXTERNAL_OES);
   uint32_t channels = GLES2Util::GetChannelsForFormat(format);
-  if ((feature_info_->feature_flags().angle_depth_texture ||
-       feature_info_->IsWebGL2OrES3Context())
-      && (channels & GLES2Util::kDepth) != 0) {
+  if ((channels & GLES2Util::kDepth) != 0 &&
+      feature_info_->feature_flags().angle_depth_texture &&
+      feature_info_->gl_version_info().is_es2) {
     // It's a depth format and ANGLE doesn't allow texImage2D or texSubImage2D
-    // on depth formats.
+    // on depth formats in ES2.
     GLuint fb = 0;
     glGenFramebuffersEXT(1, &fb);
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, fb);
