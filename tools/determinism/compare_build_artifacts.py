@@ -68,7 +68,9 @@ def diff_dict(a, b):
 
 def diff_binary(first_filepath, second_filepath, file_len):
   """Returns a compact binary diff if the diff is small enough."""
+  BLOCK_SIZE = 8192
   CHUNK_SIZE = 32
+  NUM_CHUNKS_IN_BLOCK = BLOCK_SIZE / CHUNK_SIZE
   MAX_STREAMS = 10
   diffs = 0
   streams = []
@@ -106,17 +108,21 @@ def diff_binary(first_filepath, second_filepath, file_len):
           rhs.seek(0)
 
       while True:
-        lhs_data = lhs.read(CHUNK_SIZE)
-        rhs_data = rhs.read(CHUNK_SIZE)
+        lhs_data = lhs.read(BLOCK_SIZE)
+        rhs_data = rhs.read(BLOCK_SIZE)
         if not lhs_data:
           break
         if lhs_data != rhs_data:
           diffs += sum(l != r for l, r in zip(lhs_data, rhs_data))
-          if streams is not None:
-            if len(streams) < MAX_STREAMS:
-              streams.append((offset, lhs_data, rhs_data))
-            else:
-              streams = None
+          for idx in xrange(NUM_CHUNKS_IN_BLOCK):
+            lhs_chunk = lhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
+            rhs_chunk = rhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
+            if streams is not None and lhs_chunk != rhs_chunk:
+              if len(streams) < MAX_STREAMS:
+                streams.append((offset + CHUNK_SIZE * idx,
+                                lhs_chunk, rhs_chunk))
+              else:
+                streams = None
         offset += len(lhs_data)
         del lhs_data
         del rhs_data
