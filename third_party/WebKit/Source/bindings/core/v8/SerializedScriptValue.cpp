@@ -166,7 +166,7 @@ void SerializedScriptValue::toWireBytes(Vector<char>& result) const {
 
     // This is equivalent to swapping the byte order of the two bytes (x, 0),
     // depending on endianness.
-    if (m_dataBufferSize % 1)
+    if (m_dataBufferSize % 2)
       dst[wireSizeBytes / 2 - 1] = m_dataBuffer[m_dataBufferSize - 1] << 8;
 
     return;
