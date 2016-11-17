@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -15,14 +16,19 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 
 namespace ash {
 
 // static
 const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
-ActionableView::ActionableView(SystemTrayItem* owner)
-    : views::CustomButton(this), destroyed_(nullptr), owner_(owner) {
+ActionableView::ActionableView(SystemTrayItem* owner,
+                               TrayPopupInkDropStyle ink_drop_style)
+    : views::CustomButton(this),
+      destroyed_(nullptr),
+      owner_(owner),
+      ink_drop_style_(ink_drop_style) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
   set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
@@ -92,27 +98,22 @@ void ActionableView::OnBlur() {
 }
 
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  return std::move(ink_drop);
+  return TrayPopupUtils::CreateInkDrop(ink_drop_style_, this);
 }
 
 std::unique_ptr<views::InkDropRipple> ActionableView::CreateInkDropRipple()
     const {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
-      GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
-      GetInkDropBaseColor(), ink_drop_visible_opacity());
+  return TrayPopupUtils::CreateInkDropRipple(
+      ink_drop_style_, this, GetInkDropCenterBasedOnLastEvent());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 ActionableView::CreateInkDropHighlight() const {
-  std::unique_ptr<views::InkDropHighlight> highlight(
-      new views::InkDropHighlight(size(), 0,
-                                  gfx::RectF(GetLocalBounds()).CenterPoint(),
-                                  GetInkDropBaseColor()));
-  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
-  return highlight;
+  return TrayPopupUtils::CreateInkDropHighlight(ink_drop_style_, this);
+}
+
+std::unique_ptr<views::InkDropMask> ActionableView::CreateInkDropMask() const {
+  return TrayPopupUtils::CreateInkDropMask(ink_drop_style_, this);
 }
 
 void ActionableView::CloseSystemBubble() {
@@ -133,8 +134,9 @@ void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
 
 ButtonListenerActionableView::ButtonListenerActionableView(
     SystemTrayItem* owner,
+    TrayPopupInkDropStyle ink_drop_style,
     views::ButtonListener* listener)
-    : ActionableView(owner), listener_(listener) {}
+    : ActionableView(owner, ink_drop_style), listener_(listener) {}
 
 bool ButtonListenerActionableView::PerformAction(const ui::Event& event) {
   listener_->ButtonPressed(this, event);

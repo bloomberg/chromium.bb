@@ -6,6 +6,7 @@
 #define ASH_COMMON_SYSTEM_TRAY_ACTIONABLE_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/system/tray/tray_popup_ink_drop_style.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -29,7 +30,7 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
 
   // The owner is used to close the system tray bubble. Can be null if
   // the action will not close the bubble.
-  explicit ActionableView(SystemTrayItem* owner);
+  ActionableView(SystemTrayItem* owner, TrayPopupInkDropStyle ink_drop_style);
 
   ~ActionableView() override;
 
@@ -71,6 +72,7 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(Button* sender, const ui::Event& event) override;
@@ -85,6 +87,9 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
 
   base::string16 accessible_name_;
 
+  // Defines the flavor of ink drop ripple/highlight that should be constructed.
+  TrayPopupInkDropStyle ink_drop_style_;
+
   DISALLOW_COPY_AND_ASSIGN(ActionableView);
 };
 
@@ -93,6 +98,7 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
 class ASH_EXPORT ButtonListenerActionableView : public ActionableView {
  public:
   ButtonListenerActionableView(SystemTrayItem* owner,
+                               TrayPopupInkDropStyle ink_drop_style,
                                views::ButtonListener* listener);
 
   // ActionableView:

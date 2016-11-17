@@ -101,6 +101,7 @@ const SkColor kTrayPopupInkDropBaseColor = SK_ColorBLACK;
 const float kTrayPopupInkDropRippleOpacity = 0.06f;
 const float kTrayPopupInkDropHighlightOpacity = 0.08f;
 const int kTrayPopupInkDropInset = 4;
+const int kTrayPopupInkDropCornerRadius = 2;
 
 int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, kTrayItemSize, kTrayItemSize};

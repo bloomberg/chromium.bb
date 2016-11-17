@@ -65,7 +65,7 @@ void TilesDefaultView::Init() {
   const bool disable_buttons = !TrayPopupUtils::CanOpenWebUISettings(login_);
 
   settings_button_ = new SystemMenuButton(
-      this, SystemMenuButton::InkDropStyle::FLOOD_FILL, kSystemMenuSettingsIcon,
+      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
   if (disable_buttons || !shell->system_tray_delegate()->ShouldShowSettings())
     settings_button_->SetState(views::Button::STATE_DISABLED);
@@ -73,7 +73,7 @@ void TilesDefaultView::Init() {
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
   help_button_ =
-      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
+      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   if (base::i18n::IsRTL() &&
       base::i18n::GetConfiguredLocale() == kHebrewLocale) {
@@ -89,7 +89,7 @@ void TilesDefaultView::Init() {
 
 #if !defined(OS_WIN)
   lock_button_ =
-      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
+      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
   if (disable_buttons || !shell->GetSessionStateDelegate()->CanLockScreen())
     lock_button_->SetState(views::Button::STATE_DISABLED);
@@ -98,7 +98,7 @@ void TilesDefaultView::Init() {
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
   power_button_ =
-      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
+      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuPowerIcon, IDS_ASH_STATUS_TRAY_SHUTDOWN);
   AddChildView(power_button_);
   // This object is recreated every time the menu opens. Don't bother updating

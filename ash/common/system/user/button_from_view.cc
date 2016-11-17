@@ -9,6 +9,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
@@ -35,10 +37,12 @@ const SkColor kBorderColor = 0xffdcdcdc;
 
 ButtonFromView::ButtonFromView(views::View* content,
                                views::ButtonListener* listener,
+                               TrayPopupInkDropStyle ink_drop_style,
                                bool highlight_on_hover,
                                const gfx::Insets& tab_frame_inset)
     : CustomButton(listener),
       content_(content),
+      ink_drop_style_(ink_drop_style),
       highlight_on_hover_(highlight_on_hover),
       button_hovered_(false),
       show_border_(false),
@@ -117,36 +121,42 @@ void ButtonFromView::Layout() {
 }
 
 void ButtonFromView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  // TODO(bruthig): Rework InkDropHostView so that it can still manage the
+  // creation/application of the mask while allowing subclasses to use an
+  // InkDropContainer.
+  ink_drop_mask_ = CreateInkDropMask();
+  if (ink_drop_mask_)
+    ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
   ink_drop_container_->AddInkDropLayer(ink_drop_layer);
 }
 
 void ButtonFromView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  // TODO(bruthig): Rework InkDropHostView so that it can still manage the
+  // creation/application of the mask while allowing subclasses to use an
+  // InkDropContainer.
+  // Layers safely handle destroying a mask layer before the masked layer.
+  ink_drop_mask_.reset();
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 std::unique_ptr<views::InkDrop> ButtonFromView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  return std::move(ink_drop);
+  return TrayPopupUtils::CreateInkDrop(TrayPopupInkDropStyle::INSET_BOUNDS,
+                                       this);
 }
 
 std::unique_ptr<views::InkDropRipple> ButtonFromView::CreateInkDropRipple()
     const {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
-      GetInkDropBounds(), GetInkDropCenterBasedOnLastEvent(),
-      kTrayPopupInkDropBaseColor, kTrayPopupInkDropRippleOpacity);
+  return TrayPopupUtils::CreateInkDropRipple(
+      ink_drop_style_, this, GetInkDropCenterBasedOnLastEvent());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 ButtonFromView::CreateInkDropHighlight() const {
-  const gfx::Rect bounds = GetInkDropBounds();
-  std::unique_ptr<views::InkDropHighlight> highlight(
-      new views::InkDropHighlight(bounds.size(), 0,
-                                  gfx::RectF(bounds).CenterPoint(),
-                                  kTrayPopupInkDropBaseColor));
-  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
-  return highlight;
+  return TrayPopupUtils::CreateInkDropHighlight(ink_drop_style_, this);
+}
+
+std::unique_ptr<views::InkDropMask> ButtonFromView::CreateInkDropMask() const {
+  return TrayPopupUtils::CreateInkDropMask(ink_drop_style_, this);
 }
 
 void ButtonFromView::ShowActive() {
@@ -164,12 +174,6 @@ void ButtonFromView::ShowActive() {
     set_background(views::Background::CreateSolidBackground(background_color));
   }
   SchedulePaint();
-}
-
-gfx::Rect ButtonFromView::GetInkDropBounds() const {
-  gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(ink_drop_insets_);
-  return bounds;
 }
 
 }  // namespace tray

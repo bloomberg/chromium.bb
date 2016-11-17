@@ -96,7 +96,8 @@ class ImeListItemView : public ActionableView {
                   const base::string16& label,
                   bool selected,
                   const SkColor button_color)
-      : ActionableView(owner), ime_list_view_(list_view) {
+      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
+        ime_list_view_(list_view) {
     if (MaterialDesignController::IsSystemTrayMenuMaterial())
       SetInkDropMode(InkDropHostView::InkDropMode::ON);
 

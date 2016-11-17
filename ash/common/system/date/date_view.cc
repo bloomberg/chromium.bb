@@ -115,7 +115,7 @@ void BaseDateTimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 BaseDateTimeView::BaseDateTimeView(SystemTrayItem* owner)
-    : ActionableView(owner),
+    : ActionableView(owner, TrayPopupInkDropStyle::INSET_BOUNDS),
       hour_type_(WmShell::Get()->system_tray_controller()->hour_clock_type()) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);

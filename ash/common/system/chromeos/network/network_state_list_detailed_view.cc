@@ -485,14 +485,14 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
     tri_view()->SetContainerVisible(TriView::Container::END, true);
 
     info_button_md_ = new SystemMenuButton(
-        this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuInfoIcon,
+        this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuInfoIcon,
         IDS_ASH_STATUS_TRAY_NETWORK_INFO);
     tri_view()->AddView(TriView::Container::END, info_button_md_);
 
     if (login_ != LoginStatus::NOT_LOGGED_IN) {
       DCHECK(!settings_button_md_);
       settings_button_md_ = new SystemMenuButton(
-          this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+          this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
           IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
 
       // Allow the user to access settings only if user is logged in
@@ -505,7 +505,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
       tri_view()->AddView(TriView::Container::END, settings_button_md_);
     } else {
       proxy_settings_button_md_ = new SystemMenuButton(
-          this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+          this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
           IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
       title_row()->AddViewToTitleRow(proxy_settings_button_md_);
     }

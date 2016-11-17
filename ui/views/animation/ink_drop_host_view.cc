@@ -143,7 +143,7 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   if (destroying_)
     return;
   layer()->Remove(ink_drop_layer);
-  ink_drop_layer->SetMaskLayer(nullptr);
+  // Layers safely handle destroying a mask layer before the masked layer.
   ink_drop_mask_.reset();
   SetPaintToLayer(old_paint_to_layer_);
 }

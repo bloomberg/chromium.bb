@@ -37,7 +37,7 @@ class SettingsDefaultView : public ActionableView,
                             public PowerStatus::Observer {
  public:
   SettingsDefaultView(SystemTrayItem* owner, LoginStatus status)
-      : ActionableView(owner),
+      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
         login_status_(status),
         label_(nullptr),
         power_status_view_(nullptr) {

@@ -242,7 +242,7 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
     gfx::ImageSkia disabled_image = network_icon::GetImageForNewWifiNetwork(
         SkColorSetA(prominent_color, kDisabledJoinIconAlpha),
         SkColorSetA(prominent_color, kDisabledJoinBadgeAlpha));
-    join_ = new SystemMenuButton(this, SystemMenuButton::InkDropStyle::SQUARE,
+    join_ = new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                                  normal_image, disabled_image,
                                  IDS_ASH_STATUS_TRAY_OTHER_WIFI);
     join_->set_ink_drop_base_color(prominent_color);

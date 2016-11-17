@@ -65,7 +65,9 @@ class VolumeButton : public ButtonListenerActionableView {
   VolumeButton(SystemTrayItem* owner,
                views::ButtonListener* listener,
                system::TrayAudioDelegate* audio_delegate)
-      : ButtonListenerActionableView(owner, listener),
+      : ButtonListenerActionableView(owner,
+                                     TrayPopupInkDropStyle::INSET_BOUNDS,
+                                     listener),
         audio_delegate_(audio_delegate),
         image_(TrayPopupUtils::CreateMainImageView()),
         image_index_(-1) {
@@ -177,7 +179,8 @@ VolumeView::VolumeView(SystemTrayItem* owner,
     return;
   }
 
-  more_button_ = new ButtonListenerActionableView(owner_, this);
+  more_button_ = new ButtonListenerActionableView(
+      owner_, TrayPopupInkDropStyle::INSET_BOUNDS, this);
   TrayPopupUtils::ConfigureContainer(TriView::Container::END, more_button_);
   more_button_->SetFocusBehavior(FocusBehavior::NEVER);
 

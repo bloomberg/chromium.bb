@@ -412,7 +412,7 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
 views::CustomButton* TrayDetailsView::CreateSettingsButton(LoginStatus status) {
   DCHECK(UseMd());
   SystemMenuButton* button = new SystemMenuButton(
-      this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
   if (!TrayPopupUtils::CanOpenWebUISettings(status))
     button->SetState(views::Button::STATE_DISABLED);
@@ -422,7 +422,7 @@ views::CustomButton* TrayDetailsView::CreateSettingsButton(LoginStatus status) {
 views::CustomButton* TrayDetailsView::CreateHelpButton(LoginStatus status) {
   DCHECK(UseMd());
   SystemMenuButton* button =
-      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::SQUARE,
+      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   if (!TrayPopupUtils::CanOpenWebUISettings(status))
     button->SetState(views::Button::STATE_DISABLED);
@@ -474,7 +474,7 @@ void TrayDetailsView::TransitionToDefaultView() {
 views::Button* TrayDetailsView::CreateBackButton() {
   DCHECK(UseMd());
   SystemMenuButton* button = new SystemMenuButton(
-      this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuArrowBackIcon,
+      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuArrowBackIcon,
       IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
   return button;
 }

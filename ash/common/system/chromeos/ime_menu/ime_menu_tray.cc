@@ -90,9 +90,8 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
                                       const gfx::VectorIcon& icon,
                                       int accessible_name_id,
                                       int right_border) {
-  SystemMenuButton* button =
-      new SystemMenuButton(listener, SystemMenuButton::InkDropStyle::SQUARE,
-                           icon, accessible_name_id);
+  SystemMenuButton* button = new SystemMenuButton(
+      listener, TrayPopupInkDropStyle::HOST_CENTERED, icon, accessible_name_id);
   if (!MaterialDesignController::IsShelfMaterial()) {
     button->SetBorder(
         views::CreateSolidSidedBorder(0, 0, 0, right_border, kBorderDarkColor));

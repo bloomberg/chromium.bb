@@ -31,7 +31,8 @@ namespace tray {
 
 class DefaultTracingView : public ActionableView {
  public:
-  explicit DefaultTracingView(SystemTrayItem* owner) : ActionableView(owner) {
+  explicit DefaultTracingView(SystemTrayItem* owner)
+      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
     SetLayoutManager(new views::FillLayout);

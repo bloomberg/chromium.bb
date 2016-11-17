@@ -6,6 +6,7 @@
 #define ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 
 #include "ash/common/login_status.h"
+#include "ash/common/system/tray/tray_popup_ink_drop_style.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "base/strings/string16.h"
 
@@ -13,6 +14,11 @@ namespace views {
 class Border;
 class ButtonListener;
 class ImageView;
+class InkDrop;
+class InkDropRipple;
+class InkDropHighlight;
+class InkDropHostView;
+class InkDropMask;
 class Label;
 class LabelButton;
 class LayoutManager;
@@ -113,12 +119,54 @@ class TrayPopupUtils {
   // returned separator.
   static views::Separator* CreateVerticalSeparator();
 
+  // Creates in InkDrop instance for |host| according to the |ink_drop_style|.
+  // All styles are configured to show the highlight when the ripple is visible.
+  //
+  // All targetable views in the system menu should delegate
+  // InkDropHost::CreateInkDrop() calls here.
+  static std::unique_ptr<views::InkDrop> CreateInkDrop(
+      TrayPopupInkDropStyle ink_drop_style,
+      views::InkDropHostView* host);
+
+  // Creates an InkDropRipple instance for |host| according to the
+  // |ink_drop_style|. The ripple will be centered on |center_point|.
+  //
+  // All targetable views in the system menu should delegate
+  // InkDropHost::CreateInkDropRipple() calls here.
+  static std::unique_ptr<views::InkDropRipple> CreateInkDropRipple(
+      TrayPopupInkDropStyle ink_drop_style,
+      const views::View* host,
+      const gfx::Point& center_point);
+
+  // Creates in InkDropHighlight instance for |host| according to the
+  // |ink_drop_style|.
+  //
+  // All targetable views in the system menu should delegate
+  // InkDropHost::CreateInkDropHighlight() calls here.
+  static std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
+      TrayPopupInkDropStyle ink_drop_style,
+      const views::View* host);
+
+  // Creates in InkDropMask instance for |host| according to the
+  // |ink_drop_style|. May return null.
+  //
+  // All targetable views in the system menu should delegate
+  // InkDropHost::CreateInkDropMask() calls here.
+  static std::unique_ptr<views::InkDropMask> CreateInkDropMask(
+      TrayPopupInkDropStyle ink_drop_style,
+      const views::View* host);
+
   // Returns true if it is possible to open WebUI settings in a browser window,
   // i.e., the user is logged in, not on the lock screen, and not in a secondary
   // account flow.
   static bool CanOpenWebUISettings(LoginStatus status);
 
  private:
+  // Returns the effective ink drop bounds for |host| according to the
+  // |ink_drop_style|.
+  static gfx::Rect GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
+                                    const views::View* host);
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(TrayPopupUtils);
 };
 

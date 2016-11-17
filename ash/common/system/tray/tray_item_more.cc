@@ -25,7 +25,7 @@
 namespace ash {
 
 TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
-    : ActionableView(owner),
+    : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
       show_more_(show_more),
       icon_(nullptr),
       label_(nullptr),

@@ -4,6 +4,8 @@
 
 #include "ash/common/system/tray/tray_background_view.h"
 
+#include <algorithm>
+
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -266,7 +268,8 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 // TrayBackgroundView
 
 TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
-    : ActionableView(nullptr),
+    // Note the ink drop style is ignored.
+    : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
       wm_shelf_(wm_shelf),
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),

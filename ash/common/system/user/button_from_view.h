@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/common/system/tray/tray_popup_ink_drop_style.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -30,6 +31,7 @@ class ButtonFromView : public views::CustomButton {
   // An accessible label gets computed based upon descendant views of this view.
   ButtonFromView(views::View* content,
                  views::ButtonListener* listener,
+                 TrayPopupInkDropStyle ink_drop_style,
                  bool highlight_on_hover,
                  const gfx::Insets& tab_frame_inset);
   ~ButtonFromView() override;
@@ -49,10 +51,6 @@ class ButtonFromView : public views::CustomButton {
   // Check if the item is hovered.
   bool is_hovered_for_test() { return button_hovered_; }
 
-  void set_ink_drop_insets(const gfx::Insets& insets) {
-    ink_drop_insets_ = insets;
-  }
-
  protected:
   // views::CustomButton:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -61,17 +59,17 @@ class ButtonFromView : public views::CustomButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  private:
   // Change the hover/active state of the "button" when the status changes.
   void ShowActive();
 
-  // Returns the bounds that the ink drop ripple and highlight should be created
-  // with.
-  gfx::Rect GetInkDropBounds() const;
-
   // Content of button.
   views::View* content_;
+
+  // Defines the flavor of ink drop ripple/highlight that should be constructed.
+  TrayPopupInkDropStyle ink_drop_style_;
 
   // Whether button should be highligthed on hover.
   bool highlight_on_hover_;
@@ -90,8 +88,7 @@ class ButtonFromView : public views::CustomButton {
   // design.
   views::InkDropContainerView* ink_drop_container_;
 
-  // Used to inset the ink drop.
-  gfx::Insets ink_drop_insets_;
+  std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonFromView);
 };

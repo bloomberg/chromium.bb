@@ -84,7 +84,8 @@ SkColor IconColorForUpdateSeverity(UpdateInfo::UpdateSeverity severity,
 class UpdateView : public ActionableView {
  public:
   UpdateView(SystemTrayItem* owner, const UpdateInfo& info)
-      : ActionableView(owner), label_(nullptr) {
+      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
+        label_(nullptr) {
     SetLayoutManager(new views::FillLayout);
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

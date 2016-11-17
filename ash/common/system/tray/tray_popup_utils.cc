@@ -15,7 +15,11 @@
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/wm_shell.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -134,10 +138,25 @@ class BorderlessLabelButton : public views::LabelButton {
 
  private:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    std::unique_ptr<views::InkDropImpl> ink_drop =
-        CreateDefaultFloodFillInkDropImpl();
-    ink_drop->SetShowHighlightOnHover(false);
-    return std::move(ink_drop);
+    return TrayPopupUtils::CreateInkDrop(TrayPopupInkDropStyle::INSET_BOUNDS,
+                                         this);
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return TrayPopupUtils::CreateInkDropRipple(
+        TrayPopupInkDropStyle::INSET_BOUNDS, this,
+        GetInkDropCenterBasedOnLastEvent());
+  }
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return TrayPopupUtils::CreateInkDropHighlight(
+        TrayPopupInkDropStyle::INSET_BOUNDS, this);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return TrayPopupUtils::CreateInkDropMask(
+        TrayPopupInkDropStyle::INSET_BOUNDS, this);
   }
 
   DISALLOW_COPY_AND_ASSIGN(BorderlessLabelButton);
@@ -264,6 +283,95 @@ views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
   separator->SetPreferredSize(kHorizontalSeparatorHeight);
   separator->SetColor(kHorizontalSeparatorColor);
   return separator;
+}
+
+std::unique_ptr<views::InkDrop> TrayPopupUtils::CreateInkDrop(
+    TrayPopupInkDropStyle ink_drop_style,
+    views::InkDropHostView* host) {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      base::MakeUnique<views::InkDropImpl>(host, host->size());
+  ink_drop->SetAutoHighlightMode(
+      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+  ink_drop->SetShowHighlightOnHover(false);
+
+  return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
+    TrayPopupInkDropStyle ink_drop_style,
+    const views::View* host,
+    const gfx::Point& center_point) {
+  const gfx::Rect bounds =
+      TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
+  switch (ink_drop_style) {
+    case TrayPopupInkDropStyle::HOST_CENTERED:
+      if (MaterialDesignController::GetMode() ==
+          MaterialDesignController::MATERIAL_EXPERIMENTAL) {
+        return base::MakeUnique<views::SquareInkDropRipple>(
+            bounds.size(), bounds.size().width() / 2, bounds.size(),
+            bounds.size().width() / 2, center_point, bounds.CenterPoint(),
+            kTrayPopupInkDropBaseColor, kTrayPopupInkDropRippleOpacity);
+      }
+    // Intentional fall through.
+    case TrayPopupInkDropStyle::INSET_BOUNDS:
+    case TrayPopupInkDropStyle::FILL_BOUNDS:
+      return base::MakeUnique<views::FloodFillInkDropRipple>(
+          bounds, center_point, kTrayPopupInkDropBaseColor,
+          kTrayPopupInkDropRippleOpacity);
+  }
+  // Required for some compilers.
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
+    TrayPopupInkDropStyle ink_drop_style,
+    const views::View* host) {
+  const gfx::Rect bounds =
+      TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
+  std::unique_ptr<views::InkDropHighlight> highlight(
+      new views::InkDropHighlight(bounds.size(), 0,
+                                  gfx::PointF(bounds.CenterPoint()),
+                                  kTrayPopupInkDropBaseColor));
+  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
+  return highlight;
+}
+
+std::unique_ptr<views::InkDropMask> TrayPopupUtils::CreateInkDropMask(
+    TrayPopupInkDropStyle ink_drop_style,
+    const views::View* host) {
+  if (ink_drop_style == TrayPopupInkDropStyle::FILL_BOUNDS)
+    return nullptr;
+
+  const gfx::Rect layer_bounds = host->GetLocalBounds();
+  const gfx::Rect mask_bounds = GetInkDropBounds(ink_drop_style, host);
+  switch (ink_drop_style) {
+    case TrayPopupInkDropStyle::HOST_CENTERED: {
+      const int radius =
+          std::min(mask_bounds.width(), mask_bounds.height()) / 2;
+      return base::MakeUnique<views::CircleInkDropMask>(
+          layer_bounds, mask_bounds.CenterPoint(), radius);
+    }
+    case TrayPopupInkDropStyle::INSET_BOUNDS:
+      return base::MakeUnique<views::RoundRectInkDropMask>(
+          layer_bounds, mask_bounds, kTrayPopupInkDropCornerRadius);
+    case TrayPopupInkDropStyle::FILL_BOUNDS:
+      // Handled by quick return above.
+      break;
+  }
+  // Required by some compilers.
+  NOTREACHED();
+  return nullptr;
+}
+
+gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
+                                           const views::View* host) {
+  gfx::Rect bounds = host->GetLocalBounds();
+  if (ink_drop_style == TrayPopupInkDropStyle::HOST_CENTERED ||
+      ink_drop_style == TrayPopupInkDropStyle::INSET_BOUNDS) {
+    bounds.Inset(kTrayPopupInkDropInset, kTrayPopupInkDropInset);
+  }
+  return bounds;
 }
 
 bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {

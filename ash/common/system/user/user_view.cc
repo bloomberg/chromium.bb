@@ -542,8 +542,10 @@ void UserView::AddUserCard(LoginStatus login) {
       contents_view->AddChildView(user_card_view_);
       insets = gfx::Insets(1, 1, 1, 3);
     }
-    auto* button =
-        new ButtonFromView(contents_view, this, IsActiveUser(), insets);
+    auto* button = new ButtonFromView(contents_view, this,
+                                      // This parameter is ignored in non-md.
+                                      TrayPopupInkDropStyle::FILL_BOUNDS,
+                                      IsActiveUser(), insets);
     user_card_view_ = button;
     is_user_card_button_ = true;
   }
@@ -563,9 +565,10 @@ void UserView::AddUserCardMd(LoginStatus login) {
   if (clickable) {
     views::View* contents_view = user_card_view_;
     auto* button =
-        new ButtonFromView(contents_view, this, false, gfx::Insets());
-    if (IsActiveUser())
-      button->set_ink_drop_insets(gfx::Insets(kTrayPopupInkDropInset));
+        new ButtonFromView(contents_view, this,
+                           IsActiveUser() ? TrayPopupInkDropStyle::INSET_BOUNDS
+                                          : TrayPopupInkDropStyle::FILL_BOUNDS,
+                           false, gfx::Insets());
     user_card_view_ = button;
     is_user_card_button_ = true;
   }
@@ -609,9 +612,10 @@ void UserView::ToggleAddUserMenuOption() {
     if (!add_user_enabled_)
       error = add_user_error;
     ButtonFromView* button = new ButtonFromView(
-        CreateAddUserView(error), add_user_enabled_ ? this : nullptr, false,
-        gfx::Insets());
-    button->set_ink_drop_insets(gfx::Insets(kTrayPopupInkDropInset));
+        CreateAddUserView(error), add_user_enabled_ ? this : nullptr,
+        IsActiveUser() ? TrayPopupInkDropStyle::INSET_BOUNDS
+                       : TrayPopupInkDropStyle::FILL_BOUNDS,
+        false, gfx::Insets());
     button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
     button->ForceBorderVisible(true);
@@ -648,9 +652,10 @@ void UserView::ToggleAddUserMenuOption() {
   } else {
     AddUserView* add_user_view =
         new AddUserView(static_cast<ButtonFromView*>(user_card_view_));
-    ButtonFromView* button =
-        new ButtonFromView(add_user_view, add_user_enabled_ ? this : nullptr,
-                           add_user_enabled_, gfx::Insets(1));
+    ButtonFromView* button = new ButtonFromView(
+        add_user_view, add_user_enabled_ ? this : nullptr,
+        // Ignored in non-md.
+        TrayPopupInkDropStyle::INSET_BOUNDS, add_user_enabled_, gfx::Insets(1));
     button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
     button->ForceBorderVisible(true);

@@ -48,7 +48,7 @@ bool CapsLockIsEnabled() {
 class CapsLockDefaultView : public ActionableView {
  public:
   CapsLockDefaultView()
-      : ActionableView(nullptr),
+      : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
         image_(TrayPopupUtils::CreateMainImageView()),
         text_label_(TrayPopupUtils::CreateDefaultLabel()),
         shortcut_label_(TrayPopupUtils::CreateDefaultLabel()) {
