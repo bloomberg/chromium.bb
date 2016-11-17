@@ -299,22 +299,28 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   DCHECK(status_area_window_);
   DCHECK(system_tray_);
 
-  const bool md_shelf = MaterialDesignController::IsShelfMaterial();
-  gfx::ImageSkia bell_image =
-      md_shelf
-          ? CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor)
-          : CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS,
-                             kNoUnreadIconSize, kWebNotificationColorNoUnread);
-  const gfx::Size bell_icon_size =
-      md_shelf ? kTrayItemInnerIconSize : kTrayItemInnerBellIconSizeNonMd;
-  bell_icon_.reset(new WebNotificationImage(bell_image, bell_icon_size,
-                                            animation_container_.get(), this));
+  if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    SetContentsBackground(false);
+    gfx::ImageSkia bell_image =
+        CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor);
+    const gfx::Size bell_icon_size = kTrayItemInnerIconSize;
+    bell_icon_.reset(new WebNotificationImage(
+        bell_image, bell_icon_size, animation_container_.get(), this));
+  } else {
+    SetContentsBackground(true);
+    gfx::ImageSkia bell_image =
+        CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
+                         kWebNotificationColorNoUnread);
+    const gfx::Size bell_icon_size = kTrayItemInnerBellIconSizeNonMd;
+    bell_icon_.reset(new WebNotificationImage(
+        bell_image, bell_icon_size, animation_container_.get(), this));
+  }
   tray_container()->AddChildView(bell_icon_.get());
 
   counter_.reset(new WebNotificationLabel(animation_container_.get(), this));
   tray_container()->AddChildView(counter_.get());
 
-  SetContentsBackground(true);
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this, message_center::MessageCenter::Get()));
   popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(shelf));

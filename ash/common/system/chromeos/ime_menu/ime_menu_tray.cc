@@ -302,9 +302,14 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       show_keyboard_(false),
       force_show_keyboard_(false),
       should_block_shelf_auto_hide_(false) {
+  if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    SetContentsBackground(false);
+  } else {
+    SetContentsBackground(true);
+  }
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
-  SetContentsBackground(true);
   WmShell::Get()->system_tray_notifier()->AddIMEObserver(this);
 }
 

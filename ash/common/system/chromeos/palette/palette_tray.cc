@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -162,7 +163,12 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
 
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
-  SetContentsBackground(true);
+  if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    SetContentsBackground(false);
+  } else {
+    SetContentsBackground(true);
+  }
 
   SetLayoutManager(new views::FillLayout());
   icon_ = new views::ImageView();

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/status_area_widget.h"
@@ -472,6 +473,10 @@ TEST_P(WebNotificationTrayTest, PopupAndSystemTrayMultiDisplay) {
 
 // Tests that there is visual feedback for touch presses.
 TEST_P(WebNotificationTrayTest, TouchFeedback) {
+  // Touch feedback is not available in material mode.
+  if (MaterialDesignController::IsShelfMaterial())
+    return;
+
   AddNotification("test_id");
   RunAllPendingInMessageLoop();
   WebNotificationTray* tray = GetTray();
@@ -496,6 +501,10 @@ TEST_P(WebNotificationTrayTest, TouchFeedback) {
 // Tests that while touch presses trigger visual feedback, that subsequent non
 // tap gestures cancel the feedback without triggering the message center.
 TEST_P(WebNotificationTrayTest, TouchFeedbackCancellation) {
+  // Touch feedback is not available in material mode.
+  if (MaterialDesignController::IsShelfMaterial())
+    return;
+
   AddNotification("test_id");
   RunAllPendingInMessageLoop();
   WebNotificationTray* tray = GetTray();

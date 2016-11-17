@@ -29,10 +29,13 @@ namespace ash {
 VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf), icon_(new views::ImageView) {
   if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    SetContentsBackground(false);
     gfx::ImageSkia image_md =
         CreateVectorIcon(gfx::VectorIconId::SHELF_KEYBOARD, kShelfIconColor);
     icon_->SetImage(image_md);
   } else {
+    SetContentsBackground(true);
     gfx::ImageSkia* image_non_md =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD);
@@ -41,7 +44,6 @@ VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
 
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
-  SetContentsBackground(true);
   // The Shell may not exist in some unit tests.
   if (WmShell::HasInstance())
     WmShell::Get()->keyboard_ui()->AddObserver(this);
@@ -77,6 +79,12 @@ void VirtualKeyboardTray::ClickedOutsideBubble() {}
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   WmShell::Get()->keyboard_ui()->Show();
+  // Normally, active status is set when virtual keyboard is shown/hidden,
+  // however, showing virtual keyboard happens asynchronously and, especially
+  // the first time, takes some time. We need to set active status here to
+  // prevent bad things happening if user clicked the button before keyboard is
+  // shown.
+  SetIsActive(true);
   return true;
 }
 
