@@ -837,7 +837,7 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardEntries) {
   NSArray* backEntries = [session_controller_ backwardEntries];
   EXPECT_EQ(2U, [backEntries count]);
   EXPECT_EQ(0U, [[session_controller_ forwardEntries] count]);
-  EXPECT_EQ("http://www.example.com/1",
+  EXPECT_EQ("http://www.example.com/redirect",
             [[backEntries objectAtIndex:0] navigationItem]->GetURL().spec());
 
   [session_controller_ goToEntryAtIndex:1];
@@ -1090,6 +1090,22 @@ TEST_F(CRWSessionControllerTest, VisibleEntryWithPendingNavigationIndex) {
       [[session_controller_ visibleEntry] navigationItem];
   ASSERT_TRUE(visible_item);
   EXPECT_EQ("http://www.example.com/0", visible_item->GetURL().spec());
+}
+
+// Tests that |-backwardEntries| is empty if all preceding entries are
+// redirects.
+TEST_F(CRWSessionControllerTest, BackwardEntriesForAllRedirects) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/b")
+                            transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+  EXPECT_EQ(0U, [session_controller_ backwardEntries].count);
 }
 
 }  // anonymous namespace

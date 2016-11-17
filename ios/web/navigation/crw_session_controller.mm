@@ -666,17 +666,10 @@ NSString* const kWindowNameKey = @"windowName";
 
 - (NSArray*)backwardEntries {
   NSMutableArray* entries = [NSMutableArray array];
-  NSInteger lastNonRedirectedIndex = _currentNavigationIndex;
-  while (lastNonRedirectedIndex >= 0) {
-    CRWSessionEntry* entry = [_entries objectAtIndex:lastNonRedirectedIndex];
-    if (!ui::PageTransitionIsRedirect(
-            entry.navigationItem->GetTransitionType())) {
-      [entries addObject:entry];
-    }
-    --lastNonRedirectedIndex;
+  for (NSInteger index = _currentNavigationIndex; index > 0; --index) {
+    if (![self isRedirectTransitionForEntryAtIndex:index])
+      [entries addObject:_entries[index - 1]];
   }
-  // Remove the currently displayed entry.
-  [entries removeObjectAtIndex:0];
   return entries;
 }
 
