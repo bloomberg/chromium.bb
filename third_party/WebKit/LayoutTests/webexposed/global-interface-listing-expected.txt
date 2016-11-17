@@ -1910,6 +1910,16 @@ interface GamepadEvent : Event
     attribute @@toStringTag
     getter gamepad
     method constructor
+interface Gyroscope : Sensor
+    attribute @@toStringTag
+    getter reading
+    method constructor
+interface GyroscopeReading : SensorReading
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
 interface HTMLAllCollection
     attribute @@toStringTag
     getter length

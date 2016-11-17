@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  // Test that Gyroscope interface exists
+  assert_true('Gyroscope' in window);
+  // Test that GyroscopeReading interface exists
+  assert_true('GyroscopeReading' in window);
+}, 'Test that the Gyroscope and GyroscopeReading interfaces are present.');
+</script>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/sensor-helpers.js"></script>
+<script src="resources/generic-sensor-tests.js"></script>
+<script>
+
+'use strict';
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+const kDefaultReadingX = 1.12345;
+const kDefaultReadingY = 2.12345;
+const kDefaultReadingZ = 3.12345;
+
+function update_sensor_reading(buffer) {
+  buffer[1] = window.performance.now();
+  buffer[2] = kDefaultReadingX;
+  buffer[3] = kDefaultReadingY;
+  buffer[4] = kDefaultReadingZ;
+}
+
+function verify_sensor_reading(reading) {
+  return reading.x == kDefaultReadingX &&
+         reading.y == kDefaultReadingY &&
+         reading.z == kDefaultReadingZ;
+}
+
+runGenericSensorTests(Gyroscope, update_sensor_reading, verify_sensor_reading);
+
+</script>
