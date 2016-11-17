@@ -119,12 +119,14 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
 
   if (behavior == DetachGlobal) {
     // Clean up state on the global proxy, which will be reused.
-    CHECK(m_globalProxy == context->Global());
-    CHECK_EQ(
-        toScriptWrappable(context->Global()),
-        toScriptWrappable(context->Global()->GetPrototype().As<v8::Object>()));
+    if (!m_globalProxy.isEmpty()) {
+      CHECK(m_globalProxy == context->Global());
+      CHECK_EQ(toScriptWrappable(context->Global()),
+               toScriptWrappable(
+                   context->Global()->GetPrototype().As<v8::Object>()));
+      m_globalProxy.get().SetWrapperClassId(0);
+    }
     V8DOMWrapper::clearNativeInfo(m_isolate, context->Global());
-    m_globalProxy.get().SetWrapperClassId(0);
     m_scriptState->detachGlobalObject();
   }
 
