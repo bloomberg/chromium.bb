@@ -55,6 +55,14 @@ enum {
   AKEYCODE_TV_MEDIA_CONTEXT_MENU = 257,
   AKEYCODE_TV_TIMER_PROGRAMMING = 258,
   AKEYCODE_HELP = 259,
+  AKEYCODE_NAVIGATE_PREVIOUS = 260,
+  AKEYCODE_NAVIGATE_NEXT = 261,
+  AKEYCODE_NAVIGATE_IN = 262,
+  AKEYCODE_NAVIGATE_OUT = 263,
+  AKEYCODE_MEDIA_SKIP_FORWARD = 272,
+  AKEYCODE_MEDIA_SKIP_BACKWARD = 273,
+  AKEYCODE_MEDIA_STEP_FORWARD = 274,
+  AKEYCODE_MEDIA_STEP_BACKWARD = 275,
   AKEYCODE_CUT = 277,
   AKEYCODE_COPY = 278,
   AKEYCODE_PASTE = 279,
@@ -66,9 +74,13 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_UNKNOWN:
       return DomKey::NONE;
     case AKEYCODE_HOME:
-      return DomKey::HOME;
+      return DomKey::GO_HOME;
     case AKEYCODE_BACK:
-      return DomKey::BROWSER_BACK;
+      return DomKey::GO_BACK;
+    case AKEYCODE_CALL:
+      return DomKey::CALL;
+    case AKEYCODE_ENDCALL:
+      return DomKey::END_CALL;
     case AKEYCODE_DPAD_UP:
       return DomKey::ARROW_UP;
     case AKEYCODE_DPAD_DOWN:
@@ -77,6 +89,8 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::ARROW_LEFT;
     case AKEYCODE_DPAD_RIGHT:
       return DomKey::ARROW_RIGHT;
+    case AKEYCODE_DPAD_CENTER:
+      return DomKey::ENTER;
     case AKEYCODE_VOLUME_UP:
       return DomKey::AUDIO_VOLUME_UP;
     case AKEYCODE_VOLUME_DOWN:
@@ -105,6 +119,12 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::ENTER;
     case AKEYCODE_DEL:
       return DomKey::BACKSPACE;
+    case AKEYCODE_HEADSETHOOK:
+      return DomKey::HEADSET_HOOK;
+    case AKEYCODE_FOCUS:
+      return DomKey::CAMERA_FOCUS;
+    case AKEYCODE_NOTIFICATION:
+      return DomKey::NOTIFICATION;
     case AKEYCODE_MENU:
       return DomKey::CONTEXT_MENU;
     case AKEYCODE_SEARCH:
@@ -122,7 +142,7 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_MEDIA_FAST_FORWARD:
       return DomKey::MEDIA_FAST_FORWARD;
     case AKEYCODE_MUTE:
-      return DomKey::AUDIO_VOLUME_MUTE;
+      return DomKey::MICROPHONE_VOLUME_MUTE;
     case AKEYCODE_PAGE_UP:
       return DomKey::PAGE_UP;
     case AKEYCODE_PAGE_DOWN:
@@ -237,8 +257,16 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::COLOR_F2_YELLOW;
     case AKEYCODE_PROG_BLUE:
       return DomKey::COLOR_F3_BLUE;
+    case AKEYCODE_APP_SWITCH:
+      return DomKey::APP_SWITCH;
     case AKEYCODE_LANGUAGE_SWITCH:
       return DomKey::GROUP_NEXT;
+    case AKEYCODE_MANNER_MODE:
+      return DomKey::MANNER_MODE;
+    case AKEYCODE_3D_MODE:
+      return DomKey::TV_3D_MODE;
+    case AKEYCODE_CONTACTS:
+      return DomKey::LAUNCH_CONTACTS;
     case AKEYCODE_CALENDAR:
       return DomKey::LAUNCH_CALENDAR;
     case AKEYCODE_MUSIC:
@@ -255,20 +283,96 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::CONVERT;
     case AKEYCODE_KATAKANA_HIRAGANA:
       return DomKey::HIRAGANA_KATAKANA;
+    case AKEYCODE_KANA:
+      return DomKey::KANA_MODE;
     case AKEYCODE_BRIGHTNESS_DOWN:
       return DomKey::BRIGHTNESS_DOWN;
     case AKEYCODE_BRIGHTNESS_UP:
       return DomKey::BRIGHTNESS_UP;
+    case AKEYCODE_MEDIA_AUDIO_TRACK:
+      return DomKey::MEDIA_AUDIO_TRACK;
     case AKEYCODE_SLEEP:
       return DomKey::STANDBY;
     case AKEYCODE_WAKEUP:
       return DomKey::WAKE_UP;
+    case AKEYCODE_PAIRING:
+      return DomKey::PAIRING;
+    case AKEYCODE_MEDIA_TOP_MENU:
+      return DomKey::MEDIA_TOP_MENU;
     case AKEYCODE_LAST_CHANNEL:
       return DomKey::MEDIA_LAST;
+    case AKEYCODE_TV_DATA_SERVICE:
+      return DomKey::TV_DATA_SERVICE;
+    case AKEYCODE_TV_RADIO_SERVICE:
+      return DomKey::TV_RADIO_SERVICE;
+    case AKEYCODE_TV_TELETEXT:
+      return DomKey::TELETEXT;
+    case AKEYCODE_TV_NUMBER_ENTRY:
+      return DomKey::TV_NUMBER_ENTRY;
+    case AKEYCODE_TV_TERRESTRIAL_ANALOG:
+      return DomKey::TV_TERRESTRIAL_ANALOG;
+    case AKEYCODE_TV_TERRESTRIAL_DIGITAL:
+      return DomKey::TV_TERRESTRIAL_DIGITAL;
+    case AKEYCODE_TV_SATELLITE:
+      return DomKey::TV_SATELLITE;
+    case AKEYCODE_TV_SATELLITE_BS:
+      return DomKey::TV_SATELLITE_BS;
+    case AKEYCODE_TV_SATELLITE_CS:
+      return DomKey::TV_SATELLITE_CS;
+    case AKEYCODE_TV_SATELLITE_SERVICE:
+      return DomKey::TV_SATELLITE_TOGGLE;
+    case AKEYCODE_TV_NETWORK:
+      return DomKey::TV_NETWORK;
+    case AKEYCODE_TV_ANTENNA_CABLE:
+      return DomKey::TV_ANTENNA_CABLE;
+    case AKEYCODE_TV_INPUT_HDMI_1:
+      return DomKey::TV_INPUT_HDMI1;
+    case AKEYCODE_TV_INPUT_HDMI_2:
+      return DomKey::TV_INPUT_HDMI2;
+    case AKEYCODE_TV_INPUT_HDMI_3:
+      return DomKey::TV_INPUT_HDMI3;
+    case AKEYCODE_TV_INPUT_HDMI_4:
+      return DomKey::TV_INPUT_HDMI4;
+    case AKEYCODE_TV_INPUT_COMPOSITE_1:
+      return DomKey::TV_INPUT_COMPONENT1;
+    case AKEYCODE_TV_INPUT_COMPOSITE_2:
+      return DomKey::TV_INPUT_COMPONENT2;
+    case AKEYCODE_TV_INPUT_COMPONENT_1:
+      return DomKey::TV_INPUT_COMPOSITE1;
+    case AKEYCODE_TV_INPUT_COMPONENT_2:
+      return DomKey::TV_INPUT_COMPOSITE2;
+    case AKEYCODE_TV_INPUT_VGA_1:
+      return DomKey::TV_INPUT_VGA1;
+    case AKEYCODE_TV_AUDIO_DESCRIPTION:
+      return DomKey::TV_AUDIO_DESCRIPTION;
+    case AKEYCODE_TV_AUDIO_DESCRIPTION_MIX_UP:
+      return DomKey::TV_AUDIO_DESCRIPTION_MIX_UP;
+    case AKEYCODE_TV_AUDIO_DESCRIPTION_MIX_DOWN:
+      return DomKey::TV_AUDIO_DESCRIPTION_MIX_DOWN;
     case AKEYCODE_TV_ZOOM_MODE:
       return DomKey::ZOOM_TOGGLE;
+    case AKEYCODE_TV_CONTENTS_MENU:
+      return DomKey::TV_CONTENTS_MENU;
+    case AKEYCODE_TV_TIMER_PROGRAMMING:
+      return DomKey::TV_TIMER;
     case AKEYCODE_HELP:
       return DomKey::HELP;
+    case AKEYCODE_NAVIGATE_PREVIOUS:
+      return DomKey::NAVIGATE_PREVIOUS;
+    case AKEYCODE_NAVIGATE_NEXT:
+      return DomKey::NAVIGATE_NEXT;
+    case AKEYCODE_NAVIGATE_IN:
+      return DomKey::NAVIGATE_IN;
+    case AKEYCODE_NAVIGATE_OUT:
+      return DomKey::NAVIGATE_OUT;
+    case AKEYCODE_MEDIA_SKIP_FORWARD:
+      return DomKey::MEDIA_SKIP_FORWARD;
+    case AKEYCODE_MEDIA_SKIP_BACKWARD:
+      return DomKey::MEDIA_SKIP_BACKWARD;
+    case AKEYCODE_MEDIA_STEP_FORWARD:
+      return DomKey::MEDIA_STEP_FORWARD;
+    case AKEYCODE_MEDIA_STEP_BACKWARD:
+      return DomKey::MEDIA_STEP_BACKWARD;
     case AKEYCODE_CUT:
       return DomKey::CUT;
     case AKEYCODE_COPY:
@@ -358,12 +462,6 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
 
     // case AKEYCODE_SOFT_LEFT:
     // case AKEYCODE_SOFT_RIGHT:
-    // case AKEYCODE_CALL:
-    // case AKEYCODE_ENDCALL:
-    // case AKEYCODE_DPAD_CENTER:
-    // case AKEYCODE_HEADSETHOOK:
-    // case AKEYCODE_FOCUS:
-    // case AKEYCODE_NOTIFICATION:
     // case AKEYCODE_PICTSYMBOLS:
     // case AKEYCODE_BUTTON_A:
     // case AKEYCODE_BUTTON_B:
@@ -382,7 +480,6 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     // case AKEYCODE_BUTTON_MODE:
     // case AKEYCODE_WINDOW:
     // case AKEYCODE_DVR:
-    // case AKEYCODE_APP_SWITCH:
     // case AKEYCODE_BUTTON_1:
     // case AKEYCODE_BUTTON_2:
     // case AKEYCODE_BUTTON_3:
@@ -399,46 +496,14 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     // case AKEYCODE_BUTTON_14:
     // case AKEYCODE_BUTTON_15:
     // case AKEYCODE_BUTTON_16:
-    // case AKEYCODE_MANNER_MODE:
-    // case AKEYCODE_3D_MODE:
-    // case AKEYCODE_CONTACTS:
     // case AKEYCODE_YEN:
     // case AKEYCODE_RO:
-    // case AKEYCODE_KANA:
     // case AKEYCODE_ASSIST:
-    // case AKEYCODE_MEDIA_AUDIO:
-    // case AKEYCODE_PAIRING:
-    // case AKEYCODE_MEDIA_TOP:
     // case AKEYCODE_11:
     // case AKEYCODE_12:
     // case AKEYCODE_TV_DATA:
     // case AKEYCODE_VOICE_ASSIST:
-    // case AKEYCODE_TV_RADIO:
-    // case AKEYCODE_TV_TELETEXT:
-    // case AKEYCODE_TV_NUMBER:
-    // case AKEYCODE_TV_TERRESTRIAL_ANALOG:
-    // case AKEYCODE_TV_TERRESTRIAL_DIGITAL:
-    // case AKEYCODE_TV_SATELLITE:
-    // case AKEYCODE_TV_SATELLITE_BS:
-    // case AKEYCODE_TV_SATELLITE_CS:
-    // case AKEYCODE_TV_SATELLITE_SERVICE:
-    // case AKEYCODE_TV_NETWORK:
-    // case AKEYCODE_TV_ANTENNA_CABLE:
-    // case AKEYCODE_TV_INPUT_HDMI_1:
-    // case AKEYCODE_TV_INPUT_HDMI_2:
-    // case AKEYCODE_TV_INPUT_HDMI_3:
-    // case AKEYCODE_TV_INPUT_HDMI_4:
-    // case AKEYCODE_TV_INPUT_COMPOSITE_1:
-    // case AKEYCODE_TV_INPUT_COMPOSITE_2:
-    // case AKEYCODE_TV_INPUT_COMPONENT_1:
-    // case AKEYCODE_TV_INPUT_COMPONENT_2:
-    // case AKEYCODE_TV_INPUT_VGA_1:
-    // case AKEYCODE_TV_AUDIO_DESCRIPTION:
-    // case AKEYCODE_TV_AUDIO_DESCRIPTION_MIX_UP:
-    // case AKEYCODE_TV_AUDIO_DESCRIPTION_MIX_DOWN:
-    // case AKEYCODE_TV_CONTENTS_MENU:
     // case AKEYCODE_TV_MEDIA_CONTEXT_MENU:
-    // case AKEYCODE_TV_TIMER_PROGRAMMING:
   }
 }
 

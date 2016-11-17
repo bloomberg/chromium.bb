@@ -436,7 +436,7 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("TVPower",              TV_POWER,                 0x0D4B),
   DOM_KEY_MAP("TVRadioService",       TV_RADIO_SERVICE,         0x1114),
   DOM_KEY_MAP("TVSatellite",          TV_SATELLITE,             0x1115),
-  DOM_KEY_MAP("TVSatelliteBC",        TV_SATELLITE_BC,          0x1116),
+  DOM_KEY_MAP("TVSatelliteBS",        TV_SATELLITE_BS,          0x1116),
   DOM_KEY_MAP("TVSatelliteCS",        TV_SATELLITE_CS,          0x1117),
   DOM_KEY_MAP("TVSatelliteToggle",    TV_SATELLITE_TOGGLE,      0x1118),
   DOM_KEY_MAP("TVTerrestrialAnalog",  TV_TERRESTRIAL_ANALOG,    0x1119),
