@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -21,7 +20,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -74,10 +72,6 @@ void SearchEnginesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "searchEngineEditCompleted",
       base::Bind(&SearchEnginesHandler::HandleSearchEngineEditCompleted,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "disableExtension",
-      base::Bind(&SearchEnginesHandler::HandleDisableExtension,
                  base::Unretained(this)));
 }
 
@@ -335,17 +329,6 @@ void SearchEnginesHandler::HandleSearchEngineEditCompleted(
     edit_controller_->AcceptAddOrEdit(base::UTF8ToUTF16(search_engine),
                                       base::UTF8ToUTF16(keyword), query_url);
   }
-}
-
-void SearchEnginesHandler::HandleDisableExtension(
-    const base::ListValue* args) {
-  std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(extension_service);
-  extension_service->DisableExtension(
-      extension_id, extensions::Extension::DISABLE_USER_ACTION);
 }
 
 }  // namespace settings

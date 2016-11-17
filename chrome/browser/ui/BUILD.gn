@@ -1094,6 +1094,8 @@ split_static_library("ui") {
       "webui/settings/chromeos/internet_handler.h",
       "webui/settings/downloads_handler.cc",
       "webui/settings/downloads_handler.h",
+      "webui/settings/extension_control_handler.cc",
+      "webui/settings/extension_control_handler.h",
       "webui/settings/font_handler.cc",
       "webui/settings/font_handler.h",
       "webui/settings/languages_handler.cc",

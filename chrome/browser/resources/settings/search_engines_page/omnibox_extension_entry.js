@@ -13,13 +13,14 @@ Polymer({
     /** @type {!SearchEngine} */
     engine: Object,
 
-    /** @private {!settings.SearchEnginesBrowserProxy} */
+    /** @private {!settings.ExtensionControlBrowserProxy} */
     browserProxy_: Object,
   },
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        settings.ExtensionControlBrowserProxyImpl.getInstance();
   },
 
   /** @private */

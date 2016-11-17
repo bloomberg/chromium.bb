@@ -341,8 +341,8 @@ cr.define('settings_search_engines_page', function() {
       var browserProxy = null;
 
       setup(function() {
-        browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
-        settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
+        browserProxy = new TestExtensionControlBrowserProxy();
+        settings.ExtensionControlBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         entry = document.createElement('settings-omnibox-extension-entry');
         entry.set('engine', createSampleOmniboxExtension());

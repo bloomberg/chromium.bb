@@ -21,8 +21,6 @@ cr.define('settings_search', function() {
       'searchEngineEditStarted',
       'setDefaultSearchEngine',
       'validateSearchEngineInput',
-      'manageExtension',
-      'disableExtension',
     ]);
 
     /** @private {!SearchEnginesInfo} */
@@ -75,16 +73,6 @@ cr.define('settings_search', function() {
     validateSearchEngineInput: function(fieldName, fieldValue) {
       this.methodCalled('validateSearchEngineInput');
       return Promise.resolve(true);
-    },
-
-    /** @override */
-    manageExtension: function(extensionId) {
-      this.methodCalled('manageExtension', extensionId);
-    },
-
-    /** @override */
-    disableExtension: function(extensionId) {
-      this.methodCalled('disableExtension', extensionId);
     },
   };
 
