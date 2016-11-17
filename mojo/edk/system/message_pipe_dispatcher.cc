@@ -249,8 +249,6 @@ MojoResult MessagePipeDispatcher::WriteMessage(
         rv == ports::ERROR_PORT_CANNOT_SEND_PEER) {
       return MOJO_RESULT_INVALID_ARGUMENT;
     } else if (rv == ports::ERROR_PORT_PEER_CLOSED) {
-      base::AutoLock lock(signal_lock_);
-      awakables_.AwakeForStateChange(GetHandleSignalsStateNoLock());
       return MOJO_RESULT_FAILED_PRECONDITION;
     }
 
@@ -315,8 +313,6 @@ MojoResult MessagePipeDispatcher::ReadMessage(
 
     // Peer is closed and there are no more messages to read.
     DCHECK_EQ(rv, ports::ERROR_PORT_PEER_CLOSED);
-    base::AutoLock lock(signal_lock_);
-    awakables_.AwakeForStateChange(GetHandleSignalsStateNoLock());
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
