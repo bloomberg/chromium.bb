@@ -204,13 +204,7 @@ TEST(Vector3dTest, DotProduct) {
   }
 }
 
-#if defined(ARCH_CPU_ARM_FAMILY)
-// TODO(danakj): Make this pass on ARM, https://crbug.com/662556
-#define MAYBE_CrossProduct DISABLED_CrossProduct
-#else
-#define MAYBE_CrossProduct CrossProduct
-#endif
-TEST(Vector3dTest, MAYBE_CrossProduct) {
+TEST(Vector3dTest, CrossProduct) {
   const struct {
     gfx::Vector3dF expected;
     gfx::Vector3dF input1;
@@ -233,6 +227,7 @@ TEST(Vector3dTest, MAYBE_CrossProduct) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    SCOPED_TRACE(i);
     Vector3dF actual = gfx::CrossProduct(tests[i].input1, tests[i].input2);
     EXPECT_EQ(tests[i].expected.ToString(), actual.ToString());
   }

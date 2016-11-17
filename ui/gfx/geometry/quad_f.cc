@@ -76,10 +76,17 @@ static inline bool PointIsInTriangle(const PointF& point,
   Vector2dF r32 = r2 - r3;
   Vector2dF r3p = point - r3;
 
-  float denom = r32.y() * r31.x() - r32.x() * r31.y();
-  float u = (r32.y() * r3p.x() - r32.x() * r3p.y()) / denom;
-  float v = (r31.x() * r3p.y() - r31.y() * r3p.x()) / denom;
-  float w = 1.f - u - v;
+  // Promote to doubles so all the math below is done with doubles, because
+  // otherwise it gets incorrect results on arm64.
+  double r31x = r31.x();
+  double r31y = r31.y();
+  double r32x = r32.x();
+  double r32y = r32.y();
+
+  double denom = r32y * r31x - r32x * r31y;
+  double u = (r32y * r3p.x() - r32x * r3p.y()) / denom;
+  double v = (r31x * r3p.y() - r31y * r3p.x()) / denom;
+  double w = 1.0 - u - v;
 
   // Use the barycentric coordinates to test if |point| is inside the
   // triangle (r1, r2, r2).

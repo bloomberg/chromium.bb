@@ -50,9 +50,12 @@ void Vector3dF::Scale(float x_scale, float y_scale, float z_scale) {
 }
 
 void Vector3dF::Cross(const Vector3dF& other) {
-  float x = y_ * other.z() - z_ * other.y();
-  float y = z_ * other.x() - x_ * other.z();
-  float z = x_ * other.y() - y_ * other.x();
+  double dx = x_;
+  double dy = y_;
+  double dz = z_;
+  float x = static_cast<float>(dy * other.z() - dz * other.y());
+  float y = static_cast<float>(dz * other.x() - dx * other.z());
+  float z = static_cast<float>(dx * other.y() - dy * other.x());
   x_ = x;
   y_ = y;
   z_ = z;
