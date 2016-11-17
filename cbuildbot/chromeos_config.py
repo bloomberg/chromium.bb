@@ -1492,6 +1492,11 @@ def CreateBuilderTemplates(site_config, ge_build_config):
       active_waterfall=constants.WATERFALL_TRYBOT,
   )
 
+  site_config.AddTemplate(
+      'build_external_chrome',
+      useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
+  )
+
 
 def CreateBoardConfigs(site_config, ge_build_config):
   """Create mixin templates for each board."""
@@ -1992,7 +1997,7 @@ def _GetConfig(site_config, ge_build_config):
                  and configs.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateBoardConfigs(site_config, ge_build_config)
 
   site_config.Add(
       'master-chromium-pfq',
@@ -2016,11 +2021,6 @@ def _GetConfig(site_config, ge_build_config):
       'amd64-generic',
   ])
 
-  external_overrides = config_lib.BuildConfig(
-      manifest=constants.DEFAULT_MANIFEST,
-      useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
-  )
-
   def _AddFullConfigs():
     """Add x86 and arm full configs."""
     site_config.AddForBoards(
@@ -2028,47 +2028,47 @@ def _GetConfig(site_config, ge_build_config):
         _all_full_boards,
         board_configs,
         site_config.templates.full,
+        site_config.templates.build_external_chrome,
         internal=False,
         manifest_repo_url=site_config.params['MANIFEST_URL'],
         overlays=constants.PUBLIC_OVERLAYS,
-        prebuilts=constants.PUBLIC,
-        **external_overrides)
+        prebuilts=constants.PUBLIC)
     # TODO: Move to Informational
     site_config.AddForBoards(
         'tot-chromium-pfq-informational',
         _all_full_boards,
         board_configs,
         site_config.templates.chromium_pfq_informational,
+        site_config.templates.build_external_chrome,
         important=False,
         internal=False,
         manifest_repo_url=site_config.params['MANIFEST_URL'],
-        overlays=constants.PUBLIC_OVERLAYS,
-        **external_overrides)
+        overlays=constants.PUBLIC_OVERLAYS)
     # TODO: Move to Informational
     site_config.AddForBoards(
         'tot-chromium-pfq-informational-gn',
         _all_full_boards,
         board_configs,
         site_config.templates.chromium_pfq_informational_gn,
+        site_config.templates.build_external_chrome,
         important=False,
         internal=False,
         manifest_repo_url=site_config.params['MANIFEST_URL'],
-        overlays=constants.PUBLIC_OVERLAYS,
-        **external_overrides)
+        overlays=constants.PUBLIC_OVERLAYS)
     # Create important configs, then non-important configs.
     site_config.AddForBoards(
         'chromium-pfq',
         _chromium_pfq_important_boards,
         board_configs,
         site_config.templates.chromium_pfq,
-        **external_overrides)
+        site_config.templates.build_external_chrome)
     site_config.AddForBoards(
         'chromium-pfq',
         _all_full_boards - _chromium_pfq_important_boards,
         board_configs,
         site_config.templates.chromium_pfq,
-        important=False,
-        **external_overrides)
+        site_config.templates.build_external_chrome,
+        important=False)
 
   _AddFullConfigs()
 
