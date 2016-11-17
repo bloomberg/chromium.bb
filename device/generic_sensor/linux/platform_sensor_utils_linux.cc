@@ -51,12 +51,9 @@ bool GetSensorFilePaths(const SensorDataLinux& data,
   return true;
 }
 
-// Returns -1 if unable to read a scaling value, 1 if scaling value is not
-// found. Otherwise, returns a scaling value read from a file.
-double GetSensorScalingValue(const base::FilePath& scale_file_path) {
-  if (!base::PathExists(scale_file_path))
-    return 1;
-
+// Returns -1 if unable to read a scaling value.
+// Otherwise, returns a scaling value read from a file.
+double ReadSensorScalingValue(const base::FilePath& scale_file_path) {
   std::string value;
   if (!base::ReadFileToString(scale_file_path, &value))
     return -1;
@@ -79,9 +76,15 @@ std::unique_ptr<SensorReader> SensorReader::Create(
     return nullptr;
 
   DCHECK(!sensor_paths.empty());
-  const base::FilePath scale_file_path =
-      sensor_paths.back().DirName().Append(data.sensor_scale_name);
-  double scaling_value = GetSensorScalingValue(scale_file_path);
+  // Scaling value is 1 if scaling file is not specified is |data| or scaling
+  // file is not found.
+  double scaling_value = 1;
+  if (!data.sensor_scale_name.empty()) {
+    const base::FilePath scale_file_path =
+        sensor_paths.back().DirName().Append(data.sensor_scale_name);
+    if (base::PathExists(scale_file_path))
+      scaling_value = ReadSensorScalingValue(scale_file_path);
+  }
 
   // A file with a scaling value is found, but couldn't be read.
   if (scaling_value == -1)
