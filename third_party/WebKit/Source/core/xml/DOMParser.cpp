@@ -28,7 +28,8 @@ Document* DOMParser::parseFromString(const String& str, const String& type) {
   Document* doc = DOMImplementation::createDocument(
       type, DocumentInit(KURL(), nullptr, m_contextDocument), false);
   doc->setContent(str);
-  doc->setSecurityOrigin(m_contextDocument->getSecurityOrigin());
+  if (m_contextDocument)
+    doc->setSecurityOrigin(m_contextDocument->getSecurityOrigin());
   return doc;
 }
 
