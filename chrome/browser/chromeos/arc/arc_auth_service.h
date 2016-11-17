@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/arc/arc_auth_code_fetcher_delegate.h"
-#include "chrome/browser/chromeos/arc/arc_auth_context_delegate.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
@@ -55,8 +53,6 @@ class ArcAuthService : public ArcService,
                        public InstanceHolder<mojom::AuthInstance>::Observer,
                        public ArcSupportHost::Observer,
                        public ArcOptInPreferenceHandlerObserver,
-                       public ArcAuthContextDelegate,
-                       public ArcAuthCodeFetcherDelegate,
                        public sync_preferences::PrefServiceSyncableObserver,
                        public sync_preferences::SyncedPrefObserver {
  public:
@@ -181,9 +177,6 @@ class ArcAuthService : public ArcService,
   void GetIsAccountManagedDeprecated(
       const GetIsAccountManagedDeprecatedCallback& callback) override;
 
-  // Called from Arc support platform app to set auth code and start arc.
-  void OnAuthCodeObtained(const std::string& auth_code);
-
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
@@ -203,14 +196,6 @@ class ArcAuthService : public ArcService,
 
   // sync_preferences::SyncedPrefObserver
   void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
-
-  // ArcAuthContextDelegate:
-  void OnContextReady() override;
-  void OnPrepareContextFailed() override;
-
-  // ArcAuthCodeFetcherDelegate:
-  void OnAuthCodeSuccess(const std::string& auth_code) override;
-  void OnAuthCodeFailed() override;
 
   // ArcSupportHost::Observer:
   void OnWindowClosed() override;
@@ -256,13 +241,22 @@ class ArcAuthService : public ArcService,
   void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
-  bool IsAuthCodeRequest() const;
   void FetchAuthCode();
   void PrepareContextForAuthCodeRequest();
   void RequestAccountInfoInternal(
       std::unique_ptr<AccountInfoNotifier> account_info_notifier);
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
+
+  // Callback for Robot auth in Kiosk mode.
   void OnRobotAuthCodeFetched(const std::string& auth_code);
+
+  // Callback for automatic auth code fetching when --arc-user-auth-endpoint
+  // flag is set.
+  void OnAuthCodeFetched(const std::string& auth_code);
+
+  // Common procedure across LSO auth code fetching, automatic auth code
+  // fetching, and Robot auth.
+  void OnAuthCodeObtained(const std::string& auth_code);
 
   void StartArcAndroidManagementCheck();
 

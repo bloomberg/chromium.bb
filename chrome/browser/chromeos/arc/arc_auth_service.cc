@@ -389,16 +389,38 @@ void ArcAuthService::RequestAccountInfoInternal(
     return;
   }
 
+  // Hereafter asynchronous operation. Remember the notifier.
   account_info_notifier_ = std::move(account_info_notifier);
 
+  // In Kiosk mode, use Robot auth code fetching.
   if (IsArcKioskMode()) {
     arc_robot_auth_.reset(new ArcRobotAuth());
     arc_robot_auth_->FetchRobotAuthCode(
         base::Bind(&ArcAuthService::OnRobotAuthCodeFetched,
                    weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    PrepareContextForAuthCodeRequest();
+    return;
   }
+
+  // If endpoint is passed via command line flag, use automatic auth code
+  // fetching.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kArcUseAuthEndpoint)) {
+    std::string auth_endpoint = command_line->GetSwitchValueASCII(
+        chromeos::switches::kArcUseAuthEndpoint);
+    if (!auth_endpoint.empty()) {
+      DCHECK(!auth_code_fetcher_);
+      auth_code_fetcher_ = base::MakeUnique<ArcAuthCodeFetcher>(
+          profile_, context_.get(), auth_endpoint);
+      auth_code_fetcher_->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
+                                           weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
+  }
+
+  // Otherwise, show LSO page to user, and let them click "Sign in" button.
+  if (support_host_)
+    support_host_->ShowLso();
 }
 
 void ArcAuthService::OnRobotAuthCodeFetched(
@@ -417,27 +439,20 @@ void ArcAuthService::OnRobotAuthCodeFetched(
     return;
   }
 
-  account_info_notifier_->Notify(
-      !IsOptInVerificationDisabled(), robot_auth_code,
-      mojom::ChromeAccountType::ROBOT_ACCOUNT, false);
-  account_info_notifier_.reset();
+  OnAuthCodeObtained(robot_auth_code);
 }
 
-bool ArcAuthService::IsAuthCodeRequest() const {
-  return account_info_notifier_ != nullptr;
-}
-
-void ArcAuthService::PrepareContextForAuthCodeRequest() {
-  // Requesting auth code on demand happens in following cases:
-  // 1. To handle account password revoke.
-  // 2. In case Arc is activated in OOBE flow.
-  // 3. For any other state on Android side that leads device appears in
-  // non-signed state.
+void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(state_ == State::ACTIVE);
-  DCHECK(IsAuthCodeRequest());
-  DCHECK(!IsArcKioskMode());
-  context_->PrepareContext();
+  auth_code_fetcher_.reset();
+
+  if (auth_code.empty()) {
+    OnProvisioningFinished(
+        ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+    return;
+  }
+
+  OnAuthCodeObtained(auth_code);
 }
 
 void ArcAuthService::OnSignInComplete() {
@@ -608,7 +623,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
       prefs::kArcEnabled, this);
 
-  context_.reset(new ArcAuthContext(this, profile_));
+  context_.reset(new ArcAuthContext(profile_));
 
   if (!g_disable_ui_for_testing ||
       g_enable_check_android_management_for_testing) {
@@ -654,11 +669,6 @@ void ArcAuthService::Shutdown() {
   profile_ = nullptr;
   arc_robot_auth_.reset();
   SetState(State::NOT_INITIALIZED);
-}
-
-void ArcAuthService::OnContextReady() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  FetchAuthCode();
 }
 
 void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
@@ -898,20 +908,6 @@ void ArcAuthService::StartUI() {
     support_host_->ShowTermsOfService();
 }
 
-void ArcAuthService::OnPrepareContextFailed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  OnProvisioningFinished(ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
-}
-
-void ArcAuthService::OnAuthCodeSuccess(const std::string& auth_code) {
-  OnAuthCodeObtained(auth_code);
-}
-
-void ArcAuthService::OnAuthCodeFailed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  OnProvisioningFinished(ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
-}
-
 void ArcAuthService::StartArcAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(arc_bridge_service()->stopped());
@@ -977,26 +973,6 @@ void ArcAuthService::OnBackgroundAndroidManagementChecked(
   }
 }
 
-void ArcAuthService::FetchAuthCode() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  std::string auth_endpoint;
-  if (command_line->HasSwitch(chromeos::switches::kArcUseAuthEndpoint)) {
-    auth_endpoint = command_line->GetSwitchValueASCII(
-        chromeos::switches::kArcUseAuthEndpoint);
-  }
-
-  if (!auth_endpoint.empty()) {
-    auth_code_fetcher_.reset(new ArcAuthCodeFetcher(
-        this, context_->GetURLRequestContext(), profile_, auth_endpoint));
-  } else {
-    if (support_host_)
-      support_host_->ShowLso();
-  }
-}
-
 void ArcAuthService::OnWindowClosed() {
   DCHECK(support_host_);
   CancelAuthCode();
@@ -1047,12 +1023,7 @@ void ArcAuthService::OnRetryClicked() {
   } else if (state_ == State::ACTIVE) {
     // This happens when ARC support Chrome app reports an error on "Sign in"
     // page.
-    // TODO(hidehiko): Currently, due to the existing code structure, we need
-    // to call PrepareContextForAuthCodeRequest() always. However, to fetch
-    // an authtoken via LSO page, it is not necessary to call PrepareContext().
-    // Instead, it is possible to show LSO page, immediately.
-    support_host_->ShowArcLoading();
-    PrepareContextForAuthCodeRequest();
+    support_host_->ShowLso();
   } else {
     // Otherwise, we restart ARC. Note: this is the first boot case.
     // For second or later boot, either ERROR_WITH_FEEDBACK case or ACTIVE

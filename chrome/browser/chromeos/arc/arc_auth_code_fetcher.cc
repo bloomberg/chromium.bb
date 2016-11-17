@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/arc/arc_auth_code_fetcher.h"
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/arc_auth_code_fetcher_delegate.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -41,33 +43,44 @@ constexpr char kContentTypeJSON[] = "application/json";
 
 }  // namespace
 
-ArcAuthCodeFetcher::ArcAuthCodeFetcher(
-    ArcAuthCodeFetcherDelegate* delegate,
-    net::URLRequestContextGetter* request_context_getter,
-    Profile* profile,
-    const std::string& auth_endpoint)
+ArcAuthCodeFetcher::ArcAuthCodeFetcher(Profile* profile,
+                                       ArcAuthContext* context,
+                                       const std::string& auth_endpoint)
     : OAuth2TokenService::Consumer(kConsumerName),
-      delegate_(delegate),
-      request_context_getter_(request_context_getter),
       profile_(profile),
-      auth_endpoint_(auth_endpoint) {
+      context_(context),
+      auth_endpoint_(auth_endpoint),
+      weak_ptr_factory_(this) {}
+
+ArcAuthCodeFetcher::~ArcAuthCodeFetcher() = default;
+
+void ArcAuthCodeFetcher::Fetch(const FetchCallback& callback) {
+  DCHECK(callback_.is_null());
+  callback_ = callback;
+
+  context_->Prepare(base::Bind(&ArcAuthCodeFetcher::OnPrepared,
+                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcAuthCodeFetcher::OnPrepared(
+    net::URLRequestContextGetter* request_context_getter) {
+  if (!request_context_getter) {
+    base::ResetAndReturn(&callback_).Run(std::string());
+    return;
+  }
+
+  DCHECK(!request_context_getter_);
+  request_context_getter_ = request_context_getter;
+
   // Get token service and account ID to fetch auth tokens.
-  ProfileOAuth2TokenService* const token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  const SigninManagerBase* const signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  CHECK(token_service && signin_manager);
-  const std::string& account_id = signin_manager->GetAuthenticatedAccountId();
-  DCHECK(!account_id.empty());
+  ProfileOAuth2TokenService* const token_service = context_->token_service();
+  const std::string& account_id = context_->account_id();
   DCHECK(token_service->RefreshTokenIsAvailable(account_id));
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  login_token_request_.reset(
-      token_service->StartRequest(account_id, scopes, this).release());
+  login_token_request_ = token_service->StartRequest(account_id, scopes, this);
 }
-
-ArcAuthCodeFetcher::~ArcAuthCodeFetcher() {}
 
 void ArcAuthCodeFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
@@ -104,8 +117,7 @@ void ArcAuthCodeFetcher::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   VLOG(2) << "Failed to get LST " << error.ToString() << ".";
   ResetFetchers();
-
-  delegate_->OnAuthCodeFailed();
+  base::ResetAndReturn(&callback_).Run(std::string());
 }
 
 void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -117,7 +129,7 @@ void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (response_code != net::HTTP_OK) {
     VLOG(2) << "Server returned wrong response code: " << response_code << ".";
-    delegate_->OnAuthCodeFailed();
+    base::ResetAndReturn(&callback_).Run(std::string());
     return;
   }
 
@@ -128,7 +140,7 @@ void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!auth_code_info) {
     VLOG(2) << "Unable to deserialize auth code json data: " << error_msg
             << ".";
-    delegate_->OnAuthCodeFailed();
+    base::ResetAndReturn(&callback_).Run(std::string());
     return;
   }
 
@@ -136,7 +148,7 @@ void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
       base::DictionaryValue::From(std::move(auth_code_info));
   if (!auth_code_dictionary) {
     NOTREACHED();
-    delegate_->OnAuthCodeFailed();
+    base::ResetAndReturn(&callback_).Run(std::string());
     return;
   }
 
@@ -144,11 +156,11 @@ void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!auth_code_dictionary->GetString(kToken, &auth_code) ||
       auth_code.empty()) {
     VLOG(2) << "Response does not contain auth code.";
-    delegate_->OnAuthCodeFailed();
+    base::ResetAndReturn(&callback_).Run(std::string());
     return;
   }
 
-  delegate_->OnAuthCodeSuccess(auth_code);
+  base::ResetAndReturn(&callback_).Run(auth_code);
 }
 
 void ArcAuthCodeFetcher::ResetFetchers() {
