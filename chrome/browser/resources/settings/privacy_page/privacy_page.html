@@ -39,13 +39,15 @@
 
       /* TODO(dbeam): this is similar to a 1 line checkbox. Worth somehow
        * combining? */
-      #metricsReporting {
+      #metricsReporting,
+      #safeBrowsingExtendedReporting {
         align-items: center;
         display: flex;
-        min-height: var(--settings-row-min-height);
+        min-height: var(--settings-row-min-height);       
       }
 
-      #metricsReportingCheckbox {
+      #metricsReportingCheckbox,
+      #safeBrowsingExtendedReportingCheckbox {
         display: inline-block;
       }
 
@@ -60,7 +62,7 @@
       #restart {
         flex: 1;
         text-align: end;
-      }
+      }      
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
       <settings-clear-browsing-data-dialog prefs="{{prefs}}"
@@ -87,11 +89,13 @@
               label="$i18n{networkPredictionEnabled}"
               hidden="[[!pageVisibility.networkPrediction]]">
           </settings-checkbox>
-          <paper-checkbox id="safeBrowsingExtendedReportingCheckbox"
-              on-tap="onSafeBrowsingExtendedReportingCheckboxTap_"
-              checked="[[safeBrowsingExtendedReportingEnabled_]]">
-            $i18n{safeBrowsingEnableExtendedReporting}
-          </paper-checkbox>
+          <div id="safeBrowsingExtendedReporting">
+            <paper-checkbox id="safeBrowsingExtendedReportingCheckbox"
+                on-tap="onSafeBrowsingExtendedReportingCheckboxTap_"
+                checked="[[safeBrowsingExtendedReportingEnabled_]]">
+              $i18n{safeBrowsingEnableExtendedReporting}
+            </paper-checkbox>
+          </div>
           <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
               label="$i18n{safeBrowsingEnableProtection}">
           </settings-checkbox>
