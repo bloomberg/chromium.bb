@@ -127,6 +127,21 @@ constexpr T BinaryComplement(T x) {
   return static_cast<T>(~x);
 }
 
+// Return if a numeric value is negative regardless of type.
+template <typename T,
+          typename std::enable_if<std::is_arithmetic<T>::value &&
+                                  std::is_signed<T>::value>::type* = nullptr>
+constexpr bool IsNegative(T x) {
+  return x < 0;
+}
+
+template <typename T,
+          typename std::enable_if<std::is_arithmetic<T>::value &&
+                                  !std::is_signed<T>::value>::type* = nullptr>
+constexpr bool IsNegative(T x) {
+  return false;
+}
+
 enum ArithmeticPromotionCategory {
   LEFT_PROMOTION,          // Use the type of the left-hand argument.
   RIGHT_PROMOTION,         // Use the type of the right-hand argument.
@@ -478,6 +493,48 @@ CheckedMod(T x, U y, V* result) {
                                  static_cast<Promotion>(y), &presult);
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
+}
+
+// Left shift. Shifts less than 0 or greater than or equal to the number
+// of bits in the promoted type are undefined. Shifts of negative values
+// are undefined. Otherwise it is defined when the result fits.
+template <typename T, typename U, typename V>
+typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer &&
+                            std::numeric_limits<V>::is_integer,
+                        bool>::type
+CheckedLeftShift(T x, U shift, V* result) {
+  using ShiftType = typename UnsignedIntegerForSize<T>::type;
+  static const ShiftType kBitWidth = CHAR_BIT * sizeof(T);
+  const ShiftType real_shift = static_cast<ShiftType>(shift);
+  // Signed shift is not legal on negative values.
+  if (!IsNegative(x) && real_shift < kBitWidth) {
+    // Just use a multiplication because it's easy.
+    // TODO(jschuh): This could probably be made more efficient.
+    if (!std::is_signed<T>::value || real_shift != kBitWidth - 1)
+      return CheckedMul(x, static_cast<T>(1) << shift, result);
+    return !x;  // Special case zero for a full width signed shift.
+  }
+  return false;
+}
+
+// Right shift. Shifts less than 0 or greater than or equal to the number
+// of bits in the promoted type are undefined. Otherwise, it is always defined,
+// but a right shift of a negative value is implementation-dependent.
+template <typename T, typename U, typename V>
+typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer &&
+                            std::numeric_limits<V>::is_integer,
+                        bool>::type
+CheckedRightShift(T x, U shift, V* result) {
+  // Use the type conversion push negative values out of range.
+  using ShiftType = typename UnsignedIntegerForSize<T>::type;
+  if (static_cast<ShiftType>(shift) < (CHAR_BIT * sizeof(T))) {
+    T tmp = x >> shift;
+    *result = static_cast<V>(tmp);
+    return IsValueInRangeForNumericType<unsigned>(tmp);
+  }
+  return false;
 }
 
 template <typename T>

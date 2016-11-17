@@ -35,11 +35,11 @@ using base::internal::RANGE_OVERFLOW;
 using base::internal::RANGE_UNDERFLOW;
 using base::internal::SignedIntegerForSize;
 
-// These tests deliberately cause arithmetic overflows. If the compiler is
-// aggressive enough, it can const fold these overflows. Disable warnings about
-// overflows for const expressions.
+// These tests deliberately cause arithmetic boundary errors. If the compiler is
+// aggressive enough, it can const detect these errors, so we disable warnings.
 #if defined(OS_WIN)
-#pragma warning(disable:4756)
+#pragma warning(disable : 4756)  // Arithmetic overflow.
+#pragma warning(disable : 4293)  // Invalid shift.
 #endif
 
 // This is a helper function for finding the maximum value in Src that can be
@@ -123,6 +123,22 @@ static void TestSpecializedArithmetic(
   TEST_EXPECTED_VALUE(0, checked_dst %= 1);
   // Test that div by 0 is avoided but returns invalid result.
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) % 0);
+  // Test bit shifts.
+  volatile Dst negative_one = -1;
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) << negative_one);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) << (sizeof(Dst) * CHAR_BIT - 1));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(0) << (sizeof(Dst) * CHAR_BIT));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) << 1);
+  TEST_EXPECTED_VALUE(static_cast<Dst>(1) << (sizeof(Dst) * CHAR_BIT - 2),
+                      CheckedNumeric<Dst>(1) << (sizeof(Dst) * CHAR_BIT - 2));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0)
+                             << (sizeof(Dst) * CHAR_BIT - 1));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) << 0);
+  TEST_EXPECTED_VALUE(2, CheckedNumeric<Dst>(1) << 1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) >> (sizeof(Dst) * CHAR_BIT));
+  TEST_EXPECTED_VALUE(0,
+                      CheckedNumeric<Dst>(1) >> (sizeof(Dst) * CHAR_BIT - 1));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) >> negative_one);
 }
 
 // Unsigned integer arithmetic.
@@ -160,6 +176,21 @@ static void TestSpecializedArithmetic(
   TEST_EXPECTED_VALUE(0, checked_dst %= 1);
   // Test that div by 0 is avoided but returns invalid result.
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) % 0);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) << (sizeof(Dst) * CHAR_BIT));
+  // Test bit shifts.
+  volatile int negative_one = -1;
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) << negative_one);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) << (sizeof(Dst) * CHAR_BIT));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(0) << (sizeof(Dst) * CHAR_BIT));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) << 1);
+  TEST_EXPECTED_VALUE(static_cast<Dst>(1) << (sizeof(Dst) * CHAR_BIT - 1),
+                      CheckedNumeric<Dst>(1) << (sizeof(Dst) * CHAR_BIT - 1));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) << 0);
+  TEST_EXPECTED_VALUE(2, CheckedNumeric<Dst>(1) << 1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) >> (sizeof(Dst) * CHAR_BIT));
+  TEST_EXPECTED_VALUE(0,
+                      CheckedNumeric<Dst>(1) >> (sizeof(Dst) * CHAR_BIT - 1));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) >> negative_one);
 }
 
 // Floating point arithmetic.

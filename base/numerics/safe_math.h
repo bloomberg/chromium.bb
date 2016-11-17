@@ -112,11 +112,20 @@ class CheckedNumeric {
   T ValueUnsafe() const { return state_.value(); }
 
   // Prototypes for the supported arithmetic operator overloads.
-  template <typename Src> CheckedNumeric& operator+=(Src rhs);
-  template <typename Src> CheckedNumeric& operator-=(Src rhs);
-  template <typename Src> CheckedNumeric& operator*=(Src rhs);
-  template <typename Src> CheckedNumeric& operator/=(Src rhs);
-  template <typename Src> CheckedNumeric& operator%=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator+=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator-=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator*=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator/=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator%=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator<<=(Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator>>=(Src rhs);
 
   CheckedNumeric operator-() const {
     // Negation is always valid for floating point.
@@ -240,6 +249,8 @@ BASE_NUMERIC_ARITHMETIC_OPERATORS(Sub, -, -=, MAX_EXPONENT_PROMOTION)
 BASE_NUMERIC_ARITHMETIC_OPERATORS(Mul, *, *=, MAX_EXPONENT_PROMOTION)
 BASE_NUMERIC_ARITHMETIC_OPERATORS(Div, /, /=, MAX_EXPONENT_PROMOTION)
 BASE_NUMERIC_ARITHMETIC_OPERATORS(Mod, %, %=, MAX_EXPONENT_PROMOTION)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(LeftShift, <<, <<=, LEFT_PROMOTION)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(RightShift, >>, >>=, LEFT_PROMOTION)
 
 #undef BASE_NUMERIC_ARITHMETIC_OPERATORS
 
