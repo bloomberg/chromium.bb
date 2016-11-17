@@ -1,11 +1,11 @@
-CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
-CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
-CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
-CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
-CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
-CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
-CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
-CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
+CONSOLE WARNING: 'webkitIDBTransaction' is deprecated and will be removed in M57, around March 2017. Please use 'IDBTransaction' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBRequest' is deprecated and will be removed in M57, around March 2017. Please use 'IDBRequest' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated and will be removed in M57, around March 2017. Please use 'IDBObjectStore' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated and will be removed in M57, around March 2017. Please use 'IDBKeyRange' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBIndex' is deprecated and will be removed in M57, around March 2017. Please use 'IDBIndex' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBFactory' is deprecated and will be removed in M57, around March 2017. Please use 'IDBFactory' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBDatabase' is deprecated and will be removed in M57, around March 2017. Please use 'IDBDatabase' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
+CONSOLE WARNING: 'webkitIDBCursor' is deprecated and will be removed in M57, around March 2017. Please use 'IDBCursor' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
 This test documents all interface attributes and methods on DedicatedWorkerGlobalScope.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

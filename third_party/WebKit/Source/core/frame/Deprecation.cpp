@@ -233,31 +233,40 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
                         "'Document.exitFullscreen()'");
 
     case UseCounter::PrefixedIndexedDB:
-      return replacedBy("'webkitIndexedDB'", "'indexedDB'");
+      return replacedWillBeRemoved("'webkitIndexedDB'", "'indexedDB'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBCursorConstructor:
-      return replacedBy("'webkitIDBCursor'", "'IDBCursor'");
+      return replacedWillBeRemoved("'webkitIDBCursor'", "'IDBCursor'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBDatabaseConstructor:
-      return replacedBy("'webkitIDBDatabase'", "'IDBDatabase'");
+      return replacedWillBeRemoved("'webkitIDBDatabase'", "'IDBDatabase'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBFactoryConstructor:
-      return replacedBy("'webkitIDBFactory'", "'IDBFactory'");
+      return replacedWillBeRemoved("'webkitIDBFactory'", "'IDBFactory'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBIndexConstructor:
-      return replacedBy("'webkitIDBIndex'", "'IDBIndex'");
+      return replacedWillBeRemoved("'webkitIDBIndex'", "'IDBIndex'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBKeyRangeConstructor:
-      return replacedBy("'webkitIDBKeyRange'", "'IDBKeyRange'");
+      return replacedWillBeRemoved("'webkitIDBKeyRange'", "'IDBKeyRange'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBObjectStoreConstructor:
-      return replacedBy("'webkitIDBObjectStore'", "'IDBObjectStore'");
+      return replacedWillBeRemoved("'webkitIDBObjectStore'", "'IDBObjectStore'",
+                                   M57, "5775330191081472");
 
     case UseCounter::PrefixedIDBRequestConstructor:
-      return replacedBy("'webkitIDBRequest'", "'IDBRequest'");
+      return replacedWillBeRemoved("'webkitIDBRequest'", "'IDBRequest'", M57,
+                                   "5775330191081472");
 
     case UseCounter::PrefixedIDBTransactionConstructor:
-      return replacedBy("'webkitIDBTransaction'", "'IDBTransaction'");
+      return replacedWillBeRemoved("'webkitIDBTransaction'", "'IDBTransaction'",
+                                   M57, "5775330191081472");
 
     case UseCounter::PrefixedRequestAnimationFrame:
       return "'webkitRequestAnimationFrame' is vendor-specific. Please use the "
