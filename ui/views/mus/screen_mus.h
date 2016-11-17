@@ -36,11 +36,11 @@ class VIEWS_MUS_EXPORT ScreenMus
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
 
   // ui::mojom::DisplayManager:
-  void OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays,
+  void OnDisplays(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
                   int64_t primary_display_id,
                   int64_t internal_display_id) override;
   void OnDisplaysChanged(
-      mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) override;
+      std::vector<ui::mojom::WsDisplayPtr> ws_displays) override;
   void OnDisplayRemoved(int64_t display_id) override;
   void OnPrimaryDisplayChanged(int64_t primary_display_id) override;
 

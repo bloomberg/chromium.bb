@@ -61,7 +61,7 @@ void UserIdTracker::Bind(mojom::UserAccessManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void UserIdTracker::SetActiveUser(const mojo::String& user_id) {
+void UserIdTracker::SetActiveUser(const std::string& user_id) {
   if (!IsValidUserId(user_id))
     AddUserId(user_id);
   SetActiveUserId(user_id);

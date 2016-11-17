@@ -44,7 +44,7 @@ class UserIdTracker : public mojom::UserAccessManager {
   using UserIdSet = std::set<UserId>;
 
   // mojom::UserAccessManager:
-  void SetActiveUser(const mojo::String& user_id) override;
+  void SetActiveUser(const std::string& user_id) override;
 
   base::ObserverList<UserIdTrackerObserver> observers_;
 

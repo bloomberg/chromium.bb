@@ -27,7 +27,7 @@ class WindowServerTestImpl : public mojom::WindowServerTest {
 
   // mojom::WindowServerTest:
   void EnsureClientHasDrawnWindow(
-      const mojo::String& client_name,
+      const std::string& client_name,
       const EnsureClientHasDrawnWindowCallback& callback) override;
 
   WindowServer* window_server_;

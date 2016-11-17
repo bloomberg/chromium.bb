@@ -39,10 +39,10 @@ void UserDisplayManager::OnFrameDecorationValuesChanged() {
   mojo::Array<mojom::WsDisplayPtr> displays = GetAllDisplays();
   display_manager_observers_.ForAllPtrs(
       [this, &displays](mojom::DisplayManagerObserver* observer) {
-        observer->OnDisplaysChanged(displays.Clone());
+        observer->OnDisplaysChanged(displays.Clone().PassStorage());
       });
   if (test_observer_)
-    test_observer_->OnDisplaysChanged(displays.Clone());
+    test_observer_->OnDisplaysChanged(displays.Clone().PassStorage());
 }
 
 void UserDisplayManager::AddDisplayManagerBinding(
@@ -59,10 +59,10 @@ void UserDisplayManager::OnDisplayUpdate(Display* display) {
 
   display_manager_observers_.ForAllPtrs(
       [&displays](mojom::DisplayManagerObserver* observer) {
-        observer->OnDisplaysChanged(displays.Clone());
+        observer->OnDisplaysChanged(displays.Clone().PassStorage());
       });
   if (test_observer_)
-    test_observer_->OnDisplaysChanged(displays.Clone());
+    test_observer_->OnDisplaysChanged(displays.Clone().PassStorage());
 }
 
 void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
@@ -159,7 +159,7 @@ void UserDisplayManager::CallOnDisplays(
     mojom::DisplayManagerObserver* observer) {
   // TODO(kylechar): Pass internal display id to clients here.
   observer->OnDisplays(
-      GetAllDisplays(),
+      GetAllDisplays().PassStorage(),
       display::PlatformScreen::GetInstance()->GetPrimaryDisplayId(),
       display::Display::kInvalidDisplayID);
 }

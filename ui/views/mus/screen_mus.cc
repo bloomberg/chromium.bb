@@ -91,7 +91,7 @@ aura::Window* ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
   return delegate_->GetWindowAtScreenPoint(point);
 }
 
-void ScreenMus::OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays,
+void ScreenMus::OnDisplays(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
                            int64_t primary_display_id,
                            int64_t internal_display_id) {
   // This should only be called once when ScreenMus is added as an observer.
@@ -121,7 +121,7 @@ void ScreenMus::OnDisplays(mojo::Array<ui::mojom::WsDisplayPtr> ws_displays,
 }
 
 void ScreenMus::OnDisplaysChanged(
-    mojo::Array<ui::mojom::WsDisplayPtr> ws_displays) {
+    std::vector<ui::mojom::WsDisplayPtr> ws_displays) {
   for (size_t i = 0; i < ws_displays.size(); ++i) {
     const display::Display& display = ws_displays[i]->display;
     const bool is_primary =

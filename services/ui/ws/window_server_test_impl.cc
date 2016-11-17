@@ -44,10 +44,9 @@ void WindowServerTestImpl::OnWindowPaint(
 }
 
 void WindowServerTestImpl::EnsureClientHasDrawnWindow(
-    const mojo::String& client_name,
+    const std::string& client_name,
     const EnsureClientHasDrawnWindowCallback& callback) {
-  std::string name = client_name.To<std::string>();
-  WindowTree* tree = window_server_->GetTreeWithClientName(name);
+  WindowTree* tree = window_server_->GetTreeWithClientName(client_name);
   if (tree) {
     for (const ServerWindow* window : tree->roots()) {
       if (WindowHasValidFrame(window)) {
@@ -59,7 +58,7 @@ void WindowServerTestImpl::EnsureClientHasDrawnWindow(
 
   window_server_->SetPaintCallback(
       base::Bind(&WindowServerTestImpl::OnWindowPaint, base::Unretained(this),
-                 name, std::move(callback)));
+                 client_name, std::move(callback)));
 }
 
 }  // namespace ws
