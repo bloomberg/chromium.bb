@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -39,6 +40,22 @@ public class VrShellDelegate {
     // Pseudo-random number to avoid request id collisions.
     public static final int EXIT_VR_RESULT = 721251;
 
+    // TODO(bshe): These should be replaced by string provided by NDK. Currently, it only available
+    // in SDK and we don't want add dependency to SDK just to get these strings.
+    private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
+    private static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
+    private static final String CARDBOARD_CATEGORY = "com.google.intent.category.CARDBOARD";
+
+    private static final String VR_ACTIVITY_ALIAS =
+            "org.chromium.chrome.browser.VRChromeTabbedActivity";
+    private static final String DAYDREAM_DON_TYPE = "DAYDREAM_DON_TYPE";
+
+    private static final int DAYDREAM_DON_TYPE_VR_SHELL = 0;
+    private static final int DAYDREAM_DON_TYPE_WEBVR = 1;
+    private static final int DAYDREAM_DON_TYPE_AUTO = 2;
+
+    private static final long REENTER_VR_TIMEOUT_MS = 1000;
+
     private final ChromeTabbedActivity mActivity;
     private final TabObserver mTabObserver;
 
@@ -59,20 +76,7 @@ public class VrShellDelegate {
     private long mNativeVrShellDelegate;
     private Tab mTab;
     private boolean mRequestedWebVR;
-
-    // TODO(bshe): These should be replaced by string provided by NDK. Currently, it only available
-    // in SDK and we don't want add dependency to SDK just to get these strings.
-    private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
-    private static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
-    private static final String CARDBOARD_CATEGORY = "com.google.intent.category.CARDBOARD";
-
-    private static final String VR_ACTIVITY_ALIAS =
-            "org.chromium.chrome.browser.VRChromeTabbedActivity";
-    private static final String DAYDREAM_DON_TYPE = "DAYDREAM_DON_TYPE";
-
-    private static final int DAYDREAM_DON_TYPE_VR_SHELL = 0;
-    private static final int DAYDREAM_DON_TYPE_WEBVR = 1;
-    private static final int DAYDREAM_DON_TYPE_AUTO = 2;
+    private long mLastVRExit;
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
@@ -267,6 +271,8 @@ public class VrShellDelegate {
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
+        } else if (mLastVRExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
+            enterVRIfNecessary(mRequestedWebVR);
         }
     }
 
@@ -371,6 +377,7 @@ public class VrShellDelegate {
             mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent());
         } else {
             mVrDaydreamApi.setVrModeEnabled(false);
+            mLastVRExit = SystemClock.uptimeMillis();
         }
         mActivity.setRequestedOrientation(mRestoreOrientation);
         mVrShell.pause();
