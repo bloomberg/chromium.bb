@@ -17,7 +17,7 @@ TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
   EXPECT_EQ(document, document->commonAncestorTreeScope(*document));
 
   Element* html = document->createElement("html", StringOrDictionary());
-  document->appendChild(html, ASSERT_NO_EXCEPTION);
+  document->appendChild(html);
   ShadowRoot* shadowRoot =
       html->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
   EXPECT_EQ(shadowRoot, shadowRoot->commonAncestorTreeScope(*shadowRoot));
@@ -30,7 +30,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
 
   Document* document = Document::create();
   Element* html = document->createElement("html", StringOrDictionary());
-  document->appendChild(html, ASSERT_NO_EXCEPTION);
+  document->appendChild(html);
   ShadowRoot* shadowRoot =
       html->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
 
@@ -45,7 +45,7 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
 
   Document* document = Document::create();
   Element* html = document->createElement("html", StringOrDictionary());
-  document->appendChild(html, ASSERT_NO_EXCEPTION);
+  document->appendChild(html);
   Element* head = document->createElement("head", StringOrDictionary());
   html->appendChild(head);
   Element* body = document->createElement("body", StringOrDictionary());
@@ -69,7 +69,7 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
 
   Document* document = Document::create();
   Element* html = document->createElement("html", StringOrDictionary());
-  document->appendChild(html, ASSERT_NO_EXCEPTION);
+  document->appendChild(html);
   Element* head = document->createElement("head", StringOrDictionary());
   html->appendChild(head);
   Element* body = document->createElement("body", StringOrDictionary());

@@ -818,7 +818,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
       "function(event) {"
       "    document.title += `input.isComposing:${event.isComposing};`;"
       "});");
-  document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
+  document().body()->appendChild(script);
   document().view()->updateAllLifecyclePhases();
 
   // Simulate composition in the |contentEditable|.
@@ -852,7 +852,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventData) {
       "function(event) {"
       "    document.title += `input.data:${event.data};`;"
       "});");
-  document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
+  document().body()->appendChild(script);
   document().view()->updateAllLifecyclePhases();
 
   // Simulate composition in the |contentEditable|.

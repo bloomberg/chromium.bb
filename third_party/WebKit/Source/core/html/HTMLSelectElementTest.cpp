@@ -419,7 +419,7 @@ TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
   EXPECT_EQ(1, select->activeSelectionEndListIndex());
   select->firstChild()->removeChild(option);
   EXPECT_EQ(-1, select->activeSelectionEndListIndex());
-  select->appendChild(option, ASSERT_NO_EXCEPTION);
+  select->appendChild(option);
   EXPECT_EQ(1, select->activeSelectionEndListIndex());
 }
 
