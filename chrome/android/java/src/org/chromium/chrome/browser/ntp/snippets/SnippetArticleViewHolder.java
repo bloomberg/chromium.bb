@@ -133,6 +133,10 @@ public class SnippetArticleViewHolder
 
     @Override
     public Set<Integer> getSupportedMenuItems() {
+        if (mArticle.isDownload()) {
+            return new HashSet<>(Arrays.asList(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW,
+                    ContextMenuManager.ID_OPEN_IN_NEW_TAB, ContextMenuManager.ID_REMOVE));
+        }
         return new HashSet<>(Arrays.asList(ContextMenuManager.ID_OPEN_IN_NEW_WINDOW,
                 ContextMenuManager.ID_OPEN_IN_NEW_TAB, ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB,
                 ContextMenuManager.ID_REMOVE, ContextMenuManager.ID_SAVE_FOR_OFFLINE));
