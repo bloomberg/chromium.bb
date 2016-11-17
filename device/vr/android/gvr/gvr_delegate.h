@@ -16,6 +16,8 @@ class GvrApi;
 
 namespace device {
 
+constexpr gvr::Sizei kFallbackRenderTargetSize = {2048, 1024};
+
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
@@ -25,6 +27,8 @@ class DEVICE_VR_EXPORT GvrDelegate {
 
   virtual void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
                                   uint32_t pose_index) = 0;
+  virtual gvr::Sizei GetWebVRCompositorSurfaceSize() = 0;
+  virtual void SetWebVRRenderSurfaceSize(int width, int height) = 0;
   virtual gvr::GvrApi* gvr_api() = 0;
 };
 

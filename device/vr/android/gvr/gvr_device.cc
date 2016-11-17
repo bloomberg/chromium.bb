@@ -59,8 +59,9 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   // sizes when the phone is in portait mode. Send arbitrary,
   // not-horrifically-wrong values instead.
   //  gvr::Sizei render_target_size = gvr_api->GetRecommendedRenderTargetSize();
-  left_eye->renderWidth = 1024;   // render_target_size.width / 2;
-  left_eye->renderHeight = 1024;  // render_target_size.height;
+  gvr::Sizei render_target_size = kFallbackRenderTargetSize;
+  left_eye->renderWidth = render_target_size.width / 2;
+  left_eye->renderHeight = render_target_size.height;
 
   right_eye->renderWidth = left_eye->renderWidth;
   right_eye->renderHeight = left_eye->renderHeight;
@@ -89,8 +90,21 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
     right_eye->offset[1] = 0.0;
     right_eye->offset[2] = 0.03;
 
+    delegate_->SetWebVRRenderSurfaceSize(2 * left_eye->renderWidth,
+                                         left_eye->renderHeight);
+
     return device;
   }
+
+  // In compositor mode, we have to use the current compositor window's
+  // surface size. Would be nice to change it, but that needs more browser
+  // internals to be modified. TODO(klausw,crbug.com/655722): remove this once
+  // we can pick our own surface size.
+  gvr::Sizei compositor_size = delegate_->GetWebVRCompositorSurfaceSize();
+  left_eye->renderWidth = compositor_size.width / 2;
+  left_eye->renderHeight = compositor_size.height;
+  right_eye->renderWidth = left_eye->renderHeight;
+  right_eye->renderHeight = left_eye->renderHeight;
 
   std::string vendor = gvr_api->GetViewerVendor();
   std::string model = gvr_api->GetViewerModel();
@@ -125,6 +139,9 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   right_eye->offset[0] = -right_eye_mat.m[0][3];
   right_eye->offset[1] = -right_eye_mat.m[1][3];
   right_eye->offset[2] = -right_eye_mat.m[2][3];
+
+  delegate_->SetWebVRRenderSurfaceSize(2 * left_eye->renderWidth,
+                                       left_eye->renderHeight);
 
   return device;
 }

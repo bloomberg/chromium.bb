@@ -99,6 +99,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
                                 const gvr::Rectf& right_bounds) override;
   gvr::GvrApi* gvr_api() override;
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) override;
+  void SetWebVRRenderSurfaceSize(int width, int height) override;
+  gvr::Sizei GetWebVRCompositorSurfaceSize() override;
 
   void ContentSurfaceChanged(
       JNIEnv* env,
@@ -125,7 +127,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void LoadUIContent();
   void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
-                  const std::vector<const ContentRectangle*>& elements);
+                  const std::vector<const ContentRectangle*>& elements,
+                  const gvr::Sizei& render_size, int viewport_offset);
   void DrawElements(const gvr::Mat4f& render_matrix,
                     const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
@@ -159,7 +162,13 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
 
-  gvr::Sizei render_size_;
+  // Current sizes for the render buffers.
+  gvr::Sizei render_size_primary_;
+  gvr::Sizei render_size_headlocked_;
+
+  // Intended size for the primary render buffer by UI mode.
+  gvr::Sizei render_size_primary_webvr_ = device::kFallbackRenderTargetSize;
+  gvr::Sizei render_size_primary_vrshell_;
 
   std::queue<base::Callback<void()>> task_queue_;
   base::Lock task_queue_lock_;
@@ -185,6 +194,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   int ui_tex_height_ = 0;
   int content_tex_width_ = 0;
   int content_tex_height_ = 0;
+  gvr::Sizei content_tex_pixels_for_webvr_ = {0, 0};
 
   bool webvr_mode_ = false;
 
@@ -193,6 +203,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // current backlog of poses which is 2-3 frames.
   static constexpr int kPoseRingBufferSize = 8;
   std::vector<gvr::Mat4f> webvr_head_pose_;
+  jint webvr_texture_id_ = 0;
 
   std::unique_ptr<VrController> controller_;
   scoped_refptr<VrInputManager> content_input_manager_;

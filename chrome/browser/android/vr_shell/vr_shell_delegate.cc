@@ -31,6 +31,9 @@ class GvrNonPresentingDelegate : public device::GvrDelegate {
                                 const gvr::Rectf& right_bounds) override {}
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
                           uint32_t pose_index) override {}
+  void SetWebVRRenderSurfaceSize(int width, int height) override {}
+  gvr::Sizei GetWebVRCompositorSurfaceSize() override {
+    return device::kFallbackRenderTargetSize; }
   gvr::GvrApi* gvr_api() override { return gvr_api_.get(); }
   base::WeakPtr<GvrNonPresentingDelegate> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

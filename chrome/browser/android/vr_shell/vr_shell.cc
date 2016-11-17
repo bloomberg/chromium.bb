@@ -73,8 +73,23 @@ static constexpr float kReticleOffset = 0.99f;
 // adjust according to content quad placement.
 static constexpr float kReticleDistanceMultiplier = 1.5f;
 
+// GVR buffer indices for use with viewport->SetSourceBufferIndex
+// or frame.BindBuffer. We use one for world content (with reprojection)
+// including main VrShell and WebVR content plus world-space UI.
+// The headlocked buffer is for UI that should not use reprojection.
 static constexpr int kFramePrimaryBuffer = 0;
 static constexpr int kFrameHeadlockedBuffer = 1;
+
+// Pixel dimensions and field of view for the head-locked content. This
+// is currently sized to fit the WebVR "insecure transport" warnings,
+// adjust it as needed if there is additional content.
+static constexpr gvr::Sizei kHeadlockedBufferDimensions = {1024, 1024};
+static constexpr gvr::Rectf kHeadlockedBufferFov = {20.f, 20.f, 20.f, 20.f};
+
+// The GVR viewport list has two entries (left eye and right eye) for each
+// GVR buffer.
+static constexpr int kViewportListPrimaryOffset = 0;
+static constexpr int kViewportListHeadlockedOffset = 2;
 
 vr_shell::VrShell* g_instance;
 
@@ -222,13 +237,10 @@ void VrShell::GvrInit(JNIEnv* env,
 
   gvr_api_ =
       gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(native_gvr_api));
-
-  if (delegate_) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
-                              delegate_->GetDeviceProvider(),
-                              weak_ptr_factory_.GetWeakPtr()));
-  }
+  // TODO(klausw,crbug.com/655722): should report OnGvrDelegateReady here once
+  // we switch to using a WebVR render surface. We currently need to wait for
+  // the compositor window's size to be known first. See also
+  // ContentSurfaceChanged.
   controller_.reset(
       new VrController(reinterpret_cast<gvr_context*>(native_gvr_api)));
   content_input_manager_ = new VrInputManager(main_contents_);
@@ -261,30 +273,53 @@ void VrShell::InitializeGl(JNIEnv* env,
   content_texture_id_ = content_texture_handle;
   ui_texture_id_ = ui_texture_handle;
 
+  // While WebVR is going through the compositor path, it shares
+  // the same texture ID. This will change once it gets its own
+  // surface, but store it separately to avoid future confusion.
+  // TODO(klausw,crbug.com/655722): remove this.
+  webvr_texture_id_ = content_texture_id_;
+
   gvr_api_->InitializeGl();
   std::vector<gvr::BufferSpec> specs;
+  // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs.push_back(gvr_api_->CreateBufferSpec());
-  render_size_ = specs[0].GetSize();
+  render_size_primary_ = specs[kFramePrimaryBuffer].GetSize();
+  render_size_primary_vrshell_ = render_size_primary_;
 
-  // For WebVR content
+  // For kFrameHeadlockedBuffer (for WebVR insecure content warning).
+  // Set this up at fixed resolution, the (smaller) FOV gets set below.
   specs.push_back(gvr_api_->CreateBufferSpec());
+  specs.back().SetSize(kHeadlockedBufferDimensions);
+  render_size_headlocked_ = specs[kFrameHeadlockedBuffer].GetSize();
 
   swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapChain(specs)));
 
   vr_shell_renderer_.reset(new VrShellRenderer());
+
+  // Allocate a buffer viewport for use in UI drawing. This isn't
+  // initialized at this point, it'll be set from other viewport list
+  // entries as needed.
+  buffer_viewport_.reset(
+      new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
+
+  // Set up main content viewports. The list has two elements, 0=left
+  // eye and 1=right eye.
   buffer_viewport_list_.reset(
       new gvr::BufferViewportList(gvr_api_->CreateEmptyBufferViewportList()));
   buffer_viewport_list_->SetToRecommendedBufferViewports();
 
-  buffer_viewport_.reset(
-      new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
-
+  // Set up head-locked UI viewports, these will be elements 2=left eye
+  // and 3=right eye. For now, use a hardcoded 20-degree-from-center FOV
+  // frustum to reduce rendering cost for this overlay. This fits the
+  // current content, but will need to be adjusted once there's more dynamic
+  // head-locked content that could be larger.
   headlocked_left_viewport_.reset(
       new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
   buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
                                            headlocked_left_viewport_.get());
   headlocked_left_viewport_->SetSourceBufferIndex(kFrameHeadlockedBuffer);
   headlocked_left_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+  headlocked_left_viewport_->SetSourceFov(kHeadlockedBufferFov);
 
   headlocked_right_viewport_.reset(
       new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
@@ -292,7 +327,10 @@ void VrShell::InitializeGl(JNIEnv* env,
                                            headlocked_right_viewport_.get());
   headlocked_right_viewport_->SetSourceBufferIndex(kFrameHeadlockedBuffer);
   headlocked_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+  headlocked_right_viewport_->SetSourceFov(kHeadlockedBufferFov);
 
+  // Save copies of the first two viewport items for use by WebVR, it
+  // sets its own UV bounds.
   webvr_left_viewport_.reset(
       new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
   buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
@@ -506,7 +544,23 @@ uint32_t GetPixelEncodedPoseIndex() {
 }
 
 void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  // Reset the viewport list to just the pair of viewports for the
+  // primary buffer each frame. Head-locked viewports get added by
+  // DrawVrShell if needed.
   buffer_viewport_list_->SetToRecommendedBufferViewports();
+
+  if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+    // If needed, resize the primary buffer for use with WebVR.
+    if (render_size_primary_ != render_size_primary_webvr_) {
+      render_size_primary_ = render_size_primary_webvr_;
+      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
+    }
+  } else {
+    if (render_size_primary_ != render_size_primary_vrshell_) {
+      render_size_primary_ = render_size_primary_vrshell_;
+      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
+    }
+  }
 
   gvr::Frame frame = swap_chain_->AcquireFrame();
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
@@ -544,8 +598,8 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     // buffering in the compositor and SurfaceTexture, we read the pose number
     // from a corner pixel. There's no point in doing this for legacy
     // distortion rendering since that doesn't need a pose, and reading back
-    // pixels is an expensive operation. TODO(klausw): stop doing this once we
-    // have working no-compositor rendering for WebVR.
+    // pixels is an expensive operation. TODO(klausw,crbug.com/655722): stop
+    // doing this once we have working no-compositor rendering for WebVR.
     if (gvr_api_->GetAsyncReprojectionEnabled()) {
       uint32_t webvr_pose_frame = GetPixelEncodedPoseIndex();
       // If we don't get a valid frame ID back we shouldn't attempt to reproject
@@ -582,39 +636,69 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
     }
   }
 
-  bool not_web_vr = html_interface_->GetMode() != UiInterface::Mode::WEB_VR;
+  if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+    // WebVR is incompatible with 3D world compositing since the
+    // depth buffer was already populated with unknown scaling - the
+    // WebVR app has full control over zNear/zFar. Just leave the
+    // existing content in place in the primary buffer without
+    // clearing. Currently, there aren't any world elements in WebVR
+    // mode, this will need further testing if those get added
+    // later.
+  } else {
+    // Non-WebVR mode, enable depth testing and clear the primary buffers.
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
 
-  glEnable(GL_CULL_FACE);
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-
-  if (not_web_vr) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  DrawUiView(&head_pose, world_elements);
+  if (!world_elements.empty()) {
+    DrawUiView(&head_pose, world_elements, render_size_primary_,
+               kViewportListPrimaryOffset);
+  }
 
   if (!head_locked_elements.empty()) {
-    // Switch to head-locked viewports.
-    size_t last_viewport = buffer_viewport_list_->GetSize();
-    buffer_viewport_list_->SetBufferViewport(last_viewport++,
+    // Add head-locked viewports. The list gets reset to just
+    // the recommended viewports (for the primary buffer) each frame.
+    buffer_viewport_list_->SetBufferViewport(
+        kViewportListHeadlockedOffset + GVR_LEFT_EYE,
         *headlocked_left_viewport_);
-    buffer_viewport_list_->SetBufferViewport(last_viewport++,
+    buffer_viewport_list_->SetBufferViewport(
+        kViewportListHeadlockedOffset + GVR_RIGHT_EYE,
         *headlocked_right_viewport_);
 
     // Bind the headlocked framebuffer.
     frame.BindBuffer(kFrameHeadlockedBuffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DrawUiView(nullptr, head_locked_elements);
+    DrawUiView(nullptr, head_locked_elements, render_size_headlocked_,
+               kViewportListHeadlockedOffset);
   }
 }
 
+void VrShell::SetWebVRRenderSurfaceSize(int width, int height) {
+  render_size_primary_webvr_.width = width;
+  render_size_primary_webvr_.height = height;
+  // TODO(klausw,crbug.com/655722): set the WebVR render surface size here once
+  // we have that.
+}
+
+gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
+  // This is a stopgap while we're using the WebVR compositor rendering path.
+  // TODO(klausw,crbug.com/655722): Remove this method and member once we're
+  // using a separate WebVR render surface.
+  return content_tex_pixels_for_webvr_;
+}
+
+
 void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
-                         const std::vector<const ContentRectangle*>& elements) {
+                         const std::vector<const ContentRectangle*>& elements,
+                         const gvr::Sizei& render_size, int viewport_offset) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
-    buffer_viewport_list_->GetBufferViewport(eye, buffer_viewport_.get());
+    buffer_viewport_list_->GetBufferViewport(
+        eye + viewport_offset, buffer_viewport_.get());
 
     gvr::Mat4f view_matrix = gvr_api_->GetEyeFromHeadMatrix(eye);
     if (head_pose != nullptr) {
@@ -622,7 +706,7 @@ void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
     }
 
     gvr::Recti pixel_rect =
-        CalculatePixelSpaceRect(render_size_, buffer_viewport_->GetSourceUv());
+        CalculatePixelSpaceRect(render_size, buffer_viewport_->GetSourceUv());
     glViewport(pixel_rect.left, pixel_rect.bottom,
                pixel_rect.right - pixel_rect.left,
                pixel_rect.top - pixel_rect.bottom);
@@ -747,11 +831,13 @@ void VrShell::DrawWebVr() {
   glDisable(GL_BLEND);
   glDisable(GL_POLYGON_OFFSET_FILL);
 
-  glViewport(0, 0, render_size_.width, render_size_.height);
-  vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
+  glViewport(0, 0, render_size_primary_.width, render_size_primary_.height);
+  vr_shell_renderer_->GetWebVrRenderer()->Draw(webvr_texture_id_);
 
-  buffer_viewport_list_->SetBufferViewport(0, *webvr_left_viewport_);
-  buffer_viewport_list_->SetBufferViewport(1, *webvr_right_viewport_);
+  buffer_viewport_list_->SetBufferViewport(GVR_LEFT_EYE,
+                                           *webvr_left_viewport_);
+  buffer_viewport_list_->SetBufferViewport(GVR_RIGHT_EYE,
+                                           *webvr_right_viewport_);
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -830,11 +916,28 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint width,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
+  // If we have a delegate, must trigger "ready" callback one time only.
+  // Do so the first time we got a nonzero size. (This assumes it doesn't
+  // change, but once we get resize ability we'll no longer need this hack.)
+  // TODO(klausw,crbug.com/655722): remove when we have surface support.
+  bool delegate_not_ready = delegate_ && !content_tex_pixels_for_webvr_.width;
+
   content_compositor_->SurfaceChanged((int)width, (int)height, surface);
+  content_tex_pixels_for_webvr_.width = width;
+  content_tex_pixels_for_webvr_.height = height;
   float scale_factor = display::Screen::GetScreen()
       ->GetPrimaryDisplay().device_scale_factor();
   content_tex_width_ = width / scale_factor;
   content_tex_height_ = height / scale_factor;
+
+  // TODO(klausw,crbug.com/655722): move this back to GvrInit once we have
+  // our own WebVR surface.
+  if (delegate_ && delegate_not_ready) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
+                              delegate_->GetDeviceProvider(),
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void VrShell::UiSurfaceChanged(JNIEnv* env,
