@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.ntp.cards;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,9 @@ public final class ContentSuggestionsTestUtils {
     public static List<SnippetArticle> createDummySuggestions(int count) {
         List<SnippetArticle> suggestions = new ArrayList<>();
         for (int index = 0; index < count; index++) {
-            suggestions.add(new SnippetArticle(0, "https://site.com/url" + index, "title" + index,
-                    "pub" + index, "txt" + index, "https://site.com/url" + index,
-                    "https://amp.site.com/url" + index, 0, 0, 0,
+            suggestions.add(new SnippetArticle(KnownCategories.BOOKMARKS,
+                    "https://site.com/url" + index, "title" + index, "pub" + index, "txt" + index,
+                    "https://site.com/url" + index, "https://amp.site.com/url" + index, 0, 0, 0,
                     ContentSuggestionsCardLayout.FULL_CARD));
         }
         return suggestions;
@@ -41,7 +42,7 @@ public final class ContentSuggestionsTestUtils {
     }
 
     public static SuggestionsSection createSection(boolean hasReloadAction, NodeParent parent,
-            NewTabPageManager manager, OfflinePageDownloadBridge bridge) {
+            NewTabPageManager manager, OfflinePageBridge bridge) {
         return new SuggestionsSection(parent,
                 createInfo(42, /*hasMoreAction=*/false, /*hasReloadAction=*/hasReloadAction,
                         /*hasViewAllAction=*/false, /*showIfEmpty=*/true),

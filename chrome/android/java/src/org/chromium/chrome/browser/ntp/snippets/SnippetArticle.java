@@ -4,7 +4,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.Bitmap;
-import android.text.TextUtils;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
@@ -78,8 +78,8 @@ public class SnippetArticle {
     /** The offline page id (only for recent tab articles). */
     private String mRecentTabOfflinePageId;
 
-    /** The path to the offline page, if any. */
-    private String mOfflinePagePath;
+    /** The offline id of the corresponding offline page, if any. */
+    private Long mOfflinePageOfflineId;
 
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
@@ -176,6 +176,14 @@ public class SnippetArticle {
         mDownloadAssetMimeType = mimeType;
     }
 
+    /**
+     * @return whether a snippet has to be matched with the exact offline page or with the most
+     * recent offline page found by the snippet's URL.
+     */
+    public boolean requiresExactOfflinePage() {
+        return isDownload() || isRecentTab();
+    }
+
     public boolean isRecentTab() {
         return mCategory == KnownCategories.RECENT_TABS;
     }
@@ -208,22 +216,25 @@ public class SnippetArticle {
         mRecentTabOfflinePageId = offlinePageId;
     }
 
-    /** Sets OfflinePageDownloads guid for the offline version of the snippet. Null to clear. */
-    public void setOfflinePageDownloadGuid(String path) {
-        String previous = mOfflinePagePath;
-        mOfflinePagePath = path;
+    /** Sets offline id of the corresponding to the snippet offline page. Null to clear.*/
+    public void setOfflinePageOfflineId(@Nullable Long offlineId) {
+        Long previous = mOfflinePageOfflineId;
+        mOfflinePageOfflineId = offlineId;
 
-        if (mOfflineStatusChangeRunnable != null && !TextUtils.equals(previous, mOfflinePagePath)) {
+        if (mOfflineStatusChangeRunnable == null) return;
+        if ((previous == null) ? (mOfflinePageOfflineId != null)
+                               : !previous.equals(mOfflinePageOfflineId)) {
             mOfflineStatusChangeRunnable.run();
         }
     }
 
     /**
-     * Gets the OfflinePageDownloads guid for the offline version of the snippet.
-     * Null if page is not available offline.
+     * Gets offline id of the corresponding to the snippet offline page.
+     * Null if there is no corresponding offline page.
      */
-    public String getOfflinePageDownloadGuid() {
-        return mOfflinePagePath;
+    @Nullable
+    public Long getOfflinePageOfflineId() {
+        return mOfflinePageOfflineId;
     }
 
     @Override

@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -355,14 +354,19 @@ public class NewTabPage
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
+            // TODO(vitaliii): Propagate OfflineId for offline page downloads from C++.
             if (article.isDownload() && article.mIsDownloadedAsset) {
                 DownloadUtils.openFile(
                         article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
                 return;
             }
 
-            if (article.getOfflinePageDownloadGuid() != null) {
-                OfflinePageDownloadBridge.openDownloadedPage(article.getOfflinePageDownloadGuid());
+            if (article.getOfflinePageOfflineId() != null) {
+                // TODO(vitaliii): Handle other window dispositions.
+                if (windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB) {
+                    OfflinePageUtils.openInExistingTab(
+                            article.mUrl, article.getOfflinePageOfflineId(), mTab);
+                }
                 return;
             }
 

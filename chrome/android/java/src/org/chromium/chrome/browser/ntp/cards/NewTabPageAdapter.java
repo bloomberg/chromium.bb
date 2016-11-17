@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +51,7 @@ public class NewTabPageAdapter
     private final View mAboveTheFoldView;
     private final UiConfig mUiConfig;
     private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
-    private final OfflinePageDownloadBridge mOfflinePageDownloadBridge;
+    private final OfflinePageBridge mOfflinePageBridge;
     private NewTabPageRecyclerView mRecyclerView;
 
     /**
@@ -135,16 +135,16 @@ public class NewTabPageAdapter
      * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
      *                         (logo, search box, most visited tiles)
      * @param uiConfig the NTP UI configuration, to be passed to created views.
-     * @param offlinePageDownloadBridge the OfflinePageDownloadBridge used to determine if articles
-     *                                  are available offline.
+     * @param offlinePageBridge the OfflinePageBridge used to determine if articles are available
+     *                              offline.
      *
      */
     public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig,
-            OfflinePageDownloadBridge offlinePageDownloadBridge) {
+            OfflinePageBridge offlinePageBridge) {
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
-        mOfflinePageDownloadBridge = offlinePageDownloadBridge;
+        mOfflinePageBridge = offlinePageBridge;
         mRoot = new InnerNode(this) {
             @Override
             protected List<TreeNode> getChildren() {
@@ -232,8 +232,7 @@ public class NewTabPageAdapter
         // Create the section if needed.
         SuggestionsSection section = mSections.get(category);
         if (section == null) {
-            section = new SuggestionsSection(mRoot, info, mNewTabPageManager,
-                    mOfflinePageDownloadBridge);
+            section = new SuggestionsSection(mRoot, info, mNewTabPageManager, mOfflinePageBridge);
             mSections.put(category, section);
         }
 
