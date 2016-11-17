@@ -17,6 +17,17 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 [INTERFACES]
+interface Accelerometer : Sensor
+    attribute @@toStringTag
+    getter includesGravity
+    getter reading
+    method constructor
+interface AccelerometerReading : SensorReading
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
     getter reading

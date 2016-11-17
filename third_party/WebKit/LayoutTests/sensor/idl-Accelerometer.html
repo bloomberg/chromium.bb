@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  // Test that Accelerometer interface exists
+  assert_true('Accelerometer' in window);
+  // Test that AccelerometerReading interface exists
+  assert_true('AccelerometerReading' in window);
+}, 'Test that the Accelerometer and AccelerometerReading interfaces'
+   + ' are present.');
+</script>
