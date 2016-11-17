@@ -82,6 +82,8 @@ action("aggregate_vector_icons") {
     "system_menu_accessibility_large_cursor.icon",
     "system_menu_accessibility_screen_magnifier.1x.icon",
     "system_menu_accessibility_screen_magnifier.icon",
+    "system_menu_add_connection.1x.icon",
+    "system_menu_add_connection.icon",
     "system_menu_arrow_back.1x.icon",
     "system_menu_arrow_back.icon",
     "system_menu_arrow_right.1x.icon",

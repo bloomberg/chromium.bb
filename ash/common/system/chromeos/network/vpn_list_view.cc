@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
@@ -15,12 +16,14 @@
 #include "ash/common/system/chromeos/network/network_list_delegate.h"
 #include "ash/common/system/chromeos/network/vpn_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -32,14 +35,17 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -71,10 +77,62 @@ class VPNListEntryBase : public HoverHighlightView {
 // A list entry that represents a VPN provider.
 class VPNListProviderEntry : public VPNListEntryBase {
  public:
-  VPNListProviderEntry(VPNListView* parent, const std::string& name);
+  VPNListProviderEntry(VPNListView* parent, const std::string& name)
+      : VPNListEntryBase(parent) {
+    views::Label* const label = AddLabel(
+        base::UTF8ToUTF16(name), gfx::ALIGN_LEFT, false /* highlight */);
+    label->SetBorder(views::CreateEmptyBorder(5, 0, 5, 0));
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VPNListProviderEntry);
+};
+
+// A list entry that represents a VPN provider with Material Design.
+class VPNListProviderEntryMd : public views::ButtonListener,
+                               public views::View {
+ public:
+  VPNListProviderEntryMd(ViewClickListener* parent,
+                         const std::string& name,
+                         int button_accessible_name_id)
+      : parent_(parent) {
+    SetLayoutManager(new views::FillLayout);
+    TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
+    tri_view->SetContainerVisible(TriView::Container::START, false);
+    AddChildView(tri_view);
+
+    const ui::NativeTheme* theme = GetNativeTheme();
+    const SkColor prominent_color =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
+    views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+    TrayPopupItemStyle style(
+        theme, TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    style.SetupLabel(label);
+    label->SetText(base::ASCIIToUTF16(name));
+    label->SetEnabledColor(prominent_color);
+    tri_view->AddView(TriView::Container::CENTER, label);
+
+    gfx::ImageSkia icon =
+        gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon, prominent_color);
+    views::ImageButton* add_vpn_button =
+        new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED, icon,
+                             icon, button_accessible_name_id);
+    add_vpn_button->set_ink_drop_base_color(prominent_color);
+    add_vpn_button->SetEnabled(true);
+    tri_view->AddView(TriView::Container::END, add_vpn_button);
+  }
+
+ protected:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    parent_->OnViewClicked(this);
+  }
+
+ private:
+  // Our parent to handle events.
+  ViewClickListener* parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(VPNListProviderEntryMd);
 };
 
 // A list entry that represents a network. If the network is currently
@@ -125,14 +183,6 @@ class VPNListNetworkEntry : public VPNListEntryBase,
 VPNListEntryBase::VPNListEntryBase(VPNListView* parent)
     : HoverHighlightView(parent) {
   SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
-}
-
-VPNListProviderEntry::VPNListProviderEntry(VPNListView* parent,
-                                           const std::string& name)
-    : VPNListEntryBase(parent) {
-  views::Label* const label =
-      AddLabel(base::UTF8ToUTF16(name), gfx::ALIGN_LEFT, false /* highlight */);
-  label->SetBorder(views::CreateEmptyBorder(5, 0, 5, 0));
 }
 
 VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* parent,
@@ -402,7 +452,13 @@ void VPNListView::AddProviderAndNetworks(
     list_empty_ = false;
   }
   // Add a list entry for the VPN provider.
-  views::View* provider(new VPNListProviderEntry(this, name));
+  views::View* provider = nullptr;
+  if (UseMd()) {
+    provider = new VPNListProviderEntryMd(this, name,
+                                          IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
+  } else {
+    provider = new VPNListProviderEntry(this, name);
+  }
   container()->AddChildView(provider);
   provider_view_key_map_[provider] = key;
   // Add the networks belonging to this provider, in the priority order returned
