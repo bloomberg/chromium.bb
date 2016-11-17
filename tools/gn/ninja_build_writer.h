@@ -67,5 +67,7 @@ class NinjaBuildWriter {
   DISALLOW_COPY_AND_ASSIGN(NinjaBuildWriter);
 };
 
+extern const char kNinjaRules_Help[];
+
 #endif  // TOOLS_GN_NINJA_BUILD_WRITER_H_
 

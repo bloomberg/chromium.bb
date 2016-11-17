@@ -41,7 +41,15 @@ Argument
 
 Example
 
-  set_default_toolchain("//build/config/win:vs32"))";
+  # Set default toolchain only has an effect when run in the context of the
+  # default toolchain. Pick the right one according to the current CPU
+  # architecture.
+  if (target_cpu == "x64") {
+    set_default_toolchain("//toolchains:64")
+  } else if (target_cpu == "x86") {
+    set_default_toolchain("//toolchains:32")
+  }
+)";
 
 Value RunSetDefaultToolchain(Scope* scope,
                              const FunctionCallNode* function,

@@ -305,7 +305,44 @@ const char kToolchain_Help[] =
     R"*(toolchain: Defines a toolchain.
 
   A toolchain is a set of commands and build flags used to compile the source
-  code. You can have more than one toolchain in use at once in a build.
+  code. The toolchain() function defines these commands.
+
+Toolchain overview
+
+  You can have more than one toolchain in use at once in a build and a target
+  can exist simultaneously in multiple toolchains. A build file is executed
+  once for each toolchain it is referenced in so the GN code can vary all
+  parameters of each target (or which targets exist) on a per-toolchain basis.
+
+  When you have a simple build with only one toolchain, the build config file
+  is loaded only once at the beginning of the build. It must call
+  set_default_toolchain() (see "gn help set_default_toolchain") to tell GN the
+  label of the toolchain definition to use. The "toolchain_args" section of the
+  toolchain definition is ignored.
+
+  When a target has a dependency on a target using different toolchain (see "gn
+  help labels" for how to specify this), GN will start a build using that
+  secondary toolchain to resolve the target. GN will load the build config file
+  with the build arguements overridden as specified in the toolchain_args.
+  Because the default toolchain is already known, calls to
+  set_default_toolchain() are ignored.
+
+  To load a file in an alternate toolchain, GN does the following:
+
+    1. Loads the file with the toolchain definition in it (as determined by the
+       toolchain label).
+    2. Re-runs the master build configuration file, applying the arguments
+       specified by the toolchain_args section of the toolchain definition.
+    3. Loads the destination build file in the context of the configuration file
+       in the previous step.
+
+  The toolchain configuration is two-way. In the default toolchain (i.e. the
+  main build target) the configuration flows from the build config file to the
+  toolchain. The build config file looks at the state of the build (OS type,
+  CPU architecture, etc.) and decides which toolchain to use (via
+  set_default_toolchain()). In secondary toolchains, the configuration flows
+  from the toolchain to the build config file: the "toolchain_args" in the
+  toolchain definition specifies the arguments to re-invoke the build.
 
 Functions and variables
 
@@ -344,40 +381,53 @@ Functions and variables
     This concept is somewhat inefficient to express in Ninja (it requires a lot
     of duplicate of rules) so should only be used when absolutely necessary.
 
-Invoking targets in toolchains
+Example of defining a toolchain
 
-  By default, when a target depends on another, there is an implicit toolchain
-  label that is inherited, so the dependee has the same one as the dependent.
-
-  You can override this and refer to any other toolchain by explicitly
-  labeling the toolchain to use. For example:
-    data_deps = [ "//plugins:mine(//toolchains:plugin_toolchain)" ]
-  The string "//build/toolchains:plugin_toolchain" is a label that identifies
-  the toolchain declaration for compiling the sources.
-
-  To load a file in an alternate toolchain, GN does the following:
-
-   1. Loads the file with the toolchain definition in it (as determined by the
-      toolchain label).
-   2. Re-runs the master build configuration file, applying the arguments
-      specified by the toolchain_args section of the toolchain definition.
-   3. Loads the destination build file in the context of the configuration file
-      in the previous step.
-
-Example
-
-  toolchain("plugin_toolchain") {
+  toolchain("32") {
     tool("cc") {
       command = "gcc {{source}}"
       ...
     }
 
     toolchain_args = {
-      is_plugin = true
-      is_32bit = true
-      is_64bit = false
+      use_doom_melon = true  # Doom melon always required for 32-bit builds.
+      current_cpu = "x86"
     }
-  };
+  }
+
+  toolchain("64") {
+    tool("cc") {
+      command = "gcc {{source}}"
+      ...
+    }
+
+    toolchain_args = {
+      # use_doom_melon is not overridden here, it will take the default.
+      current_cpu = "x64"
+    }
+  }
+
+Example of cross-toolchain dependencies
+
+  If a 64-bit target wants to depend on a 32-bit binary, it would specify a
+  dependency using data_deps (data deps are like deps that are only needed at
+  runtime and aren't linked, since you can't link a 32-bit and a 64-bit
+  library).
+
+    executable("my_program") {
+      ...
+      if (target_cpu == "x64") {
+        # The 64-bit build needs this 32-bit helper.
+        data_deps = [ ":helper(//toolchains:32)" ]
+      }
+    }
+
+    if (target_cpu == "x86") {
+      # Our helper library is only compiled in 32-bits.
+      shared_library("helper") {
+        ...
+      }
+    }
 )*";
 
 Value RunToolchain(Scope* scope,
