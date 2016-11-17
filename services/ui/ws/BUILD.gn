@@ -55,6 +55,8 @@ static_library("lib") {
     "operation.h",
     "platform_display.cc",
     "platform_display.h",
+    "platform_display_default.cc",
+    "platform_display_default.h",
     "platform_display_delegate.h",
     "platform_display_factory.h",
     "platform_display_init_params.cc",
