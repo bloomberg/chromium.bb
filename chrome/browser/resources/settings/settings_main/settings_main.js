@@ -330,10 +330,11 @@ Polymer({
       setTimeout(function() {
         var whenSearchDone = settings.getSearchManager().search(
             query, assert(this.getPage_(settings.Route.BASIC)));
-        assert(
-            whenSearchDone ===
-                settings.getSearchManager().search(
-                    query, assert(this.getPage_(settings.Route.ADVANCED))));
+
+        if (this.pageVisibility.advancedSettings !== false) {
+          assert(whenSearchDone === settings.getSearchManager().search(
+              query, assert(this.getPage_(settings.Route.ADVANCED))));
+        }
 
         whenSearchDone.then(function(request) {
           resolve();
