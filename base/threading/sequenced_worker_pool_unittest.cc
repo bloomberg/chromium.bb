@@ -254,12 +254,8 @@ class SequencedWorkerPoolTest
       TaskScheduler::CreateAndSetDefaultTaskScheduler(
           std::move(worker_pool_params),
           base::Bind([](const TaskTraits&) -> size_t { return 0U; }));
-
-      // Unit tests run in an environment where SequencedWorkerPool is enabled
-      // without redirection to TaskScheduler. For the current unit test,
-      // disable it and re-enable it with redirection to TaskScheduler.
-      SequencedWorkerPool::DisableForProcessForTesting();
-      SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
+      SequencedWorkerPool::ResetRedirectToTaskSchedulerForProcessForTesting();
+      SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
     }
   }
 
@@ -271,12 +267,7 @@ class SequencedWorkerPoolTest
     DeletePool();
 
     if (RedirectedToTaskScheduler()) {
-      // Reset SequencedWorkerPool to its original state (i.e. enabled without
-      // redirection to TaskScheduler).
-      SequencedWorkerPool::DisableForProcessForTesting();
-      SequencedWorkerPool::EnableForProcess();
-
-      // Delete the registered TaskScheduler.
+      SequencedWorkerPool::ResetRedirectToTaskSchedulerForProcessForTesting();
       DeleteTaskScheduler();
     }
   }
