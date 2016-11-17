@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -97,7 +98,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   std::string GetGroupIDInput(const std::string& input_device_id) override;
 
   // Get number of input or output streams.
-  int input_stream_count() const { return num_input_streams_; }
+  int input_stream_count() const {
+    return static_cast<int>(input_streams_.size());
+  }
   int output_stream_count() const { return num_output_streams_; }
 
  protected:
@@ -154,11 +157,11 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Number of currently open output streams.
   int num_output_streams_;
 
-  // Number of currently open input streams.
-  int num_input_streams_;
-
   // Track output state change listeners.
   base::ObserverList<AudioDeviceListener> output_listeners_;
+
+  // Contains currently open input streams.
+  std::unordered_set<AudioInputStream*> input_streams_;
 
   // Map of cached AudioOutputDispatcher instances.  Must only be touched
   // from the audio thread (no locking).
