@@ -5,7 +5,7 @@
 [
     RuntimeEnabled=CustomElementsV1,
 ] interface CustomElementRegistry {
-    [CallWith=ScriptState, CEReactions, CustomElementCallbacks, RaisesException] void define(DOMString name, Function constructor, optional ElementDefinitionOptions options);
+    [CallWith=ScriptState, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=CustomElementRegistryDefine] void define(DOMString name, Function constructor, optional ElementDefinitionOptions options);
     any get(DOMString name);
     [CallWith=ScriptState,RaisesException] Promise<void> whenDefined(DOMString name);
 };
