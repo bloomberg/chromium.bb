@@ -613,7 +613,6 @@ component("platform") {
     "fonts/GenericFontFamilySettings.h",
     "fonts/GlyphBuffer.h",
     "fonts/GlyphMetricsMap.h",
-    "fonts/Latin1TextIterator.h",
     "fonts/OrientationIterator.cpp",
     "fonts/OrientationIterator.h",
     "fonts/ScriptRunIterator.cpp",
