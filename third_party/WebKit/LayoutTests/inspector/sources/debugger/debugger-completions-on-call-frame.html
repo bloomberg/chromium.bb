@@ -91,16 +91,17 @@ function test()
 
     function checkAgainstGolden(golden, antiGolden, continuation, completions)
     {
+        var suggestions = new Set(completions.map(s => s.title))
         var failed = false;
         for (var i = 0; i < golden.length; ++i) {
-            if (completions.indexOf(golden[i]) === -1) {
+            if (!suggestions.has(golden[i])) {
                 failed = true;
                 InspectorTest.addResult("FAIL: NOT FOUND: " + golden[i]);
             }
         }
 
         for (var i = 0; i < antiGolden.length; ++i) {
-            if (completions.indexOf(antiGolden[i]) !== -1) {
+            if (suggestions.has(antiGolden[i])) {
                 failed = true;
                 InspectorTest.addResult("FAIL: FOUND: " + antiGolden[i]);
             }

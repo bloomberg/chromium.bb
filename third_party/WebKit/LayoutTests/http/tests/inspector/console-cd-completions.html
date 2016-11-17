@@ -165,7 +165,7 @@ function test()
 
     function dumpCompletions(completions, expected)
     {
-        var completionSet = new Set(completions);
+        var completionSet = new Set(completions.map(c => c.title));
         for (var completion of expected) {
             if (completionSet.has(completion))
                 InspectorTest.addResult(completion);

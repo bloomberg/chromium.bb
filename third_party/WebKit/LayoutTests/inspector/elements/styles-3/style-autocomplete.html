@@ -91,17 +91,19 @@ function test()
             selectionRange.selectNodeContents(proxyElement);
         }
         var range = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, prompt._completionStopCharacters, proxyElement, "backward");
-        prompt._buildPropertyCompletions(proxyElement, range, force, completions);
+        var prefix = range.toString();
+        prompt._buildPropertyCompletions(inputText.substring(0, inputText.length - prefix.length), prefix, force).then(completions);
 
-        function completions(result, index)
+        function completions(result)
         {
+            var suggestions = new Set(result.map(s => s.title))
             var i;
             for (i = 0; i < golden.length; ++i) {
-                if (result.indexOf(golden[i]) === -1)
+                if (!suggestions.has(golden[i]))
                     InspectorTest.addResult("NOT FOUND: " + golden[i]);
             }
             for (i = 0; i < antiGolden.length; ++i) {
-                if (result.indexOf(antiGolden[i]) !== -1)
+                if (suggestions.has(antiGolden[i]))
                     InspectorTest.addResult("FOUND: " + antiGolden[i]);
             }
             proxyElement.remove();

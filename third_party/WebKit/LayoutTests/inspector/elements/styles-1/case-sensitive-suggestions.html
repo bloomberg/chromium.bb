@@ -31,9 +31,10 @@ function test()
         proxyElement.textContent = inputText;
         var selectionRange = document.createRange();
         selectionRange.selectNodeContents(proxyElement);
-        prompt._buildPropertyCompletions(proxyElement, selectionRange, true, completions);
+        var prefix = selectionRange.toString();
+        prompt._buildPropertyCompletions(inputText.substring(0, inputText.length - prefix.length), prefix, true).then(completions);
 
-        function completions(result, index)
+        function completions(result)
         {
             function isUpperCase(str)
             {
@@ -56,12 +57,12 @@ function test()
             for (var i = 0; i < result.length; ++i) {
                 switch (inputCase) {
                 case Case.Upper:
-                    if (!isUpperCase(result[i]))
-                        InspectorTest.addResult("Error: Suggestion " + result[i] + " must be in UPPERCASE.");
+                    if (!isUpperCase(result[i].title))
+                        InspectorTest.addResult("Error: Suggestion " + result[i].title + " must be in UPPERCASE.");
                     break;
                 case Case.Lower:
-                    if (!isLowerCase(result[i]))
-                        InspectorTest.addResult("Error: Suggestion " + result[i] + " must be in lowercase.");
+                    if (!isLowerCase(result[i].title))
+                        InspectorTest.addResult("Error: Suggestion " + result[i].title + " must be in lowercase.");
                     break;
                 }
             }

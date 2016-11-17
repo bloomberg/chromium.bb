@@ -5,25 +5,30 @@
 <script src="/inspector-unit/inspector-unit-test.js"></script>
 <script>
 function test() {
-    var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"];
+    var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"].map(s => ({title: s}));
     var prompt = new UI.TextPrompt();
-    prompt.initialize((element, range, force, callback) => callback(suggestions));
-    prompt.setSuggestBoxEnabled(true);
+    prompt.initialize(() => Promise.resolve(suggestions));
     var div = document.createElement("div");
     UI.inspectorView.element.appendChild(div);
     prompt.attachAndStartEditing(div);
     prompt.setText("hey");
+    UnitTest.addSniffer(prompt, "_completionsReady").then(step2);
     prompt.complete();
-    UnitTest.addResult("Text:" + prompt.text());
-    UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
+    function step2() {
+        UnitTest.addResult("Text:" + prompt.text());
+        UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
 
-    UnitTest.addResult("Test with inexact match:");
-    prompt.clearAutocomplete();
-    prompt.setText("inexactmatch");
-    prompt.complete();
-    UnitTest.addResult("Text:" + prompt.text());
-    UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
-    UnitTest.completeTest();
+        UnitTest.addResult("Test with inexact match:");
+        prompt.clearAutocomplete();
+        prompt.setText("inexactmatch");
+        UnitTest.addSniffer(prompt, "_completionsReady").then(step3);
+        prompt.complete();
+    }
+    function step3() {
+        UnitTest.addResult("Text:" + prompt.text());
+        UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
+        UnitTest.completeTest();
+    }
 }
 </script>
 </head>

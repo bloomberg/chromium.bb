@@ -7,7 +7,7 @@
 
 function test()
 {
-    var suggestions = ["testTextPrompt"];
+    var suggestions = [{title:"testTextPrompt"}];
     var waitingForAutocomplete = null;
     var completionsDone = function () {
         console.error("completionsDone called too early!");
@@ -19,65 +19,71 @@ function test()
     UI.inspectorView.element.appendChild(element);
     var proxy = prompt.attachAndStartEditing(element);
     prompt.setText("testT");
+    waitForAutocomplete().then(step1);
     prompt.complete();
     dumpTextPrompt();
-    completionsDone();
-    dumpTextPrompt();
 
-    typeCharacter("e");
-    dumpTextPrompt();
+    function step1() {
+        dumpTextPrompt();
 
-    waitForAutocomplete(step2)
+        typeCharacter("e");
+        dumpTextPrompt();
+
+        waitForAutocomplete().then(step2);
+    }
     function step2()
     {
-        completionsDone();
         dumpTextPrompt();
 
         typeCharacter("z");
-        waitForAutocomplete(step3);
+        waitForAutocomplete().then(step3);
     }
 
     function step3()
     {
-        completionsDone();
         dumpTextPrompt();
         typeCharacter(null);
-        waitForAutocomplete(step4);
+        waitForAutocomplete().then(step4);
     }
 
     function step4()
     {
-        completionsDone();
         dumpTextPrompt();
         typeCharacter(null);
-        waitForAutocomplete(step5);
+        waitForAutocomplete().then(step5);
     }
     function step5()
     {
-        completionsDone();
         dumpTextPrompt();
         prompt.setText("something_before test");
         prompt.complete();
-        completionsDone();
-        dumpTextPrompt();
-        typeCharacter("T");
-        dumpTextPrompt();
-        UnitTest.completeTest();
+        completionsDone().then(()=>{
+            dumpTextPrompt();
+            typeCharacter("T");
+            dumpTextPrompt();
+            UnitTest.completeTest();
+        });
     }
 
-    function completions(element, range, force, callback)
+    function completions(expression, query)
     {
+        var callback;
+        var promise = new Promise(x => callback = x);
         UnitTest.addResult("Requesting completions");
-        completionsDone = () => callback(suggestions.filter(s => s.startsWith(range.toString())));
+        completionsDone = () => {
+            callback(suggestions.filter(s => s.title.startsWith(query.toString())))
+            return Promise.resolve();
+        };
         var temp = waitingForAutocomplete;
         waitingForAutocomplete = null;
         if (temp)
             temp();
+        return promise;
     }
 
-    function waitForAutocomplete(fn)
+    function waitForAutocomplete()
     {
-        waitingForAutocomplete = fn;
+        return new Promise(x => waitingForAutocomplete = x).then(() => completionsDone());
     }
 
     function dumpTextPrompt()
