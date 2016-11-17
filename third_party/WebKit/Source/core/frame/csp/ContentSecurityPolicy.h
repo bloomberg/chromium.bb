@@ -386,8 +386,10 @@ class CORE_EXPORT ContentSecurityPolicy
   bool shouldSendViolationReport(const String&) const;
   void didSendViolationReport(const String&);
   void dispatchViolationEvents(const SecurityPolicyViolationEventInit&,
-                               Element*,
-                               Document*);
+                               Element*);
+  void postViolationReport(const SecurityPolicyViolationEventInit&,
+                           LocalFrame*,
+                           const Vector<String>& reportEndpoints);
 
   Member<ExecutionContext> m_executionContext;
   bool m_overrideInlineStyleAllowed;
