@@ -180,8 +180,8 @@ PasswordFormManager::PasswordFormManager(
 }
 
 PasswordFormManager::~PasswordFormManager() {
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.ActionsTakenV3", GetActionsTaken(), kMaxNumActionsTaken);
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
+                            kMaxNumActionsTaken);
   if (submit_result_ == kSubmitResultNotSubmitted) {
     if (has_generated_password_)
       metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -676,9 +676,8 @@ bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(
   return false;
 }
 
-void PasswordFormManager::SendAutofillVotes(
-    const PasswordForm& observed,
-    PasswordForm* pending) {
+void PasswordFormManager::SendAutofillVotes(const PasswordForm& observed,
+                                            PasswordForm* pending) {
   if (pending->form_data.fields.empty())
     return;
 
@@ -778,6 +777,11 @@ bool PasswordFormManager::UploadPasswordForm(
   // sure to receive them.
   form_structure.set_upload_required(UPLOAD_REQUIRED);
 
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
+  }
+
   bool success = autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       login_form_signature, true /* observed_submission */);
@@ -860,6 +864,11 @@ bool PasswordFormManager::UploadChangePasswordForm(
   // sure to receive them. It also makes testing easier if these requests
   // always pass.
   form_structure.set_upload_required(UPLOAD_REQUIRED);
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
+  }
 
   return autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,

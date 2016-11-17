@@ -814,10 +814,17 @@ void PasswordManager::AutofillHttpAuth(
 void PasswordManager::ProcessAutofillPredictions(
     password_manager::PasswordManagerDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_))
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+
   // Leave only forms that contain fields that are useful for password manager.
   std::map<autofill::FormData, autofill::PasswordFormFieldPredictionMap>
       predictions;
-  for (autofill::FormStructure* form : forms) {
+  for (const autofill::FormStructure* form : forms) {
+    if (logger)
+      logger->LogFormStructure(Logger::STRING_SERVER_PREDICTIONS, *form);
     for (std::vector<autofill::AutofillField*>::const_iterator field =
              form->begin();
          field != form->end(); ++field) {

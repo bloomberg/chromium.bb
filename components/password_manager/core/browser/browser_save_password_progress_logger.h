@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 
+namespace autofill {
+class FormStructure;
+}
+
 namespace password_manager {
 
 class LogManager;
@@ -26,6 +30,10 @@ class BrowserSavePasswordProgressLogger
   // sanitized and passed to SendLog for display.
   void LogFormSignatures(StringID label, const autofill::PasswordForm& form);
 
+  // Browser-specific addition to the base class' Log* methods. The input is
+  // sanitized and passed to SendLog for display.
+  void LogFormStructure(StringID label, const autofill::FormStructure& form);
+
  protected:
   // autofill::SavePasswordProgressLogger:
   void SendLog(const std::string& log) override;
@@ -34,6 +42,10 @@ class BrowserSavePasswordProgressLogger
   // The LogManager to which logs can be sent for display. The log_manager must
   // outlive this logger.
   const LogManager* const log_manager_;
+
+  // Return string representation for FormStructure.
+  std::string FormStructureToFieldsLogString(
+      const autofill::FormStructure& form);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSavePasswordProgressLogger);
 };

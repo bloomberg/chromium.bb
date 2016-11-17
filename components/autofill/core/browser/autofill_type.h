@@ -44,6 +44,9 @@ class AutofillType {
   static ServerFieldType GetEquivalentBillingFieldType(
       ServerFieldType field_type);
 
+  // Translates the ServerFieldType values into the corresponding strings.
+  static std::string ServerFieldTypeToString(ServerFieldType type);
+
  private:
   // The server-native field type, or UNKNOWN_TYPE if unset.
   ServerFieldType server_type_;
