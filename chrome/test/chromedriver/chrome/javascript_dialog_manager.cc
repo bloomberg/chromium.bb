@@ -37,8 +37,13 @@ Status JavaScriptDialogManager::HandleDialog(bool accept,
   if (text)
     params.SetString("promptText", *text);
   Status status = client_->SendCommand("Page.handleJavaScriptDialog", params);
-  if (status.IsError())
-    return status;
+  if (status.IsError()) {
+    // Retry once to work around
+    // https://bugs.chromium.org/p/chromedriver/issues/detail?id=1500
+    status = client_->SendCommand("Page.handleJavaScriptDialog", params);
+    if (status.IsError())
+      return status;
+  }
 
   // Remove a dialog from the queue. Need to check the queue is not empty here,
   // because it could have been cleared during waiting for the command
