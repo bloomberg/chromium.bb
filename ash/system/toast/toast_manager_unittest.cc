@@ -54,12 +54,18 @@ class ToastManagerTest : public test::AshTestBase {
     return overlay ? overlay->widget_for_testing() : nullptr;
   }
 
+  ToastOverlayButton* GetDismissButton() {
+    ToastOverlay* overlay = GetCurrentOverlay();
+    DCHECK(overlay);
+    return overlay->dismiss_button_for_testing();
+  }
+
   base::string16 GetCurrentText() {
     ToastOverlay* overlay = GetCurrentOverlay();
     return overlay ? overlay->text_ : base::string16();
   }
 
-  base::string16 GetCurrentDismissText() {
+  base::Optional<base::string16> GetCurrentDismissText() {
     ToastOverlay* overlay = GetCurrentOverlay();
     return overlay ? overlay->dismiss_text_ : base::string16();
   }
@@ -77,12 +83,17 @@ class ToastManagerTest : public test::AshTestBase {
     return id;
   }
 
-  std::string ShowToastWithDismiss(const std::string& text,
-                                   int32_t duration,
-                                   const std::string& dismiss_text) {
+  std::string ShowToastWithDismiss(
+      const std::string& text,
+      int32_t duration,
+      const base::Optional<std::string>& dismiss_text) {
+    base::Optional<base::string16> localized_dismiss;
+    if (dismiss_text.has_value())
+      localized_dismiss = base::ASCIIToUTF16(dismiss_text.value());
+
     std::string id = "TOAST_ID_" + base::UintToString(serial_++);
-    manager()->Show(ToastData(id, base::ASCIIToUTF16(text), duration,
-                              base::ASCIIToUTF16(dismiss_text)));
+    manager()->Show(
+        ToastData(id, base::ASCIIToUTF16(text), duration, localized_dismiss));
     return id;
   }
 
@@ -135,6 +146,12 @@ TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
 
   // Toast isn't closed.
   EXPECT_TRUE(GetCurrentOverlay() != nullptr);
+}
+
+TEST_F(ToastManagerTest, NullMessageHasNoDismissButton) {
+  ShowToastWithDismiss("DUMMY", 10, base::Optional<std::string>());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetDismissButton());
 }
 
 TEST_F(ToastManagerTest, QueueMessage) {

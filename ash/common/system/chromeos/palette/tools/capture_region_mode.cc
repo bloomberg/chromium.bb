@@ -45,7 +45,7 @@ void CaptureRegionMode::OnEnable() {
 
   ToastData toast(kToastId, l10n_util::GetStringUTF16(
                                 IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_TOAST),
-                  kToastDurationMs, base::string16());
+                  kToastDurationMs, base::Optional<base::string16>());
   ash::WmShell::Get()->toast_manager()->Show(toast);
 
   WmShell::Get()->palette_delegate()->TakePartialScreenshot(base::Bind(
