@@ -23,7 +23,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
-  bool fixed_inline = false, fixed_block = false, is_new_fc = false;
+  bool fixed_inline = false, fixed_block = false;
   // XXX for orthogonal writing mode this is not right
   LayoutUnit available_logical_width =
       std::max(LayoutUnit(), box.containingBlockLogicalWidthForContent());
@@ -48,8 +48,8 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     fixed_block = true;
   }
 
-  if (box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext())
-    is_new_fc = true;
+  bool is_new_fc =
+      box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext();
 
   NGConstraintSpaceBuilder builder(
       FromPlatformWritingMode(box.styleRef().getWritingMode()));
@@ -71,10 +71,22 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
       box.styleRef().direction(), builder.ToConstraintSpace());
 }
 
-void NGConstraintSpace::AddExclusion(const NGLogicalRect& exclusion) const {
+void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) const {
   WRITING_MODE_IGNORED(
       "Exclusions are stored directly in physical constraint space.");
   MutablePhysicalSpace()->AddExclusion(exclusion);
+}
+
+const NGExclusion* NGConstraintSpace::LastLeftFloatExclusion() const {
+  WRITING_MODE_IGNORED(
+      "Exclusions are stored directly in physical constraint space.");
+  return PhysicalSpace()->LastLeftFloatExclusion();
+}
+
+const NGExclusion* NGConstraintSpace::LastRightFloatExclusion() const {
+  WRITING_MODE_IGNORED(
+      "Exclusions are stored directly in physical constraint space.");
+  return PhysicalSpace()->LastRightFloatExclusion();
 }
 
 NGLogicalSize NGConstraintSpace::PercentageResolutionSize() const {

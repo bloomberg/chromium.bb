@@ -148,10 +148,10 @@ NGLayoutOpportunity GetTopSpace(const NGLayoutOpportunity& parent_opportunity,
 
 // Inserts the exclusion into the Layout Opportunity tree.
 void InsertExclusion(NGLayoutOpportunityTreeNode* node,
-                     const NGLogicalRect* exclusion,
+                     const NGExclusion* exclusion,
                      NGLayoutOpportunities& opportunities) {
   // Base case: size of the exclusion is empty.
-  if (exclusion->size.IsEmpty())
+  if (exclusion->rect.size.IsEmpty())
     return;
 
   // Base case: there is no node.
@@ -159,7 +159,7 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
     return;
 
   // Base case: exclusion is not in the node's constraint space.
-  if (!exclusion->IsContained(node->opportunity))
+  if (!exclusion->rect.IsContained(node->opportunity))
     return;
 
   if (node->exclusion) {
@@ -170,12 +170,12 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
   }
 
   // Split the current node.
-  node->left = CreateLeftNGLayoutOpportunityTreeNode(node, *exclusion);
-  node->right = CreateRightNGLayoutOpportunityTreeNode(node, *exclusion);
-  node->bottom = CreateBottomNGLayoutOpportunityTreeNode(node, *exclusion);
+  node->left = CreateLeftNGLayoutOpportunityTreeNode(node, exclusion->rect);
+  node->right = CreateRightNGLayoutOpportunityTreeNode(node, exclusion->rect);
+  node->bottom = CreateBottomNGLayoutOpportunityTreeNode(node, exclusion->rect);
 
   NGLayoutOpportunity top_layout_opp =
-      GetTopSpace(node->opportunity, *exclusion);
+      GetTopSpace(node->opportunity, exclusion->rect);
   if (!top_layout_opp.IsEmpty())
     opportunities.append(top_layout_opp);
 
@@ -184,9 +184,9 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
 
 // Compares exclusions by their top position.
 bool CompareNGExclusionsByTopAsc(
-    const std::unique_ptr<const NGLogicalRect>& lhs,
-    const std::unique_ptr<const NGLogicalRect>& rhs) {
-  return rhs->offset.block_offset > lhs->offset.block_offset;
+    const std::unique_ptr<const NGExclusion>& lhs,
+    const std::unique_ptr<const NGExclusion>& rhs) {
+  return rhs->rect.offset.block_offset > lhs->rect.offset.block_offset;
 }
 
 // Compares Layout Opportunities by Start Point.
@@ -233,15 +233,15 @@ void RunPreconditionChecks(
   }
 }
 
-NGLogicalRect ToLeaderExclusion(const NGLogicalOffset& origin_point,
-                                const NGLogicalOffset& leader_point) {
+NGExclusion ToLeaderExclusion(const NGLogicalOffset& origin_point,
+                              const NGLogicalOffset& leader_point) {
   LayoutUnit inline_size =
       leader_point.inline_offset - origin_point.inline_offset;
   LayoutUnit block_size = leader_point.block_offset - origin_point.block_offset;
 
-  NGLogicalRect leader_exclusion;
-  leader_exclusion.offset = origin_point;
-  leader_exclusion.size = {inline_size, block_size};
+  NGExclusion leader_exclusion;
+  leader_exclusion.rect.offset = origin_point;
+  leader_exclusion.rect.size = {inline_size, block_size};
   return leader_exclusion;
 }
 
@@ -267,7 +267,7 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
   opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(initial_opportunity);
 
   if (opt_leader_point) {
-    const NGLogicalRect leader_exclusion =
+    const NGExclusion leader_exclusion =
         ToLeaderExclusion(origin_point, opt_leader_point.value());
     InsertExclusion(MutableOpportunityTreeRoot(), &leader_exclusion,
                     opportunities_);

@@ -86,13 +86,12 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   // Create a space with a 100x100 exclusion in the top right corner.
   auto* space =
       ConstructConstraintSpace(HorizontalTopBottom, LTR, physical_size);
-  NGLogicalRect exclusion;
-  exclusion.size = {/* inline_size */ LayoutUnit(100),
-                    /* block_size */ LayoutUnit(100)};
-  exclusion.offset = {/* inline_offset */ LayoutUnit(500),
-                      /* block_offset */ LayoutUnit(0)};
+  NGExclusion exclusion;
+  exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
+                         /* block_size */ LayoutUnit(100)};
+  exclusion.rect.offset = {/* inline_offset */ LayoutUnit(500),
+                           /* block_offset */ LayoutUnit(0)};
   space->AddExclusion(exclusion);
-
   auto* iterator = space->LayoutOpportunities();
 
   // First opportunity should be to the left of the exclusion.
@@ -113,11 +112,11 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
   // Create a space with a 100x100 exclusion in the top left corner.
   auto* space =
       ConstructConstraintSpace(HorizontalTopBottom, LTR, physical_size);
-  NGLogicalRect exclusion;
-  exclusion.size = {/* inline_size */ LayoutUnit(100),
-                    /* block_size */ LayoutUnit(100)};
-  exclusion.offset = {/* inline_offset */ LayoutUnit(0),
-                      /* block_offset */ LayoutUnit(0)};
+  NGExclusion exclusion;
+  exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
+                         /* block_size */ LayoutUnit(100)};
+  exclusion.rect.offset = {/* inline_offset */ LayoutUnit(0),
+                           /* block_offset */ LayoutUnit(0)};
   space->AddExclusion(exclusion);
 
   auto* iterator = space->LayoutOpportunities();
@@ -163,17 +162,17 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   auto* space =
       ConstructConstraintSpace(HorizontalTopBottom, LTR, physical_size);
   // Add exclusions
-  NGLogicalRect exclusion1;
-  exclusion1.size = {/* inline_size */ LayoutUnit(100),
-                     /* block_size */ LayoutUnit(100)};
-  exclusion1.offset = {/* inline_offset */ LayoutUnit(150),
-                       /* block_offset */ LayoutUnit(200)};
+  NGExclusion exclusion1;
+  exclusion1.rect.size = {/* inline_size */ LayoutUnit(100),
+                          /* block_size */ LayoutUnit(100)};
+  exclusion1.rect.offset = {/* inline_offset */ LayoutUnit(150),
+                            /* block_offset */ LayoutUnit(200)};
   space->AddExclusion(exclusion1);
-  NGLogicalRect exclusion2;
-  exclusion2.size = {/* inline_size */ LayoutUnit(50),
-                     /* block_size */ LayoutUnit(50)};
-  exclusion2.offset = {/* inline_offset */ LayoutUnit(500),
-                       /* block_offset */ LayoutUnit(350)};
+  NGExclusion exclusion2;
+  exclusion2.rect.size = {/* inline_size */ LayoutUnit(50),
+                          /* block_size */ LayoutUnit(50)};
+  exclusion2.rect.offset = {/* inline_offset */ LayoutUnit(500),
+                            /* block_offset */ LayoutUnit(350)};
   space->AddExclusion(exclusion2);
 
   auto* iterator = space->LayoutOpportunities();
@@ -218,17 +217,17 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
   auto* space =
       ConstructConstraintSpace(HorizontalTopBottom, LTR, physical_size);
   // Add exclusions
-  NGLogicalRect exclusion1;
-  exclusion1.size = {/* inline_size */ LayoutUnit(100),
-                     /* block_size */ LayoutUnit(100)};
-  exclusion1.offset = {/* inline_offset */ LayoutUnit(150),
-                       /* block_offset */ LayoutUnit(200)};
+  NGExclusion exclusion1;
+  exclusion1.rect.size = {/* inline_size */ LayoutUnit(100),
+                          /* block_size */ LayoutUnit(100)};
+  exclusion1.rect.offset = {/* inline_offset */ LayoutUnit(150),
+                            /* block_offset */ LayoutUnit(200)};
   space->AddExclusion(exclusion1);
-  NGLogicalRect exclusion2;
-  exclusion2.size = {/* inline_size */ LayoutUnit(50),
-                     /* block_size */ LayoutUnit(50)};
-  exclusion2.offset = {/* inline_offset */ LayoutUnit(500),
-                       /* block_offset */ LayoutUnit(350)};
+  NGExclusion exclusion2;
+  exclusion2.rect.size = {/* inline_size */ LayoutUnit(50),
+                          /* block_size */ LayoutUnit(50)};
+  exclusion2.rect.offset = {/* inline_offset */ LayoutUnit(500),
+                            /* block_offset */ LayoutUnit(350)};
   space->AddExclusion(exclusion2);
 
   const NGLogicalOffset origin_point = {LayoutUnit(0), LayoutUnit(200)};
@@ -273,11 +272,11 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
 
   auto* space =
       ConstructConstraintSpace(HorizontalTopBottom, LTR, physical_size);
-  NGLogicalRect exclusion;
-  exclusion.size = {/* inline_size */ LayoutUnit(100),
-                    /* block_size */ LayoutUnit(100)};
-  exclusion.offset = {/* inline_offset */ LayoutUnit(0),
-                      /* block_offset */ LayoutUnit(150)};
+  NGExclusion exclusion;
+  exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
+                         /* block_size */ LayoutUnit(100)};
+  exclusion.rect.offset = {/* inline_offset */ LayoutUnit(0),
+                           /* block_offset */ LayoutUnit(150)};
   space->AddExclusion(exclusion);
 
   auto* iterator = space->LayoutOpportunities();

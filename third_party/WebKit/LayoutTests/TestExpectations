@@ -211,8 +211,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 
 #### fast/block/float
-#### Passed: 47
-#### Skipped: 148
+#### Passed: 48
+#### Skipped: 149
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -318,7 +318,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-float-sibling-with
 crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/logical-bottom-exceeds-layoutunit-max.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/marquee-shrink-to-avoid-floats.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/multiple-float-positioning.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/narrow-after-wide.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-clear.html [ Skip ]

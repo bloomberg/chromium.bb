@@ -685,5 +685,85 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   EXPECT_EQ(kDiv2Size + kDiv3Size, child4->TopOffset());
   EXPECT_EQ(kParentLeftPadding + kDiv4LeftMargin, child4->LeftOffset());
 }
+
+// Verifies that NG block layout algorithm respects "clear" CSS property.
+//
+// Test case's HTML representation:
+//  <div id="parent" style="width: 200px; height: 200px;">
+//    <div style="float: left; width: 30px; height: 30px;"/>   <!-- DIV1 -->
+//    <div style="float: right; width: 40px; height: 40px;
+//        clear: left;"/>  <!-- DIV2 -->
+//    <div style="clear: ...; width: 50px; height: 50px;"/>    <!-- DIV3 -->
+//  </div>
+//
+// Expected:
+// - DIV2 is positioned below DIV1 because it has clear: left;
+// - DIV3 is positioned below DIV1 if clear: left;
+// - DIV3 is positioned below DIV2 if clear: right;
+// - DIV3 is positioned below DIV2 if clear: both;
+TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
+  const int kParentSize = 200;
+  const int kDiv1Size = 30;
+  const int kDiv2Size = 40;
+  const int kDiv3Size = 50;
+
+  style_->setHeight(Length(kParentSize, Fixed));
+  style_->setWidth(Length(kParentSize, Fixed));
+
+  // DIV1
+  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
+  div1_style->setWidth(Length(kDiv1Size, Fixed));
+  div1_style->setHeight(Length(kDiv1Size, Fixed));
+  div1_style->setFloating(EFloat::Left);
+  NGBox* div1 = new NGBox(div1_style.get());
+
+  // DIV2
+  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
+  div2_style->setWidth(Length(kDiv2Size, Fixed));
+  div2_style->setHeight(Length(kDiv2Size, Fixed));
+  div2_style->setClear(EClear::ClearLeft);
+  div2_style->setFloating(EFloat::Right);
+  NGBox* div2 = new NGBox(div2_style.get());
+
+  // DIV3
+  RefPtr<ComputedStyle> div3_style = ComputedStyle::create();
+  div3_style->setWidth(Length(kDiv3Size, Fixed));
+  div3_style->setHeight(Length(kDiv3Size, Fixed));
+  NGBox* div3 = new NGBox(div3_style.get());
+
+  div1->SetNextSibling(div2);
+  div2->SetNextSibling(div3);
+
+  // clear: left;
+  div3_style->setClear(EClear::ClearLeft);
+  auto* space = ConstructConstraintSpace(
+      HorizontalTopBottom, LTR,
+      NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  const NGPhysicalFragmentBase* child3 = frag->Children()[2];
+  EXPECT_EQ(kDiv1Size, child3->TopOffset());
+
+  // clear: right;
+  div3_style->setClear(EClear::ClearRight);
+  space = ConstructConstraintSpace(
+      HorizontalTopBottom, LTR,
+      NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
+  frag = RunBlockLayoutAlgorithm(space, div1);
+  child3 = frag->Children()[2];
+  EXPECT_EQ(kDiv1Size + kDiv2Size, child3->TopOffset());
+
+  // clear: both;
+  div3_style->setClear(EClear::ClearBoth);
+  space = ConstructConstraintSpace(
+      HorizontalTopBottom, LTR,
+      NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
+  frag = RunBlockLayoutAlgorithm(space, div1);
+  space = ConstructConstraintSpace(
+      HorizontalTopBottom, LTR,
+      NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
+  child3 = frag->Children()[2];
+  EXPECT_EQ(kDiv1Size + kDiv2Size, child3->TopOffset());
+}
+
 }  // namespace
 }  // namespace blink

@@ -81,6 +81,15 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   void UpdateMarginStrut(const NGMarginStrut& from);
 
   // Read-only Getters.
+  const ComputedStyle& CurrentChildStyle() const {
+    DCHECK(current_child_);
+    return *current_child_->Style();
+  }
+
+  const NGConstraintSpace& ConstraintSpace() const {
+    return *constraint_space_;
+  }
+
   const ComputedStyle& Style() const { return *style_; }
 
   enum State { kStateInit, kStateChildLayout, kStateFinalize };

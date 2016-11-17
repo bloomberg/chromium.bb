@@ -20,6 +20,42 @@
 namespace blink {
 namespace {
 
+// Adjusts content's offset to CSS "clear" property.
+// TODO(glebl): Support margin collapsing edge cases, e.g. margin collapsing
+// should not occur if "clear" is applied to non-floating blocks.
+// TODO(layout-ng): the call to AdjustToClearance should be moved to
+// CreateConstraintSpaceForChild once ConstraintSpaceBuilder is sharing the
+// exclusion information between constraint spaces.
+void AdjustToClearance(const NGConstraintSpace& space,
+                       const ComputedStyle& style,
+                       LayoutUnit* content_size) {
+  const NGExclusion* right_exclusion = space.LastRightFloatExclusion();
+  const NGExclusion* left_exclusion = space.LastLeftFloatExclusion();
+
+  // Calculates Left/Right block end offset from left/right float exclusions or
+  // use the default content offset position.
+  LayoutUnit left_block_end_offset =
+      left_exclusion ? left_exclusion->rect.BlockEndOffset() : *content_size;
+  LayoutUnit right_block_end_offset =
+      right_exclusion ? right_exclusion->rect.BlockEndOffset() : *content_size;
+
+  switch (style.clear()) {
+    case EClear::ClearNone:
+      return;  // nothing to do here.
+    case EClear::ClearLeft:
+      *content_size = left_block_end_offset;
+      break;
+    case EClear::ClearRight:
+      *content_size = right_block_end_offset;
+      break;
+    case EClear::ClearBoth:
+      *content_size = std::max(left_block_end_offset, right_block_end_offset);
+      break;
+    default:
+      ASSERT_NOT_REACHED();
+  }
+}
+
 LayoutUnit ComputeCollapsedMarginBlockStart(
     const NGMarginStrut& prev_margin_strut,
     const NGMarginStrut& curr_margin_strut) {
@@ -31,20 +67,23 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
 
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
-NGLogicalRect CreateExclusion(const NGFragmentBase& fragment,
-                              const NGLayoutOpportunity& opportunity,
-                              LayoutUnit float_offset,
-                              NGBoxStrut margins) {
-  NGLogicalRect exclusion;
-  exclusion.offset = opportunity.offset;
-  exclusion.offset.inline_offset += float_offset;
+NGExclusion CreateExclusion(const NGFragmentBase& fragment,
+                            const NGLayoutOpportunity& opportunity,
+                            LayoutUnit float_offset,
+                            NGBoxStrut margins,
+                            NGExclusion::Type exclusion_type) {
+  NGExclusion exclusion;
+  exclusion.type = exclusion_type;
+  NGLogicalRect& rect = exclusion.rect;
+  rect.offset = opportunity.offset;
+  rect.offset.inline_offset += float_offset;
 
-  exclusion.size.inline_size = fragment.InlineSize();
-  exclusion.size.block_size = fragment.BlockSize();
+  rect.size.inline_size = fragment.InlineSize();
+  rect.size.block_size = fragment.BlockSize();
 
   // Adjust to child's margin.
-  exclusion.size.block_size += margins.BlockSum();
-  exclusion.size.inline_size += margins.InlineSum();
+  rect.size.block_size += margins.BlockSum();
+  rect.size.inline_size += margins.InlineSum();
 
   return exclusion;
 }
@@ -157,7 +196,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
   switch (state_) {
     case kStateInit: {
       border_and_padding_ =
-          ComputeBorders(Style()) + ComputePadding(*constraint_space_, Style());
+          ComputeBorders(Style()) + ComputePadding(ConstraintSpace(), Style());
 
       WTF::Optional<MinAndMaxContentSizes> sizes;
       if (NeedMinAndMaxContentSizes(Style())) {
@@ -165,13 +204,13 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         sizes = MinAndMaxContentSizes();
       }
       LayoutUnit inline_size =
-          ComputeInlineSizeForFragment(*constraint_space_, Style(), sizes);
+          ComputeInlineSizeForFragment(ConstraintSpace(), Style(), sizes);
       LayoutUnit adjusted_inline_size =
           inline_size - border_and_padding_.InlineSum();
       // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
       // -1?
       LayoutUnit block_size = ComputeBlockSizeForFragment(
-          *constraint_space_, Style(), NGSizeIndefinite);
+          ConstraintSpace(), Style(), NGSizeIndefinite);
       LayoutUnit adjusted_block_size(block_size);
       // Our calculated block-axis size may be indefinite at this point.
       // If so, just leave the size as NGSizeIndefinite instead of subtracting
@@ -220,7 +259,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
 
       // Recompute the block-axis size now that we know our content size.
       LayoutUnit block_size = ComputeBlockSizeForFragment(
-          *constraint_space_, Style(), content_size_);
+          ConstraintSpace(), Style(), content_size_);
 
       builder_->SetBlockSize(block_size)
           .SetInlineOverflow(max_inline_size_)
@@ -241,15 +280,15 @@ bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {
     return false;
 
   NGBoxStrut child_margins = ComputeMargins(
-      *space_for_current_child_, *current_child_->Style(),
+      *space_for_current_child_, CurrentChildStyle(),
       constraint_space_->WritingMode(), constraint_space_->Direction());
 
   NGLogicalOffset fragment_offset;
-  if (current_child_->Style()->isFloating()) {
+  if (CurrentChildStyle().isFloating()) {
     fragment_offset = PositionFloatFragment(*fragment, child_margins);
   } else {
-    ApplyAutoMargins(*space_for_current_child_, *current_child_->Style(),
-                     *fragment, &child_margins);
+    ApplyAutoMargins(*space_for_current_child_, CurrentChildStyle(), *fragment,
+                     &child_margins);
     fragment_offset = PositionFragment(*fragment, child_margins);
   }
   builder_->AddChild(fragment, fragment_offset);
@@ -268,8 +307,8 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
 
   // Calculate borders and padding for the current child.
   NGBoxStrut border_and_padding =
-      ComputeBorders(*current_child_->Style()) +
-      ComputePadding(*constraint_space_, *current_child_->Style());
+      ComputeBorders(CurrentChildStyle()) +
+      ComputePadding(ConstraintSpace(), CurrentChildStyle());
 
   // Collapse BLOCK-START margins if there is no padding or border between
   // parent (current child) and its first in-flow child.
@@ -283,7 +322,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
   // 1) there is no padding or border between parent (current child) and its
   //    first/last in-flow child
   // 2) parent's logical height is auto.
-  if (current_child_->Style()->logicalHeight().isAuto() &&
+  if (CurrentChildStyle().logicalHeight().isAuto() &&
       !border_and_padding.block_end) {
     curr_margin_strut.AppendMarginBlockEnd(margins.block_end);
   } else {
@@ -328,6 +367,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
   const NGBoxStrut collapsed_margins =
       CollapseMargins(child_margins, toNGFragment(fragment));
 
+  AdjustToClearance(ConstraintSpace(), CurrentChildStyle(), &content_size_);
+
   LayoutUnit inline_offset =
       border_and_padding_.inline_start + child_margins.inline_start;
   LayoutUnit block_offset = content_size_ + collapsed_margins.block_start;
@@ -344,19 +385,28 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
     const NGBoxStrut& margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.
+
+  // Update offset if there is a clearance.
+  NGLogicalOffset offset = space_for_current_child_->Offset();
+  AdjustToClearance(ConstraintSpace(), CurrentChildStyle(),
+                    &offset.block_offset);
+  space_for_current_child_->SetOffset(offset);
+
   const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
       space_for_current_child_, fragment, margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
+  NGExclusion::Type exclusion_type = NGExclusion::NG_FLOAT_LEFT;
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
-  if (current_child_->Style()->floating() == EFloat::Right) {
+  if (CurrentChildStyle().floating() == EFloat::Right) {
     float_offset = opportunity.size.inline_size - fragment.InlineSize();
+    exclusion_type = NGExclusion::NG_FLOAT_RIGHT;
   }
 
   // Add the float as an exclusion.
-  const NGLogicalRect exclusion =
-      CreateExclusion(fragment, opportunity, float_offset, margins);
+  const NGExclusion exclusion = CreateExclusion(
+      fragment, opportunity, float_offset, margins, exclusion_type);
   constraint_space_->AddExclusion(exclusion);
 
   return CalculateLogicalOffsetForOpportunity(opportunity, float_offset,
@@ -375,8 +425,8 @@ NGConstraintSpace*
 NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
   DCHECK(current_child_);
   space_builder_->SetIsNewFormattingContext(
-      IsNewFormattingContextForInFlowBlockLevelChild(*constraint_space_,
-                                                     *current_child_->Style()));
+      IsNewFormattingContextForInFlowBlockLevelChild(ConstraintSpace(),
+                                                     CurrentChildStyle()));
   NGConstraintSpace* child_space = new NGConstraintSpace(
       constraint_space_->WritingMode(), constraint_space_->Direction(),
       space_builder_->ToConstraintSpace());

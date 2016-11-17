@@ -41,7 +41,7 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode
   NGEdge exclusion_edge;
 
   // Exclusion that splits apart this layout opportunity.
-  const NGLogicalRect* exclusion;  // Not owned.
+  const NGExclusion* exclusion;  // Not owned.
 
   // Whether this node is a leaf node.
   // The node is a leaf if it doesn't have an exclusion that splits it apart.

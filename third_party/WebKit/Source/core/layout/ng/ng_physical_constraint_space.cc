@@ -24,15 +24,21 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
       height_direction_triggers_scrollbar_(height_direction_triggers_scrollbar),
       width_direction_fragmentation_type_(width_direction_fragmentation_type),
       height_direction_fragmentation_type_(height_direction_fragmentation_type),
-      is_new_fc_(is_new_fc) {}
+      is_new_fc_(is_new_fc),
+      last_left_float_exclusion_(nullptr),
+      last_right_float_exclusion_(nullptr) {}
 
-void NGPhysicalConstraintSpace::AddExclusion(const NGLogicalRect& exclusion,
-                                             unsigned options) {
-  NGLogicalRect* exclusion_ptr = new NGLogicalRect(exclusion);
+void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
+  NGExclusion* exclusion_ptr = new NGExclusion(exclusion);
   exclusions_.append(WTF::wrapUnique(exclusion_ptr));
+  if (exclusion.type == NGExclusion::NG_FLOAT_LEFT) {
+    last_left_float_exclusion_ = exclusions_.rbegin()->get();
+  } else if (exclusion.type == NGExclusion::NG_FLOAT_RIGHT) {
+    last_right_float_exclusion_ = exclusions_.rbegin()->get();
+  }
 }
 
-const Vector<std::unique_ptr<const NGLogicalRect>>&
+const Vector<std::unique_ptr<const NGExclusion>>&
 NGPhysicalConstraintSpace::Exclusions(unsigned options) const {
   // TODO(layout-ng): Filter based on options? Perhaps layout Opportunities
   // should filter instead?

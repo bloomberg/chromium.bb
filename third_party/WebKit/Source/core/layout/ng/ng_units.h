@@ -164,6 +164,26 @@ inline std::ostream& operator<<(std::ostream& stream,
   return stream << value.ToString();
 }
 
+// Struct that represents NG exclusion.
+struct CORE_EXPORT NGExclusion {
+  // Type of NG exclusion.
+  enum Type {
+    // Undefined exclusion type.
+    // At this moment it's also used to represent CSS3 exclusion.
+    NG_EXCLUSION_TYPE_UNDEFINED = 0,
+    // Exclusion that is created by LEFT float.
+    NG_FLOAT_LEFT = 1,
+    // Exclusion that is created by RIGHT float.
+    NG_FLOAT_RIGHT = 2
+  };
+
+  // Rectangle in logical coordinates the represents this exclusion.
+  NGLogicalRect rect;
+
+  // Type of this exclusion.
+  Type type;
+};
+
 struct NGPixelSnappedPhysicalRect {
   int top;
   int left;
