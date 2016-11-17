@@ -22,11 +22,13 @@ source_set("infobars") {
   ]
   deps = [
     "//base",
-    "//components/infobars/core",
     "//components/translate/core/browser",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",
+  ]
+  public_deps = [
+    "//components/infobars/core",
   ]
 }

@@ -26,7 +26,6 @@ source_set("browsing_data") {
     "//components/omnibox/browser",
     "//components/password_manager/core/browser",
     "//components/prefs",
-    "//components/search_engines",
     "//components/sessions",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
@@ -42,6 +41,9 @@ source_set("browsing_data") {
     "//ios/web",
     "//net",
     "//url",
+  ]
+  public_deps = [
+    "//components/search_engines",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/signin" ]
 
