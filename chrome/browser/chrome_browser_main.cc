@@ -315,7 +315,12 @@ void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-void MaybeInitializeTaskScheduler() {
+// Initializes TaskScheduler if enabled via field trial or command line flag.
+// The function returns true if it enables redirection of SequencedWorkerPool to
+// TaskScheduler.
+bool MaybeInitializeTaskScheduler() {
+  bool sequenced_worker_pool_redirected = false;
+
   static constexpr char kFieldTrialName[] = "BrowserScheduler";
   std::map<std::string, std::string> variation_params;
   if (!variations::GetVariationParams(kFieldTrialName, &variation_params)) {
@@ -325,19 +330,22 @@ void MaybeInitializeTaskScheduler() {
         << switches::kEnableBrowserTaskScheduler
         << " because there is no available variation param for this build or "
            " the task scheduler is disabled in chrome://flags.";
-    return;
+    return sequenced_worker_pool_redirected;
   }
 
   if (!task_scheduler_util::InitializeDefaultTaskScheduler(variation_params))
-    return;
+    return sequenced_worker_pool_redirected;
 
   // TODO(gab): Remove this when http://crbug.com/622400 concludes.
   const auto sequenced_worker_pool_param =
       variation_params.find("RedirectSequencedWorkerPools");
   if (sequenced_worker_pool_param != variation_params.end() &&
       sequenced_worker_pool_param->second == "true") {
-    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
+    sequenced_worker_pool_redirected = true;
+    base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
   }
+
+  return sequenced_worker_pool_redirected;
 }
 
 // Returns the new local state object, guaranteed non-NULL.
@@ -1237,7 +1245,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupFieldTrials();
 
-  // Task Scheduler initialization needs to be here for the following reasons:
+  // Initializing TaskScheduler and enabling SequencedWorkerPool needs to be
+  // here for the following reasons:
   //   * After |SetupFieldTrials()|: Initialization uses variations.
   //   * Before |SetupMetrics()|: |SetupMetrics()| uses the blocking pool. The
   //         Task Scheduler must do any necessary redirection before then.
@@ -1246,7 +1255,14 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   //         threads itself so instantiating it earlier is also incorrect.
   // To maintain scoping symmetry, if this line is moved, the corresponding
   // shutdown call may also need to be moved.
-  MaybeInitializeTaskScheduler();
+  const bool sequenced_worker_pool_redirected = MaybeInitializeTaskScheduler();
+
+  // If MaybeInitializeTaskScheduler() hasn't enabled SequencedWorkerPool with
+  // redirection to TaskScheduler, enable it without redirection.
+  // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
+  // redirection experiment concludes https://crbug.com/622400.
+  if (!sequenced_worker_pool_redirected)
+    base::SequencedWorkerPool::EnableForProcess();
 
   SetupMetrics();
 
