@@ -444,16 +444,29 @@ public class CustomTabsConnection {
     private boolean validatePostMessageOriginInternal(final CustomTabsSessionToken session) {
         if (!mWarmupHasBeenCalled.get()) return false;
         if (!isCallerForegroundOrSelf()) return false;
+        final int uid = Binder.getCallingUid();
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
                 // If the API is not enabled, we don't set the post message origin, which will
                 // avoid PostMessageHandler initialization and disallow postMessage calls.
                 if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_POST_MESSAGE_API)) return;
-                mClientManager.setPostMessageOriginForSession(session, Uri.EMPTY);
+                mClientManager.setPostMessageOriginForSession(
+                        session, acquireOriginForSession(session, uid));
             }
         });
         return true;
+    }
+
+    /**
+     * Acquire the origin for the client that owns the given session.
+     * @param session The session to use for getting client information.
+     * @param clientUID The UID for the client controlling the session.
+     * @return The validated origin {@link Uri} for the given session's client.
+     */
+    protected Uri acquireOriginForSession(CustomTabsSessionToken session, int clientUID) {
+        if (clientUID == Process.myUid()) return Uri.EMPTY;
+        return null;
     }
 
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
