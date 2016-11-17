@@ -93,8 +93,12 @@ class HoverHighlightView : public ActionableView {
   // the other Add* functions first). |icon_size| is the size of the icon in DP.
   void AddRightIcon(const gfx::ImageSkia& image, int icon_size);
 
-  // Hide or show the right icon.
-  void SetRightIconVisible(bool visible);
+  // Add an optional right view to an already established view (call one of
+  // the other Add* functions first).
+  void AddRightView(views::View* view);
+
+  // Hide or show the right view.
+  void SetRightViewVisible(bool visible);
 
   // Allows view to expand its height.
   // Size of unexapandable view is fixed and equals to kTrayPopupItemHeight.
@@ -174,7 +178,7 @@ class HoverHighlightView : public ActionableView {
   views::Label* sub_text_label_ = nullptr;
   views::BoxLayout* box_layout_ = nullptr;  // Not used in material design.
   views::ImageView* left_icon_ = nullptr;
-  views::ImageView* right_icon_ = nullptr;
+  views::View* right_view_ = nullptr;
   TriView* tri_view_ = nullptr;  // Only used in material design.
   SkColor highlight_color_ = 0;  // Not used in material design.
   SkColor default_color_ = 0;

@@ -280,7 +280,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
     gfx::ImageSkia check_mark =
         CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
     container->AddRightIcon(check_mark, check_mark.width());
-    container->SetRightIconVisible(checked);
+    container->SetRightViewVisible(checked);
   } else {
     container->AddCheckableLabel(text, highlight, checked);
   }

@@ -56,39 +56,45 @@ bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-// TODO(tdanderson|fukino): Consider changing this to a more generic type
-// to permit other elements, such as a spinner.
 void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
                                       int icon_size) {
-  DCHECK(!right_icon_);
+  DCHECK(!right_view_);
 
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    DCHECK(tri_view_);
-
-    right_icon_ = TrayPopupUtils::CreateMainImageView();
-    right_icon_->SetImage(image);
-    right_icon_->SetEnabled(enabled());
-    tri_view_->AddView(TriView::Container::END, right_icon_);
-    tri_view_->SetContainerVisible(TriView::Container::END, true);
+    views::ImageView* right_icon = TrayPopupUtils::CreateMainImageView();
+    right_icon->SetImage(image);
+    AddRightView(right_icon);
     return;
   }
 
-  DCHECK(box_layout_);
+  views::ImageView* right_icon = new FixedSizedImageView(icon_size, icon_size);
+  right_icon->SetImage(image);
+  AddRightView(right_icon);
+}
 
-  right_icon_ = new FixedSizedImageView(icon_size, icon_size);
-  right_icon_->SetImage(image);
-  right_icon_->SetEnabled(enabled());
-  AddChildView(right_icon_);
+void HoverHighlightView::AddRightView(views::View* view) {
+  DCHECK(!right_view_);
+
+  right_view_ = view;
+  right_view_->SetEnabled(enabled());
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    DCHECK(tri_view_);
+    tri_view_->AddView(TriView::Container::END, right_view_);
+    tri_view_->SetContainerVisible(TriView::Container::END, true);
+    return;
+  }
+  DCHECK(box_layout_);
+  AddChildView(right_view_);
 }
 
 // TODO(tdanderson): Ensure all checkable detailed view rows use this
 // mechanism, and share the code that sets the accessible state for
 // a checkbox. See crbug.com/652674.
-void HoverHighlightView::SetRightIconVisible(bool visible) {
-  if (!right_icon_)
+void HoverHighlightView::SetRightViewVisible(bool visible) {
+  if (!right_view_)
     return;
 
-  right_icon_->SetVisible(visible);
+  right_view_->SetVisible(visible);
   Layout();
 }
 
@@ -392,8 +398,8 @@ void HoverHighlightView::OnEnabledChanged() {
       left_icon_->SetEnabled(enabled());
     if (text_label_)
       text_label_->SetEnabled(enabled());
-    if (right_icon_)
-      right_icon_->SetEnabled(enabled());
+    if (right_view_)
+      right_view_->SetEnabled(enabled());
   } else {
     if (!enabled())
       SetHoverHighlight(false);

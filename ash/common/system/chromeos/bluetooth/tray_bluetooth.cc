@@ -403,6 +403,9 @@ class BluetoothDetailedView : public TrayDetailsView {
     container->AddIconAndLabels(
         image, text, l10n_util::GetStringUTF16(
                          IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
+    ThrobberView* throbber = new ThrobberView;
+    throbber->Start();
+    container->AddRightView(throbber);
   }
 
   // Add settings entries.
