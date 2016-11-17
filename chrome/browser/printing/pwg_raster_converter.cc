@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -77,14 +78,15 @@ class FileHandlers {
   base::ScopedTempDir temp_dir_;
   base::File pdf_file_;
   base::File pwg_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileHandlers);
 };
 
 void FileHandlers::Init(base::RefCountedMemory* data) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  if (!temp_dir_.CreateUniqueTempDir()) {
+  if (!temp_dir_.CreateUniqueTempDir())
     return;
-  }
 
   if (static_cast<int>(data->size()) !=
       base::WriteFile(GetPdfPath(), data->front_as<char>(), data->size())) {
@@ -150,8 +152,8 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
 };
 
 PwgUtilityProcessHostClient::PwgUtilityProcessHostClient(
-    const printing::PdfRenderSettings& settings,
-    const printing::PwgRasterSettings& bitmap_settings)
+    const PdfRenderSettings& settings,
+    const PwgRasterSettings& bitmap_settings)
     : settings_(settings), bitmap_settings_(bitmap_settings) {}
 
 PwgUtilityProcessHostClient::~PwgUtilityProcessHostClient() {
@@ -161,9 +163,11 @@ void PwgUtilityProcessHostClient::Convert(
     base::RefCountedMemory* data,
     const PWGRasterConverter::ResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   callback_ = callback;
   CHECK(!files_);
   files_.reset(new FileHandlers());
+
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&FileHandlers::Init, base::Unretained(files_.get()),
@@ -200,6 +204,7 @@ void PwgUtilityProcessHostClient::OnFailed() {
 
 void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!files_->IsValid()) {
     RunCallbackOnUIThread(false);
     return;
@@ -211,6 +216,7 @@ void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
 
 void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(this,
                                           base::ThreadTaskRunnerHandle::Get());
@@ -230,23 +236,22 @@ void PwgUtilityProcessHostClient::RunCallback(bool success) {
 
 void PwgUtilityProcessHostClient::RunCallbackOnUIThread(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!callback_.is_null()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback_, success,
-                                       files_->GetPwgPath()));
-    callback_.Reset();
-  }
+  if (callback_.is_null())
+    return;
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback_, success, files_->GetPwgPath()));
+  callback_.Reset();
 }
 
 class PWGRasterConverterImpl : public PWGRasterConverter {
  public:
   PWGRasterConverterImpl();
-
   ~PWGRasterConverterImpl() override;
 
   void Start(base::RefCountedMemory* data,
-             const printing::PdfRenderSettings& conversion_settings,
-             const printing::PwgRasterSettings& bitmap_settings,
+             const PdfRenderSettings& conversion_settings,
+             const PwgRasterSettings& bitmap_settings,
              const ResultCallback& callback) override;
 
  private:
@@ -262,11 +267,10 @@ PWGRasterConverterImpl::PWGRasterConverterImpl() {
 PWGRasterConverterImpl::~PWGRasterConverterImpl() {
 }
 
-void PWGRasterConverterImpl::Start(
-    base::RefCountedMemory* data,
-    const printing::PdfRenderSettings& conversion_settings,
-    const printing::PwgRasterSettings& bitmap_settings,
-    const ResultCallback& callback) {
+void PWGRasterConverterImpl::Start(base::RefCountedMemory* data,
+                                   const PdfRenderSettings& conversion_settings,
+                                   const PwgRasterSettings& bitmap_settings,
+                                   const ResultCallback& callback) {
   // Rebind cancelable callback to avoid calling callback if
   // PWGRasterConverterImpl is destroyed.
   callback_.Reset(callback);
@@ -279,71 +283,64 @@ void PWGRasterConverterImpl::Start(
 
 // static
 std::unique_ptr<PWGRasterConverter> PWGRasterConverter::CreateDefault() {
-  return std::unique_ptr<PWGRasterConverter>(new PWGRasterConverterImpl());
+  return base::MakeUnique<PWGRasterConverterImpl>();
 }
 
 // static
-printing::PdfRenderSettings PWGRasterConverter::GetConversionSettings(
+PdfRenderSettings PWGRasterConverter::GetConversionSettings(
     const cloud_devices::CloudDeviceDescription& printer_capabilities,
     const gfx::Size& page_size) {
-  int dpi = printing::kDefaultPdfDpi;
+  int dpi = kDefaultPdfDpi;
   cloud_devices::printer::DpiCapability dpis;
   if (dpis.LoadFrom(printer_capabilities))
     dpi = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
 
-  double scale = dpi;
-  scale /= printing::kPointsPerInch;
+  const double scale = static_cast<double>(dpi) / kPointsPerInch;
 
   // Make vertical rectangle to optimize streaming to printer. Fix orientation
   // by autorotate.
   gfx::Rect area(std::min(page_size.width(), page_size.height()) * scale,
                  std::max(page_size.width(), page_size.height()) * scale);
-  return printing::PdfRenderSettings(area, dpi, true /* autorotate */);
+  return PdfRenderSettings(area, dpi, true /* autorotate */);
 }
 
 // static
-printing::PwgRasterSettings PWGRasterConverter::GetBitmapSettings(
+PwgRasterSettings PWGRasterConverter::GetBitmapSettings(
     const cloud_devices::CloudDeviceDescription& printer_capabilities,
     const cloud_devices::CloudDeviceDescription& ticket) {
-  printing::PwgRasterSettings result;
-  cloud_devices::printer::PwgRasterConfigCapability raster_capability;
-  // If the raster capability fails to load, raster_capability will contain
-  // the default value.
-  raster_capability.LoadFrom(printer_capabilities);
-
   cloud_devices::printer::DuplexTicketItem duplex_item;
   cloud_devices::printer::DuplexType duplex_value =
       cloud_devices::printer::NO_DUPLEX;
+  if (duplex_item.LoadFrom(ticket))
+    duplex_value = duplex_item.value();
 
+  cloud_devices::printer::PwgRasterConfigCapability raster_capability;
+  // If the raster capability fails to load, |raster_capability| will contain
+  // the default value.
+  raster_capability.LoadFrom(printer_capabilities);
   cloud_devices::printer::DocumentSheetBack document_sheet_back =
       raster_capability.value().document_sheet_back;
 
-  if (duplex_item.LoadFrom(ticket)) {
-    duplex_value = duplex_item.value();
-  }
-
-  result.odd_page_transform = printing::TRANSFORM_NORMAL;
+  PwgRasterSettings result;
+  result.odd_page_transform = TRANSFORM_NORMAL;
   switch (duplex_value) {
     case cloud_devices::printer::NO_DUPLEX:
-      result.odd_page_transform = printing::TRANSFORM_NORMAL;
       break;
     case cloud_devices::printer::LONG_EDGE:
-      if (document_sheet_back == cloud_devices::printer::ROTATED) {
-        result.odd_page_transform = printing::TRANSFORM_ROTATE_180;
-      } else if (document_sheet_back == cloud_devices::printer::FLIPPED) {
-        result.odd_page_transform = printing::TRANSFORM_FLIP_VERTICAL;
-      }
+      if (document_sheet_back == cloud_devices::printer::ROTATED)
+        result.odd_page_transform = TRANSFORM_ROTATE_180;
+      else if (document_sheet_back == cloud_devices::printer::FLIPPED)
+        result.odd_page_transform = TRANSFORM_FLIP_VERTICAL;
       break;
     case cloud_devices::printer::SHORT_EDGE:
-      if (document_sheet_back == cloud_devices::printer::MANUAL_TUMBLE) {
-        result.odd_page_transform = printing::TRANSFORM_ROTATE_180;
-      } else if (document_sheet_back == cloud_devices::printer::FLIPPED) {
-        result.odd_page_transform = printing::TRANSFORM_FLIP_HORIZONTAL;
-      }
+      if (document_sheet_back == cloud_devices::printer::MANUAL_TUMBLE)
+        result.odd_page_transform = TRANSFORM_ROTATE_180;
+      else if (document_sheet_back == cloud_devices::printer::FLIPPED)
+        result.odd_page_transform = TRANSFORM_FLIP_HORIZONTAL;
+      break;
   }
 
   result.rotate_all_pages = raster_capability.value().rotate_all_pages;
-
   result.reverse_page_order = raster_capability.value().reverse_order_streaming;
   return result;
 }
