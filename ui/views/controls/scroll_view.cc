@@ -283,7 +283,7 @@ gfx::Size ScrollView::GetPreferredSize() const {
   if (!is_bounded())
     return View::GetPreferredSize();
 
-  gfx::Size size = contents_->GetPreferredSize();
+  gfx::Size size = contents()->GetPreferredSize();
   size.SetToMax(gfx::Size(size.width(), min_height_));
   size.SetToMin(gfx::Size(size.width(), max_height_));
   gfx::Insets insets = GetInsets();
@@ -297,7 +297,7 @@ int ScrollView::GetHeightForWidth(int width) const {
 
   gfx::Insets insets = GetInsets();
   width = std::max(0, width - insets.width());
-  int height = contents_->GetHeightForWidth(width) + insets.height();
+  int height = contents()->GetHeightForWidth(width) + insets.height();
   return std::min(std::max(height, min_height_), max_height_);
 }
 
@@ -308,12 +308,13 @@ void ScrollView::Layout() {
   gfx::Rect available_rect = GetContentsBounds();
   if (is_bounded()) {
     int content_width = available_rect.width();
-    int content_height = contents_->GetHeightForWidth(content_width);
+    int content_height = contents()->GetHeightForWidth(content_width);
     if (content_height > height()) {
       content_width = std::max(content_width - GetScrollBarWidth(), 0);
-      content_height = contents_->GetHeightForWidth(content_width);
+      content_height = contents()->GetHeightForWidth(content_width);
     }
-    contents_->SetSize(gfx::Size(content_width, content_height));
+    if (contents()->bounds().size() != gfx::Size(content_width, content_height))
+      contents()->SetBounds(0, 0, content_width, content_height);
   }
 
   // Most views will want to auto-fit the available space. Most of them want to

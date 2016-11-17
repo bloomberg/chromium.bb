@@ -869,40 +869,6 @@ TEST_F(ScrollViewTest, ConstrainScrollToBounds) {
   EXPECT_EQ(fully_scrolled.x() - 77, test_api.CurrentOffset().x());
 }
 
-// Calling Layout on ScrollView should not reset the scroll location.
-TEST_F(ScrollViewTest, ContentScrollNotResetOnLayout) {
-  ScrollViewTestApi test_api(&scroll_view_);
-
-  CustomView* contents = new CustomView;
-  contents->SetPreferredSize(gfx::Size(300, 300));
-  scroll_view_.SetContents(contents);
-  scroll_view_.ClipHeightTo(0, 150);
-  scroll_view_.SizeToPreferredSize();
-  // ScrollView preferred width matches that of |contents|, with the height
-  // capped at the value we clipped to.
-  EXPECT_EQ(gfx::Size(300, 150), scroll_view_.size());
-
-  // Scroll down.
-  scroll_view_.ScrollToPosition(
-      const_cast<ScrollBar*>(scroll_view_.vertical_scroll_bar()), 25);
-  EXPECT_EQ(25, test_api.CurrentOffset().y());
-  // Call Layout; no change to scroll position.
-  scroll_view_.Layout();
-  EXPECT_EQ(25, test_api.CurrentOffset().y());
-  // Change contents of |contents|, call Layout; still no change to scroll
-  // position.
-  contents->SetPreferredSize(gfx::Size(300, 500));
-  contents->InvalidateLayout();
-  scroll_view_.Layout();
-  EXPECT_EQ(25, test_api.CurrentOffset().y());
-
-  // Change |contents| to be shorter than the ScrollView's clipped height.
-  // This /will/ change the scroll location due to ConstrainScrollToBounds.
-  contents->SetPreferredSize(gfx::Size(300, 50));
-  scroll_view_.Layout();
-  EXPECT_EQ(0, test_api.CurrentOffset().y());
-}
-
 // Test scrolling behavior when clicking on the scroll track.
 TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
   // Set up with a vertical scroller.
