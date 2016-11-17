@@ -38,6 +38,11 @@ Current patches:
     We cannot just disable FF_API_AVPACKET_OLD_API because upstream does not yet
     compile with it disabled. Therefore, suppress the warnings locally.
 
+    Locally disable deprecation warnings related to
+    avcodec_encode_{audio,video}2 until upstream introduces an appropriate
+    FF_API_AVsomething_OLD_API gate that we can use in our BUILD.gn, or upstream
+    stops using the deprecated methods.
+
   Revert 'sidx' processing for .mov containers. (libavformat/isom.h and mov.c)
     8b946dec reverts commit 4ab56667594842283dc5ae07f0daba2a2cb4d3af.
     'sidx' box processing is broken for MOV containers. http://crbug.com/568336.
@@ -65,6 +70,9 @@ Current patches:
   In libavformat/wavdec.c, exclude code blocks using #if to remove references
     to symbols not in our builds which some toolchains don't elide, for each of
     CONFIG_SPDIF_DEMUXER and CONFIG_W64_DEMUXER.
+
+  In libavformat/utils.c, locally disable deprecation warnings related to
+    AVStream.codec access until upstream stops using deprecated fields.
 
   Changes to libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and

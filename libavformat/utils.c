@@ -5337,9 +5337,14 @@ int avformat_transfer_internal_stream_timing_info(const AVOutputFormat *ofmt,
                                                   AVStream *ost, const AVStream *ist,
                                                   enum AVTimebaseSource copy_tb)
 {
+// Suppress deprecation warnings related to AVStream.codec access, deprecated in
+// M56 roll. TODO(wolenetz): Remove when upstream no longer uses deprecated
+// access.
+FF_DISABLE_DEPRECATION_WARNINGS
     //TODO: use [io]st->internal->avctx
     const AVCodecContext *dec_ctx = ist->codec;
     AVCodecContext       *enc_ctx = ost->codec;
+FF_ENABLE_DEPRECATION_WARNINGS
 
     enc_ctx->time_base = ist->time_base;
     /*

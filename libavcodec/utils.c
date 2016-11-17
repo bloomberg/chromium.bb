@@ -2948,11 +2948,23 @@ static int do_encode(AVCodecContext *avctx, const AVFrame *frame, int *got_packe
     avctx->internal->buffer_pkt_valid = 0;
 
     if (avctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+// Suppress deprecation warning related to old encode API, deprecated in M56
+// roll. TODO(wolenetz): Remove when upstream no longer uses deprecated encode,
+// or replace with FF_API_AVsomething_OLD_API gate if upstream introduces such a
+// gate.
+FF_DISABLE_DEPRECATION_WARNINGS
         ret = avcodec_encode_video2(avctx, avctx->internal->buffer_pkt,
                                     frame, got_packet);
+FF_ENABLE_DEPRECATION_WARNINGS
     } else if (avctx->codec_type == AVMEDIA_TYPE_AUDIO) {
+// Suppress deprecation warning related to old encode API, deprecated in M56
+// roll. TODO(wolenetz): Remove when upstream no longer uses deprecated encode,
+// or replace with FF_API_AVsomething_OLD_API gate if upstream introduces such a
+// gate.
+FF_DISABLE_DEPRECATION_WARNINGS
         ret = avcodec_encode_audio2(avctx, avctx->internal->buffer_pkt,
                                     frame, got_packet);
+FF_ENABLE_DEPRECATION_WARNINGS
     } else {
         ret = AVERROR(EINVAL);
     }
