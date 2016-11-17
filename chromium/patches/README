@@ -62,8 +62,9 @@ Current patches:
     TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
     these changes are still necessary and either remove or document them.
 
-  In libavformat/wavdec.c, exclude code block completely to remove reference to
-    symbol not in our builds, conditioned by CONFIG_SPDIF_DEMUXER.
+  In libavformat/wavdec.c, exclude code blocks using #if to remove references
+    to symbols not in our builds which some toolchains don't elide, for each of
+    CONFIG_SPDIF_DEMUXER and CONFIG_W64_DEMUXER.
 
   Changes to libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and

@@ -600,8 +600,10 @@ static int wav_read_packet(AVFormatContext *s, AVPacket *pkt)
     AVStream *st;
     WAVDemuxContext *wav = s->priv_data;
 
+#if CONFIG_SPDIF_DEMUXER
     if (CONFIG_SPDIF_DEMUXER && wav->spdif == 1)
         return ff_spdif_read_packet(s, pkt);
+#endif
 
     if (wav->smv_data_ofs > 0) {
         int64_t audio_dts, video_dts;
@@ -656,9 +658,11 @@ smv_out:
     if (wav->ignore_length)
         left = INT_MAX;
     if (left <= 0) {
+#if CONFIG_W64_DEMUXER
         if (CONFIG_W64_DEMUXER && wav->w64)
             left = find_guid(s->pb, ff_w64_guid_data) - 24;
         else
+#endif
             left = find_tag(wav, s->pb, MKTAG('d', 'a', 't', 'a'));
         if (left < 0) {
             wav->audio_eof = 1;
