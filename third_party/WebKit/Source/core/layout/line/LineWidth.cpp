@@ -191,7 +191,7 @@ void LineWidth::wrapNextToShapeOutside(bool isFirstLine) {
 void LineWidth::fitBelowFloats(bool isFirstLine) {
   ASSERT(!m_committedWidth);
   ASSERT(!fitsOnLine());
-  m_block.positionNewFloats(m_block.logicalHeight(), this);
+  m_block.placeNewFloats(m_block.logicalHeight(), this);
 
   LayoutUnit floatLogicalBottom;
   LayoutUnit lastFloatLogicalBottom = m_block.logicalHeight();

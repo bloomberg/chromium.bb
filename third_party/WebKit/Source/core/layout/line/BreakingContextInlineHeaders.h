@@ -496,7 +496,7 @@ inline void BreakingContext::handleFloat() {
       m_width.fitsOnLine(
           m_block.logicalWidthForFloat(*floatingObject).toFloat(),
           ExcludeWhitespace)) {
-    m_block.positionNewFloats(m_block.logicalHeight(), &m_width);
+    m_block.placeNewFloats(m_block.logicalHeight(), &m_width);
     if (m_lineBreak.getLineLayoutItem() == m_current.getLineLayoutItem()) {
       ASSERT(!m_lineBreak.offset());
       m_lineBreak.increment();

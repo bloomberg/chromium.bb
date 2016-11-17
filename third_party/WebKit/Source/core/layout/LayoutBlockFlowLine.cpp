@@ -1364,7 +1364,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
             floatingObject->setOriginatingLine(line);
             LayoutUnit logicalTop =
                 logicalTopForChild(*box) - marginBeforeForChild(*box) + delta;
-            positionNewFloats(logicalTop);
+            placeNewFloats(logicalTop);
           }
         }
       }
@@ -1379,7 +1379,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
   // now. This has to be done before adding in the bottom border/padding, or the
   // float will
   // include the padding incorrectly. -dwh
-  if (positionNewFloats(logicalHeight()) && lastRootBox())
+  if (placeNewFloats(logicalHeight()) && lastRootBox())
     appendFloatsToLastLine(layoutState, InlineIterator(), InlineBidiResolver(),
                            BidiStatus());
 }
@@ -1398,7 +1398,7 @@ void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(
     }
     insertFloatingObject(*f);
   }
-  positionNewFloats(logicalHeight());
+  placeNewFloats(logicalHeight());
 }
 
 // InlineMinMaxIterator is a class that will iterate over all layout objects
@@ -2088,7 +2088,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
           floatingObject->setOriginatingLine(line);
           LayoutUnit logicalTop =
               logicalTopForChild(*box) - marginBeforeForChild(*box);
-          positionNewFloats(logicalTop);
+          placeNewFloats(logicalTop);
           ASSERT(layoutState.floats()[numCleanFloats].object == box);
           numCleanFloats++;
         }

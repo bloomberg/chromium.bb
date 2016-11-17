@@ -348,19 +348,24 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   FloatingObject* insertFloatingObject(LayoutBox&);
 
-  // Position all floats that have not yet been positioned.
+  // Position and lay out all floats that have not yet been positioned.
   //
-  // |logicalTop| is the minimum logical top for the floats. The final logical
-  // top of the floats will also be affected by clearance and space available
-  // after having positioned earlier floats.
+  // This will mark them as "placed", which means that they have found their
+  // final location in this layout pass.
   //
-  // Returns true if and only if it has positioned any floats.
-  bool positionNewFloats(LayoutUnit logicalTop, LineWidth* = nullptr);
+  // |logicalTopMarginEdge| is the minimum logical top for the floats. The
+  // final logical top of the floats will also be affected by clearance and
+  // space available after having positioned earlier floats.
+  //
+  // Returns true if and only if it has placed any floats.
+  bool placeNewFloats(LayoutUnit logicalTopMarginEdge, LineWidth* = nullptr);
 
   // Position and lay out the float, if it needs layout.
-  // |logicalTop| is the minimum logical top offset for the float (margin edge).
-  // The value returned is the minimum logical top offset for subsequent floats.
-  LayoutUnit positionAndLayoutFloat(FloatingObject&, LayoutUnit logicalTop);
+  // |logicalTopMarginEdge| is the minimum logical top offset for the float.
+  // The value returned is the minimum logical top offset for subsequent
+  // floats.
+  LayoutUnit positionAndLayoutFloat(FloatingObject&,
+                                    LayoutUnit logicalTopMarginEdge);
 
   LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit) const;
   LayoutUnit nextFloatLogicalBottomBelowForBlock(LayoutUnit) const;

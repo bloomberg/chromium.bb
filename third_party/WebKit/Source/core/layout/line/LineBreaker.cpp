@@ -43,7 +43,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver,
       }
     } else if (lineLayoutItem.isFloating()) {
       m_block.insertFloatingObject(LineLayoutBox(lineLayoutItem));
-      m_block.positionNewFloats(m_block.logicalHeight(), &width);
+      m_block.placeNewFloats(m_block.logicalHeight(), &width);
     }
     resolver.position().increment(&resolver);
   }
