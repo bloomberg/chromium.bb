@@ -969,7 +969,7 @@ bool ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show) {
     [m_scrollbarPainterController.get() hideOverlayScrollers];
 
   [m_verticalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
-  [m_verticalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
+  [m_horizontalScrollbarPainterDelegate.get() updateVisibilityImmediately:show];
   return true;
 }
 
