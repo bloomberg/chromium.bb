@@ -475,16 +475,22 @@ void HttpAuthController::PopulateAuthChallenge() {
 int HttpAuthController::HandleGenerateTokenResult(int result) {
   DCHECK(CalledOnValidThread());
   switch (result) {
+    // Occurs if the credential handle is found to be invalid at the point it is
+    // exercised (i.e. GenerateAuthToken stage). We are going to consider this
+    // to be an error that invalidates the identity but not necessarily the
+    // scheme. Doing so allows a different identity to be used with the same
+    // scheme. See https://crbug.com/648366.
+    case ERR_INVALID_HANDLE:
+
+    // If the GenerateAuthToken call fails with this error, this means that the
+    // handler can no longer be used. However, the authentication scheme is
+    // considered still usable. This allows a scheme that attempted and failed
+    // to use default credentials to recover and use explicit credentials.
+    //
+    // The current handler may be tied to external state that is no longer
+    // valid, hence should be discarded. Since the scheme is still valid, a new
+    // handler can be created for the current scheme.
     case ERR_INVALID_AUTH_CREDENTIALS:
-      // If the GenerateAuthToken call fails with this error, this means that
-      // the handler can no longer be used. However, the authentication scheme
-      // is considered still usable. This allows a scheme that attempted and
-      // failed to use default credentials to recover and use explicit
-      // credentials.
-      //
-      // The current handler may be tied to external state that is no longer
-      // valid, hence should be discarded. Since the scheme is still valid, a
-      // new handler can be created for the current scheme.
       InvalidateCurrentHandler(INVALIDATE_HANDLER_AND_CACHED_CREDENTIALS);
       auth_token_.clear();
       return OK;
