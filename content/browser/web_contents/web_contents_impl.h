@@ -646,6 +646,9 @@ class CONTENT_EXPORT WebContentsImpl
   void ReplicatePageFocus(bool is_focused) override;
   RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
       RenderWidgetHostImpl* receiving_widget) override;
+  RenderWidgetHostImpl* GetRenderWidgetHostWithPageFocus() override;
+  void FocusOwningWebContents(
+      RenderWidgetHostImpl* render_widget_host) override;
   void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host,
                             RendererUnresponsiveType type) override;
   void RendererResponsive(RenderWidgetHostImpl* render_widget_host) override;
@@ -1009,11 +1012,34 @@ class CONTENT_EXPORT WebContentsImpl
   // up at the next animation step if the throbber is going.
   void SetNotWaitingForResponse() { waiting_for_response_ = false; }
 
+  // Inner WebContents Helpers -------------------------------------------------
+  //
+  // These functions are helpers in managing a hierarchy of WebContents
+  // involved in rendering inner WebContents.
+
+  // When multiple WebContents are present within a tab or window, a single one
+  // is focused and will route keyboard events in most cases to a RenderWidget
+  // contained within it. |GetFocusedWebContents()|'s main frame widget will
+  // receive page focus and blur events when the containing window changes focus
+  // state.
+
   // Returns the focused WebContents.
   // If there are multiple inner/outer WebContents (when embedding <webview>,
   // <guestview>, ...) returns the single one containing the currently focused
   // frame. Otherwise, returns this WebContents.
   WebContentsImpl* GetFocusedWebContents();
+
+  // Returns true if |this| is the focused WebContents or an ancestor of the
+  // focused WebContents.
+  bool ContainsOrIsFocusedWebContents();
+
+  // When inner or outer WebContents are present, become the focused
+  // WebContentsImpl. This will activate this content's main frame RenderWidget
+  // and indirectly all its subframe widgets.  GetFocusedRenderWidgetHost will
+  // search this WebContentsImpl for a focused RenderWidgetHost. The previously
+  // focused WebContentsImpl, if any, will have its RenderWidgetHosts
+  // deactivated.
+  void SetAsFocusedWebContentsIfNecessary();
 
   // Returns the root of the WebContents tree.
   WebContentsImpl* GetOutermostWebContents();

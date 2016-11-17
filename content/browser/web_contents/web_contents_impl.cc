@@ -482,9 +482,9 @@ WebContentsImpl::~WebContentsImpl() {
     entry.second->CloseAllBindings();
 
   WebContentsImpl* outermost = GetOutermostWebContents();
-  if (GetFocusedWebContents() == this && this != outermost) {
+  if (this != outermost && ContainsOrIsFocusedWebContents()) {
     // If the current WebContents is in focus, unset it.
-    outermost->node_->SetFocusedWebContents(outermost);
+    outermost->SetAsFocusedWebContentsIfNecessary();
   }
 
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
@@ -1868,6 +1868,10 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
     return nullptr;
 
   return RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
+}
+
+RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
+  return GetFocusedWebContents()->GetMainFrame()->GetRenderWidgetHost();
 }
 
 void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
@@ -4222,6 +4226,17 @@ WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {
   return outermost->node_->focused_web_contents();
 }
 
+bool WebContentsImpl::ContainsOrIsFocusedWebContents() {
+  for (WebContentsImpl* focused_contents = GetFocusedWebContents();
+       focused_contents;
+       focused_contents = focused_contents->GetOuterWebContents()) {
+    if (focused_contents == this)
+      return true;
+  }
+
+  return false;
+}
+
 WebContentsImpl* WebContentsImpl::GetOutermostWebContents() {
   WebContentsImpl* root = this;
   while (root->GetOuterWebContents())
@@ -4641,29 +4656,32 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
   }
 }
 
+void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
+  // Only change focus if we are not currently focused.
+  WebContentsImpl* old_contents = GetFocusedWebContents();
+  if (old_contents == this)
+    return;
+
+  // Send a page level blur to the old contents so that it displays inactive UI
+  // and focus this contents to activate it.
+  if (old_contents)
+    old_contents->GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(false);
+  GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(true);
+  GetOutermostWebContents()->node_->SetFocusedWebContents(this);
+}
+
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
                                       SiteInstance* source) {
+  // The PDF plugin still runs as a BrowserPlugin and must go through the
+  // input redirection mechanism. It must not become focused direcly.
   if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_) {
     frame_tree_.SetFocusedFrame(node, source);
     return;
   }
 
-  // 1. Find old focused frame and unfocus it.
-  // 2. Focus the new frame in the current FrameTree.
-  // 3. Set current WebContents as focused.
-  WebContentsImpl* old_focused_contents = GetFocusedWebContents();
-  if (old_focused_contents != this) {
-    // Focus is moving between frame trees, unfocus the frame in the old tree.
-    old_focused_contents->frame_tree_.SetFocusedFrame(nullptr, source);
-    GetOutermostWebContents()->node_->SetFocusedWebContents(this);
-  }
+  SetAsFocusedWebContentsIfNecessary();
 
   frame_tree_.SetFocusedFrame(node, source);
-
-  // TODO(avallee): Remove this once page focus is fixed.
-  RenderWidgetHostImpl* rwh = node->current_frame_host()->GetRenderWidgetHost();
-  if (rwh && old_focused_contents != this)
-    rwh->Focus();
 }
 
 bool WebContentsImpl::DidAddMessageToConsole(int32_t level,
@@ -4691,6 +4709,22 @@ void WebContentsImpl::OnUserInteraction(
   // rdh is NULL in unittests.
   if (rdh && type != blink::WebInputEvent::MouseWheel)
     rdh->OnUserGesture();
+}
+
+void WebContentsImpl::FocusOwningWebContents(
+    RenderWidgetHostImpl* render_widget_host) {
+  // The PDF plugin still runs as a BrowserPlugin and must go through the
+  // input redirection mechanism. It must not become focused direcly.
+  if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_)
+    return;
+
+  RenderWidgetHostImpl* focused_widget =
+      GetFocusedRenderWidgetHost(render_widget_host);
+
+  if (focused_widget != render_widget_host &&
+      focused_widget->delegate() != render_widget_host->delegate()) {
+    SetAsFocusedWebContentsIfNecessary();
+  }
 }
 
 void WebContentsImpl::OnIgnoredUIEvent() {

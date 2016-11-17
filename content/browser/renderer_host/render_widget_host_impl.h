@@ -274,6 +274,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // but it failed, thus HasFocus() returns false.
   bool is_focused() const { return is_focused_; }
 
+  // Support for focus tracking on multi-WebContents cases. This will notify all
+  // renderers involved in a page about a page-level focus update. Users other
+  // than WebContents and RenderWidgetHost should use Focus()/Blur().
+  void SetPageFocus(bool focused);
+
   // Called to notify the RenderWidget that it has lost the mouse lock.
   void LostMouseLock();
 

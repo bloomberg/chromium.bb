@@ -7,6 +7,9 @@ var inputElement;
 var waitingForBlur = false;
 var seenBlurAfterFocus = false;
 
+var seenEvent = {};
+var waitingEvent = {};
+
 var LOG = function(msg) {
   window.console.log(msg);
 };
@@ -72,6 +75,27 @@ var getInputValue = function() {
   }
 }
 
+var monitorEvent = function(type) {
+  var listener = function(e) {
+    seenEvent[type] = true;
+    if (waitingEvent[type]) {
+      sendMessage(['response-waitEvent', type]);
+    }
+    window.removeEventListener(type, listener);
+  };
+  seenEvent[type] = false;
+  waitingEvent[type] = false;
+  window.addEventListener(type, listener);
+}
+
+var waitEvent = function(type) {
+  if (seenEvent[type]) {
+    sendMessage(['response-waitEvent', type]);
+  } else {
+    waitingEvent[type] = true;
+  }
+}
+
 window.addEventListener('message', function(e) {
   var data = JSON.parse(e.data);
   if (data[0] == 'connect') {
@@ -88,6 +112,10 @@ window.addEventListener('message', function(e) {
     createInput(data[1]);
   } else if (data[0] == 'request-getInputValue') {
     getInputValue();
+  } else if (data[0] == 'request-monitorEvent') {
+    monitorEvent(data[1]);
+  } else if (data[0] == 'request-waitEvent') {
+    waitEvent(data[1]);
   }
 });
 

@@ -737,34 +737,43 @@ void RenderWidgetHostImpl::GotFocus() {
 }
 
 void RenderWidgetHostImpl::Focus() {
-  is_focused_ = true;
+  RenderWidgetHostImpl* focused_widget =
+      delegate_ ? delegate_->GetRenderWidgetHostWithPageFocus() : nullptr;
 
-  Send(new InputMsg_SetFocus(routing_id_, true));
-
-  // Also send page-level focus state to other SiteInstances involved in
-  // rendering the current FrameTree.
-  if (RenderViewHost::From(this) && delegate_)
-    delegate_->ReplicatePageFocus(true);
+  if (!focused_widget)
+    focused_widget = this;
+  focused_widget->SetPageFocus(true);
 }
 
 void RenderWidgetHostImpl::Blur() {
-  is_focused_ = false;
+  RenderWidgetHostImpl* focused_widget =
+      delegate_ ? delegate_->GetRenderWidgetHostWithPageFocus() : nullptr;
 
-  // If there is a pending mouse lock request, we don't want to reject it at
-  // this point. The user can switch focus back to this view and approve the
-  // request later.
-  if (IsMouseLocked())
-    view_->UnlockMouse();
+  if (!focused_widget)
+    focused_widget = this;
+  focused_widget->SetPageFocus(false);
+}
 
-  if (touch_emulator_)
-    touch_emulator_->CancelTouch();
+void RenderWidgetHostImpl::SetPageFocus(bool focused) {
+  is_focused_ = focused;
 
-  Send(new InputMsg_SetFocus(routing_id_, false));
+  if (!focused) {
+    // If there is a pending mouse lock request, we don't want to reject it at
+    // this point. The user can switch focus back to this view and approve the
+    // request later.
+    if (IsMouseLocked())
+      view_->UnlockMouse();
+
+    if (touch_emulator_)
+      touch_emulator_->CancelTouch();
+  }
+
+  Send(new InputMsg_SetFocus(routing_id_, focused));
 
   // Also send page-level focus state to other SiteInstances involved in
   // rendering the current FrameTree.
   if (RenderViewHost::From(this) && delegate_)
-    delegate_->ReplicatePageFocus(false);
+    delegate_->ReplicatePageFocus(focused);
 }
 
 void RenderWidgetHostImpl::LostCapture() {
@@ -2070,11 +2079,17 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   if (!process_->HasConnection())
     return INPUT_EVENT_ACK_STATE_UNKNOWN;
 
-  if (delegate_ && (event.type == WebInputEvent::MouseDown ||
-                    event.type == WebInputEvent::GestureScrollBegin ||
-                    event.type == WebInputEvent::TouchStart ||
-                    event.type == WebInputEvent::RawKeyDown)) {
-    delegate_->OnUserInteraction(this, event.type);
+  if (delegate_) {
+    if (event.type == WebInputEvent::MouseDown ||
+        event.type == WebInputEvent::TouchStart) {
+      delegate_->FocusOwningWebContents(this);
+    }
+    if (event.type == WebInputEvent::MouseDown ||
+        event.type == WebInputEvent::GestureScrollBegin ||
+        event.type == WebInputEvent::TouchStart ||
+        event.type == WebInputEvent::RawKeyDown) {
+      delegate_->OnUserInteraction(this, event.type);
+    }
   }
 
   return view_ ? view_->FilterInputEvent(event)

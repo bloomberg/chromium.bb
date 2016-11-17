@@ -1364,13 +1364,11 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, FocusAndVisibility) {
   EXPECT_TRUE(webview_button_not_focused_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocus) {
-  TestHelper("testKeyboardFocus", "web_view/focus", NO_TEST_SERVER);
+IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusSimple) {
+  TestHelper("testKeyboardFocusSimple", "web_view/focus", NO_TEST_SERVER);
 
   EXPECT_EQ(embedder_web_contents()->GetFocusedFrame(),
             embedder_web_contents()->GetMainFrame());
-  content::FrameFocusedObserver focus_observer(
-      guest_web_contents()->GetMainFrame());
   ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
   next_step_listener.set_failure_message("TEST_STEP_FAILED");
   {
@@ -1383,10 +1381,6 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocus) {
 
   // Waits for the renderer to know the input has focus.
   ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
-  // Wait for the browser to know which frame has focus.
-  focus_observer.Wait();
-  if (GetParam())
-    EXPECT_EQ(embedder_web_contents()->GetFocusedFrame(), nullptr);
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       GetPlatformAppWindow(), ui::VKEY_A, false, false, false, false));
@@ -1399,6 +1393,74 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocus) {
   EXPECT_TRUE(content::ExecuteScript(
       embedder_web_contents(),
       "window.runCommand('testKeyboardFocusRunNextStep', 'aBc');"));
+
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+}
+
+// Ensures that input is routed to the webview after the containing window loses
+// and regains focus. Additionally, the webview does not process keypresses sent
+// while another window is focused.
+// http://crbug.com/660044.
+IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusWindowCycle) {
+  TestHelper("testKeyboardFocusWindowFocusCycle", "web_view/focus",
+             NO_TEST_SERVER);
+
+  EXPECT_EQ(embedder_web_contents()->GetFocusedFrame(),
+            embedder_web_contents()->GetMainFrame());
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
+  {
+    gfx::Rect offset = embedder_web_contents()->GetContainerBounds();
+    // Click the <input> element inside the <webview>.
+    // If we wanted, we could ask the embedder to compute an appropriate point.
+    MoveMouseInsideWindow(gfx::Point(offset.x() + 40, offset.y() + 40));
+    SendMouseClick(ui_controls::LEFT);
+  }
+
+  // Waits for the renderer to know the input has focus.
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_A, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_B, false, true, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_C, false, false, false, false));
+
+  const extensions::Extension* extension =
+      LoadAndLaunchPlatformApp("minimal", "Launched");
+  extensions::AppWindow* window = GetFirstAppWindowForApp(extension->id());
+  EXPECT_TRUE(content::ExecuteScript(
+      embedder_web_contents(),
+      "window.runCommand('monitorGuestEvent', 'focus');"));
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_F, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_O, false, true, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_O, false, true, false, false));
+
+  // Close the other window and wait for the webview to regain focus.
+  CloseAppWindow(window);
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+  next_step_listener.Reset();
+  EXPECT_TRUE(
+      content::ExecuteScript(embedder_web_contents(),
+                             "window.runCommand('waitGuestEvent', 'focus');"));
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_X, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_Y, false, true, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_Z, false, false, false, false));
+
+  next_step_listener.Reset();
+  EXPECT_TRUE(content::ExecuteScript(
+      embedder_web_contents(),
+      "window.runCommand('testKeyboardFocusRunNextStep', 'aBcxYz');"));
 
   ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
 }

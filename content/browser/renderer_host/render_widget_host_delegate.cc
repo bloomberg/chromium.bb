@@ -52,6 +52,11 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFocusedRenderWidgetHost(
   return receiving_widget;
 }
 
+RenderWidgetHostImpl*
+RenderWidgetHostDelegate::GetRenderWidgetHostWithPageFocus() {
+  return nullptr;
+}
+
 bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() const {
   return false;
 }
