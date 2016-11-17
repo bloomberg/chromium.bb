@@ -67,7 +67,7 @@ Platform specific build notes:
     src/third_party/llvm-build/Release+Asserts/bin
 
   win:
-    Script must be run on Windows with VS2013 or higher under Cygwin (or MinGW,
+    Script must be run on Windows with VS2015 or higher under Cygwin (or MinGW,
     but as of 1.0.11, it has serious performance issues with make which makes
     building take hours).
 
@@ -218,6 +218,17 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           os.path.join(config_dir, 'config.h'),
           r'(#define HAVE_POSIX_MEMALIGN [01])',
           (r'#define HAVE_POSIX_MEMALIGN 0 /* \1 -- forced to 0. See https://crbug.com/604451 */'))
+
+  # Windows linking resolves external symbols. Since generate_gn.py does not
+  # need a functioning set of libraries, ignore unresolved symbols here.
+  # This is especially useful here to avoid having to build a local libopus for
+  # windows. We munge the output of configure here to avoid this LDFLAGS setting
+  # triggering mis-detection during configure execution.
+  if target_os == 'win':
+      RewriteFile(
+          os.path.join(config_dir, 'config.mak'),
+          r'(LDFLAGS=.*)',
+          (r'\1 -FORCE:UNRESOLVED'))
 
   if target_os in (host_os, host_os + '-noasm', 'android') and not config_only:
     libraries = [
