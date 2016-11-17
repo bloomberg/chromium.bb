@@ -33,11 +33,13 @@ void FocusSynchronizer::SetFocusFromServer(WindowMus* window) {
   base::AutoReset<bool> focus_reset(&setting_focus_, true);
   base::AutoReset<WindowMus*> window_setting_focus_to_reset(
       &window_setting_focus_to_, window);
-  Env* env = aura::Env::GetInstance();
+  Env* env = Env::GetInstance();
   if (window) {
     Window* root = window->GetWindow()->GetRootWindow();
+    // The client should provide a focus client for all roots.
+    DCHECK(client::GetFocusClient(root));
     if (env->active_focus_client_root() != root)
-      env->SetActiveFocusClient(aura::client::GetFocusClient(root), root);
+      env->SetActiveFocusClient(client::GetFocusClient(root), root);
     window->GetWindow()->Focus();
   } else if (env->active_focus_client()) {
     env->active_focus_client()->FocusWindow(nullptr);

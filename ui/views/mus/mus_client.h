@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_MUS_CLIENT_INIT_H_
-#define UI_VIEWS_MUS_MUS_CLIENT_INIT_H_
+#ifndef UI_VIEWS_MUS_MUS_CLIENT_H_
+#define UI_VIEWS_MUS_MUS_CLIENT_H_
 
 #include <string>
 
@@ -128,4 +128,4 @@ class VIEWS_MUS_EXPORT MusClient
 
 }  // namespace views
 
-#endif  // UI_VIEWS_MUS_MUS_CLIENT_INIT_H_
+#endif  // UI_VIEWS_MUS_MUS_CLIENT_H_

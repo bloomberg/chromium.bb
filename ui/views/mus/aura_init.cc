@@ -14,8 +14,6 @@
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_port_mus.h"
-#include "ui/aura/window_port_local.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -57,8 +55,9 @@ AuraInit::AuraInit(service_manager::Connector* connector,
                    Mode mode)
     : resource_file_(resource_file),
       resource_file_200_(resource_file_200),
-      env_(aura::Env::CreateInstance(
-          base::Bind(&AuraInit::CreateWindowPort, base::Unretained(this)))),
+      env_(aura::Env::CreateInstance(mode == Mode::AURA_MUS
+                                         ? aura::Env::Mode::MUS
+                                         : aura::Env::Mode::LOCAL)),
       views_delegate_(new MusViewsDelegate) {
   if (mode == Mode::AURA_MUS) {
     mus_client_ =
@@ -116,19 +115,6 @@ void AuraInit::InitializeResources(service_manager::Connector* connector) {
   if (!resource_file_200_.empty())
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
         loader.TakeFile(resource_file_200_), ui::SCALE_FACTOR_200P);
-}
-
-std::unique_ptr<aura::WindowPort> AuraInit::CreateWindowPort(
-    aura::Window* window) {
-  if (mus_client_) {
-    std::unique_ptr<aura::WindowPortMus> window_port =
-        base::MakeUnique<aura::WindowPortMus>(mus_client_->window_tree_client(),
-                                              aura::WindowMusType::LOCAL);
-    return std::move(window_port);
-  }
-  std::unique_ptr<aura::WindowPortLocal> window_port =
-      base::MakeUnique<aura::WindowPortLocal>(window);
-  return std::move(window_port);
 }
 
 }  // namespace views

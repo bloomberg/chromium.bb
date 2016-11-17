@@ -16,7 +16,6 @@
 
 namespace aura {
 class Env;
-class WindowPort;
 }
 
 namespace base {
@@ -64,8 +63,6 @@ class VIEWS_MUS_EXPORT AuraInit {
 
  private:
   void InitializeResources(service_manager::Connector* connector);
-
-  std::unique_ptr<aura::WindowPort> CreateWindowPort(aura::Window* window);
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;

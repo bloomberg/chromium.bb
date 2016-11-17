@@ -31,7 +31,6 @@ class TestScreen;
 class TestWindowTree;
 class TestWindowTreeClientSetup;
 class Window;
-class WindowPort;
 class WindowManagerDelegate;
 class WindowTreeClient;
 class WindowTreeClientDelegate;
@@ -106,9 +105,6 @@ class AuraTestHelper {
 
   // Initializes a WindowTreeClient with a test WindowTree.
   void InitWindowTreeClient();
-
-  // Factory function for creating the appropriate WindowPort function.
-  std::unique_ptr<WindowPort> CreateWindowPort(Window* window);
 
   Mode mode_ = Mode::LOCAL;
   bool setup_called_;

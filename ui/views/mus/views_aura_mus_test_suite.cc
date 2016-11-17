@@ -19,6 +19,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/test_utils.h"
@@ -55,11 +56,14 @@ class PlatformTestHelperMus : public PlatformTestHelper {
  public:
   PlatformTestHelperMus(service_manager::Connector* connector,
                         const service_manager::Identity& identity) {
+    aura::test::EnvTestHelper().SetWindowTreeClient(nullptr);
     // It is necessary to recreate the MusClient for each test,
     // since a new MessageLoop is created for each test.
     mus_client_ = test::MusClientTestApi::Create(connector, identity);
   }
-  ~PlatformTestHelperMus() override {}
+  ~PlatformTestHelperMus() override {
+    aura::test::EnvTestHelper().SetWindowTreeClient(nullptr);
+  }
 
   // PlatformTestHelper:
   void OnTestHelperCreated(ViewsTestHelper* helper) override {

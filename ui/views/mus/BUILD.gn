@@ -255,6 +255,7 @@ static_library("test_support_aura_mus") {
     "//services/ui/common:mus_common",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/gl:test_support",
     "//ui/resources",
     "//ui/resources:ui_test_pak",

@@ -16,6 +16,7 @@ namespace test {
 
 class EnvTestHelper {
  public:
+  EnvTestHelper() : EnvTestHelper(Env::GetInstance()) {}
   explicit EnvTestHelper(Env* env) : env_(env) {}
   ~EnvTestHelper() {}
 
@@ -29,8 +30,12 @@ class EnvTestHelper {
     env_->is_touch_down_ = false;
   }
 
-  void SetWindowPortFactory(const Env::WindowPortFactory& factory) {
-    env_->window_port_factory_ = factory;
+  void SetMode(Env::Mode mode) { env_->mode_ = mode; }
+
+  // This circumvents the DCHECKs in Env::SetWindowTreeClient() and should
+  // only be used for tests where Env is long lived.
+  void SetWindowTreeClient(WindowTreeClient* window_tree_client) {
+    env_->window_tree_client_ = window_tree_client;
   }
 
  private:

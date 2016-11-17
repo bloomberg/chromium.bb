@@ -96,6 +96,7 @@ MusClient::MusClient(service_manager::Connector* connector,
       compositor_context_factory_.get());
   window_tree_client_ =
       base::MakeUnique<aura::WindowTreeClient>(this, nullptr, nullptr);
+  aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
   window_tree_client_->ConnectViaWindowTreeFactory(connector_);
 
   // TODO: wire up PointerWatcherEventRouter. http://crbug.com/663526.

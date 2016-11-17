@@ -87,19 +87,21 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // Needs to be before creating WindowTreeClient.
   focus_client_ = base::MakeUnique<TestFocusClient>();
   capture_client_ = base::MakeUnique<client::DefaultCaptureClient>();
-  Env::WindowPortFactory window_impl_factory =
-      base::Bind(&AuraTestHelper::CreateWindowPort, base::Unretained(this));
+  const Env::Mode env_mode =
+      (mode_ == Mode::LOCAL) ? Env::Mode::LOCAL : Env::Mode::MUS;
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
     InitWindowTreeClient();
   if (!Env::GetInstanceDontCreate())
-    env_ = Env::CreateInstance(window_impl_factory);
-  else
-    EnvTestHelper(Env::GetInstance()).SetWindowPortFactory(window_impl_factory);
+    env_ = Env::CreateInstance(env_mode);
+  EnvTestHelper env_helper;
+  // Always reset the mode. This really only matters for if Env was created
+  // above.
+  env_helper.SetMode(env_mode);
+  env_helper.SetWindowTreeClient(window_tree_client_);
   Env::GetInstance()->SetActiveFocusClient(focus_client_.get(), nullptr);
   Env::GetInstance()->set_context_factory(context_factory);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
-  EnvTestHelper env_helper(Env::GetInstance());
   env_helper.SetInputStateLookup(nullptr);
   env_helper.ResetEventState();
 
@@ -148,12 +150,10 @@ void AuraTestHelper::TearDown() {
 
   ui::ShutdownInputMethodForTesting();
 
-  if (env_) {
+  if (env_)
     env_.reset();
-  } else {
-    EnvTestHelper(Env::GetInstance())
-        .SetWindowPortFactory(Env::WindowPortFactory());
-  }
+  else
+    EnvTestHelper().SetWindowTreeClient(nullptr);
   wm_state_.reset();
 }
 
@@ -181,17 +181,6 @@ void AuraTestHelper::InitWindowTreeClient() {
   window_tree_client_setup_->InitForWindowManager(window_tree_delegate_,
                                                   window_manager_delegate_);
   window_tree_client_ = window_tree_client_setup_->window_tree_client();
-}
-
-std::unique_ptr<WindowPort> AuraTestHelper::CreateWindowPort(Window* window) {
-  if (mode_ == Mode::LOCAL) {
-    std::unique_ptr<WindowPortLocal> window_port =
-        base::MakeUnique<WindowPortLocal>(window);
-    return std::move(window_port);
-  }
-  std::unique_ptr<WindowPortMus> window_port = base::MakeUnique<WindowPortMus>(
-      window_tree_client_, WindowMusType::LOCAL);
-  return std::move(window_port);
 }
 
 }  // namespace test
