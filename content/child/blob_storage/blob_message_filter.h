@@ -56,10 +56,7 @@ class BlobMessageFilter : public IPC::MessageFilter {
       std::vector<base::SharedMemoryHandle> memory_handles,
       const std::vector<IPC::PlatformFileForTransit>& file_handles);
 
-  void OnCancelBuildingBlob(const std::string& uuid,
-                            storage::IPCBlobCreationCancelCode code);
-
-  void OnDoneBuildingBlob(const std::string& uuid);
+  void OnBlobFinalStatus(const std::string& uuid, storage::BlobStatus code);
 
   IPC::Sender* sender_;
   scoped_refptr<base::TaskRunner> file_runner_;

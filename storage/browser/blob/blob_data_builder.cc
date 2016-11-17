@@ -57,6 +57,9 @@ uint64_t BlobDataBuilder::GetFutureFileID(const DataElement& element) {
 }
 
 BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {}
+
+BlobDataBuilder::BlobDataBuilder(BlobDataBuilder&&) = default;
+BlobDataBuilder& BlobDataBuilder::operator=(BlobDataBuilder&&) = default;
 BlobDataBuilder::~BlobDataBuilder() {}
 
 void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {

@@ -45,7 +45,7 @@ class ShareableFileReference;
 // * Allocating memory & file quota (ReserveMemoryQuota, ReserveFileQuota)
 // * Paging memory quota to disk when we're nearing our memory limit, and
 // * Maintaining an LRU of memory items to choose candidates to page to disk
-//   (NotifyMemoryItemUsed).
+//   (NotifyMemoryItemsUsed).
 // This class can only be interacted with on the IO thread.
 class STORAGE_EXPORT BlobMemoryController {
  public:
@@ -152,7 +152,7 @@ class STORAGE_EXPORT BlobMemoryController {
 
   // Called when initially populated or upon later access.
   void NotifyMemoryItemsUsed(
-      std::vector<scoped_refptr<ShareableBlobDataItem>>& items);
+      const std::vector<scoped_refptr<ShareableBlobDataItem>>& items);
 
   size_t memory_usage() const { return blob_memory_used_; }
   uint64_t disk_usage() const { return disk_used_; }

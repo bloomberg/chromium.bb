@@ -37,8 +37,8 @@ using base::FilePath;
 using base::TestSimpleTaskRunner;
 using storage::BlobItemBytesRequest;
 using storage::BlobItemBytesResponse;
+using storage::BlobStatus;
 using storage::DataElement;
-using storage::IPCBlobCreationCancelCode;
 
 namespace content {
 namespace {
@@ -129,21 +129,15 @@ class BlobTransportControllerTest : public testing::Test {
                                      const std::string& expected_content_type,
                                      std::vector<DataElement>* descriptions) {
     const IPC::Message* register_message =
-        sink_.GetUniqueMessageMatching(BlobStorageMsg_RegisterBlobUUID::ID);
-    const IPC::Message* start_message =
-        sink_.GetUniqueMessageMatching(BlobStorageMsg_StartBuildingBlob::ID);
+        sink_.GetUniqueMessageMatching(BlobStorageMsg_RegisterBlob::ID);
     ASSERT_TRUE(register_message);
-    ASSERT_TRUE(start_message);
-    std::tuple<std::string, std::string, std::string, std::set<std::string>>
+    std::tuple<std::string, std::string, std::string, std::vector<DataElement>>
         register_contents;
-    std::tuple<std::string, std::vector<DataElement>> start_contents;
-    BlobStorageMsg_RegisterBlobUUID::Read(register_message, &register_contents);
-    BlobStorageMsg_StartBuildingBlob::Read(start_message, &start_contents);
+    BlobStorageMsg_RegisterBlob::Read(register_message, &register_contents);
     EXPECT_EQ(expected_uuid, std::get<0>(register_contents));
-    EXPECT_EQ(expected_uuid, std::get<0>(start_contents));
     EXPECT_EQ(expected_content_type, std::get<1>(register_contents));
     if (descriptions)
-      *descriptions = std::get<1>(start_contents);
+      *descriptions = std::get<3>(register_contents);
     // We don't have dispositions from the renderer.
     EXPECT_TRUE(std::get<2>(register_contents).empty());
     sink_.ClearMessages();
@@ -165,12 +159,12 @@ class BlobTransportControllerTest : public testing::Test {
   }
 
   void ExpectCancel(const std::string& expected_uuid,
-                    storage::IPCBlobCreationCancelCode expected_code) {
+                    storage::BlobStatus expected_code) {
     const IPC::Message* cancel_message =
-        sink_.GetUniqueMessageMatching(BlobStorageMsg_CancelBuildingBlob::ID);
+        sink_.GetUniqueMessageMatching(BlobStorageMsg_SendBlobStatus::ID);
     ASSERT_TRUE(cancel_message);
-    std::tuple<std::string, storage::IPCBlobCreationCancelCode> cancel_content;
-    BlobStorageMsg_CancelBuildingBlob::Read(cancel_message, &cancel_content);
+    std::tuple<std::string, storage::BlobStatus> cancel_content;
+    BlobStorageMsg_SendBlobStatus::Read(cancel_message, &cancel_content);
     EXPECT_EQ(expected_uuid, std::get<0>(cancel_content));
     EXPECT_EQ(expected_code, std::get<1>(cancel_content));
   }
@@ -384,7 +378,7 @@ TEST_F(BlobTransportControllerTest, Disk) {
   // Clear the main thread task, as it has the AddRef job.
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
   main_thread_runner_->ClearPendingTasks();
-  ExpectCancel(kBlobUUID, IPCBlobCreationCancelCode::FILE_WRITE_FAILED);
+  ExpectCancel(kBlobUUID, BlobStatus::ERR_FILE_WRITE_FAILED);
 }
 
 TEST_F(BlobTransportControllerTest, PublicMethods) {
@@ -423,7 +417,7 @@ TEST_F(BlobTransportControllerTest, PublicMethods) {
   EXPECT_TRUE(holder->IsTransporting(kBlobUUID));
   EXPECT_EQ(MakeBlobElement(KRefBlobUUID, 10, 10), message_descriptions[0]);
 
-  holder->OnCancel(kBlobUUID, IPCBlobCreationCancelCode::OUT_OF_MEMORY);
+  holder->OnBlobFinalStatus(kBlobUUID, BlobStatus::ERR_OUT_OF_MEMORY);
   EXPECT_FALSE(holder->IsTransporting(kBlobUUID));
   // Check we have the 'decrease ref' task.
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
@@ -475,7 +469,7 @@ TEST_F(BlobTransportControllerTest, PublicMethods) {
   EXPECT_FALSE(main_thread_runner_->HasPendingTask());
 
   // Finish the second one.
-  holder->OnDone(kBlob2UUID);
+  holder->OnBlobFinalStatus(kBlob2UUID, BlobStatus::DONE);
   EXPECT_FALSE(holder->IsTransporting(kBlob2UUID));
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
   main_thread_runner_->ClearPendingTasks();

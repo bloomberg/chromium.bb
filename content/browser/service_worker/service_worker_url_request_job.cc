@@ -7,17 +7,22 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <limits>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/resource_context_impl.h"
@@ -31,6 +36,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/referrer.h"
@@ -104,90 +110,109 @@ net::NetLogEventType RequestJobResultToNetEventType(
   return n::FAILED;
 }
 
+std::vector<int64_t> GetFileSizesOnBlockingPool(
+    std::vector<base::FilePath> file_paths) {
+  std::vector<int64_t> sizes;
+  sizes.reserve(file_paths.size());
+  for (const base::FilePath& path : file_paths) {
+    base::File::Info file_info;
+    if (!base::GetFileInfo(path, &file_info) || file_info.is_directory)
+      return std::vector<int64_t>();
+    sizes.push_back(file_info.size);
+  }
+  return sizes;
+}
+
 }  // namespace
 
-class ServiceWorkerURLRequestJob::BlobConstructionWaiter {
+// Sets the size on each DataElement in the request body that is a file with
+// unknown size. This ensures ServiceWorkerURLRequestJob::CreateRequestBodyBlob
+// can successfuly create a blob from the data elements, as files with unknown
+// sizes are not supported by the blob storage system.
+class ServiceWorkerURLRequestJob::FileSizeResolver {
  public:
-  explicit BlobConstructionWaiter(ServiceWorkerURLRequestJob* owner)
+  explicit FileSizeResolver(ServiceWorkerURLRequestJob* owner)
       : owner_(owner), weak_factory_(this) {
-    TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "BlobConstructionWaiter", this,
-                             "URL", owner_->request()->url().spec());
+    TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "FileSizeResolver", this, "URL",
+                             owner_->request()->url().spec());
     owner_->request()->net_log().BeginEvent(
-        net::NetLogEventType::SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_BLOB);
+        net::NetLogEventType::SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_FILES);
   }
 
-  ~BlobConstructionWaiter() {
+  ~FileSizeResolver() {
     owner_->request()->net_log().EndEvent(
-        net::NetLogEventType::SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_BLOB,
+        net::NetLogEventType::SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_FILES,
         net::NetLog::BoolCallback("success", phase_ == Phase::SUCCESS));
-    TRACE_EVENT_ASYNC_END1("ServiceWorker", "BlobConstructionWaiter", this,
-                           "Success", phase_ == Phase::SUCCESS);
+    TRACE_EVENT_ASYNC_END1("ServiceWorker", "FileSizeResolver", this, "Success",
+                           phase_ == Phase::SUCCESS);
   }
 
-  void RunOnComplete(const base::Callback<void(bool)>& callback) {
+  void Resolve(base::TaskRunner* file_runner,
+               const base::Callback<void(bool)>& callback) {
     DCHECK_EQ(static_cast<int>(Phase::INITIAL), static_cast<int>(phase_));
+    DCHECK(file_elements_.empty());
     phase_ = Phase::WAITING;
-    num_pending_request_body_blobs_ = 0;
+    body_ = owner_->body_;
     callback_ = callback;
 
-    for (const ResourceRequestBodyImpl::Element& element :
-         *(owner_->body_->elements())) {
-      if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB)
-        continue;
-
-      std::unique_ptr<storage::BlobDataHandle> handle =
-          owner_->blob_storage_context_->GetBlobDataFromUUID(
-              element.blob_uuid());
-      if (handle->IsBroken()) {
-        Complete(false);
-        return;
-      }
-      if (handle->IsBeingBuilt()) {
-        ++num_pending_request_body_blobs_;
-        handle->RunOnConstructionComplete(
-            base::Bind(&BlobConstructionWaiter::OneRequestBodyBlobCompleted,
-                       weak_factory_.GetWeakPtr()));
+    std::vector<base::FilePath> file_paths;
+    for (ResourceRequestBodyImpl::Element& element :
+         *body_->elements_mutable()) {
+      if (element.type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
+          element.length() == ResourceRequestBodyImpl::Element::kUnknownSize) {
+        file_elements_.push_back(&element);
+        file_paths.push_back(element.path());
       }
     }
-
-    if (num_pending_request_body_blobs_ == 0)
+    if (file_elements_.empty()) {
       Complete(true);
+      return;
+    }
+
+    PostTaskAndReplyWithResult(
+        file_runner, FROM_HERE,
+        base::Bind(&GetFileSizesOnBlockingPool, base::Passed(&file_paths)),
+        base::Bind(
+            &ServiceWorkerURLRequestJob::FileSizeResolver::OnFileSizesResolved,
+            weak_factory_.GetWeakPtr()));
   }
 
  private:
   enum class Phase { INITIAL, WAITING, SUCCESS, FAIL };
 
-  void OneRequestBodyBlobCompleted(
-      bool success,
-      storage::IPCBlobCreationCancelCode cancel_code) {
-    DCHECK_GT(num_pending_request_body_blobs_, 0UL);
-
-    if (success)
-      --num_pending_request_body_blobs_;
-    else
-      num_pending_request_body_blobs_ = 0;
-
-    if (num_pending_request_body_blobs_ == 0)
-      Complete(success);
+  void OnFileSizesResolved(std::vector<int64_t> sizes) {
+    bool success = !sizes.empty();
+    if (success) {
+      DCHECK_EQ(sizes.size(), file_elements_.size());
+      size_t num_elements = file_elements_.size();
+      for (size_t i = 0; i < num_elements; i++) {
+        ResourceRequestBodyImpl::Element* element = file_elements_[i];
+        element->SetToFilePathRange(element->path(), element->offset(),
+                                    base::checked_cast<uint64_t>(sizes[i]),
+                                    element->expected_modification_time());
+      }
+      file_elements_.clear();
+    }
+    Complete(success);
   }
 
   void Complete(bool success) {
     DCHECK_EQ(static_cast<int>(Phase::WAITING), static_cast<int>(phase_));
     phase_ = success ? Phase::SUCCESS : Phase::FAIL;
-    // Destroys |this|.
-    callback_.Run(success);
+    // Destroys |this|, so we use a copy.
+    base::ResetAndReturn(&callback_).Run(success);
   }
 
   // Owns and must outlive |this|.
   ServiceWorkerURLRequestJob* owner_;
 
   scoped_refptr<ResourceRequestBodyImpl> body_;
+  std::vector<ResourceRequestBodyImpl::Element*> file_elements_;
   base::Callback<void(bool)> callback_;
-  size_t num_pending_request_body_blobs_ = 0;
   Phase phase_ = Phase::INITIAL;
-  base::WeakPtrFactory<BlobConstructionWaiter> weak_factory_;
+  base::WeakPtrFactory<FileSizeResolver> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlobConstructionWaiter);
+  DISALLOW_COPY_AND_ASSIGN(FileSizeResolver);
 };
 
 bool ServiceWorkerURLRequestJob::Delegate::RequestStillValid(
@@ -233,7 +258,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
   stream_reader_.reset();
-  blob_construction_waiter_.reset();
+  file_size_resolver_.reset();
 
   if (!ShouldRecordResult())
     return;
@@ -410,15 +435,17 @@ void ServiceWorkerURLRequestJob::StartRequest() {
 
     case FORWARD_TO_SERVICE_WORKER:
       if (HasRequestBody()) {
-        DCHECK(!blob_construction_waiter_);
-        blob_construction_waiter_.reset(new BlobConstructionWaiter(this));
-        blob_construction_waiter_->RunOnComplete(
-            base::Bind(&ServiceWorkerURLRequestJob::RequestBodyBlobsCompleted,
-                       GetWeakPtr()));
+        DCHECK(!file_size_resolver_);
+        file_size_resolver_.reset(new FileSizeResolver(this));
+        file_size_resolver_->Resolve(
+            BrowserThread::GetBlockingPool(),
+            base::Bind(
+                &ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved,
+                GetWeakPtr()));
         return;
       }
 
-      RequestBodyBlobsCompleted(true);
+      RequestBodyFileSizesResolved(true);
       return;
   }
 
@@ -470,70 +497,15 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
 void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
                                                        uint64_t* blob_size) {
   DCHECK(HasRequestBody());
-  // To ensure the blobs stick around until the end of the reading.
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
-  std::vector<std::unique_ptr<storage::BlobDataSnapshot>> snapshots;
-  // TODO(dmurph): Allow blobs to be added below, so that the context can
-  // efficiently re-use blob items for the new blob.
-  std::vector<const ResourceRequestBodyImpl::Element*> resolved_elements;
+  storage::BlobDataBuilder blob_builder(base::GenerateGUID());
   for (const ResourceRequestBodyImpl::Element& element : (*body_->elements())) {
-    if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB) {
-      resolved_elements.push_back(&element);
-      continue;
-    }
-    std::unique_ptr<storage::BlobDataHandle> handle =
-        blob_storage_context_->GetBlobDataFromUUID(element.blob_uuid());
-    std::unique_ptr<storage::BlobDataSnapshot> snapshot =
-        handle->CreateSnapshot();
-    if (snapshot->items().empty())
-      continue;
-    const auto& items = snapshot->items();
-    for (const auto& item : items) {
-      DCHECK_NE(storage::DataElement::TYPE_BLOB, item->type());
-      resolved_elements.push_back(item->data_element_ptr());
-    }
-    handles.push_back(std::move(handle));
-    snapshots.push_back(std::move(snapshot));
-  }
-
-  const std::string uuid(base::GenerateGUID());
-  uint64_t total_size = 0;
-
-  storage::BlobDataBuilder blob_builder(uuid);
-  for (size_t i = 0; i < resolved_elements.size(); ++i) {
-    const ResourceRequestBodyImpl::Element& element = *resolved_elements[i];
-    if (total_size != std::numeric_limits<uint64_t>::max() &&
-        element.length() != std::numeric_limits<uint64_t>::max())
-      total_size += element.length();
-    else
-      total_size = std::numeric_limits<uint64_t>::max();
-    switch (element.type()) {
-      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
-        blob_builder.AppendData(element.bytes(), element.length());
-        break;
-      case ResourceRequestBodyImpl::Element::TYPE_FILE:
-        blob_builder.AppendFile(element.path(), element.offset(),
-                                element.length(),
-                                element.expected_modification_time());
-        break;
-      case ResourceRequestBodyImpl::Element::TYPE_BLOB:
-        // Blob elements should be resolved beforehand.
-        NOTREACHED();
-        break;
-      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
-        blob_builder.AppendFileSystemFile(element.filesystem_url(),
-                                          element.offset(), element.length(),
-                                          element.expected_modification_time());
-        break;
-      default:
-        NOTIMPLEMENTED();
-    }
+    blob_builder.AppendIPCDataElement(element);
   }
 
   request_body_blob_data_handle_ =
       blob_storage_context_->AddFinishedBlob(&blob_builder);
-  *blob_uuid = uuid;
-  *blob_size = total_size;
+  *blob_uuid = blob_builder.uuid();
+  *blob_size = request_body_blob_data_handle_->size();
 }
 
 void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
@@ -851,8 +823,8 @@ bool ServiceWorkerURLRequestJob::HasRequestBody() {
   return request_->has_upload() && body_.get() && blob_storage_context_;
 }
 
-void ServiceWorkerURLRequestJob::RequestBodyBlobsCompleted(bool success) {
-  blob_construction_waiter_.reset();
+void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
+  file_size_resolver_.reset();
   if (!success) {
     RecordResult(
         ServiceWorkerMetrics::REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED);

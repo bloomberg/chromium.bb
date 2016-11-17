@@ -19,7 +19,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -139,7 +138,7 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
   DCHECK(ChildThreadImpl::current());
   if (length == 0)
     return;
-  if (length < storage::kBlobStorageIPCThresholdBytes) {
+  if (length <= limits_.max_ipc_memory_size) {
     DataElement item;
     item.SetToBytes(data, length);
     sender_->Send(new StreamHostMsg_AppendBlobDataItem(url, item));
@@ -147,7 +146,7 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
     // We handle larger amounts of data via SharedMemory instead of
     // writing it directly to the IPC channel.
     size_t shared_memory_size =
-        std::min(length, storage::kBlobStorageMaxSharedMemoryBytes);
+        std::min(length, limits_.max_shared_memory_size);
     std::unique_ptr<base::SharedMemory> shared_memory(
         ChildThreadImpl::AllocateSharedMemory(shared_memory_size,
                                               sender_.get(), nullptr));

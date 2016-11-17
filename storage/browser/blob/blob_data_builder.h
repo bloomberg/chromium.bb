@@ -44,6 +44,8 @@ class STORAGE_EXPORT BlobDataBuilder {
   static uint64_t GetFutureFileID(const DataElement& element);
 
   explicit BlobDataBuilder(const std::string& uuid);
+  BlobDataBuilder(BlobDataBuilder&&);
+  BlobDataBuilder& operator=(BlobDataBuilder&&);
   ~BlobDataBuilder();
 
   const std::string& uuid() const { return uuid_; }

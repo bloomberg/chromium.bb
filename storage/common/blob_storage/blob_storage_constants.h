@@ -13,15 +13,6 @@
 
 namespace storage {
 
-// All sizes are in bytes. Deprecated, please use BlobStorageLimits.
-const int64_t kBlobStorageMaxMemoryUsage = 500 * 1024 * 1024;  // Half a gig.
-const size_t kBlobStorageIPCThresholdBytes = 250 * 1024;
-const size_t kBlobStorageMaxSharedMemoryBytes = 10 * 1024 * 1024;
-const uint64_t kBlobStorageMaxFileSizeBytes = 100 * 1024 * 1024;
-const uint64_t kBlobStorageMinFileSizeBytes = 1 * 1024 * 1024;
-const size_t kBlobStorageMaxBlobMemorySize =
-    kBlobStorageMaxMemoryUsage - kBlobStorageMinFileSizeBytes;
-
 // All sizes are in bytes.
 struct BlobStorageLimits {
   size_t memory_limit_before_paging() const {
@@ -55,28 +46,6 @@ enum class IPCBlobItemRequestStrategy {
   LAST = FILE
 };
 
-// These items cannot be reordered or renumbered because they're recorded to
-// UMA. New items must be added immediately before LAST, and LAST must be set to
-// the the last item.
-// DEPRECATED, please use BlobStatus instead.
-enum class IPCBlobCreationCancelCode {
-  UNKNOWN = 0,
-  OUT_OF_MEMORY = 1,
-  // We couldn't create or write to a file. File system error, like a full disk.
-  FILE_WRITE_FAILED = 2,
-  // The renderer was destroyed while data was in transit.
-  SOURCE_DIED_IN_TRANSIT = 3,
-  // The renderer destructed the blob before it was done transferring, and there
-  // were no outstanding references (no one is waiting to read) to keep the
-  // blob alive.
-  BLOB_DEREFERENCED_WHILE_BUILDING = 4,
-  // A blob that we referenced during construction is broken, or a browser-side
-  // builder tries to build a blob with a blob reference that isn't finished
-  // constructing.
-  REFERENCED_BLOB_BROKEN = 5,
-  LAST = REFERENCED_BLOB_BROKEN
-};
-
 // This is the enum to rule them all in the blob system.
 // These values are used in UMA metrics, so they should not be changed. Please
 // update LAST_ERROR if you add an error condition and LAST if you add new
@@ -106,16 +75,20 @@ enum class BlobStatus {
   DONE = 200,
   // The system is pending on quota being granted, the transport layer
   // populating pending data, and/or copying data from dependent blobs. See
-  // InternalBlobData::BuildingState determine which of these are happening, as
-  // they all can happen concurrently.
-  PENDING = 201,
-  LAST = PENDING
+  // BlobEntry::BuildingState determine which of these are happening, as they
+  // all can happen concurrently.
+  PENDING_QUOTA = 201,
+  PENDING_TRANSPORT = 202,
+  PENDING_INTERNALS = 203,
+  LAST = PENDING_INTERNALS
 };
 
 using BlobStatusCallback = base::Callback<void(BlobStatus)>;
 
 // Returns if the status is an error code.
 STORAGE_COMMON_EXPORT bool BlobStatusIsError(BlobStatus status);
+
+STORAGE_COMMON_EXPORT bool BlobStatusIsPending(BlobStatus status);
 
 // Returns if the status is a bad enough error to flag the IPC as bad. This is
 // only INVALID_CONSTRUCTION_ARGUMENTS.

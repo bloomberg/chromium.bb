@@ -35,8 +35,7 @@ bool BlobMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlobMessageFilter, message)
     IPC_MESSAGE_HANDLER(BlobStorageMsg_RequestMemoryItem, OnRequestMemoryItem)
-    IPC_MESSAGE_HANDLER(BlobStorageMsg_CancelBuildingBlob, OnCancelBuildingBlob)
-    IPC_MESSAGE_HANDLER(BlobStorageMsg_DoneBuildingBlob, OnDoneBuildingBlob)
+    IPC_MESSAGE_HANDLER(BlobStorageMsg_SendBlobStatus, OnBlobFinalStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -58,14 +57,9 @@ void BlobMessageFilter::OnRequestMemoryItem(
       sender_);
 }
 
-void BlobMessageFilter::OnCancelBuildingBlob(
-    const std::string& uuid,
-    storage::IPCBlobCreationCancelCode code) {
-  BlobTransportController::GetInstance()->OnCancel(uuid, code);
-}
-
-void BlobMessageFilter::OnDoneBuildingBlob(const std::string& uuid) {
-  BlobTransportController::GetInstance()->OnDone(uuid);
+void BlobMessageFilter::OnBlobFinalStatus(const std::string& uuid,
+                                          storage::BlobStatus code) {
+  BlobTransportController::GetInstance()->OnBlobFinalStatus(uuid, code);
 }
 
 }  // namespace content

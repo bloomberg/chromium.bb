@@ -29,8 +29,7 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(storage::IPCBlobItemRequestStrategy,
                           storage::IPCBlobItemRequestStrategy::LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(storage::IPCBlobCreationCancelCode,
-                          storage::IPCBlobCreationCancelCode::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(storage::BlobStatus, storage::BlobStatus::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(storage::BlobItemBytesRequest)
   IPC_STRUCT_TRAITS_MEMBER(request_number)
@@ -48,21 +47,17 @@ IPC_STRUCT_TRAITS_BEGIN(storage::BlobItemBytesResponse)
   IPC_STRUCT_TRAITS_MEMBER(time_file_modified)
 IPC_STRUCT_TRAITS_END()
 
-// This message is to tell the browser that we will be building a blob.
-IPC_MESSAGE_CONTROL4(BlobStorageMsg_RegisterBlobUUID,
-                     std::string /* uuid */,
-                     std::string /* content_type */,
-                     std::string /* content_disposition */,
-                     std::set<std::string> /* referenced_blob_uuids */)
-
-// The DataElements are used to:
+// This message is to tell the browser that we will be building a blob. The
+// DataElements are used to:
 // * describe & transport non-memory resources (blobs, files, etc)
 // * describe the size of memory items
 // * 'shortcut' transport the memory up to the IPC limit so the browser can use
 //   it if it's not currently full.
 // See https://bit.ly/BlobStorageRefactor
-IPC_MESSAGE_CONTROL2(BlobStorageMsg_StartBuildingBlob,
+IPC_MESSAGE_CONTROL4(BlobStorageMsg_RegisterBlob,
                      std::string /* uuid */,
+                     std::string /* content_type */,
+                     std::string /* content_disposition */,
                      std::vector<storage::DataElement> /* item_descriptions */)
 
 IPC_MESSAGE_CONTROL4(
@@ -77,11 +72,9 @@ IPC_MESSAGE_CONTROL2(
     std::string /* uuid */,
     std::vector<storage::BlobItemBytesResponse> /* responses */)
 
-IPC_MESSAGE_CONTROL2(BlobStorageMsg_CancelBuildingBlob,
+IPC_MESSAGE_CONTROL2(BlobStorageMsg_SendBlobStatus,
                      std::string /* uuid */,
-                     storage::IPCBlobCreationCancelCode /* code */)
-
-IPC_MESSAGE_CONTROL1(BlobStorageMsg_DoneBuildingBlob, std::string /* uuid */)
+                     storage::BlobStatus /* code */)
 
 IPC_MESSAGE_CONTROL1(BlobHostMsg_IncrementRefCount,
                      std::string /* uuid */)

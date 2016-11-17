@@ -141,7 +141,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   base::WeakPtr<ServiceWorkerURLRequestJob> GetWeakPtr();
 
  private:
-  class BlobConstructionWaiter;
+  class FileSizeResolver;
 
   enum ResponseType {
     NOT_DETERMINED,
@@ -167,7 +167,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // Creates BlobDataHandle of the request body from |body_|. This handle
   // |request_body_blob_data_handle_| will be deleted when
   // ServiceWorkerURLRequestJob is deleted.
-  // This must not be called until all blobs in |body_| finished construction.
+  // This must not be called until all files in |body_| with unknown size have
+  // their sizes populated.
   void CreateRequestBodyBlob(std::string* blob_uuid, uint64_t* blob_size);
 
   // For FORWARD_TO_SERVICE_WORKER case.
@@ -223,9 +224,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   bool IsMainResourceLoad() const;
 
-  // For waiting for request body blobs to finish construction.
+  // For waiting for files sizes of request body files with unknown sizes.
   bool HasRequestBody();
-  void RequestBodyBlobsCompleted(bool success);
+  void RequestBodyFileSizesResolved(bool success);
 
   // Not owned.
   Delegate* delegate_;
@@ -277,7 +278,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   ServiceWorkerHeaderList cors_exposed_header_names_;
 
-  std::unique_ptr<BlobConstructionWaiter> blob_construction_waiter_;
+  std::unique_ptr<FileSizeResolver> file_size_resolver_;
 
   bool worker_already_activated_ = false;
   EmbeddedWorkerStatus initial_worker_status_ = EmbeddedWorkerStatus::STOPPED;

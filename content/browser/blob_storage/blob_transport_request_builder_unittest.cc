@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "storage/browser/blob/blob_async_transport_request_builder.h"
+#include "storage/browser/blob/blob_transport_request_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -39,7 +39,7 @@ void AddBlobItem(std::vector<DataElement>* out) {
 }
 
 TEST(BlobAsyncTransportRequestBuilderTest, TestNoMemoryItems) {
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   std::vector<DataElement> infos;
 
@@ -63,7 +63,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestNoMemoryItems) {
 }
 
 TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFile) {
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   std::vector<DataElement> infos;
 
@@ -90,7 +90,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFile) {
 }
 
 TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFiles) {
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   std::vector<DataElement> infos;
 
@@ -136,7 +136,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFiles) {
 
 TEST(BlobAsyncTransportRequestBuilderTest,
      TestLargeBlocksConsolidatingInFiles) {
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   std::vector<DataElement> infos;
 
@@ -183,7 +183,7 @@ TEST(BlobAsyncTransportRequestBuilderTest,
 }
 
 TEST(BlobAsyncTransportRequestBuilderTest, TestSharedMemorySegmentation) {
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   std::vector<DataElement> infos;
 
@@ -231,7 +231,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestSharedMemorySegmentation) {
 
 TEST(BlobAsyncTransportRequestBuilderTest,
      TestSharedMemorySegmentationAndStorage) {
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   std::vector<DataElement> infos;
 
@@ -289,7 +289,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestSimpleIPC) {
   // Test simple IPC strategy, where size < max_ipc_memory_size and we have
   // just one item.
   std::vector<DataElement> infos;
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   AddMemoryItem(10, &infos);
   AddBlobItem(&infos);
@@ -312,7 +312,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestSimpleIPC) {
 TEST(BlobAsyncTransportRequestBuilderTest, TestMultipleIPC) {
   // Same as above, but with 2 items and a blob in-between.
   std::vector<DataElement> infos;
-  BlobAsyncTransportRequestBuilder strategy;
+  BlobTransportRequestBuilder strategy;
   BlobDataBuilder builder(kNewUUID);
   AddShortcutMemoryItem(10, &infos);  // should have no behavior change
   AddBlobItem(&infos);

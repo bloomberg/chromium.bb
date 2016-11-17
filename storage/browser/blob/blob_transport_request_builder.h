@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_BROWSER_BLOB_BLOB_ASYNC_TRANSPORT_REQUEST_BUILDER_H_
-#define STORAGE_BROWSER_BLOB_BLOB_ASYNC_TRANSPORT_REQUEST_BUILDER_H_
+#ifndef STORAGE_BROWSER_BLOB_BLOB_TRANSPORT_REQUEST_BUILDER_H_
+#define STORAGE_BROWSER_BLOB_BLOB_TRANSPORT_REQUEST_BUILDER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -28,7 +28,7 @@ namespace storage {
 //       where the data is already present in the blob description, and will
 //       always give the caller requests for requesting all data from the
 //       renderer.
-class STORAGE_EXPORT BlobAsyncTransportRequestBuilder {
+class STORAGE_EXPORT BlobTransportRequestBuilder {
  public:
   struct RendererMemoryItemRequest {
     RendererMemoryItemRequest();
@@ -42,8 +42,10 @@ class STORAGE_EXPORT BlobAsyncTransportRequestBuilder {
     BlobItemBytesRequest message;
   };
 
-  BlobAsyncTransportRequestBuilder();
-  virtual ~BlobAsyncTransportRequestBuilder();
+  BlobTransportRequestBuilder();
+  BlobTransportRequestBuilder(BlobTransportRequestBuilder&&);
+  BlobTransportRequestBuilder& operator=(BlobTransportRequestBuilder&&);
+  virtual ~BlobTransportRequestBuilder();
 
   // Initializes the request builder for file requests. One or more files are
   // created to hold the given data. Each file can hold data from multiple
@@ -114,9 +116,6 @@ class STORAGE_EXPORT BlobAsyncTransportRequestBuilder {
   // The total bytes size of memory items in the blob.
   uint64_t total_bytes_size() const { return total_bytes_size_; }
 
-  static bool ShouldBeShortcut(const std::vector<DataElement>& items,
-                               size_t memory_available);
-
  private:
   static void ComputeHandleSizes(uint64_t total_memory_size,
                                  size_t max_segment_size,
@@ -130,9 +129,9 @@ class STORAGE_EXPORT BlobAsyncTransportRequestBuilder {
   uint64_t total_bytes_size_;
   std::vector<RendererMemoryItemRequest> requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlobAsyncTransportRequestBuilder);
+  DISALLOW_COPY_AND_ASSIGN(BlobTransportRequestBuilder);
 };
 
 }  // namespace storage
 
-#endif  // STORAGE_BROWSER_BLOB_BLOB_ASYNC_TRANSPORT_REQUEST_BUILDER_H_
+#endif  // STORAGE_BROWSER_BLOB_BLOB_TRANSPORT_REQUEST_BUILDER_H_

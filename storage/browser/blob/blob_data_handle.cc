@@ -26,8 +26,6 @@
 #include "url/gurl.h"
 
 namespace storage {
-using BlobState = BlobStorageRegistry::BlobState;
-
 namespace {
 
 class FileStreamReaderProviderImpl
@@ -67,10 +65,12 @@ BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition,
+    uint64_t size,
     BlobStorageContext* context)
     : uuid_(uuid),
       content_type_(content_type),
       content_disposition_(content_disposition),
+      size_(size),
       context_(context->AsWeakPtr()) {
   context_->IncrementBlobRefCount(uuid);
 }
@@ -92,12 +92,14 @@ BlobDataHandle::BlobDataHandleShared::~BlobDataHandleShared() {
 BlobDataHandle::BlobDataHandle(const std::string& uuid,
                                const std::string& content_type,
                                const std::string& content_disposition,
+                               uint64_t size,
                                BlobStorageContext* context,
                                base::SequencedTaskRunner* io_task_runner)
     : io_task_runner_(io_task_runner),
       shared_(new BlobDataHandleShared(uuid,
                                        content_type,
                                        content_disposition,
+                                       size,
                                        context)) {
   DCHECK(io_task_runner_.get());
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -121,21 +123,24 @@ bool BlobDataHandle::IsBeingBuilt() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (!shared_->context_)
     return false;
-  return shared_->context_->IsBeingBuilt(shared_->uuid_);
+  return BlobStatusIsPending(GetBlobStatus());
 }
 
 bool BlobDataHandle::IsBroken() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (!shared_->context_)
     return true;
-  return shared_->context_->IsBroken(shared_->uuid_);
+  return BlobStatusIsError(GetBlobStatus());
 }
 
-void BlobDataHandle::RunOnConstructionComplete(
-    const BlobConstructedCallback& done) {
+BlobStatus BlobDataHandle::GetBlobStatus() const {
+  return shared_->context_->GetBlobStatus(shared_->uuid_);
+}
+
+void BlobDataHandle::RunOnConstructionComplete(const BlobStatusCallback& done) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (!shared_->context_.get()) {
-    done.Run(false, IPCBlobCreationCancelCode::UNKNOWN);
+    done.Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
     return;
   }
   shared_->context_->RunOnConstructionComplete(shared_->uuid_, done);
@@ -158,6 +163,10 @@ const std::string& BlobDataHandle::content_type() const {
 
 const std::string& BlobDataHandle::content_disposition() const {
   return shared_->content_disposition_;
+}
+
+uint64_t BlobDataHandle::size() const {
+  return shared_->size_;
 }
 
 }  // namespace storage

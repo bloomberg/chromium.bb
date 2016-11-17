@@ -5,6 +5,7 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_DATA_HANDLE_H_
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_HANDLE_H_
 
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -39,10 +40,7 @@ class FileSystemContext;
 class STORAGE_EXPORT BlobDataHandle
     : public base::SupportsUserData::Data {
  public:
-  // True means the blob was constructed successfully, and false means that
-  // there was an error, which is reported in the second argument.
-  using BlobConstructedCallback =
-      base::Callback<void(bool, IPCBlobCreationCancelCode)>;
+  static constexpr uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
 
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
   ~BlobDataHandle() override;                   // May be deleted on any thread.
@@ -59,13 +57,17 @@ class STORAGE_EXPORT BlobDataHandle
   // Must be called on IO thread.
   bool IsBroken() const;
 
+  // Returns the broken reason if this blob is broken.
+  // Must be called on IO thread.
+  BlobStatus GetBlobStatus() const;
+
   // The callback will be run on the IO thread when construction of the blob
   // is complete. If construction is already complete, then the task is run
   // immediately on the current message loop (i.e. IO thread).
   // Must be called on IO thread.  Returns if construction successful.
   // Calling this multiple times results in registering multiple
   // completion callbacks.
-  void RunOnConstructionComplete(const BlobConstructedCallback& done);
+  void RunOnConstructionComplete(const BlobStatusCallback& done);
 
   // A BlobReader is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period
@@ -80,6 +82,9 @@ class STORAGE_EXPORT BlobDataHandle
   const std::string& content_type() const;
   // May be accessed on any thread.
   const std::string& content_disposition() const;
+  // May be accessed on any thread. In rare cases where the blob is created
+  // as a file from javascript, this will be kUnknownSize.
+  uint64_t size() const;
 
   // This call and the destruction of the returned snapshot must be called
   // on the IO thread. If the blob is broken, then we return a nullptr here.
@@ -97,6 +102,7 @@ class STORAGE_EXPORT BlobDataHandle
     BlobDataHandleShared(const std::string& uuid,
                          const std::string& content_type,
                          const std::string& content_disposition,
+                         uint64_t size,
                          BlobStorageContext* context);
 
    private:
@@ -109,6 +115,7 @@ class STORAGE_EXPORT BlobDataHandle
     const std::string uuid_;
     const std::string content_type_;
     const std::string content_disposition_;
+    const uint64_t size_;
     base::WeakPtr<BlobStorageContext> context_;
 
     DISALLOW_COPY_AND_ASSIGN(BlobDataHandleShared);
@@ -118,6 +125,7 @@ class STORAGE_EXPORT BlobDataHandle
   BlobDataHandle(const std::string& uuid,
                  const std::string& content_type,
                  const std::string& content_disposition,
+                 uint64_t size,
                  BlobStorageContext* context,
                  base::SequencedTaskRunner* io_task_runner);
 

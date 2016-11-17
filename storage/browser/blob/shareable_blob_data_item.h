@@ -18,15 +18,14 @@
 
 namespace storage {
 class BlobDataItem;
-class InternalBlobData;
 
 // This class allows blob items to be shared between blobs.  This class contains
 // both the blob data item and the uuids of all the blobs using this item.
 // The data in this class (the item) is immutable, but the item itself can be
 // swapped out with an item with the same data but a different backing (think
 // RAM vs file backed).
-// We also allow the storage of a deletion closure which is used for memory
-// quota reclamation.
+// We also allow the storage of a memory quota allocation object which is used
+// for memory quota reclamation.
 class STORAGE_EXPORT ShareableBlobDataItem
     : public base::RefCounted<ShareableBlobDataItem> {
  public:
@@ -44,24 +43,16 @@ class STORAGE_EXPORT ShareableBlobDataItem
     POPULATED_WITHOUT_QUOTA
   };
 
-  ShareableBlobDataItem(const std::string& referencing_blob_uuid,
-                        scoped_refptr<BlobDataItem> item,
-                        State state);
+  ShareableBlobDataItem(scoped_refptr<BlobDataItem> item, State state);
 
   const scoped_refptr<BlobDataItem>& item() const { return item_; }
+
   void set_item(scoped_refptr<BlobDataItem> item);
 
   // This is a unique auto-incrementing id assigned to this item on
   // construction. It is used to keep track of this item in an LRU data
   // structure for eviction to disk.
   uint64_t item_id() const { return item_id_; }
-
-  const base::hash_set<std::string>& referencing_blobs() const {
-    return referencing_blobs_;
-  }
-  base::hash_set<std::string>* referencing_blobs_mutable() {
-    return &referencing_blobs_;
-  }
 
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }
@@ -77,6 +68,7 @@ class STORAGE_EXPORT ShareableBlobDataItem
  private:
   friend class BlobMemoryController;
   friend class BlobMemoryControllerTest;
+  friend class BlobStorageContext;
   friend class base::RefCounted<ShareableBlobDataItem>;
   friend STORAGE_EXPORT void PrintTo(const ShareableBlobDataItem& x,
                                      ::std::ostream* os);
@@ -88,11 +80,12 @@ class STORAGE_EXPORT ShareableBlobDataItem
     memory_allocation_ = std::move(allocation);
   }
 
+  bool has_memory_allocation() { return static_cast<bool>(memory_allocation_); }
+
   // This is a unique identifier for this ShareableBlobDataItem.
   const uint64_t item_id_;
   State state_;
   scoped_refptr<BlobDataItem> item_;
-  base::hash_set<std::string> referencing_blobs_;
   std::unique_ptr<BlobMemoryController::MemoryAllocation> memory_allocation_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareableBlobDataItem);

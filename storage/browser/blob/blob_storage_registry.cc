@@ -9,15 +9,13 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "storage/browser/blob/blob_entry.h"
 #include "url/gurl.h"
 
 namespace storage {
-using BlobState = BlobStorageRegistry::BlobState;
 
 namespace {
 // We can't use GURL directly for these hash fragment manipulations
@@ -38,18 +36,6 @@ GURL ClearBlobUrlRef(const GURL& url) {
 
 }  // namespace
 
-BlobStorageRegistry::Entry::Entry(int refcount, BlobState state)
-    : refcount(refcount), state(state) {}
-
-BlobStorageRegistry::Entry::~Entry() {}
-
-bool BlobStorageRegistry::Entry::TestAndSetState(BlobState expected,
-                                                 BlobState set) {
-  if (state != expected)
-    return false;
-  state = set;
-  return true;
-}
 
 BlobStorageRegistry::BlobStorageRegistry() {}
 
@@ -59,15 +45,14 @@ BlobStorageRegistry::~BlobStorageRegistry() {
   // So it shouldn't matter.
 }
 
-BlobStorageRegistry::Entry* BlobStorageRegistry::CreateEntry(
+BlobEntry* BlobStorageRegistry::CreateEntry(
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition) {
-  DCHECK(!base::ContainsKey(blob_map_, uuid));
-  std::unique_ptr<Entry> entry(new Entry(1, BlobState::PENDING));
-  entry->content_type = content_type;
-  entry->content_disposition = content_disposition;
-  Entry* entry_ptr = entry.get();
+  DCHECK(!ContainsKey(blob_map_, uuid));
+  std::unique_ptr<BlobEntry> entry(
+      new BlobEntry(content_type, content_disposition));
+  BlobEntry* entry_ptr = entry.get();
   blob_map_.add(uuid, std::move(entry));
   return entry_ptr;
 }
@@ -80,16 +65,14 @@ bool BlobStorageRegistry::HasEntry(const std::string& uuid) const {
   return blob_map_.find(uuid) != blob_map_.end();
 }
 
-BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntry(
-    const std::string& uuid) {
+BlobEntry* BlobStorageRegistry::GetEntry(const std::string& uuid) {
   BlobMap::iterator found = blob_map_.find(uuid);
   if (found == blob_map_.end())
     return nullptr;
   return found->second;
 }
 
-const BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntry(
-    const std::string& uuid) const {
+const BlobEntry* BlobStorageRegistry::GetEntry(const std::string& uuid) const {
   return const_cast<BlobStorageRegistry*>(this)->GetEntry(uuid);
 }
 
@@ -118,14 +101,13 @@ bool BlobStorageRegistry::IsURLMapped(const GURL& blob_url) const {
   return base::ContainsKey(url_to_uuid_, blob_url);
 }
 
-BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntryFromURL(
-    const GURL& url,
-    std::string* uuid) {
+BlobEntry* BlobStorageRegistry::GetEntryFromURL(const GURL& url,
+                                                std::string* uuid) {
   URLMap::iterator found =
       url_to_uuid_.find(BlobUrlHasRef(url) ? ClearBlobUrlRef(url) : url);
   if (found == url_to_uuid_.end())
     return nullptr;
-  Entry* entry = GetEntry(found->second);
+  BlobEntry* entry = GetEntry(found->second);
   if (entry && uuid)
     uuid->assign(found->second);
   return entry;

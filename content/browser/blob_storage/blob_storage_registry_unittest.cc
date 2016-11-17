@@ -5,13 +5,12 @@
 #include "storage/browser/blob/blob_storage_registry.h"
 
 #include "base/callback.h"
+#include "storage/browser/blob/blob_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace storage {
 namespace {
-using Entry = BlobStorageRegistry::Entry;
-using BlobState = BlobStorageRegistry::BlobState;
 
 TEST(BlobStorageRegistry, UUIDRegistration) {
   const std::string kBlob1 = "Blob1";
@@ -22,14 +21,12 @@ TEST(BlobStorageRegistry, UUIDRegistration) {
   EXPECT_FALSE(registry.DeleteEntry(kBlob1));
   EXPECT_EQ(0u, registry.blob_count());
 
-  Entry* entry = registry.CreateEntry(kBlob1, kType, kDisposition);
+  BlobEntry* entry = registry.CreateEntry(kBlob1, kType, kDisposition);
   ASSERT_NE(nullptr, entry);
-  EXPECT_EQ(BlobState::PENDING, entry->state);
-  EXPECT_EQ(kType, entry->content_type);
-  EXPECT_EQ(kDisposition, entry->content_disposition);
-  EXPECT_EQ(1u, entry->refcount);
-  EXPECT_FALSE(entry->data.get() || entry->data_builder.get());
-  EXPECT_EQ(0u, entry->build_completion_callbacks.size());
+  EXPECT_EQ(BlobStatus::PENDING_QUOTA, entry->status());
+  EXPECT_EQ(kType, entry->content_type());
+  EXPECT_EQ(kDisposition, entry->content_disposition());
+  EXPECT_EQ(0u, entry->refcount());
 
   EXPECT_EQ(entry, registry.GetEntry(kBlob1));
   EXPECT_TRUE(registry.DeleteEntry(kBlob1));
@@ -52,7 +49,7 @@ TEST(BlobStorageRegistry, URLRegistration) {
   EXPECT_FALSE(registry.DeleteURLMapping(kURL, nullptr));
   EXPECT_FALSE(registry.CreateUrlMapping(kURL, kBlob));
   EXPECT_EQ(0u, registry.url_count());
-  Entry* entry = registry.CreateEntry(kBlob, kType, kDisposition);
+  BlobEntry* entry = registry.CreateEntry(kBlob, kType, kDisposition);
 
   EXPECT_FALSE(registry.IsURLMapped(kURL));
   EXPECT_TRUE(registry.CreateUrlMapping(kURL, kBlob));

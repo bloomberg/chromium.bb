@@ -126,47 +126,28 @@ ReadStatus BlobConsolidation::VisitMemory(size_t consolidated_item_index,
   }
 
   // We do a binary search to find the correct data to start with in the data
-  // elements.  This is slightly customized due to our unique storage and
-  // constraints.
-  size_t mid = 0;
-  size_t offset_from_mid = consolidated_offset;
-  size_t num_items = item.data.size();
-  if (!item.offsets.empty()) {
-    size_t low = 0;
-    size_t high = num_items - 1;
-    while (true) {
-      mid = (high + low) / 2;
-      // Note: we don't include the implicit '0' for the first item in offsets.
-      size_t item_offset = (mid == 0 ? 0 : item.offsets[mid - 1]);
-      offset_from_mid = consolidated_offset - item_offset;
-      size_t next_item_offset = (mid + 1 == num_items ? 0 : item.offsets[mid]);
-      if (item_offset == consolidated_offset) {
-        // found exact match.
-        break;
-      } else if (item_offset > consolidated_offset) {
-        high = mid - 1;
-      } else if (mid + 1 == num_items ||
-                 next_item_offset > consolidated_offset) {
-        // We are at the last item, or the next offset is greater than the one
-        // we want, so the current item wins.
-        break;
-      } else {
-        low = mid + 1;
-      }
-    }
-  }
+  // elements.
+  const auto& offsets = item.offsets;
+  size_t item_index =
+      std::upper_bound(offsets.begin(), offsets.end(), consolidated_offset) -
+      offsets.begin();
+  size_t item_offset = base::checked_cast<size_t>(
+      item_index == 0 ? consolidated_offset
+                      : consolidated_offset - offsets[item_index - 1]);
 
-  DCHECK_LT(offset_from_mid, item.data[mid].size());
-  // Read starting from 'mid' and 'offset_from_mid'.
+  DCHECK_LT(item_offset, item.data[item_index].size());
+  // Read starting from 'item_index' and 'item_offset'.
+  size_t num_items = item.data.size();
   for (size_t memory_read = 0;
-       mid < num_items && memory_read < consolidated_size; mid++) {
-    size_t read_size = std::min(item.data[mid].size() - offset_from_mid,
+       item_index < num_items && memory_read < consolidated_size;
+       item_index++) {
+    size_t read_size = std::min(item.data[item_index].size() - item_offset,
                                 consolidated_size - memory_read);
     bool continu =
-        visitor.Run(item.data[mid].data() + offset_from_mid, read_size);
+        visitor.Run(item.data[item_index].data() + item_offset, read_size);
     if (!continu)
       return ReadStatus::CANCELLED_BY_VISITOR;
-    offset_from_mid = 0;
+    item_offset = 0;
     memory_read += read_size;
   }
   return ReadStatus::OK;

@@ -12,6 +12,12 @@ bool BlobStatusIsError(BlobStatus status) {
   return static_cast<int>(status) <= static_cast<int>(BlobStatus::LAST_ERROR);
 }
 
+bool BlobStatusIsPending(BlobStatus status) {
+  int status_int = static_cast<int>(status);
+  return status_int >= static_cast<int>(BlobStatus::PENDING_QUOTA) &&
+         status_int <= static_cast<int>(BlobStatus::PENDING_INTERNALS);
+}
+
 bool BlobStatusIsBadIPC(BlobStatus status) {
   return status == BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
 }

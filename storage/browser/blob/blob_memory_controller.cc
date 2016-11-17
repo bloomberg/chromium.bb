@@ -492,10 +492,12 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveFileQuota(
 }
 
 void BlobMemoryController::NotifyMemoryItemsUsed(
-    std::vector<scoped_refptr<ShareableBlobDataItem>>& items) {
+    const std::vector<scoped_refptr<ShareableBlobDataItem>>& items) {
   for (const auto& item : items) {
-    DCHECK_EQ(DataElement::TYPE_BYTES, item->item()->type());
-    DCHECK_EQ(ShareableBlobDataItem::POPULATED_WITH_QUOTA, item->state());
+    if (item->item()->type() != DataElement::TYPE_BYTES ||
+        item->state() != ShareableBlobDataItem::POPULATED_WITH_QUOTA) {
+      continue;
+    }
     // We don't want to re-add the item if we're currently paging it to disk.
     if (items_paging_to_file_.find(item->item_id()) !=
         items_paging_to_file_.end()) {
@@ -699,7 +701,14 @@ uint64_t BlobMemoryController::GetAvailableFileSpaceForBlobs() const {
 void BlobMemoryController::GrantMemoryAllocations(
     std::vector<scoped_refptr<ShareableBlobDataItem>>* items,
     size_t total_bytes) {
+  // These metrics let us calculate the global distribution of blob storage by
+  // subtracting the histograms.
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
+                       blob_memory_used_ / 1024);
   blob_memory_used_ += total_bytes;
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeAfterAppend",
+                       blob_memory_used_ / 1024);
+
   for (auto& item : *items) {
     item->set_state(ShareableBlobDataItem::QUOTA_GRANTED);
     item->set_memory_allocation(base::MakeUnique<MemoryAllocation>(
@@ -711,7 +720,15 @@ void BlobMemoryController::GrantMemoryAllocations(
 void BlobMemoryController::RevokeMemoryAllocation(uint64_t item_id,
                                                   size_t length) {
   DCHECK_LE(length, blob_memory_used_);
+
+  // These metrics let us calculate the global distribution of blob storage by
+  // subtracting the histograms.
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
+                       blob_memory_used_ / 1024);
   blob_memory_used_ -= length;
+  UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeAfterAppend",
+                       blob_memory_used_ / 1024);
+
   auto iterator = populated_memory_items_.Get(item_id);
   if (iterator != populated_memory_items_.end()) {
     DCHECK_GE(populated_memory_items_bytes_, length);

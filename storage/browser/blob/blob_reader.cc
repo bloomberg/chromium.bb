@@ -39,20 +39,25 @@ bool IsFileType(DataElement::Type type) {
   }
 }
 
-int ConvertBlobErrorToNetError(IPCBlobCreationCancelCode reason) {
+int ConvertBlobErrorToNetError(BlobStatus reason) {
   switch (reason) {
-    case IPCBlobCreationCancelCode::UNKNOWN:
+    case BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS:
       return net::ERR_FAILED;
-    case IPCBlobCreationCancelCode::OUT_OF_MEMORY:
+    case BlobStatus::ERR_OUT_OF_MEMORY:
       return net::ERR_OUT_OF_MEMORY;
-    case IPCBlobCreationCancelCode::FILE_WRITE_FAILED:
+    case BlobStatus::ERR_FILE_WRITE_FAILED:
       return net::ERR_FILE_NO_SPACE;
-    case IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT:
+    case BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT:
       return net::ERR_UNEXPECTED;
-    case IPCBlobCreationCancelCode::BLOB_DEREFERENCED_WHILE_BUILDING:
+    case BlobStatus::ERR_BLOB_DEREFERENCED_WHILE_BUILDING:
       return net::ERR_UNEXPECTED;
-    case IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN:
+    case BlobStatus::ERR_REFERENCED_BLOB_BROKEN:
       return net::ERR_INVALID_HANDLE;
+    case BlobStatus::DONE:
+    case BlobStatus::PENDING_QUOTA:
+    case BlobStatus::PENDING_TRANSPORT:
+    case BlobStatus::PENDING_INTERNALS:
+      NOTREACHED();
   }
   NOTREACHED();
   return net::ERR_FAILED;
@@ -254,10 +259,9 @@ BlobReader::Status BlobReader::ReportError(int net_error) {
 }
 
 void BlobReader::AsyncCalculateSize(const net::CompletionCallback& done,
-                                    bool async_succeeded,
-                                    IPCBlobCreationCancelCode reason) {
-  if (!async_succeeded) {
-    InvalidateCallbacksAndDone(ConvertBlobErrorToNetError(reason), done);
+                                    BlobStatus status) {
+  if (BlobStatusIsError(status)) {
+    InvalidateCallbacksAndDone(ConvertBlobErrorToNetError(status), done);
     return;
   }
   DCHECK(!blob_handle_->IsBroken()) << "Callback should have returned false.";

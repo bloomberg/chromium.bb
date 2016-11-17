@@ -26,6 +26,8 @@ namespace storage {
 // bytes, file or blob data.
 class STORAGE_COMMON_EXPORT DataElement {
  public:
+  static const uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
+
   enum Type {
     TYPE_UNKNOWN = -1,
     TYPE_BYTES,
