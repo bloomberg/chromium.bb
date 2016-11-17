@@ -22,7 +22,7 @@ namespace ash {
 
 namespace {
 
-const int kToastMarginX = 3;
+const int kToastMarginX = 7;
 
 // If there should be no margin for the first item, this value needs to be
 // substracted to flush the message to the shelf (the width of the border +
