@@ -49,8 +49,7 @@ class BidirectionalStreamTestURLRequestContextGetter
       auto params = base::MakeUnique<net::HttpNetworkSession::Params>();
       params->enable_quic = true;
       params->enable_http2 = true;
-      net::AlternativeService alternative_service(net::AlternateProtocol::QUIC,
-                                                  "", 443);
+      net::AlternativeService alternative_service(net::kProtoQUIC, "", 443);
       url::SchemeHostPort quic_hint_server("https", kTestServerHost, 443);
       server_properties_->SetAlternativeService(
           quic_hint_server, alternative_service, base::Time::Max());

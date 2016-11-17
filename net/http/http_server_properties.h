@@ -66,33 +66,17 @@ enum BrokenAlternateProtocolLocation {
 NET_EXPORT void HistogramBrokenAlternateProtocolLocation(
     BrokenAlternateProtocolLocation location);
 
-enum AlternateProtocol {
-  NPN_HTTP_2,
-  QUIC,
-  UNINITIALIZED_ALTERNATE_PROTOCOL,
-};
-
-NET_EXPORT bool IsAlternateProtocolValid(AlternateProtocol protocol);
-
-NET_EXPORT const char* AlternateProtocolToString(AlternateProtocol protocol);
-NET_EXPORT AlternateProtocol AlternateProtocolFromString(
-    const std::string& str);
-NET_EXPORT_PRIVATE AlternateProtocol AlternateProtocolFromNextProto(
-    NextProto next_proto);
+NET_EXPORT bool IsAlternateProtocolValid(NextProto protocol);
 
 // (protocol, host, port) triple as defined in
 // https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html
 struct NET_EXPORT AlternativeService {
-  AlternativeService()
-      : protocol(UNINITIALIZED_ALTERNATE_PROTOCOL), host(), port(0) {}
+  AlternativeService() : protocol(kProtoUnknown), host(), port(0) {}
 
-  AlternativeService(AlternateProtocol protocol,
-                     const std::string& host,
-                     uint16_t port)
+  AlternativeService(NextProto protocol, const std::string& host, uint16_t port)
       : protocol(protocol), host(host), port(port) {}
 
-  AlternativeService(AlternateProtocol protocol,
-                     const HostPortPair& host_port_pair)
+  AlternativeService(NextProto protocol, const HostPortPair& host_port_pair)
       : protocol(protocol),
         host(host_port_pair.host()),
         port(host_port_pair.port()) {}
@@ -119,7 +103,7 @@ struct NET_EXPORT AlternativeService {
 
   std::string ToString() const;
 
-  AlternateProtocol protocol;
+  NextProto protocol;
   std::string host;
   uint16_t port;
 };
@@ -132,12 +116,11 @@ struct NET_EXPORT AlternativeServiceInfo {
       : alternative_service(alternative_service),
         expiration(expiration) {}
 
-  AlternativeServiceInfo(AlternateProtocol protocol,
+  AlternativeServiceInfo(NextProto protocol,
                          const std::string& host,
                          uint16_t port,
                          base::Time expiration)
-      : alternative_service(protocol, host, port),
-        expiration(expiration) {}
+      : alternative_service(protocol, host, port), expiration(expiration) {}
 
   AlternativeServiceInfo(
       const AlternativeServiceInfo& alternative_service_info) = default;
