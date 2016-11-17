@@ -1320,6 +1320,27 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
   if (!frame_is_intra_only(cm)) {
     av1_update_mv_count(td);
 
+#if CONFIG_GLOBAL_MOTION
+    if (is_inter_block(mbmi)) {
+      if (bsize >= BLOCK_8X8) {
+        // TODO(sarahparker): global motion stats need to be handled per-tile
+        // to be compatible with tile-based threading.
+        update_global_motion_used(mbmi->mode, mbmi, (AV1_COMP *)cpi);
+      } else {
+        const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
+        const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
+        int idx, idy;
+        for (idy = 0; idy < 2; idy += num_4x4_h) {
+          for (idx = 0; idx < 2; idx += num_4x4_w) {
+            const int j = idy * 2 + idx;
+            update_global_motion_used(mi->bmi[j].as_mode, mbmi,
+                                      (AV1_COMP *)cpi);
+          }
+        }
+      }
+    }
+#endif  // CONFIG_GLOBAL_MOTION
+
     if (cm->interp_filter == SWITCHABLE
 #if CONFIG_EXT_INTERP
         && av1_is_interp_needed(xd)
