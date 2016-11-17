@@ -159,7 +159,7 @@ void av1_fill_token_costs(av1_coeff_cost *c,
                           av1_coeff_probs_model (*p)[PLANE_TYPES]) {
   int i, j, k, l;
   TX_SIZE t;
-  for (t = TX_4X4; t <= TX_32X32; ++t)
+  for (t = TX_4X4; t < TX_SIZES; ++t)
     for (i = 0; i < PLANE_TYPES; ++i)
       for (j = 0; j < REF_TYPES; ++j)
         for (k = 0; k < COEF_BANDS; ++k)
@@ -571,6 +571,16 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 8)
         t_left[i] = !!*(const uint64_t *)&left[i];
       break;
+#if CONFIG_TX64X64
+    case TX_64X64:
+      for (i = 0; i < num_4x4_w; i += 16)
+        t_above[i] =
+            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8]);
+      for (i = 0; i < num_4x4_h; i += 16)
+        t_left[i] = !!(*(const uint64_t *)&left[i] |
+                       *(const uint64_t *)&left[i + 8];
+      break;
+#endif  // CONFIG_TX64X64
     case TX_4X8:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
       for (i = 0; i < num_4x4_h; i += 2)

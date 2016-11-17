@@ -1460,7 +1460,7 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
     evaluate_rect_tx = is_rect_tx_allowed(xd, mbmi);
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
     start_tx = max_tx_size;
-    end_tx = (max_tx_size == TX_32X32) ? TX_8X8 : TX_4X4;
+    end_tx = (max_tx_size >= TX_32X32) ? TX_8X8 : TX_4X4;
   } else {
     const TX_SIZE chosen_tx_size =
         tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
@@ -1504,7 +1504,7 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
     if (is_inter && x->use_default_inter_tx_type &&
         tx_type != get_default_tx_type(0, xd, 0, n))
       continue;
-    if (max_tx_size == TX_32X32 && n == TX_4X4) continue;
+    if (max_tx_size >= TX_32X32 && n == TX_4X4) continue;
 #if CONFIG_EXT_TX
     ext_tx_set = get_ext_tx_set(n, bs, is_inter);
     if (is_inter) {

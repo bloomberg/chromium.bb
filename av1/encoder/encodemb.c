@@ -1431,7 +1431,7 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
   // int pvq_dc_quant = OD_MAXI(1,
   //  quant * daala_enc->state.pvq_qm_q4[plane][od_qm_get_index(tx_size, 0)] >>
   //  4);
-  int quant_shift = tx_size == TX_32X32 ? 1 : 0;
+  int quant_shift = get_tx_scale(tx_size);
   // DC quantizer for PVQ
   int pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
   int tell;

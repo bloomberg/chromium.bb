@@ -162,6 +162,10 @@ static void set_good_speed_feature(AV1_COMP *cpi, AV1_COMMON *cm,
     sf->adaptive_pred_interp_filter = 1;
 
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
+#if CONFIG_TX64X64
+    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
+    sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC_H_V;
+#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC_H_V;
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
@@ -211,6 +215,10 @@ static void set_good_speed_feature(AV1_COMP *cpi, AV1_COMMON *cm,
     sf->recode_loop = ALLOW_RECODE_KFMAXBW;
     sf->adaptive_rd_thresh = 3;
     sf->mode_skip_start = 6;
+#if CONFIG_TX64X64
+    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
+    sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC;
+#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC;
     sf->adaptive_interp_filter_search = 1;
@@ -309,6 +317,10 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
     sf->adaptive_pred_interp_filter = 1;
     sf->mv.auto_mv_step_size = 1;
     sf->adaptive_rd_thresh = 2;
+#if CONFIG_TX64X64
+    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
+    sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC_H_V;
+#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = INTRA_DC_H_V;
@@ -357,6 +369,9 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
       sf->intra_y_mode_mask[i] = INTRA_DC_H_V;
       sf->intra_uv_mode_mask[i] = INTRA_DC;
     }
+#if CONFIG_TX64X64
+    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
+#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
     sf->frame_parameter_update = 0;
     sf->mv.search_method = FAST_HEX;

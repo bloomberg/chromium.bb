@@ -157,7 +157,7 @@ typedef enum ATTRIBUTE_PACKED {
   TX_INVALID = 255    // Invalid transform size
 } TX_SIZE;
 
-#define MAX_TX_DEPTH (TX_32X32 - TX_4X4)
+#define MAX_TX_DEPTH (TX_SIZES - 1 - TX_4X4)
 
 #define MAX_TX_SIZE_LOG2 (5 + CONFIG_TX64X64)
 #define MAX_TX_SIZE (1 << MAX_TX_SIZE_LOG2)
@@ -419,7 +419,7 @@ typedef enum {
 #define REF_CONTEXTS 5
 
 #if CONFIG_VAR_TX
-#define TXFM_PARTITION_CONTEXTS 16
+#define TXFM_PARTITION_CONTEXTS ((TX_SIZES - TX_8X8) * 6 - 2)
 typedef uint8_t TXFM_CONTEXT;
 #endif
 

@@ -318,7 +318,7 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   int off;
   const int is_keyframe = 0;
   const int has_dc_skip = 1;
-  int quant_shift = bs == TX_32X32 ? 1 : 0;
+  int quant_shift = get_tx_scale(bs);
   // DC quantizer for PVQ
   int pvq_dc_quant;
   int lossless = (quant[0] == 0);

@@ -810,24 +810,13 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
   const int above = *above_ctx < txw;
   const int left = *left_ctx < txh;
   TX_SIZE max_tx_size = max_txsize_lookup[bsize];
-  int category = 15;
+  int category = TXFM_PARTITION_CONTEXTS - 1;
 
-  if (max_tx_size == TX_32X32) {
-    if (tx_size == TX_32X32)
-      category = 0;
-    else
-      category = 1;
-  } else if (max_tx_size == TX_16X16) {
-    if (tx_size == TX_16X16)
-      category = 2;
-    else
-      category = 3;
-  } else if (max_tx_size == TX_8X8) {
-    category = 4;
+  if (max_tx_size >= TX_8X8) {
+    category = (tx_size != max_tx_size && max_tx_size > TX_8X8) +
+               (TX_SIZES - 1 - tx_size) * 2;
   }
-
-  if (category == 15) return category;
-
+  if (category == TXFM_PARTITION_CONTEXTS - 1) return category;
   return category * 3 + above + left;
 }
 #endif

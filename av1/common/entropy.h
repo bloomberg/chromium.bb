@@ -154,7 +154,8 @@ void av1_partial_adapt_probs(struct AV1Common *cm, int mi_row, int mi_col);
 // This macro is currently unused but may be used by certain implementations
 #define MAXBAND_INDEX 21
 
-DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_8x8plus[1024]);
+DECLARE_ALIGNED(16, extern const uint8_t,
+                av1_coefband_trans_8x8plus[MAX_TX_SQUARE]);
 #if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x8_8x4[32]);
 #endif  // CONFIG_EXT_TX
@@ -258,6 +259,12 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       above_ec = !!*(const uint64_t *)a;
       left_ec = !!*(const uint64_t *)l;
       break;
+#if CONFIG_TX64X64
+    case TX_64X64:
+      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
+      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
+      break;
+#endif  // CONFIG_TX64X64
     default: assert(0 && "Invalid transform size."); break;
   }
   return combine_entropy_contexts(above_ec, left_ec);
