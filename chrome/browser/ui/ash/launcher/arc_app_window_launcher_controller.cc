@@ -88,18 +88,6 @@ blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
   }
 }
 
-int GetWindowTaskId(aura::Window* window) {
-  const std::string arc_app_id = exo::ShellSurface::GetApplicationId(window);
-  if (arc_app_id.empty())
-    return -1;
-
-  int task_id = -1;
-  if (sscanf(arc_app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
-    return -1;
-
-  return task_id;
-}
-
 }  // namespace
 
 // The information about the arc application window which has to be kept
@@ -722,4 +710,17 @@ void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->screen_orientation_controller()->LockOrientationForWindow(
       window, BlinkOrientationLockFromMojom(orientation_lock));
+}
+
+// static
+int ArcAppWindowLauncherController::GetWindowTaskId(aura::Window* window) {
+  const std::string arc_app_id = exo::ShellSurface::GetApplicationId(window);
+  if (arc_app_id.empty())
+    return -1;
+
+  int task_id = -1;
+  if (sscanf(arc_app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+    return -1;
+
+  return task_id;
 }

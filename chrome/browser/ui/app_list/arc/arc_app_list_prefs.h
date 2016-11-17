@@ -34,6 +34,10 @@ namespace arc {
 class ArcPackageSyncableService;
 }  // namespace arc
 
+namespace chromeos {
+class ArcKioskAppService;
+}  // namespace chromeos
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -374,7 +378,9 @@ class ArcAppListPrefs
   // True is Arc package list has been refreshed once.
   bool package_list_initial_refreshed_ = false;
 
-  arc::ArcPackageSyncableService* sync_service_;
+  arc::ArcPackageSyncableService* sync_service_ = nullptr;
+  // Track ARC kiosk app and auto-launches it if needed.
+  chromeos::ArcKioskAppService* kiosk_app_service_ = nullptr;
 
   mojo::Binding<arc::mojom::AppHost> binding_;
 

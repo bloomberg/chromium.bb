@@ -153,6 +153,14 @@ const AccountId& ArcKioskAppManager::GetAutoLaunchAccountId() const {
   return auto_launch_account_id_;
 }
 
+const ArcKioskAppManager::ArcKioskApp* ArcKioskAppManager::GetAppByAccountId(
+    const AccountId& account_id) {
+  for (auto& app : GetAllApps())
+    if (app.account_id() == account_id)
+      return &app;
+  return nullptr;
+}
+
 void ArcKioskAppManager::AddObserver(ArcKioskAppManagerObserver* observer) {
   observers_.AddObserver(observer);
 }

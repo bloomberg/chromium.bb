@@ -73,6 +73,9 @@ class ArcKioskAppManager {
   // thus is_valid() returns empty AccountId.
   const AccountId& GetAutoLaunchAccountId() const;
 
+  // Returns app that should be started for given account id.
+  const ArcKioskApp* GetAppByAccountId(const AccountId& account_id);
+
   const ArcKioskApps& GetAllApps() const { return apps_; }
 
   void AddObserver(ArcKioskAppManagerObserver* observer);
