@@ -411,7 +411,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceCheckSecurityAcce
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceCheckSecurityMethods[] = {
-    {"voidMethod", TestInterfaceCheckSecurityV8Internal::voidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"voidMethod", TestInterfaceCheckSecurityV8Internal::voidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterfaceCheckSecurityTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

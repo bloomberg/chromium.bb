@@ -402,31 +402,31 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
   DCHECK(executionContext);
   if (executionContext && (executionContext->isSecureContext())) {
-      const V8DOMConfiguration::MethodConfiguration secureContextMethodMethodConfiguration = {"secureContextMethod", TestInterfaceSecureContextV8Internal::secureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration secureContextMethodMethodConfiguration = {"secureContextMethod", TestInterfaceSecureContextV8Internal::secureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-          const V8DOMConfiguration::MethodConfiguration secureContextRuntimeEnabledMethodMethodConfiguration = {"secureContextRuntimeEnabledMethod", TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration secureContextRuntimeEnabledMethodMethodConfiguration = {"secureContextRuntimeEnabledMethod", TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextRuntimeEnabledMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isDocument())) {
-          const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedMethodMethodConfiguration = {"secureContextWindowExposedMethod", TestInterfaceSecureContextV8Internal::secureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedMethodMethodConfiguration = {"secureContextWindowExposedMethod", TestInterfaceSecureContextV8Internal::secureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWindowExposedMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isWorkerGlobalScope())) {
-          const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedMethodMethodConfiguration = {"secureContextWorkerExposedMethod", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedMethodMethodConfiguration = {"secureContextWorkerExposedMethod", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWorkerExposedMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isDocument())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWindowExposedRuntimeEnabledMethod", TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+              const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWindowExposedRuntimeEnabledMethod", TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration);
           }
       }
@@ -434,7 +434,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isWorkerGlobalScope())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+              const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration);
           }
       }

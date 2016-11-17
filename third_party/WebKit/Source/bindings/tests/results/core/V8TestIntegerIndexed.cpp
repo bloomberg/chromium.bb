@@ -161,7 +161,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedAccessors[] 
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedMethods[] = {
-    {"voidMethodDocument", TestIntegerIndexedV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodDocument", TestIntegerIndexedV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestIntegerIndexedTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

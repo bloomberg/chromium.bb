@@ -244,6 +244,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned exposeConfiguration : 1;  // ExposeConfiguration
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
+    unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
   };
 
   struct SymbolKeyedMethodConfiguration {
@@ -265,6 +266,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned exposeConfiguration : 1;  // ExposeConfiguration
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
+    unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
   };
 
   static void installMethods(v8::Isolate*,

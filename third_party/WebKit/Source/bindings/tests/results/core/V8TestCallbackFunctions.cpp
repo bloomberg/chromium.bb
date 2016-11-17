@@ -282,14 +282,14 @@ const V8DOMConfiguration::AccessorConfiguration V8TestCallbackFunctionsAccessors
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestCallbackFunctionsMethods[] = {
-    {"returnCallbackFunctionMethod", TestCallbackFunctionsV8Internal::returnCallbackFunctionMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"returnCallbackFunctionMethod2", TestCallbackFunctionsV8Internal::returnCallbackFunctionMethod2MethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodCallbackFunctionInArg", TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodCallbackFunctionInArg2", TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArg2MethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodCallbackFunctionWithReturnValueInArg", TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionWithReturnValueInArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodOptionalCallbackFunctionInArg", TestCallbackFunctionsV8Internal::voidMethodOptionalCallbackFunctionInArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodNullableCallbackFunctionInArg", TestCallbackFunctionsV8Internal::voidMethodNullableCallbackFunctionInArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"customElementCallbacksMethod", TestCallbackFunctionsV8Internal::customElementCallbacksMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"returnCallbackFunctionMethod", TestCallbackFunctionsV8Internal::returnCallbackFunctionMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"returnCallbackFunctionMethod2", TestCallbackFunctionsV8Internal::returnCallbackFunctionMethod2MethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodCallbackFunctionInArg", TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodCallbackFunctionInArg2", TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArg2MethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodCallbackFunctionWithReturnValueInArg", TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionWithReturnValueInArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOptionalCallbackFunctionInArg", TestCallbackFunctionsV8Internal::voidMethodOptionalCallbackFunctionInArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodNullableCallbackFunctionInArg", TestCallbackFunctionsV8Internal::voidMethodNullableCallbackFunctionInArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customElementCallbacksMethod", TestCallbackFunctionsV8Internal::customElementCallbacksMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestCallbackFunctionsTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

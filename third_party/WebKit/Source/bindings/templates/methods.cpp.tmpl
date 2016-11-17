@@ -12,7 +12,8 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
 
-  {% if 'exceptionState' in function_call %}
+  {% if 'exceptionState' in function_call or
+        (method.returns_promise and not method.is_static) %}
   {{define_exception_state}}
   {% if method.returns_promise %}
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
@@ -20,6 +21,14 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   {% endif %}
 
   {% if not method.is_static %}
+  {% if method.returns_promise %}
+  // V8DOMConfiguration::DoNotCheckHolder
+  // Make sure that info.Holder() really points to an instance of the type.
+  if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate())) {
+    {{throw_type_error(method, '"Illegal invocation"')}}
+    return;
+  }
+  {% endif %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
   {% endif %}
 
@@ -633,7 +642,9 @@ v8SetReturnValue(info, wrapper);
        'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
        if method.property_attributes else 'v8::None' %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}}
+{% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'
+       if method.returns_promise else 'V8DOMConfiguration::CheckHolder' %}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}, {{holder_check}}}
 {%- endmacro %}
 
 

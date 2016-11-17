@@ -358,6 +358,13 @@ void installMethodInternal(v8::Isolate* isolate,
 
   v8::Local<v8::Name> name = method.methodName(isolate);
   v8::FunctionCallback callback = method.callbackForWorld(world);
+  // Promise-returning functions need to return a reject promise when
+  // an exception occurs.  This includes a case that the receiver object is not
+  // of the type.  So, we disable the type check of the receiver object on V8
+  // side so that V8 won't throw.  Instead, we do the check on Blink side and
+  // convert an exception to a reject promise.
+  if (method.holderCheckConfiguration == V8DOMConfiguration::DoNotCheckHolder)
+    signature = v8::Local<v8::Signature>();
 
   DCHECK(method.propertyLocationConfiguration);
   if (method.propertyLocationConfiguration &
@@ -404,6 +411,13 @@ void installMethodInternal(
 
   v8::Local<v8::Name> name = method.methodName(isolate);
   v8::FunctionCallback callback = method.callbackForWorld(world);
+  // Promise-returning functions need to return a reject promise when
+  // an exception occurs.  This includes a case that the receiver object is not
+  // of the type.  So, we disable the type check of the receiver object on V8
+  // side so that V8 won't throw.  Instead, we do the check on Blink side and
+  // convert an exception to a reject promise.
+  if (method.holderCheckConfiguration == V8DOMConfiguration::DoNotCheckHolder)
+    signature = v8::Local<v8::Signature>();
 
   DCHECK(method.propertyLocationConfiguration);
   if (method.propertyLocationConfiguration &

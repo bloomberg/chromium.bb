@@ -168,7 +168,7 @@ void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value,
 } // namespace TestSpecialOperationsV8Internal
 
 const V8DOMConfiguration::MethodConfiguration V8TestSpecialOperationsMethods[] = {
-    {"namedItem", TestSpecialOperationsV8Internal::namedItemMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"namedItem", TestSpecialOperationsV8Internal::namedItemMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestSpecialOperationsTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

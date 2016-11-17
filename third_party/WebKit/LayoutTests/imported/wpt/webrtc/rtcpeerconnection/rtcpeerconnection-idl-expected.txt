@@ -1,3 +1,9 @@
+CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'createOffer' on 'RTCPeerConnection': Illegal invocation
+CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': Illegal invocation
+CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'createAnswer' on 'RTCPeerConnection': Illegal invocation
+CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Illegal invocation
+CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Illegal invocation
+CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'getStats' on 'RTCPeerConnection': Illegal invocation
 CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 1 argument required, but only 0 present.
 CONSOLE ERROR: line 75: Uncaught (in promise) TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': 1 argument required, but only 0 present.
@@ -12,17 +18,17 @@ PASS RTCPeerConnection interface object length
 PASS RTCPeerConnection interface object name 
 FAIL RTCPeerConnection interface: existence and properties of interface prototype object assert_equals: class string of RTCPeerConnection.prototype expected "[object RTCPeerConnectionPrototype]" but got "[object RTCPeerConnection]"
 PASS RTCPeerConnection interface: existence and properties of interface prototype object's "constructor" property 
-FAIL RTCPeerConnection interface: operation createOffer(RTCOfferOptions) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
-FAIL RTCPeerConnection interface: operation createAnswer(RTCAnswerOptions) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
-FAIL RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescription) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS RTCPeerConnection interface: operation createOffer(RTCOfferOptions) 
+PASS RTCPeerConnection interface: operation createAnswer(RTCAnswerOptions) 
+PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescription) 
 PASS RTCPeerConnection interface: attribute localDescription 
 FAIL RTCPeerConnection interface: attribute currentLocalDescription assert_true: The prototype object must have a property "currentLocalDescription" expected true got false
 FAIL RTCPeerConnection interface: attribute pendingLocalDescription assert_true: The prototype object must have a property "pendingLocalDescription" expected true got false
-FAIL RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescription) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescription) 
 PASS RTCPeerConnection interface: attribute remoteDescription 
 FAIL RTCPeerConnection interface: attribute currentRemoteDescription assert_true: The prototype object must have a property "currentRemoteDescription" expected true got false
 FAIL RTCPeerConnection interface: attribute pendingRemoteDescription assert_true: The prototype object must have a property "pendingRemoteDescription" expected true got false
-FAIL RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidate) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidate) 
 PASS RTCPeerConnection interface: attribute signalingState 
 PASS RTCPeerConnection interface: attribute iceGatheringState 
 PASS RTCPeerConnection interface: attribute iceConnectionState 
@@ -35,12 +41,24 @@ PASS RTCPeerConnection interface: attribute onicecandidate
 PASS RTCPeerConnection interface: attribute onsignalingstatechange 
 PASS RTCPeerConnection interface: attribute oniceconnectionstatechange 
 FAIL RTCPeerConnection interface: attribute onicegatheringstatechange assert_true: The prototype object must have a property "onicegatheringstatechange" expected true got false
-PASS RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) 
-PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) 
-PASS RTCPeerConnection interface: operation createAnswer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback) 
-PASS RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) 
-PASS RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidate,VoidFunction,RTCPeerConnectionErrorCallback) 
-PASS RTCPeerConnection interface: operation getStats(MediaStreamTrack,RTCStatsCallback,RTCPeerConnectionErrorCallback) 
+FAIL RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+FAIL RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+FAIL RTCPeerConnection interface: operation createAnswer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+FAIL RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+FAIL RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidate,VoidFunction,RTCPeerConnectionErrorCallback) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+FAIL RTCPeerConnection interface: operation getStats(MediaStreamTrack,RTCStatsCallback,RTCPeerConnectionErrorCallback) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
 PASS RTCPeerConnection interface: operation generateCertificate(AlgorithmIdentifier) 
 FAIL RTCPeerConnection interface: operation getSenders() assert_own_property: interface prototype object missing non-static operation expected property "getSenders" missing
 FAIL RTCPeerConnection interface: operation getReceivers() assert_own_property: interface prototype object missing non-static operation expected property "getReceivers" missing
@@ -50,7 +68,7 @@ FAIL RTCPeerConnection interface: attribute ontrack assert_true: The prototype o
 PASS RTCPeerConnection interface: operation createDataChannel(DOMString,RTCDataChannelInit) 
 PASS RTCPeerConnection interface: attribute ondatachannel 
 FAIL RTCPeerConnection interface: attribute dtmf assert_true: The prototype object must have a property "dtmf" expected true got false
-FAIL RTCPeerConnection interface: operation getStats(MediaStreamTrack) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS RTCPeerConnection interface: operation getStats(MediaStreamTrack) 
 FAIL RTCPeerConnection interface: operation setIdentityProvider(DOMString,DOMString,DOMString) assert_own_property: interface prototype object missing non-static operation expected property "setIdentityProvider" missing
 FAIL RTCPeerConnection interface: operation getIdentityAssertion() assert_own_property: interface prototype object missing non-static operation expected property "getIdentityAssertion" missing
 FAIL RTCPeerConnection interface: attribute peerIdentity assert_true: The prototype object must have a property "peerIdentity" expected true got false

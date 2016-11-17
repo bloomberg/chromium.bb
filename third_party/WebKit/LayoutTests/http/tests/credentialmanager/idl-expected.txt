@@ -4,9 +4,9 @@ PASS CredentialsContainer interface object length
 PASS CredentialsContainer interface object name 
 FAIL CredentialsContainer interface: existence and properties of interface prototype object assert_equals: class string of CredentialsContainer.prototype expected "[object CredentialsContainerPrototype]" but got "[object CredentialsContainer]"
 PASS CredentialsContainer interface: existence and properties of interface prototype object's "constructor" property 
-FAIL CredentialsContainer interface: operation get(CredentialRequestOptions) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
-FAIL CredentialsContainer interface: operation store(Credential) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
-FAIL CredentialsContainer interface: operation requireUserMediation() assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS CredentialsContainer interface: operation get(CredentialRequestOptions) 
+PASS CredentialsContainer interface: operation store(Credential) 
+PASS CredentialsContainer interface: operation requireUserMediation() 
 PASS CredentialsContainer must be primary interface of navigator.credentials 
 PASS Stringification of navigator.credentials 
 PASS CredentialsContainer interface: navigator.credentials must inherit property "get" with the proper type (0) 

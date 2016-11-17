@@ -157,6 +157,12 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
 
+  // V8DOMConfiguration::DoNotCheckHolder
+  // Make sure that info.Holder() really points to an instance of the type.
+  if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate())) {
+    exceptionState.throwTypeError("Illegal invocation");
+    return;
+  }
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
   Document* document;
@@ -370,8 +376,8 @@ void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::V
 } // namespace TestInterfaceImplementationPartialV8Internal
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
-    {"partialVoidTestEnumModulesArgMethod", TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"unscopableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"partialVoidTestEnumModulesArgMethod", TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unscopableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -403,9 +409,9 @@ void V8TestInterfacePartial::installOriginTrialPartialFeature(v8::Isolate* isola
   V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorpartial4StaticLongAttributeConfiguration);
   const V8DOMConfiguration::ConstantConfiguration constantPartial4UnsignedShortConfiguration = {"PARTIAL4_UNSIGNED_SHORT", 4, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
   V8DOMConfiguration::installConstant(isolate, interface, prototype, constantPartial4UnsignedShortConfiguration);
-  const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration = {"partial4StaticVoidMethod", TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
+  const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration = {"partial4StaticVoidMethod", TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPartial4StaticvoidmethodConfiguration);
-  const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration = {"partial4VoidMethod", TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+  const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration = {"partial4VoidMethod", TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPartial4VoidmethodConfiguration);
 }
 

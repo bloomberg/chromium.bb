@@ -241,8 +241,8 @@ const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceOriginTrialEnable
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceOriginTrialEnabledMethods[] = {
-    {"voidMethodDoubleArgFloatArg", TestInterfaceOriginTrialEnabledV8Internal::voidMethodDoubleArgFloatArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodPartialOverload", TestInterfaceOriginTrialEnabledV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodDoubleArgFloatArg", TestInterfaceOriginTrialEnabledV8Internal::voidMethodDoubleArgFloatArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodPartialOverload", TestInterfaceOriginTrialEnabledV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterfaceOriginTrialEnabledTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

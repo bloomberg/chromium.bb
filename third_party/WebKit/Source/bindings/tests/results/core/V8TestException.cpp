@@ -111,7 +111,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestExceptionAccessors[] = {
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestExceptionMethods[] = {
-    {"toString", TestExceptionV8Internal::toStringMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"toString", TestExceptionV8Internal::toStringMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 void V8TestException::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {

@@ -1923,6 +1923,15 @@ static void staticVoidMethodPartialOverload1Method(const v8::FunctionCallbackInf
 }
 
 static void promiseMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+
+  // V8DOMConfiguration::DoNotCheckHolder
+  // Make sure that info.Holder() really points to an instance of the type.
+  if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate())) {
+    exceptionState.throwTypeError("Illegal invocation");
+    return;
+  }
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
   v8SetReturnValue(info, impl->promiseMethodPartialOverload().v8Value());
@@ -1932,6 +1941,12 @@ static void promiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
 
+  // V8DOMConfiguration::DoNotCheckHolder
+  // Make sure that info.Holder() really points to an instance of the type.
+  if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate())) {
+    exceptionState.throwTypeError("Illegal invocation");
+    return;
+  }
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
   DOMWindow* window;
@@ -2663,29 +2678,29 @@ const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[] = {
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
-    {"voidMethodTestInterfaceEmptyArg", TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodDoubleArgFloatArg", TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodTestEnumArg", TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethod", TestInterfaceImplementationV8Internal::voidMethodMethodCallback, TestInterfaceImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"alwaysExposedMethod", TestInterfaceImplementationV8Internal::alwaysExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"alwaysExposedStaticMethod", TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"staticReturnDOMWrapperMethod", TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"legacyInterfaceTypeCheckingMethod", TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"implementsVoidMethod", TestInterfaceImplementationV8Internal::implementsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"implementsComplexMethod", TestInterfaceImplementationV8Internal::implementsComplexMethodMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"implementsCustomVoidMethod", TestInterfaceImplementationV8Internal::implementsCustomVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"implementsStaticVoidMethod", TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"implements3VoidMethod", TestInterfaceImplementationV8Internal::implements3VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"implements3StaticVoidMethod", TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"voidMethodPartialOverload", TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"staticVoidMethodPartialOverload", TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"promiseMethodPartialOverload", TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"staticPromiseMethodPartialOverload", TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"partial2VoidMethod", TestInterfaceImplementationV8Internal::partial2VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"partial2StaticVoidMethod", TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-    {"toJSON", TestInterfaceImplementationV8Internal::toJSONMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"toString", TestInterfaceImplementationV8Internal::toStringMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodTestInterfaceEmptyArg", TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDoubleArgFloatArg", TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestEnumArg", TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethod", TestInterfaceImplementationV8Internal::voidMethodMethodCallback, TestInterfaceImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"alwaysExposedMethod", TestInterfaceImplementationV8Internal::alwaysExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"alwaysExposedStaticMethod", TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"staticReturnDOMWrapperMethod", TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingMethod", TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implementsVoidMethod", TestInterfaceImplementationV8Internal::implementsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implementsComplexMethod", TestInterfaceImplementationV8Internal::implementsComplexMethodMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implementsCustomVoidMethod", TestInterfaceImplementationV8Internal::implementsCustomVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implementsStaticVoidMethod", TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"implements3VoidMethod", TestInterfaceImplementationV8Internal::implements3VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implements3StaticVoidMethod", TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"voidMethodPartialOverload", TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"staticVoidMethodPartialOverload", TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"promiseMethodPartialOverload", TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
+    {"staticPromiseMethodPartialOverload", TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::DoNotCheckHolder},
+    {"partial2VoidMethod", TestInterfaceImplementationV8Internal::partial2VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"partial2StaticVoidMethod", TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"toJSON", TestInterfaceImplementationV8Internal::toJSONMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"toString", TestInterfaceImplementationV8Internal::toStringMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -2766,31 +2781,31 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const
   instanceTemplate->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
 
   if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration implements2VoidMethodMethodConfiguration = {"implements2VoidMethod", TestInterfaceImplementationV8Internal::implements2VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration implements2VoidMethodMethodConfiguration = {"implements2VoidMethod", TestInterfaceImplementationV8Internal::implements2VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, implements2VoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration partialVoidMethodMethodConfiguration = {"partialVoidMethod", TestInterfaceImplementationV8Internal::partialVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration partialVoidMethodMethodConfiguration = {"partialVoidMethod", TestInterfaceImplementationV8Internal::partialVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration partialStaticVoidMethodMethodConfiguration = {"partialStaticVoidMethod", TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
+      const V8DOMConfiguration::MethodConfiguration partialStaticVoidMethodMethodConfiguration = {"partialStaticVoidMethod", TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialStaticVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration partialVoidMethodLongArgMethodConfiguration = {"partialVoidMethodLongArg", TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration partialVoidMethodLongArgMethodConfiguration = {"partialVoidMethodLongArg", TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodLongArgMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration = {"partialCallWithExecutionContextRaisesExceptionVoidMethod", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration = {"partialCallWithExecutionContextRaisesExceptionVoidMethod", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration partialVoidMethodPartialCallbackTypeArgMethodConfiguration = {"partialVoidMethodPartialCallbackTypeArg", TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration partialVoidMethodPartialCallbackTypeArgMethodConfiguration = {"partialVoidMethodPartialCallbackTypeArg", TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodPartialCallbackTypeArgMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration = {"shortMethodWithShortArgumentImplementedInPrivateScript", TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration = {"shortMethodWithShortArgumentImplementedInPrivateScript", TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration);
   }
 }
@@ -2907,65 +2922,65 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
   ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
   DCHECK(executionContext);
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
-      const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration = {"workerExposedMethod", TestInterfaceImplementationV8Internal::workerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration = {"workerExposedMethod", TestInterfaceImplementationV8Internal::workerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument())) {
-      const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration = {"windowExposedMethod", TestInterfaceImplementationV8Internal::windowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration = {"windowExposedMethod", TestInterfaceImplementationV8Internal::windowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
-      const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration = {"workerExposedStaticMethod", TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
+      const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration = {"workerExposedStaticMethod", TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedStaticMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument())) {
-      const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration = {"windowExposedStaticMethod", TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
+      const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration = {"windowExposedStaticMethod", TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedStaticMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument())) {
       if (RuntimeEnabledFeatures::featureNameEnabled()) {
-          const V8DOMConfiguration::MethodConfiguration methodWithExposedAndRuntimeEnabledFlagMethodConfiguration = {"methodWithExposedAndRuntimeEnabledFlag", TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration methodWithExposedAndRuntimeEnabledFlagMethodConfiguration = {"methodWithExposedAndRuntimeEnabledFlag", TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodWithExposedAndRuntimeEnabledFlagMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isDocument())) {
-      const V8DOMConfiguration::MethodConfiguration overloadMethodWithExposedAndRuntimeEnabledFlagMethodConfiguration = {"overloadMethodWithExposedAndRuntimeEnabledFlag", TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration overloadMethodWithExposedAndRuntimeEnabledFlagMethodConfiguration = {"overloadMethodWithExposedAndRuntimeEnabledFlag", TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, overloadMethodWithExposedAndRuntimeEnabledFlagMethodConfiguration);
   }
   if (executionContext && ((executionContext->isDocument() && RuntimeEnabledFeatures::featureNameEnabled()) || (executionContext->isWorkerGlobalScope() && RuntimeEnabledFeatures::featureName2Enabled()))) {
-      const V8DOMConfiguration::MethodConfiguration methodWithExposedHavingRuntimeEnabldFlagMethodConfiguration = {"methodWithExposedHavingRuntimeEnabldFlag", TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration methodWithExposedHavingRuntimeEnabldFlagMethodConfiguration = {"methodWithExposedHavingRuntimeEnabldFlag", TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodWithExposedHavingRuntimeEnabldFlagMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument() || executionContext->isServiceWorkerGlobalScope())) {
-      const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowAndServiceWorkerExposedMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isSecureContext())) {
-      const V8DOMConfiguration::MethodConfiguration secureContextMethodMethodConfiguration = {"secureContextMethod", TestInterfaceImplementationV8Internal::secureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration secureContextMethodMethodConfiguration = {"secureContextMethod", TestInterfaceImplementationV8Internal::secureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-          const V8DOMConfiguration::MethodConfiguration secureContextRuntimeEnabledMethodMethodConfiguration = {"secureContextRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration secureContextRuntimeEnabledMethodMethodConfiguration = {"secureContextRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextRuntimeEnabledMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isDocument())) {
-          const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedMethodMethodConfiguration = {"secureContextWindowExposedMethod", TestInterfaceImplementationV8Internal::secureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedMethodMethodConfiguration = {"secureContextWindowExposedMethod", TestInterfaceImplementationV8Internal::secureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWindowExposedMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isWorkerGlobalScope())) {
-          const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedMethodMethodConfiguration = {"secureContextWorkerExposedMethod", TestInterfaceImplementationV8Internal::secureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedMethodMethodConfiguration = {"secureContextWorkerExposedMethod", TestInterfaceImplementationV8Internal::secureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWorkerExposedMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isDocument())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWindowExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+              const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWindowExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration);
           }
       }
@@ -2973,41 +2988,41 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isWorkerGlobalScope())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+              const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"secureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration);
           }
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
-      const V8DOMConfiguration::MethodConfiguration partial2SecureContextMethodMethodConfiguration = {"partial2SecureContextMethod", TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration partial2SecureContextMethodMethodConfiguration = {"partial2SecureContextMethod", TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partial2SecureContextMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isSecureContext())) {
-      const V8DOMConfiguration::MethodConfiguration partialSecureContextMethodMethodConfiguration = {"partialSecureContextMethod", TestInterfaceImplementationV8Internal::partialSecureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+      const V8DOMConfiguration::MethodConfiguration partialSecureContextMethodMethodConfiguration = {"partialSecureContextMethod", TestInterfaceImplementationV8Internal::partialSecureContextMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-          const V8DOMConfiguration::MethodConfiguration partialSecureContextRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration partialSecureContextRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextRuntimeEnabledMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isDocument())) {
-          const V8DOMConfiguration::MethodConfiguration partialSecureContextWindowExposedMethodMethodConfiguration = {"partialSecureContextWindowExposedMethod", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration partialSecureContextWindowExposedMethodMethodConfiguration = {"partialSecureContextWindowExposedMethod", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWindowExposedMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isWorkerGlobalScope())) {
-          const V8DOMConfiguration::MethodConfiguration partialSecureContextWorkerExposedMethodMethodConfiguration = {"partialSecureContextWorkerExposedMethod", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+          const V8DOMConfiguration::MethodConfiguration partialSecureContextWorkerExposedMethodMethodConfiguration = {"partialSecureContextWorkerExposedMethod", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
           V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWorkerExposedMethodMethodConfiguration);
       }
   }
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isDocument())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::MethodConfiguration partialSecureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextWindowExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+              const V8DOMConfiguration::MethodConfiguration partialSecureContextWindowExposedRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextWindowExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWindowExposedRuntimeEnabledMethodMethodConfiguration);
           }
       }
@@ -3015,7 +3030,7 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
   if (executionContext && (executionContext->isSecureContext())) {
       if (executionContext && (executionContext->isWorkerGlobalScope())) {
           if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
-              const V8DOMConfiguration::MethodConfiguration partialSecureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+              const V8DOMConfiguration::MethodConfiguration partialSecureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration = {"partialSecureContextWorkerExposedRuntimeEnabledMethod", TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
               V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, partialSecureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration);
           }
       }

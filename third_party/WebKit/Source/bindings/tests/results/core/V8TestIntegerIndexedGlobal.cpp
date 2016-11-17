@@ -161,7 +161,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedGlobalAccess
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedGlobalMethods[] = {
-    {"voidMethodDocument", TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"voidMethodDocument", TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestIntegerIndexedGlobalTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
