@@ -269,51 +269,12 @@ scoped_refptr<cc::Layer> foreignLayerForPaintChunk(
   return layer;
 }
 
+constexpr int kInvalidNodeId = -1;
 // cc's property trees use 0 for the root node (always non-null).
 constexpr int kRealRootNodeId = 0;
 // cc allocates special nodes for root effects such as the device scale.
 constexpr int kSecondaryRootNodeId = 1;
 constexpr int kPropertyTreeSequenceNumber = 1;
-
-// Creates a minimal set of property trees for the compositor.
-void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId) {
-  // cc is hardcoded to use transform node index 1 for device scale and
-  // transform.
-  cc::TransformTree& transformTree = propertyTrees->transform_tree;
-  transformTree.clear();
-  cc::TransformNode& transformNode = *transformTree.Node(
-      transformTree.Insert(cc::TransformNode(), kRealRootNodeId));
-  DCHECK_EQ(transformNode.id, kSecondaryRootNodeId);
-  transformNode.source_node_id = transformNode.parent_id;
-  transformTree.SetTargetId(transformNode.id, kRealRootNodeId);
-  transformTree.SetContentTargetId(transformNode.id, kRealRootNodeId);
-
-  // cc is hardcoded to use clip node index 1 for viewport clip.
-  cc::ClipTree& clipTree = propertyTrees->clip_tree;
-  clipTree.clear();
-  cc::ClipNode& clipNode =
-      *clipTree.Node(clipTree.Insert(cc::ClipNode(), kRealRootNodeId));
-  DCHECK_EQ(clipNode.id, kSecondaryRootNodeId);
-  clipNode.owner_id = ownerId;
-
-  // cc is hardcoded to use effect node index 1 for root render surface.
-  cc::EffectTree& effectTree = propertyTrees->effect_tree;
-  effectTree.clear();
-  cc::EffectNode& effectNode =
-      *effectTree.Node(effectTree.Insert(cc::EffectNode(), kRealRootNodeId));
-  DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
-  effectNode.owner_id = ownerId;
-  effectNode.clip_id = clipNode.id;
-  effectNode.has_render_surface = true;
-
-  cc::ScrollTree& scrollTree = propertyTrees->scroll_tree;
-  scrollTree.clear();
-  cc::ScrollNode& scrollNode =
-      *scrollTree.Node(scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId));
-  DCHECK_EQ(scrollNode.id, kSecondaryRootNodeId);
-  scrollNode.owner_id = ownerId;
-  scrollNode.transform_id = kRealRootNodeId;
-}
 
 }  // namespace
 
@@ -394,16 +355,17 @@ class PropertyTreeManager {
   PropertyTreeManager(cc::PropertyTrees& propertyTrees, cc::Layer* rootLayer)
       : m_propertyTrees(propertyTrees),
         m_rootLayer(rootLayer)
-#if DCHECK_IS_ON()
-        ,
-        m_isFirstEffectEver(true)
-#endif
   {
-    m_effectStack.append(BlinkEffectAndCcIdPair{nullptr, kSecondaryRootNodeId});
+    setupRootTransformNode();
+    setupRootClipNode();
+    setupRootEffectNode();
+    setupRootScrollNode();
   }
 
-  // TODO(pdr): This will need to be unified with how viewport scale works.
-  void setDeviceScaleFactor(float);
+  void setupRootTransformNode();
+  void setupRootClipNode();
+  void setupRootEffectNode();
+  void setupRootScrollNode();
 
   int compositorIdForTransformNode(const TransformPaintPropertyNode*);
   int compositorIdForClipNode(const ClipPaintPropertyNode*);
@@ -448,26 +410,92 @@ class PropertyTreeManager {
 
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> m_effectNodesConverted;
-  bool m_isFirstEffectEver;
 #endif
 };
 
-void PropertyTreeManager::setDeviceScaleFactor(float deviceScaleFactor) {
+void PropertyTreeManager::setupRootTransformNode() {
+  // cc is hardcoded to use transform node index 1 for device scale and
+  // transform.
+  cc::TransformTree& transformTree = m_propertyTrees.transform_tree;
+  transformTree.clear();
+  cc::TransformNode& transformNode = *transformTree.Node(
+      transformTree.Insert(cc::TransformNode(), kRealRootNodeId));
+  DCHECK_EQ(transformNode.id, kSecondaryRootNodeId);
+  transformNode.source_node_id = transformNode.parent_id;
+  transformTree.SetTargetId(transformNode.id, kRealRootNodeId);
+  transformTree.SetContentTargetId(transformNode.id, kRealRootNodeId);
+
   // TODO(jaydasika): We shouldn't set ToScreeen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
   // cc.
+  float deviceScaleFactor = m_rootLayer->GetLayerTree()->device_scale_factor();
   gfx::Transform toScreen;
   toScreen.Scale(deviceScaleFactor, deviceScaleFactor);
-  transformTree().SetToScreen(kRealRootNodeId, toScreen);
+  transformTree.SetToScreen(kRealRootNodeId, toScreen);
   gfx::Transform fromScreen;
   bool invertible = toScreen.GetInverse(&fromScreen);
   DCHECK(invertible);
-  transformTree().SetFromScreen(kRealRootNodeId, fromScreen);
-  transformTree().set_needs_update(true);
+  transformTree.SetFromScreen(kRealRootNodeId, fromScreen);
+  transformTree.set_needs_update(true);
+
+  m_transformNodeMap.set(TransformPaintPropertyNode::root(), transformNode.id);
+  m_rootLayer->SetTransformTreeIndex(transformNode.id);
+}
+
+void PropertyTreeManager::setupRootClipNode() {
+  // cc is hardcoded to use clip node index 1 for viewport clip.
+  cc::ClipTree& clipTree = m_propertyTrees.clip_tree;
+  clipTree.clear();
+  cc::ClipNode& clipNode =
+      *clipTree.Node(clipTree.Insert(cc::ClipNode(), kRealRootNodeId));
+  DCHECK_EQ(clipNode.id, kSecondaryRootNodeId);
+
+  clipNode.resets_clip = true;
+  clipNode.owner_id = m_rootLayer->id();
+  clipNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
+  clipNode.clip = gfx::RectF(
+      gfx::SizeF(m_rootLayer->GetLayerTree()->device_viewport_size()));
+  clipNode.transform_id = kRealRootNodeId;
+  clipNode.target_transform_id = kRealRootNodeId;
+
+  m_clipNodeMap.set(ClipPaintPropertyNode::root(), clipNode.id);
+  m_rootLayer->SetClipTreeIndex(clipNode.id);
+}
+
+void PropertyTreeManager::setupRootEffectNode() {
+  // cc is hardcoded to use effect node index 1 for root render surface.
+  cc::EffectTree& effectTree = m_propertyTrees.effect_tree;
+  effectTree.clear();
+  cc::EffectNode& effectNode =
+      *effectTree.Node(effectTree.Insert(cc::EffectNode(), kInvalidNodeId));
+  DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
+  effectNode.owner_id = m_rootLayer->id();
+  effectNode.transform_id = kRealRootNodeId;
+  effectNode.clip_id = kSecondaryRootNodeId;
+  effectNode.has_render_surface = true;
+
+  m_effectStack.append(
+      BlinkEffectAndCcIdPair{EffectPaintPropertyNode::root(), effectNode.id});
+  m_rootLayer->SetEffectTreeIndex(effectNode.id);
+}
+
+void PropertyTreeManager::setupRootScrollNode() {
+  cc::ScrollTree& scrollTree = m_propertyTrees.scroll_tree;
+  scrollTree.clear();
+  cc::ScrollNode& scrollNode =
+      *scrollTree.Node(scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId));
+  DCHECK_EQ(scrollNode.id, kSecondaryRootNodeId);
+  scrollNode.owner_id = m_rootLayer->id();
+  scrollNode.transform_id = kSecondaryRootNodeId;
+
+  m_scrollNodeMap.set(ScrollPaintPropertyNode::root(), scrollNode.id);
+  m_rootLayer->SetScrollTreeIndex(scrollNode.id);
 }
 
 int PropertyTreeManager::compositorIdForTransformNode(
     const TransformPaintPropertyNode* transformNode) {
+  DCHECK(transformNode);
+  // TODO(crbug.com/645615): Remove the failsafe here.
   if (!transformNode)
     return kSecondaryRootNodeId;
 
@@ -511,6 +539,8 @@ int PropertyTreeManager::compositorIdForTransformNode(
 
 int PropertyTreeManager::compositorIdForClipNode(
     const ClipPaintPropertyNode* clipNode) {
+  DCHECK(clipNode);
+  // TODO(crbug.com/645615): Remove the failsafe here.
   if (!clipNode)
     return kSecondaryRootNodeId;
 
@@ -550,6 +580,8 @@ int PropertyTreeManager::compositorIdForClipNode(
 
 int PropertyTreeManager::compositorIdForScrollNode(
     const ScrollPaintPropertyNode* scrollNode) {
+  DCHECK(scrollNode);
+  // TODO(crbug.com/645615): Remove the failsafe here.
   if (!scrollNode)
     return kSecondaryRootNodeId;
 
@@ -639,16 +671,10 @@ int PropertyTreeManager::switchToEffectNode(
     const EffectPaintPropertyNode& nextEffect) {
   const EffectPaintPropertyNode* ancestor =
       lowestCommonAncestor(currentEffectNode(), &nextEffect);
+  DCHECK(ancestor) << "Malformed effect tree. All nodes must be descendant of "
+                      "EffectPaintPropertyNode::root().";
   while (currentEffectNode() != ancestor)
     m_effectStack.pop_back();
-
-#if DCHECK_IS_ON()
-  DCHECK(m_isFirstEffectEver || currentEffectNode())
-      << "Malformed effect tree. Nodes in the same property tree should have "
-         "common root. "
-      << &nextEffect;
-  m_isFirstEffectEver = false;
-#endif
 
   // Now the current effect is the lowest common ancestor of previous effect
   // and the next effect. That implies it is an existing node that already has
@@ -738,18 +764,11 @@ void PaintArtifactCompositor::update(
   if (m_extraDataForTestingEnabled)
     m_extraDataForTesting = wrapUnique(new ExtraDataForTesting);
 
-  setMinimalPropertyTrees(layerTree->property_trees(), m_rootLayer->id());
-
   m_rootLayer->RemoveAllChildren();
   m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
-  m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
-  m_rootLayer->SetClipTreeIndex(kSecondaryRootNodeId);
-  m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
-  m_rootLayer->SetScrollTreeIndex(kRealRootNodeId);
 
   PropertyTreeManager propertyTreeManager(*layerTree->property_trees(),
                                           m_rootLayer.get());
-  propertyTreeManager.setDeviceScaleFactor(layerTree->device_scale_factor());
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> newContentLayerClients;
   newContentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());

@@ -9,6 +9,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -24,7 +25,6 @@ class ClipPaintPropertyNode;
 class EffectPaintPropertyNode;
 class FloatRect;
 class PaintArtifact;
-class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
 
 // Useful for quickly making a paint artifact in unit tests.
@@ -47,10 +47,11 @@ class TestPaintArtifact {
   ~TestPaintArtifact();
 
   // Add to the artifact.
-  TestPaintArtifact& chunk(PassRefPtr<TransformPaintPropertyNode>,
-                           PassRefPtr<ClipPaintPropertyNode>,
-                           PassRefPtr<EffectPaintPropertyNode>,
-                           PassRefPtr<ScrollPaintPropertyNode> = nullptr);
+  TestPaintArtifact& chunk(
+      PassRefPtr<TransformPaintPropertyNode>,
+      PassRefPtr<ClipPaintPropertyNode>,
+      PassRefPtr<EffectPaintPropertyNode>,
+      PassRefPtr<ScrollPaintPropertyNode> = ScrollPaintPropertyNode::root());
   TestPaintArtifact& chunk(const PaintChunkProperties&);
   TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
   TestPaintArtifact& foreignLayer(const FloatPoint&,
