@@ -23,12 +23,10 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "ui/base/idle/idle.h"
 
 namespace chromeos {
@@ -73,7 +71,7 @@ class DeviceStatusCollector {
 
   // Passed into asynchronous mojo interface for communicating with Android.
   using AndroidStatusReceiver =
-      base::Callback<void(mojo::String, mojo::String)>;
+      base::Callback<void(const std::string&, const std::string&)>;
   // Calls the enterprise reporting mojo interface, passing over the
   // AndroidStatusReceiver.
   using AndroidStatusFetcher =

@@ -129,7 +129,6 @@ mojom("arc_bindings_old_types") {
   sources = [
     "common/bitmap.mojom",
     "common/bluetooth.mojom",
-    "common/enterprise_reporting.mojom",
     "common/net.mojom",
     "common/video_accelerator.mojom",
   ]
@@ -151,6 +150,7 @@ mojom("arc_bindings") {
     "common/boot_phase_monitor.mojom",
     "common/clipboard.mojom",
     "common/crash_collector.mojom",
+    "common/enterprise_reporting.mojom",
     "common/file_system.mojom",
     "common/ime.mojom",
     "common/intent_helper.mojom",
