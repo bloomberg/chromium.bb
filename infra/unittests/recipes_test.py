@@ -12,8 +12,11 @@ INFRA_DIR = os.path.dirname(THIS_DIR)
 
 
 def recipes_py(*args):
-  subprocess.check_call(
-      [os.path.join(INFRA_DIR, 'recipes.py'), '--use-bootstrap'] + list(args))
+  subprocess.check_call([
+      os.path.join(INFRA_DIR, 'recipes.py'),
+      '--deps-path=-',
+      '--use-bootstrap',
+  ] + list(args))
 
 
 recipes_py('simulation_test')

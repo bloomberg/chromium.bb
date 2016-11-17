@@ -5,6 +5,7 @@
 DEPS = [
   'build/adb',
   'build/bisect_tester',
+  'build/build',
   'build/chromium',
   'build/chromium_android',
   'build/chromium_swarming',

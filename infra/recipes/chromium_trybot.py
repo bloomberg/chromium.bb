@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'build/build',
   'build/chromium',
   'build/chromium_android',
   'build/chromium_checkout',
