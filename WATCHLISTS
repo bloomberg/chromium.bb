@@ -25,7 +25,6 @@
       'tandrii+omg_git_cl@chromium.org',
     ],
     'depot_tools': [
-      'dpranke+depot_tools@chromium.org',
       'iannucci+depot_tools@chromium.org',
     ],
   },
