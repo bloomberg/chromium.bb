@@ -564,8 +564,8 @@
   }
 
   function removeVideoCodec(offerSdp) {
-    offerSdp = offerSdp.replace('a=rtpmap:100 VP8/90000\r\n',
-                                'a=rtpmap:100 XVP8/90000\r\n');
+    offerSdp = offerSdp.replace(/a=rtpmap:(\d+)\ VP8\/90000\r\n/,
+                                'a=rtpmap:$1 XVP8/90000\r\n');
     return offerSdp;
   }
 
