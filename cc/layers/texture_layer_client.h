@@ -8,7 +8,6 @@
 #include "cc/resources/single_release_callback.h"
 
 namespace cc {
-class ResourceUpdateQueue;
 class TextureMailbox;
 
 class TextureLayerClient {

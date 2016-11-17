@@ -24,8 +24,6 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/quad_f.h"
 
-class SkBitmap;
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -35,7 +33,6 @@ class GLES2Interface;
 namespace cc {
 class GLRendererShaderTest;
 class OutputSurface;
-class PictureDrawQuad;
 class Resource;
 class ResourcePool;
 class ScopedResource;
@@ -44,7 +41,6 @@ class TextureDrawQuad;
 class TextureMailboxDeleter;
 class StaticGeometryBinding;
 class DynamicGeometryBinding;
-class ScopedEnsureFramebufferAllocation;
 struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.

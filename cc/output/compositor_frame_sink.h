@@ -19,17 +19,6 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 
-namespace ui {
-class LatencyInfo;
-}
-
-namespace gfx {
-class ColorSpace;
-class Rect;
-class Size;
-class Transform;
-}
-
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -37,7 +26,6 @@ class GpuMemoryBufferManager;
 namespace cc {
 
 class CompositorFrame;
-struct ManagedMemoryPolicy;
 class CompositorFrameSinkClient;
 class SharedBitmapManager;
 

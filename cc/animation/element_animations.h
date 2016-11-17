@@ -25,7 +25,6 @@ class BoxF;
 
 namespace cc {
 
-class AnimationDelegate;
 class AnimationEvents;
 class AnimationHost;
 class AnimationPlayer;

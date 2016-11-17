@@ -11,9 +11,6 @@
 
 namespace cc {
 
-class Layer;
-class LayerImpl;
-
 class CC_EXPORT ScrollbarLayerInterface {
  public:
   virtual int ScrollLayerId() const = 0;

@@ -31,11 +31,11 @@ class LatencyInfo;
 }
 
 namespace cc {
+
+class BeginFrameSource;
 class CompositorFrame;
 class CopyOutputRequest;
-class SurfaceManager;
 class SurfaceFactory;
-class SurfaceResourceHolder;
 
 class CC_SURFACES_EXPORT Surface {
  public:

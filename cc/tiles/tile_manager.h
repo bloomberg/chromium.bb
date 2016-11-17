@@ -36,8 +36,6 @@ class TracedValue;
 }
 
 namespace cc {
-class PictureLayerImpl;
-class ResourceProvider;
 class ImageDecodeController;
 
 class CC_EXPORT TileManagerClient {

@@ -10,8 +10,6 @@
 
 namespace cc {
 
-class CompositorFrameSink;
-
 class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
  public:
   FakeCompositorFrameSinkClient() : memory_policy_(0) {}

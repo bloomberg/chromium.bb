@@ -19,12 +19,7 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace cc {
-class BeginFrameSource;
 class CopyOutputRequest;
 class Surface;
 class SurfaceFactoryClient;

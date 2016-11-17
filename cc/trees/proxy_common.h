@@ -14,8 +14,6 @@
 
 namespace cc {
 
-class LayerTreeHost;
-
 using BeginFrameCallbackList = std::vector<base::Closure>;
 
 struct CC_EXPORT BeginMainFrameAndCommitState {

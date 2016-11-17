@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "cc/output/geometry_binding.h"
 
+namespace gfx {
+class QuadF;
+}
+
 namespace cc {
 
 class DynamicGeometryBinding {

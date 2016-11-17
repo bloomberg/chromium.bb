@@ -14,7 +14,6 @@
 #include "cc/resources/scoped_ui_resource.h"
 
 namespace cc {
-class ScrollbarThemeComposite;
 
 class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                         public Layer {

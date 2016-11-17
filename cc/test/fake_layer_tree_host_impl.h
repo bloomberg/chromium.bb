@@ -10,10 +10,6 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace cc {
 
 class AnimationHost;

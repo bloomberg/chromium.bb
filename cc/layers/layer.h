@@ -39,10 +39,6 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
 
-namespace gfx {
-class BoxF;
-}
-
 namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
@@ -52,23 +48,17 @@ class ConvertableToTraceFormat;
 namespace cc {
 
 class CopyOutputRequest;
-class LayerAnimationEventObserver;
 class LayerClient;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
-class LayerTreeSettings;
 class MutatorHost;
-class RenderingStatsInstrumentation;
-class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
-class SimpleEnclosedRegion;
 
 namespace proto {
 class LayerNode;
 class LayerProperties;
-class LayerUpdate;
 }  // namespace proto
 
 // Base class for composited layers. Special layer types are derived from

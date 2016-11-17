@@ -27,7 +27,6 @@ namespace gles2 { class GLES2Interface; }
 }
 
 namespace cc {
-struct ManagedMemoryPolicy;
 
 class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
  public:

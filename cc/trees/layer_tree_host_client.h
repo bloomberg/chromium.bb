@@ -10,13 +10,10 @@
 #include "base/memory/ref_counted.h"
 
 namespace gfx {
-class Vector2d;
 class Vector2dF;
 }
 
 namespace cc {
-class ContextProvider;
-class InputHandlerClient;
 class CompositorFrameSink;
 struct BeginFrameArgs;
 

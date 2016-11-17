@@ -47,10 +47,8 @@
 
 namespace cc {
 class MutatorEvents;
-class BeginFrameSource;
 class ClientPictureCache;
 class EnginePictureCache;
-class HeadsUpDisplayLayer;
 class ImageSerializationProcessor;
 class Layer;
 class LayerTreeHostClient;
@@ -60,12 +58,8 @@ class LayerTreeHostSingleThreadClient;
 class LayerTreeMutator;
 class MutatorHost;
 class PropertyTrees;
-class Region;
 class RenderingStatsInstrumentation;
-class ResourceProvider;
-class ResourceUpdateQueue;
 class TaskGraphRunner;
-struct PendingPageScaleAnimation;
 struct ReflectedMainFrameState;
 struct RenderingStats;
 struct ScrollAndScaleSet;

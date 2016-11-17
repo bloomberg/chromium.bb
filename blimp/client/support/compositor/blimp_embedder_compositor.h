@@ -16,6 +16,7 @@
 
 namespace cc {
 class AnimationHost;
+class ContextProvider;
 class Display;
 class LayerTreeHost;
 class SurfaceManager;

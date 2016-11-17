@@ -7,8 +7,6 @@
 
 namespace cc {
 
-class LayerTreeImpl;
-
 class CC_EXPORT BrowserControlsOffsetManagerClient {
  public:
   virtual float TopControlsHeight() const = 0;

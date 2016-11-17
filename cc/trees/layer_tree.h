@@ -30,7 +30,6 @@ namespace cc {
 
 namespace proto {
 class LayerTree;
-class LayerUpdate;
 }  // namespace proto
 
 class ClientPictureCache;
@@ -42,9 +41,6 @@ class LayerTreeImpl;
 class LayerTreeSettings;
 class MutatorHost;
 struct PendingPageScaleAnimation;
-class UIResourceManager;
-class SwapPromiseManager;
-class SurfaceSequenceGenerator;
 
 class CC_EXPORT LayerTree : public MutatorHostClient {
  public:

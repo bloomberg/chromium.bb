@@ -18,10 +18,8 @@
 
 namespace gfx {
 class Point;
-class PointF;
 class ScrollOffset;
 class SizeF;
-class Vector2d;
 class Vector2dF;
 }
 

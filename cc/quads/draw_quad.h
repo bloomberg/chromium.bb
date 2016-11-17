@@ -16,8 +16,6 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-class Value;
-class DictionaryValue;
 }
 
 namespace cc {

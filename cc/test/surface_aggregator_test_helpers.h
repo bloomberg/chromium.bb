@@ -18,7 +18,6 @@
 namespace cc {
 
 class RenderPass;
-class Surface;
 class TestRenderPass;
 
 typedef std::vector<std::unique_ptr<RenderPass>> RenderPassList;

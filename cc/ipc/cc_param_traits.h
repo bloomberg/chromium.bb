@@ -17,10 +17,6 @@
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
 
-namespace gfx {
-class Transform;
-}
-
 namespace cc {
 class FilterOperations;
 }

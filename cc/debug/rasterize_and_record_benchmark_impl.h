@@ -20,7 +20,7 @@ namespace cc {
 
 class LayerTreeHostImpl;
 class PictureLayerImpl;
-class LayerImpl;
+
 class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
  public:
   explicit RasterizeAndRecordBenchmarkImpl(

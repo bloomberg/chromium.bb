@@ -29,8 +29,6 @@ class GLES2Interface;
 
 namespace cc {
 class Resource;
-class RasterSource;
-class ResourcePool;
 
 struct StagingBuffer {
   StagingBuffer(const gfx::Size& size, ResourceFormat format);

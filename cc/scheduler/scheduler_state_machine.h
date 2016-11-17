@@ -21,7 +21,6 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
-class Value;
 }
 
 namespace cc {

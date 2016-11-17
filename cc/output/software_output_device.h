@@ -14,7 +14,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-class SkBitmap;
 class SkCanvas;
 
 namespace gfx {

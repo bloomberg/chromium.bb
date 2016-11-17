@@ -13,14 +13,9 @@
 
 namespace cc {
 
-namespace proto {
-class PictureLayerProperties;
-}
-
 class ContentLayerClient;
 class DisplayItemList;
 class RecordingSource;
-class ResourceUpdateQueue;
 
 class CC_EXPORT PictureLayer : public Layer {
  public:

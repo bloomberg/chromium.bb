@@ -28,16 +28,6 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 
-namespace blink {
-struct WebFloatRect;
-}
-
-namespace base {
-namespace trace_event {
-class ConvertableToTraceFormat;
-}
-}
-
 namespace cc {
 class FilterOperations;
 class Layer;

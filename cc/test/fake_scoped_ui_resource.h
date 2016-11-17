@@ -10,8 +10,6 @@
 
 namespace cc {
 
-class LayerTreeHost;
-
 class FakeScopedUIResource : public ScopedUIResource {
  public:
   static std::unique_ptr<FakeScopedUIResource> Create(

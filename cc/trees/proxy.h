@@ -20,12 +20,9 @@
 
 namespace gfx {
 class Rect;
-class Vector2d;
 }
 
 namespace cc {
-class BeginFrameSource;
-class LayerTreeDebugState;
 class LayerTreeMutator;
 class CompositorFrameSink;
 

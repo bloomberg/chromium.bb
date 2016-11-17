@@ -16,7 +16,6 @@
 #include "ui/gfx/geometry/point_f.h"
 
 class SkColorFilter;
-class SkImageFilter;
 class SkMatrix44;
 class SkPath;
 class SkPicture;
@@ -29,7 +28,6 @@ struct WebRect;
 }
 
 namespace cc {
-class DisplayItemListSettings;
 class FilterOperations;
 }
 

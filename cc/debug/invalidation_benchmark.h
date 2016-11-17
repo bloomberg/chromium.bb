@@ -14,7 +14,7 @@
 namespace cc {
 
 class LayerTree;
-class Layer;
+
 // NOTE: this benchmark will not measure or return any results, it will simply
 // invalidate a certain area of each layer every frame. It is intended to be
 // used in combination with a telemetry benchmark that does the actual

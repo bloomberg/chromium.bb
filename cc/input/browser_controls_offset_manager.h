@@ -17,7 +17,6 @@
 
 namespace cc {
 
-class LayerTreeImpl;
 class BrowserControlsOffsetManagerClient;
 
 // Manages the position of the browser controls.

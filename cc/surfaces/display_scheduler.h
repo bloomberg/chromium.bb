@@ -18,7 +18,6 @@
 
 namespace cc {
 
-class OutputSurface;
 class BeginFrameSource;
 
 class CC_SURFACES_EXPORT DisplaySchedulerClient {

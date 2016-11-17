@@ -16,14 +16,9 @@
 
 class SkBitmap;
 
-namespace gpu {
-class GLInProcessContext;
-}
-
 namespace cc {
 class CopyOutputRequest;
 class CopyOutputResult;
-class LayerTreeHost;
 class PixelComparator;
 class SolidColorLayer;
 class TextureLayer;

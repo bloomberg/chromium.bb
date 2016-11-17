@@ -19,8 +19,6 @@
 
 namespace cc {
 
-class ClientPictureCache;
-class ContentLayerClient;
 class DisplayItemList;
 class RasterSource;
 class Region;

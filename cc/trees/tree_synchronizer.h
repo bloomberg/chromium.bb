@@ -14,7 +14,6 @@ namespace cc {
 
 class LayerImpl;
 class LayerTree;
-class LayerTreeHost;
 class LayerTreeImpl;
 class Layer;
 

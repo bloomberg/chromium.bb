@@ -16,9 +16,6 @@
 
 namespace cc {
 
-class LayerTreeHost;
-class ScopedUIResource;
-
 class CC_EXPORT NinePatchLayer : public UIResourceLayer {
  public:
   static scoped_refptr<NinePatchLayer> Create();

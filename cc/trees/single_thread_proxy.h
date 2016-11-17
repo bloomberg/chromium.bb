@@ -21,7 +21,6 @@ namespace cc {
 
 class MutatorEvents;
 class BeginFrameSource;
-class ContextProvider;
 class LayerTreeHostInProcess;
 class LayerTreeHostSingleThreadClient;
 

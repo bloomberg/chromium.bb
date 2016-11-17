@@ -16,7 +16,6 @@
 namespace cc {
 
 class LayerTreeHost;
-class ScopedUIResource;
 
 class CC_EXPORT UIResourceLayer : public Layer {
  public:

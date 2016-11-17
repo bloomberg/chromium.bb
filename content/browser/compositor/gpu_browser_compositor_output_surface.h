@@ -24,6 +24,7 @@ struct GpuProcessHostedCALayerTreeParamsMac;
 
 namespace ui {
 class CompositorVSyncManager;
+class LatencyInfo;
 }
 
 namespace content {

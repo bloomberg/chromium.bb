@@ -13,8 +13,6 @@
 #include "cc/layers/layer_collections.h"
 #include "ui/gfx/geometry/rect.h"
 
-class SkImageFilter;
-
 namespace gfx {
 class Rect;
 }

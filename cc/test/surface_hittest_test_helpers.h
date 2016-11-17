@@ -21,8 +21,6 @@ class Transform;
 namespace cc {
 
 class CompositorFrame;
-class RenderPassDrawQuad;
-class SolidColorDrawQuad;
 
 namespace test {
 

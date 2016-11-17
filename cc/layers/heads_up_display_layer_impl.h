@@ -27,7 +27,6 @@ struct SkRect;
 namespace cc {
 
 class FrameRateCounter;
-class PaintTimeCounter;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
  public:

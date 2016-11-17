@@ -52,20 +52,14 @@ class DictionaryValue;
 
 namespace cc {
 
-class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class MutatorHost;
-class Occlusion;
-class EffectTree;
 class PrioritizedTile;
 class RenderPass;
-class RenderPassId;
-class Renderer;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
-class TransformTree;
 class ScrollState;
 
 struct AppendQuadsData;

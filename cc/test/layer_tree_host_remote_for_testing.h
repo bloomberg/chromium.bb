@@ -9,17 +9,13 @@
 #include "cc/blimp/compositor_state_deserializer.h"
 #include "cc/blimp/layer_tree_host_remote.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}  // namespace gpu
-
 namespace cc {
 
 class AnimationHost;
+class CompositorProtoState;
 class FakeImageSerializationProcessor;
 class LayerTreeHostInProcess;
 class MutatorHost;
-class SharedBitmapManager;
 class TaskGraphRunner;
 
 // This is a version of LayerTreeHostRemote meant to be used for tests that want

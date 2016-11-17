@@ -16,10 +16,6 @@
 
 namespace cc {
 
-namespace proto {
-class LayerNode;
-}  // namespace proto
-
 class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create();

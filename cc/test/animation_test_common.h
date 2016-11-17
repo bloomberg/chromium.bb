@@ -15,8 +15,6 @@
 
 namespace cc {
 class AnimationPlayer;
-class LayerImpl;
-class Layer;
 }
 
 namespace gfx {

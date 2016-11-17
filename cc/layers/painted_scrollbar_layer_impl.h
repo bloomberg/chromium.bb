@@ -14,7 +14,6 @@
 namespace cc {
 
 class LayerTreeImpl;
-class ScrollView;
 
 class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
  public:

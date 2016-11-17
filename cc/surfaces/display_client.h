@@ -8,7 +8,6 @@
 #include "cc/quads/render_pass.h"
 
 namespace cc {
-struct ManagedMemoryPolicy;
 
 class DisplayClient {
  public:

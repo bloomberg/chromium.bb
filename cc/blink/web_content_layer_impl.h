@@ -15,11 +15,6 @@
 #include "cc/layers/content_layer_client.h"
 #include "third_party/WebKit/public/platform/WebContentLayer.h"
 
-namespace cc {
-class IntRect;
-class FloatRect;
-}
-
 namespace blink {
 class WebContentLayerClient;
 }

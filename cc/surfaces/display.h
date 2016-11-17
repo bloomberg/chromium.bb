@@ -40,10 +40,7 @@ class RendererSettings;
 class ResourceProvider;
 class SharedBitmapManager;
 class SoftwareRenderer;
-class Surface;
 class SurfaceAggregator;
-class SurfaceIdAllocator;
-class SurfaceFactory;
 class TextureMailboxDeleter;
 
 // A Display produces a surface that can be used to draw to a physical display

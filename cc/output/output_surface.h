@@ -20,20 +20,13 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 
-namespace ui {
-class LatencyInfo;
-}
-
 namespace gfx {
 class ColorSpace;
-class Rect;
 class Size;
-class Transform;
 }
 
 namespace cc {
 
-struct ManagedMemoryPolicy;
 class OutputSurfaceClient;
 class OutputSurfaceFrame;
 

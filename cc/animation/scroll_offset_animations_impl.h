@@ -18,7 +18,6 @@ namespace cc {
 class AnimationPlayer;
 class AnimationHost;
 class AnimationTimeline;
-class ElementAnimations;
 
 // Contains an AnimationTimeline and its AnimationPlayer that owns the impl
 // only scroll offset animations running on a particular CC Layer.

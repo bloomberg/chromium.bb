@@ -12,7 +12,6 @@
 #include "cc/input/scrollbar_animation_controller.h"
 
 namespace cc {
-class LayerImpl;
 
 // Scrollbar animation that partially fades and thins after an idle delay,
 // and reacts to mouse movements.

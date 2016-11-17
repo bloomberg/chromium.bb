@@ -51,7 +51,6 @@ class ScrollOffset;
 namespace cc {
 
 class BrowserControlsOffsetManager;
-class CompletionEvent;
 class CompositorFrameMetadata;
 class CompositorFrameSink;
 class DebugRectHistory;
@@ -64,22 +63,16 @@ class MutatorEvents;
 class MutatorHost;
 class PageScaleAnimation;
 class PendingTreeDurationHistogramTimer;
-class PictureLayerImpl;
 class RasterTilePriorityQueue;
-class TileTaskManager;
 class RasterBufferProvider;
-class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
 class ResourcePool;
 class ScrollElasticityHelper;
-class ScrollbarLayerImplBase;
 class SwapPromise;
 class SwapPromiseMonitor;
 class SynchronousTaskGraphRunner;
 class TaskGraphRunner;
-class TextureMailboxDeleter;
 class UIResourceBitmap;
-class UIResourceRequest;
 struct ScrollAndScaleSet;
 class Viewport;
 

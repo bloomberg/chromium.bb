@@ -14,14 +14,7 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace gfx {
-class Transform;
-}
-
 namespace cc {
-
-class BeginFrameSource;
-struct ManagedMemoryPolicy;
 
 class CC_EXPORT OutputSurfaceClient {
  public:

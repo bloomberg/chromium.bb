@@ -15,7 +15,6 @@
 namespace cc {
 
 class MutatorEvents;
-class BeginFrameSource;
 class ChannelMain;
 class CompositorFrameSink;
 class LayerTreeHostInProcess;

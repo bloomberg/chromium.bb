@@ -15,10 +15,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace cc {
 class Resource;
 

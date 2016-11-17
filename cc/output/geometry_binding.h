@@ -12,13 +12,6 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace gfx {
-class QuadF;
-class Quad;
-class QuadIndex;
-class PointF;
-}
-
 namespace cc {
 
 struct GeometryBindingVertex {
@@ -48,9 +41,6 @@ struct GeometryBindingQuadIndex {
 
   uint16_t data[6];
 };
-
-class DrawQuad;
-class DrawPolygon;
 
 struct GeometryBinding {
   // All layer shaders share the same attribute locations for the vertex

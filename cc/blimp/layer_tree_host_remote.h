@@ -26,7 +26,6 @@ class LayerTreeHost;
 
 class MutatorHost;
 class EnginePictureCache;
-class ImageSerializationProcessor;
 class RemoteCompositorBridge;
 class LayerTreeHostClient;
 

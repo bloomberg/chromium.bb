@@ -16,8 +16,6 @@ class Vector2dF;
 
 namespace cc {
 
-class ClipTree;
-struct DrawProperties;
 class Layer;
 class LayerImpl;
 class LayerTree;

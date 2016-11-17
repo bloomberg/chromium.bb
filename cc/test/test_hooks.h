@@ -14,10 +14,6 @@ namespace cc {
 
 class CompositorFrame;
 
-namespace proto {
-class CompositorMessageToImpl;
-}
-
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public AnimationDelegate {
  public:

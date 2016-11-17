@@ -18,7 +18,6 @@ namespace cc {
 namespace proto {
 class ClientStateUpdate;
 }  // namespace proto
-class CompositorProtoState;
 
 class CC_EXPORT RemoteCompositorBridgeClient {
  public:

@@ -17,9 +17,7 @@
 
 namespace cc {
 
-class PrioritizedTile;
 class TileManager;
-struct TilePriority;
 
 class CC_EXPORT Tile {
  public:

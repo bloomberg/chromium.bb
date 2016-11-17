@@ -24,7 +24,6 @@ class DictionaryValue;
 namespace cc {
 
 class LayerTree;
-class Layer;
 
 class RasterizeAndRecordBenchmark : public MicroBenchmark {
  public:

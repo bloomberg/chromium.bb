@@ -12,7 +12,6 @@
 
 namespace cc {
 
-class Layer;
 class LayerImpl;
 
 // Unlike LayerIterator and friends, these iterators are not intended to permit

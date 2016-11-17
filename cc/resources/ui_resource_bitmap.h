@@ -20,8 +20,6 @@ class SkBitmap;
 
 namespace cc {
 
-class ETC1PixelRef;
-
 // A bitmap class that contains a ref-counted reference to a SkPixelRef that
 // holds the content of the bitmap (cannot use SkBitmap because of ETC1).
 // Thread-safety (by ways of SkPixelRef) ensures that both main and impl threads

@@ -12,7 +12,6 @@
 #include "cc/input/scrollbar_animation_controller.h"
 
 namespace cc {
-class LayerImpl;
 
 class CC_EXPORT ScrollbarAnimationControllerLinearFade
     : public ScrollbarAnimationController {

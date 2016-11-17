@@ -42,19 +42,11 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-class GrContext;
-class GrSurface;
-
 namespace gpu {
 class GpuMemoryBufferManager;
 namespace gles {
 class GLES2Interface;
 }
-}
-
-namespace gfx {
-class Rect;
-class Vector2d;
 }
 
 namespace cc {

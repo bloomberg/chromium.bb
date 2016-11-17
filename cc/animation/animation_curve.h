@@ -23,7 +23,6 @@ class FilterAnimationCurve;
 class FloatAnimationCurve;
 class ScrollOffsetAnimationCurve;
 class TransformAnimationCurve;
-class TransformOperations;
 
 // An animation curve is a function that returns a value given a time.
 class CC_EXPORT AnimationCurve {

@@ -9,8 +9,6 @@
 
 namespace cc {
 
-class OutputSurface;
-
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
   FakeOutputSurfaceClient() = default;

@@ -17,7 +17,6 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-class Value;
 }
 
 namespace gfx {

@@ -25,12 +25,10 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 class SkCanvas;
-class SkPictureRecorder;
 
 namespace cc {
 class ClientPictureCache;
 class DisplayItem;
-class DrawingDisplayItem;
 
 namespace proto {
 class DisplayItemList;

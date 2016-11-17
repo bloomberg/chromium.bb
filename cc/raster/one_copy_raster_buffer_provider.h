@@ -17,7 +17,6 @@
 namespace cc {
 struct StagingBuffer;
 class StagingBufferPool;
-class ResourcePool;
 
 class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
  public:

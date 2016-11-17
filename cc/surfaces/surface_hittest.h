@@ -18,7 +18,6 @@ class Transform;
 namespace cc {
 
 class DrawQuad;
-class QuadList;
 class RenderPass;
 class RenderPassId;
 class SurfaceHittestDelegate;
