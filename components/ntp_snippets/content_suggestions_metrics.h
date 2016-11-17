@@ -50,6 +50,8 @@ void OnMoreButtonShown(Category category, int position);
 
 void OnMoreButtonClicked(Category category, int position);
 
+void OnCategoryDismissed(Category category);
+
 }  // namespace metrics
 }  // namespace ntp_snippets
 

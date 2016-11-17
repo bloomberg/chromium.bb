@@ -44,12 +44,12 @@ class NTPSnippetsBridge
 
   int GetCategoryStatus(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jint category);
+                        jint j_category_id);
 
   base::android::ScopedJavaLocalRef<jobject> GetCategoryInfo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jint category);
+      jint j_category_id);
 
   base::android::ScopedJavaLocalRef<jobject> GetSuggestionsForCategory(
       JNIEnv* env,
@@ -59,7 +59,7 @@ class NTPSnippetsBridge
   void FetchSuggestionImage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jint category,
+      jint j_category_id,
       const base::android::JavaParamRef<jstring>& id_within_category,
       const base::android::JavaParamRef<jobject>& j_callback);
 
@@ -74,13 +74,13 @@ class NTPSnippetsBridge
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jurl,
       jint global_position,
-      jint category,
+      jint j_category_id,
       jint category_position,
       const base::android::JavaParamRef<jstring>& id_within_category);
 
   void DismissCategory(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
-                       jint category);
+                       jint j_category_id);
 
   void RestoreDismissedCategories(
       JNIEnv* env,
@@ -95,7 +95,7 @@ class NTPSnippetsBridge
   void OnSuggestionShown(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          jint global_position,
-                         jint category,
+                         jint j_category_id,
                          jint category_position,
                          jlong publish_timestamp_ms,
                          jfloat score);
@@ -103,7 +103,7 @@ class NTPSnippetsBridge
   void OnSuggestionOpened(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint global_position,
-                          jint category,
+                          jint j_category_id,
                           jint category_position,
                           jlong publish_timestamp_ms,
                           jfloat score,
@@ -112,19 +112,19 @@ class NTPSnippetsBridge
   void OnSuggestionMenuOpened(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj,
                               jint global_position,
-                              jint category,
+                              jint j_category_id,
                               jint category_position,
                               jlong publish_timestamp_ms,
                               jfloat score);
 
   void OnMoreButtonShown(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
-                         jint category,
+                         jint j_category_id,
                          jint position);
 
   void OnMoreButtonClicked(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
-                           jint category,
+                           jint j_category_id,
                            jint position);
 
   static bool Register(JNIEnv* env);
