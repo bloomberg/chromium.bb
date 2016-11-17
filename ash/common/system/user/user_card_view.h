@@ -29,7 +29,12 @@ class UserCardView : public views::View {
   // Creates the content for the public mode.
   void AddPublicModeUserContent(int max_width);
 
-  void AddUserContent(LoginStatus login_status, int user_index);
+  void AddUserContent(LoginStatus login_status);
+  void AddUserContentMd(LoginStatus login_status);
+
+  bool is_active_user() const { return !user_index_; }
+
+  int user_index_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCardView);
 };

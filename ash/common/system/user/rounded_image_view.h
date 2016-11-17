@@ -44,6 +44,7 @@ class RoundedImageView : public views::View {
 
   // True if the given user is the active user and the icon should get
   // painted as active.
+  // TODO(estade): remove this, it's not used in Material Design.
   bool active_user_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedImageView);

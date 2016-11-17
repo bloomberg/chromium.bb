@@ -255,6 +255,7 @@ void SystemTray::Shutdown() {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
+  const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
 #if !defined(OS_WIN)
   // Create user items for each possible user.
   int maximum_user_profiles = WmShell::Get()
@@ -265,20 +266,18 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 
   // Crucially, this trailing padding has to be inside the user item(s).
   // Otherwise it could be a main axis margin on the tray's box layout.
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (use_md)
     AddTrayItem(new PaddingTrayItem());
 
-  if (maximum_user_profiles > 1) {
+  if (!use_md && maximum_user_profiles > 1) {
     // Add a special double line separator between users and the rest of the
     // menu if more than one user is logged in.
     AddTrayItem(new TrayUserSeparator(this));
   }
 #endif
 
-  const bool use_material_design =
-      MaterialDesignController::IsSystemTrayMenuMaterial();
   tray_accessibility_ = new TrayAccessibility(this);
-  if (!use_material_design)
+  if (!use_md)
     tray_date_ = new TrayDate(this);
   tray_update_ = new TrayUpdate(this);
 
@@ -311,10 +310,10 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
       delegate->CreateRotationLockTrayItem(this);
   if (tray_rotation_lock)
     AddTrayItem(tray_rotation_lock.release());
-  if (!use_material_design)
+  if (!use_md)
     AddTrayItem(new TraySettings(this));
   AddTrayItem(tray_update_);
-  if (use_material_design) {
+  if (use_md) {
     tray_tiles_ = new TrayTiles(this);
     AddTrayItem(tray_tiles_);
     tray_system_info_ = new TraySystemInfo(this);
@@ -325,11 +324,11 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
   AddTrayItem(tray_update_);
-  if (!use_material_design)
+  if (!use_md)
     AddTrayItem(tray_date_);
 #endif
   // Leading padding.
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (use_md)
     AddTrayItem(new PaddingTrayItem());
 }
 

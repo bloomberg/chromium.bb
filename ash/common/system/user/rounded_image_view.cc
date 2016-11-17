@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/user/rounded_image_view.h"
+
+#include "ash/common/material_design/material_design_controller.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -64,8 +66,10 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setBlendMode(active_user_ ? SkBlendMode::kSrcOver
-                                  : SkBlendMode::kLuminosity);
+  const bool grayscale =
+      !active_user_ && !MaterialDesignController::IsSystemTrayMenuMaterial();
+  paint.setBlendMode(grayscale ? SkBlendMode::kLuminosity
+                               : SkBlendMode::kSrcOver);
   canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(), path,
                           paint);
 }

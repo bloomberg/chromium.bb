@@ -11,6 +11,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/size_range_layout.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/wm_shell.h"
@@ -105,8 +106,10 @@ class BorderlessLabelButton : public views::LabelButton {
       set_has_ink_drop_action_on_click(true);
       set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
       set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
-      const int kHorizontalPadding = 20;
+      const int kHorizontalPadding = 8;
       SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
+      TrayPopupItemStyle style(nullptr, TrayPopupItemStyle::FontStyle::BUTTON);
+      style.SetupLabel(label());
       // TODO(tdanderson): Update focus rect for material design. See
       // crbug.com/615892
     } else {
