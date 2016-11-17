@@ -5,7 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -36,7 +34,6 @@ class RestoreOnStartupTestChromeOS : public LoginPolicyTestBase {
   RestoreOnStartupTestChromeOS();
 
   // LoginPolicyTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override;
 
   void LogInAndVerifyStartUpURLs();
@@ -46,12 +43,6 @@ class RestoreOnStartupTestChromeOS : public LoginPolicyTestBase {
 };
 
 RestoreOnStartupTestChromeOS::RestoreOnStartupTestChromeOS() {
-}
-
-void RestoreOnStartupTestChromeOS::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  LoginPolicyTestBase::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kDisableChildAccountDetection);
 }
 
 void RestoreOnStartupTestChromeOS::GetMandatoryPoliciesValue(

@@ -190,10 +190,6 @@ const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 const char kDisableCastStreamingHWEncoding[] =
     "disable-cast-streaming-hw-encoding";
 
-// Disables detection of child accounts.
-const char kDisableChildAccountDetection[] =
-    "disable-child-account-detection";
-
 // Disables data volume counters in the Clear Browsing Data dialog.
 const char kDisableClearBrowsingDataCounters[] =
     "disable-clear-browsing-data-counters";
@@ -345,10 +341,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // Enables the multi-level undo system for bookmarks.
 const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
-
-// Enables detection of child accounts.
-const char kEnableChildAccountDetection[] =
-    "enable-child-account-detection";
 
 // Enables data volume counters in the Clear Browsing Data dialog.
 const char kEnableClearBrowsingDataCounters[] =

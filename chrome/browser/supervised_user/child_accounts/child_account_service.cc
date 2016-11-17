@@ -24,7 +24,6 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -84,17 +83,8 @@ ChildAccountService::~ChildAccountService() {}
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
   // Child account detection is always enabled on Android.
 #if !defined(OS_ANDROID)
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
   const std::string group_name =
       base::FieldTrialList::FindFullName(kChildAccountDetectionFieldTrialName);
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableChildAccountDetection))
-    return false;
-  if (command_line->HasSwitch(switches::kEnableChildAccountDetection))
-    return true;
-
   if (group_name == "Disabled")
     return false;
 #endif
