@@ -579,7 +579,13 @@ void CreateClientHandleOnIoThread(const NamedPlatformHandle& named_handle,
   *output = CreateClientHandle(named_handle);
 }
 
-TEST_F(EmbedderTest, ClosePendingPeerConnection) {
+#if defined(OS_ANDROID)
+// Disabled on Android as suspected source of flake. https://crbug.com/666356.
+#define MAYBE_ClosePendingPeerConnection DISABLED_ClosePendingPeerConnection
+#else
+#define MAYBE_ClosePendingPeerConnection ClosePendingPeerConnection
+#endif
+TEST_F(EmbedderTest, MAYBE_ClosePendingPeerConnection) {
   NamedPlatformHandle named_handle = GenerateChannelName();
   std::string peer_token = GenerateRandomToken();
   ScopedMessagePipeHandle server_pipe =
@@ -605,7 +611,13 @@ TEST_F(EmbedderTest, ClosePendingPeerConnection) {
 
 #if !defined(OS_IOS)
 
-TEST_F(EmbedderTest, ClosePipeToConnectedPeer) {
+#if defined(OS_ANDROID)
+// Disabled on Android as suspected source of flake. https://crbug.com/666356.
+#define MAYBE_ClosePipeToConnectedPeer DISABLED_ClosePipeToConnectedPeer
+#else
+#define MAYBE_ClosePipeToConnectedPeer ClosePipeToConnectedPeer
+#endif
+TEST_F(EmbedderTest, MAYBE_ClosePipeToConnectedPeer) {
   set_launch_type(LaunchType::PEER);
   auto& controller = StartClient("ClosePipeToConnectedPeerClient");
   MojoHandle server_mp = controller.pipe();
@@ -636,7 +648,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ClosePipeToConnectedPeerClient, EmbedderTest,
                       MOJO_DEADLINE_INDEFINITE, nullptr));
 }
 
-TEST_F(EmbedderTest, ClosePipeToConnectingPeer) {
+#if defined(OS_ANDROID)
+// Disabled on Android as suspected source of flake. https://crbug.com/666356.
+#define MAYBE_ClosePipeToConnectingPeer DISABLED_ClosePipeToConnectingPeer
+#else
+#define MAYBE_ClosePipeToConnectingPeer ClosePipeToConnectingPeer
+#endif
+TEST_F(EmbedderTest, MAYBE_ClosePipeToConnectingPeer) {
   set_launch_type(LaunchType::PEER);
   auto& controller = StartClient("ClosePipeToConnectingPeerClient");
   controller.ClosePeerConnection();
