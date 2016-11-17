@@ -634,20 +634,18 @@ NSString* const kWindowNameKey = @"windowName";
 - (void)goDelta:(int)delta {
   if (delta != 0 && [self canGoDelta:delta]) {
     NSInteger newNavigationIndex = [self indexOfEntryForDelta:delta];
-    [self goToEntry:_entries[newNavigationIndex]];
+    [self goToEntryAtIndex:newNavigationIndex];
   }
 }
 
-- (void)goToEntry:(CRWSessionEntry*)entry {
-  DCHECK(entry);
-  if (![_entries containsObject:entry])
+- (void)goToEntryAtIndex:(NSInteger)index {
+  if (index < 0 || static_cast<NSUInteger>(index) >= _entries.count)
     return;
 
-  NSInteger newNavigationIndex = [_entries indexOfObject:entry];
-  if (newNavigationIndex < _currentNavigationIndex) {
+  if (index < _currentNavigationIndex) {
     // Going back.
     [self discardNonCommittedEntries];
-  } else if (_currentNavigationIndex < newNavigationIndex) {
+  } else if (_currentNavigationIndex < index) {
     // Going forward.
     [self discardTransientEntry];
   } else {
@@ -656,7 +654,7 @@ NSString* const kWindowNameKey = @"windowName";
   }
 
   _previousNavigationIndex = _currentNavigationIndex;
-  _currentNavigationIndex = newNavigationIndex;
+  _currentNavigationIndex = index;
 }
 
 - (void)removeEntryAtIndex:(NSInteger)index {

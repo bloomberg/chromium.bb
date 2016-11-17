@@ -121,9 +121,8 @@ struct SSLStatus;
 - (BOOL)canGoDelta:(int)delta;
 // Navigates to the entry with the given |delta|.
 - (void)goDelta:(int)delta;
-// Sets |currentNavigationIndex_| to the index of |entry| if |entries_| contains
-// |entry|.
-- (void)goToEntry:(CRWSessionEntry*)entry;
+// Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.
+- (void)goToEntryAtIndex:(NSInteger)index;
 
 // Removes the entry at |index| after discarding any noncomitted entries.
 // |index| must not be the index of the last committed entry, or a noncomitted

@@ -156,15 +156,15 @@ TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToEntry:session_controller().entries[1]];
+  [session_controller() goToEntryAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToEntry:session_controller().entries[0]];
+  [session_controller() goToEntryAtIndex:0];
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToEntry:session_controller().entries[1]];
+  [session_controller() goToEntryAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 }
@@ -182,7 +182,7 @@ TEST_F(NavigationManagerTest, CanGoForwardWithPendingItem) {
                              transition:ui::PAGE_TRANSITION_TYPED
                       rendererInitiated:NO];
   [session_controller() commitPendingEntry];
-  [session_controller() goToEntry:session_controller().entries[0]];
+  [session_controller() goToEntryAtIndex:0];
   [session_controller() addPendingEntry:GURL("http://www.url.com/1")
                                referrer:Referrer()
                              transition:ui::PAGE_TRANSITION_TYPED
@@ -234,19 +234,19 @@ TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntry:session_controller().entries[1]];
+  [session_controller() goToEntryAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntry:session_controller().entries[0]];
+  [session_controller() goToEntryAtIndex:0];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntry:session_controller().entries[1]];
+  [session_controller() goToEntryAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntry:session_controller().entries[2]];
+  [session_controller() goToEntryAtIndex:2];
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }

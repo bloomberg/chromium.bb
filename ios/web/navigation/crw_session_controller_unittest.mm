@@ -358,7 +358,7 @@ TEST_F(CRWSessionControllerTest, CommitPendingEntryWithExistingForwardEntries) {
   [session_controller_ commitPendingEntry];
 
   // Go back to the first entry.
-  [session_controller_ goToEntry:[[session_controller_ entries] firstObject]];
+  [session_controller_ goToEntryAtIndex:0];
 
   // Create and commit a new pending entry.
   [session_controller_ addPendingEntry:GURL("http://www.example.com/2")
@@ -394,7 +394,7 @@ TEST_F(CRWSessionControllerTest, CommitPendingEntryIndex) {
   ASSERT_EQ(3U, [[session_controller_ entries] count]);
 
   // Go to the middle, and commit first pending entry index.
-  [session_controller_ goToEntry:[session_controller_ entries][1]];
+  [session_controller_ goToEntryAtIndex:1];
   [session_controller_ setPendingEntryIndex:0];
   ASSERT_EQ(0, [session_controller_ pendingEntryIndex]);
   base::scoped_nsobject<CRWSessionEntry> pendingEntry(
@@ -631,7 +631,7 @@ TEST_F(CRWSessionControllerTest, GoDelta) {
   [session_controller_ goDelta:-3];
   ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
   ASSERT_EQ(3, [session_controller_ previousNavigationIndex]);
-  [session_controller_ goToEntry:entries[4]];
+  [session_controller_ goToEntryAtIndex:4];
 
   // Go back 2 entries.
   EXPECT_TRUE([session_controller_ canGoDelta:-2]);
@@ -652,7 +652,7 @@ TEST_F(CRWSessionControllerTest, GoDelta) {
   [session_controller_ goDelta:3];
   ASSERT_EQ(1, [session_controller_ currentNavigationIndex]);
   ASSERT_EQ(4, [session_controller_ previousNavigationIndex]);
-  [session_controller_ goToEntry:entries[1]];
+  [session_controller_ goToEntryAtIndex:1];
 
   // Go forward 2 entries.
   EXPECT_TRUE([session_controller_ canGoDelta:2]);
@@ -673,7 +673,7 @@ TEST_F(CRWSessionControllerTest, GoDelta) {
   [session_controller_ goDelta:-2];
   ASSERT_EQ(2, [session_controller_ currentNavigationIndex]);
   ASSERT_EQ(4, [session_controller_ previousNavigationIndex]);
-  [session_controller_ goToEntry:entries[2]];
+  [session_controller_ goToEntryAtIndex:2];
 
   // Go back 1 entry.
   EXPECT_TRUE([session_controller_ canGoDelta:-1]);
@@ -766,16 +766,16 @@ TEST_F(CRWSessionControllerTest, PreviousNavigationEntry) {
 
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 1);
 
-  [session_controller_ goToEntry:[session_controller_ entries][1]];
+  [session_controller_ goToEntryAtIndex:1];
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 2);
 
-  [session_controller_ goToEntry:[session_controller_ entries][0]];
+  [session_controller_ goToEntryAtIndex:0];
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 1);
 
-  [session_controller_ goToEntry:[session_controller_ entries][1]];
+  [session_controller_ goToEntryAtIndex:1];
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 0);
 
-  [session_controller_ goToEntry:[session_controller_ entries][2]];
+  [session_controller_ goToEntryAtIndex:2];
   EXPECT_EQ(session_controller_.get().previousNavigationIndex, 1);
 }
 
@@ -941,11 +941,11 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardEntries) {
   EXPECT_EQ("http://www.example.com/1",
             [[backEntries objectAtIndex:0] navigationItem]->GetURL().spec());
 
-  [session_controller_ goToEntry:[session_controller_ entries][1]];
+  [session_controller_ goToEntryAtIndex:1];
   EXPECT_EQ(1U, [[session_controller_ backwardEntries] count]);
   EXPECT_EQ(1U, [[session_controller_ forwardEntries] count]);
 
-  [session_controller_ goToEntry:[session_controller_ entries][0]];
+  [session_controller_ goToEntryAtIndex:0];
   NSArray* forwardEntries = [session_controller_ forwardEntries];
   EXPECT_EQ(0U, [[session_controller_ backwardEntries] count]);
   EXPECT_EQ(2U, [forwardEntries count]);
@@ -953,7 +953,8 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardEntries) {
             [[forwardEntries objectAtIndex:1] navigationItem]->GetURL().spec());
 }
 
-TEST_F(CRWSessionControllerTest, GoToEntry) {
+// Tests going to entries with existing and non-existing indices.
+TEST_F(CRWSessionControllerTest, GoToEntryAtIndex) {
   [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
                              referrer:MakeReferrer("http://www.example.com/a")
                            transition:ui::PAGE_TRANSITION_LINK
@@ -974,18 +975,43 @@ TEST_F(CRWSessionControllerTest, GoToEntry) {
                            transition:ui::PAGE_TRANSITION_LINK
                     rendererInitiated:NO];
   [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/3")
+                              referrer:MakeReferrer("http://www.example.com/d")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.example.com")];
   EXPECT_EQ(3, session_controller_.get().currentNavigationIndex);
+  EXPECT_EQ(2, session_controller_.get().previousNavigationIndex);
+  EXPECT_TRUE(session_controller_.get().pendingEntry);
+  EXPECT_TRUE(session_controller_.get().transientEntry);
 
-  CRWSessionEntry* entry1 = [session_controller_.get().entries objectAtIndex:1];
-  [session_controller_ goToEntry:entry1];
+  // Going back should discard transient and pending entries.
+  [session_controller_ goToEntryAtIndex:1];
   EXPECT_EQ(1, session_controller_.get().currentNavigationIndex);
+  EXPECT_EQ(3, session_controller_.get().previousNavigationIndex);
+  EXPECT_FALSE(session_controller_.get().pendingEntry);
+  EXPECT_FALSE(session_controller_.get().transientEntry);
 
-  // Remove an entry and attempt to go it. Ensure it outlives the removal.
-  base::scoped_nsobject<CRWSessionEntry> entry3(
-      [[session_controller_.get().entries objectAtIndex:3] retain]);
-  [session_controller_ removeEntryAtIndex:3];
-  [session_controller_ goToEntry:entry3];
-  EXPECT_EQ(1, session_controller_.get().currentNavigationIndex);
+  // Going forward should discard transient entry.
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.example.com")];
+  EXPECT_TRUE(session_controller_.get().transientEntry);
+  [session_controller_ goToEntryAtIndex:2];
+  EXPECT_EQ(2, session_controller_.get().currentNavigationIndex);
+  EXPECT_EQ(1, session_controller_.get().previousNavigationIndex);
+  EXPECT_FALSE(session_controller_.get().transientEntry);
+
+  // Out of bounds navigations should be no-op.
+  [session_controller_ goToEntryAtIndex:-1];
+  EXPECT_EQ(2, session_controller_.get().currentNavigationIndex);
+  EXPECT_EQ(1, session_controller_.get().previousNavigationIndex);
+  [session_controller_ goToEntryAtIndex:NSIntegerMax];
+  EXPECT_EQ(2, session_controller_.get().currentNavigationIndex);
+  EXPECT_EQ(1, session_controller_.get().previousNavigationIndex);
+
+  // Going to current index should not change the previous index.
+  [session_controller_ goToEntryAtIndex:2];
+  EXPECT_EQ(2, session_controller_.get().currentNavigationIndex);
+  EXPECT_EQ(1, session_controller_.get().previousNavigationIndex);
 }
 
 // Tests -[CRWSessionController indexOfEntryForDelta:] API for positive,
@@ -1021,8 +1047,7 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   ASSERT_EQ(5U, [[session_controller_ entries] count]);
 
   // Go to entry at index 1 and test API from that state.
-  NSArray* entries = [session_controller_ entries];
-  [session_controller_ goToEntry:entries[1]];
+  [session_controller_ goToEntryAtIndex:1];
   ASSERT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(-2, [session_controller_ indexOfEntryForDelta:-2]);
@@ -1031,7 +1056,7 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:3]);
 
   // Go to entry at index 2 and test API from that state.
-  [session_controller_ goToEntry:entries[2]];
+  [session_controller_ goToEntryAtIndex:2];
   ASSERT_EQ(2, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(-1, [session_controller_ indexOfEntryForDelta:-2]);
@@ -1039,7 +1064,7 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:2]);
 
   // Go to entry at index 4 and test API from that state.
-  [session_controller_ goToEntry:entries[4]];
+  [session_controller_ goToEntryAtIndex:4];
   ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-2]);

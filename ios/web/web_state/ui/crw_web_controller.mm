@@ -2285,7 +2285,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
   CRWSessionEntry* fromEntry = self.sessionController.currentEntry;
-  [self.sessionController goToEntry:entries[index]];
+  [self.sessionController goToEntryAtIndex:index];
   if (fromEntry)
     [self finishHistoryNavigationFromEntry:fromEntry];
 }
