@@ -88,8 +88,11 @@ void ButtonFromView::OnMouseExited(const ui::MouseEvent& event) {
 void ButtonFromView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   if (HasFocus()) {
-    gfx::Rect rect(GetLocalBounds());
-    rect.Inset(tab_frame_inset_);
+    gfx::RectF rect(GetLocalBounds());
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      rect.Inset(gfx::InsetsF(0.5f));
+    else
+      rect.Inset(gfx::InsetsF(tab_frame_inset_));
     canvas->DrawSolidFocusRect(rect, kFocusBorderColor);
   }
 }

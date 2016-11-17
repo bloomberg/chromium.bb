@@ -116,6 +116,11 @@ class BorderlessLabelButton : public views::LabelButton {
       style.SetupLabel(label());
       // TODO(tdanderson): Update focus rect for material design. See
       // crbug.com/615892
+      // Hack alert: CreateSolidFocusPainter should add 0.5f to all insets to
+      // make the lines align to pixel centers, but for now it doesn't. We can
+      // get around this by relying on Skia rounding up integer coordinates.
+      SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+          kFocusBorderColor, gfx::Insets(0, 0, 1, 1)));
     } else {
       SetBorder(std::unique_ptr<views::Border>(new TrayPopupLabelButtonBorder));
       SetFocusPainter(views::Painter::CreateSolidFocusPainter(
