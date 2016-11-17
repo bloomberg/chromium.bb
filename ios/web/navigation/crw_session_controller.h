@@ -119,8 +119,6 @@ struct SSLStatus;
 
 // Returns YES if there are entries to go with given delta.
 - (BOOL)canGoDelta:(int)delta;
-// Navigates to the entry with the given |delta|.
-- (void)goDelta:(int)delta;
 // Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.
 - (void)goToEntryAtIndex:(NSInteger)index;
 
