@@ -395,7 +395,8 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   RemoteSuggestionsProviderTest()
       : params_manager_(ntp_snippets::kStudyName,
                         {{"content_suggestions_backend",
-                          kTestContentSuggestionsServerEndpoint}}),
+                          kTestContentSuggestionsServerEndpoint},
+                         {"fetching_personalization", "non_personal"}}),
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(kTestContentSuggestionsServerWithAPIKey),
@@ -439,8 +440,6 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
             &user_classifier_);
 
     utils_.fake_signin_manager()->SignIn("foo@bar.com");
-    snippets_fetcher->SetPersonalizationForTesting(
-        NTPSnippetsFetcher::Personalization::kNonPersonal);
 
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
 

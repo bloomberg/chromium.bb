@@ -176,10 +176,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     tick_clock_ = std::move(tick_clock);
   }
 
-  void SetPersonalizationForTesting(Personalization personalization) {
-    personalization_ = personalization;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestAuthenticated);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestUnauthenticated);
