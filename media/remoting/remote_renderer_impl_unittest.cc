@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/test_helpers.h"
 #include "media/remoting/fake_remoting_controller.h"
 #include "media/remoting/fake_remoting_demuxer_stream_provider.h"
 #include "media/remoting/remoting_renderer_controller.h"
@@ -19,6 +20,14 @@ using testing::Return;
 namespace media {
 
 namespace {
+
+PipelineMetadata DefaultMetadata() {
+  PipelineMetadata data;
+  data.has_audio = true;
+  data.has_video = true;
+  data.video_decoder_config = TestVideoConfig::Normal();
+  return data;
+}
 
 class RendererClientImpl : public RendererClient {
  public:
@@ -240,15 +249,17 @@ class RemoteRendererImplTest : public testing::Test {
     remoting_renderer_controller_ =
         base::MakeUnique<RemotingRendererController>(
             CreateRemotingSourceImpl(false));
+    remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
+
     // Redirect RPC message to RemoteRendererImplTest::OnSendMessageToSink().
     remoting_renderer_controller_->GetRpcBroker()->SetMessageCallbackForTesting(
         base::Bind(&RemoteRendererImplTest::OnSendMessageToSink,
                    base::Unretained(this)));
 
     // Creates RemoteRendererImpl.
-    remote_renderer_impl_.reset(
-        new RemoteRendererImpl(base::ThreadTaskRunnerHandle::Get(),
-                               remoting_renderer_controller_->GetWeakPtr()));
+    remote_renderer_impl_.reset(new RemoteRendererImpl(
+        base::ThreadTaskRunnerHandle::Get(),
+        remoting_renderer_controller_->GetWeakPtr(), nullptr));
     RunPendingTasks();
   }
 

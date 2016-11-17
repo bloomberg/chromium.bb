@@ -12,7 +12,6 @@
 
 namespace media {
 
-struct PipelineMetadata;
 namespace remoting {
 class RpcBroker;
 }
@@ -65,7 +64,22 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   base::WeakPtr<remoting::RpcBroker> GetRpcBroker() const;
 
+  PipelineMetadata pipeline_metadata() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return pipeline_metadata_;
+  }
+
  private:
+  bool has_audio() const {
+    return pipeline_metadata_.has_audio &&
+           pipeline_metadata_.audio_decoder_config.IsValidConfig();
+  }
+
+  bool has_video() const {
+    return pipeline_metadata_.has_video &&
+           pipeline_metadata_.video_decoder_config.IsValidConfig();
+  }
+
   bool IsVideoCodecSupported();
   bool IsAudioCodecSupported();
 
@@ -88,8 +102,6 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Current audio/video config.
   VideoDecoderConfig video_decoder_config_;
   AudioDecoderConfig audio_decoder_config_;
-  bool has_audio_ = false;
-  bool has_video_ = false;
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;
@@ -101,6 +113,8 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // This is used to check all the methods are called on the current thread in
   // debug builds.
   base::ThreadChecker thread_checker_;
+
+  PipelineMetadata pipeline_metadata_;
 
   base::WeakPtrFactory<RemotingRendererController> weak_factory_;
 

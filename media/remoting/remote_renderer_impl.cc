@@ -25,7 +25,8 @@ namespace media {
 RemoteRendererImpl::RemoteRendererImpl(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     const base::WeakPtr<RemotingRendererController>&
-        remoting_renderer_controller)
+        remoting_renderer_controller,
+    VideoRendererSink* video_renderer_sink)
     : state_(STATE_UNINITIALIZED),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(std::move(media_task_runner)),
@@ -35,10 +36,15 @@ RemoteRendererImpl::RemoteRendererImpl(
       rpc_broker_(remoting_renderer_controller_->GetRpcBroker()),
       rpc_handle_(remoting::RpcBroker::GetUniqueHandle()),
       remote_renderer_handle_(remoting::kInvalidHandle),
+      interstitial_ui_(video_renderer_sink,
+                       remoting_renderer_controller->pipeline_metadata()),
       weak_factory_(this) {
   VLOG(2) << __FUNCTION__;
   // The constructor is running on the main thread.
   DCHECK(remoting_renderer_controller);
+
+  UpdateInterstitial();
+
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&RemoteRendererImpl::OnMessageReceivedOnMainThread,
                  media_task_runner_, weak_factory_.GetWeakPtr());
@@ -549,6 +555,10 @@ void RemoteRendererImpl::OnFatalError(PipelineStatus error) {
   if (state_ == STATE_ERROR)
     return;
 
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RemoteRendererImpl::UpdateInterstitial,
+                            weak_factory_.GetWeakPtr()));
+
   const State old_state = state_;
   state_ = STATE_ERROR;
 
@@ -565,4 +575,13 @@ void RemoteRendererImpl::OnFatalError(PipelineStatus error) {
   // After OnError() returns, the pipeline may destroy |this|.
   client_->OnError(error);
 }
+
+void RemoteRendererImpl::UpdateInterstitial() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  interstitial_ui_.ShowInterstitial(
+      remoting_renderer_controller_->remoting_source()->state() ==
+      RemotingSessionState::SESSION_STARTED);
+}
+
 }  // namespace media

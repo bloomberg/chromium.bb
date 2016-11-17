@@ -103,17 +103,14 @@ void RemotingRendererController::OnMetadataChanged(
     const PipelineMetadata& metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  has_video_ =
-      metadata.has_video && metadata.video_decoder_config.IsValidConfig();
-  has_audio_ =
-      metadata.has_audio && metadata.audio_decoder_config.IsValidConfig();
+  pipeline_metadata_ = metadata;
 
   is_encrypted_ = false;
-  if (has_video_) {
+  if (has_video()) {
     video_decoder_config_ = metadata.video_decoder_config;
     is_encrypted_ |= video_decoder_config_.is_encrypted();
   }
-  if (has_audio_) {
+  if (has_audio()) {
     audio_decoder_config_ = metadata.audio_decoder_config;
     is_encrypted_ |= audio_decoder_config_.is_encrypted();
   }
@@ -122,7 +119,7 @@ void RemotingRendererController::OnMetadataChanged(
 
 bool RemotingRendererController::IsVideoCodecSupported() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_video_);
+  DCHECK(has_video());
 
   switch (video_decoder_config_.codec()) {
     case VideoCodec::kCodecH264:
@@ -137,7 +134,7 @@ bool RemotingRendererController::IsVideoCodecSupported() {
 
 bool RemotingRendererController::IsAudioCodecSupported() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_audio_);
+  DCHECK(has_audio());
 
   switch (audio_decoder_config_.codec()) {
     case AudioCodec::kCodecAAC:
@@ -193,9 +190,9 @@ bool RemotingRendererController::ShouldBeRemoting() {
     case SESSION_PERMANENTLY_STOPPED:
       return false;  // Use local rendering after stopping remoting.
   }
-  if ((!has_audio_ && !has_video_) ||
-      (has_video_ && !IsVideoCodecSupported()) ||
-      (has_audio_ && !IsAudioCodecSupported()))
+  if ((!has_audio() && !has_video()) ||
+      (has_video() && !IsVideoCodecSupported()) ||
+      (has_audio() && !IsAudioCodecSupported()))
     return false;
 
   // Normally, entering fullscreen is the signal that starts remote rendering.

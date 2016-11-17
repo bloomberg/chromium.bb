@@ -27,7 +27,8 @@ std::unique_ptr<Renderer> RemotingRendererFactory::CreateRenderer(
       remoting_renderer_controller_->remote_rendering_started()) {
     VLOG(1) << "Create Remoting renderer.";
     return base::WrapUnique(new RemoteRendererImpl(
-        media_task_runner, remoting_renderer_controller_->GetWeakPtr()));
+        media_task_runner, remoting_renderer_controller_->GetWeakPtr(),
+        video_renderer_sink));
   } else {
     VLOG(1) << "Create Local playback renderer.";
     return default_renderer_factory_->CreateRenderer(

@@ -19,6 +19,7 @@
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/remoting/remoting_interstitial_ui.h"
 #include "media/remoting/rpc/rpc_broker.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -27,7 +28,6 @@ namespace media {
 class BalancedMediaTaskRunnerFactory;
 class RemotingRendererController;
 class Renderer;
-class VideoRendererSink;
 
 namespace remoting {
 class RemoteDemuxerStreamAdapter;
@@ -41,9 +41,10 @@ class RemoteRendererImpl : public Renderer {
   // |media_task_runner|. The constructor and GetMediaTime() run on render main
   // thread.
   RemoteRendererImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       const base::WeakPtr<RemotingRendererController>&
-          remoting_renderer_controller);
+          remoting_renderer_controller,
+      VideoRendererSink* video_renderer_sink);
   ~RemoteRendererImpl() final;
 
  private:
@@ -123,6 +124,9 @@ class RemoteRendererImpl : public Renderer {
   // Shut down remoting session.
   void OnFatalError(PipelineStatus status);
 
+  // Show interstial accordingly.
+  void UpdateInterstitial();
+
   State state_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
@@ -155,6 +159,8 @@ class RemoteRendererImpl : public Renderer {
   PipelineStatusCB init_workflow_done_callback_;
   CdmAttachedCB cdm_attached_cb_;
   base::Closure flush_cb_;
+
+  RemotingInterstitialUI interstitial_ui_;
 
   base::WeakPtrFactory<RemoteRendererImpl> weak_factory_;
 

@@ -5,7 +5,10 @@
 #include "media/remoting/remoting_interstitial_ui.h"
 
 #include "media/base/media_resources.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_renderer_sink.h"
 #include "media/base/video_util.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/color_palette.h"
@@ -16,30 +19,38 @@
 
 namespace media {
 
-scoped_refptr<VideoFrame> GetInterstitial(SkCanvas* existing_frame_canvas,
-                                          bool is_remoting_successful) {
-  if (!existing_frame_canvas)
-    return nullptr;
+namespace {
 
-  // Initial bitmap to grab the existing frame image.
-  SkBitmap bitmap;
-  bitmap.setInfo(existing_frame_canvas->imageInfo());
-  const SkISize frame_size = existing_frame_canvas->getBaseLayerSize();
+gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
+  if (rotation == VIDEO_ROTATION_90 || rotation == VIDEO_ROTATION_270)
+    return gfx::Size(natural_size.height(), natural_size.width());
+  return natural_size;
+}
+
+}  // namespace
+
+RemotingInterstitialUI::RemotingInterstitialUI(
+    VideoRendererSink* video_renderer_sink,
+    const PipelineMetadata& pipeline_metadata)
+    : video_renderer_sink_(video_renderer_sink),
+      pipeline_metadata_(pipeline_metadata) {
+  DCHECK(pipeline_metadata_.has_video);
+  pipeline_metadata_.natural_size = GetRotatedVideoSize(
+      pipeline_metadata_.video_rotation, pipeline_metadata_.natural_size);
+}
+
+RemotingInterstitialUI::~RemotingInterstitialUI() {}
+
+scoped_refptr<VideoFrame> RemotingInterstitialUI::GetInterstitial(
+    const SkBitmap& background_image,
+    bool is_remoting_successful) {
   const gfx::Size canvas_size =
-      gfx::Size(frame_size.width(), frame_size.height());
+      gfx::Size(background_image.width(), background_image.height());
+  DCHECK(canvas_size == pipeline_metadata_.natural_size);
 
-  // Second bitmap for manipulation.
-  SkBitmap modified_bitmap;
-
-  // Reads the pixels from the current frame into |modified_bitmap|. In the
-  // case this failed, create and use a blank bitmap.
-  if (existing_frame_canvas->readPixels(&bitmap, 0, 0)) {
-    // Make monochromatic.
-    color_utils::HSL shift = {-1, 0, 0.2};
-    modified_bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(bitmap, shift);
-  } else {
-    modified_bitmap.allocN32Pixels(canvas_size.width(), canvas_size.height());
-  }
+  color_utils::HSL shift = {-1, 0, 0.2};  // Make monochromatic.
+  SkBitmap modified_bitmap =
+      SkBitmapOperations::CreateHSLShiftedBitmap(background_image, shift);
 
   SkCanvas canvas(modified_bitmap);
 
@@ -107,6 +118,25 @@ scoped_refptr<VideoFrame> GetInterstitial(SkCanvas* existing_frame_canvas,
       gfx::Rect(canvas_size.width(), canvas_size.height()), video_frame.get());
   modified_bitmap.unlockPixels();
   return video_frame;
+}
+
+void RemotingInterstitialUI::ShowInterstitial(bool is_remoting_successful) {
+  if (!video_renderer_sink_)
+    return;
+
+  // TODO(xjz): Provide poster image, if available, rather than a blank, black
+  // image.
+  SkBitmap background_image;
+  const gfx::Size size = pipeline_metadata_.natural_size;
+  background_image.allocN32Pixels(size.width(), size.height());
+  background_image.eraseColor(SK_ColorBLACK);
+
+  const scoped_refptr<VideoFrame> interstitial =
+      GetInterstitial(background_image, is_remoting_successful);
+  if (!interstitial)
+    return;
+
+  video_renderer_sink_->PaintSingleFrame(interstitial);
 }
 
 }  // namespace media
