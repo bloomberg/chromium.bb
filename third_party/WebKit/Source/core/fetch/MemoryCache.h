@@ -40,62 +40,26 @@
 
 namespace blink {
 
-class Resource;
 class KURL;
-class ExecutionContext;
 
-// This cache holds subresources used by Web pages: images, scripts,
-// stylesheets, etc.
-
-// The cache keeps a flexible but bounded window of dead resources that
-// grows/shrinks depending on the live resource load. Here's an example of cache
-// growth over time, with a min dead resource capacity of 25% and a max dead
-// resource capacity of 50%:
-//
-// Dead: -
-// Live: +
-// Cache boundary: | (objects outside this mark have been evicted)
-//
-//        |-----|
-//        |----------|
-//      --|----------|
-//      --|----------++++++++++|
-// -------|-----+++++++++++++++|
-// -------|-----+++++++++++++++|+++++
-
-enum UpdateReason { UpdateForAccess, UpdateForPropertyChange };
-
-// MemoryCacheEntry class is used only in MemoryCache class, but we don't make
-// MemoryCacheEntry class an inner class of MemoryCache because of dependency
-// from MemoryCacheLRUList.
+// Member<MemoryCacheEntry> + MemoryCacheEntry::clearResourceWeak() monitors
+// eviction from MemoryCache due to Resource garbage collection.
+// WeakMember<Resource> + Resource's prefinalizer cannot determine whether the
+// Resource was on MemoryCache or not, because WeakMember is already cleared
+// when the prefinalizer is executed.
 class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
  public:
   static MemoryCacheEntry* create(Resource* resource) {
     return new MemoryCacheEntry(resource);
   }
   DECLARE_TRACE();
-  void dispose();
-  Resource* resource();
+  Resource* resource() const { return m_resource; }
 
-  bool m_inLiveDecodedResourcesList;
-  unsigned m_accessCount;
   double m_lastDecodedAccessTime;  // Used as a thrash guard
-
-  Member<MemoryCacheEntry> m_previousInLiveResourcesList;
-  Member<MemoryCacheEntry> m_nextInLiveResourcesList;
-  Member<MemoryCacheEntry> m_previousInAllResourcesList;
-  Member<MemoryCacheEntry> m_nextInAllResourcesList;
 
  private:
   explicit MemoryCacheEntry(Resource* resource)
-      : m_inLiveDecodedResourcesList(false),
-        m_accessCount(0),
-        m_lastDecodedAccessTime(0.0),
-        m_previousInLiveResourcesList(nullptr),
-        m_nextInLiveResourcesList(nullptr),
-        m_previousInAllResourcesList(nullptr),
-        m_nextInAllResourcesList(nullptr),
-        m_resource(resource) {}
+      : m_lastDecodedAccessTime(0.0), m_resource(resource) {}
 
   void clearResourceWeak(Visitor*);
 
@@ -104,26 +68,8 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
 
-// MemoryCacheLRUList is used only in MemoryCache class, but we don't make
-// MemoryCacheLRUList an inner struct of MemoryCache because we can't define
-// VectorTraits for inner structs.
-struct MemoryCacheLRUList final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
- public:
-  Member<MemoryCacheEntry> m_head;
-  Member<MemoryCacheEntry> m_tail;
-
-  MemoryCacheLRUList() : m_head(nullptr), m_tail(nullptr) {}
-  DECLARE_TRACE();
-};
-
-}  // namespace blink
-
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::MemoryCacheLRUList);
-
-namespace blink {
-
+// This cache holds subresources used by Web pages: images, scripts,
+// stylesheets, etc.
 class CORE_EXPORT MemoryCache final
     : public GarbageCollectedFinalized<MemoryCache>,
       public WebThread::TaskObserver,
@@ -141,7 +87,6 @@ class CORE_EXPORT MemoryCache final
     STACK_ALLOCATED();
     size_t count;
     size_t size;
-    size_t liveSize;
     size_t decodedSize;
     size_t encodedSize;
     size_t overheadSize;
@@ -150,7 +95,6 @@ class CORE_EXPORT MemoryCache final
     TypeStatistic()
         : count(0),
           size(0),
-          liveSize(0),
           decodedSize(0),
           encodedSize(0),
           overheadSize(0),
@@ -169,9 +113,9 @@ class CORE_EXPORT MemoryCache final
     TypeStatistic other;
   };
 
-  Resource* resourceForURL(const KURL&);
-  Resource* resourceForURL(const KURL&, const String& cacheIdentifier);
-  HeapVector<Member<Resource>> resourcesForURL(const KURL&);
+  Resource* resourceForURL(const KURL&) const;
+  Resource* resourceForURL(const KURL&, const String& cacheIdentifier) const;
+  HeapVector<Member<Resource>> resourcesForURL(const KURL&) const;
 
   void add(Resource*);
   void remove(Resource*);
@@ -184,15 +128,9 @@ class CORE_EXPORT MemoryCache final
   // Sets the cache's memory capacities, in bytes. These will hold only
   // approximately, since the decoded cost of resources like scripts and
   // stylesheets is not known.
-  //  - minDeadBytes: The maximum number of bytes that dead resources should
-  //    consume when the cache is under pressure.
-  //  - maxDeadBytes: The maximum number of bytes that dead resources should
-  //    consume when the cache is not under pressure.
   //  - totalBytes: The maximum number of bytes that the cache should consume
   //    overall.
-  void setCapacities(size_t minDeadBytes,
-                     size_t maxDeadBytes,
-                     size_t totalBytes);
+  void setCapacity(size_t totalBytes);
   void setDelayBeforeLiveDecodedPrune(double seconds) {
     m_delayBeforeLiveDecodedPrune = seconds;
   }
@@ -205,28 +143,15 @@ class CORE_EXPORT MemoryCache final
 
   void prune();
 
-  // Called to adjust a resource's size, lru list position, and access count.
-  void update(Resource*,
-              size_t oldSize,
-              size_t newSize,
-              bool wasAccessed = false);
-  void updateForAccess(Resource* resource) {
-    update(resource, resource->size(), resource->size(), true);
-  }
-  void updateDecodedResource(Resource*, UpdateReason);
-
-  void makeLive(Resource*);
-  void makeDead(Resource*);
+  // Called to update MemoryCache::size().
+  void update(Resource*, size_t oldSize, size_t newSize);
 
   void removeURLFromCache(const KURL&);
 
-  Statistics getStatistics();
+  Statistics getStatistics() const;
 
-  size_t minDeadCapacity() const { return m_minDeadCapacity; }
-  size_t maxDeadCapacity() const { return m_maxDeadCapacity; }
   size_t capacity() const { return m_capacity; }
-  size_t liveSize() const { return m_liveSize; }
-  size_t deadSize() const { return m_deadSize; }
+  size_t size() const { return m_size; }
 
   // TaskObserver implementation
   void willProcessTask() override;
@@ -241,8 +166,6 @@ class CORE_EXPORT MemoryCache final
 
   void onMemoryPressure(WebMemoryPressureLevel) override;
 
-  bool isInSameLRUListForTest(const Resource*, const Resource*);
-
  private:
   enum PruneStrategy {
     // Automatically decide how much to prune.
@@ -251,36 +174,22 @@ class CORE_EXPORT MemoryCache final
     MaximalPrune
   };
 
+  // A URL-based map of all resources that are in the cache (including the
+  // freshest version of objects that are currently being referenced by a Web
+  // page). removeFragmentIdentifierIfNeeded() should be called for the url
+  // before using it as a key for the map.
+  using ResourceMap = HeapHashMap<String, Member<MemoryCacheEntry>>;
+  using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
+  ResourceMap* ensureResourceMap(const String& cacheIdentifier);
+  ResourceMapIndex m_resourceMaps;
+
   MemoryCache();
 
-  MemoryCacheLRUList* lruListFor(unsigned accessCount, size_t);
+  void addInternal(ResourceMap*, MemoryCacheEntry*);
+  void removeInternal(ResourceMap*, const ResourceMap::iterator&);
 
-  // Calls to put the cached resource into and out of LRU lists.
-  void insertInLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
-  void removeFromLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
-  bool containedInLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
-
-  // Track decoded resources that are in the cache and referenced by a Web page.
-  void insertInLiveDecodedResourcesList(MemoryCacheEntry*);
-  void removeFromLiveDecodedResourcesList(MemoryCacheEntry*);
-  bool containedInLiveDecodedResourcesList(MemoryCacheEntry*);
-
-  size_t liveCapacity() const;
-  size_t deadCapacity() const;
-
-  // pruneDeadResources() - Flush decoded and encoded data from resources not
-  // referenced by Web pages.
-  // pruneLiveResources() - Flush decoded data from resources still referenced
-  // by Web pages.
-  void pruneDeadResources(PruneStrategy);
-  void pruneLiveResources(PruneStrategy);
+  void pruneResources(PruneStrategy);
   void pruneNow(double currentTime, PruneStrategy);
-
-  void evict(MemoryCacheEntry*);
-
-  MemoryCacheEntry* getEntryForResource(const Resource*) const;
-
-  static void removeURLFromCacheInternal(ExecutionContext*, const KURL&);
 
   bool m_inPruneResources;
   bool m_prunePending;
@@ -291,34 +200,10 @@ class CORE_EXPORT MemoryCache final
                                      // thrash in the cache
 
   size_t m_capacity;
-  size_t m_minDeadCapacity;
-  size_t m_maxDeadCapacity;
-  size_t m_maxDeferredPruneDeadCapacity;
   double m_delayBeforeLiveDecodedPrune;
 
-  // The number of bytes currently consumed by "live" resources in the cache.
-  size_t m_liveSize;
-  // The number of bytes currently consumed by "dead" resources in the cache.
-  size_t m_deadSize;
-
-  // Size-adjusted and popularity-aware LRU list collection for cache objects.
-  // This collection can hold more resources than the cached resource map, since
-  // it can also hold "stale" multiple versions of objects that are waiting to
-  // die when the clients referencing them go away.
-  HeapVector<MemoryCacheLRUList, 32> m_allResources;
-
-  // Lists just for live resources with decoded data. Access to this list is
-  // based off of painting the resource.
-  MemoryCacheLRUList m_liveDecodedResources;
-
-  // A URL-based map of all resources that are in the cache (including the
-  // freshest version of objects that are currently being referenced by a Web
-  // page). removeFragmentIdentifierIfNeeded() should be called for the url
-  // before using it as a key for the map.
-  using ResourceMap = HeapHashMap<String, Member<MemoryCacheEntry>>;
-  using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
-  ResourceMap* ensureResourceMap(const String& cacheIdentifier);
-  ResourceMapIndex m_resourceMaps;
+  // The number of bytes currently consumed by resources in the cache.
+  size_t m_size;
 
   friend class MemoryCacheTest;
 };

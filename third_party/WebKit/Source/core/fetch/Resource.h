@@ -347,7 +347,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void setEncodedSize(size_t);
   void setDecodedSize(size_t);
-  void didAccessDecodedData();
 
   void finishPendingClients();
 

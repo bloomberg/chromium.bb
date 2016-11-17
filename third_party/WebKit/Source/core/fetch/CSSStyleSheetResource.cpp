@@ -202,8 +202,6 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(
   if (m_parsedStyleSheetCache->parserContext() != context)
     return nullptr;
 
-  didAccessDecodedData();
-
   return m_parsedStyleSheetCache;
 }
 

@@ -711,7 +711,6 @@ void Resource::willAddClientOrObserver(PreloadReferencePolicy policy) {
   }
   if (!hasClientsOrObservers()) {
     m_isAlive = true;
-    memoryCache()->makeLive(this);
   }
 }
 
@@ -762,7 +761,6 @@ void Resource::removeClient(ResourceClient* client) {
 void Resource::didRemoveClientOrObserver() {
   if (!hasClientsOrObservers() && m_isAlive) {
     m_isAlive = false;
-    memoryCache()->makeDead(this);
     allClientsAndObserversRemoved();
 
     // RFC2616 14.9.2:
@@ -796,7 +794,6 @@ void Resource::setDecodedSize(size_t decodedSize) {
   size_t oldSize = size();
   m_decodedSize = decodedSize;
   memoryCache()->update(this, oldSize, size());
-  memoryCache()->updateDecodedResource(this, UpdateForPropertyChange);
 }
 
 void Resource::setEncodedSize(size_t encodedSize) {
@@ -806,10 +803,6 @@ void Resource::setEncodedSize(size_t encodedSize) {
   m_encodedSize = encodedSize;
   m_encodedSizeMemoryUsage = encodedSize;
   memoryCache()->update(this, oldSize, size());
-}
-
-void Resource::didAccessDecodedData() {
-  memoryCache()->updateDecodedResource(this, UpdateForAccess);
 }
 
 void Resource::finishPendingClients() {

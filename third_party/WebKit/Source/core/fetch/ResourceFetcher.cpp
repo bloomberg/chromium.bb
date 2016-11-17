@@ -590,7 +590,6 @@ Resource* ResourceFetcher::requestResource(
     case Use:
       if (resource->isLinkPreload() && !request.isLinkPreload())
         resource->setLinkPreload(false);
-      memoryCache()->updateForAccess(resource);
       break;
   }
 
