@@ -95,6 +95,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
+  void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
 
   // URLFetcher::FetchResultListener implementation:
   void OnFetchStartError(net::Error error) override;
@@ -121,6 +122,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
   int http_response_code_ = 0;
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
+  base::TimeTicks response_time_;
 
   base::WeakPtrFactory<GenericURLRequestJob> weak_factory_;
 

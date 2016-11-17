@@ -140,6 +140,7 @@ void GenericURLRequestJob::OnFetchComplete(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
     size_t body_size) {
+  response_time_ = base::TimeTicks::Now();
   http_response_code_ = http_response_code;
   response_headers_ = response_headers;
   body_ = body;
@@ -184,6 +185,12 @@ bool GenericURLRequestJob::GetCharset(std::string* charset) {
   if (!response_headers_)
     return false;
   return response_headers_->GetCharset(charset);
+}
+
+void GenericURLRequestJob::GetLoadTimingInfo(
+    net::LoadTimingInfo* load_timing_info) const {
+  // TODO(alexclarke): Investigate setting the other members too where possible.
+  load_timing_info->receive_headers_end = response_time_;
 }
 
 }  // namespace headless

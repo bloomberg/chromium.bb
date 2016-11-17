@@ -86,6 +86,7 @@ class MockFetcher : public URLFetcher {
       response_headers->AddHeader(
           base::StringPrintf("%s: %s", it.key().c_str(), value.c_str()));
     }
+
     result_listener->OnFetchComplete(
         GURL(final_url), http_response_code, std::move(response_headers),
         response_data_.c_str(), response_data_.size());
@@ -240,6 +241,10 @@ TEST_F(GenericURLRequestJobTest, BasicRequestContents) {
   EXPECT_TRUE(request->Read(buffer.get(), kBufferSize, &bytes_read));
   EXPECT_EQ(5, bytes_read);
   EXPECT_EQ("Reply", std::string(buffer->data(), 5));
+
+  net::LoadTimingInfo load_timing_info;
+  request->GetLoadTimingInfo(&load_timing_info);
+  EXPECT_FALSE(load_timing_info.receive_headers_end.is_null());
 }
 
 TEST_F(GenericURLRequestJobTest, ReadInParts) {
