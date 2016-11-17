@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/search_provider_logos/switches.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -227,6 +228,9 @@ void LogoTracker::FetchLogo() {
 
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(),
+      data_use_measurement::DataUseUserData::SEARCH_PROVIDER_LOGOS);
   fetcher_->Start();
   logo_download_start_time_ = base::TimeTicks::Now();
 }

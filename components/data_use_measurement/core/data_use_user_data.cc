@@ -92,6 +92,12 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "TracingUploader";
     case DOM_DISTILLER:
       return "DOMDistiller";
+    case CLOUD_PRINT:
+      return "CloudPrint";
+    case SEARCH_PROVIDER_LOGOS:
+      return "SearchProviderLogos";
+    case UPDATE_CLIENT:
+      return "UpdateClient";
   }
   return "INVALID";
 }

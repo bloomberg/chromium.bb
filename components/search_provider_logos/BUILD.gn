@@ -22,6 +22,7 @@ static_library("search_provider_logos") {
   ]
 
   deps = [
+    "//components/data_use_measurement/core",
     "//net",
     "//ui/gfx",
     "//url",

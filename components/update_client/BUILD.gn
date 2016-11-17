@@ -62,6 +62,7 @@ static_library("update_client") {
     "//base",
     "//components/client_update_protocol",
     "//components/crx_file",
+    "//components/data_use_measurement/core",
     "//components/prefs",
     "//courgette:courgette_lib",
     "//crypto",

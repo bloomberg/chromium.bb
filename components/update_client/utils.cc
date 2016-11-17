@@ -26,6 +26,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "components/crx_file/id_util.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
@@ -188,6 +189,8 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
   if (!url_fetcher.get())
     return url_fetcher;
 
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher.get(), data_use_measurement::DataUseUserData::UPDATE_CLIENT);
   url_fetcher->SetUploadData("application/xml", protocol_request);
   url_fetcher->SetRequestContext(url_request_context_getter);
   url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

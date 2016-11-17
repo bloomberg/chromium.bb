@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/cloud_print/privet_constants.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -150,6 +151,9 @@ void PrivetURLFetcher::Try() {
   if (tries_ <= max_retries_) {
     DVLOG(1) << "Attempt: " << tries_;
     url_fetcher_ = net::URLFetcher::Create(url_, request_type_, this);
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
+
     // Privet requests are relevant to hosts on local network only.
     url_fetcher_->SetLoadFlags(
         url_fetcher_->GetLoadFlags() | net::LOAD_BYPASS_PROXY |

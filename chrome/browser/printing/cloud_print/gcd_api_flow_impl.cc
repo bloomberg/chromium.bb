@@ -16,6 +16,7 @@
 #include "chrome/browser/printing/cloud_print/gcd_constants.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -77,6 +78,8 @@ void GCDApiFlowImpl::CreateRequest(const GURL& url) {
     url_fetcher_->SetUploadData(upload_type, upload_data);
   }
 
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
   url_fetcher_->SetRequestContext(request_context_.get());
 
   std::vector<std::string> extra_headers = request_->GetExtraRequestHeaders();

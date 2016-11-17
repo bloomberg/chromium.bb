@@ -56,6 +56,7 @@ static_library("service") {
     "//chrome:strings",
     "//chrome/common",
     "//components/cloud_devices/common",
+    "//components/data_use_measurement/core",
     "//google_apis",
     "//jingle:notifier",
     "//mojo/edk/system",
