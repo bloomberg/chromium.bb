@@ -195,7 +195,6 @@ class WEB_EXPORT WebViewImpl final
   WebLocalFrame* focusedFrame() override;
   void setFocusedFrame(WebFrame*) override;
   void focusDocumentView(WebFrame*) override;
-  void unfocusDocumentView() override;
   void setInitialFocus(bool reverse) override;
   void clearFocusedElement() override;
   bool scrollFocusedEditableElementIntoRect(const WebRect&) override;

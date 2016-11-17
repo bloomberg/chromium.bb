@@ -2498,10 +2498,6 @@ void RenderFrameHostImpl::SetFocusedFrame() {
   Send(new FrameMsg_SetFocusedFrame(routing_id_));
 }
 
-void RenderFrameHostImpl::ClearFocusedFrame() {
-  Send(new FrameMsg_ClearFocusedFrame(routing_id_));
-}
-
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
                                                    size_t after) {
   Send(new InputMsg_ExtendSelectionAndDelete(routing_id_, before, after));

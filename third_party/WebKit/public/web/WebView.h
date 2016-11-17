@@ -194,10 +194,6 @@ class WebView : protected WebWidget {
   // elements.
   virtual void focusDocumentView(WebFrame*) = 0;
 
-  // Sets no frame as focused and fires blur events on any currently focused
-  // element.
-  virtual void unfocusDocumentView() = 0;
-
   // Focus the first (last if reverse is true) focusable node.
   virtual void setInitialFocus(bool reverse) = 0;
 
