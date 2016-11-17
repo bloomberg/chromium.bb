@@ -86,8 +86,8 @@ void TrayItemMore::UpdateStyle() {
   style->SetupLabel(label_);
 
   if (more_) {
-    more_->SetImage(gfx::CreateVectorIcon(kSystemMenuArrowRightIcon,
-                                          style->GetIconColor()));
+    more_->SetImage(
+        gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
   }
 }
 
