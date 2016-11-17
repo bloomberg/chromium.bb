@@ -719,6 +719,7 @@ text_entry_destroy(struct text_entry *entry)
 	zwp_text_input_v1_destroy(entry->text_input);
 	g_clear_object(&entry->layout);
 	free(entry->text);
+	free(entry->preferred_language);
 	free(entry);
 }
 
