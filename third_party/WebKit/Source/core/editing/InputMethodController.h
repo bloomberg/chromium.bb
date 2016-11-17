@@ -101,6 +101,9 @@ class CORE_EXPORT InputMethodController final
   WebTextInputType textInputType() const;
 
  private:
+  Document& document() const;
+  bool isAvailable() const;
+
   Member<LocalFrame> m_frame;
   Member<Range> m_compositionRange;
   bool m_isDirty;
