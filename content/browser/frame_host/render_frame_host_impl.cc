@@ -96,7 +96,9 @@
 #include "device/vibration/vibration_manager_impl.h"
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "media/base/media_switches.h"
+#include "media/media_features.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -203,6 +205,40 @@ void NotifyRenderFrameDetachedOnIO(int render_process_id, int render_frame_id) {
   SharedWorkerServiceImpl::GetInstance()->RenderFrameDetached(render_process_id,
                                                               render_frame_id);
 }
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+// RemoterFactory that delegates Create() calls to the ContentBrowserClient.
+//
+// Since Create() could be called at any time, perhaps by a stray task being run
+// after a RenderFrameHost has been destroyed, the RemoterFactoryImpl uses the
+// process/routing IDs as a weak reference to the RenderFrameHostImpl.
+class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
+ public:
+  RemoterFactoryImpl(int process_id, int routing_id)
+      : process_id_(process_id), routing_id_(routing_id) {}
+
+  static void Bind(int process_id, int routing_id,
+                   media::mojom::RemoterFactoryRequest request) {
+    mojo::MakeStrongBinding(
+        base::MakeUnique<RemoterFactoryImpl>(process_id, routing_id),
+        std::move(request));
+  }
+
+ private:
+  void Create(media::mojom::RemotingSourcePtr source,
+              media::mojom::RemoterRequest request) final {
+    if (auto* host = RenderFrameHostImpl::FromID(process_id_, routing_id_)) {
+      GetContentClient()->browser()->CreateMediaRemoter(
+          host, std::move(source), std::move(request));
+    }
+  }
+
+  const int process_id_;
+  const int routing_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoterFactoryImpl);
+};
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
 }  // namespace
 
@@ -2249,6 +2285,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 #endif
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  GetInterfaceRegistry()->AddInterface(base::Bind(
+      &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
   GetContentClient()->browser()->RegisterRenderFrameMojoInterfaces(
       GetInterfaceRegistry(), this);

@@ -25,14 +25,13 @@ class WebContents;
 // render process represents itself by providing a media::mojom::RemotingSource
 // service instance. The sink is represented by the Media Router Cast Provider.
 //
-// Whenever a RenderFrameHost is created, ChromeContentBrowserClient will call
-// CreateRemoterFactory() to instantiate an implementation of
-// media::mojom::RemoterFactory associated with the connector. This allows one
-// or more media sources in a render frame to create a media::mojom::Remoter to
-// start/stop and execute media remoting. Media sources also provide a
-// media::mojom::RemotingSource so that the connector may notify them when a
-// sink becomes available for remoting and pass binary messages from the sink
-// back to the source.
+// Whenever a candidate media source is created in a render frame,
+// ChromeContentBrowserClient will call CreateMediaRemoter() to instantiate a
+// media::mojom::Remoter associated with the connector. A corresponding
+// media::mojom::RemotingSource is provided by the caller for communications
+// back to the media source in the render frame: The connector uses this to
+// notify when a sink becomes available for remoting, and to pass binary
+// messages from the sink back to the source.
 //
 // At any time before or after the CastRemotingConnector is created, the
 // Media Router Cast Provider may create a tab remoting media route. This
@@ -72,20 +71,16 @@ class CastRemotingConnector
   static CastRemotingConnector* Get(content::WebContents* source_contents);
 
   // Used by ChromeContentBrowserClient to request a binding to a new
-  // RemoterFactory for each new render frame.
-  static void CreateRemoterFactory(content::RenderFrameHost* render_frame_host,
-                                   media::mojom::RemoterFactoryRequest request);
+  // Remoter for each new source in a render frame.
+  static void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
+                                 media::mojom::RemotingSourcePtr source,
+                                 media::mojom::RemoterRequest request);
 
  private:
   // Allow unit tests access to the private constructor and CreateBridge()
   // method, since unit tests don't have a complete browser (i.e., with a
   // WebContents and RenderFrameHost) to work with.
   friend class CastRemotingConnectorTest;
-
-  // Implementation of the media::mojom::RemoterFactory, with one instance
-  // created per content::RenderFrameHost. An instance of this class is owned by
-  // its mojo message pipe.
-  class FrameRemoterFactory;
 
   // Implementation of the media::mojom::Remoter service for a single source in
   // a render frame. This is just a "lightweight bridge" that delegates calls

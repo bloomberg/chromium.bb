@@ -29,37 +29,6 @@ using media::mojom::RemotingStopReason;
 
 using Messaging = CastRemotingConnectorMessaging;
 
-class CastRemotingConnector::FrameRemoterFactory
-    : public media::mojom::RemoterFactory {
- public:
-  // |render_frame_host| represents the source render frame. It could be
-  // destroyed at any time and so the process/routing IDs are used as a weak
-  // reference.
-  explicit FrameRemoterFactory(content::RenderFrameHost* render_frame_host)
-      : render_frame_process_id_(render_frame_host->GetProcess()->GetID()),
-        render_frame_routing_id_(render_frame_host->GetRoutingID()) {}
-  ~FrameRemoterFactory() final {}
-
-  void Create(media::mojom::RemotingSourcePtr source,
-              media::mojom::RemoterRequest request) final {
-    auto* const host = content::RenderFrameHost::FromID(
-        render_frame_process_id_, render_frame_routing_id_);
-    if (!host)
-      return;
-    auto* const contents = content::WebContents::FromRenderFrameHost(host);
-    if (!contents)
-      return;
-    CastRemotingConnector::Get(contents)->CreateBridge(std::move(source),
-                                                       std::move(request));
-  }
-
- private:
-  const int render_frame_process_id_;
-  const int render_frame_routing_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameRemoterFactory);
-};
-
 class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
  public:
   // Constructs a "bridge" to delegate calls between the given |source| and
@@ -176,13 +145,16 @@ CastRemotingConnector* CastRemotingConnector::Get(
 }
 
 // static
-void CastRemotingConnector::CreateRemoterFactory(
-    content::RenderFrameHost* render_frame_host,
-    media::mojom::RemoterFactoryRequest request) {
-  DCHECK(render_frame_host);
-  mojo::MakeStrongBinding(
-      base::MakeUnique<FrameRemoterFactory>(render_frame_host),
-      std::move(request));
+void CastRemotingConnector::CreateMediaRemoter(
+    content::RenderFrameHost* host,
+    media::mojom::RemotingSourcePtr source,
+    media::mojom::RemoterRequest request) {
+  DCHECK(host);
+  auto* const contents = content::WebContents::FromRenderFrameHost(host);
+  if (!contents)
+    return;
+  CastRemotingConnector::Get(contents)->CreateBridge(std::move(source),
+                                                     std::move(request));
 }
 
 CastRemotingConnector::CastRemotingConnector(

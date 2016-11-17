@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 
 class ChromeContentBrowserClientParts;
 
@@ -301,7 +302,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       override;
   content::PresentationServiceDelegate* GetPresentationServiceDelegate(
       content::WebContents* web_contents) override;
-
   void RecordURLMetric(const std::string& metric, const GURL& url) override;
   ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
       content::NavigationHandle* handle) override;
@@ -309,6 +309,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationHandle* navigation_handle) override;
   std::unique_ptr<content::MemoryCoordinatorDelegate>
   GetMemoryCoordinatorDelegate() override;
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
+                          media::mojom::RemotingSourcePtr source,
+                          media::mojom::RemoterRequest request) final;
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

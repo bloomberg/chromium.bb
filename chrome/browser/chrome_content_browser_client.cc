@@ -333,10 +333,14 @@
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+#endif  // defined(ENABLE_MEDIA_ROUTER)
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING) && defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/cast_remoting_connector.h"
 #endif
+
 
 #if defined(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
@@ -2980,12 +2984,6 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
   }
 #endif
-
-#if defined(ENABLE_MEDIA_ROUTER)
-  registry->AddInterface(
-      base::Bind(&CastRemotingConnector::CreateRemoterFactory,
-                 render_frame_host));
-#endif
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
@@ -3246,3 +3244,21 @@ std::unique_ptr<content::MemoryCoordinatorDelegate>
 ChromeContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return memory::ChromeMemoryCoordinatorDelegate::Create();
 }
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+void ChromeContentBrowserClient::CreateMediaRemoter(
+    content::RenderFrameHost* render_frame_host,
+    media::mojom::RemotingSourcePtr source,
+    media::mojom::RemoterRequest request) {
+#if defined(ENABLE_MEDIA_ROUTER)
+  CastRemotingConnector::CreateMediaRemoter(
+      render_frame_host, std::move(source), std::move(request));
+#else
+  // Chrome's media remoting implementation depends on the Media Router
+  // infrastructure to identify remote sinks and provide the user interface for
+  // sink selection. In the case where the Media Router is not present, simply
+  // drop the interface request. This will prevent code paths for media remoting
+  // in the renderer process from activating.
+#endif
+}
+#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
