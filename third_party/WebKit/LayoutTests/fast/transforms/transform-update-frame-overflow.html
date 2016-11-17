@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"/>
 <style>
 #transformed {
     width: 100px;
@@ -10,11 +11,10 @@
 <div id="transformed">
 </div>
 <script>
-    document.body.offsetTop;
-
-    var transformed = document.getElementById('transformed');
-    transformed.style.transform = "translateY(1000px)";
-
-    if (window.eventSender)
-        eventSender.keyDown("End");
+    runAfterLayoutAndPaint(function() {
+        var transformed = document.getElementById('transformed');
+        transformed.style.transform = "translateY(1000px)";
+        if (window.eventSender)
+            eventSender.keyDown("End");
+    }, true);
 </script>
