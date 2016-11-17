@@ -23,7 +23,7 @@ class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
   ui::Layer* layer() { return &layer_; }
 
  protected:
-  explicit InkDropMask(const gfx::Rect& layer_bounds);
+  explicit InkDropMask(const gfx::Size& layer_size);
 
  private:
   // Overriden from ui::LayerDelegate:
@@ -39,7 +39,7 @@ class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
 // A rectangular ink drop mask with rounded corners.
 class VIEWS_EXPORT RoundRectInkDropMask : public InkDropMask {
  public:
-  RoundRectInkDropMask(const gfx::Rect& layer_bounds,
+  RoundRectInkDropMask(const gfx::Size& layer_size,
                        const gfx::Rect& mask_bounds,
                        int corner_radius);
 
@@ -56,7 +56,7 @@ class VIEWS_EXPORT RoundRectInkDropMask : public InkDropMask {
 // A circular ink drop mask.
 class VIEWS_EXPORT CircleInkDropMask : public InkDropMask {
  public:
-  CircleInkDropMask(const gfx::Rect& layer_bounds,
+  CircleInkDropMask(const gfx::Size& layer_size,
                     const gfx::Point& mask_center,
                     int mask_radius);
 
