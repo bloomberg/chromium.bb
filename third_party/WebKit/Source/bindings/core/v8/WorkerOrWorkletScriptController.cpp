@@ -180,14 +180,6 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded() {
 
   ScriptState::Scope scope(m_scriptState.get());
 
-  // Name new context for debugging. For main thread worklet global scopes
-  // this is done once the context is initialized.
-  if (m_globalScope->isWorkerGlobalScope() ||
-      m_globalScope->isThreadedWorkletGlobalScope()) {
-    WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
-    debugger->contextCreated(m_globalScope->thread(), context);
-  }
-
   // The global proxy object.  Note this is not the global object.
   v8::Local<v8::Object> globalProxy = context->Global();
   V8DOMWrapper::setNativeInfo(m_isolate, globalProxy, wrapperTypeInfo,
@@ -202,6 +194,14 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded() {
   // All interfaces must be registered to V8PerContextData.
   // So we explicitly call constructorForType for the global object.
   V8PerContextData::from(context)->constructorForType(wrapperTypeInfo);
+
+  // Name new context for debugging. For main thread worklet global scopes
+  // this is done once the context is initialized.
+  if (m_globalScope->isWorkerGlobalScope() ||
+      m_globalScope->isThreadedWorkletGlobalScope()) {
+    WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
+    debugger->contextCreated(m_globalScope->thread(), context);
+  }
 
   return true;
 }
