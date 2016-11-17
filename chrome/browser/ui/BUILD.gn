@@ -1106,6 +1106,8 @@ split_static_library("ui") {
       "webui/settings/md_settings_ui.h",
       "webui/settings/metrics_reporting_handler.cc",
       "webui/settings/metrics_reporting_handler.h",
+      "webui/settings/on_startup_handler.cc",
+      "webui/settings/on_startup_handler.h",
       "webui/settings/people_handler.cc",
       "webui/settings/people_handler.h",
       "webui/settings/profile_info_handler.cc",

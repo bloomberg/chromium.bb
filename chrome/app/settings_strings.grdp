@@ -254,6 +254,9 @@
       Restart
     </message>
   </if>
+  <message name="IDS_SETTINGS_CONTROLLED_BY_EXTENSION" desc="Label text of an indicator that a setting's value is being controlled by an extension.">
+    <ph name="NAME">$1<ex>Adblocker plusplus</ex></ph> is controlling this setting
+  </message>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_OVERFLOW_MENU" desc="Alt text for the overflow button on a list item. Triggers a context menu when clicked.">

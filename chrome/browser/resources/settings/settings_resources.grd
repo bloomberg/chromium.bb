@@ -148,6 +148,12 @@
                  file="lifetime_browser_proxy.js"
                  type="chrome_html"
                  flattenhtml="true" />
+      <structure name="IDR_SETTINGS_ON_STARTUP_BROWSER_PROXY_HTML"
+                 file="on_startup_page/on_startup_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_ON_STARTUP_BROWSER_PROXY_JS"
+                 file="on_startup_page/on_startup_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ON_STARTUP_PAGE_HTML"
                  file="on_startup_page/on_startup_page.html"
                  type="chrome_html" />
@@ -359,6 +365,12 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_CONTROLLED_RADIO_BUTTON_HTML"
                  file="controls/controlled_radio_button.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_EXTENSION_CONTROLLED_INDICATOR_JS"
+                 file="controls/extension_controlled_indicator.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_EXTENSION_CONTROLLED_INDICATOR_HTML"
+                 file="controls/extension_controlled_indicator.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_HTML"
                  file="controls/settings_checkbox.html"

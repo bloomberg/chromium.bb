@@ -18,13 +18,13 @@ Polymer({
   is: 'settings-on-startup-page',
 
   properties: {
-    /**
-     * Preferences state.
-     */
     prefs: {
       type: Object,
       notify: true,
     },
+
+    /** @private {?NtpExtension} */
+    ntpExtension_: Object,
 
     /**
      * Enum values for the 'session.restore_on_startup' preference.
@@ -34,11 +34,34 @@ Polymer({
       readOnly: true,
       type: Object,
       value: {
-        OPEN_NEW_TAB: 5,
         CONTINUE: 1,
+        OPEN_NEW_TAB: 5,
         OPEN_SPECIFIC: 4,
       },
     },
+  },
+
+  /** @override */
+  attached: function() {
+    this.getNtpExtension_();
+  },
+
+  /** @private */
+  getNtpExtension_: function() {
+    settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
+        function(ntpExtension) {
+          this.ntpExtension_ = ntpExtension;
+        }.bind(this));
+  },
+
+  /**
+   * @param {?NtpExtension} ntpExtension
+   * @param {number} restoreOnStartup Value of prefs.session.restore_on_startup.
+   * @return {boolean}
+   * @private
+   */
+  showIndicator_: function(ntpExtension, restoreOnStartup) {
+    return !!ntpExtension && restoreOnStartup == this.prefValues_.OPEN_NEW_TAB;
   },
 
   /**
