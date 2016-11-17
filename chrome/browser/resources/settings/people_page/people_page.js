@@ -150,6 +150,9 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function() {
+    this.showImportDataDialog_ =
+        settings.getCurrentRoute() == settings.Route.IMPORT_DATA;
+
     if (settings.getCurrentRoute() == settings.Route.SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the disconnect dialog. There is another check when the sync status is
@@ -359,12 +362,12 @@ Polymer({
 
   /** @private */
   onImportDataTap_: function() {
-    this.showImportDataDialog_ = true;
+    settings.navigateTo(settings.Route.IMPORT_DATA);
   },
 
   /** @private */
   onImportDataDialogClosed_: function() {
-    this.showImportDataDialog_ = false;
+    settings.navigateToPreviousRoute();
   },
 </if>
 

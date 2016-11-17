@@ -93,6 +93,7 @@ cr.define('settings', function() {
 
   // Navigable dialogs. These are the only non-section children of root pages.
   // These are disfavored. If we add anymore, we should add explicit support.
+  r.IMPORT_DATA = r.BASIC.createChild('/importData');
   r.SIGN_OUT = r.BASIC.createChild('/signOut');
   r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
   r.RESET_DIALOG = r.ADVANCED.createChild('/resetProfileSettings');
