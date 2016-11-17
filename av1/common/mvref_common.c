@@ -258,6 +258,8 @@ static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
   // bs > 0 and bs is a power of 2
   assert(bs > 0 && !(bs & (bs - 1)));
 
+  if ((mi_row & MAX_MIB_MASK) == 0) return has_tr;
+
   // For each 4x4 group of blocks, when the bottom right is decoded the blocks
   // to the right have not been decoded therefore the bottom right does
   // not have a top right
