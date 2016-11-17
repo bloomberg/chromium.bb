@@ -1772,8 +1772,11 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
     return;
   }
 
-  if (!StartDevicePoll())
-    return;
+  // Start poll thread if NotifyFlushDoneIfNeeded has not already.
+  if (!device_poll_thread_.IsRunning()) {
+    if (!StartDevicePoll())
+      return;
+  }
 
   // Reset format-specific bits.
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
