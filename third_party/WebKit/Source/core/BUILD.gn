@@ -1157,6 +1157,7 @@ source_set("unit_tests") {
     "fetch/ResourceTest.cpp",
     "fileapi/FileListTest.cpp",
     "fileapi/FileTest.cpp",
+    "frame/FeaturePolicyInFrameTest.cpp",
     "frame/FrameViewTest.cpp",
     "frame/HistoryTest.cpp",
     "frame/ImageBitmapTest.cpp",

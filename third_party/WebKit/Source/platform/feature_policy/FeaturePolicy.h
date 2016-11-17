@@ -145,6 +145,7 @@ class PLATFORM_EXPORT FeaturePolicy final {
 
  private:
   friend class FeaturePolicyTest;
+  friend class FeaturePolicyInFrameTest;
 
   FeaturePolicy(RefPtr<SecurityOrigin>, FeatureList& features);
 

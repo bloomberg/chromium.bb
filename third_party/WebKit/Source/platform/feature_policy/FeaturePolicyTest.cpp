@@ -675,7 +675,7 @@ TEST_F(FeaturePolicyTest, TestFeaturesAreIndependent) {
   // | | +-------------+                           | |
   // | +-------------------------------------------+ |
   // +-----------------------------------------------+
-  // Vibrate feature should be enabled in all frames; Docwrite feature
+  // Default-self feature should be enabled in all frames; Default-on feature
   // should be enabled in frame 1, and disabled in frames 2 and 3.
   Vector<String> messages;
   std::unique_ptr<FeaturePolicy> policy1 =
@@ -697,6 +697,27 @@ TEST_F(FeaturePolicyTest, TestFeaturesAreIndependent) {
   EXPECT_FALSE(policy2->isFeatureEnabled(kDefaultOnFeature));
   EXPECT_TRUE(policy3->isFeatureEnabled(kDefaultSelfFeature));
   EXPECT_FALSE(policy3->isFeatureEnabled(kDefaultOnFeature));
+}
+
+TEST_F(FeaturePolicyTest, TestFeatureEnabledForOrigin) {
+  // +-----------------------------------------------+
+  // |(1) Origin A                                   |
+  // |Policy: {"default-off": ["self", "Origin B"]}  |
+  // +-----------------------------------------------+
+  // Features should be enabled by the policy in frame 1 for origins A and B,
+  // and disabled for origin C.
+  Vector<String> messages;
+  std::unique_ptr<FeaturePolicy> policy1 =
+      createFromParentPolicy(nullptr, m_originA);
+  policy1->setHeaderPolicy("{\"default-off\": [\"self\", \"" ORIGIN_B "\"]}",
+                           messages);
+  EXPECT_EQ(0UL, messages.size());
+  EXPECT_TRUE(
+      policy1->isFeatureEnabledForOrigin(kDefaultOffFeature, *m_originA));
+  EXPECT_TRUE(
+      policy1->isFeatureEnabledForOrigin(kDefaultOffFeature, *m_originB));
+  EXPECT_FALSE(
+      policy1->isFeatureEnabledForOrigin(kDefaultOffFeature, *m_originC));
 }
 
 }  // namespace blink
