@@ -106,6 +106,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // reclaimed).
   void DisallowWorkerDetachmentForTesting();
 
+  // Returns the number of workers alive in this worker pool. The value may
+  // change if workers are woken up or detached during this call.
+  size_t NumberOfAliveWorkersForTesting();
+
  private:
   class SchedulerSingleThreadTaskRunner;
   class SchedulerWorkerDelegateImpl;
@@ -119,6 +123,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   bool Initialize(
       ThreadPriority priority_hint,
+      SchedulerWorkerPoolParams::StandbyThreadPolicy standby_thread_policy,
       size_t max_threads,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback);
 

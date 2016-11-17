@@ -21,6 +21,9 @@ namespace task_scheduler_util {
 
 namespace {
 
+using StandbyThreadPolicy =
+    base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
+
 enum WorkerPoolType : size_t {
   BACKGROUND_WORKER_POOL = 0,
   BACKGROUND_FILE_IO_WORKER_POOL,
@@ -30,6 +33,7 @@ enum WorkerPoolType : size_t {
 };
 
 struct WorkerPoolVariationValues {
+  StandbyThreadPolicy standby_thread_policy;
   int threads = 0;
   base::TimeDelta detach_period;
 };
@@ -39,11 +43,12 @@ struct WorkerPoolVariationValues {
 //
 // |pool_descriptor| is a semi-colon separated value string with the following
 // items:
-// 1. Minimum Thread Count (int)
-// 2. Maximum Thread Count (int)
-// 3. Thread Count Multiplier (double)
-// 4. Thread Count Offset (int)
-// 5. Detach Time in Milliseconds (milliseconds)
+// 0. Minimum Thread Count (int)
+// 1. Maximum Thread Count (int)
+// 2. Thread Count Multiplier (double)
+// 3. Thread Count Offset (int)
+// 4. Detach Time in Milliseconds (milliseconds)
+// 5. Standby Thread Policy (string)
 // Additional values may appear as necessary and will be ignored.
 WorkerPoolVariationValues StringToWorkerPoolVariationValues(
     const base::StringPiece pool_descriptor) {
@@ -67,6 +72,10 @@ WorkerPoolVariationValues StringToWorkerPoolVariationValues(
         min, max, cores_multiplier, offset);
     values.detach_period =
         base::TimeDelta::FromMilliseconds(detach_milliseconds);
+    values.standby_thread_policy =
+        (tokens.size() >= 6 && tokens[5] == "lazy")
+            ? StandbyThreadPolicy::LAZY
+            : StandbyThreadPolicy::ONE;
     return values;
   }
   DLOG(ERROR) << "Invalid Worker Pool Descriptor: " << pool_descriptor;
@@ -128,6 +137,7 @@ bool InitializeDefaultTaskScheduler(
     params_vector.emplace_back(predefined_params.name,
                                predefined_params.priority_hint,
                                predefined_params.io_restriction,
+                               variation_values.standby_thread_policy,
                                variation_values.threads,
                                variation_values.detach_period);
   }

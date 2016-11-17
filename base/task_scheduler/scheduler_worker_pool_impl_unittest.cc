@@ -59,6 +59,7 @@ constexpr TimeDelta kExtraTimeToWaitForDetach =
     TimeDelta::FromSeconds(1);
 
 using IORestriction = SchedulerWorkerPoolParams::IORestriction;
+using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
 
 class TaskSchedulerWorkerPoolImplTest
     : public testing::TestWithParam<test::ExecutionMode> {
@@ -84,9 +85,9 @@ class TaskSchedulerWorkerPoolImplTest
     delayed_task_manager_ =
         base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
     worker_pool_ = SchedulerWorkerPoolImpl::Create(
-        SchedulerWorkerPoolParams("TestWorkerPool", ThreadPriority::NORMAL,
-                                  IORestriction::ALLOWED, num_workers,
-                                  suggested_reclaim_time),
+        SchedulerWorkerPoolParams(
+            "TestWorkerPool", ThreadPriority::NORMAL, IORestriction::ALLOWED,
+            StandbyThreadPolicy::LAZY, num_workers, suggested_reclaim_time),
         Bind(&TaskSchedulerWorkerPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),
         &task_tracker_, delayed_task_manager_.get());
@@ -473,9 +474,9 @@ TEST_P(TaskSchedulerWorkerPoolImplIORestrictionTest, IORestriction) {
       make_scoped_refptr(new TestSimpleTaskRunner));
 
   auto worker_pool = SchedulerWorkerPoolImpl::Create(
-      SchedulerWorkerPoolParams("TestWorkerPoolWithParam",
-                                ThreadPriority::NORMAL, GetParam(), 1U,
-                                TimeDelta::Max()),
+      SchedulerWorkerPoolParams(
+          "TestWorkerPoolWithParam", ThreadPriority::NORMAL, GetParam(),
+          StandbyThreadPolicy::LAZY, 1U, TimeDelta::Max()),
       Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
       &delayed_task_manager);
   ASSERT_TRUE(worker_pool);
@@ -823,6 +824,37 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
   EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(3));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
+}
+
+TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitLazy) {
+  TaskTracker task_tracker;
+  DelayedTaskManager delayed_task_manager(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+  auto worker_pool = SchedulerWorkerPoolImpl::Create(
+      SchedulerWorkerPoolParams("LazyPolicyWorkerPool", ThreadPriority::NORMAL,
+                                IORestriction::DISALLOWED,
+                                StandbyThreadPolicy::LAZY, 8U,
+                                TimeDelta::Max()),
+      Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
+      &delayed_task_manager);
+  ASSERT_TRUE(worker_pool);
+  EXPECT_EQ(0U, worker_pool->NumberOfAliveWorkersForTesting());
+  worker_pool->JoinForTesting();
+}
+
+TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
+  TaskTracker task_tracker;
+  DelayedTaskManager delayed_task_manager(
+      make_scoped_refptr(new TestSimpleTaskRunner));
+  auto worker_pool = SchedulerWorkerPoolImpl::Create(
+      SchedulerWorkerPoolParams("LazyPolicyWorkerPool", ThreadPriority::NORMAL,
+                                IORestriction::DISALLOWED,
+                                StandbyThreadPolicy::ONE, 8U, TimeDelta::Max()),
+      Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
+      &delayed_task_manager);
+  ASSERT_TRUE(worker_pool);
+  EXPECT_EQ(1U, worker_pool->NumberOfAliveWorkersForTesting());
+  worker_pool->JoinForTesting();
 }
 
 }  // namespace internal

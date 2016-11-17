@@ -313,8 +313,9 @@ std::unique_ptr<SchedulerWorkerPoolImpl> SchedulerWorkerPoolImpl::Create(
                                   params.io_restriction(),
                                   params.suggested_reclaim_time(),
                                   task_tracker, delayed_task_manager));
-  if (worker_pool->Initialize(params.priority_hint(), params.max_threads(),
-                              re_enqueue_sequence_callback)) {
+  if (worker_pool->Initialize(
+          params.priority_hint(), params.standby_thread_policy(),
+          params.max_threads(), re_enqueue_sequence_callback)) {
     return worker_pool;
   }
   return nullptr;
@@ -450,6 +451,15 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 
 void SchedulerWorkerPoolImpl::DisallowWorkerDetachmentForTesting() {
   worker_detachment_disallowed_.Set();
+}
+
+size_t SchedulerWorkerPoolImpl::NumberOfAliveWorkersForTesting() {
+  size_t num_alive_workers = 0;
+  for (const auto& worker : workers_) {
+    if (worker->ThreadAliveForTesting())
+      ++num_alive_workers;
+  }
+  return num_alive_workers;
 }
 
 SchedulerWorkerPoolImpl::SchedulerSingleThreadTaskRunner::
@@ -716,6 +726,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
 
 bool SchedulerWorkerPoolImpl::Initialize(
     ThreadPriority priority_hint,
+    SchedulerWorkerPoolParams::StandbyThreadPolicy standby_thread_policy,
     size_t max_threads,
     const ReEnqueueSequenceCallback& re_enqueue_sequence_callback) {
   AutoSchedulerLock auto_lock(idle_workers_stack_lock_);
@@ -727,9 +738,13 @@ bool SchedulerWorkerPoolImpl::Initialize(
   // This ensures that they are woken up in order of index and that the ALIVE
   // worker is on top of the stack.
   for (int index = max_threads - 1; index >= 0; --index) {
+    const bool is_standby_lazy =
+        standby_thread_policy ==
+        SchedulerWorkerPoolParams::StandbyThreadPolicy::LAZY;
     const SchedulerWorker::InitialState initial_state =
-        (index == 0) ? SchedulerWorker::InitialState::ALIVE
-                     : SchedulerWorker::InitialState::DETACHED;
+        (index == 0 && !is_standby_lazy)
+            ? SchedulerWorker::InitialState::ALIVE
+            : SchedulerWorker::InitialState::DETACHED;
     std::unique_ptr<SchedulerWorker> worker = SchedulerWorker::Create(
         priority_hint,
         MakeUnique<SchedulerWorkerDelegateImpl>(
@@ -752,6 +767,8 @@ void SchedulerWorkerPoolImpl::WakeUpWorker(SchedulerWorker* worker) {
   DCHECK(worker);
   RemoveFromIdleWorkersStack(worker);
   worker->WakeUp();
+  // TOOD(robliao): Honor StandbyThreadPolicy::ONE here and consider adding
+  // hysteresis to the CanDetach check. See https://crbug.com/666041.
 }
 
 void SchedulerWorkerPoolImpl::WakeUpOneWorker() {
