@@ -304,18 +304,6 @@ BookmarkManagerPrivateDragEventRouter::
   // are both WebContentsUserData and will be deleted at the same time.
 }
 
-void BookmarkManagerPrivateDragEventRouter::MaybeCreateForWebContents(
-    content::WebContents* web_contents) {
-  content::BrowserContext* context = web_contents->GetBrowserContext();
-  const Extension* extension =
-      ExtensionRegistry::Get(context)
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(
-              web_contents->GetSiteInstance()->GetSiteURL());
-  if (extension && extension->id() == extension_misc::kBookmarkManagerId)
-    CreateForWebContents(web_contents);
-}
-
 void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,

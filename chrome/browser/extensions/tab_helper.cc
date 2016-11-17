@@ -185,8 +185,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   ExtensionWebContentsObserver::GetForWebContents(web_contents)->dispatcher()->
       set_delegate(this);
 
-  BookmarkManagerPrivateDragEventRouter::MaybeCreateForWebContents(
-      web_contents);
+  BookmarkManagerPrivateDragEventRouter::CreateForWebContents(web_contents);
 
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,

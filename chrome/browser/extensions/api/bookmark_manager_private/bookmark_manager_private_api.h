@@ -102,8 +102,6 @@ class BookmarkManagerPrivateDragEventRouter
       content::WebContents* web_contents);
   ~BookmarkManagerPrivateDragEventRouter() override;
 
-  static void MaybeCreateForWebContents(content::WebContents* web_contents);
-
   // BookmarkTabHelper::BookmarkDrag interface
   void OnDragEnter(const bookmarks::BookmarkNodeData& data) override;
   void OnDragOver(const bookmarks::BookmarkNodeData& data) override;
