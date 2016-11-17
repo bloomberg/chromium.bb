@@ -358,7 +358,7 @@ void AppBannerManager::SendBannerPromptRequest() {
 }
 
 void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
-  if (!handle->IsInMainFrame())
+  if (!handle->IsInMainFrame() || handle->IsSamePage())
     return;
 
   load_finished_ = false;
@@ -373,7 +373,8 @@ void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
 }
 
 void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
-  if (handle->IsInMainFrame() && handle->HasCommitted()) {
+  if (handle->IsInMainFrame() && handle->HasCommitted() &&
+      !handle->IsSamePage()) {
     last_transition_type_ = handle->GetPageTransition();
     active_media_players_.clear();
     if (is_active_)
