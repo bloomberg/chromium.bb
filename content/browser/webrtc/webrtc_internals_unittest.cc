@@ -5,6 +5,7 @@
 #include "content/browser/webrtc/webrtc_internals.h"
 
 #include <memory>
+#include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -17,9 +18,9 @@ namespace content {
 
 namespace {
 
-static const std::string kContraints = "c";
-static const std::string kRtcConfiguration = "r";
-static const std::string kUrl = "u";
+static const char kContraints[] = "c";
+static const char kRtcConfiguration[] = "r";
+static const char kUrl[] = "u";
 
 class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
  public:
@@ -339,6 +340,55 @@ TEST_F(WebRtcInternalsTest, AudioDebugRecordingsFileSelectionCanceled) {
 
   EXPECT_EQ("audioDebugRecordingsFileSelectionCancelled", observer.command());
   EXPECT_EQ(nullptr, observer.value());
+}
+
+TEST_F(WebRtcInternalsTest, PowerSaveBlock) {
+  int kRenderProcessId = 1;
+  int pid = 1;
+  int lid[] = {1, 2, 3};
+
+  WebRTCInternalsForTest webrtc_internals;
+
+  // Add a few peer connections.
+  EXPECT_EQ(0, webrtc_internals.num_open_connections());
+  EXPECT_FALSE(webrtc_internals.IsPowerSavingBlocked());
+  webrtc_internals.OnAddPeerConnection(kRenderProcessId, pid, lid[0], kUrl,
+                                       kRtcConfiguration, kContraints);
+  EXPECT_EQ(1, webrtc_internals.num_open_connections());
+  EXPECT_TRUE(webrtc_internals.IsPowerSavingBlocked());
+
+  webrtc_internals.OnAddPeerConnection(kRenderProcessId, pid, lid[1], kUrl,
+                                       kRtcConfiguration, kContraints);
+  EXPECT_EQ(2, webrtc_internals.num_open_connections());
+  EXPECT_TRUE(webrtc_internals.IsPowerSavingBlocked());
+
+  webrtc_internals.OnAddPeerConnection(kRenderProcessId, pid, lid[2], kUrl,
+                                       kRtcConfiguration, kContraints);
+  EXPECT_EQ(3, webrtc_internals.num_open_connections());
+  EXPECT_TRUE(webrtc_internals.IsPowerSavingBlocked());
+
+  // Remove a peer connection without closing it first.
+  webrtc_internals.OnRemovePeerConnection(pid, lid[2]);
+  EXPECT_EQ(2, webrtc_internals.num_open_connections());
+  EXPECT_TRUE(webrtc_internals.IsPowerSavingBlocked());
+
+  // Close the remaining peer connections.
+  webrtc_internals.OnUpdatePeerConnection(pid, lid[1], "stop", std::string());
+  EXPECT_EQ(1, webrtc_internals.num_open_connections());
+  EXPECT_TRUE(webrtc_internals.IsPowerSavingBlocked());
+
+  webrtc_internals.OnUpdatePeerConnection(pid, lid[0], "stop", std::string());
+  EXPECT_EQ(0, webrtc_internals.num_open_connections());
+  EXPECT_FALSE(webrtc_internals.IsPowerSavingBlocked());
+
+  // Remove the remaining peer connections.
+  webrtc_internals.OnRemovePeerConnection(pid, lid[1]);
+  EXPECT_EQ(0, webrtc_internals.num_open_connections());
+  EXPECT_FALSE(webrtc_internals.IsPowerSavingBlocked());
+
+  webrtc_internals.OnRemovePeerConnection(pid, lid[0]);
+  EXPECT_EQ(0, webrtc_internals.num_open_connections());
+  EXPECT_FALSE(webrtc_internals.IsPowerSavingBlocked());
 }
 
 }  // namespace content
