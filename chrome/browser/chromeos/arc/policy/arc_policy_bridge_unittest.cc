@@ -51,10 +51,7 @@ constexpr char kFakeONC[] =
     "\"GUID\":\"{00f79111-51e0-e6e0-76b3b55450d80a1b}\"}"
     "]}";
 
-constexpr char kPolicyCompliantResponse[] = "{ \"policyCompliant\": true }";
-constexpr char kPolicyNonCompliantResponse[] = "{ \"policyCompliant\": false }";
-
-// Helper class to define callbacks that verify that they were run.
+// Helper class to define a PolicyStringCallback which verifies that it was run.
 // Wraps a bool initially set to |false| and verifies that it's been set to
 // |true| before destruction.
 class CheckedBoolean {
@@ -70,23 +67,17 @@ class CheckedBoolean {
   DISALLOW_COPY_AND_ASSIGN(CheckedBoolean);
 };
 
-void ExpectString(std::unique_ptr<CheckedBoolean> was_run,
-                  const std::string& expected,
-                  const std::string& received) {
-  EXPECT_EQ(expected, received);
+void ExpectPolicyString(std::unique_ptr<CheckedBoolean> was_run,
+                        const std::string& expected,
+                        const std::string& policies) {
+  EXPECT_EQ(expected, policies);
   was_run->set_value(true);
 }
 
 arc::ArcPolicyBridge::GetPoliciesCallback PolicyStringCallback(
     const std::string& expected) {
   std::unique_ptr<CheckedBoolean> was_run(new CheckedBoolean());
-  return base::Bind(&ExpectString, base::Passed(&was_run), expected);
-}
-
-arc::ArcPolicyBridge::ReportComplianceCallback PolicyComplianceCallback(
-    const std::string& expected) {
-  std::unique_ptr<CheckedBoolean> was_run(new CheckedBoolean);
-  return base::Bind(&ExpectString, base::Passed(&was_run), expected);
+  return base::Bind(&ExpectPolicyString, base::Passed(&was_run), expected);
 }
 
 }  // namespace
@@ -339,23 +330,6 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
       "\"cameraDisabled\":true,"
       "\"defaultPermissionPolicy\":\"GRANT\""
       "}"));
-}
-
-TEST_F(ArcPolicyBridgeTest, EmptyReportComplianceTest) {
-  policy_bridge()->ReportCompliance(
-      "", PolicyComplianceCallback(kPolicyCompliantResponse));
-}
-
-TEST_F(ArcPolicyBridgeTest, ParsableReportComplianceTest) {
-  policy_bridge()->ReportCompliance(
-      "{\"nonComplianceDetails\" : []}",
-      PolicyComplianceCallback(kPolicyCompliantResponse));
-}
-
-TEST_F(ArcPolicyBridgeTest, NonParsableReportComplianceTest) {
-  policy_bridge()->ReportCompliance(
-      "\"nonComplianceDetails\" : [}",
-      PolicyComplianceCallback(kPolicyNonCompliantResponse));
 }
 
 // This and the following test send the policies through a mojo connection
