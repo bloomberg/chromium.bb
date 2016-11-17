@@ -8,6 +8,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/renderer_host/offscreen_canvas_surface_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -16,7 +17,12 @@ namespace content {
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl()
     : id_allocator_(new cc::SurfaceIdAllocator()) {}
 
-OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {}
+OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
+  if (frame_sink_id_.is_valid()) {
+    OffscreenCanvasSurfaceManager::GetInstance()
+        ->UnregisterOffscreenCanvasSurfaceInstance(frame_sink_id_);
+  }
+}
 
 // static
 void OffscreenCanvasSurfaceImpl::Create(
@@ -28,11 +34,27 @@ void OffscreenCanvasSurfaceImpl::Create(
 void OffscreenCanvasSurfaceImpl::GetSurfaceId(
     const GetSurfaceIdCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (frame_sink_id_.is_valid()) {
+    // This IPC should be only called once for each HTMLCanvasElement. In this
+    // case, frame_sink_id_ is still unset.
+    // As the browser makes no assumption of correct behavior of renderer, in
+    // an unwanted situation when this function is invoked twice, we need to
+    // unregister the instance from manager.
+    OffscreenCanvasSurfaceManager::GetInstance()
+        ->UnregisterOffscreenCanvasSurfaceInstance(frame_sink_id_);
+    mojo::ReportBadMessage(
+        "The same OffscreenCanvasSurfaceImpl is registered to "
+        "OffscreenCanvasSurfaceManager twice.");
+  }
 
-  cc::LocalFrameId local_frame_id = id_allocator_->GenerateId();
-  surface_id_ = cc::SurfaceId(AllocateFrameSinkId(), local_frame_id);
+  frame_sink_id_ = AllocateFrameSinkId();
+  cc::SurfaceId surface_id =
+      cc::SurfaceId(frame_sink_id_, id_allocator_->GenerateId());
 
-  callback.Run(surface_id_);
+  OffscreenCanvasSurfaceManager::GetInstance()
+      ->RegisterOffscreenCanvasSurfaceInstance(frame_sink_id_, this);
+
+  callback.Run(surface_id);
 }
 
 void OffscreenCanvasSurfaceImpl::Require(const cc::SurfaceId& surface_id,

@@ -1184,6 +1184,7 @@ test("content_unittests") {
     "../browser/renderer_host/media/video_capture_device_client_unittest.cc",
     "../browser/renderer_host/media/video_capture_manager_unittest.cc",
     "../browser/renderer_host/media/video_capture_unittest.cc",
+    "../browser/renderer_host/offscreen_canvas_surface_manager_unittest.cc",
     "../browser/renderer_host/render_process_host_unittest.cc",
     "../browser/renderer_host/render_view_host_unittest.cc",
     "../browser/renderer_host/render_widget_host_unittest.cc",

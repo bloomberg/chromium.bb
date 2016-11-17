@@ -13,7 +13,8 @@
 
 namespace content {
 
-class OffscreenCanvasSurfaceImpl : public blink::mojom::OffscreenCanvasSurface {
+class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
+    : public blink::mojom::OffscreenCanvasSurface {
  public:
   OffscreenCanvasSurfaceImpl();
   ~OffscreenCanvasSurfaceImpl() override;
@@ -26,10 +27,12 @@ class OffscreenCanvasSurfaceImpl : public blink::mojom::OffscreenCanvasSurface {
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
+  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+
  private:
   // Surface-related state
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
-  cc::SurfaceId surface_id_;
+  cc::FrameSinkId frame_sink_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceImpl);
 };
