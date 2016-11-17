@@ -52,8 +52,6 @@ const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 const int kPopularSitesRedownloadIntervalHours = 24;
 
 const char kPopularSitesLastDownloadPref[] = "popular_sites_last_download";
-const char kPopularSitesCountryPref[] = "popular_sites_country";
-const char kPopularSitesVersionPref[] = "popular_sites_version";
 const char kPopularSitesURLPref[] = "popular_sites_url";
 
 GURL GetPopularSitesURL(const std::string& country,
@@ -265,10 +263,6 @@ void PopularSites::RegisterProfilePrefs(
 
   user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
   user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
-
-  // TODO(sfiera): remove these obsolete preferences.
-  user_prefs->RegisterStringPref(kPopularSitesCountryPref, std::string());
-  user_prefs->RegisterStringPref(kPopularSitesVersionPref, std::string());
 }
 
 void PopularSites::OnReadFileDone(std::unique_ptr<std::string> data,
