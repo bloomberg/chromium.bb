@@ -226,6 +226,21 @@ struct ArithmeticPromotion<BIG_ENOUGH_PROMOTION, Lhs, Rhs> {
   static const bool is_contained = BigEnoughPromotion<Lhs, Rhs>::is_contained;
 };
 
+// We can statically check if operations on the provided types can wrap, so we
+// can skip the checked operations if they're not needed. So, for an integer we
+// care if the destination type preserves the sign and is twice the width of
+// the source.
+template <typename T, typename Lhs, typename Rhs>
+struct IsIntegerArithmeticSafe {
+  static const bool value = !std::numeric_limits<T>::is_iec559 &&
+                            StaticDstRangeRelationToSrcRange<T, Lhs>::value ==
+                                NUMERIC_RANGE_CONTAINED &&
+                            sizeof(T) >= (2 * sizeof(Lhs)) &&
+                            StaticDstRangeRelationToSrcRange<T, Rhs>::value !=
+                                NUMERIC_RANGE_CONTAINED &&
+                            sizeof(T) >= (2 * sizeof(Rhs));
+};
+
 // Here are the actual portable checked integer math implementations.
 // TODO(jschuh): Break this code out from the enable_if pattern and find a clean
 // way to coalesce things into the CheckedNumericState specializations below.
@@ -257,16 +272,18 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
 CheckedAdd(T x, U y, V* result) {
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+  Promotion presult;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
-  if (!IsValueInRangeForNumericType<Promotion>(x) ||
-      !IsValueInRangeForNumericType<Promotion>(y)) {
-    return false;
-  }
+  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                  IsValueInRangeForNumericType<Promotion>(y);
 
-  Promotion presult;
-  bool is_valid = CheckedAddImpl(static_cast<Promotion>(x),
-                                 static_cast<Promotion>(y), &presult);
+  if (IsIntegerArithmeticSafe<Promotion, U, V>::value) {
+    presult = static_cast<Promotion>(x) + static_cast<Promotion>(y);
+  } else {
+    is_valid &= CheckedAddImpl(static_cast<Promotion>(x),
+                               static_cast<Promotion>(y), &presult);
+  }
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
 }
@@ -297,16 +314,18 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
 CheckedSub(T x, U y, V* result) {
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+  Promotion presult;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
-  if (!IsValueInRangeForNumericType<Promotion>(x) ||
-      !IsValueInRangeForNumericType<Promotion>(y)) {
-    return false;
-  }
+  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                  IsValueInRangeForNumericType<Promotion>(y);
 
-  Promotion presult;
-  bool is_valid = CheckedSubImpl(static_cast<Promotion>(x),
-                                 static_cast<Promotion>(y), &presult);
+  if (IsIntegerArithmeticSafe<Promotion, U, V>::value) {
+    presult = static_cast<Promotion>(x) - static_cast<Promotion>(y);
+  } else {
+    is_valid &= CheckedSubImpl(static_cast<Promotion>(x),
+                               static_cast<Promotion>(y), &presult);
+  }
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
 }
@@ -374,16 +393,18 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
 CheckedMul(T x, U y, V* result) {
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+  Promotion presult;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
-  if (!IsValueInRangeForNumericType<Promotion>(x) ||
-      !IsValueInRangeForNumericType<Promotion>(y)) {
-    return false;
-  }
+  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                  IsValueInRangeForNumericType<Promotion>(y);
 
-  Promotion presult;
-  bool is_valid = CheckedMulImpl(static_cast<Promotion>(x),
-                                 static_cast<Promotion>(y), &presult);
+  if (IsIntegerArithmeticSafe<Promotion, U, V>::value) {
+    presult = static_cast<Promotion>(x) * static_cast<Promotion>(y);
+  } else {
+    is_valid &= CheckedMulImpl(static_cast<Promotion>(x),
+                               static_cast<Promotion>(y), &presult);
+  }
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
 }
@@ -409,16 +430,13 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
 CheckedDiv(T x, U y, V* result) {
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+  Promotion presult;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
-  if (!IsValueInRangeForNumericType<Promotion>(x) ||
-      !IsValueInRangeForNumericType<Promotion>(y)) {
-    return false;
-  }
-
-  Promotion presult;
-  bool is_valid = CheckedDivImpl(static_cast<Promotion>(x),
-                                 static_cast<Promotion>(y), &presult);
+  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                  IsValueInRangeForNumericType<Promotion>(y);
+  is_valid &= CheckedDivImpl(static_cast<Promotion>(x),
+                             static_cast<Promotion>(y), &presult);
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
 }
