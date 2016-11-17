@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/i18n/timezone.h"
@@ -147,8 +148,15 @@ ArcSupportHost::~ArcSupportHost() {
 }
 
 void ArcSupportHost::AddObserver(Observer* observer) {
-  DCHECK(!observer_);
-  observer_ = observer;
+  observer_list_.AddObserver(observer);
+}
+
+void ArcSupportHost::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+bool ArcSupportHost::HasObserver(Observer* observer) {
+  return observer_list_.HasObserver(observer);
 }
 
 void ArcSupportHost::SetArcManaged(bool is_arc_managed) {
@@ -483,17 +491,14 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     return;
   }
 
-  if (!observer_) {
-    LOG(ERROR) << "No observer is found.";
-    return;
-  }
-
   if (event == kEventOnWindowClosed) {
-    observer_->OnWindowClosed();
+    for (auto& observer : observer_list_)
+      observer.OnWindowClosed();
   } else if (event == kEventOnAuthSucceeded) {
     std::string code;
     if (message.GetString(kCode, &code)) {
-      observer_->OnAuthSucceeded(code);
+      for (auto& observer : observer_list_)
+        observer.OnAuthSucceeded(code);
     } else {
       NOTREACHED();
     }
@@ -506,15 +511,19 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
                            &is_backup_restore_enabled) &&
         message.GetBoolean(kIsLocationServiceEnabled,
                            &is_location_service_enabled)) {
-      observer_->OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,
+      for (auto& observer : observer_list_) {
+        observer.OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,
                                is_location_service_enabled);
+      }
     } else {
       NOTREACHED();
     }
   } else if (event == kEventOnRetryClicked) {
-    observer_->OnRetryClicked();
+    for (auto& observer : observer_list_)
+      observer.OnRetryClicked();
   } else if (event == kEventOnSendFeedbackClicked) {
-    observer_->OnSendFeedbackClicked();
+    for (auto& observer : observer_list_)
+      observer.OnSendFeedbackClicked();
   } else {
     LOG(ERROR) << "Unknown message: " << event;
     NOTREACHED();

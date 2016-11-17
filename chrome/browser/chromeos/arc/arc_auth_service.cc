@@ -608,6 +608,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   // do some action to solve the problem be means of UI.
   if (!g_disable_ui_for_testing && !IsOptInVerificationDisabled() &&
       !IsArcKioskMode()) {
+    DCHECK(!support_host_);
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
     support_host_->AddObserver(this);
 
@@ -656,8 +657,11 @@ void ArcAuthService::OnIsSyncingChanged() {
 
 void ArcAuthService::Shutdown() {
   ShutdownBridge();
-  if (support_host_)
+  if (support_host_) {
     support_host_->Close();
+    support_host_->RemoveObserver(this);
+    support_host_.reset();
+  }
   if (profile_) {
     sync_preferences::PrefServiceSyncable* pref_service_syncable =
         PrefServiceSyncableFromProfile(profile_);

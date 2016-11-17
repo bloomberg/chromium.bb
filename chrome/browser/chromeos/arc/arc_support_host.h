@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_SUPPORT_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "ui/display/display_observer.h"
@@ -46,23 +48,23 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     virtual ~Observer() = default;
 
     // Called when the ARC support window is closed.
-    virtual void OnWindowClosed() = 0;
+    virtual void OnWindowClosed() {}
 
     // Called when the user press AGREE button on ToS page.
     // TODO(hidehiko): Currently, due to implementation reason,
     // this is also called when RETRY on error page is clicked. Fix this.
     virtual void OnTermsAgreed(bool is_metrics_enabled,
                                bool is_backup_and_restore_enabled,
-                               bool is_location_service_enabled) = 0;
+                               bool is_location_service_enabled) {}
 
     // Called when LSO auth token fetch is successfully completed.
-    virtual void OnAuthSucceeded(const std::string& auth_code) = 0;
+    virtual void OnAuthSucceeded(const std::string& auth_code) {}
 
     // Called when "RETRY" button on the error page is clicked.
-    virtual void OnRetryClicked() = 0;
+    virtual void OnRetryClicked() {}
 
     // Called when send feedback button on error page is clicked.
-    virtual void OnSendFeedbackClicked() = 0;
+    virtual void OnSendFeedbackClicked() {}
   };
 
   static const char kHostAppId[];
@@ -71,9 +73,9 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   explicit ArcSupportHost(Profile* profile);
   ~ArcSupportHost() override;
 
-  // Currently only one observer can be added.
-  // TODO(hidehiko): Support RemoveObserver. Support multiple observer.
   void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+  bool HasObserver(Observer* observer);
 
   // Called when the communication to arc_support Chrome App is ready.
   void SetMessageHost(arc::ArcSupportMessageHost* message_host);
@@ -154,9 +156,7 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
 
   Profile* const profile_;
 
-  // Currently Observer is only ArcAuthService, so it is unique.
-  // Use ObserverList when more classes start to observe it.
-  Observer* observer_ = nullptr;
+  base::ObserverList<Observer> observer_list_;
 
   // True, if ARC support app is requested to start, but the connection is not
   // yet established. Reset to false, when the app is started and the
