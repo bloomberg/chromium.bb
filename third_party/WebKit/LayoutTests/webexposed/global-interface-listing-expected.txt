@@ -1109,6 +1109,7 @@ interface DOMMatrixReadOnly
     method toFloat64Array
     method toJSON
     method toString
+    method transformPoint
     method translate
 interface DOMParser
     attribute @@toStringTag

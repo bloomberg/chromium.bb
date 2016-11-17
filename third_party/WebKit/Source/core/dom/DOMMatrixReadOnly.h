@@ -16,6 +16,8 @@ namespace blink {
 
 class DOMMatrix;
 class DOMMatrixInit;
+class DOMPoint;
+class DOMPointInit;
 
 class CORE_EXPORT DOMMatrixReadOnly
     : public GarbageCollectedFinalized<DOMMatrixReadOnly>,
@@ -82,6 +84,8 @@ class CORE_EXPORT DOMMatrixReadOnly
   DOMMatrix* flipX();
   DOMMatrix* flipY();
   DOMMatrix* inverse();
+
+  DOMPoint* transformPoint(const DOMPointInit&);
 
   DOMFloat32Array* toFloat32Array() const;
   DOMFloat64Array* toFloat64Array() const;

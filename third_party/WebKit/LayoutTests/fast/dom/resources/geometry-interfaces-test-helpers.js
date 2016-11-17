@@ -63,3 +63,10 @@ function assert_array_almost_equals(actual, expected) {
 function assert_matrix_almost_equals(actual, expected) {
   assert_array_almost_equals(actual.toFloat64Array(), expected.toFloat64Array());
 }
+
+function assert_point_equals(actual, expected) {
+  assert_equals(actual.x, expected.x, "point equality: x differs");
+  assert_equals(actual.y, expected.y, "point equality: y differs");
+  assert_equals(actual.z, expected.z, "point equality: z differs");
+  assert_equals(actual.w, expected.w, "point equality: w differs");
+}

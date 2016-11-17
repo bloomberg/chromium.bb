@@ -7,6 +7,8 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/DOMMatrix.h"
 #include "core/dom/DOMMatrixInit.h"
+#include "core/dom/DOMPoint.h"
+#include "core/dom/DOMPointInit.h"
 
 namespace blink {
 namespace {
@@ -227,6 +229,24 @@ DOMMatrix* DOMMatrixReadOnly::flipY() {
 
 DOMMatrix* DOMMatrixReadOnly::inverse() {
   return DOMMatrix::create(this)->invertSelf();
+}
+
+DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit& point) {
+  if (is2D() && point.z() == 0 && point.w() == 1) {
+    double x = point.x() * m11() + point.y() * m12() + m41();
+    double y = point.x() * m12() + point.y() * m22() + m42();
+    return DOMPoint::create(x, y, 0, 1);
+  }
+
+  double x = point.x() * m11() + point.y() * m21() + point.z() * m31() +
+             point.w() * m41();
+  double y = point.x() * m12() + point.y() * m22() + point.z() * m32() +
+             point.w() * m42();
+  double z = point.x() * m13() + point.y() * m23() + point.z() * m33() +
+             point.w() * m43();
+  double w = point.x() * m14() + point.y() * m24() + point.z() * m34() +
+             point.w() * m44();
+  return DOMPoint::create(x, y, z, w);
 }
 
 DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const {
