@@ -354,18 +354,12 @@ public class NewTabPage
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
-            if (article.isDownload() && article.mIsDownloadedAsset) {
+            if (article.mIsDownloadedAsset) {
+                assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
+                        || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
+                        || windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB;
                 DownloadUtils.openFile(
                         article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
-                return;
-            }
-
-            if (article.getOfflinePageOfflineId() != null) {
-                // TODO(vitaliii): Handle other window dispositions.
-                if (windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB) {
-                    OfflinePageUtils.openInExistingTab(
-                            article.mUrl, article.getOfflinePageOfflineId(), mTab);
-                }
                 return;
             }
 
@@ -382,8 +376,18 @@ public class NewTabPage
                 NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
             }
 
-            LoadUrlParams loadUrlParams =
-                    new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);
+            LoadUrlParams loadUrlParams;
+            // The snippet's offline page is ignored if the snippet is saved or opened in incognito.
+            if (article.getOfflinePageOfflineId() != null
+                    && windowOpenDisposition != WindowOpenDisposition.SAVE_TO_DISK
+                    && windowOpenDisposition != WindowOpenDisposition.OFF_THE_RECORD) {
+                loadUrlParams = OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
+                        article.mUrl, article.getOfflinePageOfflineId());
+                // Extra headers are not read in loadUrl, but verbatim headers are.
+                loadUrlParams.setVerbatimHeaders(loadUrlParams.getExtraHeadersString());
+            } else {
+                loadUrlParams = new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);
+            }
 
             // For article suggestions, we set the referrer. This is exploited
             // to filter out these history entries for NTP tiles.
@@ -402,8 +406,6 @@ public class NewTabPage
             int tabIndex = TabModelUtils.getTabIndexById(tabModel, tabId);
             if (tabIndex == TabModel.INVALID_TAB_INDEX) return false;
             TabModelUtils.setIndex(tabModel, tabIndex);
-            assert recentTabArticle.getOfflinePageOfflineId().equals(
-                    Long.parseLong(recentTabArticle.getRecentTabId()));
             OfflinePageUtils.openInExistingTab(recentTabArticle.mUrl,
                     recentTabArticle.getOfflinePageOfflineId(), tabModel.getTabAt(tabIndex));
             return true;
