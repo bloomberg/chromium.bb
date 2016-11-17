@@ -271,8 +271,8 @@ public class SuggestionsSection extends InnerNode {
         }
     }
 
-    /** Lets the {@link SuggestionsSection} know when the FetchMore action has been triggered. */
-    public void onFetchMore() {
+    /** Lets the {@link SuggestionsSection} know when a suggestion fetch has been started. */
+    public void onFetchStarted() {
         mProgressIndicator.setVisible(true);
     }
 
