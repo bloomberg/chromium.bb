@@ -18,7 +18,7 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "printing/features/features.h"
@@ -40,19 +40,19 @@ namespace printing {
 namespace {
 
 #if defined(OS_ANDROID)
-content::WebContents* GetWebContentsForRenderView(int render_process_id,
-                                                  int render_view_id) {
+content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
+                                                   int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderViewHost* view = content::RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  return view ? content::WebContents::FromRenderViewHost(view) : nullptr;
+  content::RenderFrameHost* frame =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  return frame ? content::WebContents::FromRenderFrameHost(frame) : nullptr;
 }
 
 PrintViewManagerBasic* GetPrintManager(int render_process_id,
-                                       int render_view_id) {
+                                       int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::WebContents* web_contents =
-      GetWebContentsForRenderView(render_process_id, render_view_id);
+      GetWebContentsForRenderFrame(render_process_id, render_frame_id);
   return web_contents ? PrintViewManagerBasic::FromWebContents(web_contents)
                       : nullptr;
 }
@@ -94,7 +94,6 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
                         OnTempFileForPrintingWritten)
 #endif
-    IPC_MESSAGE_HANDLER(PrintHostMsg_IsPrintingEnabled, OnIsPrintingEnabled)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
                                     OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
@@ -110,34 +109,30 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 #if defined(OS_ANDROID)
 void PrintingMessageFilter::OnAllocateTempFileForPrinting(
-    int render_view_id,
+    int render_frame_id,
     base::FileDescriptor* temp_file_fd,
     int* sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintViewManagerBasic* print_view_manager =
-      GetPrintManager(render_process_id_, render_view_id);
+      GetPrintManager(render_process_id_, render_frame_id);
   if (!print_view_manager)
     return;
+
   // The file descriptor is originally created in & passed from the Android
   // side, and it will handle the closing.
   temp_file_fd->fd = print_view_manager->file_descriptor().fd;
   temp_file_fd->auto_close = false;
 }
 
-void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
+void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_frame_id,
                                                          int sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintViewManagerBasic* print_view_manager =
-      GetPrintManager(render_process_id_, render_view_id);
+      GetPrintManager(render_process_id_, render_frame_id);
   if (print_view_manager)
     print_view_manager->PdfWritingDone(true);
 }
 #endif  // defined(OS_ANDROID)
-
-void PrintingMessageFilter::OnIsPrintingEnabled(bool* is_enabled) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  *is_enabled = is_printing_enabled_->GetValue();
-}
 
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -240,10 +235,10 @@ void PrintingMessageFilter::OnScriptedPrintReply(
 }
 
 #if defined(OS_ANDROID)
-void PrintingMessageFilter::UpdateFileDescriptor(int render_view_id, int fd) {
+void PrintingMessageFilter::UpdateFileDescriptor(int render_frame_id, int fd) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintViewManagerBasic* print_view_manager =
-      GetPrintManager(render_process_id_, render_view_id);
+      GetPrintManager(render_process_id_, render_frame_id);
   if (print_view_manager)
     print_view_manager->set_file_descriptor(base::FileDescriptor(fd, false));
 }

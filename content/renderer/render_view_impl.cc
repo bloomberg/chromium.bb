@@ -1499,8 +1499,8 @@ void RenderViewImpl::printPage(WebLocalFrame* frame) {
   UMA_HISTOGRAM_BOOLEAN("PrintPreview.OutOfProcessSubframe",
                         frame->top()->isWebRemoteFrame());
 
-  for (auto& observer : observers_)
-    observer.PrintPage(frame, input_handler().handling_input_event());
+  RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
+      input_handler().handling_input_event());
 }
 
 bool RenderViewImpl::enumerateChosenDirectory(

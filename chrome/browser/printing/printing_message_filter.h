@@ -48,18 +48,15 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
 #if defined(OS_ANDROID)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
-  void OnAllocateTempFileForPrinting(int render_view_id,
+  void OnAllocateTempFileForPrinting(int render_frame_id,
                                      base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
-  void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
+  void OnTempFileForPrintingWritten(int render_frame_id, int sequence_number);
 
   // Updates the file descriptor for the PrintViewManagerBasic of a given
-  // render_view_id.
-  void UpdateFileDescriptor(int render_view_id, int fd);
+  // |render_frame_id|.
+  void UpdateFileDescriptor(int render_frame_id, int fd);
 #endif
-
-  // Checks if printing is enabled.
-  void OnIsPrintingEnabled(bool* is_enabled);
 
   // Get the default print setting.
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);

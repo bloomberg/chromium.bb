@@ -13,14 +13,16 @@ class AwPrintWebViewHelperDelegate
     : public printing::PrintWebViewHelper::Delegate {
  public:
   ~AwPrintWebViewHelperDelegate() override;
-  bool CancelPrerender(content::RenderView* render_view,
-                       int routing_id) override;
+
+ private:
+  // printing::PrintWebViewHelper::Delegate:
+  bool CancelPrerender(content::RenderFrame* render_frame) override;
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
   bool IsPrintPreviewEnabled() override;
   bool IsAskPrintSettingsEnabled() override;
   bool IsScriptedPrintEnabled() override;
   bool OverridePrint(blink::WebLocalFrame* frame) override;
-};  // class AwPrintWebViewHelperDelegate
+};
 
 }  // namespace android_webview
 

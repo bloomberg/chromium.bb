@@ -162,7 +162,7 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
   static bool Dispatch(const Message* msg,
                        T* obj,
                        S* sender,
-                       P* parameter,
+                       P* /* parameter */,
                        Method func) {
     TRACE_EVENT0("ipc", Meta::kName);
     SendParam send_params;
@@ -184,7 +184,7 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
   template <class T, class P, class Method>
   static bool DispatchDelayReply(const Message* msg,
                                  T* obj,
-                                 P* parameter,
+                                 P* /* parameter */,
                                  Method func) {
     TRACE_EVENT0("ipc", Meta::kName);
     SendParam send_params;
@@ -194,6 +194,29 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
       std::tuple<Message&> t = std::tie(*reply);
       ConnectMessageAndReply(msg, reply);
       base::DispatchToMethod(obj, func, send_params, &t);
+    } else {
+      NOTREACHED() << "Error deserializing message " << msg->type();
+      reply->set_reply_error();
+      obj->Send(reply);
+    }
+    return ok;
+  }
+
+  template <class T, class P, class Method>
+  static bool DispatchWithParamDelayReply(const Message* msg,
+                                          T* obj,
+                                          P* parameter,
+                                          Method func) {
+    TRACE_EVENT0("ipc", Meta::kName);
+    SendParam send_params;
+    bool ok = ReadSendParam(msg, &send_params);
+    Message* reply = SyncMessage::GenerateReply(msg);
+    if (ok) {
+      std::tuple<Message&> t = std::tie(*reply);
+      ConnectMessageAndReply(msg, reply);
+      std::tuple<P*> parameter_tuple(parameter);
+      auto concat_params = std::tuple_cat(parameter_tuple, send_params);
+      base::DispatchToMethod(obj, func, concat_params, &t);
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();

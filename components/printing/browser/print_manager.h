@@ -39,10 +39,11 @@ class PrintManager : public content::WebContentsObserver {
   explicit PrintManager(content::WebContents* contents);
 
   // Terminates or cancels the print job if one was pending.
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrintingRenderFrameDeleted();
 
   // content::WebContentsObserver
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
   // IPC handlers
   virtual void OnDidGetPrintedPagesCount(int cookie, int number_pages);

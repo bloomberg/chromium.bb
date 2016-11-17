@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/features/features.h"
@@ -70,6 +71,7 @@ void ShowWarningMessageBox(const base::string16& message) {
 
 PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : PrintManager(web_contents),
+      printing_rfh_(nullptr),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
 #if !defined(OS_MACOSX)
@@ -80,9 +82,8 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
-      prefs::kPrintingEnabled,
-      profile->GetPrefs(),
-      base::Bind(&PrintViewManagerBase::UpdateScriptedPrintingBlocked,
+      prefs::kPrintingEnabled, profile->GetPrefs(),
+      base::Bind(&PrintViewManagerBase::UpdatePrintingEnabled,
                  base::Unretained(this)));
 }
 
@@ -92,36 +93,24 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-bool PrintViewManagerBase::PrintNow() {
-  return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
+bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
+  DisconnectFromCurrentPrintJob();
+
+  SetPrintingRFH(rfh);
+  int32_t id = rfh->GetRoutingID();
+  return PrintNowInternal(rfh, base::MakeUnique<PrintMsg_PrintPages>(id));
 }
 #endif
 
-void PrintViewManagerBase::UpdateScriptedPrintingBlocked() {
-  Send(new PrintMsg_SetScriptedPrintingBlocked(
-       routing_id(),
-       !printing_enabled_.GetValue()));
+void PrintViewManagerBase::UpdatePrintingEnabled() {
+  web_contents()->ForEachFrame(
+      base::Bind(&PrintViewManagerBase::SendPrintingEnabled,
+                 base::Unretained(this), printing_enabled_.GetValue()));
 }
 
 void PrintViewManagerBase::NavigationStopped() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);
-}
-
-void PrintViewManagerBase::RenderProcessGone(base::TerminationStatus status) {
-  PrintManager::RenderProcessGone(status);
-  ReleasePrinterQuery();
-
-  if (!print_job_.get())
-    return;
-
-  scoped_refptr<PrintedDocument> document(print_job_->document());
-  if (document.get()) {
-    // If IsComplete() returns false, the document isn't completely rendered.
-    // Since our renderer is gone, there's nothing to do, cancel it. Otherwise,
-    // the print job may finish without problem.
-    TerminatePrintJob(!document->IsComplete());
-  }
 }
 
 base::string16 PrintViewManagerBase::RenderSourceName() {
@@ -240,10 +229,35 @@ void PrintViewManagerBase::OnShowInvalidPrinterSettingsError() {
 }
 
 void PrintViewManagerBase::DidStartLoading() {
-  UpdateScriptedPrintingBlocked();
+  UpdatePrintingEnabled();
 }
 
-bool PrintViewManagerBase::OnMessageReceived(const IPC::Message& message) {
+void PrintViewManagerBase::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  // Terminates or cancels the print job if one was pending.
+  if (render_frame_host != printing_rfh_)
+    return;
+
+  printing_rfh_ = nullptr;
+
+  PrintManager::PrintingRenderFrameDeleted();
+  ReleasePrinterQuery();
+
+  if (!print_job_.get())
+    return;
+
+  scoped_refptr<PrintedDocument> document(print_job_->document());
+  if (document.get()) {
+    // If IsComplete() returns false, the document isn't completely rendered.
+    // Since our renderer is gone, there's nothing to do, cancel it. Otherwise,
+    // the print job may finish without problem.
+    TerminatePrintJob(!document->IsComplete());
+  }
+}
+
+bool PrintViewManagerBase::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBase, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
@@ -251,7 +265,7 @@ bool PrintViewManagerBase::OnMessageReceived(const IPC::Message& message) {
                         OnShowInvalidPrinterSettingsError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled || PrintManager::OnMessageReceived(message);
+  return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void PrintViewManagerBase::Observe(
@@ -363,7 +377,7 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
 bool PrintViewManagerBase::CreateNewPrintJob(PrintJobWorkerOwner* job) {
   DCHECK(!inside_inner_message_loop_);
 
-  // Disconnect the current print_job_.
+  // Disconnect the current |print_job_|.
   DisconnectFromCurrentPrintJob();
 
   // We can't print if there is no renderer.
@@ -408,12 +422,6 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
 #endif
 }
 
-void PrintViewManagerBase::PrintingDone(bool success) {
-  if (!print_job_.get())
-    return;
-  Send(new PrintMsg_PrintingDone(routing_id(), success));
-}
-
 void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
   if (!print_job_.get())
     return;
@@ -435,16 +443,23 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
 }
 
 void PrintViewManagerBase::ReleasePrintJob() {
+  content::RenderFrameHost* rfh = printing_rfh_;
+  printing_rfh_ = nullptr;
+
   if (!print_job_.get())
     return;
 
-  PrintingDone(printing_succeeded_);
+  if (rfh) {
+    auto msg = base::MakeUnique<PrintMsg_PrintingDone>(rfh->GetRoutingID(),
+                                                       printing_succeeded_);
+    rfh->Send(msg.release());
+  }
 
   registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                     content::Source<PrintJob>(print_job_.get()));
   print_job_->DisconnectSource();
   // Don't close the worker thread.
-  print_job_ = NULL;
+  print_job_ = nullptr;
 }
 
 bool PrintViewManagerBase::RunInnerMessageLoop() {
@@ -513,14 +528,18 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
   return true;
 }
 
-bool PrintViewManagerBase::PrintNowInternal(IPC::Message* message) {
+bool PrintViewManagerBase::PrintNowInternal(
+    content::RenderFrameHost* rfh,
+    std::unique_ptr<IPC::Message> message) {
   // Don't print / print preview interstitials or crashed tabs.
-  if (web_contents()->ShowingInterstitialPage() ||
-      web_contents()->IsCrashed()) {
-    delete message;
+  if (web_contents()->ShowingInterstitialPage() || web_contents()->IsCrashed())
     return false;
-  }
-  return Send(message);
+  return rfh->Send(message.release());
+}
+
+void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
+  DCHECK(!printing_rfh_);
+  printing_rfh_ = rfh;
 }
 
 void PrintViewManagerBase::ReleasePrinterQuery() {
@@ -542,6 +561,11 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PrinterQuery::StopWorker, printer_query));
+}
+
+void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
+                                               content::RenderFrameHost* rfh) {
+  rfh->Send(new PrintMsg_SetPrintingEnabled(rfh->GetRoutingID(), enabled));
 }
 
 }  // namespace printing

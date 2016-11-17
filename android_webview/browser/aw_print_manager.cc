@@ -7,6 +7,7 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(android_webview::AwPrintManager);
 
@@ -41,27 +42,33 @@ AwPrintManager::~AwPrintManager() {
 
 bool AwPrintManager::PrintNow() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return Send(new PrintMsg_PrintPages(routing_id()));
+  auto* rfh = web_contents()->GetMainFrame();
+  return rfh->Send(new PrintMsg_PrintPages(rfh->GetRoutingID()));
 }
 
-bool AwPrintManager::OnMessageReceived(const IPC::Message& message) {
+bool AwPrintManager::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AwPrintManager, message)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
-                                    OnGetDefaultPrintSettings)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwPrintManager, message, render_frame_host)
+    IPC_MESSAGE_HANDLER_WITH_PARAM_DELAY_REPLY(
+        PrintHostMsg_GetDefaultPrintSettings, OnGetDefaultPrintSettings)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled ? true : PrintManager::OnMessageReceived(message);
+  return handled ? true
+                 : PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
-void AwPrintManager::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
+void AwPrintManager::OnGetDefaultPrintSettings(
+    content::RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg) {
   // Unlike the printing_message_filter, we do process this in UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrintMsg_Print_Params params;
   printing::RenderParamsFromPrintSettings(settings_, &params);
   params.document_cookie = cookie_;
   PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
-  Send(reply_msg);
+  render_frame_host->Send(reply_msg);
 }
 
 }  // namespace android_webview

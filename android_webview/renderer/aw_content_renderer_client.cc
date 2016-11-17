@@ -149,6 +149,8 @@ void AwContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new AwContentSettingsClient(render_frame);
   new PrintRenderFrameObserver(render_frame);
+  new printing::PrintWebViewHelper(
+      render_frame, base::MakeUnique<AwPrintWebViewHelperDelegate>());
   new AwRenderFrameExt(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
@@ -172,10 +174,6 @@ void AwContentRendererClient::RenderFrameCreated(
 void AwContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   AwRenderViewExt::RenderViewCreated(render_view);
-
-  new printing::PrintWebViewHelper(
-      render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
-                       new AwPrintWebViewHelperDelegate()));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());

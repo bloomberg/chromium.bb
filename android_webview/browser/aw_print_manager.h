@@ -35,8 +35,13 @@ class AwPrintManager : public printing::PrintManager,
                  const base::FileDescriptor& file_descriptor,
                  const PdfWritingDoneCallback& callback);
 
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
+  // printing::PrintManager:
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+
+  // IPC Handlers
+  void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
+                                 IPC::Message* reply_msg);
 
   printing::PrintSettings settings_;
 

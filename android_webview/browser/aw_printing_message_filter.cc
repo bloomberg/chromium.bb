@@ -8,7 +8,7 @@
 #include "base/file_descriptor_posix.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
@@ -18,15 +18,14 @@ namespace android_webview {
 
 namespace {
 
-AwPrintManager* GetPrintManager(int render_process_id, int render_view_id) {
+AwPrintManager* GetPrintManager(int render_process_id, int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderViewHost* view = content::RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  if (!view)
+  content::RenderFrameHost* frame =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!frame)
     return nullptr;
-  WebContents* web_contents = WebContents::FromRenderViewHost(view);
-  return web_contents ? AwPrintManager::FromWebContents(web_contents)
-                      : nullptr;
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+  return web_contents ? AwPrintManager::FromWebContents(web_contents) : nullptr;
 }
 
 } // namespace
@@ -61,12 +60,12 @@ bool AwPrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AwPrintingMessageFilter::OnAllocateTempFileForPrinting(
-    int render_view_id,
+    int render_frame_id,
     base::FileDescriptor* temp_file_fd,
     int* sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AwPrintManager* print_manager =
-      GetPrintManager(render_process_id_, render_view_id);
+      GetPrintManager(render_process_id_, render_frame_id);
   if (!print_manager)
     return;
 
@@ -76,11 +75,11 @@ void AwPrintingMessageFilter::OnAllocateTempFileForPrinting(
 }
 
 void AwPrintingMessageFilter::OnTempFileForPrintingWritten(
-    int render_view_id,
+    int render_frame_id,
     int sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AwPrintManager* print_manager =
-      GetPrintManager(render_process_id_, render_view_id);
+      GetPrintManager(render_process_id_, render_frame_id);
   if (print_manager)
     print_manager->PdfWritingDone(true);
 }

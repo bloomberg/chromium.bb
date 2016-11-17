@@ -18,7 +18,9 @@ PrintManager::PrintManager(content::WebContents* contents)
 PrintManager::~PrintManager() {
 }
 
-bool PrintManager::OnMessageReceived(const IPC::Message& message) {
+bool PrintManager::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
@@ -52,7 +54,7 @@ void PrintManager::OnPrintingFailed(int cookie) {
 #endif
 }
 
-void PrintManager::RenderProcessGone(base::TerminationStatus status) {
+void PrintManager::PrintingRenderFrameDeleted() {
 #if defined(OS_ANDROID)
   PdfWritingDone(false);
 #endif
