@@ -811,7 +811,7 @@ cr.define('options', function() {
      * @private
      */
     doSignOutOnAuthError_: function() {
-      chrome.send('SyncSetupDoSignOutOnAuthError');
+      chrome.send('AttemptUserExit');
     },
   };
 

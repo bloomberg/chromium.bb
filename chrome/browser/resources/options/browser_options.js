@@ -16,6 +16,7 @@ cr.exportPath('options');
  *            signedIn: (boolean|undefined),
  *            signinAllowed: (boolean|undefined),
  *            signoutAllowed: (boolean|undefined),
+ *            statusAction: (string|undefined),
  *            statusText: (string|undefined),
  *            supervisedUser: (boolean|undefined),
  *            syncSystemEnabled: (boolean|undefined)}}
@@ -1217,13 +1218,31 @@ cr.define('options', function() {
       $('sync-action-link').disabled = syncData.managed ||
                                        !syncData.syncSystemEnabled;
 
-      // On Chrome OS, sign out the user and sign in again to get fresh
-      // credentials on auth errors.
       $('sync-action-link').onclick = function(event) {
-        if (cr.isChromeOS && syncData.hasError)
-          SyncSetupOverlay.doSignOutOnAuthError();
-        else
-          SyncSetupOverlay.showSetupUI();
+        switch (syncData.statusAction) {
+          case 'reauthenticate':
+<if expr="chromeos">
+            // On Chrome OS, sign out the user and sign in again to get fresh
+            // credentials on auth errors.
+            SyncSetupOverlay.doSignOutOnAuthError();
+</if>
+<if expr="not chromeos">
+            if (syncData.signoutAllowed) {
+              // Silently sign the user out without deleting their profile and
+              // prompt them to sign back in.
+              chrome.send('SyncSetupStopSyncing', [false /* deleteProfile */]);
+              SyncSetupOverlay.startSignIn(false /* creatingSupervisedUser */);
+            } else {
+              chrome.send('showDisconnectManagedProfileDialog');
+            }
+</if>
+            break;
+          case 'upgradeClient':
+            PageManager.showPageByName('help');
+            break;
+          default:
+            SyncSetupOverlay.showSetupUI();
+        }
       };
 
       if (syncData.hasError)

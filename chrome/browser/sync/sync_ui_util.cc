@@ -99,11 +99,15 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
 
 void GetStatusForActionableError(const syncer::SyncProtocolError& error,
                                  base::string16* status_label,
+                                 base::string16* link_label,
                                  ActionType* action_type) {
   DCHECK(status_label);
+  DCHECK(link_label);
   switch (error.action) {
     case syncer::UPGRADE_CLIENT:
       status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT));
+      link_label->assign(
+          l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL));
       *action_type = UPGRADE_CLIENT;
       break;
     case syncer::ENABLE_SYNC_ON_ACCOUNT:
@@ -119,6 +123,7 @@ void GetStatusForActionableError(const syncer::SyncProtocolError& error,
 void GetStatusForUnrecoverableError(Profile* profile,
                                     ProfileSyncService* service,
                                     base::string16* status_label,
+                                    base::string16* link_label,
                                     ActionType* action_type) {
   // Unrecoverable error is sometimes accompanied by actionable error.
   // If status message is set display that message, otherwise show generic
@@ -126,9 +131,11 @@ void GetStatusForUnrecoverableError(Profile* profile,
   ProfileSyncService::Status status;
   service->QueryDetailedSyncStatus(&status);
   GetStatusForActionableError(status.sync_protocol_error, status_label,
-                              action_type);
+                              link_label, action_type);
   if (status_label->empty()) {
     *action_type = REAUTHENTICATE;
+    link_label->assign(
+        l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
 
 #if !defined(OS_CHROMEOS)
     status_label->assign(l10n_util::GetStringUTF16(
@@ -205,9 +212,9 @@ MessageType GetStatusInfo(Profile* profile,
     // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
 
     if (service && service->HasUnrecoverableError()) {
-      if (status_label) {
+      if (status_label && link_label) {
         GetStatusForUnrecoverableError(profile, service, status_label,
-                                       action_type);
+                                       link_label, action_type);
       }
       return SYNC_ERROR;
     }
@@ -237,9 +244,9 @@ MessageType GetStatusInfo(Profile* profile,
       // We don't have an auth error. Check for an actionable error.
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
-      if (status_label) {
+      if (status_label && link_label) {
         GetStatusForActionableError(status.sync_protocol_error, status_label,
-                                    action_type);
+                                    link_label, action_type);
         if (!status_label->empty())
           return SYNC_ERROR;
       }
@@ -303,9 +310,9 @@ MessageType GetStatusInfo(Profile* profile,
       }
     } else if (service->HasUnrecoverableError()) {
       result_type = SYNC_ERROR;
-      if (status_label) {
+      if (status_label && link_label) {
         GetStatusForUnrecoverableError(profile, service, status_label,
-                                       action_type);
+                                       link_label, action_type);
       }
     } else if (signin.IsAuthenticated()) {
       // The user is signed in, but sync has been stopped.

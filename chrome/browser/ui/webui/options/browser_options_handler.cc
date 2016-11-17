@@ -180,6 +180,19 @@ bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
+std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
+  switch (action_type) {
+    case sync_ui_util::REAUTHENTICATE:
+      return "reauthenticate";
+    case sync_ui_util::UPGRADE_CLIENT:
+      return "upgradeClient";
+    case sync_ui_util::ENTER_PASSPHRASE:
+      return "enterPassphrase";
+    default:
+      return "noAction";
+  }
+}
+
 }  // namespace
 
 namespace options {
@@ -1589,7 +1602,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetString("statusText", status_label);
   sync_status->SetString("actionLinkText", link_label);
   sync_status->SetBoolean("hasError", status_has_error);
-
+  sync_status->SetString("statusAction", GetSyncErrorAction(action_type));
   sync_status->SetBoolean("managed", service && service->IsManaged());
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetString("accountInfo",
