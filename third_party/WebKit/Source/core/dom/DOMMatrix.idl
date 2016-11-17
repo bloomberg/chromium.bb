@@ -41,11 +41,6 @@
     inherit attribute unrestricted double m43;
     inherit attribute unrestricted double m44;
 
-    // TODO(zino): Should implement rotateSelf() method (See: crbug.com/645878)
-    // TODO(zino): Should implement rotateFromVectorSelf() method (See: crbug.com/645882)
-    // TODO(zino): Should implement rotateAxisAngleSelf() method (See: crbug.com/645883)
-    // TODO(zino): Should implement setMatrixValue() method (See: crbug.com/645884)
-    // TODO(zino): Should remove scaleNonUniformSelf() method (See: crbug.com/645887)
     // Mutable transform methods
     [RaisesException] DOMMatrix multiplySelf(optional DOMMatrixInit other);
     [RaisesException] DOMMatrix preMultiplySelf(optional DOMMatrixInit other);

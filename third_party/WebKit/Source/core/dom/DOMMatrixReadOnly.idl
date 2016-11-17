@@ -42,11 +42,7 @@
     readonly attribute boolean is2D;
     readonly attribute boolean isIdentity;
 
-    // TODO(zino): Should implement rotate() method (See: crbug.com/645878)
-    // TODO(zino): Should implement rotateFromVector() method (See: crbug.com/645882)
-    // TODO(zino): Should implement rotateAxisAngle() method (See: crbug.com/645883)
     // TODO(zino): Should implement transformPoint() method (See: crbug.com/645885)
-    // TODO(zino): Should remove scaleNonUniform() method (See: crbug.com/645887)
     // Immutable transform methods
     DOMMatrix translate(optional unrestricted double tx = 0,
                         optional unrestricted double ty = 0,
