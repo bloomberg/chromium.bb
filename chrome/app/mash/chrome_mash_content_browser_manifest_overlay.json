@@ -9,18 +9,12 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "content_browser:ash": [
-          "ash::mojom::NewWindowClient",
-          "ash::mojom::SystemTrayClient",
-          "ash::mojom::VolumeController",
-          "ash::mojom::WallpaperManager",
-          "app_list::mojom::AppListPresenter",
-          "keyboard::mojom::Keyboard"
+        "ash": [
+          "app_list::mojom::AppListPresenter"
         ],
         "ime:ime_driver": [ "ui::mojom::IMEDriver" ]
       },
       "requires": {
-        "ash": [ "ash" ],
         "accessibility_autoclick": [ "ash:autoclick" ],
         "mash_session": [ "app" ],
         "task_viewer": [ "mash:launchable" ],
