@@ -85,8 +85,33 @@ bool IsExtendedReportingEnabled(const PrefService& prefs) {
 }
 
 void RecordExtendedReportingMetrics(const PrefService& prefs) {
+  // This metric tracks the extended browsing opt-in based on whichever setting
+  // the user is currently seeing. It tells us whether extended reporting is
+  // happening for this user.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Extended",
                         IsExtendedReportingEnabled(prefs));
+
+  // These metrics track the Scout transition.
+  if (prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
+    // Users in the Scout group: currently seeing the Scout opt-in.
+    UMA_HISTOGRAM_BOOLEAN(
+        "SafeBrowsing.Pref.Scout.ScoutGroup.SBER1Pref",
+        prefs.GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
+    UMA_HISTOGRAM_BOOLEAN(
+        "SafeBrowsing.Pref.Scout.ScoutGroup.SBER2Pref",
+        prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
+  } else {
+    // Users not in the Scout group: currently seeing the SBER opt-in.
+    UMA_HISTOGRAM_BOOLEAN(
+        "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER1Pref",
+        prefs.GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
+    // The following metric is a corner case. User was previously in the
+    // Scout group and was able to opt-in to the Scout pref, but was since
+    // removed from the Scout group (eg: by rolling back a Scout experiment).
+    UMA_HISTOGRAM_BOOLEAN(
+        "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER2Pref",
+        prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
+  }
 }
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {
