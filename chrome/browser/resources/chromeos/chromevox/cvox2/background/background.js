@@ -175,6 +175,16 @@ Background = function() {
    * @private
    */
   this.focusRecoveryMap_ = new WeakMap();
+
+  // Record a metric with the mode we're in on startup.
+  var useNext = localStorage['useNext'] !== 'false';
+  chrome.metricsPrivate.recordValue(
+      { metricName: 'Accessibility.CrosChromeVoxNext',
+        type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
+        min: 1,  // According to histogram.h, this should be 1 for enums.
+        max: 2,  // Maximum should be exclusive.
+        buckets: 3 },  // Number of buckets: 0, 1 and overflowing 2.
+      useNext ? 1 : 0);
 };
 
 /**
@@ -348,6 +358,14 @@ Background.prototype = {
       useNext = opt_setValue;
     else
       useNext = localStorage['useNext'] !== 'true';
+
+    if (useNext) {
+      chrome.metricsPrivate.recordUserAction(
+          'Accessibility.ChromeVox.ToggleNextOn');
+    } else {
+      chrome.metricsPrivate.recordUserAction(
+          'Accessibility.ChromeVox.ToggleNextOff');
+    }
 
     localStorage['useNext'] = useNext;
     if (useNext)

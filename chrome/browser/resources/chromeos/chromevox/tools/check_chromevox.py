@@ -45,6 +45,11 @@ def ChromeRootPath(path='.'):
 _CHROME_EXTENSIONS_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/chrome_extensions.js'))
 
+# MetricsPrivate externs file.
+_METRICS_PRIVATE_EXTERNS = (
+    ChromeRootPath('third_party/closure_compiler/externs/metrics_private.js'))
+
+
 # Externs common to many ChromeVox scripts.
 _COMMON_EXTERNS = [
     CVoxPath('common/externs.js'),
@@ -52,7 +57,8 @@ _COMMON_EXTERNS = [
     CVoxPath('chromevox/background/externs.js'),
     CVoxPath('chromevox/injected/externs.js'),
     CVoxPath('host/chrome/externs.js'),
-    _CHROME_EXTENSIONS_EXTERNS]
+    _CHROME_EXTENSIONS_EXTERNS,
+    _METRICS_PRIVATE_EXTERNS]
 
 # List of top-level scripts and externs that we can check.
 _TOP_LEVEL_SCRIPTS = [

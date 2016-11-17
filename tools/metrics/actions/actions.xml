@@ -996,6 +996,38 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accessibility.ChromeVox.Jump">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A Chrome OS user with spoken feedback enabled has executed any jump action,
+    like jumping to the next heading on a web page.
+  </description>
+</action>
+
+<action name="Accessibility.ChromeVox.Navigate">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A Chrome OS user with spoken feedback enabled has executed any navigation
+    action, like navigating to the next object on the screen.
+  </description>
+</action>
+
+<action name="Accessibility.ChromeVox.ToggleNextOff">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A Chrome OS user with spoken feedback enabled manually toggles ChromeVox
+    Next off.
+  </description>
+</action>
+
+<action name="Accessibility.ChromeVox.ToggleNextOn">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A Chrome OS user with spoken feedback enabled manually toggles ChromeVox
+    Next on.
+  </description>
+</action>
+
 <action name="ActionBox.ClickButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

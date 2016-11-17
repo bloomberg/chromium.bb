@@ -210,27 +210,34 @@ CommandHandler.onCommand = function(command) {
   var rootPred = AutomationPredicate.root;
   var speechProps = {};
   var skipSync = false;
+  var didNavigate = false;
   switch (command) {
     case 'nextCharacter':
+      didNavigate = true;
       speechProps['phoneticCharacters'] = true;
       current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
       break;
     case 'previousCharacter':
+      didNavigate = true;
       speechProps['phoneticCharacters'] = true;
       current = current.move(cursors.Unit.CHARACTER, Dir.BACKWARD);
       break;
     case 'nextWord':
+      didNavigate = true;
       current = current.move(cursors.Unit.WORD, Dir.FORWARD);
       break;
     case 'previousWord':
+      didNavigate = true;
       current = current.move(cursors.Unit.WORD, Dir.BACKWARD);
       break;
     case 'forward':
     case 'nextLine':
+      didNavigate = true;
       current = current.move(cursors.Unit.LINE, Dir.FORWARD);
       break;
     case 'backward':
     case 'previousLine':
+      didNavigate = true;
       current = current.move(cursors.Unit.LINE, Dir.BACKWARD);
       break;
     case 'nextButton':
@@ -405,10 +412,12 @@ CommandHandler.onCommand = function(command) {
       break;
     case 'right':
     case 'nextObject':
+      didNavigate = true;
       current = current.move(cursors.Unit.NODE, Dir.FORWARD);
       break;
     case 'left':
     case 'previousObject':
+      didNavigate = true;
       current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
       break;
     case 'previousGroup':
@@ -663,7 +672,12 @@ CommandHandler.onCommand = function(command) {
       return true;
   }
 
+  if (didNavigate)
+    chrome.metricsPrivate.recordUserAction('Accessibility.ChromeVox.Navigate');
+
   if (pred) {
+    chrome.metricsPrivate.recordUserAction('Accessibility.ChromeVox.Jump');
+
     var bound = current.getBound(dir).node;
     if (bound) {
       var node = AutomationUtil.findNextNode(
