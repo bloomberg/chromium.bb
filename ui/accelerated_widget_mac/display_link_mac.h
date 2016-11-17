@@ -16,6 +16,10 @@
 #include "base/timer/timer.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace ui {
 
 class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
