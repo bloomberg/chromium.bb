@@ -348,18 +348,18 @@ std::unique_ptr<views::InkDropMask> TrayPopupUtils::CreateInkDropMask(
   if (ink_drop_style == TrayPopupInkDropStyle::FILL_BOUNDS)
     return nullptr;
 
-  const gfx::Rect layer_bounds = host->GetLocalBounds();
+  const gfx::Size layer_size = host->size();
   const gfx::Rect mask_bounds = GetInkDropBounds(ink_drop_style, host);
   switch (ink_drop_style) {
     case TrayPopupInkDropStyle::HOST_CENTERED: {
       const int radius =
           std::min(mask_bounds.width(), mask_bounds.height()) / 2;
       return base::MakeUnique<views::CircleInkDropMask>(
-          layer_bounds, mask_bounds.CenterPoint(), radius);
+          layer_size, mask_bounds.CenterPoint(), radius);
     }
     case TrayPopupInkDropStyle::INSET_BOUNDS:
       return base::MakeUnique<views::RoundRectInkDropMask>(
-          layer_bounds, mask_bounds, kTrayPopupInkDropCornerRadius);
+          layer_size, mask_bounds, kTrayPopupInkDropCornerRadius);
     case TrayPopupInkDropStyle::FILL_BOUNDS:
       // Handled by quick return above.
       break;
