@@ -1438,6 +1438,13 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
       !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(browser_context,
                                                          dest_url)) {
+    if (GetContentClient()
+            ->browser()
+            ->ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+                dest_url, current_instance)) {
+      return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
+    }
+
     // This is a cross-site subframe of a non-isolated origin, so place this
     // frame in the default subframe site instance.
     return SiteInstanceDescriptor(

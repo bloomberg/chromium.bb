@@ -243,6 +243,14 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool* is_renderer_initiated,
                                         content::Referrer* referrer) {}
 
+  // Allows the embedder to override top document isolation for specific frames.
+  // |url| is the URL being loaded in the subframe, and |parent_site_instance|
+  // is the SiteInstance of the parent frame. Called only for subframes and only
+  // when top document isolation mode is enabled.
+  virtual bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+      const GURL& url,
+      SiteInstance* parent_site_instance);
+
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.
   virtual bool IsSuitableHost(RenderProcessHost* process_host,

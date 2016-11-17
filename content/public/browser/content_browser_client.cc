@@ -79,6 +79,13 @@ bool ContentBrowserClient::ShouldAllowOpenURL(SiteInstance* site_instance,
   return true;
 }
 
+bool ContentBrowserClient::
+    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+        const GURL& url,
+        SiteInstance* parent_site_instance) {
+  return false;
+}
+
 bool ContentBrowserClient::IsSuitableHost(RenderProcessHost* process_host,
                                           const GURL& site_url) {
   return true;

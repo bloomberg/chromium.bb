@@ -1221,6 +1221,25 @@ bool ChromeContentBrowserClient::ShouldAllowOpenURL(
   return true;
 }
 
+namespace {
+
+// Returns whether a SiteInstance holds a NTP. TODO(mastiz): This
+// really really really needs to be moved to a shared place where all the code
+// that needs to know this can access it. See http://crbug.com/624410.
+bool IsNTPSiteInstance(SiteInstance* site_instance) {
+  // While using SiteInstance::GetSiteURL() is unreliable and the wrong thing to
+  // use for making security decisions 99.44% of the time, for detecting the NTP
+  // it is reliable and the correct way. Again, see http://crbug.com/624410.
+  return site_instance &&
+         site_instance->GetSiteURL().SchemeIs(chrome::kChromeSearchScheme) &&
+         (site_instance->GetSiteURL().host_piece() ==
+              chrome::kChromeSearchRemoteNtpHost ||
+          site_instance->GetSiteURL().host_piece() ==
+              chrome::kChromeSearchLocalNtpHost);
+}
+
+}  // namespace
+
 void ChromeContentBrowserClient::OverrideNavigationParams(
     SiteInstance* site_instance,
     ui::PageTransition* transition,
@@ -1231,12 +1250,7 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
   DCHECK(referrer);
   // TODO(crbug.com/624410): Factor the predicate to identify a URL as an NTP
   // to a shared library.
-  if (site_instance &&
-      site_instance->GetSiteURL().SchemeIs(chrome::kChromeSearchScheme) &&
-      (site_instance->GetSiteURL().host_piece() ==
-           chrome::kChromeSearchRemoteNtpHost ||
-       site_instance->GetSiteURL().host_piece() ==
-           chrome::kChromeSearchLocalNtpHost) &&
+  if (IsNTPSiteInstance(site_instance) &&
       ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
     // Use AUTO_BOOKMARK for clicks on tiles of the new tab page, consistently
     // with native implementations like Android's.
@@ -1249,6 +1263,13 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
   ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
       site_instance, transition, is_renderer_initiated, referrer);
 #endif
+}
+
+bool ChromeContentBrowserClient::
+    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+        const GURL& url,
+        content::SiteInstance* parent_site_instance) {
+  return IsNTPSiteInstance(parent_site_instance);
 }
 
 bool ChromeContentBrowserClient::IsSuitableHost(
