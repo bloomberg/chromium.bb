@@ -39,6 +39,7 @@ class CHROMEOS_EXPORT StubAuthenticator : public Authenticator {
   void LoginAsPublicSession(const UserContext& user_context) override;
   void LoginAsKioskAccount(const AccountId& app_account_id,
                            bool use_guest_mount) override;
+  void LoginAsArcKioskAccount(const AccountId& app_account_id) override;
   void OnAuthSuccess() override;
   void OnAuthFailure(const AuthFailure& failure) override;
   void RecoverEncryptedData(const std::string& old_password) override;

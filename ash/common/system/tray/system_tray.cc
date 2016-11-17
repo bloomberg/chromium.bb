@@ -538,8 +538,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            BubbleCreationType creation_type,
                            bool persistent) {
   // No system tray bubbles in kiosk mode.
-  if (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
-      LoginStatus::KIOSK_APP) {
+  SystemTrayDelegate* system_tray_delegate =
+      WmShell::Get()->system_tray_delegate();
+  if (system_tray_delegate->GetUserLoginStatus() == LoginStatus::KIOSK_APP ||
+      system_tray_delegate->GetUserLoginStatus() ==
+          LoginStatus::ARC_KIOSK_APP) {
     return;
   }
 

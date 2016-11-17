@@ -137,6 +137,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
+  void LoginAsArcKioskApp(const AccountId& account_id);
 
   // Retrieve public session auto-login policy and update the timer.
   void ConfigurePublicSessionAutoLogin();

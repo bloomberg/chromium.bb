@@ -783,7 +783,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   arc_service_launcher_->Shutdown();
-  arc_kiosk_app_manager_.reset();
 
   // Unregister CrosSettings observers before CrosSettings is destroyed.
   shutdown_policy_forwarder_.reset();
@@ -878,6 +877,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We first call PostMainMessageLoopRun and then destroy UserManager, because
   // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  // Destroy ArcKioskAppManager after its observers are removed when Ash is
+  // closed above.
+  arc_kiosk_app_manager_.reset();
 
   if (!chrome::IsRunningInMash())
     AccessibilityManager::Shutdown();

@@ -494,7 +494,9 @@ void ArcAuthService::OnProvisioningFinished(ProvisioningResult result) {
       return;
 
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
-    if (!IsOptInVerificationDisabled()) {
+    // Don't show Play Store app for ARC Kiosk because the only one UI in kiosk
+    // mode must be the kiosk app and device is not needed for opt-in.
+    if (!IsOptInVerificationDisabled() && !IsArcKioskMode()) {
       playstore_launcher_.reset(
           new ArcAppLauncher(profile_, kPlayStoreAppId, true));
     }

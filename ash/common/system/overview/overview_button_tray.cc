@@ -152,7 +152,9 @@ void OverviewButtonTray::UpdateIconVisibility() {
       session_state_delegate->GetSessionState() ==
           session_manager::SessionState::ACTIVE &&
       shell->system_tray_delegate()->GetUserLoginStatus() !=
-          LoginStatus::KIOSK_APP);
+          LoginStatus::KIOSK_APP &&
+      shell->system_tray_delegate()->GetUserLoginStatus() !=
+          LoginStatus::ARC_KIOSK_APP);
 }
 
 }  // namespace ash

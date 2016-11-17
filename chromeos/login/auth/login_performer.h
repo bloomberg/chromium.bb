@@ -83,6 +83,9 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer {
   void LoginAsKioskAccount(const AccountId& app_account_id,
                            bool use_guest_mount);
 
+  // Performs a login into the ARC kiosk mode account with |arc_app_account_id|.
+  void LoginAsArcKioskAccount(const AccountId& arc_app_account_id);
+
   // AuthStatusConsumer implementation:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;

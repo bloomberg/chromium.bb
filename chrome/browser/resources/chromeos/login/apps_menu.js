@@ -91,6 +91,10 @@ cr.define('login', function() {
      *     mode.
      */
     launchApp_: function(app, diagnosticMode) {
+      if (app.isAndroidApp) {
+        chrome.send('launchArcKioskApp', [app.account_email]);
+        return;
+      }
       if (!diagnosticMode) {
         chrome.send('launchKioskApp', [app.id, false]);
         return;

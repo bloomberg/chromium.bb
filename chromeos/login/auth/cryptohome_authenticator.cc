@@ -609,6 +609,22 @@ void CryptohomeAuthenticator::LoginAsKioskAccount(
   }
 }
 
+void CryptohomeAuthenticator::LoginAsArcKioskAccount(
+    const AccountId& app_account_id) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  current_state_.reset(new AuthAttemptState(
+      UserContext(user_manager::USER_TYPE_ARC_KIOSK_APP, app_account_id),
+      false,    // unlock
+      false,    // online_complete
+      false));  // user_is_new
+
+  remove_user_data_on_failure_ = true;
+  MountPublic(current_state_->AsWeakPtr(),
+              scoped_refptr<CryptohomeAuthenticator>(this),
+              cryptohome::CREATE_IF_MISSING);
+}
+
 void CryptohomeAuthenticator::OnAuthSuccess() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   VLOG(1) << "Login success";

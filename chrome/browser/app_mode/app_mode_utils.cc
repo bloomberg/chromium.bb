@@ -45,13 +45,14 @@ bool IsCommandAllowedInAppMode(int command_id) {
 bool IsRunningInAppMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kKioskMode) ||
-      IsRunningInForcedAppMode();
+         IsRunningInForcedAppMode();
 }
 
 bool IsRunningInForcedAppMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kForceAppMode) &&
-      command_line->HasSwitch(switches::kAppId);
+  return (command_line->HasSwitch(switches::kForceAppMode) &&
+          command_line->HasSwitch(switches::kAppId)) ||
+         command_line->HasSwitch(switches::kForceAndroidAppMode);
 }
 
 }  // namespace chrome

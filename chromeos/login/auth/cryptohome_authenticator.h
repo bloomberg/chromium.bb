@@ -137,6 +137,13 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   void LoginAsKioskAccount(const AccountId& app_account_id,
                            bool use_guest_mount) override;
 
+  // Initiates login into the ARC kiosk mode account identified by
+  // |app_account_id|.
+  // Mounts a public cryptohome, which will be ephemeral if the
+  // |DeviceEphemeralUsersEnabled| policy is enabled and non-ephemeral
+  // otherwise.
+  void LoginAsArcKioskAccount(const AccountId& app_account_id) override;
+
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   void OnAuthSuccess() override;

@@ -134,6 +134,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
       const AccountId& account_id) const override;
   void DemoAccountLoggedIn() override {}
   void KioskAppLoggedIn(user_manager::User* user) override {}
+  void ArcKioskAppLoggedIn(user_manager::User* user) override {}
   void PublicAccountUserLoggedIn(user_manager::User* user) override {}
   void SupervisedUserLoggedIn(const AccountId& account_id) override {}
   void OnUserRemoved(const AccountId& account_id) override {}

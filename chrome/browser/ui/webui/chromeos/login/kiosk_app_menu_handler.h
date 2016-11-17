@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -25,7 +26,8 @@ namespace chromeos {
 class KioskAppMenuHandler
     : public content::WebUIMessageHandler,
       public KioskAppManagerObserver,
-      public NetworkStateInformer::NetworkStateInformerObserver {
+      public NetworkStateInformer::NetworkStateInformerObserver,
+      public ArcKioskAppManager::ArcKioskAppManagerObserver {
  public:
   explicit KioskAppMenuHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
@@ -55,6 +57,9 @@ class KioskAppMenuHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver overrides:
   void UpdateState(NetworkError::ErrorReason reason) override;
+
+  // ArcKioskAppManager::ArcKioskAppManagerObserver overrides:
+  void OnArcKioskAppsChanged() override;
 
   // True when WebUI is initialized. Otherwise don't allow calling JS functions.
   bool is_webui_initialized_;

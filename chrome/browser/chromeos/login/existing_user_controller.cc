@@ -234,9 +234,11 @@ void ExistingUserController::UpdateLoginDisplay(
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskAppManager.
-    if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
+    // KioskAppManager and ArcKioskAppManager.
+    if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP ||
+        user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
       continue;
+    }
 
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     const bool meets_supervised_requirements =
@@ -906,6 +908,12 @@ void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
   host_->StartAppLaunch(app_id, diagnostic_mode, auto_start);
 }
 
+void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
+  login_performer_.reset(nullptr);
+  login_performer_.reset(new ChromeLoginPerformer(this));
+  login_performer_->LoginAsArcKioskAccount(account_id);
+}
+
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {
   std::string auto_login_account_id;
   cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
@@ -1202,6 +1210,11 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
     LoginAsKioskApp(user_context.GetAccountId().GetUserEmail(),
                     specifics.kiosk_diagnostic_mode);
+    return;
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
+    LoginAsArcKioskApp(user_context.GetAccountId());
     return;
   }
 

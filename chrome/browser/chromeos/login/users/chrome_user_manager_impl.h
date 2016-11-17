@@ -165,6 +165,7 @@ class ChromeUserManagerImpl
   void DemoAccountLoggedIn() override;
   void GuestUserLoggedIn() override;
   void KioskAppLoggedIn(user_manager::User* user) override;
+  void ArcKioskAppLoggedIn(user_manager::User* user) override;
   void PublicAccountUserLoggedIn(user_manager::User* user) override;
   void RegularUserLoggedIn(const AccountId& account_id) override;
   void RegularUserLoggedInAsEphemeral(const AccountId& account_id) override;

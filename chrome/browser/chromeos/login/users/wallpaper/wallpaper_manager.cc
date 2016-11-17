@@ -696,8 +696,10 @@ void WallpaperManager::ScheduleSetUserWallpaper(const AccountId& account_id,
       user_manager::UserManager::Get()->FindUser(account_id);
 
   // User is unknown or there is no visible wallpaper in kiosk mode.
-  if (!user || user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
+  if (!user || user->GetType() == user_manager::USER_TYPE_KIOSK_APP ||
+      user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
     return;
+  }
 
   // Guest user or regular user in ephemeral mode.
   if ((user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(

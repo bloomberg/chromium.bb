@@ -239,6 +239,14 @@ void LoginPerformer::LoginAsKioskAccount(const AccountId& app_account_id,
                  app_account_id, use_guest_mount));
 }
 
+void LoginPerformer::LoginAsArcKioskAccount(
+    const AccountId& arc_app_account_id) {
+  EnsureAuthenticator();
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&Authenticator::LoginAsArcKioskAccount,
+                                    authenticator_.get(), arc_app_account_id));
+}
+
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&Authenticator::RecoverEncryptedData,

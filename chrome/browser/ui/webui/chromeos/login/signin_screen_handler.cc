@@ -564,6 +564,8 @@ void SigninScreenHandler::RegisterMessages() {
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
   AddCallback("launchKioskApp", &SigninScreenHandler::HandleLaunchKioskApp);
+  AddCallback("launchArcKioskApp",
+              &SigninScreenHandler::HandleLaunchArcKioskApp);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context) {
@@ -1398,6 +1400,13 @@ void SigninScreenHandler::HandleLaunchKioskApp(const AccountId& app_account_id,
   specifics.kiosk_diagnostic_mode = diagnostic_mode;
   if (delegate_)
     delegate_->Login(context, specifics);
+}
+
+void SigninScreenHandler::HandleLaunchArcKioskApp(
+    const AccountId& app_account_id) {
+  UserContext context(user_manager::USER_TYPE_ARC_KIOSK_APP, app_account_id);
+  if (delegate_)
+    delegate_->Login(context, SigninSpecifics());
 }
 
 void SigninScreenHandler::HandleGetTouchViewState() {
