@@ -70,7 +70,6 @@ policy_templates_linux_outputs =
     [ "$policy_templates_base_dir/linux/examples/chrome.json" ]
 
 policy_templates_mac_outputs = [
-  "$policy_templates_base_dir/ios/chrome_policy.plist",
   "$policy_templates_base_dir/mac/app-Manifest.plist",
 
   "$policy_templates_base_dir/mac/strings/am.lproj/Localizable.strings",
