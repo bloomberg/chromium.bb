@@ -31,7 +31,6 @@ class LoggerTest : public testing::Test {
   LoggerTest() {}
 
   void SetUp() override {
-    logging::SetMinLogLevel(logging::LOG_INFO);
     util::ClearLog();
   }
 
