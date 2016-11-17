@@ -1148,7 +1148,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         ContentBitmapCallback callback = new ContentBitmapCallback() {
             @Override
             public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                ShareHelper.onScreenshotReady(blockingUri, bitmap, mainActivity);
+                ShareHelper.saveScreenshotToDisk(bitmap, mainActivity,
+                        new Callback<Uri>() {
+                            @Override
+                            public void onResult(Uri result) {
+                                // Unblock the file once it is saved to disk.
+                                ChromeFileProvider.notifyFileReady(blockingUri, result);
+                            }
+                        });
             }
         };
         if (!mScreenshotCaptureSkippedForTesting) {

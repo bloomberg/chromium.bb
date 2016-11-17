@@ -38,6 +38,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
@@ -45,7 +46,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
 
@@ -62,8 +62,9 @@ import java.util.concurrent.TimeoutException;
  * A helper class that helps to start an intent to share titles and URLs.
  */
 public class ShareHelper {
+
     /** Interface that receives intents for testing (to fake out actually sending them). */
-    public static interface FakeIntentReceiver {
+    public interface FakeIntentReceiver {
         /** Sets the intent to send back in the broadcast. */
         public void setIntentToSendBack(Intent intent);
 
@@ -369,20 +370,18 @@ public class ShareHelper {
     }
 
     /**
-     * Writes the screenshot file and notifies the file provider that the file is ready to be
+     * Persists the screenshot file and notifies the file provider that the file is ready to be
      * accessed by the client.
      *
      * The bitmap is compressed to JPEG before being written to the file.
      *
-     * @param blockingUri The unique id given by the
-     *                    {@link ChromeFileProvider#generateUriAndBlockAccess()} for the screenshot.
-     * @param screenshot The screenshot bitmap to be written to file.
-     * @param activity Activity that is used to access package manager.
+     * @param screenshot  The screenshot bitmap to be written to file.
+     * @param callback    The callback that will be called once the bitmap is saved.
      */
-    public static void onScreenshotReady(
-            final Uri blockingUri, final Bitmap screenshot, final Activity activity) {
+    public static void saveScreenshotToDisk(final Bitmap screenshot, final Context context,
+            final Callback<Uri> callback) {
         if (screenshot == null) {
-            ChromeFileProvider.notifyFileReady(blockingUri, null);
+            callback.onResult(null);
             return;
         }
 
@@ -391,7 +390,7 @@ public class ShareHelper {
             protected File doInBackground(Void... params) {
                 FileOutputStream fOut = null;
                 try {
-                    File path = new File(UiUtils.getDirectoryForImageCapture(activity) + "/"
+                    File path = new File(UiUtils.getDirectoryForImageCapture(context) + "/"
                             + SHARE_IMAGES_DIRECTORY_NAME);
                     if (path.exists() || path.mkdir()) {
                         String fileName = String.valueOf(System.currentTimeMillis());
@@ -410,14 +409,14 @@ public class ShareHelper {
             }
 
             @Override
-            protected void onPostExecute(File saveFile) {
+            protected void onPostExecute(File savedFile) {
                 Uri fileUri = null;
                 if (ApplicationStatus.getStateForApplication()
                         != ApplicationState.HAS_DESTROYED_ACTIVITIES
-                        && saveFile != null) {
-                    fileUri = UiUtils.getUriForImageCaptureFile(activity, saveFile);
+                        && savedFile != null) {
+                    fileUri = UiUtils.getUriForImageCaptureFile(context, savedFile);
                 }
-                ChromeFileProvider.notifyFileReady(blockingUri, fileUri);
+                callback.onResult(fileUri);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
