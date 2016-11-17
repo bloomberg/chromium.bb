@@ -161,4 +161,15 @@ public class UrlRequestException extends IOException {
                 return true;
         }
     }
+
+    @Override
+    public String getMessage() {
+        StringBuilder b = new StringBuilder(super.getMessage());
+        b.append(", ErrorCode=").append(mErrorCode);
+        if (mCronetInternalErrorCode != 0) {
+            b.append(", InternalErrorCode=").append(mCronetInternalErrorCode);
+        }
+        b.append(", Retryable=").append(immediatelyRetryable());
+        return b.toString();
+    }
 }

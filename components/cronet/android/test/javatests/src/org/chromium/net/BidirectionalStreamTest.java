@@ -201,7 +201,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
         stream.start();
         callback.blockForDone();
         assertTrue(stream.isDone());
-        assertEquals("Exception in BidirectionalStream: net::ERR_DISALLOWED_URL_SCHEME",
+        assertContains("Exception in BidirectionalStream: net::ERR_DISALLOWED_URL_SCHEME",
                 callback.mError.getMessage());
         assertEquals(-301, callback.mError.getCronetInternalErrorCode());
     }

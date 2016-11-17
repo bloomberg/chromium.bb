@@ -13,6 +13,8 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
+import static org.chromium.net.CronetTestBase.assertContains;
+
 import org.chromium.net.impl.UrlRequestError;
 
 import java.nio.ByteBuffer;
@@ -254,10 +256,10 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         if (mListenerExceptionThrown) {
             assertEquals(UrlRequestError.LISTENER_EXCEPTION_THROWN, error.getErrorCode());
             assertEquals(0, error.getCronetInternalErrorCode());
-            assertEquals("Exception received from UrlRequest.Callback", error.getMessage());
+            assertContains("Exception received from UrlRequest.Callback", error.getMessage());
             assertNotNull(error.getCause());
             assertTrue(error.getCause() instanceof IllegalStateException);
-            assertEquals("Listener Exception.", error.getCause().getMessage());
+            assertContains("Listener Exception.", error.getCause().getMessage());
             assertFalse(error.immediatelyRetryable());
         }
 

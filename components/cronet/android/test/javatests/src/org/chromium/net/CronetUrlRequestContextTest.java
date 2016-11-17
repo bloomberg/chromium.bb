@@ -1222,7 +1222,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertNotNull(callback.mError);
-        assertEquals("Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED",
+        assertContains("Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED",
                 callback.mError.getMessage());
     }
 

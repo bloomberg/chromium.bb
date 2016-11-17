@@ -166,6 +166,14 @@ public class CronetTestBase extends AndroidTestCase {
         }
     }
 
+    static void assertContains(String expectedSubstring, String actualString) {
+        assertNotNull(actualString);
+        if (!actualString.contains(expectedSubstring)) {
+            fail("String [" + actualString + "] doesn't contain substring [" + expectedSubstring
+                    + "]");
+        }
+    }
+
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface CompareDefaultWithCronet {

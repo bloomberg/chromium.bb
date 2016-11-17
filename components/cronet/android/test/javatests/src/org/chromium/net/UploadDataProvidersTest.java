@@ -200,8 +200,8 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertFalse(callback.mOnCanceledCalled);
         assertEquals(UrlRequestException.ERROR_LISTENER_EXCEPTION_THROWN,
                 callback.mError.getErrorCode());
-        assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
-        assertEquals(exceptionMessage, callback.mError.getCause().getMessage());
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains(exceptionMessage, callback.mError.getCause().getMessage());
     }
 
     @SmallTest
