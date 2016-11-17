@@ -511,10 +511,9 @@ def get_swarming_dimension(dimension, device_affinity):
 def generate_cplusplus_isolate_script_test(dimension):
   return [
     generate_isolate_script_entry(
-        get_swarming_dimension(dimension, shard), [], name, name)
+        [get_swarming_dimension(dimension, shard)], [], name, name)
     for name, shard in dimension['perf_tests']
   ]
-
 
 
 def generate_telemetry_tests(
