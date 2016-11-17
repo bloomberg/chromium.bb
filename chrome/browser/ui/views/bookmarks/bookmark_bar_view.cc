@@ -217,7 +217,10 @@ class BookmarkButtonBase : public views::LabelButton {
 
   // LabelButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return CreateDefaultFloodFillInkDropImpl();
+    std::unique_ptr<views::InkDropImpl> ink_drop =
+        CreateDefaultFloodFillInkDropImpl();
+    ink_drop->SetShowHighlightOnFocus(true);
+    return std::move(ink_drop);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
@@ -337,7 +340,10 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   // MenuButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return CreateDefaultFloodFillInkDropImpl();
+    std::unique_ptr<views::InkDropImpl> ink_drop =
+        CreateDefaultFloodFillInkDropImpl();
+    ink_drop->SetShowHighlightOnFocus(true);
+    return std::move(ink_drop);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
