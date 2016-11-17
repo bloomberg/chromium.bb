@@ -73,13 +73,8 @@
         <item name="android:maxLines">2</item>
     </style>
 
-    <!-- A theme for alert dialogs. The colors are copied from MainTheme, and the window
-         dimensions are copied from *.MinWidth theme variants. Sadly there is no
-         AppCompat.Light.Dialog.Alert or even AppCompat.Light.Dialog.MinWidth. -->
-    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
-        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
-        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
 
         <!--  Overriding AppCompat values -->
         <item name="colorAccent">@color/light_active_color</item>
