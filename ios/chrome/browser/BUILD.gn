@@ -131,6 +131,7 @@ source_set("browser_impl") {
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/history/core/browser",
+    "//components/keyed_service/core",
     "//components/language_usage_metrics",
     "//components/metrics:profiler_ios",
     "//components/metrics_services_manager",

@@ -304,6 +304,9 @@ component("gfx") {
       "codec/jpeg_codec.cc",
       "codec/jpeg_codec.h",
     ]
+    set_sources_assignment_filter([])
+    sources += [ "scoped_cg_context_save_gstate_mac.h" ]
+    set_sources_assignment_filter(sources_assignment_filter)
   } else {
     deps += [ "//third_party:jpeg" ]
   }
