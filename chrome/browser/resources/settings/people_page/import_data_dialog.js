@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-import-data-dialog',
 
-  behaviors: [I18nBehavior, WebUIListenerBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior, PrefsBehavior],
 
   properties: {
     /** @private {!Array<!settings.BrowserProfile>} */
@@ -18,8 +18,34 @@ Polymer({
     /** @private {!settings.BrowserProfile} */
     selected_: Object,
 
-    prefs: Object,
+    /**
+     * Whether none of the import data categories is selected.
+     * @private
+     */
+    noImportDataTypeSelected_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    importStatus_: {
+      type: String,
+      value: settings.ImportDataStatus.INITIAL,
+    },
+
+    /**
+     * Mirroring the enum so that it can be used from HTML bindings.
+     * @private
+     */
+    importStatusEnum_: {
+      type: Object,
+      value: settings.ImportDataStatus,
+    },
   },
+
+  observers: [
+    'prefsChanged_(selected_, prefs.*)',
+  ],
 
   /** @private {?settings.ImportDataBrowserProxy} */
   browserProxy_: null,
@@ -27,16 +53,45 @@ Polymer({
   /** @override */
   attached: function() {
     this.browserProxy_ = settings.ImportDataBrowserProxyImpl.getInstance();
-    this.browserProxy_.initializeImportDialog().then(function(data) {
-      this.browserProfiles_ = data;
-      this.selected_ = this.browserProfiles_[0];
-    }.bind(this));
+    this.browserProxy_.initializeImportDialog().then(
+        /** @param {!Array<!settings.BrowserProfile>} data */
+        function(data) {
+          this.browserProfiles_ = data;
+          this.selected_ = this.browserProfiles_[0];
+        }.bind(this));
 
-    this.addWebUIListener('import-data-status-changed', function(e) {
-      // TODO(dpapad): Handle events to show spinner or success message.
-    });
+    this.addWebUIListener(
+        'import-data-status-changed',
+        /** @param {settings.ImportDataStatus} importStatus */
+        function(importStatus) {
+          this.importStatus_ = importStatus;
+          if (this.hasImportStatus_(settings.ImportDataStatus.FAILED))
+            this.closeDialog_();
+        }.bind(this));
 
     this.$.dialog.showModal();
+  },
+
+  /** @private */
+  prefsChanged_() {
+    this.noImportDataTypeSelected_ =
+        !(this.getPref('import_history').value && this.selected_.history) &&
+        !(this.getPref('import_bookmarks').value && this.selected_.favorites) &&
+        !(this.getPref('import_saved_passwords').value &&
+            this.selected_.passwords) &&
+        !(this.getPref('import_search_engine').value &&
+            this.selected_.search) &&
+        !(this.getPref('import_autofill_form_data').value &&
+            this.selected_.autofillFormData);
+  },
+
+  /**
+   * @param {!settings.ImportDataStatus} status
+   * @return {boolean} Whether |status| is the current status.
+   * @private
+   */
+  hasImportStatus_: function(status) {
+    return this.importStatus_ == status;
   },
 
   /** @private */
@@ -56,21 +111,29 @@ Polymer({
   },
 
   /** @private */
-  onChange_: function() {
+  onBrowserProfileSelectionChange_: function() {
     this.selected_ = this.browserProfiles_[this.$.browserSelect.selectedIndex];
   },
 
   /** @private */
   onActionButtonTap_: function() {
-    if (this.isImportFromFileSelected_()) {
+    if (this.isImportFromFileSelected_())
       this.browserProxy_.importFromBookmarksFile();
-    } else {
-      // TODO(dpapad): Implement this.
-    }
+    else
+      this.browserProxy_.importData(this.$.browserSelect.selectedIndex);
   },
 
   /** @private */
-  onCancelTap_: function() {
+  closeDialog_: function() {
     this.$.dialog.close();
+  },
+
+  /**
+   * @return {boolean} Whether the import button should be disabled.
+   * @private
+   */
+  shouldDisableImport_: function() {
+    return this.hasImportStatus_(settings.ImportDataStatus.IN_PROGRESS) ||
+        this.noImportDataTypeSelected_;
   },
 });

@@ -2293,16 +2293,15 @@
       Autofill form data
     </message>
 
-    <message name="IDS_SETTINGS_IMPORT_SUCCEEDED" desc="Status text to notify the user that the import succeeded">
-      Success!
-    </message>
     <message name="IDS_SETTINGS_IMPORT_CHOOSE_FILE" desc="Text for the Choose File on dialog">
       Choose File
     </message>
     <message name="IDS_SETTINGS_IMPORT_COMMIT" desc="Text for OK button on dialog">
       Import
     </message>
-
+    <message name="IDS_SETTINGS_IMPORT_SUCCESS" desc="Message displayed after settings and bookmarks have been imported">
+      Your bookmarks and settings are ready.
+    </message>
     <message name="IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
       No supported browser found
     </message>

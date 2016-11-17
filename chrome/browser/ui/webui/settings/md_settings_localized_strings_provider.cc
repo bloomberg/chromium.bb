@@ -74,6 +74,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       {"close", IDS_CLOSE},
       {"confirm", IDS_CONFIRM},
       {"disable", IDS_DISABLE},
+      {"done", IDS_DONE},
       {"learnMore", IDS_LEARN_MORE},
       {"ok", IDS_OK},
       {"save", IDS_SAVE},
@@ -692,11 +693,10 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
     {"importPasswords", IDS_SETTINGS_IMPORT_PASSWORDS_CHECKBOX},
     {"importSearch", IDS_SETTINGS_IMPORT_SEARCH_ENGINES_CHECKBOX},
     {"importAutofillFormData", IDS_SETTINGS_IMPORT_AUTOFILL_FORM_DATA_CHECKBOX},
-    {"importSucceeded", IDS_SETTINGS_IMPORT_SUCCEEDED},
     {"importChooseFile", IDS_SETTINGS_IMPORT_CHOOSE_FILE},
     {"importCommit", IDS_SETTINGS_IMPORT_COMMIT},
     {"noProfileFound", IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND},
-    {"findYourImportedBookmarks", IDS_SETTINGS_IMPORT_FIND_YOUR_BOOKMARKS},
+    {"importSuccess", IDS_SETTINGS_IMPORT_SUCCESS},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

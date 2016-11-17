@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,31 +112,22 @@ void ImportDataHandler::StartImport(
 void ImportDataHandler::ImportData(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::string string_value;
-
   int browser_index;
-  if (!args->GetString(0, &string_value) ||
-      !base::StringToInt(string_value, &browser_index)) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(args->GetInteger(0, &browser_index));
+
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
   uint16_t selected_items = importer::NONE;
-  if (args->GetString(1, &string_value) && string_value == "true") {
-    selected_items |= importer::HISTORY;
-  }
-  if (args->GetString(2, &string_value) && string_value == "true") {
-    selected_items |= importer::FAVORITES;
-  }
-  if (args->GetString(3, &string_value) && string_value == "true") {
-    selected_items |= importer::PASSWORDS;
-  }
-  if (args->GetString(4, &string_value) && string_value == "true") {
-    selected_items |= importer::SEARCH_ENGINES;
-  }
-  if (args->GetString(5, &string_value) && string_value == "true") {
+  if (prefs->GetBoolean(prefs::kImportAutofillFormData))
     selected_items |= importer::AUTOFILL_FORM_DATA;
-  }
+  if (prefs->GetBoolean(prefs::kImportBookmarks))
+    selected_items |= importer::FAVORITES;
+  if (prefs->GetBoolean(prefs::kImportHistory))
+    selected_items |= importer::HISTORY;
+  if (prefs->GetBoolean(prefs::kImportSavedPasswords))
+    selected_items |= importer::PASSWORDS;
+  if (prefs->GetBoolean(prefs::kImportSearchEngine))
+    selected_items |= importer::SEARCH_ENGINES;
 
   const importer::SourceProfile& source_profile =
       importer_list_->GetSourceProfileAt(browser_index);

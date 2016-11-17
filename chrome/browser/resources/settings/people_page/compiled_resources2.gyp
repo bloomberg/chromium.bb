@@ -184,6 +184,7 @@
     {
       'target_name': 'import_data_dialog',
       'dependencies': [
+        '../prefs/compiled_resources2.gyp:prefs_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'import_data_browser_proxy',
