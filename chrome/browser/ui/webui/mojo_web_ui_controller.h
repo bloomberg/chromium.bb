@@ -25,7 +25,7 @@ class MojoWebUIControllerBase : public content::WebUIController {
   ~MojoWebUIControllerBase() override;
 
   // WebUIController overrides:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIControllerBase);
@@ -45,9 +45,14 @@ class MojoWebUIController : public MojoWebUIControllerBase {
   explicit MojoWebUIController(content::WebUI* contents)
       : MojoWebUIControllerBase(contents), weak_factory_(this) {}
   ~MojoWebUIController() override {}
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override {
-    MojoWebUIControllerBase::RenderViewCreated(render_view_host);
-    render_view_host->GetMainFrame()->GetInterfaceRegistry()->
+
+  void RenderFrameCreated(
+      content::RenderFrameHost* render_frame_host) override {
+    MojoWebUIControllerBase::RenderFrameCreated(render_frame_host);
+
+    // Right now, this is expected to be called only for main frames.
+    DCHECK(!render_frame_host->GetParent());
+    render_frame_host->GetInterfaceRegistry()->
         AddInterface<Interface>(
             base::Bind(&MojoWebUIController::BindUIHandler,
                        weak_factory_.GetWeakPtr()));

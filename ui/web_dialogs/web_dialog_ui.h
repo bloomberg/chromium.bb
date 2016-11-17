@@ -63,7 +63,7 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public content::WebUIController {
 
  private:
   // WebUIController
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   // Gets the delegate for the WebContent set with SetDelegate.
   static WebDialogDelegate* GetDelegate(content::WebContents* web_contents);

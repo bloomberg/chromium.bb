@@ -127,8 +127,8 @@ class PingTestWebUIController : public TestWebUIController {
   ~PingTestWebUIController() override {}
 
   // WebUIController overrides:
-  void RenderViewCreated(RenderViewHost* render_view_host) override {
-    render_view_host->GetMainFrame()->GetInterfaceRegistry()->AddInterface(
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    render_frame_host->GetInterfaceRegistry()->AddInterface(
         base::Bind(&PingTestWebUIController::CreateHandler,
                    base::Unretained(this)));
   }

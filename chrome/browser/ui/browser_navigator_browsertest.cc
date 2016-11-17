@@ -32,9 +32,12 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
@@ -1447,6 +1450,51 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   EXPECT_EQ(base::UTF8ToUTF16(expected_url), omnibox_view->GetText());
+}
+
+// Test that there's no crash when a navigation to a WebUI page reuses an
+// existing swapped out RenderViewHost.  Previously, this led to a browser
+// process crash in WebUI pages that use MojoWebUIController, which tried to
+// use the RenderViewHost's GetMainFrame() when it was invalid in
+// RenderViewCreated(). See https://crbug.com/627027.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ReuseRVHWithWebUI) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Visit a WebUI page with bindings.
+  GURL webui_url(chrome::kChromeUIOmniboxURL);
+  ui_test_utils::NavigateToURL(browser(), webui_url);
+
+  // window.open a new tab.  This will keep the chrome://omnibox process alive
+  // once we navigate away from it.
+  content::WindowedNotificationObserver windowed_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.open('" + webui_url.spec() + "');"));
+  windowed_observer.Wait();
+  content::NavigationController* controller =
+      content::Source<content::NavigationController>(windowed_observer.source())
+          .ptr();
+  content::WebContents* popup = controller->GetWebContents();
+  ASSERT_TRUE(popup);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  content::RenderViewHost* webui_rvh = popup->GetRenderViewHost();
+  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI, webui_rvh->GetEnabledBindings());
+
+  // Navigate to another page in the popup.
+  GURL nonwebui_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), nonwebui_url);
+  EXPECT_NE(webui_rvh, popup->GetRenderViewHost());
+
+  // Go back in the popup.  This should finish without crashing and should
+  // reuse the old RenderViewHost.
+  content::TestNavigationObserver back_load_observer(popup);
+  controller->GoBack();
+  back_load_observer.Wait();
+  EXPECT_EQ(webui_rvh, popup->GetRenderViewHost());
+  EXPECT_TRUE(webui_rvh->IsRenderViewLive());
+  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI, webui_rvh->GetEnabledBindings());
 }
 
 }  // namespace

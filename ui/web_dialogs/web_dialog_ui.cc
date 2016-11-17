@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -15,7 +16,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
-using content::RenderViewHost;
+using content::RenderFrameHost;
 using content::WebUIMessageHandler;
 
 namespace ui {
@@ -76,7 +77,7 @@ WebDialogDelegate* WebDialogUI::GetDelegate(
 }
 
 
-void WebDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
+void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   // Hook up the javascript function calls, also known as chrome.send("foo")
   // calls in the HTML, to the actual C++ functions.
   web_ui()->RegisterMessageCallback("dialogClose",
@@ -91,6 +92,8 @@ void WebDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
     delegate->GetWebUIMessageHandlers(&handlers);
   }
 
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   if (0 != (web_ui()->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();

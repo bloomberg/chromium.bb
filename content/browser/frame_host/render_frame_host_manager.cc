@@ -244,10 +244,10 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
       return nullptr;
 
     if (GetNavigatingWebUI()) {
-      // A new RenderView was created and there is a navigating WebUI which
-      // never interacted with it. So notify the WebUI using RenderViewCreated.
-      GetNavigatingWebUI()->RenderViewCreated(
-          dest_render_frame_host->render_view_host());
+      // A new RenderFrame was created and there is a navigating WebUI which
+      // never interacted with it. So notify the WebUI using
+      // RenderFrameCreated.
+      GetNavigatingWebUI()->RenderFrameCreated(dest_render_frame_host);
     }
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
@@ -774,7 +774,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
-  bool notify_webui_of_rv_creation = false;
+  bool notify_webui_of_rf_creation = false;
 
   // Reuse the current RenderFrameHost if its SiteInstance matches the
   // navigation's.
@@ -844,7 +844,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         request.common_params().url, request.bindings());
     speculative_render_frame_host_->CommitPendingWebUI();
     DCHECK_EQ(GetNavigatingWebUI(), speculative_render_frame_host_->web_ui());
-    notify_webui_of_rv_creation =
+    notify_webui_of_rf_creation =
         changed_web_ui && speculative_render_frame_host_->web_ui();
 
     navigation_rfh = speculative_render_frame_host_.get();
@@ -858,13 +858,13 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // RFH isn't live.)
       CommitPending();
 
-      // Notify the WebUI of the creation of the RenderView if needed (the
-      // newly created WebUI has just been committed by CommitPending, so
+      // Notify the WebUI about the new RenderFrame if needed (the newly
+      // created WebUI has just been committed by CommitPending, so
       // GetNavigatingWebUI() below will return false).
-      if (notify_webui_of_rv_creation && render_frame_host_->web_ui()) {
-        render_frame_host_->web_ui()->RenderViewCreated(
-            render_frame_host_->render_view_host());
-        notify_webui_of_rv_creation = false;
+      if (notify_webui_of_rf_creation && render_frame_host_->web_ui()) {
+        render_frame_host_->web_ui()->RenderFrameCreated(
+            render_frame_host_.get());
+        notify_webui_of_rf_creation = false;
       }
     }
   }
@@ -878,7 +878,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (!ReinitializeRenderFrame(navigation_rfh))
       return nullptr;
 
-    notify_webui_of_rv_creation = true;
+    notify_webui_of_rf_creation = true;
 
     if (navigation_rfh == render_frame_host_.get()) {
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
@@ -892,11 +892,11 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
   }
 
-  // If a WebUI was created in a speculative RenderFrameHost or a new RenderView
-  // was created then the WebUI never interacted with the RenderView. Notify
-  // using RenderViewCreated.
-  if (notify_webui_of_rv_creation && GetNavigatingWebUI())
-    GetNavigatingWebUI()->RenderViewCreated(navigation_rfh->render_view_host());
+  // If a WebUI was created in a speculative RenderFrameHost or a new
+  // RenderFrame was created then the WebUI never interacted with the
+  // RenderFrame or its RenderView. Notify using RenderFrameCreated.
+  if (notify_webui_of_rf_creation && GetNavigatingWebUI())
+    GetNavigatingWebUI()->RenderFrameCreated(navigation_rfh);
 
   return navigation_rfh;
 }
@@ -2322,11 +2322,11 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     DCHECK_EQ(GetNavigatingWebUI(), pending_render_frame_host_->web_ui());
 
     // If a WebUI exists in the pending RenderFrameHost it was just created, as
-    // well as the RenderView, and they never interacted. So notify it using
-    // RenderViewCreated.
+    // well as the RenderFrame, and they never interacted. So notify the WebUI
+    // using RenderFrameCreated.
     if (pending_render_frame_host_->web_ui()) {
-      pending_render_frame_host_->web_ui()->RenderViewCreated(
-          pending_render_frame_host_->render_view_host());
+      pending_render_frame_host_->web_ui()->RenderFrameCreated(
+          pending_render_frame_host_.get());
     }
 
     // Check if our current RFH is live before we set up a transition.
@@ -2402,20 +2402,20 @@ void RenderFrameHostManager::UpdatePendingWebUIOnCurrentFrameHost(
       render_frame_host_->IsRenderFrameLive()) {
     // If a pending WebUI exists in the current RenderFrameHost and it has been
     // updated and the associated RenderFrame is alive, notify the WebUI about
-    // the RenderView.
-    // Note: If the RenderFrame is not alive at this point the notification will
-    // happen later, when the RenderView is created.
+    // the RenderFrame.
+    // Note: If the RenderFrame is not alive at this point the notification
+    // will happen later, when the RenderFrame is created.
     if (render_frame_host_->pending_web_ui() == render_frame_host_->web_ui()) {
       // If the active WebUI is being reused it has already interacting with
-      // this RenderView in the past, so call RenderViewReused.
-      render_frame_host_->pending_web_ui()->RenderViewReused(
-          render_frame_host_->render_view_host(),
-          frame_tree_node_->IsMainFrame());
+      // this RenderFrame and its RenderView in the past, so call
+      // RenderFrameReused.
+      render_frame_host_->pending_web_ui()->RenderFrameReused(
+          render_frame_host_.get());
     } else {
       // If this is a new WebUI it has never interacted with the existing
-      // RenderView so call RenderViewCreated.
-      render_frame_host_->pending_web_ui()->RenderViewCreated(
-          render_frame_host_->render_view_host());
+      // RenderFrame so call RenderFrameCreated.
+      render_frame_host_->pending_web_ui()->RenderFrameCreated(
+          render_frame_host_.get());
     }
   }
 }

@@ -34,7 +34,7 @@
 
 using content::NavigationController;
 using content::NavigationEntry;
-using content::RenderViewHost;
+using content::RenderFrameHost;
 using content::WebContents;
 
 namespace {
@@ -195,9 +195,9 @@ content::WebUI* UberUI::GetSubpage(const std::string& page_url) {
   return sub_uis_[page_url].get();
 }
 
-void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
+void UberUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   for (auto iter = sub_uis_.begin(); iter != sub_uis_.end(); ++iter) {
-    iter->second->GetController()->RenderViewCreated(render_view_host);
+    iter->second->GetController()->RenderFrameCreated(render_frame_host);
   }
 }
 

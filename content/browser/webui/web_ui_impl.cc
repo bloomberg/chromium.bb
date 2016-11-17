@@ -107,14 +107,13 @@ void WebUIImpl::OnWebUISend(const GURL& source_url,
   ProcessWebUIMessage(source_url, message, args);
 }
 
-void WebUIImpl::RenderViewCreated(RenderViewHost* render_view_host) {
-  controller_->RenderViewCreated(render_view_host);
+void WebUIImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
+  controller_->RenderFrameCreated(render_frame_host);
 }
 
-void WebUIImpl::RenderViewReused(RenderViewHost* render_view_host,
-                                 bool was_main_frame) {
-  if (was_main_frame) {
-    GURL site_url = render_view_host->GetSiteInstance()->GetSiteURL();
+void WebUIImpl::RenderFrameReused(RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetParent()) {
+    GURL site_url = render_frame_host->GetSiteInstance()->GetSiteURL();
     GetContentClient()->browser()->LogWebUIUrl(site_url);
   }
 }

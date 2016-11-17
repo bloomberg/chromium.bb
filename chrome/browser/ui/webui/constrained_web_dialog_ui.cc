@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #endif
 
+using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -60,8 +62,8 @@ ConstrainedWebDialogUI::ConstrainedWebDialogUI(content::WebUI* web_ui)
 ConstrainedWebDialogUI::~ConstrainedWebDialogUI() {
 }
 
-void ConstrainedWebDialogUI::RenderViewCreated(
-    RenderViewHost* render_view_host) {
+void ConstrainedWebDialogUI::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
   // Add a "dialogClose" callback which matches WebDialogUI behavior.
   web_ui()->RegisterMessageCallback("dialogClose",
       base::Bind(&ConstrainedWebDialogUI::OnDialogCloseMessage,
@@ -74,6 +76,7 @@ void ConstrainedWebDialogUI::RenderViewCreated(
   ui::WebDialogDelegate* dialog_delegate = delegate->GetWebDialogDelegate();
   std::vector<WebUIMessageHandler*> handlers;
   dialog_delegate->GetWebUIMessageHandlers(&handlers);
+  RenderViewHost* render_view_host = render_frame_host->GetRenderViewHost();
   render_view_host->SetWebUIProperty("dialogArguments",
                                      dialog_delegate->GetDialogArgs());
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();

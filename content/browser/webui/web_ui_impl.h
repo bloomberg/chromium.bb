@@ -27,14 +27,14 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   WebUIImpl(WebContents* contents, const std::string& frame_name);
   ~WebUIImpl() override;
 
-  // Called when a RenderView is created for a WebUI (reload after a renderer
-  // crash) or when a WebUI is created for an RenderView (i.e. navigating from
+  // Called when a RenderFrame is created for a WebUI (reload after a renderer
+  // crash) or when a WebUI is created for a RenderFrame (i.e. navigating from
   // chrome://downloads to chrome://bookmarks) or when both are new (i.e.
   // opening a new tab).
-  void RenderViewCreated(RenderViewHost* render_view_host);
+  void RenderFrameCreated(RenderFrameHost* render_frame_host);
 
-  // Called when a RenderView is reused for the same WebUI type (i.e. reload).
-  void RenderViewReused(RenderViewHost* render_view_host, bool was_main_frame);
+  // Called when a RenderFrame is reused for the same WebUI type (i.e. reload).
+  void RenderFrameReused(RenderFrameHost* render_frame_host);
 
   // Called when the owning RenderFrameHost has started swapping out.
   void RenderFrameHostSwappingOut();

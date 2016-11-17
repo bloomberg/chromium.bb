@@ -54,7 +54,7 @@ class UberUI : public content::WebUIController {
                                   const base::ListValue& args) override;
 
   // We forward these to |sub_uis_|.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
  private:
   // Creates and stores a WebUI for the given URL.
