@@ -579,8 +579,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/array_separate*.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
-        ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['linux', 'amd'], bug=483282)
@@ -662,11 +660,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_size.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/' +
-        'single_nested_struct_array.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/multi_nested_struct.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays/' +
@@ -738,15 +731,32 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'no_angle'], bug=483282)
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
         ['linux', 'amd'], bug=633022)
-    self.Fail('conformance2/buffers/uniform-buffers.html',
-        ['linux', 'amd'], bug=658842)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
     self.Fail('conformance2/glsl3/valid-invariant.html',
         ['linux', 'amd'], bug=639760)
 
+    # Uniform buffer related failures
+    self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/single_nested_struct.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/' +
+        'single_nested_struct_array.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/multi_basic_types.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/multi_nested_struct.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/buffers/uniform-buffers.html',
+        ['linux', 'amd'], bug=658842)
+    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
+        ['linux', 'amd'], bug=658844)
+
     # Conflicting expectations to test that the
-    # "Expectations Have No collisions" unittest works.
+    # "Expectations have no collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
 
     # Conflict when all conditions match
