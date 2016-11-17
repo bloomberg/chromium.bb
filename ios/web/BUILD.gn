@@ -347,8 +347,6 @@ source_set("earl_grey_test_support") {
     "public/test/earl_grey/web_view_actions.mm",
     "public/test/earl_grey/web_view_matchers.h",
     "public/test/earl_grey/web_view_matchers.mm",
-    "public/test/web_view_interaction_test_util.h",
-    "public/test/web_view_interaction_test_util.mm",
   ]
 }
 
@@ -359,6 +357,7 @@ source_set("test_support") {
     ":web",
     "//base",
     "//base/test:test_support",
+    "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
     "//ios/third_party/gcdwebserver",
     "//ios/web/test:mojo_bindings",
@@ -420,6 +419,8 @@ source_set("test_support") {
     "public/test/web_test_suite.h",
     "public/test/web_test_with_web_state.h",
     "public/test/web_test_with_web_state.mm",
+    "public/test/web_view_interaction_test_util.h",
+    "public/test/web_view_interaction_test_util.mm",
     "test/crw_fake_web_controller_observer.h",
     "test/crw_fake_web_controller_observer.mm",
     "test/test_url_constants.cc",
