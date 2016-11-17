@@ -155,12 +155,12 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(GetBacklightsForcedOff());
   ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(GetBacklightsForcedOff());
 
   PressPowerButton();
-  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(GetBacklightsForcedOff());
   ReleasePowerButton();
@@ -186,11 +186,11 @@ TEST_F(TabletPowerButtonControllerTest,
   // Test again when backlights is forced off.
   PressPowerButton();
   ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_TRUE(GetBacklightsForcedOff());
 
   PressPowerButton();
-  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_FALSE(GetBacklightsForcedOff());
   test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api->shutdown_timer_is_running());
@@ -204,7 +204,7 @@ TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenScreenIsIdleOff) {
   power_manager_client_->SendBrightnessChanged(0, false);
   PressPowerButton();
   EXPECT_FALSE(GetBacklightsForcedOff());
-  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   ReleasePowerButton();
   EXPECT_FALSE(GetBacklightsForcedOff());
 }
@@ -245,25 +245,25 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   // KeyEvent should SetBacklightsForcedOff(false).
   PressPowerButton();
   ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
-  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_FALSE(GetBacklightsForcedOff());
 
   // Regular mouse event should SetBacklightsForcedOff(false).
   PressPowerButton();
   ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->MoveMouseBy(1, 1);
-  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_FALSE(GetBacklightsForcedOff());
 
   // Synthesized mouse event should not SetBacklightsForcedOff(false).
   PressPowerButton();
   ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->set_flags(ui::EF_IS_SYNTHESIZED);
   generator_->MoveMouseBy(1, 1);
@@ -285,7 +285,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnMaximizeMode) {
 
   PressPowerButton();
   ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
   EXPECT_TRUE(GetBacklightsForcedOff());
