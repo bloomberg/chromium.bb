@@ -547,8 +547,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/data/gles3/shaders/functions.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/multisample.html',
         ['linux', 'amd'], bug=617290)
     self.Fail('deqp/data/gles3/shaders/conversions.html',
@@ -563,19 +561,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/samplerobject.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderprecision*.html',
+    self.Fail('deqp/functional/gles3/shaderprecision_int.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturefiltering/3d*',
         ['linux', 'amd'], bug=606114)
-    self.Fail('deqp/functional/gles3/lifetime.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'textureprojoffset.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'textureprojlodoffset.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturegrad.html',
         ['linux', 'amd'], bug=483282)
@@ -583,18 +573,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texelfetchoffset.html',
         ['linux', 'amd'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/instancedrendering.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/negativetextureapi.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
+    self.Fail('deqp/functional/gles3/transformfeedback/array_separate*.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'amd'], bug=634525)
@@ -674,14 +660,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_size.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/single_nested_struct.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/' +
         'single_nested_struct_array.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/uniformbuffers/multi_basic_types.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/multi_nested_struct.html',
         ['linux', 'amd'], bug=483282)
@@ -695,8 +675,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/textureshadow/*.html',
         ['linux', 'amd'], bug=483282)
@@ -762,8 +740,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=658842)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
-    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
-        ['linux', 'amd'], bug=658844)
     self.Fail('conformance2/glsl3/valid-invariant.html',
         ['linux', 'amd'], bug=639760)
 

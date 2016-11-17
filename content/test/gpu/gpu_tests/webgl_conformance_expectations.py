@@ -271,7 +271,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # AMD Radeon 6450 and/or R7 240
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
-        ['linux', 'amd'], bug=479260)
+        ['linux', 'amd', 'no_angle'], bug=479260)
     self.Flaky('conformance/extensions/ext-texture-filter-anisotropic.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Flaky('conformance/glsl/misc/shader-struct-scope.html',
