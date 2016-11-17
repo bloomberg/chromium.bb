@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,14 +36,16 @@ class DeletedFileTracker {
     }
 
     /** Add a new item to the tracker. */
-    void add(String id, boolean isOffTheRecord) {
-        Set<String> items = isOffTheRecord ? mIncognitoItems : mRegularItems;
-        items.add(id);
+    void add(DownloadHistoryItemWrapper wrapper) {
+        if (!(wrapper instanceof DownloadItemWrapper)) return;
+        Set<String> items = wrapper.isOffTheRecord() ? mIncognitoItems : mRegularItems;
+        items.add(wrapper.getId());
     }
 
     /** Checks if an item is in the tracker. */
-    boolean contains(String id, boolean isOffTheRecord) {
-        Set<String> items = isOffTheRecord ? mIncognitoItems : mRegularItems;
-        return items.contains(id);
+    boolean contains(DownloadHistoryItemWrapper wrapper) {
+        if (!(wrapper instanceof DownloadItemWrapper)) return false;
+        Set<String> items = wrapper.isOffTheRecord() ? mIncognitoItems : mRegularItems;
+        return items.contains(wrapper.getId());
     }
 }

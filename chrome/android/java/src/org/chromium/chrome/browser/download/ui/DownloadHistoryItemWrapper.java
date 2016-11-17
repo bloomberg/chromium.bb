@@ -71,6 +71,9 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return How much of the download has completed, or -1 if there is no progress. */
     public abstract int getDownloadProgress();
 
+    /** @return Whether or not the file is completely downloaded. */
+    public abstract boolean isComplete();
+
     /** Called when the user wants to open the file. */
     abstract void open();
 
@@ -105,14 +108,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** Wraps a {@link DownloadItem}. */
     public static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
         private final DownloadItem mItem;
-        private final boolean mIsOffTheRecord;
         private File mFile;
 
-        DownloadItemWrapper(DownloadItem item, boolean isOffTheRecord, BackendProvider provider,
-                ComponentName component) {
+        DownloadItemWrapper(DownloadItem item, BackendProvider provider, ComponentName component) {
             super(provider, component);
             mItem = item;
-            mIsOffTheRecord = isOffTheRecord;
         }
 
         @Override
@@ -185,7 +185,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
                 return;
             }
 
-            if (DownloadUtils.openFile(getFile(), getMimeType(), mIsOffTheRecord)) {
+            if (DownloadUtils.openFile(getFile(), getMimeType(), isOffTheRecord())) {
                 recordOpenSuccess();
             } else {
                 recordOpenFailure();
@@ -195,7 +195,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public boolean remove() {
             // Tell the DownloadManager to remove the file from history.
-            mBackendProvider.getDownloadDelegate().removeDownload(getId(), mIsOffTheRecord);
+            mBackendProvider.getDownloadDelegate().removeDownload(getId(), isOffTheRecord());
             return false;
         }
 
@@ -206,7 +206,12 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         boolean isOffTheRecord() {
-            return mIsOffTheRecord;
+            return mItem.getDownloadInfo().isOffTheRecord();
+        }
+
+        @Override
+        public boolean isComplete() {
+            return mItem.getDownloadInfo().state() == DownloadState.COMPLETE;
         }
     }
 
@@ -304,6 +309,12 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         boolean isOffTheRecord() {
             return false;
+        }
+
+        @Override
+        public boolean isComplete() {
+            // Incomplete offline pages aren't shown yet.
+            return true;
         }
     }
 }
