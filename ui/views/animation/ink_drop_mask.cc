@@ -12,10 +12,10 @@ namespace views {
 
 // InkDropMask
 
-InkDropMask::InkDropMask(const gfx::Size& layer_size)
+InkDropMask::InkDropMask(const gfx::Rect& layer_bounds)
     : layer_(ui::LAYER_TEXTURED) {
   layer_.set_delegate(this);
-  layer_.SetBounds(gfx::Rect(layer_size));
+  layer_.SetBounds(layer_bounds);
   layer_.SetFillsBoundsOpaquely(false);
   layer_.set_name("InkDropMaskLayer");
 }
@@ -30,10 +30,10 @@ void InkDropMask::OnDeviceScaleFactorChanged(float device_scale_factor) {}
 
 // RoundRectInkDropMask
 
-RoundRectInkDropMask::RoundRectInkDropMask(const gfx::Size& layer_size,
+RoundRectInkDropMask::RoundRectInkDropMask(const gfx::Rect& layer_bounds,
                                            const gfx::Rect& mask_bounds,
                                            int corner_radius)
-    : InkDropMask(layer_size),
+    : InkDropMask(layer_bounds),
       mask_bounds_(mask_bounds),
       corner_radius_(corner_radius) {}
 
@@ -49,10 +49,10 @@ void RoundRectInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
 
 // CircleInkDropMask
 
-CircleInkDropMask::CircleInkDropMask(const gfx::Size& layer_size,
+CircleInkDropMask::CircleInkDropMask(const gfx::Rect& layer_bounds,
                                      const gfx::Point& mask_center,
                                      int mask_radius)
-    : InkDropMask(layer_size),
+    : InkDropMask(layer_bounds),
       mask_center_(mask_center),
       mask_radius_(mask_radius) {}
 

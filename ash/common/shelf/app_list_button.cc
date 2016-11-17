@@ -281,8 +281,8 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
 }
 
 std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
-  return base::MakeUnique<views::CircleInkDropMask>(size(), GetCenterPoint(),
-                                                    kAppListButtonRadius);
+  return base::MakeUnique<views::CircleInkDropMask>(
+      GetLocalBounds(), GetCenterPoint(), kAppListButtonRadius);
 }
 
 void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {

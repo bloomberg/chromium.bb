@@ -529,7 +529,8 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
     const {
   return base::MakeUnique<views::RoundRectInkDropMask>(
-      size(), GetBackgroundBounds(GetContentsBounds(), shelf_alignment_),
+      GetLocalBounds(),
+      GetBackgroundBounds(GetContentsBounds(), shelf_alignment_),
       kTrayRoundedBorderRadius);
 }
 
