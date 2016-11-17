@@ -536,3 +536,20 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
           prerender::ORIGIN_NONE, false, false, base::TimeDelta()),
       0);
 }
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Careful: Blink code clamps timestamps to 5us, so any CSS parsing we do here
+  // must take >> 5us, otherwise we'll log 0 for the value and it will remain
+  // unset here.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/page_load_metrics/page_with_css.html"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
+                                     1);
+  histogram_tester_.ExpectTotalCount(
+      "PageLoad.CSSTiming.Parse.BeforeFirstContentfulPaint", 1);
+}

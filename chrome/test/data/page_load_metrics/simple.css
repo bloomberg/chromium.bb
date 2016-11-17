@@ -1,0 +1,33 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+body {
+  background-color: red;
+  color: red;
+}
+form {
+  background-color: red;
+  color: red;
+}
+a {
+  background-color: red;
+  color: red;
+  float: left;
+  font-size: 14px;
+  line-height: 1.43;
+  margin: 0 20px 0 0;
+  padding: 6px 0;
+}
+p {
+  color: red;
+  background-color: red;
+  padding: 0 15px;
+  background: #eee;
+}
+div {
+  background-color: red;
+  color: #333;
+  padding: 0 15px;
+  background: #eee;
+}

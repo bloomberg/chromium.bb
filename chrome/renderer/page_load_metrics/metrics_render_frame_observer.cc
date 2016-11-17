@@ -144,6 +144,12 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
         base::TimeDelta::FromSecondsD(
             perf.parseBlockedOnScriptExecutionFromDocumentWriteDuration());
   }
+
+  if (perf.authorStyleSheetParseDurationBeforeFCP() > 0.0) {
+    timing.style_sheet_timing.author_style_sheet_parse_duration_before_fcp =
+        base::TimeDelta::FromSecondsD(
+            perf.authorStyleSheetParseDurationBeforeFCP());
+  }
   return timing;
 }
 

@@ -197,6 +197,11 @@ double WebPerformance::parseBlockedOnScriptExecutionFromDocumentWriteDuration()
           ->parseBlockedOnScriptExecutionFromDocumentWriteDuration());
 }
 
+double WebPerformance::authorStyleSheetParseDurationBeforeFCP() const {
+  return millisecondsToSeconds(
+      m_private->timing()->authorStyleSheetParseDurationBeforeFCP());
+}
+
 WebPerformance::WebPerformance(Performance* performance)
     : m_private(performance) {}
 

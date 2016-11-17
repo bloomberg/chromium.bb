@@ -12,6 +12,11 @@
 #define IPC_MESSAGE_START PageLoadMetricsMsgStart
 
 // See comments in page_load_timing.h for details on each field.
+
+IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::StyleSheetTiming)
+  IPC_STRUCT_TRAITS_MEMBER(author_style_sheet_parse_duration_before_fcp)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
   IPC_STRUCT_TRAITS_MEMBER(navigation_start)
   IPC_STRUCT_TRAITS_MEMBER(response_start)
@@ -31,6 +36,7 @@ IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
   IPC_STRUCT_TRAITS_MEMBER(parse_blocked_on_script_execution_duration)
   IPC_STRUCT_TRAITS_MEMBER(
       parse_blocked_on_script_execution_from_document_write_duration)
+  IPC_STRUCT_TRAITS_MEMBER(style_sheet_timing)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadMetadata)

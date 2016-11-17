@@ -21,6 +21,7 @@
 #include "core/css/StyleSheetContents.h"
 
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSTiming.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
@@ -327,7 +328,7 @@ void StyleSheetContents::parseAuthorStyleSheet(
     const SecurityOrigin* securityOrigin) {
   TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
                InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Style.AuthorStyleSheet.ParseTime");
+  double startTimeMS = monotonicallyIncreasingTimeMS();
 
   bool isSameOriginRequest =
       securityOrigin && securityOrigin->canRequest(baseURL());
@@ -360,6 +361,16 @@ void StyleSheetContents::parseAuthorStyleSheet(
   CSSParserContext context(parserContext(), UseCounter::getFrom(this));
   CSSParser::parseSheet(context, this, sheetText,
                         RuntimeEnabledFeatures::lazyParseCSSEnabled());
+
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, parseHistogram,
+                      ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));
+  double parseDurationMS = (monotonicallyIncreasingTimeMS() - startTimeMS);
+  parseHistogram.count(parseDurationMS * 1000);
+  if (Document* document = singleOwnerDocument()) {
+    // CSSTiming expects time in seconds.
+    CSSTiming::from(*document).recordAuthorStyleSheetParseTime(parseDurationMS /
+                                                               1000);
+  }
 }
 
 void StyleSheetContents::parseString(const String& sheetText) {

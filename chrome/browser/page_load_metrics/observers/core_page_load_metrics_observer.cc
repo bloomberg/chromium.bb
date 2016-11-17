@@ -330,6 +330,14 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
                           timing.first_contentful_paint.value());
     }
 
+    if (timing.style_sheet_timing
+            .author_style_sheet_parse_duration_before_fcp) {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.CSSTiming.Parse.BeforeFirstContentfulPaint",
+          timing.style_sheet_timing.author_style_sheet_parse_duration_before_fcp
+              .value());
+    }
+
     switch (GetPageLoadType(transition_)) {
       case LOAD_TYPE_RELOAD:
         PAGE_LOAD_HISTOGRAM(

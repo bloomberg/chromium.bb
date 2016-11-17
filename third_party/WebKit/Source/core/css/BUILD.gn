@@ -133,6 +133,8 @@ blink_core_sources("css") {
     "CSSSupportsRule.h",
     "CSSSyntaxDescriptor.cpp",
     "CSSSyntaxDescriptor.h",
+    "CSSTiming.cpp",
+    "CSSTiming.h",
     "CSSTimingFunctionValue.cpp",
     "CSSTimingFunctionValue.h",
     "CSSToLengthConversionData.cpp",

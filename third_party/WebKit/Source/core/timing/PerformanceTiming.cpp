@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "core/css/CSSTiming.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/DocumentTiming.h"
@@ -402,6 +403,16 @@ PerformanceTiming::parseBlockedOnScriptExecutionFromDocumentWriteDuration()
       timing->parserBlockedOnScriptExecutionFromDocumentWriteDuration());
 }
 
+unsigned long long PerformanceTiming::authorStyleSheetParseDurationBeforeFCP()
+    const {
+  const CSSTiming* timing = cssTiming();
+  if (!timing)
+    return 0;
+
+  return toIntegerMilliseconds(
+      timing->authorStyleSheetParseDurationBeforeFCP());
+}
+
 DocumentLoader* PerformanceTiming::documentLoader() const {
   if (!frame())
     return nullptr;
@@ -429,6 +440,17 @@ const PaintTiming* PerformanceTiming::paintTiming() const {
     return nullptr;
 
   return &PaintTiming::from(*document);
+}
+
+const CSSTiming* PerformanceTiming::cssTiming() const {
+  if (!frame())
+    return nullptr;
+
+  Document* document = frame()->document();
+  if (!document)
+    return nullptr;
+
+  return &CSSTiming::from(*document);
 }
 
 const DocumentParserTiming* PerformanceTiming::documentParserTiming() const {

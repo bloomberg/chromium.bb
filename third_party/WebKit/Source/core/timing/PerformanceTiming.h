@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class CSSTiming;
 class DocumentLoadTiming;
 class DocumentLoader;
 class DocumentParserTiming;
@@ -107,6 +108,10 @@ class CORE_EXPORT PerformanceTiming final
   unsigned long long parseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
 
+  // Microseconds spend parsing author style sheets before the first contentful
+  // paint.
+  unsigned long long authorStyleSheetParseDurationBeforeFCP() const;
+
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   DECLARE_VIRTUAL_TRACE();
@@ -118,6 +123,7 @@ class CORE_EXPORT PerformanceTiming final
   explicit PerformanceTiming(LocalFrame*);
 
   const DocumentTiming* documentTiming() const;
+  const CSSTiming* cssTiming() const;
   const DocumentParserTiming* documentParserTiming() const;
   const PaintTiming* paintTiming() const;
   DocumentLoader* documentLoader() const;

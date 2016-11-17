@@ -11,6 +11,23 @@
 
 namespace page_load_metrics {
 
+struct StyleSheetTiming {
+  StyleSheetTiming();
+  StyleSheetTiming(const StyleSheetTiming& other);
+  ~StyleSheetTiming();
+
+  bool operator==(const StyleSheetTiming& other) const;
+  bool operator!=(const StyleSheetTiming& other) const {
+    return !(*this == other);
+  }
+
+  bool IsEmpty() const;
+
+  // Total time spent parsing author style sheets, before the first contentful
+  // paint.
+  base::Optional<base::TimeDelta> author_style_sheet_parse_duration_before_fcp;
+};
+
 // PageLoadTiming contains timing metrics associated with a page load. Many of
 // the metrics here are based on the Navigation Timing spec:
 // http://www.w3.org/TR/navigation-timing/.
@@ -97,6 +114,8 @@ struct PageLoadTiming {
   // not currently covered by this field. See crbug/600711 for details.
   base::Optional<base::TimeDelta>
       parse_blocked_on_script_execution_from_document_write_duration;
+
+  StyleSheetTiming style_sheet_timing;
 
   // If you add additional members, also be sure to update operator==,
   // page_load_metrics_messages.h, and IsEmpty().
