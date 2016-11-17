@@ -309,13 +309,13 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     // 1. Create the index file as a string. (WriteIndex)
     // 2. Write the file to disk. (WriteIndexWriteToFileInPool)
 
-    CacheStorageIndex index;
+    proto::CacheStorageIndex index;
     index.set_origin(origin_.spec());
 
     for (size_t i = 0u, max = cache_names.size(); i < max; ++i) {
       DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_names[i]));
 
-      CacheStorageIndex::Cache* index_cache = index.add_cache();
+      proto::CacheStorageIndex::Cache* index_cache = index.add_cache();
       index_cache->set_name(cache_names[i]);
       index_cache->set_cache_dir(cache_name_to_cache_dir_[cache_names[i]]);
     }
@@ -374,10 +374,10 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     std::unique_ptr<std::set<std::string>> cache_dirs(
         new std::set<std::string>);
 
-    CacheStorageIndex index;
+    proto::CacheStorageIndex index;
     if (index.ParseFromString(serialized)) {
       for (int i = 0, max = index.cache_size(); i < max; ++i) {
-        const CacheStorageIndex::Cache& cache = index.cache(i);
+        const proto::CacheStorageIndex::Cache& cache = index.cache(i);
         DCHECK(cache.has_cache_dir());
         names->push_back(cache.name());
         cache_name_to_cache_dir_[cache.name()] = cache.cache_dir();
@@ -427,7 +427,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
   static std::string MigrateCachesIfNecessaryInPool(
       const std::string& body,
       const base::FilePath& index_path) {
-    CacheStorageIndex index;
+    proto::CacheStorageIndex index;
     if (!index.ParseFromString(body))
       return body;
 
@@ -438,7 +438,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     // Look for caches that have no cache_dir. Give any such caches a directory
     // with a random name and move them there. Then, rewrite the index file.
     for (int i = 0, max = index.cache_size(); i < max; ++i) {
-      const CacheStorageIndex::Cache& cache = index.cache(i);
+      const proto::CacheStorageIndex::Cache& cache = index.cache(i);
       if (!cache.has_cache_dir()) {
         // Find a new home for the cache.
         base::FilePath legacy_cache_path =

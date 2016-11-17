@@ -36,9 +36,12 @@ namespace content {
 class CacheStorage;
 class CacheStorageBlobToDiskCache;
 class CacheStorageCacheHandle;
-class CacheMetadata;
 class CacheStorageScheduler;
 class TestCacheStorageCache;
+
+namespace proto {
+class CacheMetadata;
+}
 
 // Represents a ServiceWorker Cache as seen in
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/ The
@@ -223,7 +226,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void QueryCacheDidReadMetadata(
       std::unique_ptr<QueryCacheContext> query_cache_context,
       disk_cache::ScopedEntryPtr entry,
-      std::unique_ptr<CacheMetadata> metadata);
+      std::unique_ptr<proto::CacheMetadata> metadata);
   static bool QueryCacheResultCompare(const QueryCacheResult& lhs,
                                       const QueryCacheResult& rhs);
 
@@ -274,12 +277,13 @@ class CONTENT_EXPORT CacheStorageCache {
                                  int buf_len,
                                  std::unique_ptr<disk_cache::Entry*> entry_ptr,
                                  int rv);
-  void WriteSideDataDidReadMetaData(const ErrorCallback& callback,
-                                    base::Time expected_response_time,
-                                    scoped_refptr<net::IOBuffer> buffer,
-                                    int buf_len,
-                                    disk_cache::ScopedEntryPtr entry,
-                                    std::unique_ptr<CacheMetadata> headers);
+  void WriteSideDataDidReadMetaData(
+      const ErrorCallback& callback,
+      base::Time expected_response_time,
+      scoped_refptr<net::IOBuffer> buffer,
+      int buf_len,
+      disk_cache::ScopedEntryPtr entry,
+      std::unique_ptr<proto::CacheMetadata> headers);
   void WriteSideDataDidWrite(const ErrorCallback& callback,
                              disk_cache::ScopedEntryPtr entry,
                              int expected_bytes,
@@ -355,10 +359,10 @@ class CONTENT_EXPORT CacheStorageCache {
                         CacheStorageError cache_create_error,
                         int cache_size);
 
-  void PopulateRequestFromMetadata(const CacheMetadata& metadata,
+  void PopulateRequestFromMetadata(const proto::CacheMetadata& metadata,
                                    const GURL& request_url,
                                    ServiceWorkerFetchRequest* request);
-  void PopulateResponseMetadata(const CacheMetadata& metadata,
+  void PopulateResponseMetadata(const proto::CacheMetadata& metadata,
                                 ServiceWorkerResponse* response);
   std::unique_ptr<storage::BlobDataHandle> PopulateResponseBody(
       disk_cache::ScopedEntryPtr entry,

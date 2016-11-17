@@ -64,7 +64,7 @@ void ListOriginsAndLastModifiedOnTaskRunner(
     std::string protobuf;
     base::ReadFileToString(path.AppendASCII(CacheStorage::kIndexFileName),
                            &protobuf);
-    CacheStorageIndex index;
+    proto::CacheStorageIndex index;
     if (index.ParseFromString(protobuf)) {
       if (index.has_origin()) {
         base::File::Info file_info;
