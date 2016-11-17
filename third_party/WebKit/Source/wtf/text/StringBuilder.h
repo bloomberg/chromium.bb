@@ -247,6 +247,9 @@ bool equalIgnoringCase(const StringBuilder& s,
   return equalIgnoringCase(s.characters16(), buffer, length);
 }
 
+// Unicode aware case insensitive string matching. Non-ASCII characters might
+// match to ASCII characters. This function is rarely used to implement web
+// platform features.
 inline bool equalIgnoringCase(const StringBuilder& s, const char* string) {
   return equalIgnoringCase(s, reinterpret_cast<const LChar*>(string),
                            strlen(string));
@@ -269,25 +272,6 @@ bool equal(const StringBuilder& a, const StringType& b) {
   if (b.is8Bit())
     return equal(a.characters16(), b.characters8(), a.length());
   return equal(a.characters16(), b.characters16(), a.length());
-}
-
-template <typename StringType>
-bool equalIgnoringCase(const StringBuilder& a, const StringType& b) {
-  if (a.length() != b.length())
-    return false;
-
-  if (!a.length())
-    return true;
-
-  if (a.is8Bit()) {
-    if (b.is8Bit())
-      return equalIgnoringCase(a.characters8(), b.characters8(), a.length());
-    return equalIgnoringCase(a.characters8(), b.characters16(), a.length());
-  }
-
-  if (b.is8Bit())
-    return equalIgnoringCase(a.characters16(), b.characters8(), a.length());
-  return equalIgnoringCase(a.characters16(), b.characters16(), a.length());
 }
 
 inline bool operator==(const StringBuilder& a, const StringBuilder& b) {

@@ -336,6 +336,12 @@ TEST(StringTest, ToLowerLocale) {
   }
 }
 
+TEST(StringTest, StartsWithIgnoringUnicodeCase) {
+  // [U+017F U+212A i a] starts with "sk".
+  EXPECT_TRUE(String::fromUTF8("\xC5\xBF\xE2\x84\xAAia")
+                  .startsWith("sk", TextCaseInsensitive));
+}
+
 TEST(StringTest, StartsWithIgnoringASCIICase) {
   String allASCII("LINK");
   String allASCIILowerCase("link");
@@ -415,8 +421,15 @@ TEST(StringTest, Lower) {
   EXPECT_STREQ("link", String("LINK").lower().ascii().data());
   EXPECT_STREQ("link", String("lInk").lower().ascii().data());
   EXPECT_STREQ("lin\xE1k", String("lIn\xC1k").lower().latin1().data());
+  // U+212A -> k
   EXPECT_STREQ("link",
                String::fromUTF8("LIN\xE2\x84\xAA").lower().utf8().data());
+}
+
+TEST(StringTest, Upper) {
+  EXPECT_STREQ("CROSS", String("cross").upper().utf8().data());
+  // U+017F -> S
+  EXPECT_STREQ("CROSS", String::fromUTF8("cro\xC5\xBFs").upper().utf8().data());
 }
 
 TEST(StringTest, Ensure16Bit) {

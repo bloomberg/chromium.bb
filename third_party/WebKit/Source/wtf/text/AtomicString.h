@@ -104,7 +104,9 @@ class WTF_EXPORT AtomicString {
     return m_string.find(value, start, caseSensitivity);
   }
 
-  // Unicode aware case insensitive string matching.
+  // Unicode aware case insensitive string matching. Non-ASCII characters might
+  // match to ASCII characters. This function is rarely used to implement web
+  // platform features.
   size_t findIgnoringCase(const StringView& value, unsigned start = 0) const {
     return m_string.findIgnoringCase(value, start);
   }
@@ -144,9 +146,16 @@ class WTF_EXPORT AtomicString {
   }
   bool endsWith(UChar character) const { return m_string.endsWith(character); }
 
+  // Returns a lowercase/uppercase version of the string. These functions might
+  // convert non-ASCII characters to ASCII characters. For example, lower() for
+  // U+212A is 'k', upper() for U+017F is 'S'.
+  // These functions are rarely used to implement web platform features.
   AtomicString lower() const;
-  AtomicString lowerASCII() const;
   AtomicString upper() const { return AtomicString(impl()->upper()); }
+
+  // Returns a lowercase version of the string. This function converts only
+  // upper-case ASCII characters.
+  AtomicString lowerASCII() const;
 
   int toInt(bool* ok = 0) const { return m_string.toInt(ok); }
   double toDouble(bool* ok = 0) const { return m_string.toDouble(ok); }

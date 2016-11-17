@@ -51,6 +51,10 @@ class RetainPtr;
 enum TextCaseSensitivity {
   TextCaseSensitive,
   TextCaseASCIIInsensitive,
+
+  // Unicode aware case insensitive matching. Non-ASCII characters might match
+  // to ASCII characters. This flag is rarely used to implement web platform
+  // features.
   TextCaseInsensitive
 };
 
@@ -384,6 +388,9 @@ class WTF_EXPORT StringImpl {
 
   // Find substrings.
   size_t find(const StringView&, unsigned index = 0);
+  // Unicode aware case insensitive string matching. Non-ASCII characters might
+  // match to ASCII characters. This function is rarely used to implement web
+  // platform features.
   size_t findIgnoringCase(const StringView&, unsigned index = 0);
   size_t findIgnoringASCIICase(const StringView&, unsigned index = 0);
 
@@ -543,12 +550,14 @@ ALWAYS_INLINE bool equal(const UChar* a, const LChar* b, unsigned length) {
   return equal(b, a, length);
 }
 
+// Unicode aware case insensitive string matching. Non-ASCII characters might
+// match to ASCII characters. These functions are rarely used to implement web
+// platform features.
 WTF_EXPORT bool equalIgnoringCase(const LChar*, const LChar*, unsigned length);
 WTF_EXPORT bool equalIgnoringCase(const UChar*, const LChar*, unsigned length);
 inline bool equalIgnoringCase(const LChar* a, const UChar* b, unsigned length) {
   return equalIgnoringCase(b, a, length);
 }
-
 WTF_EXPORT bool equalIgnoringCase(const UChar*, const UChar*, unsigned length);
 
 WTF_EXPORT bool equalIgnoringNullity(StringImpl*, StringImpl*);
