@@ -50,11 +50,6 @@ VIEWS_EXPORT
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo;
 
-// Redeclare methods defined in the protocol NSWindowDelegate which are only
-// available on OSX 10.7+.
-- (void)windowDidFailToEnterFullScreen:(NSWindow*)window;
-- (void)windowDidFailToExitFullScreen:(NSWindow*)window;
-
 @end
 
 #endif  // UI_VIEWS_COCOA_VIEWS_NSWINDOW_DELEGATE_H_

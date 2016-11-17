@@ -23,7 +23,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
-#import "ui/base/cocoa/nscolor_additions.h"
 #include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;

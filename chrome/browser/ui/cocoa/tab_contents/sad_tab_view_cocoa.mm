@@ -9,7 +9,6 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
-#import "ui/base/cocoa/nscolor_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -68,7 +67,7 @@ NSTextField* MakeLabelTextField(NSRect frame) {
 
     self.wantsLayer = YES;
     self.layer.backgroundColor =
-        [NSColor colorWithCalibratedWhite:245.0f / 255.0f alpha:1.0].cr_CGColor;
+        [NSColor colorWithCalibratedWhite:245.0f / 255.0f alpha:1.0].CGColor;
     container_ = [[SadTabContainerView new] autorelease];
 
     NSImage* iconImage = ResourceBundle::GetSharedInstance()
