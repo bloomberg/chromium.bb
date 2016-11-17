@@ -36,8 +36,6 @@ from pylib.constants import host_paths
 from pylib.linker import setup as linker_setup
 from pylib.junit import setup as junit_setup
 from pylib.junit import test_dispatcher as junit_dispatcher
-from pylib.monkey import setup as monkey_setup
-from pylib.monkey import test_options as monkey_test_options
 from pylib.results import json_results
 from pylib.results import report_results
 
@@ -426,52 +424,31 @@ def AddMonkeyTestOptions(parser):
 
   group = parser.add_argument_group('Monkey Test Options')
   group.add_argument(
-      '--package', required=True, choices=constants.PACKAGE_INFO.keys(),
-      metavar='PACKAGE', help='Package under test.')
+      '--browser', required=True, choices=constants.PACKAGE_INFO.keys(),
+      metavar='BROWSER', help='Browser under test.')
   group.add_argument(
       '--event-count', default=10000, type=int,
       help='Number of events to generate (default: %(default)s).')
   group.add_argument(
-      '--category', default='',
-      help='A list of allowed categories.')
+      '--category', nargs='*', dest='categories', default=[],
+      help='A list of allowed categories. Monkey will only visit activities '
+           'that are listed with one of the specified categories.')
   group.add_argument(
       '--throttle', default=100, type=int,
       help='Delay between events (ms) (default: %(default)s). ')
   group.add_argument(
       '--seed', type=int,
-      help=('Seed value for pseudo-random generator. Same seed value generates '
-            'the same sequence of events. Seed is randomized by default.'))
+      help='Seed value for pseudo-random generator. Same seed value generates '
+           'the same sequence of events. Seed is randomized by default.')
   group.add_argument(
-      '--extra-args', default='',
-      help=('String of other args to pass to the command verbatim.'))
-
+      '--repeat', dest='repeat', type=int, default=0,
+      help='Number of times to repeat the specified set of tests.')
+  group.add_argument(
+      '--break-on-failure', '--break_on_failure',
+      dest='break_on_failure', action='store_true',
+      help='Whether to break on failure.')
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
-
-def ProcessMonkeyTestOptions(args):
-  """Processes all monkey test options.
-
-  Args:
-    args: argparse.Namespace object.
-
-  Returns:
-    A MonkeyOptions named tuple which contains all options relevant to
-    monkey tests.
-  """
-  # TODO(jbudorick): Handle this directly in argparse with nargs='+'
-  category = args.category
-  if category:
-    category = args.category.split(',')
-
-  # TODO(jbudorick): Get rid of MonkeyOptions.
-  return monkey_test_options.MonkeyOptions(
-      args.verbose_count,
-      args.package,
-      args.event_count,
-      category,
-      args.throttle,
-      args.seed,
-      args.extra_args)
 
 
 def AddPerfTestOptions(parser):
@@ -608,27 +585,6 @@ def _RunJUnitTests(args):
   return exit_code
 
 
-def _RunMonkeyTests(args, devices):
-  """Subcommand of RunTestsCommands which runs monkey tests."""
-  monkey_options = ProcessMonkeyTestOptions(args)
-
-  runner_factory, tests = monkey_setup.Setup(monkey_options)
-
-  results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, devices, shard=False, test_timeout=None,
-      num_retries=args.num_retries)
-
-  report_results.LogFull(
-      results=results,
-      test_type='Monkey',
-      test_package='Monkey')
-
-  if args.json_results_file:
-    json_results.GenerateJsonResultsFile([results], args.json_results_file)
-
-  return exit_code
-
-
 def _RunPythonTests(args):
   """Subcommand of RunTestsCommand which runs python unit tests."""
   suite_vars = constants.PYTHON_UNIT_TEST_SUITES[args.suite_name]
@@ -678,7 +634,7 @@ def _GetAttachedDevices(blacklist_file, test_device, enable_cache, num_retries):
     return sorted(attached_devices)
 
 
-_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation', 'perf']
+_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation', 'monkey', 'perf']
 
 
 def RunTestsCommand(args): # pylint: disable=too-many-return-statements
@@ -718,8 +674,6 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
     return _RunLinkerTests(args, get_devices())
   elif command == 'junit':
     return _RunJUnitTests(args)
-  elif command == 'monkey':
-    return _RunMonkeyTests(args, get_devices())
   elif command == 'python':
     return _RunPythonTests(args)
   else:
@@ -731,6 +685,7 @@ _SUPPORTED_IN_PLATFORM_MODE = [
   'gtest',
   'instrumentation',
   'junit',
+  'monkey',
   'perf',
 ]
 

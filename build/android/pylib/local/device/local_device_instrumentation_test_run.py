@@ -60,6 +60,7 @@ class LocalDeviceInstrumentationTestRun(
     super(LocalDeviceInstrumentationTestRun, self).__init__(env, test_instance)
     self._flag_changers = {}
 
+  #override
   def TestPackage(self):
     return self._test_instance.suite
 

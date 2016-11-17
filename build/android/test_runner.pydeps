@@ -106,6 +106,7 @@ pylib/local/device/__init__.py
 pylib/local/device/local_device_environment.py
 pylib/local/device/local_device_gtest_run.py
 pylib/local/device/local_device_instrumentation_test_run.py
+pylib/local/device/local_device_monkey_test_run.py
 pylib/local/device/local_device_perf_test_run.py
 pylib/local/device/local_device_test_run.py
 pylib/local/local_test_server_spawner.py
@@ -113,9 +114,7 @@ pylib/local/machine/__init__.py
 pylib/local/machine/local_machine_environment.py
 pylib/local/machine/local_machine_junit_test_run.py
 pylib/monkey/__init__.py
-pylib/monkey/setup.py
-pylib/monkey/test_options.py
-pylib/monkey/test_runner.py
+pylib/monkey/monkey_test_instance.py
 pylib/perf/__init__.py
 pylib/perf/perf_test_instance.py
 pylib/results/__init__.py

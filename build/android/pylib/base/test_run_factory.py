@@ -5,9 +5,11 @@
 from pylib.gtest import gtest_test_instance
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.junit import junit_test_instance
+from pylib.monkey import monkey_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_gtest_run
 from pylib.local.device import local_device_instrumentation_test_run
+from pylib.local.device import local_device_monkey_test_run
 from pylib.local.device import local_device_perf_test_run
 from pylib.local.machine import local_machine_environment
 from pylib.local.machine import local_machine_junit_test_run
@@ -33,6 +35,9 @@ def CreateTestRun(args, env, test_instance, error_func):
                   instrumentation_test_instance.InstrumentationTestInstance):
       return (local_device_instrumentation_test_run
               .LocalDeviceInstrumentationTestRun(env, test_instance))
+    if isinstance(test_instance, monkey_test_instance.MonkeyTestInstance):
+      return (local_device_monkey_test_run
+              .LocalDeviceMonkeyTestRun(env, test_instance))
     if isinstance(test_instance,
                   perf_test_instance.PerfTestInstance):
       return _CreatePerfTestRun(args, env, test_instance)
