@@ -21,13 +21,13 @@ class Vector2d;
 
 namespace content {
 class RenderFrameHost;
+class RenderWidgetHostImpl;
 struct ContextMenuParams;
 struct DropData;
 struct MenuItem;
 
 // This class provides a way for the RenderViewHost to reach out to its
-// delegate's view. It only needs to be implemented by embedders if they don't
-// use the default WebContentsView implementations.
+// delegate's view.
 class CONTENT_EXPORT RenderViewHostDelegateView {
  public:
   // A context menu should be shown, to be built using the context information
@@ -44,7 +44,8 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
                              blink::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
-                             const DragEventSourceInfo& event_info) {}
+                             const DragEventSourceInfo& event_info,
+                             RenderWidgetHostImpl* source_rwh) {}
 
   // The page wants to update the mouse cursor during a drag & drop operation.
   // |operation| describes the current operation (none, move, copy, link.)

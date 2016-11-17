@@ -229,7 +229,8 @@ void WebContentsViewGuest::StartDragging(
     WebDragOperationsMask ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
-    const DragEventSourceInfo& event_info) {
+    const DragEventSourceInfo& event_info,
+    RenderWidgetHostImpl* source_rwh) {
   WebContentsImpl* embedder_web_contents = guest_->embedder_web_contents();
   embedder_web_contents->GetBrowserPluginEmbedder()->StartDrag(guest_);
   RenderViewHostImpl* embedder_render_view_host =
@@ -240,7 +241,8 @@ void WebContentsViewGuest::StartDragging(
       embedder_render_view_host->GetDelegate()->GetDelegateView();
   if (view) {
     RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.StartDrag"));
-    view->StartDragging(drop_data, ops, image, image_offset, event_info);
+    view->StartDragging(
+        drop_data, ops, image, image_offset, event_info, source_rwh);
   } else {
     embedder_web_contents->SystemDragEnded();
   }

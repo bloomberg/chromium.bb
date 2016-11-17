@@ -199,10 +199,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                       const gfx::Point& client_pt,
                       const gfx::Point& screen_pt,
                       int key_modifiers) override;
-  void DragSourceEndedAt(int client_x,
-                         int client_y,
-                         int screen_x,
-                         int screen_y,
+  void DragSourceEndedAt(const gfx::Point& client_pt,
+                         const gfx::Point& screen_pt,
                          blink::WebDragOperation operation) override;
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
@@ -568,6 +566,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool renderer_initialized() const { return renderer_initialized_; }
 
   bool needs_begin_frames() const { return needs_begin_frames_; }
+
+  base::WeakPtr<RenderWidgetHostImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
  protected:
   // ---------------------------------------------------------------------------

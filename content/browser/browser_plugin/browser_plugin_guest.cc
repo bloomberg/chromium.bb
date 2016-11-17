@@ -514,10 +514,10 @@ void BrowserPluginGuest::DragSourceEndedAt(int client_x,
                                            int screen_x,
                                            int screen_y,
                                            blink::WebDragOperation operation) {
-  // TODO(paulmeyer): This will need to target the correct specific
-  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
   web_contents()->GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
-      client_x, client_y, screen_x, screen_y, operation);
+      gfx::Point(client_x, client_y),
+      gfx::Point(screen_x, screen_y),
+      operation);
   seen_embedder_drag_source_ended_at_ = true;
   EndSystemDragIfApplicable();
 }

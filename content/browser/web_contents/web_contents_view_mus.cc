@@ -207,7 +207,8 @@ void WebContentsViewMus::StartDragging(const DropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const gfx::ImageSkia& image,
                                        const gfx::Vector2d& image_offset,
-                                       const DragEventSourceInfo& event_info) {
+                                       const DragEventSourceInfo& event_info,
+                                       RenderWidgetHostImpl* source_rwh) {
   // TODO(fsamuel): Implement drag and drop.
 }
 

@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -31,6 +32,7 @@ class TouchSelectionController;
 namespace content {
 class GestureNavSimple;
 class OverscrollNavigationOverlay;
+class RenderWidgetHostImpl;
 class RenderWidgetHostViewAura;
 class TouchSelectionControllerClientAura;
 class WebContentsViewDelegate;
@@ -117,7 +119,8 @@ class CONTENT_EXPORT WebContentsViewAura
                      blink::WebDragOperationsMask operations,
                      const gfx::ImageSkia& image,
                      const gfx::Vector2d& image_offset,
-                     const DragEventSourceInfo& event_info) override;
+                     const DragEventSourceInfo& event_info,
+                     RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(blink::WebDragOperation operation) override;
   void GotFocus() override;
   void TakeFocus(bool reverse) override;
@@ -191,11 +194,18 @@ class CONTENT_EXPORT WebContentsViewAura
 
   WebDragDestDelegate* drag_dest_delegate_;
 
-  // We keep track of the render view host we're dragging over.  If it changes
-  // during a drag, we need to re-send the DragEnter message.  WARNING:
-  // this pointer should never be dereferenced.  We only use it for comparing
-  // pointers.
+  // We keep track of the RenderWidgetHost we're dragging over. If it changes
+  // during a drag, we need to re-send the DragEnter message.
+  base::WeakPtr<RenderWidgetHostImpl> current_rwh_for_drag_;
+
+  // We also keep track of the RenderViewHost we're dragging over to avoid
+  // sending the drag exited message after leaving the current
+  // view. |current_rvh_for_drag_| should not be dereferenced.
   void* current_rvh_for_drag_;
+
+  // We keep track of the RenderWidgetHost from which the current drag started,
+  // in order to properly route the drag end message to it.
+  base::WeakPtr<RenderWidgetHostImpl> drag_start_rwh_;
 
   // The overscroll gesture currently in progress.
   OverscrollMode current_overscroll_gesture_;

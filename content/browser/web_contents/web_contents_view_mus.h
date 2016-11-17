@@ -20,6 +20,7 @@
 
 namespace content {
 
+class RenderWidgetHostImpl;
 class WebContents;
 class WebContentsImpl;
 class WebContentsViewDelegate;
@@ -80,7 +81,8 @@ class WebContentsViewMus : public WebContentsView,
                      blink::WebDragOperationsMask allowed_ops,
                      const gfx::ImageSkia& image,
                      const gfx::Vector2d& image_offset,
-                     const DragEventSourceInfo& event_info) override;
+                     const DragEventSourceInfo& event_info,
+                     RenderWidgetHostImpl* source_rwh) override;
   void UpdateDragCursor(blink::WebDragOperation operation) override;
   void GotFocus() override;
   void TakeFocus(bool reverse) override;

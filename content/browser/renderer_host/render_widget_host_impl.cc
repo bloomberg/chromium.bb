@@ -1379,11 +1379,12 @@ void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
 }
 
 void RenderWidgetHostImpl::DragSourceEndedAt(
-    int client_x, int client_y, int screen_x, int screen_y,
+    const gfx::Point& client_pt,
+    const gfx::Point& screen_pt,
     blink::WebDragOperation operation) {
   Send(new DragMsg_SourceEnded(GetRoutingID(),
-                               gfx::Point(client_x, client_y),
-                               gfx::Point(screen_x, screen_y),
+                               client_pt,
+                               screen_pt,
                                operation));
 }
 
@@ -1476,13 +1477,6 @@ void RenderWidgetHostImpl::OnStartDragging(
     const SkBitmap& bitmap,
     const gfx::Vector2d& bitmap_offset_in_dip,
     const DragEventSourceInfo& event_info) {
-  // TODO(paulmeyer): Stop relying on RenderViewHost once
-  // DragSourceSystemDragEnded is moved into RenderWidgetHost. See
-  // crbug.com/647249.
-  RenderViewHost* rvh = RenderViewHost::From(this);
-  if (!rvh)
-    return;
-
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (!view) {
     // Need to clear drag and drop state in blink.
@@ -1526,7 +1520,7 @@ void RenderWidgetHostImpl::OnStartDragging(
   float scale = GetScaleFactorForView(GetView());
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale));
   view->StartDragging(filtered_data, drag_operations_mask, image,
-                      bitmap_offset_in_dip, event_info);
+                      bitmap_offset_in_dip, event_info, this);
 }
 
 void RenderWidgetHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {

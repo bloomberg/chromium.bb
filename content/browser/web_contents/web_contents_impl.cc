@@ -2967,11 +2967,6 @@ void WebContentsImpl::DragSourceEndedAt(int client_x,
   if (browser_plugin_embedder_.get())
     browser_plugin_embedder_->DragSourceEndedAt(
         client_x, client_y, screen_x, screen_y, operation);
-  // TODO(paulmeyer): This will need to target the correct specific RWH to work
-  // with OOPIF.
-  if (GetRenderViewHost())
-    GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
-        client_x, client_y, screen_x, screen_y, operation);
 }
 
 void WebContentsImpl::LoadStateChanged(

@@ -285,11 +285,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
                               const gfx::Point& screen_pt,
                               int key_modifiers) {}
 
-  // Notifies the renderer that a a drag operation that it started has ended,
+  // Notifies the renderer that a drag operation that it started has ended,
   // either in a drop or by being cancelled.
-  virtual void DragSourceEndedAt(
-      int client_x, int client_y, int screen_x, int screen_y,
-      blink::WebDragOperation operation) {};
+  virtual void DragSourceEndedAt(const gfx::Point& client_pt,
+                                 const gfx::Point& screen_pt,
+                                 blink::WebDragOperation operation) {};
 
   // Notifies the renderer that we're done with the drag and drop operation.
   // This allows the renderer to reset some state.
