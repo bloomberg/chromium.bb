@@ -50,7 +50,7 @@ I. Binding Agreement
    team.
 
    By entering, Participant warrants that Participant has not violated
-   any employment agreement or other restriction imposed by his or her
+   any employment agreement or other restriction imposed by their
    employer by participating in this Contest.
 
 #. Description
@@ -69,8 +69,8 @@ I. Binding Agreement
    Exploit will become an Issue and will no longer be able to be
    identified by another Participant. Google will then verify that the
    Issue is reproducible. If so, that Issue will become a Verified
-   Issue. Finally, the Participant will submit a Summary of up to his
-   or her top ten best Issues that were submitted on the `Native
+   Issue. Finally, the Participant will submit a Summary of up to their
+   top ten best Issues that were submitted on the `Native
    Client Issue Tracker
    <http://code.google.com/p/nativeclient/issues/list>`_. Since it is
    possible that an Issue may not be verified until after the Contest
@@ -634,7 +634,7 @@ I. Binding Agreement
       distribution of the prize among the team members.
 
       Each individual that enters as part of a team, understands and
-      agrees that if his/her team is selected to receive a prize, the
+      agrees that if their team is selected to receive a prize, the
       team is responsible for ensuring the funds are appropriately
       distributed to each member of the team. In addition, once a team
       has registered, the team may not add, remove, or substitute any
@@ -748,7 +748,7 @@ I. Binding Agreement
       authority, all as determined by applicable law, including, where
       relevant, the law of the potential prize recipient's country of
       residence. The potential prize recipient is responsible for
-      ensuring that (s)he complies with all the applicable tax laws
+      ensuring that they comply with all the applicable tax laws
       and filing requirements. If a potential prize recipient fails to
       provide such documentation or comply with such laws, the prize
       may be forfeited and Google may, in its sole discretion, select
