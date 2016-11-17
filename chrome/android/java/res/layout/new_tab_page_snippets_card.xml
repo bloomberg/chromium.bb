@@ -64,15 +64,16 @@
         <!-- We can't add this ImageView as a CompoundDrawable to the TextView because we want to
         have different paddings between the favicon (which is a compound drawable on the TextView)
         and the offline icon. -->
-        <ImageView
+        <org.chromium.chrome.browser.widget.TintedImageView
             android:id="@+id/offline_icon"
             android:layout_width="@dimen/snippets_offline_icon_size"
             android:layout_height="@dimen/snippets_offline_icon_size"
             android:layout_marginStart="6dp"
-            android:alpha="0.46"
+            android:alpha="0.54"
             android:src="@drawable/offline_pin_round"
             android:contentDescription="@string/accessibility_ntp_offline_badge"
-            android:visibility="gone" />
+            android:visibility="gone"
+            chrome:tint="#000" />
 
     </LinearLayout>
 
