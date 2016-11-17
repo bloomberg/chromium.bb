@@ -22,6 +22,9 @@ const char kArcApps[] = "arc.apps";
 const char kArcBackupRestoreEnabled[] = "arc.backup_restore.enabled";
 // A preference to keep Android apps enabled state.
 const char kArcEnabled[] = "arc.enabled";
+// A preference that indicated whether Android reported that it's compliant
+// with provided policies. When it's compliant, Android kiosk app will start.
+const char kArcPolicyCompliant[] = "arc.policy_compliant";
 // A preference that indicates that user accepted PlayStore terms.
 const char kArcTermsAccepted[] = "arc.terms.accepted";
 // A preference to keep user's consent to use location service.
