@@ -1035,8 +1035,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
     {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
     {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
-    {"manageOtherPeopleDescription",
-     IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE_DESCRIPTION},
     {"manageSupervisedUsers", IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS},
     {"manageSupervisedUsersDescription",
      IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS_DESCRIPTION},
