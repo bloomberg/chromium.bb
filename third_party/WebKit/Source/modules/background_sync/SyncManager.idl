@@ -8,6 +8,8 @@ enum SyncPermissionState {
   "granted"
 };
 
+// https://wicg.github.io/BackgroundSync/spec/#sync-manager-interface
+
 [
     Exposed=(Window,ServiceWorker),
     RuntimeEnabled=BackgroundSync,

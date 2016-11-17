@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Standards spec at https://github.com/WICG/ResizeObserver
+// https://wicg.github.io/ResizeObserver/#resize-observer-interface
 
 [
     Constructor(ResizeObserverCallback callback),

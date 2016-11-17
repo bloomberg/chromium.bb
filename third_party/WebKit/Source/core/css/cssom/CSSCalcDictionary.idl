@@ -1,3 +1,6 @@
+// TODO(markdittmer): Should be named "CSSLengthCalcDictionary".
+// https://drafts.css-houdini.org/css-typed-om-1/#dictdef-csslengthcalcdictionary
+
 dictionary CSSCalcDictionary {
   double? px = null;
   double? percent = null;

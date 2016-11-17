@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://www.khronos.org/registry/webgl/specs/latest/2.0/#3.7
+
 [
     DoNotCheckConstants,
     SetWrapperReferenceFrom=canvas,

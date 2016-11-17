@@ -16,6 +16,9 @@ enum RequestContext {
 enum RequestMode { "navigate", "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 enum RequestRedirect { "follow", "error", "manual" };
+
+// https://w3c.github.io/webappsec-referrer-policy/#referrer-policies
+
 enum ReferrerPolicy {
     "",
     "no-referrer",

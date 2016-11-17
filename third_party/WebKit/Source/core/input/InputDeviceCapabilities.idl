@@ -9,6 +9,8 @@
 // events, and one for those that don't, because currently all we care
 // about is if the input device fires touch events or not.
 
+// https://wicg.github.io/InputDeviceCapabilities/#the-inputdevicecapabilities-interface
+
 [
     Constructor(optional InputDeviceCapabilitiesInit deviceInitDict),
 ] interface InputDeviceCapabilities {

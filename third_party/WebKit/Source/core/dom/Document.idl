@@ -23,7 +23,8 @@
 // https://html.spec.whatwg.org/#the-document-object
 enum DocumentReadyState { "loading", "interactive", "complete" };
 
-// http://www.w3.org/TR/page-visibility/#VisibilityState
+
+// https://w3c.github.io/page-visibility/#visibility-states-and-the-visibilitystate-enum
 enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
 // https://mikewest.github.io/cors-rfc1918/#feature-detect

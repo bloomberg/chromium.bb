@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#the-domparser-interface
+// https://w3c.github.io/DOM-Parsing/#the-domparser-interface
 
 enum SupportedType {
     "text/html",

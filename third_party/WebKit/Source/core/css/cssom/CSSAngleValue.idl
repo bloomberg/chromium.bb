@@ -1,3 +1,5 @@
+// https://drafts.css-houdini.org/css-typed-om-1/#anglevalue-objects
+
 enum CSSAngleUnit {
     "deg", "rad", "grad", "turn"
 };

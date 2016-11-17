@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-datatransferitem-interface
+
+// TODO(markdittmer): Spec defines this as FunctionStringCallback.
 callback interface StringCallback {
     void handleEvent(DOMString data);
 };
