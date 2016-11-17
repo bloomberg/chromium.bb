@@ -121,9 +121,15 @@ TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
   RunAllPendingInMessageLoop();
 }
 
+// TODO(bruthig): Re-enable.  See https://crbug.com/665960.
+#if defined(OS_WIN)
+#define MAYBE_NullDefaultViewIsNotRecorded DISABLED_NullDefaultViewIsNotRecorded
+#else
+#define MAYBE_NullDefaultViewIsNotRecorded NullDefaultViewIsNotRecorded
+#endif
 // Verifies null default views are not recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
-TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
+TEST_F(SystemTrayTest, MAYBE_NullDefaultViewIsNotRecorded) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
