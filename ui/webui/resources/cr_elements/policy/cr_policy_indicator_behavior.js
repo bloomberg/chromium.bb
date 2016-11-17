@@ -9,6 +9,7 @@
 /** @enum {string} */
 var CrPolicyIndicatorType = {
   DEVICE_POLICY: 'devicePolicy',
+  EXTENSION: 'extension',
   NONE: 'none',
   OWNER: 'owner',
   PRIMARY_USER: 'primary_user',
@@ -24,7 +25,8 @@ var CrPolicyIndicatorBehavior = {
    * @private
    */
   isIndicatorVisible: function(type) {
-    return type != CrPolicyIndicatorType.NONE;
+    return type != CrPolicyIndicatorType.NONE &&
+           type != CrPolicyIndicatorType.EXTENSION;
   },
 
   /**
@@ -35,6 +37,7 @@ var CrPolicyIndicatorBehavior = {
   getPolicyIndicatorIcon: function(type) {
     var icon = '';
     switch (type) {
+      case CrPolicyIndicatorType.EXTENSION:
       case CrPolicyIndicatorType.NONE:
         return icon;
       case CrPolicyIndicatorType.PRIMARY_USER:
