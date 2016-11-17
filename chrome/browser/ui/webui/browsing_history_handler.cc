@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -106,8 +107,9 @@ static const char kDeviceTypeTablet[] = "tablet";
 
 // Returns a localized version of |visit_time| including a relative
 // indicator (e.g. today, yesterday).
-base::string16 GetRelativeDateLocalized(const base::Time& visit_time) {
-  base::Time midnight = base::Time::Now().LocalMidnight();
+base::string16 GetRelativeDateLocalized(base::Clock* clock,
+                                        const base::Time& visit_time) {
+  base::Time midnight = clock->Now().LocalMidnight();
   base::string16 date_str = ui::TimeFormat::RelativeDate(visit_time, &midnight);
   if (date_str.empty()) {
     date_str = base::TimeFormatFriendlyDate(visit_time);
@@ -178,9 +180,14 @@ void RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(bool shown) {
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
     BrowsingHistoryHandler::HistoryEntry::EntryType entry_type,
-    const GURL& url, const base::string16& title, base::Time time,
-    const std::string& client_id, bool is_search_result,
-    const base::string16& snippet, bool blocked_visit) {
+    const GURL& url,
+    const base::string16& title,
+    base::Time time,
+    const std::string& client_id,
+    bool is_search_result,
+    const base::string16& snippet,
+    bool blocked_visit,
+    base::Clock* clock) {
   this->entry_type = entry_type;
   this->url = url;
   this->title = title;
@@ -190,6 +197,7 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
   this->is_search_result = is_search_result;
   this->snippet = snippet;
   this->blocked_visit = blocked_visit;
+  this->clock = clock;
 }
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry()
@@ -280,7 +288,7 @@ BrowsingHistoryHandler::HistoryEntry::ToValue(
   if (is_search_result) {
     snippet_string = snippet;
   } else {
-    base::Time midnight = base::Time::Now().LocalMidnight();
+    base::Time midnight = clock->Now().LocalMidnight();
     base::string16 date_str = ui::TimeFormat::RelativeDate(time, &midnight);
     if (date_str.empty()) {
       date_str = base::TimeFormatFriendlyDate(time);
@@ -335,6 +343,7 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
       sync_service_observer_(this),
       has_synced_results_(false),
       has_other_forms_of_browsing_history_(false),
+      clock_(new base::DefaultClock()),
       weak_factory_(this) {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
@@ -550,7 +559,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
 
-  base::Time now = base::Time::Now();
+  base::Time now = clock_->Now();
   std::vector<history::ExpireHistoryArgs> expire_list;
   expire_list.reserve(args->GetSize());
 
@@ -723,16 +732,10 @@ void BrowsingHistoryHandler::QueryComplete(
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
     // TODO(dubroy): Use sane time (crbug.com/146090) here when it's ready.
-    query_results_.push_back(
-        HistoryEntry(
-            HistoryEntry::LOCAL_ENTRY,
-            page.url(),
-            page.title(),
-            page.visit_time(),
-            std::string(),
-            !search_text.empty(),
-            page.snippet().text(),
-            page.blocked_visit()));
+    query_results_.push_back(HistoryEntry(
+        HistoryEntry::LOCAL_ENTRY, page.url(), page.title(), page.visit_time(),
+        std::string(), !search_text.empty(), page.snippet().text(),
+        page.blocked_visit(), clock_.get()));
   }
 
   // The items which are to be written into results_info_value_ are also
@@ -744,15 +747,17 @@ void BrowsingHistoryHandler::QueryComplete(
 
   // Add the specific dates that were searched to display them.
   // TODO(sergiu): Put today if the start is in the future.
-  results_info_value_.SetString("queryStartTime",
-                                GetRelativeDateLocalized(options.begin_time));
+  results_info_value_.SetString(
+      "queryStartTime",
+      GetRelativeDateLocalized(clock_.get(), options.begin_time));
   if (!options.end_time.is_null()) {
-    results_info_value_.SetString("queryEndTime",
-        GetRelativeDateLocalized(options.end_time -
-                                 base::TimeDelta::FromDays(1)));
+    results_info_value_.SetString(
+        "queryEndTime",
+        GetRelativeDateLocalized(
+            clock_.get(), options.end_time - base::TimeDelta::FromDays(1)));
   } else {
-    results_info_value_.SetString("queryEndTime",
-        GetRelativeDateLocalized(base::Time::Now()));
+    results_info_value_.SetString(
+        "queryEndTime", GetRelativeDateLocalized(clock_.get(), clock_->Now()));
   }
   if (!web_history_timer_.IsRunning())
     ReturnResultsToFrontEnd();
@@ -887,15 +892,9 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         id->GetString("client_id", &client_id);
 
         web_history_query_results_.push_back(
-            HistoryEntry(
-                HistoryEntry::REMOTE_ENTRY,
-                gurl,
-                title,
-                time,
-                client_id,
-                !search_text.empty(),
-                base::string16(),
-                /* blocked_visit */ false));
+            HistoryEntry(HistoryEntry::REMOTE_ENTRY, gurl, title, time,
+                         client_id, !search_text.empty(), base::string16(),
+                         /* blocked_visit */ false, clock_.get()));
       }
     }
   }
@@ -938,8 +937,8 @@ void BrowsingHistoryHandler::SetQueryTimeInWeeks(
     int offset, history::QueryOptions* options) {
   // LocalMidnight returns the beginning of the current day so get the
   // beginning of the next one.
-  base::Time midnight = base::Time::Now().LocalMidnight() +
-                              base::TimeDelta::FromDays(1);
+  base::Time midnight =
+      clock_->Now().LocalMidnight() + base::TimeDelta::FromDays(1);
   options->end_time = midnight -
       base::TimeDelta::FromDays(7 * offset);
   options->begin_time = midnight -
@@ -951,7 +950,7 @@ void BrowsingHistoryHandler::SetQueryTimeInMonths(
   // Configure the begin point of the search to the start of the
   // current month.
   base::Time::Exploded exploded;
-  base::Time::Now().LocalMidnight().LocalExplode(&exploded);
+  clock_->Now().LocalMidnight().LocalExplode(&exploded);
   exploded.day_of_month = 1;
 
   if (offset == 0) {
@@ -972,7 +971,7 @@ void BrowsingHistoryHandler::SetQueryTimeInMonths(
     exploded.month -= offset - 1;
     // Set the correct year.
     NormalizeMonths(&exploded);
-    if (!base::Time::FromLocalExploded(exploded, &options->begin_time)) {
+    if (!base::Time::FromLocalExploded(exploded, &options->end_time)) {
       // TODO(maksims): implement errors handling here.
       NOTIMPLEMENTED();
     }

@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -66,10 +67,15 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
       COMBINED_ENTRY
     };
 
-    HistoryEntry(EntryType type, const GURL& url, const base::string16& title,
-                 base::Time time, const std::string& client_id,
-                 bool is_search_result, const base::string16& snippet,
-                 bool blocked_visit);
+    HistoryEntry(EntryType type,
+                 const GURL& url,
+                 const base::string16& title,
+                 base::Time time,
+                 const std::string& client_id,
+                 bool is_search_result,
+                 const base::string16& snippet,
+                 bool blocked_visit,
+                 base::Clock* clock);
     HistoryEntry();
     HistoryEntry(const HistoryEntry& other);
     virtual ~HistoryEntry();
@@ -113,6 +119,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
+
+    base::Clock* clock;  // Weak reference.
   };
 
   BrowsingHistoryHandler();
@@ -149,9 +157,16 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                      const history::QueryOptions& options,
                      history::QueryResults* results);
 
+  // For tests.
+  void set_clock(std::unique_ptr<base::Clock> clock) {
+    clock_ = std::move(clock);
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest,
                            ObservingWebHistoryDeletions);
+  FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest, SetQueryTimeInWeeks);
+  FRIEND_TEST_ALL_PREFIXES(BrowsingHistoryHandlerTest, SetQueryTimeInMonths);
 
   // The range for which to return results:
   // - ALLTIME: allows access to all the results in a paginated way.
@@ -260,6 +275,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // Whether there are other forms of browsing history on the history server.
   bool has_other_forms_of_browsing_history_;
+
+  // The clock used to vend times.
+  std::unique_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_;
 
