@@ -69,8 +69,11 @@ class AV1Trans8x4HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
+TEST_P(AV1Trans8x4HT, AccuracyCheck) { RunAccuracyCheck(0); }
 TEST_P(AV1Trans8x4HT, CoeffCheck) { RunCoeffCheck(); }
+TEST_P(AV1Trans8x4HT, MemCheck) { RunMemCheck(); }
 TEST_P(AV1Trans8x4HT, InvCoeffCheck) { RunInvCoeffCheck(); }
+TEST_P(AV1Trans8x4HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 
 using std::tr1::make_tuple;
 

@@ -103,10 +103,10 @@ class TransformTestBase {
     }
 
     EXPECT_GE(static_cast<uint32_t>(limit), max_error)
-        << "Error: 4x4 FHT/IHT has an individual round trip error > " << limit;
+        << "Error: FHT/IHT has an individual round trip error > " << limit;
 
     EXPECT_GE(count_test_block * limit, total_error)
-        << "Error: 4x4 FHT/IHT has average round trip error > " << limit
+        << "Error: FHT/IHT has average round trip error > " << limit
         << " per block";
 
     aom_free(test_input_block);
@@ -249,7 +249,9 @@ class TransformTestBase {
       int row_length = FindRowLength();
       // The minimum quant value is 4.
       for (int j = 0; j < num_coeffs_; ++j) {
-        EXPECT_EQ(output_block[j], output_ref_block[j]);
+        EXPECT_EQ(output_block[j], output_ref_block[j])
+            << "Not bit-exact at test index: " << i << ", "
+            << "j = " << j << std::endl;
         EXPECT_GE(row_length * kDctMaxValue << (bit_depth_ - 8),
                   abs(output_block[j]))
             << "Error: NxN FDCT has coefficient larger than N*DCT_MAX_VALUE";

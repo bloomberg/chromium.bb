@@ -1190,8 +1190,6 @@ void av1_iht4x8_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
   in[6] = load_input_data(input + 2 * 8);
   in[7] = load_input_data(input + 3 * 8);
 
-  scale_sqrt2_8x4(in + 4);
-
   // Row transform
   switch (tx_type) {
     case DCT_DCT:
@@ -1229,6 +1227,8 @@ void av1_iht4x8_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
     default: assert(0); break;
   }
+
+  scale_sqrt2_8x4(in + 4);
 
   // Repack data
   in[0] = _mm_unpacklo_epi64(in[4], in[6]);

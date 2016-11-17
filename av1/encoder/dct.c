@@ -787,10 +787,10 @@ static void fadst8(const tran_low_t *input, tran_low_t *output) {
   s6 = cospi_26_64 * x6 + cospi_6_64 * x7;
   s7 = cospi_6_64 * x6 - cospi_26_64 * x7;
 
-  x0 = fdct_round_shift(s0 + s4);
-  x1 = fdct_round_shift(s1 + s5);
-  x2 = fdct_round_shift(s2 + s6);
-  x3 = fdct_round_shift(s3 + s7);
+  x0 = s0 + s4;
+  x1 = s1 + s5;
+  x2 = s2 + s6;
+  x3 = s3 + s7;
   x4 = fdct_round_shift(s0 - s4);
   x5 = fdct_round_shift(s1 - s5);
   x6 = fdct_round_shift(s2 - s6);
@@ -806,10 +806,10 @@ static void fadst8(const tran_low_t *input, tran_low_t *output) {
   s6 = -cospi_24_64 * x6 + cospi_8_64 * x7;
   s7 = cospi_8_64 * x6 + cospi_24_64 * x7;
 
-  x0 = s0 + s2;
-  x1 = s1 + s3;
-  x2 = s0 - s2;
-  x3 = s1 - s3;
+  x0 = fdct_round_shift(s0 + s2);
+  x1 = fdct_round_shift(s1 + s3);
+  x2 = fdct_round_shift(s0 - s2);
+  x3 = fdct_round_shift(s1 - s3);
   x4 = fdct_round_shift(s4 + s6);
   x5 = fdct_round_shift(s5 + s7);
   x6 = fdct_round_shift(s4 - s6);
@@ -875,14 +875,15 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
   s14 = x14 * cospi_29_64 + x15 * cospi_3_64;
   s15 = x14 * cospi_3_64 - x15 * cospi_29_64;
 
-  x0 = fdct_round_shift(s0 + s8);
-  x1 = fdct_round_shift(s1 + s9);
-  x2 = fdct_round_shift(s2 + s10);
-  x3 = fdct_round_shift(s3 + s11);
-  x4 = fdct_round_shift(s4 + s12);
-  x5 = fdct_round_shift(s5 + s13);
-  x6 = fdct_round_shift(s6 + s14);
-  x7 = fdct_round_shift(s7 + s15);
+  x0 = s0 + s8;
+  x1 = s1 + s9;
+  x2 = s2 + s10;
+  x3 = s3 + s11;
+  x4 = s4 + s12;
+  x5 = s5 + s13;
+  x6 = s6 + s14;
+  x7 = s7 + s15;
+
   x8 = fdct_round_shift(s0 - s8);
   x9 = fdct_round_shift(s1 - s9);
   x10 = fdct_round_shift(s2 - s10);
@@ -914,14 +915,15 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
   x1 = s1 + s5;
   x2 = s2 + s6;
   x3 = s3 + s7;
-  x4 = s0 - s4;
-  x5 = s1 - s5;
-  x6 = s2 - s6;
-  x7 = s3 - s7;
-  x8 = fdct_round_shift(s8 + s12);
-  x9 = fdct_round_shift(s9 + s13);
-  x10 = fdct_round_shift(s10 + s14);
-  x11 = fdct_round_shift(s11 + s15);
+  x4 = fdct_round_shift(s0 - s4);
+  x5 = fdct_round_shift(s1 - s5);
+  x6 = fdct_round_shift(s2 - s6);
+  x7 = fdct_round_shift(s3 - s7);
+
+  x8 = s8 + s12;
+  x9 = s9 + s13;
+  x10 = s10 + s14;
+  x11 = s11 + s15;
   x12 = fdct_round_shift(s8 - s12);
   x13 = fdct_round_shift(s9 - s13);
   x14 = fdct_round_shift(s10 - s14);
@@ -945,18 +947,21 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
   s14 = -x14 * cospi_24_64 + x15 * cospi_8_64;
   s15 = x14 * cospi_8_64 + x15 * cospi_24_64;
 
-  x0 = s0 + s2;
-  x1 = s1 + s3;
-  x2 = s0 - s2;
-  x3 = s1 - s3;
+  x0 = fdct_round_shift(s0 + s2);
+  x1 = fdct_round_shift(s1 + s3);
+  x2 = fdct_round_shift(s0 - s2);
+  x3 = fdct_round_shift(s1 - s3);
+
   x4 = fdct_round_shift(s4 + s6);
   x5 = fdct_round_shift(s5 + s7);
   x6 = fdct_round_shift(s4 - s6);
   x7 = fdct_round_shift(s5 - s7);
-  x8 = s8 + s10;
-  x9 = s9 + s11;
-  x10 = s8 - s10;
-  x11 = s9 - s11;
+
+  x8 = fdct_round_shift(s8 + s10);
+  x9 = fdct_round_shift(s9 + s11);
+  x10 = fdct_round_shift(s8 - s10);
+  x11 = fdct_round_shift(s9 - s11);
+
   x12 = fdct_round_shift(s12 + s14);
   x13 = fdct_round_shift(s13 + s15);
   x14 = fdct_round_shift(s12 - s14);
@@ -1230,7 +1235,7 @@ void av1_fht4x8_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = out[j + i * n];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n; ++j) output[j + i * n] = (temp_out[j] + 1) >> 2;
+    for (j = 0; j < n; ++j) output[j + i * n] = temp_out[j] >> 2;
   }
   // Note: overall scale factor of transform is 8 times unitary
 }
@@ -1281,7 +1286,7 @@ void av1_fht8x4_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n2; ++j) output[j + i * n2] = (temp_out[j] + 1) >> 2;
+    for (j = 0; j < n2; ++j) output[j + i * n2] = temp_out[j] >> 2;
   }
   // Note: overall scale factor of transform is 8 times unitary
 }
@@ -1332,8 +1337,7 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = out[j + i * n];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
-      output[j + i * n] = (temp_out[j] + 1 + (temp_out[j] < 0)) >> 2;
+    for (j = 0; j < n; ++j) output[j + i * n] = temp_out[j] >> 2;
   }
   // Note: overall scale factor of transform is 8 times unitary
 }
@@ -1384,8 +1388,7 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n2; ++j)
-      output[j + i * n2] = (temp_out[j] + 1 + (temp_out[j] < 0)) >> 2;
+    for (j = 0; j < n2; ++j) output[j + i * n2] = temp_out[j] >> 2;
   }
   // Note: overall scale factor of transform is 8 times unitary
 }
@@ -1435,9 +1438,7 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = out[j + i * n];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
-      output[j + i * n] =
-          (tran_low_t)((temp_out[j] + 1 + (temp_out[j] < 0)) >> 2);
+    for (j = 0; j < n; ++j) output[j + i * n] = temp_out[j] >> 2;
   }
   // Note: overall scale factor of transform is 4 times unitary
 }
@@ -1487,9 +1488,7 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n2; ++j)
-      output[j + i * n2] =
-          (tran_low_t)((temp_out[j] + 1 + (temp_out[j] < 0)) >> 2);
+    for (j = 0; j < n2; ++j) output[j + i * n2] = temp_out[j] >> 2;
   }
   // Note: overall scale factor of transform is 4 times unitary
 }

@@ -14,12 +14,15 @@
 
 #include "aom_dsp/txfm_common.h"
 
+static INLINE tran_high_t saturate_int16(tran_high_t value) {
+  tran_high_t result;
+  result = value > INT16_MAX ? INT16_MAX : value;
+  return result < INT16_MIN ? INT16_MIN : result;
+}
+
 static INLINE tran_high_t fdct_round_shift(tran_high_t input) {
   tran_high_t rv = ROUND_POWER_OF_TWO(input, DCT_CONST_BITS);
-  // TODO(debargha, peter.derivaz): Find new bounds for this assert
-  // and make the bounds consts.
-  // assert(INT16_MIN <= rv && rv <= INT16_MAX);
-  return rv;
+  return saturate_int16(rv);
 }
 
 void aom_fdct32(const tran_high_t *input, tran_high_t *output, int round);
