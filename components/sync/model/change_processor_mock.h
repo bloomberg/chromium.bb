@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
-#define COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
+#ifndef COMPONENTS_SYNC_MODEL_CHANGE_PROCESSOR_MOCK_H_
+#define COMPONENTS_SYNC_MODEL_CHANGE_PROCESSOR_MOCK_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/driver/change_processor.h"
+#include "components/sync/model/change_processor.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -35,4 +35,4 @@ class ChangeProcessorMock : public ChangeProcessor {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
+#endif  // COMPONENTS_SYNC_MODEL_CHANGE_PROCESSOR_MOCK_H_

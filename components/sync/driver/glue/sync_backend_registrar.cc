@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "components/sync/driver/change_processor.h"
+#include "components/sync/model/change_processor.h"
 #include "components/sync/syncable/user_share.h"
 
 namespace syncer {
