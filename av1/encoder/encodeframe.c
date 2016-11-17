@@ -1992,12 +1992,13 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
 #if CONFIG_EXT_INTER
         if (cm->reference_mode != SINGLE_REFERENCE &&
-            is_inter_compound_mode(mbmi->mode) &&
+            is_inter_compound_mode(mbmi->mode)
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-            mbmi->motion_mode == SIMPLE_TRANSLATION &&
+            && mbmi->motion_mode == SIMPLE_TRANSLATION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-            is_interinter_wedge_used(bsize)) {
-          counts->compound_interinter[bsize][mbmi->interinter_compound]++;
+            ) {
+          counts->compound_interinter[bsize]
+                                     [mbmi->interinter_compound_data.type]++;
         }
 #endif  // CONFIG_EXT_INTER
       }

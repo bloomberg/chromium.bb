@@ -1910,10 +1910,9 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   }
 
   for (i = 0; i < BLOCK_SIZES; ++i) {
-    if (is_interinter_wedge_used(i))
-      aom_tree_merge_probs(
-          av1_compound_type_tree, pre_fc->compound_type_prob[i],
-          counts->compound_interinter[i], fc->compound_type_prob[i]);
+    aom_tree_merge_probs(av1_compound_type_tree, pre_fc->compound_type_prob[i],
+                         counts->compound_interinter[i],
+                         fc->compound_type_prob[i]);
   }
 #endif  // CONFIG_EXT_INTER
 

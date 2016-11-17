@@ -4327,10 +4327,8 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     }
     if (cm->reference_mode != SINGLE_REFERENCE) {
       for (i = 0; i < BLOCK_SIZES; i++) {
-        if (is_interinter_wedge_used(i)) {
-          for (j = 0; j < COMPOUND_TYPES - 1; j++) {
-            av1_diff_update_prob(&r, &fc->compound_type_prob[i][j], ACCT_STR);
-          }
+        for (j = 0; j < COMPOUND_TYPES - 1; j++) {
+          av1_diff_update_prob(&r, &fc->compound_type_prob[i][j], ACCT_STR);
         }
       }
     }

@@ -522,6 +522,10 @@ const uint8_t *av1_get_soft_mask(int wedge_index, int wedge_sign,
                                  BLOCK_SIZE sb_type, int wedge_offset_x,
                                  int wedge_offset_y);
 
+const uint8_t *av1_get_compound_type_mask(
+    const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type,
+    int invert);
+
 void av1_build_interintra_predictors(MACROBLOCKD *xd, uint8_t *ypred,
                                      uint8_t *upred, uint8_t *vpred,
                                      int ystride, int ustride, int vstride,
