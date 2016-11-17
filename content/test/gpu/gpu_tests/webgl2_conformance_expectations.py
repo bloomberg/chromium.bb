@@ -118,8 +118,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['win', 'intel'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
-        ['win7', 'intel'], bug=593024)
+    # These tests seem to crash flakily. It's best to leave them as skip
+    # until we can run them without GPU hangs and crashes.
+    self.Skip('deqp/functional/gles3/textureshadow/2d_array_*.html',
+        ['win', 'intel'], bug=666392)
 
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
