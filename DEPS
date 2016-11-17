@@ -963,7 +963,7 @@ hooks = [
     'action': ['python',
                'src/build/get_syzygy_binaries.py',
                '--output-dir=src/third_party/syzygy/binaries',
-               '--revision=1fcdf23259f4fbfcf200be20dc79e7567dde844e',
+               '--revision=55b5f3979e226101b1d4764ca024925ed42970bc',
                '--overwrite',
                '--copy-dia-binaries',
     ],
