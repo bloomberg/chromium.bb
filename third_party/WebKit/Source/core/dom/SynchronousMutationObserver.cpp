@@ -12,6 +12,7 @@ namespace blink {
 SynchronousMutationObserver::SynchronousMutationObserver()
     : LifecycleObserver(nullptr) {}
 
+void SynchronousMutationObserver::nodeChildrenWillBeRemoved(ContainerNode&) {}
 void SynchronousMutationObserver::nodeWillBeRemoved(Node&) {}
 
 }  // namespace blink

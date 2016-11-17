@@ -86,6 +86,10 @@ class TestSynchronousMutationObserver
     return m_contextDestroyedCalledCounter;
   }
 
+  const HeapVector<Member<ContainerNode>>& removedChildrenNodes() const {
+    return m_removedChildrenNodes;
+  }
+
   const HeapVector<Member<Node>>& removedNodes() const {
     return m_removedNodes;
   }
@@ -95,9 +99,11 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
+  void nodeChildrenWillBeRemoved(ContainerNode&) final;
   void nodeWillBeRemoved(Node&) final;
 
   int m_contextDestroyedCalledCounter = 0;
+  HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
   HeapVector<Member<Node>> m_removedNodes;
 
   DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
@@ -112,11 +118,17 @@ void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
 }
 
+void TestSynchronousMutationObserver::nodeChildrenWillBeRemoved(
+    ContainerNode& container) {
+  m_removedChildrenNodes.append(&container);
+}
+
 void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
   m_removedNodes.append(&node);
 }
 
 DEFINE_TRACE(TestSynchronousMutationObserver) {
+  visitor->trace(m_removedChildrenNodes);
   visitor->trace(m_removedNodes);
   SynchronousMutationObserver::trace(visitor);
 }
@@ -357,13 +369,28 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(observer.lifecycleContext(), document());
   EXPECT_EQ(observer.countContextDestroyedCalled(), 0);
 
+  Element* divNode = document().createElement("div");
+  document().body()->appendChild(divNode);
+
+  Element* boldNode = document().createElement("b");
+  divNode->appendChild(boldNode);
+
+  Element* italicNode = document().createElement("i");
+  divNode->appendChild(italicNode);
+
   Node* textNode = document().createTextNode("0123456789");
-  document().body()->appendChild(textNode);
+  boldNode->appendChild(textNode);
   EXPECT_TRUE(observer.removedNodes().isEmpty());
 
   textNode->remove();
   ASSERT_EQ(observer.removedNodes().size(), 1u);
   EXPECT_EQ(textNode, observer.removedNodes()[0]);
+
+  divNode->removeChildren();
+  EXPECT_EQ(observer.removedNodes().size(), 1u)
+      << "ContainerNode::removeChildren() doesn't call nodeWillBeRemoved()";
+  ASSERT_EQ(observer.removedChildrenNodes().size(), 1u);
+  EXPECT_EQ(divNode, observer.removedChildrenNodes()[0]);
 
   document().shutdown();
   EXPECT_EQ(observer.lifecycleContext(), nullptr);

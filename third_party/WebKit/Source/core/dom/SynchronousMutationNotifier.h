@@ -12,6 +12,7 @@
 namespace blink {
 
 class CharacterData;
+class ContainerNode;
 class Document;
 class Node;
 class SynchronousMutationObserver;
@@ -21,6 +22,8 @@ class CORE_EXPORT SynchronousMutationNotifier
  public:
   // TODO(yosin): We will have |notifyXXX()| functions defined in
   // |SynchronousMutationObserver|.
+
+  void notifyNodeChildrenWillBeRemoved(ContainerNode&);
   void notifyNodeWillBeRemoved(Node&);
 
  protected:

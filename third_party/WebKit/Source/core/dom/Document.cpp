@@ -4092,6 +4092,7 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container) {
       ni->nodeWillBeRemoved(n);
   }
 
+  notifyNodeChildrenWillBeRemoved(container);
   if (LocalFrame* frame = this->frame()) {
     frame->selection().nodeChildrenWillBeRemoved(container);
     frame->eventHandler().nodeChildrenWillBeRemoved(container);

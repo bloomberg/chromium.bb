@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class ContainerNode;
 class Document;
 
 // This class is a base class for classes which observe DOM tree mutation
@@ -33,11 +34,13 @@ class CORE_EXPORT SynchronousMutationObserver
   // TODO(yosin): We will have following member functions:
   //  - dataWillBeChanged(const CharacterData&);
   //  - didMoveTreeToNewDocument(const Node& root);
-  //  - nodeChildrenWillBeRemoved(ContainerNode&)
   //  - didInsertText(Node*, unsigned offset, unsigned length);
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
   //  - didMergeTextNodes(Text& oldNode, unsigned offset);
   //  - didSplitTextNode(Text& oldNode);
+
+  // Called before removing container node.
+  virtual void nodeChildrenWillBeRemoved(ContainerNode&);
 
   // Called before removing node.
   virtual void nodeWillBeRemoved(Node&);
