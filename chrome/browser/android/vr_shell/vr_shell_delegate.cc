@@ -63,13 +63,6 @@ base::WeakPtr<device::GvrDeviceProvider> VrShellDelegate::GetDeviceProvider() {
   return device_provider_;
 }
 
-void VrShellDelegate::ExitWebVRIfNecessary(JNIEnv* env, jobject obj) {
-  if (!device_provider_)
-    return;
-
-  device_provider_->OnGvrDelegateRemoved();
-}
-
 bool VrShellDelegate::RequestWebVRPresent(
     base::WeakPtr<device::GvrDeviceProvider> device_provider) {
   // Only set one device provider at a time

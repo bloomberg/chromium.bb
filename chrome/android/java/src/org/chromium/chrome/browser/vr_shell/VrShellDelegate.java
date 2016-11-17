@@ -300,8 +300,6 @@ public class VrShellDelegate {
      */
     public boolean exitVRIfNecessary(boolean returnTo2D) {
         if (!mInVr) return false;
-        // If WebVR is presenting instruct it to exit.
-        nativeExitWebVRIfNecessary(mNativeVrShellDelegate);
         shutdownVR(returnTo2D);
         return true;
     }
@@ -538,5 +536,4 @@ public class VrShellDelegate {
     }
 
     private native long nativeInit();
-    private native void nativeExitWebVRIfNecessary(long nativeVrShellDelegate);
 }

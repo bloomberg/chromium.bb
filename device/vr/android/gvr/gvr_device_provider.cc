@@ -69,6 +69,10 @@ bool GvrDeviceProvider::RequestPresent() {
 // VR presentation exit requested by the API.
 void GvrDeviceProvider::ExitPresent() {
   SwitchToNonPresentingDelegate();
+  // If we're presenting currently stop.
+  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
+  if (delegate_provider)
+    delegate_provider->ExitWebVRPresent();
 }
 
 void GvrDeviceProvider::OnGvrDelegateReady(
@@ -111,9 +115,6 @@ void GvrDeviceProvider::SwitchToNonPresentingDelegate() {
   // Remove GVR gamepad polling.
   GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
       GAMEPAD_SOURCE_GVR);
-
-  // If we're presenting currently stop.
-  delegate_provider->ExitWebVRPresent();
 }
 
 }  // namespace device
