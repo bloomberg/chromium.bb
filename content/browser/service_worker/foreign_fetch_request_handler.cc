@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
@@ -233,6 +234,11 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     return;
   }
 
+  if (!IsForeignFetchEnabled() && !CheckOriginTrialToken(active_version)) {
+    job->FallbackToNetwork();
+    return;
+  }
+
   int render_process_id;
   int render_frame_id;
   if (!ResourceRequestInfo::GetRenderFrameForRequest(
@@ -271,6 +277,18 @@ void ForeignFetchRequestHandler::ClearJob() {
   job_.reset();
   target_worker_ = nullptr;
   resource_context_ = nullptr;
+}
+
+// static
+bool ForeignFetchRequestHandler::CheckOriginTrialToken(
+    const ServiceWorkerVersion* const active_version) {
+  // The worker entry in the database was written by old version Chrome (< M56)
+  // and the main script was not loaded yet. In this case, we can't check the
+  // origin trial token.
+  if (!active_version->origin_trial_tokens())
+    return true;
+  const auto& token_map = *active_version->origin_trial_tokens();
+  return base::ContainsKey(token_map, "ForeignFetch");
 }
 
 }  // namespace content

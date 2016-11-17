@@ -83,6 +83,8 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
                                      ResourceContext* resource_context);
 
  private:
+  friend class ForeignFetchRequestHandlerTest;
+
   ForeignFetchRequestHandler(
       ServiceWorkerContextWrapper* context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
@@ -109,6 +111,12 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   // Sets |job_| to nullptr, and clears all extra response info associated with
   // that job.
   void ClearJob();
+
+  // Returns true if the version doesn't have origin_trial_tokens entry (this
+  // happens if the existing worker's entry in the database was written by old
+  // version (< M56) Chrome), or the version has valid Origin Trial token.
+  static bool CheckOriginTrialToken(
+      const ServiceWorkerVersion* const active_version);
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
