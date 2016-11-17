@@ -7,6 +7,7 @@ PASS lastEvent.type is "touchstart"
 PASS lastEvent.touches.length is 1
 PASS lastEvent.changedTouches.length is 1
 PASS lastEvent.targetTouches.length is 1
+PASS lastEvent.composed is true
 PASS lastEvent.shiftKey is false
 PASS lastEvent.touches[0].target.id is "touchtarget"
 PASS lastEvent.touches[0].pageX is 10
@@ -28,6 +29,7 @@ PASS lastEvent.type is "touchmove"
 PASS lastEvent.touches.length is 1
 PASS lastEvent.changedTouches.length is 1
 PASS lastEvent.targetTouches.length is 1
+PASS lastEvent.composed is true
 PASS lastEvent.touches[0].pageX is 50
 PASS lastEvent.touches[0].pageY is 50
 PASS lastEvent.touches[0].clientX is 50
@@ -41,6 +43,7 @@ PASS lastEvent.type is "touchend"
 PASS lastEvent.touches.length is 0
 PASS lastEvent.changedTouches.length is 1
 PASS lastEvent.targetTouches.length is 0
+PASS lastEvent.composed is true
 PASS lastEvent.changedTouches[0].pageX is 50
 PASS lastEvent.changedTouches[0].pageY is 50
 PASS lastEvent.changedTouches[0].clientX is 50
@@ -52,11 +55,13 @@ PASS lastEvent.type is "touchstart"
 PASS lastEvent.touches.length is 1
 PASS lastEvent.changedTouches.length is 1
 PASS lastEvent.targetTouches.length is 1
+PASS lastEvent.composed is true
 PASS lastEvent.targetTouches[0].target.tagName is "DIV"
 PASS lastEvent.type is "touchmove"
 PASS lastEvent.touches.length is 1
 PASS lastEvent.changedTouches.length is 1
 PASS lastEvent.targetTouches.length is 1
+PASS lastEvent.composed is true
 PASS lastEvent.touches[0].target.tagName is "DIV"
 PASS successfullyParsed is true
 
