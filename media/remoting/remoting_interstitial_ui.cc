@@ -85,9 +85,9 @@ scoped_refptr<VideoFrame> GetInterstitial(SkCanvas* existing_frame_canvas,
                   sk_text_offset_y, paint);
 
   // Draw the appropriate Cast icon.
-  gfx::VectorIconId current_icon = is_remoting_successful
-                                       ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE
-                                       : gfx::VectorIconId::MEDIA_ROUTER_ERROR;
+  gfx::VectorIconId current_icon =
+      is_remoting_successful ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE
+                             : gfx::VectorIconId::MEDIA_ROUTER_WARNING;
   gfx::ImageSkia icon_image =
       gfx::CreateVectorIcon(current_icon, 65, SK_ColorLTGRAY);
   const SkBitmap* icon_bitmap = icon_image.bitmap();
