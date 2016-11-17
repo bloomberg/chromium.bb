@@ -260,6 +260,7 @@ PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(
 
 void FontCache::acceptLanguagesChanged(const String& acceptLanguages) {
   AcceptLanguagesResolver::acceptLanguagesChanged(acceptLanguages);
+  fontCache()->invalidateShapeCache();
 }
 
 static FontDataCache* gFontDataCache = 0;
