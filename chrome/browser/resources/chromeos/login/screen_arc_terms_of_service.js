@@ -11,7 +11,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
     EXTERNAL_API: [
       'setMetricsMode',
       'setBackupAndRestoreMode',
-      'setLocationServicesMode'
+      'setLocationServicesMode',
+      'setCountryCode'
     ],
 
     /** @override */
@@ -118,6 +119,27 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       this.setPreference('arc-enable-location-service',
                          'arc-text-location-service',
                          enabled, managed);
+    },
+
+    /**
+     * Sets current country code for ToS.
+     * @param {string} countryCode Country code based on current timezone.
+     */
+    setCountryCode: function(countryCode) {
+      var scriptSetCountryCode = 'document.countryCode = \'' +
+          countryCode.toLowerCase() + '\';';
+      var termsView = $('arc-tos-view');
+      termsView.removeContentScripts(['preProcess']);
+      termsView.addContentScripts([
+          { name: 'preProcess',
+            matches: ['https://play.google.com/*'],
+            js: { code: scriptSetCountryCode },
+            run_at: 'document_start'
+          }]);
+
+      if (!$('arc-tos').hidden) {
+        this.reloadPlayStore();
+      }
     },
 
     /**
@@ -284,17 +306,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       $('learn-more-link-location-service').onclick = function() {
         self.showLearnMoreOverlay(leanMoreLocationServiceText);
       };
-
-      var scriptSetCountryCode = 'document.countryCode = \'' +
-          loadTimeData.getString('arcCountryCode') + '\';';
-      var termsView = $('arc-tos-view');
-      termsView.removeContentScripts(['preProcess']);
-      termsView.addContentScripts([
-          { name: 'preProcess',
-            matches: ['https://play.google.com/*'],
-            js: { code: scriptSetCountryCode },
-            run_at: 'document_start'
-          }]);
     }
   };
 });

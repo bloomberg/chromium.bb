@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/settings/timezone_settings.h"
 
 namespace arc {
 class ArcOptInPreferenceHandler;
@@ -25,7 +26,8 @@ class CoreOobeActor;
 class ArcTermsOfServiceScreenHandler :
     public BaseScreenHandler,
     public ArcTermsOfServiceScreenActor,
-    public arc::ArcOptInPreferenceHandlerObserver {
+    public arc::ArcOptInPreferenceHandlerObserver,
+    public system::TimezoneSettings::Observer {
  public:
   ArcTermsOfServiceScreenHandler();
   ~ArcTermsOfServiceScreenHandler() override;
@@ -42,6 +44,9 @@ class ArcTermsOfServiceScreenHandler :
   void Show() override;
   void Hide() override;
 
+  // system::TimezoneSettings::Observer:
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
+
  private:
   // BaseScreenHandler:
   void Initialize() override;
@@ -50,6 +55,7 @@ class ArcTermsOfServiceScreenHandler :
   void HandleSkip();
   void HandleAccept(bool enable_backup_restore,
                     bool enable_location_services);
+  void UpdateTimeZone();
 
   // arc::ArcOptInPreferenceHandlerObserver:
   void OnMetricsModeChanged(bool enabled, bool managed) override;
@@ -60,6 +66,9 @@ class ArcTermsOfServiceScreenHandler :
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;
+
+  // To prevent redundant updates, keep last country code used for update.
+  std::string last_applied_contry_code_;
 
   std::unique_ptr<arc::ArcOptInPreferenceHandler> pref_handler_;
 

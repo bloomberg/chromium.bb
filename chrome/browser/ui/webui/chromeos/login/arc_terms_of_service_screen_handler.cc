@@ -28,6 +28,8 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+
   if (screen_)
     screen_->OnActorDestroyed(this);
 }
@@ -37,6 +39,19 @@ void ArcTermsOfServiceScreenHandler::RegisterMessages() {
               &ArcTermsOfServiceScreenHandler::HandleSkip);
   AddCallback("arcTermsOfServiceAccept",
               &ArcTermsOfServiceScreenHandler::HandleAccept);
+}
+
+void ArcTermsOfServiceScreenHandler::UpdateTimeZone() {
+  const std::string country_code = base::CountryCodeForCurrentTimezone();
+  if (country_code == last_applied_contry_code_)
+    return;
+  last_applied_contry_code_ = country_code;
+  CallJS("setCountryCode", country_code);
+}
+
+void ArcTermsOfServiceScreenHandler::TimezoneChanged(
+    const icu::TimeZone& timezone) {
+  UpdateTimeZone();
 }
 
 void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
@@ -59,7 +74,6 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcLearnMoreBackupAndRestore",
       IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE);
   builder->Add("arcOverlayClose", IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON);
-  builder->Add("arcCountryCode", base::CountryCodeForCurrentTimezone());
 }
 
 void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
@@ -113,6 +127,7 @@ void ArcTermsOfServiceScreenHandler::Show() {
 }
 
 void ArcTermsOfServiceScreenHandler::Hide() {
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   pref_handler_.reset();
 }
 
@@ -130,6 +145,10 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
+
+  UpdateTimeZone();
+  system::TimezoneSettings::GetInstance()->AddObserver(this);
+
   ShowScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
 }
 
