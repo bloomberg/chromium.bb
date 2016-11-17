@@ -20,7 +20,7 @@ void DataUseRecorder::OnBeforeUrlRequest(net::URLRequest* request) {
   pending_url_requests_.insert(request);
 }
 
-void DataUseRecorder::OnUrlRequestCompleted(net::URLRequest* request) {
+void DataUseRecorder::OnUrlRequestDestroyed(net::URLRequest* request) {
   pending_url_requests_.erase(request);
 }
 

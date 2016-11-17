@@ -46,9 +46,9 @@ void DataUseNetworkDelegate::OnNetworkBytesSentInternal(
   ascriber_->OnNetworkBytesSent(request, bytes_sent);
 }
 
-void DataUseNetworkDelegate::OnCompletedInternal(net::URLRequest* request,
-                                                 bool started) {
-  ascriber_->OnUrlRequestCompleted(request, started);
+void DataUseNetworkDelegate::OnURLRequestDestroyedInternal(
+    net::URLRequest* request) {
+  ascriber_->OnUrlRequestDestroyed(request);
 }
 
 }  // namespace data_use_measurement

@@ -67,9 +67,9 @@ void DataUseWebContentsObserver::DidStartNavigation(
   service_->DidStartNavigation(navigation_handle);
 }
 
-void DataUseWebContentsObserver::DidFinishNavigation(
+void DataUseWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  service_->DidFinishNavigation(navigation_handle);
+  service_->ReadyToCommitNavigation(navigation_handle);
 }
 
 void DataUseWebContentsObserver::DidRedirectNavigation(

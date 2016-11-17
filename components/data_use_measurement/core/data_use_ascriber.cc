@@ -41,12 +41,11 @@ void DataUseAscriber::OnNetworkBytesReceived(net::URLRequest* request,
     recorder->OnNetworkBytesReceived(request, bytes_received);
 }
 
-void DataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
-                                            bool started) {
+void DataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   DataUseRecorder* recorder = GetDataUseRecorder(request);
   // TODO(kundaji): Enforce DCHECK(recorder).
   if (recorder)
-    recorder->OnUrlRequestCompleted(request);
+    recorder->OnUrlRequestDestroyed(request);
 }
 
 }  // namespace data_use_measurement

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -78,6 +79,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ResourceContext* GetContext() const override;
   int GetChildID() const override;
   int GetRouteID() const override;
+  GlobalRequestID GetGlobalRequestID() const override;
   int GetOriginPID() const override;
   int GetRenderFrameID() const override;
   int GetFrameTreeNodeId() const override;
@@ -101,7 +103,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
   CONTENT_EXPORT int GetRequestID() const;
-  CONTENT_EXPORT GlobalRequestID GetGlobalRequestID() const;
   GlobalRoutingID GetGlobalRoutingID() const;
 
   // PlzNavigate

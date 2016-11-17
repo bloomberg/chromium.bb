@@ -4,8 +4,6 @@
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
-#include <utility>
-
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
@@ -384,6 +382,12 @@ const std::string& NavigationHandleImpl::GetSearchableFormEncoding() {
 
 NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
+}
+
+const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
+  DCHECK(state_ == WILL_PROCESS_RESPONSE || state_ == DEFERRING_RESPONSE ||
+         state_ == READY_TO_COMMIT);
+  return request_id_;
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(

@@ -49,7 +49,7 @@ class DataUseAscriber {
   virtual void OnNetworkBytesReceived(net::URLRequest* request,
                                       int64_t bytes_received);
 
-  virtual void OnUrlRequestCompleted(net::URLRequest* request, bool started);
+  virtual void OnUrlRequestDestroyed(net::URLRequest* request);
 };
 
 }  // namespace data_use_measurement
