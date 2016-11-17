@@ -179,8 +179,8 @@ void ManageProfileHandler::HandleRequestHasProfileShortcuts(
   DCHECK(ProfileShortcutManager::IsFeatureEnabled());
 
   CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
 
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
@@ -202,9 +202,9 @@ void ManageProfileHandler::HandleRequestHasProfileShortcuts(
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(
-    const base::Value* callback_id, bool has_shortcuts) {
+    const std::string& callback_id, bool has_shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ResolveJavascriptCallback(*callback_id,
+  ResolveJavascriptCallback(base::StringValue(callback_id),
                             base::FundamentalValue(has_shortcuts));
 }
 

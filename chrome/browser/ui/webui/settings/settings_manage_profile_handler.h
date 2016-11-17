@@ -63,7 +63,7 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
 
   // Callback invoked from the profile manager indicating whether the profile
   // being edited has any desktop shortcuts.
-  void OnHasProfileShortcuts(const base::Value* callback_id,
+  void OnHasProfileShortcuts(const std::string& callback_id,
                              bool has_shortcuts);
 
   // Callback for the "addProfileShortcut" message, which is called when editing
