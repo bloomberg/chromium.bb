@@ -4087,7 +4087,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   FRAME_CONTEXT *const fc = cm->fc;
   aom_reader r;
   int k, i;
-#if !CONFIG_EC_ADAPT
+#if !CONFIG_EC_ADAPT || CONFIG_EXT_INTRA
   int j;
 #endif
 
