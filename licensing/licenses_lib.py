@@ -116,6 +116,23 @@ PACKAGE_LICENSES = {
 
     # Currently the code cannot parse LGPL-3 || ( LGPL-2.1 MPL-1.1 )
     'dev-python/pycairo': ['LGPL-3', 'LGPL-2.1'],
+
+    # Currently the code cannot parse the license for mit-krb5
+    # "openafs-krb5-a BSD MIT OPENLDAP BSD-2 HPND BSD-4 ISC RSA CC-BY-SA-3.0 ||
+    #      ( BSD-2 GPL-2+ )"
+    'app-crypt/mit-krb5': [
+        'openafs-krb5-a',
+        'BSD',
+        'MIT',
+        'OPENLDAP',
+        'BSD-2',
+        'HPND',
+        'BSD-4',
+        'ISC',
+        'RSA',
+        'CC-BY-SA-3.0',
+        'GPL-2+',
+    ],
 }
 
 # Any license listed list here found in the ebuild will make the code look for
