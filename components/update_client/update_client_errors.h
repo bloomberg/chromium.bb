@@ -69,7 +69,14 @@ enum class InstallError {
   NONE = 0,
   FINGERPRINT_WRITE_FAILED = 2,
   BAD_MANIFEST = 3,
-  GENERIC_ERROR = 9,        // Matches kInstallerError for compatibility.
+  GENERIC_ERROR = 9,  // Matches kInstallerError for compatibility.
+  MOVE_FILES_ERROR = 10,
+  SET_PERMISSIONS_FAILED = 11,
+  INVALID_VERSION = 12,
+  VERSION_NOT_UPGRADED = 13,
+  NO_DIR_COMPONENT_USER = 14,
+  CLEAN_INSTALL_DIR_FAILED = 15,
+  INSTALL_VERIFICATION_FAILED = 16,
   CUSTOM_ERROR_BASE = 100,  // Specific installer errors go above this value.
 };
 

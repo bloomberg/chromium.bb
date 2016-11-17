@@ -84,13 +84,13 @@ Result DefaultComponentInstaller::InstallHelper(
 
   if (!base::Move(unpack_path, install_path)) {
     PLOG(ERROR) << "Move failed.";
-    return Result(InstallError::GENERIC_ERROR);
+    return Result(InstallError::MOVE_FILES_ERROR);
   }
 
 #if defined(OS_CHROMEOS)
   if (!base::SetPosixFilePermissions(install_path, 0755)) {
     PLOG(ERROR) << "SetPosixFilePermissions failed: " << install_path.value();
-    return  Result(InstallError::GENERIC_ERROR);
+    return Result(InstallError::SET_PERMISSIONS_FAILED);
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -101,8 +101,7 @@ Result DefaultComponentInstaller::InstallHelper(
     return result;
   }
   if (!installer_traits_->VerifyInstallation(manifest, install_path)) {
-    PLOG(ERROR) << "VerifyInstallation failed.";
-    return Result(InstallError::GENERIC_ERROR);
+    return Result(InstallError::INSTALL_VERIFICATION_FAILED);
   }
 
   return Result(InstallError::NONE);
@@ -118,17 +117,17 @@ Result DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
           << " current version=" << current_version_.GetString();
 
   if (!version.IsValid())
-    return Result(InstallError::GENERIC_ERROR);
+    return Result(InstallError::INVALID_VERSION);
   if (current_version_.CompareTo(version) > 0)
-    return Result(InstallError::GENERIC_ERROR);
+    return Result(InstallError::VERSION_NOT_UPGRADED);
   base::FilePath install_path;
   if (!PathService::Get(DIR_COMPONENT_USER, &install_path))
-    return Result(InstallError::GENERIC_ERROR);
+    return Result(InstallError::NO_DIR_COMPONENT_USER);
   install_path = install_path.Append(installer_traits_->GetRelativeInstallDir())
                      .AppendASCII(version.GetString());
   if (base::PathExists(install_path)) {
     if (!base::DeleteFile(install_path, true))
-      return Result(InstallError::GENERIC_ERROR);
+      return Result(InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
   const auto result = InstallHelper(manifest, unpack_path, install_path);
   if (result.error) {
