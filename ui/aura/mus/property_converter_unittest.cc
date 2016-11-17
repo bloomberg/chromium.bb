@@ -37,8 +37,8 @@ DEFINE_WINDOW_PROPERTY_KEY(int16_t, kTestPropertyKey6, 0);
 DEFINE_WINDOW_PROPERTY_KEY(int32_t, kTestPropertyKey7, 0);
 DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey8, 0);
 
-DEFINE_WINDOW_PROPERTY_KEY(gfx::Rect*, kTestRectPropertyKey, nullptr);
-DEFINE_WINDOW_PROPERTY_KEY(std::string*, kTestStringPropertyKey, nullptr);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kTestStringPropertyKey, nullptr);
 
 const char kTestPropertyServerKey0[] = "test-property-server0";
 const char kTestPropertyServerKey1[] = "test-property-server1";
