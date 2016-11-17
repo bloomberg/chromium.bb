@@ -1388,6 +1388,8 @@ class CORE_EXPORT UseCounter {
     V8Event_StopPropagation_Method = 1684,
     V8Event_StopImmediatePropagation_Method = 1685,
     ImageCaptureConstructor = 1686,
+    V8Document_RootScroller_AttributeGetter = 1687,
+    V8Document_RootScroller_AttributeSetter = 1688,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
