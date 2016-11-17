@@ -27,7 +27,7 @@
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
-#include "components/ntp_snippets/remote/ntp_snippets_database.h"
+#include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -241,7 +241,7 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
-    std::unique_ptr<NTPSnippetsDatabase> database,
+    std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<NTPSnippetsStatusService> status_service)
     : ContentSuggestionsProvider(observer, category_factory),
       state_(State::NOT_INITED),

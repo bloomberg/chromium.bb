@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_DATABASE_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_DATABASE_H_
 
 #include <memory>
 #include <set>
@@ -28,15 +28,15 @@ namespace ntp_snippets {
 class SnippetImageProto;
 class SnippetProto;
 
-class NTPSnippetsDatabase {
+class RemoteSuggestionsDatabase {
  public:
   using SnippetsCallback = base::Callback<void(NTPSnippet::PtrVector)>;
   using SnippetImageCallback = base::Callback<void(std::string)>;
 
-  NTPSnippetsDatabase(
+  RemoteSuggestionsDatabase(
       const base::FilePath& database_dir,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner);
-  ~NTPSnippetsDatabase();
+  ~RemoteSuggestionsDatabase();
 
   // Returns whether the database has finished initialization. While this is
   // false, loads may already be started (they'll be serviced after
@@ -81,7 +81,7 @@ class NTPSnippetsDatabase {
       std::unique_ptr<std::set<std::string>> alive_snippet_ids);
 
  private:
-  friend class NTPSnippetsDatabaseTest;
+  friend class RemoteSuggestionsDatabaseTest;
 
   using KeyEntryVector =
       leveldb_proto::ProtoDatabase<SnippetProto>::KeyEntryVector;
@@ -129,11 +129,11 @@ class NTPSnippetsDatabase {
 
   base::Closure error_callback_;
 
-  base::WeakPtrFactory<NTPSnippetsDatabase> weak_ptr_factory_;
+  base::WeakPtrFactory<RemoteSuggestionsDatabase> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsDatabase);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsDatabase);
 };
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_DATABASE_H_

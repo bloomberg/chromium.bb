@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_database.h"
+#include "components/ntp_snippets/remote/remote_suggestions_database.h"
 
 #include <memory>
 
@@ -59,8 +59,8 @@ bool operator==(const NTPSnippet& lhs, const NTPSnippet& rhs) {
 namespace {
 
 std::unique_ptr<NTPSnippet> CreateTestSnippet() {
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet("http://localhost",
-                                                     kArticlesRemoteId));
+  auto snippet =
+      base::MakeUnique<NTPSnippet>("http://localhost", kArticlesRemoteId);
   snippet->add_source(
       SnippetSource(GURL("http://localhost"), "Publisher", GURL("http://amp")));
   return snippet;
@@ -72,13 +72,13 @@ MATCHER_P(SnippetEq, snippet, "") {
 
 }  // namespace
 
-class NTPSnippetsDatabaseTest : public testing::Test {
+class RemoteSuggestionsDatabaseTest : public testing::Test {
  public:
-  NTPSnippetsDatabaseTest() {
+  RemoteSuggestionsDatabaseTest() {
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
   }
 
-  ~NTPSnippetsDatabaseTest() override {
+  ~RemoteSuggestionsDatabaseTest() override {
     // We need to run the message loop after deleting the database, because
     // ProtoDatabaseImpl deletes the actual LevelDB asynchronously on the task
     // runner. Without this, we'd get reports of memory leaks.
@@ -91,11 +91,11 @@ class NTPSnippetsDatabaseTest : public testing::Test {
     // on the file.
     db_.reset();
 
-    db_.reset(new NTPSnippetsDatabase(database_dir_.GetPath(),
-                                      base::ThreadTaskRunnerHandle::Get()));
+    db_.reset(new RemoteSuggestionsDatabase(
+        database_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get()));
   }
 
-  NTPSnippetsDatabase* db() { return db_.get(); }
+  RemoteSuggestionsDatabase* db() { return db_.get(); }
 
   // TODO(tschumann): MOCK_METHODS on non mock objects are an anti-pattern.
   // Clean up.
@@ -110,12 +110,12 @@ class NTPSnippetsDatabaseTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   base::ScopedTempDir database_dir_;
-  std::unique_ptr<NTPSnippetsDatabase> db_;
+  std::unique_ptr<RemoteSuggestionsDatabase> db_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsDatabaseTest);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsDatabaseTest);
 };
 
-TEST_F(NTPSnippetsDatabaseTest, Init) {
+TEST_F(RemoteSuggestionsDatabaseTest, Init) {
   ASSERT_FALSE(db());
 
   CreateDatabase();
@@ -125,15 +125,17 @@ TEST_F(NTPSnippetsDatabaseTest, Init) {
   EXPECT_TRUE(db()->IsInitialized());
 }
 
-TEST_F(NTPSnippetsDatabaseTest, LoadBeforeInit) {
+TEST_F(RemoteSuggestionsDatabaseTest, LoadBeforeInit) {
   CreateDatabase();
   EXPECT_FALSE(db()->IsInitialized());
 
   // Start a snippet and image load before the DB is initialized.
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
-  db()->LoadImage("id", base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
-                                   base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
+  db()->LoadImage("id",
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
+                             base::Unretained(this)));
 
   // They should be serviced once initialization finishes.
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(_));
@@ -142,7 +144,7 @@ TEST_F(NTPSnippetsDatabaseTest, LoadBeforeInit) {
   EXPECT_TRUE(db()->IsInitialized());
 }
 
-TEST_F(NTPSnippetsDatabaseTest, LoadAfterInit) {
+TEST_F(RemoteSuggestionsDatabaseTest, LoadAfterInit) {
   CreateDatabase();
   EXPECT_FALSE(db()->IsInitialized());
 
@@ -153,15 +155,17 @@ TEST_F(NTPSnippetsDatabaseTest, LoadAfterInit) {
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(_));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   EXPECT_CALL(*this, OnImageLoaded(_));
-  db()->LoadImage("id", base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
-                                   base::Unretained(this)));
+  db()->LoadImage("id",
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
+                             base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, Save) {
+TEST_F(RemoteSuggestionsDatabaseTest, Save) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -176,20 +180,21 @@ TEST_F(NTPSnippetsDatabaseTest, Save) {
   // Make sure they're there.
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, OnImageLoaded(image_data));
   db()->LoadImage(snippet->id(),
-                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, SavePersist) {
+TEST_F(RemoteSuggestionsDatabaseTest, SavePersist) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -207,16 +212,17 @@ TEST_F(NTPSnippetsDatabaseTest, SavePersist) {
 
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   EXPECT_CALL(*this, OnImageLoaded(image_data));
   db()->LoadImage(snippet->id(),
-                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, Update) {
+TEST_F(RemoteSuggestionsDatabaseTest, Update) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -234,12 +240,13 @@ TEST_F(NTPSnippetsDatabaseTest, Update) {
   // Make sure we get the updated version.
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, Delete) {
+TEST_F(RemoteSuggestionsDatabaseTest, Delete) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -252,8 +259,9 @@ TEST_F(NTPSnippetsDatabaseTest, Delete) {
   // Make sure it's there.
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(this);
@@ -263,12 +271,13 @@ TEST_F(NTPSnippetsDatabaseTest, Delete) {
 
   // Make sure it's gone.
   EXPECT_CALL(*this, OnSnippetsLoadedImpl(IsEmpty()));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
+TEST_F(RemoteSuggestionsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -284,11 +293,12 @@ TEST_F(NTPSnippetsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
   // Make sure they're there.
   EXPECT_CALL(*this,
               OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
-  db()->LoadSnippets(base::Bind(&NTPSnippetsDatabaseTest::OnSnippetsLoaded,
-                                base::Unretained(this)));
+  db()->LoadSnippets(
+      base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
+                 base::Unretained(this)));
   EXPECT_CALL(*this, OnImageLoaded(image_data));
   db()->LoadImage(snippet->id(),
-                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
@@ -300,12 +310,12 @@ TEST_F(NTPSnippetsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
   // Make sure the image is still there.
   EXPECT_CALL(*this, OnImageLoaded(image_data));
   db()->LoadImage(snippet->id(),
-                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, DeleteImage) {
+TEST_F(RemoteSuggestionsDatabaseTest, DeleteImage) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -320,7 +330,7 @@ TEST_F(NTPSnippetsDatabaseTest, DeleteImage) {
   // Make sure the image is there.
   EXPECT_CALL(*this, OnImageLoaded(image_data));
   db()->LoadImage(snippet->id(),
-                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
@@ -332,14 +342,14 @@ TEST_F(NTPSnippetsDatabaseTest, DeleteImage) {
   // Make sure the image is gone.
   EXPECT_CALL(*this, OnImageLoaded(std::string()));
   db()->LoadImage(snippet->id(),
-                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                  base::Bind(&RemoteSuggestionsDatabaseTest::OnImageLoaded,
                              base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 }
 
 namespace {
 
-void LoadExpectedImage(NTPSnippetsDatabase* db,
+void LoadExpectedImage(RemoteSuggestionsDatabase* db,
                        const std::string& id,
                        const std::string& expected_data) {
   base::RunLoop run_loop;
@@ -355,7 +365,7 @@ void LoadExpectedImage(NTPSnippetsDatabase* db,
 
 }  // namespace
 
-TEST_F(NTPSnippetsDatabaseTest, ShouldGarbageCollectImages) {
+TEST_F(RemoteSuggestionsDatabaseTest, ShouldGarbageCollectImages) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());

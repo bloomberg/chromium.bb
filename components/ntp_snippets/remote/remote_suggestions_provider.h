@@ -43,7 +43,7 @@ class ImageFetcher;
 
 namespace ntp_snippets {
 
-class NTPSnippetsDatabase;
+class RemoteSuggestionsDatabase;
 class UserClassifier;
 
 // Retrieves fresh content data (articles) from the server, stores them and
@@ -75,7 +75,7 @@ class RemoteSuggestionsProvider final
       std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
-      std::unique_ptr<NTPSnippetsDatabase> database,
+      std::unique_ptr<RemoteSuggestionsDatabase> database,
       std::unique_ptr<NTPSnippetsStatusService> status_service);
 
   ~RemoteSuggestionsProvider() override;
@@ -243,7 +243,7 @@ class RemoteSuggestionsProvider final
   void OnImageDataFetched(const std::string& id_within_category,
                           const std::string& image_data) override;
 
-  // Callbacks for the NTPSnippetsDatabase.
+  // Callbacks for the RemoteSuggestionsDatabase.
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
   void OnDatabaseError();
 
@@ -379,7 +379,7 @@ class RemoteSuggestionsProvider final
   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
 
   // The database for persisting snippets.
-  std::unique_ptr<NTPSnippetsDatabase> database_;
+  std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::TimeTicks database_load_start_;
 
   // The service that provides events and data about the signin and sync state.

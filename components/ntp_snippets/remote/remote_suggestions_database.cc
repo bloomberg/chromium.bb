@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_database.h"
+#include "components/ntp_snippets/remote/remote_suggestions_database.h"
 
 #include <utility>
 
@@ -26,11 +26,10 @@ const char kImageDatabaseFolder[] = "images";
 
 namespace ntp_snippets {
 
-NTPSnippetsDatabase::NTPSnippetsDatabase(
+RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner)
-    : database_(
-          new ProtoDatabaseImpl<SnippetProto>(file_task_runner)),
+    : database_(new ProtoDatabaseImpl<SnippetProto>(file_task_runner)),
       database_initialized_(false),
       image_database_(
           new ProtoDatabaseImpl<SnippetImageProto>(file_task_runner)),
@@ -38,39 +37,40 @@ NTPSnippetsDatabase::NTPSnippetsDatabase(
       weak_ptr_factory_(this) {
   base::FilePath snippet_dir = database_dir.AppendASCII(kSnippetDatabaseFolder);
   database_->Init(kDatabaseUMAClientName, snippet_dir,
-                  base::Bind(&NTPSnippetsDatabase::OnDatabaseInited,
+                  base::Bind(&RemoteSuggestionsDatabase::OnDatabaseInited,
                              weak_ptr_factory_.GetWeakPtr()));
 
   base::FilePath image_dir = database_dir.AppendASCII(kImageDatabaseFolder);
-  image_database_->Init(kImageDatabaseUMAClientName, image_dir,
-                        base::Bind(&NTPSnippetsDatabase::OnImageDatabaseInited,
-                                   weak_ptr_factory_.GetWeakPtr()));
+  image_database_->Init(
+      kImageDatabaseUMAClientName, image_dir,
+      base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-NTPSnippetsDatabase::~NTPSnippetsDatabase() = default;
+RemoteSuggestionsDatabase::~RemoteSuggestionsDatabase() = default;
 
-bool NTPSnippetsDatabase::IsInitialized() const {
+bool RemoteSuggestionsDatabase::IsInitialized() const {
   return !IsErrorState() && database_initialized_ &&
-      image_database_initialized_;
+         image_database_initialized_;
 }
 
-bool NTPSnippetsDatabase::IsErrorState() const {
+bool RemoteSuggestionsDatabase::IsErrorState() const {
   return !database_ || !image_database_;
 }
 
-void NTPSnippetsDatabase::SetErrorCallback(
+void RemoteSuggestionsDatabase::SetErrorCallback(
     const base::Closure& error_callback) {
   error_callback_ = error_callback;
 }
 
-void NTPSnippetsDatabase::LoadSnippets(const SnippetsCallback& callback) {
+void RemoteSuggestionsDatabase::LoadSnippets(const SnippetsCallback& callback) {
   if (IsInitialized())
     LoadSnippetsImpl(callback);
   else
     pending_snippets_callbacks_.emplace_back(callback);
 }
 
-void NTPSnippetsDatabase::SaveSnippet(const NTPSnippet& snippet) {
+void RemoteSuggestionsDatabase::SaveSnippet(const NTPSnippet& snippet) {
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
   // OnDatabaseLoaded relies on the detail that the primary snippet id goes
   // first in the protocol representation.
@@ -79,7 +79,8 @@ void NTPSnippetsDatabase::SaveSnippet(const NTPSnippet& snippet) {
   SaveSnippetsImpl(std::move(entries_to_save));
 }
 
-void NTPSnippetsDatabase::SaveSnippets(const NTPSnippet::PtrVector& snippets) {
+void RemoteSuggestionsDatabase::SaveSnippets(
+    const NTPSnippet::PtrVector& snippets) {
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
   for (const std::unique_ptr<NTPSnippet>& snippet : snippets) {
     // OnDatabaseLoaded relies on the detail that the primary snippet id goes
@@ -90,30 +91,32 @@ void NTPSnippetsDatabase::SaveSnippets(const NTPSnippet::PtrVector& snippets) {
   SaveSnippetsImpl(std::move(entries_to_save));
 }
 
-void NTPSnippetsDatabase::DeleteSnippet(const std::string& snippet_id) {
+void RemoteSuggestionsDatabase::DeleteSnippet(const std::string& snippet_id) {
   DeleteSnippets(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
 }
 
-void NTPSnippetsDatabase::DeleteSnippets(
+void RemoteSuggestionsDatabase::DeleteSnippets(
     std::unique_ptr<std::vector<std::string>> snippet_ids) {
   DCHECK(IsInitialized());
 
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
-  database_->UpdateEntries(std::move(entries_to_save), std::move(snippet_ids),
-                           base::Bind(&NTPSnippetsDatabase::OnDatabaseSaved,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  database_->UpdateEntries(
+      std::move(entries_to_save), std::move(snippet_ids),
+      base::Bind(&RemoteSuggestionsDatabase::OnDatabaseSaved,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NTPSnippetsDatabase::LoadImage(const std::string& snippet_id,
-                                    const SnippetImageCallback& callback) {
+void RemoteSuggestionsDatabase::LoadImage(
+    const std::string& snippet_id,
+    const SnippetImageCallback& callback) {
   if (IsInitialized())
     LoadImageImpl(snippet_id, callback);
   else
     pending_image_callbacks_.emplace_back(snippet_id, callback);
 }
 
-void NTPSnippetsDatabase::SaveImage(const std::string& snippet_id,
-                                    const std::string& image_data) {
+void RemoteSuggestionsDatabase::SaveImage(const std::string& snippet_id,
+                                          const std::string& image_data) {
   DCHECK(IsInitialized());
 
   SnippetImageProto image_proto;
@@ -125,36 +128,36 @@ void NTPSnippetsDatabase::SaveImage(const std::string& snippet_id,
 
   image_database_->UpdateEntries(
       std::move(entries_to_save), base::MakeUnique<std::vector<std::string>>(),
-      base::Bind(&NTPSnippetsDatabase::OnImageDatabaseSaved,
+      base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NTPSnippetsDatabase::DeleteImage(const std::string& snippet_id) {
+void RemoteSuggestionsDatabase::DeleteImage(const std::string& snippet_id) {
   DeleteImages(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
 }
 
-void NTPSnippetsDatabase::DeleteImages(
+void RemoteSuggestionsDatabase::DeleteImages(
     std::unique_ptr<std::vector<std::string>> snippet_ids) {
   DCHECK(IsInitialized());
   image_database_->UpdateEntries(
       base::MakeUnique<ImageKeyEntryVector>(), std::move(snippet_ids),
-      base::Bind(&NTPSnippetsDatabase::OnImageDatabaseSaved,
+      base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NTPSnippetsDatabase::GarbageCollectImages(
+void RemoteSuggestionsDatabase::GarbageCollectImages(
     std::unique_ptr<std::set<std::string>> alive_snippet_ids) {
   DCHECK(image_database_initialized_);
   image_database_->LoadKeys(
-      base::Bind(&NTPSnippetsDatabase::DeleteUnreferencedImages,
+      base::Bind(&RemoteSuggestionsDatabase::DeleteUnreferencedImages,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(alive_snippet_ids))));
 }
 
-void NTPSnippetsDatabase::OnDatabaseInited(bool success) {
+void RemoteSuggestionsDatabase::OnDatabaseInited(bool success) {
   DCHECK(!database_initialized_);
   if (!success) {
-    DVLOG(1) << "NTPSnippetsDatabase init failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase init failed.";
     OnDatabaseError();
     return;
   }
@@ -163,12 +166,12 @@ void NTPSnippetsDatabase::OnDatabaseInited(bool success) {
     ProcessPendingLoads();
 }
 
-void NTPSnippetsDatabase::OnDatabaseLoaded(
+void RemoteSuggestionsDatabase::OnDatabaseLoaded(
     const SnippetsCallback& callback,
     bool success,
     std::unique_ptr<std::vector<SnippetProto>> entries) {
   if (!success) {
-    DVLOG(1) << "NTPSnippetsDatabase load failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase load failed.";
     OnDatabaseError();
     return;
   }
@@ -200,17 +203,17 @@ void NTPSnippetsDatabase::OnDatabaseLoaded(
     DeleteSnippets(std::move(keys_to_remove));
 }
 
-void NTPSnippetsDatabase::OnDatabaseSaved(bool success) {
+void RemoteSuggestionsDatabase::OnDatabaseSaved(bool success) {
   if (!success) {
-    DVLOG(1) << "NTPSnippetsDatabase save failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase save failed.";
     OnDatabaseError();
   }
 }
 
-void NTPSnippetsDatabase::OnImageDatabaseInited(bool success) {
+void RemoteSuggestionsDatabase::OnImageDatabaseInited(bool success) {
   DCHECK(!image_database_initialized_);
   if (!success) {
-    DVLOG(1) << "NTPSnippetsDatabase init failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase init failed.";
     OnDatabaseError();
     return;
   }
@@ -219,12 +222,12 @@ void NTPSnippetsDatabase::OnImageDatabaseInited(bool success) {
     ProcessPendingLoads();
 }
 
-void NTPSnippetsDatabase::OnImageDatabaseLoaded(
+void RemoteSuggestionsDatabase::OnImageDatabaseLoaded(
     const SnippetImageCallback& callback,
     bool success,
     std::unique_ptr<SnippetImageProto> entry) {
   if (!success) {
-    DVLOG(1) << "NTPSnippetsDatabase load failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase load failed.";
     OnDatabaseError();
     return;
   }
@@ -238,21 +241,21 @@ void NTPSnippetsDatabase::OnImageDatabaseLoaded(
   callback.Run(std::move(*data));
 }
 
-void NTPSnippetsDatabase::OnImageDatabaseSaved(bool success) {
+void RemoteSuggestionsDatabase::OnImageDatabaseSaved(bool success) {
   if (!success) {
-    DVLOG(1) << "NTPSnippetsDatabase save failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase save failed.";
     OnDatabaseError();
   }
 }
 
-void NTPSnippetsDatabase::OnDatabaseError() {
+void RemoteSuggestionsDatabase::OnDatabaseError() {
   database_.reset();
   image_database_.reset();
   if (!error_callback_.is_null())
     error_callback_.Run();
 }
 
-void NTPSnippetsDatabase::ProcessPendingLoads() {
+void RemoteSuggestionsDatabase::ProcessPendingLoads() {
   DCHECK(IsInitialized());
 
   for (const auto& callback : pending_snippets_callbacks_)
@@ -264,40 +267,41 @@ void NTPSnippetsDatabase::ProcessPendingLoads() {
   pending_image_callbacks_.clear();
 }
 
-void NTPSnippetsDatabase::LoadSnippetsImpl(const SnippetsCallback& callback) {
+void RemoteSuggestionsDatabase::LoadSnippetsImpl(
+    const SnippetsCallback& callback) {
   DCHECK(IsInitialized());
-  database_->LoadEntries(base::Bind(&NTPSnippetsDatabase::OnDatabaseLoaded,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    callback));
+  database_->LoadEntries(
+      base::Bind(&RemoteSuggestionsDatabase::OnDatabaseLoaded,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void NTPSnippetsDatabase::SaveSnippetsImpl(
+void RemoteSuggestionsDatabase::SaveSnippetsImpl(
     std::unique_ptr<KeyEntryVector> entries_to_save) {
   DCHECK(IsInitialized());
 
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
-  database_->UpdateEntries(std::move(entries_to_save),
-                           std::move(keys_to_remove),
-                           base::Bind(&NTPSnippetsDatabase::OnDatabaseSaved,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  database_->UpdateEntries(
+      std::move(entries_to_save), std::move(keys_to_remove),
+      base::Bind(&RemoteSuggestionsDatabase::OnDatabaseSaved,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NTPSnippetsDatabase::LoadImageImpl(const std::string& snippet_id,
-                                        const SnippetImageCallback& callback) {
+void RemoteSuggestionsDatabase::LoadImageImpl(
+    const std::string& snippet_id,
+    const SnippetImageCallback& callback) {
   DCHECK(IsInitialized());
   image_database_->GetEntry(
-      snippet_id,
-      base::Bind(&NTPSnippetsDatabase::OnImageDatabaseLoaded,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      snippet_id, base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseLoaded,
+                             weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void NTPSnippetsDatabase::DeleteUnreferencedImages(
+void RemoteSuggestionsDatabase::DeleteUnreferencedImages(
     std::unique_ptr<std::set<std::string>> references,
     bool load_keys_success,
     std::unique_ptr<std::vector<std::string>> image_keys) {
   if (!load_keys_success) {
-    DVLOG(1) << "NTPSnippetsDatabase garbage collection failed.";
+    DVLOG(1) << "RemoteSuggestionsDatabase garbage collection failed.";
     OnDatabaseError();
     return;
   }
@@ -309,6 +313,5 @@ void NTPSnippetsDatabase::DeleteUnreferencedImages(
   }
   DeleteImages(std::move(keys_to_remove));
 }
-
 
 }  // namespace ntp_snippets

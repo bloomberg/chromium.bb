@@ -30,10 +30,10 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
-#include "components/ntp_snippets/remote/ntp_snippets_database.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
+#include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -454,8 +454,8 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
         observer_.get(), &category_factory_, utils_.pref_service(), "fr",
         &user_classifier_, &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), std::move(image_decoder),
-        base::MakeUnique<NTPSnippetsDatabase>(database_dir_.GetPath(),
-                                              task_runner),
+        base::MakeUnique<RemoteSuggestionsDatabase>(database_dir_.GetPath(),
+                                                    task_runner),
         base::MakeUnique<NTPSnippetsStatusService>(utils_.fake_signin_manager(),
                                                    utils_.pref_service()));
   }
