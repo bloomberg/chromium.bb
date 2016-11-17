@@ -716,7 +716,6 @@ void FrameSelection::documentDetached(const Document& document) {
   clearTypingStyle();
   m_selectionEditor->documentDetached(document);
   m_frameCaret->documentDetached();
-  m_frame->eventHandler().selectionController().documentDetached();
 }
 
 LayoutBlock* FrameSelection::caretLayoutObject() const {
