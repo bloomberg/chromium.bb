@@ -1750,25 +1750,10 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
 {
 	struct drm_output *output = output_state->output;
-	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_plane *scanout_plane = output->scanout_plane;
 	struct drm_plane_state *state;
-	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
-	struct gbm_bo *bo;
+	struct drm_fb *fb;
 	pixman_box32_t *extents;
-
-	/* Don't import buffers which span multiple outputs. */
-	if (ev->output_mask != (1u << output->base.id))
-		return NULL;
-
-	/* We use GBM to import buffers. */
-	if (b->gbm == NULL)
-		return NULL;
-
-	if (buffer == NULL)
-		return NULL;
-	if (wl_shm_buffer_get(buffer->resource))
-		return NULL;
 
 	/* Check the view spans exactly the output size, calculated in the
 	 * logical co-ordinate space. */
@@ -1782,15 +1767,27 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	if (ev->alpha != 1.0f)
 		return NULL;
 
+	fb = drm_fb_get_from_view(output_state, ev);
+	if (!fb)
+		return NULL;
+
+	/* Can't change formats with just a pageflip */
+	if (fb->format->format != output->gbm_format) {
+		drm_fb_unref(fb);
+		return NULL;
+	}
+
 	state = drm_output_state_get_plane(output_state, scanout_plane);
 	if (state->fb) {
 		/* If there is already a framebuffer on the scanout plane,
 		 * a client view has already been placed on the scanout
 		 * view. In that case, do not free or put back the state,
 		 * but just leave it in place and quietly exit. */
+		drm_fb_unref(fb);
 		return NULL;
 	}
 
+	state->fb = fb;
 	state->output = output;
 	if (!drm_plane_state_coords_for_view(state, ev))
 		goto err;
@@ -1803,30 +1800,6 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	    state->dest_w != (unsigned) output->base.current_mode->width ||
 	    state->dest_h != (unsigned) output->base.current_mode->height)
 		goto err;
-
-	bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   buffer->resource, GBM_BO_USE_SCANOUT);
-
-	/* Unable to use the buffer for scanout */
-	if (!bo)
-		goto err;
-
-	state->fb = drm_fb_get_from_bo(bo, b, drm_view_is_opaque(ev),
-				       BUFFER_CLIENT);
-	if (!state->fb) {
-		/* We need to explicitly destroy the BO. */
-		gbm_bo_destroy(bo);
-		goto err;
-	}
-
-	/* Can't change formats with just a pageflip */
-	if (state->fb->format->format != output->gbm_format) {
-		/* No need to destroy the GBM BO here, as it's now owned
-		 * by the FB. */
-		goto err;
-	}
-
-	drm_fb_set_buffer(state->fb, buffer);
 
 	return &scanout_plane->base;
 
