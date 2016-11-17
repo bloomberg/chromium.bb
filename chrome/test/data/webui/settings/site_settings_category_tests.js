@@ -164,12 +164,6 @@ cr.define('site_settings_category', function() {
                   category, settings.PermissionValues.SESSION_ONLY, false));
             }
           }
-
-          // All categories have an icon and a title.
-          assertNotEquals(
-              '', testElement.computeIconForContentCategory(category));
-          assertNotEquals(
-              '', testElement.computeTitleForContentCategory(category));
         }
       });
 

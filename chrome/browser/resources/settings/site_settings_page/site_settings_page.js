@@ -67,19 +67,6 @@ Polymer({
   },
 
   /**
-   * Handles selection of a single category and navigates to the details for
-   * that category.
-   * @param {!Event} event The tap event.
-   */
-  onTapCategory: function(event) {
-    var category = event.currentTarget.getAttribute('category');
-    if (category == settings.ALL_SITES)
-      settings.navigateTo(settings.Route.SITE_SETTINGS_ALL);
-    else
-      settings.navigateTo(this.computeCategoryRoute(category));
-  },
-
-  /**
    * Navigate to the route specified in the event dataset.
    * @param {!Event} event The tap event.
    * @private

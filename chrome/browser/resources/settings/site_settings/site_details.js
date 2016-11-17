@@ -69,13 +69,11 @@ Polymer({
    * @private
    */
   onSiteChanged_: function() {
-    // originForDisplay may be initially undefined if the user follows a direct
+    // origin may be initially undefined if the user follows a direct
     // link (URL) to this page.
-    if (this.site.originForDisplay !== undefined) {
-      // Using originForDisplay avoids the [*.] prefix that some exceptions use.
-      var url = new URL(this.ensureUrlHasScheme(this.site.originForDisplay));
-      this.$.usageApi.fetchUsageTotal(url.hostname);
-    }
+    var origin = this.site.origin;
+    if (origin !== undefined)
+      this.$.usageApi.fetchUsageTotal(this.toUrl(origin).hostname);
   },
 
   /** @private */

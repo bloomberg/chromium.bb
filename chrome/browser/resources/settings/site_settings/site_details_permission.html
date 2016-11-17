@@ -13,12 +13,10 @@
     <div id="details" hidden>
       <div class="list-item underbar">
         <div>
-          <iron-icon icon="[[computeIconForContentCategory(category)]]">
+          <iron-icon icon="[[icon]]">
           </iron-icon>
         </div>
-        <div class="middle" id="permissionHeader">
-          [[computeTitleForContentCategory(category)]]
-        </div>
+        <div class="middle" id="permissionHeader">[[label]]</div>
         <div class="md-select-wrapper">
           <select id="permission" class="md-select"
               on-change="onPermissionSelectionChange_">

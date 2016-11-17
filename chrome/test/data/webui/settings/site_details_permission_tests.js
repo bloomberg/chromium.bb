@@ -100,9 +100,10 @@ cr.define('site_details_permission', function() {
       });
 
       test('camera category', function() {
-        var origin = "https://www.example.com";
+        var origin = 'https://www.example.com';
         browserProxy.setPrefs(prefs);
         testElement.category = settings.ContentSettingsTypes.CAMERA;
+        testElement.label = 'Camera';
         testElement.site = {
           origin: origin,
           embeddingOrigin: '',
@@ -129,9 +130,10 @@ cr.define('site_details_permission', function() {
       });
 
       test('cookies category', function() {
-        var origin = "https://www.example.com";
+        var origin = 'https://www.example.com';
         browserProxy.setPrefs(prefsCookies);
         testElement.category = settings.ContentSettingsTypes.COOKIES;
+        testElement.label = 'Cookies';
         testElement.site = {
           origin: origin,
           embeddingOrigin: '',

@@ -12,7 +12,7 @@
     <style include="settings-shared"></style>
     <template is="dom-if" if="[[enableSiteSettings_]]">
       <div class="settings-box first" category$="[[ALL_SITES]]"
-          on-tap="onTapCategory" actionable>
+          data-route="SITE_SETTINGS_ALL" on-tap="onTapNavigate_" actionable>
         <iron-icon icon="settings:list"></iron-icon>
         <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
         <button class="subpage-arrow" is="paper-icon-button-light"></button>
@@ -21,181 +21,164 @@
       </div>
     </template>
     <div class="settings-box two-line first"
-        category$="[[ContentSettingsTypes.COOKIES]]" on-tap="onTapCategory"
-        actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.COOKIES)]]"></iron-icon>
+        category$="[[ContentSettingsTypes.COOKIES]]"
+        data-route="SITE_SETTINGS_COOKIES" on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:cookie"></iron-icon>
       <div class="middle">
-        <div>
-          [[computeTitleForContentCategory(ContentSettingsTypes.COOKIES)]]
-        </div>
+        <div>$i18n{siteSettingsCookies}</div>
         <div id="cookies" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.GEOLOCATION]]" on-tap="onTapCategory"
-        actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.GEOLOCATION)]]"></iron-icon>
+        category$="[[ContentSettingsTypes.GEOLOCATION]]"
+        data-route="SITE_SETTINGS_LOCATION" on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:location-on"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
+        <div>$i18n{siteSettingsLocation}</div>
         <div id="geolocation" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.CAMERA]]" on-tap="onTapCategory"
-        actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.CAMERA)]]"></iron-icon>
+        category$="[[ContentSettingsTypes.CAMERA]]"
+        data-route="SITE_SETTINGS_CAMERA"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:videocam"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
+        <div>$i18n{siteSettingsCamera}</div>
         <div id="camera" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line" category$="[[ContentSettingsTypes.MIC]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.MIC)]]"></iron-icon>
+        data-route="SITE_SETTINGS_MICROPHONE" on-tap="onTapNavigate_"
+        actionable>
+      <iron-icon icon="settings:mic"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
+        $i18n{siteSettingsMic}
         <div id="mic" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.NOTIFICATIONS)]]"></iron-icon>
+        data-route="SITE_SETTINGS_NOTIFICATIONS" on-tap="onTapNavigate_"
+        actionable>
+      <iron-icon icon="settings:notifications"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.NOTIFICATIONS)]]
+        $i18n{siteSettingsNotifications}
         <div id="notifications" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.JAVASCRIPT]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.JAVASCRIPT)]]"></iron-icon>
+        data-route="SITE_SETTINGS_JAVASCRIPT" on-tap="onTapNavigate_"
+        actionable>
+      <iron-icon icon="settings:input"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
+        $i18n{siteSettingsJavascript}
         <div id="javascript" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.PLUGINS]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.PLUGINS)]]"></iron-icon>
+        data-route="SITE_SETTINGS_FLASH" on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.PLUGINS)]]
+        $i18n{siteSettingsFlash}
         <div id="plugins" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.IMAGES]]" on-tap="onTapCategory"
-        actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.IMAGES)]]"></iron-icon>
+        category$="[[ContentSettingsTypes.IMAGES]]"
+        data-route="SITE_SETTINGS_IMAGES" on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:photo"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
+        $i18n{siteSettingsImages}
         <div id="images" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
-    <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.POPUPS]]" on-tap="onTapCategory"
-        actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.POPUPS)]]"></iron-icon>
+    <div category$="[[ContentSettingsTypes.POPUPS]]"
+        class="settings-box two-line" data-route="SITE_SETTINGS_POPUPS"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="cr:open-in-new"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
+        $i18n{siteSettingsPopups}
         <div id="popups" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.BACKGROUND_SYNC]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.BACKGROUND_SYNC)]]"></iron-icon>
+        data-route="SITE_SETTINGS_BACKGROUND_SYNC" on-tap="onTapNavigate_"
+        actionable>
+      <iron-icon icon="settings:sync"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(
-            ContentSettingsTypes.BACKGROUND_SYNC)]]
+        $i18n{siteSettingsBackgroundSync}
         <div id="backgroundSync" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.KEYGEN]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.KEYGEN)]]"></iron-icon>
+        data-route="SITE_SETTINGS_KEYGEN" on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:code"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(
-            ContentSettingsTypes.KEYGEN)]]
+        $i18n{siteSettingsKeygen}
         <div id="keygen" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.AUTOMATIC_DOWNLOADS]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.AUTOMATIC_DOWNLOADS)]]"></iron-icon>
+        data-route="SITE_SETTINGS_AUTOMATIC_DOWNLOADS"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="cr:file-download"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(
-            ContentSettingsTypes.AUTOMATIC_DOWNLOADS)]]
+        $i18n{siteSettingsAutomaticDownloads}
         <div id="automaticDownloads" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.UNSANDBOXED_PLUGINS]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.UNSANDBOXED_PLUGINS)]]"></iron-icon>
+        data-route="SITE_SETTINGS_UNSANDBOXED_PLUGINS"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(
-            ContentSettingsTypes.UNSANDBOXED_PLUGINS)]]
+        $i18n{siteSettingsUnsandboxedPlugins}
         <div id="unsandboxedPlugins" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.PROTOCOL_HANDLERS]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.PROTOCOL_HANDLERS)]]"></iron-icon>
+        data-route="SITE_SETTINGS_HANDLERS"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:protocol-handler"></iron-icon>
       <div class="middle">
-        [[computeTitleForContentCategory(
-            ContentSettingsTypes.PROTOCOL_HANDLERS)]]
+        $i18n{siteSettingsHandlers}
         <div id="handlers" class="secondary"></div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box" category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.ZOOM_LEVELS)]]"></iron-icon>
-      <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.ZOOM_LEVELS)]]
-      </div>
+        data-route="SITE_SETTINGS_ZOOM_LEVELS"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:zoom-in"></iron-icon>
+      <div class="middle">$i18n{siteSettingsZoomLevels}</div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box" category$="[[ContentSettingsTypes.USB_DEVICES]]"
-        on-tap="onTapCategory" actionable>
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.USB_DEVICES)]]"></iron-icon>
-      <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.USB_DEVICES)]]
-      </div>
+        data-route="SITE_SETTINGS_USB_DEVICES"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:usb"></iron-icon>
+      <div class="middle">$i18n{siteSettingsUsbDevices}</div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box" data-route="SITE_SETTINGS_PDF_DOCUMENTS"
