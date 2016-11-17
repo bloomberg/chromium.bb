@@ -82,8 +82,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   class Observer {
    public:
     virtual void OnMostVisitedURLsAvailable(const NTPTilesVector& tiles) = 0;
-    // TODO(sfiera): make this method required after iOS implements it:
-    virtual void OnIconMadeAvailable(const GURL& site_url) {}
+    virtual void OnIconMadeAvailable(const GURL& site_url) = 0;
 
    protected:
     virtual ~Observer() {}
