@@ -4,20 +4,33 @@
 
 #import "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
 
+namespace {
+
+const char kTestUpdateServerURL[] = "https://iosupdatetest.chromium.org";
+
+const char kTestApplicationID[] = "{TestApplicationID}";
+
+// Brand-codes are composed of four capital letters.
+const char kTestBrandCode[] = "RIMZ";
+
+}  // namespace
+
 TestOmahaServiceProvider::TestOmahaServiceProvider() {}
 
 TestOmahaServiceProvider::~TestOmahaServiceProvider() {}
 
+void TestOmahaServiceProvider::Initialize() {}
+
 GURL TestOmahaServiceProvider::GetUpdateServerURL() const {
-  return GURL();
+  return GURL(kTestUpdateServerURL);
 }
 
 std::string TestOmahaServiceProvider::GetApplicationID() const {
-  return std::string();
+  return kTestApplicationID;
 }
 
 std::string TestOmahaServiceProvider::GetBrandCode() const {
-  return std::string();
+  return kTestBrandCode;
 }
 
 void TestOmahaServiceProvider::AppendExtraAttributes(

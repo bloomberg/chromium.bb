@@ -19,6 +19,9 @@ class OmahaServiceProvider {
   OmahaServiceProvider();
   virtual ~OmahaServiceProvider();
 
+  // Initializes the provider.  This method will be called on the UI thread.
+  virtual void Initialize();
+
   // Returns the URL to use for update checks.
   virtual GURL GetUpdateServerURL() const;
 

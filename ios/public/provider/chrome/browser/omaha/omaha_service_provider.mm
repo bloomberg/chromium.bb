@@ -8,6 +8,8 @@ OmahaServiceProvider::OmahaServiceProvider() {}
 
 OmahaServiceProvider::~OmahaServiceProvider() {}
 
+void OmahaServiceProvider::Initialize() {}
+
 GURL OmahaServiceProvider::GetUpdateServerURL() const {
   return GURL();
 }

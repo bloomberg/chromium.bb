@@ -13,6 +13,7 @@ class TestOmahaServiceProvider : public OmahaServiceProvider {
   ~TestOmahaServiceProvider() override;
 
   // OmahaServiceProvider.
+  void Initialize() override;
   GURL GetUpdateServerURL() const override;
   std::string GetApplicationID() const override;
   std::string GetBrandCode() const override;
