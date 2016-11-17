@@ -490,6 +490,7 @@ static int main_loop(int argc, const char **argv_) {
   aom_codec_ctx_t decoder;
   char *fn = NULL;
   int i;
+  int ret = EXIT_FAILURE;
   uint8_t *buf = NULL;
   size_t bytes_in_buffer = 0, buffer_size = 0;
   FILE *infile;
@@ -706,7 +707,7 @@ static int main_loop(int argc, const char **argv_) {
                          dec_flags)) {
     fprintf(stderr, "Failed to initialize decoder: %s\n",
             aom_codec_error(&decoder));
-    return EXIT_FAILURE;
+    goto fail2;
   }
 
   if (!quiet) fprintf(stderr, "%s\n", decoder.name);
@@ -716,13 +717,13 @@ static int main_loop(int argc, const char **argv_) {
     if (aom_codec_control(&decoder, AV1_SET_DECODE_TILE_ROW, tile_row)) {
       fprintf(stderr, "Failed to set decode_tile_row: %s\n",
               aom_codec_error(&decoder));
-      return EXIT_FAILURE;
+      goto fail;
     }
 
     if (aom_codec_control(&decoder, AV1_SET_DECODE_TILE_COL, tile_col)) {
       fprintf(stderr, "Failed to set decode_tile_col: %s\n",
               aom_codec_error(&decoder));
-      return EXIT_FAILURE;
+      goto fail;
     }
   }
 #endif
@@ -742,7 +743,7 @@ static int main_loop(int argc, const char **argv_) {
                                              &ext_fb_list)) {
       fprintf(stderr, "Failed to configure external frame buffers: %s\n",
               aom_codec_error(&decoder));
-      return EXIT_FAILURE;
+      goto fail;
     }
   }
 
@@ -851,7 +852,7 @@ static int main_loop(int argc, const char **argv_) {
                   "Scaling is disabled in this configuration. "
                   "To enable scaling, configure with --enable-libyuv\n",
                   aom_codec_error(&decoder));
-          return EXIT_FAILURE;
+          goto fail;
 #endif
         }
       }
@@ -968,16 +969,20 @@ static int main_loop(int argc, const char **argv_) {
     fprintf(stderr, "\n");
   }
 
-  if (frames_corrupted)
+  if (frames_corrupted) {
     fprintf(stderr, "WARNING: %d frames corrupted.\n", frames_corrupted);
+  } else {
+    ret = EXIT_SUCCESS;
+  }
 
 fail:
 
   if (aom_codec_destroy(&decoder)) {
     fprintf(stderr, "Failed to destroy decoder: %s\n",
             aom_codec_error(&decoder));
-    return EXIT_FAILURE;
   }
+
+fail2:
 
   if (!noblit && single_file) {
     if (do_md5) {
@@ -1008,7 +1013,7 @@ fail:
   fclose(infile);
   free(argv);
 
-  return frames_corrupted ? EXIT_FAILURE : EXIT_SUCCESS;
+  return ret;
 }
 
 int main(int argc, const char **argv_) {
