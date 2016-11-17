@@ -330,7 +330,7 @@ class BluetoothDetailedView : public TrayDetailsView {
       }
     }
 
-    scroll_content()->SizeToPreferredSize();
+    scroll_content()->InvalidateLayout();
   }
 
   void AppendSameTypeDevicesToScrollList(const BluetoothDeviceList& list,
