@@ -6,7 +6,6 @@
 
 [
     Constructor,
-    Constructor(DOMMatrixReadOnly other),
     Constructor(sequence<unrestricted double> numberSequence),
     RaisesException=Constructor,
     // FIXME: Should implement more constructors (See: crbug.com/388780)

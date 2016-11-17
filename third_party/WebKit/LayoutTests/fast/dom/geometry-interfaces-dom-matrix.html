@@ -9,18 +9,6 @@ test(() => {
 }, "DOMMatrix() constructor");
 
 test(() => {
-  var other = new DOMMatrix();
-  other.m11 = 10;
-  other.m12 = 20;
-  other.m24 = 2;
-  other.m33 = 3;
-  other.m42 = 3;
-  other.m44 = 9;
-  var matrix = new DOMMatrix(other);
-  assert_3d_matrix_equals(matrix, [10, 20, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 3, 0, 9]);
-}, "DOMMatrix(other) constructor");
-
-test(() => {
   var float32Array = new Float32Array([1, 2, 3, 4, 5, 6]);
   var matrix2d = DOMMatrix.fromFloat32Array(float32Array);
   assert_2d_matrix_equals(matrix2d, [1, 2, 3, 4, 5, 6]);
