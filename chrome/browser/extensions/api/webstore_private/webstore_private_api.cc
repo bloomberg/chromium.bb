@@ -41,6 +41,11 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
+
 namespace extensions {
 
 namespace BeginInstallWithManifest3 =
@@ -263,13 +268,32 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     return;
   }
 
-  // Check the management policy before the installation process begins
+  // Check the management policy before the installation process begins.
+  Profile* profile = chrome_details_.GetProfile();
   base::string16 policy_error;
-  bool allow = ExtensionSystem::Get(chrome_details_.GetProfile())->
+  bool allow = ExtensionSystem::Get(profile)->
       management_policy()->UserMayLoad(dummy_extension_.get(), &policy_error);
   if (!allow) {
-    Respond(BuildResponse(api::webstore_private::RESULT_BLOCKED_BY_POLICY,
-                          base::UTF16ToUTF8(policy_error)));
+    bool blocked_for_child = false;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    // If the installation was blocked because the user is a child, we send a
+    // different error code so that the Web Store can adjust the UI accordingly.
+    // In that case, the CWS will not show the |policy_error|.
+    if (profile->IsChild()) {
+      SupervisedUserService* service =
+          SupervisedUserServiceFactory::GetForProfile(profile);
+      // Hack: Check that the message matches to make sure installation was
+      // actually blocked due to the user being a child, as opposed to, say,
+      // device policy.
+      if (policy_error == service->GetExtensionsLockedMessage())
+        blocked_for_child = true;
+    }
+#endif
+    api::webstore_private::Result code =
+        blocked_for_child
+            ? api::webstore_private::RESULT_BLOCKED_FOR_CHILD_ACCOUNT
+            : api::webstore_private::RESULT_BLOCKED_BY_POLICY;
+    Respond(BuildResponse(code, base::UTF16ToUTF8(policy_error)));
     // Matches the AddRef in Run().
     Release();
     return;

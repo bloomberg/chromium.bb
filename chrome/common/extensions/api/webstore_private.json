@@ -64,6 +64,9 @@
         }, {
           "name": "already_installed",
           "description": "The extension is already installed"
+        }, {
+          "name": "blocked_for_child_account",
+          "description": "The user is signed in to a child account, and not allowed to perform the operation"
         }],
         "description": "Whether the API call succeeded, or the reason for failure."
       },

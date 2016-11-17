@@ -1094,7 +1094,7 @@ bool SupervisedUserService::MustRemainDisabled(const Extension* extension,
 
   if (must_remain_disabled) {
     if (error)
-      *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER);
+      *error = GetExtensionsLockedMessage();
     // If the extension must remain disabled due to permission increase,
     // then the update request has been already sent at update time.
     // We do nothing and we don't add an extra disable reason.
