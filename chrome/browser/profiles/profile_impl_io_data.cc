@@ -485,7 +485,8 @@ void ProfileImplIOData::InitializeInternal(
   main_context_storage->set_network_delegate(
       data_reduction_proxy_io_data()->CreateNetworkDelegate(
           io_thread_globals->data_use_ascriber->CreateNetworkDelegate(
-              std::move(chrome_network_delegate)),
+              std::move(chrome_network_delegate),
+              io_thread->GetMetricsDataUseForwarder()),
           true));
 
   main_context->set_host_resolver(

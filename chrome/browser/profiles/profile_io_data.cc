@@ -1033,7 +1033,7 @@ void ProfileIOData::Init(
 #else
           NULL,
 #endif
-          &enable_referrers_, io_thread->GetMetricsDataUseForwarder()));
+          &enable_referrers_));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());

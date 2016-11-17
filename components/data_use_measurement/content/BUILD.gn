@@ -4,31 +4,12 @@
 
 static_library("content") {
   sources = [
-    "data_use_measurement.cc",
-    "data_use_measurement.h",
+    "content_url_request_classifier.cc",
+    "content_url_request_classifier.h",
   ]
   deps = [
     "//base",
-    "//components/data_use_measurement/core",
-    "//components/metrics",
     "//content/public/browser",
-    "//net",
-  ]
-}
-
-source_set("unit_tests") {
-  sources = [
-    "data_use_measurement_unittest.cc",
-  ]
-  testonly = true
-  deps = [
-    ":content",
-    "//base",
-    "//components/data_use_measurement/core",
-    "//content/public/browser",
-    "//net",
-    "//net:test_support",
-    "//testing/gtest",
-    "//url",
+    "//net:net",
   ]
 }

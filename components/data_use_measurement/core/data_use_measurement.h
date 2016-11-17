@@ -29,6 +29,8 @@ class URLRequest;
 
 namespace data_use_measurement {
 
+class URLRequestClassifier;
+
 // Records the data use of user traffic and various services in UMA histograms.
 // The UMA is broken down by network technology used (Wi-Fi vs cellular). On
 // Android, the UMA is further broken down by whether the application was in the
@@ -37,7 +39,8 @@ namespace data_use_measurement {
 // http://crbug.com/527460
 class DataUseMeasurement {
  public:
-  explicit DataUseMeasurement(
+  DataUseMeasurement(
+      std::unique_ptr<URLRequestClassifier> url_request_classifier,
       const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
   ~DataUseMeasurement();
 
@@ -55,9 +58,6 @@ class DataUseMeasurement {
 
   // Indicates that |request| has been completed or failed.
   void OnCompleted(const net::URLRequest& request, bool started);
-
-  // Returns true if the URLRequest |request| is initiated by user traffic.
-  static bool IsUserInitiatedRequest(const net::URLRequest& request);
 
 #if defined(OS_ANDROID)
   // This function should just be used for testing purposes. A change in
@@ -112,6 +112,9 @@ class DataUseMeasurement {
   // Updates the data use of the |request|, thus |request| must be non-null.
   void UpdateDataUsePrefs(const net::URLRequest& request) const;
 
+  // Reports the message size of the service requests.
+  void ReportServicesMessageSizeUMA(const net::URLRequest& request);
+
   // A helper function used to record data use of services. It gets the size of
   // exchanged message, its direction (which is upstream or downstream) and
   // reports to two histogram groups. DataUse.MessageSize.ServiceName and
@@ -124,6 +127,9 @@ class DataUseMeasurement {
       DataUseUserData::AppState app_state,
       bool is_connection_cellular,
       int64_t message_size) const;
+
+  // Classifier for identifying if an URL request is user initiated.
+  std::unique_ptr<URLRequestClassifier> url_request_classifier_;
 
   // Callback for updating data use prefs.
   // TODO(rajendrant): If a similar mechanism would need be used for components

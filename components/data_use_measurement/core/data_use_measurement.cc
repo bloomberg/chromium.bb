@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_use_measurement/content/data_use_measurement.h"
+#include "components/data_use_measurement/core/data_use_measurement.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "content/public/browser/resource_request_info.h"
+#include "components/data_use_measurement/core/url_request_classifier.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
@@ -64,8 +64,10 @@ void IncrementLatencyHistogramByCount(const std::string& name,
 }  // namespace
 
 DataUseMeasurement::DataUseMeasurement(
+    std::unique_ptr<URLRequestClassifier> url_request_classifier,
     const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder)
-    : metrics_data_use_forwarder_(metrics_data_use_forwarder)
+    : url_request_classifier_(std::move(url_request_classifier)),
+      metrics_data_use_forwarder_(metrics_data_use_forwarder)
 #if defined(OS_ANDROID)
       ,
       app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
@@ -78,6 +80,7 @@ DataUseMeasurement::DataUseMeasurement(
       no_reads_since_background_(false)
 #endif
 {
+  DCHECK(url_request_classifier_);
 }
 
 DataUseMeasurement::~DataUseMeasurement(){};
@@ -97,6 +100,7 @@ void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
   // Recording data use of request on redirects.
   // TODO(rajendrant): May not be needed when http://crbug/651957 is fixed.
   UpdateDataUsePrefs(request);
+  ReportServicesMessageSizeUMA(request);
 }
 
 void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
@@ -122,6 +126,7 @@ void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
   // TODO(amohammadkhan): Verify that there is no double recording in data use
   // of redirected requests.
   UpdateDataUsePrefs(request);
+  ReportServicesMessageSizeUMA(request);
 #if defined(OS_ANDROID)
   MaybeRecordNetworkBytesOS();
 #endif
@@ -130,21 +135,19 @@ void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
 void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
                                           TrafficDirection dir,
                                           int64_t bytes) {
-  bool is_user_traffic = IsUserInitiatedRequest(request);
+  bool is_user_traffic = url_request_classifier_->IsUserRequest(request);
   bool is_connection_cellular =
       net::NetworkChangeNotifier::IsConnectionCellular(
           net::NetworkChangeNotifier::GetConnectionType());
 
   DataUseUserData* attached_service_data = static_cast<DataUseUserData*>(
       request.GetUserData(DataUseUserData::kUserDataKey));
-  DataUseUserData::ServiceName service_name = DataUseUserData::NOT_TAGGED;
   DataUseUserData::AppState old_app_state = DataUseUserData::FOREGROUND;
   DataUseUserData::AppState new_app_state = DataUseUserData::UNKNOWN;
 
-  if (attached_service_data) {
-    service_name = attached_service_data->service_name();
+  if (attached_service_data)
     old_app_state = attached_service_data->app_state();
-  }
+
   if (old_app_state == CurrentAppState())
     new_app_state = old_app_state;
 
@@ -157,10 +160,6 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
                        dir, new_app_state, is_connection_cellular),
       bytes);
 
-  if (!is_user_traffic) {
-    ReportDataUsageServices(service_name, dir, new_app_state,
-                            is_connection_cellular, bytes);
-  }
 #if defined(OS_ANDROID)
   if (dir == DOWNSTREAM && CurrentAppState() == DataUseUserData::BACKGROUND) {
     DCHECK(!last_app_background_time_.is_null());
@@ -201,20 +200,6 @@ void DataUseMeasurement::UpdateDataUsePrefs(
         request.GetTotalSentBytes() + request.GetTotalReceivedBytes(),
         is_connection_cellular);
   }
-}
-
-// static
-bool DataUseMeasurement::IsUserInitiatedRequest(
-    const net::URLRequest& request) {
-  // Having ResourceRequestInfo in the URL request is a sign that the request is
-  // for a web content from user. For now we could add a condition to check
-  // ProcessType in info is content::PROCESS_TYPE_RENDERER, but it won't be
-  // compatible with upcoming PlzNavigate architecture. So just existence of
-  // ResourceRequestInfo is verified, and the current check should be compatible
-  // with upcoming changes in PlzNavigate.
-  // TODO(rajendrant): Verify this condition for different use cases. See
-  // crbug.com/626063.
-  return content::ResourceRequestInfo::ForRequest(&request) != nullptr;
 }
 
 #if defined(OS_ANDROID)
@@ -292,6 +277,30 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
   }
 }
 #endif
+
+void DataUseMeasurement::ReportServicesMessageSizeUMA(
+    const net::URLRequest& request) {
+  bool is_user_traffic = url_request_classifier_->IsUserRequest(request);
+  bool is_connection_cellular =
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType());
+
+  DataUseUserData* attached_service_data = static_cast<DataUseUserData*>(
+      request.GetUserData(DataUseUserData::kUserDataKey));
+  DataUseUserData::ServiceName service_name = DataUseUserData::NOT_TAGGED;
+
+  if (attached_service_data)
+    service_name = attached_service_data->service_name();
+
+  if (!is_user_traffic) {
+    ReportDataUsageServices(service_name, UPSTREAM, CurrentAppState(),
+                            is_connection_cellular,
+                            request.GetTotalSentBytes());
+    ReportDataUsageServices(service_name, DOWNSTREAM, CurrentAppState(),
+                            is_connection_cellular,
+                            request.GetTotalReceivedBytes());
+  }
+}
 
 void DataUseMeasurement::ReportDataUsageServices(
     DataUseUserData::ServiceName service,

@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/features.h"
+#include "components/metrics/data_use_tracker.h"
 #include "components/prefs/pref_member.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -400,7 +401,7 @@ class IOThread : public content::BrowserThreadDelegate {
   const base::TimeTicks creation_time_;
 
   // Callback for updating data use prefs which needs to be initialized on UI
-  // thread and passed to |ChromeNetworkDelegate|.
+  // thread and passed to |DataUseNetworkDelegate|.
   metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
 
   base::WeakPtrFactory<IOThread> weak_factory_;

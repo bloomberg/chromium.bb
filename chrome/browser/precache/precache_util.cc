@@ -9,7 +9,7 @@
 #include "chrome/browser/precache/precache_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/data_use_measurement/content/data_use_measurement.h"
+#include "components/data_use_measurement/content/content_url_request_classifier.h"
 #include "components/precache/content/precache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request.h"
@@ -64,13 +64,10 @@ void UpdatePrecacheMetricsAndState(const net::URLRequest* request,
   // precaching is allowed.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &UpdatePrecacheMetricsAndStateOnUIThread, request->url(),
-          GURL(request->referrer()), latency, base::Time::Now(),
-          request->response_info(), received_content_length,
-          data_use_measurement::DataUseMeasurement::IsUserInitiatedRequest(
-              *request),
-          profile_id));
+      base::Bind(&UpdatePrecacheMetricsAndStateOnUIThread, request->url(),
+                 GURL(request->referrer()), latency, base::Time::Now(),
+                 request->response_info(), received_content_length,
+                 data_use_measurement::IsUserRequest(*request), profile_id));
 }
 
 }  // namespace precache

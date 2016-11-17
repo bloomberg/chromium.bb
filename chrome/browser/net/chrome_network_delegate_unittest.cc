@@ -28,7 +28,6 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
@@ -50,18 +49,12 @@
 
 namespace {
 
-// This function requests a URL, and makes it return a known response. If
-// |from_user| is true, it attaches a ResourceRequestInfo to the URLRequest,
-// because requests from users have this info. If |from_user| is false, the
-// request is presumed to be from a service, and the service name is set in the
-// request's user data. (As an example suggestions service tag is attached). if
-// |redirect| is true, it adds necessary socket data to have it follow redirect
-// before getting the final response.
+// This function requests a URL, and makes it return a known response.
+// ResourceRequestInfo is attached to the URLRequest, to represent this request
+// as an user initiated.
 std::unique_ptr<net::URLRequest> RequestURL(
     net::URLRequestContext* context,
-    net::MockClientSocketFactory* socket_factory,
-    bool from_user,
-    bool redirect) {
+    net::MockClientSocketFactory* socket_factory) {
   net::MockRead redirect_mock_reads[] = {
       net::MockRead("HTTP/1.1 302 Found\r\n"
                     "Location: http://bar.com/\r\n\r\n"),
@@ -70,8 +63,6 @@ std::unique_ptr<net::URLRequest> RequestURL(
   net::StaticSocketDataProvider redirect_socket_data_provider(
       redirect_mock_reads, arraysize(redirect_mock_reads), nullptr, 0);
 
-  if (redirect)
-    socket_factory->AddSocketDataProvider(&redirect_socket_data_provider);
   net::MockRead response_mock_reads[] = {
       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"), net::MockRead("response body"),
       net::MockRead(net::SYNCHRONOUS, net::OK),
@@ -84,17 +75,10 @@ std::unique_ptr<net::URLRequest> RequestURL(
   std::unique_ptr<net::URLRequest> request(context->CreateRequest(
       GURL("http://example.com"), net::DEFAULT_PRIORITY, &test_delegate));
 
-  if (from_user) {
-    content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-        true, false, true, true, false);
-  } else {
-    request->SetUserData(
-        data_use_measurement::DataUseUserData::kUserDataKey,
-        new data_use_measurement::DataUseUserData(
-            data_use_measurement::DataUseUserData::SUGGESTIONS,
-            data_use_measurement::DataUseUserData::FOREGROUND));
-  }
+  content::ResourceRequestInfo::AllocateForTesting(
+      request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
+      true, false, true, true, false);
+
   request->Start();
   base::RunLoop().RunUntilIdle();
   return request;
@@ -161,8 +145,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
   void Initialize() {
     network_delegate_.reset(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_,
-                                  metrics::UpdateUsagePrefCallbackType()));
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     context_->set_client_socket_factory(&socket_factory_);
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
@@ -197,125 +180,6 @@ class ChromeNetworkDelegateTest : public testing::Test {
   std::unique_ptr<net::TestURLRequestContext> context_;
 };
 
-// Test that the total data use consumed by Chrome is recorded correctly.
-TEST_F(ChromeNetworkDelegateTest, TotalDataUseMeasurementTest) {
-  Initialize();
-  base::HistogramTester histogram_tester;
-
-  // A query from a user without redirection.
-  RequestURL(context(), socket_factory(), true, false);
-  std::vector<base::Bucket> buckets =
-      histogram_tester.GetAllSamples("DataUse.BytesSent.Delegate");
-  EXPECT_FALSE(buckets.empty());
-
-  buckets = histogram_tester.GetAllSamples("DataUse.BytesReceived.Delegate");
-  EXPECT_FALSE(buckets.empty());
-}
-
-// This function tests data use measurement for requests by services. it makes a
-// query which is similar to a query of a service, so it should affect
-// DataUse.TrafficSize.System.Dimensions and DataUse.MessageSize.ServiceName
-// histograms. AppState and ConnectionType dimensions are always Foreground and
-// NotCellular respectively.
-TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementServiceTest) {
-  Initialize();
-  base::HistogramTester histogram_tester;
-
-  // A query from a service without redirection.
-  RequestURL(context(), socket_factory(), false, false);
-  EXPECT_FALSE(
-      histogram_tester
-          .GetTotalCountsForPrefix(
-              "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular")
-          .empty());
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 1);
-  EXPECT_FALSE(histogram_tester
-                   .GetTotalCountsForPrefix("DataUse.MessageSize.Suggestions")
-                   .empty());
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Upstream.Foreground.NotCellular", 0);
-}
-
-// This function tests data use measurement for requests by user.The query from
-// a user should affect DataUse.TrafficSize.User.Dimensions histogram. AppState
-// and ConnectionType dimensions are always Foreground and NotCellular
-// respectively.
-TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementUserTest) {
-  Initialize();
-  base::HistogramTester histogram_tester;
-
-  // A query from user without redirection.
-  RequestURL(context(), socket_factory(), true, false);
-  EXPECT_FALSE(
-      histogram_tester
-          .GetTotalCountsForPrefix(
-              "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular")
-          .empty());
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Upstream.Foreground.NotCellular", 1);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 0);
-}
-
-// This function tests data use measurement for requests by services in case the
-// request is redirected once. it makes a query which is similar to a query of a
-// service, so it should affect DataUse.TrafficSize.System.Dimensions and
-// DataUse.MessageSize.ServiceName histograms. AppState and ConnectionType
-// dimensions are always Foreground and NotCellular respectively.
-TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementServiceTestWithRedirect) {
-  Initialize();
-  base::HistogramTester histogram_tester;
-
-  // A query from user with one redirection.
-  RequestURL(context(), socket_factory(), false, true);
-  EXPECT_FALSE(
-      histogram_tester
-          .GetTotalCountsForPrefix(
-              "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular")
-          .empty());
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 2);
-  // Two uploads and two downloads message, so totalCount should be 4.
-  EXPECT_FALSE(histogram_tester
-                   .GetTotalCountsForPrefix("DataUse.MessageSize.Suggestions")
-                   .empty());
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Upstream.Foreground.NotCellular", 0);
-}
-
-// This function tests data use measurement for requests by user in case the
-// request is redirected once.The query from a user should affect
-// DataUse.TrafficSize.User.Dimensions histogram. AppState and ConnectionType
-// dimensions are always Foreground and NotCellular respectively.
-TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementUserTestWithRedirect) {
-  Initialize();
-  base::HistogramTester histogram_tester;
-
-  // A query from user with one redirection.
-  RequestURL(context(), socket_factory(), true, true);
-
-  EXPECT_FALSE(
-      histogram_tester
-          .GetTotalCountsForPrefix(
-              "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular")
-          .empty());
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.User.Upstream.Foreground.NotCellular", 2);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount(
-      "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 0);
-}
-
 TEST_F(ChromeNetworkDelegateTest, DisableSameSiteCookiesIffFlagDisabled) {
   Initialize();
   EXPECT_FALSE(network_delegate()->AreExperimentalCookieFeaturesEnabled());
@@ -336,7 +200,7 @@ TEST_F(ChromeNetworkDelegateTest, ReportDataUseToAggregator) {
       &fake_aggregator, false /* is_data_usage_off_the_record */);
 
   std::unique_ptr<net::URLRequest> request =
-      RequestURL(context(), socket_factory(), true, false);
+      RequestURL(context(), socket_factory());
   EXPECT_EQ(request->GetTotalSentBytes(),
             fake_aggregator.on_the_record_tx_bytes());
   EXPECT_EQ(request->GetTotalReceivedBytes(),
@@ -352,7 +216,7 @@ TEST_F(ChromeNetworkDelegateTest, ReportOffTheRecordDataUseToAggregator) {
   chrome_network_delegate()->set_data_use_aggregator(
       &fake_aggregator, true /* is_data_usage_off_the_record */);
   std::unique_ptr<net::URLRequest> request =
-      RequestURL(context(), socket_factory(), true, false);
+      RequestURL(context(), socket_factory());
 
   EXPECT_EQ(0, fake_aggregator.on_the_record_tx_bytes());
   EXPECT_EQ(0, fake_aggregator.on_the_record_rx_bytes());
@@ -411,8 +275,7 @@ class ChromeNetworkDelegateSafeSearchTest :
  protected:
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
     std::unique_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_,
-                                  metrics::UpdateUsagePrefCallbackType()));
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
     network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
     return std::move(network_delegate);
@@ -483,8 +346,7 @@ class ChromeNetworkDelegateAllowedDomainsTest :
  protected:
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
     std::unique_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_,
-                                  metrics::UpdateUsagePrefCallbackType()));
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_allowed_domains_for_apps(&allowed_domains_for_apps_);
     return std::move(network_delegate);
   }
@@ -578,8 +440,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
  protected:
   std::unique_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
     std::unique_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_,
-                                  metrics::UpdateUsagePrefCallbackType()));
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_cookie_settings(cookie_settings_);
     return network_delegate;
   }

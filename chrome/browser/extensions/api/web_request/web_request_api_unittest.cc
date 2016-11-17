@@ -193,8 +193,7 @@ class ExtensionWebRequestTest : public testing::Test {
         &enable_referrers_, nullptr, nullptr, nullptr, nullptr,
         profile_.GetTestingPrefService());
     network_delegate_.reset(
-        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_,
-                                  metrics::UpdateUsagePrefCallbackType()));
+        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
         CookieSettingsFactory::GetForProfile(&profile_).get());
@@ -1000,8 +999,7 @@ class ExtensionWebRequestHeaderModificationTest
         &enable_referrers_, nullptr, nullptr, nullptr, nullptr,
         profile_.GetTestingPrefService());
     network_delegate_.reset(
-        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_,
-                                  metrics::UpdateUsagePrefCallbackType()));
+        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
         CookieSettingsFactory::GetForProfile(&profile_).get());

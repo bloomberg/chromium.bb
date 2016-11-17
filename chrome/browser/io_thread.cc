@@ -515,8 +515,7 @@ void IOThread::Init() {
 
   std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
-                                &system_enable_referrers_,
-                                metrics_data_use_forwarder_));
+                                &system_enable_referrers_));
   // By default, data usage is considered off the record.
   chrome_network_delegate->set_data_use_aggregator(
       globals_->data_use_aggregator.get(),
@@ -532,7 +531,7 @@ void IOThread::Init() {
 
   globals_->system_network_delegate =
       globals_->data_use_ascriber->CreateNetworkDelegate(
-          std::move(chrome_network_delegate));
+          std::move(chrome_network_delegate), metrics_data_use_forwarder_);
 
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 

@@ -5,8 +5,10 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/data_use_measurement/content/content_url_request_classifier.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/data_use_measurement/core/url_request_classifier.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -181,6 +183,11 @@ void ChromeDataUseAscriber::DeletePendingNavigationEntry(
     pending_navigation_data_use_map_.erase(navigation_iter);
     data_use_recorders_.erase(entry);
   }
+}
+
+std::unique_ptr<URLRequestClassifier>
+ChromeDataUseAscriber::CreateURLRequestClassifier() const {
+  return base::MakeUnique<ContentURLRequestClassifier>();
 }
 
 }  // namespace data_use_measurement

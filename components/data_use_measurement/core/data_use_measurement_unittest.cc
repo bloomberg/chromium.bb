@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_use_measurement/content/data_use_measurement.h"
+#include "components/data_use_measurement/core/data_use_measurement.h"
 
 #include <memory>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
-#include "content/public/browser/resource_request_info.h"
+#include "components/data_use_measurement/core/url_request_classifier.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
 #include "net/socket/socket_test_util.h"
@@ -27,10 +27,29 @@
 
 namespace data_use_measurement {
 
+class UserRequestUserDataForTesting : public base::SupportsUserData::Data,
+                                      public URLRequestClassifier {
+ public:
+  static const void* const kUserDataKey;
+
+  bool IsUserRequest(const net::URLRequest& request) const override {
+    return request.GetUserData(kUserDataKey) != nullptr;
+  }
+
+  static void MarkAsUserRequest(net::URLRequest* request) {
+    request->SetUserData(kUserDataKey, new UserRequestUserDataForTesting());
+  }
+};
+
+// static
+const void* const UserRequestUserDataForTesting::kUserDataKey =
+    &UserRequestUserDataForTesting::kUserDataKey;
+
 class DataUseMeasurementTest : public testing::Test {
  public:
   DataUseMeasurementTest()
       : data_use_measurement_(
+            base::MakeUnique<UserRequestUserDataForTesting>(),
             base::Bind(&DataUseMeasurementTest::FakeDataUseforwarder,
                        base::Unretained(this))) {
     // During the test it is expected to not have cellular connection.
@@ -52,15 +71,13 @@ class DataUseMeasurementTest : public testing::Test {
     std::unique_ptr<net::URLRequest> request(context_->CreateRequest(
         GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
     if (is_user_request) {
+      UserRequestUserDataForTesting::MarkAsUserRequest(request.get());
+    } else {
       request->SetUserData(
           data_use_measurement::DataUseUserData::kUserDataKey,
           new data_use_measurement::DataUseUserData(
               data_use_measurement::DataUseUserData::SUGGESTIONS,
               data_use_measurement_.CurrentAppState()));
-    } else {
-      content::ResourceRequestInfo::AllocateForTesting(
-          request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-          true, false, true, true, false);
     }
 
     request->Start();
@@ -84,21 +101,6 @@ class DataUseMeasurementTest : public testing::Test {
   void TestForAUserRequest(const std::string& target_dimension) {
     base::HistogramTester histogram_tester;
     SendRequest(true);
-    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Downstream." +
-                                          target_dimension + kConnectionType,
-                                      1);
-    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Upstream." +
-                                          target_dimension + kConnectionType,
-                                      1);
-    // One upload and one download message, so total count should be 2.
-    histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 2);
-  }
-
-  // This function makes a service request and confirms that its effect is
-  // reflected in proper histograms.
-  void TestForAServiceRequest(const std::string& target_dimension) {
-    base::HistogramTester histogram_tester;
-    SendRequest(false);
     histogram_tester.ExpectTotalCount("DataUse.TrafficSize.User.Downstream." +
                                           target_dimension + kConnectionType,
                                       1);
@@ -113,6 +115,21 @@ class DataUseMeasurementTest : public testing::Test {
         "DataUse.MessageSize.AllServices.Downstream." + target_dimension +
             kConnectionType,
         0);
+  }
+
+  // This function makes a service request and confirms that its effect is
+  // reflected in proper histograms.
+  void TestForAServiceRequest(const std::string& target_dimension) {
+    base::HistogramTester histogram_tester;
+    SendRequest(false);
+    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Downstream." +
+                                          target_dimension + kConnectionType,
+                                      1);
+    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Upstream." +
+                                          target_dimension + kConnectionType,
+                                      1);
+    // One upload and one download message, so total count should be 2.
+    histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 2);
   }
 
   DataUseMeasurement* data_use_measurement() { return &data_use_measurement_; }
@@ -178,7 +195,7 @@ TEST_F(DataUseMeasurementTest, DataUseForwarderIsCalled) {
 #if defined(OS_ANDROID)
 TEST_F(DataUseMeasurementTest, AppStateUnknown) {
   base::HistogramTester histogram_tester;
-  std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+  std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
   data_use_measurement_.OnBeforeURLRequest(request.get());
 
   {
@@ -214,7 +231,7 @@ TEST_F(DataUseMeasurementTest, AppStateUnknown) {
 
 TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   {
-    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     base::HistogramTester histogram_tester;
     data_use_measurement()->OnApplicationStateChange(
@@ -232,7 +249,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   {
     // Create new request when app is in foreground..
     base::HistogramTester histogram_tester;
-    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     data_use_measurement_.OnNetworkBytesSent(*request, 100);
     data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
@@ -245,7 +262,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   }
 
   {
-    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     base::HistogramTester histogram_tester;
     data_use_measurement()->OnApplicationStateChange(
@@ -263,7 +280,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   {
     // Create new request when app is in background.
     base::HistogramTester histogram_tester;
-    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     data_use_measurement_.OnNetworkBytesSent(*request, 100);
     data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
@@ -278,7 +295,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   {
     // Create new request when app is in background.
     base::HistogramTester histogram_tester;
-    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     data_use_measurement_.OnNetworkBytesSent(*request, 100);
     data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
@@ -295,7 +312,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   }
 
   {
-    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     base::HistogramTester histogram_tester;
     data_use_measurement()->OnApplicationStateChange(

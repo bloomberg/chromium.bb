@@ -9,6 +9,8 @@
 
 #include <memory>
 
+#include "components/data_use_measurement/core/data_use_measurement.h"
+#include "components/metrics/data_use_tracker.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -19,6 +21,7 @@ class URLRequest;
 namespace data_use_measurement {
 
 class DataUseRecorder;
+class URLRequestClassifier;
 
 // Abstract class that manages instances of DataUseRecorder and maps
 // a URLRequest instance to its appropriate DataUseRecorder. An embedder
@@ -31,7 +34,8 @@ class DataUseAscriber {
 
   // Creates a network delegate that will be used to track data use.
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate(
-      std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate);
+      std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate,
+      const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
 
   // Returns the DataUseRecorder to which data usage for the given URL should
   // be ascribed. If no existing DataUseRecorder exists, a new one will be
@@ -50,6 +54,9 @@ class DataUseAscriber {
                                       int64_t bytes_received);
 
   virtual void OnUrlRequestDestroyed(net::URLRequest* request);
+
+  virtual std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
+      const = 0;
 };
 
 }  // namespace data_use_measurement
