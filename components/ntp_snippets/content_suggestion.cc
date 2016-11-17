@@ -8,6 +8,10 @@
 
 namespace ntp_snippets {
 
+DownloadSuggestionExtra::DownloadSuggestionExtra() = default;
+
+DownloadSuggestionExtra::~DownloadSuggestionExtra() = default;
+
 bool ContentSuggestion::ID::operator==(const ID& rhs) const {
   return category_ == rhs.category_ &&
          id_within_category_ == rhs.id_within_category_;

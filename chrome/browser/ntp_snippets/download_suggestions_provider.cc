@@ -488,6 +488,7 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertOfflinePage(
   suggestion.set_publisher_name(base::UTF8ToUTF16(offline_page.url.host()));
   auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
   extra->is_download_asset = false;
+  extra->offline_page_id = offline_page.offline_id;
   suggestion.set_download_suggestion_extra(std::move(extra));
   return suggestion;
 }

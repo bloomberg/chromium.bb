@@ -209,6 +209,8 @@ public class SnippetsBridge implements SuggestionsSource {
                 timestamp, score, position, cardLayout));
     }
 
+    // TODO(vitaliii): Remove all |.*ForLastSuggestion| methods and instead make |addSuggestion|
+    // return the suggestion and set the values there.
     @CalledByNative
     private static void setDownloadAssetDataForLastSuggestion(
             List<SnippetArticle> suggestions, String filePath, String mimeType) {
@@ -217,8 +219,15 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
+    private static void setDownloadOfflinePageDataForLastSuggestion(
+            List<SnippetArticle> suggestions, long offlinePageId) {
+        assert suggestions.size() > 0;
+        suggestions.get(suggestions.size() - 1).setDownloadOfflinePageData(offlinePageId);
+    }
+
+    @CalledByNative
     private static void setRecentTabDataForLastSuggestion(
-            List<SnippetArticle> suggestions, String tabId, String offlinePageId) {
+            List<SnippetArticle> suggestions, String tabId, long offlinePageId) {
         assert suggestions.size() > 0;
         suggestions.get(suggestions.size() - 1).setRecentTabData(tabId, offlinePageId);
     }

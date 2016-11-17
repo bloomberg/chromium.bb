@@ -20,11 +20,18 @@ namespace ntp_snippets {
 // DownloadSuggestionExtra contains additional data which is only available for
 // download suggestions.
 struct DownloadSuggestionExtra {
+  DownloadSuggestionExtra();
+  ~DownloadSuggestionExtra();
+
   // The file path of the downloaded file once download completes.
   base::FilePath target_file_path;
   // The effective MIME type of downloaded content.
   std::string mime_type;
+  // Underlying offline page identifier.
+  int64_t offline_page_id = 0;
   // Whether or not the download suggestion is a downloaded asset.
+  // When this is true, |offline_page_id| is ignored, otherwise
+  // |target_file_path| and |mime_type| are ignored.
   bool is_download_asset = false;
 };
 
@@ -33,7 +40,7 @@ struct RecentTabSuggestionExtra {
   // Corresponding tab identifier.
   std::string tab_id;
   // Underlying offline page identifier.
-  std::string offline_page_id;
+  int64_t offline_page_id;
 };
 
 // A content suggestion for the new tab page, which can be an article or an

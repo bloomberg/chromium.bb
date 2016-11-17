@@ -354,7 +354,6 @@ public class NewTabPage
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
-            // TODO(vitaliii): Propagate OfflineId for offline page downloads from C++.
             if (article.isDownload() && article.mIsDownloadedAsset) {
                 DownloadUtils.openFile(
                         article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
@@ -403,8 +402,10 @@ public class NewTabPage
             int tabIndex = TabModelUtils.getTabIndexById(tabModel, tabId);
             if (tabIndex == TabModel.INVALID_TAB_INDEX) return false;
             TabModelUtils.setIndex(tabModel, tabIndex);
+            assert recentTabArticle.getOfflinePageOfflineId().equals(
+                    Long.parseLong(recentTabArticle.getRecentTabId()));
             OfflinePageUtils.openInExistingTab(recentTabArticle.mUrl,
-                    Long.parseLong(recentTabArticle.getRecentTabId()), tabModel.getTabAt(tabIndex));
+                    recentTabArticle.getOfflinePageOfflineId(), tabModel.getTabAt(tabIndex));
             return true;
         }
 

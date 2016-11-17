@@ -241,8 +241,7 @@ public class SuggestionsSection extends InnerNode {
     }
 
     private void updateSnippetOfflineAvailability(final SnippetArticle article) {
-        // This method is not applicable for downloads and recent tabs, where the exact offline id
-        // must specified.
+        // This method is not applicable to articles for which the exact offline id must specified.
         assert !article.requiresExactOfflinePage();
         if (!mOfflinePageBridge.isOfflinePageModelLoaded()) return;
         // TabId is relevant only for recent tab offline pages, which we do not handle here, so we

@@ -81,15 +81,19 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
         static_cast<int>(info->card_layout()));
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::DOWNLOADS) &&
-        suggestion.download_suggestion_extra() != nullptr &&
-        suggestion.download_suggestion_extra()->is_download_asset) {
-      Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
-          env, result,
-          ConvertUTF8ToJavaString(
-              env,
-              suggestion.download_suggestion_extra()->target_file_path.value()),
-          ConvertUTF8ToJavaString(
-              env, suggestion.download_suggestion_extra()->mime_type));
+        suggestion.download_suggestion_extra() != nullptr) {
+      if (suggestion.download_suggestion_extra()->is_download_asset) {
+        Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
+            env, result,
+            ConvertUTF8ToJavaString(env, suggestion.download_suggestion_extra()
+                                             ->target_file_path.value()),
+            ConvertUTF8ToJavaString(
+                env, suggestion.download_suggestion_extra()->mime_type));
+      } else {
+        Java_SnippetsBridge_setDownloadOfflinePageDataForLastSuggestion(
+            env, result,
+            suggestion.download_suggestion_extra()->offline_page_id);
+      }
     }
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::RECENT_TABS) &&
@@ -98,8 +102,7 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
           env, result,
           ConvertUTF8ToJavaString(
               env, suggestion.recent_tab_suggestion_extra()->tab_id),
-          ConvertUTF8ToJavaString(
-              env, suggestion.recent_tab_suggestion_extra()->offline_page_id));
+          suggestion.recent_tab_suggestion_extra()->offline_page_id);
     }
   }
 

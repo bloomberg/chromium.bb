@@ -75,9 +75,6 @@ public class SnippetArticle {
     /** The tab id of the corresponding tab (only for recent tab articles). */
     private String mRecentTabId;
 
-    /** The offline page id (only for recent tab articles). */
-    private String mRecentTabOfflinePageId;
-
     /** The offline id of the corresponding offline page, if any. */
     private Long mOfflinePageOfflineId;
 
@@ -177,9 +174,19 @@ public class SnippetArticle {
     }
 
     /**
-     * @return whether a snippet has to be matched with the exact offline page or with the most
-     * recent offline page found by the snippet's URL.
+     * Marks the article suggestion as a download offline page with the given id. May only be called
+     * if this snippet belongs to DOWNLOADS category.
      */
+    public void setDownloadOfflinePageData(long offlinePageId) {
+        assert isDownload();
+        mIsDownloadedAsset = false;
+        setOfflinePageOfflineId(offlinePageId);
+    }
+
+    /**
+    * @return whether a snippet has to be matched with the exact offline page or with the most
+    * recent offline page found by the snippet's URL.
+    */
     public boolean requiresExactOfflinePage() {
         return isDownload() || isRecentTab();
     }
@@ -198,22 +205,13 @@ public class SnippetArticle {
     }
 
     /**
-     * @return the corresponding recent tab offline page id. May only be called if this snippet is a
-     * recent tab article.
-     */
-    public String getRecentTabOfflinePageId() {
-        assert isRecentTab();
-        return mRecentTabOfflinePageId;
-    }
-
-    /**
      * Sets tab id and offline page id for recent tab articles. May only be called if this snippet
      * is a recent tab article.
      */
-    public void setRecentTabData(String tabId, String offlinePageId) {
+    public void setRecentTabData(String tabId, long offlinePageId) {
         assert isRecentTab();
         mRecentTabId = tabId;
-        mRecentTabOfflinePageId = offlinePageId;
+        setOfflinePageOfflineId(offlinePageId);
     }
 
     /** Sets offline id of the corresponding to the snippet offline page. Null to clear.*/
