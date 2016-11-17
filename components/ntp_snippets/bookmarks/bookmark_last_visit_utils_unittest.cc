@@ -26,36 +26,64 @@ namespace ntp_snippets {
 
 namespace {
 
-const char kBookmarkLastVisitDateKey[] = "last_visited";
+const char kBookmarkLastVisitDateOnMobileKey[] = "last_visited";
+const char kBookmarkLastVisitDateOnDesktopKey[] = "last_visited_desktop";
 
-std::unique_ptr<BookmarkModel> CreateModelWithRecentBookmarks(
-    int number_of_bookmarks,
-    int number_of_recent,
-    const base::Time& threshold_time) {
-  std::unique_ptr<BookmarkModel> model =
-      bookmarks::TestBookmarkClient::CreateModel();
+void AddBookmarks(BookmarkModel* model,
+                  int num,
+                  const std::string& meta_key,
+                  const std::string& meta_value) {
+  for (int index = 0; index < num; ++index) {
+    base::string16 title = base::ASCIIToUTF16(
+        base::StringPrintf("title%s%d", meta_key.c_str(), index));
+    GURL url(base::StringPrintf("http://url%s%d.com", meta_key.c_str(), index));
+    const BookmarkNode* node =
+        model->AddURL(model->bookmark_bar_node(), 0, title, url);
 
+    if (!meta_key.empty()) {
+      model->SetNodeMetaInfo(node, meta_key, meta_value);
+    }
+  }
+}
+
+void AddBookmarksRecentOnMobile(BookmarkModel* model,
+                                int num,
+                                const base::Time& threshold_time) {
   base::TimeDelta week = base::TimeDelta::FromDays(7);
   base::Time recent_time = threshold_time + week;
   std::string recent_time_string =
       base::Int64ToString(recent_time.ToInternalValue());
+
+  AddBookmarks(model, num, kBookmarkLastVisitDateOnMobileKey,
+               recent_time_string);
+}
+
+void AddBookmarksRecentOnDesktop(BookmarkModel* model,
+                                 int num,
+                                 const base::Time& threshold_time) {
+  base::TimeDelta week = base::TimeDelta::FromDays(7);
+  base::Time recent_time = threshold_time + week;
+  std::string recent_time_string =
+      base::Int64ToString(recent_time.ToInternalValue());
+
+  AddBookmarks(model, num, kBookmarkLastVisitDateOnDesktopKey,
+               recent_time_string);
+}
+
+void AddBookmarksNonRecentOnMobile(BookmarkModel* model,
+                                   int num,
+                                   const base::Time& threshold_time) {
+  base::TimeDelta week = base::TimeDelta::FromDays(7);
   base::Time nonrecent_time = threshold_time - week;
   std::string nonrecent_time_string =
       base::Int64ToString(nonrecent_time.ToInternalValue());
 
-  for (int index = 0; index < number_of_bookmarks; ++index) {
-    base::string16 title =
-        base::ASCIIToUTF16(base::StringPrintf("title%d", index));
-    GURL url(base::StringPrintf("http://url%d.com", index));
-    const BookmarkNode* node =
-        model->AddURL(model->bookmark_bar_node(), index, title, url);
+  AddBookmarks(model, num, kBookmarkLastVisitDateOnMobileKey,
+               nonrecent_time_string);
+}
 
-    model->SetNodeMetaInfo(
-        node, kBookmarkLastVisitDateKey,
-        index < number_of_recent ? recent_time_string : nonrecent_time_string);
-  }
-
-  return model;
+void AddBookmarksNonVisited(BookmarkModel* model, int num) {
+  AddBookmarks(model, num, std::string(), std::string());
 }
 
 }  // namespace
@@ -76,46 +104,101 @@ class GetRecentlyVisitedBookmarksTest : public testing::Test {
 };
 
 TEST_F(GetRecentlyVisitedBookmarksTest,
-       WithoutDateFallbackShouldNotReturnNonRecent) {
-  const int number_of_recent = 0;
+       WithoutDateFallbackShouldNotReturnMissing) {
   const int number_of_bookmarks = 3;
-  std::unique_ptr<BookmarkModel> model = CreateModelWithRecentBookmarks(
-      number_of_bookmarks, number_of_recent, threshold_time());
+  std::unique_ptr<BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  AddBookmarksNonVisited(model.get(), number_of_bookmarks);
 
   std::vector<const bookmarks::BookmarkNode*> result =
       GetRecentlyVisitedBookmarks(model.get(), 0, number_of_bookmarks,
                                   threshold_time(),
-                                  /*creation_date_fallback=*/false);
+                                  /*creation_date_fallback=*/false,
+                                  /*consider_visits_from_desktop=*/false);
   EXPECT_THAT(result, IsEmpty());
 }
 
 TEST_F(GetRecentlyVisitedBookmarksTest,
-       WithDateFallbackShouldReturnNonRecentUpToMinCount) {
-  const int number_of_recent = 0;
+       WithDateFallbackShouldReturnMissingUpToMinCount) {
   const int number_of_bookmarks = 3;
-  std::unique_ptr<BookmarkModel> model = CreateModelWithRecentBookmarks(
-      number_of_bookmarks, number_of_recent, threshold_time());
+  std::unique_ptr<BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  AddBookmarksNonVisited(model.get(), number_of_bookmarks);
 
   const int min_count = number_of_bookmarks - 1;
   const int max_count = min_count + 10;
   std::vector<const bookmarks::BookmarkNode*> result =
       GetRecentlyVisitedBookmarks(model.get(), min_count, max_count,
                                   threshold_time(),
-                                  /*creation_date_fallback=*/true);
+                                  /*creation_date_fallback=*/true,
+                                  /*consider_visits_from_desktop=*/false);
   EXPECT_THAT(result, SizeIs(min_count));
 }
 
-TEST_F(GetRecentlyVisitedBookmarksTest, ShouldReturnNotMoreThanMaxCount) {
-  const int number_of_recent = 3;
-  const int number_of_bookmarks = number_of_recent;
-  std::unique_ptr<BookmarkModel> model = CreateModelWithRecentBookmarks(
-      number_of_bookmarks, number_of_recent, threshold_time());
+TEST_F(GetRecentlyVisitedBookmarksTest,
+       WithDateFallbackShouldReturnNonRecentUpToMinCount) {
+  const int number_of_bookmarks = 3;
+  std::unique_ptr<BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  AddBookmarksNonRecentOnMobile(model.get(), number_of_bookmarks,
+                                threshold_time());
 
-  const int max_count = number_of_recent - 1;
+  const int min_count = number_of_bookmarks - 1;
+  const int max_count = min_count + 10;
+  std::vector<const bookmarks::BookmarkNode*> result =
+      GetRecentlyVisitedBookmarks(model.get(), min_count, max_count,
+                                  threshold_time(),
+                                  /*creation_date_fallback=*/true,
+                                  /*consider_visits_from_desktop=*/false);
+  EXPECT_THAT(result, SizeIs(min_count));
+}
+
+TEST_F(GetRecentlyVisitedBookmarksTest, ShouldNotConsiderDesktopVisits) {
+  const int number_of_bookmarks = 3;
+  std::unique_ptr<BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  AddBookmarksRecentOnDesktop(model.get(), number_of_bookmarks,
+                              threshold_time());
+
+  std::vector<const bookmarks::BookmarkNode*> result =
+      GetRecentlyVisitedBookmarks(model.get(), 0, number_of_bookmarks,
+                                  threshold_time(),
+                                  /*creation_date_fallback=*/false,
+                                  /*consider_visits_from_desktop=*/false);
+  EXPECT_THAT(result, IsEmpty());
+}
+
+TEST_F(GetRecentlyVisitedBookmarksTest, ShouldConsiderDesktopVisits) {
+  const int number_of_bookmarks = 3;
+  const int number_of_recent_desktop = 2;
+  std::unique_ptr<BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  AddBookmarksRecentOnDesktop(model.get(), number_of_recent_desktop,
+                              threshold_time());
+  AddBookmarksNonVisited(model.get(),
+                         number_of_bookmarks - number_of_recent_desktop);
+
+  std::vector<const bookmarks::BookmarkNode*> result =
+      GetRecentlyVisitedBookmarks(model.get(), 0, number_of_bookmarks,
+                                  threshold_time(),
+                                  /*creation_date_fallback=*/false,
+                                  /*consider_visits_from_desktop=*/true);
+  EXPECT_THAT(result, SizeIs(number_of_recent_desktop));
+}
+
+TEST_F(GetRecentlyVisitedBookmarksTest, ShouldReturnNotMoreThanMaxCount) {
+  const int number_of_bookmarks = 3;
+  std::unique_ptr<BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  AddBookmarksRecentOnMobile(model.get(), number_of_bookmarks,
+                             threshold_time());
+
+  const int max_count = number_of_bookmarks - 1;
   std::vector<const bookmarks::BookmarkNode*> result =
       GetRecentlyVisitedBookmarks(model.get(), max_count, max_count,
                                   threshold_time(),
-                                  /*creation_date_fallback=*/false);
+                                  /*creation_date_fallback=*/false,
+                                  /*consider_visits_from_desktop=*/false);
   EXPECT_THAT(result, SizeIs(max_count));
 }
 

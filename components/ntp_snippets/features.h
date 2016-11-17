@@ -43,6 +43,12 @@ int GetParamAsInt(const base::Feature& feature,
                   const std::string& param_name,
                   int default_value);
 
+// Returns a feature param as a bool instead of a string.
+// TODO(jkrcal): Use this function in other code in the ntp_snippets component.
+bool GetParamAsBool(const base::Feature& feature,
+                    const std::string& param_name,
+                    bool default_value);
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_FEATURES_H_
