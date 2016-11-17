@@ -4,27 +4,62 @@
 
 cr.define('md_history.history_item_test', function() {
   function registerTests() {
-    suite('history-item', function() {
-      var element;
-      var TEST_HISTORY_RESULTS;
-      var SEARCH_HISTORY_RESULTS;
+    var TEST_HISTORY_RESULTS = [
+      createHistoryEntry('2016-03-16 10:00', 'http://www.google.com'),
+      createHistoryEntry('2016-03-16 9:00', 'http://www.example.com'),
+      createHistoryEntry('2016-03-16 7:01', 'http://www.badssl.com'),
+      createHistoryEntry('2016-03-16 7:00', 'http://www.website.com'),
+      createHistoryEntry('2016-03-16 4:00', 'http://www.website.com'),
+      createHistoryEntry('2016-03-15 11:00', 'http://www.example.com'),
+    ];
 
-      suiteSetup(function() {
-        TEST_HISTORY_RESULTS = [
-          createHistoryEntry('2016-03-16 10:00', 'http://www.google.com'),
-          createHistoryEntry('2016-03-16 9:00', 'http://www.example.com'),
-          createHistoryEntry('2016-03-16 7:01', 'http://www.badssl.com'),
-          createHistoryEntry('2016-03-16 7:00', 'http://www.website.com'),
-          createHistoryEntry('2016-03-16 4:00', 'http://www.website.com'),
-          createHistoryEntry('2016-03-15 11:00', 'http://www.example.com'),
-        ];
+    var SEARCH_HISTORY_RESULTS = [
+      createSearchEntry('2016-03-16', "http://www.google.com"),
+      createSearchEntry('2016-03-14 11:00', "http://calendar.google.com"),
+      createSearchEntry('2016-03-14 10:00', "http://mail.google.com")
+    ];
 
-        SEARCH_HISTORY_RESULTS = [
-          createSearchEntry('2016-03-16', "http://www.google.com"),
-          createSearchEntry('2016-03-14 11:00', "http://calendar.google.com"),
-          createSearchEntry('2016-03-14 10:00', "http://mail.google.com")
-        ];
+    suite('<history-item> unit test', function() {
+      var item;
+
+      setup(function() {
+        item = document.createElement('history-item');
+        item.item = TEST_HISTORY_RESULTS[0];
+        replaceBody(item);
       });
+
+      test('click targets for selection', function() {
+        var selectionCount = 0;
+        item.addEventListener('history-checkbox-select', function() {
+          selectionCount++;
+        });
+
+        // Checkbox should trigger selection.
+        MockInteractions.tap(item.$.checkbox);
+        assertEquals(1, selectionCount);
+
+        // Non-interactive text should trigger selection.
+        MockInteractions.tap(item.$['time-accessed']);
+        assertEquals(2, selectionCount);
+
+        // Menu button should not trigger selection.
+        MockInteractions.tap(item.$['menu-button']);
+        assertEquals(2, selectionCount);
+      });
+
+      test('refocus checkbox on click', function() {
+        return PolymerTest.flushTasks().then(function() {
+          item.$['menu-button'].focus();
+          assertEquals(item.$['menu-button'], item.root.activeElement);
+
+          MockInteractions.tap(item.$['time-accessed']);
+          assertEquals(item.$['checkbox'], item.root.activeElement);
+        });
+      });
+    });
+
+    suite('<history-item> integration test', function() {
+      var element;
 
       setup(function() {
         element = replaceApp().$['history'].$['infinite-list'];
@@ -98,29 +133,6 @@ cr.define('md_history.history_item_test', function() {
           assertEquals(element.historyData_[1].starred, false);
           assertEquals(element.historyData_[5].starred, false);
         });
-      });
-
-      test('click targets for selection', function() {
-        var item = document.createElement('history-item');
-        var selectionCount = 0;
-        item.item = TEST_HISTORY_RESULTS[0];
-        item.addEventListener('history-checkbox-select', function() {
-          selectionCount++;
-        });
-
-        replaceBody(item);
-
-        // Checkbox should trigger selection.
-        MockInteractions.tap(item.$.checkbox);
-        assertEquals(1, selectionCount);
-
-        // Non-interactive text should trigger selection.
-        MockInteractions.tap(item.$['time-accessed']);
-        assertEquals(2, selectionCount);
-
-        // Menu button should not trigger selection.
-        MockInteractions.tap(item.$['menu-button']);
-        assertEquals(2, selectionCount);
       });
     });
   }

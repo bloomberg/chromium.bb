@@ -185,6 +185,7 @@ cr.define('md_history', function() {
       if (this.selectionNotAllowed_())
         return;
 
+      this.$.checkbox.focus();
       this.fire('history-checkbox-select', {
         element: this,
         shiftKey: e.shiftKey,
