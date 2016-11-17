@@ -1305,6 +1305,109 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
 	return true;
 }
 
+static bool
+drm_view_is_opaque(struct weston_view *ev)
+{
+	pixman_region32_t r;
+	bool ret = false;
+
+	pixman_region32_init_rect(&r, 0, 0,
+				  ev->surface->width,
+				  ev->surface->height);
+	pixman_region32_subtract(&r, &r, &ev->surface->opaque);
+
+	if (!pixman_region32_not_empty(&r))
+		ret = true;
+
+	pixman_region32_fini(&r);
+
+	return ret;
+}
+
+static struct drm_fb *
+drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev)
+{
+	struct drm_output *output = state->output;
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
+	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
+	struct linux_dmabuf_buffer *dmabuf;
+	struct drm_fb *fb;
+	struct gbm_bo *bo;
+
+	/* Don't import buffers which span multiple outputs. */
+	if (ev->output_mask != (1u << output->base.id))
+		return NULL;
+
+	if (ev->alpha != 1.0f)
+		return NULL;
+
+	if (!drm_view_transform_supported(ev, &output->base))
+		return NULL;
+
+	if (!buffer)
+		return NULL;
+
+	if (wl_shm_buffer_get(buffer->resource))
+		return NULL;
+
+	if (!b->gbm)
+		return NULL;
+
+	dmabuf = linux_dmabuf_buffer_get(buffer->resource);
+	if (dmabuf) {
+#ifdef HAVE_GBM_FD_IMPORT
+		/* XXX: TODO:
+		 *
+		 * Use AddFB2 directly, do not go via GBM.
+		 * Add support for multiplanar formats.
+		 * Both require refactoring in the DRM-backend to
+		 * support a mix of gbm_bos and drmfbs.
+		 */
+		 struct gbm_import_fd_data gbm_dmabuf = {
+			 .fd = dmabuf->attributes.fd[0],
+			 .width = dmabuf->attributes.width,
+			 .height = dmabuf->attributes.height,
+			 .stride = dmabuf->attributes.stride[0],
+			 .format = dmabuf->attributes.format
+		 };
+
+                /* XXX: TODO:
+                 *
+                 * Currently the buffer is rejected if any dmabuf attribute
+                 * flag is set.  This keeps us from passing an inverted /
+                 * interlaced / bottom-first buffer (or any other type that may
+                 * be added in the future) through to an overlay.  Ultimately,
+                 * these types of buffers should be handled through buffer
+                 * transforms and not as spot-checks requiring specific
+                 * knowledge. */
+		if (dmabuf->attributes.n_planes != 1 ||
+                    dmabuf->attributes.offset[0] != 0 ||
+		    dmabuf->attributes.flags)
+			return NULL;
+
+		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
+				   GBM_BO_USE_SCANOUT);
+#else
+		return NULL;
+#endif
+	} else {
+		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
+				   buffer->resource, GBM_BO_USE_SCANOUT);
+	}
+
+	if (!bo)
+		return NULL;
+
+	fb = drm_fb_get_from_bo(bo, b, drm_view_is_opaque(ev), BUFFER_CLIENT);
+	if (!fb) {
+		gbm_bo_destroy(bo);
+		return NULL;
+	}
+
+	drm_fb_set_buffer(fb, buffer);
+	return fb;
+}
+
 /**
  * Return a plane state from a drm_output_state.
  */
@@ -1640,25 +1743,6 @@ drm_output_assign_state(struct drm_output_state *state,
 		else if (plane->type == WDRM_PLANE_TYPE_PRIMARY)
 			output->page_flip_pending = 1;
 	}
-}
-
-static bool
-drm_view_is_opaque(struct weston_view *ev)
-{
-	pixman_region32_t r;
-	bool ret = false;
-
-	pixman_region32_init_rect(&r, 0, 0,
-				  ev->surface->width,
-				  ev->surface->height);
-	pixman_region32_subtract(&r, &r, &ev->surface->opaque);
-
-	if (!pixman_region32_not_empty(&r))
-		ret = true;
-
-	pixman_region32_fini(&r);
-
-	return ret;
 }
 
 static struct weston_plane *
@@ -2749,31 +2833,16 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	struct drm_output *output = output_state->output;
 	struct weston_compositor *ec = output->base.compositor;
 	struct drm_backend *b = to_drm_backend(ec);
-	struct wl_resource *buffer_resource;
 	struct drm_plane *p;
 	struct drm_plane_state *state = NULL;
-	struct linux_dmabuf_buffer *dmabuf;
-	struct gbm_bo *bo = NULL;
+	struct drm_fb *fb;
 	unsigned int i;
 
 	if (b->sprites_are_broken)
 		return NULL;
 
-	/* Don't import buffers which span multiple outputs. */
-	if (ev->output_mask != (1u << output->base.id))
-		return NULL;
-
-	/* We can only import GBM buffers. */
-	if (b->gbm == NULL)
-		return NULL;
-
-	if (ev->surface->buffer_ref.buffer == NULL)
-		return NULL;
-	buffer_resource = ev->surface->buffer_ref.buffer->resource;
-	if (wl_shm_buffer_get(buffer_resource))
-		return NULL;
-
-	if (ev->alpha != 1.0f)
+	fb = drm_fb_get_from_view(output_state, ev);
+	if (!fb)
 		return NULL;
 
 	wl_list_for_each(p, &b->plane_list, link) {
@@ -2781,6 +2850,14 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 			continue;
 
 		if (!drm_plane_is_available(p, output))
+			continue;
+
+		/* Check whether the format is supported */
+		for (i = 0; i < p->count_formats; i++) {
+			if (p->formats[i] == fb->format->format)
+				break;
+		}
+		if (i == p->count_formats)
 			continue;
 
 		state = drm_output_state_get_plane(output_state, p);
@@ -2793,10 +2870,14 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	}
 
 	/* No sprites available */
-	if (!state)
+	if (!state) {
+		drm_fb_unref(fb);
 		return NULL;
+	}
 
+	state->fb = fb;
 	state->output = output;
+
 	if (!drm_plane_state_coords_for_view(state, ev))
 		goto err;
 
@@ -2804,71 +2885,9 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	    state->src_h != state->dest_h << 16)
 		goto err;
 
-	if ((dmabuf = linux_dmabuf_buffer_get(buffer_resource))) {
-#ifdef HAVE_GBM_FD_IMPORT
-		/* XXX: TODO:
-		 *
-		 * Use AddFB2 directly, do not go via GBM.
-		 * Add support for multiplanar formats.
-		 * Both require refactoring in the DRM-backend to
-		 * support a mix of gbm_bos and drmfbs.
-		 */
-		struct gbm_import_fd_data gbm_dmabuf = {
-			.fd     = dmabuf->attributes.fd[0],
-			.width  = dmabuf->attributes.width,
-			.height = dmabuf->attributes.height,
-			.stride = dmabuf->attributes.stride[0],
-			.format = dmabuf->attributes.format
-		};
-
-                /* XXX: TODO:
-                 *
-                 * Currently the buffer is rejected if any dmabuf attribute
-                 * flag is set.  This keeps us from passing an inverted /
-                 * interlaced / bottom-first buffer (or any other type that may
-                 * be added in the future) through to an overlay.  Ultimately,
-                 * these types of buffers should be handled through buffer
-                 * transforms and not as spot-checks requiring specific
-                 * knowledge. */
-		if (dmabuf->attributes.n_planes != 1 ||
-                    dmabuf->attributes.offset[0] != 0 ||
-		    dmabuf->attributes.flags)
-			goto err;
-
-		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
-				   GBM_BO_USE_SCANOUT);
-#else
-		goto err;
-#endif
-	} else {
-		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
-				   buffer_resource, GBM_BO_USE_SCANOUT);
-	}
-	if (!bo)
-		goto err;
-
-	state->fb = drm_fb_get_from_bo(bo, b, drm_view_is_opaque(ev),
-				       BUFFER_CLIENT);
-	if (!state->fb)
-		goto err;
-	bo = NULL;
-
-	/* Check whether the format is supported */
-	for (i = 0; i < p->count_formats; i++)
-		if (p->formats[i] == state->fb->format->format)
-			break;
-	if (i == p->count_formats)
-		goto err;
-
-	drm_fb_set_buffer(state->fb, ev->surface->buffer_ref.buffer);
-
 	return &p->base;
 
 err:
-	/* Destroy the BO as we've allocated it, but it won't yet
-	 * be deallocated by the state. */
-	if (bo)
-		gbm_bo_destroy(bo);
 	drm_plane_state_put_back(state);
 	return NULL;
 }
