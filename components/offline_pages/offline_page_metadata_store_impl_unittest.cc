@@ -221,6 +221,8 @@ void BuildTestStoreWithSchemaFromM55(const base::FilePath& file) {
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(connection.DoesTableExist(OFFLINE_PAGES_TABLE_V1));
   ASSERT_TRUE(connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "title"));
+  ASSERT_FALSE(
+      connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "original_url"));
 }
 
 class OfflinePageMetadataStoreFactory {

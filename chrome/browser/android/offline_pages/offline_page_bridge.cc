@@ -408,9 +408,10 @@ void OfflinePageBridge::SelectPageForOnlineUrl(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
-  OfflinePageUtils::SelectPageForOnlineURL(
+  OfflinePageUtils::SelectPageForURL(
       browser_context_,
       GURL(ConvertJavaStringToUTF8(env, j_online_url)),
+      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
       tab_id,
       base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
 }

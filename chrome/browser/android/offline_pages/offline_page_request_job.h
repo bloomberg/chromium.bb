@@ -81,6 +81,7 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   void Kill() override;
 
   void OnOfflineFilePathAvailable(const base::FilePath& offline_file_path);
+  void OnOfflineRedirectAvailabe(const GURL& redirected_url);
 
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 

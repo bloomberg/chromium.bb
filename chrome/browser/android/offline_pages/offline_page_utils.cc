@@ -30,37 +30,54 @@
 namespace offline_pages {
 namespace {
 
-void OnGetPagesByOnlineURLDone(
+void OnGetPagesByURLDone(
+    const GURL& url,
     int tab_id,
     const std::vector<std::string>& namespaces_to_show_in_original_tab,
     const base::Callback<void(const OfflinePageItem*)>& callback,
     const MultipleOfflinePageItemResult& pages) {
-  const OfflinePageItem* selected_page = nullptr;
+  const OfflinePageItem* selected_page_for_final_url = nullptr;
+  const OfflinePageItem* selected_page_for_original_url = nullptr;
   std::string tab_id_str = base::IntToString(tab_id);
 
-  for (const auto& offline_page : pages) {
+  for (const auto& page : pages) {
     auto result = std::find(namespaces_to_show_in_original_tab.begin(),
                             namespaces_to_show_in_original_tab.end(),
-                            offline_page.client_id.name_space);
+                            page.client_id.name_space);
     if (result != namespaces_to_show_in_original_tab.end() &&
-        offline_page.client_id.id != tab_id_str) {
+        page.client_id.id != tab_id_str) {
       continue;
     }
 
-    if (!selected_page ||
-        offline_page.creation_time > selected_page->creation_time) {
-      selected_page = &offline_page;
+    if (OfflinePageUtils::EqualsIgnoringFragment(url, page.url)) {
+      if (!selected_page_for_final_url ||
+          page.creation_time > selected_page_for_final_url->creation_time) {
+        selected_page_for_final_url = &page;
+      }
+    } else {
+      // This is consistent with exact match against original url done in
+      // OfflinePageModelImpl.
+      DCHECK(url == page.original_url);
+      if (!selected_page_for_original_url ||
+          page.creation_time > selected_page_for_original_url->creation_time) {
+        selected_page_for_original_url = &page;
+      }
     }
   }
-  callback.Run(selected_page);
+
+  // Match for final URL should take high priority than matching for original
+  // URL.
+  callback.Run(selected_page_for_final_url ? selected_page_for_final_url
+                                           : selected_page_for_original_url);
 }
 
 }  // namespace
 
 // static
-void OfflinePageUtils::SelectPageForOnlineURL(
+void OfflinePageUtils::SelectPageForURL(
     content::BrowserContext* browser_context,
-    const GURL& online_url,
+    const GURL& url,
+    OfflinePageModel::URLSearchMode url_search_mode,
     int tab_id,
     const base::Callback<void(const OfflinePageItem*)>& callback) {
   OfflinePageModel* offline_page_model =
@@ -71,11 +88,13 @@ void OfflinePageUtils::SelectPageForOnlineURL(
     return;
   }
 
-  offline_page_model->GetPagesByOnlineURL(
-      online_url, base::Bind(&OnGetPagesByOnlineURLDone, tab_id,
-                             offline_page_model->GetPolicyController()
-                                 ->GetNamespacesRestrictedToOriginalTab(),
-                             callback));
+  offline_page_model->GetPagesByURL(
+      url,
+      url_search_mode,
+      base::Bind(&OnGetPagesByURLDone, url, tab_id,
+                 offline_page_model->GetPolicyController()
+                     ->GetNamespacesRestrictedToOriginalTab(),
+                 callback));
 }
 
 const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
@@ -147,8 +166,10 @@ void OfflinePageUtils::CheckExistenceOfPagesWithURL(
     callback.Run(false);
   };
 
-  offline_page_model->GetPagesByOnlineURL(
-      offline_page_url, base::Bind(continuation, name_space, callback));
+  offline_page_model->GetPagesByURL(
+      offline_page_url,
+      OfflinePageModel::URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
+      base::Bind(continuation, name_space, callback));
 }
 
 // static

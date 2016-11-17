@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "components/offline_pages/offline_page_model.h"
 
 class GURL;
 
@@ -22,14 +23,15 @@ struct OfflinePageItem;
 
 class OfflinePageUtils {
  public:
-  // Returns via callback an offline page saved for |online_url|, if any. The
+  // Returns via callback an offline page related to |url|, if any. The
   // page is chosen based on creation date; a more recently created offline
   // page will be preferred over an older one. The offline page captured from
   // last visit in the tab will not be considered if its tab id does not match
   // the provided |tab_id|.
-  static void SelectPageForOnlineURL(
+  static void SelectPageForURL(
       content::BrowserContext* browser_context,
-      const GURL& online_url,
+      const GURL& url,
+      OfflinePageModel::URLSearchMode url_search_mode,
       int tab_id,
       const base::Callback<void(const OfflinePageItem*)>& callback);
 

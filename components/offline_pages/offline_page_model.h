@@ -48,6 +48,15 @@ struct OfflinePageItem;
 // * how to cancel requests and what to expect
 class OfflinePageModel : public base::SupportsUserData {
  public:
+  // Controls how to search on differnt URLs for pages.
+  enum class URLSearchMode {
+    // Match against the last committed URL only.
+    SEARCH_BY_FINAL_URL_ONLY,
+    // Match against all stored URLs, including the last committed URL and
+    // the original request URL.
+    SEARCH_BY_ALL_URLS
+  };
+
   // Describes the parameters to control how to save a page.
   struct SavePageParams {
     SavePageParams();
@@ -160,9 +169,11 @@ class OfflinePageModel : public base::SupportsUserData {
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) = 0;
 
-  // Returns the offline pages that are stored under |online_url|.
-  virtual void GetPagesByOnlineURL(
-      const GURL& online_url,
+  // Returns the offline pages that are related to |url|. |url_search_mode|
+  // controls how the url match is done. See URLSearchMode for more details.
+  virtual void GetPagesByURL(
+      const GURL& url,
+      URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) = 0;
 
   // Marks pages with |offline_ids| as expired and deletes the associated

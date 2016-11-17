@@ -158,7 +158,8 @@ class OfflinePageModelImplTest
 
   std::unique_ptr<OfflinePageItem> GetPageByOfflineId(int64_t offline_id);
 
-  MultipleOfflinePageItemResult GetPagesByOnlineURL(const GURL& online_url);
+  MultipleOfflinePageItemResult GetPagesByFinalURL(const GURL& url);
+  MultipleOfflinePageItemResult GetPagesByAllURLS(const GURL& url);
 
   OfflinePageModelImpl* model() { return model_.get(); }
 
@@ -444,11 +445,24 @@ void OfflinePageModelImplTest::OnPagesExpired(bool result) {
   last_expire_page_result_ = result;
 }
 
-MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByOnlineURL(
-    const GURL& online_url) {
+MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByFinalURL(
+    const GURL& url) {
   MultipleOfflinePageItemResult result;
-  model()->GetPagesByOnlineURL(
-      online_url,
+  model()->GetPagesByURL(
+      url,
+      OfflinePageModel::URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
+                 AsWeakPtr(), base::Unretained(&result)));
+  PumpLoop();
+  return result;
+}
+
+MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByAllURLS(
+    const GURL& url) {
+  MultipleOfflinePageItemResult result;
+  model()->GetPagesByURL(
+      url,
+      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
       base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
@@ -916,43 +930,69 @@ TEST_F(OfflinePageModelImplTest, GetPageByOfflineId) {
   EXPECT_FALSE(page);
 }
 
-TEST_F(OfflinePageModelImplTest, GetPagesByOnlineURL) {
+TEST_F(OfflinePageModelImplTest, GetPagesByFinalURL) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
-  MultipleOfflinePageItemResult pages = GetPagesByOnlineURL(kTestUrl2);
+  MultipleOfflinePageItemResult pages = GetPagesByFinalURL(kTestUrl2);
   EXPECT_EQ(1U, pages.size());
   EXPECT_EQ(kTestUrl2, pages[0].url);
   EXPECT_EQ(kTestClientId2, pages[0].client_id);
 
-  pages = GetPagesByOnlineURL(kTestUrl);
+  pages = GetPagesByFinalURL(kTestUrl);
   EXPECT_EQ(1U, pages.size());
   EXPECT_EQ(kTestUrl, pages[0].url);
   EXPECT_EQ(kTestClientId1, pages[0].client_id);
 
-  pages = GetPagesByOnlineURL(GURL("http://foo"));
+  pages = GetPagesByFinalURL(GURL("http://foo"));
   EXPECT_EQ(0U, pages.size());
 }
 
-TEST_F(OfflinePageModelImplTest, GetPagesByOnlineURLWithFragment) {
+TEST_F(OfflinePageModelImplTest, GetPagesByFinalURLWithFragmentStripped) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2WithFragment, kTestClientId2);
 
   MultipleOfflinePageItemResult pages =
-      GetPagesByOnlineURL(kTestUrlWithFragment);
+      GetPagesByFinalURL(kTestUrlWithFragment);
   EXPECT_EQ(1U, pages.size());
   EXPECT_EQ(kTestUrl, pages[0].url);
   EXPECT_EQ(kTestClientId1, pages[0].client_id);
 
-  pages = GetPagesByOnlineURL(kTestUrl2);
+  pages = GetPagesByFinalURL(kTestUrl2);
   EXPECT_EQ(1U, pages.size());
   EXPECT_EQ(kTestUrl2WithFragment, pages[0].url);
   EXPECT_EQ(kTestClientId2, pages[0].client_id);
 
-  pages = GetPagesByOnlineURL(kTestUrl2WithFragment2);
+  pages = GetPagesByFinalURL(kTestUrl2WithFragment2);
   EXPECT_EQ(1U, pages.size());
   EXPECT_EQ(kTestUrl2WithFragment, pages[0].url);
   EXPECT_EQ(kTestClientId2, pages[0].client_id);
+}
+
+TEST_F(OfflinePageModelImplTest, GetPagesByAllURLS) {
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+      kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
+  SavePageWithArchiverAsync(
+      kTestUrl, kTestClientId1, kTestUrl2, std::move(archiver));
+  PumpLoop();
+
+  SavePage(kTestUrl2, kTestClientId2);
+
+  MultipleOfflinePageItemResult pages = GetPagesByAllURLS(kTestUrl2);
+  ASSERT_EQ(2U, pages.size());
+  // Validates the items regardless their order.
+  int i = -1;
+  if (pages[0].url == kTestUrl2)
+    i = 0;
+  else if (pages[1].url == kTestUrl2)
+    i = 1;
+  ASSERT_NE(-1, i);
+  EXPECT_EQ(kTestUrl2, pages[i].url);
+  EXPECT_EQ(kTestClientId2, pages[i].client_id);
+  EXPECT_EQ(GURL(), pages[i].original_url);
+  EXPECT_EQ(kTestUrl, pages[1 - i].url);
+  EXPECT_EQ(kTestClientId1, pages[1 - i].client_id);
+  EXPECT_EQ(kTestUrl2, pages[1 - i].original_url);
 }
 
 TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {

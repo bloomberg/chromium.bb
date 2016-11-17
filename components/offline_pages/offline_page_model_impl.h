@@ -98,8 +98,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) override;
-  void GetPagesByOnlineURL(
-      const GURL& online_url,
+  void GetPagesByURL(
+      const GURL& url,
+      URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) override;
   void ExpirePages(const std::vector<int64_t>& offline_ids,
                    const base::Time& expiration_time,
@@ -140,8 +141,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const SingleOfflinePageItemCallback& callback) const;
   const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
       const ClientId& client_id) const;
-  void GetPagesByOnlineURLWhenLoadDone(
-      const GURL& online_url,
+  void GetPagesByURLWhenLoadDone(
+      const GURL& url,
+      URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) const;
   void MarkPageAccessedWhenLoadDone(int64_t offline_id);
 

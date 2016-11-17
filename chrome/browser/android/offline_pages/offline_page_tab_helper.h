@@ -77,7 +77,7 @@ class OfflinePageTabHelper :
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  void SelectPageForOnlineURLDone(const OfflinePageItem* offline_page);
+  void SelectPageForURLDone(const OfflinePageItem* offline_page);
 
   // The provisional info about the offline page being loaded. This is set when
   // the offline interceptor decides to serve the offline page and it will be

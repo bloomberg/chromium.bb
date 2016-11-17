@@ -131,15 +131,16 @@ void OfflinePageTabHelper::DidFinishNavigation(
     return;
   }
 
-  OfflinePageUtils::SelectPageForOnlineURL(
+  OfflinePageUtils::SelectPageForURL(
       web_contents()->GetBrowserContext(),
       navigated_url,
+      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
       tab_id,
-      base::Bind(&OfflinePageTabHelper::SelectPageForOnlineURLDone,
+      base::Bind(&OfflinePageTabHelper::SelectPageForURLDone,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OfflinePageTabHelper::SelectPageForOnlineURLDone(
+void OfflinePageTabHelper::SelectPageForURLDone(
     const OfflinePageItem* offline_page) {
   // Bails out if no offline page is found.
   if (!offline_page) {

@@ -218,6 +218,15 @@ void NotifyOfflineFilePathOnIO(base::WeakPtr<OfflinePageRequestJob> job,
   job->OnOfflineFilePathAvailable(offline_file_path);
 }
 
+void NotifyOfflineRedirectOnIO(base::WeakPtr<OfflinePageRequestJob> job,
+                               const GURL& redirected_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (!job)
+    return;
+  job->OnOfflineRedirectAvailabe(redirected_url);
+}
+
 // Notifies OfflinePageRequestJob about the offline file path. Note that the
 // file path may be empty if not found or on error.
 void NotifyOfflineFilePathOnUI(base::WeakPtr<OfflinePageRequestJob> job,
@@ -230,6 +239,21 @@ void NotifyOfflineFilePathOnUI(base::WeakPtr<OfflinePageRequestJob> job,
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&NotifyOfflineFilePathOnIO, job, offline_file_path));
+}
+
+// Notifies OfflinePageRequestJob about the redirected URL. Note that
+// redirected_url should not be empty.
+void NotifyOfflineRedirectOnUI(base::WeakPtr<OfflinePageRequestJob> job,
+                               const GURL& redirected_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!redirected_url.is_empty());
+
+  // Delegates to IO thread since OfflinePageRequestJob should only be accessed
+  // from IO thread.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&NotifyOfflineRedirectOnIO, job, redirected_url));
 }
 
 // Finds the offline file path based on the select page result and network
@@ -286,12 +310,19 @@ RequestResult AccessOfflineFile(
 
 // Handles the result of finding an offline page.
 void SucceededToFindOfflinePage(
+    const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
     base::WeakPtr<OfflinePageRequestJob> job,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const OfflinePageItem* offline_page) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If the match is for original URL, trigger the redirect.
+  if (offline_page && url == offline_page->original_url) {
+    NotifyOfflineRedirectOnUI(job, offline_page->url);
+    return;
+  }
 
   base::FilePath offline_file_path;
   RequestResult request_result = AccessOfflineFile(
@@ -315,9 +346,9 @@ void FailedToFindOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
   NotifyOfflineFilePathOnUI(job, empty_file_path);
 }
 
-// Tries to find the offline page to serve for |online_url|.
-void SelectPageForOnlineURL(
-    const GURL& online_url,
+// Tries to find the offline page to serve for |url|.
+void SelectPageForURL(
+    const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -338,11 +369,13 @@ void SelectPageForOnlineURL(
     return;
   }
 
-  OfflinePageUtils::SelectPageForOnlineURL(
+  OfflinePageUtils::SelectPageForURL(
       web_contents->GetBrowserContext(),
-      online_url,
+      url,
+      OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
       tab_id,
       base::Bind(&SucceededToFindOfflinePage,
+                 url,
                  offline_header,
                  network_state,
                  job,
@@ -350,7 +383,7 @@ void SelectPageForOnlineURL(
 }
 
 void FindPageWithOfflineIDDone(
-    const GURL& online_url,
+    const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -361,20 +394,21 @@ void FindPageWithOfflineIDDone(
 
   // If the found offline page does not has same URL as the request URL, fall
   // back to find the offline page based on the URL.
-  if (!offline_page || offline_page->url != online_url) {
-    SelectPageForOnlineURL(
-        online_url, offline_header, network_state, web_contents_getter,
+  if (!offline_page || offline_page->url != url) {
+    SelectPageForURL(
+        url, offline_header, network_state, web_contents_getter,
         tab_id_getter, job);
     return;
   }
 
   SucceededToFindOfflinePage(
-      offline_header, network_state, job, web_contents_getter, offline_page);
+      url, offline_header, network_state, job, web_contents_getter,
+      offline_page);
 }
 
 // Tries to find an offline page associated with |offline_id|.
 void FindPageWithOfflineID(
-    const GURL& online_url,
+    const GURL& url,
     const OfflinePageHeader& offline_header,
     int64_t offline_id,
     NetworkState network_state,
@@ -393,7 +427,7 @@ void FindPageWithOfflineID(
   offline_page_model->GetPageByOfflineId(
       offline_id,
       base::Bind(&FindPageWithOfflineIDDone,
-                 online_url,
+                 url,
                  offline_header,
                  network_state,
                  web_contents_getter,
@@ -401,9 +435,9 @@ void FindPageWithOfflineID(
                  job));
 }
 
-// Tries to find the offline page to serve for |online_url|.
+// Tries to find the offline page to serve for |url|.
 void SelectPage(
-    const GURL& online_url,
+    const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -415,18 +449,18 @@ void SelectPage(
   // particular version.
   if (!offline_header.id.empty()) {
     // if the id string cannot be converted to int64 id, fall through to
-    // select page via online URL.
+    // select page via URL.
     int64_t offline_id;
     if (base::StringToInt64(offline_header.id, &offline_id)) {
-      FindPageWithOfflineID(online_url, offline_header, offline_id,
+      FindPageWithOfflineID(url, offline_header, offline_id,
                             network_state, web_contents_getter, tab_id_getter,
                             job);
       return;
     }
   }
 
-  SelectPageForOnlineURL(online_url, offline_header, network_state,
-                         web_contents_getter, tab_id_getter, job);
+  SelectPageForURL(url, offline_header, network_state, web_contents_getter,
+                   tab_id_getter, job);
 }
 
 }  // namespace
@@ -554,6 +588,12 @@ void OfflinePageRequestJob::OnOfflineFilePathAvailable(
   // Sets the file path and lets URLRequestFileJob start to read from the file.
   file_path_ = offline_file_path;
   URLRequestFileJob::Start();
+}
+
+void OfflinePageRequestJob::OnOfflineRedirectAvailabe(
+    const GURL& redirected_url) {
+  // TODO(jianli): kicks off the redirect. For now, use the default.
+  FallbackToDefault();
 }
 
 void OfflinePageRequestJob::SetDelegateForTesting(
