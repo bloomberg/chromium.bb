@@ -1614,3 +1614,6 @@ crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
 
 crbug.com/664450 inspector/console/console-on-animation-worklet.html [ Skip ]
+
+crbug.com/666142 inspector/console/console-error-on-call-frame.html [ NeedsManualRebaseline ]
+crbug.com/666142 inspector/sources/debugger-pause/debugger-eval-while-paused-throws.html [ NeedsManualRebaseline ]
