@@ -76,6 +76,11 @@ function safeToString(o) {
     }
 }
 
+function escapeHTML(text) {
+    // Coerce to string, then replace characters that need HTML escaping.
+    return (text+'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function shouldBe(actual, expected)
 {
     var actualValue = eval(actual);
@@ -171,9 +176,9 @@ window.tryPostMessage = function(message, shouldThrow, expected, expectedExcepti
     } catch(e) {
         if (shouldThrow) {
             if (expectedException === undefined || expectedException == e.code || expectedException == e) {
-                console.innerHTML += "PASS: 'postMessage("+message+")' threw " + e + "<br>";
+                console.innerHTML += "PASS: 'postMessage("+message+")' threw " + escapeHTML(e) + "<br>";
             } else {
-                console.innerHTML += "FAIL: 'postMessage("+message+")' threw " + e + ", was expecting " + expectedException + "<br>";
+                console.innerHTML += "FAIL: 'postMessage("+message+")' threw " + escapeHTML(e) + ", was expecting " + escapeHTML(expectedException) + "<br>";
             }
         } else
             console.innerHTML += "FAIL: 'postMessage("+message+")' should not throw but threw " + e + "<br>";
