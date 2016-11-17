@@ -214,7 +214,7 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Add a in-progress download notification.
+     * Adds or updates an in-progress download notification.
      * @param downloadGuid GUID of the download.
      * @param fileName File name of the download.
      * @param percentage Percentage completed. Value should be between 0 to 100 if
@@ -223,16 +223,52 @@ public class DownloadNotificationService extends Service {
      * @param startTime Time when download started.
      * @param isOffTheRecord Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
+     * @param isOfflinePage Whether the download is for offline page.
      */
     public void notifyDownloadProgress(String downloadGuid, String fileName, int percentage,
             long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isOfflinePage) {
+        updateActiveDownloadNotification(downloadGuid, fileName, percentage, timeRemainingInMillis,
+                startTime, isOffTheRecord, canDownloadWhileMetered, isOfflinePage, false);
+    }
+
+    /**
+     * Adds or updates a pending download notification.
+     * @param downloadGuid GUID of the download.
+     * @param fileName File name of the download.
+     * @param isOffTheRecord Whether the download is off the record.
+     * @param canDownloadWhileMetered Whether the download can happen in metered network.
+     * @param isOfflinePage Whether the download is for offline page.
+     */
+    private void notifyDownloadPending(String downloadGuid, String fileName, boolean isOffTheRecord,
+            boolean canDownloadWhileMetered, boolean isOfflinePage) {
+        updateActiveDownloadNotification(downloadGuid, fileName, INVALID_DOWNLOAD_PERCENTAGE,
+                0, 0, isOffTheRecord, canDownloadWhileMetered, isOfflinePage, true);
+    }
+
+    /**
+     * Helper method to update the notification for an active download, the download is either in
+     * progress or pending.
+     * @param downloadGuid GUID of the download.
+     * @param fileName File name of the download.
+     * @param percentage Percentage completed. Value should be between 0 to 100 if
+     *        the percentage can be determined, or -1 if it is unknown.
+     * @param timeRemainingInMillis Remaining download time in milliseconds.
+     * @param startTime Time when download started.
+     * @param isOffTheRecord Whether the download is off the record.
+     * @param canDownloadWhileMetered Whether the download can happen in metered network.
+     * @param isOfflinePage Whether the download is for offline page.
+     * @param isDownloadPending Whether the download is pending.
+     */
+    private void updateActiveDownloadNotification(String downloadGuid, String fileName,
+            int percentage, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
+            boolean canDownloadWhileMetered, boolean isOfflinePage, boolean isDownloadPending) {
         if (mStopPostingProgressNotifications) return;
-        boolean indeterminate = percentage == INVALID_DOWNLOAD_PERCENTAGE;
-        String contentText = mContext.getResources().getString(
-                indeterminate ? R.string.download_notification_pending : R.string.download_started);
+        String contentText = mContext.getResources().getString(isDownloadPending
+                ? R.string.download_notification_pending : R.string.download_started);
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download, fileName, contentText);
+        boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         builder.setOngoing(true).setProgress(100, percentage, indeterminate);
         builder.setPriority(Notification.PRIORITY_HIGH);
         if (!indeterminate) {
@@ -304,9 +340,8 @@ public class DownloadNotificationService extends Service {
         }
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
-            notifyDownloadProgress(entry.downloadGuid, entry.fileName, INVALID_DOWNLOAD_PERCENTAGE,
-                    0, 0, entry.isOffTheRecord, entry.canDownloadWhileMetered,
-                    entry.isOfflinePage());
+            notifyDownloadPending(entry.downloadGuid, entry.fileName, entry.isOffTheRecord,
+                    entry.canDownloadWhileMetered, entry.isOfflinePage());
             mDownloadsInProgress.remove(downloadGuid);
             return;
         }
@@ -591,9 +626,9 @@ public class DownloadNotificationService extends Service {
                                 entry.isOffTheRecord);
                         break;
                     case ACTION_DOWNLOAD_RESUME:
-                        notifyDownloadProgress(entry.downloadGuid, entry.fileName,
-                                INVALID_DOWNLOAD_PERCENTAGE, 0, 0, entry.isOffTheRecord,
-                                entry.canDownloadWhileMetered, entry.isOfflinePage());
+                        notifyDownloadPending(entry.downloadGuid, entry.fileName,
+                                entry.isOffTheRecord, entry.canDownloadWhileMetered,
+                                entry.isOfflinePage());
                         downloadServiceDelegate.resumeDownload(entry.buildDownloadItem(), true);
                         break;
                     case ACTION_DOWNLOAD_RESUME_ALL:
@@ -729,8 +764,8 @@ public class DownloadNotificationService extends Service {
             DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
             if (mDownloadsInProgress.contains(entry.downloadGuid)) continue;
             if (!entry.canDownloadWhileMetered && isNetworkMetered) continue;
-            notifyDownloadProgress(entry.downloadGuid, entry.fileName, INVALID_DOWNLOAD_PERCENTAGE,
-                    0, 0, false, entry.canDownloadWhileMetered, entry.isOfflinePage());
+            notifyDownloadPending(entry.downloadGuid, entry.fileName, false,
+                    entry.canDownloadWhileMetered, entry.isOfflinePage());
             DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(entry.itemType);
             downloadServiceDelegate.resumeDownload(entry.buildDownloadItem(), false);
             downloadServiceDelegate.destroyServiceDelegate();
