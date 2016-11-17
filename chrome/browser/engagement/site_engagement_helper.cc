@@ -133,6 +133,7 @@ void SiteEngagementService::Helper::MediaTracker::TrackingStarted() {
 }
 
 void SiteEngagementService::Helper::MediaTracker::MediaStartedPlaying(
+    const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
   // Only begin engagement detection when media actually starts playing.
   active_media_players_.push_back(id);
@@ -141,6 +142,7 @@ void SiteEngagementService::Helper::MediaTracker::MediaStartedPlaying(
 }
 
 void SiteEngagementService::Helper::MediaTracker::MediaStoppedPlaying(
+    const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
   active_media_players_.erase(std::remove(active_media_players_.begin(),
                                           active_media_players_.end(), id),

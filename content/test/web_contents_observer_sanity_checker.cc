@@ -285,6 +285,7 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
 }
 
 void WebContentsObserverSanityChecker::MediaStartedPlaying(
+    const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
   CHECK(!web_contents_destroyed_);
   CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),
@@ -293,6 +294,7 @@ void WebContentsObserverSanityChecker::MediaStartedPlaying(
 }
 
 void WebContentsObserverSanityChecker::MediaStoppedPlaying(
+    const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
   CHECK(!web_contents_destroyed_);
   CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),

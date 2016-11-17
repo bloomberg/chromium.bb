@@ -760,8 +760,15 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Called by MediaWebContentsObserver when playback starts or stops.  See the
   // WebContentsObserver function stubs for more details.
-  void MediaStartedPlaying(const WebContentsObserver::MediaPlayerId& id);
-  void MediaStoppedPlaying(const WebContentsObserver::MediaPlayerId& id);
+  void MediaStartedPlaying(
+      const WebContentsObserver::MediaPlayerInfo& media_info,
+      const WebContentsObserver::MediaPlayerId& id);
+  void MediaStoppedPlaying(
+      const WebContentsObserver::MediaPlayerInfo& media_info,
+      const WebContentsObserver::MediaPlayerId& id);
+  int GetCurrentlyPlayingVideoCount() override;
+
+  bool IsFullscreen() override;
 
   MediaWebContentsObserver* media_web_contents_observer() {
     return media_web_contents_observer_.get();
@@ -1437,6 +1444,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Whether this WebContents is for content overlay.
   bool is_overlay_content_;
+
+  int currently_playing_video_count_ = 0;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

@@ -14,7 +14,10 @@
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
+#include "chrome/browser/browser_process.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -130,7 +133,8 @@ blink::WebMouseEvent MakeMouseEvent(WebInputEvent::Type type,
 
 namespace vr_shell {
 
-VrShell::VrShell(JNIEnv* env, jobject obj,
+VrShell::VrShell(JNIEnv* env,
+                 jobject obj,
                  content::WebContents* main_contents,
                  ui::WindowAndroid* content_window,
                  content::WebContents* ui_contents,
@@ -138,6 +142,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
     : WebContentsObserver(ui_contents),
       main_contents_(main_contents),
       ui_contents_(ui_contents),
+      metrics_helper_(new VrMetricsHelper(main_contents)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
@@ -210,6 +215,11 @@ void VrShell::GvrInit(JNIEnv* env,
                       const JavaParamRef<jobject>& obj,
                       jlong native_gvr_api) {
   base::AutoLock lock(gvr_init_lock_);
+
+  // set the initial webvr state
+  metrics_helper_->SetWebVREnabled(webvr_mode_);
+  metrics_helper_->SetVRActive(true);
+
   gvr_api_ =
       gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(native_gvr_api));
 
@@ -754,6 +764,9 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     return;
   controller_->OnPause();
   gvr_api_->PauseTracking();
+
+  // exit vr session
+  metrics_helper_->SetVRActive(false);
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -763,6 +776,9 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
   controller_->OnResume();
+
+  // exit vr session
+  metrics_helper_->SetVRActive(true);
 }
 
 base::WeakPtr<VrShell> VrShell::GetWeakPtr(
@@ -784,6 +800,7 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
   webvr_mode_ = enabled;
+  metrics_helper_->SetWebVREnabled(webvr_mode_);
   if (enabled) {
     html_interface_->SetMode(UiInterface::Mode::WEB_VR);
   } else {

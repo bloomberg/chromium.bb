@@ -38,6 +38,7 @@ class UiScene;
 class VrCompositor;
 class VrController;
 class VrInputManager;
+class VrMetricsHelper;
 class VrShellDelegate;
 class VrShellRenderer;
 class VrWebContentsObserver;
@@ -51,6 +52,8 @@ enum UiAction {
   ZOOM_IN,
   RELOAD_UI
 };
+
+class VrMetricsHelper;
 
 class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  public:
@@ -194,6 +197,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   std::unique_ptr<VrController> controller_;
   scoped_refptr<VrInputManager> content_input_manager_;
   scoped_refptr<VrInputManager> ui_input_manager_;
+  scoped_refptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

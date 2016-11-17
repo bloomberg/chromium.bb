@@ -61,11 +61,13 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
 
   void MediaStartedPlaying(SiteEngagementService::Helper* helper) {
     helper->media_tracker_.MediaStartedPlaying(
+        content::WebContentsObserver::MediaPlayerInfo(false),
         content::WebContentsObserver::MediaPlayerId(nullptr, 1));
   }
 
   void MediaStoppedPlaying(SiteEngagementService::Helper* helper) {
     helper->media_tracker_.MediaStoppedPlaying(
+        content::WebContentsObserver::MediaPlayerInfo(false),
         content::WebContentsObserver::MediaPlayerId(nullptr, 1));
   }
 

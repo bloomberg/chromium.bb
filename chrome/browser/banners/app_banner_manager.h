@@ -169,8 +169,10 @@ class AppBannerManager : public content::WebContentsObserver,
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void MediaStartedPlaying(const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerId& id) override;
+  void MediaStartedPlaying(const MediaPlayerInfo& media_info,
+                           const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
+                           const MediaPlayerId& id) override;
   void WebContentsDestroyed() override;
 
   // SiteEngagementObserver overrides.

@@ -135,8 +135,10 @@ class SiteEngagementService::Helper
     void TrackingStarted() override;
 
     // content::WebContentsObserver overrides.
-    void MediaStartedPlaying(const MediaPlayerId& id) override;
-    void MediaStoppedPlaying(const MediaPlayerId& id) override;
+    void MediaStartedPlaying(const MediaPlayerInfo& media_info,
+                             const MediaPlayerId& id) override;
+    void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
+                             const MediaPlayerId& id) override;
     void WasShown() override;
     void WasHidden() override;
 

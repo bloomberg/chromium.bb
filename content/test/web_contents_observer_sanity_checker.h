@@ -80,8 +80,10 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
                            const Referrer& referrer,
                            WindowOpenDisposition disposition,
                            ui::PageTransition transition) override;
-  void MediaStartedPlaying(const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerId& id) override;
+  void MediaStartedPlaying(const MediaPlayerInfo& media_info,
+                           const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
+                           const MediaPlayerId& id) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;

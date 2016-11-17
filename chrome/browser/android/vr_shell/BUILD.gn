@@ -40,6 +40,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "vr_shell_delegate.h",
       "vr_shell_renderer.cc",
       "vr_shell_renderer.h",
+      "vr_usage_monitor.cc",
+      "vr_usage_monitor.h",
       "vr_web_contents_observer.cc",
       "vr_web_contents_observer.h",
     ]

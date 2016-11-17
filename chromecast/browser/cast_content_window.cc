@@ -135,11 +135,13 @@ void CastContentWindow::DidFirstVisuallyNonEmptyPaint() {
   metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstPaint();
 }
 
-void CastContentWindow::MediaStoppedPlaying(const MediaPlayerId& id) {
+void CastContentWindow::MediaStoppedPlaying(const MediaPlayerInfo& media_info,
+                                            const MediaPlayerId& id) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }
 
-void CastContentWindow::MediaStartedPlaying(const MediaPlayerId& id) {
+void CastContentWindow::MediaStartedPlaying(const MediaPlayerInfo& media_info,
+                                            const MediaPlayerId& id) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
 }
 
