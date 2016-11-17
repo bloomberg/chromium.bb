@@ -1415,7 +1415,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf);
   }
 
-  for (ref_frame = LAST_FRAME; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     av1_find_mv_refs(cm, xd, mi, ref_frame,
 #if CONFIG_REF_MV
                      &xd->ref_mv_count[ref_frame], xd->ref_mv_stack[ref_frame],
