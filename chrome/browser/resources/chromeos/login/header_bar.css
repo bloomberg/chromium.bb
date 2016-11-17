@@ -12,11 +12,7 @@
 }
 
 #login-header-bar {
-  /* Using copy of Ash launcher background with 0.8 opacity applied to it.
-     Otherwise if opacity: 0.8 is set here it will affect button text as well.
-     Have to position background differently so that opacity is not applied
-     to child elements. */
-  background-image: url(chrome://theme/IDR_LAUNCHER_BACKGROUND);
+  background-color: rgba(0, 0, 0, 0.6);
   padding-top: 7px;
 }
 
@@ -59,7 +55,6 @@ html[screen=oobe] .login-header-bar-animate-slow {
 }
 
 .header-bar-item {
-  display: inline-block;
   height: 34px;
 }
 
@@ -93,52 +88,64 @@ html[dir=rtl] .header-bar-item {
   background-position: right center;
 }
 
+#login-header-bar #shutdown-button-text,
+#login-header-bar #restart-button-text,
+#login-header-bar #add-user-button-text,
+#login-header-bar #guest-user-button-text,
+#login-header-bar #more-settings-button-text,
+#login-header-bar #cancel-multiple-sign-in-button-text {
+  -webkit-padding-start: 28px;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+}
+
+html[dir=rtl] #login-header-bar #shutdown-button-text,
+html[dir=rtl] #login-header-bar #restart-button-text,
+html[dir=rtl] #login-header-bar #add-user-button-text,
+html[dir=rtl] #login-header-bar #more-settings-button-text,
+html[dir=rtl] #login-header-bar #guest-user-button-text,
+html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button-text {
+  background-position: right center;
+}
+
 #login-header-bar #shutdown-button,
 #login-header-bar #restart-button,
 #login-header-bar #add-user-button,
 #login-header-bar #guest-user-button,
 #login-header-bar #more-settings-button,
 #login-header-bar #cancel-multiple-sign-in-button {
-  -webkit-padding-start: 24px;
-  background-position: left center;
-  background-repeat: no-repeat;
-  background-size: 24px;
-}
-
-html[dir=rtl] #login-header-bar #shutdown-button,
-html[dir=rtl] #login-header-bar #restart-button,
-html[dir=rtl] #login-header-bar #add-user-button,
-html[dir=rtl] #login-header-bar #more-settings-button,
-html[dir=rtl] #login-header-bar #guest-user-button,
-html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
-  background-position: right center;
+  padding: 0 14px;
 }
 
 #login-header-bar #more-settings-header-bar-item {
   position: relative;
 }
 
-#login-header-bar #shutdown-button {
-  background-image: url(chrome://theme/IDR_ICON_POWER_WHITE);
+#login-header-bar #shutdown-button-text,
+#login-header-bar #restart-button-text {
+  background-image: -webkit-image-set(
+      url(images/1x/shutdown.svg) 1x,
+      url(images/2x/shutdown.svg) 2x );
 }
 
-#login-header-bar #restart-button {
-  background-image: url(chrome://theme/IDR_ICON_POWER_WHITE);
+#login-header-bar #add-user-button-text {
+  background-image: -webkit-image-set(
+      url(images/1x/add-person.svg) 1x,
+      url(images/2x/add-person.svg) 2x );
 }
 
-#login-header-bar #add-user-button {
-  background-image: url(chrome://theme/IDR_ICON_ADD_USER_WHITE);
-}
-
-#login-header-bar #more-settings-button {
+#login-header-bar #more-settings-button-text {
   background-image: url(chrome://theme/IDR_ICON_MORE_VERT_WHITE);
 }
 
-#login-header-bar #guest-user-button {
-  background-image: url(chrome://theme/IDR_ICON_GUEST_WHITE);
+#login-header-bar #guest-user-button-text {
+  background-image: -webkit-image-set(
+      url(images/1x/browse-as-guest.svg) 1x,
+      url(images/2x/browse-as-guest.svg) 2x );
 }
 
-#login-header-bar #cancel-multiple-sign-in-button {
+#login-header-bar #cancel-multiple-sign-in-button-text {
   /* TODO(dzhioev): replace with appropriate image when possible. */
   background-image: url(chrome://theme/IDR_PANEL_CLOSE);
 }
