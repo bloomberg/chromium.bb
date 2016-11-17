@@ -71,7 +71,7 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style) {
 const DisplayItemClient& TableCellPainter::displayItemClientForBorders() const {
   // TODO(wkorman): We may need to handle PaintInvalidationDelayedFull.
   // http://crbug.com/657186
-  return m_layoutTableCell.usesTableAsAdditionalDisplayItemClient()
+  return m_layoutTableCell.usesCompositedCellDisplayItemClients()
              ? static_cast<const DisplayItemClient&>(
                    *m_layoutTableCell.collapsedBorderValues())
              : m_layoutTableCell;
@@ -195,14 +195,16 @@ void TableCellPainter::paintContainerBackgroundBehindCell(
       !m_layoutTableCell.firstChild())
     return;
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutTableCell, type))
+  const DisplayItemClient& client =
+      m_layoutTableCell.backgroundDisplayItemClient();
+  if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, client,
+                                                  type))
     return;
 
   LayoutRect paintRect =
       paintRectNotIncludingVisualOverflow(adjustedPaintOffset);
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell,
-                                       type, paintRect);
+  DrawingRecorder recorder(paintInfo.context, client, type,
+                           FloatRect(paintRect));
   paintBackground(paintInfo, paintRect, backgroundObject);
 }
 

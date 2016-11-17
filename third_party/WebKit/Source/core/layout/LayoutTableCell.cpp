@@ -46,7 +46,8 @@ using namespace HTMLNames;
 struct SameSizeAsLayoutTableCell : public LayoutBlockFlow {
   unsigned bitfields;
   int paddings[2];
-  void* pointer;
+  void* pointer1;
+  void* pointer2;
 };
 
 static_assert(sizeof(LayoutTableCell) == sizeof(SameSizeAsLayoutTableCell),
@@ -463,6 +464,16 @@ int LayoutTableCell::cellBaselinePosition() const {
   return (borderBefore() + paddingBefore() + contentLogicalHeight()).toInt();
 }
 
+void LayoutTableCell::ensureIsReadyForPaintInvalidation() {
+  LayoutBlockFlow::ensureIsReadyForPaintInvalidation();
+  if (!usesCompositedCellDisplayItemClients())
+    return;
+  if (!m_rowBackgroundDisplayItemClient) {
+    m_rowBackgroundDisplayItemClient =
+        wrapUnique(new LayoutTableCell::RowBackgroundDisplayItemClient(*row()));
+  }
+}
+
 void LayoutTableCell::styleDidChange(StyleDifference diff,
                                      const ComputedStyle* oldStyle) {
   DCHECK_EQ(style()->display(), EDisplay::TableCell);
@@ -506,6 +517,18 @@ void LayoutTableCell::styleDidChange(StyleDifference diff,
       nextCell()->setPreferredLogicalWidthsDirty(MarkOnlyThis);
     }
   }
+}
+
+LayoutTableCell::RowBackgroundDisplayItemClient::RowBackgroundDisplayItemClient(
+    const LayoutTableRow& layoutTableRow)
+    : m_layoutTableRow(layoutTableRow) {}
+
+String LayoutTableCell::RowBackgroundDisplayItemClient::debugName() const {
+  return "RowBackground";
+}
+
+LayoutRect LayoutTableCell::RowBackgroundDisplayItemClient::visualRect() const {
+  return m_layoutTableRow.visualRect();
 }
 
 // The following rules apply for resolving conflicts and figuring out which
@@ -1416,7 +1439,7 @@ bool LayoutTableCell::backgroundIsKnownToBeOpaqueInRect(
   return LayoutBlockFlow::backgroundIsKnownToBeOpaqueInRect(localRect);
 }
 
-bool LayoutTableCell::usesTableAsAdditionalDisplayItemClient() const {
+bool LayoutTableCell::usesCompositedCellDisplayItemClients() const {
   // In certain cases such as collapsed borders for composited table cells we
   // paint content for the cell into the table graphics layer backing and so
   // must use the table's visual rect.
@@ -1426,11 +1449,18 @@ bool LayoutTableCell::usesTableAsAdditionalDisplayItemClient() const {
 
 void LayoutTableCell::invalidateDisplayItemClients(
     PaintInvalidationReason reason) const {
-  if (m_collapsedBorderValues && usesTableAsAdditionalDisplayItemClient()) {
-    ObjectPaintInvalidator(*this).invalidateDisplayItemClient(
-        *m_collapsedBorderValues, reason);
-  }
   LayoutBlockFlow::invalidateDisplayItemClients(reason);
+
+  if (!usesCompositedCellDisplayItemClients())
+    return;
+
+  ObjectPaintInvalidator invalidator(*this);
+  if (m_collapsedBorderValues)
+    invalidator.invalidateDisplayItemClient(*m_collapsedBorderValues, reason);
+  if (m_rowBackgroundDisplayItemClient) {
+    invalidator.invalidateDisplayItemClient(*m_rowBackgroundDisplayItemClient,
+                                            reason);
+  }
 }
 
 // TODO(lunalu): Deliberately dump the "inner" box of table cells, since that

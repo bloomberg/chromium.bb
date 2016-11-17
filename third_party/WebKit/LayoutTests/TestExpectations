@@ -803,6 +803,21 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vrl-006.xht [ Failure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vlr-007.xht [ Failure ]
 
+crbug.com/658874 paint/invalidation/table/composited-table-background.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-initial-empty.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-col.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-col-initial-empty.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-col-span.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-col-span-initial-empty.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-colgroup.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-colgroup-initial-empty.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-composited-row.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-composited-row-initial-empty.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-section.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-section-initial-empty.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-section-composited-row.html [ NeedsRebaseline ]
+crbug.com/658874 paint/invalidation/table/composited-table-background-section-composited-row-initial-empty.html [ NeedsRebaseline ]
+
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
 
