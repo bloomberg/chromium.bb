@@ -717,7 +717,7 @@ static void set_param_topblock(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->above_txfm_context = cm->above_txfm_context + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
-  set_txfm_ctxs(xd->mi[0]->mbmi.tx_size, bw, bh, xd);
+  set_txfm_ctxs(xd->mi[0]->mbmi.tx_size, bw, bh, skip, xd);
 #endif
 }
 

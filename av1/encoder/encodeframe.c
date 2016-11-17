@@ -2303,7 +2303,8 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
         update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif
 #if CONFIG_VAR_TX
-      set_txfm_ctxs(supertx_size, mi_width, mi_height, xd);
+      set_txfm_ctxs(supertx_size, mi_width, mi_height, xd->mi[0]->mbmi.skip,
+                    xd);
 #endif  // CONFIG_VAR_TX
       return;
     } else {
