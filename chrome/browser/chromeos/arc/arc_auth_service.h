@@ -181,8 +181,6 @@ class ArcAuthService : public ArcService,
   void GetIsAccountManagedDeprecated(
       const GetIsAccountManagedDeprecatedCallback& callback) override;
 
-  void OnSignInFailedInternal(ProvisioningResult result);
-
   // Called from Arc support platform app to set auth code and start arc.
   void OnAuthCodeObtained(const std::string& auth_code);
 
@@ -243,6 +241,8 @@ class ArcAuthService : public ArcService,
   ArcSupportHost* support_host() { return support_host_.get(); }
 
   void StartArc();
+
+  void OnProvisioningFinished(ProvisioningResult result);
 
  private:
   using AccountInfoCallback = base::Callback<void(mojom::AccountInfoPtr)>;

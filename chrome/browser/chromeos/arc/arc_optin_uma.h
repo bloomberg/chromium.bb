@@ -79,6 +79,11 @@ enum class ProvisioningResult : int {
   // time.
   OVERALL_SIGN_IN_TIMEOUT = 17,
 
+  // In Chrome, server communication error occurs.
+  // For backward compatibility, the UMA is handled differently. Please see
+  // ArcAuthService::OnProvisioningFinished for details.
+  CHROME_SERVER_COMMUNICATION_ERROR = 18,
+
   // The size of this enum; keep last.
   SIZE,
 };

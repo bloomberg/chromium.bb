@@ -23,6 +23,7 @@ void UpdateEnabledStateUMA(bool enabled) {
 }
 
 void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed) {
+  DCHECK_NE(result, ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
   std::string histogram_name = "Arc.Provisioning.Result.";
   histogram_name += managed ? "Managed" : "Unmanaged";
   base::LinearHistogram::FactoryGet(

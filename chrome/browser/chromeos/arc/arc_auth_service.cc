@@ -287,7 +287,7 @@ void ArcAuthService::OnInstanceReady() {
 void ArcAuthService::OnBridgeStopped(ArcBridgeService::StopReason reason) {
   // TODO(crbug.com/625923): Use |reason| to report more detailed errors.
   if (arc_sign_in_timer_.IsRunning()) {
-    OnSignInFailedInternal(ProvisioningResult::ARC_STOPPED);
+    OnProvisioningFinished(ProvisioningResult::ARC_STOPPED);
   }
 
   if (clear_required_) {
@@ -443,48 +443,50 @@ void ArcAuthService::PrepareContextForAuthCodeRequest() {
 void ArcAuthService::OnSignInComplete() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::ACTIVE);
-
-  if (!sign_in_time_.is_null()) {
-    arc_sign_in_timer_.Stop();
-    UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
-                             policy_util::IsAccountManaged(profile_));
-    UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS,
-                                policy_util::IsAccountManaged(profile_));
-  }
-
-  if (support_host_)
-    support_host_->Close();
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn))
-    return;
-
-  profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
-  if (!IsOptInVerificationDisabled()) {
-    playstore_launcher_.reset(
-        new ArcAppLauncher(profile_, kPlayStoreAppId, true));
-  }
-
-  for (auto& observer : observer_list_)
-    observer.OnInitialStart();
+  OnProvisioningFinished(ProvisioningResult::SUCCESS);
 }
 
 void ArcAuthService::OnSignInFailed(mojom::ArcSignInFailureReason reason) {
-  OnSignInFailedInternal(
+  OnProvisioningFinished(
       ConvertArcSignInFailureReasonToProvisioningResult(reason));
 }
 
-void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
+void ArcAuthService::OnProvisioningFinished(ProvisioningResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::ACTIVE);
 
-  if (!sign_in_time_.is_null()) {
+  if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
+    // For backwards compatibility, use NETWORK_ERROR for
+    // CHROME_SERVER_COMMUNICATION_ERROR case.
+    UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
+  } else if (!sign_in_time_.is_null()) {
     arc_sign_in_timer_.Stop();
 
-    UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
+    UpdateProvisioningTiming(base::Time::Now() - sign_in_time_,
+                             result == ProvisioningResult::SUCCESS,
                              policy_util::IsAccountManaged(profile_));
-    UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
     UpdateProvisioningResultUMA(result,
                                 policy_util::IsAccountManaged(profile_));
+    if (result != ProvisioningResult::SUCCESS)
+      UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
+  }
+
+  if (result == ProvisioningResult::SUCCESS) {
+    if (support_host_)
+      support_host_->Close();
+
+    if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn))
+      return;
+
+    profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+    if (!IsOptInVerificationDisabled()) {
+      playstore_launcher_.reset(
+          new ArcAppLauncher(profile_, kPlayStoreAppId, true));
+    }
+
+    for (auto& observer : observer_list_)
+      observer.OnInitialStart();
+    return;
   }
 
   ArcSupportHost::Error error;
@@ -511,12 +513,16 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
     case ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR:
       error = ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
       break;
+    case ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR:
+      error = ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR;
+      break;
     default:
       error = ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR;
       break;
   }
 
-  if (result == ProvisioningResult::ARC_STOPPED) {
+  if (result == ProvisioningResult::ARC_STOPPED ||
+      result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     ShutdownBridge();
@@ -797,7 +803,7 @@ void ArcAuthService::OnAuthCodeObtained(const std::string& auth_code) {
 
 void ArcAuthService::OnArcSignInTimeout() {
   LOG(ERROR) << "Timed out waiting for first sign in.";
-  OnSignInFailedInternal(ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT);
+  OnProvisioningFinished(ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT);
 }
 
 void ArcAuthService::CancelAuthCode() {
@@ -893,12 +899,8 @@ void ArcAuthService::StartUI() {
 }
 
 void ArcAuthService::OnPrepareContextFailed() {
-  ShutdownBridge();
-  if (support_host_) {
-    support_host_->ShowError(ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR,
-                             false);
-  }
-  UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  OnProvisioningFinished(ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
 }
 
 void ArcAuthService::OnAuthCodeSuccess(const std::string& auth_code) {
@@ -907,12 +909,7 @@ void ArcAuthService::OnAuthCodeSuccess(const std::string& auth_code) {
 
 void ArcAuthService::OnAuthCodeFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ShutdownBridge();
-  if (support_host_) {
-    support_host_->ShowError(ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR,
-                             false);
-  }
-  UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
+  OnProvisioningFinished(ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
 }
 
 void ArcAuthService::StartArcAndroidManagementCheck() {
