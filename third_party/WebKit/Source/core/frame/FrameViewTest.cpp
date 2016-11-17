@@ -80,8 +80,7 @@ class FrameViewTest
 INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
 
 TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
-  document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
   document().view()->updateAllLifecyclePhases();
   document().getElementById("a")->setAttribute(HTMLNames::styleAttr,
                                                "color: green");
@@ -91,8 +90,7 @@ TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
 }
 
 TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
-  document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
   document().view()->updateAllLifecyclePhases();
   chromeClient().m_hasScheduledAnimation = false;
   document()
@@ -115,7 +113,7 @@ TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
 // performance. See crbug.com/586852 for details.
 TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges) {
   document().body()->setInnerHTML(
-      "<div style='width:1000px;height:1000px'></div>", ASSERT_NO_EXCEPTION);
+      "<div style='width:1000px;height:1000px'></div>");
   document().view()->updateAllLifecyclePhases();
 
   EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _));

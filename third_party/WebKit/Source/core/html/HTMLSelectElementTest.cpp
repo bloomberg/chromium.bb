@@ -40,8 +40,7 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState) {
              "<option value='111' id='0'>111</option>"
              "<option value='222'>222</option>"
              "<option value='111' selected id='2'>!666</option>"
-             "<option value='999'>999</option></select>"),
-      ASSERT_NO_EXCEPTION);
+             "<option value='999'>999</option></select>"));
   document().view()->updateAllLifecyclePhases();
   Element* element = document().getElementById("sel");
   HTMLFormControlElementWithState* select = toHTMLSelectElement(element);
@@ -73,8 +72,7 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState) {
              "<option value='111' id='0'>111</option>"
              "<option value='222'>222</option>"
              "<option value='111' selected id='2'>!666</option>"
-             "<option value='999' selected id='3'>999</option></select>"),
-      ASSERT_NO_EXCEPTION);
+             "<option value='999' selected id='3'>999</option></select>"));
   document().view()->updateAllLifecyclePhases();
   HTMLFormControlElementWithState* select =
       toHTMLSelectElement(document().getElementById("sel"));
@@ -114,8 +112,7 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
       "<select id='sel'>"
       "<option selected>Default</option>"
       "<option id='2'>222</option>"
-      "</select>",
-      ASSERT_NO_EXCEPTION);
+      "</select>");
   document().view()->updateAllLifecyclePhases();
   Element* element = document().getElementById("sel");
   HTMLFormControlElementWithState* select = toHTMLSelectElement(element);
@@ -140,8 +137,7 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
 TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport) {
   document().documentElement()->setInnerHTML(
       "<select style='position:fixed; top:12.3px; height:24px; "
-      "-webkit-appearance:none;'><option>o1</select>",
-      ASSERT_NO_EXCEPTION);
+      "-webkit-appearance:none;'><option>o1</select>");
   document().view()->updateAllLifecyclePhases();
   HTMLSelectElement* select =
       toHTMLSelectElement(document().body()->firstChild());
@@ -152,7 +148,7 @@ TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport) {
 
 TEST_F(HTMLSelectElementTest, PopupIsVisible) {
   document().documentElement()->setInnerHTML(
-      "<select><option>o1</option></select>", ASSERT_NO_EXCEPTION);
+      "<select><option>o1</option></select>");
   document().view()->updateAllLifecyclePhases();
   HTMLSelectElement* select =
       toHTMLSelectElement(document().body()->firstChild());
@@ -166,8 +162,7 @@ TEST_F(HTMLSelectElementTest, PopupIsVisible) {
 
 TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
   {
-    document().documentElement()->setInnerHTML("<select></select>",
-                                               ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML("<select></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -175,8 +170,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
   }
   {
     document().documentElement()->setInnerHTML(
-        "<select><option id=o1></option><option id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "<select><option id=o1></option><option id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -186,8 +180,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1 disabled></option><option "
-        "id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -197,8 +190,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1 style='display:none'></option><option "
-        "id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -208,8 +200,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><optgroup><option id=o1></option><option "
-        "id=o2></option></optgroup></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></optgroup></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -220,8 +211,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, LastSelectableOption) {
   {
-    document().documentElement()->setInnerHTML("<select></select>",
-                                               ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML("<select></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -229,8 +219,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
   }
   {
     document().documentElement()->setInnerHTML(
-        "<select><option id=o1></option><option id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "<select><option id=o1></option><option id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -240,8 +229,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1></option><option id=o2 "
-        "disabled></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "disabled></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -251,8 +239,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1></option><option id=o2 "
-        "style='display:none'></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "style='display:none'></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -262,8 +249,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><optgroup><option id=o1></option><option "
-        "id=o2></option></optgroup></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></optgroup></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -274,8 +260,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   {
-    document().documentElement()->setInnerHTML("<select></select>",
-                                               ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML("<select></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -283,8 +268,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   }
   {
     document().documentElement()->setInnerHTML(
-        "<select><option id=o1></option><option id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "<select><option id=o1></option><option id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -294,8 +278,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1 disabled></option><option "
-        "id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -305,8 +288,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1 style='display:none'></option><option "
-        "id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -316,8 +298,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><optgroup><option id=o1></option><option "
-        "id=o2></option></optgroup></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></optgroup></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -326,8 +307,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   }
   {
     document().documentElement()->setInnerHTML(
-        "<select><option id=o1></option><option id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "<select><option id=o1></option><option id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -342,8 +322,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1></option><optgroup><option "
-        "id=o2></option></optgroup></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></optgroup></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -356,8 +335,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   {
-    document().documentElement()->setInnerHTML("<select></select>",
-                                               ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML("<select></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -365,8 +343,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   }
   {
     document().documentElement()->setInnerHTML(
-        "<select><option id=o1></option><option id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "<select><option id=o1></option><option id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -376,8 +353,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1></option><option id=o2 "
-        "disabled></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "disabled></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -387,8 +363,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1></option><option id=o2 "
-        "style='display:none'></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "style='display:none'></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -398,8 +373,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><optgroup><option id=o1></option><option "
-        "id=o2></option></optgroup></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></optgroup></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -408,8 +382,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   }
   {
     document().documentElement()->setInnerHTML(
-        "<select><option id=o1></option><option id=o2></option></select>",
-        ASSERT_NO_EXCEPTION);
+        "<select><option id=o1></option><option id=o2></option></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -424,8 +397,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   {
     document().documentElement()->setInnerHTML(
         "<select><option id=o1></option><optgroup><option "
-        "id=o2></option></optgroup></select>",
-        ASSERT_NO_EXCEPTION);
+        "id=o2></option></optgroup></select>");
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(document().body()->firstChild());
@@ -438,8 +410,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
   document().documentElement()->setInnerHTML(
-      "<select><optgroup><option selected>o1</option></optgroup></select>",
-      ASSERT_NO_EXCEPTION);
+      "<select><optgroup><option selected>o1</option></optgroup></select>");
   document().view()->updateAllLifecyclePhases();
   HTMLSelectElement* select =
       toHTMLSelectElement(document().body()->firstChild());
@@ -455,8 +426,7 @@ TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
 TEST_F(HTMLSelectElementTest, DefaultToolTip) {
   document().documentElement()->setInnerHTML(
       "<select size=4><option value="
-      ">Placeholder</option><optgroup><option>o2</option></optgroup></select>",
-      ASSERT_NO_EXCEPTION);
+      ">Placeholder</option><optgroup><option>o2</option></optgroup></select>");
   document().view()->updateAllLifecyclePhases();
   HTMLSelectElement* select =
       toHTMLSelectElement(document().body()->firstChild());
@@ -501,12 +471,11 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip) {
 TEST_F(HTMLSelectElementTest, SetRecalcListItemsByOptgroupRemoval) {
   document().documentElement()->setInnerHTML(
       "<select><optgroup><option>sub1</option><option>sub2</option></"
-      "optgroup></select>",
-      ASSERT_NO_EXCEPTION);
+      "optgroup></select>");
   document().view()->updateAllLifecyclePhases();
   HTMLSelectElement* select =
       toHTMLSelectElement(document().body()->firstChild());
-  select->setInnerHTML("", ASSERT_NO_EXCEPTION);
+  select->setInnerHTML("");
   // PASS if setInnerHTML didn't have a check failure.
 }
 

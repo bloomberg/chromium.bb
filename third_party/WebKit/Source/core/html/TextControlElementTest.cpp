@@ -68,8 +68,7 @@ void TextControlElementTest::SetUp() {
 
   m_document = &m_dummyPageHolder->document();
   m_document->documentElement()->setInnerHTML(
-      "<body><textarea id=textarea></textarea><input id=input /></body>",
-      ASSERT_NO_EXCEPTION);
+      "<body><textarea id=textarea></textarea><input id=input /></body>");
   m_document->view()->updateAllLifecyclePhases();
   m_textControl = toTextControlElement(m_document->getElementById("textarea"));
   m_textControl->focus();

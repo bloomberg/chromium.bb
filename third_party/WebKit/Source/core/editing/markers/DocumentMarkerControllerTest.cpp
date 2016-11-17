@@ -88,8 +88,7 @@ void DocumentMarkerControllerTest::markNodeContentsWithComposition(Node* node) {
 }
 
 void DocumentMarkerControllerTest::setBodyInnerHTML(const char* bodyContent) {
-  document().body()->setInnerHTML(String::fromUTF8(bodyContent),
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML(String::fromUTF8(bodyContent));
 }
 
 TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {

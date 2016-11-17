@@ -85,8 +85,7 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEvent) {
   MockInterfaceProvider interfaceProvider;
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
-  pageHolder->document().body()->setInnerHTML("<input type='password'>",
-                                              ASSERT_NO_EXCEPTION);
+  pageHolder->document().body()->setInnerHTML("<input type='password'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   EXPECT_TRUE(interfaceProvider.passwordFieldVisibleCalled());
@@ -101,8 +100,7 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
   pageHolder->document().setURL(KURL(KURL(), "https://example.test"));
   pageHolder->document().setSecurityOrigin(
       SecurityOrigin::create(KURL(KURL(), "https://example.test")));
-  pageHolder->document().body()->setInnerHTML("<input type='password'>",
-                                              ASSERT_NO_EXCEPTION);
+  pageHolder->document().body()->setInnerHTML("<input type='password'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   // No message should have been sent from a secure context.
   blink::testing::runPendingTasks();
@@ -116,7 +114,7 @@ TEST(PasswordInputTypeTest, InvisiblePasswordFieldBecomesVisible) {
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
   pageHolder->document().body()->setInnerHTML(
-      "<input type='password' style='display:none;'>", ASSERT_NO_EXCEPTION);
+      "<input type='password' style='display:none;'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   // The message should not be sent for a hidden password field.
@@ -137,8 +135,7 @@ TEST(PasswordInputTypeTest, NonPasswordFieldBecomesPassword) {
   MockInterfaceProvider interfaceProvider;
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
-  pageHolder->document().body()->setInnerHTML("<input type='text'>",
-                                              ASSERT_NO_EXCEPTION);
+  pageHolder->document().body()->setInnerHTML("<input type='text'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   // The message should not be sent for a non-password field.
   blink::testing::runPendingTasks();
@@ -161,7 +158,7 @@ TEST(PasswordInputTypeTest,
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
   pageHolder->document().body()->setInnerHTML(
-      "<input type='password' style='display:none;'>", ASSERT_NO_EXCEPTION);
+      "<input type='password' style='display:none;'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   // The message should not be sent for a hidden password field.
@@ -183,8 +180,7 @@ TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
   MockInterfaceProvider interfaceProvider;
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
-  pageHolder->document().body()->setInnerHTML("<input type='password'>",
-                                              ASSERT_NO_EXCEPTION);
+  pageHolder->document().body()->setInnerHTML("<input type='password'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   EXPECT_TRUE(interfaceProvider.passwordFieldVisibleCalled());
@@ -206,7 +202,7 @@ TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
   pageHolder->document().body()->setInnerHTML(
-      "<input type='password'><input type='password'>", ASSERT_NO_EXCEPTION);
+      "<input type='password'><input type='password'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
@@ -246,7 +242,7 @@ TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
   pageHolder->document().body()->setInnerHTML(
-      "<div><input type='password'></div>", ASSERT_NO_EXCEPTION);
+      "<div><input type='password'></div>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());
@@ -278,7 +274,7 @@ TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
   pageHolder->document().body()->setInnerHTML(
-      "<input type='password'><input type='password'>", ASSERT_NO_EXCEPTION);
+      "<input type='password'><input type='password'>");
   pageHolder->document().view()->updateAllLifecyclePhases();
   blink::testing::runPendingTasks();
   EXPECT_EQ(0u, interfaceProvider.numPasswordFieldsInvisibleCalls());

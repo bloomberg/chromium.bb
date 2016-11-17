@@ -84,7 +84,7 @@ class PrintContextTest : public RenderingTest {
 
   void setBodyInnerHTML(String bodyContent) {
     document().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
-    document().body()->setInnerHTML(bodyContent, ASSERT_NO_EXCEPTION);
+    document().body()->setInnerHTML(bodyContent);
   }
 
   void printSinglePage(SkCanvas& canvas) {

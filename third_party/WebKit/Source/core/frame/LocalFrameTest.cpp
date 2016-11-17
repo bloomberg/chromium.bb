@@ -28,8 +28,7 @@ class LocalFrameTest : public ::testing::Test {
   Performance* performance() const { return m_performance; }
 
   void setBodyContent(const std::string& bodyContent) {
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent.c_str()),
-                                    ASSERT_NO_EXCEPTION);
+    document().body()->setInnerHTML(String::fromUTF8(bodyContent.c_str()));
     updateAllLifecyclePhases();
   }
 

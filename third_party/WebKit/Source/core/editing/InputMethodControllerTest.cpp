@@ -817,8 +817,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
       "document.getElementById('sample').addEventListener('input', "
       "function(event) {"
       "    document.title += `input.isComposing:${event.isComposing};`;"
-      "});",
-      ASSERT_NO_EXCEPTION);
+      "});");
   document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
   document().view()->updateAllLifecyclePhases();
 
@@ -852,8 +851,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventData) {
       "document.getElementById('sample').addEventListener('input', "
       "function(event) {"
       "    document.title += `input.data:${event.data};`;"
-      "});",
-      ASSERT_NO_EXCEPTION);
+      "});");
   document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
   document().view()->updateAllLifecyclePhases();
 

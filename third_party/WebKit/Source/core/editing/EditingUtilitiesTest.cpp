@@ -108,7 +108,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   // element. So, we build DOM tree manually.
   // Note: This is unusual HTML taken from http://crbug.com/574230
   Element* table = document().createElement("table");
-  table->setInnerHTML("<caption>foo</caption>", ASSERT_NO_EXCEPTION);
+  table->setInnerHTML("<caption>foo</caption>");
   while (document().firstChild())
     document().firstChild()->remove();
   document().appendChild(table);

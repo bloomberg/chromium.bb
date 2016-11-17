@@ -71,8 +71,7 @@ WebFloatRect TextFinderTest::findInPageRect(Node* startContainer,
 }
 
 TEST_F(TextFinderTest, FindTextSimple) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   document().updateStyleAndLayout();
   Node* textNode = document().body()->firstChild();
 
@@ -146,8 +145,7 @@ TEST_F(TextFinderTest, FindTextSimple) {
 }
 
 TEST_F(TextFinderTest, FindTextAutosizing) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   document().updateStyleAndLayout();
 
   int identifier = 0;
@@ -185,8 +183,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
 }
 
 TEST_F(TextFinderTest, FindTextNotFound) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   document().updateStyleAndLayout();
 
   int identifier = 0;
@@ -200,12 +197,11 @@ TEST_F(TextFinderTest, FindTextNotFound) {
 }
 
 TEST_F(TextFinderTest, FindTextInShadowDOM) {
-  document().body()->setInnerHTML("<b>FOO</b><i>foo</i>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
   ShadowRoot* shadowRoot = document().body()->createShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);
   shadowRoot->setInnerHTML(
-      "<content select=\"i\"></content><u>Foo</u><content></content>",
-      ASSERT_NO_EXCEPTION);
+      "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* textInBElement = document().body()->firstChild()->firstChild();
   Node* textInIElement = document().body()->lastChild()->firstChild();
   Node* textInUElement = shadowRoot->childNodes()->item(1)->firstChild();
@@ -302,8 +298,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
   document().updateStyleAndLayout();
 
   Node* textNode = document().body()->firstChild();
@@ -326,12 +321,11 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
-  document().body()->setInnerHTML("<b>FOO</b><i>foo</i>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
   ShadowRoot* shadowRoot = document().body()->createShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);
   shadowRoot->setInnerHTML(
-      "<content select=\"i\"></content><u>Foo</u><content></content>",
-      ASSERT_NO_EXCEPTION);
+      "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* textInBElement = document().body()->firstChild()->firstChild();
   Node* textInIElement = document().body()->lastChild()->firstChild();
   Node* textInUElement = shadowRoot->childNodes()->item(1)->firstChild();
@@ -362,7 +356,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
 }
 
 TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
-  document().body()->setInnerHTML("ab ab ab ab ab", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("ab ab ab ab ab");
   document().updateStyleAndLayout();
 
   Node* textNode = document().body()->firstChild();
@@ -385,7 +379,7 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
 }
 
 TEST_F(TextFinderTest, OverlappingMatches) {
-  document().body()->setInnerHTML("aababaa", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("aababaa");
   document().updateStyleAndLayout();
 
   Node* textNode = document().body()->firstChild();
@@ -408,7 +402,7 @@ TEST_F(TextFinderTest, OverlappingMatches) {
 }
 
 TEST_F(TextFinderTest, SequentialMatches) {
-  document().body()->setInnerHTML("ababab", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("ababab");
   document().updateStyleAndLayout();
 
   Node* textNode = document().body()->firstChild();
@@ -432,8 +426,7 @@ TEST_F(TextFinderTest, SequentialMatches) {
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
-  document().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>");
   document().updateStyleAndLayout();
 
   int identifier = 0;
@@ -458,7 +451,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   // Add new text to DOM and try FindNext.
   Element* iElement = toElement(document().body()->lastChild());
   ASSERT_TRUE(iElement);
-  iElement->setInnerHTML("ZZFindMe", ASSERT_NO_EXCEPTION);
+  iElement->setInnerHTML("ZZFindMe");
   document().updateStyleAndLayout();
 
   ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions,
@@ -523,7 +516,7 @@ TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
   text.insert(searchPattern, 50);
   text.insert(searchPattern, 90);
 
-  document().body()->setInnerHTML(text, ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML(text);
   document().updateStyleAndLayout();
 
   int identifier = 0;

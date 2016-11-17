@@ -41,10 +41,10 @@ TEST_F(OptionListTest, Empty) {
 
 TEST_F(OptionListTest, OptionOnly) {
   select().setInnerHTML(
-      "text<input><option id=o1></option><input><option id=o2></option><input>",
-      ASSERT_NO_EXCEPTION);
+      "text<input><option id=o1></option><input><option "
+      "id=o2></option><input>");
   HTMLElement* div = toHTMLElement(select().document().createElement("div"));
-  div->setInnerHTML("<option id=o3></option>", ASSERT_NO_EXCEPTION);
+  div->setInnerHTML("<option id=o3></option>");
   select().appendChild(div);
   OptionList list = select().optionList();
   OptionList::Iterator iter = list.begin();
@@ -62,8 +62,7 @@ TEST_F(OptionListTest, Optgroup) {
       "<optgroup><option id=g21></option></optgroup>"
       "<optgroup></optgroup>"
       "<option id=o1></option>"
-      "<optgroup><option id=g41></option></optgroup>",
-      ASSERT_NO_EXCEPTION);
+      "<optgroup><option id=g41></option></optgroup>");
   OptionList list = select().optionList();
   OptionList::Iterator iter = list.begin();
   EXPECT_EQ("g11", id(*iter));
@@ -81,8 +80,7 @@ TEST_F(OptionListTest, Optgroup) {
   toHTMLElement(select().firstChild())
       ->setInnerHTML(
           "<optgroup><option id=gg11></option></optgroup>"
-          "<option id=g11></option>",
-          ASSERT_NO_EXCEPTION);
+          "<option id=g11></option>");
   list = select().optionList();
   iter = list.begin();
   EXPECT_EQ("g11", id(*iter)) << "Nested OPTGROUP should be ignored.";

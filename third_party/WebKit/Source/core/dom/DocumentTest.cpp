@@ -66,8 +66,7 @@ void DocumentTest::SetUp() {
 }
 
 void DocumentTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent),
-                                             ASSERT_NO_EXCEPTION);
+  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
   document().view()->updateAllLifecyclePhases();
 }
 

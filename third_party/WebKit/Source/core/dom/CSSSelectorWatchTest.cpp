@@ -48,8 +48,7 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
       "  <span id='x' class='a'></span>"
       "  <span id='y' class='b'><span></span></span>"
       "  <span id='z'><span></span></span>"
-      "</div>",
-      ASSERT_NO_EXCEPTION);
+      "</div>");
 
   CSSSelectorWatch& watch = CSSSelectorWatch::from(document());
 

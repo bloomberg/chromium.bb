@@ -1838,12 +1838,10 @@ TEST_F(VisibleUnitsTest, startOfParagraph) {
   root->setInnerHTML(
       "<style>* { display:inline-table; }</style><body "
       "contenteditable=true><svg><svg><foreignObject>abc<svg></svg></"
-      "foreignObject></svg></svg></body>",
-      ASSERT_NO_EXCEPTION);
+      "foreignObject></svg></svg></body>");
   Element* oldBody = document().body();
   root->setInnerHTML(
-      "<body contenteditable=true><svg><foreignObject><style>def</style>",
-      ASSERT_NO_EXCEPTION);
+      "<body contenteditable=true><svg><foreignObject><style>def</style>");
   DCHECK_NE(oldBody, document().body());
   Node* foreignObject = document().body()->firstChild()->firstChild();
   foreignObject->insertBefore(oldBody, foreignObject->firstChild());

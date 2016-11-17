@@ -36,8 +36,7 @@ class PasswordCredentialTest : public ::testing::Test {
     b.append("'>");
     b.append(html);
     b.append("</form></body></html>");
-    document().documentElement()->setInnerHTML(b.toString(),
-                                               ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML(b.toString());
     document().view()->updateAllLifecyclePhases();
     HTMLFormElement* form =
         toHTMLFormElement(document().getElementById("theForm"));

@@ -61,7 +61,7 @@ class RuleFeatureSetTest : public ::testing::Test {
     html->appendChild(HTMLBodyElement::create(*m_document));
     m_document->appendChild(html);
 
-    m_document->body()->setInnerHTML("<b><i></i></b>", ASSERT_NO_EXCEPTION);
+    m_document->body()->setInnerHTML("<b><i></i></b>");
   }
 
   RuleFeatureSet::SelectorPreMatch collectFeatures(const String& selectorText) {

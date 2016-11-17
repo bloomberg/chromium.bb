@@ -49,7 +49,7 @@ void SlotScopedTraversalTest::setupSampleHTML(const char* mainHTML,
                                               const char* shadowHTML,
                                               unsigned index) {
   Element* body = document().body();
-  body->setInnerHTML(String::fromUTF8(mainHTML), ASSERT_NO_EXCEPTION);
+  body->setInnerHTML(String::fromUTF8(mainHTML));
   if (shadowHTML) {
     Element* shadowHost = toElement(NodeTraversal::childAt(*body, index));
     attachOpenShadowRoot(*shadowHost, shadowHTML);
@@ -61,8 +61,7 @@ void SlotScopedTraversalTest::attachOpenShadowRoot(
     const char* shadowInnerHTML) {
   ShadowRoot* shadowRoot = shadowHost.createShadowRootInternal(
       ShadowRootType::Open, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML(String::fromUTF8(shadowInnerHTML),
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML(String::fromUTF8(shadowInnerHTML));
   document().body()->updateDistribution();
 }
 

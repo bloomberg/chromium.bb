@@ -26,7 +26,7 @@ class FocusControllerTest : public testing::Test {
 };
 
 TEST_F(FocusControllerTest, SetInitialFocus) {
-  document().body()->setInnerHTML("<input><textarea>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<input><textarea>");
   Element* input = toElement(document().body()->firstChild());
   // Set sequential focus navigation point before the initial focus.
   input->focus();
@@ -40,8 +40,7 @@ TEST_F(FocusControllerTest, SetInitialFocus) {
 TEST_F(FocusControllerTest, DoNotCrash1) {
   document().body()->setInnerHTML(
       "<div id='host'></div>This test is for crbug.com/609012<p id='target' "
-      "tabindex='0'></p>",
-      ASSERT_NO_EXCEPTION);
+      "tabindex='0'></p>");
   // <div> with shadow root
   Element* host = toElement(document().body()->firstChild());
   ShadowRootInit init;
@@ -64,8 +63,7 @@ TEST_F(FocusControllerTest, DoNotCrash1) {
 TEST_F(FocusControllerTest, DoNotCrash2) {
   document().body()->setInnerHTML(
       "<p id='target' tabindex='0'></p>This test is for crbug.com/609012<div "
-      "id='host'></div>",
-      ASSERT_NO_EXCEPTION);
+      "id='host'></div>");
   // <p>
   Element* target = toElement(document().body()->firstChild());
   // "This test is for crbug.com/609012"

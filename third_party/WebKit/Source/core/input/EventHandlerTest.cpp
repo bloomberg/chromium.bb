@@ -52,8 +52,7 @@ void EventHandlerTest::SetUp() {
 }
 
 void EventHandlerTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent),
-                                             ASSERT_NO_EXCEPTION);
+  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
   document().view()->updateAllLifecyclePhases();
 }
 
@@ -240,8 +239,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
   Element* script = document().createElement("script");
   script->setInnerHTML(
       "document.addEventListener('contextmenu', event => "
-      "event.preventDefault());",
-      ASSERT_NO_EXCEPTION);
+      "event.preventDefault());");
   document().body()->appendChild(script);
   document().updateStyleAndLayout();
   document().frame()->selection().setSelection(

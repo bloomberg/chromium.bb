@@ -25,7 +25,7 @@ class ContextMenuControllerTest : public testing::Test {
   Document& document() const { return m_pageHolder->document(); }
 
   void setBodyInnerHTML(const String& htmlContent) {
-    document().body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
+    document().body()->setInnerHTML(htmlContent);
     document().view()->updateAllLifecyclePhases();
   }
 

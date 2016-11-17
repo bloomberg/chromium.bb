@@ -19,7 +19,7 @@ class WebNodeTest : public testing::Test {
   Document& document() { return m_pageHolder->document(); }
 
   void setInnerHTML(const String& html) {
-    document().documentElement()->setInnerHTML(html, ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML(html);
   }
 
   WebNode root() { return WebNode(document().documentElement()); }

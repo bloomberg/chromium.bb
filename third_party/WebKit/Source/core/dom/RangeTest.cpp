@@ -42,7 +42,7 @@ HTMLDocument& RangeTest::document() const {
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
-  document().body()->setInnerHTML("1234", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("1234");
   Text* oldText = toText(document().body()->firstChild());
 
   Range* range04 = Range::create(document(), oldText, 0, oldText, 4);
@@ -83,8 +83,7 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
 TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
   document().body()->setInnerHTML(
       "<span id=\"outer\">0<span id=\"inner-left\">1</span>SPLITME<span "
-      "id=\"inner-right\">2</span>3</span>",
-      ASSERT_NO_EXCEPTION);
+      "id=\"inner-right\">2</span>3</span>");
 
   Element* outer = document().getElementById(AtomicString::fromUTF8("outer"));
   Element* innerLeft =
@@ -164,8 +163,7 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
 // Regression test for crbug.com/639184
 TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
   document().body()->setInnerHTML(
-      "<div><span id=span1>foo</span>bar<span id=span2>baz</span></div>",
-      ASSERT_NO_EXCEPTION);
+      "<div><span id=span1>foo</span>bar<span id=span2>baz</span></div>");
 
   Element* div = document().querySelector("div");
   Element* span1 = document().getElementById("span1");
@@ -187,8 +185,7 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
 // Regression test for crbug.com/639184
 TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
   document().body()->setInnerHTML(
-      "<div><span id=span1>foofoo</span>bar<span id=span2>baz</span></div>",
-      ASSERT_NO_EXCEPTION);
+      "<div><span id=span1>foofoo</span>bar<span id=span2>baz</span></div>");
 
   Element* div = document().querySelector("div");
   Element* span1 = document().getElementById("span1");

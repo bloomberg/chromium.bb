@@ -45,7 +45,7 @@ TEST_F(AXObjectTest, IsARIAWidget) {
       "id=\"focusable-parent\">focusable-parent</div></div><br>"
       "</body>";
 
-  document().documentElement()->setInnerHTML(testContent, ASSERT_NO_EXCEPTION);
+  document().documentElement()->setInnerHTML(testContent);
   document().updateStyleAndLayout();
   Element* root(document().documentElement());
   EXPECT_FALSE(AXObject::isInsideFocusableElementOrARIAWidget(

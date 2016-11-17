@@ -19,7 +19,7 @@ TEST(StyleElementTest, CreateSheetUsesCache) {
   Document& document = dummyPageHolder->document();
 
   document.documentElement()->setInnerHTML(
-      "<style id=style>a { top: 0; }</style>", ASSERT_NO_EXCEPTION);
+      "<style id=style>a { top: 0; }</style>");
 
   HTMLStyleElement& styleElement =
       toHTMLStyleElement(*document.getElementById("style"));

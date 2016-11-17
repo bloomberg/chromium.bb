@@ -74,8 +74,7 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
 
 TEST_F(StyleEngineTest, AnalyzedInject) {
   document().body()->setInnerHTML(
-      "<style>div { color: red }</style><div id='t1'>Green</div><div></div>",
-      ASSERT_NO_EXCEPTION);
+      "<style>div { color: red }</style><div id='t1'>Green</div><div></div>");
   document().view()->updateAllLifecyclePhases();
 
   Element* t1 = document().getElementById("t1");
@@ -142,8 +141,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
       "<div>"
       "  <span></span>"
       "  <div></div>"
-      "</div>",
-      ASSERT_NO_EXCEPTION);
+      "</div>");
 
   document().view()->updateAllLifecyclePhases();
 
@@ -169,8 +167,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
-  document().body()->setInnerHTML("<div id=nohost></div><div id=host></div>",
-                                  ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=nohost></div><div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -180,8 +177,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
       ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
-  shadowRoot->setInnerHTML("<div></div><div></div><div></div>",
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML("<div></div><div></div><div></div>");
   document().view()->updateAllLifecyclePhases();
 
   unsigned beforeCount = styleEngine().styleForElementCount();
@@ -215,8 +211,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
       "  <span class=s2></span>"
       "  <span class=s1></span>"
       "  <span></span>"
-      "</div>",
-      ASSERT_NO_EXCEPTION);
+      "</div>");
 
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
@@ -227,8 +222,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
       ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
-  shadowRoot->setInnerHTML("<slot name=other></slot><slot></slot>",
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML("<slot name=other></slot><slot></slot>");
   document().view()->updateAllLifecyclePhases();
 
   unsigned beforeCount = styleEngine().styleForElementCount();
@@ -249,7 +243,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
-  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -259,8 +253,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
       ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
-  shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>",
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>");
   document().view()->updateAllLifecyclePhases();
 
   unsigned beforeCount = styleEngine().styleForElementCount();
@@ -280,7 +273,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
-  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -290,8 +283,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
       ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
-  shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>",
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>");
   document().view()->updateAllLifecyclePhases();
 
   EXPECT_EQ(scheduleInvalidationsForRules(

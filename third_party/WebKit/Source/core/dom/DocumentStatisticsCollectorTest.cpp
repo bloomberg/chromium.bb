@@ -44,8 +44,7 @@ void DocumentStatisticsCollectorTest::SetUp() {
 
 void DocumentStatisticsCollectorTest::setHtmlInnerHTML(
     const String& htmlContent) {
-  document().documentElement()->setInnerHTML((htmlContent),
-                                             ASSERT_NO_EXCEPTION);
+  document().documentElement()->setInnerHTML((htmlContent));
 }
 
 // This test checks open graph articles can be recognized.

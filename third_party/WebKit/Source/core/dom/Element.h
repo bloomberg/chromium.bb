@@ -536,7 +536,7 @@ class CORE_EXPORT Element : public ContainerNode {
   String outerText();
   String innerHTML() const;
   String outerHTML() const;
-  void setInnerHTML(const String&, ExceptionState&);
+  void setInnerHTML(const String&, ExceptionState& = ASSERT_NO_EXCEPTION);
   void setOuterHTML(const String&, ExceptionState&);
 
   Element* insertAdjacentElement(const String& where,

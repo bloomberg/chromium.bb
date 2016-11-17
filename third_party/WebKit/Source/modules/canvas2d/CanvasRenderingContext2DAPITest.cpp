@@ -69,7 +69,7 @@ void CanvasRenderingContext2DAPITest::SetUp() {
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
   m_document = &m_dummyPageHolder->document();
   m_document->documentElement()->setInnerHTML(
-      "<body><canvas id='c'></canvas></body>", ASSERT_NO_EXCEPTION);
+      "<body><canvas id='c'></canvas></body>");
   m_document->view()->updateAllLifecyclePhases();
   m_canvasElement = toHTMLCanvasElement(m_document->getElementById("c"));
 }
@@ -296,8 +296,7 @@ void resetCanvasForAccessibilityRectTest(Document& document) {
   document.documentElement()->setInnerHTML(
       "<canvas id='canvas' style='position:absolute; top:0px; left:0px; "
       "padding:10px; margin:5px;'>"
-      "<button id='button'></button></canvas>",
-      ASSERT_NO_EXCEPTION);
+      "<button id='button'></button></canvas>");
   document.settings()->setAccessibilityEnabled(true);
   HTMLCanvasElement* canvas =
       toHTMLCanvasElement(document.getElementById("canvas"));

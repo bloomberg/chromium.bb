@@ -59,8 +59,7 @@ class SnapCoordinatorTest
   Document& document() { return m_pageHolder->document(); }
 
   void setHTML(const char* htmlContent) {
-    document().documentElement()->setInnerHTML(htmlContent,
-                                               ASSERT_NO_EXCEPTION);
+    document().documentElement()->setInnerHTML(htmlContent);
   }
 
   Element& snapContainer() {
@@ -262,8 +261,7 @@ TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   Element& container = *document().getElementById("snap-container");
   container.setInnerHTML(
       "<div style='scroll-snap-coordinate: 20px 22px;'><div "
-      "style='width:2000px; height:2000px;'></div></div>",
-      ASSERT_NO_EXCEPTION);
+      "style='width:2000px; height:2000px;'></div></div>");
   document().updateStyleAndLayout();
 
   EXPECT_EQ(20, snapOffsets(snapContainer(), HorizontalScrollbar)[0]);

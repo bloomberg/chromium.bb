@@ -149,8 +149,7 @@ TEST(CustomElementTest, StateByParser) {
       "<font-face id=v0></font-face>";
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
   Document& document = pageHolder->document();
-  document.body()->setInnerHTML(String::fromUTF8(bodyContent),
-                                ASSERT_NO_EXCEPTION);
+  document.body()->setInnerHTML(String::fromUTF8(bodyContent));
 
   struct {
     const char* id;

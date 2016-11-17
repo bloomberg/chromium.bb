@@ -39,8 +39,7 @@ TEST_F(NthIndexCacheTest, NthIndex) {
       "<span></span><span></span><span></span><span></span><span></span>"
       "<span></span><span></span><span></span><span></span><span "
       "id=last></span>"
-      "</body>",
-      ASSERT_NO_EXCEPTION);
+      "</body>");
 
   NthIndexCache nthIndexCache(document());
 

@@ -43,7 +43,7 @@ HTMLDocument& StaticRangeTest::document() const {
 }
 
 TEST_F(StaticRangeTest, SplitTextNodeRangeWithinText) {
-  document().body()->setInnerHTML("1234", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("1234");
   Text* oldText = toText(document().body()->firstChild());
 
   StaticRange* staticRange04 =
@@ -115,8 +115,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeWithinText) {
 TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
   document().body()->setInnerHTML(
       "<span id=\"outer\">0<span id=\"inner-left\">1</span>SPLITME<span "
-      "id=\"inner-right\">2</span>3</span>",
-      ASSERT_NO_EXCEPTION);
+      "id=\"inner-right\">2</span>3</span>");
 
   Element* outer = document().getElementById(AtomicString::fromUTF8("outer"));
   Element* innerLeft =
@@ -224,7 +223,7 @@ TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
 }
 
 TEST_F(StaticRangeTest, InvalidToRange) {
-  document().body()->setInnerHTML("1234", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("1234");
   Text* oldText = toText(document().body()->firstChild());
 
   StaticRange* staticRange04 =

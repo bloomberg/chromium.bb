@@ -283,7 +283,7 @@ class WebFrameTest : public ::testing::Test {
 
   // Both sets the inner html and runs the document lifecycle.
   void initializeWithHTML(LocalFrame& frame, const String& htmlContent) {
-    frame.document()->body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
+    frame.document()->body()->setInnerHTML(htmlContent);
     frame.document()->view()->updateAllLifecyclePhases();
   }
 

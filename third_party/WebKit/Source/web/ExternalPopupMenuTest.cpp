@@ -39,8 +39,7 @@ class ExternalPopupMenuDisplayNoneItemsTest : public testing::Test {
     // Set the 4th an 5th items to have "display: none" property
     element->setInnerHTML(
         "<option><option><option><option style='display:none;'><option "
-        "style='display:none;'><option><option>",
-        ASSERT_NO_EXCEPTION);
+        "style='display:none;'><option><option>");
     m_dummyPageHolder->document().body()->appendChild(element,
                                                       ASSERT_NO_EXCEPTION);
     m_ownerElement = element;

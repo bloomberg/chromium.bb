@@ -18,8 +18,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   HTMLHtmlElement* html = HTMLHtmlElement::create(*document);
   document->appendChild(html);
   document->documentElement()->setInnerHTML(
-      "<body><style>span::before { content: 'X' }</style><span></span></body>",
-      ASSERT_NO_EXCEPTION);
+      "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selectorList = CSSParser::parseSelector(
       CSSParserContext(*document, nullptr, KURL(), emptyString(),

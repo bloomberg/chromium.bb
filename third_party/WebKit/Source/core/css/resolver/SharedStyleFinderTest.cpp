@@ -24,7 +24,7 @@ class SharedStyleFinderTest : public ::testing::Test {
   Document& document() { return m_dummyPageHolder->document(); }
 
   void setBodyContent(const String& html) {
-    document().body()->setInnerHTML(html, ASSERT_NO_EXCEPTION);
+    document().body()->setInnerHTML(html);
     document().view()->updateAllLifecyclePhases();
   }
 

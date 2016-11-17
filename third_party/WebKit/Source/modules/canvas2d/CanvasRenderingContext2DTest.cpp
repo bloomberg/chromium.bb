@@ -171,7 +171,7 @@ void CanvasRenderingContext2DTest::SetUp() {
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
   m_document = &m_dummyPageHolder->document();
   m_document->documentElement()->setInnerHTML(
-      "<body><canvas id='c'></canvas></body>", ASSERT_NO_EXCEPTION);
+      "<body><canvas id='c'></canvas></body>");
   m_document->view()->updateAllLifecyclePhases();
   m_canvasElement = toHTMLCanvasElement(m_document->getElementById("c"));
 

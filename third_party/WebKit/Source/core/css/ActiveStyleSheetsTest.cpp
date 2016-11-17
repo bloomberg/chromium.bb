@@ -317,7 +317,7 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
 }
 
 TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
-  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -351,7 +351,7 @@ TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToDocument) {
 }
 
 TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToShadowTree) {
-  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -386,7 +386,7 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
 }
 
 TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
-  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -406,13 +406,12 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
 }
 
 TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
-  document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+  document().body()->setInnerHTML("<div id=host></div>");
   Element* host = document().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadowRoot = attachShadow(*host);
-  shadowRoot.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>",
-                          ASSERT_NO_EXCEPTION);
+  shadowRoot.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>");
   document().view()->updateAllLifecyclePhases();
 
   EXPECT_EQ(1u, styleEngine().treeBoundaryCrossingScopes().size());

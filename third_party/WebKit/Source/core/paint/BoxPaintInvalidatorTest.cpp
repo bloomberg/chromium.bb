@@ -181,8 +181,8 @@ TEST_F(BoxPaintInvalidatorTest, ResizeRotatedChild) {
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: rotate(45deg); width: 200px");
   target->setInnerHTML(
-      "<div id=child style='width: 50px; height: 50px; background: red'></div>",
-      ASSERT_NO_EXCEPTION);
+      "<div id=child style='width: 50px; height: 50px; background: "
+      "red'></div>");
   document().view()->updateAllLifecyclePhases();
   Element* child = document().getElementById("child");
 

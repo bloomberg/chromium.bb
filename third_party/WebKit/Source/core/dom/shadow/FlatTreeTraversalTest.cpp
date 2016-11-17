@@ -57,25 +57,24 @@ void FlatTreeTraversalTest::setupSampleHTML(const char* mainHTML,
                                             const char* shadowHTML,
                                             unsigned index) {
   Element* body = document().body();
-  body->setInnerHTML(String::fromUTF8(mainHTML), ASSERT_NO_EXCEPTION);
+  body->setInnerHTML(String::fromUTF8(mainHTML));
   Element* shadowHost = toElement(NodeTraversal::childAt(*body, index));
   ShadowRoot* shadowRoot = shadowHost->createShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML(String::fromUTF8(shadowHTML), ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML(String::fromUTF8(shadowHTML));
   body->updateDistribution();
 }
 
 void FlatTreeTraversalTest::setupDocumentTree(const char* mainHTML) {
   Element* body = document().body();
-  body->setInnerHTML(String::fromUTF8(mainHTML), ASSERT_NO_EXCEPTION);
+  body->setInnerHTML(String::fromUTF8(mainHTML));
 }
 
 void FlatTreeTraversalTest::attachV0ShadowRoot(Element& shadowHost,
                                                const char* shadowInnerHTML) {
   ShadowRoot* shadowRoot = shadowHost.createShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML(String::fromUTF8(shadowInnerHTML),
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML(String::fromUTF8(shadowInnerHTML));
   document().body()->updateDistribution();
 }
 
@@ -83,8 +82,7 @@ void FlatTreeTraversalTest::attachOpenShadowRoot(Element& shadowHost,
                                                  const char* shadowInnerHTML) {
   ShadowRoot* shadowRoot = shadowHost.createShadowRootInternal(
       ShadowRootType::Open, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML(String::fromUTF8(shadowInnerHTML),
-                           ASSERT_NO_EXCEPTION);
+  shadowRoot->setInnerHTML(String::fromUTF8(shadowInnerHTML));
   document().body()->updateDistribution();
 }
 
