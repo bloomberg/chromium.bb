@@ -52,6 +52,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
 
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
+  void OnStoreReset() override;
   void OnMessage(const std::string& app_id,
                  const gcm::IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;

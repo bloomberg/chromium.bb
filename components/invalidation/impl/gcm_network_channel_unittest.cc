@@ -25,9 +25,9 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
   TestGCMNetworkChannelDelegate()
       : register_call_count_(0) {}
 
-  void Initialize(
-      GCMNetworkChannelDelegate::ConnectionStateCallback callback) override {
-    connection_state_callback = callback;
+  void Initialize(ConnectionStateCallback connection_state_callback,
+                  base::Closure store_reset_callback) override {
+    this->connection_state_callback = connection_state_callback;
   }
 
   void RequestToken(RequestTokenCallback callback) override {

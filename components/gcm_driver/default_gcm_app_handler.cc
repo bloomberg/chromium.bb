@@ -18,6 +18,10 @@ void DefaultGCMAppHandler::ShutdownHandler() {
   // Nothing to do.
 }
 
+void DefaultGCMAppHandler::OnStoreReset() {
+  // Nothing to do.
+}
+
 void DefaultGCMAppHandler::OnMessage(const std::string& app_id,
                                      const IncomingMessage& message) {
   DVLOG(1) << "No app handler is found to route message for " << app_id;

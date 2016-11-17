@@ -247,7 +247,6 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
     // outstanding registration attempts and disconnect from GCM so the
     // connection can be shut down. If heartbeats are re-enabled later, we
     // will re-register with GCM.
-    heartbeat_callback_.Cancel();
     ShutdownGCM();
   } else {
     // Schedule a new upload with the new frequency.
@@ -259,6 +258,7 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
 }
 
 void HeartbeatScheduler::ShutdownGCM() {
+  heartbeat_callback_.Cancel();
   registration_helper_.reset();
   registration_id_.clear();
   if (registered_app_handler_) {
@@ -422,6 +422,15 @@ void HeartbeatScheduler::ShutdownHandler() {
   // shutdown before GCMDriver is shut down, rather than trying to handle the
   // case when GCMDriver goes away.
   NOTREACHED() << "HeartbeatScheduler should be destroyed before GCMDriver";
+}
+
+void HeartbeatScheduler::OnStoreReset() {
+  // TODO(crbug.com/661660): Tell server that |registration_id_| is no longer
+  // valid. See also crbug.com/516375.
+  if (!registration_helper_) {
+    ShutdownGCM();
+    RefreshHeartbeatSettings();
+  }  // Otherwise let the pending registration complete normally.
 }
 
 void HeartbeatScheduler::OnMessage(const std::string& app_id,

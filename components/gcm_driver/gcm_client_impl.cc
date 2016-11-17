@@ -812,6 +812,13 @@ void GCMClientImpl::DestroyStoreCallback(bool success) {
 }
 
 void GCMClientImpl::ResetStoreCallback(bool success) {
+  // Even an incomplete reset may invalidate registrations, and this might be
+  // the only opportunity to notify the delegate. For example a partial reset
+  // that deletes the "CURRENT" file will cause GCMStoreImpl to consider the DB
+  // to no longer exist, in which case the next load will simply create a new
+  // store rather than resetting it.
+  delegate_->OnStoreReset();
+
   if (!success) {
     LOG(ERROR) << "Failed to reset GCM store";
     RecordResetStoreErrorToUMA(DESTROYING_STORE_FAILED);

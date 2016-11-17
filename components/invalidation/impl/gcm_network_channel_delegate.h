@@ -34,7 +34,8 @@ class GCMNetworkChannelDelegate {
 
   virtual ~GCMNetworkChannelDelegate() {}
 
-  virtual void Initialize(ConnectionStateCallback callback) = 0;
+  virtual void Initialize(ConnectionStateCallback connection_state_callback,
+                          base::Closure store_reset_callback) = 0;
   // Request access token. Callback should be called either with access token or
   // error code.
   virtual void RequestToken(RequestTokenCallback callback) = 0;

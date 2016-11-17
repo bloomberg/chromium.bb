@@ -94,6 +94,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
   void OnIncomingMessage(const std::string& message,
                          const std::string& echo_token);
   void OnConnectionStateChanged(bool online);
+  void OnStoreReset();
   void UpdateGcmChannelState(bool online);
   void UpdateHttpChannelState(bool online);
 

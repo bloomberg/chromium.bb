@@ -100,6 +100,17 @@ class MockGCMDriver : public testing::StrictMock<gcm::FakeGCMDriver> {
         .Times(AnyNumber());
   }
 
+  void ResetStore() {
+    // Defensive copy in case OnStoreReset calls Add/RemoveAppHandler.
+    std::vector<gcm::GCMAppHandler*> app_handler_values;
+    for (const auto& key_value : app_handlers())
+      app_handler_values.push_back(key_value.second);
+    for (gcm::GCMAppHandler* app_handler : app_handler_values) {
+      app_handler->OnStoreReset();
+      // app_handler might now have been deleted.
+    }
+  }
+
  private:
   gcm::GCMConnectionObserver* observer_ = nullptr;
 
@@ -208,6 +219,59 @@ TEST_F(HeartbeatSchedulerTest, TemporarilyFailedGCMRegistration) {
   gcm_driver_.CompleteRegistration(
       kHeartbeatGCMAppID, gcm::GCMClient::SUCCESS);
   task_runner_->RunPendingTasks();
+}
+
+TEST_F(HeartbeatSchedulerTest, StoreResetDuringRegistration) {
+  IgnoreUpstreamNotificationMsg();
+
+  EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _));
+  settings_helper_.SetBoolean(chromeos::kHeartbeatEnabled, true);
+  testing::Mock::VerifyAndClearExpectations(&gcm_driver_);
+
+  gcm_driver_.ResetStore();
+
+  IgnoreUpstreamNotificationMsg();
+
+  // Successful registration handled ok despite store reset.
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  EXPECT_CALL(gcm_driver_, SendImpl(kHeartbeatGCMAppID, _, IsHeartbeatMsg()));
+  gcm_driver_.CompleteRegistration(
+      kHeartbeatGCMAppID, gcm::GCMClient::SUCCESS);
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  task_runner_->RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(&gcm_driver_);
+}
+
+TEST_F(HeartbeatSchedulerTest, StoreResetAfterRegistration) {
+  IgnoreUpstreamNotificationMsg();
+
+  // Start from a successful registration.
+  EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _));
+  settings_helper_.SetBoolean(chromeos::kHeartbeatEnabled, true);
+  EXPECT_CALL(gcm_driver_, SendImpl(kHeartbeatGCMAppID, _, IsHeartbeatMsg()));
+  gcm_driver_.CompleteRegistration(
+      kHeartbeatGCMAppID, gcm::GCMClient::SUCCESS);
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  task_runner_->RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(&gcm_driver_);
+
+  gcm_driver_.IgnoreDefaultHeartbeatsInterval();
+
+  // Reseting the store should trigger re-registration.
+  EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _));
+  gcm_driver_.ResetStore();
+  testing::Mock::VerifyAndClearExpectations(&gcm_driver_);
+
+  IgnoreUpstreamNotificationMsg();
+
+  // Once we have successfully re-registered, we should send a heartbeat.
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  EXPECT_CALL(gcm_driver_, SendImpl(kHeartbeatGCMAppID, _, IsHeartbeatMsg()));
+  gcm_driver_.CompleteRegistration(
+      kHeartbeatGCMAppID, gcm::GCMClient::SUCCESS);
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  task_runner_->RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(&gcm_driver_);
 }
 
 TEST_F(HeartbeatSchedulerTest, ChangeHeartbeatFrequency) {

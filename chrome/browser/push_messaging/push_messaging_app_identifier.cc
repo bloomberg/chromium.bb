@@ -160,6 +160,14 @@ std::vector<PushMessagingAppIdentifier> PushMessagingAppIdentifier::GetAll(
 }
 
 // static
+void PushMessagingAppIdentifier::DeleteAllFromPrefs(Profile* profile) {
+  DictionaryPrefUpdate update(profile->GetPrefs(),
+                              prefs::kPushMessagingAppIdentifierMap);
+  base::DictionaryValue* map = update.Get();
+  map->Clear();
+}
+
+// static
 size_t PushMessagingAppIdentifier::GetCount(Profile* profile) {
   return profile->GetPrefs()
       ->GetDictionary(prefs::kPushMessagingAppIdentifierMap)

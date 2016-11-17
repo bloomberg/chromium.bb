@@ -121,8 +121,10 @@ GCMNetworkChannel::GCMNetworkChannel(
       diagnostic_info_(this),
       weak_factory_(this) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  delegate_->Initialize(base::Bind(&GCMNetworkChannel::OnConnectionStateChanged,
-                                   weak_factory_.GetWeakPtr()));
+  delegate_->Initialize(
+      base::Bind(&GCMNetworkChannel::OnConnectionStateChanged,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&GCMNetworkChannel::OnStoreReset, weak_factory_.GetWeakPtr()));
   Register();
 }
 
@@ -194,7 +196,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   DCHECK(CalledOnValidThread());
-  if (cached_message_.empty()) {
+  if (cached_message_.empty() || registration_id_.empty()) {
     // Nothing to do.
     return;
   }
@@ -300,6 +302,11 @@ void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
 
 void GCMNetworkChannel::OnConnectionStateChanged(bool online) {
   UpdateGcmChannelState(online);
+}
+
+void GCMNetworkChannel::OnStoreReset() {
+  // TODO(crbug.com/661660): Tell server the registration ID is no longer valid.
+  registration_id_.clear();
 }
 
 void GCMNetworkChannel::OnNetworkChanged(

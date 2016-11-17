@@ -171,6 +171,7 @@ class GCMDriverDesktop : public GCMDriver,
                       const base::Time& last_token_fetch_time);
   void OnConnected(const net::IPEndPoint& ip_endpoint);
   void OnDisconnected();
+  void OnStoreReset();
 
   void GetGCMStatisticsFinished(const GCMClient::GCMStatistics& stats);
   void GetInstanceIDDataFinished(const std::string& app_id,

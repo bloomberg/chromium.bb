@@ -43,7 +43,8 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
   ~Core() override;
 
   // syncer::GCMNetworkChannelDelegate implementation.
-  void Initialize(ConnectionStateCallback callback) override;
+  void Initialize(ConnectionStateCallback connection_state_callback,
+                  base::Closure store_reset_callback) override;
   void RequestToken(RequestTokenCallback callback) override;
   void InvalidateToken(const std::string& token) override;
   void Register(RegisterCallback callback) override;
@@ -61,6 +62,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
                          const std::string& echo_token);
 
   void OnConnectionStateChanged(bool online);
+  void OnStoreReset();
 
  private:
   base::WeakPtr<GCMInvalidationBridge> bridge_;
@@ -68,6 +70,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
 
   MessageCallback message_callback_;
   ConnectionStateCallback connection_state_callback_;
+  base::Closure store_reset_callback_;
 
   base::WeakPtrFactory<Core> weak_factory_;
 
@@ -86,9 +89,12 @@ GCMInvalidationBridge::Core::Core(
 
 GCMInvalidationBridge::Core::~Core() {}
 
-void GCMInvalidationBridge::Core::Initialize(ConnectionStateCallback callback) {
+void GCMInvalidationBridge::Core::Initialize(
+    ConnectionStateCallback connection_state_callback,
+    base::Closure store_reset_callback) {
   DCHECK(CalledOnValidThread());
-  connection_state_callback_ = callback;
+  connection_state_callback_ = connection_state_callback;
+  store_reset_callback_ = store_reset_callback;
   // Pass core WeapPtr and TaskRunner to GCMInvalidationBridge for it to be able
   // to post back.
   ui_thread_task_runner_->PostTask(
@@ -154,6 +160,12 @@ void GCMInvalidationBridge::Core::OnIncomingMessage(
 void GCMInvalidationBridge::Core::OnConnectionStateChanged(bool online) {
   if (!connection_state_callback_.is_null()) {
     connection_state_callback_.Run(online);
+  }
+}
+
+void GCMInvalidationBridge::Core::OnStoreReset() {
+  if (!store_reset_callback_.is_null()) {
+    store_reset_callback_.Run();
   }
 }
 
@@ -317,6 +329,11 @@ void GCMInvalidationBridge::SubscribeForIncomingMessages() {
 
 void GCMInvalidationBridge::ShutdownHandler() {
   // Nothing to do.
+}
+
+void GCMInvalidationBridge::OnStoreReset() {
+  core_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GCMInvalidationBridge::Core::OnStoreReset, core_));
 }
 
 void GCMInvalidationBridge::OnMessage(const std::string& app_id,

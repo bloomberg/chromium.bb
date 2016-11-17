@@ -24,6 +24,8 @@ void FakeGCMAppHandler::WaitForNotification() {
 void FakeGCMAppHandler::ShutdownHandler() {
 }
 
+void FakeGCMAppHandler::OnStoreReset() {}
+
 void FakeGCMAppHandler::OnMessage(const std::string& app_id,
                                   const IncomingMessage& message) {
   ClearResults();

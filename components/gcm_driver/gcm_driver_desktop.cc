@@ -66,6 +66,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void OnActivityRecorded() override;
   void OnConnected(const net::IPEndPoint& ip_endpoint) override;
   void OnDisconnected() override;
+  void OnStoreReset() override;
 
   // Called on IO thread.
   void Initialize(
@@ -301,6 +302,11 @@ void GCMDriverDesktop::IOWorker::OnConnected(
 void GCMDriverDesktop::IOWorker::OnDisconnected() {
   ui_thread_->PostTask(FROM_HERE,
                        base::Bind(&GCMDriverDesktop::OnDisconnected, service_));
+}
+
+void GCMDriverDesktop::IOWorker::OnStoreReset() {
+  ui_thread_->PostTask(FROM_HERE,
+                       base::Bind(&GCMDriverDesktop::OnStoreReset, service_));
 }
 
 void GCMDriverDesktop::IOWorker::Start(
@@ -1298,6 +1304,17 @@ void GCMDriverDesktop::OnDisconnected() {
 
   for (GCMConnectionObserver& observer : connection_observer_list_)
     observer.OnDisconnected();
+}
+
+void GCMDriverDesktop::OnStoreReset() {
+  // Defensive copy in case OnStoreReset calls Add/RemoveAppHandler.
+  std::vector<GCMAppHandler*> app_handler_values;
+  for (const auto& key_value : app_handlers())
+    app_handler_values.push_back(key_value.second);
+  for (GCMAppHandler* app_handler : app_handler_values) {
+    app_handler->OnStoreReset();
+    // app_handler might now have been deleted.
+  }
 }
 
 void GCMDriverDesktop::GetGCMStatisticsFinished(

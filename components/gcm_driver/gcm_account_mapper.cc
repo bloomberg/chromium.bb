@@ -150,6 +150,12 @@ void GCMAccountMapper::ShutdownHandler() {
   dispatch_message_callback_.Reset();
 }
 
+void GCMAccountMapper::OnStoreReset() {
+  // TODO(crbug.com/661660): Tell server to remove the mapping. But can't use
+  // upstream GCM send for that since the store got reset.
+  ShutdownHandler();
+}
+
 void GCMAccountMapper::OnMessage(const std::string& app_id,
                                  const IncomingMessage& message) {
   DCHECK_EQ(app_id, kGCMAccountMapperAppId);

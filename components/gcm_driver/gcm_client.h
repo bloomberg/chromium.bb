@@ -214,6 +214,10 @@ class GCMClient {
 
     // Called when the connection is interrupted.
     virtual void OnDisconnected() = 0;
+
+    // Called when the GCM store is reset (e.g. due to corruption), which
+    // changes the device ID, invalidating all prior registrations.
+    virtual void OnStoreReset() = 0;
   };
 
   GCMClient();

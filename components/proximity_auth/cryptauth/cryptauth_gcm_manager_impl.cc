@@ -83,6 +83,12 @@ void CryptAuthGCMManagerImpl::RemoveObserver(Observer* observer) {
 void CryptAuthGCMManagerImpl::ShutdownHandler() {
 }
 
+void CryptAuthGCMManagerImpl::OnStoreReset() {
+  // We will automatically re-register to GCM and re-enroll the new registration
+  // ID to Cryptauth during the next scheduled sync.
+  pref_service_->ClearPref(prefs::kCryptAuthGCMRegistrationId);
+}
+
 void CryptAuthGCMManagerImpl::OnMessage(const std::string& app_id,
                                         const gcm::IncomingMessage& message) {
   std::vector<std::string> fields;

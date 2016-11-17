@@ -20,6 +20,7 @@ class DefaultGCMAppHandler : public GCMAppHandler {
 
   // Overridden from GCMAppHandler:
   void ShutdownHandler() override;
+  void OnStoreReset() override;
   void OnMessage(const std::string& app_id,
                  const IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;

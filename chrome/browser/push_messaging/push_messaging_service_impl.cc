@@ -252,6 +252,19 @@ void PushMessagingServiceImpl::ShutdownHandler() {
   NOTREACHED();
 }
 
+void PushMessagingServiceImpl::OnStoreReset() {
+  // Delete all cached subscriptions, since they are now invalid.
+  for (const auto& identifier : PushMessagingAppIdentifier::GetAll(profile_)) {
+    // Clear all the subscriptions in parallel, to reduce risk that shutdown
+    // occurs before we finish clearing them.
+    ClearPushSubscriptionId(profile_, identifier.origin(),
+                            identifier.service_worker_registration_id(),
+                            base::Bind(&base::DoNothing));
+    // TODO(johnme): Fire pushsubscriptionchange/pushsubscriptionlost SW event.
+  }
+  PushMessagingAppIdentifier::DeleteAllFromPrefs(profile_);
+}
+
 // OnMessage methods -----------------------------------------------------------
 
 void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
