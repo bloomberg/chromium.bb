@@ -101,7 +101,7 @@ class CSSPreloadScanner {
 // @import tags before parsing.
 class CORE_EXPORT CSSPreloaderResourceClient
     : public GarbageCollectedFinalized<CSSPreloaderResourceClient>,
-      public ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient> {
+      public StyleSheetResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(CSSPreloaderResourceClient);
 
  public:
@@ -123,6 +123,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
 
  private:
   void scanCSS(const CSSStyleSheetResource*);
+  void clearResource();
 
   enum PreloadPolicy {
     ScanOnly,
@@ -131,6 +132,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
 
   const PreloadPolicy m_policy;
   WeakMember<HTMLResourcePreloader> m_preloader;
+  WeakMember<CSSStyleSheetResource> m_resource;
 };
 
 }  // namespace blink

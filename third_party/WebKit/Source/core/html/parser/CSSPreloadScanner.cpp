@@ -255,10 +255,9 @@ CSSPreloaderResourceClient::CSSPreloaderResourceClient(
     : m_policy(preloader->document()->settings()->cssExternalScannerPreload()
                    ? ScanAndPreload
                    : ScanOnly),
-      m_preloader(preloader) {
-  DCHECK(resource->getType() == Resource::Type::CSSStyleSheet);
-  setResource(toCSSStyleSheetResource(resource),
-              Resource::DontMarkAsReferenced);
+      m_preloader(preloader),
+      m_resource(toCSSStyleSheetResource(resource)) {
+  m_resource->addClient(this);
 }
 
 CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}
@@ -320,9 +319,16 @@ void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads) {
   }
 }
 
+void CSSPreloaderResourceClient::clearResource() {
+  if (m_resource)
+    m_resource->removeClient(this);
+  m_resource.clear();
+}
+
 DEFINE_TRACE(CSSPreloaderResourceClient) {
   visitor->trace(m_preloader);
-  ResourceOwner<CSSStyleSheetResource>::trace(visitor);
+  visitor->trace(m_resource);
+  StyleSheetResourceClient::trace(visitor);
 }
 
 }  // namespace blink
