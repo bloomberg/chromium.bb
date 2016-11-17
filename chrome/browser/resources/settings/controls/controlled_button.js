@@ -21,7 +21,7 @@ Polymer({
    * @private
    */
   computeControlled_: function() {
-    return this.isPrefPolicyControlled(assert(this.pref));
+    return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**

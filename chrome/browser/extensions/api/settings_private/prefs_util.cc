@@ -7,6 +7,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/settings_api_helpers.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -18,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
@@ -25,6 +28,8 @@
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
@@ -92,6 +97,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kUsesSystemTheme] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #endif
+  (*s_whitelist)[::prefs::kHomePage] =
+      settings_private::PrefType::PREF_TYPE_URL;
+  (*s_whitelist)[::prefs::kHomePageIsNewTabPage] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kWebKitDefaultFixedFontSize] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kWebKitDefaultFontSize] =
@@ -109,6 +118,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kDefaultCharset] =
       settings_private::PrefType::PREF_TYPE_STRING;
 
+  // On startup.
+  (*s_whitelist)[::prefs::kRestoreOnStartup] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kURLsToRestoreOnStartup] =
+      settings_private::PrefType::PREF_TYPE_LIST;
+
   // Downloads settings.
   (*s_whitelist)[::prefs::kDownloadDefaultDirectory] =
       settings_private::PrefType::PREF_TYPE_STRING;
@@ -121,12 +136,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kLocalDiscoveryNotificationsEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
-  // Miscelaneous. TODO(stevenjb): categorize.
+  // Miscellaneous. TODO(stevenjb): categorize.
   (*s_whitelist)[::prefs::kEnableDoNotTrack] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kHomePage] =
-      settings_private::PrefType::PREF_TYPE_URL;
-  (*s_whitelist)[::prefs::kHomePageIsNewTabPage] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kApplicationLocale] =
       settings_private::PrefType::PREF_TYPE_STRING;
@@ -142,10 +153,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSearchSuggestEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kRestoreOnStartup] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)[::prefs::kURLsToRestoreOnStartup] =
-      settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckDictionaries] =
       settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckUseSpellingService] =
@@ -382,40 +389,42 @@ std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
 
 #if defined(OS_CHROMEOS)
   if (IsPrefPrimaryUserControlled(name)) {
-    pref_object->policy_source =
-        settings_private::PolicySource::POLICY_SOURCE_PRIMARY_USER;
-    pref_object->policy_enforcement =
-        settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-    pref_object->policy_source_name.reset(
+    pref_object->controlled_by =
+        settings_private::ControlledBy::CONTROLLED_BY_PRIMARY_USER;
+    pref_object->enforcement =
+        settings_private::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by_name.reset(
         new std::string(user_manager::UserManager::Get()
                             ->GetPrimaryUser()
                             ->GetAccountId()
                             .GetUserEmail()));
     return pref_object;
   }
+
   if (IsPrefEnterpriseManaged(name)) {
     // Enterprise managed prefs are treated the same as device policy restricted
     // prefs in the UI.
-    pref_object->policy_source =
-        settings_private::PolicySource::POLICY_SOURCE_DEVICE_POLICY;
-    pref_object->policy_enforcement =
-        settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by =
+        settings_private::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
+    pref_object->enforcement =
+        settings_private::Enforcement::ENFORCEMENT_ENFORCED;
     return pref_object;
   }
 #endif
 
   if (pref && pref->IsManaged()) {
-    pref_object->policy_source =
-        settings_private::PolicySource::POLICY_SOURCE_USER_POLICY;
-    pref_object->policy_enforcement =
-        settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by =
+        settings_private::ControlledBy::CONTROLLED_BY_USER_POLICY;
+    pref_object->enforcement =
+        settings_private::Enforcement::ENFORCEMENT_ENFORCED;
     return pref_object;
   }
+
   if (pref && pref->IsRecommended()) {
-    pref_object->policy_source =
-        settings_private::PolicySource::POLICY_SOURCE_USER_POLICY;
-    pref_object->policy_enforcement =
-        settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_RECOMMENDED;
+    pref_object->controlled_by =
+        settings_private::ControlledBy::CONTROLLED_BY_USER_POLICY;
+    pref_object->enforcement =
+        settings_private::Enforcement::ENFORCEMENT_RECOMMENDED;
     pref_object->recommended_value.reset(
         pref->GetRecommendedValue()->DeepCopy());
     return pref_object;
@@ -427,37 +436,31 @@ std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
     // device policy there is no "owner". (In the unlikely case that both
     // situations apply, either badge is potentially relevant, so the order
     // is somewhat arbitrary).
-    pref_object->policy_source =
-        settings_private::PolicySource::POLICY_SOURCE_OWNER;
-    pref_object->policy_enforcement =
-        settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-    pref_object->policy_source_name.reset(new std::string(
+    pref_object->controlled_by =
+        settings_private::ControlledBy::CONTROLLED_BY_OWNER;
+    pref_object->enforcement =
+        settings_private::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by_name.reset(new std::string(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
     return pref_object;
   }
 #endif
 
-  if (pref && pref->IsExtensionControlled()) {
-    std::string extension_id =
-        ExtensionPrefValueMapFactory::GetForBrowserContext(profile_)
-            ->GetExtensionControllingPref(pref->name());
-    const Extension* extension = ExtensionRegistry::Get(profile_)->
-        GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
-    if (extension) {
-      pref_object->policy_source =
-          settings_private::PolicySource::POLICY_SOURCE_EXTENSION;
-      pref_object->policy_enforcement =
-          settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-      pref_object->extension_id.reset(new std::string(extension_id));
-      pref_object->policy_source_name.reset(new std::string(extension->name()));
-      return pref_object;
-    }
-  }
-  if (pref && (!pref->IsUserModifiable() || IsPrefSupervisorControlled(name))) {
-    // TODO(stevenjb): Investigate whether either of these should be badged.
-    pref_object->read_only.reset(new bool(true));
+  const Extension* extension = GetExtensionControllingPref(*pref_object);
+  if (extension) {
+    pref_object->controlled_by =
+        settings_private::ControlledBy::CONTROLLED_BY_EXTENSION;
+    pref_object->enforcement =
+        settings_private::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->extension_id.reset(new std::string(extension->id()));
+    pref_object->controlled_by_name.reset(new std::string(extension->name()));
+    bool can_be_disabled = !ExtensionSystem::Get(profile_)->management_policy()
+        ->MustRemainEnabled(extension, nullptr);
+    pref_object->extension_can_be_disabled.reset(new bool(can_be_disabled));
     return pref_object;
   }
+
+  // TODO(dbeam): surface !IsUserModifiable or IsPrefSupervisorControlled?
 
   return pref_object;
 }
@@ -678,6 +681,21 @@ bool PrefsUtil::IsCrosSetting(const std::string& pref_name) {
 #else
   return false;
 #endif
+}
+
+const Extension* PrefsUtil::GetExtensionControllingPref(
+    const settings_private::PrefObject& pref_object) {
+  // Look for specific prefs that might be extension controlled. This generally
+  // corresponds with some indiciator that should be shown in the settings UI.
+  if (pref_object.key == ::prefs::kHomePage)
+    return GetExtensionOverridingHomepage(profile_);
+  if (pref_object.key == ::prefs::kURLsToRestoreOnStartup)
+    return GetExtensionOverridingStartupPages(profile_);
+  if (pref_object.key == ::prefs::kDefaultSearchProviderEnabled)
+    return GetExtensionOverridingSearchEngine(profile_);
+  if (pref_object.key == proxy_config::prefs::kProxy)
+    return GetExtensionOverridingProxy(profile_);
+  return nullptr;
 }
 
 }  // namespace extensions

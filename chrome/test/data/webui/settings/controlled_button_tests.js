@@ -21,8 +21,7 @@ suite('controlled button', function() {
   });
 
   test('disables when pref is managed', function() {
-    button.set('pref.policyEnforcement',
-               chrome.settingsPrivate.PolicyEnforcement.ENFORCED);
+    button.set('pref.enforcement', chrome.settingsPrivate.Enforcement.ENFORCED);
     Polymer.dom.flush();
     assertTrue(button.$$('paper-button').disabled);
 
@@ -30,7 +29,7 @@ suite('controlled button', function() {
     assertTrue(!!indicator);
     assertGT(indicator.clientHeight, 0);
 
-    button.set('pref.policyEnforcement', undefined);
+    button.set('pref.enforcement', undefined);
     Polymer.dom.flush();
     assertFalse(button.$$('paper-button').disabled);
     assertEquals(0, indicator.clientHeight);

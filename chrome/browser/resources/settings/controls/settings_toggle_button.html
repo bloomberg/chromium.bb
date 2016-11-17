@@ -30,7 +30,7 @@
         <div>[[label]]</div>
         <div class="secondary">[[subLabel]]</div>
       </div>
-      <template is="dom-if" if="[[pref.policySource]]">
+      <template is="dom-if" if="[[pref.controlledBy]]">
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
       </template>
       <paper-toggle-button id="control" checked="{{checked}}"

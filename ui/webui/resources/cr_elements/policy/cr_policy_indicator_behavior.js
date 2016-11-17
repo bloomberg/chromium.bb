@@ -9,7 +9,6 @@
 /** @enum {string} */
 var CrPolicyIndicatorType = {
   DEVICE_POLICY: 'devicePolicy',
-  EXTENSION: 'extension',
   NONE: 'none',
   OWNER: 'owner',
   PRIMARY_USER: 'primary_user',
@@ -49,9 +48,6 @@ var CrPolicyIndicatorBehavior = {
       case CrPolicyIndicatorType.RECOMMENDED:
         icon = 'domain';
         break;
-      case CrPolicyIndicatorType.EXTENSION:
-        icon = 'extension';
-        break;
       default:
         assertNotReached();
     }
@@ -70,7 +66,7 @@ var CrPolicyIndicatorBehavior = {
   /**
    * @param {CrPolicyIndicatorType} type
    * @param {string} name The name associated with the controllable. See
-   *     chrome.settingsPrivate.PrefObject.policySourceName
+   *     chrome.settingsPrivate.PrefObject.controlledByName
    * @return {string} The tooltip text for |type|.
    */
   getPolicyIndicatorTooltip: function(type, name) {
@@ -82,8 +78,6 @@ var CrPolicyIndicatorBehavior = {
       case CrPolicyIndicatorType.USER_POLICY:
       case CrPolicyIndicatorType.DEVICE_POLICY:
         return this.i18n_('controlledSettingPolicy');
-      case CrPolicyIndicatorType.EXTENSION:
-        return this.i18n_('controlledSettingExtension', name);
       case CrPolicyIndicatorType.RECOMMENDED:
         // This case is not handled here since it requires knowledge of the
         // value and recommended value associated with the controllable.

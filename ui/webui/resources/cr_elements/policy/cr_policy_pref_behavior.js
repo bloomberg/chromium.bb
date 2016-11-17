@@ -13,31 +13,29 @@ var CrPolicyPrefBehavior = {
    * @return {boolean} True if the pref is controlled by an enforced policy.
    */
   isPrefPolicyControlled: function(pref) {
-    return pref.policyEnforcement ==
-           chrome.settingsPrivate.PolicyEnforcement.ENFORCED;
+    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
+           pref.controlledBy != chrome.settingsPrivate.ControlledBy.EXTENSION;
   },
 
   /**
-   * @param {chrome.settingsPrivate.PolicySource} source
-   * @param {chrome.settingsPrivate.PolicyEnforcement} enforcement
-   * @return {CrPolicyIndicatorType} The indicator type based on |source| and
-   *     |enforcement|.
+   * @param {chrome.settingsPrivate.ControlledBy} controlledBy
+   * @param {chrome.settingsPrivate.Enforcement} enforcement
+   * @return {CrPolicyIndicatorType} The indicator type based on |controlledBy|
+   *     and |enforcement|.
    */
-  getIndicatorType: function(source, enforcement) {
-    if (enforcement == chrome.settingsPrivate.PolicyEnforcement.RECOMMENDED)
+  getIndicatorType: function(controlledBy, enforcement) {
+    if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED)
       return CrPolicyIndicatorType.RECOMMENDED;
-    if (enforcement == chrome.settingsPrivate.PolicyEnforcement.ENFORCED) {
-      switch (source) {
-        case chrome.settingsPrivate.PolicySource.PRIMARY_USER:
+    if (enforcement == chrome.settingsPrivate.Enforcement.ENFORCED) {
+      switch (controlledBy) {
+        case chrome.settingsPrivate.ControlledBy.PRIMARY_USER:
           return CrPolicyIndicatorType.PRIMARY_USER;
-        case chrome.settingsPrivate.PolicySource.OWNER:
+        case chrome.settingsPrivate.ControlledBy.OWNER:
           return CrPolicyIndicatorType.OWNER;
-        case chrome.settingsPrivate.PolicySource.USER_POLICY:
+        case chrome.settingsPrivate.ControlledBy.USER_POLICY:
           return CrPolicyIndicatorType.USER_POLICY;
-        case chrome.settingsPrivate.PolicySource.DEVICE_POLICY:
+        case chrome.settingsPrivate.ControlledBy.DEVICE_POLICY:
           return CrPolicyIndicatorType.DEVICE_POLICY;
-        case chrome.settingsPrivate.PolicySource.EXTENSION:
-          return CrPolicyIndicatorType.EXTENSION;
       }
     }
     return CrPolicyIndicatorType.NONE;

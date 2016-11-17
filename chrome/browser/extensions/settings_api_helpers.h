@@ -18,6 +18,11 @@ namespace extensions {
 const Extension* GetExtensionOverridingHomepage(
     content::BrowserContext* browser_context);
 
+// Returns which extension (if any) is overriding the New Tab page in a given
+// |browser_context|.
+const Extension* GetExtensionOverridingNewTabPage(
+    content::BrowserContext* browser_context);
+
 // Returns which extension (if any) is overriding the homepage in a given
 // |browser_context|.
 const Extension* GetExtensionOverridingStartupPages(

@@ -17,6 +17,7 @@ class PrefService;
 class Profile;
 
 namespace extensions {
+class Extension;
 
 class PrefsUtil {
 
@@ -101,6 +102,10 @@ class PrefsUtil {
 
   SetPrefResult SetCrosSettingsPref(const std::string& name,
                                     const base::Value* value);
+
+ private:
+  const Extension* GetExtensionControllingPref(
+      const api::settings_private::PrefObject& pref_object);
 
   Profile* profile_;  // weak
 };

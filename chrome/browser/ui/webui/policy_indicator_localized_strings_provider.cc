@@ -18,6 +18,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "controlledSettingRecommendedDiffers",
       IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION);
+  // TODO(dbeam): use this string in new UI. http://crbug.com/614265#c36
   html_source->AddLocalizedString(
       "controlledSettingExtension",
       IDS_SETTINGS_CONTROLLED_SETTING_NAMED_EXTENSION);

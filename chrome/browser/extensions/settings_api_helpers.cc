@@ -6,12 +6,16 @@
 
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
+#include "content/public/browser/browser_url_handler.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -69,6 +73,19 @@ const Extension* FindOverridingExtension(
 const Extension* GetExtensionOverridingHomepage(
     content::BrowserContext* browser_context) {
   return FindOverridingExtension(browser_context, BUBBLE_TYPE_HOME_PAGE);
+}
+
+const Extension* GetExtensionOverridingNewTabPage(
+    content::BrowserContext* browser_context) {
+  GURL ntp_url(chrome::kChromeUINewTabURL);
+  bool ignored;
+  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+      &ntp_url, browser_context, &ignored);
+  if (ntp_url.SchemeIs(kExtensionScheme)) {
+    return ExtensionRegistry::Get(browser_context)->GetExtensionById(
+        ntp_url.host(), ExtensionRegistry::ENABLED);
+  }
+  return nullptr;
 }
 
 const Extension* GetExtensionOverridingStartupPages(

@@ -681,12 +681,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   allow_deletion = allow_deletion && !ash::WmShell::HasInstance();
 #endif
   values->SetBoolean("allowProfileDeletion", allow_deletion);
-
-  values->SetBoolean("profileIsGuest",
-                     Profile::FromWebUI(web_ui())->IsOffTheRecord());
-
-  values->SetBoolean("profileIsSupervised",
-                     Profile::FromWebUI(web_ui())->IsSupervised());
+  values->SetBoolean("profileIsGuest", profile->IsOffTheRecord());
+  values->SetBoolean("profileIsSupervised", profile->IsSupervised());
 
 #if !defined(OS_CHROMEOS)
   values->SetBoolean(
@@ -716,8 +712,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                     chrome::kLanguageSettingsLearnMoreUrl);
 
   values->SetBoolean(
-      "easyUnlockAllowed",
-      EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsAllowed());
+      "easyUnlockAllowed", EasyUnlockService::Get(profile)->IsAllowed());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
   values->SetBoolean("easyUnlockProximityDetectionAllowed",
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -743,8 +738,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("enableTimeZoneTrackingOption",
                      !chromeos::system::HasSystemTimezonePolicy());
   values->SetBoolean("resolveTimezoneByGeolocationInitialValue",
-                     Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
-                         prefs::kResolveTimezoneByGeolocation));
+      profile->GetPrefs()->GetBoolean(prefs::kResolveTimezoneByGeolocation));
   values->SetBoolean("enableLanguageOptionsImeMenu",
                      base::FeatureList::IsEnabled(features::kOptInImeMenu));
   values->SetBoolean(
@@ -1013,11 +1007,11 @@ void BrowserOptionsHandler::InitializeHandler() {
   AddTemplateUrlServiceObserver();
 
 #if defined(OS_WIN)
-  ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->AddObserver(this);
+  ExtensionRegistry::Get(profile)->AddObserver(this);
 #endif
 
   // No preferences below this point may be modified by guest profiles.
-  if (Profile::FromWebUI(web_ui())->IsGuestSession())
+  if (profile->IsGuestSession())
     return;
 
   auto_open_files_.Init(
@@ -1179,8 +1173,7 @@ bool BrowserOptionsHandler::ShouldShowSetDefaultBrowser() {
   // We're always the default browser on ChromeOS.
   return false;
 #else
-  Profile* profile = Profile::FromWebUI(web_ui());
-  return !profile->IsGuestSession();
+  return !Profile::FromWebUI(web_ui())->IsGuestSession();
 #endif
 }
 
@@ -1189,8 +1182,7 @@ bool BrowserOptionsHandler::ShouldShowMultiProfilesUserList() {
   // On Chrome OS we use different UI for multi-profiles.
   return false;
 #else
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->IsGuestSession())
+  if (Profile::FromWebUI(web_ui())->IsGuestSession())
     return false;
   return profiles::IsMultipleProfilesEnabled();
 #endif
@@ -2172,42 +2164,27 @@ void BrowserOptionsHandler::SetupEasyUnlock() {
 void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
   base::DictionaryValue extension_controlled;
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+
   // Check if an extension is overriding the Search Engine.
   const extensions::Extension* extension =
-      extensions::GetExtensionOverridingSearchEngine(
-          Profile::FromWebUI(web_ui()));
+      extensions::GetExtensionOverridingSearchEngine(profile);
   AppendExtensionData("searchEngine", extension, &extension_controlled);
 
   // Check if an extension is overriding the Home page.
-  extension = extensions::GetExtensionOverridingHomepage(
-      Profile::FromWebUI(web_ui()));
+  extension = extensions::GetExtensionOverridingHomepage(profile);
   AppendExtensionData("homePage", extension, &extension_controlled);
 
   // Check if an extension is overriding the Startup pages.
-  extension = extensions::GetExtensionOverridingStartupPages(
-      Profile::FromWebUI(web_ui()));
+  extension = extensions::GetExtensionOverridingStartupPages(profile);
   AppendExtensionData("startUpPage", extension, &extension_controlled);
 
   // Check if an extension is overriding the NTP page.
-  GURL ntp_url(chrome::kChromeUINewTabURL);
-  bool ignored_param;
-  extension = NULL;
-  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &ntp_url,
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      &ignored_param);
-  if (ntp_url.SchemeIs("chrome-extension")) {
-    using extensions::ExtensionRegistry;
-    ExtensionRegistry* registry = ExtensionRegistry::Get(
-        Profile::FromWebUI(web_ui()));
-    extension = registry->GetExtensionById(ntp_url.host(),
-                                           ExtensionRegistry::ENABLED);
-  }
+  extension = extensions::GetExtensionOverridingNewTabPage(profile);
   AppendExtensionData("newTabPage", extension, &extension_controlled);
 
   // Check if an extension is overwriting the proxy setting.
-  extension = extensions::GetExtensionOverridingProxy(
-      Profile::FromWebUI(web_ui()));
+  extension = extensions::GetExtensionOverridingProxy(profile);
   AppendExtensionData("proxy", extension, &extension_controlled);
 
   web_ui()->CallJavascriptFunctionUnsafe(

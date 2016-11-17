@@ -35,7 +35,7 @@ Polymer({
     indicatorType: {
       type: String,
       value: CrPolicyIndicatorType.NONE,
-      computed: 'getIndicatorType(pref.policySource, pref.policyEnforcement)',
+      computed: 'getIndicatorType(pref.controlledBy, pref.enforcement)',
     },
   },
 
@@ -51,7 +51,7 @@ Polymer({
         return this.i18n_('controlledSettingRecommendedMatches');
       return this.i18n_('controlledSettingRecommendedDiffers');
     }
-    var name = pref ? pref.policySourceName : controllingUser;
+    var name = pref ? pref.controlledByName : controllingUser;
     return this.getPolicyIndicatorTooltip(type, name);
   }
 });

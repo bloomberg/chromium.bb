@@ -5,11 +5,9 @@
 // Use the <code>chrome.settingsPrivate</code> API to get or set preferences
 // from the settings UI.
 namespace settingsPrivate {
-  // Type of a pref.
   enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST, DICTIONARY };
 
-  // Source of a restricted pref, either by policy or other source.
-  enum PolicySource {
+  enum ControlledBy {
     DEVICE_POLICY,
     USER_POLICY,
     OWNER,
@@ -17,8 +15,7 @@ namespace settingsPrivate {
     EXTENSION
   };
 
-  // Enforcement type of a restricted pref.
-  enum PolicyEnforcement { ENFORCED, RECOMMENDED };
+  enum Enforcement { ENFORCED, RECOMMENDED };
 
   dictionary PrefObject {
     // The key for the pref.
@@ -32,26 +29,26 @@ namespace settingsPrivate {
 
     // The policy source of the pref; an undefined value means there is no
     // policy.
-    PolicySource? policySource;
+    ControlledBy? controlledBy;
 
-    // The owner name if policySource == OWNER.
-    // The primary user name if policySource == PRIMARY_USER.
-    // The extension name if policySource == EXTENSION.
-    DOMString? policySourceName;
+    // The owner name if controlledBy == OWNER.
+    // The primary user name if controlledBy == PRIMARY_USER.
+    // The extension name if controlledBy == EXTENSION.
+    DOMString? controlledByName;
 
-    // The policy enforcement of the pref; must be specified if policySource is
+    // The policy enforcement of the pref; must be specified if controlledBy is
     // also present.
-    PolicyEnforcement? policyEnforcement;
+    Enforcement? enforcement;
 
-    // The recommended value if policyEnforcement == RECOMMENDED.
+    // The recommended value if enforcement == RECOMMENDED.
     any? recommendedValue;
 
-    // The extension ID if policySource == EXTENSION.
+    // The extension ID if controlledBy == EXTENSION.
     DOMString? extensionId;
 
-    // True if the pref is not controlled by a policy or user, but it can not be
-    // modified (pref->IsUserModifiable() is false). Defaults to false.
-    boolean? readOnly;
+    // Whether the controlling extension can be disabled if controlledBy ==
+    // EXTENSION.
+    boolean? extensionCanBeDisabled;
   };
 
   callback OnPrefSetCallback = void (boolean success);

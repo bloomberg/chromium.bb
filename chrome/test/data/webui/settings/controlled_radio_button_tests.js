@@ -21,8 +21,8 @@ suite('controlled radio button', function() {
   });
 
   test('disables when pref is managed', function() {
-    radioButton.set('pref.policyEnforcement',
-                    chrome.settingsPrivate.PolicyEnforcement.ENFORCED);
+    radioButton.set('pref.enforcement',
+                    chrome.settingsPrivate.Enforcement.ENFORCED);
     Polymer.dom.flush();
     assertTrue(radioButton.$$('paper-radio-button').disabled);
     assertFalse(!!radioButton.$$('cr-policy-pref-indicator'));
@@ -31,7 +31,7 @@ suite('controlled radio button', function() {
     Polymer.dom.flush();
     assertTrue(!!radioButton.$$('cr-policy-pref-indicator'));
 
-    radioButton.set('pref.policyEnforcement', undefined);
+    radioButton.set('pref.enforcement', undefined);
     Polymer.dom.flush();
     assertFalse(radioButton.$$('paper-radio-button').disabled);
     assertEquals('none',

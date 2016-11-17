@@ -133,8 +133,8 @@ Polymer({
         key: 'fakeTimeZonePref',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 0,
-        policySource: chrome.settingsPrivate.PolicySource.DEVICE_POLICY,
-        policyEnforcement: chrome.settingsPrivate.PolicyEnforcement.ENFORCED,
+        controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
+        enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
       };
     }
   },
