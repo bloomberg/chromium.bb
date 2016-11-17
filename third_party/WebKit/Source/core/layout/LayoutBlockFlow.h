@@ -376,8 +376,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
-  LayoutUnit lowestFloatLogicalBottom(
-      FloatingObject::Type = FloatingObject::FloatLeftRight) const;
+  LayoutUnit lowestFloatLogicalBottom(EClear = ClearBoth) const;
 
   bool hasOverhangingFloats() const {
     return parent() && containsFloats() &&

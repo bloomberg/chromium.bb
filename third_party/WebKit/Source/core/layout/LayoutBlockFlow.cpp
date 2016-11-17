@@ -2649,25 +2649,12 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child,
 
   // At least one float is present. We need to perform the clearance
   // computation.
-  bool clearSet = child->style()->clear() != ClearNone;
-  LayoutUnit logicalBottom;
-  switch (child->style()->clear()) {
-    case ClearNone:
-      break;
-    case ClearLeft:
-      logicalBottom = lowestFloatLogicalBottom(FloatingObject::FloatLeft);
-      break;
-    case ClearRight:
-      logicalBottom = lowestFloatLogicalBottom(FloatingObject::FloatRight);
-      break;
-    case ClearBoth:
-      logicalBottom = lowestFloatLogicalBottom();
-      break;
-  }
+  EClear clear = child->style()->clear();
+  LayoutUnit logicalBottom = lowestFloatLogicalBottom(clear);
 
   // We also clear floats if we are too big to sit on the same line as a float
   // (and wish to avoid floats by default).
-  LayoutUnit result = clearSet
+  LayoutUnit result = clear != ClearNone
                           ? (logicalBottom - logicalTop).clampNegativeToZero()
                           : LayoutUnit();
   if (!result && child->avoidsFloats()) {
@@ -3340,19 +3327,7 @@ void LayoutBlockFlow::childBecameNonInline(LayoutObject*) {
 void LayoutBlockFlow::clearFloats(EClear clear) {
   positionNewFloats(logicalHeight());
   // set y position
-  LayoutUnit newY;
-  switch (clear) {
-    case ClearLeft:
-      newY = lowestFloatLogicalBottom(FloatingObject::FloatLeft);
-      break;
-    case ClearRight:
-      newY = lowestFloatLogicalBottom(FloatingObject::FloatRight);
-      break;
-    case ClearBoth:
-      newY = lowestFloatLogicalBottom();
-    default:
-      break;
-  }
+  LayoutUnit newY = lowestFloatLogicalBottom(clear);
   if (size().height() < newY)
     setLogicalHeight(newY);
 }
@@ -3653,14 +3628,8 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
   LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection()
                                           ? marginStartForChild(childBox)
                                           : marginEndForChild(childBox);
-  if (childBox.style()->clear() & ClearLeft) {
-    logicalTop = std::max(lowestFloatLogicalBottom(FloatingObject::FloatLeft),
-                          logicalTop);
-  }
-  if (childBox.style()->clear() & ClearRight) {
-    logicalTop = std::max(lowestFloatLogicalBottom(FloatingObject::FloatRight),
-                          logicalTop);
-  }
+  logicalTop =
+      std::max(logicalTop, lowestFloatLogicalBottom(childBox.style()->clear()));
 
   bool isPaginated = view()->layoutState()->isPaginated();
   if (isPaginated && !childrenInline()) {
@@ -3896,11 +3865,14 @@ void LayoutBlockFlow::addOverhangingFloats(LayoutBlockFlow* child,
   }
 }
 
-LayoutUnit LayoutBlockFlow::lowestFloatLogicalBottom(
-    FloatingObject::Type floatType) const {
-  if (!m_floatingObjects)
+LayoutUnit LayoutBlockFlow::lowestFloatLogicalBottom(EClear clear) const {
+  if (clear == ClearNone || !m_floatingObjects)
     return LayoutUnit();
 
+  FloatingObject::Type floatType =
+      clear == ClearLeft ? FloatingObject::FloatLeft
+                         : clear == ClearRight ? FloatingObject::FloatRight
+                                               : FloatingObject::FloatLeftRight;
   return m_floatingObjects->lowestFloatLogicalBottom(floatType);
 }
 
