@@ -6,9 +6,12 @@ package org.chromium.content_public.browser;
 
 import android.os.Handler;
 
+import org.chromium.base.annotations.UsedByReflection;
+
 /**
  * Interface for message ports that handle postMessage requests.
  */
+@UsedByReflection("")
 public interface MessagePort {
     /**
      * The message callback for receiving messages.
