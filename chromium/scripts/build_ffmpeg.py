@@ -343,6 +343,7 @@ def main(argv):
       '--disable-vda',
       '--disable-vdpau',
       '--disable-videotoolbox',
+      '--disable-nvenc',
 
       # Common codecs.
       '--enable-decoder=vorbis,libopus,flac',
