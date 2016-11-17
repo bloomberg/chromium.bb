@@ -37,7 +37,7 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -162,7 +162,7 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
       name_(base::ASCIIToUTF16("utility process")),
       weak_ptr_factory_(this) {
   process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_UTILITY, this, kUtilityServiceName));
+      PROCESS_TYPE_UTILITY, this, mojom::kUtilityServiceName));
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {

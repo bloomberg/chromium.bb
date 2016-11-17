@@ -79,7 +79,6 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/browser_plugin_delegate.h"

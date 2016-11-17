@@ -24,7 +24,7 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
@@ -182,7 +182,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
         std::move(native_runner_factory), catalog_->TakeService()));
 
     service_manager::mojom::ServiceRequest request =
-        service_manager_->StartEmbedderService(kBrowserServiceName);
+        service_manager_->StartEmbedderService(mojom::kBrowserServiceName);
     mojo::FuseInterface(
         std::move(request), std::move(embedder_service_proxy_info));
   }
@@ -213,11 +213,11 @@ ServiceManagerContext::ServiceManagerContext() {
       const char* name;
       int resource_id;
     } kManifests[] = {
-      { kBrowserServiceName, IDR_MOJO_CONTENT_BROWSER_MANIFEST },
-      { kGpuServiceName, IDR_MOJO_CONTENT_GPU_MANIFEST },
-      { kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
-      { kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
-      { kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
+      { mojom::kBrowserServiceName, IDR_MOJO_CONTENT_BROWSER_MANIFEST },
+      { mojom::kGpuServiceName, IDR_MOJO_CONTENT_GPU_MANIFEST },
+      { mojom::kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
+      { mojom::kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
+      { mojom::kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
       { catalog::mojom::kServiceName, IDR_MOJO_CATALOG_MANIFEST },
       { file::mojom::kServiceName, IDR_MOJO_FILE_MANIFEST }
     };

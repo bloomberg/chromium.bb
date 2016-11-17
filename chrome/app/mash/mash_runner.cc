@@ -19,7 +19,7 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mash/package/mash_packaged_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
@@ -90,7 +90,7 @@ class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
   void AdjustCommandLineArgumentsForTarget(
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {
-    if (target.name() != content::kBrowserServiceName) {
+    if (target.name() != content::mojom::kBrowserServiceName) {
       // If running anything other than the browser process, launch a mash
       // child process. The new process will execute MashRunner::RunChild().
       command_line->AppendSwitchASCII(switches::kProcessType, kMashChild);
@@ -154,16 +154,16 @@ void MashRunner::RunMain() {
   catalog::mojom::CatalogControlPtr catalog_control;
   catalog_connection->GetInterface(&catalog_control);
   CHECK(catalog_control->OverrideManifestPath(
-      content::kBrowserServiceName,
+      content::mojom::kBrowserServiceName,
       GetPackageManifestPath(kChromeMashContentBrowserPackageName)));
   CHECK(catalog_control->OverrideManifestPath(
-      content::kGpuServiceName,
+      content::mojom::kGpuServiceName,
       GetPackageManifestPath(kChromeContentGpuPackageName)));
   CHECK(catalog_control->OverrideManifestPath(
-      content::kRendererServiceName,
+      content::mojom::kRendererServiceName,
       GetPackageManifestPath(kChromeContentRendererPackageName)));
   CHECK(catalog_control->OverrideManifestPath(
-      content::kUtilityServiceName,
+      content::mojom::kUtilityServiceName,
       GetPackageManifestPath(kChromeContentUtilityPackageName)));
 
   // Ping mash_session to ensure an instance is brought up

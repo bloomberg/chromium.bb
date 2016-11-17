@@ -28,7 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -186,7 +186,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner));
     shell_context_.reset(new TestServiceManagerContext);
     child_connection_.reset(new ChildConnection(
-        kRendererServiceName, "test", mojo::edk::GenerateRandomToken(),
+        mojom::kRendererServiceName, "test", mojo::edk::GenerateRandomToken(),
         ServiceManagerConnection::GetForProcess()->GetConnector(),
         io_task_runner));
 

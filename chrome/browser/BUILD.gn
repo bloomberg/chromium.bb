@@ -1426,6 +1426,7 @@ split_static_library("browser") {
     "//content/public/common",
     "//content/public/common:feature_h264_with_openh264_ffmpeg",
     "//content/public/common:features",
+    "//content/public/common:service_names",
     "//courgette:courgette_lib",
     "//crypto",
     "//crypto:platform",

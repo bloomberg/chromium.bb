@@ -54,7 +54,7 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/service/switches.h"
@@ -319,7 +319,7 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const service_manager::Identity& remote_identity,
                  service_manager::InterfaceRegistry* registry,
                  service_manager::Connector* connector) override {
-    if (remote_identity.name() != kGpuServiceName)
+    if (remote_identity.name() != mojom::kGpuServiceName)
       return false;
 
     GetContentClient()->browser()->ExposeInterfacesToGpuProcess(registry,
@@ -481,7 +481,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       base::Bind(base::IgnoreResult(&GpuProcessHostUIShim::Create), host_id));
 
   process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_GPU, this, kGpuServiceName));
+      PROCESS_TYPE_GPU, this, mojom::kGpuServiceName));
 }
 
 GpuProcessHost::~GpuProcessHost() {

@@ -50,7 +50,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -436,7 +436,7 @@ std::unique_ptr<base::Value>
 CastContentBrowserClient::GetServiceManifestOverlay(
     const std::string& service_name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (service_name != content::kBrowserServiceName)
+  if (service_name != content::mojom::kBrowserServiceName)
     return nullptr;
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY,

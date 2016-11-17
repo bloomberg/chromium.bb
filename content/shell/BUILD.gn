@@ -233,6 +233,7 @@ static_library("content_shell_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/gpu",
+    "//content/public/common:service_names",
     "//content/test:content_test_mojo_bindings",
     "//content/test:layouttest_support",
     "//content/test:test_support",

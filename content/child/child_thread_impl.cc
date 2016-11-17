@@ -54,7 +54,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "device/power_monitor/public/cpp/power_monitor_broadcast_source.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
@@ -266,7 +266,7 @@ class ChannelBootstrapFilter : public ConnectionFilter {
   bool OnConnect(const service_manager::Identity& remote_identity,
                  service_manager::InterfaceRegistry* registry,
                  service_manager::Connector* connector) override {
-    if (remote_identity.name() != kBrowserServiceName)
+    if (remote_identity.name() != mojom::kBrowserServiceName)
       return false;
 
     registry->AddInterface(base::Bind(&ChannelBootstrapFilter::CreateBootstrap,
@@ -487,7 +487,7 @@ void ChildThreadImpl::Init(const Options& options) {
     if (options.connect_to_browser) {
       browser_connection_ =
           service_manager_connection_->GetConnector()->Connect(
-              kBrowserServiceName);
+              mojom::kBrowserServiceName);
     } else {
       remote_interfaces = GetRemoteInterfaces();
     }
@@ -910,7 +910,7 @@ void ChildThreadImpl::GetAssociatedInterface(
 void ChildThreadImpl::OnServiceConnect(
     const service_manager::ServiceInfo& local_info,
     const service_manager::ServiceInfo& remote_info) {
-  if (remote_info.identity.name() != kBrowserServiceName)
+  if (remote_info.identity.name() != mojom::kBrowserServiceName)
     return;
   DCHECK(!connected_to_browser_);
   connected_to_browser_ = true;

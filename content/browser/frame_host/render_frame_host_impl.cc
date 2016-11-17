@@ -88,7 +88,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/generic_sensor/sensor_provider_impl.h"
@@ -1580,7 +1580,7 @@ void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
 void RenderFrameHostImpl::OnRendererConnect(
     const service_manager::ServiceInfo& local_info,
     const service_manager::ServiceInfo& remote_info) {
-  if (remote_info.identity.name() != kRendererServiceName)
+  if (remote_info.identity.name() != mojom::kRendererServiceName)
     return;
   browser_info_ = local_info;
   renderer_info_ = remote_info;

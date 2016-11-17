@@ -159,7 +159,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
 #include "device/power_monitor/power_monitor_message_broadcaster.h"
@@ -938,7 +938,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 
   // Establish a ServiceManager connection for the new render service instance.
   child_connection_.reset(new ChildConnection(
-      kRendererServiceName,
+      mojom::kRendererServiceName,
       base::StringPrintf("%d_%d", id_, instance_id_++), child_token_, connector,
       io_task_runner));
 

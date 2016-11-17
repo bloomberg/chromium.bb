@@ -169,7 +169,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/bluetooth/adapter_factory.h"
@@ -3022,15 +3022,15 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int id = -1;
-  if (name == content::kBrowserServiceName)
+  if (name == content::mojom::kBrowserServiceName)
     id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
-  else if (name == content::kGpuServiceName)
+  else if (name == content::mojom::kGpuServiceName)
     id = IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY;
-  else if (name == content::kPluginServiceName)
+  else if (name == content::mojom::kPluginServiceName)
     id = IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY;
-  else if (name == content::kRendererServiceName)
+  else if (name == content::mojom::kRendererServiceName)
     id = IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY;
-  else if (name == content::kUtilityServiceName)
+  else if (name == content::mojom::kUtilityServiceName)
     id = IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY;
   if (id == -1)
     return nullptr;

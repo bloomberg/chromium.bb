@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -62,7 +62,7 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
 std::unique_ptr<base::Value>
 HeadlessContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
-  if (name != content::kBrowserServiceName ||
+  if (name != content::mojom::kBrowserServiceName ||
       browser_->options()->mojo_service_names.empty())
     return nullptr;
 

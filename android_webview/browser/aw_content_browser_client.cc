@@ -48,7 +48,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/access_token_store.h"
@@ -529,7 +529,7 @@ AwContentBrowserClient::GetDevToolsManagerDelegate() {
 std::unique_ptr<base::Value>
 AwContentBrowserClient::GetServiceManifestOverlay(const std::string& name) {
   int id = -1;
-  if (name == content::kBrowserServiceName)
+  if (name == content::mojom::kBrowserServiceName)
     id = IDR_AW_BROWSER_MANIFEST_OVERLAY;
   if (id == -1)
     return nullptr;

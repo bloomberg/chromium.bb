@@ -100,6 +100,7 @@ source_set("app") {
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
+    "//content/public/common:service_names",
     "//content/public/renderer",
     "//content/public/utility",
     "//device/geolocation",
