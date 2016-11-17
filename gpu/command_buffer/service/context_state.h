@@ -68,21 +68,32 @@ struct GPU_EXPORT TextureUnit {
       GLenum type) {
     switch (type) {
       case GL_SAMPLER_2D:
+      case GL_SAMPLER_2D_SHADOW:
+      case GL_INT_SAMPLER_2D:
+      case GL_UNSIGNED_INT_SAMPLER_2D:
         return bound_texture_2d;
       case GL_SAMPLER_CUBE:
+      case GL_SAMPLER_CUBE_SHADOW:
+      case GL_INT_SAMPLER_CUBE:
+      case GL_UNSIGNED_INT_SAMPLER_CUBE:
         return bound_texture_cube_map;
       case GL_SAMPLER_EXTERNAL_OES:
         return bound_texture_external_oes;
       case GL_SAMPLER_2D_RECT_ARB:
         return bound_texture_rectangle_arb;
       case GL_SAMPLER_3D:
+      case GL_INT_SAMPLER_3D:
+      case GL_UNSIGNED_INT_SAMPLER_3D:
         return bound_texture_3d;
       case GL_SAMPLER_2D_ARRAY:
+      case GL_SAMPLER_2D_ARRAY_SHADOW:
+      case GL_INT_SAMPLER_2D_ARRAY:
+      case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
         return bound_texture_2d_array;
     }
 
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<TextureRef>& GetInfoForTarget(GLenum target) {
@@ -362,4 +373,3 @@ struct GPU_EXPORT ContextState {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_CONTEXT_STATE_H_
-

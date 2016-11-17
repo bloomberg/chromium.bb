@@ -99,8 +99,28 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
                 const std::vector<GLint>& service_locations);
     ~UniformInfo();
     bool IsSampler() const {
-      return type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_RECT_ARB ||
-             type == GL_SAMPLER_CUBE || type == GL_SAMPLER_EXTERNAL_OES;
+      switch (type) {
+        case GL_SAMPLER_2D:
+        case GL_SAMPLER_2D_RECT_ARB:
+        case GL_SAMPLER_CUBE:
+        case GL_SAMPLER_EXTERNAL_OES:
+        case GL_SAMPLER_3D:
+        case GL_SAMPLER_2D_SHADOW:
+        case GL_SAMPLER_2D_ARRAY:
+        case GL_SAMPLER_2D_ARRAY_SHADOW:
+        case GL_SAMPLER_CUBE_SHADOW:
+        case GL_INT_SAMPLER_2D:
+        case GL_INT_SAMPLER_3D:
+        case GL_INT_SAMPLER_CUBE:
+        case GL_INT_SAMPLER_2D_ARRAY:
+        case GL_UNSIGNED_INT_SAMPLER_2D:
+        case GL_UNSIGNED_INT_SAMPLER_3D:
+        case GL_UNSIGNED_INT_SAMPLER_CUBE:
+        case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+          return true;
+        default:
+          return false;
+      }
     }
 
     GLsizei size;
