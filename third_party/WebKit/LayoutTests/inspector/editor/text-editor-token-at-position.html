@@ -35,7 +35,8 @@ function test()
         function testHighlightedText(next)
         {
             var textEditor = InspectorTest.createTestEditor();
-            textEditor.setMimeType("text/javascript").then(step1);
+            InspectorTest.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, "rewriteMimeType").then(step1);
+            textEditor.setMimeType("text/javascript");
             function step1()
             {
                 textEditor.setText(text.join("\n"));
