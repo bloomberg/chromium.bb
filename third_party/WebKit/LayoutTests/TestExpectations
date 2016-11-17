@@ -956,6 +956,14 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
+# TODO(yangguo): these tests need to be rebaselined after V8 change lands.
+crbug.com/666223 fast/workers/constructor-proto.html [ NeedsManualRebaseline ]
+crbug.com/666223 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ NeedsManualRebaseline ]
+crbug.com/666223 imported/wpt/WebIDL/ecmascript-binding/es-exceptions/constructor-object.html [ NeedsManualRebaseline ]
+crbug.com/666223 imported/wpt/dom/interfaces.html [ NeedsManualRebaseline ]
+crbug.com/666223 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
+crbug.com/666223 virtual/sharedarraybuffer/fast/workers/constructor-proto.html [ NeedsManualRebaseline ]
+
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
