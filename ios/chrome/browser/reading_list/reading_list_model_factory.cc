@@ -21,11 +21,13 @@
 #include "ios/web/public/web_thread.h"
 
 // static
+bool ReadingListModelFactory::IsReadingListEnabled() {
+  return experimental_flags::IsReadingListEnabled();
+}
+
+// static
 ReadingListModel* ReadingListModelFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  if (!experimental_flags::IsReadingListEnabled()) {
-    return nullptr;
-  }
   return static_cast<ReadingListModelImpl*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -33,9 +35,6 @@ ReadingListModel* ReadingListModelFactory::GetForBrowserState(
 // static
 ReadingListModel* ReadingListModelFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
-  if (!experimental_flags::IsReadingListEnabled()) {
-    return nullptr;
-  }
   return static_cast<ReadingListModelImpl*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
