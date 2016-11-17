@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,9 +17,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/switches.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
@@ -29,6 +32,63 @@ using base::ASCIIToUTF16;
 #define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
 
 namespace views {
+
+namespace {
+
+#if defined(OS_MACOSX)
+const int kControlCommandModifier = ui::EF_COMMAND_DOWN;
+#else
+const int kControlCommandModifier = ui::EF_CONTROL_DOWN;
+#endif
+
+// All text sizing measurements (width and height) should be greater than this.
+const int kMinTextDimension = 4;
+
+class TestLabel : public Label {
+ public:
+  TestLabel() : Label(ASCIIToUTF16("TestLabel")) { SizeToPreferredSize(); }
+
+  int schedule_paint_count() const { return schedule_paint_count_; }
+
+  void SimulatePaint() {
+    gfx::Canvas canvas(bounds().size(), 1.0, false /* is_opaque */);
+    Paint(ui::CanvasPainter(&canvas, 1.f).context());
+  }
+
+  // View:
+  void SchedulePaintInRect(const gfx::Rect& r) override {
+    ++schedule_paint_count_;
+    Label::SchedulePaintInRect(r);
+  }
+
+ private:
+  int schedule_paint_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLabel);
+};
+
+// A test utility function to set the application default text direction.
+void SetRTL(bool rtl) {
+  // Override the current locale/direction.
+  base::i18n::SetICUDefaultLocale(rtl ? "he" : "en");
+  EXPECT_EQ(rtl, base::i18n::IsRTL());
+}
+
+// Returns true if |current| is bigger than |last|. Sets |last| to |current|.
+bool Increased(int current, int* last) {
+  bool increased = current > *last;
+  *last = current;
+  return increased;
+}
+
+base::string16 GetClipboardText(ui::ClipboardType clipboard_type) {
+  base::string16 clipboard_text;
+  ui::Clipboard::GetForCurrentThread()->ReadText(clipboard_type,
+                                                 &clipboard_text);
+  return clipboard_text;
+}
+
+}  // namespace
 
 class LabelTest : public ViewsTestBase {
  public:
@@ -85,6 +145,8 @@ class LabelSelectionTest : public LabelTest {
         switches::kEnableHarfBuzzRenderText);
 #endif
     LabelTest::SetUp();
+    event_generator_ =
+        base::MakeUnique<ui::test::EventGenerator>(widget()->GetNativeWindow());
   }
 
  protected:
@@ -125,66 +187,19 @@ class LabelSelectionTest : public LabelTest {
         .origin();
   }
 
-  base::string16 GetSelectedText() {
-    const gfx::RenderText* render_text =
-        label()->GetRenderTextForSelectionController();
-    return render_text->GetTextFromRange(render_text->selection());
+  base::string16 GetSelectedText() { return label()->GetSelectedText(); }
+
+  ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
+
+  bool IsMenuCommandEnabled(int command_id) {
+    return label()->IsCommandIdEnabled(command_id);
   }
 
  private:
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
+
   DISALLOW_COPY_AND_ASSIGN(LabelSelectionTest);
 };
-
-namespace {
-
-// All text sizing measurements (width and height) should be greater than this.
-const int kMinTextDimension = 4;
-
-class TestLabel : public Label {
- public:
-  TestLabel() : Label(ASCIIToUTF16("TestLabel")) { SizeToPreferredSize(); }
-
-  int schedule_paint_count() const { return schedule_paint_count_; }
-
-  void SimulatePaint() {
-    gfx::Canvas canvas(bounds().size(), 1.0, false /* is_opaque */);
-    Paint(ui::CanvasPainter(&canvas, 1.f).context());
-  }
-
-  // View:
-  void SchedulePaintInRect(const gfx::Rect& r) override {
-    ++schedule_paint_count_;
-    Label::SchedulePaintInRect(r);
-  }
-
- private:
-  int schedule_paint_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLabel);
-};
-
-// A test utility function to set the application default text direction.
-void SetRTL(bool rtl) {
-  // Override the current locale/direction.
-  base::i18n::SetICUDefaultLocale(rtl ? "he" : "en");
-  EXPECT_EQ(rtl, base::i18n::IsRTL());
-}
-
-// Returns true if |current| is bigger than |last|. Sets |last| to |current|.
-bool Increased(int current, int* last) {
-  bool increased = current > *last;
-  *last = current;
-  return increased;
-}
-
-base::string16 GetSelectionClipboardText() {
-  base::string16 selection_clipboard_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_SELECTION,
-                                                 &selection_clipboard_text);
-  return selection_clipboard_text;
-}
-
-}  // namespace
 
 // Crashes on Linux only. http://crbug.com/612406
 #if defined(OS_LINUX)
@@ -809,6 +824,15 @@ TEST_F(LabelSelectionTest, Selectable) {
   // selection.
   label()->SetMultiLine(true);
   EXPECT_FALSE(label()->selectable());
+
+  label()->SetMultiLine(false);
+  ASSERT_TRUE(label()->SetSelectable(true));
+  EXPECT_TRUE(label()->selectable());
+
+  // Verify that obscuring the label text causes the label to not support text
+  // selection.
+  label()->SetObscured(true);
+  EXPECT_FALSE(label()->selectable());
 }
 
 // Verify that labels supporting text selection get focus on clicks.
@@ -900,6 +924,9 @@ TEST_F(LabelSelectionTest, MouseDrag) {
   PerformMouseDragTo(gfx::Point(200, 0));
   PerformMouseRelease(gfx::Point(200, 0));
   EXPECT_STR_EQ(" mouse drag", GetSelectedText());
+
+  event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
+  EXPECT_STR_EQ(" mouse drag", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
 }
 
 // Verify the initially selected word on a double click, remains selected on
@@ -932,15 +959,85 @@ TEST_F(LabelSelectionTest, SelectionClipboard) {
   // selection clipboard.
   label()->SelectRange(gfx::Range(2, 5));
   EXPECT_STR_EQ("bel", GetSelectedText());
-  EXPECT_TRUE(GetSelectionClipboardText().empty());
+  EXPECT_TRUE(GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION).empty());
 
   // Verify text selection using the mouse updates the selection clipboard.
   PerformMousePress(GetCursorPoint(5));
   PerformMouseDragTo(gfx::Point());
   PerformMouseRelease(gfx::Point());
   EXPECT_STR_EQ("Label", GetSelectedText());
-  EXPECT_STR_EQ("Label", GetSelectionClipboardText());
+  EXPECT_STR_EQ("Label", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 }
 #endif
+
+// Verify that keyboard shortcuts for Copy and Select All work when a selectable
+// label is focused.
+TEST_F(LabelSelectionTest, KeyboardActions) {
+  const base::string16 initial_text = ASCIIToUTF16("Label keyboard actions");
+  label()->SetText(initial_text);
+  label()->SizeToPreferredSize();
+  ASSERT_TRUE(label()->SetSelectable(true));
+
+  PerformClick(gfx::Point());
+  EXPECT_EQ(label(), GetFocusedView());
+
+  event_generator()->PressKey(ui::VKEY_A, kControlCommandModifier);
+  EXPECT_EQ(initial_text, GetSelectedText());
+
+  event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
+  EXPECT_EQ(initial_text, GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
+
+  // The selection should get cleared on changing the text, but focus should not
+  // be affected.
+  const base::string16 new_text = ASCIIToUTF16("Label obscured text");
+  label()->SetText(new_text);
+  EXPECT_FALSE(label()->HasSelection());
+  EXPECT_EQ(label(), GetFocusedView());
+
+  // Obscured labels do not support text selection.
+  label()->SetObscured(true);
+  EXPECT_FALSE(label()->selectable());
+  event_generator()->PressKey(ui::VKEY_A, kControlCommandModifier);
+  EXPECT_EQ(base::string16(), GetSelectedText());
+}
+
+// Verify the context menu options are enabled and disabled appropriately.
+TEST_F(LabelSelectionTest, ContextMenuContents) {
+  label()->SetText(ASCIIToUTF16("Label context menu"));
+  label()->SizeToPreferredSize();
+
+  // A non-selectable label would not show a context menu and both COPY and
+  // SELECT_ALL context menu items should be disabled for it.
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+
+  // For a selectable label with no selection, only SELECT_ALL should be
+  // enabled.
+  ASSERT_TRUE(label()->SetSelectable(true));
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
+  EXPECT_TRUE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+
+  // For a selectable label with a selection, both COPY and SELECT_ALL should be
+  // enabled.
+  label()->SelectRange(gfx::Range(0, 4));
+  EXPECT_TRUE(IsMenuCommandEnabled(IDS_APP_COPY));
+  EXPECT_TRUE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+  // Ensure unsupported commands like PASTE are not enabled.
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_PASTE));
+
+  // An obscured label would not show a context menu and both COPY and
+  // SELECT_ALL should be disabled for it.
+  label()->SetObscured(true);
+  EXPECT_FALSE(label()->selectable());
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+  label()->SetObscured(false);
+
+  // For an empty label, both COPY and SELECT_ALL should be disabled.
+  label()->SetText(base::string16());
+  ASSERT_TRUE(label()->SetSelectable(true));
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
+  EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
+}
 
 }  // namespace views

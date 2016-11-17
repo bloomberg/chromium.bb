@@ -8,16 +8,22 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/selection_controller_delegate.h"
 #include "ui/views/view.h"
 
 namespace views {
 class LabelSelectionTest;
+class MenuRunner;
 class SelectionController;
 
 // A view subclass that can display a string.
-class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
+class VIEWS_EXPORT Label : public View,
+                           public ContextMenuController,
+                           public SelectionControllerDelegate,
+                           public ui::SimpleMenuModel::Delegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -145,7 +151,8 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
   bool selectable() const { return !!selection_controller_; }
 
   // Sets whether the label is selectable. False is returned if the call fails,
-  // i.e. when selection is not supported but |selectable| is true.
+  // i.e. when selection is not supported but |selectable| is true. For example,
+  // obscured labels do not support text selection.
   bool SetSelectable(bool selectable);
 
   // Returns true if the label has a selection.
@@ -208,6 +215,9 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelTest, ResetRenderTextData);
@@ -217,6 +227,11 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
   FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
   friend class LabelSelectionTest;
+
+  // ContextMenuController overrides:
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // SelectionControllerDelegate overrides:
   gfx::RenderText* GetRenderTextForSelectionController() override;
@@ -231,6 +246,13 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
   void OnAfterPointerAction(bool text_changed, bool selection_changed) override;
   bool PasteSelectionClipboard() override;
   void UpdateSelectionClipboard() override;
+
+  // ui::SimpleMenuModel::Delegate overrides:
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) const override;
 
   const gfx::RenderText* GetRenderTextForSelectionController() const;
 
@@ -262,6 +284,15 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
 
   // Empties |lines_| and updates |stored_selection_range_|.
   void ClearRenderTextLines() const;
+
+  // Returns the currently selected text.
+  base::string16 GetSelectedText() const;
+
+  // Updates the clipboard with the currently selected text.
+  void CopyToClipboard();
+
+  // Builds |context_menu_contents_|.
+  void BuildContextMenuContents();
 
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> render_text_;
@@ -308,6 +339,10 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
   bool is_first_paint_text_;
 
   std::unique_ptr<SelectionController> selection_controller_;
+
+  // Context menu related members.
+  ui::SimpleMenuModel context_menu_contents_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Label);
 };

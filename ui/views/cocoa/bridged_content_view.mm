@@ -30,6 +30,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"
@@ -245,6 +246,22 @@ NSAttributedString* GetAttributedString(
 
   [str endEditing];
   return str.autorelease();
+}
+
+ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
+  if (action == @selector(undo:))
+    return ui::TextEditCommand::UNDO;
+  if (action == @selector(redo:))
+    return ui::TextEditCommand::REDO;
+  if (action == @selector(cut:))
+    return ui::TextEditCommand::CUT;
+  if (action == @selector(copy:))
+    return ui::TextEditCommand::COPY;
+  if (action == @selector(paste:))
+    return ui::TextEditCommand::PASTE;
+  if (action == @selector(selectAll:))
+    return ui::TextEditCommand::SELECT_ALL;
+  return ui::TextEditCommand::INVALID_COMMAND;
 }
 
 }  // namespace
@@ -520,12 +537,6 @@ NSAttributedString* GetAttributedString(
 }
 
 - (void)undo:(id)sender {
-  // This DCHECK is more strict than a similar check in handleAction:. It can be
-  // done here because the actors sending these actions should be calling
-  // validateUserInterfaceItem: before enabling UI that allows these messages to
-  // be sent. Checking it here would be too late to provide correct UI feedback
-  // (e.g. there will be no "beep").
-  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::UNDO));
   [self handleAction:ui::TextEditCommand::UNDO
              keyCode:ui::VKEY_Z
              domCode:ui::DomCode::US_Z
@@ -533,7 +544,6 @@ NSAttributedString* GetAttributedString(
 }
 
 - (void)redo:(id)sender {
-  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::REDO));
   [self handleAction:ui::TextEditCommand::REDO
              keyCode:ui::VKEY_Z
              domCode:ui::DomCode::US_Z
@@ -541,7 +551,6 @@ NSAttributedString* GetAttributedString(
 }
 
 - (void)cut:(id)sender {
-  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::CUT));
   [self handleAction:ui::TextEditCommand::CUT
              keyCode:ui::VKEY_X
              domCode:ui::DomCode::US_X
@@ -549,7 +558,6 @@ NSAttributedString* GetAttributedString(
 }
 
 - (void)copy:(id)sender {
-  DCHECK(textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::COPY));
   [self handleAction:ui::TextEditCommand::COPY
              keyCode:ui::VKEY_C
              domCode:ui::DomCode::US_C
@@ -557,8 +565,6 @@ NSAttributedString* GetAttributedString(
 }
 
 - (void)paste:(id)sender {
-  DCHECK(
-      textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::PASTE));
   [self handleAction:ui::TextEditCommand::PASTE
              keyCode:ui::VKEY_V
              domCode:ui::DomCode::US_V
@@ -566,8 +572,6 @@ NSAttributedString* GetAttributedString(
 }
 
 - (void)selectAll:(id)sender {
-  DCHECK(textInputClient_->IsTextEditCommandEnabled(
-      ui::TextEditCommand::SELECT_ALL));
   [self handleAction:ui::TextEditCommand::SELECT_ALL
              keyCode:ui::VKEY_A
              domCode:ui::DomCode::US_A
@@ -1378,30 +1382,25 @@ NSAttributedString* GetAttributedString(
 // NSUserInterfaceValidations protocol implementation.
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  if (!textInputClient_)
+  ui::TextEditCommand command = GetTextEditCommandForMenuAction([item action]);
+
+  if (command == ui::TextEditCommand::INVALID_COMMAND)
     return NO;
 
-  SEL action = [item action];
+  if (textInputClient_)
+    return textInputClient_->IsTextEditCommandEnabled(command);
 
-  if (action == @selector(undo:))
-    return textInputClient_->IsTextEditCommandEnabled(
-        ui::TextEditCommand::UNDO);
-  if (action == @selector(redo:))
-    return textInputClient_->IsTextEditCommandEnabled(
-        ui::TextEditCommand::REDO);
-  if (action == @selector(cut:))
-    return textInputClient_->IsTextEditCommandEnabled(ui::TextEditCommand::CUT);
-  if (action == @selector(copy:))
-    return textInputClient_->IsTextEditCommandEnabled(
-        ui::TextEditCommand::COPY);
-  if (action == @selector(paste:))
-    return textInputClient_->IsTextEditCommandEnabled(
-        ui::TextEditCommand::PASTE);
-  if (action == @selector(selectAll:))
-    return textInputClient_->IsTextEditCommandEnabled(
-        ui::TextEditCommand::SELECT_ALL);
+  // views::Label does not implement the TextInputClient interface but still
+  // needs to intercept the Copy and Select All menu actions.
+  if (command != ui::TextEditCommand::COPY &&
+      command != ui::TextEditCommand::SELECT_ALL)
+    return NO;
 
-  return NO;
+  views::FocusManager* focus_manager =
+      hostedView_->GetWidget()->GetFocusManager();
+  return focus_manager && focus_manager->GetFocusedView() &&
+         focus_manager->GetFocusedView()->GetClassName() ==
+             views::Label::kViewClassName;
 }
 
 // NSDraggingSource protocol implementation.

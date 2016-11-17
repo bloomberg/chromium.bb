@@ -29,6 +29,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/selection_controller.h"
@@ -44,7 +46,8 @@ Label::Label() : Label(base::string16()) {
 Label::Label(const base::string16& text) : Label(text, GetDefaultFontList()) {
 }
 
-Label::Label(const base::string16& text, const gfx::FontList& font_list) {
+Label::Label(const base::string16& text, const gfx::FontList& font_list)
+    : context_menu_contents_(this) {
   Init(text, font_list);
 }
 
@@ -69,6 +72,7 @@ void Label::SetText(const base::string16& new_text) {
   is_first_paint_text_ = true;
   render_text_->SetText(new_text);
   ResetLayout();
+  stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
 void Label::SetAutoColorReadabilityEnabled(bool enabled) {
@@ -181,6 +185,8 @@ void Label::SetObscured(bool obscured) {
     return;
   is_first_paint_text_ = true;
   render_text_->SetObscured(obscured);
+  if (obscured)
+    SetSelectable(false);
   ResetLayout();
 }
 
@@ -244,7 +250,7 @@ base::string16 Label::GetDisplayTextForTesting() {
 }
 
 bool Label::IsSelectionSupported() const {
-  return !multi_line() && render_text_->IsSelectionSupported();
+  return !multi_line() && !obscured() && render_text_->IsSelectionSupported();
 }
 
 bool Label::SetSelectable(bool value) {
@@ -253,10 +259,12 @@ bool Label::SetSelectable(bool value) {
 
   if (!value) {
     ClearSelection();
+    stored_selection_range_ = gfx::Range::InvalidRange();
     selection_controller_.reset();
     return true;
   }
 
+  DCHECK(!stored_selection_range_.IsValid());
   if (!IsSelectionSupported())
     return false;
 
@@ -544,6 +552,61 @@ void Label::OnMouseCaptureLost() {
   selection_controller_->OnMouseCaptureLost();
 }
 
+bool Label::OnKeyPressed(const ui::KeyEvent& event) {
+  if (!GetRenderTextForSelectionController())
+    return false;
+
+  const bool shift = event.IsShiftDown();
+  const bool control = event.IsControlDown();
+  const bool alt = event.IsAltDown() || event.IsAltGrDown();
+
+  switch (event.key_code()) {
+    case ui::VKEY_C:
+      if (control && !alt && HasSelection()) {
+        CopyToClipboard();
+        return true;
+      }
+      break;
+    case ui::VKEY_INSERT:
+      if (control && !shift && HasSelection()) {
+        CopyToClipboard();
+        return true;
+      }
+      break;
+    case ui::VKEY_A:
+      if (control && !alt && !text().empty()) {
+        SelectAll();
+        DCHECK(HasSelection());
+        UpdateSelectionClipboard();
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+
+  return false;
+}
+
+bool Label::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  // Allow the "Copy" action from the Chrome menu to be invoked. E.g., if a user
+  // selects a Label on a web modal dialog. "Select All" doesn't appear in the
+  // Chrome menu so isn't handled here.
+  if (accelerator.key_code() == ui::VKEY_C && accelerator.IsCtrlDown()) {
+    CopyToClipboard();
+    return true;
+  }
+  return false;
+}
+
+bool Label::CanHandleAccelerators() const {
+  // Focus needs to be checked since the accelerator for the Copy command from
+  // the Chrome menu should only be handled when the current view has focus. See
+  // related comment in BrowserView::CutCopyPaste.
+  return HasFocus() && GetRenderTextForSelectionController() &&
+         View::CanHandleAccelerators();
+}
+
 void Label::OnDeviceScaleFactorChanged(float device_scale_factor) {
   View::OnDeviceScaleFactorChanged(device_scale_factor);
   // When the device scale factor is changed, some font rendering parameters is
@@ -555,6 +618,21 @@ void Label::OnDeviceScaleFactorChanged(float device_scale_factor) {
 void Label::VisibilityChanged(View* starting_from, bool is_visible) {
   if (!is_visible)
     ClearRenderTextLines();
+}
+
+void Label::ShowContextMenuForView(View* source,
+                                   const gfx::Point& point,
+                                   ui::MenuSourceType source_type) {
+  if (!GetRenderTextForSelectionController())
+    return;
+
+  context_menu_runner_.reset(
+      new MenuRunner(&context_menu_contents_, MenuRunner::HAS_MNEMONICS |
+                                                  MenuRunner::CONTEXT_MENU |
+                                                  MenuRunner::ASYNC));
+  ignore_result(context_menu_runner_->RunMenuAt(
+      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()), MENU_ANCHOR_TOPLEFT,
+      source_type));
 }
 
 gfx::RenderText* Label::GetRenderTextForSelectionController() {
@@ -611,14 +689,55 @@ bool Label::PasteSelectionClipboard() {
 void Label::UpdateSelectionClipboard() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!obscured()) {
-    const gfx::RenderText* render_text = GetRenderTextForSelectionController();
-    DCHECK(render_text);
-    const base::string16 selected_text =
-        render_text->GetTextFromRange(render_text->selection());
     ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_SELECTION)
-        .WriteText(selected_text);
+        .WriteText(GetSelectedText());
   }
 #endif
+}
+
+bool Label::IsCommandIdChecked(int command_id) const {
+  return true;
+}
+
+bool Label::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
+    case IDS_APP_COPY:
+      return HasSelection() && !obscured();
+    case IDS_APP_SELECT_ALL:
+      return GetRenderTextForSelectionController() && !text().empty();
+  }
+  return false;
+}
+
+void Label::ExecuteCommand(int command_id, int event_flags) {
+  switch (command_id) {
+    case IDS_APP_COPY:
+      CopyToClipboard();
+      break;
+    case IDS_APP_SELECT_ALL:
+      SelectAll();
+      DCHECK(HasSelection());
+      UpdateSelectionClipboard();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+bool Label::GetAcceleratorForCommandId(int command_id,
+                                       ui::Accelerator* accelerator) const {
+  switch (command_id) {
+    case IDS_APP_COPY:
+      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDS_APP_SELECT_ALL:
+      *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 const gfx::RenderText* Label::GetRenderTextForSelectionController() const {
@@ -659,6 +778,15 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   max_width_ = 0;
   is_first_paint_text_ = true;
   SetText(text);
+
+  // Only selectable labels will get requests to show the context menu, due to
+  // CanProcessEventsWithinSubtree().
+  BuildContextMenuContents();
+  set_context_menu_controller(this);
+
+  // This allows the BrowserView to pass the copy command from the Chrome menu
+  // to the Label.
+  AddAccelerator(ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));
 }
 
 void Label::ResetLayout() {
@@ -862,12 +990,36 @@ bool Label::ShouldShowDefaultTooltip() const {
 }
 
 void Label::ClearRenderTextLines() const {
+  // The HasSelection() call below will build |lines_| in case it is empty.
+  // Return early to avoid this.
+  if (lines_.empty())
+    return;
+
   // Persist the selection range if there is an active selection.
   if (HasSelection()) {
     stored_selection_range_ =
         GetRenderTextForSelectionController()->selection();
   }
   lines_.clear();
+}
+
+base::string16 Label::GetSelectedText() const {
+  const gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  return render_text ? render_text->GetTextFromRange(render_text->selection())
+                     : base::string16();
+}
+
+void Label::CopyToClipboard() {
+  if (!HasSelection() || obscured())
+    return;
+  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+      .WriteText(GetSelectedText());
+}
+
+void Label::BuildContextMenuContents() {
+  context_menu_contents_.AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
+  context_menu_contents_.AddItemWithStringId(IDS_APP_SELECT_ALL,
+                                             IDS_APP_SELECT_ALL);
 }
 
 }  // namespace views
