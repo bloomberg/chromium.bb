@@ -33,6 +33,7 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -47,7 +48,8 @@ class SourceLocation;
 // FrameHost to the ChromeClient and Inspector.  It's meant as an abstraction
 // around ChromeClient calls and the way that Blink core/ can add messages to
 // the console.
-class CORE_EXPORT FrameConsole final : public GarbageCollected<FrameConsole> {
+class CORE_EXPORT FrameConsole final
+    : public GarbageCollectedFinalized<FrameConsole> {
  public:
   static FrameConsole* create(LocalFrame& frame) {
     return new FrameConsole(frame);
@@ -58,6 +60,10 @@ class CORE_EXPORT FrameConsole final : public GarbageCollected<FrameConsole> {
                             const String& message,
                             std::unique_ptr<SourceLocation>,
                             const String& workerId);
+
+  // Show the specified ConsoleMessage only if the frame haven't shown a message
+  // same as ConsoleMessage::messsage().
+  void addSingletonMessage(ConsoleMessage*);
 
   bool addMessageToStorage(ConsoleMessage*);
   void reportMessageToClient(MessageSource,
@@ -77,6 +83,7 @@ class CORE_EXPORT FrameConsole final : public GarbageCollected<FrameConsole> {
   explicit FrameConsole(LocalFrame&);
 
   Member<LocalFrame> m_frame;
+  HashSet<String> m_singletonMessages;
 };
 
 }  // namespace blink

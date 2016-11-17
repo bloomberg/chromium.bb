@@ -1,3 +1,10 @@
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=r and name=R
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=radio and name=rAdIO
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=radio and name=RADIO
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=ñ and name=Ñ
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=ς and name=σ
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=ς and name=Σ
+CONSOLE WARNING: line 1: Case-insensitive matching for <input type=radio name=...> is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/6165799291060224 for more details. Comparing name=i and name=I
 Case shouldn't matter when it comes to radio group names
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

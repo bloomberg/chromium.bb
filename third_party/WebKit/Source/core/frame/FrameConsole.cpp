@@ -100,6 +100,13 @@ void FrameConsole::addMessageFromWorker(
       level, message, std::move(location), workerId));
 }
 
+void FrameConsole::addSingletonMessage(ConsoleMessage* consoleMessage) {
+  if (m_singletonMessages.contains(consoleMessage->message()))
+    return;
+  m_singletonMessages.add(consoleMessage->message());
+  addMessage(consoleMessage);
+}
+
 void FrameConsole::reportResourceResponseReceived(
     DocumentLoader* loader,
     unsigned long requestIdentifier,
