@@ -41,10 +41,11 @@ class ReadingListModelObserver {
   virtual void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
                                               size_t index) {}
   // Invoked when elements are moved from unread to read or from read to unread.
-  // |index| is the original position in the origin list. The element will be
-  // added to the beginning of the target list.
+  // |index| is the original position  and |read| the origin status. The element
+  // will change list and/or index but will not be deleted.
   virtual void ReadingListWillMoveEntry(const ReadingListModel* model,
-                                        size_t index) {}
+                                        size_t index,
+                                        bool read) {}
 
   // Invoked when elements are added to the read or the unread list. The new
   // entries are always added at the beginning. these methods may be called

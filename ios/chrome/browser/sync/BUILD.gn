@@ -46,6 +46,7 @@ source_set("sync") {
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/invalidation",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/services/gcm",
     "//ios/chrome/browser/sessions",

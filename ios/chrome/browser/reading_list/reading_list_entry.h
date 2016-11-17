@@ -9,8 +9,20 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "url/gurl.h"
+
+namespace reading_list {
+class ReadingListLocal;
+}
+
+namespace sync_pb {
+class ReadingListSpecifics;
+}
+
+class ReadingListEntry;
+using ReadingListEntries = std::vector<ReadingListEntry>;
 
 // An entry in the reading list. The URL is a unique identifier for an entry, as
 // such it should not be empty and is the only thing considered when comparing
@@ -51,8 +63,47 @@ class ReadingListEntry {
   // non-error state.
   int FailedDownloadCounter() const;
 
+  // The last update time of the entry. This value may be used to sort the
+  // entries. The value is in microseconds since Jan 1st 1970.
+  int64_t UpdateTime() const;
+
+  // The creation update time of the entry. The value is in microseconds since
+  // Jan 1st 1970.
+  int64_t CreationTime() const;
+
+  // Set the update time to now.
+  void MarkEntryUpdated();
+
+  // Returns a protobuf encoding the content of this ReadingListEntry for local
+  // storage.
+  std::unique_ptr<reading_list::ReadingListLocal> AsReadingListLocal(
+      bool read) const;
+
+  // Returns a protobuf encoding the content of this ReadingListEntry for sync.
+  std::unique_ptr<sync_pb::ReadingListSpecifics> AsReadingListSpecifics(
+      bool read) const;
+
+  // Created a ReadingListEntry from the protobuf format.
+  static std::unique_ptr<ReadingListEntry> FromReadingListLocal(
+      const reading_list::ReadingListLocal& pb_entry);
+
+  // Created a ReadingListEntry from the protobuf format.
+  static std::unique_ptr<ReadingListEntry> FromReadingListSpecifics(
+      const sync_pb::ReadingListSpecifics& pb_entry);
+
+  // Merge the local data from |other| to this.
+  // The local fields (distilled_state_, distilled_url_, backoff_,
+  // failed_download_counter_) of |other| are moved to |this| and must not be
+  // used after this call.
+  void MergeLocalStateFrom(ReadingListEntry& other);
+
   ReadingListEntry& operator=(ReadingListEntry&& other);
+
   bool operator==(const ReadingListEntry& other) const;
+
+  // Returns whether |lhs| is more recent than |rhs|.
+  static bool CompareEntryUpdateTime(const ReadingListEntry& lhs,
+                                     const ReadingListEntry& rhs);
 
   // Sets the title.
   void SetTitle(const std::string& title);
@@ -63,12 +114,27 @@ class ReadingListEntry {
   void SetDistilledState(DistillationState distilled_state);
 
  private:
+  ReadingListEntry(const GURL& url,
+                   const std::string& title,
+                   int64_t creation_time,
+                   int64_t update_time,
+                   ReadingListEntry::DistillationState distilled_state,
+                   const base::FilePath& distilled_path,
+                   int failed_download_counter,
+                   std::unique_ptr<net::BackoffEntry> backoff);
   GURL url_;
   std::string title_;
   base::FilePath distilled_path_;
   DistillationState distilled_state_;
+
   std::unique_ptr<net::BackoffEntry> backoff_;
   int failed_download_counter_;
+
+  // These value are in microseconds since Jan 1st 1970. They are used for
+  // sorting the entries from the database. They are kept in int64_t to avoid
+  // conversion on each save/read event.
+  int64_t creation_time_us_;
+  int64_t update_time_us_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);
 };

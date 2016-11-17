@@ -25,7 +25,8 @@
     willRemoveReadEntryAtIndex:(size_t)index;
 
 - (void)readingListModel:(const ReadingListModel*)model
-           willMoveEntry:(size_t)unreadIndex;
+           willMoveEntry:(size_t)unreadIndex
+                  isRead:(BOOL)read;
 
 - (void)readingListModel:(const ReadingListModel*)model
       willAddUnreadEntry:(const ReadingListEntry&)entry;
@@ -65,7 +66,8 @@ class ReadingListModelBridge : public ReadingListModelObserver {
   void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
                                       size_t index) override;
   void ReadingListWillMoveEntry(const ReadingListModel* model,
-                                size_t index) override;
+                                size_t index,
+                                bool read) override;
   void ReadingListWillAddUnreadEntry(const ReadingListModel* model,
                                      const ReadingListEntry& entry) override;
   void ReadingListWillAddReadEntry(const ReadingListModel* model,

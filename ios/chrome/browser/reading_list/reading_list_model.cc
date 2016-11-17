@@ -4,7 +4,11 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
+
 ReadingListModel::ReadingListModel() : current_batch_updates_count_(0) {}
+
 ReadingListModel::~ReadingListModel() {
   for (auto& observer : observers_) {
     observer.ReadingListModelBeingDeleted(this);
@@ -13,6 +17,7 @@ ReadingListModel::~ReadingListModel() {
 
 // Observer methods.
 void ReadingListModel::AddObserver(ReadingListModelObserver* observer) {
+  DCHECK(CalledOnValidThread());
   DCHECK(observer);
   observers_.AddObserver(observer);
   if (loaded()) {
@@ -21,32 +26,56 @@ void ReadingListModel::AddObserver(ReadingListModelObserver* observer) {
 }
 
 void ReadingListModel::RemoveObserver(ReadingListModelObserver* observer) {
+  DCHECK(CalledOnValidThread());
   observers_.RemoveObserver(observer);
 }
 
 // Batch update methods.
 bool ReadingListModel::IsPerformingBatchUpdates() const {
+  DCHECK(CalledOnValidThread());
   return current_batch_updates_count_ > 0;
 }
 
 std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
+ReadingListModel::CreateBatchToken() {
+  return base::MakeUnique<ReadingListModel::ScopedReadingListBatchUpdate>(this);
+}
+
+std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
 ReadingListModel::BeginBatchUpdates() {
-  std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate> token(
-      new ReadingListModel::ScopedReadingListBatchUpdate(this));
+  DCHECK(CalledOnValidThread());
+  auto token = CreateBatchToken();
 
   ++current_batch_updates_count_;
   if (current_batch_updates_count_ == 1) {
-    for (auto& observer : observers_)
-      observer.ReadingListModelBeganBatchUpdates(this);
+    EnteringBatchUpdates();
   }
   return token;
 }
 
+void ReadingListModel::EnteringBatchUpdates() {
+  DCHECK(CalledOnValidThread());
+  for (auto& observer : observers_)
+    observer.ReadingListModelBeganBatchUpdates(this);
+}
+
 void ReadingListModel::EndBatchUpdates() {
+  DCHECK(CalledOnValidThread());
   DCHECK(IsPerformingBatchUpdates());
+  DCHECK(current_batch_updates_count_ > 0);
   --current_batch_updates_count_;
   if (current_batch_updates_count_ == 0) {
-    for (auto& observer : observers_)
-      observer.ReadingListModelCompletedBatchUpdates(this);
+    LeavingBatchUpdates();
   }
+}
+
+void ReadingListModel::LeavingBatchUpdates() {
+  DCHECK(CalledOnValidThread());
+  for (auto& observer : observers_)
+    observer.ReadingListModelCompletedBatchUpdates(this);
+}
+
+ReadingListModel::ScopedReadingListBatchUpdate::
+    ~ScopedReadingListBatchUpdate() {
+  model_->EndBatchUpdates();
 }
