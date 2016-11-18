@@ -430,9 +430,8 @@ RenderText::~RenderText() {
 // static
 RenderText* RenderText::CreateInstance() {
 #if defined(OS_MACOSX)
-  static const bool use_native =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHarfBuzzRenderText);
+  const bool use_native = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableHarfBuzzRenderText);
   if (use_native)
     return new RenderTextMac;
 #endif  // defined(OS_MACOSX)
