@@ -21,8 +21,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
-WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj, int display_id)
-    : display_id_(display_id), compositor_(NULL) {
+WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj) : compositor_(NULL) {
   java_window_.Reset(env, obj);
 }
 
@@ -47,8 +46,8 @@ WindowAndroid::~WindowAndroid() {
 WindowAndroid* WindowAndroid::CreateForTesting() {
   JNIEnv* env = AttachCurrentThread();
   const JavaRef<jobject>& context = base::android::GetApplicationContext();
-  long native_pointer = Java_WindowAndroid_createForTesting(env, context);
-  return reinterpret_cast<WindowAndroid*>(native_pointer);
+  return new WindowAndroid(
+      env, Java_WindowAndroid_createForTesting(env, context).obj());
 }
 
 void WindowAndroid::DestroyForTesting() {
@@ -155,8 +154,8 @@ WindowAndroid* WindowAndroid::GetWindowAndroid() const {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj, int sdk_display_id) {
-  WindowAndroid* window = new WindowAndroid(env, obj, sdk_display_id);
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  WindowAndroid* window = new WindowAndroid(env, obj);
   return reinterpret_cast<intptr_t>(window);
 }
 

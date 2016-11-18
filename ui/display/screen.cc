@@ -21,7 +21,7 @@ Screen::~Screen() {}
 
 // static
 Screen* Screen::GetScreen() {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   // TODO(scottmg): https://crbug.com/558054
   if (!g_screen)
     g_screen = CreateNativeScreen();

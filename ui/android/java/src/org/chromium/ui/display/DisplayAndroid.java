@@ -6,12 +6,10 @@ package org.chromium.ui.display;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.Surface;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -58,8 +56,6 @@ public class DisplayAndroid {
     private final Point mSize;
     private final Point mPhysicalSize;
     private final DisplayMetrics mDisplayMetrics;
-    private final PixelFormat mPixelFormatInfo;
-    private int mPixelFormatId;
     private int mRotation;
 
     // When this object exists, a positive value means that the forced DIP scale is set and
@@ -118,13 +114,6 @@ public class DisplayAndroid {
     }
 
     /**
-     * @return Display id as defined in Android's Display.
-     */
-    public int getSdkDisplayId() {
-        return mSdkDisplayId;
-    }
-
-    /**
      * @return Display height in physical pixels.
      */
     public int getDisplayHeight() {
@@ -160,72 +149,10 @@ public class DisplayAndroid {
     }
 
     /**
-     * @return current orientation in degrees. One of the values 0, 90, 180, 270.
-     */
-    /* package */ int getRotationDegrees() {
-        switch (mRotation) {
-            case Surface.ROTATION_0:
-                return 0;
-            case Surface.ROTATION_90:
-                return 90;
-            case Surface.ROTATION_180:
-                return 180;
-            case Surface.ROTATION_270:
-                return 270;
-        }
-
-        // This should not happen.
-        assert false;
-        return 0;
-    }
-
-    /**
      * @return A scaling factor for the Density Independent Pixel unit.
      */
     public float getDipScale() {
         return mDisplayMetrics.density;
-    }
-
-    /**
-     * @return Number of bits per pixel.
-     */
-    /* package */ int getBitsPerPixel() {
-        return mPixelFormatInfo.bitsPerPixel;
-    }
-
-    /**
-     * @return Number of bits per each color component.
-     */
-    @SuppressWarnings("deprecation")
-    /* package */ int getBitsPerComponent() {
-        switch (mPixelFormatId) {
-            case PixelFormat.RGBA_4444:
-                return 4;
-
-            case PixelFormat.RGBA_5551:
-                return 5;
-
-            case PixelFormat.RGBA_8888:
-            case PixelFormat.RGBX_8888:
-            case PixelFormat.RGB_888:
-                return 8;
-
-            case PixelFormat.RGB_332:
-                return 2;
-
-            case PixelFormat.RGB_565:
-                return 5;
-
-            // Non-RGB formats.
-            case PixelFormat.A_8:
-            case PixelFormat.LA_88:
-            case PixelFormat.L_8:
-                return 0;
-
-            // Unknown format. Use 8 as a sensible default.
-            default:
-                return 8;
-        }
     }
 
     /**
@@ -265,17 +192,12 @@ public class DisplayAndroid {
         mSize = new Point();
         mPhysicalSize = new Point();
         mDisplayMetrics = new DisplayMetrics();
-        mPixelFormatInfo = new PixelFormat();
+        updateFromDisplay(display);
     }
 
-    @SuppressWarnings("deprecation")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     /* package */ void updateFromDisplay(Display display) {
-        final Point oldSize = new Point(mSize);
-        final Point oldPhysicalSize = new Point(mPhysicalSize);
-        final float oldDensity = mDisplayMetrics.density;
-        final int oldPixelFormatId = mPixelFormatId;
-        final int oldRotation = mRotation;
+        float oldDensity = mDisplayMetrics.density;
 
         display.getSize(mSize);
         display.getMetrics(mDisplayMetrics);
@@ -286,24 +208,11 @@ public class DisplayAndroid {
             display.getRealSize(mPhysicalSize);
         }
 
-        // JellyBean MR1 and later always uses RGBA_8888.
-        mPixelFormatId = (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-                ? display.getPixelFormat()
-                : PixelFormat.RGBA_8888;
-        if (oldPixelFormatId != mPixelFormatId) {
-            PixelFormat.getPixelFormatInfo(mPixelFormatId, mPixelFormatInfo);
-        }
+        int newRotation = display.getRotation();
+        boolean rotationChanged = newRotation != mRotation;
+        mRotation = newRotation;
 
-        mRotation = display.getRotation();
-
-        final boolean noChanges = oldSize.equals(mSize) && oldPhysicalSize.equals(mPhysicalSize)
-                && oldDensity == mDisplayMetrics.density && oldPixelFormatId == mPixelFormatId
-                && oldRotation == mRotation;
-        if (noChanges) return;
-
-        getManager().updateDisplayOnNativeSide(this);
-
-        if (oldRotation != mRotation) {
+        if (rotationChanged) {
             DisplayAndroidObserver[] observers = getObservers();
             for (DisplayAndroidObserver o : observers) {
                 o.onRotationChanged(mRotation);
