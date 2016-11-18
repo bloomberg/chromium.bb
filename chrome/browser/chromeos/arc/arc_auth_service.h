@@ -23,7 +23,6 @@ class URLRequestContextGetter;
 namespace arc {
 
 class ArcAuthCodeFetcher;
-class ArcAuthContext;
 class ArcRobotAuth;
 
 // Implementation of ARC authorization.
@@ -91,7 +90,6 @@ class ArcAuthService : public ArcService,
 
   mojo::Binding<mojom::AuthHost> binding_;
 
-  std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher_;
   std::unique_ptr<ArcRobotAuth> arc_robot_auth_;
 
