@@ -274,14 +274,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         base::MakeUnique<UIDataTypeController>(syncer::ARTICLES, error_callback,
                                                sync_client_));
   }
-  // Reading list sync is disabled by default.  Register only if explicitly
-  // enabled.
-  if (enabled_types.Has(syncer::READING_LIST)) {
-    sync_service->RegisterDataTypeController(
-        base::MakeUnique<ModelTypeController>(
-            syncer::READING_LIST, error_callback, sync_client_,
-            base::ThreadTaskRunnerHandle::Get()));
-  }
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(

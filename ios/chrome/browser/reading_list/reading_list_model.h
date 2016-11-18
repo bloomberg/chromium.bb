@@ -11,41 +11,29 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
 
 class GURL;
-class ReadingListEntry;
 class ReadingListModel;
-class ReadingListStore;
-class ScopedReadingListBatchUpdate;
 
 namespace ios {
 class ChromeBrowserState;
-}
-
-namespace syncer {
-class ModelTypeSyncBridge;
 }
 
 // The reading list model contains two list of entries: one of unread urls, the
 // other of read ones. This object should only be accessed from one thread
 // (Usually the main thread). The observers callbacks are also sent on the main
 // thread.
-class ReadingListModel : public base::NonThreadSafe {
+class ReadingListModel {
  public:
   class ScopedReadingListBatchUpdate;
-
   // Returns true if the model finished loading. Until this returns true the
   // reading list is not ready for use.
   virtual bool loaded() const = 0;
 
   // Returns true if the model is performing batch updates right now.
   bool IsPerformingBatchUpdates() const;
-
-  // Returns the ModelTypeSyncBridge responsible for handling sync message.
-  virtual syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() = 0;
 
   // Tells model to prepare for batch updates.
   // This method is reentrant, i.e. several batch updates may take place at the
@@ -54,9 +42,6 @@ class ReadingListModel : public base::NonThreadSafe {
   // batch update is performed. Deallocating this object will inform model that
   // the batch update has completed.
   std::unique_ptr<ScopedReadingListBatchUpdate> BeginBatchUpdates();
-
-  // Creates a batch token that will freeze the model while in scope.
-  virtual std::unique_ptr<ScopedReadingListBatchUpdate> CreateBatchToken();
 
   // Returns the size of read and unread entries.
   virtual size_t unread_size() const = 0;
@@ -74,10 +59,7 @@ class ReadingListModel : public base::NonThreadSafe {
   virtual const ReadingListEntry& GetReadEntryAtIndex(size_t index) const = 0;
 
   // Returns a specific entry. Returns null if the entry does not exist.
-  // If |read| is not null and the entry is found, |*read| is the read status
-  // of the entry.
-  virtual const ReadingListEntry* GetEntryFromURL(const GURL& gurl,
-                                                  bool* read) const = 0;
+  virtual const ReadingListEntry* GetEntryFromURL(const GURL& gurl) const = 0;
 
   // Synchronously calls the |callback| with entry associated with this |url|.
   // Does nothing if there is no entry associated.
@@ -127,7 +109,7 @@ class ReadingListModel : public base::NonThreadSafe {
     explicit ScopedReadingListBatchUpdate(ReadingListModel* model)
         : model_(model) {}
 
-    virtual ~ScopedReadingListBatchUpdate();
+    ~ScopedReadingListBatchUpdate() { model_->EndBatchUpdates(); }
 
    private:
     ReadingListModel* model_;
@@ -145,12 +127,6 @@ class ReadingListModel : public base::NonThreadSafe {
   // Tells model that batch updates have completed. Called from
   // ReadingListBatchUpdateToken dtor.
   virtual void EndBatchUpdates();
-
-  // Called when model is entering batch update mode.
-  virtual void EnteringBatchUpdates();
-
-  // Called when model is leaving batch update mode.
-  virtual void LeavingBatchUpdates();
 
  private:
   unsigned int current_batch_updates_count_;
