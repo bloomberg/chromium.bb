@@ -2026,31 +2026,31 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETextAlign e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case TASTART:
+    case ETextAlign::Start:
       m_valueID = CSSValueStart;
       break;
-    case TAEND:
+    case ETextAlign::End:
       m_valueID = CSSValueEnd;
       break;
-    case LEFT:
+    case ETextAlign::Left:
       m_valueID = CSSValueLeft;
       break;
-    case RIGHT:
+    case ETextAlign::Right:
       m_valueID = CSSValueRight;
       break;
-    case CENTER:
+    case ETextAlign::Center:
       m_valueID = CSSValueCenter;
       break;
-    case JUSTIFY:
+    case ETextAlign::Justify:
       m_valueID = CSSValueJustify;
       break;
-    case WEBKIT_LEFT:
+    case ETextAlign::WebkitLeft:
       m_valueID = CSSValueWebkitLeft;
       break;
-    case WEBKIT_RIGHT:
+    case ETextAlign::WebkitRight:
       m_valueID = CSSValueWebkitRight;
       break;
-    case WEBKIT_CENTER:
+    case ETextAlign::WebkitCenter:
       m_valueID = CSSValueWebkitCenter;
       break;
   }
@@ -2061,11 +2061,11 @@ inline ETextAlign CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueWebkitAuto:  // Legacy -webkit-auto. Eqiuvalent to start.
     case CSSValueStart:
-      return TASTART;
+      return ETextAlign::Start;
     case CSSValueEnd:
-      return TAEND;
+      return ETextAlign::End;
     case CSSValueInternalCenter:
-      return CENTER;
+      return ETextAlign::Center;
     default:
       return static_cast<ETextAlign>(m_valueID - CSSValueLeft);
   }

@@ -1122,23 +1122,23 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(
   CaretAlignment alignment = AlignLeft;
 
   switch (currentStyle.textAlign()) {
-    case LEFT:
-    case WEBKIT_LEFT:
+    case ETextAlign::Left:
+    case ETextAlign::WebkitLeft:
       break;
-    case CENTER:
-    case WEBKIT_CENTER:
+    case ETextAlign::Center:
+    case ETextAlign::WebkitCenter:
       alignment = AlignCenter;
       break;
-    case RIGHT:
-    case WEBKIT_RIGHT:
+    case ETextAlign::Right:
+    case ETextAlign::WebkitRight:
       alignment = AlignRight;
       break;
-    case JUSTIFY:
-    case TASTART:
+    case ETextAlign::Justify:
+    case ETextAlign::Start:
       if (!currentStyle.isLeftToRightDirection())
         alignment = AlignRight;
       break;
-    case TAEND:
+    case ETextAlign::End:
       if (currentStyle.isLeftToRightDirection())
         alignment = AlignRight;
       break;

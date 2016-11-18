@@ -337,16 +337,16 @@ enum EWhiteSpace { NORMAL, PRE, PRE_WRAP, PRE_LINE, NOWRAP, KHTML_NOWRAP };
 
 // The order of this enum must match the order of the text align values in
 // CSSValueKeywords.in.
-enum ETextAlign {
-  LEFT,
-  RIGHT,
-  CENTER,
-  JUSTIFY,
-  WEBKIT_LEFT,
-  WEBKIT_RIGHT,
-  WEBKIT_CENTER,
-  TASTART,
-  TAEND,
+enum class ETextAlign : unsigned {
+  Left,
+  Right,
+  Center,
+  Justify,
+  WebkitLeft,
+  WebkitRight,
+  WebkitCenter,
+  Start,
+  End,
 };
 
 enum ETextTransform { CAPITALIZE, UPPERCASE, LOWERCASE, TTNONE };

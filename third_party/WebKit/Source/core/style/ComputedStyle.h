@@ -367,7 +367,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialListStyleType());
     m_inheritedData.m_listStylePosition =
         static_cast<unsigned>(initialListStylePosition());
-    m_inheritedData.m_textAlign = initialTextAlign();
+    m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
     m_inheritedData.m_textTransform = initialTextTransform();
     m_inheritedData.m_textUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
@@ -2218,11 +2218,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // text-align
-  static ETextAlign initialTextAlign() { return TASTART; }
+  static ETextAlign initialTextAlign() { return ETextAlign::Start; }
   ETextAlign textAlign() const {
     return static_cast<ETextAlign>(m_inheritedData.m_textAlign);
   }
-  void setTextAlign(ETextAlign v) { m_inheritedData.m_textAlign = v; }
+  void setTextAlign(ETextAlign v) {
+    m_inheritedData.m_textAlign = static_cast<unsigned>(v);
+  }
 
   // text-align-last
   static TextAlignLast initialTextAlignLast() { return TextAlignLastAuto; }

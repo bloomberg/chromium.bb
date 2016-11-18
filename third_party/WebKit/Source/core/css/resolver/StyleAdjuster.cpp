@@ -200,9 +200,10 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
   if (isHTMLTableElement(element)) {
     // Tables never support the -webkit-* values for text-align and will reset
     // back to the default.
-    if (style.textAlign() == WEBKIT_LEFT ||
-        style.textAlign() == WEBKIT_CENTER || style.textAlign() == WEBKIT_RIGHT)
-      style.setTextAlign(TASTART);
+    if (style.textAlign() == ETextAlign::WebkitLeft ||
+        style.textAlign() == ETextAlign::WebkitCenter ||
+        style.textAlign() == ETextAlign::WebkitRight)
+      style.setTextAlign(ETextAlign::Start);
     return;
   }
 

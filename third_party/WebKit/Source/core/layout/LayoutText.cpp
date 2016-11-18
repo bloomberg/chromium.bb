@@ -763,20 +763,20 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   bool rightAligned = false;
   switch (cbStyle.textAlign()) {
-    case RIGHT:
-    case WEBKIT_RIGHT:
+    case ETextAlign::Right:
+    case ETextAlign::WebkitRight:
       rightAligned = true;
       break;
-    case LEFT:
-    case WEBKIT_LEFT:
-    case CENTER:
-    case WEBKIT_CENTER:
+    case ETextAlign::Left:
+    case ETextAlign::WebkitLeft:
+    case ETextAlign::Center:
+    case ETextAlign::WebkitCenter:
       break;
-    case JUSTIFY:
-    case TASTART:
+    case ETextAlign::Justify:
+    case ETextAlign::Start:
       rightAligned = !cbStyle.isLeftToRightDirection();
       break;
-    case TAEND:
+    case ETextAlign::End:
       rightAligned = cbStyle.isLeftToRightDirection();
       break;
   }

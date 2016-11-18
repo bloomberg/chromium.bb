@@ -179,9 +179,9 @@ int WebFormControlElement::selectionEnd() const {
 WebString WebFormControlElement::alignmentForFormData() const {
   if (const ComputedStyle* style =
           constUnwrap<HTMLFormControlElement>()->computedStyle()) {
-    if (style->textAlign() == RIGHT)
+    if (style->textAlign() == ETextAlign::Right)
       return WebString::fromUTF8("right");
-    if (style->textAlign() == LEFT)
+    if (style->textAlign() == ETextAlign::Left)
       return WebString::fromUTF8("left");
   }
   return WebString();

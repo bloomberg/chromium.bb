@@ -114,7 +114,9 @@ void LayoutMenuList::adjustInnerStyle() {
          m_optionStyle->unicodeBidi() != innerStyle.unicodeBidi()))
       m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
           LayoutInvalidationReason::StyleChange);
-    innerStyle.setTextAlign(style()->isLeftToRightDirection() ? LEFT : RIGHT);
+    innerStyle.setTextAlign(style()->isLeftToRightDirection()
+                                ? ETextAlign::Left
+                                : ETextAlign::Right);
     innerStyle.setDirection(m_optionStyle->direction());
     innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
   }

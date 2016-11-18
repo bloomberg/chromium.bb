@@ -50,7 +50,7 @@ ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const {
 
   // The default behavior is to allow ruby text to expand if it is shorter than
   // the ruby base.
-  return JUSTIFY;
+  return ETextAlign::Justify;
 }
 
 void LayoutRubyText::adjustInlineDirectionLineBounds(

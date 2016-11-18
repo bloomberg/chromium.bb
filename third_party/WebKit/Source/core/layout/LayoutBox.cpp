@@ -2812,7 +2812,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
     const ComputedStyle& containingBlockStyle = containingBlock->styleRef();
     if ((marginStartLength.isAuto() && marginEndLength.isAuto()) ||
         (!marginStartLength.isAuto() && !marginEndLength.isAuto() &&
-         containingBlockStyle.textAlign() == WEBKIT_CENTER)) {
+         containingBlockStyle.textAlign() == ETextAlign::WebkitCenter)) {
       // Other browsers center the margin box for align=center elements so we
       // match them here.
       LayoutUnit centeredMarginBoxStart = std::max(
@@ -2826,9 +2826,9 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
 
     // Adjust margins for the align attribute
     if ((!containingBlockStyle.isLeftToRightDirection() &&
-         containingBlockStyle.textAlign() == WEBKIT_LEFT) ||
+         containingBlockStyle.textAlign() == ETextAlign::WebkitLeft) ||
         (containingBlockStyle.isLeftToRightDirection() &&
-         containingBlockStyle.textAlign() == WEBKIT_RIGHT)) {
+         containingBlockStyle.textAlign() == ETextAlign::WebkitRight)) {
       if (containingBlockStyle.isLeftToRightDirection() !=
           styleRef().isLeftToRightDirection()) {
         if (!marginStartLength.isAuto())

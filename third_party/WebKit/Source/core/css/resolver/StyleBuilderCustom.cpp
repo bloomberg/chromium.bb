@@ -509,14 +509,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
       state.style()->setTextAlign(state.parentStyle()->textAlign());
     else
       state.style()->setTextAlign(identValue.convertTo<ETextAlign>());
-  } else if (state.parentStyle()->textAlign() == TASTART)
-    state.style()->setTextAlign(
-        state.parentStyle()->isLeftToRightDirection() ? LEFT : RIGHT);
-  else if (state.parentStyle()->textAlign() == TAEND)
-    state.style()->setTextAlign(
-        state.parentStyle()->isLeftToRightDirection() ? RIGHT : LEFT);
-  else
+  } else if (state.parentStyle()->textAlign() == ETextAlign::Start) {
+    state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection()
+                                    ? ETextAlign::Left
+                                    : ETextAlign::Right);
+  } else if (state.parentStyle()->textAlign() == ETextAlign::End) {
+    state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection()
+                                    ? ETextAlign::Right
+                                    : ETextAlign::Left);
+  } else {
     state.style()->setTextAlign(state.parentStyle()->textAlign());
+  }
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(
