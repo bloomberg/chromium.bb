@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_EXTENSIONS_ARC_SUPPORT_MESSAGE_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"

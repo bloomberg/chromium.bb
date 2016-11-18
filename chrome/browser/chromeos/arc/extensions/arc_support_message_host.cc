@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 
+#include <string>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -59,9 +61,10 @@ void ArcSupportMessageHost::Start(Client* client) {
   client_ = client;
 
   ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
-  DCHECK(arc_session_manager);
-  DCHECK(arc_session_manager->support_host());
-  arc_session_manager->support_host()->SetMessageHost(this);
+  if (arc_session_manager) {
+    DCHECK(arc_session_manager->support_host());
+    arc_session_manager->support_host()->SetMessageHost(this);
+  }
 }
 
 void ArcSupportMessageHost::OnMessage(const std::string& message_string) {
