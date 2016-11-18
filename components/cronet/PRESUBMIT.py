@@ -8,10 +8,14 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
+import re
+
+
 def _PyLintChecks(input_api, output_api):
   pylint_checks = input_api.canned_checks.GetPylint(input_api, output_api,
           extra_paths_list=_GetPathsToPrepend(input_api), pylintrc='pylintrc')
   return input_api.RunTests(pylint_checks)
+
 
 def _GetPathsToPrepend(input_api):
   current_dir = input_api.PresubmitLocalPath()
@@ -30,6 +34,7 @@ def _GetPathsToPrepend(input_api):
     input_api.os_path.join(chromium_src_dir,
         'third_party', 'catapult', 'devil'),
   ]
+
 
 def _PackageChecks(input_api, output_api):
   """Verify API classes are in org.chromium.net package, and implementation
@@ -65,10 +70,54 @@ def _PackageChecks(input_api, output_api):
   else:
     return []
 
+
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_PyLintChecks(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
   results.extend(_PackageChecks(input_api, output_api))
+  return results
+
+
+def _GetTryMasters(project, change):
+  return {
+    'master.tryserver.chromium.android': {
+      'android_cronet_tester': [],
+     },
+  }
+
+
+def GetPreferredTryMasters(project, change):
+  # TODO(nick, dcheng): Using the value of _GetTryMasters() instead of an empty
+  # value here would cause 'git cl try' to include the Cronet trybot,
+  # which would be nice. But it has the side effect of replacing, rather than
+  # augmenting, the default set of try servers. Re-enable this when we figure
+  # out a way to augment the default set.
+  return {}
+
+
+def PostUploadHook(cl, change, output_api):
+  """git cl upload will call this hook after the issue is created/modified.
+
+  This hook adds an extra try bot to the CL description in order to run Cronet
+  tests in addition to CQ try bots.
+  """
+  rietveld_obj = cl.RpcServer()
+  issue = cl.issue
+  description = rietveld_obj.get_description(issue)
+  if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
+    return []
+
+  masters = _GetTryMasters(None, change)
+  results = []
+  new_description = description
+  new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(
+      '%s:%s' % (master, ','.join(bots))
+      for master, bots in masters.iteritems())
+  results.append(output_api.PresubmitNotifyResult(
+      'Automatically added Cronet trybot to run tests on CQ.'))
+
+  rietveld_obj.update_description(issue, new_description)
+
   return results
