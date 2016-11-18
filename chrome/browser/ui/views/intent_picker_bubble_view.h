@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -94,17 +95,37 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Similar to ButtonPressed, except this controls the up/down/right/left input
+  // while focusing on the |scroll_view_|.
+  void ArrowButtonPressed(int index);
+
   // views::View overrides:
   gfx::Size GetPreferredSize() const override;
 
   // content::WebContentsObserver overrides:
   void WebContentsDestroyed() override;
 
+  // ui::EventHandler overrides:
+  void OnKeyEvent(ui::KeyEvent* event) override;
+
   // Retrieves the IntentPickerLabelButton* contained at position |index| from
   // the internal ScrollView.
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
   void RunCallback(std::string package,
                    arc::ArcNavigationThrottle::CloseReason close_reason);
+
+  // Accessory for |scroll_view_|'s contents size.
+  size_t GetScrollViewSize() const;
+
+  // Ensure the selected app is within the visible region of the ScrollView.
+  void AdjustScrollViewVisibleRegion();
+
+  // Set the new app selection, use the |event| (if provided) to show a more
+  // accurate ripple effect w.r.t. the user's input.
+  void SetSelectedAppIndex(int index, const ui::Event* event);
+
+  // Calculate the next app to select given the current selection and |delta|.
+  size_t CalculateNextAppIndex(int delta);
 
   gfx::ImageSkia GetAppImageForTesting(size_t index);
   views::InkDropState GetInkDropStateForTesting(size_t);

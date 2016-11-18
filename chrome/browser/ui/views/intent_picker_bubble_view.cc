@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +40,11 @@ constexpr int kTopContainerMerge = 3;
 
 constexpr char kInvalidPackageName[] = "";
 
+bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
+  return key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
+         key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_LEFT;
+}
+
 }  // namespace
 
 // IntentPickerLabelButton
@@ -54,7 +60,6 @@ class IntentPickerLabelButton : public views::LabelButton {
                     base::UTF8ToUTF16(base::StringPiece(activity_name))),
         package_name_(package_name) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    SetFocusBehavior(View::FocusBehavior::ALWAYS);
     SetMinSize(gfx::Size(kMaxWidth, kRowHeight));
     SetInkDropMode(InkDropMode::ON);
     if (!icon->IsEmpty())
@@ -65,7 +70,7 @@ class IntentPickerLabelButton : public views::LabelButton {
   SkColor GetInkDropBaseColor() const override { return SK_ColorBLACK; }
 
   void MarkAsUnselected(const ui::Event* event) {
-    AnimateInkDrop(views::InkDropState::DEACTIVATED,
+    AnimateInkDrop(views::InkDropState::HIDDEN,
                    ui::LocatedEvent::FromIfValid(event));
   }
 
@@ -118,6 +123,7 @@ void IntentPickerBubbleView::ShowBubble(
   delegate->GetDialogClientView()->set_button_row_insets(
       gfx::Insets(kDialogDelegateInsets));
   delegate->GetDialogClientView()->Layout();
+  delegate->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   delegate->GetIntentPickerLabelButtonAt(0)->MarkAsSelected(nullptr);
   widget->Show();
 }
@@ -226,12 +232,13 @@ void IntentPickerBubbleView::OnWidgetDestroying(views::Widget* widget) {
 
 void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
-  // The selected app must be a value in the range [0, app_info_.size()-1].
-  DCHECK_LT(static_cast<size_t>(sender->tag()), app_info_.size());
-  GetIntentPickerLabelButtonAt(selected_app_tag_)->MarkAsUnselected(&event);
+  SetSelectedAppIndex(sender->tag(), &event);
+  RequestFocus();
+}
 
-  selected_app_tag_ = sender->tag();
-  GetIntentPickerLabelButtonAt(selected_app_tag_)->MarkAsSelected(&event);
+void IntentPickerBubbleView::ArrowButtonPressed(int index) {
+  SetSelectedAppIndex(index, nullptr);
+  AdjustScrollViewVisibleRegion();
 }
 
 gfx::Size IntentPickerBubbleView::GetPreferredSize() const {
@@ -255,6 +262,34 @@ void IntentPickerBubbleView::WebContentsDestroyed() {
   GetWidget()->Close();
 }
 
+void IntentPickerBubbleView::OnKeyEvent(ui::KeyEvent* event) {
+  if (!IsKeyboardCodeArrow(event->key_code()) ||
+      event->type() != ui::ET_KEY_RELEASED)
+    return;
+
+  int delta = 0;
+  switch (event->key_code()) {
+    case ui::VKEY_UP:
+      delta = -1;
+      break;
+    case ui::VKEY_DOWN:
+      delta = 1;
+      break;
+    case ui::VKEY_LEFT:
+      delta = base::i18n::IsRTL() ? 1 : -1;
+      break;
+    case ui::VKEY_RIGHT:
+      delta = base::i18n::IsRTL() ? -1 : 1;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  ArrowButtonPressed(CalculateNextAppIndex(delta));
+
+  View::OnKeyEvent(event);
+}
+
 IntentPickerLabelButton* IntentPickerBubbleView::GetIntentPickerLabelButtonAt(
     size_t index) {
   views::View* temp_contents = scroll_view_->contents();
@@ -272,6 +307,33 @@ void IntentPickerBubbleView::RunCallback(
     intent_picker_cb_.Reset();
     callback.Run(package, close_reason);
   }
+}
+
+size_t IntentPickerBubbleView::GetScrollViewSize() const {
+  return scroll_view_->contents()->child_count();
+}
+
+void IntentPickerBubbleView::AdjustScrollViewVisibleRegion() {
+  const views::ScrollBar* bar = scroll_view_->vertical_scroll_bar();
+  if (bar) {
+    scroll_view_->ScrollToPosition(const_cast<views::ScrollBar*>(bar),
+                                   (selected_app_tag_ - 1) * kRowHeight);
+  }
+}
+
+void IntentPickerBubbleView::SetSelectedAppIndex(int index,
+                                                 const ui::Event* event) {
+  // The selected app must be a value in the range [0, app_info_.size()-1].
+  DCHECK_LT(static_cast<size_t>(index), app_info_.size());
+
+  GetIntentPickerLabelButtonAt(selected_app_tag_)->MarkAsUnselected(nullptr);
+  selected_app_tag_ = index;
+  GetIntentPickerLabelButtonAt(selected_app_tag_)->MarkAsSelected(event);
+}
+
+size_t IntentPickerBubbleView::CalculateNextAppIndex(int delta) {
+  size_t size = GetScrollViewSize();
+  return static_cast<size_t>((selected_app_tag_ + size + delta) % size);
 }
 
 gfx::ImageSkia IntentPickerBubbleView::GetAppImageForTesting(size_t index) {
