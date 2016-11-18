@@ -28,7 +28,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/switches.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "extensions/browser/api_test_utils.h"

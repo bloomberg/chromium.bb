@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
+#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +54,7 @@ class MockProximityAuthPrefManager : public ProximityAuthPrefManager {
 class ProximityAuthRemoteDeviceLoaderTest : public testing::Test {
  public:
   ProximityAuthRemoteDeviceLoaderTest()
-      : secure_message_delegate_(new FakeSecureMessageDelegate()),
+      : secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate()),
         user_private_key_(secure_message_delegate_->GetPrivateKeyForPublicKey(
             kUserPublicKey)),
         pref_manager_(new MockProximityAuthPrefManager()) {}
@@ -71,7 +71,8 @@ class ProximityAuthRemoteDeviceLoaderTest : public testing::Test {
  protected:
   // Handles deriving the PSK. Ownership will be passed to the
   // RemoteDeviceLoader under test.
-  std::unique_ptr<FakeSecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<cryptauth::FakeSecureMessageDelegate>
+      secure_message_delegate_;
 
   // The private key of the user local device.
   std::string user_private_key_;

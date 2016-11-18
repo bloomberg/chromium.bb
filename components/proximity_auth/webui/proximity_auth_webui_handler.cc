@@ -15,12 +15,12 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
+#include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/ble/pref_names.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
-#include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
@@ -196,8 +196,9 @@ void ProximityAuthWebUIHandler::OnSyncStarted() {
 }
 
 void ProximityAuthWebUIHandler::OnSyncFinished(
-    CryptAuthDeviceManager::SyncResult sync_result,
-    CryptAuthDeviceManager::DeviceChangeResult device_change_result) {
+    cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
+    cryptauth::CryptAuthDeviceManager::DeviceChangeResult
+        device_change_result) {
   std::unique_ptr<base::DictionaryValue> device_sync_state =
       GetDeviceSyncStateDictionary();
   PA_LOG(INFO) << "Device sync completed with result="
@@ -206,7 +207,7 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
       "LocalStateInterface.onDeviceSyncStateChanged", *device_sync_state);
 
   if (device_change_result ==
-      CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
+      cryptauth::CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
     std::unique_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
     PA_LOG(INFO) << "New unlock keys obtained after device sync:\n"
                  << *unlock_keys;
@@ -218,12 +219,12 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
 void ProximityAuthWebUIHandler::OnWebContentsInitialized(
     const base::ListValue* args) {
   if (!web_contents_initialized_) {
-    CryptAuthEnrollmentManager* enrollment_manager =
+    cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
         proximity_auth_client_->GetCryptAuthEnrollmentManager();
     if (enrollment_manager)
       enrollment_manager->AddObserver(this);
 
-    CryptAuthDeviceManager* device_manager =
+    cryptauth::CryptAuthDeviceManager* device_manager =
         proximity_auth_client_->GetCryptAuthDeviceManager();
     if (device_manager)
       device_manager->AddObserver(this);
@@ -308,7 +309,7 @@ void ProximityAuthWebUIHandler::FindReachableDevices(
 }
 
 void ProximityAuthWebUIHandler::ForceEnrollment(const base::ListValue* args) {
-  CryptAuthEnrollmentManager* enrollment_manager =
+  cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
       proximity_auth_client_->GetCryptAuthEnrollmentManager();
   if (enrollment_manager) {
     enrollment_manager->ForceEnrollmentNow(cryptauth::INVOCATION_REASON_MANUAL);
@@ -316,16 +317,16 @@ void ProximityAuthWebUIHandler::ForceEnrollment(const base::ListValue* args) {
 }
 
 void ProximityAuthWebUIHandler::ForceDeviceSync(const base::ListValue* args) {
-  CryptAuthDeviceManager* device_manager =
+  cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (device_manager)
     device_manager->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 }
 
 void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
-  CryptAuthEnrollmentManager* enrollment_manager =
+  cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
       proximity_auth_client_->GetCryptAuthEnrollmentManager();
-  CryptAuthDeviceManager* device_manager =
+  cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!enrollment_manager || !device_manager)
     return;
@@ -428,7 +429,7 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
 
 std::unique_ptr<base::DictionaryValue>
 ProximityAuthWebUIHandler::GetEnrollmentStateDictionary() {
-  CryptAuthEnrollmentManager* enrollment_manager =
+  cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
       proximity_auth_client_->GetCryptAuthEnrollmentManager();
   if (!enrollment_manager)
     return base::MakeUnique<base::DictionaryValue>();
@@ -442,7 +443,7 @@ ProximityAuthWebUIHandler::GetEnrollmentStateDictionary() {
 
 std::unique_ptr<base::DictionaryValue>
 ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
-  CryptAuthDeviceManager* device_manager =
+  cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!device_manager)
     return base::MakeUnique<base::DictionaryValue>();
@@ -457,7 +458,7 @@ ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
 std::unique_ptr<base::ListValue>
 ProximityAuthWebUIHandler::GetUnlockKeysList() {
   std::unique_ptr<base::ListValue> unlock_keys(new base::ListValue());
-  CryptAuthDeviceManager* device_manager =
+  cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!device_manager)
     return unlock_keys;
@@ -503,7 +504,7 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);
 
-  CryptAuthDeviceManager* device_manager =
+  cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!device_manager)
     return dictionary;

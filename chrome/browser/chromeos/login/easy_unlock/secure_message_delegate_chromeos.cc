@@ -10,7 +10,7 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using proximity_auth::SecureMessageDelegate;
+using cryptauth::SecureMessageDelegate;
 
 namespace chromeos {
 namespace {

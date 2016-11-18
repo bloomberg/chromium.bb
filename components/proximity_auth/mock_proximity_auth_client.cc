@@ -12,12 +12,12 @@ MockProximityAuthClient::MockProximityAuthClient() {}
 
 MockProximityAuthClient::~MockProximityAuthClient() {}
 
-std::unique_ptr<SecureMessageDelegate>
+std::unique_ptr<cryptauth::SecureMessageDelegate>
 MockProximityAuthClient::CreateSecureMessageDelegate() {
   return base::WrapUnique(CreateSecureMessageDelegatePtr());
 }
 
-std::unique_ptr<CryptAuthClientFactory>
+std::unique_ptr<cryptauth::CryptAuthClientFactory>
 MockProximityAuthClient::CreateCryptAuthClientFactory() {
   return base::WrapUnique(CreateCryptAuthClientFactoryPtr());
 }

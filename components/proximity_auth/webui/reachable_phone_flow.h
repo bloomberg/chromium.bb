@@ -14,15 +14,14 @@
 #include "base/memory/weak_ptr.h"
 
 namespace cryptauth {
+class CryptAuthClient;
+class CryptAuthClientFactory;
 class ExternalDeviceInfo;
 class FindEligibleUnlockDevicesResponse;
 class SendDeviceSyncTickleResponse;
 };
 
 namespace proximity_auth {
-
-class CryptAuthClient;
-class CryptAuthClientFactory;
 
 // Run this flow to find the user's phones that actively respond to a CryptAuth
 // ping. We are confident that phones responding to the ping are currently
@@ -32,7 +31,8 @@ class ReachablePhoneFlow {
   // Creates the ReachablePhoneFlow instance:
   // |client_factory|: Factory for creating CryptAuthClient instances. Not owned
   //     and must outlive |this| instance.
-  explicit ReachablePhoneFlow(CryptAuthClientFactory* client_factory);
+  explicit ReachablePhoneFlow(
+      cryptauth::CryptAuthClientFactory* client_factory);
 
   ~ReachablePhoneFlow();
 
@@ -62,13 +62,13 @@ class ReachablePhoneFlow {
 
   // Factory for creating CryptAuthClient instances. Not owned and must outlive
   // |this| instance.
-  CryptAuthClientFactory* client_factory_;
+  cryptauth::CryptAuthClientFactory* client_factory_;
 
   // Callback invoked when the flow completes.
   ReachablePhonesCallback callback_;
 
   // The client making the current CryptAuth API call.
-  std::unique_ptr<CryptAuthClient> client_;
+  std::unique_ptr<cryptauth::CryptAuthClient> client_;
 
   base::WeakPtrFactory<ReachablePhoneFlow> weak_ptr_factory_;
 

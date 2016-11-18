@@ -1741,9 +1741,9 @@ split_static_library("browser") {
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
       "//chrome/common/extensions/api:extensions_features",
+      "//components/cryptauth",
       "//components/drive",
       "//components/proximity_auth/ble",
-      "//components/proximity_auth/cryptauth",
       "//extensions/components/javascript_dialog_extensions_client",
       "//media/cast:net",
     ]

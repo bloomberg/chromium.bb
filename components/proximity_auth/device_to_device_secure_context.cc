@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/proximity_auth/cryptauth/proto/securemessage.pb.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/proto/securemessage.pb.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace proximity_auth {
@@ -27,7 +27,7 @@ const int kAuthenticationSequenceNumber = 2;
 }  // namespace
 
 DeviceToDeviceSecureContext::DeviceToDeviceSecureContext(
-    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
     const std::string& symmetric_key,
     const std::string& responder_auth_message,
     ProtocolVersion protocol_version)
@@ -42,7 +42,7 @@ DeviceToDeviceSecureContext::~DeviceToDeviceSecureContext() {}
 
 void DeviceToDeviceSecureContext::Decode(const std::string& encoded_message,
                                          const MessageCallback& callback) {
-  SecureMessageDelegate::UnwrapOptions unwrap_options;
+  cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
 
@@ -64,7 +64,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
   device_to_device_message.set_sequence_number(++last_sequence_number_);
   device_to_device_message.set_message(message);
 
-  SecureMessageDelegate::CreateOptions create_options;
+  cryptauth::SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::AES_256_CBC;
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   gcm_metadata.SerializeToString(&create_options.public_metadata);

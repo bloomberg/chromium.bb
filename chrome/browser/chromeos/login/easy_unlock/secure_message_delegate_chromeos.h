@@ -6,15 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SECURE_MESSAGE_DELEGATE_CHROMEOS_H_
 
 #include "base/macros.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate.h"
 
 namespace chromeos {
 
 class EasyUnlockClient;
 
 // SecureMessageDelegate implementation for ChromeOS.
-class SecureMessageDelegateChromeOS
-    : public proximity_auth::SecureMessageDelegate {
+class SecureMessageDelegateChromeOS : public cryptauth::SecureMessageDelegate {
  public:
   SecureMessageDelegateChromeOS();
   ~SecureMessageDelegateChromeOS() override;

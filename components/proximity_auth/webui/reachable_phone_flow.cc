@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/cryptauth_client.h"
+#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace proximity_auth {
@@ -24,7 +24,8 @@ const int kWaitTimeMillis = 7000;
 
 }  // namespace
 
-ReachablePhoneFlow::ReachablePhoneFlow(CryptAuthClientFactory* client_factory)
+ReachablePhoneFlow::ReachablePhoneFlow(
+    cryptauth::CryptAuthClientFactory* client_factory)
     : client_factory_(client_factory), weak_ptr_factory_(this) {}
 
 ReachablePhoneFlow::~ReachablePhoneFlow() {}

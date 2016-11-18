@@ -9,7 +9,7 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 
@@ -19,7 +19,7 @@ RemoteDeviceLoader::RemoteDeviceLoader(
     const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys,
     const std::string& user_id,
     const std::string& user_private_key,
-    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
     ProximityAuthPrefManager* pref_manager)
     : remaining_unlock_keys_(unlock_keys),
       user_id_(user_id),

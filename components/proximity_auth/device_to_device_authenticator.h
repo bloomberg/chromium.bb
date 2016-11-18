@@ -15,10 +15,13 @@ namespace base {
 class Timer;
 };
 
+namespace cryptauth {
+class SecureMessageDelegate;
+}
+
 namespace proximity_auth {
 
 class Connection;
-class SecureMessageDelegate;
 
 // Authenticator implementation using the "device to device" protocol, which is
 // in turn built on top of the SecureMessage library.
@@ -47,10 +50,10 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   // |account_id|: The canonical account id of the user who is the owner of both
   //     the local and remote devices.
   // |secure_message_delegate|: Handles the SecureMessage crypto operations.
-  DeviceToDeviceAuthenticator(
-      Connection* connection,
-      const std::string& account_id,
-      std::unique_ptr<SecureMessageDelegate> secure_message_delegate);
+  DeviceToDeviceAuthenticator(Connection* connection,
+                              const std::string& account_id,
+                              std::unique_ptr<cryptauth::SecureMessageDelegate>
+                                  secure_message_delegate);
 
   ~DeviceToDeviceAuthenticator() override;
 
@@ -124,7 +127,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   const std::string account_id_;
 
   // Handles SecureMessage crypto operations.
-  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
 
   // The current state in the authentication flow.
   State state_;

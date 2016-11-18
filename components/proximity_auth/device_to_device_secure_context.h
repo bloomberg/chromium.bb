@@ -15,15 +15,17 @@ namespace securemessage {
 class Header;
 }
 
-namespace proximity_auth {
-
+namespace cryptauth {
 class SecureMessageDelegate;
+}
+
+namespace proximity_auth {
 
 // SecureContext implementation for the DeviceToDevice protocol.
 class DeviceToDeviceSecureContext : public SecureContext {
  public:
   DeviceToDeviceSecureContext(
-      std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
       const std::string& symmetric_key,
       const std::string& responder_auth_message_,
       ProtocolVersion protocol_version);
@@ -49,7 +51,7 @@ class DeviceToDeviceSecureContext : public SecureContext {
       const securemessage::Header& header);
 
   // Delegate for handling the creation and unwrapping of SecureMessages.
-  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
 
   // The symmetric key used to create and unwrap messages.
   const std::string symmetric_key_;

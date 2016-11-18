@@ -42,7 +42,7 @@ static_library("ble") {
   ]
 
   public_deps = [
-    "//components/proximity_auth/cryptauth/proto",
+    "//components/cryptauth/proto",
   ]
 }
 
@@ -71,6 +71,6 @@ source_set("unit_tests") {
   ]
 
   public_deps = [
-    "//components/proximity_auth/cryptauth/proto",
+    "//components/cryptauth/proto",
   ]
 }

@@ -13,8 +13,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
+#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_responder_operations.h"
 #include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/secure_context.h"
@@ -104,7 +104,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
  public:
   DeviceToDeviceAuthenticatorForTest(
       Connection* connection,
-      std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
+      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
       : DeviceToDeviceAuthenticator(connection,
                                     kAccountId,
                                     std::move(secure_message_delegate)),
@@ -139,7 +139,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   ProximityAuthDeviceToDeviceAuthenticatorTest()
       : remote_device_(CreateClassicRemoteDeviceForTest()),
         connection_(remote_device_),
-        secure_message_delegate_(new FakeSecureMessageDelegate),
+        secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate),
         authenticator_(&connection_,
                        base::WrapUnique(secure_message_delegate_)) {}
   ~ProximityAuthDeviceToDeviceAuthenticatorTest() override {}
@@ -229,7 +229,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
 
   // The SecureMessageDelegate used by the authenticator.
   // Owned by |authenticator_|.
-  FakeSecureMessageDelegate* secure_message_delegate_;
+  cryptauth::FakeSecureMessageDelegate* secure_message_delegate_;
 
   // The DeviceToDeviceAuthenticator under test.
   DeviceToDeviceAuthenticatorForTest authenticator_;

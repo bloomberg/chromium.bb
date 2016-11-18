@@ -29,13 +29,13 @@ class BrowserContext;
 
 namespace cryptauth {
 class ExternalDeviceInfo;
+class SecureMessageDelegate;
 }
 
 namespace proximity_auth {
 class Connection;
 class BluetoothLowEnergyConnectionFinder;
 class BluetoothThrottler;
-class SecureMessageDelegate;
 }
 
 namespace extensions {
@@ -339,7 +339,7 @@ class EasyUnlockPrivateGetRemoteDevicesFunction
   std::unique_ptr<base::ListValue> remote_devices_;
 
   // Used to derive devices' PSK. Used for the native experiment.
-  std::unique_ptr<proximity_auth::SecureMessageDelegate>
+  std::unique_ptr<cryptauth::SecureMessageDelegate>
       secure_message_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetRemoteDevicesFunction);

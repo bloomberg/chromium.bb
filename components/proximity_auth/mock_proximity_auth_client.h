@@ -9,10 +9,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
-#include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/cryptauth/cryptauth_client.h"
+#include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -40,15 +40,19 @@ class MockProximityAuthClient : public ProximityAuthClient {
   MOCK_METHOD0(GetDeviceClassifier, cryptauth::DeviceClassifier(void));
   MOCK_METHOD0(GetAccountId, std::string(void));
   MOCK_METHOD0(GetCryptAuthEnrollmentManager,
-               CryptAuthEnrollmentManager*(void));
-  MOCK_METHOD0(GetCryptAuthDeviceManager, CryptAuthDeviceManager*(void));
-  std::unique_ptr<SecureMessageDelegate> CreateSecureMessageDelegate() override;
-  std::unique_ptr<CryptAuthClientFactory> CreateCryptAuthClientFactory()
-      override;
+               cryptauth::CryptAuthEnrollmentManager*(void));
+  MOCK_METHOD0(GetCryptAuthDeviceManager,
+               cryptauth::CryptAuthDeviceManager*(void));
+  std::unique_ptr<cryptauth::SecureMessageDelegate>
+  CreateSecureMessageDelegate() override;
+  std::unique_ptr<cryptauth::CryptAuthClientFactory>
+  CreateCryptAuthClientFactory() override;
 
   // Proxy mock methods because implementation requires returning scoped_ptr.
-  MOCK_METHOD0(CreateSecureMessageDelegatePtr, SecureMessageDelegate*(void));
-  MOCK_METHOD0(CreateCryptAuthClientFactoryPtr, CryptAuthClientFactory*(void));
+  MOCK_METHOD0(CreateSecureMessageDelegatePtr,
+               cryptauth::SecureMessageDelegate*(void));
+  MOCK_METHOD0(CreateCryptAuthClientFactoryPtr,
+               cryptauth::CryptAuthClientFactory*(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityAuthClient);

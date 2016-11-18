@@ -8,12 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/cryptauth/cryptauth_client.h"
+#include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/connection_observer.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
-#include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/logging/log_buffer.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_client.h"
@@ -36,12 +36,13 @@ class RemoteDeviceLoader;
 struct RemoteStatusUpdate;
 
 // Handles messages from the chrome://proximity-auth page.
-class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
-                                  public LogBuffer::Observer,
-                                  public CryptAuthEnrollmentManager::Observer,
-                                  public CryptAuthDeviceManager::Observer,
-                                  public RemoteDeviceLifeCycle::Observer,
-                                  public MessengerObserver {
+class ProximityAuthWebUIHandler
+    : public content::WebUIMessageHandler,
+      public LogBuffer::Observer,
+      public cryptauth::CryptAuthEnrollmentManager::Observer,
+      public cryptauth::CryptAuthDeviceManager::Observer,
+      public RemoteDeviceLifeCycle::Observer,
+      public MessengerObserver {
  public:
   // |client_| is not owned and must outlive this instance.
   explicit ProximityAuthWebUIHandler(
@@ -62,9 +63,9 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // CryptAuthDeviceManager::Observer:
   void OnSyncStarted() override;
-  void OnSyncFinished(
-      CryptAuthDeviceManager::SyncResult sync_result,
-      CryptAuthDeviceManager::DeviceChangeResult device_change_result) override;
+  void OnSyncFinished(cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
+                      cryptauth::CryptAuthDeviceManager::DeviceChangeResult
+                          device_change_result) override;
 
   // Message handler callbacks.
   void OnWebContentsInitialized(const base::ListValue* args);
@@ -132,10 +133,10 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   ProximityAuthClient* proximity_auth_client_;
 
   // Creates CryptAuth client instances to make API calls.
-  std::unique_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
+  std::unique_ptr<cryptauth::CryptAuthClientFactory> cryptauth_client_factory_;
 
   // We only support one concurrent API call.
-  std::unique_ptr<CryptAuthClient> cryptauth_client_;
+  std::unique_ptr<cryptauth::CryptAuthClient> cryptauth_client_;
 
   // The flow for getting a list of reachable phones.
   std::unique_ptr<ReachablePhoneFlow> reachable_phone_flow_;

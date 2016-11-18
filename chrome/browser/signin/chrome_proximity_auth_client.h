@@ -24,15 +24,15 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
   void UpdateScreenlockState(proximity_auth::ScreenlockState state) override;
   void FinalizeUnlock(bool success) override;
   PrefService* GetPrefService() override;
-  std::unique_ptr<proximity_auth::SecureMessageDelegate>
+  std::unique_ptr<cryptauth::SecureMessageDelegate>
   CreateSecureMessageDelegate() override;
-  std::unique_ptr<proximity_auth::CryptAuthClientFactory>
+  std::unique_ptr<cryptauth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
   cryptauth::DeviceClassifier GetDeviceClassifier() override;
   std::string GetAccountId() override;
-  proximity_auth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager()
+  cryptauth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager()
       override;
-  proximity_auth::CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
+  cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
   void FinalizeSignin(const std::string& secret) override;
   void GetChallengeForUserAndDevice(
       const std::string& user_id,

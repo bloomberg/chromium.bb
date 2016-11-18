@@ -9,8 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_initiator_operations.h"
 #include "components/proximity_auth/device_to_device_secure_context.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -35,7 +35,7 @@ const char kPermitIdPrefix[] = "permit://google.com/easyunlock/v1/";
 DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
     Connection* connection,
     const std::string& account_id,
-    std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
     : connection_(connection),
       account_id_(account_id),
       secure_message_delegate_(std::move(secure_message_delegate)),
