@@ -26,7 +26,8 @@ namespace {
 
 // Send a UMA histogram about if |local_results| has empty or duplicate
 // usernames.
-void ReportAccountChooserMetrics(bool had_duplicates, bool had_empty_username) {
+void ReportAccountChooserUsabilityMetrics(bool had_duplicates,
+                                          bool had_empty_username) {
   metrics_util::AccountChooserUsabilityMetric metric;
   if (had_empty_username && had_duplicates)
     metric = metrics_util::ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES;
@@ -98,7 +99,13 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
 
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  using metrics_util::LogCredentialManagerGetResult;
+  metrics_util::CredentialManagerGetMediation mediation_status =
+      zero_click_only_ ? metrics_util::CREDENTIAL_MANAGER_GET_UNMEDIATED
+                       : metrics_util::CREDENTIAL_MANAGER_GET_MEDIATED;
   if (delegate_->GetOrigin() != origin_) {
+    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_NONE,
+                                  mediation_status);
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
@@ -148,6 +155,9 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   const bool has_duplicates = (local_results_size != local_results.size());
 
   if (local_results.empty()) {
+    LogCredentialManagerGetResult(
+        metrics_util::CREDENTIAL_MANAGER_GET_NONE_EMPTY_STORE,
+        mediation_status);
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
@@ -170,6 +180,8 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     delegate_->client()->NotifyUserAutoSignin(std::move(local_results),
                                               origin_);
     base::RecordAction(base::UserMetricsAction("CredentialManager_Autosignin"));
+    LogCredentialManagerGetResult(
+        metrics_util::CREDENTIAL_MANAGER_GET_AUTOSIGNIN, mediation_status);
     delegate_->SendCredential(send_callback_, info);
     return;
   }
@@ -181,23 +193,33 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
       can_use_autosignin ? new autofill::PasswordForm(*local_results[0])
                          : nullptr);
   if (!zero_click_only_)
-    ReportAccountChooserMetrics(has_duplicates, has_empty_username);
+    ReportAccountChooserUsabilityMetrics(has_duplicates, has_empty_username);
   if (zero_click_only_ ||
       !delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), origin_,
           base::Bind(
               &CredentialManagerPendingRequestTaskDelegate::SendPasswordForm,
               base::Unretained(delegate_), send_callback_))) {
+    metrics_util::CredentialManagerGetResult get_result =
+        metrics_util::CREDENTIAL_MANAGER_GET_NONE;
+    if (zero_click_only_) {
+      if (!can_use_autosignin)
+        get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_MANY_CREDENTIALS;
+      else if (potential_autosignin_form->skip_zero_click)
+        get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_SIGNED_OUT;
+      else
+        get_result = metrics_util::CREDENTIAL_MANAGER_GET_NONE_FIRST_RUN;
+    }
     if (can_use_autosignin) {
       // The user had credentials, but either chose not to share them with the
       // site, or was prevented from doing so by lack of zero-click (or the
       // first-run experience). So, notify the client that we could potentially
-      // have used zero-click; if the user signs in with the same form via
-      // autofill, we'll toggle the flag for them.
+      // have used zero-click.
       delegate_->client()->NotifyUserCouldBeAutoSignedIn(
           std::move(potential_autosignin_form));
     }
 
+    LogCredentialManagerGetResult(get_result, mediation_status);
     delegate_->SendCredential(send_callback_, CredentialInfo());
   }
 }
