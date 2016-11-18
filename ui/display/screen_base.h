@@ -31,7 +31,7 @@ class DISPLAY_EXPORT ScreenBase : public Screen {
   Display GetDisplayNearestWindow(gfx::NativeView view) const override;
   Display GetDisplayNearestPoint(const gfx::Point& point) const override;
   int GetNumDisplays() const override;
-  std::vector<Display> GetAllDisplays() const override;
+  const std::vector<Display>& GetAllDisplays() const override;
   Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
   void AddObserver(DisplayObserver* observer) override;
   void RemoveObserver(DisplayObserver* observer) override;

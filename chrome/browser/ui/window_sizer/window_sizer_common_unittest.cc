@@ -58,7 +58,7 @@ class TestScreen : public display::Screen {
 
   int GetNumDisplays() const override { return displays_.size(); }
 
-  std::vector<display::Display> GetAllDisplays() const override {
+  const std::vector<display::Display>& GetAllDisplays() const override {
     return displays_;
   }
 

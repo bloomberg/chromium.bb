@@ -384,8 +384,8 @@ int ScreenWin::GetNumDisplays() const {
   return static_cast<int>(screen_win_displays_.size());
 }
 
-std::vector<display::Display> ScreenWin::GetAllDisplays() const {
-  return ScreenWinDisplaysToDisplays(screen_win_displays_);
+const std::vector<display::Display>& ScreenWin::GetAllDisplays() const {
+  return displays_;
 }
 
 display::Display ScreenWin::GetDisplayNearestWindow(
@@ -443,6 +443,7 @@ gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeView view,
 void ScreenWin::UpdateFromDisplayInfos(
     const std::vector<DisplayInfo>& display_infos) {
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(display_infos);
+  displays_ = ScreenWinDisplaysToDisplays(screen_win_displays_);
 }
 
 void ScreenWin::Initialize() {
@@ -487,9 +488,9 @@ void ScreenWin::OnWndProc(HWND hwnd,
   if (message != WM_DISPLAYCHANGE)
     return;
 
-  std::vector<display::Display> old_displays = GetAllDisplays();
+  std::vector<display::Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
-  change_notifier_.NotifyDisplaysChanged(old_displays, GetAllDisplays());
+  change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
 
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestHWND(HWND hwnd)

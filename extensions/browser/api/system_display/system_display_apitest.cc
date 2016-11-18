@@ -47,7 +47,7 @@ class MockScreen : public Screen {
   int GetNumDisplays() const override {
     return static_cast<int>(displays_.size());
   }
-  std::vector<display::Display> GetAllDisplays() const override {
+  const std::vector<display::Display>& GetAllDisplays() const override {
     return displays_;
   }
   display::Display GetDisplayNearestWindow(

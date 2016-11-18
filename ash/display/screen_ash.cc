@@ -45,7 +45,7 @@ class ScreenForShutdown : public display::Screen {
     return NULL;
   }
   int GetNumDisplays() const override { return display_list_.size(); }
-  std::vector<display::Display> GetAllDisplays() const override {
+  const std::vector<display::Display>& GetAllDisplays() const override {
     return display_list_;
   }
   display::Display GetDisplayNearestWindow(
@@ -110,7 +110,7 @@ int ScreenAsh::GetNumDisplays() const {
   return GetDisplayManager()->GetNumDisplays();
 }
 
-std::vector<display::Display> ScreenAsh::GetAllDisplays() const {
+const std::vector<display::Display>& ScreenAsh::GetAllDisplays() const {
   return GetDisplayManager()->active_display_list();
 }
 

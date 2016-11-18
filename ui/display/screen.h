@@ -53,7 +53,7 @@ class DISPLAY_EXPORT Screen {
   virtual int GetNumDisplays() const = 0;
 
   // Returns the list of displays that are currently available.
-  virtual std::vector<display::Display> GetAllDisplays() const = 0;
+  virtual const std::vector<display::Display>& GetAllDisplays() const = 0;
 
   // Returns the display nearest the specified window.
   // If the window is NULL or the window is not rooted to a display this will

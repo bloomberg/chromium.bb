@@ -184,7 +184,8 @@ WindowManagerConnection::WindowManagerConnection(
 ui::Window* WindowManagerConnection::GetUiWindowAtScreenPoint(
     const gfx::Point& point) {
   std::map<int64_t, gfx::Point> display_origins;
-  for (display::Display& d : display::Screen::GetScreen()->GetAllDisplays())
+  for (const display::Display& d :
+       display::Screen::GetScreen()->GetAllDisplays())
     display_origins[d.id()] = d.bounds().origin();
 
   const std::set<ui::Window*>& roots = GetRoots();

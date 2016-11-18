@@ -165,7 +165,7 @@ int DesktopScreenX11::GetNumDisplays() const {
   return displays_.size();
 }
 
-std::vector<display::Display> DesktopScreenX11::GetAllDisplays() const {
+const std::vector<display::Display>& DesktopScreenX11::GetAllDisplays() const {
   return displays_;
 }
 

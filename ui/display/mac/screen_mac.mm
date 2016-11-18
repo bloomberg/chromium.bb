@@ -141,7 +141,7 @@ class ScreenMac : public Screen {
 
   int GetNumDisplays() const override { return GetAllDisplays().size(); }
 
-  std::vector<Display> GetAllDisplays() const override {
+  const std::vector<Display>& GetAllDisplays() const override {
     return displays_;
   }
 

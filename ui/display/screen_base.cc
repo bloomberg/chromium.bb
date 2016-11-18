@@ -51,7 +51,7 @@ int ScreenBase::GetNumDisplays() const {
   return static_cast<int>(display_list_.displays().size());
 }
 
-std::vector<Display> ScreenBase::GetAllDisplays() const {
+const std::vector<Display>& ScreenBase::GetAllDisplays() const {
   return display_list_.displays();
 }
 
