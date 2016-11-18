@@ -9,11 +9,13 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -40,6 +42,10 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 
 namespace {
+
+// May only be accessed on the UI thread
+base::LazyInstance<base::FilePath>::Leaky
+    last_save_dir = LAZY_INSTANCE_INITIALIZER;
 
 content::WebUIDataSource* CreateNetExportHTMLSource() {
   content::WebUIDataSource* source =
@@ -188,16 +194,20 @@ void NetExportMessageHandler::OnGetExportNetLogInfo(
 }
 
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool result = list->GetString(0, &log_mode_);
   DCHECK(result);
 
   if (UsingMobileUI()) {
     StartNetLog();
   } else {
-    base::FilePath home_dir = base::GetHomeDir();
-    base::FilePath default_path =
-        home_dir.Append(FILE_PATH_LITERAL("chrome-net-export-log.json"));
-    ShowSelectFileDialog(default_path);
+    base::FilePath initial_dir = last_save_dir.Pointer()->empty() ?
+        DownloadPrefs::FromBrowserContext(
+            web_ui()->GetWebContents()->GetBrowserContext())->DownloadPath() :
+        *last_save_dir.Pointer();
+    base::FilePath initial_path =
+        initial_dir.Append(FILE_PATH_LITERAL("chrome-net-export-log.json"));
+    ShowSelectFileDialog(initial_path);
   }
 }
 
@@ -332,9 +342,11 @@ void NetExportMessageHandler::ShowSelectFileDialog(
 void NetExportMessageHandler::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(select_file_dialog_);
   select_file_dialog_ = nullptr;
 
+  *last_save_dir.Pointer() = path.DirName();
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
       base::Bind(&net_log::NetLogFileWriter::SetUpNetExportLogPath,
