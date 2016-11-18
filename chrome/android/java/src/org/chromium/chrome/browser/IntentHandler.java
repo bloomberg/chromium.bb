@@ -368,11 +368,11 @@ public class IntentHandler {
      * @return The referrer Uri.
      */
     private static Uri getReferrer(Intent intent) {
-        Uri referrer = intent.getParcelableExtra(Intent.EXTRA_REFERRER);
+        Uri referrer = IntentUtils.safeGetParcelableExtra(intent, Intent.EXTRA_REFERRER);
         if (referrer != null) {
             return referrer;
         }
-        String referrerName = intent.getStringExtra(Intent.EXTRA_REFERRER_NAME);
+        String referrerName = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER_NAME);
         if (referrerName != null) {
             return Uri.parse(referrerName);
         }
