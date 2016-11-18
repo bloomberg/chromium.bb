@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<title>Custom Elements: Create an element when definition is non-null and synchronous flag set</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/custom-elements-helpers.js"></script>
+<body>
+<script>
+'use strict';
+
+// https://dom.spec.whatwg.org/#dom-document-createelement
+// 1. If localName does not match the Name production, then throw an InvalidCharacterError
+// 2. If context object is an HTML document, let localName be converted to ASCII lowercase
+// 5. If 'is' is non-null and definition is null, then throw a NotFoundError
+// 6. If 'is' is non-null, then set is attribute to 'is'
+
+// https://dom.spec.whatwg.org/#internal-createelementns-steps
+// 4. If 'is' is non-null and definition is null, then throw a NotFoundError
+//    Different from createElement: localName is not converted to ASCII lowercase
+
+function setup(w) {
+  class A extends w.HTMLElement {
+    constructor() {
+      super();
+    }
+  }
+  w.customElements.define('a-a', A);
+
+  class B extends w.HTMLDivElement {
+    constructor() {
+      super();
+    }
+  }
+  w.customElements.define('b-b', B, {extends: 'div'});
+}
+
+test_with_window((w) => {
+  assert_throws_dom_exception(w, 'InvalidCharacterError', () => {
+    w.document.createElement('.invalid.name.');
+  });
+}, 'createElement   1. If localName does not match the Name production, then throw an InvalidCharacterError');
+
+test_with_window((w) => {
+  setup(w);
+
+  assert_not_equals(w.document.createElement('A-a').constructor, w.HTMLElement);
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElement('div', {is: 'b-B'});
+  }, 'The \'is\' option should not be converted to ASCII lowercase');
+}, 'createElement   2. If context object is an HTML document, let localName be converted to ASCII lowercase');
+
+test_with_window((w) => {
+  setup(w);
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElement('div', {is: 'a-a'});
+  }, 'Custom element definition named \'a-a\' is not a customized built-in element');
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElement('button', {is: 'b-b'});
+  }, 'Custom element definition named \'b-b\' is not an HTMLButtonElement');
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElement('button', {id: 'b-b'});
+  }, 'An \'is\' attribute is needed to create a customized built-in element');
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElement('div', {is: ''});
+  }, 'There is no custom element definition named with an empty string');
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElement('div', {});
+  }, 'There is no custom element definition named with null');
+}, 'createElement   5. If \'is\' is non-null and definition is null, then throw a NotFoundError');
+
+test_with_window((w) => {
+  setup(w);
+  let a = w.document.createElement('a-a');
+  let b = w.document.createElement('div', {is : 'b-b'});
+  assert_equals(a.getAttribute('is'), null);
+  assert_equals(b.getAttribute('is'), 'b-b');
+}, 'createElement   6. If \'is\' is non-null, then set is-attribute to \'is\'');
+
+test_with_window((w) => {
+  setup(w);
+  assert_equals(w.document.createElementNS('http://www.w3.org/1999/xhtml', 'a-A').constructor, w.HTMLElement);
+  assert_throws_dom_exception(w, 'NotFoundError', () => {
+    w.document.createElementNS('http://www.w3.org/1999/xhtml', 'dIv', {is: 'b-b'});
+  });
+}, 'createElementNS 4. If \'is\' is non-null and definition is null, then throw a NotFoundError');
+
+</script>
+</body>

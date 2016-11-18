@@ -65,9 +65,14 @@ class CORE_EXPORT CustomElement {
   static bool shouldCreateCustomElement(const AtomicString& localName);
   static bool shouldCreateCustomElement(const QualifiedName&);
 
-  static HTMLElement* createCustomElementSync(Document&,
-                                              const AtomicString& localName);
-  static HTMLElement* createCustomElementSync(Document&, const QualifiedName&);
+  static HTMLElement* createCustomElementSync(
+      Document&,
+      const AtomicString& localName,
+      const AtomicString& is = AtomicString());
+  static HTMLElement* createCustomElementSync(
+      Document&,
+      const QualifiedName&,
+      const AtomicString& is = AtomicString());
   static HTMLElement* createCustomElementAsync(Document&, const QualifiedName&);
 
   static HTMLElement* createFailedElement(Document&, const QualifiedName&);

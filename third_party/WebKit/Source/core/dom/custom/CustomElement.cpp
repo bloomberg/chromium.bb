@@ -4,6 +4,8 @@
 
 #include "core/dom/custom/CustomElement.h"
 
+#include "core/HTMLElementFactory.h"
+#include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/custom/CEReactionsScope.h"
@@ -79,21 +81,37 @@ static CustomElementDefinition* definitionFor(
 
 HTMLElement* CustomElement::createCustomElementSync(
     Document& document,
-    const AtomicString& localName) {
+    const AtomicString& localName,
+    const AtomicString& is) {
   return createCustomElementSync(
       document,
-      QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI));
+      QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI), is);
 }
 
+// https://dom.spec.whatwg.org/#concept-create-element
 HTMLElement* CustomElement::createCustomElementSync(
     Document& document,
-    const QualifiedName& tagName) {
-  DCHECK(shouldCreateCustomElement(tagName));
-  if (CustomElementDefinition* definition = definitionFor(
-          document,
-          CustomElementDescriptor(tagName.localName(), tagName.localName())))
-    return definition->createElementSync(document, tagName);
-  return createUndefinedElement(document, tagName);
+    const QualifiedName& tagName,
+    const AtomicString& is) {
+  const AtomicString& name =
+      (is.isNull() || is.isEmpty()) ? tagName.localName() : is;
+  DCHECK(shouldCreateCustomElement(name));
+  const CustomElementDescriptor desc(name, tagName.localName());
+  CustomElementDefinition* definition = definitionFor(document, desc);
+  HTMLElement* element;
+
+  if (definition && desc.isAutonomous()) {
+    // 6. If definition is non-null and we have an autonomous custom element
+    element = definition->createElementSync(document, tagName);
+  } else if (definition) {
+    // 5. If definition is non-null and we have a customized built-in element
+    element = createUndefinedElement(document, tagName);
+    definition->upgrade(element);
+  } else {
+    // 7. Otherwise
+    element = createUndefinedElement(document, tagName);
+  }
+  return element;
 }
 
 HTMLElement* CustomElement::createCustomElementAsync(
@@ -113,10 +131,15 @@ HTMLElement* CustomElement::createCustomElementAsync(
   return createUndefinedElement(document, tagName);
 }
 
+// Create a HTMLElement
 HTMLElement* CustomElement::createUndefinedElement(
     Document& document,
     const QualifiedName& tagName) {
-  DCHECK(shouldCreateCustomElement(tagName));
+  bool shouldCreateBuiltin =
+      htmlElementTypeForTag(tagName.localName()) !=
+          HTMLElementType::kHTMLUnknownElement &&
+      RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+  DCHECK(shouldCreateCustomElement(tagName) || shouldCreateBuiltin);
 
   HTMLElement* element;
   if (V0CustomElement::isValidName(tagName.localName()) &&
@@ -125,6 +148,9 @@ HTMLElement* CustomElement::createUndefinedElement(
         document, tagName);
     SECURITY_DCHECK(v0element->isHTMLElement());
     element = toHTMLElement(v0element);
+  } else if (shouldCreateBuiltin) {
+    element = HTMLElementFactory::createHTMLElement(
+        tagName.localName(), document, nullptr, CreatedByCreateElement);
   } else {
     element = HTMLElement::create(tagName, document);
   }

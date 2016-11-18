@@ -44,6 +44,7 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/HTMLElementFactory.h"
+#include "core/HTMLElementTypeHelpers.h"
 #include "core/HTMLNames.h"
 #include "core/SVGElementFactory.h"
 #include "core/SVGNames.h"
@@ -112,6 +113,8 @@
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
@@ -707,9 +710,11 @@ String getTypeExtension(Document* document,
   return emptyString();
 }
 
+// https://dom.spec.whatwg.org/#dom-document-createelement
 Element* Document::createElement(const AtomicString& localName,
                                  const StringOrDictionary& stringOrOptions,
                                  ExceptionState& exceptionState) {
+  // 1. If localName does not match Name production, throw InvalidCharacterError
   if (!isValidName(localName)) {
     exceptionState.throwDOMException(
         InvalidCharacterError,
@@ -717,26 +722,63 @@ Element* Document::createElement(const AtomicString& localName,
     return nullptr;
   }
 
+  // 2. localName converted to ASCII lowercase
+  const AtomicString& convertedLocalName = convertLocalName(localName);
+
+  bool isV1 = stringOrOptions.isDictionary() || !registrationContext();
+  bool createV1Builtin = stringOrOptions.isDictionary() &&
+                         RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+  bool shouldCreateBuiltin = createV1Builtin || stringOrOptions.isString();
+
+  // 3.
+  const AtomicString& is =
+      AtomicString(getTypeExtension(this, stringOrOptions, exceptionState));
+  const AtomicString& name = shouldCreateBuiltin ? is : convertedLocalName;
+
+  // 4. Let definition be result of lookup up custom element definition
+  CustomElementDefinition* definition = nullptr;
+  if (isV1) {
+    // Is the runtime flag enabled for customized builtin elements?
+    const CustomElementDescriptor desc =
+        RuntimeEnabledFeatures::customElementsBuiltinEnabled()
+            ? CustomElementDescriptor(name, convertedLocalName)
+            : CustomElementDescriptor(convertedLocalName, convertedLocalName);
+    if (CustomElementRegistry* registry = CustomElement::registry(*this))
+      definition = registry->definitionFor(desc);
+
+    // 5. If 'is' is non-null and definition is null, throw NotFoundError
+    // TODO(yurak): update when https://github.com/w3c/webcomponents/issues/608
+    //              is resolved
+    if (!definition && createV1Builtin) {
+      exceptionState.throwDOMException(NotFoundError,
+                                       "Custom element definition not found.");
+      return nullptr;
+    }
+  }
+
+  // 7. Let element be the result of creating an element
   Element* element;
 
-  if (CustomElement::shouldCreateCustomElement(convertLocalName(localName))) {
-    element = CustomElement::createCustomElementSync(
-        *this, convertLocalName(localName));
+  if (definition) {
+    element =
+        CustomElement::createCustomElementSync(*this, convertedLocalName, name);
   } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
     element = registrationContext()->createCustomTagElement(
-        *this, QualifiedName(nullAtom, convertLocalName(localName),
-                             xhtmlNamespaceURI));
+        *this, QualifiedName(nullAtom, convertedLocalName, xhtmlNamespaceURI));
   } else {
     element = createElement(localName, exceptionState);
     if (exceptionState.hadException())
       return nullptr;
   }
 
-  String typeExtention =
-      getTypeExtension(this, stringOrOptions, exceptionState);
-  if (!typeExtention.isEmpty()) {
-    V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
-        element, AtomicString(typeExtention));
+  // 8. If 'is' is non-null, set 'is' attribute
+  if (!is.isEmpty()) {
+    if (stringOrOptions.isString()) {
+      V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
+          element, is);
+    } else if (stringOrOptions.isDictionary()) {
+      element->setAttribute(HTMLNames::isAttr, is);
+    }
   }
 
   return element;
@@ -777,29 +819,72 @@ Element* Document::createElementNS(const AtomicString& namespaceURI,
   return createElement(qName, CreatedByCreateElement);
 }
 
+// https://dom.spec.whatwg.org/#internal-createelementns-steps
 Element* Document::createElementNS(const AtomicString& namespaceURI,
                                    const AtomicString& qualifiedName,
                                    const StringOrDictionary& stringOrOptions,
                                    ExceptionState& exceptionState) {
+  // 1. Validate and extract
   QualifiedName qName(
       createQualifiedName(namespaceURI, qualifiedName, exceptionState));
   if (qName == QualifiedName::null())
     return nullptr;
 
-  Element* element;
-  if (CustomElement::shouldCreateCustomElement(qName))
-    element = CustomElement::createCustomElementSync(*this, qName);
-  else if (V0CustomElement::isValidName(qName.localName()) &&
-           registrationContext())
-    element = registrationContext()->createCustomTagElement(*this, qName);
-  else
-    element = createElement(qName, CreatedByCreateElement);
+  bool isV1 = stringOrOptions.isDictionary() || !registrationContext();
+  bool createV1Builtin = stringOrOptions.isDictionary() &&
+                         RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+  bool shouldCreateBuiltin = createV1Builtin || stringOrOptions.isString();
 
-  String typeExtention =
-      getTypeExtension(this, stringOrOptions, exceptionState);
-  if (!typeExtention.isEmpty()) {
-    V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
-        element, AtomicString(typeExtention));
+  // 2.
+  const AtomicString& is =
+      AtomicString(getTypeExtension(this, stringOrOptions, exceptionState));
+  const AtomicString& name = shouldCreateBuiltin ? is : qualifiedName;
+
+  if (!isValidName(qualifiedName)) {
+    exceptionState.throwDOMException(
+        InvalidCharacterError,
+        "The tag name provided ('" + qualifiedName + "') is not a valid name.");
+    return nullptr;
+  }
+
+  // 3. Let definition be result of lookup up custom element definition
+  CustomElementDefinition* definition = nullptr;
+  if (isV1) {
+    const CustomElementDescriptor desc =
+        RuntimeEnabledFeatures::customElementsBuiltinEnabled()
+            ? CustomElementDescriptor(name, qualifiedName)
+            : CustomElementDescriptor(qualifiedName, qualifiedName);
+    if (CustomElementRegistry* registry = CustomElement::registry(*this))
+      definition = registry->definitionFor(desc);
+
+    // 4. If 'is' is non-null and definition is null, throw NotFoundError
+    if (!definition && createV1Builtin) {
+      exceptionState.throwDOMException(NotFoundError,
+                                       "Custom element definition not found.");
+      return nullptr;
+    }
+  }
+
+  // 5. Let element be the result of creating an element
+  Element* element;
+
+  if (CustomElement::shouldCreateCustomElement(qName) || createV1Builtin) {
+    element = CustomElement::createCustomElementSync(*this, qName, is);
+  } else if (V0CustomElement::isValidName(qName.localName()) &&
+             registrationContext()) {
+    element = registrationContext()->createCustomTagElement(*this, qName);
+  } else {
+    element = createElement(qName, CreatedByCreateElement);
+  }
+
+  // 6. If 'is' is non-null, set 'is' attribute
+  if (!is.isEmpty()) {
+    if (element->getCustomElementState() != CustomElementState::Custom) {
+      V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
+          element, is);
+    } else if (stringOrOptions.isDictionary()) {
+      element->setAttribute(HTMLNames::isAttr, is);
+    }
   }
 
   return element;
