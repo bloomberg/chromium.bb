@@ -4,6 +4,9 @@
 
 #include "components/arc/bluetooth/bluetooth_struct_traits.h"
 
+#include <string>
+#include <utility>
+
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -24,7 +27,7 @@ constexpr uint8_t kManufacturerData[] = {0x00, 0xe0};
 
 template <typename MojoType, typename UserType>
 mojo::StructPtr<MojoType> ConvertToMojo(UserType& input) {
-  mojo::Array<uint8_t> data = MojoType::Serialize(&input);
+  std::vector<uint8_t> data = MojoType::Serialize(&input);
   mojo::StructPtr<MojoType> output;
   MojoType::Deserialize(std::move(data), &output);
   return output;
@@ -32,7 +35,7 @@ mojo::StructPtr<MojoType> ConvertToMojo(UserType& input) {
 
 template <typename MojoType, typename UserType>
 bool ConvertFromMojo(mojo::StructPtr<MojoType> input, UserType* output) {
-  mojo::Array<uint8_t> data = MojoType::Serialize(&input);
+  std::vector<uint8_t> data = MojoType::Serialize(&input);
   return MojoType::Deserialize(std::move(data), output);
 }
 
@@ -70,7 +73,7 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothUUID) {
 TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
   arc::mojom::BluetoothAdvertisementPtr advertisement_mojo =
       arc::mojom::BluetoothAdvertisement::New();
-  mojo::Array<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
+  std::vector<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
 
   // Create service UUIDs.
   arc::mojom::BluetoothAdvertisingDataPtr data =
@@ -133,13 +136,13 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
 TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisementFailure) {
   arc::mojom::BluetoothAdvertisementPtr advertisement_mojo =
       arc::mojom::BluetoothAdvertisement::New();
-  mojo::Array<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
+  std::vector<arc::mojom::BluetoothAdvertisingDataPtr> adv_data;
 
   // Create empty manufacturer data. Manufacturer data must include the CIC
   // which is 2 bytes long.
   arc::mojom::BluetoothAdvertisingDataPtr data =
       arc::mojom::BluetoothAdvertisingData::New();
-  data->set_manufacturer_data((mojo::Array<uint8_t>()));
+  data->set_manufacturer_data(std::vector<uint8_t>());
   adv_data.push_back(std::move(data));
 
   advertisement_mojo->type =

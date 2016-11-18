@@ -181,7 +181,7 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(0u, fake_bluetooth_instance_->device_found_data().size());
   AddTestDevice();
   EXPECT_EQ(2u, fake_bluetooth_instance_->device_found_data().size());
-  const mojo::Array<mojom::BluetoothPropertyPtr>& prop =
+  const std::vector<mojom::BluetoothPropertyPtr>& prop =
       fake_bluetooth_instance_->device_found_data().back();
 
   EXPECT_EQ(7u, prop.size());
@@ -208,7 +208,7 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
 
   ChangeTestDeviceRssi(kTestRssi2);
   EXPECT_EQ(3u, fake_bluetooth_instance_->device_found_data().size());
-  const mojo::Array<mojom::BluetoothPropertyPtr>& prop2 =
+  const std::vector<mojom::BluetoothPropertyPtr>& prop2 =
       fake_bluetooth_instance_->device_found_data().back();
   EXPECT_EQ(7u, prop2.size());
   EXPECT_TRUE(prop2[6]->is_remote_rssi());
@@ -225,7 +225,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
   const auto& le_device_found_data =
       fake_bluetooth_instance_->le_device_found_data().back();
   const mojom::BluetoothAddressPtr& addr = le_device_found_data->addr();
-  const mojo::Array<mojom::BluetoothAdvertisingDataPtr>& adv_data =
+  const std::vector<mojom::BluetoothAdvertisingDataPtr>& adv_data =
       le_device_found_data->adv_data();
 
   EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
@@ -234,7 +234,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
 
   EXPECT_TRUE(adv_data[0]->is_local_name());
   EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyName),
-            adv_data[0]->get_local_name().To<std::string>());
+            adv_data[0]->get_local_name());
 
   EXPECT_TRUE(adv_data[1]->is_service_uuids());
   EXPECT_EQ(1u, adv_data[1]->get_service_uuids().size());
@@ -268,7 +268,7 @@ TEST_F(ArcBluetoothBridgeTest, GetGattDB) {
   //         Descriptor: ClientCharacteristicConfiguration
   //     Characteristic: BodySensorLocation
   //     Characteristic: HeartRateControlPoint
-  const mojo::Array<mojom::BluetoothGattDBElementPtr>& db =
+  const std::vector<mojom::BluetoothGattDBElementPtr>& db =
       fake_bluetooth_instance_->gatt_db_result().back()->db();
   EXPECT_EQ(5u, db.size());
 

@@ -152,7 +152,7 @@ void OnGattReadDone(const GattReadCallback& callback,
   arc::mojom::BluetoothGattValuePtr gattValue =
       arc::mojom::BluetoothGattValue::New();
   gattValue->status = arc::mojom::BluetoothGattStatus::GATT_SUCCESS;
-  gattValue->value = mojo::Array<uint8_t>::From(result);
+  gattValue->value = result;
   callback.Run(std::move(gattValue));
 }
 
@@ -163,7 +163,6 @@ void OnGattReadError(const GattReadCallback& callback,
       arc::mojom::BluetoothGattValue::New();
   gattValue->status =
       mojo::ConvertTo<arc::mojom::BluetoothGattStatus>(error_code);
-  gattValue->value = nullptr;
   callback.Run(std::move(gattValue));
 }
 
@@ -172,9 +171,9 @@ void OnGattServerRead(
     const BluetoothLocalGattService::Delegate::ValueCallback& success_callback,
     const BluetoothLocalGattService::Delegate::ErrorCallback& error_callback,
     arc::mojom::BluetoothGattStatus status,
-    mojo::Array<uint8_t> value) {
+    const std::vector<uint8_t>& value) {
   if (status == arc::mojom::BluetoothGattStatus::GATT_SUCCESS)
-    success_callback.Run(value.To<std::vector<uint8_t>>());
+    success_callback.Run(value);
   else
     error_callback.Run();
 }
@@ -318,7 +317,7 @@ void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device) const {
   if (!bluetooth_instance)
     return;
 
-  mojo::Array<mojom::BluetoothPropertyPtr> properties =
+  std::vector<mojom::BluetoothPropertyPtr> properties =
       GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device);
 
   bluetooth_instance->OnDeviceFound(std::move(properties));
@@ -340,7 +339,7 @@ void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device) const {
             "OnLEDeviceFound", kMinBtleVersion);
     if (!btle_instance)
       return;
-    mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data =
+    std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data =
         GetAdvertisingData(device);
     addr = mojom::BluetoothAddress::From(device->GetAddress());
     btle_instance->OnLEDeviceFound(std::move(addr), rssi.value(),
@@ -539,8 +538,7 @@ void ArcBluetoothBridge::GattCharacteristicValueChanged(
   char_id->uuid = characteristic->GetUUID();
 
   btle_instance->OnGattNotify(std::move(address), std::move(service_id),
-                              std::move(char_id), true /* is_notify */,
-                              mojo::Array<uint8_t>::From(value));
+                              std::move(char_id), true /* is_notify */, value);
 }
 
 void ArcBluetoothBridge::GattDescriptorValueChanged(
@@ -595,8 +593,7 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
 
   bluetooth_instance->RequestGattWrite(
       mojom::BluetoothAddress::From(device->GetAddress()),
-      gatt_handle_[attribute->GetIdentifier()], offset,
-      mojo::Array<uint8_t>::From(value),
+      gatt_handle_[attribute->GetIdentifier()], offset, value,
       base::Bind(&OnGattServerWrite, success_callback, error_callback));
 }
 
@@ -682,7 +679,7 @@ void ArcBluetoothBridge::GetAdapterProperty(mojom::BluetoothPropertyType type) {
   if (!bluetooth_instance)
     return;
 
-  mojo::Array<mojom::BluetoothPropertyPtr> properties =
+  std::vector<mojom::BluetoothPropertyPtr> properties =
       GetAdapterProperties(type);
 
   bluetooth_instance->OnAdapterProperties(mojom::BluetoothStatus::SUCCESS,
@@ -747,7 +744,7 @@ void ArcBluetoothBridge::OnSetAdapterProperty(
           "OnAdapterProperties");
   DCHECK(bluetooth_instance);
 
-  auto properties = mojo::Array<arc::mojom::BluetoothPropertyPtr>::New(0);
+  std::vector<arc::mojom::BluetoothPropertyPtr> properties;
   properties.push_back(std::move(property));
 
   bluetooth_instance->OnAdapterProperties(status, std::move(properties));
@@ -805,7 +802,7 @@ void ArcBluetoothBridge::GetRemoteDeviceProperty(
   std::string addr_str = remote_addr->To<std::string>();
   BluetoothDevice* device = bluetooth_adapter_->GetDevice(addr_str);
 
-  mojo::Array<mojom::BluetoothPropertyPtr> properties =
+  std::vector<mojom::BluetoothPropertyPtr> properties =
       GetDeviceProperties(type, device);
   mojom::BluetoothStatus status = mojom::BluetoothStatus::SUCCESS;
 
@@ -832,7 +829,7 @@ void ArcBluetoothBridge::SetRemoteDeviceProperty(
   // And only Android Settings App / Android TV / NFC used that.
   bluetooth_instance->OnRemoteDeviceProperties(
       mojom::BluetoothStatus::UNSUPPORTED, std::move(remote_addr),
-      mojo::Array<mojom::BluetoothPropertyPtr>::New(0));
+      std::vector<mojom::BluetoothPropertyPtr>());
 }
 
 void ArcBluetoothBridge::GetRemoteServiceRecord(
@@ -1216,7 +1213,7 @@ void ArcBluetoothBridge::GetGattDB(mojom::BluetoothAddressPtr remote_addr) {
 
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
-  mojo::Array<mojom::BluetoothGattDBElementPtr> db;
+  std::vector<mojom::BluetoothGattDBElementPtr> db;
   for (auto* service : device->GetGattServices()) {
     mojom::BluetoothGattDBElementPtr service_element = CreateGattDBElement(
         service->IsPrimary()
@@ -1316,8 +1313,7 @@ void ArcBluetoothBridge::WriteGattCharacteristic(
   DCHECK(characteristic->GetPermissions() & kGattWritePermission);
 
   characteristic->WriteRemoteCharacteristic(
-      value->value.To<std::vector<uint8_t>>(),
-      base::Bind(&OnGattOperationDone, callback),
+      value->value, base::Bind(&OnGattOperationDone, callback),
       base::Bind(&OnGattOperationError, callback));
 }
 
@@ -1364,8 +1360,7 @@ void ArcBluetoothBridge::WriteGattDescriptor(
   }
 
   descriptor->WriteRemoteDescriptor(
-      value->value.To<std::vector<uint8_t>>(),
-      base::Bind(&OnGattOperationDone, callback),
+      value->value, base::Bind(&OnGattOperationDone, callback),
       base::Bind(&OnGattOperationError, callback));
 }
 
@@ -1595,7 +1590,7 @@ void ArcBluetoothBridge::SendIndication(
     int32_t attribute_handle,
     mojom::BluetoothAddressPtr address,
     bool confirm,
-    mojo::Array<uint8_t> value,
+    const std::vector<uint8_t>& value,
     const SendIndicationCallback& callback) {}
 
 void ArcBluetoothBridge::GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
@@ -1844,10 +1839,10 @@ void ArcBluetoothBridge::OnForgetError(mojom::BluetoothAddressPtr addr) const {
                                          std::move(addr), bond_state);
 }
 
-mojo::Array<mojom::BluetoothPropertyPtr>
+std::vector<mojom::BluetoothPropertyPtr>
 ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
                                         const BluetoothDevice* device) const {
-  mojo::Array<mojom::BluetoothPropertyPtr> properties;
+  std::vector<mojom::BluetoothPropertyPtr> properties;
 
   if (!device) {
     return properties;
@@ -1890,7 +1885,7 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
       type == mojom::BluetoothPropertyType::REMOTE_FRIENDLY_NAME) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     btp->set_remote_friendly_name(
-        mojo::String::From(base::UTF16ToUTF8(device->GetNameForDisplay())));
+        base::UTF16ToUTF8(device->GetNameForDisplay()));
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -1907,16 +1902,16 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   return properties;
 }
 
-mojo::Array<mojom::BluetoothPropertyPtr>
+std::vector<mojom::BluetoothPropertyPtr>
 ArcBluetoothBridge::GetAdapterProperties(
     mojom::BluetoothPropertyType type) const {
-  mojo::Array<mojom::BluetoothPropertyPtr> properties;
+  std::vector<mojom::BluetoothPropertyPtr> properties;
 
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::BDNAME) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     std::string name = bluetooth_adapter_->GetName();
-    btp->set_bdname(mojo::String(name));
+    btp->set_bdname(name);
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -1929,8 +1924,7 @@ ArcBluetoothBridge::GetAdapterProperties(
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::UUIDS) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    btp->set_uuids(
-        mojo::Array<BluetoothUUID>::From(bluetooth_adapter_->GetUUIDs()));
+    btp->set_uuids(bluetooth_adapter_->GetUUIDs());
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -1962,8 +1956,7 @@ ArcBluetoothBridge::GetAdapterProperties(
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
 
-    mojo::Array<mojom::BluetoothAddressPtr> bonded_devices =
-        mojo::Array<mojom::BluetoothAddressPtr>::New(0);
+    std::vector<mojom::BluetoothAddressPtr> bonded_devices;
 
     for (auto* device : devices) {
       if (device->IsPaired())
@@ -2011,9 +2004,9 @@ ArcBluetoothBridge::GetAdapterProperties(
 // Local Name, Service UUIDs, Tx Power Level, Service Data, and Manufacturer
 // Data. Note that we need to use 16-bit UUID in Service Data section because
 // Android does not support 128-bit UUID there.
-mojo::Array<mojom::BluetoothAdvertisingDataPtr>
+std::vector<mojom::BluetoothAdvertisingDataPtr>
 ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
-  mojo::Array<mojom::BluetoothAdvertisingDataPtr> advertising_data;
+  std::vector<mojom::BluetoothAdvertisingDataPtr> advertising_data;
 
   // Advertising Data Flags
   if (device->GetAdvertisingDataFlags().has_value()) {
@@ -2035,8 +2028,8 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
   if (uuid_set.size() > 0) {
     mojom::BluetoothAdvertisingDataPtr service_uuids =
         mojom::BluetoothAdvertisingData::New();
-    service_uuids->set_service_uuids(mojo::Array<BluetoothUUID>::From(
-        std::vector<BluetoothUUID>(uuid_set.begin(), uuid_set.end())));
+    service_uuids->set_service_uuids(
+        std::vector<BluetoothUUID>(uuid_set.begin(), uuid_set.end()));
     advertising_data.push_back(std::move(service_uuids));
   }
 
@@ -2062,8 +2055,7 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
     const std::vector<uint8_t>* data = device->GetServiceDataForUUID(uuid);
     DCHECK(data != nullptr);
 
-    std::vector<uint8_t> data_copy = *data;
-    service_data->data.Swap(&data_copy);
+    service_data->data = *data;
 
     service_data_element->set_service_data(std::move(service_data));
     advertising_data.push_back(std::move(service_data_element));
@@ -2133,9 +2125,13 @@ void ArcBluetoothBridge::OnGetServiceRecordsDone(
   if (!sdp_bluetooth_instance)
     return;
 
-  sdp_bluetooth_instance->OnGetSdpRecords(
-      mojom::BluetoothStatus::SUCCESS, std::move(remote_addr), target_uuid,
-      mojo::Array<mojom::BluetoothSdpRecordPtr>::From(records_bluez));
+  std::vector<mojom::BluetoothSdpRecordPtr> records;
+  for (const auto& r : records_bluez)
+    records.push_back(mojom::BluetoothSdpRecord::From(r));
+
+  sdp_bluetooth_instance->OnGetSdpRecords(mojom::BluetoothStatus::SUCCESS,
+                                          std::move(remote_addr), target_uuid,
+                                          std::move(records));
 }
 
 void ArcBluetoothBridge::OnGetServiceRecordsError(
@@ -2165,7 +2161,7 @@ void ArcBluetoothBridge::OnGetServiceRecordsError(
 
   sdp_bluetooth_instance->OnGetSdpRecords(
       status, std::move(remote_addr), target_uuid,
-      mojo::Array<mojom::BluetoothSdpRecordPtr>::New(0));
+      std::vector<mojom::BluetoothSdpRecordPtr>());
 }
 
 bool ArcBluetoothBridge::CalledOnValidThread() {

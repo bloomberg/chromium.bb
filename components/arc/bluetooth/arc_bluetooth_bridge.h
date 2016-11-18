@@ -263,7 +263,7 @@ class ArcBluetoothBridge
   void SendIndication(int32_t attribute_handle,
                       mojom::BluetoothAddressPtr address,
                       bool confirm,
-                      mojo::Array<uint8_t> value,
+                      const std::vector<uint8_t>& value,
                       const SendIndicationCallback& callback) override;
 
   // Bluetooth Mojo host interface - Bluetooth SDP functions
@@ -331,12 +331,12 @@ class ArcBluetoothBridge
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
 
  private:
-  mojo::Array<mojom::BluetoothPropertyPtr> GetDeviceProperties(
+  std::vector<mojom::BluetoothPropertyPtr> GetDeviceProperties(
       mojom::BluetoothPropertyType type,
       const device::BluetoothDevice* device) const;
-  mojo::Array<mojom::BluetoothPropertyPtr> GetAdapterProperties(
+  std::vector<mojom::BluetoothPropertyPtr> GetAdapterProperties(
       mojom::BluetoothPropertyType type) const;
-  mojo::Array<mojom::BluetoothAdvertisingDataPtr> GetAdvertisingData(
+  std::vector<mojom::BluetoothAdvertisingDataPtr> GetAdvertisingData(
       const device::BluetoothDevice* device) const;
 
   void SendCachedDevicesFound() const;

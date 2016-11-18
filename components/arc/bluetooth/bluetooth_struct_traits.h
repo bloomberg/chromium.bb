@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
 #define COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
 
+#include <memory>
+#include <vector>
+
 #include "components/arc/common/bluetooth.mojom.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -122,10 +125,10 @@ struct StructTraits<arc::mojom::BluetoothAdvertisementDataView,
     return false;
   }
 
-  static mojo::Array<arc::mojom::BluetoothAdvertisingDataPtr> data(
+  static std::vector<arc::mojom::BluetoothAdvertisingDataPtr> data(
       std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
     NOTREACHED();
-    return mojo::Array<arc::mojom::BluetoothAdvertisingDataPtr>();
+    return std::vector<arc::mojom::BluetoothAdvertisingDataPtr>();
   }
 };
 
