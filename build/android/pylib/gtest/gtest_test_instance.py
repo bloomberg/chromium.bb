@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import tempfile
+import threading
 import xml.etree.ElementTree
 
 from devil.android import apk_helper
@@ -240,6 +241,7 @@ class GtestTestInstance(test_instance.TestInstance):
     self._shard_timeout = args.shard_timeout
     self._store_tombstones = args.store_tombstones
     self._suite = args.suite_name[0]
+    self._filter_tests_lock = threading.Lock()
 
     # GYP:
     if args.executable_dist_dir:
@@ -428,10 +430,13 @@ class GtestTestInstance(test_instance.TestInstance):
       gtest_filter_strings.append(self._gtest_filter)
 
     filtered_test_list = test_list
-    for gtest_filter_string in gtest_filter_strings:
-      logging.debug('Filtering tests using: %s', gtest_filter_string)
-      filtered_test_list = unittest_util.FilterTestNames(
-          filtered_test_list, gtest_filter_string)
+    # This lock is required because on older versions of Python
+    # |unittest_util.FilterTestNames| use of |fnmatch| is not threadsafe.
+    with self._filter_tests_lock:
+      for gtest_filter_string in gtest_filter_strings:
+        logging.debug('Filtering tests using: %s', gtest_filter_string)
+        filtered_test_list = unittest_util.FilterTestNames(
+            filtered_test_list, gtest_filter_string)
     return filtered_test_list
 
   def _GenerateDisabledFilterString(self, disabled_prefixes):
