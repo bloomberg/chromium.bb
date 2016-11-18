@@ -66,6 +66,14 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def SetUp(self):
+    def substitute_device_root(d, device_root):
+      if not d:
+        return device_root
+      elif isinstance(d, list):
+        return posixpath.join(*(p if p else device_root for p in d))
+      else:
+        return d
+
     @local_device_environment.handle_shard_failures_with(
         self._env.BlacklistDevice)
     def individual_device_set_up(dev, host_device_tuples):
@@ -109,7 +117,7 @@ class LocalDeviceInstrumentationTestRun(
         device_root = posixpath.join(dev.GetExternalStoragePath(),
                                      'chromium_tests_root')
         host_device_tuples_substituted = [
-            (h, local_device_test_run.SubstituteDeviceRoot(d, device_root))
+            (h, substitute_device_root(d, device_root))
             for h, d in host_device_tuples]
         logging.info('instrumentation data deps:')
         for h, d in host_device_tuples_substituted:

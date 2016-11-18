@@ -369,6 +369,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 
 
 _GENERIC_PYDEPS_FILES = [
+    'build/secondary/tools/swarming_client/isolate.pydeps',
 ]
 
 

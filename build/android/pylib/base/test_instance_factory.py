@@ -7,17 +7,17 @@ from pylib.instrumentation import instrumentation_test_instance
 from pylib.junit import junit_test_instance
 from pylib.monkey import monkey_test_instance
 from pylib.perf import perf_test_instance
-from pylib.utils import device_dependencies
+from pylib.utils import isolator
 
 
 def CreateTestInstance(args, error_func):
 
   if args.command == 'gtest':
     return gtest_test_instance.GtestTestInstance(
-        args, device_dependencies.GetDataDependencies, error_func)
+        args, isolator.Isolator(), error_func)
   elif args.command == 'instrumentation':
     return instrumentation_test_instance.InstrumentationTestInstance(
-        args, device_dependencies.GetDataDependencies, error_func)
+        args, isolator.Isolator(), error_func)
   elif args.command == 'junit':
     return junit_test_instance.JunitTestInstance(args, error_func)
   elif args.command == 'monkey':

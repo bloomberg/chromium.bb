@@ -196,16 +196,12 @@ def AddGTestOptions(parser):
                      dest='shard_timeout', type=int, default=120,
                      help='Timeout to wait for each test '
                           '(default: %(default)s).')
-  # TODO(jbudorick): Remove this after ensuring nothing else uses it.
   group.add_argument('--isolate_file_path',
                      '--isolate-file-path',
                      dest='isolate_file_path',
                      type=os.path.realpath,
-                     help=argparse.SUPPRESS)
-  group.add_argument('--runtime-deps-path',
-                     dest='runtime_deps_path',
-                     type=os.path.realpath,
-                     help='Runtime data dependency file from GN.')
+                     help='.isolate file path to override the default '
+                          'path')
   group.add_argument('--app-data-file', action='append', dest='app_data_files',
                      help='A file path relative to the app data directory '
                           'that should be saved to the host.')
@@ -364,16 +360,12 @@ def AddInstrumentationTestOptions(parser):
   group.add_argument('--device-flags-file', type=os.path.realpath,
                      help='The relative filepath to a file containing '
                           'command-line flags to set on the device')
-  # TODO(jbudorick): Remove this after ensuring nothing else uses it.
   group.add_argument('--isolate_file_path',
                      '--isolate-file-path',
                      dest='isolate_file_path',
                      type=os.path.realpath,
-                     help=argparse.SUPPRESS)
-  group.add_argument('--runtime-deps-path',
-                     dest='runtime_deps_path',
-                     type=os.path.realpath,
-                     help='Runtime data dependency file from GN.')
+                     help='.isolate file path to override the default '
+                          'path')
   group.add_argument('--delete-stale-data', dest='delete_stale_data',
                      action='store_true',
                      help='Delete stale test data on the device.')

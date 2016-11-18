@@ -251,7 +251,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   def SetUp(self):
     @local_device_environment.handle_shard_failures_with(
         on_failure=self._env.BlacklistDevice)
-    def individual_device_set_up(dev, host_device_tuples):
+    def individual_device_set_up(dev):
       def install_apk():
         # Install test APK.
         self._delegate.Install(dev)
@@ -259,12 +259,11 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
       def push_test_data():
         # Push data dependencies.
         device_root = self._delegate.GetTestDataRoot(dev)
-        host_device_tuples_substituted = [
-            (h, local_device_test_run.SubstituteDeviceRoot(d, device_root))
-            for h, d in host_device_tuples]
-        dev.PushChangedFiles(
-            host_device_tuples_substituted,
-            delete_device_stale=True)
+        data_deps = self._test_instance.GetDataDependencies()
+        host_device_tuples = [
+            (h, d if d is not None else device_root)
+            for h, d in data_deps]
+        dev.PushChangedFiles(host_device_tuples, delete_device_stale=True)
         if not host_device_tuples:
           dev.RunShellCommand(['rm', '-rf', device_root], check_return=True)
           dev.RunShellCommand(['mkdir', '-p', device_root], check_return=True)
@@ -290,9 +289,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         for step in steps:
           step()
 
-    self._env.parallel_devices.pMap(
-        individual_device_set_up,
-        self._test_instance.GetDataDependencies())
+    self._env.parallel_devices.pMap(individual_device_set_up)
 
   #override
   def _ShouldShard(self):
