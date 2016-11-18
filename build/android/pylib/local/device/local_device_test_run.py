@@ -92,7 +92,7 @@ class LocalDeviceTestRun(test_run.TestRun):
       raise TestsTerminated()
 
     try:
-      with signal_handler.AddSignalHandler(signal.SIGTERM, stop_tests):
+      with signal_handler.SignalHandler(signal.SIGTERM, stop_tests):
         tries = 0
         results = []
         while tries < self._env.max_tries and tests:
