@@ -4,16 +4,24 @@
 
 #include "ash/common/system/chromeos/audio/audio_detailed_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 
 namespace {
 
@@ -64,28 +72,61 @@ void AudioDetailedView::Update() {
   Layout();
 }
 
-void AudioDetailedView::AddScrollListInfoItem(const base::string16& text) {
-  views::Label* label = new views::Label(
-      text, ui::ResourceBundle::GetSharedInstance().GetFontList(
-                ui::ResourceBundle::BoldFont));
+void AudioDetailedView::AddInputHeader() {
+  AddScrollListInfoItem(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INPUT),
+      gfx::CreateVectorIcon(kSystemMenuAudioInputIcon,
+                            TrayPopupItemStyle::GetIconColor(
+                                TrayPopupItemStyle::ColorStyle::ACTIVE)));
+}
 
-  //  Align info item with checkbox items
-  int margin =
-      kTrayPopupPaddingHorizontal + kTrayPopupDetailsLabelExtraLeftMargin;
-  int left_margin = 0;
-  int right_margin = 0;
-  if (base::i18n::IsRTL())
-    right_margin = margin;
-  else
-    left_margin = margin;
+void AudioDetailedView::AddOutputHeader() {
+  AddScrollListInfoItem(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT),
+      gfx::CreateVectorIcon(kSystemMenuAudioOutputIcon,
+                            TrayPopupItemStyle::GetIconColor(
+                                TrayPopupItemStyle::ColorStyle::ACTIVE)));
+}
 
-  label->SetBorder(views::CreateEmptyBorder(
-      ash::kTrayPopupPaddingBetweenItems, left_margin,
-      ash::kTrayPopupPaddingBetweenItems, right_margin));
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
+void AudioDetailedView::AddScrollListInfoItem(const base::string16& text,
+                                              const gfx::ImageSkia& image) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    TriView* header = TrayPopupUtils::CreateDefaultRowView();
+    views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
+    image_view->SetImage(image);
+    header->AddView(TriView::Container::START, image_view);
 
-  scroll_content()->AddChildView(label);
+    views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+    label->SetText(text);
+    TrayPopupItemStyle style(
+        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    style.SetupLabel(label);
+    header->AddView(TriView::Container::CENTER, label);
+
+    header->SetContainerVisible(TriView::Container::END, false);
+    scroll_content()->AddChildView(header);
+  } else {
+    views::Label* label = new views::Label(
+        text, ui::ResourceBundle::GetSharedInstance().GetFontList(
+                  ui::ResourceBundle::BoldFont));
+
+    //  Align info item with checkbox items
+    int margin =
+        kTrayPopupPaddingHorizontal + kTrayPopupDetailsLabelExtraLeftMargin;
+    int left_margin = 0;
+    int right_margin = 0;
+    if (base::i18n::IsRTL())
+      right_margin = margin;
+    else
+      left_margin = margin;
+
+    label->SetBorder(views::CreateEmptyBorder(
+        ash::kTrayPopupPaddingBetweenItems, left_margin,
+        ash::kTrayPopupPaddingBetweenItems, right_margin));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
+    scroll_content()->AddChildView(label);
+  }
 }
 
 HoverHighlightView* AudioDetailedView::AddScrollListItem(
@@ -93,7 +134,24 @@ HoverHighlightView* AudioDetailedView::AddScrollListItem(
     bool highlight,
     bool checked) {
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddCheckableLabel(text, highlight, checked);
+
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    container->AddLabelRowMd(text);
+    if (checked) {
+      gfx::ImageSkia check_mark = gfx::CreateVectorIcon(
+          gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
+      container->AddRightIcon(check_mark, check_mark.width());
+      container->SetRightViewVisible(true);
+      container->SetAccessiblityState(
+          HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
+    } else {
+      container->SetAccessiblityState(
+          HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+    }
+  } else {
+    container->AddCheckableLabel(text, highlight, checked);
+  }
+
   scroll_content()->AddChildView(container);
   return container;
 }
@@ -125,8 +183,14 @@ void AudioDetailedView::UpdateScrollableList() {
   device_map_.clear();
 
   // Add audio output devices.
-  AddScrollListInfoItem(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT));
+  const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
+  const bool has_output_devices = output_devices_.size() > 0;
+  if (!use_md || has_output_devices)
+    AddOutputHeader();
+  if (use_md && has_output_devices)
+    scroll_content()->AddChildView(
+        TrayPopupUtils::CreateListItemSeparator(true));
+
   for (size_t i = 0; i < output_devices_.size(); ++i) {
     HoverHighlightView* container = AddScrollListItem(
         GetAudioDeviceName(output_devices_[i]), false /* highlight */,
@@ -134,11 +198,21 @@ void AudioDetailedView::UpdateScrollableList() {
     device_map_[container] = output_devices_[i];
   }
 
-  AddScrollSeparator();
+  if (!use_md) {
+    AddScrollSeparator();
+  } else if (has_output_devices) {
+    scroll_content()->AddChildView(
+        TrayPopupUtils::CreateListItemSeparator(false));
+  }
 
   // Add audio input devices.
-  AddScrollListInfoItem(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INPUT));
+  const bool has_input_devices = input_devices_.size() > 0;
+  if (!use_md || has_input_devices)
+    AddInputHeader();
+  if (use_md && has_input_devices)
+    scroll_content()->AddChildView(
+        TrayPopupUtils::CreateListItemSeparator(true));
+
   for (size_t i = 0; i < input_devices_.size(); ++i) {
     HoverHighlightView* container = AddScrollListItem(
         GetAudioDeviceName(input_devices_[i]), false /* highlight */,

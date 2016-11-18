@@ -207,6 +207,7 @@ void HoverHighlightView::DoAddIconAndLabelsMd(
   text_label_->SetEnabled(enabled());
   TrayPopupItemStyle style(GetNativeTheme(), font_style);
   style.SetupLabel(text_label_);
+
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
   if (!sub_text.empty()) {
     sub_text_label_ = TrayPopupUtils::CreateDefaultLabel();
@@ -254,11 +255,11 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
   return text_label_;
 }
 
-// TODO(tdanderson): Make this function non-MD-only once the audio detailed
-// view no longer uses it.
 views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
                                                     bool highlight,
                                                     bool checked) {
+  DCHECK(!MaterialDesignController::IsSystemTrayMenuMaterial());
+
   if (checked) {
     accessibility_state_ = AccessibilityState::CHECKED_CHECKBOX;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -290,6 +291,23 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
 
   accessibility_state_ = AccessibilityState::UNCHECKED_CHECKBOX;
   return AddLabel(text, gfx::ALIGN_LEFT, highlight);
+}
+
+void HoverHighlightView::AddLabelRowMd(const base::string16& text) {
+  DCHECK(MaterialDesignController::IsSystemTrayMenuMaterial());
+
+  SetLayoutManager(new views::FillLayout);
+  tri_view_ = TrayPopupUtils::CreateDefaultRowView();
+  AddChildView(tri_view_);
+
+  text_label_ = TrayPopupUtils::CreateDefaultLabel();
+  text_label_->SetText(text);
+
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+  style.SetupLabel(text_label_);
+  tri_view_->AddView(TriView::Container::CENTER, text_label_);
+
+  SetAccessibleName(text);
 }
 
 void HoverHighlightView::SetExpandable(bool expandable) {

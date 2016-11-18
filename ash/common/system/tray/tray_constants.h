@@ -59,9 +59,6 @@ extern const SkColor kTrayPopupHoverBackgroundColor;
 extern const int kTrayPopupScrollSeparatorHeight;
 extern const int kTrayRoundedBorderRadius;
 
-// The padding used on the left and right of labels.
-extern const int kTrayPopupLabelHorizontalPadding;
-
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
 extern const SkColor kPublicAccountBackgroundColor;

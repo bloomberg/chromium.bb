@@ -43,19 +43,6 @@ const int kMinFontSizeDelta = -10;
 
 const SkColor kKeyboardRowSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 
-// Creates a separator that will be used between the IME list items.
-views::Separator* CreateListItemSeparator() {
-  views::Separator* separator =
-      new views::Separator(views::Separator::HORIZONTAL);
-  separator->SetColor(kBorderLightColor);
-  separator->SetPreferredSize(kSeparatorWidth);
-  separator->SetBorder(
-      views::CreateEmptyBorder(kMenuSeparatorVerticalPadding,
-                               kMenuExtraMarginFromLeftEdge + kMenuButtonSize,
-                               kMenuSeparatorVerticalPadding, 0));
-  return separator;
-}
-
 // A |HoverHighlightView| that uses bold or normal font depending on whether it
 // is selected.  This view exposes itself as a checkbox to the accessibility
 // framework.
@@ -344,7 +331,8 @@ void ImeListView::AppendImeListAndProperties(
     // selected IME item.
     if (list[i].selected && !property_list.empty()) {
       // Adds a separator on the top of property items.
-      scroll_content()->AddChildView(CreateListItemSeparator());
+      scroll_content()->AddChildView(
+          TrayPopupUtils::CreateListItemSeparator(true));
 
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
@@ -358,7 +346,8 @@ void ImeListView::AppendImeListAndProperties(
       // Adds a separator on the bottom of property items if there are still
       // other IMEs under the current one.
       if (i < list.size() - 1)
-        scroll_content()->AddChildView(CreateListItemSeparator());
+        scroll_content()->AddChildView(
+            TrayPopupUtils::CreateListItemSeparator(true));
     }
   }
 }

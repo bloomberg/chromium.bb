@@ -30,7 +30,12 @@ class AudioDetailedView : public TrayDetailsView {
   void Update();
 
  private:
-  void AddScrollListInfoItem(const base::string16& text);
+  // Helper functions to add non-clickable header rows within the scrollable
+  // list.
+  void AddInputHeader();
+  void AddOutputHeader();
+  void AddScrollListInfoItem(const base::string16& text,
+                             const gfx::ImageSkia& image);
 
   HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         bool highlight,

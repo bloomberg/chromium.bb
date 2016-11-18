@@ -51,11 +51,19 @@ SkColor TrayPopupItemStyle::GetIconColor(const ui::NativeTheme* theme,
   return SK_ColorMAGENTA;
 }
 
+// static
+SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style) {
+  return GetIconColor(nullptr, color_style);
+}
+
 TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
                                        FontStyle font_style)
     : theme_(theme),
       font_style_(font_style),
       color_style_(ColorStyle::ACTIVE) {}
+
+TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style)
+    : TrayPopupItemStyle(nullptr, font_style) {}
 
 TrayPopupItemStyle::~TrayPopupItemStyle() {}
 

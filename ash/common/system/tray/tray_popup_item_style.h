@@ -73,8 +73,10 @@ class TrayPopupItemStyle {
 
   static SkColor GetIconColor(const ui::NativeTheme* theme,
                               ColorStyle color_style);
+  static SkColor GetIconColor(ColorStyle color_style);
 
   TrayPopupItemStyle(const ui::NativeTheme* theme, FontStyle font_style);
+  explicit TrayPopupItemStyle(FontStyle font_style);
   ~TrayPopupItemStyle();
 
   const ui::NativeTheme* theme() const { return theme_; }

@@ -156,6 +156,12 @@ class TrayPopupUtils {
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host);
 
+  // Creates and returns a horizontal separator line to be drawn between rows
+  // in a detailed view. If |left_inset| is true, then the separator is inset on
+  // the left by the width normally occupied by an icon. Caller assumes
+  // ownership of the returned separator.
+  static views::Separator* CreateListItemSeparator(bool left_inset);
+
   // Returns true if it is possible to open WebUI settings in a browser window,
   // i.e., the user is logged in, not on the lock screen, and not in a secondary
   // account flow.

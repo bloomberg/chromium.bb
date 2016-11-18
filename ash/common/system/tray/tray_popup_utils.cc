@@ -379,6 +379,21 @@ gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
   return bounds;
 }
 
+views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
+  views::Separator* separator =
+      new views::Separator(views::Separator::HORIZONTAL);
+  separator->SetColor(kHorizontalSeparatorColor);
+  separator->SetPreferredSize(kSeparatorWidth);
+  separator->SetBorder(views::CreateEmptyBorder(
+      kMenuSeparatorVerticalPadding - kSeparatorWidth,
+      left_inset
+          ? kMenuExtraMarginFromLeftEdge + kMenuButtonSize +
+                kTrayPopupLabelHorizontalPadding
+          : 0,
+      kMenuSeparatorVerticalPadding, 0));
+  return separator;
+}
+
 bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
   // TODO(tdanderson): Consider moving this into WmShell, or introduce a
   // CanShowSettings() method in each delegate type that has a

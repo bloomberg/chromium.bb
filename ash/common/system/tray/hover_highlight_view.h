@@ -89,6 +89,10 @@ class HoverHighlightView : public ActionableView {
                                   bool highlight,
                                   bool checked);
 
+  // Adds a row containing only a text label, inset on the left by the
+  // horizontal space that would normally be occupied by an icon.
+  void AddLabelRowMd(const base::string16& text);
+
   // Add an optional right icon to an already established view (call one of
   // the other Add* functions first). |icon_size| is the size of the icon in DP.
   void AddRightIcon(const gfx::ImageSkia& image, int icon_size);
