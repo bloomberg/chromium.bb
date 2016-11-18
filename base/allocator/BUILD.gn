@@ -216,7 +216,12 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src",
     ]
 
-    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs -= [
+      "//build/config/compiler:chromium_code",
+
+      # The asm code in tcmalloc is not currently thumb compatible
+      "//build/config/compiler:compiler_arm_thumb",
+    ]
     configs += [
       "//build/config/compiler:no_chromium_code",
       ":tcmalloc_flags",
