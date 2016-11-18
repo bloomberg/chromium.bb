@@ -50,6 +50,7 @@ class WebServiceWorkerRegistration {
   virtual void proxyStopped() {}
 
   virtual WebURL scope() const { return WebURL(); }
+  virtual int64_t registrationId() const = 0;
   virtual void update(WebServiceWorkerProvider*,
                       WebServiceWorkerUpdateCallbacks*) {}
   virtual void unregister(WebServiceWorkerProvider*,

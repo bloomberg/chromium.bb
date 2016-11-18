@@ -44,7 +44,7 @@ class WebThreadBase;
 }
 
 namespace content {
-class BackgroundSyncProvider;
+
 class NotificationDispatcher;
 class PushDispatcher;
 class ThreadSafeSender;
@@ -114,7 +114,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebCrypto* crypto() override;
   blink::WebNotificationManager* notificationManager() override;
   blink::WebPushProvider* pushProvider() override;
-  blink::WebSyncProvider* backgroundSyncProvider() override;
 
   blink::WebString domCodeStringFromEnum(int dom_code) override;
   int domEnumFromCodeString(const blink::WebString& codeString) override;
@@ -142,7 +141,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
-  std::unique_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
 
   blink::scheduler::WebThreadBase* compositor_thread_;
 };

@@ -7,7 +7,6 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/modules/background_sync/WebSyncError.h"
-#include "public/platform/modules/background_sync/WebSyncProvider.h"
 
 namespace blink {
 

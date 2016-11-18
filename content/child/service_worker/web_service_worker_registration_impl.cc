@@ -191,6 +191,10 @@ int64_t WebServiceWorkerRegistrationImpl::registration_id() const {
   return handle_ref_->registration_id();
 }
 
+int64_t WebServiceWorkerRegistrationImpl::registrationId() const {
+  return registration_id();
+}
+
 // static
 std::unique_ptr<blink::WebServiceWorkerRegistration::Handle>
 WebServiceWorkerRegistrationImpl::CreateHandle(

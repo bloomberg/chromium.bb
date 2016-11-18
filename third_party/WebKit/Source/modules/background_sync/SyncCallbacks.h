@@ -7,8 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/modules/background_sync/WebSyncProvider.h"
-#include "public/platform/modules/background_sync/WebSyncRegistration.h"
+#include "public/platform/modules/background_sync/background_sync.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -25,7 +24,9 @@ struct WebSyncRegistration;
 // depending on the result passed to the callback. It takes a
 // ServiceWorkerRegistration in its constructor and will pass it to the
 // SyncRegistration.
-class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
+class SyncRegistrationCallbacks final
+    : public WebCallbacks<blink::mojom::blink::SyncRegistrationPtr,
+                          const WebSyncError&> {
   WTF_MAKE_NONCOPYABLE(SyncRegistrationCallbacks);
   // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
   // the following macro should be moved to WebCallbacks defined in
@@ -36,7 +37,7 @@ class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
   SyncRegistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
   ~SyncRegistrationCallbacks() override;
 
-  void onSuccess(std::unique_ptr<WebSyncRegistration>) override;
+  void onSuccess(blink::mojom::blink::SyncRegistrationPtr) override;
   void onError(const WebSyncError&) override;
 
  private:
@@ -50,7 +51,9 @@ class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
 // ServiceWorkerRegistration in its constructor and will pass it to the
 // SyncRegistration.
 class SyncGetRegistrationsCallbacks final
-    : public WebSyncGetRegistrationsCallbacks {
+    : public WebCallbacks<
+          const WebVector<blink::mojom::blink::SyncRegistration*>&,
+          const WebSyncError&> {
   WTF_MAKE_NONCOPYABLE(SyncGetRegistrationsCallbacks);
   // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
   // the following macro should be moved to WebCallbacks defined in
@@ -62,7 +65,8 @@ class SyncGetRegistrationsCallbacks final
                                 ServiceWorkerRegistration*);
   ~SyncGetRegistrationsCallbacks() override;
 
-  void onSuccess(const WebVector<WebSyncRegistration*>&) override;
+  void onSuccess(
+      const WebVector<blink::mojom::blink::SyncRegistration*>&) override;
   void onError(const WebSyncError&) override;
 
  private:

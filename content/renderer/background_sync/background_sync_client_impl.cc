@@ -7,14 +7,11 @@
 #include <utility>
 
 #include "base/time/time.h"
-#include "content/child/background_sync/background_sync_provider.h"
 #include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
-#include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
-#include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
 namespace content {

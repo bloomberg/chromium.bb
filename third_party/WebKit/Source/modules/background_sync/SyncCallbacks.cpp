@@ -24,15 +24,13 @@ SyncRegistrationCallbacks::SyncRegistrationCallbacks(
 SyncRegistrationCallbacks::~SyncRegistrationCallbacks() {}
 
 void SyncRegistrationCallbacks::onSuccess(
-    std::unique_ptr<WebSyncRegistration> webSyncRegistration) {
+    mojom::blink::SyncRegistrationPtr syncRegistration) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
     return;
   }
 
-  std::unique_ptr<WebSyncRegistration> registration =
-      wrapUnique(webSyncRegistration.release());
-  if (!registration) {
+  if (!syncRegistration) {
     m_resolver->resolve(v8::Null(m_resolver->getScriptState()->isolate()));
     return;
   }
@@ -59,13 +57,13 @@ SyncGetRegistrationsCallbacks::SyncGetRegistrationsCallbacks(
 SyncGetRegistrationsCallbacks::~SyncGetRegistrationsCallbacks() {}
 
 void SyncGetRegistrationsCallbacks::onSuccess(
-    const WebVector<WebSyncRegistration*>& webSyncRegistrations) {
+    const WebVector<mojom::blink::SyncRegistration*>& syncRegistrations) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
     return;
   }
   Vector<String> tags;
-  for (const WebSyncRegistration* r : webSyncRegistrations) {
+  for (const mojom::blink::SyncRegistration* r : syncRegistrations) {
     tags.append(r->tag);
   }
   m_resolver->resolve(tags);

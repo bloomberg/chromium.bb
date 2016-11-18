@@ -40,8 +40,6 @@ target(link_target_type, "child") {
     "appcache/web_application_cache_host_impl.cc",
     "appcache/web_application_cache_host_impl.h",
     "assert_matching_enums.cc",
-    "background_sync/background_sync_provider.cc",
-    "background_sync/background_sync_provider.h",
     "background_sync/background_sync_type_converters.cc",
     "background_sync/background_sync_type_converters.h",
     "blink_platform_impl.cc",

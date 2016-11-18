@@ -37,7 +37,6 @@
 #include "components/mime_util/mime_util.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
-#include "content/child/background_sync/background_sync_provider.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/notifications/notification_dispatcher.h"
@@ -389,8 +388,6 @@ void BlinkPlatformImpl::InternalInit() {
     notification_dispatcher_ =
         ChildThreadImpl::current()->notification_dispatcher();
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
-    main_thread_sync_provider_.reset(
-        new BackgroundSyncProvider(main_thread_task_runner_.get()));
   }
 }
 
@@ -772,14 +769,6 @@ blink::WebPushProvider* BlinkPlatformImpl::pushProvider() {
 
   return PushProvider::ThreadSpecificInstance(thread_safe_sender_.get(),
                                               push_dispatcher_.get());
-}
-
-blink::WebSyncProvider* BlinkPlatformImpl::backgroundSyncProvider() {
-  if (IsMainThread())
-    return main_thread_sync_provider_.get();
-
-  return BackgroundSyncProvider::GetOrCreateThreadSpecificInstance(
-      main_thread_task_runner_.get());
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {
