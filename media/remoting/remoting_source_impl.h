@@ -84,8 +84,17 @@ class RemotingSourceImpl final
     return state_;
   }
 
+  mojom::RemotingSinkCapabilities sink_capabilities() const {
+    return sink_capabilities_;
+  }
+
+  bool is_remote_decryption_available() const {
+    return sink_capabilities_ ==
+           mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
+  }
+
   // RemotingSource implementations.
-  void OnSinkAvailable() override;
+  void OnSinkAvailable(mojom::RemotingSinkCapabilities capabilities) override;
   void OnSinkGone() override;
   void OnStarted() override;
   void OnStartFailed(mojom::RemotingStartFailReason reason) override;
@@ -138,6 +147,11 @@ class RemotingSourceImpl final
 
   const mojo::Binding<mojom::RemotingSource> binding_;
   const mojom::RemoterPtr remoter_;
+
+  // When the sink is available, this describes its capabilities. When not
+  // available, this is always NONE. Updated by OnSinkAvailable/Gone().
+  mojom::RemotingSinkCapabilities sink_capabilities_ =
+      mojom::RemotingSinkCapabilities::NONE;
 
   // The current state.
   RemotingSessionState state_ = RemotingSessionState::SESSION_UNAVAILABLE;

@@ -80,6 +80,12 @@ interface Remoter {
   SendMessageToSink(array<uint8> message);
 };
 
+enum RemotingSinkCapabilities {
+  NONE,
+  RENDERING_ONLY,
+  CONTENT_DECRYPTION_AND_RENDERING,
+};
+
 enum RemotingStartFailReason {
   CANNOT_START_MULTIPLE,  // Remoting was already active.
   ROUTE_TERMINATED,  // User-initated disconnect while starting remoting.
@@ -91,9 +97,9 @@ interface RemotingSource {
   // Notify the source that the sink is now available to start remoting. It is
   // up to the source's control logic to decide whether/when to start remoting.
   //
-  // TODO(miu): In a later change, also pass information about the sink's
+  // TODO(miu): In a later change, pass detailed information about the sink's
   // capabilities (e.g., codec support, DRM keysystem support, etc.).
-  OnSinkAvailable();
+  OnSinkAvailable(RemotingSinkCapabilities capabilities);
 
   // Notify the source that the sink is no longer available for remoting. This
   // may happen, for example, because the sink has been shut down, or because

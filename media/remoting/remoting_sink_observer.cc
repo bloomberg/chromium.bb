@@ -13,12 +13,13 @@ RemotingSinkObserver::RemotingSinkObserver(
 
 RemotingSinkObserver::~RemotingSinkObserver() {}
 
-void RemotingSinkObserver::OnSinkAvailable() {
-  is_sink_available_ = true;
+void RemotingSinkObserver::OnSinkAvailable(
+    mojom::RemotingSinkCapabilities capabilities) {
+  sink_capabilities_ = capabilities;
 }
 
 void RemotingSinkObserver::OnSinkGone() {
-  is_sink_available_ = false;
+  sink_capabilities_ = mojom::RemotingSinkCapabilities::NONE;
 }
 
 }  // namespace media

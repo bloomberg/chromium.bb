@@ -190,10 +190,20 @@ bool RemotingRendererController::ShouldBeRemoting() {
     case SESSION_PERMANENTLY_STOPPED:
       return false;  // Use local rendering after stopping remoting.
   }
+
+  switch (remoting_source_->sink_capabilities()) {
+    case mojom::RemotingSinkCapabilities::NONE:
+      return false;
+    case mojom::RemotingSinkCapabilities::RENDERING_ONLY:
+    case mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING:
+      break;  // The sink is capable of remote rendering.
+  }
+
   if ((!has_audio() && !has_video()) ||
       (has_video() && !IsVideoCodecSupported()) ||
-      (has_audio() && !IsAudioCodecSupported()))
+      (has_audio() && !IsAudioCodecSupported())) {
     return false;
+  }
 
   // Normally, entering fullscreen is the signal that starts remote rendering.
   // However, current technical limitations require encrypted content be remoted

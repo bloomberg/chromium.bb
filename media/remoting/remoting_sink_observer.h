@@ -18,20 +18,31 @@ class RemotingSinkObserver final : public mojom::RemotingSource {
                        mojom::RemoterPtr remoter);
   ~RemotingSinkObserver() override;
 
+  mojom::RemotingSinkCapabilities sink_capabilities() const {
+    return sink_capabilities_;
+  }
+
+  bool is_remote_decryption_available() const {
+    return sink_capabilities_ ==
+           mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
+  }
+
   // RemotingSource implementations.
-  void OnSinkAvailable() override;
+  void OnSinkAvailable(mojom::RemotingSinkCapabilities capabilities) override;
   void OnSinkGone() override;
   void OnStarted() override {}
   void OnStartFailed(mojom::RemotingStartFailReason reason) override {}
   void OnMessageFromSink(const std::vector<uint8_t>& message) override {}
   void OnStopped(mojom::RemotingStopReason reason) override {}
 
-  bool is_sink_available() { return is_sink_available_; }
-
  private:
   const mojo::Binding<mojom::RemotingSource> binding_;
   const mojom::RemoterPtr remoter_;
-  bool is_sink_available_ = false;
+
+  // When the sink is available, this describes its capabilities. When not
+  // available, this is always NONE. Updated by OnSinkAvailable/Gone().
+  mojom::RemotingSinkCapabilities sink_capabilities_ =
+      mojom::RemotingSinkCapabilities::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingSinkObserver);
 };

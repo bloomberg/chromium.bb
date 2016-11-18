@@ -159,6 +159,11 @@ class CastRemotingConnector
   // CastRemotingConnector.
   const media_router::MediaSource::Id media_source_id_;
 
+  // Describes the sink's capabilities according to what has been enabled via
+  // |features::kMediaRemoting|. These are controlled manually via
+  // chrome://flags or the command line; or in-the-wild via feature experiments.
+  const media::mojom::RemotingSinkCapabilities enabled_features_;
+
   // Set of registered RemotingBridges, maintained by RegisterBridge() and
   // DeregisterBridge(). These pointers are always valid while they are in this
   // set.

@@ -51,6 +51,11 @@ void RemotingCdmController::ShouldCreateRemotingCdm(
     return;
   }
 
+  if (!remoting_source_->is_remote_decryption_available()) {
+    cb.Run(false);
+    return;
+  }
+
   DCHECK(cdm_check_cb_.is_null());
   cdm_check_cb_ = cb;
   remoting_source_->StartRemoting(this);

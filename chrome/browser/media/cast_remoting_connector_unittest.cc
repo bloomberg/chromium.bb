@@ -27,6 +27,7 @@ using content::BrowserThread;
 
 using media::mojom::RemoterPtr;
 using media::mojom::RemoterRequest;
+using media::mojom::RemotingSinkCapabilities;
 using media::mojom::RemotingSourcePtr;
 using media::mojom::RemotingSourceRequest;
 using media::mojom::RemotingStartFailReason;
@@ -53,6 +54,9 @@ constexpr char kTabMirroringMediaSource[] =
     "urn:x-org.chromium.media:source:tab:123";
 constexpr char kTabMirroringMediaRoute[] =
     "urn:x-org.chromium:media:route:bloopity_blop_ohun48i56nh9oid/cast-wiggles";
+
+constexpr RemotingSinkCapabilities kAllCapabilities =
+    RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
 
 // Implements basic functionality of a subset of the MediaRouter for use by the
 // unit tests in this module. Note that MockMediaRouter will complain at runtime
@@ -222,7 +226,7 @@ class MockRemotingSource : public media::mojom::RemotingSource {
     binding_.Bind(std::move(request));
   }
 
-  MOCK_METHOD0(OnSinkAvailable, void());
+  MOCK_METHOD1(OnSinkAvailable, void(RemotingSinkCapabilities));
   MOCK_METHOD0(OnSinkGone, void());
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD1(OnStartFailed, void(RemotingStartFailReason));
@@ -238,7 +242,11 @@ class MockRemotingSource : public media::mojom::RemotingSource {
 class CastRemotingConnectorTest : public ::testing::Test {
  public:
   CastRemotingConnectorTest()
-      : connector_(&media_router_, kRemotingMediaSource) {}
+      : connector_(&media_router_, kRemotingMediaSource) {
+    // HACK: Override feature flags for testing.
+    const_cast<RemotingSinkCapabilities&>(connector_.enabled_features_) =
+        kAllCapabilities;
+  }
 
   void TearDown() final {
     // Allow any pending Mojo operations to complete before destruction. For
@@ -335,7 +343,7 @@ TEST_F(CastRemotingConnectorTest, NeverNotifiesThatSinkIsAvailable) {
   MockRemotingSource source;
   RemoterPtr remoter = CreateRemoter(&source);
 
-  EXPECT_CALL(source, OnSinkAvailable()).Times(0);
+  EXPECT_CALL(source, OnSinkAvailable(_)).Times(0);
   EXPECT_CALL(source, OnSinkGone()).Times(AtLeast(0));
   RunUntilIdle();
 }
@@ -344,7 +352,7 @@ TEST_F(CastRemotingConnectorTest, NotifiesWhenSinkIsAvailableAndThenGone) {
   MockRemotingSource source;
   RemoterPtr remoter = CreateRemoter(&source);
 
-  EXPECT_CALL(source, OnSinkAvailable()).Times(1);
+  EXPECT_CALL(source, OnSinkAvailable(kAllCapabilities)).Times(1);
   ProviderDiscoversSink();
   RunUntilIdle();
 
@@ -360,8 +368,8 @@ TEST_F(CastRemotingConnectorTest,
   MockRemotingSource source2;
   RemoterPtr remoter2 = CreateRemoter(&source2);
 
-  EXPECT_CALL(source1, OnSinkAvailable()).Times(1);
-  EXPECT_CALL(source2, OnSinkAvailable()).Times(1);
+  EXPECT_CALL(source1, OnSinkAvailable(kAllCapabilities)).Times(1);
+  EXPECT_CALL(source2, OnSinkAvailable(kAllCapabilities)).Times(1);
   ProviderDiscoversSink();
   RunUntilIdle();
 
@@ -375,7 +383,7 @@ TEST_F(CastRemotingConnectorTest, HandlesTeardownOfRemotingSourceFirst) {
   std::unique_ptr<MockRemotingSource> source(new MockRemotingSource);
   RemoterPtr remoter = CreateRemoter(source.get());
 
-  EXPECT_CALL(*source, OnSinkAvailable()).Times(1);
+  EXPECT_CALL(*source, OnSinkAvailable(kAllCapabilities)).Times(1);
   ProviderDiscoversSink();
   RunUntilIdle();
 
@@ -387,7 +395,7 @@ TEST_F(CastRemotingConnectorTest, HandlesTeardownOfRemoterFirst) {
   MockRemotingSource source;
   RemoterPtr remoter = CreateRemoter(&source);
 
-  EXPECT_CALL(source, OnSinkAvailable()).Times(1);
+  EXPECT_CALL(source, OnSinkAvailable(kAllCapabilities)).Times(1);
   ProviderDiscoversSink();
   RunUntilIdle();
 
@@ -433,8 +441,10 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
 
   // Both sinks should be notified when the Cast Provider tells the connector
   // a remoting sink is available.
-  EXPECT_CALL(*source, OnSinkAvailable()).Times(1).RetiresOnSaturation();
-  EXPECT_CALL(*other_source, OnSinkAvailable()).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*source, OnSinkAvailable(kAllCapabilities)).Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*other_source, OnSinkAvailable(kAllCapabilities)).Times(1)
+      .RetiresOnSaturation();
   ProviderDiscoversSink();
   RunUntilIdle();
 
@@ -497,8 +507,9 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       // When the sink is ready, the Cast Provider sends a notification to the
       // connector. The connector will notify both sources that a sink is once
       // again available.
-      EXPECT_CALL(*source, OnSinkAvailable()).Times(1).RetiresOnSaturation();
-      EXPECT_CALL(*other_source, OnSinkAvailable()).Times(1)
+      EXPECT_CALL(*source, OnSinkAvailable(kAllCapabilities)).Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*other_source, OnSinkAvailable(kAllCapabilities)).Times(1)
           .RetiresOnSaturation();
       ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
       RunUntilIdle();
@@ -552,8 +563,8 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       // another and should not be able to exchange messages anymore. Therefore,
       // the connector will never try to notify the sources that the sink is
       // available again.
-      EXPECT_CALL(*source, OnSinkAvailable()).Times(0);
-      EXPECT_CALL(*other_source, OnSinkAvailable()).Times(0);
+      EXPECT_CALL(*source, OnSinkAvailable(_)).Times(0);
+      EXPECT_CALL(*other_source, OnSinkAvailable(_)).Times(0);
       ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
       RunUntilIdle();
 
@@ -582,8 +593,9 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       // Later, if whatever caused the external failure has resolved, the Cast
       // Provider will notify the connector that the sink is available one
       // again.
-      EXPECT_CALL(*source, OnSinkAvailable()).Times(1).RetiresOnSaturation();
-      EXPECT_CALL(*other_source, OnSinkAvailable()).Times(1)
+      EXPECT_CALL(*source, OnSinkAvailable(kAllCapabilities)).Times(1)
+          .RetiresOnSaturation();
+      EXPECT_CALL(*other_source, OnSinkAvailable(kAllCapabilities)).Times(1)
           .RetiresOnSaturation();
       ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
       RunUntilIdle();

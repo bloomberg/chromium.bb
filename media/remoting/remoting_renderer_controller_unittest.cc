@@ -21,6 +21,9 @@
 namespace media {
 namespace {
 
+constexpr mojom::RemotingSinkCapabilities kAllCapabilities =
+    mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
+
 PipelineMetadata DefaultMetadata() {
   PipelineMetadata data;
   data.has_audio = true;
@@ -76,13 +79,47 @@ TEST_F(RemotingRendererControllerTest, ToggleRenderer) {
       &RemotingRendererControllerTest::ToggleRenderer, base::Unretained(this)));
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
-  remoting_source_impl->OnSinkAvailable();
+  remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnEnteredFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
+  RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnExitedFullscreen();
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+}
+
+TEST_F(RemotingRendererControllerTest, SinkCapabilities) {
+  EXPECT_FALSE(is_rendering_remotely_);
+  scoped_refptr<RemotingSourceImpl> remoting_source_impl =
+      CreateRemotingSourceImpl(false);
+  remoting_renderer_controller_ =
+      base::MakeUnique<RemotingRendererController>(remoting_source_impl);
+  remoting_renderer_controller_->SetSwitchRendererCallback(base::Bind(
+      &RemotingRendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnEnteredFullscreen();
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  // An available sink that does not support remote rendering should not cause
+  // the controller to toggle remote rendering on.
+  remoting_source_impl->OnSinkAvailable(mojom::RemotingSinkCapabilities::NONE);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_source_impl->OnSinkGone();  // Bye-bye useless sink!
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  // A sink that *does* support remote rendering *does* cause the controller to
+  // toggle remote rendering on.
+  remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);
   remoting_renderer_controller_->OnExitedFullscreen();
@@ -100,7 +137,7 @@ TEST_F(RemotingRendererControllerTest, StartFailed) {
       &RemotingRendererControllerTest::ToggleRenderer, base::Unretained(this)));
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
-  remoting_source_impl->OnSinkAvailable();
+  remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnEnteredFullscreen();
@@ -126,7 +163,7 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithRemotingCdm) {
       CreateRemotingSourceImpl(false);
   std::unique_ptr<RemotingCdmController> remoting_cdm_controller =
       base::MakeUnique<RemotingCdmController>(cdm_remoting_source_impl);
-  cdm_remoting_source_impl->OnSinkAvailable();
+  cdm_remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   remoting_cdm_controller->ShouldCreateRemotingCdm(base::Bind(
       &RemotingRendererControllerTest::CreateCdm, base::Unretained(this)));
   RunUntilIdle();
@@ -172,7 +209,7 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithLocalCdm) {
       &RemotingRendererControllerTest::ToggleRenderer, base::Unretained(this)));
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
-  renderer_remoting_source_impl->OnSinkAvailable();
+  renderer_remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnEnteredFullscreen();
@@ -186,7 +223,7 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithLocalCdm) {
       CreateRemotingSourceImpl(true);
   std::unique_ptr<RemotingCdmController> remoting_cdm_controller =
       base::MakeUnique<RemotingCdmController>(cdm_remoting_source_impl);
-  cdm_remoting_source_impl->OnSinkAvailable();
+  cdm_remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   remoting_cdm_controller->ShouldCreateRemotingCdm(base::Bind(
       &RemotingRendererControllerTest::CreateCdm, base::Unretained(this)));
   RunUntilIdle();
@@ -213,7 +250,7 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithFailedRemotingCdm) {
       CreateRemotingSourceImpl(false);
   std::unique_ptr<RemotingCdmController> remoting_cdm_controller =
       base::MakeUnique<RemotingCdmController>(cdm_remoting_source_impl);
-  cdm_remoting_source_impl->OnSinkAvailable();
+  cdm_remoting_source_impl->OnSinkAvailable(kAllCapabilities);
   remoting_cdm_controller->ShouldCreateRemotingCdm(base::Bind(
       &RemotingRendererControllerTest::CreateCdm, base::Unretained(this)));
   RunUntilIdle();

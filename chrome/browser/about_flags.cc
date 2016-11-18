@@ -2117,12 +2117,21 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesSvelteConcurrentLoadingFeature)},
 #endif
-    // NOTE: Adding new command-line switches requires adding corresponding
-    // entries to enum "LoginCustomFlags" in histograms.xml. See note in
-    // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
     {"cross-process-guests", IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_NAME,
      IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kGuestViewCrossProcessFrames)},
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    {"media-remoting", IDS_FLAGS_MEDIA_REMOTING_NAME,
+     IDS_FLAGS_MEDIA_REMOTING_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMediaRemoting)},
+    {"media-remoting-encrypted", IDS_FLAGS_MEDIA_REMOTING_ENCRYPTED_NAME,
+     IDS_FLAGS_MEDIA_REMOTING_ENCRYPTED_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMediaRemotingEncrypted)},
+#endif
+
+    // NOTE: Adding new command-line switches requires adding corresponding
+    // entries to enum "LoginCustomFlags" in histograms.xml. See note in
+    // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
 };
 
 class FlagsStateSingleton {

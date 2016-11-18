@@ -29,15 +29,23 @@ RemotingSourceImpl::~RemotingSourceImpl() {
   }
 }
 
-void RemotingSourceImpl::OnSinkAvailable() {
+void RemotingSourceImpl::OnSinkAvailable(
+    mojom::RemotingSinkCapabilities capabilities) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (capabilities == mojom::RemotingSinkCapabilities::NONE) {
+    OnSinkGone();
+    return;
+  }
+  sink_capabilities_ = capabilities;
   if (state_ == RemotingSessionState::SESSION_UNAVAILABLE)
     UpdateAndNotifyState(RemotingSessionState::SESSION_CAN_START);
 }
 
 void RemotingSourceImpl::OnSinkGone() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  sink_capabilities_ = mojom::RemotingSinkCapabilities::NONE;
 
   if (state_ == RemotingSessionState::SESSION_PERMANENTLY_STOPPED)
     return;

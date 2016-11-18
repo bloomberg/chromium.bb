@@ -79,6 +79,11 @@ extern const base::Feature kMaterialDesignHistory;
 
 extern const base::Feature kMaterialDesignSettings;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+extern const base::Feature kMediaRemoting;
+extern const base::Feature kMediaRemotingEncrypted;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
 extern const base::Feature kModalPermissionPrompts;
 
 #if defined(OS_MACOSX)
