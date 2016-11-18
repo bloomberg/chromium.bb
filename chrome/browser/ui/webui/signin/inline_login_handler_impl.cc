@@ -110,122 +110,6 @@ void RedirectToNtpOrAppsPageIfNecessary(
     RedirectToNtpOrAppsPage(contents, access_point);
 }
 
-class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
- public:
-  // Callback indicating action performed by the user.
-  typedef base::Callback<void(InlineSigninHelper::Action)> Callback;
-
-  // Ask the user for confirmation before starting to sync.
-  static void AskForConfirmation(content::WebContents* contents,
-                                 const std::string& last_email,
-                                 const std::string& email,
-                                 Callback callback);
-
- private:
-  ConfirmEmailDialogDelegate(content::WebContents* contents,
-                             const std::string& last_email,
-                             const std::string& email,
-                             Callback callback);
-  ~ConfirmEmailDialogDelegate() override;
-
-  // TabModalConfirmDialogDelegate:
-  base::string16 GetTitle() override;
-  base::string16 GetDialogMessage() override;
-  base::string16 GetAcceptButtonTitle() override;
-  base::string16 GetCancelButtonTitle() override;
-  base::string16 GetLinkText() const override;
-  void OnAccepted() override;
-  void OnCanceled() override;
-  void OnClosed() override;
-  void OnLinkClicked(WindowOpenDisposition disposition) override;
-
-  std::string last_email_;
-  std::string email_;
-  Callback callback_;
-
-  // Web contents from which the "Learn more" link should be opened.
-  content::WebContents* web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmEmailDialogDelegate);
-};
-
-// static
-void ConfirmEmailDialogDelegate::AskForConfirmation(
-    content::WebContents* contents,
-    const std::string& last_email,
-    const std::string& email,
-    Callback callback) {
-  content::RecordAction(
-      base::UserMetricsAction("Signin_Show_ImportDataPrompt"));
-  TabModalConfirmDialog::Create(
-      new ConfirmEmailDialogDelegate(contents, last_email, email, callback),
-      contents);
-}
-
-ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
-    content::WebContents* contents,
-    const std::string& last_email,
-    const std::string& email,
-    Callback callback)
-  : TabModalConfirmDialogDelegate(contents),
-    last_email_(last_email),
-    email_(email),
-    callback_(callback),
-    web_contents_(contents) {
-}
-
-ConfirmEmailDialogDelegate::~ConfirmEmailDialogDelegate() {
-}
-
-base::string16 ConfirmEmailDialogDelegate::GetTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
-}
-
-base::string16 ConfirmEmailDialogDelegate::GetDialogMessage() {
-  return l10n_util::GetStringFUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
-      base::UTF8ToUTF16(last_email_), base::UTF8ToUTF16(email_));
-}
-
-base::string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
-}
-
-base::string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
-  return l10n_util::GetStringUTF16(
-      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
-}
-
-base::string16 ConfirmEmailDialogDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-void ConfirmEmailDialogDelegate::OnAccepted() {
-  base::ResetAndReturn(&callback_).Run(InlineSigninHelper::CREATE_NEW_USER);
-}
-
-void ConfirmEmailDialogDelegate::OnCanceled() {
-  base::ResetAndReturn(&callback_).Run(InlineSigninHelper::START_SYNC);
-}
-
-void ConfirmEmailDialogDelegate::OnClosed() {
-  base::ResetAndReturn(&callback_).Run(InlineSigninHelper::CLOSE);
-}
-
-void ConfirmEmailDialogDelegate::OnLinkClicked(
-    WindowOpenDisposition disposition) {
-  content::OpenURLParams params(
-      GURL(chrome::kChromeSyncMergeTroubleshootingURL), content::Referrer(),
-      WindowOpenDisposition::NEW_POPUP, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      false);
-  // It is guaranteed that |web_contents_| is valid here because when it's
-  // deleted, the dialog is immediately closed and no further action can be
-  // performed.
-  web_contents_->OpenURL(params);
-}
-
 void CloseModalSigninIfNeeded(InlineLoginHandlerImpl* handler) {
   if (handler && switches::UsePasswordSeparatedSigninFlow()) {
     Browser* browser = handler->GetDesktopBrowser();
@@ -440,16 +324,11 @@ bool InlineSigninHelper::HandleCrossAccountError(
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  ConfirmEmailDialogDelegate::AskForConfirmation(
-      web_contents,
-      last_email,
-      email_,
+  SigninEmailConfirmationDialog::AskForConfirmation(
+      web_contents, profile_, last_email, email_,
       base::Bind(&InlineSigninHelper::ConfirmEmailAction,
-                 base::Unretained(this),
-                 web_contents,
-                 refresh_token,
-                 confirmation_required,
-                 start_mode));
+                 base::Unretained(this), web_contents, refresh_token,
+                 confirmation_required, start_mode));
   return true;
 }
 
@@ -458,10 +337,10 @@ void InlineSigninHelper::ConfirmEmailAction(
     const std::string& refresh_token,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
     OneClickSigninSyncStarter::StartSyncMode start_mode,
-    InlineSigninHelper::Action action) {
+    SigninEmailConfirmationDialog::Action action) {
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   switch (action) {
-    case InlineSigninHelper::CREATE_NEW_USER:
+    case SigninEmailConfirmationDialog::CREATE_NEW_USER:
       content::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
       if (handler_) {
@@ -471,13 +350,13 @@ void InlineSigninHelper::ConfirmEmailAction(
       UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
                         profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
       break;
-    case InlineSigninHelper::START_SYNC:
+    case SigninEmailConfirmationDialog::START_SYNC:
       content::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       CreateSyncStarter(browser, web_contents, current_url_, GURL(),
                         refresh_token, start_mode, confirmation_required);
       break;
-    case InlineSigninHelper::CLOSE:
+    case SigninEmailConfirmationDialog::CLOSE:
       content::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_Cancel"));
       if (handler_) {

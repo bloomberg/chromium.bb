@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
+#include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 // Implementation for the inline login WebUI handler on desktop Chrome. Once
@@ -138,19 +139,6 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
 // InlineLoginHandlerImpl is destryed once the UI is closed.
 class InlineSigninHelper : public GaiaAuthConsumer {
  public:
-  // Actions that can be taken when the user is asked to confirm their account.
-  enum Action {
-    // The user chose not to sign in to the current profile and wants chrome
-    // to create a new profile instead.
-    CREATE_NEW_USER,
-
-    // The user chose to sign in and enable sync in the current profile.
-    START_SYNC,
-
-    // The user chose abort sign in.
-    CLOSE
-  };
-
   InlineSigninHelper(base::WeakPtr<InlineLoginHandlerImpl> handler,
                      net::URLRequestContextGetter* getter,
                      Profile* profile,
@@ -182,7 +170,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
       const std::string& refresh_token,
       OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
       OneClickSigninSyncStarter::StartSyncMode start_mode,
-      Action action);
+      SigninEmailConfirmationDialog::Action action);
 
   // Overridden from GaiaAuthConsumer.
   void OnClientOAuthSuccess(const ClientOAuthResult& result) override;

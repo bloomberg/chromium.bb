@@ -165,6 +165,7 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/welcome_ui.h"
@@ -535,6 +536,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SigninErrorUI>;
   if (url.host_piece() == chrome::kChromeUISyncConfirmationHost)
     return &NewWebUI<SyncConfirmationUI>;
+  if (url.host_piece() == chrome::kChromeUISigninEmailConfirmationHost)
+    return &NewWebUI<SigninEmailConfirmationUI>;
   if (url.host_piece() == chrome::kChromeUIProfileSigninConfirmationHost)
     return &NewWebUI<ProfileSigninConfirmationUI>;
   if (url.host_piece() == chrome::kChromeUIWelcomeHost)

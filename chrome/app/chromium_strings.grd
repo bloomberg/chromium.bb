@@ -815,6 +815,13 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
+      <!-- Signin Email Confirmation tab modal dialog -->
+      <if expr="not chromeos">
+        <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE" desc="Title of the signin email confirmation tab modal dialog.">
+          <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph> was previously using Chromium
+        </message>
+      </if>
+
       <!-- SRT bubble messages -->
       <if expr="is_win">
         <message name="IDS_SRT_BUBBLE_TITLE" desc="Text for the title of the software removal tool bubble view.">

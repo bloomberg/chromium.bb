@@ -11322,7 +11322,7 @@ I don't think this site should be blocked!
       </message>
 
 
-      <!-- Signin Error tab modal dialogue -->
+      <!-- Signin Error tab modal dialog -->
       <message name="IDS_SIGNIN_ERROR_TITLE" desc="Title of the signin error tab modal dialog.">
         Can't sign in
       </message>
@@ -11348,6 +11348,20 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_SIGNIN_ACCESSIBLE_BACK_BUTTON" desc="Accessibility label for the back button of the tab modal signin flow">
         Back
+      </message>
+
+      <!-- Signin Email Confirmation tab modal dialog -->
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_CREATE_PROFILE_RADIO_BUTTON_TITLE" desc="Title of radio button to create a new profile.">
+        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>This wasn't me.<ph name="END_BOLD">&lt;/strong&gt;</ph> Create a new profile for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_START_SYNC_RADIO_BUTTON_TITLE" desc="Title of radio button to create a new profile.">
+        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>This was me.<ph name="END_BOLD">&lt;/strong&gt;</ph> Add my bookmarks, history, passwords, and other settings to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_CLOSE_BUTTON_LABEL" desc="Label of the close button in the signin email confirmation dialog.">
+        Cancel
+      </message>
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the signin email confirmation dialog.">
+        Continue
       </message>
 
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
