@@ -7,47 +7,55 @@
 <script src="resources/utils.js"></script>
 <script>
 
-var expectations = [
-  [ MOJOM_ACTION_PLAY, true ],
-  [ MOJOM_ACTION_PAUSE, true ],
-  [ MOJOM_ACTION_PLAY_PAUSE, true ],
-  [ MOJOM_ACTION_PREVIOUS_TRACK, true ],
-  [ MOJOM_ACTION_NEXT_TRACK, true ],
-  [ MOJOM_ACTION_SEEK_FORWARD, true ],
-  [ MOJOM_ACTION_SEEK_BACKWARD, true ],
-  [ MOJOM_ACTION_PLAY, false ],
-  [ MOJOM_ACTION_PLAY, true ],
-  [ MOJOM_ACTION_PAUSE, false ],
-  [ MOJOM_ACTION_PAUSE, true ],
-  [ MOJOM_ACTION_PLAY_PAUSE, false ],
-  [ MOJOM_ACTION_PLAY_PAUSE, true ],
-  [ MOJOM_ACTION_PREVIOUS_TRACK, false ],
-  [ MOJOM_ACTION_PREVIOUS_TRACK, true ],
-  [ MOJOM_ACTION_NEXT_TRACK, false ],
-  [ MOJOM_ACTION_NEXT_TRACK, true ],
-  [ MOJOM_ACTION_SEEK_FORWARD, false ],
-  [ MOJOM_ACTION_SEEK_FORWARD, true ],
-  [ MOJOM_ACTION_SEEK_BACKWARD, false ],
-  [ MOJOM_ACTION_SEEK_BACKWARD, true ],
-  [ MOJOM_ACTION_PLAY, false ],
-  [ MOJOM_ACTION_PAUSE, false ],
-  [ MOJOM_ACTION_PLAY_PAUSE, false ],
-  [ MOJOM_ACTION_PREVIOUS_TRACK, false ],
-  [ MOJOM_ACTION_NEXT_TRACK, false ],
-  [ MOJOM_ACTION_SEEK_FORWARD, false ],
-  [ MOJOM_ACTION_SEEK_BACKWARD, false ],
-];
+var expectations;
 
 var nextExpectation = 0;
+
+// Delay the initialization since the initialization of MediaSessionAction is delayed.
+function getExpectations() {
+  if (!expectations) {
+    expectations = [
+      [ MediaSessionAction.PLAY, true ],
+      [ MediaSessionAction.PAUSE, true ],
+      [ MediaSessionAction.PLAY_PAUSE, true ],
+      [ MediaSessionAction.PREVIOUS_TRACK, true ],
+      [ MediaSessionAction.NEXT_TRACK, true ],
+      [ MediaSessionAction.SEEK_BACKWARD, true ],
+      [ MediaSessionAction.SEEK_FORWARD, true ],
+      [ MediaSessionAction.PLAY, false ],
+      [ MediaSessionAction.PLAY, true ],
+      [ MediaSessionAction.PAUSE, false ],
+      [ MediaSessionAction.PAUSE, true ],
+      [ MediaSessionAction.PLAY_PAUSE, false ],
+      [ MediaSessionAction.PLAY_PAUSE, true ],
+      [ MediaSessionAction.PREVIOUS_TRACK, false ],
+      [ MediaSessionAction.PREVIOUS_TRACK, true ],
+      [ MediaSessionAction.NEXT_TRACK, false ],
+      [ MediaSessionAction.NEXT_TRACK, true ],
+      [ MediaSessionAction.SEEK_BACKWARD, false ],
+      [ MediaSessionAction.SEEK_BACKWARD, true ],
+      [ MediaSessionAction.SEEK_FORWARD, false ],
+      [ MediaSessionAction.SEEK_FORWARD, true ],
+      [ MediaSessionAction.PLAY, false ],
+      [ MediaSessionAction.PAUSE, false ],
+      [ MediaSessionAction.PLAY_PAUSE, false ],
+      [ MediaSessionAction.PREVIOUS_TRACK, false ],
+      [ MediaSessionAction.NEXT_TRACK, false ],
+      [ MediaSessionAction.SEEK_BACKWARD, false ],
+      [ MediaSessionAction.SEEK_FORWARD, false ],
+    ];
+  }
+  return expectations;
+}
 
 async_test(function(t) {
   mediaSessionServiceMock.then(m => {
     m.setEnableDisableActionCallback(t.step_func(function(action, isEnabled) {
-      var expectedAction = expectations[nextExpectation][0];
-      var expectedIsEnabled = expectations[nextExpectation][1];
+      var expectedAction = getExpectations()[nextExpectation][0];
+      var expectedIsEnabled = getExpectations()[nextExpectation][1];
       assert_equals(expectedAction, action);
       assert_equals(expectedIsEnabled, isEnabled);
-      if (++nextExpectation >= expectations.length)
+      if (++nextExpectation >= getExpectations().length)
         t.done();
     }));
 
@@ -58,8 +66,8 @@ async_test(function(t) {
     window.navigator.mediaSession.onplaypause = _ => {};
     window.navigator.mediaSession.onprevioustrack = _ => {};
     window.navigator.mediaSession.onnexttrack = _ => {};
-    window.navigator.mediaSession.onseekforward = _ => {};
     window.navigator.mediaSession.onseekbackward = _ => {};
+    window.navigator.mediaSession.onseekforward = _ => {};
 
     // Resetting handlers
     window.navigator.mediaSession.onresize = _ => {};  // Unknown event.
@@ -68,8 +76,8 @@ async_test(function(t) {
     window.navigator.mediaSession.onplaypause = _ => {};
     window.navigator.mediaSession.onprevioustrack = _ => {};
     window.navigator.mediaSession.onnexttrack = _ => {};
-    window.navigator.mediaSession.onseekforward = _ => {};
     window.navigator.mediaSession.onseekbackward = _ => {};
+    window.navigator.mediaSession.onseekforward = _ => {};
 
     // Unsetting handlers
     window.navigator.mediaSession.onresize = null;  // Unknown event.
@@ -78,8 +86,8 @@ async_test(function(t) {
     window.navigator.mediaSession.onplaypause = null;
     window.navigator.mediaSession.onprevioustrack = null;
     window.navigator.mediaSession.onnexttrack = null;
-    window.navigator.mediaSession.onseekforward = null;
     window.navigator.mediaSession.onseekbackward = null;
+    window.navigator.mediaSession.onseekforward = null;
   });
 }, "test that setting event handler notifies the mojo service");
 

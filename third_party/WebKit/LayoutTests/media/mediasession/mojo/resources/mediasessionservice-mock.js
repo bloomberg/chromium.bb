@@ -4,6 +4,8 @@
 
 "use strict";
 
+var MediaSessionAction;
+
 function mojoString16ToJS(mojoString16) {
   return String.fromCharCode.apply(null, mojoString16.data);
 }
@@ -42,6 +44,8 @@ let mediaSessionServiceMock = loadMojoModules(
      'mojo/public/js/router',
     ]).then(mojo => {
       let [mediaSessionService, router] = mojo.modules;
+
+      MediaSessionAction = mediaSessionService.MediaSessionAction;
 
       class MediaSessionServiceMock {
         constructor(interfaceProvider) {

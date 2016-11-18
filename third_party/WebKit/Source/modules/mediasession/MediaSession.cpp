@@ -36,10 +36,10 @@ const AtomicString& mojomActionToEventName(MediaSessionAction action) {
       return EventTypeNames::previoustrack;
     case MediaSessionAction::NEXT_TRACK:
       return EventTypeNames::nexttrack;
-    case MediaSessionAction::SEEK_FORWARD:
-      return EventTypeNames::seekforward;
     case MediaSessionAction::SEEK_BACKWARD:
       return EventTypeNames::seekbackward;
+    case MediaSessionAction::SEEK_FORWARD:
+      return EventTypeNames::seekforward;
     default:
       NOTREACHED();
   }
@@ -58,10 +58,10 @@ WTF::Optional<MediaSessionAction> eventNameToMojomAction(
     return MediaSessionAction::PREVIOUS_TRACK;
   if (EventTypeNames::nexttrack == eventName)
     return MediaSessionAction::NEXT_TRACK;
-  if (EventTypeNames::seekforward == eventName)
-    return MediaSessionAction::SEEK_FORWARD;
   if (EventTypeNames::seekbackward == eventName)
     return MediaSessionAction::SEEK_BACKWARD;
+  if (EventTypeNames::seekforward == eventName)
+    return MediaSessionAction::SEEK_FORWARD;
 
   NOTREACHED();
   return WTF::nullopt;

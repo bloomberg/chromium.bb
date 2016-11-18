@@ -1,11 +1,3 @@
-var MOJOM_ACTION_PLAY = 0;
-var MOJOM_ACTION_PAUSE = 1;
-var MOJOM_ACTION_PLAY_PAUSE = 2;
-var MOJOM_ACTION_PREVIOUS_TRACK = 3;
-var MOJOM_ACTION_NEXT_TRACK = 4;
-var MOJOM_ACTION_SEEK_FORWARD = 5;
-var MOJOM_ACTION_SEEK_BACKWARD = 6;
-
 function assert_image_equals(expected, observed) {
   assert_equals(expected.src, observed.src);
   assert_equals(expected.type, observed.type);
