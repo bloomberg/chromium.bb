@@ -343,7 +343,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   std::unique_ptr<crypto::ScopedTestNSSChromeOSUser> test_nss_user_;
 
   // Needed to properly set up signin and user profiles for test.
-  user_manager::FakeUserManager* user_manager_;
+  chromeos::FakeChromeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   TestingProfileManager profile_manager_;
 

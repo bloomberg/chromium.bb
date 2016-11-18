@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
@@ -62,7 +62,7 @@ std::unique_ptr<KeyedService> CreatePrinterDetector(
 class PrinterDetectorAppSearchEnabledTest : public testing::Test {
  public:
   PrinterDetectorAppSearchEnabledTest()
-      : user_manager_(new user_manager::FakeUserManager()),
+      : user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(user_manager_) {}
 
   ~PrinterDetectorAppSearchEnabledTest() override = default;
@@ -135,7 +135,7 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   StubNotificationUIManager notification_ui_manager_;
-  user_manager::FakeUserManager* user_manager_;
+  chromeos::FakeChromeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   device::MockDeviceClient device_client_;
   std::unique_ptr<TestingProfile> profile_;

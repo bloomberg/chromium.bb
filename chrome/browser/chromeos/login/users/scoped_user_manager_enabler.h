@@ -13,6 +13,8 @@ class UserManager;
 
 namespace chromeos {
 
+class ChromeUserManager;
+
 // Helper class for unit tests. Initializes the UserManager singleton to the
 // given |user_manager| and tears it down again on destruction. If the singleton
 // had already been initialized, its previous value is restored after tearing
@@ -20,7 +22,7 @@ namespace chromeos {
 class ScopedUserManagerEnabler {
  public:
   // Takes ownership of |user_manager|.
-  explicit ScopedUserManagerEnabler(user_manager::UserManager* user_manager);
+  explicit ScopedUserManagerEnabler(ChromeUserManager* user_manager);
   ~ScopedUserManagerEnabler();
 
  private:

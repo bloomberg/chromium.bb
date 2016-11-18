@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -35,7 +36,6 @@
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
@@ -49,7 +49,7 @@ const char kStandaloneAppId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  public:
   ExternalProviderImplChromeOSTest()
-      : fake_user_manager_(new user_manager::FakeUserManager()),
+      : fake_user_manager_(new chromeos::FakeChromeUserManager()),
         scoped_user_manager_(fake_user_manager_) {}
 
   ~ExternalProviderImplChromeOSTest() override {}
@@ -87,7 +87,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  private:
   std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  user_manager::FakeUserManager* fake_user_manager_;
+  chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplChromeOSTest);

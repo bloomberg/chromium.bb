@@ -10,6 +10,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
@@ -17,7 +18,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/user_info.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -32,8 +32,7 @@ class MultiUserNotificationBlockerChromeOSTest
       : state_changed_count_(0),
         testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
         window_id_(0),
-        fake_user_manager_(new user_manager::FakeUserManager),
-        user_manager_enabler_(fake_user_manager_) {}
+        user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
   ~MultiUserNotificationBlockerChromeOSTest() override {}
 
   // ash::test::AshTestBase overrides:
@@ -155,8 +154,6 @@ class MultiUserNotificationBlockerChromeOSTest
   int state_changed_count_;
   TestingProfileManager testing_profile_manager_;
   int window_id_;
-
-  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
 
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 

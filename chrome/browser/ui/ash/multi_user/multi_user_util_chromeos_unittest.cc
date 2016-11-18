@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/test/ash_test_base.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -12,7 +13,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/user.h"
 
 namespace ash {
@@ -58,7 +58,7 @@ class MultiUserUtilTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    fake_user_manager_ = new user_manager::FakeUserManager;
+    fake_user_manager_ = new chromeos::FakeChromeUserManager;
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(fake_user_manager_));
 
@@ -105,7 +105,8 @@ class MultiUserUtilTest : public AshTestBase {
 
  private:
   std::unique_ptr<MultiUserTestingProfile> profile_;
-  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
+  // |fake_user_manager_| is owned by |user_manager_enabler_|.
+  chromeos::FakeChromeUserManager* fake_user_manager_;
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserUtilTest);

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 
-#include "components/user_manager/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 
 namespace chromeos {
 
 ScopedUserManagerEnabler::ScopedUserManagerEnabler(
-    user_manager::UserManager* user_manager) {
+    ChromeUserManager* user_manager) {
   if (user_manager::UserManager::GetForTesting())
     user_manager::UserManager::GetForTesting()->Shutdown();
 
@@ -21,7 +21,7 @@ ScopedUserManagerEnabler::~ScopedUserManagerEnabler() {
   // Shutdown and destroy current UserManager instance that we track.
   user_manager::UserManager::Get()->Shutdown();
   delete user_manager::UserManager::Get();
-  user_manager::UserManager::SetInstance(NULL);
+  user_manager::UserManager::SetInstance(nullptr);
 
   user_manager::UserManager::SetForTesting(previous_user_manager_);
 }

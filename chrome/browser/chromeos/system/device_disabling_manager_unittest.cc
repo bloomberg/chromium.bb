@@ -26,7 +26,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +76,7 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   chromeos::ScopedStubInstallAttributes install_attributes_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  user_manager::FakeUserManager fake_user_manager_;
+  chromeos::FakeChromeUserManager fake_user_manager_;
   std::unique_ptr<DeviceDisablingManager> device_disabling_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingManagerTestBase);

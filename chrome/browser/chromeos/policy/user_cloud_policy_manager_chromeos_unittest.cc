@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -42,7 +43,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -87,7 +87,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         task_runner_(new base::TestSimpleTaskRunner()),
         profile_(NULL),
         signin_profile_(NULL),
-        user_manager_(new user_manager::FakeUserManager()),
+        user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(user_manager_) {}
 
   void SetUp() override {
@@ -345,15 +345,14 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   TestingProfile* profile_;
   TestingProfile* signin_profile_;
 
-  user_manager::FakeUserManager* user_manager_;
+  chromeos::FakeChromeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOSTest);
 };
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFirstFetch) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the policy cache is empty.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -389,8 +388,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingRefreshFetch) {
                          base::Unretained(store_)));
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchStoreError) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchStoreError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the initial store load fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -413,8 +411,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchStoreError) {
                          DM_STATUS_SUCCESS, register_blob_));
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchOAuthError) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the OAuth2 token fetch fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -443,9 +440,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchOAuthError) {
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest,
-       DISABLED_BlockingFetchRegisterError) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchRegisterError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the device management registration fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -471,9 +466,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest,
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest,
-       DISABLED_BlockingFetchPolicyFetchError) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when the policy fetch request fails.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));

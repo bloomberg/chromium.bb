@@ -11,10 +11,10 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/login/login_state.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
 
@@ -23,7 +23,7 @@ namespace chromeos {
 class SystemTrayDelegateChromeOSTest : public ash::test::AshTestBase {
  public:
   SystemTrayDelegateChromeOSTest()
-      : user_manager_enabler_(new user_manager::FakeUserManager) {}
+      : user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
   ~SystemTrayDelegateChromeOSTest() override {
     // The system clock must be destroyed before |settings_helper_|.
     g_browser_process->platform_part()->DestroySystemClock();

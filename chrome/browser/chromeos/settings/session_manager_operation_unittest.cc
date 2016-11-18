@@ -47,7 +47,7 @@ class SessionManagerOperationTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
-        user_manager_(new user_manager::FakeUserManager()),
+        user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(user_manager_),
         validated_(false) {
     OwnerSettingsServiceChromeOSFactory::GetInstance()
@@ -93,7 +93,7 @@ class SessionManagerOperationTest : public testing::Test {
   DeviceSettingsTestHelper device_settings_test_helper_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 
-  user_manager::FakeUserManager* user_manager_;
+  chromeos::FakeChromeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
   std::unique_ptr<TestingProfile> profile_;

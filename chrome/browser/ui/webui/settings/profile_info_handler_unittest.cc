@@ -17,8 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "components/user_manager/fake_user_manager.h"
 #endif
 
 namespace settings {
@@ -40,8 +40,7 @@ class ProfileInfoHandlerTest : public testing::Test {
   ProfileInfoHandlerTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
 #if defined(OS_CHROMEOS)
-        user_manager_(new user_manager::FakeUserManager),
-        user_manager_enabler_(user_manager_),
+        user_manager_enabler_(new chromeos::FakeChromeUserManager),
 #endif
         profile_(nullptr) {
   }
@@ -87,8 +86,6 @@ class ProfileInfoHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
 
 #if defined(OS_CHROMEOS)
-  // |user_manager_| is destroyed by |user_manager_enabler_|.
-  user_manager::FakeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 #endif
 
