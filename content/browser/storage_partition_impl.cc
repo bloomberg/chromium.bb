@@ -515,8 +515,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   background_sync_context->Init(service_worker_context);
 
   scoped_refptr<PaymentAppContext> payment_app_context =
-      new PaymentAppContext();
-  payment_app_context->Init(service_worker_context);
+      new PaymentAppContext(service_worker_context);
 
   scoped_refptr<BroadcastChannelProvider>
       broadcast_channel_provider = new BroadcastChannelProvider();

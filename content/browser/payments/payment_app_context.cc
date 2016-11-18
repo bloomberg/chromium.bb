@@ -15,17 +15,14 @@
 
 namespace content {
 
-PaymentAppContext::PaymentAppContext() {
+PaymentAppContext::PaymentAppContext(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    : service_worker_context_(std::move(service_worker_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 PaymentAppContext::~PaymentAppContext() {
   DCHECK(services_.empty());
-}
-
-void PaymentAppContext::Init(
-    scoped_refptr<ServiceWorkerContextWrapper> context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void PaymentAppContext::Shutdown() {
@@ -50,6 +47,10 @@ void PaymentAppContext::ServiceHadConnectionError(PaymentAppManager* service) {
   DCHECK(base::ContainsKey(services_, service));
 
   services_.erase(service);
+}
+
+ServiceWorkerContextWrapper* PaymentAppContext::service_worker_context() const {
+  return service_worker_context_.get();
 }
 
 void PaymentAppContext::CreateServiceOnIOThread(

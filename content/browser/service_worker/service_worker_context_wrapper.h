@@ -144,6 +144,21 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& document_url,
       const FindRegistrationCallback& callback);
 
+  // Returns the registration for |scope|. It is guaranteed that the returned
+  // registration has the activated worker.
+  //
+  //  - If the registration is not found, returns ERROR_NOT_FOUND.
+  //  - If the registration has neither the waiting version nor the active
+  //    version, returns ERROR_NOT_FOUND.
+  //  - If the registration does not have the active version but has the waiting
+  //    version, activates the waiting version and runs |callback| when it is
+  //    activated.
+  //
+  // Must be called from the IO thread.
+  void FindReadyRegistrationForPattern(
+      const GURL& scope,
+      const FindRegistrationCallback& callback);
+
   // Returns the registration for |registration_id|. It is guaranteed that the
   // returned registration has the activated worker.
   //

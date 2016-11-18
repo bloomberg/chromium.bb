@@ -57,6 +57,7 @@ source_set("browser") {
     "//content/browser/devtools:protocol_sources",
     "//content/browser/devtools:resources",
     "//content/browser/notifications:notification_proto",
+    "//content/browser/payments:payment_app_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
     "//content/common",

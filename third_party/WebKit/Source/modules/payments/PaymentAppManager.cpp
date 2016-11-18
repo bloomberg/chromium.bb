@@ -90,12 +90,21 @@ void PaymentAppManager::onSetManifest(
     payments::mojom::blink::PaymentAppManifestError error) {
   DCHECK(resolver);
   switch (error) {
+    case payments::mojom::blink::PaymentAppManifestError::NONE:
+      resolver->resolve();
+      break;
     case payments::mojom::blink::PaymentAppManifestError::NOT_IMPLEMENTED:
       resolver->reject(
           DOMException::create(NotSupportedError, "Not implemented yet."));
       break;
-    default:
-      NOTREACHED();
+    case payments::mojom::blink::PaymentAppManifestError::NO_ACTIVE_WORKER:
+      resolver->reject(
+          DOMException::create(InvalidStateError, "No active service worker."));
+      break;
+    case payments::mojom::blink::PaymentAppManifestError::STORE_MANIFEST_FAILED:
+      resolver->reject(DOMException::create(
+          InvalidStateError, "Storing manifest data is failed."));
+      break;
   }
 }
 

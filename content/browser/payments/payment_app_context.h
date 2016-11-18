@@ -21,11 +21,8 @@ class ServiceWorkerContextWrapper;
 class CONTENT_EXPORT PaymentAppContext
     : public base::RefCountedThreadSafe<PaymentAppContext> {
  public:
-  PaymentAppContext();
-
-  // Init and Shutdown are for use on the UI thread when the
-  // StoragePartition is being setup and torn down.
-  void Init(scoped_refptr<ServiceWorkerContextWrapper> context);
+  explicit PaymentAppContext(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
@@ -39,8 +36,11 @@ class CONTENT_EXPORT PaymentAppContext
   // be deleted. Call on the IO thread.
   void ServiceHadConnectionError(PaymentAppManager* service);
 
+  ServiceWorkerContextWrapper* service_worker_context() const;
+
  protected:
   friend class base::RefCountedThreadSafe<PaymentAppContext>;
+  friend class PaymentAppManagerTest;
   virtual ~PaymentAppContext();
 
  private:
@@ -48,6 +48,8 @@ class CONTENT_EXPORT PaymentAppContext
       mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request);
 
   void ShutdownOnIO();
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   // The services are owned by this. They're either deleted
   // during ShutdownOnIO or when the channel is closed via

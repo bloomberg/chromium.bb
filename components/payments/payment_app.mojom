@@ -7,6 +7,8 @@ module payments.mojom;
 enum PaymentAppManifestError {
   NONE,
   NOT_IMPLEMENTED,
+  NO_ACTIVE_WORKER,
+  STORE_MANIFEST_FAILED,
 };
 
 struct PaymentAppOption {
