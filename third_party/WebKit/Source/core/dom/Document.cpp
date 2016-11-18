@@ -118,7 +118,6 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/DragCaretController.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -4093,10 +4092,8 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container) {
   }
 
   notifyNodeChildrenWillBeRemoved(container);
-  if (LocalFrame* frame = this->frame()) {
+  if (LocalFrame* frame = this->frame())
     frame->selection().nodeChildrenWillBeRemoved(container);
-    frame->page()->dragCaretController().nodeChildrenWillBeRemoved(container);
-  }
 
   if (containsV1ShadowTree()) {
     for (Node& n : NodeTraversal::childrenOf(container))
@@ -4115,7 +4112,6 @@ void Document::nodeWillBeRemoved(Node& n) {
 
   if (LocalFrame* frame = this->frame()) {
     frame->selection().nodeWillBeRemoved(n);
-    frame->page()->dragCaretController().nodeWillBeRemoved(n);
   }
 
   if (containsV1ShadowTree())

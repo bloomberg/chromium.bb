@@ -27,16 +27,21 @@
 #ifndef DragCaretController_h
 #define DragCaretController_h
 
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CaretBase.h"
 
 namespace blink {
 
 class DragCaretController final
-    : public GarbageCollectedFinalized<DragCaretController> {
+    : public GarbageCollectedFinalized<DragCaretController>,
+      public SynchronousMutationObserver {
   WTF_MAKE_NONCOPYABLE(DragCaretController);
+  USING_GARBAGE_COLLECTED_MIXIN(DragCaretController);
 
  public:
   static DragCaretController* create();
+
+  virtual ~DragCaretController();
 
   void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
 
@@ -48,13 +53,14 @@ class DragCaretController final
   void setCaretPosition(const PositionWithAffinity&);
   void clear() { setCaretPosition(PositionWithAffinity()); }
 
-  void nodeChildrenWillBeRemoved(ContainerNode&);
-  void nodeWillBeRemoved(Node&);
-
   DECLARE_TRACE();
 
  private:
   DragCaretController();
+
+  // Implementations of |SynchronousMutationObserver|
+  void nodeChildrenWillBeRemoved(ContainerNode&);
+  void nodeWillBeRemoved(Node&);
 
   PositionWithAffinity m_position;
   const Member<CaretBase> m_caretBase;

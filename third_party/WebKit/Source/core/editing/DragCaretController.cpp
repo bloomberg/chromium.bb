@@ -34,6 +34,8 @@ namespace blink {
 
 DragCaretController::DragCaretController() : m_caretBase(new CaretBase()) {}
 
+DragCaretController::~DragCaretController() = default;
+
 DragCaretController* DragCaretController::create() {
   return new DragCaretController;
 }
@@ -65,6 +67,7 @@ void DragCaretController::setCaretPosition(
   if (Node* node = m_position.anchorNode()) {
     m_caretBase->invalidateCaretRect(node);
     document = &node->document();
+    setContext(document);
   }
   if (m_position.isNull()) {
     m_caretBase->clearCaretRect();
@@ -102,6 +105,7 @@ void DragCaretController::nodeWillBeRemoved(Node& node) {
 DEFINE_TRACE(DragCaretController) {
   visitor->trace(m_position);
   visitor->trace(m_caretBase);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 void DragCaretController::paintDragCaret(LocalFrame* frame,
