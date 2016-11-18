@@ -38,6 +38,7 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -819,6 +820,11 @@ bool TestLauncher::Init() {
   fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
   if (parallel_jobs_ > 1U) {
+    // Allow usage of SequencedWorkerPool to launch test processes.
+    // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
+    // redirection experiment concludes https://crbug.com/622400.
+    SequencedWorkerPool::EnableForProcess();
+
     worker_pool_owner_ = MakeUnique<SequencedWorkerPoolOwner>(
         parallel_jobs_, "test_launcher");
   } else {

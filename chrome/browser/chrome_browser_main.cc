@@ -1209,7 +1209,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupFieldTrials();
 
-  // Task Scheduler initialization needs to be here for the following reasons:
+  // Initializing TaskScheduler and enabling SequencedWorkerPool needs to be
+  // here for the following reasons:
   //   * After |SetupFieldTrials()|: Initialization uses variations.
   //   * Before |SetupMetrics()|: |SetupMetrics()| uses the blocking pool. The
   //         Task Scheduler must do any necessary redirection before then.

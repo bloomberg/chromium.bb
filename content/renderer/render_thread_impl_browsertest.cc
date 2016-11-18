@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "content/app/mojo/mojo_init.h"
@@ -167,6 +168,12 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
   void SetUp() override {
+    // SequencedWorkerPool is enabled by default in tests. Disable it for this
+    // test to avoid a DCHECK failure when RenderThreadImpl::Init enables it.
+    // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
+    // redirection experiment concludes https://crbug.com/622400.
+    base::SequencedWorkerPool::DisableForProcessForTesting();
+
     content_renderer_client_.reset(new ContentRendererClient());
     SetRendererClientForTesting(content_renderer_client_.get());
 
