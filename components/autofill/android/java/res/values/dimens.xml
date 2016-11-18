@@ -15,4 +15,10 @@
     <dimen name="keyboard_accessory_height">48dp</dimen>
     <dimen name="keyboard_accessory_padding">8dp</dimen>
     <dimen name="keyboard_accessory_text_size">14sp</dimen>
+
+    <!-- 
+         Smaller label font size for http not secure warning messages of credit 
+         card and password forms, when users are on http sites. 
+    -->
+    <dimen name="dropdown_item_smaller_label_font_size">14sp</dimen>
 </resources>

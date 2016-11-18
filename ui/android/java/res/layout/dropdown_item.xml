@@ -32,7 +32,7 @@
             android:singleLine="true"
             android:textAlignment="viewStart"
             android:textColor="@drawable/dropdown_label_color"
-            android:textSize="18sp" />
+            android:textSize="@dimen/dropdown_item_label_font_size" />
 
         <TextView
             android:id="@+id/dropdown_sublabel"

@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -67,6 +68,9 @@ class AutofillPopupLayoutModel {
   // |index|.
   const gfx::FontList& GetValueFontListForRow(size_t index) const;
   const gfx::FontList& GetLabelFontList() const;
+
+  // Returns the value font color of the row item according to its |index|.
+  SkColor GetValueFontColorForRow(size_t index) const;
 #endif
 
   // Convert a y-coordinate to the closest line.

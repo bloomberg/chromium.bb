@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/grit/components_scaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -157,13 +158,14 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
   // All other message types are defined here.
   PopupItemId id = static_cast<PopupItemId>(suggestions[index].frontend_id);
   switch (id) {
-    case POPUP_ITEM_ID_WARNING_MESSAGE:
+    case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
       return warning_font_list_;
     case POPUP_ITEM_ID_CLEAR_FORM:
     case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
     case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
+    case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
       return normal_font_list_;
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
@@ -177,6 +179,18 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
 
 const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontList() const {
   return smaller_font_list_;
+}
+
+SkColor AutofillPopupLayoutModel::GetValueFontColorForRow(size_t index) const {
+  std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
+  switch (suggestions[index].frontend_id) {
+    case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
+      return gfx::kGoogleRed700;
+    case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+      return kLabelTextColor;
+    default:
+      return kValueTextColor;
+  }
 }
 #endif
 

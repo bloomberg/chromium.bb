@@ -158,6 +158,7 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/DropdownAdapter.java",
     "java/src/org/chromium/ui/DropdownDividerDrawable.java",
     "java/src/org/chromium/ui/DropdownItem.java",
+    "java/src/org/chromium/ui/DropdownItemBase.java",
     "java/src/org/chromium/ui/DropdownPopupWindow.java",
     "java/src/org/chromium/ui/UiUtils.java",
     "java/src/org/chromium/ui/VSyncMonitor.java",

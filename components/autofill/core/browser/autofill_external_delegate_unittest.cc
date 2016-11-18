@@ -463,16 +463,15 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
   EXPECT_CALL(
       autofill_client_,
       ShowAutofillPopup(
-          _,
-          _,
-          SuggestionVectorIdsAre(testing::ElementsAre(
-              static_cast<int>(POPUP_ITEM_ID_WARNING_MESSAGE))),
+          _, _, SuggestionVectorIdsAre(testing::ElementsAre(static_cast<int>(
+                    POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE))),
           _));
 
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
   autofill_item.push_back(Suggestion());
-  autofill_item[0].frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
+  autofill_item[0].frontend_id =
+      POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
 }
 
@@ -493,9 +492,10 @@ TEST_F(AutofillExternalDelegateUnitTest,
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion());
-  suggestions[0].frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
+  suggestions[0].frontend_id = POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
   suggestions.push_back(Suggestion());
-  suggestions[1].frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
+  suggestions[1].frontend_id =
+      POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
   suggestions.push_back(Suggestion());
   suggestions[2].value = ASCIIToUTF16("Rick");
   suggestions[2].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;

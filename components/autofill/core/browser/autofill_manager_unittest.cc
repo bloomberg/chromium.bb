@@ -1629,10 +1629,10 @@ TEST_F(AutofillManagerTest,
       kDefaultPageID,
       Suggestion(l10n_util::GetStringUTF8(
                      IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
-                 "", "", -1),
+                 "", "", POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE),
       Suggestion(
           l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-          "", "", -1));
+          "", "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();

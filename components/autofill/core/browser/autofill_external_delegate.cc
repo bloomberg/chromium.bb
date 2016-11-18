@@ -31,9 +31,11 @@ namespace autofill {
 namespace {
 
 // Returns true if the suggestion entry is an Autofill warning message.
-// Warning message should display on top of suggestion list.
+// Warning messages should display on top of suggestion list.
 bool IsAutofillWarningEntry(int frontend_id) {
-  return frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE;
+  return frontend_id ==
+             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
+         frontend_id == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
 }
 
 } // anonymous namespace
@@ -293,7 +295,7 @@ void AutofillExternalDelegate::OnCreditCardScanned(const CreditCard& card) {
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
                                                     bool is_preview) {
   // If the selected element is a warning we don't want to do anything.
-  if (unique_id == POPUP_ITEM_ID_WARNING_MESSAGE)
+  if (IsAutofillWarningEntry(unique_id))
     return;
 
   AutofillDriver::RendererFormDataAction renderer_action = is_preview ?

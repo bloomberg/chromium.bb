@@ -222,7 +222,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
           l10n_util::GetStringUTF16(
               IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE));
       password_field_http_warning_suggestion.frontend_id =
-          autofill::POPUP_ITEM_ID_WARNING_MESSAGE;
+          autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
       suggestions.insert(suggestions.begin(),
                          password_field_http_warning_suggestion);
     }

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,6 +99,11 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         } else {
             labelView.setTypeface(null, Typeface.NORMAL);
         }
+
+        labelView.setTextColor(ApiCompatibilityUtils.getColor(
+                mContext.getResources(), item.getLabelFontColorResId()));
+        labelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                mContext.getResources().getDimension(item.getLabelFontSizeResId()));
 
         TextView sublabelView = (TextView) layout.findViewById(R.id.dropdown_sublabel);
         CharSequence sublabel = item.getSublabel();

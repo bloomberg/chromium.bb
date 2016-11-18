@@ -4,12 +4,19 @@
 
 package org.chromium.components.autofill;
 
-import org.chromium.ui.DropdownItem;
+import org.chromium.ui.DropdownItemBase;
 
 /**
  * Autofill suggestion container used to store information needed for each Autofill popup entry.
  */
-public class AutofillSuggestion implements DropdownItem {
+public class AutofillSuggestion extends DropdownItemBase {
+    /**
+     * The constant used to specify a http warning message in a list of Autofill suggestions.
+     * Has to be kept in sync with enum in popup_item_ids.h
+     * TODO(crbug.com/666529): Generate java constants from C++ enum.
+     */
+    private static final int ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE = -10;
+
     private final String mLabel;
     private final String mSublabel;
     private final int mIconId;
@@ -51,18 +58,24 @@ public class AutofillSuggestion implements DropdownItem {
     }
 
     @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean isGroupHeader() {
-        return false;
-    }
-
-    @Override
     public boolean isMultilineLabel() {
         return mIsMultilineLabel;
+    }
+
+    @Override
+    public int getLabelFontColorResId() {
+        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+            return R.color.http_bad_warning_message_text;
+        }
+        return super.getLabelFontColorResId();
+    }
+
+    @Override
+    public int getLabelFontSizeResId() {
+        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+            return R.dimen.dropdown_item_smaller_label_font_size;
+        }
+        return super.getLabelFontSizeResId();
     }
 
     public int getSuggestionId() {

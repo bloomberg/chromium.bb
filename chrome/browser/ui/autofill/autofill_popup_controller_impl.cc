@@ -288,7 +288,10 @@ void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
 }
 
 bool AutofillPopupControllerImpl::IsWarning(size_t index) const {
-  return suggestions_[index].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE;
+  return suggestions_[index].frontend_id ==
+             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
+         suggestions_[index].frontend_id ==
+             POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
 }
 
 gfx::Rect AutofillPopupControllerImpl::popup_bounds() const {
@@ -460,8 +463,12 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 }
 
 bool AutofillPopupControllerImpl::CanAccept(int id) {
-  return id != POPUP_ITEM_ID_SEPARATOR && id != POPUP_ITEM_ID_WARNING_MESSAGE &&
-         id != POPUP_ITEM_ID_TITLE;
+  // TODO(lshang): Make POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE clickable
+  // and redirect to chrome security connection help center page.
+  return id != POPUP_ITEM_ID_SEPARATOR &&
+         id != POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE &&
+         id != POPUP_ITEM_ID_TITLE &&
+         id != POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
 }
 
 bool AutofillPopupControllerImpl::HasSuggestions() {
