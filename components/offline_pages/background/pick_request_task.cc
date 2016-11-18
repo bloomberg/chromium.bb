@@ -31,6 +31,7 @@ PickRequestTask::PickRequestTask(RequestQueueStore* store,
                                  RequestCoordinatorEventLogger* event_logger,
                                  RequestPickedCallback picked_callback,
                                  RequestNotPickedCallback not_picked_callback,
+                                 RequestCountCallback request_count_callback,
                                  DeviceConditions& device_conditions,
                                  const std::set<int64_t>& disabled_requests)
     : store_(store),
@@ -39,6 +40,7 @@ PickRequestTask::PickRequestTask(RequestQueueStore* store,
       event_logger_(event_logger),
       picked_callback_(picked_callback),
       not_picked_callback_(not_picked_callback),
+      request_count_callback_(request_count_callback),
       disabled_requests_(disabled_requests),
       weak_ptr_factory_(this) {
   device_conditions_.reset(new DeviceConditions(device_conditions));
@@ -56,7 +58,8 @@ void PickRequestTask::ChooseAndPrune(
     bool success,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   // If there is nothing to do, return right away.
-  if (requests.size() == 0) {
+  if (requests.empty()) {
+    request_count_callback_.Run(requests.size(), 0);
     not_picked_callback_.Run(false);
     TaskComplete();
     return;
@@ -96,6 +99,8 @@ void PickRequestTask::ChooseRequestAndCallback(
   // TODO(petewil): Consider replacing this bool with a better named enum.
   bool non_user_requested_tasks_remaining = false;
 
+  size_t available_request_count = 0;
+
   // Iterate once through the requests, keeping track of best candidate.
   for (unsigned i = 0; i < valid_requests.size(); ++i) {
     // If the  request is on the disabled list, skip it.
@@ -109,11 +114,18 @@ void PickRequestTask::ChooseRequestAndCallback(
     // non-user-requested items, which have different network and power needs.
     if (!valid_requests[i]->user_requested())
       non_user_requested_tasks_remaining = true;
+    if (valid_requests[i]->request_state() ==
+        SavePageRequest::RequestState::AVAILABLE) {
+      available_request_count++;
+    }
     if (!RequestConditionsSatisfied(valid_requests[i].get()))
       continue;
     if (IsNewRequestBetter(picked_request, valid_requests[i].get(), comparator))
       picked_request = valid_requests[i].get();
   }
+
+  // Report the request queue counts.
+  request_count_callback_.Run(valid_requests.size(), available_request_count);
 
   // If we have a best request to try next, get the request coodinator to
   // start it.  Otherwise return that we have no candidates.

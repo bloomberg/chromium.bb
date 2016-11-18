@@ -31,6 +31,7 @@ class PickRequestTaskFactory {
       RequestQueueStore* store,
       const PickRequestTask::RequestPickedCallback& picked_callback,
       const PickRequestTask::RequestNotPickedCallback& not_picked_callback,
+      const PickRequestTask::RequestCountCallback& request_count_callback,
       DeviceConditions& conditions,
       std::set<int64_t>& disabled_requests);
 

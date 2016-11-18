@@ -625,11 +625,14 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
 
   // Ask request queue to make a new PickRequestTask object, then put it on the
   // task queue.
-  queue_->PickNextRequest(base::Bind(&RequestCoordinator::RequestPicked,
-                                     weak_ptr_factory_.GetWeakPtr()),
-                          base::Bind(&RequestCoordinator::RequestNotPicked,
-                                     weak_ptr_factory_.GetWeakPtr()),
-                          *current_conditions_.get(), disabled_requests_);
+  queue_->PickNextRequest(
+      base::Bind(&RequestCoordinator::RequestPicked,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&RequestCoordinator::RequestNotPicked,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&RequestCoordinator::RequestCounts,
+                 weak_ptr_factory_.GetWeakPtr(), is_start_of_processing),
+      *current_conditions_.get(), disabled_requests_);
   // TODO(petewil): Verify current_conditions has a good value on all calling
   // paths.  It is really more of a "last known conditions" than "current
   // conditions".  Consider having a call to Java to check the current
@@ -667,6 +670,53 @@ void RequestCoordinator::RequestNotPicked(
 
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
+}
+
+void RequestCoordinator::RequestCounts(bool is_start_of_processing,
+                                       size_t total_requests,
+                                       size_t available_requests) {
+  // Only capture request counts for the start of processing (not for
+  // continued processing in the same window).
+  if (!is_start_of_processing)
+    return;
+
+  if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
+    if (is_low_end_device_) {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ScheduledStart.AvailableRequestCount."
+          "Svelte",
+          available_requests);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ScheduledStart.UnavailableRequestCount."
+          "Svelte",
+          total_requests - available_requests);
+    } else {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ScheduledStart.AvailableRequestCount",
+          available_requests);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ScheduledStart.UnavailableRequestCount",
+          total_requests - available_requests);
+    }
+  } else if (processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW) {
+    if (is_low_end_device_) {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ImmediateStart.AvailableRequestCount."
+          "Svelte",
+          available_requests);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ImmediateStart.UnavailableRequestCount."
+          "Svelte",
+          total_requests - available_requests);
+    } else {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ImmediateStart.AvailableRequestCount",
+          available_requests);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "OfflinePages.Background.ImmediateStart.UnavailableRequestCount",
+          total_requests - available_requests);
+    }
+  }
 }
 
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {

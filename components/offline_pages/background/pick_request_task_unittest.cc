@@ -99,6 +99,8 @@ class PickRequestTaskTest : public testing::Test {
 
   void RequestNotPicked(const bool non_user_requested_tasks_remaining);
 
+  void RequestCountCallback(size_t total_count, size_t available_count);
+
   void QueueRequests(const SavePageRequest& request1,
                      const SavePageRequest& request2);
 
@@ -121,6 +123,8 @@ class PickRequestTaskTest : public testing::Test {
   std::unique_ptr<PickRequestTaskFactory> factory_;
   std::unique_ptr<PickRequestTask> task_;
   bool request_queue_not_picked_called_;
+  size_t total_request_count_;
+  size_t available_request_count_;
   bool task_complete_called_;
 
  private:
@@ -141,6 +145,8 @@ void PickRequestTaskTest::SetUp() {
   notifier_.reset(new RequestNotifierStub());
   MakeFactoryAndTask();
   request_queue_not_picked_called_ = false;
+  total_request_count_ = 9999;
+  available_request_count_ = 9999;
   task_complete_called_ = false;
   last_picked_.reset();
 }
@@ -162,6 +168,12 @@ void PickRequestTaskTest::RequestPicked(const SavePageRequest& request) {
 void PickRequestTaskTest::RequestNotPicked(
     const bool non_user_requested_tasks_remaining) {
   request_queue_not_picked_called_ = true;
+}
+
+void PickRequestTaskTest::RequestCountCallback(size_t total_count,
+                                               size_t available_count) {
+  total_request_count_ = total_count;
+  available_request_count_ = available_count;
 }
 
 // Test helper to queue the two given requests.
@@ -188,6 +200,8 @@ void PickRequestTaskTest::MakeFactoryAndTask() {
       base::Bind(&PickRequestTaskTest::RequestPicked, base::Unretained(this)),
       base::Bind(&PickRequestTaskTest::RequestNotPicked,
                  base::Unretained(this)),
+      base::Bind(&PickRequestTaskTest::RequestCountCallback,
+                 base::Unretained(this)),
       conditions, disabled_requests_);
   task_->SetTaskCompletionCallbackForTesting(
       task_runner_.get(),
@@ -205,6 +219,8 @@ TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {
   PumpLoop();
 
   EXPECT_TRUE(request_queue_not_picked_called_);
+  EXPECT_EQ((size_t) 0, total_request_count_);
+  EXPECT_EQ((size_t) 0, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 
@@ -229,6 +245,8 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_EQ((size_t) 2, total_request_count_);
+  EXPECT_EQ((size_t) 2, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 
@@ -371,6 +389,8 @@ TEST_F(PickRequestTaskTest, ChooseNonExpiredRequest) {
   EXPECT_EQ(RequestNotifier::BackgroundSavePageResult::EXPIRED,
             GetNotifier()->last_request_expiration_status());
   EXPECT_EQ(1, GetNotifier()->total_expired_requests());
+  EXPECT_EQ((size_t) 1, total_request_count_);
+  EXPECT_EQ((size_t) 1, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 
@@ -394,6 +414,10 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  // TODO(dougarnett): Counts should be 1 here once requests exceeding start
+  // count get cleaned up from the queue.
+  EXPECT_EQ((size_t) 2, total_request_count_);
+  EXPECT_EQ((size_t) 2, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 
@@ -450,6 +474,8 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_EQ((size_t) 2, total_request_count_);
+  EXPECT_EQ((size_t) 1, available_request_count_);
   EXPECT_TRUE(task_complete_called_);
 }
 

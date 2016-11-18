@@ -25,11 +25,13 @@ std::unique_ptr<PickRequestTask> PickRequestTaskFactory::CreatePickerTask(
     RequestQueueStore* store,
     const PickRequestTask::RequestPickedCallback& picked_callback,
     const PickRequestTask::RequestNotPickedCallback& not_picked_callback,
+    const PickRequestTask::RequestCountCallback& request_count_callback,
     DeviceConditions& conditions,
     std::set<int64_t>& disabled_requests) {
   std::unique_ptr<PickRequestTask> task(new PickRequestTask(
       store, policy_, notifier_, event_logger_, picked_callback,
-      not_picked_callback, conditions, disabled_requests));
+      not_picked_callback, request_count_callback, conditions,
+      disabled_requests));
   return task;
 }
 

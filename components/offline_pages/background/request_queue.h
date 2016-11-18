@@ -93,6 +93,7 @@ class RequestQueue {
   void PickNextRequest(
       PickRequestTask::RequestPickedCallback picked_callback,
       PickRequestTask::RequestNotPickedCallback not_picked_callback,
+      PickRequestTask::RequestCountCallback request_count_callback,
       DeviceConditions& conditions,
       std::set<int64_t>& disabled_requests);
 

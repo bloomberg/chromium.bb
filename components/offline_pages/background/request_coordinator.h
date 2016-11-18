@@ -275,6 +275,15 @@ class RequestCoordinator : public KeyedService,
   // processing for.
   void RequestNotPicked(bool non_user_requested_tasks_remaining);
 
+  // Callback from request picker that receives the current available queued
+  // request count as well as the total queued request count (which may be
+  // different if unavailable requests are queued such as paused requests).
+  // It also receives a flag as to whether this request picking is due to the
+  // start of a request processing window.
+  void RequestCounts(bool is_start_of_processing,
+                     size_t total_requests,
+                     size_t available_requests);
+
   void HandleWatchdogTimeout();
 
   // Cancels an in progress pre-rendering, and updates state appropriately.
@@ -303,6 +312,9 @@ class RequestCoordinator : public KeyedService,
   // of the previous one.
   bool ShouldTryNextRequest(Offliner::RequestStatus previous_request_status);
 
+  // Try to find and start offlining an available request.
+  // |is_start_of_processing| identifies if this is the beginning of a
+  // processing window (vs. continuing within a current processing window).
   void TryNextRequest(bool is_start_of_processing);
 
   // If there is an active request in the list, cancel that request.

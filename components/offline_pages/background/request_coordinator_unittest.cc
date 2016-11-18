@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -391,6 +392,8 @@ class RequestCoordinatorTest
     return immediate_schedule_callback_result_;
   }
 
+  const base::HistogramTester& histograms() const { return histogram_tester_; }
+
  private:
   GetRequestsResult last_get_requests_result_;
   MultipleItemStatuses last_remove_results_;
@@ -407,6 +410,7 @@ class RequestCoordinatorTest
   DeviceConditions device_conditions_;
   base::Callback<void(bool)> immediate_callback_;
   base::Callback<void(bool)> waiting_callback_;
+  base::HistogramTester histogram_tester_;
 };
 
 RequestCoordinatorTest::RequestCoordinatorTest()
@@ -534,6 +538,16 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
   PumpLoop();
 
   EXPECT_TRUE(immediate_schedule_callback_called());
+
+  // Verify queue depth UMA for starting scheduled processing on empty queue.
+  if (base::SysInfo::IsLowEndDevice()) {
+    histograms().ExpectBucketCount(
+        "OfflinePages.Background.ScheduledStart.AvailableRequestCount.Svelte",
+        0, 1);
+  } else {
+    histograms().ExpectBucketCount(
+        "OfflinePages.Background.ScheduledStart.AvailableRequestCount", 0, 1);
+  }
 }
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
@@ -595,6 +609,16 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 
   // Check that the observer got the notification that a page is available
   EXPECT_TRUE(observer().added_called());
+
+  // Verify queue depth UMA for starting immediate processing.
+  if (base::SysInfo::IsLowEndDevice()) {
+    histograms().ExpectBucketCount(
+        "OfflinePages.Background.ImmediateStart.AvailableRequestCount.Svelte",
+        1, 1);
+  } else {
+    histograms().ExpectBucketCount(
+        "OfflinePages.Background.ImmediateStart.AvailableRequestCount", 1, 1);
+  }
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
@@ -1331,8 +1355,6 @@ TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
 
 TEST_F(RequestCoordinatorTest,
        SavePageDoesStartProcessingWhenPoorlyConnected) {
-  // If low end device, pretend it is not so that immediate start can happen.
-  SetIsLowEndDeviceForTest(false);
   // Set specific network type for 2G with poor effective connection.
   SetNetworkConditionsForTest(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G);

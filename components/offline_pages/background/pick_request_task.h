@@ -34,12 +34,16 @@ class PickRequestTask : public Task {
   // Callback to report when no request was available.
   typedef base::Callback<void(bool)> RequestNotPickedCallback;
 
+  // Callback to report available total and available queued request counts.
+  typedef base::Callback<void(size_t, size_t)> RequestCountCallback;
+
   PickRequestTask(RequestQueueStore* store,
                   OfflinerPolicy* policy,
                   RequestNotifier* notifier,
                   RequestCoordinatorEventLogger* event_logger,
                   RequestPickedCallback picked_callback,
                   RequestNotPickedCallback not_picked_callback,
+                  RequestCountCallback request_count_callback,
                   DeviceConditions& device_conditions,
                   const std::set<int64_t>& disabled_requests);
 
@@ -53,7 +57,8 @@ class PickRequestTask : public Task {
   void ChooseAndPrune(bool request,
                       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
-  // Step 2a. Handle choosing an entry, and calling the right callback.
+  // Step 2a. Handle choosing an entry, and calling the right picked callback
+  // and the request count callback.
   void ChooseRequestAndCallback(
       std::vector<std::unique_ptr<SavePageRequest>> valid_requests);
 
@@ -104,6 +109,7 @@ class PickRequestTask : public Task {
   RequestCoordinatorEventLogger* event_logger_;
   RequestPickedCallback picked_callback_;
   RequestNotPickedCallback not_picked_callback_;
+  RequestCountCallback request_count_callback_;
   std::unique_ptr<DeviceConditions> device_conditions_;
   const std::set<int64_t>& disabled_requests_;
   // Allows us to pass a weak pointer to callbacks.

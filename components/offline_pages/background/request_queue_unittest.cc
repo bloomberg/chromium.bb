@@ -125,6 +125,7 @@ class RequestQueueTest : public testing::Test {
 
   void RequestPickedCallback(const SavePageRequest& request) {}
   void RequestNotPickedCallback(bool non_user_requested_tasks_remain) {}
+  void RequestCountCallback(size_t total_count, size_t available_count) {}
 
  private:
   AddRequestResult last_add_result_;
@@ -564,6 +565,8 @@ TEST_F(RequestQueueTest, CleanStaleRequests) {
       base::Bind(&RequestQueueTest::RequestPickedCallback,
                  base::Unretained(this)),
       base::Bind(&RequestQueueTest::RequestNotPickedCallback,
+                 base::Unretained(this)),
+      base::Bind(&RequestQueueTest::RequestCountCallback,
                  base::Unretained(this)),
       conditions, disabled_list);
 

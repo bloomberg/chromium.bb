@@ -118,12 +118,13 @@ void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}
 void RequestQueue::PickNextRequest(
     PickRequestTask::RequestPickedCallback picked_callback,
     PickRequestTask::RequestNotPickedCallback not_picked_callback,
+    PickRequestTask::RequestCountCallback request_count_callback,
     DeviceConditions& conditions,
     std::set<int64_t>& disabled_requests) {
   // Using the PickerContext, create a picker task.
   std::unique_ptr<Task> task(picker_factory_->CreatePickerTask(
-      store_.get(), picked_callback, not_picked_callback, conditions,
-      disabled_requests));
+      store_.get(), picked_callback, not_picked_callback,
+      request_count_callback, conditions, disabled_requests));
 
   // Queue up the picking task, it will call one of the callbacks when it
   // completes.
