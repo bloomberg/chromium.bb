@@ -4,6 +4,7 @@
 
 component("prefs") {
   sources = [
+    "base_prefs_export.h",
     "command_line_pref_store.cc",
     "command_line_pref_store.h",
     "default_pref_store.cc",
@@ -14,12 +15,16 @@ component("prefs") {
     "json_pref_store.h",
     "overlay_user_pref_store.cc",
     "overlay_user_pref_store.h",
+    "persistent_pref_store.h",
     "pref_change_registrar.cc",
     "pref_change_registrar.h",
+    "pref_filter.h",
     "pref_member.cc",
     "pref_member.h",
+    "pref_notifier.h",
     "pref_notifier_impl.cc",
     "pref_notifier_impl.h",
+    "pref_observer.h",
     "pref_registry.cc",
     "pref_registry.h",
     "pref_registry_simple.cc",
@@ -38,17 +43,8 @@ component("prefs") {
     "scoped_user_pref_update.h",
     "value_map_pref_store.cc",
     "value_map_pref_store.h",
+    "writeable_pref_store.h",
   ]
-  if (!is_ios) {
-    sources += [
-      "base_prefs_export.h",
-      "persistent_pref_store.h",
-      "pref_filter.h",
-      "pref_notifier.h",
-      "pref_observer.h",
-      "writeable_pref_store.h",
-    ]
-  }
 
   defines = [ "COMPONENTS_PREFS_IMPLEMENTATION" ]
 
