@@ -130,7 +130,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBuffer* other) {
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source,
                                             unsigned byteLength) {
   ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::NotShared,
-                               ArrayBufferContents::ZeroInitialize);
+                               ArrayBufferContents::DontInitialize);
   RELEASE_ASSERT(contents.data());
   RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
   memcpy(buffer->data(), source, byteLength);
@@ -185,7 +185,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(unsigned numElements,
 PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(const void* source,
                                                   unsigned byteLength) {
   ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::Shared,
-                               ArrayBufferContents::ZeroInitialize);
+                               ArrayBufferContents::DontInitialize);
   RELEASE_ASSERT(contents.data());
   RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
   memcpy(buffer->data(), source, byteLength);
