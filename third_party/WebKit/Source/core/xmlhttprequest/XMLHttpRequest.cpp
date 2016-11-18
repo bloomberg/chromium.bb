@@ -941,10 +941,18 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
     InspectorInstrumentation::asyncTaskScheduled(
         &executionContext, "XMLHttpRequest.send", this, true);
     dispatchProgressEvent(EventTypeNames::loadstart, 0, 0);
+    // Event handler could have invalidated this send operation,
+    // (re)setting the send flag and/or initiating another send
+    // operation; leave quietly if so.
+    if (!m_sendFlag || m_loader)
+      return;
     if (httpBody && m_upload) {
       uploadEvents = m_upload->hasEventListeners();
       m_upload->dispatchEvent(
           ProgressEvent::create(EventTypeNames::loadstart, false, 0, 0));
+      // See above.
+      if (!m_sendFlag || m_loader)
+        return;
     }
   }
 
