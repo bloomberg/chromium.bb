@@ -12,12 +12,10 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 
-using mojo::Array;
-using mojo::Map;
-using mojo::String;
-
 namespace ui {
 namespace clipboard {
+
+using DataMap = std::unordered_map<std::string, std::vector<uint8_t>>;
 
 // ClipboardData contains data copied to the Clipboard for a variety of formats.
 // It mostly just provides APIs to cleanly access and manipulate this data.
@@ -30,8 +28,8 @@ class ClipboardImpl::ClipboardData {
     return sequence_number_;
   }
 
-  Array<String> GetMimeTypes() const {
-    Array<String> types(data_types_.size());
+  std::vector<std::string> GetMimeTypes() const {
+    std::vector<std::string> types(data_types_.size());
     int i = 0;
     for (auto it = data_types_.begin(); it != data_types_.end(); ++it, ++i)
       types[i] = it->first;
@@ -39,20 +37,21 @@ class ClipboardImpl::ClipboardData {
     return types;
   }
 
-  void SetData(Map<String, Array<uint8_t>> data) {
+  void SetData(const base::Optional<DataMap>& data) {
     sequence_number_++;
-    data_types_ = std::move(data);
+    data_types_ = data.value_or(DataMap());
   }
 
-  void GetData(const String& mime_type, Array<uint8_t>* data) const {
+  void GetData(const std::string& mime_type,
+               base::Optional<std::vector<uint8_t>>* data) const {
     auto it = data_types_.find(mime_type);
     if (it != data_types_.end())
-      *data = it->second.Clone();
+      data->emplace(it->second);
   }
 
  private:
   uint64_t sequence_number_;
-  Map<String, Array<uint8_t>> data_types_;
+  DataMap data_types_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardData);
 };
@@ -86,10 +85,10 @@ void ClipboardImpl::GetAvailableMimeTypes(
 
 void ClipboardImpl::ReadClipboardData(
     Clipboard::Type clipboard_type,
-    const String& mime_type,
+    const std::string& mime_type,
     const ReadClipboardDataCallback& callback) {
   int clipboard_num = static_cast<int>(clipboard_type);
-  Array<uint8_t> mime_data(nullptr);
+  base::Optional<std::vector<uint8_t>> mime_data;
   uint64_t sequence = clipboard_state_[clipboard_num]->sequence_number();
   clipboard_state_[clipboard_num]->GetData(mime_type, &mime_data);
   callback.Run(sequence, std::move(mime_data));
@@ -97,10 +96,10 @@ void ClipboardImpl::ReadClipboardData(
 
 void ClipboardImpl::WriteClipboardData(
     Clipboard::Type clipboard_type,
-    Map<String, Array<uint8_t>> data,
+    const base::Optional<DataMap>& data,
     const WriteClipboardDataCallback& callback) {
   int clipboard_num = static_cast<int>(clipboard_type);
-  clipboard_state_[clipboard_num]->SetData(std::move(data));
+  clipboard_state_[clipboard_num]->SetData(data);
   callback.Run(clipboard_state_[clipboard_num]->sequence_number());
 }
 

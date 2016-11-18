@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/clone_equals_util.h"
@@ -49,14 +50,25 @@ class Array {
 
   // Copies the contents of |other| into this array.
   Array(const std::vector<T>& other) : vec_(other), is_null_(false) {}
+  Array(const base::Optional<std::vector<T>>& other)
+      : vec_(other.value_or(std::vector<T>())), is_null_(!other) {}
 
   // Moves the contents of |other| into this array.
   Array(std::vector<T>&& other) : vec_(std::move(other)), is_null_(false) {}
+  Array(base::Optional<std::vector<T>>&& other) : is_null_(!other) {
+    if (!is_null_)
+      vec_ = std::move(other.value());
+  }
   Array(Array&& other) : is_null_(true) { Take(&other); }
 
   Array& operator=(std::vector<T>&& other) {
     vec_ = std::move(other);
     is_null_ = false;
+    return *this;
+  }
+  Array& operator=(base::Optional<std::vector<T>>&& other) {
+    is_null_ = !other;
+    vec_ = std::move(other).value_or(std::vector<T>());
     return *this;
   }
   Array& operator=(Array&& other) {
@@ -147,6 +159,14 @@ class Array {
   std::vector<T> PassStorage() {
     is_null_ = true;
     return std::move(vec_);
+  }
+
+  base::Optional<std::vector<T>> PassStorageAsOptional() {
+    base::Optional<std::vector<T>> result;
+    if (!is_null_)
+      result.emplace(std::move(vec_));
+    is_null_ = true;
+    return result;
   }
 
   operator const std::vector<T>&() const { return vec_; }

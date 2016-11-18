@@ -15,8 +15,6 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 
 using mojo::Array;
-using mojo::Map;
-using mojo::String;
 using ui::mojom::Clipboard;
 
 namespace ui {
@@ -51,28 +49,28 @@ class ClipboardAppTest : public service_manager::test::ServiceTest {
 
   std::vector<std::string> GetAvailableFormatMimeTypes() {
     uint64_t sequence_num = 999999;
-    Array<String> types;
+    std::vector<std::string> types;
     types.push_back(kUninitialized);
     clipboard_->GetAvailableMimeTypes(
         Clipboard::Type::COPY_PASTE,
         &sequence_num, &types);
-    return types.To<std::vector<std::string>>();
+    return types;
   }
 
   bool GetDataOfType(const std::string& mime_type, std::string* data) {
     bool valid = false;
-    Array<uint8_t> raw_data;
+    base::Optional<std::vector<uint8_t>> raw_data;
     uint64_t sequence_number = 0;
     clipboard_->ReadClipboardData(Clipboard::Type::COPY_PASTE, mime_type,
                                   &sequence_number, &raw_data);
-    valid = !raw_data.is_null();
-    *data = raw_data.is_null() ? "" : raw_data.To<std::string>();
+    valid = raw_data.has_value();
+    *data = Array<uint8_t>(std::move(raw_data)).To<std::string>();
     return valid;
   }
 
   void SetStringText(const std::string& data) {
     uint64_t sequence_number;
-    Map<String, Array<uint8_t>> mime_data;
+    std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
     mime_data[mojom::kMimeTypeText] = Array<uint8_t>::From(data);
     clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,
                                    std::move(mime_data),
@@ -105,7 +103,7 @@ TEST_F(ClipboardAppTest, CanReadBackText) {
 }
 
 TEST_F(ClipboardAppTest, CanSetMultipleDataTypesAtOnce) {
-  Map<String, Array<uint8_t>> mime_data;
+  std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
   mime_data[mojom::kMimeTypeText] =
       Array<uint8_t>::From(std::string(kPlainTextData));
   mime_data[mojom::kMimeTypeHTML] =
@@ -132,7 +130,7 @@ TEST_F(ClipboardAppTest, CanClearClipboardWithZeroArray) {
   EXPECT_TRUE(GetDataOfType(mojom::kMimeTypeText, &data));
   EXPECT_EQ(kPlainTextData, data);
 
-  Map<String, Array<uint8_t>> mime_data;
+  std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
   uint64_t sequence_num = 0;
   clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,
                                  std::move(mime_data),

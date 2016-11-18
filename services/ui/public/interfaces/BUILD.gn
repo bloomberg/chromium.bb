@@ -9,6 +9,7 @@ mojom("interfaces_use_new_wrappers") {
   sources = [
     "accessibility_manager.mojom",
     "animations.mojom",
+    "clipboard.mojom",
     "cursor.mojom",
     "display_manager.mojom",
     "event_matcher.mojom",
@@ -41,7 +42,6 @@ mojom("interfaces_use_new_wrappers") {
 # TODO(yzshen): merge this target into the one above.
 mojom("interfaces") {
   sources = [
-    "clipboard.mojom",
     "window_manager.mojom",
     "window_manager_window_tree_factory.mojom",
     "window_tree.mojom",

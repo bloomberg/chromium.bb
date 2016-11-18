@@ -25,7 +25,7 @@ class VIEWS_MUS_EXPORT ClipboardMus : public ui::Clipboard {
   void Init(service_manager::Connector* connector);
 
  private:
-  bool HasMimeType(const mojo::Array<mojo::String>& available_types,
+  bool HasMimeType(const std::vector<std::string>& available_types,
                    const std::string& type) const;
 
   // Clipboard overrides:
@@ -68,7 +68,7 @@ class VIEWS_MUS_EXPORT ClipboardMus : public ui::Clipboard {
                  const char* data_data,
                  size_t data_len) override;
 
-  static mojo::String GetMimeTypeFor(const FormatType& format);
+  static std::string GetMimeTypeFor(const FormatType& format);
 
   ui::mojom::ClipboardPtr clipboard_;
 
@@ -76,7 +76,7 @@ class VIEWS_MUS_EXPORT ClipboardMus : public ui::Clipboard {
   // WriteObjects(), which then calls our base class DispatchObject() which
   // then calls into each data type specific Write() function. Once we've
   // collected all the data types, we then pass this to the mus server.
-  std::unique_ptr<mojo::Map<mojo::String, mojo::Array<uint8_t>>>
+  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
       current_clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMus);
