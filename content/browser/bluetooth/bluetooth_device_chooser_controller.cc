@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
@@ -54,7 +55,7 @@ constexpr size_t kMaxLengthForDeviceName =
     29;  // max length of device name in filter.
 
 // The duration of a Bluetooth Scan in seconds.
-constexpr int kScanDuration = 10;
+constexpr int kScanDuration = 60;
 constexpr int kTestScanDuration = 0;
 
 void LogRequestDeviceOptions(
@@ -197,13 +198,15 @@ UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooser::Event event) {
       NOTREACHED();
       return UMARequestDeviceOutcome::SUCCESS;
     case BluetoothChooser::Event::RESCAN:
-      // Rescanning doesn't result in a IPC message for the request being sent
-      // so no need to histogram it.
-      NOTREACHED();
-      return UMARequestDeviceOutcome::SUCCESS;
+      return UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_RESCAN;
   }
   NOTREACHED();
   return UMARequestDeviceOutcome::SUCCESS;
+}
+
+void RecordScanningDuration(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_LONG_TIMES("Bluetooth.Web.RequestDevice.ScanningDuration",
+                           duration);
 }
 
 }  // namespace
@@ -232,6 +235,11 @@ BluetoothDeviceChooserController::BluetoothDeviceChooserController(
 }
 
 BluetoothDeviceChooserController::~BluetoothDeviceChooserController() {
+  if (scanning_start_time_) {
+    RecordScanningDuration(base::TimeTicks::Now() -
+                           scanning_start_time_.value());
+  }
+
   if (chooser_) {
     DCHECK(!error_callback_.is_null());
     error_callback_.Run(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
@@ -439,6 +447,8 @@ void BluetoothDeviceChooserController::StartDeviceDiscovery() {
     return;
   }
 
+  scanning_start_time_ = base::TimeTicks::Now();
+
   chooser_->ShowDiscoveryState(BluetoothChooser::DiscoveryState::DISCOVERING);
   adapter_->StartDiscoverySessionWithFilter(
       ComputeScanFilter(options_->filters),
@@ -452,6 +462,13 @@ void BluetoothDeviceChooserController::StartDeviceDiscovery() {
 
 void BluetoothDeviceChooserController::StopDeviceDiscovery() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (scanning_start_time_) {
+    RecordScanningDuration(base::TimeTicks::Now() -
+                           scanning_start_time_.value());
+    scanning_start_time_.reset();
+  }
+
   StopDiscoverySession(std::move(discovery_session_));
   if (chooser_) {
     chooser_->ShowDiscoveryState(BluetoothChooser::DiscoveryState::IDLE);
@@ -486,6 +503,7 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
 
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
+      RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PopulateConnectedDevices();
       DCHECK(chooser_);
       StartDeviceDiscovery();
@@ -516,6 +534,8 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
       PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SELECTED:
+      // RecordRequestDeviceOutcome is called in the callback, because the
+      // device may have vanished.
       PostSuccessCallback(device_address);
       break;
   }
