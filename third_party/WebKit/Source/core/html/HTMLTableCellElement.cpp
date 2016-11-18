@@ -174,29 +174,4 @@ void HTMLTableCellElement::setRowSpan(unsigned n) {
   setUnsignedIntegralAttribute(rowspanAttr, n);
 }
 
-const AtomicString& HTMLTableCellElement::scope() const {
-  const AtomicString& scopeValue = fastGetAttribute(scopeAttr);
-  if (equalIgnoringASCIICase(scopeValue, "row")) {
-    DEFINE_STATIC_LOCAL(const AtomicString, row, ("row"));
-    return row;
-  }
-  if (equalIgnoringASCIICase(scopeValue, "col")) {
-    DEFINE_STATIC_LOCAL(const AtomicString, col, ("col"));
-    return col;
-  }
-  if (equalIgnoringASCIICase(scopeValue, "rowgroup")) {
-    DEFINE_STATIC_LOCAL(const AtomicString, rowgroup, ("rowgroup"));
-    return rowgroup;
-  }
-  if (equalIgnoringASCIICase(scopeValue, "colgroup")) {
-    DEFINE_STATIC_LOCAL(const AtomicString, colgroup, ("colgroup"));
-    return colgroup;
-  }
-  return emptyAtom;
-}
-
-void HTMLTableCellElement::setScope(const AtomicString& value) {
-  setAttribute(scopeAttr, value);
-}
-
 }  // namespace blink

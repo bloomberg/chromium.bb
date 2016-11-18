@@ -49,8 +49,6 @@ class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
   void setColSpan(unsigned);
   const AtomicString& headers() const;
   void setRowSpan(unsigned);
-  const AtomicString& scope() const;
-  void setScope(const AtomicString&);
 
  private:
   HTMLTableCellElement(const QualifiedName&, Document&);

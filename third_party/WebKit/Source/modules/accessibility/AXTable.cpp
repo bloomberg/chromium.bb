@@ -232,7 +232,8 @@ bool AXTable::isDataTable() const {
       if (isHTMLTableCellElement(*cellNode)) {
         HTMLTableCellElement& cellElement = toHTMLTableCellElement(*cellNode);
         if (!cellElement.headers().isEmpty() || !cellElement.abbr().isEmpty() ||
-            !cellElement.axis().isEmpty() || !cellElement.scope().isEmpty())
+            !cellElement.axis().isEmpty() ||
+            !cellElement.fastGetAttribute(scopeAttr).isEmpty())
           return true;
       }
 

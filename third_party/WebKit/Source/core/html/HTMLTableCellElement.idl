@@ -47,5 +47,5 @@ interface HTMLTableCellElement : HTMLElement {
     // respectively. HTMLTableHeaderCellElement has the abbr and scope
     // attributes, while HTMLTableDataCellElement has only abbr.
     [CEReactions, Reflect] attribute DOMString abbr;
-    [CEReactions] attribute DOMString scope;
+    [CEReactions, Reflect, ReflectOnly=("row", "col", "rowgroup", "colgroup")] attribute DOMString scope;
 };
