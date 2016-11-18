@@ -22,4 +22,7 @@
 
     attribute EventHandler onshippingaddresschange;
     attribute EventHandler onshippingoptionchange;
+
+    // https://github.com/w3c/browser-payment-api/issues/310
+    [CallWith=ScriptState, RuntimeEnabled=CanMakeActivePayment] Promise<boolean> canMakeActivePayment();
 };

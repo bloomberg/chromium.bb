@@ -38,6 +38,7 @@ BroadcastChannel status=stable
 Budget status=experimental
 Canvas2dFixedRenderingMode status=test
 EnableCanvas2dDynamicRenderingModeSwitching status=experimental
+CanMakeActivePayment status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
 CompositeOpaqueFixedPosition status=stable, settable_from_internals=True

@@ -254,6 +254,7 @@ source_set("unit_tests") {
     "notifications/NotificationImageLoaderTest.cpp",
     "notifications/NotificationResourcesLoaderTest.cpp",
     "payments/AbortTest.cpp",
+    "payments/ActivePaymentTest.cpp",
     "payments/CompleteTest.cpp",
     "payments/OnPaymentResponseTest.cpp",
     "payments/PaymentAddressTest.cpp",

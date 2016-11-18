@@ -36,13 +36,14 @@
 #include "wtf/HashSet.h"
 #include <utility>
 
-namespace mojo {
-
+using payments::mojom::blink::ActivePaymentQueryResult;
+using payments::mojom::blink::PaymentAddressPtr;
 using payments::mojom::blink::PaymentCurrencyAmount;
 using payments::mojom::blink::PaymentCurrencyAmountPtr;
 using payments::mojom::blink::PaymentDetails;
 using payments::mojom::blink::PaymentDetailsModifier;
 using payments::mojom::blink::PaymentDetailsModifierPtr;
+using payments::mojom::blink::PaymentDetailsPtr;
 using payments::mojom::blink::PaymentDetailsPtr;
 using payments::mojom::blink::PaymentErrorReason;
 using payments::mojom::blink::PaymentItem;
@@ -51,9 +52,12 @@ using payments::mojom::blink::PaymentMethodData;
 using payments::mojom::blink::PaymentMethodDataPtr;
 using payments::mojom::blink::PaymentOptions;
 using payments::mojom::blink::PaymentOptionsPtr;
+using payments::mojom::blink::PaymentResponsePtr;
 using payments::mojom::blink::PaymentShippingOption;
 using payments::mojom::blink::PaymentShippingOptionPtr;
 using payments::mojom::blink::PaymentShippingType;
+
+namespace mojo {
 
 template <>
 struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
@@ -97,8 +101,7 @@ struct TypeConverter<PaymentDetailsModifierPtr, blink::PaymentDetailsModifier> {
   static PaymentDetailsModifierPtr Convert(
       const blink::PaymentDetailsModifier& input) {
     PaymentDetailsModifierPtr output = PaymentDetailsModifier::New();
-    output->supported_methods =
-        WTF::Vector<WTF::String>(input.supportedMethods());
+    output->supported_methods = input.supportedMethods();
 
     if (input.hasTotal())
       output->total = PaymentItem::From(input.total());
@@ -143,7 +146,7 @@ struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
     if (input.hasError())
       output->error = input.error();
     else
-      output->error = WTF::emptyString();
+      output->error = emptyString();
 
     return output;
   }
@@ -495,9 +498,8 @@ String getValidShippingType(const String& shippingType) {
   return validValues[0];
 }
 
-payments::mojom::blink::PaymentDetailsPtr maybeKeepShippingOptions(
-    payments::mojom::blink::PaymentDetailsPtr details,
-    bool keep) {
+PaymentDetailsPtr maybeKeepShippingOptions(PaymentDetailsPtr details,
+                                           bool keep) {
   if (!keep)
     details->shipping_options.resize(0);
 
@@ -589,6 +591,20 @@ ScriptPromise PaymentRequest::abort(ScriptState* scriptState) {
   m_abortResolver = ScriptPromiseResolver::create(scriptState);
   m_paymentProvider->Abort();
   return m_abortResolver->promise();
+}
+
+ScriptPromise PaymentRequest::canMakeActivePayment(ScriptState* scriptState) {
+  if (!m_paymentProvider.is_bound() || m_canMakeActivePaymentResolver ||
+      !scriptState->contextIsValid()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(InvalidStateError,
+                                          "Cannot query payment request"));
+  }
+
+  m_paymentProvider->CanMakeActivePayment();
+
+  m_canMakeActivePaymentResolver = ScriptPromiseResolver::create(scriptState);
+  return m_canMakeActivePaymentResolver->promise();
 }
 
 bool PaymentRequest::hasPendingActivity() const {
@@ -683,6 +699,7 @@ DEFINE_TRACE(PaymentRequest) {
   visitor->trace(m_showResolver);
   visitor->trace(m_completeResolver);
   visitor->trace(m_abortResolver);
+  visitor->trace(m_canMakeActivePaymentResolver);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
 }
@@ -739,7 +756,7 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
       mojo::GetProxy(&m_paymentProvider));
   m_paymentProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this),
-                payments::mojom::blink::PaymentErrorReason::UNKNOWN)));
+                PaymentErrorReason::UNKNOWN)));
   m_paymentProvider->Init(
       m_clientBinding.CreateInterfacePtrAndBind(),
       std::move(validatedMethodData),
@@ -753,8 +770,7 @@ void PaymentRequest::contextDestroyed() {
   clearResolversAndCloseMojoConnection();
 }
 
-void PaymentRequest::OnShippingAddressChange(
-    payments::mojom::blink::PaymentAddressPtr address) {
+void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   DCHECK(m_showResolver);
   DCHECK(!m_completeResolver);
 
@@ -840,7 +856,7 @@ void PaymentRequest::OnPaymentResponse(
   m_showResolver.clear();
 }
 
-void PaymentRequest::OnError(mojo::PaymentErrorReason error) {
+void PaymentRequest::OnError(PaymentErrorReason error) {
   if (!Platform::current()) {
     // TODO(rockot): Clean this up once renderer shutdown sequence is fixed.
     return;
@@ -851,15 +867,15 @@ void PaymentRequest::OnError(mojo::PaymentErrorReason error) {
   String message;
 
   switch (error) {
-    case payments::mojom::blink::PaymentErrorReason::USER_CANCEL:
+    case PaymentErrorReason::USER_CANCEL:
       message = "Request cancelled";
       break;
-    case payments::mojom::blink::PaymentErrorReason::NOT_SUPPORTED:
+    case PaymentErrorReason::NOT_SUPPORTED:
       isError = true;
       ec = NotSupportedError;
       message = "The payment method is not supported";
       break;
-    case payments::mojom::blink::PaymentErrorReason::UNKNOWN:
+    case PaymentErrorReason::UNKNOWN:
       isError = true;
       ec = UnknownError;
       message = "Request failed";
@@ -877,6 +893,9 @@ void PaymentRequest::OnError(mojo::PaymentErrorReason error) {
 
     if (m_abortResolver)
       m_abortResolver->reject(DOMException::create(ec, message));
+
+    if (m_canMakeActivePaymentResolver)
+      m_canMakeActivePaymentResolver->reject(DOMException::create(ec, message));
   } else {
     if (m_completeResolver)
       m_completeResolver->reject(message);
@@ -886,6 +905,9 @@ void PaymentRequest::OnError(mojo::PaymentErrorReason error) {
 
     if (m_abortResolver)
       m_abortResolver->reject(message);
+
+    if (m_canMakeActivePaymentResolver)
+      m_canMakeActivePaymentResolver->reject(message);
   }
 
   clearResolversAndCloseMojoConnection();
@@ -912,6 +934,25 @@ void PaymentRequest::OnAbort(bool abortedSuccessfully) {
   clearResolversAndCloseMojoConnection();
 }
 
+void PaymentRequest::OnCanMakeActivePayment(ActivePaymentQueryResult result) {
+  DCHECK(m_canMakeActivePaymentResolver);
+
+  switch (result) {
+    case ActivePaymentQueryResult::CAN_MAKE_ACTIVE_PAYMENT:
+      m_canMakeActivePaymentResolver->resolve(true);
+      break;
+    case ActivePaymentQueryResult::CANNOT_MAKE_ACTIVE_PAYMENT:
+      m_canMakeActivePaymentResolver->resolve(false);
+      break;
+    case ActivePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
+      m_canMakeActivePaymentResolver->reject(
+          DOMException::create(QuotaExceededError, "Query quota exceeded"));
+      break;
+  }
+
+  m_canMakeActivePaymentResolver.clear();
+}
+
 void PaymentRequest::onCompleteTimeout(TimerBase*) {
   m_paymentProvider->Complete(payments::mojom::blink::PaymentComplete(Fail));
   clearResolversAndCloseMojoConnection();
@@ -922,6 +963,7 @@ void PaymentRequest::clearResolversAndCloseMojoConnection() {
   m_completeResolver.clear();
   m_showResolver.clear();
   m_abortResolver.clear();
+  m_canMakeActivePaymentResolver.clear();
   if (m_clientBinding.is_bound())
     m_clientBinding.Close();
   m_paymentProvider.reset();
