@@ -468,11 +468,28 @@ class EBuild(object):
     self.is_blacklisted = False
     self.has_test = False
     self._ReadEBuild(path)
+
+    # Grab the latest project settings.
     try:
-      self.cros_workon_vars = EBuild.GetCrosWorkonVars(
-          self.ebuild_path, self.pkgname)
+      new_vars = EBuild.GetCrosWorkonVars(
+          self._unstable_ebuild_path, self.pkgname)
     except EbuildFormatIncorrectException:
-      self.cros_workon_vars = None
+      new_vars = None
+
+    # Grab the current project settings.
+    try:
+      old_vars = EBuild.GetCrosWorkonVars(self.ebuild_path, self.pkgname)
+    except EbuildFormatIncorrectException:
+      old_vars = None
+
+    # Merge the two settings.
+    self.cros_workon_vars = old_vars
+    if new_vars is not None and old_vars is not None:
+      merged_vars = new_vars._replace(commit=old_vars.commit)
+      # If the project settings have changed, throw away existing vars (use
+      # new_vars).
+      if merged_vars != old_vars:
+        self.cros_workon_vars = new_vars
 
   @staticmethod
   def Classify(ebuild_path):
