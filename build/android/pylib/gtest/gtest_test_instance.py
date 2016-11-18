@@ -15,7 +15,6 @@ from pylib import constants
 from pylib.constants import host_paths
 from pylib.base import base_test_result
 from pylib.base import test_instance
-from pylib.utils import isolator
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import unittest_util # pylint: disable=import-error
@@ -231,7 +230,7 @@ def ConvertTestFilterFileIntoGTestFilterArgument(input_lines):
 
 class GtestTestInstance(test_instance.TestInstance):
 
-  def __init__(self, args, isolate_delegate, error_func):
+  def __init__(self, args, data_deps_delegate, error_func):
     super(GtestTestInstance, self).__init__()
     # TODO(jbudorick): Support multiple test suites.
     if len(args.suite_name) > 1:
@@ -289,16 +288,10 @@ class GtestTestInstance(test_instance.TestInstance):
     else:
       self._gtest_filter = None
 
-    if (args.isolate_file_path and
-        not isolator.IsIsolateEmpty(args.isolate_file_path)):
-      self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
-      self._isolate_delegate = isolate_delegate
-      self._isolated_abs_path = os.path.join(
-          constants.GetOutDirectory(), '%s.isolated' % self._suite)
-    else:
-      logging.warning('%s isolate file provided. No data deps will be pushed.',
-                      'Empty' if args.isolate_file_path else 'No')
-      self._isolate_delegate = None
+    self._data_deps_delegate = data_deps_delegate
+    self._runtime_deps_path = args.runtime_deps_path
+    if not self._runtime_deps_path:
+      logging.warning('No data dependencies will be pushed.')
 
     if args.app_data_files:
       self._app_data_files = args.app_data_files
@@ -395,15 +388,8 @@ class GtestTestInstance(test_instance.TestInstance):
   #override
   def SetUp(self):
     """Map data dependencies via isolate."""
-    if self._isolate_delegate:
-      self._isolate_delegate.Remap(
-          self._isolate_abs_path, self._isolated_abs_path)
-      self._isolate_delegate.PurgeExcluded(_DEPS_EXCLUSION_LIST)
-      self._isolate_delegate.MoveOutputDeps()
-      dest_dir = None
-      self._data_deps.extend([
-          (self._isolate_delegate.isolate_deps_dir, dest_dir)])
-
+    self._data_deps.extend(
+        self._data_deps_delegate(self._runtime_deps_path))
 
   def GetDataDependencies(self):
     """Returns the test suite's data dependencies.
@@ -460,7 +446,6 @@ class GtestTestInstance(test_instance.TestInstance):
 
   #override
   def TearDown(self):
-    """Clear the mappings created by SetUp."""
-    if self._isolate_delegate:
-      self._isolate_delegate.Clear()
+    """Do nothing."""
+    pass
 

@@ -18,7 +18,6 @@ from pylib.base import test_instance
 from pylib.constants import host_paths
 from pylib.instrumentation import test_result
 from pylib.instrumentation import instrumentation_parser
-from pylib.utils import isolator
 from pylib.utils import proguard
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
@@ -400,7 +399,7 @@ def GetUniqueTestName(test, sep='#'):
 
 class InstrumentationTestInstance(test_instance.TestInstance):
 
-  def __init__(self, args, isolate_delegate, error_func):
+  def __init__(self, args, data_deps_delegate, error_func):
     super(InstrumentationTestInstance, self).__init__()
 
     self._additional_apks = []
@@ -417,10 +416,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._initializeApkAttributes(args, error_func)
 
     self._data_deps = None
-    self._isolate_abs_path = None
-    self._isolate_delegate = None
-    self._isolated_abs_path = None
-    self._initializeDataDependencyAttributes(args, isolate_delegate)
+    self._data_deps_delegate = None
+    self._runtime_deps_path = None
+    self._initializeDataDependencyAttributes(args, data_deps_delegate)
 
     self._annotations = None
     self._excluded_annotations = None
@@ -520,22 +518,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._additional_apks = (
         [apk_helper.ToHelper(x) for x in args.additional_apks])
 
-  def _initializeDataDependencyAttributes(self, args, isolate_delegate):
+  def _initializeDataDependencyAttributes(self, args, data_deps_delegate):
     self._data_deps = []
-    if (args.isolate_file_path and
-        not isolator.IsIsolateEmpty(args.isolate_file_path)):
-      if os.path.isabs(args.isolate_file_path):
-        self._isolate_abs_path = args.isolate_file_path
-      else:
-        self._isolate_abs_path = os.path.join(
-            constants.DIR_SOURCE_ROOT, args.isolate_file_path)
-      self._isolate_delegate = isolate_delegate
-      self._isolated_abs_path = os.path.join(
-          constants.GetOutDirectory(), '%s.isolated' % self._test_package)
-    else:
-      self._isolate_delegate = None
+    self._data_deps_delegate = data_deps_delegate
+    self._runtime_deps_path = args.runtime_deps_path
 
-    if not self._isolate_delegate:
+    if not self._runtime_deps_path:
       logging.warning('No data dependencies will be pushed.')
 
   def _initializeTestFilterAttributes(self, args):
@@ -688,11 +676,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   #override
   def SetUp(self):
-    if self._isolate_delegate:
-      self._isolate_delegate.Remap(
-          self._isolate_abs_path, self._isolated_abs_path)
-      self._isolate_delegate.MoveOutputDeps()
-      self._data_deps.extend([(self._isolate_delegate.isolate_deps_dir, None)])
+    self._data_deps.extend(
+        self._data_deps_delegate(self._runtime_deps_path))
 
   def GetDataDependencies(self):
     return self._data_deps
@@ -764,5 +749,4 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   #override
   def TearDown(self):
-    if self._isolate_delegate:
-      self._isolate_delegate.Clear()
+    pass
