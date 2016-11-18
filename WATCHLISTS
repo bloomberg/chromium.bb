@@ -575,6 +575,11 @@
     'mac': {
       'filepath': '(_|/)(cocoa|mac)(_|\.)|/(cocoa|mac)/|\.mm?$',
     },
+    'magictether': {
+      'filepath': 'components/cryptauth/'\
+                  '|chromeos/components/tether/'\
+                  '|components/proximity_auth/',
+    },
     'manifest': {
       'filepath': 'content/(browser|renderer)/manifest/'\
                   '|content/public/common/manifest*',
@@ -1883,6 +1888,11 @@
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'login': ['vabr+watchlistlogin@chromium.org'],
     'mac' : ['mac-reviews@chromium.org'],
+    'magictether': ['jlklein+watch-magictether@chromium.org',
+                    'khorimoto+watch-magictether@chromium.org',
+                    'hansberry+watch-magictether@chromium.org',
+                    'tengs+watch-magictether@chromium.org',
+                    'jhawkins+watch-magictether@chromium.org'],
     'manifest': ['mlamouri+watch-manifest@chromium.org'],
     'md_settings': ['dbeam+watch-settings@chromium.org',
                     'michaelpg+watch-md-settings@chromium.org',
