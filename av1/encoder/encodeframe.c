@@ -3154,7 +3154,7 @@ const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
   1,
   4,
   4,
-  6
+  6,
 #if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
   8,

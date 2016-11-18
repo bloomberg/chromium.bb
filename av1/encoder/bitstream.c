@@ -335,8 +335,7 @@ static void prob_diff_update(const aom_tree_index *tree,
   for (i = 0; i < n - 1; ++i)
     av1_cond_prob_diff_update(w, &probs[i], branch_ct[i], probwt);
 }
-
-#if !CONFIG_EC_ADAPT
+#if CONFIG_EXT_INTER || CONFIG_EXT_TX || !CONFIG_EC_ADAPT
 static int prob_diff_update_savings(const aom_tree_index *tree,
                                     aom_prob probs[/*n - 1*/],
                                     const unsigned int counts[/*n - 1*/], int n,
@@ -354,7 +353,7 @@ static int prob_diff_update_savings(const aom_tree_index *tree,
   }
   return savings;
 }
-#endif
+#endif  // CONFIG_EXT_INTER || CONFIG_EXT_TX || !CONFIG_EC_ADAPT
 
 #if CONFIG_VAR_TX
 static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,

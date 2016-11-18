@@ -171,7 +171,6 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 #endif
 }
 
-#if !CONFIG_EC_ADAPT
 #if CONFIG_EXT_INTER
 static void read_inter_compound_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j;
@@ -184,6 +183,7 @@ static void read_inter_compound_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   }
 }
 #endif  // CONFIG_EXT_INTER
+#if !CONFIG_EC_ADAPT
 #if !CONFIG_EXT_TX
 static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j, k;
