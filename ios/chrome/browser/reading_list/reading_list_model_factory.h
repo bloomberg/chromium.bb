@@ -15,6 +15,7 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 class ReadingListModel;
+class ReadingListStore;
 
 namespace ios {
 class ChromeBrowserState;
@@ -24,6 +25,8 @@ class ChromeBrowserState;
 // ios::ChromeBrowserState.
 class ReadingListModelFactory : public BrowserStateKeyedServiceFactory {
  public:
+  // Returns if Reading List is enabled on this device.
+  static bool IsReadingListEnabled();
   static ReadingListModel* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
   static ReadingListModel* GetForBrowserStateIfExists(

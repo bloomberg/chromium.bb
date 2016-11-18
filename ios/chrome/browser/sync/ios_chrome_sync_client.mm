@@ -52,6 +52,8 @@
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/reading_list/reading_list_model.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
@@ -335,6 +337,13 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
                  browser_state_)
           ->GetDeviceInfoSyncBridge()
           ->AsWeakPtr();
+    case syncer::READING_LIST: {
+      ReadingListModel* reading_list_model =
+          ReadingListModelFactory::GetForBrowserState(browser_state_);
+      if (reading_list_model)
+        return reading_list_model->GetModelTypeSyncBridge()->AsWeakPtr();
+      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+    }
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
