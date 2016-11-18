@@ -24,11 +24,7 @@ bool IsOverlayScrollbarEnabled() {
   if (command_line.HasSwitch(switches::kDisableOverlayScrollbar))
     return false;
 
-#if defined(OS_CHROMEOS)
-  return true;
-#else
   return command_line.HasSwitch(switches::kEnableOverlayScrollbar);
-#endif
 }
 
 }  // namespace ui
