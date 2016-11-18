@@ -26,7 +26,6 @@ class NativeCursorManagerDelegate;
 }
 
 namespace views {
-class DesktopCursorLoaderUpdater;
 
 // A NativeCursorManager that performs the desktop-specific setting of cursor
 // state. Similar to AshNativeCursorManager, it also communicates these changes
@@ -34,8 +33,7 @@ class DesktopCursorLoaderUpdater;
 class VIEWS_EXPORT DesktopNativeCursorManager
     : public wm::NativeCursorManager {
  public:
-  DesktopNativeCursorManager(
-      std::unique_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater);
+  DesktopNativeCursorManager();
   ~DesktopNativeCursorManager() override;
 
   // Builds a cursor and sets the internal platform representation. The return
@@ -66,7 +64,6 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   typedef std::set<aura::WindowTreeHost*> Hosts;
   Hosts hosts_;
 
-  std::unique_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater_;
   std::unique_ptr<ui::CursorLoader> cursor_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeCursorManager);
@@ -75,4 +72,3 @@ class VIEWS_EXPORT DesktopNativeCursorManager
 }  // namespace views
 
 #endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_CURSOR_MANAGER_H_
-

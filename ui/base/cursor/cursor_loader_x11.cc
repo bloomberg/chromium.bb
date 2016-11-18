@@ -13,6 +13,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
+#include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -23,32 +24,26 @@
 
 namespace {
 
-// Returns X font cursor shape from an Aura cursor.
-int CursorShapeFromNative(const gfx::NativeCursor& native_cursor) {
-  switch (native_cursor.native_type()) {
+// Returns CSS cursor name from an Aura cursor ID.
+const char* CursorCssNameFromId(int id) {
+  switch (id) {
     case ui::kCursorMiddlePanning:
-      return XC_fleur;
     case ui::kCursorEastPanning:
-      return XC_sb_right_arrow;
     case ui::kCursorNorthPanning:
-      return XC_sb_up_arrow;
     case ui::kCursorNorthEastPanning:
-      return XC_top_right_corner;
     case ui::kCursorNorthWestPanning:
-      return XC_top_left_corner;
     case ui::kCursorSouthPanning:
-      return XC_sb_down_arrow;
     case ui::kCursorSouthEastPanning:
-      return XC_bottom_right_corner;
     case ui::kCursorSouthWestPanning:
-      return XC_bottom_left_corner;
     case ui::kCursorWestPanning:
-      return XC_sb_left_arrow;
+      NOTREACHED() << "There's no middle-click panning on Linux or ChromeOS";
+      return "left_ptr";
     case ui::kCursorNone:
+      return "none";
     case ui::kCursorGrab:
+      return "grab";
     case ui::kCursorGrabbing:
-      // TODO(jamescook): Need cursors for these.  crbug.com/111650
-      return XC_left_ptr;
+      return "grabbing";
 
 #if defined(OS_CHROMEOS)
     case ui::kCursorNull:
@@ -85,57 +80,121 @@ int CursorShapeFromNative(const gfx::NativeCursor& native_cursor) {
     case ui::kCursorHand:
       // In some environments, the image assets are not set (e.g. in
       // content-browsertests, content-shell etc.).
-      return XC_left_ptr;
+      return "left_ptr";
 #else  // defined(OS_CHROMEOS)
     case ui::kCursorNull:
-      return XC_left_ptr;
+      return "left_ptr";
     case ui::kCursorPointer:
-      return XC_left_ptr;
+      return "left_ptr";
     case ui::kCursorMove:
-      return XC_fleur;
+      return "move";
     case ui::kCursorCross:
-      return XC_crosshair;
+      return "crosshair";
     case ui::kCursorHand:
-      return XC_hand2;
+      return "pointer";
     case ui::kCursorIBeam:
-      return XC_xterm;
+      return "text";
     case ui::kCursorProgress:
+      return "progress";
     case ui::kCursorWait:
-      return XC_watch;
+      return "wait";
     case ui::kCursorHelp:
-      return XC_question_arrow;
+      return "help";
     case ui::kCursorEastResize:
-      return XC_right_side;
+      return "e-resize";
     case ui::kCursorNorthResize:
-      return XC_top_side;
+      return "n-resize";
     case ui::kCursorNorthEastResize:
-      return XC_top_right_corner;
+      return "ne-resize";
     case ui::kCursorNorthWestResize:
-      return XC_top_left_corner;
+      return "nw-resize";
     case ui::kCursorSouthResize:
-      return XC_bottom_side;
+      return "s-resize";
     case ui::kCursorSouthEastResize:
-      return XC_bottom_right_corner;
+      return "se-resize";
     case ui::kCursorSouthWestResize:
-      return XC_bottom_left_corner;
+      return "sw-resize";
     case ui::kCursorWestResize:
-      return XC_left_side;
+      return "w-resize";
     case ui::kCursorNorthSouthResize:
-      return XC_sb_v_double_arrow;
+      return "ns-resize";
     case ui::kCursorEastWestResize:
-      return XC_sb_h_double_arrow;
+      return "ew-resize";
     case ui::kCursorColumnResize:
-      return XC_sb_h_double_arrow;
+      return "col-resize";
     case ui::kCursorRowResize:
-      return XC_sb_v_double_arrow;
+      return "row-resize";
+    case ui::kCursorNorthEastSouthWestResize:
+      return "nesw-resize";
+    case ui::kCursorNorthWestSouthEastResize:
+      return "nwse-resize";
+    case ui::kCursorVerticalText:
+      return "vertical-text";
+    case ui::kCursorZoomIn:
+      return "zoom-in";
+    case ui::kCursorZoomOut:
+      return "zoom-out";
+    case ui::kCursorCell:
+      return "cell";
+    case ui::kCursorContextMenu:
+      return "context-menu";
+    case ui::kCursorAlias:
+      return "alias";
+    case ui::kCursorNoDrop:
+      return "no-drop";
+    case ui::kCursorCopy:
+      return "copy";
+    case ui::kCursorNotAllowed:
+      return "not-allowed";
+    case ui::kCursorDndNone:
+      return "dnd-none";
+    case ui::kCursorDndMove:
+      return "dnd-move";
+    case ui::kCursorDndCopy:
+      return "dnd-copy";
+    case ui::kCursorDndLink:
+      return "dnd-link";
 #endif  // defined(OS_CHROMEOS)
     case ui::kCursorCustom:
       NOTREACHED();
-      return XC_left_ptr;
+      return "left_ptr";
   }
-  NOTREACHED() << "Case not handled for " << native_cursor.native_type();
-  return XC_left_ptr;
+  NOTREACHED() << "Case not handled for " << id;
+  return "left_ptr";
 }
+
+static const struct {
+  const char* css_name;
+  const char* fallback_name;
+  int fallback_shape;
+} kCursorFallbacks[] = {
+    { "pointer",     "hand",            XC_hand1 },
+    { "progress",    "left_ptr_watch",  XC_watch },
+    { "wait",        nullptr,           XC_watch },
+    { "cell",        nullptr,           XC_plus },
+    { "crosshair",   nullptr,           XC_cross },
+    { "text",        nullptr,           XC_xterm },
+    { "not-allowed", "crossed_circle",  None },
+    { "grabbing",    nullptr,           XC_hand2 },
+    { "col-resize",  nullptr,           XC_sb_h_double_arrow },
+    { "row-resize",  nullptr,           XC_sb_v_double_arrow},
+    { "n-resize",    nullptr,           XC_top_side},
+    { "e-resize",    nullptr,           XC_right_side},
+    { "s-resize",    nullptr,           XC_bottom_side},
+    { "w-resize",    nullptr,           XC_left_side},
+    { "ne-resize",   nullptr,           XC_top_right_corner},
+    { "nw-resize",   nullptr,           XC_top_left_corner},
+    { "se-resize",   nullptr,           XC_bottom_right_corner},
+    { "sw-resize",   nullptr,           XC_bottom_left_corner},
+    { "ew-resize",   nullptr,           XC_sb_h_double_arrow},
+    { "ns-resize",   nullptr,           XC_sb_v_double_arrow},
+    { "nesw-resize", "fd_double_arrow", None},
+    { "nwse-resize", "bd_double_arrow", None},
+    { "dnd-none",    "grabbing",        XC_hand2 },
+    { "dnd-move",    "grabbing",        XC_hand2 },
+    { "dnd-copy",    "grabbing",        XC_hand2 },
+    { "dnd-link",    "grabbing",        XC_hand2 },
+};
 
 }  // namespace
 
@@ -145,9 +204,20 @@ CursorLoader* CursorLoader::Create() {
   return new CursorLoaderX11;
 }
 
-CursorLoaderX11::CursorLoaderX11()
-    : invisible_cursor_(CreateInvisibleCursor(), gfx::GetXDisplay()) {
+CursorLoaderX11::ImageCursor::ImageCursor(XcursorImage* x_image,
+                                          float scale,
+                                          display::Display::Rotation rotation)
+    : scale(scale), rotation(rotation) {
+  cursor = CreateReffedCustomXCursor(x_image);
 }
+
+CursorLoaderX11::ImageCursor::~ImageCursor() {
+  UnrefCustomXCursor(cursor);
+}
+
+CursorLoaderX11::CursorLoaderX11()
+    : display_(gfx::GetXDisplay()),
+      invisible_cursor_(CreateInvisibleCursor(), gfx::GetXDisplay()) {}
 
 CursorLoaderX11::~CursorLoaderX11() {
   UnloadAll();
@@ -161,7 +231,7 @@ void CursorLoaderX11::LoadImageCursor(int id,
 
   GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
   XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotspot);
-  cursors_[id] = CreateReffedCustomXCursor(x_image);
+  image_cursors_[id].reset(new ImageCursor(x_image, scale(), rotation()));
 }
 
 void CursorLoaderX11::LoadAnimatedCursor(int id,
@@ -171,8 +241,8 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
   std::vector<SkBitmap> bitmaps;
   gfx::Point hotspot = hot;
 
-  GetAnimatedCursorBitmaps(
-      resource_id, scale(), rotation(), &hotspot, &bitmaps);
+  GetAnimatedCursorBitmaps(resource_id, scale(), rotation(), &hotspot,
+                           &bitmaps);
 
   XcursorImages* x_images = XcursorImagesCreate(bitmaps.size());
   x_images->nimage = bitmaps.size();
@@ -188,56 +258,88 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
 }
 
 void CursorLoaderX11::UnloadAll() {
-  for (ImageCursorMap::const_iterator it = cursors_.begin();
-       it != cursors_.end(); ++it)
-    UnrefCustomXCursor(it->second);
+  image_cursors_.clear();
 
   // Free animated cursors and images.
-  for (AnimatedCursorMap::iterator it = animated_cursors_.begin();
-       it != animated_cursors_.end(); ++it) {
-    XcursorImagesDestroy(it->second.second);  // also frees individual frames.
-    XFreeCursor(gfx::GetXDisplay(), it->second.first);
+  for (const auto& cursor : animated_cursors_) {
+    XcursorImagesDestroy(
+        cursor.second.second);  // also frees individual frames.
+    XFreeCursor(gfx::GetXDisplay(), cursor.second.first);
   }
 }
 
 void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
   DCHECK(cursor);
 
-  ::Cursor xcursor;
-  if (IsImageCursor(*cursor))
-    xcursor = ImageCursorFromNative(*cursor);
-  else if (*cursor == kCursorNone)
-    xcursor =  invisible_cursor_.get();
-  else if (*cursor == kCursorCustom)
-    xcursor = cursor->platform();
-  else if (scale() == 1.0f && rotation() == display::Display::ROTATE_0) {
-    xcursor = GetXCursor(CursorShapeFromNative(*cursor));
-  } else {
-    xcursor = ImageCursorFromNative(kCursorPointer);
+  if (*cursor == kCursorNone) {
+    cursor->SetPlatformCursor(invisible_cursor_.get());
+    return;
   }
 
-  cursor->SetPlatformCursor(xcursor);
+  if (*cursor == kCursorCustom)
+    return;
+
+  cursor->SetPlatformCursor(CursorFromId(cursor->native_type()));
 }
 
 const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(int id) {
-  return test::GetCachedXcursorImage(cursors_[id]);
+  return test::GetCachedXcursorImage(image_cursors_[id]->cursor);
 }
 
 bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   int type = native_cursor.native_type();
-  return cursors_.count(type) || animated_cursors_.count(type);
+  return image_cursors_.count(type) || animated_cursors_.count(type);
 }
 
-::Cursor CursorLoaderX11::ImageCursorFromNative(
-    gfx::NativeCursor native_cursor) {
-  int type = native_cursor.native_type();
-  if (animated_cursors_.count(type))
-    return animated_cursors_[type].first;
+::Cursor CursorLoaderX11::CursorFromId(int id) {
+  const char* css_name = CursorCssNameFromId(id);
 
-  ImageCursorMap::iterator find = cursors_.find(type);
-  if (find != cursors_.end())
-    return cursors_[type];
-  return GetXCursor(CursorShapeFromNative(native_cursor));
+  auto font_it = font_cursors_.find(id);
+  if (font_it != font_cursors_.end())
+    return font_it->second;
+  auto image_it = image_cursors_.find(id);
+  if (image_it != image_cursors_.end()) {
+    if (image_it->second->scale == scale() &&
+        image_it->second->rotation == rotation()) {
+      return image_it->second->cursor;
+    } else {
+      image_cursors_.erase(image_it);
+    }
+  }
+
+  // First try to load the cursor directly.
+  ::Cursor cursor = XcursorLibraryLoadCursor(display_, css_name);
+  if (cursor == None) {
+    // Try a similar cursor supplied by the native cursor theme.
+    for (const auto& mapping : kCursorFallbacks) {
+      if (strcmp(mapping.css_name, css_name) == 0) {
+        if (mapping.fallback_name)
+          cursor = XcursorLibraryLoadCursor(display_, mapping.fallback_name);
+        if (cursor == None && mapping.fallback_shape)
+          cursor = XCreateFontCursor(display_, mapping.fallback_shape);
+      }
+    }
+  }
+  if (cursor != None) {
+    font_cursors_[id] = cursor;
+    return cursor;
+  }
+
+  // If the theme is missing the desired cursor, use a chromium-supplied
+  // fallback icon.
+  int resource_id;
+  gfx::Point point;
+  if (ui::GetCursorDataFor(ui::CURSOR_SET_NORMAL, id, scale(), &resource_id,
+                           &point)) {
+    LoadImageCursor(id, resource_id, point);
+    return image_cursors_[id]->cursor;
+  }
+
+  // As a last resort, return a left pointer.
+  cursor = XCreateFontCursor(display_, XC_left_ptr);
+  DCHECK(cursor);
+  font_cursors_[id] = cursor;
+  return cursor;
 }
 
 }  // namespace ui

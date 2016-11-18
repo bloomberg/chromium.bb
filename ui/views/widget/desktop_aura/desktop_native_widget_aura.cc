@@ -31,7 +31,6 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
-#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_event_client.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -445,10 +444,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   // The host's dispatcher must be added to |native_cursor_manager_| before
   // OnNativeWidgetCreated() is called.
   cursor_reference_count_++;
-  if (!native_cursor_manager_) {
-    native_cursor_manager_ = new DesktopNativeCursorManager(
-        DesktopCursorLoaderUpdater::Create());
-  }
+  if (!native_cursor_manager_)
+    native_cursor_manager_ = new DesktopNativeCursorManager();
   if (!cursor_manager_) {
     cursor_manager_ = new wm::CursorManager(
         std::unique_ptr<wm::NativeCursorManager>(native_cursor_manager_));

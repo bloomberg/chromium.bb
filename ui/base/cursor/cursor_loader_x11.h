@@ -6,7 +6,7 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_X11_H_
 
 #include <X11/Xcursor/Xcursor.h>
-#include <map>
+#include <unordered_map>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -34,20 +34,37 @@ class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader {
   const XcursorImage* GetXcursorImageForTest(int id);
 
  private:
+  struct ImageCursor {
+    ImageCursor(XcursorImage* x_image,
+                float scale,
+                display::Display::Rotation rotation);
+    ~ImageCursor();
+
+    ::Cursor cursor;
+    float scale;
+    display::Display::Rotation rotation;
+  };
+
   // Returns true if we have an image resource loaded for the |native_cursor|.
   bool IsImageCursor(gfx::NativeCursor native_cursor);
 
-  // Gets the X Cursor corresponding to the |native_cursor|.
-  ::Cursor ImageCursorFromNative(gfx::NativeCursor native_cursor);
+  // Loads a new cursor corresponding to |id|.
+  ::Cursor CursorFromId(int id);
 
-  // A map to hold all image cursors. It maps the cursor ID to the X Cursor.
-  typedef std::map<int, ::Cursor> ImageCursorMap;
-  ImageCursorMap cursors_;
+  XDisplay* display_;
+
+  // A map from a cursor native type to X cursor.
+  std::unordered_map<int, ::Cursor> font_cursors_;
+
+  // A map to hold all image cursors. It maps the cursor ID to the X Cursor, the
+  // display's scale factor, and the display's rotation.
+  typedef std::unordered_map<int, std::unique_ptr<ImageCursor>> ImageCursorMap;
+  ImageCursorMap image_cursors_;
 
   // A map to hold all animated cursors. It maps the cursor ID to the pair of
   // the X Cursor and the corresponding XcursorImages. We need a pointer to the
   // images so that we can free them on destruction.
-  typedef std::map<int, std::pair< ::Cursor, XcursorImages*> >
+  typedef std::unordered_map<int, std::pair<::Cursor, XcursorImages*>>
       AnimatedCursorMap;
   AnimatedCursorMap animated_cursors_;
 

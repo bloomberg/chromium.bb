@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <X11/cursorfont.h>
 #include <X11/extensions/shape.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/Xcursor/Xcursor.h>
@@ -174,44 +175,6 @@ void ReleaseXImage(void* address, void* context) {
     XDestroyImage(static_cast<XImage*>(context));
 }
 
-// A process wide singleton that manages the usage of X cursors.
-class XCursorCache {
- public:
-  XCursorCache() {}
-  ~XCursorCache() {
-    Clear();
-  }
-
-  ::Cursor GetCursor(int cursor_shape) {
-    // Lookup cursor by attempting to insert a null value, which avoids
-    // a second pass through the map after a cache miss.
-    std::pair<std::map<int, ::Cursor>::iterator, bool> it = cache_.insert(
-        std::make_pair(cursor_shape, 0));
-    if (it.second) {
-      XDisplay* display = gfx::GetXDisplay();
-      it.first->second = XCreateFontCursor(display, cursor_shape);
-    }
-    return it.first->second;
-  }
-
-  void Clear() {
-    XDisplay* display = gfx::GetXDisplay();
-    for (std::map<int, ::Cursor>::iterator it =
-        cache_.begin(); it != cache_.end(); ++it) {
-      XFreeCursor(display, it->second);
-    }
-    cache_.clear();
-  }
-
- private:
-  // Maps X11 font cursor shapes to Cursor IDs.
-  std::map<int, ::Cursor> cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(XCursorCache);
-};
-
-XCursorCache* cursor_cache = NULL;
-
 // A process wide singleton cache for custom X cursors.
 class XCustomCursorCache {
  public:
@@ -309,12 +272,6 @@ bool QueryRenderSupport(Display* dpy) {
   static bool render_supported = XRenderQueryExtension(dpy, &dummy, &dummy);
 
   return render_supported;
-}
-
-::Cursor GetXCursor(int cursor_shape) {
-  if (!cursor_cache)
-    cursor_cache = new XCursorCache;
-  return cursor_cache->GetCursor(cursor_shape);
 }
 
 ::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
@@ -1313,11 +1270,6 @@ void XScopedCursor::reset(::Cursor cursor) {
 }
 
 namespace test {
-
-void ResetXCursorCache() {
-  delete cursor_cache;
-  cursor_cache = NULL;
-}
 
 const XcursorImage* GetCachedXcursorImage(::Cursor cursor) {
   return XCustomCursorCache::GetInstance()->GetXcursorImage(cursor);

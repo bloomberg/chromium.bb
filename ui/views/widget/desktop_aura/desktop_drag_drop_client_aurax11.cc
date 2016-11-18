@@ -681,14 +681,17 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
 
   int cursor_type = ui::kCursorNull;
   switch (negotiated_operation_) {
-    case ui::DragDropTypes::DRAG_COPY:
-      cursor_type = ui::kCursorCopy;
+    case ui::DragDropTypes::DRAG_NONE:
+      cursor_type = ui::kCursorDndNone;
       break;
     case ui::DragDropTypes::DRAG_MOVE:
-      cursor_type = ui::kCursorMove;
+      cursor_type = ui::kCursorDndMove;
       break;
-    default:
-      cursor_type = ui::kCursorGrabbing;
+    case ui::DragDropTypes::DRAG_COPY:
+      cursor_type = ui::kCursorDndCopy;
+      break;
+    case ui::DragDropTypes::DRAG_LINK:
+      cursor_type = ui::kCursorDndLink;
       break;
   }
   move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));

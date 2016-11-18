@@ -444,10 +444,7 @@ component("views") {
       "linux_ui/status_icon_linux.cc",
       "linux_ui/status_icon_linux.h",
     ]
-    sources += [
-      "widget/desktop_aura/desktop_cursor_loader_updater_chromeos.cc",
-      "widget/desktop_aura/desktop_window_tree_host_chromeos.cc",
-    ]
+    sources += [ "widget/desktop_aura/desktop_window_tree_host_chromeos.cc" ]
   }
 
   if (is_win) {
@@ -539,7 +536,6 @@ component("views") {
       "views_touch_selection_controller_factory_aura.cc",
       "widget/desktop_aura/desktop_capture_client.cc",
       "widget/desktop_aura/desktop_capture_client.h",
-      "widget/desktop_aura/desktop_cursor_loader_updater.h",
       "widget/desktop_aura/desktop_drop_target_win.cc",
       "widget/desktop_aura/desktop_drop_target_win.h",
       "widget/desktop_aura/desktop_event_client.cc",
@@ -602,7 +598,6 @@ component("views") {
         }
       } else if (is_win) {
         sources += [
-          "widget/desktop_aura/desktop_cursor_loader_updater_aurawin.cc",
           "widget/desktop_aura/desktop_drag_drop_client_win.cc",
           "widget/desktop_aura/desktop_drag_drop_client_win.h",
           "widget/desktop_aura/desktop_screen_win.cc",
@@ -619,11 +614,7 @@ component("views") {
         ]
       }
       if (is_linux) {
-        sources += [
-          "style/platform_style_linux.cc",
-          "widget/desktop_aura/desktop_cursor_loader_updater_auralinux.cc",
-          "widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h",
-        ]
+        sources += [ "style/platform_style_linux.cc" ]
       }
     }
   }

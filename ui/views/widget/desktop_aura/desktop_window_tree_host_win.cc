@@ -27,7 +27,6 @@
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/corewm/tooltip_win.h"
-#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"

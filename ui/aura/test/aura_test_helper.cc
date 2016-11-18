@@ -139,10 +139,6 @@ void AuraTestHelper::TearDown() {
     display::Screen::SetScreenInstance(nullptr);
   test_screen_.reset();
 
-#if defined(USE_X11)
-  ui::test::ResetXCursorCache();
-#endif
-
   Env::GetInstance()->SetActiveFocusClient(nullptr, nullptr);
   window_tree_client_setup_.reset();
   focus_client_.reset();
