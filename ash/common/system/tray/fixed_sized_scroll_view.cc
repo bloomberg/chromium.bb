@@ -5,7 +5,6 @@
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ui/views/background.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 
 namespace ash {

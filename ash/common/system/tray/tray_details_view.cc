@@ -484,9 +484,10 @@ void TrayDetailsView::Layout() {
     views::View::Layout();
     if (scroller_ && !scroller_->is_bounded())
       scroller_->ClipHeightTo(0, scroller_->height());
+    return;
   }
 
-  if (UseMd() || bounds().IsEmpty()) {
+  if (bounds().IsEmpty()) {
     views::View::Layout();
     return;
   }
