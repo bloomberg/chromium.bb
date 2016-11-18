@@ -555,12 +555,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
-  EXPECT_EQ(frag->Width(), LayoutUnit(kWidth + kPaddingLeft));
-  EXPECT_EQ(frag->Type(), NGPhysicalFragmentBase::FragmentBox);
+  EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
+  EXPECT_EQ(NGPhysicalFragmentBase::FragmentBox, frag->Type());
   ASSERT_EQ(frag->Children().size(), 1UL);
 
   const NGPhysicalFragmentBase* child = frag->Children()[0];
-  EXPECT_EQ(child->Width(), LayoutUnit(12));
+  EXPECT_EQ(LayoutUnit(12), child->Width());
 }
 
 // A very simple auto margin case. We rely on the tests in ng_length_utils_test
