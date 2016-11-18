@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import java.util.Map;
+
 /**
  * Meta data from the WebAPK's Android Manifest.
  */
@@ -19,6 +21,5 @@ public class WebApkMetaData {
     public long themeColor;
     public long backgroundColor;
     public int iconId;
-    public String iconUrl;
-    public String iconMurmur2Hash;
+    public Map<String, String> iconUrlAndIconMurmur2HashMap;
 }

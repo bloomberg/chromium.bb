@@ -47,10 +47,10 @@ const char kFieldTrialGroup[] = "MockFieldTrialGroup";
 // URL of mock WebAPK server.
 const char* kServerUrl = "/webapkserver/";
 
-// Icon URL from Web Manifest. We use a random file in the test data directory.
-// Since WebApkInstaller does not try to decode the file as an image it is OK
-// that the file is not an image.
-const char* kIconUrl = "/simple.html";
+// The best icon URL from Web Manifest. We use a random file in the test data
+// directory. Since WebApkInstaller does not try to decode the file as an image
+// it is OK that the file is not an image.
+const char* kBestIconUrl = "/simple.html";
 
 // URL of file to download from the WebAPK server. We use a random file in the
 // test data directory.
@@ -95,10 +95,10 @@ class TestWebApkInstaller : public WebApkInstaller {
 // Runs the WebApkInstaller installation process/update and blocks till done.
 class WebApkInstallerRunner {
  public:
-  explicit WebApkInstallerRunner(const GURL& icon_url)
+  explicit WebApkInstallerRunner(const GURL& best_icon_url)
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        icon_url_(icon_url) {}
+        best_icon_url_(best_icon_url) {}
   ~WebApkInstallerRunner() {}
 
   void RunInstallWebApk() {
@@ -129,7 +129,7 @@ class WebApkInstallerRunner {
 
   WebApkInstaller* CreateWebApkInstaller() {
     ShortcutInfo info(GURL::EmptyGURL());
-    info.icon_url = icon_url_;
+    info.best_icon_url = best_icon_url_;
 
     // WebApkInstaller owns itself.
     WebApkInstaller* installer = new TestWebApkInstaller(info, SkBitmap());
@@ -155,7 +155,7 @@ class WebApkInstallerRunner {
       url_request_context_getter_;
 
   // The Web Manifest's icon URL.
-  const GURL icon_url_;
+  const GURL best_icon_url_;
 
   // Called after the installation process has succeeded or failed.
   base::Closure on_completed_callback_;
@@ -217,8 +217,10 @@ class WebApkInstallerTest : public ::testing::Test {
     SetDefaults();
   }
 
-  // Sets the Web Manifest's icon URL.
-  void SetIconUrl(const GURL& icon_url) { icon_url_ = icon_url; }
+  // Sets the best Web Manifest's icon URL.
+  void SetBestIconUrl(const GURL& best_icon_url) {
+    best_icon_url_ = best_icon_url;
+  }
 
   // Sets the URL to send the webapk::CreateWebApkRequest to. WebApkInstaller
   // should fail if the URL is not |kServerUrl|.
@@ -238,7 +240,7 @@ class WebApkInstallerTest : public ::testing::Test {
 
   std::unique_ptr<WebApkInstallerRunner> CreateWebApkInstallerRunner() {
     return std::unique_ptr<WebApkInstallerRunner>(
-        new WebApkInstallerRunner(icon_url_));
+        new WebApkInstallerRunner(best_icon_url_));
   }
 
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
@@ -246,8 +248,8 @@ class WebApkInstallerTest : public ::testing::Test {
  private:
   // Sets default configuration for running WebApkInstaller.
   void SetDefaults() {
-    GURL icon_url = test_server_.GetURL(kIconUrl);
-    SetIconUrl(icon_url);
+    GURL best_icon_url = test_server_.GetURL(kBestIconUrl);
+    SetBestIconUrl(best_icon_url);
     GURL server_url = test_server_.GetURL(kServerUrl);
     SetWebApkServerUrl(server_url);
     GURL download_url = test_server_.GetURL(kDownloadUrl);
@@ -269,7 +271,7 @@ class WebApkInstallerTest : public ::testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // Web Manifest's icon URL.
-  GURL icon_url_;
+  GURL best_icon_url_;
 
   // Builds response to the WebAPK creation request.
   WebApkResponseBuilder webapk_response_builder_;
@@ -284,12 +286,12 @@ TEST_F(WebApkInstallerTest, Success) {
   EXPECT_TRUE(runner->success());
 }
 
-// Test that installation fails if fetching the bitmap at the icon URL times
-// out. In a perfect world the fetch would never time out because the bitmap at
-// the icon URL should be in the HTTP cache.
-TEST_F(WebApkInstallerTest, IconUrlDownloadTimesOut) {
-  GURL icon_url = test_server()->GetURL("/slow?1000");
-  SetIconUrl(icon_url);
+// Test that installation fails if fetching the bitmap at the best icon URL
+// times out. In a perfect world the fetch would never time out because the
+// bitmap at the best icon URL should be in the HTTP cache.
+TEST_F(WebApkInstallerTest, BestIconUrlDownloadTimesOut) {
+  GURL best_icon_url = test_server()->GetURL("/slow?1000");
+  SetBestIconUrl(best_icon_url);
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunInstallWebApk();

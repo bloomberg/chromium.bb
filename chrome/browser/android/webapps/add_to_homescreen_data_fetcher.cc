@@ -218,7 +218,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
   if (data.icon) {
-    shortcut_info_.icon_url = data.icon_url;
+    shortcut_info_.best_icon_url = data.icon_url;
 
     CreateLauncherIcon(*(data.icon));
     return;
@@ -277,7 +277,7 @@ void AddToHomescreenDataFetcher::CreateLauncherIconFromFaviconInBackground(
                           bitmap_result.bitmap_data->size(), &raw_icon);
   }
 
-  shortcut_info_.icon_url = bitmap_result.icon_url;
+  shortcut_info_.best_icon_url = bitmap_result.icon_url;
   CreateLauncherIconInBackground(raw_icon);
 }
 
@@ -304,7 +304,7 @@ void AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
   }
 
   if (is_generated)
-    shortcut_info_.icon_url = GURL();
+    shortcut_info_.best_icon_url = GURL();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

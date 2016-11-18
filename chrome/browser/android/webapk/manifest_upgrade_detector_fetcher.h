@@ -62,11 +62,11 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
   void OnDidGetInstallableData(const InstallableData& installable_data);
 
   // Called with the computed Murmur2 hash for the app icon.
-  void OnGotIconMurmur2Hash(const std::string& icon_murmur2_hash);
+  void OnGotIconMurmur2Hash(const std::string& best_icon_murmur2_hash);
 
   void OnDataAvailable(const ShortcutInfo& info,
-                       const std::string& icon_murmur2_hash,
-                       const SkBitmap& icon);
+                       const std::string& best_icon_murmur2_hash,
+                       const SkBitmap& best_icon);
 
   // Points to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
@@ -85,7 +85,7 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
 
   // Downloaded data for |web_manifest_url_|.
   ShortcutInfo info_;
-  SkBitmap icon_;
+  SkBitmap best_icon_;
 
   base::WeakPtrFactory<ManifestUpgradeDetectorFetcher> weak_ptr_factory_;
 

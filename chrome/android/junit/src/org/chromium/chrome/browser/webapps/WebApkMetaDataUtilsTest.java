@@ -17,6 +17,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
+import java.util.Map;
+
 /**
  * Tests WebApkMetaDataUtils.
  */
@@ -40,16 +42,62 @@ public class WebApkMetaDataUtilsTest {
     }
 
     /**
+     * Test that {@link WebApkMetaDataUtils.getIconUrlAndIconMurmur2HashMap} can read multiple icon
+     * URLs and multiple icon murmur2 hashes from metadata and returns a map with
+     * {icon URL, icon hash} pairs.
+     */
+    @Test
+    public void testGetIconUrlAndMurmur2HashFromMetaData() {
+        String[] iconUrls = {"/icon1.png", "/icon2.png"};
+        String[] hashes = {"1", "2"};
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
+                getIconUrlsAndIconMurmur2HashesString(iconUrls, hashes));
+        Map<String, String> iconUrlAndIconMurmur2HashMap =
+                WebApkMetaDataUtils.getIconUrlAndIconMurmur2HashMap(bundle);
+
+        Assert.assertEquals(iconUrls.length, iconUrlAndIconMurmur2HashMap.keySet().size());
+        Assert.assertEquals(hashes[0], iconUrlAndIconMurmur2HashMap.get(iconUrls[0]));
+        Assert.assertEquals(hashes[1], iconUrlAndIconMurmur2HashMap.get(iconUrls[1]));
+    }
+
+    /**
      * WebApkIconHasher generates hashes with values [0, 2^64-1]. 2^64-1 is greater than
-     * {@link Long#MAX_VALUE}. Test that {@link #getIconMurmur2HashFromMetaData()} can read a hash
+     * {@link Long#MAX_VALUE}. Test that {@link #getIconUrlAndIconMurmur2HashMap()} can read a hash
      * with value 2^64 - 1.
      */
     @Test
     public void testGetIconMurmur2HashFromMetaData() {
-        String hash = "18446744073709551615"; // 2^64 - 1
+        String[] iconUrls = {"/icon1.png"};
+        String[] hashes = {"18446744073709551615"}; // 2^64 - 1
+
         Bundle bundle = new Bundle();
-        bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, hash + "L");
-        String extractedHash = WebApkMetaDataUtils.getIconMurmur2HashFromMetaData(bundle);
-        Assert.assertEquals(hash, extractedHash);
+        bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
+                getIconUrlsAndIconMurmur2HashesString(iconUrls, hashes));
+        Map<String, String> iconUrlAndIconMurmur2HashMap =
+                WebApkMetaDataUtils.getIconUrlAndIconMurmur2HashMap(bundle);
+
+        Assert.assertEquals(1, iconUrlAndIconMurmur2HashMap.size());
+        Assert.assertEquals(hashes[0], iconUrlAndIconMurmur2HashMap.get(iconUrls[0]));
+    }
+
+    /**
+     * Create a WebAPK's icon URLs and icon murmur2 hashes metadata tag from the give URLs and
+     * hashes.
+     */
+    private String getIconUrlsAndIconMurmur2HashesString(String[] iconUrls,
+            String[] iconMurmur2Hahes) {
+        final String separator = " ";
+        StringBuilder iconUrlsAndIconMurmur2Hahses = new StringBuilder();
+        for (int i = 0; i < iconUrls.length; i++) {
+            iconUrlsAndIconMurmur2Hahses.append(iconUrls[i]);
+            iconUrlsAndIconMurmur2Hahses.append(separator);
+            iconUrlsAndIconMurmur2Hahses.append(iconMurmur2Hahes[i]);
+            if (i < iconUrls.length - 1) {
+                iconUrlsAndIconMurmur2Hahses.append(separator);
+            }
+        }
+        return iconUrlsAndIconMurmur2Hahses.toString();
     }
 }

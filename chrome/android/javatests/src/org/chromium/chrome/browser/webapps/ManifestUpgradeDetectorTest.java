@@ -12,10 +12,13 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServer;
+
+import java.util.HashMap;
 
 /**
  * Tests ManifestUpgradeDetector. This class contains tests which cannot be done as JUnit tests.
@@ -50,10 +53,9 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
 
         @Override
         public void onFinishedFetchingWebManifestForInitialUrl(
-                boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {}
+                boolean needsUpgrade, FetchedManifestData data) {}
 
-        public void onGotManifestData(
-                boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {
+        public void onGotManifestData(boolean needsUpgrade, FetchedManifestData data) {
             mName = data.name;
             mNeedsUpgrade = needsUpgrade;
             notifyCalled();
@@ -75,12 +77,15 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         metaData.scope = server.getURL(WEBAPK_SCOPE_URL);
         metaData.name = WEBAPK_NAME;
         metaData.shortName = WEBAPK_SHORT_NAME;
-        metaData.iconUrl = server.getURL(WEBAPK_ICON_URL);
-        metaData.iconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH;
         metaData.displayMode = WEBAPK_DISPLAY_MODE;
         metaData.orientation = WEBAPK_ORIENTATION;
         metaData.themeColor = WEBAPK_THEME_COLOR;
         metaData.backgroundColor = WEBAPK_BACKGROUND_COLOR;
+
+        metaData.iconUrlAndIconMurmur2HashMap = new HashMap<String, String>();
+        metaData.iconUrlAndIconMurmur2HashMap.put(server.getURL(WEBAPK_ICON_URL),
+                WEBAPK_ICON_MURMUR2_HASH);
+
         return metaData;
     }
 

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -13,6 +12,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -52,12 +52,10 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
         private String mIconMurmur2Hash;
 
         @Override
-        public void onGotManifestData(String startUrl, String scopeUrl, String name,
-                String shortName, String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap,
-                int displayMode, int orientation, long themeColor, long backgroundColor) {
+        public void onGotManifestData(FetchedManifestData fetchedData) {
             assertNull(mName);
-            mName = name;
-            mIconMurmur2Hash = iconMurmur2Hash;
+            mName = fetchedData.name;
+            mIconMurmur2Hash = fetchedData.bestIconMurmur2Hash;
             notifyCalled();
         }
 

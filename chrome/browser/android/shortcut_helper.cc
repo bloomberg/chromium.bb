@@ -110,8 +110,8 @@ void ShortcutHelper::AddWebappWithSkBitmap(
       base::android::ConvertUTF16ToJavaString(env, info.name);
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
-  ScopedJavaLocalRef<jstring> java_icon_url =
-      base::android::ConvertUTF8ToJavaString(env, info.icon_url.spec());
+  ScopedJavaLocalRef<jstring> java_best_icon_url =
+      base::android::ConvertUTF8ToJavaString(env, info.best_icon_url.spec());
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
@@ -125,7 +125,7 @@ void ShortcutHelper::AddWebappWithSkBitmap(
 
   Java_ShortcutHelper_addWebapp(env, java_webapp_id, java_url, java_scope_url,
                                 java_user_title, java_name, java_short_name,
-                                java_icon_url, java_bitmap, info.display,
+                                java_best_icon_url, java_bitmap, info.display,
                                 info.orientation, info.source, info.theme_color,
                                 info.background_color, callback_pointer);
 }

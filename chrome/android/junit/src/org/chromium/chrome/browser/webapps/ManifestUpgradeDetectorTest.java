@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.chrome.browser.webapps.ManifestUpgradeDetector.FetchedManifestData;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -27,8 +25,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+
+import java.util.HashMap;
 
 /**
  * Tests the ManifestUpgradeDetector.
@@ -57,19 +58,13 @@ public class ManifestUpgradeDetectorTest {
         public boolean mWasCalled;
         @Override
         public void onFinishedFetchingWebManifestForInitialUrl(
-                boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {}
+                boolean needsUpgrade, FetchedManifestData data) {}
         @Override
         public void onGotManifestData(boolean isUpgraded, FetchedManifestData data) {
             mIsUpgraded = isUpgraded;
             mWasCalled = true;
         }
     }
-
-    /**
-     * The WebappInfoCreationData is the data extracted from a WebAPK. It is used to create a
-     * WebappInfo for WebAPKs.
-     */
-    private static class WebappInfoCreationData extends FetchedManifestData {}
 
     /**
      * ManifestUpgradeDetector subclass which:
@@ -96,11 +91,7 @@ public class ManifestUpgradeDetectorTest {
                 public Void answer(InvocationOnMock invocation) throws Throwable {
                     ManifestUpgradeDetectorFetcher.Callback callback =
                             (ManifestUpgradeDetectorFetcher.Callback) invocation.getArguments()[0];
-                    callback.onGotManifestData(mFetchedData.startUrl, mFetchedData.scopeUrl,
-                            mFetchedData.name, mFetchedData.shortName, mFetchedData.iconUrl,
-                            mFetchedData.iconMurmur2Hash, mFetchedData.icon,
-                            mFetchedData.displayMode, mFetchedData.orientation,
-                            mFetchedData.themeColor, mFetchedData.backgroundColor);
+                    callback.onGotManifestData(mFetchedData);
                     return null;
                 }
             };
@@ -138,37 +129,45 @@ public class ManifestUpgradeDetectorTest {
      */
     private FetchedManifestData createDefaultFetchedManifestData() {
         FetchedManifestData data = new FetchedManifestData();
-        populateDataWithDefaults(data);
-        return data;
-    }
-
-    /**
-     * Create a default data. The WebappInfoCreationData is the data that the WebAPK was created
-     * with.
-     */
-    private WebappInfoCreationData createDefaultWebappInfoCreationData() {
-        WebappInfoCreationData data = new WebappInfoCreationData();
-        populateDataWithDefaults(data);
-        return data;
-    }
-
-    private void populateDataWithDefaults(FetchedManifestData data) {
         data.startUrl = WEBAPK_START_URL;
         data.scopeUrl = WEBAPK_SCOPE_URL;
         data.name = WEBAPK_NAME;
         data.shortName = WEBAPK_SHORT_NAME;
-        data.iconUrl = WEBAPK_ICON_URL;
-        data.iconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH;
-        data.icon = createBitmap(Color.GREEN);
+        data.bestIconUrl = WEBAPK_ICON_URL;
+        data.bestIconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH;
+        data.bestIcon = createBitmap(Color.GREEN);
+        data.iconUrls = new String[] { data.bestIconUrl };
         data.displayMode = WEBAPK_DISPLAY_MODE;
         data.orientation = WEBAPK_ORIENTATION;
         data.themeColor = WEBAPK_THEME_COLOR;
         data.backgroundColor = WEBAPK_BACKGROUND_COLOR;
+        return data;
+    }
+
+    /**
+     * Create a default data. The WebApkMetaData is the data that the WebAPK was created
+     * with.
+     */
+    private WebApkMetaData createDefaultWebApkMetaData() {
+        WebApkMetaData data = new WebApkMetaData();
+        data.startUrl = WEBAPK_START_URL;
+        data.scope = WEBAPK_SCOPE_URL;
+        data.name = WEBAPK_NAME;
+        data.shortName = WEBAPK_SHORT_NAME;
+        data.displayMode = WEBAPK_DISPLAY_MODE;
+        data.orientation = WEBAPK_ORIENTATION;
+        data.themeColor = WEBAPK_THEME_COLOR;
+        data.backgroundColor = WEBAPK_BACKGROUND_COLOR;
+
+        data.iconUrlAndIconMurmur2HashMap = new HashMap<String, String>();
+        data.iconUrlAndIconMurmur2HashMap.put(WEBAPK_ICON_URL, WEBAPK_ICON_MURMUR2_HASH);
+
+        return data;
     }
 
     private TestManifestUpgradeDetector createDetectorWithFetchedData(
             FetchedManifestData fetchedData, TestCallback callback) {
-        return createDetector(createDefaultWebappInfoCreationData(), fetchedData, callback);
+        return createDetector(createDefaultWebApkMetaData(), fetchedData, callback);
     }
 
     /**
@@ -178,20 +177,20 @@ public class ManifestUpgradeDetectorTest {
      * @param fetchedData Data fetched by ManifestUpgradeDetector.
      * @param callback Callback to call when the upgrade check is complete.
      */
-    private TestManifestUpgradeDetector createDetector(WebappInfoCreationData oldData,
+    private TestManifestUpgradeDetector createDetector(WebApkMetaData oldData,
             FetchedManifestData fetchedData, TestCallback callback) {
         WebApkMetaData metaData = new WebApkMetaData();
         metaData.manifestUrl = WEBAPK_MANIFEST_URL;
         metaData.startUrl = oldData.startUrl;
-        metaData.scope = oldData.scopeUrl;
+        metaData.scope = oldData.scope;
         metaData.name = oldData.name;
         metaData.shortName = oldData.shortName;
         metaData.displayMode = oldData.displayMode;
         metaData.orientation = oldData.orientation;
         metaData.themeColor = oldData.themeColor;
         metaData.backgroundColor = oldData.backgroundColor;
-        metaData.iconUrl = oldData.iconUrl;
-        metaData.iconMurmur2Hash = oldData.iconMurmur2Hash;
+        metaData.iconUrlAndIconMurmur2HashMap = new HashMap<String, String>(
+                oldData.iconUrlAndIconMurmur2HashMap);
         return new TestManifestUpgradeDetector(null, metaData, fetchedData, callback);
     }
 
@@ -222,12 +221,10 @@ public class ManifestUpgradeDetectorTest {
      */
     @Test
     public void testManifestEmptyScopeShouldNotUpgrade() {
-        WebappInfoCreationData oldData = createDefaultWebappInfoCreationData();
-        // webapk_installer.cc sets the scope to the default scope if the scope is empty.
-        oldData.scopeUrl = ShortcutHelper.getScopeFromUrl(oldData.startUrl);
+        WebApkMetaData oldData = createDefaultWebApkMetaData();
+        oldData.scope = "";
         FetchedManifestData fetchedData = createDefaultFetchedManifestData();
         fetchedData.scopeUrl = "";
-        Assert.assertTrue(!oldData.scopeUrl.equals(fetchedData.scopeUrl));
 
         TestCallback callback = new TestCallback();
         TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData, callback);
@@ -242,11 +239,11 @@ public class ManifestUpgradeDetectorTest {
      */
     @Test
     public void testManifestNonEmptyScopeToEmptyScopeShouldUpgrade() {
-        WebappInfoCreationData oldData = createDefaultWebappInfoCreationData();
+        WebApkMetaData oldData = createDefaultWebApkMetaData();
         oldData.startUrl = "/fancy/scope/special/snowflake.html";
-        oldData.scopeUrl = "/fancy/scope/";
+        oldData.scope = "/fancy/scope/";
         Assert.assertTrue(
-                !oldData.scopeUrl.equals(ShortcutHelper.getScopeFromUrl(oldData.startUrl)));
+                !oldData.scope.equals(ShortcutHelper.getScopeFromUrl(oldData.startUrl)));
         FetchedManifestData fetchedData = createDefaultFetchedManifestData();
         fetchedData.startUrl = "/fancy/scope/special/snowflake.html";
         fetchedData.scopeUrl = "";
@@ -266,8 +263,8 @@ public class ManifestUpgradeDetectorTest {
     @Test
     public void testHomescreenIconChangeShouldUpgrade() {
         FetchedManifestData fetchedData = createDefaultFetchedManifestData();
-        fetchedData.iconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH + "1";
-        fetchedData.icon = createBitmap(Color.BLUE);
+        fetchedData.bestIconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH + "1";
+        fetchedData.bestIcon = createBitmap(Color.BLUE);
         TestCallback callback = new TestCallback();
         TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
 
@@ -282,14 +279,52 @@ public class ManifestUpgradeDetectorTest {
      * - Web Manifest is updated to refer to different icon.
      */
     @Test
-    public void testHomescreenIconUrlChangeShouldUpgrade() {
+    public void testHomescreenBestIconUrlChangeShouldUpgrade() {
         FetchedManifestData fetchedData = createDefaultFetchedManifestData();
-        fetchedData.iconUrl = "/icon2.png";
+        fetchedData.bestIconUrl = "/icon2.png";
 
         TestCallback callback = new TestCallback();
         TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
         detector.start();
         Assert.assertTrue(callback.mWasCalled);
         Assert.assertTrue(callback.mIsUpgraded);
+    }
+
+    /** Test that an upgrade is requested when a new icon URL is added to the Web Manifest. */
+    @Test
+    public void testIconUrlsChangeShouldNotUpgradeIfTheBestIconUrlDoesNotChange() {
+        FetchedManifestData fetchedData = createDefaultFetchedManifestData();
+        fetchedData.iconUrls = new String[] { fetchedData.bestIconUrl, "/icon2.png" };
+
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
+        detector.start();
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertFalse(callback.mIsUpgraded);
+    }
+
+    /**
+     * Test that an upgrade isn't requested when the Web Manifest has multiple icons and the Web
+     * Manifest has not changed.
+     */
+    @Test
+    public void testNoIconUrlsChangeShouldNotUpgrade() {
+        String icon1 = "/icon1.png";
+        String icon2 = "/icon2.png";
+        String hash1 = "11";
+        String hash2 = "22";
+        WebApkMetaData oldData = createDefaultWebApkMetaData();
+        oldData.iconUrlAndIconMurmur2HashMap.put(icon1, hash1);
+        oldData.iconUrlAndIconMurmur2HashMap.put(icon2, hash2);
+
+        FetchedManifestData fetchedData = createDefaultFetchedManifestData();
+        fetchedData.iconUrls = new String[] {fetchedData.bestIconUrl, icon1, icon2 };
+        fetchedData.bestIconUrl = icon2;
+        fetchedData.bestIconMurmur2Hash = hash2;
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData, callback);
+        detector.start();
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertFalse(callback.mIsUpgraded);
     }
 }

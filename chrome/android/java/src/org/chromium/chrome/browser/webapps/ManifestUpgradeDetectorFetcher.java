@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -21,9 +23,29 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      * Called once the Web Manifest has been downloaded.
      */
     public interface Callback {
-        void onGotManifestData(String startUrl, String scopeUrl, String name, String shortName,
-                String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
-                int orientation, long themeColor, long backgroundColor);
+        void onGotManifestData(FetchedManifestData fetchedData);
+    }
+
+    /**
+     * Fetched Web Manifest data.
+     */
+    public static class FetchedManifestData {
+        public String startUrl;
+        public String scopeUrl;
+        public String name;
+        public String shortName;
+        public String bestIconUrl;
+
+        // Hash of untransformed icon bytes. The hash should have been taken prior to any
+        // encoding/decoding.
+        public String bestIconMurmur2Hash;
+
+        public Bitmap bestIcon;
+        public String[] iconUrls;
+        public int displayMode;
+        public int orientation;
+        public long themeColor;
+        public long backgroundColor;
     }
 
     /**
@@ -86,10 +108,28 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      */
     @CalledByNative
     private void onDataAvailable(String startUrl, String scopeUrl, String name, String shortName,
-            String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
-            int orientation, long themeColor, long backgroundColor) {
-        mCallback.onGotManifestData(startUrl, scopeUrl, name, shortName, iconUrl, iconMurmur2Hash,
-                iconBitmap, displayMode, orientation, themeColor, backgroundColor);
+            String bestIconUrl, String bestIconMurmur2Hash, Bitmap bestIconBitmap,
+            String[] iconUrls, int displayMode, int orientation, long themeColor,
+            long backgroundColor) {
+        if (TextUtils.isEmpty(scopeUrl)) {
+            scopeUrl = ShortcutHelper.getScopeFromUrl(startUrl);
+        }
+
+        FetchedManifestData fetchedData = new FetchedManifestData();
+        fetchedData.startUrl = startUrl;
+        fetchedData.scopeUrl = scopeUrl;
+        fetchedData.name = name;
+        fetchedData.shortName = shortName;
+        fetchedData.bestIconUrl = bestIconUrl;
+        fetchedData.bestIconMurmur2Hash = bestIconMurmur2Hash;
+        fetchedData.bestIcon = bestIconBitmap;
+        fetchedData.iconUrls = iconUrls;
+        fetchedData.displayMode = displayMode;
+        fetchedData.orientation = orientation;
+        fetchedData.themeColor = themeColor;
+        fetchedData.backgroundColor = backgroundColor;
+
+        mCallback.onGotManifestData(fetchedData);
     }
 
     private native long nativeInitialize(String scope, String webManifestUrl);

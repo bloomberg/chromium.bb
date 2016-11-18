@@ -44,7 +44,7 @@ std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
   if (!manifest.IsEmpty()) {
     shortcut_info->UpdateFromManifest(manifest);
     shortcut_info->manifest_url = manifest_url;
-    shortcut_info->icon_url = icon_url;
+    shortcut_info->best_icon_url = icon_url;
     shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
   }
   return shortcut_info;

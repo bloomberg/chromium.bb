@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -20,10 +21,15 @@ import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Contains methods for extracting meta data from WebAPK.
  */
 public class WebApkMetaDataUtils {
+    private static final String TAG = "cr_WebApkMetaData";
+
     /**
      * Populates {@link WebappInfo} with meta data extracted from WebAPK's Android Manifest.
      * @param webApkPackageName Package name of the WebAPK to extract meta data from.
@@ -48,7 +54,8 @@ public class WebApkMetaDataUtils {
         return WebApkInfo.create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url,
                 metaData.scope, encodedIcon, metaData.name, metaData.shortName,
                 metaData.displayMode, metaData.orientation, source, metaData.themeColor,
-                metaData.backgroundColor, TextUtils.isEmpty(metaData.iconUrl), webApkPackageName);
+                metaData.backgroundColor, metaData.iconUrlAndIconMurmur2HashMap.isEmpty(),
+                webApkPackageName);
     }
 
     /**
@@ -84,8 +91,8 @@ public class WebApkMetaDataUtils {
         metaData.backgroundColor = getLongFromMetaData(bundle, WebApkMetaDataKeys.BACKGROUND_COLOR,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
         metaData.iconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
-        metaData.iconUrl = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.ICON_URL);
-        metaData.iconMurmur2Hash = getIconMurmur2HashFromMetaData(bundle);
+        metaData.iconUrlAndIconMurmur2HashMap =
+                WebApkMetaDataUtils.getIconUrlAndIconMurmur2HashMap(bundle);
 
         if (TextUtils.isEmpty(metaData.scope)) {
             metaData.scope = ShortcutHelper.getScopeFromUrl(metaData.startUrl);
@@ -120,8 +127,45 @@ public class WebApkMetaDataUtils {
     }
 
     /**
+     * Extract the icon URLs and icon hashes from the WebAPK's meta data, and returns a map of these
+     * {URL, hash} pairs. The icon URLs/icon hashes are stored in a single meta data tag in the
+     * WebAPK's AndroidManifest.xml as following:
+     * "URL1 hash1 URL2 hash2 URL3 hash3..."
+     */
+    public static Map<String, String> getIconUrlAndIconMurmur2HashMap(Bundle metaData) {
+        Map<String, String> iconUrlAndIconMurmur2HashMap = new HashMap<String, String>();
+        String iconUrlsAndIconMurmur2Hashes = metaData.getString(
+                WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES);
+        if (TextUtils.isEmpty(iconUrlsAndIconMurmur2Hashes)) {
+            // Open old WebAPKs which support single icon only.
+            // TODO(hanxi): crbug.com/665549. Clean up the following code after all the old WebAPKs
+            // are updated.
+            String iconUrl = metaData.getString(WebApkMetaDataKeys.ICON_URL);
+            if (!TextUtils.isEmpty(iconUrl)) {
+                iconUrlAndIconMurmur2HashMap.put(iconUrl, getIconMurmur2HashFromMetaData(metaData));
+            }
+            return iconUrlAndIconMurmur2HashMap;
+        }
+
+        // Parse the metadata tag which contains "URL1 hash1 URL2 hash2 URL3 hash3..." pairs and
+        // create a hash map.
+        // TODO(hanxi): crbug.com/666349. Add a test to verify that the icon URLs in WebAPKs'
+        // AndroidManifest.xml don't contain space.
+        String[] urlsAndHashes = iconUrlsAndIconMurmur2Hashes.split("[ ]+");
+        if (urlsAndHashes.length % 2 != 0) {
+            Log.e(TAG, "The icon URLs and icon murmur2 hashes doesn't come in pairs.");
+            return iconUrlAndIconMurmur2HashMap;
+        }
+        for (int i = 0; i < urlsAndHashes.length; i += 2) {
+            iconUrlAndIconMurmur2HashMap.put(urlsAndHashes[i], urlsAndHashes[i + 1]);
+        }
+        return iconUrlAndIconMurmur2HashMap;
+    }
+
+    /**
      * Extracts icon murmur2 hash from the WebAPK's meta data. Return value is a string because the
      * hash can take values up to 2^64-1 which is greater than {@link Long#MAX_VALUE}.
+     * Note: keep this function for supporting old WebAPKs which have single icon only.
      * @param metaData WebAPK meta data to extract the hash from.
      * @return The hash. An empty string if the hash could not be extracted.
      */

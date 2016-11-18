@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <vector>
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
@@ -144,8 +145,8 @@ void ManifestUpgradeDetectorFetcher::OnDidGetInstallableData(
 
   info_.UpdateFromManifest(data.manifest);
   info_.manifest_url = data.manifest_url;
-  info_.icon_url = data.icon_url;
-  icon_ = *data.icon;
+  info_.best_icon_url = data.icon_url;
+  best_icon_ = *data.icon;
 
   icon_hasher_.reset(new WebApkIconHasher());
   Profile* profile =
@@ -158,22 +159,22 @@ void ManifestUpgradeDetectorFetcher::OnDidGetInstallableData(
 }
 
 void ManifestUpgradeDetectorFetcher::OnGotIconMurmur2Hash(
-    const std::string& icon_murmur2_hash) {
+    const std::string& best_icon_murmur2_hash) {
   icon_hasher_.reset();
 
-  if (icon_murmur2_hash.empty()) {
+  if (best_icon_murmur2_hash.empty()) {
     // TODO(pkotwicz): Tell Java side that the Web Manifest was fetched but the
     // Web Manifest is not WebAPK-compatible. (http://crbug.com/639536)
     return;
   }
 
-  OnDataAvailable(info_, icon_murmur2_hash, icon_);
+  OnDataAvailable(info_, best_icon_murmur2_hash, best_icon_);
 }
 
 void ManifestUpgradeDetectorFetcher::OnDataAvailable(
     const ShortcutInfo& info,
-    const std::string& icon_murmur2_hash,
-    const SkBitmap& icon_bitmap) {
+    const std::string& best_icon_murmur2_hash,
+    const SkBitmap& best_icon_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> java_url =
@@ -184,15 +185,19 @@ void ManifestUpgradeDetectorFetcher::OnDataAvailable(
       base::android::ConvertUTF16ToJavaString(env, info.name);
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
-  ScopedJavaLocalRef<jstring> java_icon_url =
-      base::android::ConvertUTF8ToJavaString(env, info.icon_url.spec());
-  ScopedJavaLocalRef<jstring> java_icon_murmur2_hash =
-      base::android::ConvertUTF8ToJavaString(env, icon_murmur2_hash);
-  ScopedJavaLocalRef<jobject> java_bitmap =
-      gfx::ConvertToJavaBitmap(&icon_bitmap);
+  ScopedJavaLocalRef<jstring> java_best_icon_url =
+      base::android::ConvertUTF8ToJavaString(env, info.best_icon_url.spec());
+  ScopedJavaLocalRef<jstring> java_best_icon_murmur2_hash =
+      base::android::ConvertUTF8ToJavaString(env, best_icon_murmur2_hash);
+  ScopedJavaLocalRef<jobject> java_best_bitmap =
+      gfx::ConvertToJavaBitmap(&best_icon_bitmap);
+
+  ScopedJavaLocalRef<jobjectArray> java_icon_urls =
+      base::android::ToJavaArrayOfStrings(env, info.icon_urls);
 
   Java_ManifestUpgradeDetectorFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
-      java_icon_url, java_icon_murmur2_hash, java_bitmap, info.display,
-      info.orientation, info.theme_color, info.background_color);
+      java_best_icon_url, java_best_icon_murmur2_hash, java_best_bitmap,
+      java_icon_urls, info.display, info.orientation, info.theme_color,
+      info.background_color);
 }

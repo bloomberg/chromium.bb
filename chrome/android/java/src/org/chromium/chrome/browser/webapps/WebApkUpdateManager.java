@@ -16,8 +16,10 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -84,13 +86,12 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
 
     @Override
     public void onFinishedFetchingWebManifestForInitialUrl(
-            boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {
+            boolean needsUpgrade, FetchedManifestData data) {
         onGotManifestData(needsUpgrade, data);
     }
 
     @Override
-    public void onGotManifestData(
-            boolean needsUpgrade, ManifestUpgradeDetector.FetchedManifestData data) {
+    public void onGotManifestData(boolean needsUpgrade, FetchedManifestData data) {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(mId);
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
 
@@ -127,9 +128,9 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         recordUpdate(storage, false);
 
         if (data != null) {
-            updateAsync(data.startUrl, data.scopeUrl, data.name, data.shortName, data.iconUrl,
-                    data.iconMurmur2Hash, data.icon, data.displayMode, data.orientation,
-                    data.themeColor, data.backgroundColor);
+            updateAsync(data.startUrl, data.scopeUrl, data.name, data.shortName, data.bestIconUrl,
+                    data.bestIconMurmur2Hash, data.bestIcon, data.iconUrls, data.displayMode,
+                    data.orientation, data.themeColor, data.backgroundColor);
             return;
         }
 
@@ -149,8 +150,13 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * Android Manifest.
      */
     private void updateAsyncUsingAndroidManifestMetaData() {
+        // If the Web Manifest isn't available anymore, it is impossible to know which is the best
+        // icon URL. In this case, pass an empty URL to tell the server that there isn't a best
+        // icon URL.
+        Set<String> iconUrlsSet = mMetaData.iconUrlAndIconMurmur2HashMap.keySet();
+        String[] iconUrls = new String[iconUrlsSet.size()];
         updateAsync(mMetaData.startUrl, mMetaData.scope, mMetaData.name, mMetaData.shortName,
-                mMetaData.iconUrl, mMetaData.iconMurmur2Hash, mIcon, mMetaData.displayMode,
+                "", "", mIcon, iconUrlsSet.toArray(iconUrls), mMetaData.displayMode,
                 mMetaData.orientation, mMetaData.themeColor, mMetaData.backgroundColor);
     }
 
@@ -158,12 +164,12 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      * Sends request to WebAPK Server to update WebAPK.
      */
     protected void updateAsync(String startUrl, String scopeUrl, String name, String shortName,
-            String iconUrl, String iconMurmur2Hash, Bitmap icon, int displayMode, int orientation,
-            long themeColor, long backgroundColor) {
+            String bestIconUrl, String bestIconMurmur2Hash, Bitmap bestIcon, String[] iconUrls,
+            int displayMode, int orientation, long themeColor, long backgroundColor) {
         int versionCode = readVersionCodeFromAndroidManifest(mWebApkPackageName);
-        nativeUpdateAsync(mId, startUrl, scopeUrl, name, shortName, iconUrl, iconMurmur2Hash, icon,
-                displayMode, orientation, themeColor, backgroundColor, mMetaData.manifestUrl,
-                mWebApkPackageName, versionCode);
+        nativeUpdateAsync(mId, startUrl, scopeUrl, name, shortName, bestIconUrl,
+                bestIconMurmur2Hash, bestIcon, iconUrls, displayMode, orientation, themeColor,
+                backgroundColor, mMetaData.manifestUrl, mWebApkPackageName, versionCode);
     }
 
     /**
@@ -288,7 +294,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     }
 
     private static native void nativeUpdateAsync(String id, String startUrl, String scope,
-            String name, String shortName, String iconUrl, String iconMurmur2Hash, Bitmap icon,
-            int displayMode, int orientation, long themeColor, long backgroundColor,
-            String manifestUrl, String webApkPackage, int webApkVersion);
+            String name, String shortName, String bestIconUrl, String bestIconMurmur2Hash,
+            Bitmap bestIcon, String[] iconUrls, int displayMode, int orientation, long themeColor,
+            long backgroundColor, String manifestUrl, String webApkPackage, int webApkVersion);
 }

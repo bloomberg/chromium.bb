@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/strings/string16.h"
 #include "content/public/common/manifest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
@@ -51,7 +53,8 @@ struct ShortcutInfo {
   Source source;
   int64_t theme_color;
   int64_t background_color;
-  GURL icon_url;
+  GURL best_icon_url;
+  std::vector<std::string> icon_urls;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

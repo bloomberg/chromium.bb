@@ -63,6 +63,11 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   // Set the background color based on the manifest value, if any.
   if (manifest.background_color != content::Manifest::kInvalidOrMissingColor)
     background_color = manifest.background_color;
+
+  // Set the icon urls based on the icons in the manifest, if any.
+  icon_urls.clear();
+  for (const content::Manifest::Icon& icon : manifest.icons)
+    icon_urls.push_back(icon.src.spec());
 }
 
 void ShortcutInfo::UpdateSource(const Source new_source) {
