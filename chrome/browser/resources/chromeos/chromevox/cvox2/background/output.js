@@ -1403,7 +1403,7 @@ Output.prototype = {
       return buff;
     }.bind(this);
 
-    var unit = range.isInlineText() ? cursors.Unit.LINE : cursors.Unit.NODE;
+    var unit = range.isInlineText() ? cursors.Unit.TEXT : cursors.Unit.NODE;
     while (cursor.node &&
         range.end.node &&
         AutomationUtil.getDirection(cursor.node, range.end.node) ==

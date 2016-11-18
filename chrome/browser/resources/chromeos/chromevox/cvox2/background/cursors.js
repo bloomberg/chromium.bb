@@ -34,6 +34,9 @@ cursors.Unit = {
   /** A range of characters (given by attributes on automation nodes). */
   WORD: 'word',
 
+  /** A text node. */
+  TEXT: 'text',
+
   /** A leaf node. */
   NODE: 'node',
 
@@ -345,14 +348,17 @@ cursors.Cursor.prototype = {
             }
         }
         break;
+      case Unit.TEXT:
       case Unit.NODE:
         switch (movement) {
           case Movement.BOUND:
             newIndex = dir == Dir.FORWARD ? this.getText().length - 1 : 0;
             break;
           case Movement.DIRECTIONAL:
-            newNode = AutomationUtil.findNextNode(
-                newNode, dir, AutomationPredicate.object) || originalNode;
+            var pred = unit == Unit.TEXT ?
+                AutomationPredicate.leaf : AutomationPredicate.object;
+            newNode = AutomationUtil.findNextNode(newNode, dir, pred) ||
+                originalNode;
             newIndex = cursors.NODE_INDEX;
             break;
         }
@@ -598,7 +604,7 @@ cursors.Range.prototype = {
   isInlineText: function() {
     return this.start.node &&
         this.end.node &&
-        this.start.node.role == this.end.role &&
+        this.start.node.role == this.end.node.role &&
         this.start.node.role == RoleType.inlineTextBox;
   },
 
