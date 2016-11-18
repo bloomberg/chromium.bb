@@ -301,14 +301,14 @@ static void BuildHostPathMap(TemplateURLService* model,
         template_urls[i], model->search_terms_data(), false);
     if (!host_path.empty()) {
       const TemplateURL* existing_turl = (*host_path_map)[host_path];
-      if (!existing_turl ||
-          (template_urls[i]->show_in_default_list() &&
-           !existing_turl->show_in_default_list())) {
+      TemplateURL* t_url = template_urls[i];
+      if (!existing_turl || (model->ShowInDefaultList(t_url) &&
+                             !model->ShowInDefaultList(existing_turl))) {
         // If there are multiple TemplateURLs with the same host+path, favor
         // those shown in the default list.  If there are multiple potential
         // defaults, favor the first one, which should be the more commonly used
         // one.
-        (*host_path_map)[host_path] = template_urls[i];
+        (*host_path_map)[host_path] = t_url;
       }
     }  // else case, TemplateURL doesn't have a search url, doesn't support
        // replacement, or doesn't have valid GURL. Ignore it.

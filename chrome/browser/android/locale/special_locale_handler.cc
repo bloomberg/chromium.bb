@@ -69,7 +69,6 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
     return false;
 
   for (const auto& data_url : prepopulated_list) {
-    data_url.get()->show_in_default_list = false;
     data_url.get()->safe_for_autoreplace = true;
     std::unique_ptr<TemplateURL> turl(
         new TemplateURL(*data_url, TemplateURL::LOCAL));

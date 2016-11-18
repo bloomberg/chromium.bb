@@ -143,16 +143,13 @@ void TemplateURLTableModel::Reload() {
       extension_entries;
   // Keywords that can be made the default first.
   for (auto* template_url : urls) {
-    // NOTE: we don't use ShowInDefaultList here to avoid items bouncing around
-    // the lists while editing.
-    if (template_url->show_in_default_list())
-      default_entries.push_back(
-          base::MakeUnique<ModelEntry>(this, template_url));
+    auto entry = base::MakeUnique<ModelEntry>(this, template_url);
+    if (template_url_service_->ShowInDefaultList(template_url))
+      default_entries.push_back(std::move(entry));
     else if (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)
-      extension_entries.push_back(
-          base::MakeUnique<ModelEntry>(this, template_url));
+      extension_entries.push_back(std::move(entry));
     else
-      other_entries.push_back(base::MakeUnique<ModelEntry>(this, template_url));
+      other_entries.push_back(std::move(entry));
   }
 
   last_search_engine_index_ = static_cast<int>(default_entries.size());

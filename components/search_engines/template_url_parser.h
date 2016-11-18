@@ -40,7 +40,6 @@ class TemplateURLParser {
   // the URL is not modified.
   static std::unique_ptr<TemplateURL> Parse(
       const SearchTermsData& search_terms_data,
-      bool show_in_default_list,
       const char* data,
       size_t length,
       ParameterFilter* parameter_filter);

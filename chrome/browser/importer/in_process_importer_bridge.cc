@@ -127,8 +127,8 @@ void ParseSearchEnginesFromFirefoxXMLData(
   for (std::vector<std::string>::const_iterator xml_iter =
            xml_data.begin(); xml_iter != xml_data.end(); ++xml_iter) {
     std::unique_ptr<TemplateURL> template_url = TemplateURLParser::Parse(
-        UIThreadSearchTermsData(nullptr), true, xml_iter->data(),
-        xml_iter->length(), &param_filter);
+        UIThreadSearchTermsData(nullptr), xml_iter->data(), xml_iter->length(),
+        &param_filter);
     if (template_url) {
       auto iter = search_engine_for_url.find(template_url->url());
       if (iter == search_engine_for_url.end()) {

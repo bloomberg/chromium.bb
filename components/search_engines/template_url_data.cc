@@ -11,8 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 
 TemplateURLData::TemplateURLData()
-    : show_in_default_list(false),
-      safe_for_autoreplace(false),
+    : safe_for_autoreplace(false),
       id(0),
       date_created(base::Time::Now()),
       last_modified(base::Time::Now()),
@@ -21,8 +20,7 @@ TemplateURLData::TemplateURLData()
       prepopulate_id(0),
       sync_guid(base::GenerateGUID()),
       keyword_(base::ASCIIToUTF16("dummy")),
-      url_("x") {
-}
+      url_("x") {}
 
 TemplateURLData::TemplateURLData(const TemplateURLData& other) = default;
 

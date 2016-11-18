@@ -68,7 +68,6 @@ std::unique_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
       prefs->GetString(prefs::kDefaultSearchProviderImageURLPostParams);
   default_provider_data->favicon_url =
       GURL(prefs->GetString(prefs::kDefaultSearchProviderIconURL));
-  default_provider_data->show_in_default_list = true;
   default_provider_data->search_terms_replacement_key =
       prefs->GetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey);
   default_provider_data->input_encodings = base::SplitString(

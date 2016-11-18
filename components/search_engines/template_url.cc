@@ -1253,7 +1253,6 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
       (t_url->image_url_post_params() == data->image_url_post_params) &&
       (t_url->favicon_url() == data->favicon_url) &&
       (t_url->safe_for_autoreplace() == data->safe_for_autoreplace) &&
-      (t_url->show_in_default_list() == data->show_in_default_list) &&
       (t_url->input_encodings() == data->input_encodings) &&
       (t_url->alternate_urls() == data->alternate_urls) &&
       (t_url->search_terms_replacement_key() ==
@@ -1264,12 +1263,6 @@ base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
   base::string16 bidi_safe_short_name = data_.short_name();
   base::i18n::AdjustStringForLocaleDirection(&bidi_safe_short_name);
   return bidi_safe_short_name;
-}
-
-bool TemplateURL::ShowInDefaultList(
-    const SearchTermsData& search_terms_data) const {
-  return data_.show_in_default_list &&
-      url_ref_->SupportsReplacement(search_terms_data);
 }
 
 bool TemplateURL::SupportsReplacement(

@@ -398,7 +398,6 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
   url_dict->GetBoolean(kCreatedByPolicy,
                        &prefs_default_search_->created_by_policy);
 
-  prefs_default_search_->show_in_default_list = true;
   MergePrefsDataWithPrepopulated();
 }
 

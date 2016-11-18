@@ -56,12 +56,6 @@ struct TemplateURLData {
   // URL to the OSD file this came from. May be empty.
   GURL originating_url;
 
-  // Whether this TemplateURL is shown in the default list of search providers.
-  // This is just a property and does not indicate whether the TemplateURL has a
-  // TemplateURLRef that supports replacement. Use
-  // TemplateURL::ShowInDefaultList() to test both.
-  bool show_in_default_list;
-
   // Whether it's safe for auto-modification code (the autogenerator and the
   // code that imports data from other browsers) to replace the TemplateURL.
   // This should be set to false for any TemplateURL the user edits, or any

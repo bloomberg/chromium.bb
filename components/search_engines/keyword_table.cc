@@ -49,7 +49,10 @@ const std::string ColumnsForVersion(int version, bool concatenated) {
   columns.push_back("date_created");
   columns.push_back("usage_count");
   columns.push_back("input_encodings");
-  columns.push_back("show_in_default_list");
+  if (version <= 67) {
+    // Column removed after version 67.
+    columns.push_back("show_in_default_list");
+  }
   columns.push_back("suggest_url");
   columns.push_back("prepopulate_id");
   if (version <= 44) {
@@ -119,21 +122,20 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindInt(starting_column + 7, data.usage_count);
   s->BindString(starting_column + 8,
                 base::JoinString(data.input_encodings, ";"));
-  s->BindBool(starting_column + 9, data.show_in_default_list);
-  s->BindString(starting_column + 10, data.suggestions_url);
-  s->BindInt(starting_column + 11, data.prepopulate_id);
-  s->BindBool(starting_column + 12, data.created_by_policy);
-  s->BindString(starting_column + 13, data.instant_url);
-  s->BindInt64(starting_column + 14, data.last_modified.ToTimeT());
-  s->BindString(starting_column + 15, data.sync_guid);
-  s->BindString(starting_column + 16, alternate_urls);
-  s->BindString(starting_column + 17, data.search_terms_replacement_key);
-  s->BindString(starting_column + 18, data.image_url);
-  s->BindString(starting_column + 19, data.search_url_post_params);
-  s->BindString(starting_column + 20, data.suggestions_url_post_params);
-  s->BindString(starting_column + 21, data.instant_url_post_params);
-  s->BindString(starting_column + 22, data.image_url_post_params);
-  s->BindString(starting_column + 23, data.new_tab_url);
+  s->BindString(starting_column + 9, data.suggestions_url);
+  s->BindInt(starting_column + 10, data.prepopulate_id);
+  s->BindBool(starting_column + 11, data.created_by_policy);
+  s->BindString(starting_column + 12, data.instant_url);
+  s->BindInt64(starting_column + 13, data.last_modified.ToTimeT());
+  s->BindString(starting_column + 14, data.sync_guid);
+  s->BindString(starting_column + 15, alternate_urls);
+  s->BindString(starting_column + 16, data.search_terms_replacement_key);
+  s->BindString(starting_column + 17, data.image_url);
+  s->BindString(starting_column + 18, data.search_url_post_params);
+  s->BindString(starting_column + 19, data.suggestions_url_post_params);
+  s->BindString(starting_column + 20, data.instant_url_post_params);
+  s->BindString(starting_column + 21, data.image_url_post_params);
+  s->BindString(starting_column + 22, data.new_tab_url);
 }
 
 WebDatabaseTable::TypeKey GetKey() {
@@ -171,7 +173,6 @@ bool KeywordTable::CreateTablesIfNecessary() {
                    "date_created INTEGER DEFAULT 0,"
                    "usage_count INTEGER DEFAULT 0,"
                    "input_encodings VARCHAR,"
-                   "show_in_default_list INTEGER,"
                    "suggest_url VARCHAR,"
                    "prepopulate_id INTEGER DEFAULT 0,"
                    "created_by_policy INTEGER DEFAULT 0,"
@@ -202,6 +203,9 @@ bool KeywordTable::MigrateToVersion(int version,
     case 59:
       *update_compatible_version = true;
       return MigrateToVersion59RemoveExtensionKeywords();
+    case 68:
+      *update_compatible_version = true;
+      return MigrateToVersion68RemoveShowInDefaultListColumn();
   }
 
   return true;
@@ -289,6 +293,48 @@ bool KeywordTable::MigrateToVersion59RemoveExtensionKeywords() {
                       "WHERE url LIKE 'chrome-extension://%'");
 }
 
+// SQLite does not support DROP COLUMN operation. So A new table is created
+// without the show_in_default_list column. Data from all but the dropped column
+// of the old table is copied into it. After that, the old table is dropped and
+// the new table is renamed to it.
+bool KeywordTable::MigrateToVersion68RemoveShowInDefaultListColumn() {
+  sql::Transaction transaction(db_);
+  std::string query_str =
+      std::string("INSERT INTO temp_keywords SELECT " +
+                  ColumnsForVersion(68, false) + " FROM keywords");
+  const char* clone_query = query_str.c_str();
+  return transaction.Begin() &&
+         db_->Execute(
+             "CREATE TABLE temp_keywords ("
+             "id INTEGER PRIMARY KEY,"
+             "short_name VARCHAR NOT NULL,"
+             "keyword VARCHAR NOT NULL,"
+             "favicon_url VARCHAR NOT NULL,"
+             "url VARCHAR NOT NULL,"
+             "safe_for_autoreplace INTEGER,"
+             "originating_url VARCHAR,"
+             "date_created INTEGER DEFAULT 0,"
+             "usage_count INTEGER DEFAULT 0,"
+             "input_encodings VARCHAR,"
+             "suggest_url VARCHAR,"
+             "prepopulate_id INTEGER DEFAULT 0,"
+             "created_by_policy INTEGER DEFAULT 0,"
+             "instant_url VARCHAR,"
+             "last_modified INTEGER DEFAULT 0,"
+             "sync_guid VARCHAR,"
+             "alternate_urls VARCHAR,"
+             "search_terms_replacement_key VARCHAR,"
+             "image_url VARCHAR,"
+             "search_url_post_params VARCHAR,"
+             "suggest_url_post_params VARCHAR,"
+             "instant_url_post_params VARCHAR,"
+             "image_url_post_params VARCHAR,"
+             "new_tab_url VARCHAR)") &&
+         db_->Execute(clone_query) && db_->Execute("DROP TABLE keywords") &&
+         db_->Execute("ALTER TABLE temp_keywords RENAME TO keywords") &&
+         transaction.Commit();
+}
+
 // static
 bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
                                                TemplateURLData* data) {
@@ -303,32 +349,31 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
   if (s.ColumnString(4).empty())
     return false;
   data->SetURL(s.ColumnString(4));
-  data->suggestions_url = s.ColumnString(11);
-  data->instant_url = s.ColumnString(14);
-  data->image_url = s.ColumnString(19);
-  data->new_tab_url = s.ColumnString(24);
-  data->search_url_post_params = s.ColumnString(20);
-  data->suggestions_url_post_params = s.ColumnString(21);
-  data->instant_url_post_params = s.ColumnString(22);
-  data->image_url_post_params = s.ColumnString(23);
+  data->suggestions_url = s.ColumnString(10);
+  data->instant_url = s.ColumnString(13);
+  data->image_url = s.ColumnString(18);
+  data->new_tab_url = s.ColumnString(23);
+  data->search_url_post_params = s.ColumnString(19);
+  data->suggestions_url_post_params = s.ColumnString(20);
+  data->instant_url_post_params = s.ColumnString(21);
+  data->image_url_post_params = s.ColumnString(22);
   data->favicon_url = GURL(s.ColumnString(3));
   data->originating_url = GURL(s.ColumnString(6));
-  data->show_in_default_list = s.ColumnBool(10);
   data->safe_for_autoreplace = s.ColumnBool(5);
   data->input_encodings = base::SplitString(
       s.ColumnString(9), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data->id = s.ColumnInt64(0);
   data->date_created = Time::FromTimeT(s.ColumnInt64(7));
-  data->last_modified = Time::FromTimeT(s.ColumnInt64(15));
-  data->created_by_policy = s.ColumnBool(13);
+  data->last_modified = Time::FromTimeT(s.ColumnInt64(14));
+  data->created_by_policy = s.ColumnBool(12);
   data->usage_count = s.ColumnInt(8);
-  data->prepopulate_id = s.ColumnInt(12);
-  data->sync_guid = s.ColumnString(16);
+  data->prepopulate_id = s.ColumnInt(11);
+  data->sync_guid = s.ColumnString(15);
 
   data->alternate_urls.clear();
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value(
-      json_reader.ReadToValue(s.ColumnString(17)));
+      json_reader.ReadToValue(s.ColumnString(16)));
   base::ListValue* alternate_urls_value;
   if (value.get() && value->GetAsList(&alternate_urls_value)) {
     std::string alternate_url;
@@ -338,7 +383,7 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
     }
   }
 
-  data->search_terms_replacement_key = s.ColumnString(18);
+  data->search_terms_replacement_key = s.ColumnString(17);
 
   return true;
 }
@@ -346,7 +391,7 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
 bool KeywordTable::AddKeyword(const TemplateURLData& data) {
   DCHECK(data.id);
   std::string query("INSERT INTO keywords (" + GetKeywordColumns() + ") "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
                     "        ?)");
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query.c_str()));
   BindURLToStatement(data, &s, 0, 1);
@@ -369,13 +414,13 @@ bool KeywordTable::UpdateKeyword(const TemplateURLData& data) {
       SQL_FROM_HERE,
       "UPDATE keywords SET short_name=?, keyword=?, favicon_url=?, url=?, "
       "safe_for_autoreplace=?, originating_url=?, date_created=?, "
-      "usage_count=?, input_encodings=?, show_in_default_list=?, "
-      "suggest_url=?, prepopulate_id=?, created_by_policy=?, instant_url=?, "
+      "usage_count=?, input_encodings=?, suggest_url=?, "
+      "prepopulate_id=?, created_by_policy=?, instant_url=?, "
       "last_modified=?, sync_guid=?, alternate_urls=?, "
       "search_terms_replacement_key=?, image_url=?, search_url_post_params=?, "
       "suggest_url_post_params=?, instant_url_post_params=?, "
       "image_url_post_params=?, new_tab_url=? WHERE id=?"));
-  BindURLToStatement(data, &s, 24, 0);  // "24" binds id() as the last item.
+  BindURLToStatement(data, &s, 23, 0);  // "23" binds id() as the last item.
 
   return s.Run();
 }

@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 67;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 68;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1067,5 +1067,37 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion66ToCurrent) {
     ASSERT_TRUE(read_masked.Step());
     EXPECT_EQ("Alice", read_masked.ColumnString(0));
     EXPECT_TRUE(read_masked.ColumnString(1).empty());
+  }
+}
+
+// Tests delete show_in_default_list column in keywords table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion67ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_67.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 67, 67));
+
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "show_in_default_list"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("keywords", "show_in_default_list"));
   }
 }

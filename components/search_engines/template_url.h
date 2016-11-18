@@ -571,11 +571,6 @@ class TemplateURL {
 
   const GURL& originating_url() const { return data_.originating_url; }
 
-  bool show_in_default_list() const { return data_.show_in_default_list; }
-  // Returns true if show_in_default_list() is true and this TemplateURL has a
-  // TemplateURLRef that supports replacement.
-  bool ShowInDefaultList(const SearchTermsData& search_terms_data) const;
-
   bool safe_for_autoreplace() const { return data_.safe_for_autoreplace; }
 
   const std::vector<std::string>& input_encodings() const {

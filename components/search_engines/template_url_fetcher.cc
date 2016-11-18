@@ -112,7 +112,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
   }
 
   template_url_ = TemplateURLParser::Parse(
-      fetcher_->template_url_service_->search_terms_data(), false, data.data(),
+      fetcher_->template_url_service_->search_terms_data(), data.data(),
       data.length(), nullptr);
   if (!template_url_.get() ||
       !template_url_->url_ref().SupportsReplacement(

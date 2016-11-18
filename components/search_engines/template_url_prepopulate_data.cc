@@ -1009,7 +1009,6 @@ std::unique_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
   data->instant_url_post_params = instant_url_post_params.as_string();
   data->image_url_post_params = image_url_post_params.as_string();
   data->favicon_url = GURL(favicon_url);
-  data->show_in_default_list = true;
   data->safe_for_autoreplace = true;
   data->input_encodings.push_back(encoding.as_string());
   data->date_created = base::Time();

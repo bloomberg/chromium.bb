@@ -53,7 +53,6 @@ class KeywordTableTest : public testing::Test {
     keyword.image_url_post_params = "name=1,value=2";
     keyword.favicon_url = GURL("http://favicon.url/");
     keyword.originating_url = GURL("http://google.com/");
-    keyword.show_in_default_list = true;
     keyword.safe_for_autoreplace = true;
     keyword.input_encodings.push_back("UTF-8");
     keyword.input_encodings.push_back("UTF-16");
@@ -124,8 +123,6 @@ TEST_F(KeywordTableTest, Keywords) {
   EXPECT_EQ(keyword.instant_url, restored_keyword.instant_url);
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.originating_url, restored_keyword.originating_url);
-  EXPECT_EQ(keyword.show_in_default_list,
-            restored_keyword.show_in_default_list);
   EXPECT_EQ(keyword.safe_for_autoreplace,
             restored_keyword.safe_for_autoreplace);
   EXPECT_EQ(keyword.input_encodings, restored_keyword.input_encodings);
@@ -168,8 +165,6 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(keyword.instant_url, restored_keyword.instant_url);
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.originating_url, restored_keyword.originating_url);
-  EXPECT_EQ(keyword.show_in_default_list,
-            restored_keyword.show_in_default_list);
   EXPECT_EQ(keyword.safe_for_autoreplace,
             restored_keyword.safe_for_autoreplace);
   EXPECT_EQ(keyword.input_encodings, restored_keyword.input_encodings);

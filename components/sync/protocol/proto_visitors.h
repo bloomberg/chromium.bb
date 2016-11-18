@@ -75,38 +75,37 @@
 #define VISIT_REP(field) \
   visitor.Visit(proto, #field, proto.field());
 
+// NOLINT(runtime/references) is necessary to avoid a presubmit warning about
+// V& not being const.
+#define VISIT_PROTO_FIELDS(proto) \
+  template <class V>              \
+  void VisitProtoFields(V& visitor, proto)  // NOLINT(runtime/references)
+
 namespace syncer {
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::EncryptedData& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::EncryptedData& proto) {
   VISIT(key_name);
   // TODO(akalin): Shouldn't blob be of type bytes instead of string?
   VISIT_BYTES(blob);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::PasswordSpecificsMetadata& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
   VISIT(url);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::AppNotificationSettings& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AppNotificationSettings& proto) {
   VISIT(initial_setup_done);
   VISIT(disabled);
   VISIT(oauth_client_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::SessionHeader& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SessionHeader& proto) {
   VISIT_REP(window);
   VISIT(client_name);
   VISIT_ENUM(device_type);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::SessionTab& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SessionTab& proto) {
   VISIT(tab_id);
   VISIT(window_id);
   VISIT(tab_visual_index);
@@ -120,16 +119,14 @@ void VisitProtoFields(V& visitor, const sync_pb::SessionTab& proto) {
   VISIT_REP(variation_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::SessionWindow& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SessionWindow& proto) {
   VISIT(window_id);
   VISIT(selected_tab_index);
   VISIT_REP(tab);
   VISIT_ENUM(browser_type);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::TabNavigation& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::TabNavigation& proto) {
   VISIT(virtual_url);
   VISIT(referrer);
   VISIT(title);
@@ -156,13 +153,11 @@ void VisitProtoFields(V& visitor, const sync_pb::TabNavigation& proto) {
   VISIT_ENUM(password_state);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::NavigationRedirect& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::NavigationRedirect& proto) {
   VISIT(url);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::PasswordSpecificsData& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData& proto) {
   VISIT(scheme);
   VISIT(signon_realm);
   VISIT(origin);
@@ -180,21 +175,18 @@ void VisitProtoFields(V& visitor, const sync_pb::PasswordSpecificsData& proto) {
   VISIT(federation_url);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GlobalIdDirective& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GlobalIdDirective& proto) {
   VISIT_REP(global_id);
   VISIT(start_time_usec);
   VISIT(end_time_usec);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::TimeRangeDirective& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::TimeRangeDirective& proto) {
   VISIT(start_time_usec);
   VISIT(end_time_usec);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AppListSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AppListSpecifics& proto) {
   VISIT(item_id);
   VISIT_ENUM(item_type);
   VISIT(item_name);
@@ -203,23 +195,20 @@ void VisitProtoFields(V& visitor, const sync_pb::AppListSpecifics& proto) {
   VISIT(item_pin_ordinal);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ArcPackageSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ArcPackageSpecifics& proto) {
   VISIT(package_name);
   VISIT(package_version);
   VISIT(last_backup_android_id);
   VISIT(last_backup_time);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::PrinterPPDReference& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PrinterPPDReference& proto) {
   VISIT(user_supplied_ppd_url);
   VISIT(effective_manufacturer);
   VISIT(effective_model);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ReadingListSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ReadingListSpecifics& proto) {
   VISIT(entry_id);
   VISIT(title);
   VISIT(url);
@@ -228,8 +217,7 @@ void VisitProtoFields(V& visitor, const sync_pb::ReadingListSpecifics& proto) {
   VISIT_ENUM(status);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AppNotification& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AppNotification& proto) {
   VISIT(guid);
   VISIT(app_id);
   VISIT(creation_timestamp_ms);
@@ -239,19 +227,16 @@ void VisitProtoFields(V& visitor, const sync_pb::AppNotification& proto) {
   VISIT(link_text);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AppSettingSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AppSettingSpecifics& proto) {
   VISIT(extension_setting);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::LinkedAppIconInfo& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::LinkedAppIconInfo& proto) {
   VISIT(url);
   VISIT(size);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AppSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AppSpecifics& proto) {
   VISIT(extension);
   VISIT(notification_settings);
   VISIT(app_launch_ordinal);
@@ -261,20 +246,16 @@ void VisitProtoFields(V& visitor, const sync_pb::AppSpecifics& proto) {
   VISIT(bookmark_app_description);
   VISIT(bookmark_app_icon_color);
   VISIT_REP(linked_app_icons);
-
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AutofillSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AutofillSpecifics& proto) {
   VISIT(name);
   VISIT(value);
   VISIT_REP(usage_timestamp);
   VISIT(profile);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::AutofillProfileSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT(guid);
   VISIT(origin);
   VISIT(use_count);
@@ -298,31 +279,25 @@ void VisitProtoFields(V& visitor,
   VISIT_REP(phone_home_whole_number);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::WalletMetadataSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::WalletMetadataSpecifics& proto) {
   VISIT_ENUM(type);
   VISIT(id);
   VISIT(use_count);
   VISIT(use_date);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::AutofillWalletSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AutofillWalletSpecifics& proto) {
   VISIT_ENUM(type);
   VISIT(masked_card);
   VISIT(address);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::MetaInfo& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::MetaInfo& proto) {
   VISIT(key);
   VISIT(value);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::BookmarkSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::BookmarkSpecifics& proto) {
   VISIT(url);
   VISIT_BYTES(favicon);
   VISIT(title);
@@ -331,8 +306,7 @@ void VisitProtoFields(V& visitor, const sync_pb::BookmarkSpecifics& proto) {
   VISIT_REP(meta_info);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::DeviceInfoSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(cache_guid);
   VISIT(client_name);
   VISIT_ENUM(device_type);
@@ -340,53 +314,40 @@ void VisitProtoFields(V& visitor, const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(chrome_version);
   VISIT(signin_scoped_device_id);
 }
-
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::DictionarySpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DictionarySpecifics& proto) {
   VISIT(word);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::FaviconSyncFlags& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::FaviconSyncFlags& proto) {
   VISIT(enabled);
   VISIT(favicon_sync_limit);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::KeystoreEncryptionFlags& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::KeystoreEncryptionFlags& proto) {
   VISIT(enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::HistoryDeleteDirectives& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectives& proto) {
   VISIT(enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AutofillCullingFlags& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AutofillCullingFlags& proto) {
   VISIT(enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::PreCommitUpdateAvoidanceFlags& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PreCommitUpdateAvoidanceFlags& proto) {
   VISIT(enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GcmChannelFlags& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GcmChannelFlags& proto) {
   VISIT(enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GcmInvalidationsFlags& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GcmInvalidationsFlags& proto) {
   VISIT(enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ExperimentsSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ExperimentsSpecifics& proto) {
   VISIT(keystore_encryption);
   VISIT(history_delete_directives);
   VISIT(autofill_culling);
@@ -396,16 +357,13 @@ void VisitProtoFields(V& visitor, const sync_pb::ExperimentsSpecifics& proto) {
   VISIT(gcm_invalidations);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ExtensionSettingSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ExtensionSettingSpecifics& proto) {
   VISIT(extension_id);
   VISIT(key);
   VISIT(value);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ExtensionSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ExtensionSpecifics& proto) {
   VISIT(id);
   VISIT(version);
   VISIT(update_url);
@@ -418,15 +376,13 @@ void VisitProtoFields(V& visitor, const sync_pb::ExtensionSpecifics& proto) {
   VISIT(disable_reasons);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::FaviconData& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::FaviconData& proto) {
   VISIT_BYTES(favicon);
   VISIT(width);
   VISIT(height);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::FaviconImageSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::FaviconImageSpecifics& proto) {
   VISIT(favicon_url);
   VISIT(favicon_web);
   VISIT(favicon_web_32);
@@ -434,30 +390,23 @@ void VisitProtoFields(V& visitor, const sync_pb::FaviconImageSpecifics& proto) {
   VISIT(favicon_touch_precomposed_64);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::FaviconTrackingSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::FaviconTrackingSpecifics& proto) {
   VISIT(favicon_url);
   VISIT(last_visit_time_ms);
   VISIT(is_bookmarked);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::HistoryDeleteDirectiveSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectiveSpecifics& proto) {
   VISIT(global_id_directive);
   VISIT(time_range_directive);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ManagedUserSettingSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSettingSpecifics& proto) {
   VISIT(name);
   VISIT(value);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ManagedUserSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSpecifics& proto) {
   VISIT(id);
   VISIT(name);
   VISIT(acknowledged);
@@ -466,24 +415,19 @@ void VisitProtoFields(V& visitor, const sync_pb::ManagedUserSpecifics& proto) {
   VISIT(chromeos_avatar);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ManagedUserSharedSettingSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSharedSettingSpecifics& proto) {
   VISIT(mu_id);
   VISIT(key);
   VISIT(value);
   VISIT(acknowledged);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ManagedUserWhitelistSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ManagedUserWhitelistSpecifics& proto) {
   VISIT(id);
   VISIT(name);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::NigoriSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(encryption_keybag);
   VISIT(keybag_is_frozen);
   VISIT(encrypt_bookmarks);
@@ -512,32 +456,27 @@ void VisitProtoFields(V& visitor, const sync_pb::NigoriSpecifics& proto) {
   VISIT(custom_passphrase_time);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ArticlePage& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ArticlePage& proto) {
   VISIT(url);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ArticleSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ArticleSpecifics& proto) {
   VISIT(entry_id);
   VISIT(title);
   VISIT_REP(pages);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::PasswordSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecifics& proto) {
   VISIT(encrypted);
   VISIT(unencrypted_metadata);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::PreferenceSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PreferenceSpecifics& proto) {
   VISIT(name);
   VISIT(value);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::PrinterSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PrinterSpecifics& proto) {
   VISIT(id);
   VISIT(display_name);
   VISIT(description);
@@ -548,25 +487,15 @@ void VisitProtoFields(V& visitor, const sync_pb::PrinterSpecifics& proto) {
   VISIT(ppd_reference);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::PriorityPreferenceSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PriorityPreferenceSpecifics& proto) {
   VISIT(preference);
 }
 
-template <class V>
-void VisitProtoFields(
-    V& visitor,
-    const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {
-}
+VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {}
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::SyncedNotificationSpecifics& proto) {
-}
+VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationSpecifics& proto) {}
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::SearchEngineSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SearchEngineSpecifics& proto) {
   VISIT(short_name);
   VISIT(keyword);
   VISIT(favicon_url);
@@ -575,7 +504,6 @@ void VisitProtoFields(V& visitor, const sync_pb::SearchEngineSpecifics& proto) {
   VISIT(originating_url);
   VISIT(date_created);
   VISIT(input_encodings);
-  VISIT(show_in_default_list);
   VISIT(suggestions_url);
   VISIT(prepopulate_id);
   VISIT(autogenerate_keyword);
@@ -592,16 +520,14 @@ void VisitProtoFields(V& visitor, const sync_pb::SearchEngineSpecifics& proto) {
   VISIT(new_tab_url);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::SessionSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SessionSpecifics& proto) {
   VISIT(session_tag);
   VISIT(header);
   VISIT(tab);
   VISIT(tab_node_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ThemeSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ThemeSpecifics& proto) {
   VISIT(use_custom_theme);
   VISIT(use_system_theme_by_default);
   VISIT(custom_theme_name);
@@ -609,8 +535,7 @@ void VisitProtoFields(V& visitor, const sync_pb::ThemeSpecifics& proto) {
   VISIT(custom_theme_update_url);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::TypedUrlSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::TypedUrlSpecifics& proto) {
   VISIT(url);
   VISIT(title);
   VISIT(hidden);
@@ -618,9 +543,7 @@ void VisitProtoFields(V& visitor, const sync_pb::TypedUrlSpecifics& proto) {
   VISIT_REP(visit_transitions);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::WalletMaskedCreditCard& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(id);
   VISIT_ENUM(status);
   VISIT(name_on_card);
@@ -631,8 +554,7 @@ void VisitProtoFields(V& visitor,
   VISIT(billing_address_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::WalletPostalAddress& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::WalletPostalAddress& proto) {
   VISIT(id);
   VISIT(recipient_name);
   VISIT(company_name);
@@ -648,16 +570,13 @@ void VisitProtoFields(V& visitor, const sync_pb::WalletPostalAddress& proto) {
   VISIT(language_code);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::WifiCredentialSpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::WifiCredentialSpecifics& proto) {
   VISIT_BYTES(ssid);
   VISIT_ENUM(security_class);
   VISIT_BYTES(passphrase);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::EntitySpecifics& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(app);
   VISIT(app_list);
   VISIT(app_notification);
@@ -696,8 +615,7 @@ void VisitProtoFields(V& visitor, const sync_pb::EntitySpecifics& proto) {
   VISIT(wifi_credential);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::SyncEntity& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(id_string);
   VISIT(parent_id_string);
   VISIT(old_parent_id);
@@ -720,23 +638,19 @@ void VisitProtoFields(V& visitor, const sync_pb::SyncEntity& proto) {
   VISIT_REP(attachment_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ChromiumExtensionsActivity& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ChromiumExtensionsActivity& proto) {
   VISIT(extension_id);
   VISIT(bookmark_writes_since_last_commit);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::CommitMessage& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::CommitMessage& proto) {
   VISIT_REP(entries);
   VISIT(cache_guid);
   VISIT_REP(extensions_activity);
   VISIT(config_params);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GetUpdateTriggers& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GetUpdateTriggers& proto) {
   VISIT_REP(notification_hint);
   VISIT(client_dropped_hints);
   VISIT(invalidations_out_of_sync);
@@ -744,9 +658,7 @@ void VisitProtoFields(V& visitor, const sync_pb::GetUpdateTriggers& proto) {
   VISIT(datatype_refresh_nudges);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::DataTypeProgressMarker& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DataTypeProgressMarker& proto) {
   VISIT(data_type_id);
   VISIT_BYTES(token);
   VISIT(timestamp_token_for_migration);
@@ -754,21 +666,18 @@ void VisitProtoFields(V& visitor,
   VISIT(get_update_triggers);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::DataTypeContext& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DataTypeContext& proto) {
   VISIT(data_type_id);
   VISIT(context);
   VISIT(version);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GetUpdatesCallerInfo& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesCallerInfo& proto) {
   VISIT_ENUM(source);
   VISIT(notifications_enabled);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GetUpdatesMessage& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesMessage& proto) {
   VISIT(caller_info);
   VISIT(fetch_folders);
   VISIT(batch_size);
@@ -780,14 +689,11 @@ void VisitProtoFields(V& visitor, const sync_pb::GetUpdatesMessage& proto) {
   VISIT_REP(client_contexts);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ClientStatus& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ClientStatus& proto) {
   VISIT(hierarchy_conflict_detected);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::CommitResponse::EntryResponse& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::CommitResponse::EntryResponse& proto) {
   VISIT_ENUM(response_type);
   VISIT(id_string);
   VISIT(parent_id_string);
@@ -798,21 +704,18 @@ void VisitProtoFields(V& visitor,
   VISIT(mtime);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::CommitResponse& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::CommitResponse& proto) {
   VISIT_REP(entryresponse);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::GetUpdatesResponse& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesResponse& proto) {
   VISIT_REP(entries)
   VISIT(changes_remaining);
   VISIT_REP(new_progress_marker);
   VISIT_REP(context_mutations);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ClientCommand& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ClientCommand& proto) {
   VISIT(set_sync_poll_interval);
   VISIT(set_sync_long_poll_interval);
   VISIT(max_commit_batch_size);
@@ -821,18 +724,14 @@ void VisitProtoFields(V& visitor, const sync_pb::ClientCommand& proto) {
   VISIT(client_invalidation_hint_buffer_size);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ClientToServerResponse::Error& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ClientToServerResponse::Error& proto) {
   VISIT_ENUM(error_type);
   VISIT(error_description);
   VISIT(url);
   VISIT_ENUM(action);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::ClientToServerResponse& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ClientToServerResponse& proto) {
   VISIT(commit);
   VISIT(get_updates);
   VISIT(error);
@@ -843,8 +742,7 @@ void VisitProtoFields(V& visitor,
   VISIT_REP(migrated_data_type_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ClientToServerMessage& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ClientToServerMessage& proto) {
   VISIT(share);
   VISIT(protocol_version);
   VISIT(commit);
@@ -855,9 +753,7 @@ void VisitProtoFields(V& visitor, const sync_pb::ClientToServerMessage& proto) {
   VISIT(client_status);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::DatatypeAssociationStats& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DatatypeAssociationStats& proto) {
   VISIT(data_type_id);
   VISIT(num_local_items_before_association);
   VISIT(num_sync_items_before_association);
@@ -878,8 +774,7 @@ void VisitProtoFields(V& visitor,
   VISIT(association_wait_time_for_same_priority_us);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::DebugEventInfo& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DebugEventInfo& proto) {
   VISIT_ENUM(singleton_event);
   VISIT(sync_cycle_completed_event_info);
   VISIT(nudging_datatype);
@@ -887,17 +782,14 @@ void VisitProtoFields(V& visitor, const sync_pb::DebugEventInfo& proto) {
   VISIT(datatype_association_stats);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::DebugInfo& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::DebugInfo& proto) {
   VISIT_REP(events);
   VISIT(cryptographer_ready);
   VISIT(cryptographer_has_pending_keys);
   VISIT(events_dropped);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor,
-                      const sync_pb::SyncCycleCompletedEventInfo& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
   VISIT(num_encryption_conflicts);
   VISIT(num_hierarchy_conflicts);
   VISIT(num_server_conflicts);
@@ -906,20 +798,17 @@ void VisitProtoFields(V& visitor,
   VISIT(caller_info);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::ClientConfigParams& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
   VISIT_REP(enabled_type_ids);
   VISIT(tabs_datatype_enabled);
   VISIT(cookie_jar_mismatch);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::AttachmentIdProto& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::AttachmentIdProto& proto) {
   VISIT(unique_id);
 }
 
-template <class V>
-void VisitProtoFields(V& visitor, const sync_pb::EntityMetadata& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
   VISIT(client_tag_hash);
   VISIT(server_id);
   VISIT(is_deleted);

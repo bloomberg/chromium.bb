@@ -36,7 +36,6 @@ class Statement;
 //   keyword
 //   favicon_url
 //   url
-//   show_in_default_list
 //   safe_for_autoreplace
 //   originating_url
 //   date_created           This column was added after we allowed keywords.
@@ -131,6 +130,7 @@ class KeywordTable : public WebDatabaseTable {
   // Table migration functions.
   bool MigrateToVersion53AddNewTabURLColumn();
   bool MigrateToVersion59RemoveExtensionKeywords();
+  bool MigrateToVersion68RemoveShowInDefaultListColumn();
 
  private:
   friend class KeywordTableTest;

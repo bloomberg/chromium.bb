@@ -41,7 +41,6 @@ void ExpectSimilar(const TemplateURLData* expected,
   EXPECT_EQ(expected->suggestions_url, actual->suggestions_url);
   EXPECT_EQ(expected->favicon_url, actual->favicon_url);
   EXPECT_EQ(expected->alternate_urls, actual->alternate_urls);
-  EXPECT_EQ(expected->show_in_default_list, actual->show_in_default_list);
   EXPECT_EQ(expected->safe_for_autoreplace, actual->safe_for_autoreplace);
   EXPECT_EQ(expected->input_encodings, actual->input_encodings);
   EXPECT_EQ(expected->search_terms_replacement_key,
@@ -134,7 +133,6 @@ std::unique_ptr<TemplateURLData> GenerateDummyTemplateURLData(
       std::string("http://").append(type).append("foo/alt"));
   data->favicon_url = GURL("http://icon1");
   data->safe_for_autoreplace = true;
-  data->show_in_default_list = true;
   data->input_encodings = base::SplitString(
       "UTF-8;UTF-16", ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data->date_created = base::Time();
@@ -176,7 +174,6 @@ TEST_F(DefaultSearchManagerTest, ReadAndWritePref) {
   data.alternate_urls.push_back("http://foo1/alt");
   data.favicon_url = GURL("http://icon1");
   data.safe_for_autoreplace = true;
-  data.show_in_default_list = true;
   data.input_encodings = base::SplitString(
       "UTF-8;UTF-16", ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.date_created = base::Time();

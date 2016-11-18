@@ -133,6 +133,13 @@ class TemplateURLService : public WebDataServiceConsumer,
                                   const GURL& url,
                                   TemplateURL** template_url_to_replace);
 
+  // Returns whether |template_url| should be shown in the list of engines
+  // most likely to be selected as a default engine. This is meant to highlight
+  // the current default, as well as the other most likely choices of default
+  // engine, separately from a full list of all TemplateURLs (which might be
+  // very long).
+  bool ShowInDefaultList(const TemplateURL* template_url);
+
   // Adds to |matches| all TemplateURLs whose keywords begin with |prefix|,
   // sorted shortest-keyword-first. If |supports_replacement_only| is true, only
   // TemplateURLs that support replacement are returned.
