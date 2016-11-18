@@ -1055,6 +1055,48 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(
   return newLogicalTop;
 }
 
+LayoutUnit LayoutBlockFlow::adjustFloatLogicalTopForPagination(
+    LayoutBox& child,
+    LayoutUnit logicalTopMarginEdge) {
+  // The first piece of content inside the child may have set a strut during
+  // layout.
+  LayoutUnit strut;
+  if (child.isLayoutBlockFlow())
+    strut = toLayoutBlockFlow(child).paginationStrutPropagatedFromChild();
+
+  LayoutUnit marginBefore = marginBeforeForChild(child);
+  if (marginBefore > LayoutUnit()) {
+    // Avoid breaking inside the top margin of a float.
+    if (strut) {
+      // If we already had decided to break, just add the margin. The strut so
+      // far only accounts for pushing the top border edge to the next
+      // fragmentainer. We need to push the margin over as well, because
+      // there's no break opportunity between margin and border.
+      strut += marginBefore;
+    } else {
+      // Even if we didn't break before the border box to the next
+      // fragmentainer, we need to check if we can fit the margin before it.
+      if (LayoutUnit pageLogicalHeight =
+              pageLogicalHeightForOffset(logicalTopMarginEdge)) {
+        LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
+            logicalTopMarginEdge, AssociateWithLatterPage);
+        if (remainingSpace <= marginBefore)
+          strut += remainingSpace;
+      }
+    }
+  }
+  if (!strut) {
+    // If we are unsplittable and don't fit, move to the next page or column
+    // if that helps the situation.
+    LayoutUnit newLogicalTopMarginEdge =
+        adjustForUnsplittableChild(child, logicalTopMarginEdge);
+    strut = newLogicalTopMarginEdge - logicalTopMarginEdge;
+  }
+
+  child.setPaginationStrut(strut);
+  return logicalTopMarginEdge + strut;
+}
+
 static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block,
                                   const RootInlineBox& lineBox,
                                   LayoutUnit lineLogicalOffset,
@@ -3622,23 +3664,22 @@ bool LayoutBlockFlow::placeNewFloats(LayoutUnit logicalTopMarginEdge,
 LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
     FloatingObject& floatingObject,
     LayoutUnit logicalTopMarginEdge) {
-  LayoutBox& childBox = *floatingObject.layoutObject();
+  LayoutBox& child = *floatingObject.layoutObject();
 
   // FIXME Investigate if this can be removed. crbug.com/370006
-  childBox.setMayNeedPaintInvalidation();
+  child.setMayNeedPaintInvalidation();
 
   LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection()
-                                          ? marginStartForChild(childBox)
-                                          : marginEndForChild(childBox);
-  logicalTopMarginEdge =
-      std::max(logicalTopMarginEdge,
-               lowestFloatLogicalBottom(childBox.style()->clear()));
+                                          ? marginStartForChild(child)
+                                          : marginEndForChild(child);
+  logicalTopMarginEdge = std::max(
+      logicalTopMarginEdge, lowestFloatLogicalBottom(child.style()->clear()));
 
   bool isPaginated = view()->layoutState()->isPaginated();
   if (isPaginated && !childrenInline()) {
     // Forced breaks are inserted at class A break points. Floats may be
     // affected by a break-after value on the previous in-flow sibling.
-    if (LayoutBox* previousInFlowBox = childBox.previousInFlowSiblingBox()) {
+    if (LayoutBox* previousInFlowBox = child.previousInFlowSiblingBox()) {
       logicalTopMarginEdge = applyForcedBreak(logicalTopMarginEdge,
                                               previousInFlowBox->breakAfter());
     }
@@ -3650,81 +3691,45 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
 
   setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
 
-  setLogicalLeftForChild(childBox,
+  setLogicalLeftForChild(child,
                          floatLogicalLocation.x() + childLogicalLeftMargin);
-  setLogicalTopForChild(childBox,
-                        logicalTopMarginEdge + marginBeforeForChild(childBox));
+  setLogicalTopForChild(child,
+                        logicalTopMarginEdge + marginBeforeForChild(child));
 
-  SubtreeLayoutScope layoutScope(childBox);
-  if (isPaginated && !childBox.needsLayout())
-    markChildForPaginationRelayoutIfNeeded(childBox, layoutScope);
+  SubtreeLayoutScope layoutScope(child);
+  if (isPaginated && !child.needsLayout())
+    markChildForPaginationRelayoutIfNeeded(child, layoutScope);
 
-  childBox.layoutIfNeeded();
+  child.layoutIfNeeded();
 
   if (isPaginated) {
-    LayoutBlockFlow* childBlockFlow =
-        childBox.isLayoutBlockFlow() ? toLayoutBlockFlow(&childBox) : nullptr;
-    // The first piece of content inside the child may have set a strut during
-    // layout.
-    LayoutUnit strut =
-        childBlockFlow ? childBlockFlow->paginationStrutPropagatedFromChild()
-                       : LayoutUnit();
-
-    LayoutUnit marginBefore = marginBeforeForChild(childBox);
-    if (marginBefore > LayoutUnit()) {
-      // Avoid breaking inside the top margin of a float.
-      if (strut) {
-        // If we already had decided to break, just add the margin. The strut
-        // so far only accounts for pushing the top border edge to the next
-        // fragmentainer. We need to push the margin over as well, because
-        // there's no break opportunity between margin and border.
-        strut += marginBefore;
-      } else {
-        // Even if we didn't break before the border box to the next
-        // fragmentainer, we need to check if we can fit the margin before
-        // it.
-        LayoutUnit marginEdge = childBox.logicalTop() - marginBefore;
-        if (LayoutUnit pageHeight = pageLogicalHeightForOffset(marginEdge)) {
-          LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
-              marginEdge, AssociateWithLatterPage);
-          if (remainingSpace <= marginBefore)
-            strut += remainingSpace;
-        }
-      }
-    }
-    if (!strut) {
-      // If we are unsplittable and don't fit, move to the next page or column
-      // if that helps the situation.
-      strut = adjustForUnsplittableChild(childBox, logicalTopMarginEdge) -
-              logicalTopMarginEdge;
-    }
-
-    childBox.setPaginationStrut(strut);
-    if (strut) {
+    LayoutUnit newLogicalTopMarginEdge =
+        adjustFloatLogicalTopForPagination(child, logicalTopMarginEdge);
+    if (logicalTopMarginEdge != newLogicalTopMarginEdge) {
       floatLogicalLocation = computeLogicalLocationForFloat(
-          floatingObject, logicalTopMarginEdge + strut);
+          floatingObject, newLogicalTopMarginEdge);
       logicalTopMarginEdge = floatLogicalLocation.y();
       setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
 
-      setLogicalLeftForChild(childBox,
+      setLogicalLeftForChild(child,
                              floatLogicalLocation.x() + childLogicalLeftMargin);
-      setLogicalTopForChild(
-          childBox, logicalTopMarginEdge + marginBeforeForChild(childBox));
+      setLogicalTopForChild(child,
+                            logicalTopMarginEdge + marginBeforeForChild(child));
 
-      if (childBox.isLayoutBlock())
-        childBox.setChildNeedsLayout(MarkOnlyThis);
-      childBox.layoutIfNeeded();
+      if (child.isLayoutBlock())
+        child.setChildNeedsLayout(MarkOnlyThis);
+      child.layoutIfNeeded();
     }
   }
 
   setLogicalTopForFloat(floatingObject, logicalTopMarginEdge);
 
-  setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) +
-                                               marginBeforeForChild(childBox) +
-                                               marginAfterForChild(childBox));
+  setLogicalHeightForFloat(floatingObject, logicalHeightForChild(child) +
+                                               marginBeforeForChild(child) +
+                                               marginAfterForChild(child));
 
-  if (ShapeOutsideInfo* shapeOutside = childBox.shapeOutsideInfo())
-    shapeOutside->setReferenceBoxLogicalSize(logicalSizeForChild(childBox));
+  if (ShapeOutsideInfo* shapeOutside = child.shapeOutsideInfo())
+    shapeOutside->setReferenceBoxLogicalSize(logicalSizeForChild(child));
 
   return logicalTopMarginEdge;
 }

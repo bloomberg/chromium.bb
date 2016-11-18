@@ -819,9 +819,18 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                            LayoutBox& child,
                                            BlockChildrenLayoutInfo&,
                                            bool atBeforeSideOfBlock);
+
+  // If a float cannot fit in the current fragmentainer, return the logical top
+  // margin edge that the float needs to have in order to be pushed to the top
+  // of the next fragmentainer. Otherwise, just return |logicalTopMarginEdge|.
+  LayoutUnit adjustFloatLogicalTopForPagination(
+      LayoutBox&,
+      LayoutUnit logicalTopMarginEdge);
+
   // Computes a deltaOffset value that put a line at the top of the next page if
   // it doesn't fit on the current page.
   void adjustLinePositionForPagination(RootInlineBox&, LayoutUnit& deltaOffset);
+
   // If the child is unsplittable and can't fit on the current page, return the
   // top of the next page/column.
   LayoutUnit adjustForUnsplittableChild(LayoutBox&,
