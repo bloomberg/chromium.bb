@@ -339,7 +339,7 @@ TEST(StringTest, ToLowerLocale) {
 TEST(StringTest, StartsWithIgnoringUnicodeCase) {
   // [U+017F U+212A i a] starts with "sk".
   EXPECT_TRUE(String::fromUTF8("\xC5\xBF\xE2\x84\xAAia")
-                  .startsWith("sk", TextCaseInsensitive));
+                  .startsWith("sk", TextCaseUnicodeInsensitive));
 }
 
 TEST(StringTest, StartsWithIgnoringASCIICase) {

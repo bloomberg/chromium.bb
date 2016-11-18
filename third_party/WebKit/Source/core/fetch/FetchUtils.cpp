@@ -27,8 +27,8 @@ class ForbiddenHeaderNames {
  public:
   bool has(const String& name) const {
     return m_fixedNames.contains(name) ||
-           name.startsWith(m_proxyHeaderPrefix, TextCaseInsensitive) ||
-           name.startsWith(m_secHeaderPrefix, TextCaseInsensitive);
+           name.startsWith(m_proxyHeaderPrefix, TextCaseASCIIInsensitive) ||
+           name.startsWith(m_secHeaderPrefix, TextCaseASCIIInsensitive);
   }
 
   static const ForbiddenHeaderNames& get();

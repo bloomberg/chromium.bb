@@ -57,7 +57,7 @@ bool CSPSource::hostMatches(const String& host) const {
 
   bool equalHosts = m_host == host;
   if (m_hostWildcard == HasWildcard) {
-    match = host.endsWith(String("." + m_host), TextCaseInsensitive);
+    match = host.endsWith(String("." + m_host), TextCaseUnicodeInsensitive);
 
     // Chrome used to, incorrectly, match *.x.y to x.y. This was fixed, but
     // the following count measures when a match fails that would have

@@ -71,7 +71,7 @@ bool DOMFilePath::isParentOf(const String& parent, const String& mayBeChild) {
   if (parent == DOMFilePath::root && mayBeChild != DOMFilePath::root)
     return true;
   if (parent.length() >= mayBeChild.length() ||
-      !mayBeChild.startsWith(parent, TextCaseInsensitive))
+      !mayBeChild.startsWith(parent, TextCaseUnicodeInsensitive))
     return false;
   if (mayBeChild[parent.length()] != DOMFilePath::separator)
     return false;

@@ -316,7 +316,8 @@ bool isValidTextRecord(const NFCRecord& record) {
     return false;
 
   if (record.hasMediaType() &&
-      !record.mediaType().startsWith(kPlainTextMimePrefix, TextCaseInsensitive))
+      !record.mediaType().startsWith(kPlainTextMimePrefix,
+                                     TextCaseUnicodeInsensitive))
     return false;
 
   return true;
@@ -339,7 +340,7 @@ bool isValidJSONRecord(const NFCRecord& record) {
     return false;
 
   if (record.hasMediaType() &&
-      !record.mediaType().startsWith(kJsonMimePrefix, TextCaseInsensitive))
+      !record.mediaType().startsWith(kJsonMimePrefix, TextCaseASCIIInsensitive))
     return false;
 
   return true;

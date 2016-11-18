@@ -41,7 +41,7 @@ String ContentType::parameter(const String& parameterName) const {
   size_t semi = strippedType.find(';');
   if (semi != kNotFound) {
     size_t start =
-        strippedType.find(parameterName, semi + 1, TextCaseInsensitive);
+        strippedType.find(parameterName, semi + 1, TextCaseASCIIInsensitive);
     if (start != kNotFound) {
       start = strippedType.find('=', start + parameterName.length());
       if (start != kNotFound) {

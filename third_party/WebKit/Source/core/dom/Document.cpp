@@ -606,7 +606,7 @@ void Document::setDoctype(DocumentType* docType) {
   if (m_docType) {
     this->adoptIfNeeded(*m_docType);
     if (m_docType->publicId().startsWith("-//wapforum//dtd xhtml mobile 1.",
-                                         TextCaseInsensitive)) {
+                                         TextCaseASCIIInsensitive)) {
       m_isMobileDocument = true;
       m_styleEngine->viewportRulesChanged();
     }

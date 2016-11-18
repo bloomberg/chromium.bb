@@ -125,7 +125,7 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType) {
     return false;
 
   if (mimeType[0] == '/' || mimeType[length - 5] == '/' ||
-      !mimeType.endsWith("+xml", TextCaseInsensitive))
+      !mimeType.endsWith("+xml", TextCaseASCIIInsensitive))
     return false;
 
   bool hasSlash = false;
@@ -170,10 +170,10 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType) {
 }
 
 bool DOMImplementation::isJSONMIMEType(const String& mimeType) {
-  if (mimeType.startsWith("application/json", TextCaseInsensitive))
+  if (mimeType.startsWith("application/json", TextCaseASCIIInsensitive))
     return true;
-  if (mimeType.startsWith("application/", TextCaseInsensitive)) {
-    size_t subtype = mimeType.find("+json", 12, TextCaseInsensitive);
+  if (mimeType.startsWith("application/", TextCaseASCIIInsensitive)) {
+    size_t subtype = mimeType.find("+json", 12, TextCaseASCIIInsensitive);
     if (subtype != kNotFound) {
       // Just check that a parameter wasn't matched.
       size_t parameterMarker = mimeType.find(";");
@@ -189,7 +189,7 @@ bool DOMImplementation::isJSONMIMEType(const String& mimeType) {
 }
 
 static bool isTextPlainType(const String& mimeType) {
-  return mimeType.startsWith("text/", TextCaseInsensitive) &&
+  return mimeType.startsWith("text/", TextCaseASCIIInsensitive) &&
          !(equalIgnoringCase(mimeType, "text/html") ||
            equalIgnoringCase(mimeType, "text/xml") ||
            equalIgnoringCase(mimeType, "text/xsl"));

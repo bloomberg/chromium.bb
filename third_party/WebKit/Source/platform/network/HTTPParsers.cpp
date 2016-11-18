@@ -331,7 +331,8 @@ bool parseHTTPRefresh(const String& refresh,
       ++pos;
     skipWhiteSpace(refresh, pos, matcher);
     unsigned urlStartPos = pos;
-    if (refresh.find("url", urlStartPos, TextCaseInsensitive) == urlStartPos) {
+    if (refresh.find("url", urlStartPos, TextCaseASCIIInsensitive) ==
+        urlStartPos) {
       urlStartPos += 3;
       skipWhiteSpace(refresh, urlStartPos, matcher);
       if (refresh[urlStartPos] == '=') {
@@ -431,7 +432,7 @@ void findCharsetInMediaType(const String& mediaType,
   unsigned length = mediaType.length();
 
   while (pos < length) {
-    pos = mediaType.find("charset", pos, TextCaseInsensitive);
+    pos = mediaType.find("charset", pos, TextCaseASCIIInsensitive);
     if (pos == kNotFound || !pos) {
       charsetLen = 0;
       return;

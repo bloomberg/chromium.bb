@@ -47,9 +47,10 @@ bool CSSFontFaceSrcValue::isSupportedFormat() const {
   // with the old WinIE style of font-face, we will also check to see if the URL
   // ends with .eot.  If so, we'll go ahead and assume that we shouldn't load
   // it.
-  if (m_format.isEmpty())
-    return m_absoluteResource.startsWith("data:", TextCaseInsensitive) ||
-           !m_absoluteResource.endsWith(".eot", TextCaseInsensitive);
+  if (m_format.isEmpty()) {
+    return m_absoluteResource.startsWith("data:", TextCaseASCIIInsensitive) ||
+           !m_absoluteResource.endsWith(".eot", TextCaseASCIIInsensitive);
+  }
 
   return FontCustomPlatformData::supportsFormat(m_format);
 }

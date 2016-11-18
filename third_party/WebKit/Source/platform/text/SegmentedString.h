@@ -224,7 +224,7 @@ class PLATFORM_EXPORT SegmentedString {
     return lookAheadInline(string, TextCaseSensitive);
   }
   LookAheadResult lookAheadIgnoringCase(const String& string) {
-    return lookAheadInline(string, TextCaseInsensitive);
+    return lookAheadInline(string, TextCaseASCIIInsensitive);
   }
 
   void advance() {

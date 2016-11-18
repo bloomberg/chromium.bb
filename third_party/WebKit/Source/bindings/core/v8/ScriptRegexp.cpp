@@ -47,7 +47,7 @@ ScriptRegexp::ScriptRegexp(const String& pattern,
   v8::TryCatch tryCatch(isolate);
 
   unsigned flags = v8::RegExp::kNone;
-  if (caseSensitivity == TextCaseInsensitive)
+  if (caseSensitivity != TextCaseSensitive)
     flags |= v8::RegExp::kIgnoreCase;
   if (multilineMode == MultilineEnabled)
     flags |= v8::RegExp::kMultiline;

@@ -349,12 +349,13 @@ Vector<double> parseHTMLListOfFloatingPointNumbers(const String& input) {
 static const char charsetString[] = "charset";
 static const size_t charsetLength = sizeof("charset") - 1;
 
+// https://html.spec.whatwg.org/multipage/infrastructure.html#extracting-character-encodings-from-meta-elements
 String extractCharset(const String& value) {
   size_t pos = 0;
   unsigned length = value.length();
 
   while (pos < length) {
-    pos = value.find(charsetString, pos, TextCaseInsensitive);
+    pos = value.find(charsetString, pos, TextCaseASCIIInsensitive);
     if (pos == kNotFound)
       break;
 

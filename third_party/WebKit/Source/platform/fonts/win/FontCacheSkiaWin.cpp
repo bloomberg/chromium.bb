@@ -281,7 +281,7 @@ static bool typefacesHasWeightSuffix(const AtomicString& family,
   size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
   for (size_t i = 0; i < numVariants; i++) {
     const FamilyWeightSuffix& entry = variantForSuffix[i];
-    if (family.endsWith(entry.suffix, TextCaseInsensitive)) {
+    if (family.endsWith(entry.suffix, TextCaseUnicodeInsensitive)) {
       String familyName = family.getString();
       familyName.truncate(family.length() - entry.length);
       adjustedName = AtomicString(familyName);
@@ -318,7 +318,7 @@ static bool typefacesHasStretchSuffix(const AtomicString& family,
   size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
   for (size_t i = 0; i < numVariants; i++) {
     const FamilyStretchSuffix& entry = variantForSuffix[i];
-    if (family.endsWith(entry.suffix, TextCaseInsensitive)) {
+    if (family.endsWith(entry.suffix, TextCaseUnicodeInsensitive)) {
       String familyName = family.getString();
       familyName.truncate(family.length() - entry.length);
       adjustedName = AtomicString(familyName);

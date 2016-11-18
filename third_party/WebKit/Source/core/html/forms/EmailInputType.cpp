@@ -54,7 +54,7 @@ static const int32_t idnaConversionOption = UIDNA_CHECK_BIDI;
 
 std::unique_ptr<ScriptRegexp> EmailInputType::createEmailRegexp() {
   return std::unique_ptr<ScriptRegexp>(
-      new ScriptRegexp(emailPattern, TextCaseInsensitive));
+      new ScriptRegexp(emailPattern, TextCaseUnicodeInsensitive));
 }
 
 String EmailInputType::convertEmailAddressToASCII(const ScriptRegexp& regexp,

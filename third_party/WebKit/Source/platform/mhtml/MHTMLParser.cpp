@@ -60,7 +60,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   static MIMEHeader* parseHeader(SharedBufferChunkReader* crLFLineReader);
 
   bool isMultipart() const {
-    return m_contentType.startsWith("multipart/", TextCaseInsensitive);
+    return m_contentType.startsWith("multipart/", TextCaseASCIIInsensitive);
   }
 
   String contentType() const { return m_contentType; }

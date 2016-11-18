@@ -55,7 +55,7 @@ enum TextCaseSensitivity {
   // Unicode aware case insensitive matching. Non-ASCII characters might match
   // to ASCII characters. This flag is rarely used to implement web platform
   // features.
-  TextCaseInsensitive
+  TextCaseUnicodeInsensitive
 };
 
 enum StripBehavior { StripExtraWhiteSpace, DoNotStripWhiteSpace };
@@ -840,7 +840,7 @@ struct DefaultHash<RefPtr<StringImpl>> {
 
 using WTF::StringImpl;
 using WTF::TextCaseASCIIInsensitive;
-using WTF::TextCaseInsensitive;
+using WTF::TextCaseUnicodeInsensitive;
 using WTF::TextCaseSensitive;
 using WTF::TextCaseSensitivity;
 using WTF::equal;

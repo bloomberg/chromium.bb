@@ -47,6 +47,8 @@ class CORE_EXPORT ScriptRegexp {
     UTF16,  // NOLINT
   };
 
+  // For TextCaseSensitivity argument, TextCaseASCIIInsensitive and
+  // TextCaseUnicodeInsensitive has identical behavior. They just add "i" flag.
   ScriptRegexp(const String&,
                TextCaseSensitivity,
                MultilineMode = MultilineDisabled,

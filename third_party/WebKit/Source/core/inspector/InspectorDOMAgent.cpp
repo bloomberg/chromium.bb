@@ -994,9 +994,10 @@ Response InspectorDOMAgent::performSearch(
                equalIgnoringCase(node->nodeName(), tagNameQuery)) ||
               (startTagFound && !endTagFound &&
                node->nodeName().startsWith(tagNameQuery,
-                                           TextCaseInsensitive)) ||
+                                           TextCaseUnicodeInsensitive)) ||
               (!startTagFound && endTagFound &&
-               node->nodeName().endsWith(tagNameQuery, TextCaseInsensitive))) {
+               node->nodeName().endsWith(tagNameQuery,
+                                         TextCaseUnicodeInsensitive))) {
             resultCollector.add(node);
             break;
           }
@@ -1006,12 +1007,13 @@ Response InspectorDOMAgent::performSearch(
           for (auto& attribute : attributes) {
             // Add attribute pair
             if (attribute.localName().find(whitespaceTrimmedQuery, 0,
-                                           TextCaseInsensitive) != kNotFound) {
+                                           TextCaseUnicodeInsensitive) !=
+                kNotFound) {
               resultCollector.add(node);
               break;
             }
-            size_t foundPosition =
-                attribute.value().find(attributeQuery, 0, TextCaseInsensitive);
+            size_t foundPosition = attribute.value().find(
+                attributeQuery, 0, TextCaseUnicodeInsensitive);
             if (foundPosition != kNotFound) {
               if (!exactAttributeMatch ||
                   (!foundPosition &&

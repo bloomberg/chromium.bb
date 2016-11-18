@@ -456,109 +456,119 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(
   // Check for Quirks Mode.
   if (name != "html" ||
       publicId.startsWith("+//Silmaril//dtd html Pro v0r11 19970101//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith(
           "-//AdvaSoft Ltd//DTD HTML 3.0 asWedit + extensions//",
-          TextCaseInsensitive) ||
+          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//AS//DTD HTML 3.0 asWedit + extensions//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML 2.0 Level 1//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML 2.0 Level 2//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML 2.0 Strict Level 1//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML 2.0 Strict Level 2//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML 2.0 Strict//",
-                          TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML 2.0//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML 2.1E//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML 3.0//", TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML 2.0//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML 2.1E//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML 3.0//",
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML 3.2 Final//",
-                          TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML 3.2//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML 3//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML Level 0//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML Level 1//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML Level 2//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML Level 3//", TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML 3.2//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML 3//", TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML Level 0//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML Level 1//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML Level 2//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML Level 3//",
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML Strict Level 0//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML Strict Level 1//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML Strict Level 2//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//IETF//DTD HTML Strict Level 3//",
-                          TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML Strict//", TextCaseInsensitive) ||
-      publicId.startsWith("-//IETF//DTD HTML//", TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML Strict//",
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//IETF//DTD HTML//", TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Metrius//DTD Metrius Presentational//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith(
           "-//Microsoft//DTD Internet Explorer 2.0 HTML Strict//",
-          TextCaseInsensitive) ||
+          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Microsoft//DTD Internet Explorer 2.0 HTML//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Microsoft//DTD Internet Explorer 2.0 Tables//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith(
           "-//Microsoft//DTD Internet Explorer 3.0 HTML Strict//",
-          TextCaseInsensitive) ||
+          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Microsoft//DTD Internet Explorer 3.0 HTML//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Microsoft//DTD Internet Explorer 3.0 Tables//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Netscape Comm. Corp.//DTD HTML//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Netscape Comm. Corp.//DTD Strict HTML//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//O'Reilly and Associates//DTD HTML 2.0//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//O'Reilly and Associates//DTD HTML Extended 1.0//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith(
           "-//O'Reilly and Associates//DTD HTML Extended Relaxed 1.0//",
-          TextCaseInsensitive) ||
+          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//SoftQuad Software//DTD HoTMetaL PRO "
                           "6.0::19990601::extensions to HTML 4.0//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//SoftQuad//DTD HoTMetaL PRO "
                           "4.0::19971010::extensions to HTML 4.0//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Spyglass//DTD HTML 2.0 Extended//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//SQ//DTD HTML 2.0 HoTMetaL + extensions//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//Sun Microsystems Corp.//DTD HotJava HTML//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith(
           "-//Sun Microsystems Corp.//DTD HotJava Strict HTML//",
-          TextCaseInsensitive) ||
+          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML 3 1995-03-24//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML 3.2 Draft//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML 3.2 Final//",
-                          TextCaseInsensitive) ||
-      publicId.startsWith("-//W3C//DTD HTML 3.2//", TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//W3C//DTD HTML 3.2//", TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML 3.2S Draft//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML 4.0 Frameset//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML 4.0 Transitional//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML Experimental 19960712//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD HTML Experimental 970421//",
-                          TextCaseInsensitive) ||
-      publicId.startsWith("-//W3C//DTD W3 HTML//", TextCaseInsensitive) ||
-      publicId.startsWith("-//W3O//DTD W3 HTML 3.0//", TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//W3C//DTD W3 HTML//", TextCaseASCIIInsensitive) ||
+      publicId.startsWith("-//W3O//DTD W3 HTML 3.0//",
+                          TextCaseASCIIInsensitive) ||
       equalIgnoringCase(publicId, "-//W3O//DTD W3 HTML Strict 3.0//EN//") ||
       publicId.startsWith("-//WebTechs//DTD Mozilla HTML 2.0//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//WebTechs//DTD Mozilla HTML//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       equalIgnoringCase(publicId, "-/W3C/DTD HTML 4.0 Transitional/EN") ||
       equalIgnoringCase(publicId, "HTML") ||
       equalIgnoringCase(
@@ -566,25 +576,25 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(
           "http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd") ||
       (systemId.isEmpty() &&
        publicId.startsWith("-//W3C//DTD HTML 4.01 Frameset//",
-                           TextCaseInsensitive)) ||
+                           TextCaseASCIIInsensitive)) ||
       (systemId.isEmpty() &&
        publicId.startsWith("-//W3C//DTD HTML 4.01 Transitional//",
-                           TextCaseInsensitive))) {
+                           TextCaseASCIIInsensitive))) {
     setCompatibilityMode(Document::QuirksMode);
     return;
   }
 
   // Check for Limited Quirks Mode.
   if (publicId.startsWith("-//W3C//DTD XHTML 1.0 Frameset//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       publicId.startsWith("-//W3C//DTD XHTML 1.0 Transitional//",
-                          TextCaseInsensitive) ||
+                          TextCaseASCIIInsensitive) ||
       (!systemId.isEmpty() &&
        publicId.startsWith("-//W3C//DTD HTML 4.01 Frameset//",
-                           TextCaseInsensitive)) ||
+                           TextCaseASCIIInsensitive)) ||
       (!systemId.isEmpty() &&
        publicId.startsWith("-//W3C//DTD HTML 4.01 Transitional//",
-                           TextCaseInsensitive))) {
+                           TextCaseASCIIInsensitive))) {
     setCompatibilityMode(Document::LimitedQuirksMode);
     return;
   }

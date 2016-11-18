@@ -93,7 +93,7 @@ static inline bool shouldUpdateHeaderAfterRevalidation(
   for (size_t i = 0;
        i < WTF_ARRAY_LENGTH(headerPrefixesToIgnoreAfterRevalidation); i++) {
     if (header.startsWith(headerPrefixesToIgnoreAfterRevalidation[i],
-                          TextCaseInsensitive))
+                          TextCaseASCIIInsensitive))
       return false;
   }
   return true;
