@@ -65,6 +65,7 @@ class WEB_EXPORT WebSettingsImpl final
   void setAlwaysShowContextMenuOnTouch(bool) override;
   void setAntialiased2dCanvasEnabled(bool) override;
   void setAntialiasedClips2dCanvasEnabled(bool) override;
+  void setForceSoftwareReadbackFrom2DCanvas(bool) override;
   void setAutoplayExperimentMode(const WebString&) override;
   void setAutoZoomFocusedNodeToLegibleScale(bool) override;
   void setBrowserSideNavigationEnabled(bool) override;

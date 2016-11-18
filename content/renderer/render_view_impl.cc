@@ -891,6 +891,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAccelerated2dCanvasMSAASampleCount(
       prefs.accelerated_2d_canvas_msaa_sample_count);
 
+  // Force readback from 2D canvas to use software code path. crbug.com/665656
+  settings->setForceSoftwareReadbackFrom2DCanvas(
+      prefs.force_software_readback_from_2d_canvas);
+
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(prefs.tabs_to_links);

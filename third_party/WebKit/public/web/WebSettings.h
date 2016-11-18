@@ -145,6 +145,7 @@ class WebSettings {
   virtual void setAlwaysShowContextMenuOnTouch(bool) = 0;
   virtual void setAntialiased2dCanvasEnabled(bool) = 0;
   virtual void setAntialiasedClips2dCanvasEnabled(bool) = 0;
+  virtual void setForceSoftwareReadbackFrom2DCanvas(bool) = 0;
   virtual void setAutoplayExperimentMode(const WebString&) = 0;
   virtual void setAutoZoomFocusedNodeToLegibleScale(bool) = 0;
   virtual void setBrowserSideNavigationEnabled(bool) = 0;
