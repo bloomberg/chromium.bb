@@ -8,6 +8,7 @@
 
 import argparse
 import collections
+import contextlib
 import itertools
 import logging
 import os
@@ -25,6 +26,7 @@ from devil.android import forwarder
 from devil.android import ports
 from devil.utils import reraiser_thread
 from devil.utils import run_tests_helper
+from devil.utils import signal_handler
 
 from pylib import constants
 from pylib.base import base_test_result
@@ -699,81 +701,110 @@ def RunTestsInPlatformMode(args):
   if args.command not in _SUPPORTED_IN_PLATFORM_MODE:
     infra_error('%s is not yet supported in platform mode' % args.command)
 
-  with environment_factory.CreateEnvironment(args, infra_error) as env:
-    with test_instance_factory.CreateTestInstance(args, infra_error) as test:
-      with test_run_factory.CreateTestRun(
-          args, env, test, infra_error) as test_run:
+  ### Set up sigterm handler.
 
-        # TODO(jbudorick): Rewrite results handling.
+  def unexpected_sigterm(_signum, _frame):
+    infra_error('Received SIGTERM. Shutting down.')
 
-        # all_raw_results is a list of lists of base_test_result.TestRunResults
-        # objects. Each instance of TestRunResults contains all test results
-        # produced by a single try, while each list of TestRunResults contains
-        # all tries in a single iteration.
-        all_raw_results = []
-        # all_iteration_results is a list of base_test_result.TestRunResults
-        # objects. Each instance of TestRunResults contains the last test result
-        # for each test run in that iteration.
-        all_iteration_results = []
+  sigterm_handler = signal_handler.SignalHandler(
+      signal.SIGTERM, unexpected_sigterm)
 
-        repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
-                       else itertools.count())
-        result_counts = collections.defaultdict(
-            lambda: collections.defaultdict(int))
-        iteration_count = 0
-        for _ in repetitions:
-          raw_results = test_run.RunTests()
-          if not raw_results:
-            continue
+  ### Set up results handling.
+  # TODO(jbudorick): Rewrite results handling.
 
-          all_raw_results.append(raw_results)
+  # all_raw_results is a list of lists of
+  # base_test_result.TestRunResults objects. Each instance of
+  # TestRunResults contains all test results produced by a single try,
+  # while each list of TestRunResults contains all tries in a single
+  # iteration.
+  all_raw_results = []
 
-          iteration_results = base_test_result.TestRunResults()
-          for r in reversed(raw_results):
-            iteration_results.AddTestRunResults(r)
-          all_iteration_results.append(iteration_results)
+  # all_iteration_results is a list of base_test_result.TestRunResults
+  # objects. Each instance of TestRunResults contains the last test
+  # result for each test run in that iteration.
+  all_iteration_results = []
 
-          iteration_count += 1
-          for r in iteration_results.GetAll():
-            result_counts[r.GetName()][r.GetType()] += 1
-          report_results.LogFull(
-              results=iteration_results,
-              test_type=test.TestType(),
-              test_package=test_run.TestPackage(),
-              annotation=getattr(args, 'annotations', None),
-              flakiness_server=getattr(args, 'flakiness_dashboard_server',
-                                       None))
-          if args.break_on_failure and not iteration_results.DidRunPass():
-            break
+  @contextlib.contextmanager
+  def noop():
+    yield
 
-        if iteration_count > 1:
-          # display summary results
-          # only display results for a test if at least one test did not pass
-          all_pass = 0
-          tot_tests = 0
-          for test_name in result_counts:
-            tot_tests += 1
-            if any(result_counts[test_name][x] for x in (
-                base_test_result.ResultType.FAIL,
-                base_test_result.ResultType.CRASH,
-                base_test_result.ResultType.TIMEOUT,
-                base_test_result.ResultType.UNKNOWN)):
-              logging.critical(
-                  '%s: %s',
-                  test_name,
-                  ', '.join('%s %s' % (str(result_counts[test_name][i]), i)
-                            for i in base_test_result.ResultType.GetTypes()))
-            else:
-              all_pass += 1
+  json_writer = noop()
+  if args.json_results_file:
+    @contextlib.contextmanager
+    def write_json_file():
+      try:
+        yield
+      finally:
+        json_results.GenerateJsonResultsFile(
+            all_raw_results, args.json_results_file)
 
-          logging.critical('%s of %s tests passed in all %s runs',
-                           str(all_pass),
-                           str(tot_tests),
-                           str(iteration_count))
+    json_writer = write_json_file()
 
-        if args.json_results_file:
-          json_results.GenerateJsonResultsFile(
-              all_raw_results, args.json_results_file)
+  ### Set up test objects.
+
+  env = environment_factory.CreateEnvironment(args, infra_error)
+  test_instance = test_instance_factory.CreateTestInstance(args, infra_error)
+  test_run = test_run_factory.CreateTestRun(
+      args, env, test_instance, infra_error)
+
+  ### Run.
+
+  with sigterm_handler, json_writer, env, test_instance, test_run:
+
+    repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
+                   else itertools.count())
+    result_counts = collections.defaultdict(
+        lambda: collections.defaultdict(int))
+    iteration_count = 0
+    for _ in repetitions:
+      raw_results = test_run.RunTests()
+      if not raw_results:
+        continue
+
+      all_raw_results.append(raw_results)
+
+      iteration_results = base_test_result.TestRunResults()
+      for r in reversed(raw_results):
+        iteration_results.AddTestRunResults(r)
+      all_iteration_results.append(iteration_results)
+
+      iteration_count += 1
+      for r in iteration_results.GetAll():
+        result_counts[r.GetName()][r.GetType()] += 1
+      report_results.LogFull(
+          results=iteration_results,
+          test_type=test_instance.TestType(),
+          test_package=test_run.TestPackage(),
+          annotation=getattr(args, 'annotations', None),
+          flakiness_server=getattr(args, 'flakiness_dashboard_server',
+                                   None))
+      if args.break_on_failure and not iteration_results.DidRunPass():
+        break
+
+    if iteration_count > 1:
+      # display summary results
+      # only display results for a test if at least one test did not pass
+      all_pass = 0
+      tot_tests = 0
+      for test_name in result_counts:
+        tot_tests += 1
+        if any(result_counts[test_name][x] for x in (
+            base_test_result.ResultType.FAIL,
+            base_test_result.ResultType.CRASH,
+            base_test_result.ResultType.TIMEOUT,
+            base_test_result.ResultType.UNKNOWN)):
+          logging.critical(
+              '%s: %s',
+              test_name,
+              ', '.join('%s %s' % (str(result_counts[test_name][i]), i)
+                        for i in base_test_result.ResultType.GetTypes()))
+        else:
+          all_pass += 1
+
+      logging.critical('%s of %s tests passed in all %s runs',
+                       str(all_pass),
+                       str(tot_tests),
+                       str(iteration_count))
 
   if args.command == 'perf' and (args.steps or args.single_step):
     return 0
