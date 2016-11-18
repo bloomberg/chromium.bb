@@ -7,5 +7,6 @@ include_rules = [
   "-third_party",
   "-ui",
 
+  "+ui/base/ui_features.h",  # Features header doesn't bring in all of UI.
   "+ui/events",
 ]

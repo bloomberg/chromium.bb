@@ -5,15 +5,17 @@
 #ifndef UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
 #define UI_EVENTS_KEYCODES_XKB_KEYSYM_H_
 
+#include "ui/base/ui_features.h"
+
 // This file provides definitions of the xkbcommon keysym type (xkb_keysym_t)
 // and values (XKB_KEY_...) for both xkbcommon and traditional X11.
 
-#if defined(USE_XKBCOMMON)
+#if BUILDFLAG(USE_XKBCOMMON)
 
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 
-#else  // !defined(USE_XKBCOMMON)
+#else  // !BUILDFLAG(USE_XKBCOMMON)
 
 #define XK_3270  // For XK_3270_BackTab in particular.
 #include <X11/X.h>

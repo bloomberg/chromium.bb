@@ -15,12 +15,9 @@ source_set("xkb") {
 
   deps = [
     "//base",
+    "//ui/base:ui_features",
     "//ui/events:dom_keycode_converter",
   ]
-
-  if (use_xkbcommon) {
-    defines = [ "USE_XKBCOMMON" ]
-  }
 }
 
 if (use_x11 || ozone_platform_x11) {

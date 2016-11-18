@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
 if (use_xkbcommon) {
@@ -34,7 +35,7 @@ source_set("wayland") {
     "//base",
     "//components/exo",
     "//device/gamepad",
-    "//ipc:ipc",
+    "//ipc",
     "//skia",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:alpha_compositing_protocol",
@@ -45,7 +46,8 @@ source_set("wayland") {
     "//third_party/wayland-protocols:viewporter_protocol",
     "//third_party/wayland-protocols:vsync_feedback_protocol",
     "//third_party/wayland-protocols:xdg_shell_protocol",
-    "//ui/aura:aura",
+    "//ui/aura",
+    "//ui/base",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/views",
@@ -61,7 +63,6 @@ source_set("wayland") {
 
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]
-    defines += [ "USE_XKBCOMMON" ]
     deps += [ "//ui/events/keycodes:xkb" ]
   }
 }

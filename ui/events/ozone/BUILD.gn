@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//ui/base/ui_features.gni")
 
 declare_args() {
   # Support ChromeOS touchpad gestures with ozone.
@@ -171,12 +172,6 @@ if (use_ozone) {
   }
 }
 
-config("events_ozone_layout_config") {
-  if (use_xkbcommon) {
-    defines = [ "USE_XKBCOMMON" ]
-  }
-}
-
 component("events_ozone_layout") {
   sources = [
     "layout/events_ozone_layout_export.h",
@@ -198,8 +193,6 @@ component("events_ozone_layout") {
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
   ]
-
-  public_configs = [ ":events_ozone_layout_config" ]
 
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]

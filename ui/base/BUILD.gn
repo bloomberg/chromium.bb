@@ -49,7 +49,10 @@ component("ui_data_pack") {
 
 buildflag_header("ui_features") {
   header = "ui_features.h"
-  flags = [ "ENABLE_HIDPI=$enable_hidpi" ]
+  flags = [
+    "ENABLE_HIDPI=$enable_hidpi",
+    "USE_XKBCOMMON=$use_xkbcommon",
+  ]
 }
 
 component("base") {
