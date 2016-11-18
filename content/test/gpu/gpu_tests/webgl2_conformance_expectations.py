@@ -508,6 +508,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['linux', 'intel'], bug=635528)
 
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+       ['linux', 'intel'], bug=666384)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
+       ['linux', 'intel'], bug=666384)
+
     # Fails on Intel Mesa GL 3.3, passes on Intel Mesa GL 4.5.
     self.Fail('conformance2/misc/views-with-offsets.html',
         ['linux', 'intel', 'no_angle'], bug=664180)
