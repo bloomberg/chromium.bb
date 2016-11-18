@@ -229,7 +229,7 @@ if (!is_chromeos && enable_remoting_host) {
       }
 
       if (enable_webrtc) {
-        deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+        deps += [ "//third_party/libjingle/webrtc:libjingle_webrtc" ]
       }
 
       if (is_desktop_linux) {

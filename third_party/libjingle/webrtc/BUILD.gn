@@ -1,0 +1,65 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file contains the webrtc-related build targets. They are in a separate
+# directory so the embedder can decide whether it wants to use webrtc by
+# just depending on these or not, eliminating the need for build flags at this
+# layer.
+
+# TODO(kjellander): Move this target into //third_party/webrtc_overrides as
+# soon as the work in bugs.webrtc.org/4256 has gotten rid of the duplicated
+# source listings.
+static_library("libjingle_webrtc") {
+  sources = [
+    "//third_party/webrtc_overrides/init_webrtc.cc",
+    "//third_party/webrtc_overrides/init_webrtc.h",
+  ]
+  configs += [
+    "//third_party/libjingle:jingle_unexported_configs",
+    "//third_party/webrtc:common_config",
+  ]
+  public_configs = [
+    "//third_party/libjingle:jingle_public_configs",
+    "//third_party/webrtc:common_inherited_config",
+  ]
+  public_deps = [
+    ":libjingle_webrtc_common",
+  ]
+}
+
+source_set("libjingle_webrtc_common") {
+  configs += [
+    "//third_party/libjingle:jingle_unexported_configs",
+    "//third_party/webrtc:common_config",
+  ]
+  public_configs = [
+    "//third_party/libjingle:jingle_public_configs",
+    "//third_party/webrtc:common_inherited_config",
+  ]
+
+  deps = [
+    "//third_party/libjingle:libjingle",
+    "//third_party/libsrtp",
+    "//third_party/usrsctp",
+    "//third_party/webrtc/api:libjingle_peerconnection",
+    "//third_party/webrtc/media:rtc_media",
+    "//third_party/webrtc/modules/media_file",
+    "//third_party/webrtc/modules/video_capture",
+    "//third_party/webrtc/pc:rtc_pc",
+    "//third_party/webrtc/system_wrappers",
+    "//third_party/webrtc/voice_engine",
+  ]
+}
+
+static_library("libstunprober") {
+  p2p_dir = "//third_party/webrtc/p2p"
+  sources = [
+    "$p2p_dir/stunprober/stunprober.cc",
+  ]
+
+  deps = [
+    ":libjingle_webrtc_common",
+    "//third_party/webrtc/base:rtc_base",
+  ]
+}
