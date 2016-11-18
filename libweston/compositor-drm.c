@@ -1199,6 +1199,9 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		   bool is_opaque, enum drm_fb_type type)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
+#ifdef HAVE_GBM_MODIFIERS
+	int i;
+#endif
 
 	if (fb) {
 		assert(fb->type == type);
@@ -1212,15 +1215,25 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 	fb->type = type;
 	fb->refcnt = 1;
 	fb->bo = bo;
+	fb->fd = backend->drm.fd;
 
 	fb->width = gbm_bo_get_width(bo);
 	fb->height = gbm_bo_get_height(bo);
+	fb->format = pixel_format_get_info(gbm_bo_get_format(bo));
+	fb->size = 0;
+
+#ifdef HAVE_GBM_MODIFIERS
+	fb->modifier = gbm_bo_get_modifier(bo);
+	for (i = 0; i < gbm_bo_get_plane_count(bo); i++) {
+		fb->strides[i] = gbm_bo_get_stride_for_plane(bo, i);
+		fb->handles[i] = gbm_bo_get_handle_for_plane(bo, i).u32;
+		fb->offsets[i] = gbm_bo_get_offset(bo, i);
+	}
+#else
 	fb->strides[0] = gbm_bo_get_stride(bo);
 	fb->handles[0] = gbm_bo_get_handle(bo).u32;
-	fb->format = pixel_format_get_info(gbm_bo_get_format(bo));
 	fb->modifier = DRM_FORMAT_MOD_INVALID;
-	fb->size = 0;
-	fb->fd = backend->drm.fd;
+#endif
 
 	if (!fb->format) {
 		weston_log("couldn't look up format 0x%lx\n",
@@ -4365,13 +4378,39 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 		fallback_format_for(output->gbm_format),
 	};
 	int n_formats = 1;
+	struct weston_mode *mode = output->base.current_mode;
+	struct drm_plane *plane = output->scanout_plane;
+	unsigned int i;
 
-	output->gbm_surface = gbm_surface_create(b->gbm,
-					     output->base.current_mode->width,
-					     output->base.current_mode->height,
-					     format[0],
-					     GBM_BO_USE_SCANOUT |
-					     GBM_BO_USE_RENDERING);
+	for (i = 0; i < plane->count_formats; i++) {
+		if (plane->formats[i].format == output->gbm_format)
+			break;
+	}
+
+	if (i == plane->count_formats) {
+		weston_log("format 0x%x not supported by output %s\n",
+			   output->gbm_format, output->base.name);
+		return -1;
+	}
+
+#ifdef HAVE_GBM_MODIFIERS
+	if (plane->formats[i].count_modifiers > 0) {
+		output->gbm_surface =
+			gbm_surface_create_with_modifiers(b->gbm,
+							  mode->width,
+							  mode->height,
+							  output->gbm_format,
+							  plane->formats[i].modifiers,
+							  plane->formats[i].count_modifiers);
+	} else
+#endif
+	{
+		output->gbm_surface =
+		    gbm_surface_create(b->gbm, mode->width, mode->height,
+				       output->gbm_format,
+				       GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT);
+	}
+
 	if (!output->gbm_surface) {
 		weston_log("failed to create gbm surface\n");
 		return -1;

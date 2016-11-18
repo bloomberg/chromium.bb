@@ -215,6 +215,9 @@ if test x$enable_drm_compositor = xyes; then
   PKG_CHECK_MODULES(DRM_COMPOSITOR_FORMATS_BLOB, [libdrm >= 2.4.83],
 		    [AC_DEFINE([HAVE_DRM_FORMATS_BLOB], 1, [libdrm supports modifier advertisement])],
 		    [AC_MSG_WARN([libdrm does not support modifier advertisement])])
+  PKG_CHECK_MODULES(DRM_COMPOSITOR_GBM_MODIFIERS, [gbm >= 17.1],
+		    [AC_DEFINE([HAVE_GBM_MODIFIERS], 1, [GBM supports modifiers])],
+		    [AC_MSG_WARN([GBM does not support modifiers])])
   PKG_CHECK_MODULES(DRM_COMPOSITOR_GBM, [gbm >= 17.2],
 		    [AC_DEFINE([HAVE_GBM_FD_IMPORT], 1, [gbm supports import with modifiers])],
 		    [AC_MSG_WARN([GBM does not support dmabuf import, will omit that capability])])
