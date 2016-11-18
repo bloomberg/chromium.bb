@@ -16,6 +16,10 @@ mojom("experimental_interfaces") {
     "device.mojom",
   ]
 
+  public_deps = [
+    ":interfaces",
+  ]
+
   visibility = [
     "//device/bluetooth:mojo",
     "//chrome/browser:*",

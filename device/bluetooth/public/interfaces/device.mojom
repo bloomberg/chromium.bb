@@ -4,6 +4,8 @@
 
 module bluetooth.mojom;
 
+import "device/bluetooth/public/interfaces/uuid.mojom";
+
 // TODO(crbug.com/657632): Remove when numerical values can be optional.
 struct RSSIWrapper {
   int8 value;
@@ -13,11 +15,23 @@ struct DeviceInfo {
   string? name;
   string name_for_display;
   string address;
+  bool is_gatt_connected;
   RSSIWrapper? rssi;
 };
 
+struct ServiceInfo {
+  UUID uuid;
+  bool is_primary;
+};
+
 interface Device {
+  // Disconnects and deletes the Device.
+  Disconnect();
+
   // Gets basic information about the device. Returns null, if no device is
   // available.
   GetInfo() => (DeviceInfo? info);
+
+  // Gets the GATT Services in this device's GATT Server.
+  GetServices() => (array<ServiceInfo> services);
 };

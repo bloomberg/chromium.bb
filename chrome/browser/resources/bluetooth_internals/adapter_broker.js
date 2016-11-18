@@ -27,6 +27,31 @@ cr.define('adapter_broker', function() {
     __proto__: cr.EventTarget.prototype,
 
     /**
+     * Creates a GATT connection to the device with |address|.
+     * @param {string} address
+     * @return {!Promise<!interfaces.BluetoothDevice.Device.proxyClass>}
+     */
+    connectToDevice: function(address) {
+      return this.adapter_.connectToDevice(address).then(function(response) {
+        if (response.result !=
+            interfaces.BluetoothAdapter.ConnectResult.SUCCESS) {
+          // TODO(crbug.com/663394): Replace with more descriptive error
+          // messages.
+          var ConnectResult = interfaces.BluetoothAdapter.ConnectResult;
+          var errorString = Object.keys(ConnectResult).find(function(key) {
+            return ConnectResult[key] === response.result;
+          });
+
+          throw new Error(errorString);
+        }
+
+        return interfaces.Connection.bindHandleToProxy(
+            response.device,
+            interfaces.BluetoothDevice.Device);
+      });
+    },
+
+    /**
      * Sets client of Adapter service.
      * @param {!interfaces.BluetoothAdapter.AdapterClient} adapterClient
      */

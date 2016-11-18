@@ -6,9 +6,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/device.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "device/bluetooth/public/interfaces/connect_result_type_converter.h"
 
 namespace bluetooth {
 
@@ -34,12 +35,21 @@ void Adapter::GetInfo(const GetInfoCallback& callback) {
   callback.Run(std::move(adapter_info));
 }
 
-void Adapter::GetDevice(const std::string& address,
-                        const GetDeviceCallback& callback) {
-  mojom::DevicePtr device_ptr;
-  mojo::MakeStrongBinding(base::MakeUnique<Device>(address, adapter_),
-                          mojo::GetProxy(&device_ptr));
-  callback.Run(std::move(device_ptr));
+void Adapter::ConnectToDevice(const std::string& address,
+                              const ConnectToDeviceCallback& callback) {
+  device::BluetoothDevice* device = adapter_->GetDevice(address);
+
+  if (!device) {
+    callback.Run(mojom::ConnectResult::DEVICE_NO_LONGER_IN_RANGE,
+                 nullptr /* device */);
+    return;
+  }
+
+  device->CreateGattConnection(
+      base::Bind(&Adapter::OnGattConnected, weak_ptr_factory_.GetWeakPtr(),
+                 callback),
+      base::Bind(&Adapter::OnConnectError, weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void Adapter::GetDevices(const GetDevicesCallback& callback) {
@@ -82,4 +92,18 @@ void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
   }
 }
 
+void Adapter::OnGattConnected(
+    const ConnectToDeviceCallback& callback,
+    std::unique_ptr<device::BluetoothGattConnection> connection) {
+  mojom::DevicePtr device_ptr;
+  Device::Create(adapter_, std::move(connection), mojo::GetProxy(&device_ptr));
+  callback.Run(mojom::ConnectResult::SUCCESS, std::move(device_ptr));
+}
+
+void Adapter::OnConnectError(
+    const ConnectToDeviceCallback& callback,
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  callback.Run(mojo::ConvertTo<mojom::ConnectResult>(error_code),
+               nullptr /* Device */);
+}
 }  // namespace bluetooth

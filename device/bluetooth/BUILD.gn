@@ -22,6 +22,7 @@ config("bluetooth_config") {
 
 source_set("mojo") {
   sources = [
+    "//device/bluetooth/public/interfaces/connect_result_type_converter.h",
     "adapter.cc",
     "adapter.h",
     "adapter_factory.cc",
@@ -33,6 +34,7 @@ source_set("mojo") {
   public_deps = [
     ":bluetooth",
     "//device/bluetooth/public/interfaces:experimental_interfaces",
+    "//mojo/public/cpp/bindings",
   ]
 }
 

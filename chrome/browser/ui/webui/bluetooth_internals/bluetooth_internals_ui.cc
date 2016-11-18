@@ -35,6 +35,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
   html_source->AddResourcePath(
       "device/bluetooth/public/interfaces/device.mojom",
       IDR_BLUETOOTH_DEVICE_MOJO_JS);
+  html_source->AddResourcePath("device/bluetooth/public/interfaces/uuid.mojom",
+                               IDR_BLUETOOTH_UUID_MOJO_JS);
   html_source->SetDefaultResource(IDR_BLUETOOTH_INTERNALS_HTML);
   html_source->DisableI18nAndUseGzipForAllPaths();
 
