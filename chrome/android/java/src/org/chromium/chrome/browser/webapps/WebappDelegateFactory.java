@@ -15,8 +15,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
 /**
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
@@ -33,12 +35,19 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
 
         @Override
         public void activateContents() {
+            // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
+            // will fire an Intent to launch the correct WebappActivity or WebApkActivity. On L+
+            // this could probably be changed to call AppTask.moveToFront(), but for backwards
+            // compatibility we relaunch it the hard way.
             String startUrl = mActivity.getWebappInfo().uri().toString();
 
-            // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
-            // will fire an Intent to launch the correct WebappActivity.  On L+ this could probably
-            // be changed to call AppTask.moveToFront(), but for backwards compatibility we relaunch
-            // it the hard way.
+            if (!TextUtils.isEmpty(mActivity.getWebappInfo().webApkPackageName())) {
+                Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
+                        mActivity.getWebappInfo().webApkPackageName(), startUrl);
+                IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
+                return;
+            }
+
             Intent intent = new Intent();
             intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
             intent.setPackage(mActivity.getPackageName());
@@ -47,7 +56,7 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
             intent.putExtra(
                     ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(mActivity, startUrl));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(intent);
+            IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
         }
     }
 
