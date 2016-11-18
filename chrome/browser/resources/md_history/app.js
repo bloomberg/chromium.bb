@@ -147,7 +147,11 @@ Polymer({
     }
 
     // Lazily load the remainder of the UI.
-    md_history.ensureLazyLoaded();
+    md_history.ensureLazyLoaded().then(function() {
+      window.requestIdleCallback(function() {
+        document.fonts.load('bold 12px Roboto');
+      });
+    });
   },
 
   /** Overridden from IronScrollTargetBehavior */
