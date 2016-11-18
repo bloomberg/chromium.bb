@@ -19,6 +19,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
@@ -39,6 +40,11 @@ import java.util.ArrayList;
  */
 public class ChromeFullscreenManager
         extends FullscreenManager implements ActivityStateListener, WindowFocusChangedListener {
+
+    // The amount of time to delay the control show request after returning to a once visible
+    // activity.  This delay is meant to allow Android to run its Activity focusing animation and
+    // have the controls scroll back in smoothly once that has finished.
+    private static final long ACTIVITY_RETURN_SHOW_REQUEST_DELAY_MS = 100;
 
     private final Activity mActivity;
     private final Window mWindow;
@@ -189,9 +195,12 @@ public class ChromeFullscreenManager
 
     @Override
     public void setTab(Tab tab) {
+        Tab previousTab = getTab();
         super.setTab(tab);
         mBrowserVisibilityDelegate.setTab(getTab());
-        if (tab != null) mBrowserVisibilityDelegate.showControlsTransient();
+        if (tab != null && previousTab != getTab()) {
+            mBrowserVisibilityDelegate.showControlsTransient();
+        }
     }
 
     @Override
@@ -202,7 +211,12 @@ public class ChromeFullscreenManager
             // notification bar when this was done in onStart()).
             setPersistentFullscreenMode(false);
         } else if (newState == ActivityState.STARTED) {
-            mBrowserVisibilityDelegate.showControlsTransient();
+            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mBrowserVisibilityDelegate.showControlsTransient();
+                }
+            }, ACTIVITY_RETURN_SHOW_REQUEST_DELAY_MS);
         } else if (newState == ActivityState.DESTROYED) {
             ApplicationStatus.unregisterActivityStateListener(this);
             ((BaseChromiumApplication) mWindow.getContext().getApplicationContext())
