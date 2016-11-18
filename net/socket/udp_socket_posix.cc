@@ -43,6 +43,13 @@
 #include "base/strings/utf_string_conversions.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// This was needed to debug crbug.com/640281.
+// TODO(zhongyi): Remove once the bug is resolved.
+#include <dlfcn.h>
+#include <pthread.h>
+#endif
+
 namespace net {
 
 namespace {
@@ -71,6 +78,74 @@ int GetIPv4AddressFromIndex(int socket, uint32_t index, uint32_t* address) {
 }
 
 #endif  // OS_MACOSX
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+
+// On OSX the file descriptor is guarded to detect the cause of
+// crbug.com/640281. guarded API is supported only on newer versions of OSX,
+// so the symbols need to be resolved dynamically.
+// TODO(zhongyi): Removed this code once the bug is resolved.
+
+typedef uint64_t guardid_t;
+
+typedef int (*GuardedCloseNpFunction)(int fd, const guardid_t* guard);
+typedef int (*ChangeFdguardNpFunction)(int fd,
+                                       const guardid_t* guard,
+                                       u_int flags,
+                                       const guardid_t* nguard,
+                                       u_int nflags,
+                                       int* fdflagsp);
+
+GuardedCloseNpFunction g_guarded_close_np = nullptr;
+ChangeFdguardNpFunction g_change_fdguard_np = nullptr;
+
+pthread_once_t g_guarded_functions_once = PTHREAD_ONCE_INIT;
+
+void InitGuardedFunctions() {
+  void* libsystem_handle =
+      dlopen("/usr/lib/libSystem.dylib", RTLD_LAZY | RTLD_LOCAL | RTLD_NOLOAD);
+  if (libsystem_handle) {
+    g_guarded_close_np = reinterpret_cast<GuardedCloseNpFunction>(
+        dlsym(libsystem_handle, "guarded_close_np"));
+    g_change_fdguard_np = reinterpret_cast<ChangeFdguardNpFunction>(
+        dlsym(libsystem_handle, "change_fdguard_np"));
+
+    // If for any reason only one of the functions is found, set both of them to
+    // nullptr.
+    if (!g_guarded_close_np || !g_change_fdguard_np) {
+      g_guarded_close_np = nullptr;
+      g_change_fdguard_np = nullptr;
+    }
+  }
+}
+
+int change_fdguard_np(int fd,
+                      const guardid_t* guard,
+                      u_int flags,
+                      const guardid_t* nguard,
+                      u_int nflags,
+                      int* fdflagsp) {
+  CHECK_EQ(pthread_once(&g_guarded_functions_once, InitGuardedFunctions), 0);
+  // Older version of OSX may not support guarded API.
+  if (!g_change_fdguard_np)
+    return 0;
+  return g_change_fdguard_np(fd, guard, flags, nguard, nflags, fdflagsp);
+}
+
+int guarded_close_np(int fd, const guardid_t* guard) {
+  // Older version of OSX may not support guarded API.
+  if (!g_guarded_close_np)
+    return close(fd);
+
+  return g_guarded_close_np(fd, guard);
+}
+
+const unsigned int GUARD_CLOSE = 1u << 0;
+const unsigned int GUARD_DUP = 1u << 1;
+
+const guardid_t kSocketFdGuard = 0xD712BC0BC9A4EAD4;
+
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace
 
@@ -112,6 +187,10 @@ int UDPSocketPosix::Open(AddressFamily address_family) {
   socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, 0);
   if (socket_ == kInvalidSocket)
     return MapSystemError(errno);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  PCHECK(change_fdguard_np(socket_, NULL, 0, &kSocketFdGuard,
+                           GUARD_CLOSE | GUARD_DUP, NULL) == 0);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   if (!base::SetNonBlocking(socket_)) {
     const int err = MapSystemError(errno);
     Close();
@@ -141,7 +220,11 @@ void UDPSocketPosix::Close() {
   ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  PCHECK(IGNORE_EINTR(guarded_close_np(socket_, &kSocketFdGuard)) == 0);
+#else
   PCHECK(IGNORE_EINTR(close(socket_)) == 0);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   socket_ = kInvalidSocket;
   addr_family_ = 0;
