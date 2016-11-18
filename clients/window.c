@@ -645,7 +645,7 @@ egl_window_surface_destroy(struct toysurface *base)
 	struct display *d = surface->display;
 
 	cairo_surface_destroy(surface->cairo_surface);
-	eglDestroySurface(d->dpy, surface->egl_surface);
+	weston_platform_destroy_egl_surface(d->dpy, surface->egl_surface);
 	wl_egl_window_destroy(surface->egl_window);
 	surface->surface = NULL;
 
