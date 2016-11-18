@@ -306,11 +306,11 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle* handle) {
   // TODO(reveman): Add support for other types of GpuMemoryBuffers.
 
-  // AllocateForChildProcess() will check if |width| and |height| are valid
+  // AllocateGpuMemoryBuffer() will check if |width| and |height| are valid
   // and handle failure in a controlled way when not. We just need to make
   // sure |usage| is supported here.
   if (gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
-    *handle = gpu::GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
+    *handle = gpu::GpuMemoryBufferImplSharedMemory::AllocateGpuMemoryBuffer(
         id, gfx::Size(width, height), format);
   }
 }

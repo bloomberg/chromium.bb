@@ -161,7 +161,7 @@ RenderMessageFilter::~RenderMessageFilter() {
   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
       BrowserGpuMemoryBufferManager::current();
   if (gpu_memory_buffer_manager)
-    gpu_memory_buffer_manager->ProcessRemoved(PeerHandle(), render_process_id_);
+    gpu_memory_buffer_manager->ProcessRemoved(render_process_id_);
   discardable_memory::DiscardableSharedMemoryManager::current()->ClientRemoved(
       render_process_id_);
 }
@@ -590,8 +590,7 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 
   BrowserGpuMemoryBufferManager::current()
       ->AllocateGpuMemoryBufferForChildProcess(
-          id, gfx::Size(width, height), format, usage, PeerHandle(),
-          render_process_id_,
+          id, gfx::Size(width, height), format, usage, render_process_id_,
           base::Bind(&RenderMessageFilter::GpuMemoryBufferAllocated, this,
                      reply));
 }
@@ -667,7 +666,7 @@ void RenderMessageFilter::OnDeletedGpuMemoryBuffer(
   DCHECK(BrowserGpuMemoryBufferManager::current());
 
   BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
-      id, PeerHandle(), render_process_id_, sync_token);
+      id, render_process_id_, sync_token);
 }
 
 }  // namespace content
