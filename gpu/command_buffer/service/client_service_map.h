@@ -54,6 +54,24 @@ class ClientServiceMap {
     return invalid_service_id();
   }
 
+  bool GetClientID(ServiceType service_id, ClientType* client_id) const {
+    if (service_id == 0) {
+      if (client_id) {
+        *client_id = 0;
+      }
+      return true;
+    }
+    for (auto mapping : client_to_service_) {
+      if (mapping.second == service_id) {
+        if (client_id) {
+          *client_id = mapping.first;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
   ServiceType invalid_service_id() const {
     return std::numeric_limits<ServiceType>::max();
   }

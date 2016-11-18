@@ -878,8 +878,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetBooleanv(GLenum pname,
                                                         GLsizei bufsize,
                                                         GLsizei* length,
                                                         GLboolean* params) {
-  glGetBooleanvRobustANGLE(pname, bufsize, length, params);
-  return error::kNoError;
+  return GetNumericHelper(
+      pname, bufsize, length, params,
+      [](GLenum pname, GLsizei bufsize, GLsizei* length, GLboolean* params) {
+        glGetBooleanvRobustANGLE(pname, bufsize, length, params);
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetBufferParameteri64v(
@@ -911,8 +914,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFloatv(GLenum pname,
                                                       GLsizei bufsize,
                                                       GLsizei* length,
                                                       GLfloat* params) {
-  glGetFloatvRobustANGLE(pname, bufsize, length, params);
-  return error::kNoError;
+  return GetNumericHelper(
+      pname, bufsize, length, params,
+      [](GLenum pname, GLsizei bufsize, GLsizei* length, GLfloat* params) {
+        glGetFloatvRobustANGLE(pname, bufsize, length, params);
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetFragDataLocation(
@@ -931,8 +937,23 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFramebufferAttachmentParameteriv(
     GLsizei bufsize,
     GLsizei* length,
     GLint* params) {
-  glGetFramebufferAttachmentParameterivRobustANGLE(target, attachment, pname,
-                                                   bufsize, length, params);
+  // Get a scratch buffer to hold the result of the query
+  GLint* scratch_params = GetTypedScratchMemory<GLint>(bufsize);
+  glGetFramebufferAttachmentParameterivRobustANGLE(
+      target, attachment, pname, bufsize, length, scratch_params);
+
+  // Update the results of the query, if needed
+  error::Error error = PatchGetFramebufferAttachmentParameter(
+      target, attachment, pname, *length, scratch_params);
+  if (error != error::kNoError) {
+    *length = 0;
+    return error;
+  }
+
+  // Copy into the destination
+  DCHECK(*length < bufsize);
+  std::copy(scratch_params, scratch_params + *length, params);
+
   return error::kNoError;
 }
 
@@ -940,8 +961,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetInteger64v(GLenum pname,
                                                           GLsizei bufsize,
                                                           GLsizei* length,
                                                           GLint64* params) {
-  glGetInteger64vRobustANGLE(pname, bufsize, length, params);
-  return error::kNoError;
+  return GetNumericHelper(
+      pname, bufsize, length, params,
+      [](GLenum pname, GLsizei bufsize, GLsizei* length, GLint64* params) {
+        glGetInteger64vRobustANGLE(pname, bufsize, length, params);
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetIntegeri_v(GLenum pname,
@@ -966,8 +990,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetIntegerv(GLenum pname,
                                                         GLsizei bufsize,
                                                         GLsizei* length,
                                                         GLint* params) {
-  glGetIntegervRobustANGLE(pname, bufsize, length, params);
-  return error::kNoError;
+  return GetNumericHelper(
+      pname, bufsize, length, params,
+      [](GLenum pname, GLsizei bufsize, GLsizei* length, GLint* params) {
+        glGetIntegervRobustANGLE(pname, bufsize, length, params);
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetInternalformativ(GLenum target,

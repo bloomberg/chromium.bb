@@ -25,6 +25,18 @@ void DeleteServiceObjects(ClientServiceMap<ClientType, ServiceType>* id_map,
   id_map->Clear();
 }
 
+template <typename ClientType, typename ServiceType, typename ResultType>
+bool GetClientID(const ClientServiceMap<ClientType, ServiceType>* map,
+                 ResultType service_id,
+                 ResultType* result) {
+  ClientType client_id = 0;
+  if (!map->GetClientID(static_cast<ServiceType>(service_id), &client_id)) {
+    return false;
+  }
+  *result = static_cast<ResultType>(client_id);
+  return true;
+};
+
 }  // anonymous namespace
 
 PassthroughResources::PassthroughResources() {}
@@ -537,6 +549,154 @@ const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
 scoped_refptr<ShaderTranslatorInterface>
 GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
   return nullptr;
+}
+
+void* GLES2DecoderPassthroughImpl::GetScratchMemory(size_t size) {
+  if (scratch_memory_.size() < size) {
+    scratch_memory_.resize(size, 0);
+  }
+  return scratch_memory_.data();
+}
+
+template <typename T>
+error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
+                                                                 GLsizei length,
+                                                                 T* params) {
+  // Likely a gl error if no parameters were returned
+  if (length < 1) {
+    return error::kNoError;
+  }
+
+  switch (pname) {
+    case GL_NUM_EXTENSIONS:
+      *params = *params + static_cast<T>(emulated_extensions_.size());
+      break;
+
+    case GL_TEXTURE_BINDING_2D:
+    case GL_TEXTURE_BINDING_CUBE_MAP:
+    case GL_TEXTURE_BINDING_2D_ARRAY:
+    case GL_TEXTURE_BINDING_3D:
+      if (!GetClientID(&resources_->texture_id_map, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_ARRAY_BUFFER_BINDING:
+    case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+    case GL_PIXEL_PACK_BUFFER_BINDING:
+    case GL_PIXEL_UNPACK_BUFFER_BINDING:
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+    case GL_COPY_READ_BUFFER_BINDING:
+    case GL_COPY_WRITE_BUFFER_BINDING:
+    case GL_UNIFORM_BUFFER_BINDING:
+      if (!GetClientID(&resources_->buffer_id_map, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_RENDERBUFFER_BINDING:
+      if (!GetClientID(&resources_->renderbuffer_id_map, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_SAMPLER_BINDING:
+      if (!GetClientID(&resources_->sampler_id_map, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_ACTIVE_PROGRAM:
+      if (!GetClientID(&resources_->program_id_map, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_FRAMEBUFFER_BINDING:
+    case GL_READ_FRAMEBUFFER_BINDING:
+      if (!GetClientID(&framebuffer_id_map_, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_TRANSFORM_FEEDBACK_BINDING:
+      if (!GetClientID(&transform_feedback_id_map_, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    case GL_VERTEX_ARRAY_BINDING:
+      if (!GetClientID(&vertex_array_id_map_, *params, params)) {
+        return error::kInvalidArguments;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return error::kNoError;
+}
+
+// Instantiate templated functions
+#define INSTANTIATE_PATCH_NUMERIC_RESULTS(type)                              \
+  template error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults( \
+      GLenum, GLsizei, type*)
+INSTANTIATE_PATCH_NUMERIC_RESULTS(GLint);
+INSTANTIATE_PATCH_NUMERIC_RESULTS(GLint64);
+INSTANTIATE_PATCH_NUMERIC_RESULTS(GLfloat);
+INSTANTIATE_PATCH_NUMERIC_RESULTS(GLboolean);
+#undef INSTANTIATE_PATCH_NUMERIC_RESULTS
+
+error::Error
+GLES2DecoderPassthroughImpl::PatchGetFramebufferAttachmentParameter(
+    GLenum target,
+    GLenum attachment,
+    GLenum pname,
+    GLsizei length,
+    GLint* params) {
+  // Likely a gl error if no parameters were returned
+  if (length < 1) {
+    return error::kNoError;
+  }
+
+  switch (pname) {
+    // If the attached object name was requested, it needs to be converted back
+    // to a client id.
+    case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: {
+      GLint object_type = GL_NONE;
+      glGetFramebufferAttachmentParameterivEXT(
+          target, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+          &object_type);
+
+      switch (object_type) {
+        case GL_TEXTURE:
+          if (!GetClientID(&resources_->texture_id_map, *params, params)) {
+            return error::kInvalidArguments;
+          }
+          break;
+
+        case GL_RENDERBUFFER:
+          if (!GetClientID(&resources_->renderbuffer_id_map, *params, params)) {
+            return error::kInvalidArguments;
+          }
+          break;
+
+        case GL_NONE:
+          // Default framebuffer, don't transform the result
+          break;
+
+        default:
+          NOTREACHED();
+          break;
+      }
+    } break;
+
+    default:
+      break;
+  }
+
+  return error::kNoError;
 }
 
 void GLES2DecoderPassthroughImpl::BuildExtensionsString() {

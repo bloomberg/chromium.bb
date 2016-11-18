@@ -239,6 +239,45 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
  private:
+  void* GetScratchMemory(size_t size);
+
+  template <typename T>
+  T* GetTypedScratchMemory(size_t count) {
+    return reinterpret_cast<T*>(GetScratchMemory(count * sizeof(T)));
+  }
+
+  template <typename T, typename GLGetFunction>
+  error::Error GetNumericHelper(GLenum pname,
+                                GLsizei bufsize,
+                                GLsizei* length,
+                                T* params,
+                                GLGetFunction get_call) {
+    // Get a scratch buffer to hold the result of the query
+    T* scratch_params = GetTypedScratchMemory<T>(bufsize);
+    get_call(pname, bufsize, length, scratch_params);
+
+    // Update the results of the query, if needed
+    error::Error error = PatchGetNumericResults(pname, *length, scratch_params);
+    if (error != error::kNoError) {
+      *length = 0;
+      return error;
+    }
+
+    // Copy into the destination
+    DCHECK(*length < bufsize);
+    std::copy(scratch_params, scratch_params + *length, params);
+
+    return error::kNoError;
+  }
+
+  template <typename T>
+  error::Error PatchGetNumericResults(GLenum pname, GLsizei length, T* params);
+  error::Error PatchGetFramebufferAttachmentParameter(GLenum target,
+                                                      GLenum attachment,
+                                                      GLenum pname,
+                                                      GLsizei length,
+                                                      GLint* params);
+
   void BuildExtensionsString();
 
   int commands_to_process_;
@@ -305,6 +344,9 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   std::vector<std::string> emulated_extensions_;
   std::string extension_string_;
+
+  // Cache of scratch memory
+  std::vector<uint8_t> scratch_memory_;
 
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.

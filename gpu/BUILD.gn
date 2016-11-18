@@ -147,6 +147,7 @@ test("gl_tests") {
     "command_buffer/tests/gl_manager.h",
     "command_buffer/tests/gl_map_buffer_range_unittest.cc",
     "command_buffer/tests/gl_native_gmb_backbuffer_unittest.cc",
+    "command_buffer/tests/gl_object_bindings_unittest.cc",
     "command_buffer/tests/gl_pointcoord_unittest.cc",
     "command_buffer/tests/gl_program_unittest.cc",
     "command_buffer/tests/gl_query_unittest.cc",
