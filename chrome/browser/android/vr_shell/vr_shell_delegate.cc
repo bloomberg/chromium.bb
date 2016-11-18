@@ -63,22 +63,34 @@ base::WeakPtr<device::GvrDeviceProvider> VrShellDelegate::GetDeviceProvider() {
   return device_provider_;
 }
 
-bool VrShellDelegate::RequestWebVRPresent(
-    base::WeakPtr<device::GvrDeviceProvider> device_provider) {
-  // Only set one device provider at a time
-  DCHECK(!device_provider_);
-  device_provider_ = device_provider;
+void VrShellDelegate::SetPresentResult(JNIEnv* env, jobject obj,
+                                       jboolean result) {
+  CHECK(!present_callback_.is_null());
+  present_callback_.Run(result);
+  present_callback_.Reset();
+}
 
-  // If/When VRShell is ready for use it will call OnVrShellReady.
+void VrShellDelegate::RequestWebVRPresent(
+    base::WeakPtr<device::GvrDeviceProvider> device_provider,
+    const base::Callback<void(bool)>& callback) {
+  if (!present_callback_.is_null()) {
+    // Can only handle one request at a time. This is also extremely unlikely to
+    // happen in practice.
+    callback.Run(false);
+    return;
+  }
+
+  // TODO(mthiesse): Clean this up, there's no reason to be setting the device
+  // provider from RequestWebVRPresent.
+  device_provider_ = device_provider;
+  present_callback_ = std::move(callback);
+
+  // If/When VRShell is ready for use it will call SetPresentResult.
   JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_enterVRIfNecessary(env, j_vr_shell_delegate_.obj(),
-                                          true);
-  return true;
+  Java_VrShellDelegate_presentRequested(env, j_vr_shell_delegate_.obj(), true);
 }
 
 void VrShellDelegate::ExitWebVRPresent() {
-  device_provider_.reset();
-
   // VRShell is no longer needed by WebVR, allow it to shut down if it's not
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();

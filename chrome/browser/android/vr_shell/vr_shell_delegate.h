@@ -28,13 +28,12 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   base::WeakPtr<device::GvrDeviceProvider> GetDeviceProvider();
 
-  // Called by the Java VrShellDelegate. Returns true if the GvrDeviceProvider
-  // needs to handle shutdown first.
-  void ExitWebVRIfNecessary(JNIEnv* env, jobject obj);
+  void SetPresentResult(JNIEnv* env, jobject obj, jboolean result);
 
   // device::GvrDelegateProvider implementation
-  bool RequestWebVRPresent(
-      base::WeakPtr<device::GvrDeviceProvider> device_provider) override;
+  void RequestWebVRPresent(
+      base::WeakPtr<device::GvrDeviceProvider> device_provider,
+      const base::Callback<void(bool)>& callback) override;
   void ExitWebVRPresent() override;
   base::WeakPtr<device::GvrDelegate> GetNonPresentingDelegate() override;
   void DestroyNonPresentingDelegate() override;
@@ -43,6 +42,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   std::unique_ptr<device::GvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   base::WeakPtr<device::GvrDeviceProvider> device_provider_;
+  base::Callback<void(bool)> present_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };

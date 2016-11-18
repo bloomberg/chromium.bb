@@ -30,7 +30,7 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void Initialize() override;
 
   // Called from GvrDevice.
-  bool RequestPresent();
+  void RequestPresent(const base::Callback<void(bool)>& callback);
   void ExitPresent();
 
   void OnGvrDelegateReady(const base::WeakPtr<GvrDelegate>& delegate);

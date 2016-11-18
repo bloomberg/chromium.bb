@@ -217,12 +217,14 @@ void GvrDevice::ResetPose() {
     gvr_api->RecenterTracking();
 }
 
-bool GvrDevice::RequestPresent(bool secure_origin) {
+void GvrDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
+  gvr_provider_->RequestPresent(callback);
+}
+
+void GvrDevice::SetSecureOrigin(bool secure_origin) {
   secure_origin_ = secure_origin;
   if (delegate_)
     delegate_->SetWebVRSecureOrigin(secure_origin_);
-
-  return gvr_provider_->RequestPresent();
 }
 
 void GvrDevice::ExitPresent() {

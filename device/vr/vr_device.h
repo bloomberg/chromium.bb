@@ -35,7 +35,8 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual mojom::VRPosePtr GetPose() = 0;
   virtual void ResetPose() = 0;
 
-  virtual bool RequestPresent(bool secure_origin) = 0;
+  virtual void RequestPresent(const base::Callback<void(bool)>& callback) = 0;
+  virtual void SetSecureOrigin(bool secure_origin) = 0;
   virtual void ExitPresent() = 0;
   virtual void SubmitFrame(mojom::VRPosePtr pose) = 0;
   virtual void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,

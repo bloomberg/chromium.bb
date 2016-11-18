@@ -70,9 +70,11 @@ mojom::VRPosePtr FakeVRDevice::GetPose() {
 void FakeVRDevice::ResetPose() {}
 
 // TODO(shaobo.yan@intel.com): Will implemenate for VRDeviceServiceImpl tests.
-bool FakeVRDevice::RequestPresent(bool secure_origin) {
-  return true;
+void FakeVRDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
 }
+
+void FakeVRDevice::SetSecureOrigin(bool secure_origin) {}
 
 void FakeVRDevice::ExitPresent() {}
 

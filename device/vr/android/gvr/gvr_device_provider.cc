@@ -56,14 +56,16 @@ void GvrDeviceProvider::Initialize() {
   }
 }
 
-bool GvrDeviceProvider::RequestPresent() {
+void GvrDeviceProvider::RequestPresent(
+    const base::Callback<void(bool)>& callback) {
   device::GvrDelegateProvider* delegate_provider =
       device::GvrDelegateProvider::GetInstance();
   if (!delegate_provider)
-    return false;
+    return callback.Run(false);
 
   // RequestWebVRPresent is async as a render thread may be created.
-  return delegate_provider->RequestWebVRPresent(weak_ptr_factory_.GetWeakPtr());
+  delegate_provider->RequestWebVRPresent(weak_ptr_factory_.GetWeakPtr(),
+                                         callback);
 }
 
 // VR presentation exit requested by the API.

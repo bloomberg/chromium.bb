@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-
+#include "base/memory/weak_ptr.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
@@ -29,7 +29,7 @@ class VRDisplayImpl : public mojom::VRDisplay {
   void GetPose(const GetPoseCallback& callback) override;
   void ResetPose() override;
 
-  void RequestPresent(bool secureOrigin,
+  void RequestPresent(bool secure_origin,
                       const RequestPresentCallback& callback) override;
   void ExitPresent() override;
   void SubmitFrame(mojom::VRPosePtr pose) override;
@@ -37,10 +37,16 @@ class VRDisplayImpl : public mojom::VRDisplay {
   void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
                          mojom::VRLayerBoundsPtr right_bounds) override;
 
+  void RequestPresentResult(const RequestPresentCallback& callback,
+                            bool secure_origin,
+                            bool success);
+
   mojo::Binding<mojom::VRDisplay> binding_;
   mojom::VRDisplayClientPtr client_;
   device::VRDevice* device_;
   VRServiceImpl* service_;
+
+  base::WeakPtrFactory<VRDisplayImpl> weak_ptr_factory_;
 };
 
 }  // namespace device

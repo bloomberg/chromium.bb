@@ -6,6 +6,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/ScriptedAnimationController.h"
@@ -336,42 +337,6 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     return promise;
   }
 
-  if (!m_capabilities->hasExternalDisplay()) {
-    // TODO(klausw,crbug.com/655722): Need a proper VR compositor, but
-    // for the moment on mobile we'll just make the canvas fullscreen
-    // so that VrShell can pick it up through the standard (high
-    // latency) compositing path.
-    auto canvas = m_layer.source();
-    auto inlineStyle = canvas->inlineStyle();
-    if (inlineStyle) {
-      // THREE.js's VREffect sets explicit style.width/height on its rendering
-      // canvas based on the non-fullscreen window dimensions, and it keeps
-      // those unchanged when presenting. Unfortunately it appears that a
-      // fullscreened canvas just gets centered if it has explicitly set a
-      // size smaller than the fullscreen dimensions. Manually set size to
-      // 100% in this case and restore it when exiting fullscreen. This is a
-      // stopgap measure since THREE.js's usage appears legal according to the
-      // WebVR API spec. This will no longer be necessary once we can get rid
-      // of this fullscreen hack.
-      m_fullscreenOrigWidth = inlineStyle->getPropertyValue(CSSPropertyWidth);
-      if (!m_fullscreenOrigWidth.isNull()) {
-        canvas->setInlineStyleProperty(CSSPropertyWidth, "100%");
-      }
-      m_fullscreenOrigHeight = inlineStyle->getPropertyValue(CSSPropertyHeight);
-      if (!m_fullscreenOrigHeight.isNull()) {
-        canvas->setInlineStyleProperty(CSSPropertyHeight, "100%");
-      }
-    } else {
-      m_fullscreenOrigWidth = String();
-      m_fullscreenOrigHeight = String();
-    }
-    Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
-
-    // Check to see if the canvas is still the current fullscreen
-    // element once per second.
-    m_fullscreenCheckTimer.startRepeating(1.0, BLINK_FROM_HERE);
-  }
-
   if (firstPresent) {
     bool secureContext = scriptState->getExecutionContext()->isSecureContext();
     if (!m_display) {
@@ -434,6 +399,8 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
 }
 
 void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
+  Document* doc = m_navigatorVR->document();
+  std::unique_ptr<UserGestureIndicator> gestureIndicator;
   if (m_capabilities->hasExternalDisplay()) {
     forceExitPresent();
     DOMException* exception = DOMException::create(
@@ -443,9 +410,50 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
     ReportPresentationResult(
         PresentationResult::PresentationNotSupportedByDisplay);
     return;
+  } else {
+    // TODO(klausw,crbug.com/655722): Need a proper VR compositor, but
+    // for the moment on mobile we'll just make the canvas fullscreen
+    // so that VrShell can pick it up through the standard (high
+    // latency) compositing path.
+    auto canvas = m_layer.source();
+    auto inlineStyle = canvas->inlineStyle();
+    if (inlineStyle) {
+      // THREE.js's VREffect sets explicit style.width/height on its rendering
+      // canvas based on the non-fullscreen window dimensions, and it keeps
+      // those unchanged when presenting. Unfortunately it appears that a
+      // fullscreened canvas just gets centered if it has explicitly set a
+      // size smaller than the fullscreen dimensions. Manually set size to
+      // 100% in this case and restore it when exiting fullscreen. This is a
+      // stopgap measure since THREE.js's usage appears legal according to the
+      // WebVR API spec. This will no longer be necessary once we can get rid
+      // of this fullscreen hack.
+      m_fullscreenOrigWidth = inlineStyle->getPropertyValue(CSSPropertyWidth);
+      if (!m_fullscreenOrigWidth.isNull()) {
+        canvas->setInlineStyleProperty(CSSPropertyWidth, "100%");
+      }
+      m_fullscreenOrigHeight = inlineStyle->getPropertyValue(CSSPropertyHeight);
+      if (!m_fullscreenOrigHeight.isNull()) {
+        canvas->setInlineStyleProperty(CSSPropertyHeight, "100%");
+      }
+    } else {
+      m_fullscreenOrigWidth = String();
+      m_fullscreenOrigHeight = String();
+    }
+
+    if (doc) {
+      // Since the callback for requestPresent is asynchronous, we've lost our
+      // UserGestureToken, and need to create a new one to enter fullscreen.
+      gestureIndicator =
+          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+              doc, UserGestureToken::Status::PossiblyExistingGesture)));
+    }
+    Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
+
+    // Check to see if the canvas is still the current fullscreen
+    // element once every 5 seconds.
+    m_fullscreenCheckTimer.startRepeating(5.0, BLINK_FROM_HERE);
   }
 
-  Document* doc = m_navigatorVR->document();
   if (doc) {
     Platform::current()->recordRapporURL("VR.WebVR.PresentSuccess",
                                          WebURL(doc->url()));

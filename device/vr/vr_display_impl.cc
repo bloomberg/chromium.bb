@@ -11,7 +11,10 @@
 namespace device {
 
 VRDisplayImpl::VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service)
-    : binding_(this), device_(device), service_(service) {
+    : binding_(this),
+      device_(device),
+      service_(service),
+      weak_ptr_factory_(this) {
   mojom::VRDisplayInfoPtr display_info = device->GetVRDevice();
   // Client might be null in unittest.
   // TODO: setup a mock client in unittest too?
@@ -40,16 +43,24 @@ void VRDisplayImpl::ResetPose() {
   device_->ResetPose();
 }
 
-void VRDisplayImpl::RequestPresent(bool secureOrigin,
+void VRDisplayImpl::RequestPresent(bool secure_origin,
                                    const RequestPresentCallback& callback) {
   if (!device_->IsAccessAllowed(service_)) {
     callback.Run(false);
     return;
   }
 
-  bool success = device_->RequestPresent(secureOrigin);
+  device_->RequestPresent(base::Bind(&VRDisplayImpl::RequestPresentResult,
+                                     weak_ptr_factory_.GetWeakPtr(), callback,
+                                     secure_origin));
+}
+
+void VRDisplayImpl::RequestPresentResult(const RequestPresentCallback& callback,
+                                         bool secure_origin,
+                                         bool success) {
   if (success) {
     device_->SetPresentingService(service_);
+    device_->SetSecureOrigin(secure_origin);
   }
   callback.Run(success);
 }

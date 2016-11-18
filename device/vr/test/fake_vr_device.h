@@ -27,7 +27,8 @@ class FakeVRDevice : public VRDevice {
   mojom::VRPosePtr GetPose() override;
   void ResetPose() override;
 
-  bool RequestPresent(bool secure_origin) override;
+  void RequestPresent(const base::Callback<void(bool)>& callback) override;
+  void SetSecureOrigin(bool secure_origin) override;
   void ExitPresent() override;
   void SubmitFrame(mojom::VRPosePtr pose) override;
   void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,

@@ -18,9 +18,11 @@ VRDevice::VRDevice() : presenting_service_(nullptr), id_(next_id_) {
 
 VRDevice::~VRDevice() {}
 
-bool VRDevice::RequestPresent(bool secure_origin) {
-  return true;
-};
+void VRDevice::RequestPresent(const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
+}
+
+void VRDevice::SetSecureOrigin(bool secure_origin) {}
 
 void VRDevice::AddService(VRServiceImpl* service) {
   // Create a VRDisplayImpl for this service/device pair
