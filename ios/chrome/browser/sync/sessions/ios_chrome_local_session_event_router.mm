@@ -17,6 +17,10 @@
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 sync_sessions::SyncedTabDelegate* GetSyncedTabDelegateFromWebState(
