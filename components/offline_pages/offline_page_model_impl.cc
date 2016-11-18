@@ -183,9 +183,11 @@ bool GetMatchingURLCountAndMostRecentCreationTime(
 }
 
 void ReportPageHistogramAfterSave(
+    ClientPolicyController* policy_controller_,
     const std::map<int64_t, OfflinePageItem>& offline_pages,
     const OfflinePageItem& offline_page,
     const base::Time& save_time) {
+  DCHECK(policy_controller_);
   // The histogram below is an expansion of the UMA_HISTOGRAM_TIMES
   // macro adapted to allow for a dynamically suffixed histogram name.
   // Note: The factory creates and owns the histogram.
@@ -204,7 +206,8 @@ void ReportPageHistogramAfterSave(
       1, 10000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(offline_page.file_size / 1024);
 
-  if (offline_page.client_id.name_space == kDownloadNamespace) {
+  if (policy_controller_->IsSupportedByDownload(
+          offline_page.client_id.name_space)) {
     int matching_url_count;
     base::TimeDelta time_since_most_recent_duplicate;
     if (GetMatchingURLCountAndMostRecentCreationTime(
@@ -784,8 +787,8 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   if (status == ItemActionStatus::SUCCESS) {
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
-    ReportPageHistogramAfterSave(offline_pages_, offline_page,
-                                 GetCurrentTime());
+    ReportPageHistogramAfterSave(policy_controller_.get(), offline_pages_,
+                                 offline_page, GetCurrentTime());
     offline_event_logger_.RecordPageSaved(
         offline_page.client_id.name_space, offline_page.url.spec(),
         std::to_string(offline_page.offline_id));
