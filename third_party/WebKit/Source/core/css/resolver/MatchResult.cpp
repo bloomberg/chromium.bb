@@ -48,7 +48,7 @@ void MatchResult::addMatchedProperties(
     unsigned linkMatchType,
     PropertyWhitelistType propertyWhitelistType) {
   m_matchedProperties.grow(m_matchedProperties.size() + 1);
-  MatchedProperties& newProperties = m_matchedProperties.last();
+  MatchedProperties& newProperties = m_matchedProperties.back();
   newProperties.properties = const_cast<StylePropertySet*>(properties);
   newProperties.m_types.linkMatchType = linkMatchType;
   newProperties.m_types.whitelistType = propertyWhitelistType;
@@ -63,7 +63,7 @@ void MatchResult::finishAddingAuthorRulesForTreeScope() {
   if (m_authorRangeEnds.isEmpty() && m_uaRangeEnd == m_matchedProperties.size())
     return;
   if (!m_authorRangeEnds.isEmpty() &&
-      m_authorRangeEnds.last() == m_matchedProperties.size())
+      m_authorRangeEnds.back() == m_matchedProperties.size())
     return;
   m_authorRangeEnds.append(m_matchedProperties.size());
 }

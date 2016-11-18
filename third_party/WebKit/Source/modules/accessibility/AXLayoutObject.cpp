@@ -1135,8 +1135,8 @@ String AXLayoutObject::textAlternative(bool recursive,
       nameFrom = AXNameFromContents;
       if (nameSources) {
         nameSources->append(NameSource(false));
-        nameSources->last().type = nameFrom;
-        nameSources->last().text = textAlternative;
+        nameSources->back().type = nameFrom;
+        nameSources->back().text = textAlternative;
       }
       return textAlternative;
     }
@@ -2303,7 +2303,7 @@ void AXLayoutObject::addHiddenChildren() {
       if (AXObject* childObject = axObjectCache().get(child.layoutObject())) {
         if (childObject->accessibilityIsIgnored()) {
           const auto& children = childObject->children();
-          childObject = children.size() ? children.last().get() : 0;
+          childObject = children.size() ? children.back().get() : 0;
         }
         if (childObject)
           insertionIndex = m_children.find(childObject) + 1;

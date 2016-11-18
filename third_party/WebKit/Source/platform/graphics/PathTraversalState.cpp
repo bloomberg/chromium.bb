@@ -156,7 +156,7 @@ static float curveLength(PathTraversalState& traversalState, CurveType curve) {
             traversalState.m_desiredLength)
           return totalLength;
       }
-      curve = curveStack.last();
+      curve = curveStack.back();
       curveStack.pop_back();
     }
   } while (!curveStack.isEmpty());

@@ -466,7 +466,7 @@ struct BoxBorderPainter::ComplexBorderInfo {
       }
 
       DCHECK(!opacityGroups.isEmpty());
-      OpacityGroup& currentGroup = opacityGroups.last();
+      OpacityGroup& currentGroup = opacityGroups.back();
       currentGroup.sides.append(side);
       currentGroup.edgeFlags |= edgeFlagForSide(side);
     }

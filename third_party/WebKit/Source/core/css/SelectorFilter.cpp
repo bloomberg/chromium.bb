@@ -66,10 +66,10 @@ static inline void collectElementIdentifierHashes(
 void SelectorFilter::pushParentStackFrame(Element& parent) {
   ASSERT(m_ancestorIdentifierFilter);
   ASSERT(m_parentStack.isEmpty() ||
-         m_parentStack.last().element == parent.parentOrShadowHostElement());
+         m_parentStack.back().element == parent.parentOrShadowHostElement());
   ASSERT(!m_parentStack.isEmpty() || !parent.parentOrShadowHostElement());
   m_parentStack.append(ParentStackFrame(parent));
-  ParentStackFrame& parentFrame = m_parentStack.last();
+  ParentStackFrame& parentFrame = m_parentStack.back();
   // Mix tags, class names and ids into some sort of weird bouillabaisse.
   // The filter is used for fast rejection of child and descendant selectors.
   collectElementIdentifierHashes(parent, parentFrame.identifierHashes);
@@ -81,7 +81,7 @@ void SelectorFilter::pushParentStackFrame(Element& parent) {
 void SelectorFilter::popParentStackFrame() {
   ASSERT(!m_parentStack.isEmpty());
   ASSERT(m_ancestorIdentifierFilter);
-  const ParentStackFrame& parentFrame = m_parentStack.last();
+  const ParentStackFrame& parentFrame = m_parentStack.back();
   size_t count = parentFrame.identifierHashes.size();
   for (size_t i = 0; i < count; ++i)
     m_ancestorIdentifierFilter->remove(parentFrame.identifierHashes[i]);
@@ -105,7 +105,7 @@ void SelectorFilter::pushParent(Element& parent) {
   ASSERT(m_ancestorIdentifierFilter);
   // We may get invoked for some random elements in some wacky cases during
   // style resolve. Pause maintaining the stack in this case.
-  if (m_parentStack.last().element != parent.parentOrShadowHostElement())
+  if (m_parentStack.back().element != parent.parentOrShadowHostElement())
     return;
   pushParentStackFrame(parent);
 }

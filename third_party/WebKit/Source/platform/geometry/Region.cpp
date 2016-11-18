@@ -247,7 +247,7 @@ bool Region::Shape::canCoalesce(SegmentIterator begin, SegmentIterator end) {
     return false;
 
   SegmentIterator lastSpanBegin =
-      m_segments.data() + m_spans.last().segmentIndex;
+      m_segments.data() + m_spans.back().segmentIndex;
   SegmentIterator lastSpanEnd = m_segments.data() + m_segments.size();
 
   // Check if both spans have an equal number of segments.

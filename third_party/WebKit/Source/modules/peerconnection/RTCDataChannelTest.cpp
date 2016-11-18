@@ -99,7 +99,7 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
   EXPECT_EQ(2U, channel->m_scheduledEvents.size());
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.last()->type().utf8().data()));
+      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
 
   // Add and drain 1 byte
   channel->send("A", IGNORE_EXCEPTION);
@@ -111,7 +111,7 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
   EXPECT_EQ(3U, channel->m_scheduledEvents.size());
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.last()->type().utf8().data()));
+      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
 
   // Set the threshold to 99 bytes, add 101, and drain 1 byte at a time.
   channel->setBufferedAmountLowThreshold(99U);
@@ -130,7 +130,7 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
   EXPECT_EQ(4U, channel->m_scheduledEvents.size());  // One new event.
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.last()->type().utf8().data()));
+      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
 
   handler->drainBuffer(1);
   EXPECT_EQ(98U, channel->bufferedAmount());
@@ -143,7 +143,7 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
   EXPECT_EQ(5U, channel->m_scheduledEvents.size());  // New event.
   EXPECT_EQ(
       "bufferedamountlow",
-      std::string(channel->m_scheduledEvents.last()->type().utf8().data()));
+      std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
 }
 
 }  // namespace blink

@@ -161,8 +161,8 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
   const MultiColumnFragmentainerGroup& first() const {
     return m_groups.first();
   }
-  MultiColumnFragmentainerGroup& last() { return m_groups.last(); }
-  const MultiColumnFragmentainerGroup& last() const { return m_groups.last(); }
+  MultiColumnFragmentainerGroup& last() { return m_groups.back(); }
+  const MultiColumnFragmentainerGroup& last() const { return m_groups.back(); }
 
   typedef Vector<MultiColumnFragmentainerGroup, 1>::iterator iterator;
   typedef Vector<MultiColumnFragmentainerGroup, 1>::const_iterator

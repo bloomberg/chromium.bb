@@ -42,7 +42,7 @@ const String QuotesData::getOpenQuote(int index) const {
   if (!m_quotePairs.size() || index < 0)
     return emptyString();
   if ((size_t)index >= m_quotePairs.size())
-    return m_quotePairs.last().first;
+    return m_quotePairs.back().first;
   return m_quotePairs.at(index).first;
 }
 
@@ -51,7 +51,7 @@ const String QuotesData::getCloseQuote(int index) const {
   if (!m_quotePairs.size() || index < 0)
     return emptyString();
   if ((size_t)index >= m_quotePairs.size())
-    return m_quotePairs.last().second;
+    return m_quotePairs.back().second;
   return m_quotePairs.at(index).second;
 }
 

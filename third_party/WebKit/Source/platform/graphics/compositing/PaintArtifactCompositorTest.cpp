@@ -469,14 +469,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips) {
   Vector<RefPtr<ClipPaintPropertyNode>> clips;
   for (unsigned i = 1; i <= 10; i++) {
     clips.append(ClipPaintPropertyNode::create(
-        clips.isEmpty() ? ClipPaintPropertyNode::root() : clips.last(),
+        clips.isEmpty() ? ClipPaintPropertyNode::root() : clips.back(),
         TransformPaintPropertyNode::root(),
         FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i)));
   }
 
   TestPaintArtifact artifact;
   artifact
-      .chunk(TransformPaintPropertyNode::root(), clips.last(),
+      .chunk(TransformPaintPropertyNode::root(), clips.back(),
              EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 200, 200), Color::white);
   update(artifact.build());

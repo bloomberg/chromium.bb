@@ -31,7 +31,7 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
     m_data.append(Vector<char>());
   }
   void multipartDataReceived(const char* bytes, size_t size) override {
-    m_data.last().append(bytes, size);
+    m_data.back().append(bytes, size);
   }
 
   Vector<ResourceResponse> m_responses;
@@ -223,13 +223,13 @@ void variousChunkSizesTest(const TestChunk chunks[],
                        chunks[i].endPosition - chunks[i].startPosition);
     EXPECT_EQ(chunks[i].expectedResponses, client->m_responses.size());
     EXPECT_EQ(String(chunks[i].expectedData),
-              client->m_data.size() > 0 ? toString(client->m_data.last())
+              client->m_data.size() > 0 ? toString(client->m_data.back())
                                         : String(""));
   }
   // Check final state
   parser->finish();
   EXPECT_EQ(responses, client->m_responses.size());
-  EXPECT_EQ(completedData, toString(client->m_data.last()));
+  EXPECT_EQ(completedData, toString(client->m_data.back()));
 }
 
 template <size_t N>

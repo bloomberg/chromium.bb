@@ -251,7 +251,7 @@ void DocumentMarkerController::addMarker(Node* node,
   RenderedDocumentMarker* newRenderedMarker =
       RenderedDocumentMarker::create(newMarker);
   updateMarkerRenderedRect(*node, *newRenderedMarker);
-  if (list->isEmpty() || list->last()->endOffset() < newMarker.startOffset()) {
+  if (list->isEmpty() || list->back()->endOffset() < newMarker.startOffset()) {
     list->append(newRenderedMarker);
   } else {
     if (newMarker.type() != DocumentMarker::TextMatch &&

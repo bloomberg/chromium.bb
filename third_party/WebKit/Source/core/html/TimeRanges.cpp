@@ -72,7 +72,7 @@ void TimeRanges::invert() {
     for (size_t index = 0; index + 1 < m_ranges.size(); ++index)
       inverted->add(m_ranges[index].m_end, m_ranges[index + 1].m_start);
 
-    double end = m_ranges.last().m_end;
+    double end = m_ranges.back().m_end;
     if (end != posInf)
       inverted->add(end, posInf);
   }

@@ -149,7 +149,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes) {
     }
   }
   if (wordStarted) {
-    const auto& lastNode = textNodes.last();
+    const auto& lastNode = textNodes.back();
     int xEnd = visiblePositionToContentsPoint(
                    createVisiblePosition(
                        Position(lastNode, lastNode->wholeText().length())))

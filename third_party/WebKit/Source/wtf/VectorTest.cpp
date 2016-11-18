@@ -166,7 +166,7 @@ TEST(VectorTest, OwnPtr) {
 
   std::unique_ptr<DestructCounter>& counter0 = vector.first();
   ASSERT_EQ(0, counter0->get());
-  int counter1 = vector.last()->get();
+  int counter1 = vector.back()->get();
   ASSERT_EQ(1, counter1);
   ASSERT_EQ(0, destructNumber);
 
@@ -249,7 +249,7 @@ TEST(VectorTest, MoveOnlyType) {
   EXPECT_EQ(2u, vector.size());
 
   ASSERT_EQ(1, vector.first().value());
-  ASSERT_EQ(2, vector.last().value());
+  ASSERT_EQ(2, vector.back().value());
 
   vector.remove(0);
   EXPECT_EQ(2, vector[0].value());

@@ -446,14 +446,14 @@ bool GIFImageReader::parseData(size_t dataPosition,
         ASSERT(!m_frames.isEmpty());
         // m_bytesToConsume is the current component size because it hasn't been
         // updated.
-        m_frames.last()->addLzwBlock(currentComponentPosition,
+        m_frames.back()->addLzwBlock(currentComponentPosition,
                                      m_bytesToConsume);
         GETN(1, GIFSubBlock);
         break;
 
       case GIFLZWStart: {
         ASSERT(!m_frames.isEmpty());
-        m_frames.last()->setDataSize(static_cast<unsigned char>(
+        m_frames.back()->setDataSize(static_cast<unsigned char>(
             reader.getOneByte(currentComponentPosition)));
         GETN(1, GIFSubBlock);
         break;
@@ -602,7 +602,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
                 currentComponentPosition, 4, readBuffer));
 
         addFrameIfNecessary();
-        GIFFrameContext* currentFrame = m_frames.last().get();
+        GIFFrameContext* currentFrame = m_frames.back().get();
         if (*currentComponent & 0x1)
           currentFrame->setTransparentPixel(currentComponent[3]);
 
@@ -782,7 +782,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
         }
 
         addFrameIfNecessary();
-        GIFFrameContext* currentFrame = m_frames.last().get();
+        GIFFrameContext* currentFrame = m_frames.back().get();
 
         currentFrame->setHeaderDefined();
 
@@ -825,7 +825,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
 
       case GIFImageColormap: {
         ASSERT(!m_frames.isEmpty());
-        m_frames.last()->localColorMap().setDefined();
+        m_frames.back()->localColorMap().setDefined();
         GETN(1, GIFLZWStart);
         break;
       }
@@ -840,7 +840,7 @@ bool GIFImageReader::parseData(size_t dataPosition,
           ASSERT(!m_frames.isEmpty());
           // Note that some broken GIF files do not have enough LZW blocks to
           // fully decode all rows; we treat this case as "frame complete".
-          m_frames.last()->setComplete();
+          m_frames.back()->setComplete();
           GETN(1, GIFImageStart);
         }
         break;
@@ -868,7 +868,7 @@ void GIFImageReader::setRemainingBytes(size_t remainingBytes) {
 }
 
 void GIFImageReader::addFrameIfNecessary() {
-  if (m_frames.isEmpty() || m_frames.last()->isComplete())
+  if (m_frames.isEmpty() || m_frames.back()->isComplete())
     m_frames.append(wrapUnique(new GIFFrameContext(m_frames.size())));
 }
 

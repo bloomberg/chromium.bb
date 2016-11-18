@@ -39,7 +39,7 @@ void CustomElementReactionStack::push() {
 }
 
 void CustomElementReactionStack::popInvokingReactions() {
-  ElementQueue* queue = m_stack.last();
+  ElementQueue* queue = m_stack.back();
   if (queue)
     invokeReactions(*queue);
   m_stack.pop_back();
@@ -59,7 +59,7 @@ void CustomElementReactionStack::invokeReactions(ElementQueue& queue) {
 void CustomElementReactionStack::enqueueToCurrentQueue(
     Element* element,
     CustomElementReaction* reaction) {
-  enqueue(m_stack.last(), element, reaction);
+  enqueue(m_stack.back(), element, reaction);
 }
 
 void CustomElementReactionStack::enqueue(Member<ElementQueue>& queue,

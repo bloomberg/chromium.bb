@@ -518,7 +518,7 @@ template <typename PlatformAnimationCurveType>
 void addKeyframesToCurve(
     PlatformAnimationCurveType& curve,
     const AnimatableValuePropertySpecificKeyframeVector& keyframes) {
-  auto* lastKeyframe = keyframes.last().get();
+  auto* lastKeyframe = keyframes.back().get();
   for (const auto& keyframe : keyframes) {
     const TimingFunction* keyframeTimingFunction = 0;
     // Ignore timing function of last frame.

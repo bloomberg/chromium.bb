@@ -140,7 +140,7 @@ void BlobData::appendText(const String& text,
   RefPtr<RawData> data = nullptr;
   Vector<char>* buffer;
   if (canConsolidateData(text.length())) {
-    buffer = m_items.last().data->mutableData();
+    buffer = m_items.back().data->mutableData();
   } else {
     data = RawData::create();
     buffer = data->mutableData();
@@ -160,7 +160,7 @@ void BlobData::appendBytes(const void* bytes, size_t length) {
   CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   if (canConsolidateData(length)) {
-    m_items.last().data->mutableData()->append(static_cast<const char*>(bytes),
+    m_items.back().data->mutableData()->append(static_cast<const char*>(bytes),
                                                length);
     return;
   }
@@ -198,7 +198,7 @@ long long BlobData::length() const {
 bool BlobData::canConsolidateData(size_t length) {
   if (m_items.isEmpty())
     return false;
-  BlobDataItem& lastItem = m_items.last();
+  BlobDataItem& lastItem = m_items.back();
   if (lastItem.type != BlobDataItem::Data)
     return false;
   if (lastItem.data->length() + length > kMaxConsolidatedItemSizeInBytes)

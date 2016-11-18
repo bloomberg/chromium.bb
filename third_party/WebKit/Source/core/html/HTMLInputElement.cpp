@@ -1586,7 +1586,7 @@ HTMLInputElement::filteredDataListOptions() const {
     Vector<String> emails;
     value.split(',', true, emails);
     if (!emails.isEmpty())
-      value = emails.last().stripWhiteSpace();
+      value = emails.back().stripWhiteSpace();
   }
 
   HTMLDataListOptionsCollection* options = dataList->options();

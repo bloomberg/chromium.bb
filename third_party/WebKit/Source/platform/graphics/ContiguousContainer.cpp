@@ -120,7 +120,7 @@ void* ContiguousContainerBase::allocate(size_t objectSize,
   if (!bufferForAlloc) {
     size_t newBufferSize = m_buffers.isEmpty()
                                ? kDefaultInitialBufferSize * m_maxObjectSize
-                               : 2 * m_buffers.last()->capacity();
+                               : 2 * m_buffers.back()->capacity();
     bufferForAlloc =
         allocateNewBufferForNextAllocation(newBufferSize, typeName);
   }
@@ -131,7 +131,7 @@ void* ContiguousContainerBase::allocate(size_t objectSize,
 }
 
 void ContiguousContainerBase::removeLast() {
-  void* object = m_elements.last();
+  void* object = m_elements.back();
   m_elements.pop_back();
 
   Buffer* endBuffer = m_buffers[m_endIndex].get();
@@ -160,7 +160,7 @@ void ContiguousContainerBase::swap(ContiguousContainerBase& other) {
 
 void ContiguousContainerBase::shrinkToFit() {
   while (m_endIndex < m_buffers.size() - 1) {
-    DCHECK(m_buffers.last()->isEmpty());
+    DCHECK(m_buffers.back()->isEmpty());
     m_buffers.pop_back();
   }
 }

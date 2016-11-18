@@ -44,7 +44,7 @@ class VisualRectMappingTest : public RenderingTest {
     }
 
     const PaintInvalidationState& paintInvalidationState =
-        *paintInvalidationStates.last();
+        *paintInvalidationStates.back();
     ASSERT_EQ(paintInvalidationState.m_currentObject, object);
     ASSERT_EQ(&paintInvalidationState.paintInvalidationContainer(),
               &paintInvalidationContainer);

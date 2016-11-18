@@ -208,9 +208,9 @@ inline void StyleSheetHandler::setRuleHeaderEnd(const CharacterType* dataStart,
       break;
   }
 
-  m_currentRuleDataStack.last()->ruleHeaderRange.end = listEndOffset;
-  if (!m_currentRuleDataStack.last()->selectorRanges.isEmpty())
-    m_currentRuleDataStack.last()->selectorRanges.last().end = listEndOffset;
+  m_currentRuleDataStack.back()->ruleHeaderRange.end = listEndOffset;
+  if (!m_currentRuleDataStack.back()->selectorRanges.isEmpty())
+    m_currentRuleDataStack.back()->selectorRanges.back().end = listEndOffset;
 }
 
 void StyleSheetHandler::endRuleHeader(unsigned offset) {
@@ -225,7 +225,7 @@ void StyleSheetHandler::endRuleHeader(unsigned offset) {
 void StyleSheetHandler::observeSelector(unsigned startOffset,
                                         unsigned endOffset) {
   ASSERT(m_currentRuleDataStack.size());
-  m_currentRuleDataStack.last()->selectorRanges.append(
+  m_currentRuleDataStack.back()->selectorRanges.append(
       SourceRange(startOffset, endOffset));
 }
 
@@ -234,12 +234,12 @@ void StyleSheetHandler::startRuleBody(unsigned offset) {
   ASSERT(!m_currentRuleDataStack.isEmpty());
   if (m_parsedText[offset] == '{')
     ++offset;  // Skip the rule body opening brace.
-  m_currentRuleDataStack.last()->ruleBodyRange.start = offset;
+  m_currentRuleDataStack.back()->ruleBodyRange.start = offset;
 }
 
 void StyleSheetHandler::endRuleBody(unsigned offset) {
   ASSERT(!m_currentRuleDataStack.isEmpty());
-  m_currentRuleDataStack.last()->ruleBodyRange.end = offset;
+  m_currentRuleDataStack.back()->ruleBodyRange.end = offset;
   RefPtr<CSSRuleSourceData> rule = popRuleData();
 
   fixUnparsedPropertyRanges(rule.get());
@@ -251,13 +251,13 @@ void StyleSheetHandler::addNewRuleToSourceTree(
   if (m_currentRuleDataStack.isEmpty())
     m_result->append(rule);
   else
-    m_currentRuleDataStack.last()->childRules.append(rule);
+    m_currentRuleDataStack.back()->childRules.append(rule);
 }
 
 PassRefPtr<CSSRuleSourceData> StyleSheetHandler::popRuleData() {
   ASSERT(!m_currentRuleDataStack.isEmpty());
   m_currentRuleData = nullptr;
-  RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack.last().get();
+  RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack.back().get();
   m_currentRuleDataStack.pop_back();
   return data.release();
 }
@@ -330,7 +330,7 @@ void StyleSheetHandler::observeProperty(unsigned startOffset,
                                         bool isImportant,
                                         bool isParsed) {
   if (m_currentRuleDataStack.isEmpty() ||
-      !m_currentRuleDataStack.last()->styleSourceData)
+      !m_currentRuleDataStack.back()->styleSourceData)
     return;
 
   ASSERT(endOffset <= m_parsedText.length());
@@ -352,7 +352,7 @@ void StyleSheetHandler::observeProperty(unsigned startOffset,
   String value =
       propertyString.substring(colonIndex + 1, propertyString.length())
           .stripWhiteSpace();
-  m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
+  m_currentRuleDataStack.back()->styleSourceData->propertyData.append(
       CSSPropertySourceData(name, value, isImportant, false, isParsed,
                             SourceRange(startOffset, endOffset)));
 }
@@ -362,8 +362,8 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
   ASSERT(endOffset <= m_parsedText.length());
 
   if (m_currentRuleDataStack.isEmpty() ||
-      !m_currentRuleDataStack.last()->ruleHeaderRange.end ||
-      !m_currentRuleDataStack.last()->styleSourceData)
+      !m_currentRuleDataStack.back()->ruleHeaderRange.end ||
+      !m_currentRuleDataStack.back()->styleSourceData)
     return;
 
   // The lexer is not inside a property AND it is scanning a declaration-aware
@@ -401,7 +401,7 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
   if (!parsedOk || propertyData.range.length() != commentText.length())
     return;
 
-  m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
+  m_currentRuleDataStack.back()->styleSourceData->propertyData.append(
       CSSPropertySourceData(propertyData.name, propertyData.value, false, true,
                             true, SourceRange(startOffset, endOffset)));
 }

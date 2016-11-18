@@ -523,7 +523,7 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
       // To match main-thread parser behavior (which never checks
       // locationChangePending on the EOF path) we peek to see if this chunk has
       // an EOF and process it anyway.
-      if (tokens->last().type() == HTMLToken::EndOfFile) {
+      if (tokens->back().type() == HTMLToken::EndOfFile) {
         ASSERT(
             m_speculations
                 .isEmpty());  // There should never be any chunks after the EOF.

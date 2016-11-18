@@ -933,7 +933,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
   Element* currentScript() const {
-    return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get()
+    return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.back().get()
                                            : nullptr;
   }
   void currentScriptForBinding(HTMLScriptElementOrSVGScriptElement&) const;

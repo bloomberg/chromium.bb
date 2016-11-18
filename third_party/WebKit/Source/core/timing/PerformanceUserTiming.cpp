@@ -131,7 +131,7 @@ void UserTiming::clearMarks(const String& markName) {
 double UserTiming::findExistingMarkStartTime(const String& markName,
                                              ExceptionState& exceptionState) {
   if (m_marksMap.contains(markName))
-    return m_marksMap.get(markName).last()->startTime();
+    return m_marksMap.get(markName).back()->startTime();
 
   if (restrictedKeyMap().contains(markName) && m_performance->timing()) {
     double value = static_cast<double>(

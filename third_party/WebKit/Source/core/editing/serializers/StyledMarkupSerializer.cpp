@@ -378,7 +378,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode,
 
     // Close up the ancestors.
     while (!ancestorsToClose.isEmpty()) {
-      ContainerNode* ancestor = ancestorsToClose.last();
+      ContainerNode* ancestor = ancestorsToClose.back();
       DCHECK(ancestor);
       if (next && next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
         break;

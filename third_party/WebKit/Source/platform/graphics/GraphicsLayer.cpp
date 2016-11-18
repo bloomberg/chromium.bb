@@ -238,7 +238,7 @@ void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer,
 
 void GraphicsLayer::removeAllChildren() {
   while (!m_children.isEmpty()) {
-    GraphicsLayer* curLayer = m_children.last();
+    GraphicsLayer* curLayer = m_children.back();
     ASSERT(curLayer->parent());
     curLayer->removeFromParent();
   }

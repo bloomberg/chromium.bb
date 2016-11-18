@@ -86,7 +86,7 @@ static bool parseKeyTimes(const String& string,
       if (!n) {
         if (time)
           goto fail;
-      } else if (time < result.last()) {
+      } else if (time < result.back()) {
         goto fail;
       }
     }
@@ -568,7 +568,7 @@ void SVGAnimationElement::startedActiveInterval() {
                                  fastHasAttribute(SVGNames::keyPointsAttr) ||
                                  (m_values.size() == m_keyTimes.size())) &&
         (calcMode == CalcModeDiscrete || !m_keyTimes.size() ||
-         m_keyTimes.last() == 1) &&
+         m_keyTimes.back() == 1) &&
         (calcMode != CalcModeSpline ||
          ((m_keySplines.size() &&
            (m_keySplines.size() == m_values.size() - 1)) ||
@@ -576,7 +576,7 @@ void SVGAnimationElement::startedActiveInterval() {
         (!fastHasAttribute(SVGNames::keyPointsAttr) ||
          (m_keyTimes.size() > 1 && m_keyTimes.size() == m_keyPoints.size()));
     if (m_animationValid)
-      m_animationValid = calculateToAtEndOfDurationValue(m_values.last());
+      m_animationValid = calculateToAtEndOfDurationValue(m_values.back());
     if (calcMode == CalcModePaced && m_animationValid)
       calculateKeyTimesForCalcModePaced();
   } else if (animationMode == PathAnimation) {

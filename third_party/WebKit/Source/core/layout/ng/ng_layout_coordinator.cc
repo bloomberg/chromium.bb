@@ -24,7 +24,7 @@ bool NGLayoutCoordinator::Tick(NGPhysicalFragmentBase** fragment) {
 
   // TODO(layout-dev): store box from last tick and pass it into Layout here.
   switch (
-      layout_algorithms_.last()->Layout(nullptr, fragment, &child_algorithm)) {
+      layout_algorithms_.back()->Layout(nullptr, fragment, &child_algorithm)) {
     case NotFinished:
       return false;
     case NewFragment:

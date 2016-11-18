@@ -108,9 +108,9 @@ PassRefPtr<EncodedFormData> EncodedFormData::deepCopy() const {
 }
 
 void EncodedFormData::appendData(const void* data, size_t size) {
-  if (m_elements.isEmpty() || m_elements.last().m_type != FormDataElement::data)
+  if (m_elements.isEmpty() || m_elements.back().m_type != FormDataElement::data)
     m_elements.append(FormDataElement());
-  FormDataElement& e = m_elements.last();
+  FormDataElement& e = m_elements.back();
   size_t oldSize = e.m_data.size();
   e.m_data.grow(oldSize + size);
   memcpy(e.m_data.data() + oldSize, data, size);

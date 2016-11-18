@@ -58,7 +58,7 @@ void CustomContextMenuProvider::appendSeparator(ContextMenu& contextMenu) {
 
   // Collapse all sequences of two or more adjacent separators in the menu or
   // any submenus to a single separator.
-  ContextMenuItem lastItem = contextMenu.items().last();
+  ContextMenuItem lastItem = contextMenu.items().back();
   if (lastItem.type() == SeparatorType)
     return;
 
@@ -131,7 +131,7 @@ void CustomContextMenuProvider::populateContextMenuItems(
 
   // Remove separators at the end of the menu and any submenus.
   while (contextMenu.items().size() &&
-         contextMenu.items().last().type() == SeparatorType)
+         contextMenu.items().back().type() == SeparatorType)
     contextMenu.removeLastItem();
 }
 

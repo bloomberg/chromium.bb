@@ -58,7 +58,7 @@ class HTMLTreeBuilderSimulator {
  private:
   explicit HTMLTreeBuilderSimulator(HTMLTreeBuilder*);
 
-  bool inForeignContent() const { return m_namespaceStack.last() != HTML; }
+  bool inForeignContent() const { return m_namespaceStack.back() != HTML; }
 
   HTMLParserOptions m_options;
   State m_namespaceStack;

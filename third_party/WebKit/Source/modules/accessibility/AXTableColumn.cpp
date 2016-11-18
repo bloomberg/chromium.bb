@@ -137,7 +137,7 @@ void AXTableColumn::addChildren() {
       continue;
 
     // make sure the last one isn't the same as this one (rowspan cells)
-    if (m_children.size() > 0 && m_children.last() == cell)
+    if (m_children.size() > 0 && m_children.back() == cell)
       continue;
 
     m_children.append(cell);

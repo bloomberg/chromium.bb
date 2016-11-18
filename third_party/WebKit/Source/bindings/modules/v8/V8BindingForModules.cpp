@@ -492,12 +492,12 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate,
   // Implicit properties don't need to be set. The caller is not required to
   // be aware of this, so this is an expected no-op. The caller can verify
   // that the value is correct via assertPrimaryKeyValidOrInjectable.
-  if (isImplicitProperty(isolate, value, keyPathElements.last()))
+  if (isImplicitProperty(isolate, value, keyPathElements.back()))
     return true;
 
   // If it's not an implicit property of value, value must be an object.
   v8::Local<v8::Object> object = value.As<v8::Object>();
-  v8::Local<v8::String> property = v8String(isolate, keyPathElements.last());
+  v8::Local<v8::String> property = v8String(isolate, keyPathElements.back());
   if (!v8CallBoolean(object->CreateDataProperty(context, property, key)))
     return false;
 

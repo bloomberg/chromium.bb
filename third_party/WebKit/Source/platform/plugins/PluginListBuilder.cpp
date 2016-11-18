@@ -49,12 +49,12 @@ void PluginListBuilder::addMediaTypeToLastPlugin(const WebString& name,
   MimeClassInfo info;
   info.type = name;
   info.desc = description;
-  m_results->last().mimes.append(info);
+  m_results->back().mimes.append(info);
 }
 
 void PluginListBuilder::addFileExtensionToLastMediaType(
     const WebString& extension) {
-  MimeClassInfo& info = m_results->last().mimes.last();
+  MimeClassInfo& info = m_results->back().mimes.back();
   info.extensions.append(extension);
 }
 

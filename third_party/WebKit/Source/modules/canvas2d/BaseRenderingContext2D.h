@@ -296,7 +296,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   CanvasRenderingContext2DState& modifiableState();
   const CanvasRenderingContext2DState& state() const {
-    return *m_stateStack.last();
+    return *m_stateStack.back();
   }
 
   bool computeDirtyRect(const FloatRect& localBounds, SkIRect*);

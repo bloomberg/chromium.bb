@@ -111,7 +111,7 @@ HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::stateFor(
     else if (record->namespaceURI() == MathMLNames::mathmlNamespaceURI)
       currentNamespace = MathML;
 
-    if (namespaceStack.isEmpty() || namespaceStack.last() != currentNamespace)
+    if (namespaceStack.isEmpty() || namespaceStack.back() != currentNamespace)
       namespaceStack.append(currentNamespace);
   }
   namespaceStack.reverse();
@@ -131,8 +131,8 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
       m_namespaceStack.append(MathML);
     if (inForeignContent() && tokenExitsForeignContent(token))
       m_namespaceStack.pop_back();
-    if ((m_namespaceStack.last() == SVG && tokenExitsSVG(token)) ||
-        (m_namespaceStack.last() == MathML && tokenExitsMath(token)))
+    if ((m_namespaceStack.back() == SVG && tokenExitsSVG(token)) ||
+        (m_namespaceStack.back() == MathML && tokenExitsMath(token)))
       m_namespaceStack.append(HTML);
     if (!inForeignContent()) {
       // FIXME: This is just a copy of Tokenizer::updateStateFor which uses
@@ -160,13 +160,13 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
 
   if (token.type() == HTMLToken::EndTag) {
     const String& tagName = token.data();
-    if ((m_namespaceStack.last() == SVG &&
+    if ((m_namespaceStack.back() == SVG &&
          threadSafeMatch(tagName, SVGNames::svgTag)) ||
-        (m_namespaceStack.last() == MathML &&
+        (m_namespaceStack.back() == MathML &&
          threadSafeMatch(tagName, MathMLNames::mathTag)) ||
-        (m_namespaceStack.contains(SVG) && m_namespaceStack.last() == HTML &&
+        (m_namespaceStack.contains(SVG) && m_namespaceStack.back() == HTML &&
          tokenExitsSVG(token)) ||
-        (m_namespaceStack.contains(MathML) && m_namespaceStack.last() == HTML &&
+        (m_namespaceStack.contains(MathML) && m_namespaceStack.back() == HTML &&
          tokenExitsMath(token)))
       m_namespaceStack.pop_back();
     if (threadSafeMatch(tagName, scriptTag)) {

@@ -566,7 +566,7 @@ static bool canUseResponse(ResourceResponse& response,
 const ResourceRequest& Resource::lastResourceRequest() const {
   if (!m_redirectChain.size())
     return m_resourceRequest;
-  return m_redirectChain.last().m_request;
+  return m_redirectChain.back().m_request;
 }
 
 void Resource::setRevalidatingRequest(const ResourceRequest& request) {

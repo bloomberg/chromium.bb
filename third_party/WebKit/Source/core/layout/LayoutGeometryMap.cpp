@@ -55,7 +55,7 @@ void LayoutGeometryMap::mapToAncestor(
   // If the mapping includes something like columns, we have to go via
   // layoutObjects.
   if (hasNonUniformStep()) {
-    m_mapping.last().m_layoutObject->mapLocalToAncestor(
+    m_mapping.back().m_layoutObject->mapLocalToAncestor(
         ancestor, transformState, ApplyContainerFlip | m_mapCoordinatesFlags);
     transformState.flatten();
     return;
@@ -155,7 +155,7 @@ FloatQuad LayoutGeometryMap::mapToAncestor(
 
 #if ENABLE(ASSERT)
   if (m_mapping.size() > 0) {
-    const LayoutObject* lastLayoutObject = m_mapping.last().m_layoutObject;
+    const LayoutObject* lastLayoutObject = m_mapping.back().m_layoutObject;
 
     FloatRect layoutObjectMappedResult =
         lastLayoutObject
@@ -307,12 +307,12 @@ void LayoutGeometryMap::popMappingsToAncestor(
 
   bool mightBeSaturated = false;
   while (m_mapping.size() &&
-         m_mapping.last().m_layoutObject != ancestorLayoutObject) {
+         m_mapping.back().m_layoutObject != ancestorLayoutObject) {
     mightBeSaturated =
         mightBeSaturated || m_accumulatedOffset.width().mightBeSaturated();
     mightBeSaturated =
         mightBeSaturated || m_accumulatedOffset.height().mightBeSaturated();
-    stepRemoved(m_mapping.last());
+    stepRemoved(m_mapping.back());
     m_mapping.pop_back();
   }
   if (UNLIKELY(mightBeSaturated)) {

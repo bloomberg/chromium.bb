@@ -71,9 +71,9 @@ class ExpansionOpportunities {
     m_totalOpportunities += opportunitiesInRun;
   }
   void removeTrailingExpansion() {
-    if (!m_totalOpportunities || !m_runsWithExpansions.last())
+    if (!m_totalOpportunities || !m_runsWithExpansions.back())
       return;
-    m_runsWithExpansions.last()--;
+    m_runsWithExpansions.back()--;
     m_totalOpportunities--;
   }
 

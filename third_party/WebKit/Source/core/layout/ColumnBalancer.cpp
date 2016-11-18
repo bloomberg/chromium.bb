@@ -279,7 +279,7 @@ void InitialColumnHeightFinder::addContentRun(
     LayoutUnit endOffsetInFlowThread) {
   endOffsetInFlowThread -= spaceUsedByStrutsAt(endOffsetInFlowThread);
   if (!m_contentRuns.isEmpty() &&
-      endOffsetInFlowThread <= m_contentRuns.last().breakOffset())
+      endOffsetInFlowThread <= m_contentRuns.back().breakOffset())
     return;
   // Append another item as long as we haven't exceeded used column count. What
   // ends up in the overflow area shouldn't affect column balancing. However, if

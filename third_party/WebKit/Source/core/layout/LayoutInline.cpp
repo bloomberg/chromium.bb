@@ -427,7 +427,7 @@ void LayoutInline::splitInlines(LayoutBlockFlow* fromBlock,
   }
 
   // Create a new clone of the top-most inline in |inlinesToClone|.
-  LayoutInline* topMostInlineToClone = inlinesToClone.last();
+  LayoutInline* topMostInlineToClone = inlinesToClone.back();
   LayoutInline* cloneInline = topMostInlineToClone->clone();
 
   // Now we are at the block level. We need to put the clone into the |toBlock|.

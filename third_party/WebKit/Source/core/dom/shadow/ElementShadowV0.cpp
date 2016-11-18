@@ -145,7 +145,7 @@ const InsertionPoint* ElementShadowV0::finalDestinationInsertionPointFor(
   DCHECK(!key->needsDistributionRecalc());
   NodeToDestinationInsertionPoints::const_iterator it =
       m_nodeToInsertionPoints.find(key);
-  return it == m_nodeToInsertionPoints.end() ? nullptr : it->value->last();
+  return it == m_nodeToInsertionPoints.end() ? nullptr : it->value->back();
 }
 
 const DestinationInsertionPoints*

@@ -65,7 +65,7 @@ class SelectorFilter {
 
   bool parentStackIsConsistent(const ContainerNode* parentNode) const {
     return !m_parentStack.isEmpty() &&
-           m_parentStack.last().element == parentNode;
+           m_parentStack.back().element == parentNode;
   }
 
   template <unsigned maximumIdentifierCount>

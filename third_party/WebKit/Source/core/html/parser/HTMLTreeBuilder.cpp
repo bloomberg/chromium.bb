@@ -1349,8 +1349,8 @@ void HTMLTreeBuilder::processStartTag(AtomicHTMLToken* token) {
         insertionMode = InBodyMode;
 
       ASSERT(insertionMode != TemplateContentsMode);
-      ASSERT(m_templateInsertionModes.last() == TemplateContentsMode);
-      m_templateInsertionModes.last() = insertionMode;
+      ASSERT(m_templateInsertionModes.back() == TemplateContentsMode);
+      m_templateInsertionModes.back() = insertionMode;
       setInsertionMode(insertionMode);
 
       processStartTag(token);
@@ -1526,7 +1526,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately() {
         item = m_fragmentContext.contextElementStackItem();
     }
     if (item->hasTagName(templateTag))
-      return setInsertionMode(m_templateInsertionModes.last());
+      return setInsertionMode(m_templateInsertionModes.back());
     if (item->hasTagName(selectTag)) {
       if (!last) {
         while (item->node() != m_tree.openElements()->rootNode() &&

@@ -46,7 +46,7 @@ class PLATFORM_EXPORT PaintChunker final {
   size_t lastChunkIndex() const {
     return m_chunks.isEmpty() ? kNotFound : m_chunks.size() - 1;
   }
-  PaintChunk& lastChunk() { return m_chunks.last(); }
+  PaintChunk& lastChunk() { return m_chunks.back(); }
 
   PaintChunk& findChunkByDisplayItemIndex(size_t index) {
     auto chunk = findChunkInVectorByDisplayItemIndex(m_chunks, index);

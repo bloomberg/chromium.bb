@@ -135,7 +135,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
       continue;
 
     edges.grow(++count);
-    OutlineEdgeInfo& edge = edges.last();
+    OutlineEdgeInfo& edge = edges.back();
     edge.x1 = SkScalarTruncToInt(points[0].x());
     edge.y1 = SkScalarTruncToInt(points[0].y());
     edge.x2 = SkScalarTruncToInt(points[1].x());
@@ -174,7 +174,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
   }
 
   DCHECK(count >= 4 && edges.size() == count);
-  int firstAdjacentWidth = adjustJoint(width, edges.last(), edges.first());
+  int firstAdjacentWidth = adjustJoint(width, edges.back(), edges.first());
 
   // The width of the angled part of starting and ending joint of the current
   // edge.

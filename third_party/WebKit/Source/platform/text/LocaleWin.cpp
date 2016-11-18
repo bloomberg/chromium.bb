@@ -149,7 +149,7 @@ void LocaleWin::ensureShortMonthLabels() {
   m_shortMonthLabels.reserveCapacity(WTF_ARRAY_LENGTH(types));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(types); ++i) {
     m_shortMonthLabels.append(getLocaleInfoString(types[i]));
-    if (m_shortMonthLabels.last().isEmpty()) {
+    if (m_shortMonthLabels.back().isEmpty()) {
       m_shortMonthLabels.shrink(0);
       m_shortMonthLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthName));
       for (unsigned m = 0; m < WTF_ARRAY_LENGTH(WTF::monthName); ++m)
@@ -275,7 +275,7 @@ void LocaleWin::ensureMonthLabels() {
   m_monthLabels.reserveCapacity(WTF_ARRAY_LENGTH(types));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(types); ++i) {
     m_monthLabels.append(getLocaleInfoString(types[i]));
-    if (m_monthLabels.last().isEmpty()) {
+    if (m_monthLabels.back().isEmpty()) {
       m_monthLabels.shrink(0);
       m_monthLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthFullName));
       for (unsigned m = 0; m < WTF_ARRAY_LENGTH(WTF::monthFullName); ++m)
@@ -296,7 +296,7 @@ void LocaleWin::ensureWeekDayShortLabels() {
   m_weekDayShortLabels.reserveCapacity(WTF_ARRAY_LENGTH(types));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(types); ++i) {
     m_weekDayShortLabels.append(getLocaleInfoString(types[i]));
-    if (m_weekDayShortLabels.last().isEmpty()) {
+    if (m_weekDayShortLabels.back().isEmpty()) {
       m_weekDayShortLabels.shrink(0);
       m_weekDayShortLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::weekdayName));
       for (unsigned w = 0; w < WTF_ARRAY_LENGTH(WTF::weekdayName); ++w) {

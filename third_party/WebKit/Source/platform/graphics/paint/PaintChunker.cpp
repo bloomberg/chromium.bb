@@ -72,10 +72,10 @@ bool PaintChunker::incrementDisplayItemIndex(const DisplayItem& item) {
     return true;
   }
 
-  auto& lastChunk = m_chunks.last();
+  auto& lastChunk = m_chunks.back();
   bool canContinueChunk = m_currentProperties == lastChunk.properties &&
                           behavior != RequiresSeparateChunk &&
-                          m_chunkBehavior.last() != RequiresSeparateChunk;
+                          m_chunkBehavior.back() != RequiresSeparateChunk;
   if (canContinueChunk) {
     lastChunk.endIndex++;
     return false;
@@ -92,7 +92,7 @@ bool PaintChunker::decrementDisplayItemIndex() {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
   DCHECK(!m_chunks.isEmpty());
 
-  auto& lastChunk = m_chunks.last();
+  auto& lastChunk = m_chunks.back();
   if ((lastChunk.endIndex - lastChunk.beginIndex) > 1) {
     lastChunk.endIndex--;
     return false;

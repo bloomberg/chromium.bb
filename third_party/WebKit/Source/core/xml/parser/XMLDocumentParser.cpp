@@ -307,7 +307,7 @@ void XMLDocumentParser::popCurrentNode() {
   if (!m_currentNode)
     return;
   DCHECK(m_currentNodeStack.size());
-  m_currentNode = m_currentNodeStack.last();
+  m_currentNode = m_currentNodeStack.back();
   m_currentNodeStack.pop_back();
 }
 
@@ -818,7 +818,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
     return;
 
   for (; !elemStack.isEmpty(); elemStack.pop_back()) {
-    Element* element = elemStack.last();
+    Element* element = elemStack.back();
     AttributeCollection attributes = element->attributes();
     for (auto& attribute : attributes) {
       if (attribute.localName() == xmlnsAtom)

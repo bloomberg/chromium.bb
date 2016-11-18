@@ -485,7 +485,7 @@ class ThreadedTesterBase {
     for (int i = 0; i < numberOfThreads; i++) {
       m_threads.append(wrapUnique(
           Platform::current()->createThread("blink gc testing thread")));
-      m_threads.last()->getWebTaskRunner()->postTask(
+      m_threads.back()->getWebTaskRunner()->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(threadFunc, crossThreadUnretained(tester)));
     }

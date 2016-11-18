@@ -126,10 +126,10 @@ void V8HTMLConstructor::htmlConstructor(
     // This is an element being created with 'new' from script
     element = definition->createElementForConstructor(*window->document());
   } else {
-    element = definition->constructionStack().last();
+    element = definition->constructionStack().back();
     if (element) {
       // This is an element being upgraded that has called super
-      definition->constructionStack().last().clear();
+      definition->constructionStack().back().clear();
     } else {
       // During upgrade an element has invoked the same constructor
       // before calling 'super' and that invocation has poached the

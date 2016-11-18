@@ -170,7 +170,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
   }
   DCHECK_GE(keyframes.size(), 2U);
   DCHECK(!keyframes.first()->offset());
-  DCHECK_EQ(keyframes.last()->offset(), 1);
+  DCHECK_EQ(keyframes.back()->offset(), 1);
 
   // This is used for use counting neutral keyframes running on the compositor.
   PropertySet allProperties;

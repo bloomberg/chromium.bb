@@ -88,7 +88,7 @@ class CORE_EXPORT Fullscreen final
   // |currentFullScreenElement()|, see https://crbug.com/402421.
   Element* fullscreenElement() const {
     return !m_fullscreenElementStack.isEmpty()
-               ? m_fullscreenElementStack.last().first.get()
+               ? m_fullscreenElementStack.back().first.get()
                : nullptr;
   }
 

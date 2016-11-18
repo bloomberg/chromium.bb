@@ -257,7 +257,7 @@ static bool requiresStopsNormalization(const Vector<GradientStop>& stops,
     return true;
 
   // Degenerate stops
-  if (stops.first().offset < 0 || stops.last().offset > 1)
+  if (stops.first().offset < 0 || stops.back().offset > 1)
     return true;
 
   return false;
@@ -270,7 +270,7 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
   ASSERT(stops.size() > 1);
 
   const float firstOffset = stops.first().offset;
-  const float lastOffset = stops.last().offset;
+  const float lastOffset = stops.back().offset;
   const float span = lastOffset - firstOffset;
 
   if (fabs(span) < std::numeric_limits<float>::epsilon()) {
@@ -283,7 +283,7 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
     // be significant (padding on both sides of the offset).
     if (gradient->spreadMethod() != SpreadMethodRepeat)
       gradient->addColorStop(clampedOffset, stops.first().color);
-    gradient->addColorStop(clampedOffset, stops.last().color);
+    gradient->addColorStop(clampedOffset, stops.back().color);
 
     return false;
   }
@@ -461,7 +461,7 @@ void CSSGradientValue::addStops(Gradient* gradient,
     }
   }
 
-  ASSERT(stops.first().specified && stops.last().specified);
+  ASSERT(stops.first().specified && stops.back().specified);
 
   // If any color-stop still does not have a position, then, for each run of
   // adjacent color-stops without positions, set their positions so that they
@@ -511,10 +511,10 @@ void CSSGradientValue::addStops(Gradient* gradient,
     if (normalizeAndAddStops(stops, gradient)) {
       if (isLinearGradientValue()) {
         adjustGradientPointsForOffsetRange(gradient, stops.first().offset,
-                                           stops.last().offset);
+                                           stops.back().offset);
       } else {
         adjustGradientRadiiForOffsetRange(gradient, stops.first().offset,
-                                          stops.last().offset);
+                                          stops.back().offset);
       }
     } else {
       // Normalization failed because the stop set is coincident.

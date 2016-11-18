@@ -918,8 +918,8 @@ class Vector
 
   T& first() { return at(0); }
   const T& first() const { return at(0); }
-  T& last() { return at(size() - 1); }
-  const T& last() const { return at(size() - 1); }
+  T& back() { return at(size() - 1); }
+  const T& back() const { return at(size() - 1); }
 
   template <typename U>
   bool contains(const U&) const;

@@ -77,7 +77,7 @@ static const WTF::TextEncoding getEncodingFromDomain(const KURL& url) {
   Vector<String> tokens;
   url.host().split(".", tokens);
   if (!tokens.isEmpty()) {
-    auto tld = tokens.last();
+    auto tld = tokens.back();
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(encodings); i++) {
       if (tld == encodings[i].domain)
         return WTF::TextEncoding(encodings[i].encoding);

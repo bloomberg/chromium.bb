@@ -54,9 +54,9 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   ScriptValue getConstructorForScript() override { return ScriptValue(); }
 
   bool runConstructor(Element* element) override {
-    if (constructionStack().isEmpty() || constructionStack().last() != element)
+    if (constructionStack().isEmpty() || constructionStack().back() != element)
       return false;
-    constructionStack().last().clear();
+    constructionStack().back().clear();
     return true;
   }
 

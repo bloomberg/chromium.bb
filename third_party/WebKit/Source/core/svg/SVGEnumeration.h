@@ -73,7 +73,7 @@ class SVGEnumerationBase : public SVGPropertyBase {
   AnimatedPropertyType type() const override { return classType(); }
 
   static unsigned short valueOfLastEnum(const StringEntries& entries) {
-    return entries.last().first;
+    return entries.back().first;
   }
 
   // This is the maximum value that is exposed as an IDL constant on the

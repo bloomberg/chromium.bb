@@ -179,7 +179,7 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::profile(
   double stopTime = now + minDuration;
   for (unsigned step = 0; step < minRepeatCount || now < stopTime; ++step) {
     timings->append(Vector<double>());
-    Vector<double>* currentTimings = &timings->last();
+    Vector<double>* currentTimings = &timings->back();
     if (timings->size() > 1)
       currentTimings->reserveCapacity(timings->begin()->size());
     ProfilingCanvas canvas(bitmap);

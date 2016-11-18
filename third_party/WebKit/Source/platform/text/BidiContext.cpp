@@ -110,7 +110,7 @@ BidiContext::copyStackRemovingUnicodeEmbeddingContexts() {
   ASSERT(contexts.size());
 
   RefPtr<BidiContext> topContext =
-      copyContextAndRebaselineLevel(contexts.last(), 0);
+      copyContextAndRebaselineLevel(contexts.back(), 0);
   for (int i = contexts.size() - 1; i > 0; --i)
     topContext =
         copyContextAndRebaselineLevel(contexts[i - 1], topContext.get());

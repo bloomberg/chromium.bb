@@ -132,8 +132,8 @@ CustomElementDefinition::ConstructionStackScope::ConstructionStackScope(
 
 CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope() {
   // Pop the construction stack.
-  DCHECK(!m_constructionStack.last() ||
-         m_constructionStack.last() == m_element);
+  DCHECK(!m_constructionStack.back() ||
+         m_constructionStack.back() == m_element);
   DCHECK_EQ(m_constructionStack.size(), m_depth);  // It's a *stack*.
   m_constructionStack.pop_back();
 }

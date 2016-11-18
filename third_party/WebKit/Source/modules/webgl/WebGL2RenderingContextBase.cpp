@@ -3384,7 +3384,7 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
   Vector<const char*> varyingStrings;
   for (size_t i = 0; i < varyings.size(); ++i) {
     keepAlive.append(varyings[i].ascii());
-    varyingStrings.append(keepAlive.last().data());
+    varyingStrings.append(keepAlive.back().data());
   }
 
   contextGL()->TransformFeedbackVaryings(objectOrZero(program), varyings.size(),
@@ -3569,7 +3569,7 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
   Vector<const char*> uniformStrings;
   for (size_t i = 0; i < uniformNames.size(); ++i) {
     keepAlive.append(uniformNames[i].ascii());
-    uniformStrings.append(keepAlive.last().data());
+    uniformStrings.append(keepAlive.back().data());
   }
 
   result.resize(uniformNames.size());

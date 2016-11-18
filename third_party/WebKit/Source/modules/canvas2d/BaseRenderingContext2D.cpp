@@ -40,7 +40,7 @@ BaseRenderingContext2D::~BaseRenderingContext2D() {}
 
 CanvasRenderingContext2DState& BaseRenderingContext2D::modifiableState() {
   realizeSaves();
-  return *m_stateStack.last();
+  return *m_stateStack.back();
 }
 
 void BaseRenderingContext2D::realizeSaves() {
@@ -49,7 +49,7 @@ void BaseRenderingContext2D::realizeSaves() {
     ASSERT(m_stateStack.size() >= 1);
     // Reduce the current state's unrealized count by one now,
     // to reflect the fact we are saving one state.
-    m_stateStack.last()->restore();
+    m_stateStack.back()->restore();
     m_stateStack.append(CanvasRenderingContext2DState::create(
         state(), CanvasRenderingContext2DState::DontCopyClipList));
     // Set the new state's unrealized count to 0, because it has no outstanding
@@ -58,7 +58,7 @@ void BaseRenderingContext2D::realizeSaves() {
     // used by the Vector operations copy the unrealized count from the previous
     // state (in turn necessary to support correct resizing and unwinding of the
     // stack).
-    m_stateStack.last()->resetUnrealizedSaveCount();
+    m_stateStack.back()->resetUnrealizedSaveCount();
     SkCanvas* canvas = drawingCanvas();
     if (canvas)
       canvas->save();
@@ -67,14 +67,14 @@ void BaseRenderingContext2D::realizeSaves() {
 }
 
 void BaseRenderingContext2D::save() {
-  m_stateStack.last()->save();
+  m_stateStack.back()->save();
 }
 
 void BaseRenderingContext2D::restore() {
   validateStateStack();
   if (state().hasUnrealizedSaves()) {
     // We never realized the save, so just record that it was unnecessary.
-    m_stateStack.last()->restore();
+    m_stateStack.back()->restore();
     return;
   }
   ASSERT(m_stateStack.size() >= 1);
@@ -82,7 +82,7 @@ void BaseRenderingContext2D::restore() {
     return;
   m_path.transform(state().transform());
   m_stateStack.pop_back();
-  m_stateStack.last()->clearResolvedFilter();
+  m_stateStack.back()->clearResolvedFilter();
   m_path.transform(state().transform().inverse());
   SkCanvas* c = drawingCanvas();
   if (c)

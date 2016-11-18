@@ -315,7 +315,7 @@ HeapVector<Member<Element>> TreeScope::elementsFromHitTestResult(
 
   if (rootNode().isDocumentNode()) {
     if (Element* rootElement = toDocument(rootNode()).documentElement()) {
-      if (elements.isEmpty() || elements.last() != rootElement)
+      if (elements.isEmpty() || elements.back() != rootElement)
         elements.append(rootElement);
     }
   }
@@ -503,8 +503,8 @@ const TreeScope* TreeScope::commonAncestorTreeScope(
   // returned.
   const TreeScope* lastAncestor = nullptr;
   while (!thisChain.isEmpty() && !otherChain.isEmpty() &&
-         thisChain.last() == otherChain.last()) {
-    lastAncestor = thisChain.last();
+         thisChain.back() == otherChain.back()) {
+    lastAncestor = thisChain.back();
     thisChain.pop_back();
     otherChain.pop_back();
   }

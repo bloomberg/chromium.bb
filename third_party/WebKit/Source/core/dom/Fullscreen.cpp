@@ -470,7 +470,7 @@ void Fullscreen::exitFullscreen(Document& document) {
   for (auto& descendant : descendants) {
     DCHECK(descendant);
     RequestType requestType =
-        from(*descendant).m_fullscreenElementStack.last().second;
+        from(*descendant).m_fullscreenElementStack.back().second;
     from(*descendant).clearFullscreenElementStack();
     from(document).enqueueChangeEvent(*descendant, requestType);
   }
@@ -479,7 +479,7 @@ void Fullscreen::exitFullscreen(Document& document) {
   Element* newTop = nullptr;
   for (Document* currentDoc = &document; currentDoc;) {
     RequestType requestType =
-        from(*currentDoc).m_fullscreenElementStack.last().second;
+        from(*currentDoc).m_fullscreenElementStack.back().second;
 
     // 1. Pop the top element of doc's fullscreen element stack.
     from(*currentDoc).popFullscreenElementStack();

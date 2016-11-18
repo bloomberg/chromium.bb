@@ -755,13 +755,13 @@ String AXObject::ariaTextAlternative(bool recursive,
     nameFrom = AXNameFromRelatedElement;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, attr));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
 
     const AtomicString& ariaLabelledby = getAttribute(attr);
     if (!ariaLabelledby.isNull()) {
       if (nameSources)
-        nameSources->last().attributeValue = ariaLabelledby;
+        nameSources->back().attributeValue = ariaLabelledby;
 
       // Operate on a copy of |visited| so that if |nameSources| is not null,
       // the set of visited objects is preserved unmodified for future
@@ -770,7 +770,7 @@ String AXObject::ariaTextAlternative(bool recursive,
       textAlternative = textFromAriaLabelledby(visitedCopy, relatedObjects);
       if (!textAlternative.isNull()) {
         if (nameSources) {
-          NameSource& source = nameSources->last();
+          NameSource& source = nameSources->back();
           source.type = nameFrom;
           source.relatedObjects = *relatedObjects;
           source.text = textAlternative;
@@ -780,7 +780,7 @@ String AXObject::ariaTextAlternative(bool recursive,
           return textAlternative;
         }
       } else if (nameSources) {
-        nameSources->last().invalid = true;
+        nameSources->back().invalid = true;
       }
     }
   }
@@ -790,14 +790,14 @@ String AXObject::ariaTextAlternative(bool recursive,
   nameFrom = AXNameFromAttribute;
   if (nameSources) {
     nameSources->append(NameSource(*foundTextAlternative, aria_labelAttr));
-    nameSources->last().type = nameFrom;
+    nameSources->back().type = nameFrom;
   }
   const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
   if (!ariaLabel.isEmpty()) {
     textAlternative = ariaLabel;
 
     if (nameSources) {
-      NameSource& source = nameSources->last();
+      NameSource& source = nameSources->back();
       source.text = textAlternative;
       source.attributeValue = ariaLabel;
       *foundTextAlternative = true;

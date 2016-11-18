@@ -78,7 +78,7 @@ void Gradient::addColorStop(const Gradient::ColorStop& stop) {
   if (m_stops.isEmpty()) {
     m_stopsSorted = true;
   } else {
-    m_stopsSorted = m_stopsSorted && compareStops(m_stops.last(), stop);
+    m_stopsSorted = m_stopsSorted && compareStops(m_stops.back(), stop);
   }
 
   m_stops.append(stop);

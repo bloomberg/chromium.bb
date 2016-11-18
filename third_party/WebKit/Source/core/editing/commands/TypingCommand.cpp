@@ -145,7 +145,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document,
 String TypingCommand::textDataForInputEvent() const {
   if (m_commands.isEmpty())
     return m_textToInsert;
-  return m_commands.last()->textDataForInputEvent();
+  return m_commands.back()->textDataForInputEvent();
 }
 
 void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(

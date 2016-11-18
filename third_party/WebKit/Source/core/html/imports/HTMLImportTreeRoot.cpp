@@ -63,7 +63,7 @@ void HTMLImportTreeRoot::scheduleRecalcState() {
 
 HTMLImportChild* HTMLImportTreeRoot::add(HTMLImportChild* child) {
   m_imports.append(child);
-  return m_imports.last().get();
+  return m_imports.back().get();
 }
 
 HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const {

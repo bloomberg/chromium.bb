@@ -371,7 +371,7 @@ class PropertyTreeManager {
   int compositorIdForClipNode(const ClipPaintPropertyNode*);
   int switchToEffectNode(const EffectPaintPropertyNode& nextEffect);
   int compositorIdForCurrentEffectNode() const {
-    return m_effectStack.last().id;
+    return m_effectStack.back().id;
   }
   int compositorIdForScrollNode(const ScrollPaintPropertyNode*);
 
@@ -387,7 +387,7 @@ class PropertyTreeManager {
   cc::ScrollTree& scrollTree() { return m_propertyTrees.scroll_tree; }
 
   const EffectPaintPropertyNode* currentEffectNode() const {
-    return m_effectStack.last().effect;
+    return m_effectStack.back().effect;
   }
 
   // Property trees which should be updated by the manager.

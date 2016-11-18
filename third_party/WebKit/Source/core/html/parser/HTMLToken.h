@@ -313,7 +313,7 @@ class HTMLToken {
   void addNewAttribute() {
     ASSERT(m_type == StartTag || m_type == EndTag);
     m_attributes.grow(m_attributes.size() + 1);
-    m_currentAttribute = &m_attributes.last();
+    m_currentAttribute = &m_attributes.back();
     m_currentAttribute->mutableNameRange().clear();
     m_currentAttribute->mutableValueRange().clear();
   }

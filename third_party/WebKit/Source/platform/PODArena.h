@@ -131,7 +131,7 @@ class PODArena final : public RefCounted<PODArena> {
         m_currentChunkSize = roundedSize;
       m_chunks.append(
           wrapUnique(new Chunk(m_allocator.get(), m_currentChunkSize)));
-      m_current = m_chunks.last().get();
+      m_current = m_chunks.back().get();
       ptr = m_current->allocate(roundedSize);
     }
     return ptr;

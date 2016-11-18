@@ -1587,7 +1587,7 @@ String AXNodeObject::textAlternative(bool recursive,
     nameFrom = AXNameFromContents;
     if (nameSources) {
       nameSources->append(NameSource(foundTextAlternative));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
 
     Node* node = this->getNode();
@@ -1601,7 +1601,7 @@ String AXNodeObject::textAlternative(bool recursive,
     if (!textAlternative.isEmpty()) {
       if (nameSources) {
         foundTextAlternative = true;
-        nameSources->last().text = textAlternative;
+        nameSources->back().text = textAlternative;
       } else {
         return textAlternative;
       }
@@ -1612,14 +1612,14 @@ String AXNodeObject::textAlternative(bool recursive,
   nameFrom = AXNameFromTitle;
   if (nameSources) {
     nameSources->append(NameSource(foundTextAlternative, titleAttr));
-    nameSources->last().type = nameFrom;
+    nameSources->back().type = nameFrom;
   }
   const AtomicString& title = getAttribute(titleAttr);
   if (!title.isEmpty()) {
     textAlternative = title;
     if (nameSources) {
       foundTextAlternative = true;
-      nameSources->last().text = textAlternative;
+      nameSources->back().text = textAlternative;
     } else {
       return textAlternative;
     }
@@ -2246,8 +2246,8 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromRelatedElement;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative));
-      nameSources->last().type = nameFrom;
-      nameSources->last().nativeSource = AXTextFromNativeHTMLLabel;
+      nameSources->back().type = nameFrom;
+      nameSources->back().nativeSource = AXTextFromNativeHTMLLabel;
     }
 
     LabelsNodeList* labels = toLabelableElement(htmlElement)->labels();
@@ -2258,9 +2258,9 @@ String AXNodeObject::nativeTextAlternative(
         Element* label = labels->item(labelIndex);
         if (nameSources) {
           if (label->getAttribute(forAttr) == htmlElement->getIdAttribute())
-            nameSources->last().nativeSource = AXTextFromNativeHTMLLabelFor;
+            nameSources->back().nativeSource = AXTextFromNativeHTMLLabelFor;
           else
-            nameSources->last().nativeSource = AXTextFromNativeHTMLLabelWrapped;
+            nameSources->back().nativeSource = AXTextFromNativeHTMLLabelWrapped;
         }
         labelElements.append(label);
       }
@@ -2270,14 +2270,14 @@ String AXNodeObject::nativeTextAlternative(
       if (!textAlternative.isNull()) {
         *foundTextAlternative = true;
         if (nameSources) {
-          NameSource& source = nameSources->last();
+          NameSource& source = nameSources->back();
           source.relatedObjects = *relatedObjects;
           source.text = textAlternative;
         } else {
           return textAlternative;
         }
       } else if (nameSources) {
-        nameSources->last().invalid = true;
+        nameSources->back().invalid = true;
       }
     }
   }
@@ -2288,13 +2288,13 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromValue;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, valueAttr));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
     String value = inputElement->value();
     if (!value.isNull()) {
       textAlternative = value;
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.text = textAlternative;
         *foundTextAlternative = true;
       } else {
@@ -2311,13 +2311,13 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromAttribute;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, altAttr));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
     const AtomicString& alt = inputElement->getAttribute(altAttr);
     if (!alt.isNull()) {
       textAlternative = alt;
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.attributeValue = alt;
         source.text = textAlternative;
         *foundTextAlternative = true;
@@ -2329,14 +2329,14 @@ String AXNodeObject::nativeTextAlternative(
     // value attr
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, valueAttr));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
     nameFrom = AXNameFromAttribute;
     String value = inputElement->value();
     if (!value.isNull()) {
       textAlternative = value;
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.text = textAlternative;
         *foundTextAlternative = true;
       } else {
@@ -2350,7 +2350,7 @@ String AXNodeObject::nativeTextAlternative(
         WebLocalizedString::SubmitButtonDefaultLabel);
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, typeAttr));
-      NameSource& source = nameSources->last();
+      NameSource& source = nameSources->back();
       source.attributeValue = inputElement->getAttribute(typeAttr);
       source.type = nameFrom;
       source.text = textAlternative;
@@ -2366,7 +2366,7 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromPlaceholder;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, placeholderAttr));
-      NameSource& source = nameSources->last();
+      NameSource& source = nameSources->back();
       source.type = nameFrom;
     }
     HTMLElement* element = toHTMLElement(getNode());
@@ -2375,7 +2375,7 @@ String AXNodeObject::nativeTextAlternative(
     if (!placeholder.isEmpty()) {
       textAlternative = placeholder;
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.text = textAlternative;
         source.attributeValue = placeholder;
       } else {
@@ -2391,8 +2391,8 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromRelatedElement;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative));
-      nameSources->last().type = nameFrom;
-      nameSources->last().nativeSource = AXTextFromNativeHTMLFigcaption;
+      nameSources->back().type = nameFrom;
+      nameSources->back().nativeSource = AXTextFromNativeHTMLFigcaption;
     }
     Element* figcaption = nullptr;
     for (Element& element : ElementTraversal::descendantsOf(*(getNode()))) {
@@ -2415,7 +2415,7 @@ String AXNodeObject::nativeTextAlternative(
         }
 
         if (nameSources) {
-          NameSource& source = nameSources->last();
+          NameSource& source = nameSources->back();
           source.relatedObjects = *relatedObjects;
           source.text = textAlternative;
           *foundTextAlternative = true;
@@ -2434,13 +2434,13 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromAttribute;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, altAttr));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
     const AtomicString& alt = getAttribute(altAttr);
     if (!alt.isNull()) {
       textAlternative = alt;
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.attributeValue = alt;
         source.text = textAlternative;
         *foundTextAlternative = true;
@@ -2459,8 +2459,8 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromCaption;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative));
-      nameSources->last().type = nameFrom;
-      nameSources->last().nativeSource = AXTextFromNativeHTMLTableCaption;
+      nameSources->back().type = nameFrom;
+      nameSources->back().nativeSource = AXTextFromNativeHTMLTableCaption;
     }
     HTMLTableCaptionElement* caption = tableElement->caption();
     if (caption) {
@@ -2476,7 +2476,7 @@ String AXNodeObject::nativeTextAlternative(
         }
 
         if (nameSources) {
-          NameSource& source = nameSources->last();
+          NameSource& source = nameSources->back();
           source.relatedObjects = *relatedObjects;
           source.text = textAlternative;
           *foundTextAlternative = true;
@@ -2490,13 +2490,13 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromAttribute;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative, summaryAttr));
-      nameSources->last().type = nameFrom;
+      nameSources->back().type = nameFrom;
     }
     const AtomicString& summary = getAttribute(summaryAttr);
     if (!summary.isNull()) {
       textAlternative = summary;
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.attributeValue = summary;
         source.text = textAlternative;
         *foundTextAlternative = true;
@@ -2513,8 +2513,8 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromRelatedElement;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative));
-      nameSources->last().type = nameFrom;
-      nameSources->last().nativeSource = AXTextFromNativeHTMLTitleElement;
+      nameSources->back().type = nameFrom;
+      nameSources->back().nativeSource = AXTextFromNativeHTMLTitleElement;
     }
     ASSERT(getNode()->isContainerNode());
     Element* title = ElementTraversal::firstChild(
@@ -2533,7 +2533,7 @@ String AXNodeObject::nativeTextAlternative(
         }
       }
       if (nameSources) {
-        NameSource& source = nameSources->last();
+        NameSource& source = nameSources->back();
         source.text = textAlternative;
         source.relatedObjects = *relatedObjects;
         *foundTextAlternative = true;
@@ -2548,8 +2548,8 @@ String AXNodeObject::nativeTextAlternative(
     nameFrom = AXNameFromRelatedElement;
     if (nameSources) {
       nameSources->append(NameSource(*foundTextAlternative));
-      nameSources->last().type = nameFrom;
-      nameSources->last().nativeSource = AXTextFromNativeHTMLLegend;
+      nameSources->back().type = nameFrom;
+      nameSources->back().nativeSource = AXTextFromNativeHTMLLegend;
     }
     HTMLElement* legend = toHTMLFieldSetElement(getNode())->legend();
     if (legend) {
@@ -2567,7 +2567,7 @@ String AXNodeObject::nativeTextAlternative(
         }
 
         if (nameSources) {
-          NameSource& source = nameSources->last();
+          NameSource& source = nameSources->back();
           source.relatedObjects = *relatedObjects;
           source.text = textAlternative;
           *foundTextAlternative = true;
@@ -2585,7 +2585,7 @@ String AXNodeObject::nativeTextAlternative(
       nameFrom = AXNameFromAttribute;
       if (nameSources) {
         nameSources->append(NameSource(foundTextAlternative, aria_labelAttr));
-        nameSources->last().type = nameFrom;
+        nameSources->back().type = nameFrom;
       }
       if (Element* documentElement = document->documentElement()) {
         const AtomicString& ariaLabel =
@@ -2594,7 +2594,7 @@ String AXNodeObject::nativeTextAlternative(
           textAlternative = ariaLabel;
 
           if (nameSources) {
-            NameSource& source = nameSources->last();
+            NameSource& source = nameSources->back();
             source.text = textAlternative;
             source.attributeValue = ariaLabel;
             *foundTextAlternative = true;
@@ -2607,8 +2607,8 @@ String AXNodeObject::nativeTextAlternative(
       nameFrom = AXNameFromRelatedElement;
       if (nameSources) {
         nameSources->append(NameSource(*foundTextAlternative));
-        nameSources->last().type = nameFrom;
-        nameSources->last().nativeSource = AXTextFromNativeHTMLTitleElement;
+        nameSources->back().type = nameFrom;
+        nameSources->back().nativeSource = AXTextFromNativeHTMLTitleElement;
       }
 
       textAlternative = document->title();
@@ -2624,7 +2624,7 @@ String AXNodeObject::nativeTextAlternative(
         }
 
         if (nameSources) {
-          NameSource& source = nameSources->last();
+          NameSource& source = nameSources->back();
           source.relatedObjects = *relatedObjects;
           source.text = textAlternative;
           *foundTextAlternative = true;
@@ -2674,7 +2674,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   if (descriptionSources) {
     descriptionSources->append(
         DescriptionSource(foundDescription, aria_describedbyAttr));
-    descriptionSources->last().type = descriptionFrom;
+    descriptionSources->back().type = descriptionFrom;
   }
 
   // aria-describedby overrides any other accessible description, from:
@@ -2682,13 +2682,13 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   const AtomicString& ariaDescribedby = getAttribute(aria_describedbyAttr);
   if (!ariaDescribedby.isNull()) {
     if (descriptionSources)
-      descriptionSources->last().attributeValue = ariaDescribedby;
+      descriptionSources->back().attributeValue = ariaDescribedby;
 
     description = textFromAriaDescribedby(relatedObjects);
 
     if (!description.isNull()) {
       if (descriptionSources) {
-        DescriptionSource& source = descriptionSources->last();
+        DescriptionSource& source = descriptionSources->back();
         source.type = descriptionFrom;
         source.relatedObjects = *relatedObjects;
         source.text = description;
@@ -2697,7 +2697,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
         return description;
       }
     } else if (descriptionSources) {
-      descriptionSources->last().invalid = true;
+      descriptionSources->back().invalid = true;
     }
   }
 
@@ -2713,7 +2713,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     if (descriptionSources) {
       descriptionSources->append(
           DescriptionSource(foundDescription, placeholderAttr));
-      DescriptionSource& source = descriptionSources->last();
+      DescriptionSource& source = descriptionSources->back();
       source.type = descriptionFrom;
     }
     HTMLElement* element = toHTMLElement(getNode());
@@ -2722,7 +2722,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     if (!placeholder.isEmpty()) {
       description = placeholder;
       if (descriptionSources) {
-        DescriptionSource& source = descriptionSources->last();
+        DescriptionSource& source = descriptionSources->back();
         source.text = description;
         source.attributeValue = placeholder;
         foundDescription = true;
@@ -2743,13 +2743,13 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     if (descriptionSources) {
       descriptionSources->append(
           DescriptionSource(foundDescription, valueAttr));
-      descriptionSources->last().type = descriptionFrom;
+      descriptionSources->back().type = descriptionFrom;
     }
     String value = inputElement->value();
     if (!value.isNull()) {
       description = value;
       if (descriptionSources) {
-        DescriptionSource& source = descriptionSources->last();
+        DescriptionSource& source = descriptionSources->back();
         source.text = description;
         foundDescription = true;
       } else {
@@ -2766,8 +2766,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     descriptionFrom = AXDescriptionFromRelatedElement;
     if (descriptionSources) {
       descriptionSources->append(DescriptionSource(foundDescription));
-      descriptionSources->last().type = descriptionFrom;
-      descriptionSources->last().nativeSource =
+      descriptionSources->back().type = descriptionFrom;
+      descriptionSources->back().nativeSource =
           AXTextFromNativeHTMLTableCaption;
     }
     HTMLTableCaptionElement* caption = tableElement->caption();
@@ -2782,7 +2782,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
               new NameSourceRelatedObject(captionAXObject, description));
 
         if (descriptionSources) {
-          DescriptionSource& source = descriptionSources->last();
+          DescriptionSource& source = descriptionSources->back();
           source.relatedObjects = *relatedObjects;
           source.text = description;
           foundDescription = true;
@@ -2799,7 +2799,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     descriptionFrom = AXDescriptionFromContents;
     if (descriptionSources) {
       descriptionSources->append(DescriptionSource(foundDescription));
-      descriptionSources->last().type = descriptionFrom;
+      descriptionSources->back().type = descriptionFrom;
     }
 
     AXObjectSet visited;
@@ -2808,7 +2808,7 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     if (!description.isEmpty()) {
       if (descriptionSources) {
         foundDescription = true;
-        descriptionSources->last().text = description;
+        descriptionSources->back().text = description;
       } else {
         return description;
       }
@@ -2822,14 +2822,14 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     if (descriptionSources) {
       descriptionSources->append(
           DescriptionSource(foundDescription, titleAttr));
-      descriptionSources->last().type = descriptionFrom;
+      descriptionSources->back().type = descriptionFrom;
     }
     const AtomicString& title = getAttribute(titleAttr);
     if (!title.isEmpty()) {
       description = title;
       if (descriptionSources) {
         foundDescription = true;
-        descriptionSources->last().text = description;
+        descriptionSources->back().text = description;
       } else {
         return description;
       }
@@ -2843,14 +2843,14 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   if (descriptionSources) {
     descriptionSources->append(
         DescriptionSource(foundDescription, aria_helpAttr));
-    descriptionSources->last().type = descriptionFrom;
+    descriptionSources->back().type = descriptionFrom;
   }
   const AtomicString& help = getAttribute(aria_helpAttr);
   if (!help.isEmpty()) {
     description = help;
     if (descriptionSources) {
       foundDescription = true;
-      descriptionSources->last().text = description;
+      descriptionSources->back().text = description;
     } else {
       return description;
     }

@@ -280,7 +280,7 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info) {
   }
 
   ResourceLoadTiming* lastRedirectTiming =
-      redirectChain.last().resourceLoadTiming();
+      redirectChain.back().resourceLoadTiming();
   ASSERT(lastRedirectTiming);
   double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd();
 

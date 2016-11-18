@@ -13,7 +13,7 @@ namespace blink {
 
 NGLayoutInlineItemsBuilder::~NGLayoutInlineItemsBuilder() {
   DCHECK_EQ(0u, exits_.size());
-  DCHECK_EQ(text_.length(), items_->isEmpty() ? 0 : items_->last().EndOffset());
+  DCHECK_EQ(text_.length(), items_->isEmpty() ? 0 : items_->back().EndOffset());
 }
 
 void NGLayoutInlineItemsBuilder::Append(const String& string,
@@ -100,8 +100,8 @@ void NGLayoutInlineItemsBuilder::ExitInline(LayoutObject* node) {
 }
 
 void NGLayoutInlineItemsBuilder::Exit(LayoutObject* node) {
-  while (!exits_.isEmpty() && exits_.last().node == node) {
-    Append(exits_.last().character, nullptr);
+  while (!exits_.isEmpty() && exits_.back().node == node) {
+    Append(exits_.back().character, nullptr);
     exits_.pop_back();
   }
 }

@@ -108,7 +108,7 @@ void HTMLFormattingElementList::appendMarker() {
 void HTMLFormattingElementList::clearToLastMarker() {
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#clear-the-list-of-active-formatting-elements-up-to-the-last-marker
   while (m_entries.size()) {
-    bool shouldStop = m_entries.last().isMarker();
+    bool shouldStop = m_entries.back().isMarker();
     m_entries.pop_back();
     if (shouldStop)
       break;

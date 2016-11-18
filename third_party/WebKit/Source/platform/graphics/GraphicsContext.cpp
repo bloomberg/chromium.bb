@@ -75,7 +75,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController,
   // FIXME: Do some tests to determine how many states are typically used, and
   // allocate several here.
   m_paintStateStack.append(GraphicsContextState::create());
-  m_paintState = m_paintStateStack.last().get();
+  m_paintState = m_paintStateStack.back().get();
 
   if (contextDisabled()) {
     DEFINE_STATIC_LOCAL(SkCanvas*, nullCanvas, (SkCreateNullCanvas()));

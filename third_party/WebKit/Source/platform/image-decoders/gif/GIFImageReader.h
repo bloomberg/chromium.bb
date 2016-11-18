@@ -310,7 +310,7 @@ class PLATFORM_EXPORT GIFImageReader final {
     // after GIFControlExtension but before GIFImageHeader.
     // FIXME: This extra complexity is not necessary and we should just report
     // m_frames.size().
-    return m_frames.last()->isHeaderDefined() ? m_frames.size()
+    return m_frames.back()->isHeaderDefined() ? m_frames.size()
                                               : m_frames.size() - 1;
   }
   int loopCount() const { return m_loopCount; }

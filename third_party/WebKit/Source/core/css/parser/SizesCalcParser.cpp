@@ -43,11 +43,11 @@ bool SizesCalcParser::handleOperator(Vector<CSSParserToken>& stack,
 
   if (!operatorPriority(token.delimiter(), incomingOperatorPriority))
     return false;
-  if (!stack.isEmpty() && stack.last().type() == DelimiterToken) {
-    if (!operatorPriority(stack.last().delimiter(), stackOperatorPriority))
+  if (!stack.isEmpty() && stack.back().type() == DelimiterToken) {
+    if (!operatorPriority(stack.back().delimiter(), stackOperatorPriority))
       return false;
     if (!incomingOperatorPriority || stackOperatorPriority) {
-      appendOperator(stack.last());
+      appendOperator(stack.back());
       stack.pop_back();
     }
   }
@@ -113,9 +113,9 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
         // Until the token at the top of the stack is a left parenthesis, pop
         // operators off the stack onto the output queue.
         while (!stack.isEmpty() &&
-               stack.last().type() != LeftParenthesisToken &&
-               stack.last().type() != FunctionToken) {
-          appendOperator(stack.last());
+               stack.back().type() != LeftParenthesisToken &&
+               stack.back().type() != FunctionToken) {
+          appendOperator(stack.back());
           stack.pop_back();
         }
         // If the stack runs out without finding a left parenthesis, then there
@@ -164,11 +164,11 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
   while (!stack.isEmpty()) {
     // If the operator token on the top of the stack is a parenthesis, then
     // there are mismatched parentheses.
-    CSSParserTokenType type = stack.last().type();
+    CSSParserTokenType type = stack.back().type();
     if (type == LeftParenthesisToken || type == FunctionToken)
       return false;
     // Pop the operator onto the output queue.
-    appendOperator(stack.last());
+    appendOperator(stack.back());
     stack.pop_back();
   }
   return true;
@@ -177,9 +177,9 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
 static bool operateOnStack(Vector<SizesCalcValue>& stack, UChar operation) {
   if (stack.size() < 2)
     return false;
-  SizesCalcValue rightOperand = stack.last();
+  SizesCalcValue rightOperand = stack.back();
   stack.pop_back();
-  SizesCalcValue leftOperand = stack.last();
+  SizesCalcValue leftOperand = stack.back();
   stack.pop_back();
   bool isLength;
   switch (operation) {
@@ -226,8 +226,8 @@ bool SizesCalcParser::calculate() {
         return false;
     }
   }
-  if (stack.size() == 1 && stack.last().isLength) {
-    m_result = std::max(clampTo<float>(stack.last().value), (float)0.0);
+  if (stack.size() == 1 && stack.back().isLength) {
+    m_result = std::max(clampTo<float>(stack.back().value), (float)0.0);
     return true;
   }
   return false;

@@ -143,8 +143,8 @@ KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes) {
   if (result.isEmpty())
     return result;
 
-  if (isNull(result.last()->offset()))
-    result.last()->setOffset(1);
+  if (isNull(result.back()->offset()))
+    result.back()->setOffset(1);
 
   if (result.size() > 1 && isNull(result[0]->offset()))
     result.first()->setOffset(0);
@@ -272,7 +272,7 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(
     PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(m_keyframes.isEmpty() ||
-         m_keyframes.last()->offset() <= keyframe->offset());
+         m_keyframes.back()->offset() <= keyframe->offset());
   m_keyframes.append(keyframe);
 }
 
@@ -306,8 +306,8 @@ bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
                               0, std::move(zeroOffsetEasing)));
     addedSyntheticKeyframe = true;
   }
-  if (m_keyframes.last()->offset() != 1.0) {
-    appendKeyframe(m_keyframes.last()->neutralKeyframe(1, nullptr));
+  if (m_keyframes.back()->offset() != 1.0) {
+    appendKeyframe(m_keyframes.back()->neutralKeyframe(1, nullptr));
     addedSyntheticKeyframe = true;
   }
 

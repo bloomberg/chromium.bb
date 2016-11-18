@@ -163,8 +163,8 @@ void StyleSheetContents::parserAppendRule(StyleRuleBase* rule) {
     if (importRule->mediaQueries())
       setHasMediaQueries();
     m_importRules.append(importRule);
-    m_importRules.last()->setParentStyleSheet(this);
-    m_importRules.last()->requestStyleSheet();
+    m_importRules.back()->setParentStyleSheet(this);
+    m_importRules.back()->requestStyleSheet();
     return;
   }
 

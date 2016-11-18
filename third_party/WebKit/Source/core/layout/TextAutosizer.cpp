@@ -1130,7 +1130,7 @@ bool TextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster) {
 
 TextAutosizer::Cluster* TextAutosizer::currentCluster() const {
   SECURITY_DCHECK(!m_clusterStack.isEmpty());
-  return m_clusterStack.last().get();
+  return m_clusterStack.back().get();
 }
 
 TextAutosizer::Cluster::Cluster(const LayoutBlock* root,

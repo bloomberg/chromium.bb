@@ -136,7 +136,7 @@ void EventPath::calculatePath() {
         }
         nodesInPath.append(insertionPoint);
       }
-      current = insertionPoints.last();
+      current = insertionPoints.back();
       continue;
     }
     if (current->isChildOfV1ShadowHost()) {

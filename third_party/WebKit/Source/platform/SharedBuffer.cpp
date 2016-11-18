@@ -109,7 +109,7 @@ void SharedBuffer::appendInternal(const char* data, size_t length) {
     segment = allocateSegment();
     m_segments.append(segment);
   } else
-    segment = m_segments.last() + positionInSegment;
+    segment = m_segments.back() + positionInSegment;
 
   size_t segmentFreeSpace = kSegmentSize - positionInSegment;
   size_t bytesToCopy = std::min(length, segmentFreeSpace);

@@ -419,12 +419,12 @@ TEST_F(AnimationCompositorAnimationsTest,
 TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox) {
   Vector<TransformOperations> transformVector;
   transformVector.append(TransformOperations());
-  transformVector.last().operations().append(
+  transformVector.back().operations().append(
       TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed),
                                           0.0,
                                           TransformOperation::Translate3D));
   transformVector.append(TransformOperations());
-  transformVector.last().operations().append(
+  transformVector.back().operations().append(
       TranslateTransformOperation::create(Length(200, Fixed),
                                           Length(200, Fixed), 0.0,
                                           TransformOperation::Translate3D));
@@ -439,7 +439,7 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox) {
       bounds, *AnimatableValueKeyframeEffectModel::create(*frames), -1, 1));
   EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
   transformVector.append(TransformOperations());
-  transformVector.last().operations().append(
+  transformVector.back().operations().append(
       TranslateTransformOperation::create(Length(-300, Fixed),
                                           Length(-400, Fixed), 1.0f,
                                           TransformOperation::Translate3D));
