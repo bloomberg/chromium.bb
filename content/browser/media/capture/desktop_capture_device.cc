@@ -398,8 +398,8 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
     }
 
     case DesktopMediaID::TYPE_WINDOW: {
-      std::unique_ptr<webrtc::DesktopCapturer> window_capturer(
-          webrtc::CroppingWindowCapturer::Create(options));
+      std::unique_ptr<webrtc::DesktopCapturer> window_capturer =
+          webrtc::CroppingWindowCapturer::CreateCapturer(options);
       if (window_capturer && window_capturer->SelectSource(source.id)) {
         window_capturer->FocusOnSelectedSource();
         capturer.reset(new webrtc::DesktopAndCursorComposer(
