@@ -15,7 +15,6 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineV8RuntimeCallStats");
     Runtime.experiments.enableForTest("timelineShowAllEvents");
-    Common.settingForTest("showNativeFunctionsInJSProfile").set(true);
     var model = UI.panels.timeline._model;
     InspectorTest.evaluateWithTimeline("performActions()", finish);
 
