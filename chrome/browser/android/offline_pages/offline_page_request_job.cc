@@ -27,7 +27,11 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_redirect_job.h"
+#include "url/gurl.h"
 
 namespace offline_pages {
 
@@ -567,6 +571,46 @@ void OfflinePageRequestJob::Kill() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
+bool OfflinePageRequestJob::IsRedirectResponse(GURL* location,
+                                               int* http_status_code) {
+  // OfflinePageRequestJob derives from URLRequestFileJob which derives from
+  // URLRequestJob. We need to invoke the implementation of IsRedirectResponse
+  // in URLRequestJob directly since URLRequestFileJob overrode it with the
+  // logic we don't want.
+  return URLRequestJob::IsRedirectResponse(location, http_status_code);
+}
+
+void OfflinePageRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  if (!fake_headers_for_redirect_) {
+    URLRequestFileJob::GetResponseInfo(info);
+    return;
+  }
+
+  info->headers = fake_headers_for_redirect_;
+  info->request_time = redirect_response_time_;
+  info->response_time = redirect_response_time_;
+}
+
+void OfflinePageRequestJob::GetLoadTimingInfo(
+    net::LoadTimingInfo* load_timing_info) const {
+  // Set send_start and send_end to receive_redirect_headers_end_ to be
+  // consistent with network cache behavior.
+  load_timing_info->send_start = receive_redirect_headers_end_;
+  load_timing_info->send_end = receive_redirect_headers_end_;
+  load_timing_info->receive_headers_end = receive_redirect_headers_end_;
+}
+
+bool OfflinePageRequestJob::CopyFragmentOnRedirect(const GURL& location) const {
+  return false;
+}
+
+int OfflinePageRequestJob::GetResponseCode() const {
+  if (!fake_headers_for_redirect_)
+    return URLRequestFileJob::GetResponseCode();
+
+  return net::URLRequestRedirectJob::REDIRECT_302_FOUND;
+}
+
 void OfflinePageRequestJob::FallbackToDefault() {
   OfflinePageRequestInfo* info =
       OfflinePageRequestInfo::GetFromRequest(request());
@@ -592,8 +636,26 @@ void OfflinePageRequestJob::OnOfflineFilePathAvailable(
 
 void OfflinePageRequestJob::OnOfflineRedirectAvailabe(
     const GURL& redirected_url) {
-  // TODO(jianli): kicks off the redirect. For now, use the default.
-  FallbackToDefault();
+  receive_redirect_headers_end_ = base::TimeTicks::Now();
+  redirect_response_time_ = base::Time::Now();
+
+  std::string header_string =
+      base::StringPrintf("HTTP/1.1 %i Internal Redirect\n"
+                             // Clear referrer to avoid leak when going online.
+                             "Referrer-Policy: no-referrer\n"
+                             "Location: %s\n"
+                             "Non-Authoritative-Reason: offline redirects",
+                         // 302 is used to remove response bodies in order to
+                         // avoid leak when going online.
+                         net::URLRequestRedirectJob::REDIRECT_302_FOUND,
+                         redirected_url.spec().c_str());
+
+  fake_headers_for_redirect_ = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(header_string.c_str(),
+                                        header_string.length()));
+  DCHECK(fake_headers_for_redirect_->IsRedirect(nullptr));
+
+  URLRequestJob::NotifyHeadersComplete();
 }
 
 void OfflinePageRequestJob::SetDelegateForTesting(
