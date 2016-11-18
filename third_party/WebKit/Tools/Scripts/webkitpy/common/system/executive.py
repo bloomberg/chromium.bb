@@ -38,7 +38,6 @@ import sys
 import time
 import threading
 
-from webkitpy.common.system.outputtee import Tee
 from webkitpy.common.system.filesystem import FileSystem
 
 
