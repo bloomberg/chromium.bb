@@ -1258,8 +1258,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
 
   IntSize scrollSize(layoutBox->pixelSnappedScrollWidth(),
                      layoutBox->pixelSnappedScrollHeight());
-  if (scrollSize != m_scrollingContentsLayer->size() ||
-      overflowClipRectOffsetChanged)
+  if (overflowClipRectOffsetChanged)
     m_scrollingContentsLayer->setNeedsDisplay();
 
   DoubleSize scrollingContentsOffset(

@@ -7,56 +7,45 @@
       "drawsContent": true
     },
     {
-      "name": "LayoutBlockFlow DIV id='scroller'",
+      "name": "LayoutBlockFlow DIV id='container'",
       "position": [8, 8],
-      "bounds": [200, 200],
+      "bounds": [400, 400],
       "shouldFlattenTransform": false,
       "drawsContent": true,
-      "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [185, 185],
+      "bounds": [400, 400],
       "shouldFlattenTransform": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [185, 300],
+      "bounds": [400, 2000],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 185, 300],
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [0, 500, 400, 1500],
           "reason": "background on scrolling contents layer"
         }
       ]
     },
     {
       "name": "Overflow Controls Host Layer",
-      "bounds": [200, 200]
+      "bounds": [400, 400]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [0, 185],
-      "bounds": [185, 15]
+      "position": [0, 400],
+      "bounds": [400, 0],
+      "drawsContent": true
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [185, 0],
-      "bounds": [15, 185]
-    },
-    {
-      "name": "Scroll Corner Layer",
-      "position": [185, 185],
-      "bounds": [15, 15],
+      "position": [400, 0],
+      "bounds": [0, 400],
       "drawsContent": true
     }
   ],
@@ -64,10 +53,6 @@
     {
       "object": "Scrolling Contents Layer",
       "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='scroller'",
-      "reason": "style change"
     }
   ]
 }

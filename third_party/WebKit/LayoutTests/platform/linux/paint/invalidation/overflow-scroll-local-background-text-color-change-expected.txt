@@ -35,7 +35,7 @@
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [0, 0, 185, 552],
-          "reason": "style change"
+          "reason": "background on scrolling contents layer"
         }
       ]
     },
@@ -82,7 +82,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "style change"
+      "reason": "background on scrolling contents layer"
     },
     {
       "object": "LayoutBlockFlow DIV id='scroller'",

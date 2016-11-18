@@ -286,20 +286,14 @@ void ObjectPaintInvalidator::setBackingNeedsPaintInvalidationInRect(
     layer.compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(
         rect, reason, m_object);
   } else if (paintInvalidationContainer.usesCompositedScrolling()) {
-    if (layer.compositedLayerMapping()
-            ->backgroundPaintsOntoScrollingContentsLayer()) {
-      // TODO(flackr): Get a correct rect in the context of the scrolling
-      // contents layer to update rather than updating the entire rect.
-      const LayoutRect& scrollingContentsRect =
-          toLayoutBox(m_object).layoutOverflowRect();
+    DCHECK(m_object == paintInvalidationContainer);
+    if (reason == PaintInvalidationBackgroundOnScrollingContentsLayer) {
       layer.compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(
-          scrollingContentsRect, reason, m_object);
-      layer.setNeedsRepaint();
-      invalidateDisplayItemClient(
-          *layer.compositedLayerMapping()->scrollingContentsLayer(), reason);
+          rect, reason, m_object);
+    } else {
+      layer.compositedLayerMapping()->setNonScrollingContentsNeedDisplayInRect(
+          rect, reason, m_object);
     }
-    layer.compositedLayerMapping()->setNonScrollingContentsNeedDisplayInRect(
-        rect, reason, m_object);
   } else {
     // Otherwise invalidate everything.
     layer.compositedLayerMapping()->setContentsNeedDisplayInRect(rect, reason,
@@ -345,14 +339,16 @@ void ObjectPaintInvalidator::invalidatePaintUsingContainer(
 
   // This conditional handles situations where non-rooted (and hence
   // non-composited) frames are painted, such as SVG images.
-  if (!paintInvalidationContainer.isPaintInvalidationContainer())
+  if (!paintInvalidationContainer.isPaintInvalidationContainer()) {
     invalidatePaintRectangleOnWindow(paintInvalidationContainer,
                                      enclosingIntRect(dirtyRect));
+  }
 
   if (paintInvalidationContainer.view()->usesCompositing() &&
-      paintInvalidationContainer.isPaintInvalidationContainer())
+      paintInvalidationContainer.isPaintInvalidationContainer()) {
     setBackingNeedsPaintInvalidationInRect(paintInvalidationContainer,
                                            dirtyRect, invalidationReason);
+  }
 }
 
 LayoutRect ObjectPaintInvalidator::invalidatePaintRectangle(
@@ -488,8 +484,9 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
 
   // Incremental invalidation is only applicable to LayoutBoxes. Return
   // PaintInvalidationIncremental no matter if oldVisualRect and newVisualRect
-  // are equal
-  // because a LayoutBox may need paint invalidation if its border box changes.
+  // are equal because a LayoutBox may need paint invalidation if its border box
+  // changes. BoxPaintInvalidator may also override this reason with a full
+  // paint invalidation reason if needed.
   if (m_object.isBox())
     return PaintInvalidationIncremental;
 

@@ -7,40 +7,35 @@
       "drawsContent": true
     },
     {
-      "name": "LayoutBlockFlow DIV id='scroller'",
-      "position": [8, 8],
-      "bounds": [200, 200],
+      "name": "LayoutBlockFlow DIV id='target'",
+      "position": [-2, -2],
+      "bounds": [220, 220],
       "shouldFlattenTransform": false,
       "drawsContent": true,
-      "backgroundColor": "#008000",
+      "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 220, 220],
           "reason": "style change"
         }
       ]
     },
     {
       "name": "Scrolling Layer",
+      "position": [10, 10],
       "bounds": [185, 185],
       "shouldFlattenTransform": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [185, 300],
+      "bounds": [185, 2000],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 185, 300],
-          "reason": "background on scrolling contents layer"
-        }
-      ]
+      "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [10, 10],
       "bounds": [200, 200]
     },
     {
@@ -62,11 +57,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='scroller'",
+      "object": "LayoutBlockFlow DIV id='target'",
       "reason": "style change"
     }
   ]
