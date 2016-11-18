@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/url_loader_resource.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -22,11 +24,6 @@
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_URLLoader_API;
 using ppapi::thunk::PPB_URLRequestInfo_API;
-
-#ifdef _MSC_VER
-// Do not warn about use of std::copy with raw pointers.
-#pragma warning(disable : 4996)
-#endif
 
 namespace ppapi {
 namespace proxy {
@@ -321,13 +318,15 @@ void URLLoaderResource::OnPluginMsgUpdateProgress(
   bytes_received_ = bytes_received;
   total_bytes_to_be_received_ = total_bytes_to_be_received;
 
-  if (status_callback_)
+  if (status_callback_) {
     status_callback_(pp_instance(), pp_resource(),
                      bytes_sent_, total_bytes_to_be_sent_,
                      bytes_received_, total_bytes_to_be_received_);
+  }
 }
 
 void URLLoaderResource::SetDefersLoading(bool defers_loading) {
+  is_asynchronous_load_suspended_ = defers_loading;
   Post(RENDERER, PpapiHostMsg_URLLoader_SetDeferLoading(defers_loading));
 }
 
