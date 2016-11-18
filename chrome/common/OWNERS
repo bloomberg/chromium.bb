@@ -43,7 +43,3 @@ per-file crash_keys*=rsesek@chromium.org
 per-file trace_event_args_whitelist*=nduca@chromium.org
 per-file trace_event_args_whitelist*=dsinclair@chromium.org
 per-file trace_event_args_whitelist*=oysteine@chromium.org
-
-# IPC
-per-file *.mojom=set noparent
-per-file *.mojom=file://ipc/SECURITY_OWNERS
