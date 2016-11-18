@@ -208,6 +208,11 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "deprecated. Please pass the index argument as well: "
              "insertRule(x, 0).";
 
+    case UseCounter::MapNameMatchingASCIICaseless:
+    case UseCounter::MapNameMatchingUnicodeLower:
+      return willBeRemoved("Case-insensitive matching for usemap attribute",
+                           M58, "5760965337415680");
+
     case UseCounter::PrefixedVideoSupportsFullscreen:
       return replacedBy("'HTMLVideoElement.webkitSupportsFullscreen'",
                         "'Document.fullscreenEnabled'");

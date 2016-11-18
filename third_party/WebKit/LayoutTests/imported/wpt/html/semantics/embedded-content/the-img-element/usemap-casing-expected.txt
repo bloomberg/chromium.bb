@@ -1,3 +1,6 @@
+CONSOLE WARNING: line 82: Case-insensitive matching for usemap attribute is deprecated and will be removed in M58, around April 2017. See https://www.chromestatus.com/features/5760965337415680 for more details. Comparing usemap=#sImPlE and name=simple
+CONSOLE WARNING: line 82: Case-insensitive matching for usemap attribute is deprecated and will be removed in M58, around April 2017. See https://www.chromestatus.com/features/5760965337415680 for more details. Comparing usemap=#paSSfield-killroyß and name=passfield-killroyß
+CONSOLE WARNING: line 82: Case-insensitive matching for usemap attribute is deprecated and will be removed in M58, around April 2017. See https://www.chromestatus.com/features/5760965337415680 for more details. Comparing usemap=#глупый and name=ГЛУПЫЙ
 This is a testharness.js-based test.
 PASS Image with usemap of #sanityCheck should match the area with map named sanityCheck 
 FAIL Image with usemap of #sImPlE should not match any of the areas assert_equals: The element retrieved must be the image, not an area; used <map> with name "simple" expected Element node <img src="/images/threecolors.png" usemap="#sImPlE" width... but got Element node <area shape="rect" coords="0,0,300,300"></area>
