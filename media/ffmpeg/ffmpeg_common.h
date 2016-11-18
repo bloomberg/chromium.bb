@@ -96,6 +96,12 @@ MEDIA_EXPORT int64_t ConvertToTimeBase(const AVRational& time_base,
 // Converts an FFmpeg audio codec ID into its corresponding supported codec id.
 MEDIA_EXPORT AudioCodec CodecIDToAudioCodec(AVCodecID codec_id);
 
+// Allocates, populates and returns a wrapped AVCodecContext from the
+// AVCodecParameters in |stream|. On failure, returns a wrapped nullptr.
+// Wrapping helps ensure eventual destruction of the AVCodecContext.
+MEDIA_EXPORT std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext>
+AVStreamToAVCodecContext(const AVStream* stream);
+
 // Returns true if AVStream is successfully converted to a AudioDecoderConfig.
 // Returns false if conversion fails, in which case |config| is not modified.
 MEDIA_EXPORT bool AVStreamToAudioDecoderConfig(const AVStream* stream,
@@ -143,11 +149,6 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format);
 
 ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
                                     AVColorRange color_range);
-
-// Convert FFmpeg UTC representation (YYYY-MM-DD HH:MM:SS) to base::Time.
-// Returns true and sets |*out| if |date_utc| contains a valid
-// date string. Otherwise returns fals and timeline_offset is unmodified.
-MEDIA_EXPORT bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out);
 
 // Returns a 32-bit hash for the given codec name.  See the VerifyUmaCodecHashes
 // unit test for more information and code for generating the histogram XML.

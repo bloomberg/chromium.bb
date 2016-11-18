@@ -1401,4 +1401,54 @@ TEST_F(FFmpegDemuxerTest, Read_Webm_Media_Track_Info) {
   EXPECT_EQ(audio_track.language(), "");
 }
 
+// UTCDateToTime_* tests here assume FFmpegDemuxer's ExtractTimelineOffset
+// helper uses base::Time::FromUTCString() for conversion.
+TEST_F(FFmpegDemuxerTest, UTCDateToTime_Valid) {
+  base::Time result;
+  EXPECT_TRUE(
+      base::Time::FromUTCString("2012-11-10T12:34:56.987654Z", &result));
+
+  base::Time::Exploded exploded;
+  result.UTCExplode(&exploded);
+  EXPECT_TRUE(exploded.HasValidValues());
+  EXPECT_EQ(2012, exploded.year);
+  EXPECT_EQ(11, exploded.month);
+  EXPECT_EQ(6, exploded.day_of_week);
+  EXPECT_EQ(10, exploded.day_of_month);
+  EXPECT_EQ(12, exploded.hour);
+  EXPECT_EQ(34, exploded.minute);
+  EXPECT_EQ(56, exploded.second);
+  EXPECT_EQ(987, exploded.millisecond);
+
+  // base::Time exploding operations round fractional milliseconds down, so
+  // verify fractional milliseconds using a base::TimeDelta.
+  base::Time without_fractional_ms;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &without_fractional_ms));
+  base::TimeDelta delta = result - without_fractional_ms;
+  EXPECT_EQ(654, delta.InMicroseconds());
+}
+
+TEST_F(FFmpegDemuxerTest, UTCDateToTime_Invalid) {
+  const char* invalid_date_strings[] = {
+      "",
+      "12:34:56",
+      "-- ::",
+      "2012-11- 12:34:56",
+      "2012--10 12:34:56",
+      "-11-10 12:34:56",
+      "2012-11 12:34:56",
+      "ABCD-11-10 12:34:56",
+      "2012-EF-10 12:34:56",
+      "2012-11-GH 12:34:56",
+      "2012-11-1012:34:56",
+  };
+
+  for (size_t i = 0; i < arraysize(invalid_date_strings); ++i) {
+    const char* date_string = invalid_date_strings[i];
+    base::Time result;
+    EXPECT_FALSE(base::Time::FromUTCString(date_string, &result))
+        << "date_string '" << date_string << "'";
+  }
+}
+
 }  // namespace media

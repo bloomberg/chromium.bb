@@ -138,7 +138,14 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
   // Prepare FFmpeg decoders.
   for (unsigned int i = 0; i < av_format_context_->nb_streams; ++i) {
     AVStream* av_stream = av_format_context_->streams[i];
-    AVCodecContext* av_codec_context = av_stream->codec;
+    std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> av_codec_context(
+        AVStreamToAVCodecContext(av_stream));
+    if (!av_codec_context) {
+      LOG(ERROR) << "Cannot get a codec context for the codec: "
+                 << av_stream->codecpar->codec_id;
+      continue;
+    }
+
     AVCodec* av_codec = avcodec_find_decoder(av_codec_context->codec_id);
 
     if (!av_codec) {
@@ -152,7 +159,7 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
     av_codec_context->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
     av_codec_context->request_sample_fmt = AV_SAMPLE_FMT_S16;
 
-    if (avcodec_open2(av_codec_context, av_codec, NULL) < 0) {
+    if (avcodec_open2(av_codec_context.get(), av_codec, nullptr) < 0) {
       LOG(ERROR) << "Cannot open AVCodecContext for the codec: "
                  << av_codec_context->codec_id;
       return;
@@ -174,14 +181,14 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
         LOG(WARNING) << "Found multiple audio streams.";
       }
       audio_stream_index_ = static_cast<int>(i);
+      av_audio_context_ = std::move(av_codec_context);
       source_audio_params_.Reset(
-          AudioParameters::AUDIO_PCM_LINEAR,
-          layout,
-          av_codec_context->sample_rate,
-          8 * av_get_bytes_per_sample(av_codec_context->sample_fmt),
-          av_codec_context->sample_rate / kAudioPacketsPerSecond);
+          AudioParameters::AUDIO_PCM_LINEAR, layout,
+          av_audio_context_->sample_rate,
+          8 * av_get_bytes_per_sample(av_audio_context_->sample_fmt),
+          av_audio_context_->sample_rate / kAudioPacketsPerSecond);
       source_audio_params_.set_channels_for_discrete(
-          av_codec_context->channels);
+          av_audio_context_->channels);
       CHECK(source_audio_params_.IsValid());
       LOG(INFO) << "Source file has audio.";
     } else if (av_codec->type == AVMEDIA_TYPE_VIDEO) {
@@ -195,6 +202,7 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
         LOG(WARNING) << "Found multiple video streams.";
       }
       video_stream_index_ = static_cast<int>(i);
+      av_video_context_ = std::move(av_codec_context);
       if (final_fps > 0) {
         // If video is played at a manual speed audio needs to match.
         playback_rate_ = 1.0 * final_fps *
@@ -456,8 +464,8 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
 
   do {
     int frame_decoded = 0;
-    int result = avcodec_decode_audio4(
-        av_audio_context(), avframe, &frame_decoded, &packet_temp);
+    int result = avcodec_decode_audio4(av_audio_context_.get(), avframe,
+                                       &frame_decoded, &packet_temp);
     CHECK(result >= 0) << "Failed to decode audio.";
     packet_temp.size -= result;
     packet_temp.data += result;
@@ -481,21 +489,20 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
     }
 
     scoped_refptr<AudioBuffer> buffer = AudioBuffer::CopyFrom(
-        AVSampleFormatToSampleFormat(av_audio_context()->sample_fmt,
-                                     av_audio_context()->codec_id),
-        ChannelLayoutToChromeChannelLayout(av_audio_context()->channel_layout,
-                                           av_audio_context()->channels),
-        av_audio_context()->channels, av_audio_context()->sample_rate,
+        AVSampleFormatToSampleFormat(av_audio_context_->sample_fmt,
+                                     av_audio_context_->codec_id),
+        ChannelLayoutToChromeChannelLayout(av_audio_context_->channel_layout,
+                                           av_audio_context_->channels),
+        av_audio_context_->channels, av_audio_context_->sample_rate,
         frames_read, &avframe->data[0],
-        PtsToTimeDelta(avframe->pkt_pts, av_audio_stream()->time_base));
+        PtsToTimeDelta(avframe->pts, av_audio_stream()->time_base));
     audio_algo_.EnqueueBuffer(buffer);
     av_frame_unref(avframe);
   } while (packet_temp.size > 0);
   av_frame_free(&avframe);
 
   const int frames_needed_to_scale =
-      playback_rate_ * av_audio_context()->sample_rate /
-      kAudioPacketsPerSecond;
+      playback_rate_ * av_audio_context_->sample_rate / kAudioPacketsPerSecond;
   while (frames_needed_to_scale <= audio_algo_.frames_buffered()) {
     if (!audio_algo_.FillBuffer(audio_fifo_input_bus_.get(), 0,
                                 audio_fifo_input_bus_->frames(),
@@ -530,29 +537,29 @@ void FakeMediaSource::DecodeVideo(ScopedAVPacket packet) {
   // Video.
   int got_picture;
   AVFrame* avframe = av_frame_alloc();
-  CHECK(avcodec_decode_video2(
-      av_video_context(), avframe, &got_picture, packet.get()) >= 0)
+  CHECK(avcodec_decode_video2(av_video_context_.get(), avframe, &got_picture,
+                              packet.get()) >= 0)
       << "Video decode error.";
   if (!got_picture) {
     av_frame_free(&avframe);
     return;
   }
-  gfx::Size size(av_video_context()->width, av_video_context()->height);
+  gfx::Size size(av_video_context_->width, av_video_context_->height);
 
   if (!video_first_pts_set_) {
-    video_first_pts_ = avframe->pkt_pts;
+    video_first_pts_ = avframe->pts;
     video_first_pts_set_ = true;
   }
   const AVRational& time_base = av_video_stream()->time_base;
   base::TimeDelta timestamp =
-      PtsToTimeDelta(avframe->pkt_pts - video_first_pts_, time_base);
+      PtsToTimeDelta(avframe->pts - video_first_pts_, time_base);
   if (timestamp < last_video_frame_timestamp_) {
     // Stream has rewound.  Rebase |video_first_pts_|.
     const AVRational& frame_rate = av_video_stream()->r_frame_rate;
     timestamp = last_video_frame_timestamp_ +
         (base::TimeDelta::FromSeconds(1) * frame_rate.den / frame_rate.num);
     const int64_t adjustment_pts = TimeDeltaToPts(timestamp, time_base);
-    video_first_pts_ = avframe->pkt_pts - adjustment_pts;
+    video_first_pts_ = avframe->pts - adjustment_pts;
   }
 
   scoped_refptr<media::VideoFrame> video_frame =
@@ -617,14 +624,6 @@ AVStream* FakeMediaSource::av_audio_stream() {
 
 AVStream* FakeMediaSource::av_video_stream() {
   return av_format_context_->streams[video_stream_index_];
-}
-
-AVCodecContext* FakeMediaSource::av_audio_context() {
-  return av_audio_stream()->codec;
-}
-
-AVCodecContext* FakeMediaSource::av_video_context() {
-  return av_video_stream()->codec;
 }
 
 }  // namespace cast

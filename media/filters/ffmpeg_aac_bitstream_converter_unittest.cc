@@ -23,15 +23,15 @@ class FFmpegAACBitstreamConverterTest : public testing::Test {
  protected:
   FFmpegAACBitstreamConverterTest() {
     // Minimal extra data header
-    memset(context_header_, 0, sizeof(context_header_));
+    memset(extradata_header_, 0, sizeof(extradata_header_));
 
-    // Set up reasonable aac context
-    memset(&test_context_, 0, sizeof(AVCodecContext));
-    test_context_.codec_id = AV_CODEC_ID_AAC;
-    test_context_.profile = FF_PROFILE_AAC_MAIN;
-    test_context_.channels = 2;
-    test_context_.extradata = context_header_;
-    test_context_.extradata_size = sizeof(context_header_);
+    // Set up reasonable aac parameters
+    memset(&test_parameters_, 0, sizeof(AVCodecParameters));
+    test_parameters_.codec_id = AV_CODEC_ID_AAC;
+    test_parameters_.profile = FF_PROFILE_AAC_MAIN;
+    test_parameters_.channels = 2;
+    test_parameters_.extradata = extradata_header_;
+    test_parameters_.extradata_size = sizeof(extradata_header_);
   }
 
   void CreatePacket(AVPacket* packet, const uint8_t* data, uint32_t data_size) {
@@ -40,17 +40,17 @@ class FFmpegAACBitstreamConverterTest : public testing::Test {
     memcpy(packet->data, data, data_size);
   }
 
-  // Variable to hold valid dummy context for testing.
-  AVCodecContext test_context_;
+  // Variable to hold valid dummy parameters for testing.
+  AVCodecParameters test_parameters_;
 
  private:
-  uint8_t context_header_[2];
+  uint8_t extradata_header_[2];
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegAACBitstreamConverterTest);
 };
 
 TEST_F(FFmpegAACBitstreamConverterTest, Conversion_Success) {
-  FFmpegAACBitstreamConverter converter(&test_context_);
+  FFmpegAACBitstreamConverter converter(&test_parameters_);
 
   uint8_t dummy_packet[1000];
   // Fill dummy packet with junk data. aac converter doesn't look into packet
@@ -80,10 +80,10 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_Success) {
 
 TEST_F(FFmpegAACBitstreamConverterTest, Conversion_FailureNullParams) {
   // Set up AVCConfigurationRecord to represent NULL data.
-  AVCodecContext dummy_context;
-  dummy_context.extradata = NULL;
-  dummy_context.extradata_size = 0;
-  FFmpegAACBitstreamConverter converter(&dummy_context);
+  AVCodecParameters dummy_parameters;
+  dummy_parameters.extradata = nullptr;
+  dummy_parameters.extradata_size = 0;
+  FFmpegAACBitstreamConverter converter(&dummy_parameters);
 
   uint8_t dummy_packet[1000] = {0};
 
@@ -99,7 +99,7 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_FailureNullParams) {
 }
 
 TEST_F(FFmpegAACBitstreamConverterTest, Conversion_AudioProfileType) {
-  FFmpegAACBitstreamConverter converter(&test_context_);
+  FFmpegAACBitstreamConverter converter(&test_parameters_);
 
   uint8_t dummy_packet[1000] = {0};
 
@@ -109,13 +109,13 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_AudioProfileType) {
 
   EXPECT_TRUE(converter.ConvertPacket(test_packet.get()));
 
-  // Check that the ADTS header profile matches the context
+  // Check that the ADTS header profile matches the parameters
   int profile = ((test_packet->data[2] & 0xC0) >> 6);
 
   EXPECT_EQ(profile, kAacMainProfile);
 
-  test_context_.profile = FF_PROFILE_AAC_HE;
-  FFmpegAACBitstreamConverter converter_he(&test_context_);
+  test_parameters_.profile = FF_PROFILE_AAC_HE;
+  FFmpegAACBitstreamConverter converter_he(&test_parameters_);
 
   test_packet.reset(new AVPacket());
   CreatePacket(test_packet.get(), dummy_packet,
@@ -127,8 +127,8 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_AudioProfileType) {
 
   EXPECT_EQ(profile, kAacLowComplexityProfile);
 
-  test_context_.profile = FF_PROFILE_AAC_ELD;
-  FFmpegAACBitstreamConverter converter_eld(&test_context_);
+  test_parameters_.profile = FF_PROFILE_AAC_ELD;
+  FFmpegAACBitstreamConverter converter_eld(&test_parameters_);
 
   test_packet.reset(new AVPacket());
   CreatePacket(test_packet.get(), dummy_packet,
@@ -138,7 +138,7 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_AudioProfileType) {
 }
 
 TEST_F(FFmpegAACBitstreamConverterTest, Conversion_MultipleLength) {
-  FFmpegAACBitstreamConverter converter(&test_context_);
+  FFmpegAACBitstreamConverter converter(&test_parameters_);
 
   uint8_t dummy_packet[1000];
 

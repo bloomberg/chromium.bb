@@ -184,17 +184,6 @@ static base::Time kLiveTimelineOffset() {
   return timeline_offset;
 }
 
-// FFmpeg only supports time a resolution of seconds so this
-// helper function truncates a base::Time to seconds resolution.
-static base::Time TruncateToFFmpegTimeResolution(base::Time t) {
-  base::Time::Exploded exploded_time;
-  t.UTCExplode(&exploded_time);
-  exploded_time.millisecond = 0;
-  base::Time out_time;
-  EXPECT_TRUE(base::Time::FromUTCExploded(exploded_time, &out_time));
-  return out_time;
-}
-
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
 // They do not exercise the Decrypting{Audio|Video}Decoder path.
 class FakeEncryptedMedia {
@@ -1178,11 +1167,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
 
   EXPECT_HASH_EQ("f0be120a90a811506777c99a2cdf7cc1", GetVideoHash());
   EXPECT_HASH_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
-
-  // TODO: Fix FFmpeg code to return higher resolution time values so
-  // we don't have to truncate our expectations here.
-  EXPECT_EQ(TruncateToFFmpegTimeResolution(kLiveTimelineOffset()),
-            demuxer_->GetTimelineOffset());
+  EXPECT_EQ(kLiveTimelineOffset(), demuxer_->GetTimelineOffset());
 }
 
 TEST_F(PipelineIntegrationTest, S32PlaybackHashed) {

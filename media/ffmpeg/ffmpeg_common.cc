@@ -405,10 +405,27 @@ bool AVCodecContextToAudioDecoderConfig(
   return true;
 }
 
+std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext>
+AVStreamToAVCodecContext(const AVStream* stream) {
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context(
+      avcodec_alloc_context3(nullptr));
+  if (avcodec_parameters_to_context(codec_context.get(), stream->codecpar) <
+      0) {
+    return nullptr;
+  }
+
+  return codec_context;
+}
+
 bool AVStreamToAudioDecoderConfig(const AVStream* stream,
                                   AudioDecoderConfig* config) {
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context(
+      AVStreamToAVCodecContext(stream));
+  if (!codec_context)
+    return false;
+
   return AVCodecContextToAudioDecoderConfig(
-      stream->codec, GetEncryptionScheme(stream), config);
+      codec_context.get(), GetEncryptionScheme(stream), config);
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
@@ -441,22 +458,26 @@ void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
 
 bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                                   VideoDecoderConfig* config) {
-  // Anticipating AVStream.codec.coded_{width,height} will be inaccessible in
-  // ffmpeg soon, just use the width and height, padded below, as hints of the
-  // coded size.
-  gfx::Size coded_size(stream->codec->width, stream->codec->height);
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context(
+      AVStreamToAVCodecContext(stream));
+  if (!codec_context)
+    return false;
+
+  // AVStream.codec->coded_{width,height} access is deprecated in ffmpeg.
+  // Use just the width and height as hints of coded size.
+  gfx::Size coded_size(codec_context->width, codec_context->height);
 
   // TODO(vrk): This assumes decoded frame data starts at (0, 0), which is true
   // for now, but may not always be true forever. Fix this in the future.
-  gfx::Rect visible_rect(stream->codec->width, stream->codec->height);
+  gfx::Rect visible_rect(codec_context->width, codec_context->height);
 
   AVRational aspect_ratio = { 1, 1 };
   if (stream->sample_aspect_ratio.num)
     aspect_ratio = stream->sample_aspect_ratio;
-  else if (stream->codec->sample_aspect_ratio.num)
-    aspect_ratio = stream->codec->sample_aspect_ratio;
+  else if (codec_context->sample_aspect_ratio.num)
+    aspect_ratio = codec_context->sample_aspect_ratio;
 
-  VideoCodec codec = CodecIDToVideoCodec(stream->codec->codec_id);
+  VideoCodec codec = CodecIDToVideoCodec(codec_context->codec_id);
 
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   if (codec == kCodecVP8)
@@ -466,7 +487,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
     // crbug.com/592074
     profile = VP9PROFILE_PROFILE0;
   else
-    profile = ProfileIDToVideoCodecProfile(stream->codec->profile);
+    profile = ProfileIDToVideoCodecProfile(codec_context->profile);
 
   // Without the FFmpeg h264 decoder, AVFormat is unable to get the profile, so
   // default to baseline and let the VDA fail later if it doesn't support the
@@ -481,7 +502,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
 
   VideoPixelFormat format =
-      AVPixelFormatToVideoPixelFormat(stream->codec->pix_fmt);
+      AVPixelFormatToVideoPixelFormat(codec_context->pix_fmt);
   // The format and coded size may be unknown if FFmpeg is compiled without
   // video decoders.
 #if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
@@ -511,8 +532,8 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   }
 
   // Prefer the color space found by libavcodec if available.
-  ColorSpace color_space = AVColorSpaceToColorSpace(stream->codec->colorspace,
-                                                    stream->codec->color_range);
+  ColorSpace color_space = AVColorSpaceToColorSpace(codec_context->colorspace,
+                                                    codec_context->color_range);
   if (color_space == COLOR_SPACE_UNSPECIFIED) {
     // Otherwise, assume that SD video is usually Rec.601, and HD is usually
     // Rec.709.
@@ -520,20 +541,20 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                                                 : COLOR_SPACE_HD_REC709;
   }
 
-  // AVStream occasionally has invalid extra data. See http://crbug.com/517163
-  if ((stream->codec->extradata_size == 0) !=
-      (stream->codec->extradata == nullptr)) {
-    LOG(ERROR) << __func__
-               << (stream->codec->extradata == nullptr ? " NULL" : " Non-Null")
-               << " extra data cannot have size of "
-               << stream->codec->extradata_size << ".";
+  // AVCodecContext occasionally has invalid extra data. See
+  // http://crbug.com/517163
+  if (codec_context->extradata != nullptr &&
+      codec_context->extradata_size == 0) {
+    LOG(ERROR) << __func__ << " Non-Null extra data cannot have size of 0.";
     return false;
   }
+  CHECK_EQ(codec_context->extradata == nullptr,
+           codec_context->extradata_size == 0);
 
   std::vector<uint8_t> extra_data;
-  if (stream->codec->extradata_size > 0) {
-    extra_data.assign(stream->codec->extradata,
-                      stream->codec->extradata + stream->codec->extradata_size);
+  if (codec_context->extradata_size > 0) {
+    extra_data.assign(codec_context->extradata,
+                      codec_context->extradata + codec_context->extradata_size);
   }
   config->Initialize(codec, profile, format, color_space, coded_size,
                      visible_rect, natural_size, extra_data,
@@ -731,45 +752,6 @@ ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
       DVLOG(1) << "Unknown AVColorSpace: " << color_space;
   }
   return COLOR_SPACE_UNSPECIFIED;
-}
-
-bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {
-  DCHECK(date_utc);
-  DCHECK(out);
-
-  std::vector<base::StringPiece> fields = base::SplitStringPiece(
-      date_utc, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (fields.size() != 2)
-    return false;
-
-  std::vector<base::StringPiece> date_fields = base::SplitStringPiece(
-      fields[0], "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (date_fields.size() != 3)
-    return false;
-
-  // TODO(acolwell): Update this parsing code when FFmpeg returns sub-second
-  // information.
-  std::vector<base::StringPiece> time_fields = base::SplitStringPiece(
-      fields[1], ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (time_fields.size() != 3)
-    return false;
-
-  base::Time::Exploded exploded;
-  exploded.millisecond = 0;
-  // This field cannot be uninitialized. Unless not modified, make it 0 here
-  // then.
-  exploded.day_of_week = 0;
-  if (base::StringToInt(date_fields[0], &exploded.year) &&
-      base::StringToInt(date_fields[1], &exploded.month) &&
-      base::StringToInt(date_fields[2], &exploded.day_of_month) &&
-      base::StringToInt(time_fields[0], &exploded.hour) &&
-      base::StringToInt(time_fields[1], &exploded.minute) &&
-      base::StringToInt(time_fields[2], &exploded.second)) {
-    if (base::Time::FromUTCExploded(exploded, out))
-      return true;
-  }
-
-  return false;
 }
 
 int32_t HashCodecName(const char* codec_name) {

@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/file_data_source.h"
@@ -44,14 +45,20 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     return false;
 
   // Remember the codec context for any decodable audio or video streams.
-  std::map<int, AVCodecContext*> stream_contexts;
+  std::map<int, std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext>>
+      stream_contexts;
   for (size_t i = 0; i < format_context->nb_streams; ++i) {
-    AVCodecContext* c = format_context->streams[i]->codec;
-    if (c->codec_type == AVMEDIA_TYPE_AUDIO ||
-        c->codec_type == AVMEDIA_TYPE_VIDEO) {
-      AVCodec* codec = avcodec_find_decoder(c->codec_id);
-      if (codec && avcodec_open2(c, codec, NULL) >= 0)
-        stream_contexts[i] = c;
+    AVCodecParameters* cp = format_context->streams[i]->codecpar;
+
+    if (cp->codec_type == AVMEDIA_TYPE_AUDIO ||
+        cp->codec_type == AVMEDIA_TYPE_VIDEO) {
+      std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> c(
+          AVStreamToAVCodecContext(format_context->streams[i]));
+      if (!c)
+        continue;
+      AVCodec* codec = avcodec_find_decoder(cp->codec_id);
+      if (codec && avcodec_open2(c.get(), codec, nullptr) >= 0)
+        stream_contexts[i] = std::move(c);
     }
   }
 
@@ -70,13 +77,13 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     if (result < 0)
       break;
 
-    std::map<int, AVCodecContext*>::const_iterator it =
-        stream_contexts.find(packet.stream_index);
+    std::map<int, std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext>>::
+        const_iterator it = stream_contexts.find(packet.stream_index);
     if (it == stream_contexts.end()) {
       av_packet_unref(&packet);
       continue;
     }
-    AVCodecContext* av_context = it->second;
+    AVCodecContext* av_context = it->second.get();
 
     int frame_decoded = 0;
     if (av_context->codec_type == AVMEDIA_TYPE_AUDIO) {
@@ -102,6 +109,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     av_packet_unref(&packet);
   } while (base::TimeTicks::Now() < deadline && read_ok && result >= 0);
 
+  stream_contexts.clear();
   return read_ok && (result == AVERROR_EOF || result >= 0);
 }
 

@@ -40,6 +40,8 @@ class FFmpegGlue;
 class InMemoryUrlProtocol;
 class VideoFrame;
 
+struct ScopedPtrAVFreeContext;
+
 namespace cast {
 
 class AudioFrameInput;
@@ -113,8 +115,6 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
 
   AVStream* av_audio_stream();
   AVStream* av_video_stream();
-  AVCodecContext* av_audio_context();
-  AVCodecContext* av_video_context();
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const media::AudioParameters output_audio_params_;
@@ -142,10 +142,12 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   AVFormatContext* av_format_context_;
 
   int audio_stream_index_;
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> av_audio_context_;
   AudioParameters source_audio_params_;
   double playback_rate_;
 
   int video_stream_index_;
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> av_video_context_;
   int video_frame_rate_numerator_;
   int video_frame_rate_denominator_;
 

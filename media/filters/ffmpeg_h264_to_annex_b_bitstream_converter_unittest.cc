@@ -282,9 +282,10 @@ class FFmpegH264ToAnnexBBitstreamConverterTest : public testing::Test {
     // Set up AVCConfigurationRecord correctly for tests.
     // It's ok to do const cast here as data in kHeaderDataOkWithFieldLen4 is
     // never written to.
-    memset(&test_context_, 0, sizeof(AVCodecContext));
-    test_context_.extradata = const_cast<uint8_t*>(kHeaderDataOkWithFieldLen4);
-    test_context_.extradata_size = sizeof(kHeaderDataOkWithFieldLen4);
+    memset(&test_parameters_, 0, sizeof(AVCodecParameters));
+    test_parameters_.extradata =
+        const_cast<uint8_t*>(kHeaderDataOkWithFieldLen4);
+    test_parameters_.extradata_size = sizeof(kHeaderDataOkWithFieldLen4);
   }
 
   void CreatePacket(AVPacket* packet, const uint8_t* data, uint32_t data_size) {
@@ -293,15 +294,15 @@ class FFmpegH264ToAnnexBBitstreamConverterTest : public testing::Test {
     memcpy(packet->data, data, data_size);
   }
 
-  // Variable to hold valid dummy context for testing.
-  AVCodecContext test_context_;
+  // Variable to hold valid dummy parameters for testing.
+  AVCodecParameters test_parameters_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FFmpegH264ToAnnexBBitstreamConverterTest);
 };
 
 TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_Success) {
-  FFmpegH264ToAnnexBBitstreamConverter converter(&test_context_);
+  FFmpegH264ToAnnexBBitstreamConverter converter(&test_parameters_);
 
   ScopedAVPacket test_packet(new AVPacket());
   CreatePacket(test_packet.get(), kPacketDataOkWithFieldLen4,
@@ -315,7 +316,7 @@ TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_Success) {
 }
 
 TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_SuccessBigPacket) {
-  FFmpegH264ToAnnexBBitstreamConverter converter(&test_context_);
+  FFmpegH264ToAnnexBBitstreamConverter converter(&test_parameters_);
 
   // Create new packet with 1000 excess bytes.
   ScopedAVPacket test_packet(new AVPacket());
@@ -333,13 +334,13 @@ TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_SuccessBigPacket) {
 
 TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_FailureNullParams) {
   // Set up AVCConfigurationRecord to represent NULL data.
-  AVCodecContext dummy_context;
-  dummy_context.extradata = NULL;
-  dummy_context.extradata_size = 0;
-  FFmpegH264ToAnnexBBitstreamConverter converter(&dummy_context);
+  AVCodecParameters dummy_parameters;
+  dummy_parameters.extradata = nullptr;
+  dummy_parameters.extradata_size = 0;
+  FFmpegH264ToAnnexBBitstreamConverter converter(&dummy_parameters);
 
   // Try out the actual conversion with NULL parameter.
-  EXPECT_FALSE(converter.ConvertPacket(NULL));
+  EXPECT_FALSE(converter.ConvertPacket(nullptr));
 
   // Create new packet to test actual conversion.
   ScopedAVPacket test_packet(new AVPacket());
@@ -349,7 +350,7 @@ TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_FailureNullParams) {
   // Try out the actual conversion. This should fail due to missing extradata.
   EXPECT_FALSE(converter.ConvertPacket(test_packet.get()));
 
-  // Converted will be automatically cleaned up.
+  // Converter will be automatically cleaned up.
 }
 
 }  // namespace media

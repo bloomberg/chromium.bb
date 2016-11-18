@@ -113,16 +113,16 @@ bool AudioVideoMetadataExtractor::Extract(DataSource* source,
     // metadata to contained streams instead the container itself, like OGG.
     ExtractDictionary(stream->metadata, &info.tags);
 
-    if (!stream->codec)
+    if (!stream->codecpar)
       continue;
 
-    info.type = avcodec_get_name(stream->codec->codec_id);
+    info.type = avcodec_get_name(stream->codecpar->codec_id);
 
     // Extract dimensions of largest stream that's not an attached image.
-    if (stream->codec->width > 0 && stream->codec->width > width_ &&
-        stream->codec->height > 0 && stream->codec->height > height_) {
-      width_ = stream->codec->width;
-      height_ = stream->codec->height;
+    if (stream->codecpar->width > 0 && stream->codecpar->width > width_ &&
+        stream->codecpar->height > 0 && stream->codecpar->height > height_) {
+      width_ = stream->codecpar->width;
+      height_ = stream->codecpar->height;
     }
 
     // Extract attached image if requested.

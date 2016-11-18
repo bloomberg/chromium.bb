@@ -13,10 +13,10 @@
 namespace media {
 
 FFmpegH264ToAnnexBBitstreamConverter::FFmpegH264ToAnnexBBitstreamConverter(
-    AVCodecContext* stream_codec_context)
+    AVCodecParameters* stream_codec_parameters)
     : configuration_processed_(false),
-      stream_codec_context_(stream_codec_context) {
-  CHECK(stream_codec_context_);
+      stream_codec_parameters_(stream_codec_parameters) {
+  CHECK(stream_codec_parameters_);
 }
 
 FFmpegH264ToAnnexBBitstreamConverter::~FFmpegH264ToAnnexBBitstreamConverter() {}
@@ -29,16 +29,15 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
 
   // Calculate the needed output buffer size.
   if (!configuration_processed_) {
-    if (!stream_codec_context_->extradata ||
-        stream_codec_context_->extradata_size <= 0)
+    if (!stream_codec_parameters_->extradata ||
+        stream_codec_parameters_->extradata_size <= 0)
       return false;
 
     avc_config.reset(new mp4::AVCDecoderConfigurationRecord());
 
-    if (!converter_.ParseConfiguration(
-            stream_codec_context_->extradata,
-            stream_codec_context_->extradata_size,
-            avc_config.get())) {
+    if (!converter_.ParseConfiguration(stream_codec_parameters_->extradata,
+                                       stream_codec_parameters_->extradata_size,
+                                       avc_config.get())) {
       return false;
     }
   }

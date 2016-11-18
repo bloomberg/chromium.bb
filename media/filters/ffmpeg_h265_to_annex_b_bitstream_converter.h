@@ -13,7 +13,7 @@
 #include "media/formats/mp4/hevc.h"
 
 // Forward declarations for FFmpeg datatypes used.
-struct AVCodecContext;
+struct AVCodecParameters;
 struct AVPacket;
 
 namespace media {
@@ -23,11 +23,11 @@ namespace media {
 class MEDIA_EXPORT FFmpegH265ToAnnexBBitstreamConverter
     : public FFmpegBitstreamConverter {
  public:
-  // The |stream_codec_context| will be used during conversion and should be the
-  // AVCodecContext for the stream sourcing these packets. A reference to
-  // |stream_codec_context| is retained, so it must outlive this class.
+  // The |stream_codec_parameters| will be used during conversion and should be
+  // the AVCodecParameters for the stream sourcing these packets. A reference to
+  // |stream_codec_parameters| is retained, so it must outlive this class.
   explicit FFmpegH265ToAnnexBBitstreamConverter(
-      AVCodecContext* stream_codec_context);
+      AVCodecParameters* stream_codec_parameters);
 
   ~FFmpegH265ToAnnexBBitstreamConverter() override;
 
@@ -39,7 +39,7 @@ class MEDIA_EXPORT FFmpegH265ToAnnexBBitstreamConverter
 
   // Variable to hold a pointer to memory where we can access the global
   // data from the FFmpeg file format's global headers.
-  AVCodecContext* stream_codec_context_;
+  AVCodecParameters* stream_codec_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegH265ToAnnexBBitstreamConverter);
 };

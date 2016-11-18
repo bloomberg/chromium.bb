@@ -198,26 +198,6 @@ FFmpegGlue::~FFmpegGlue() {
     return;
   }
 
-  // If avformat_open_input() has been called with this context, we need to
-  // close out any codecs/streams before closing the context.
-  if (format_context_->streams) {
-    for (int i = format_context_->nb_streams - 1; i >= 0; --i) {
-      AVStream* stream = format_context_->streams[i];
-
-      // The conditions for calling avcodec_close():
-      // 1. AVStream is alive.
-      // 2. AVCodecContext in AVStream is alive.
-      // 3. AVCodec in AVCodecContext is alive.
-      //
-      // Closing a codec context without prior avcodec_open2() will result in
-      // a crash in FFmpeg.
-      if (stream && stream->codec && stream->codec->codec) {
-        stream->discard = AVDISCARD_ALL;
-        avcodec_close(stream->codec);
-      }
-    }
-  }
-
   avformat_close_input(&format_context_);
   av_free(avio_context_->buffer);
 }

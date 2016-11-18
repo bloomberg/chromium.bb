@@ -158,15 +158,15 @@ bool GenerateAdtsHeader(int codec,
 }
 
 FFmpegAACBitstreamConverter::FFmpegAACBitstreamConverter(
-    AVCodecContext* stream_codec_context)
-    : stream_codec_context_(stream_codec_context),
+    AVCodecParameters* stream_codec_parameters)
+    : stream_codec_parameters_(stream_codec_parameters),
       header_generated_(false),
       codec_(),
       audio_profile_(),
       sample_rate_index_(),
       channel_configuration_(),
       frame_length_() {
-  CHECK(stream_codec_context_);
+  CHECK(stream_codec_parameters_);
 }
 
 FFmpegAACBitstreamConverter::~FFmpegAACBitstreamConverter() {
@@ -179,45 +179,44 @@ bool FFmpegAACBitstreamConverter::ConvertPacket(AVPacket* packet) {
 
   int header_plus_packet_size =
       packet->size + kAdtsHeaderSize;
-  if (!stream_codec_context_->extradata) {
+  if (!stream_codec_parameters_->extradata) {
     DLOG(ERROR) << "extradata is null";
     return false;
   }
-  if (stream_codec_context_->extradata_size < 2) {
+  if (stream_codec_parameters_->extradata_size < 2) {
     DLOG(ERROR) << "extradata too small to contain MP4A header";
     return false;
   }
   int sample_rate_index =
-      ((stream_codec_context_->extradata[0] & 0x07) << 1) |
-      ((stream_codec_context_->extradata[1] & 0x80) >> 7);
+      ((stream_codec_parameters_->extradata[0] & 0x07) << 1) |
+      ((stream_codec_parameters_->extradata[1] & 0x80) >> 7);
   if (sample_rate_index > 12) {
     sample_rate_index = 4;
   }
 
-  if (!header_generated_ ||
-      codec_ != stream_codec_context_->codec_id ||
-      audio_profile_ != stream_codec_context_->profile ||
+  if (!header_generated_ || codec_ != stream_codec_parameters_->codec_id ||
+      audio_profile_ != stream_codec_parameters_->profile ||
       sample_rate_index_ != sample_rate_index ||
-      channel_configuration_ != stream_codec_context_->channels ||
+      channel_configuration_ != stream_codec_parameters_->channels ||
       frame_length_ != header_plus_packet_size) {
-    header_generated_ = GenerateAdtsHeader(stream_codec_context_->codec_id,
-                                           0,  // layer
-                                           stream_codec_context_->profile,
-                                           sample_rate_index,
-                                           0,  // private stream
-                                           stream_codec_context_->channels,
-                                           0,  // originality
-                                           0,  // home
-                                           0,  // copyrighted_stream
-                                           0,  // copyright_ start
-                                           header_plus_packet_size,
-                                           0x7FF,  // buffer fullness
-                                           0,  // one frame per packet
-                                           hdr_);
-    codec_ = stream_codec_context_->codec_id;
-    audio_profile_ = stream_codec_context_->profile;
+    header_generated_ =
+        GenerateAdtsHeader(stream_codec_parameters_->codec_id,
+                           0,  // layer
+                           stream_codec_parameters_->profile, sample_rate_index,
+                           0,  // private stream
+                           stream_codec_parameters_->channels,
+                           0,  // originality
+                           0,  // home
+                           0,  // copyrighted_stream
+                           0,  // copyright_ start
+                           header_plus_packet_size,
+                           0x7FF,  // buffer fullness
+                           0,      // one frame per packet
+                           hdr_);
+    codec_ = stream_codec_parameters_->codec_id;
+    audio_profile_ = stream_codec_parameters_->profile;
     sample_rate_index_ = sample_rate_index;
-    channel_configuration_ = stream_codec_context_->channels;
+    channel_configuration_ = stream_codec_parameters_->channels;
     frame_length_ = header_plus_packet_size;
   }
 
