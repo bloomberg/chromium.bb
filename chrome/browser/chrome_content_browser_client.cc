@@ -267,7 +267,7 @@
 
 #if defined(USE_AURA)
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/ui/public/cpp/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
 

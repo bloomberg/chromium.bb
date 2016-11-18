@@ -9,9 +9,7 @@ import("//build/config/ui.gni")
 source_set("cpp") {
   sources = [
     "context_provider.h",
-    "gpu_service.h",
     "input_event_handler.h",
-    "mojo_gpu_memory_buffer_manager.h",
     "property_type_converters.h",
     "raster_thread_helper.h",
     "scoped_window_ptr.h",
@@ -40,6 +38,7 @@ source_set("cpp") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
+    "//services/ui/public/cpp/gpu",
     "//services/ui/public/interfaces",
   ]
 
@@ -48,7 +47,6 @@ source_set("cpp") {
     ":internal_or_test",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/ipc/client",
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
     "//ui/display",
@@ -98,12 +96,8 @@ source_set("internal") {
     "context_provider.cc",
     "gles2_context.cc",
     "gles2_context.h",
-    "gpu_service.cc",
     "in_flight_change.cc",
     "in_flight_change.h",
-    "mojo_buffer_backing.cc",
-    "mojo_buffer_backing.h",
-    "mojo_gpu_memory_buffer_manager.cc",
     "property_type_converters.cc",
     "raster_thread_helper.cc",
     "scoped_window_ptr.cc",
@@ -134,6 +128,7 @@ source_set("internal") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
+    "//services/ui/public/cpp/gpu",
     "//services/ui/public/interfaces",
     "//ui/display",
     "//ui/events",

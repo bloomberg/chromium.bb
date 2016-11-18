@@ -8,7 +8,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "services/ui/public/cpp/context_provider.h"
-#include "services/ui/public/cpp/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "ui/compositor/reflector.h"

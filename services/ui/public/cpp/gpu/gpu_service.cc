@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/mus/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -11,11 +11,12 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/common/switches.h"
+#include "services/ui/public/cpp/gpu/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
-#include "ui/aura/mus/mojo_gpu_memory_buffer_manager.h"
 
-namespace aura {
+namespace ui {
 
 GpuService::GpuService(service_manager::Connector* connector,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -24,7 +25,7 @@ GpuService::GpuService(service_manager::Connector* connector,
       connector_(connector),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager) {
+      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager(connector_)) {
   DCHECK(main_task_runner_);
   DCHECK(connector_);
   if (!io_task_runner_) {
@@ -152,4 +153,4 @@ std::unique_ptr<base::SharedMemory> GpuService::AllocateSharedMemory(
   return base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
 }
 
-}  // namespace aura
+}  // namespace ui

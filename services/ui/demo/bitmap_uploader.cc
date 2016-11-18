@@ -16,7 +16,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gles2_context.h"
-#include "services/ui/public/cpp/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 
 namespace ui {

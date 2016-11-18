@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_GPU_SERVICE_H_
-#define SERVICES_UI_PUBLIC_CPP_GPU_SERVICE_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_GPU_GPU_SERVICE_H_
+#define SERVICES_UI_PUBLIC_CPP_GPU_GPU_SERVICE_H_
 
 #include <stdint.h>
 #include <vector>
@@ -16,7 +16,7 @@
 #include "base/threading/thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
-#include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/gpu/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace service_manager {
@@ -81,4 +81,4 @@ class GpuService : public gpu::GpuChannelHostFactory,
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_GPU_SERVICE_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_GPU_GPU_SERVICE_H_

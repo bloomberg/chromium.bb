@@ -9,7 +9,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/demo/bitmap_uploader.h"
-#include "services/ui/public/cpp/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "third_party/skia/include/core/SkCanvas.h"

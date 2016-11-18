@@ -8,9 +8,9 @@
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/gpu_service.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
@@ -89,7 +89,7 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   wm_state_ = base::MakeUnique<wm::WMState>();
 
-  gpu_service_ = aura::GpuService::Create(connector, std::move(io_task_runner));
+  gpu_service_ = ui::GpuService::Create(connector, std::move(io_task_runner));
   compositor_context_factory_ =
       base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
   aura::Env::GetInstance()->set_context_factory(

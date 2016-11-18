@@ -15,8 +15,6 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/ui/public/cpp/gpu_service.h"
-#include "services/ui/public/interfaces/gpu_service.mojom.h"
 #include "url/gurl.h"
 
 namespace ui {

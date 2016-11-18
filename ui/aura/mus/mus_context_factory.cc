@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/context_provider.h"
-#include "ui/aura/mus/gpu_service.h"
+#include "services/ui/public/cpp/gpu/gpu_service.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/reflector.h"
@@ -26,7 +26,7 @@ class FakeReflector : public ui::Reflector {
 
 }  // namespace
 
-MusContextFactory::MusContextFactory(GpuService* gpu_service)
+MusContextFactory::MusContextFactory(ui::GpuService* gpu_service)
     : next_sink_id_(1u), gpu_service_(gpu_service) {}
 
 MusContextFactory::~MusContextFactory() {}
