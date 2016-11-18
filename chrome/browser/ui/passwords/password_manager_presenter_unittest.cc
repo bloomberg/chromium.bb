@@ -329,13 +329,6 @@ TEST_F(PasswordManagerPresenterTest, Sorting_Federations) {
 
 TEST_F(PasswordManagerPresenterTest, Sorting_SpecialCharacters) {
   // URLs with encoded special characters should not cause crash during sorting.
-  LOG(INFO) << GURL("http://abč.com");
-  LOG(INFO) << GURL("http://abc.com");
-  LOG(INFO) << GURL("http://ábc.com");
-  LOG(INFO) << GURL("http://uoy.com");
-  LOG(INFO) << GURL("http://üöÿ.com");
-  LOG(INFO) << GURL("http://zrc.com");
-  LOG(INFO) << GURL("http://žřč.com");
   const SortEntry test_cases[] = {
       {"https://xn--bea5m6d.com/", "user_a", "pwd", nullptr, nullptr, 4},
       {"https://uoy.com/", "user_a", "pwd", nullptr, nullptr, 1},
