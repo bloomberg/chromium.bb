@@ -370,6 +370,13 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
   v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
+template <typename CallbackInfo, typename T>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
+                                 const v8::Local<T> handle,
+                                 const ScriptWrappable*) {
+  v8SetReturnValue(callbackInfo, handle);
+}
+
 // Convert v8::String to a WTF::String. If the V8 string is not already
 // an external string then it is transformed into an external string at this
 // point to avoid repeated conversions.

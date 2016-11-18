@@ -114,9 +114,13 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   virtual void setDefaultStatus(const String&) = 0;
 
   // Self-referential attributes
-  DOMWindow* self() const;
-  DOMWindow* window() const { return self(); }
-  DOMWindow* frames() const { return self(); }
+  v8::Local<v8::Object> self(ScriptState*) const;
+  v8::Local<v8::Object> window(ScriptState* scriptState) const {
+    return self(scriptState);
+  }
+  v8::Local<v8::Object> frames(ScriptState* scriptState) const {
+    return self(scriptState);
+  }
 
   DOMWindow* opener() const;
   DOMWindow* parent() const;

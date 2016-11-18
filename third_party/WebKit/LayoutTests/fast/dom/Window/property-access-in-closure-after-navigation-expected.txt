@@ -6,9 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS window is self
 PASS window is frames
 PASS parent is top
-PASS window is null.
-PASS self is null.
-PASS frames is null.
+PASS window is non-null.
+PASS self is non-null.
+PASS frames is non-null.
 PASS parent is null.
 PASS top is null.
 
