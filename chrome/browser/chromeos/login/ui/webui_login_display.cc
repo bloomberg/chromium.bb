@@ -238,6 +238,11 @@ void WebUILoginDisplay::OnSigninScreenReady() {
     delegate_->OnSigninScreenReady();
 }
 
+void WebUILoginDisplay::OnGaiaScreenReady() {
+  if (delegate_)
+    delegate_->OnGaiaScreenReady();
+}
+
 void WebUILoginDisplay::RemoveUser(const AccountId& account_id) {
   SignInScreenController::Get()->RemoveUser(account_id);
 }
@@ -325,7 +330,7 @@ void WebUILoginDisplay::Signout() {
 
 void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {
   if (delegate_)
-    delegate_->ResetPublicSessionAutoLoginTimer();
+    delegate_->ResetAutoLoginTimer();
 }
 
 bool WebUILoginDisplay::IsUserWhitelisted(const AccountId& account_id) {

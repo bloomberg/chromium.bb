@@ -236,6 +236,10 @@ void WebUIScreenLocker::OnSigninScreenReady() {
   VLOG(2) << "Lock screen signin screen is ready";
 }
 
+void WebUIScreenLocker::OnGaiaScreenReady() {
+  VLOG(2) << "Lock screen gaia screen is ready";
+}
+
 void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
   NOTREACHED();
 }
@@ -256,8 +260,7 @@ void WebUIScreenLocker::ShowWrongHWIDScreen() {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::ResetPublicSessionAutoLoginTimer() {
-}
+void WebUIScreenLocker::ResetAutoLoginTimer() {}
 
 void WebUIScreenLocker::ResyncUserData() {
   NOTREACHED();

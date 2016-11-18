@@ -108,6 +108,8 @@ void AppLaunchSigninScreen::LoadSigninWallpaper() {
 void AppLaunchSigninScreen::OnSigninScreenReady() {
 }
 
+void AppLaunchSigninScreen::OnGaiaScreenReady() {}
+
 void AppLaunchSigninScreen::RemoveUser(const AccountId& account_id) {
   NOTREACHED();
 }

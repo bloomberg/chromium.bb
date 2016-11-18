@@ -63,6 +63,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   void OnSigninScreenReady() override;
+  void OnGaiaScreenReady() override;
   void RemoveUser(const AccountId& account_id) override;
   void ResyncUserData() override;
   void ShowEnterpriseEnrollmentScreen() override;

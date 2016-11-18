@@ -66,6 +66,9 @@ class LoginDisplay {
     // Notify the delegate when the sign-in UI is finished loading.
     virtual void OnSigninScreenReady() = 0;
 
+    // Notify the delegate when the GAIA UI is finished loading.
+    virtual void OnGaiaScreenReady() = 0;
+
     // Called when the user requests enterprise enrollment.
     virtual void OnStartEnterpriseEnrollment() = 0;
 
@@ -88,8 +91,8 @@ class LoginDisplay {
     // Returns name of the currently connected network, for error message,
     virtual base::string16 GetConnectedNetworkName() = 0;
 
-    // Restarts the public-session auto-login timer if it is running.
-    virtual void ResetPublicSessionAutoLoginTimer() = 0;
+    // Restarts the auto-login timer if it is running.
+    virtual void ResetAutoLoginTimer() = 0;
 
     // Returns true if user is allowed to log in by domain policy.
     virtual bool IsUserWhitelisted(const AccountId& account_id) = 0;

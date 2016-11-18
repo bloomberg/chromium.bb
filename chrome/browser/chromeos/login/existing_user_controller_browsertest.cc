@@ -212,7 +212,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   int auto_login_delay() const {
-    return existing_user_controller()->public_session_auto_login_delay_;
+    return existing_user_controller()->auto_login_delay_;
   }
 
   bool is_login_in_progress() const {
@@ -454,7 +454,7 @@ class ExistingUserControllerPublicSessionTest
   void SetAutoLoginPolicy(const std::string& user_email, int delay) {
     // Wait until ExistingUserController has finished auto-login
     // configuration by observing the same settings that trigger
-    // ConfigurePublicSessionAutoLogin.
+    // ConfigureAutoLogin.
 
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
 
@@ -494,7 +494,7 @@ class ExistingUserControllerPublicSessionTest
   }
 
   void ConfigureAutoLogin() {
-    existing_user_controller()->ConfigurePublicSessionAutoLogin();
+    existing_user_controller()->ConfigureAutoLogin();
   }
 
   void FireAutoLogin() {

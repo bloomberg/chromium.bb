@@ -140,6 +140,9 @@ class SigninScreenHandlerDelegate {
   // Notify the delegate when the sign-in UI is finished loading.
   virtual void OnSigninScreenReady() = 0;
 
+  // Notify the delegate when the GAIA UI is finished loading.
+  virtual void OnGaiaScreenReady() = 0;
+
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
 

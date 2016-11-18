@@ -65,6 +65,7 @@ class WebUILoginDisplay : public LoginDisplay,
   void CompleteLogin(const UserContext& user_context) override;
 
   void OnSigninScreenReady() override;
+  void OnGaiaScreenReady() override;
   void CancelUserAdding() override;
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;

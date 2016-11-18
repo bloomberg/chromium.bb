@@ -209,19 +209,19 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   local_account_auto_login_id_subscription_ =
       cros_settings_->AddSettingsObserver(
           kAccountsPrefDeviceLocalAccountAutoLoginId,
-          base::Bind(&ExistingUserController::ConfigurePublicSessionAutoLogin,
+          base::Bind(&ExistingUserController::ConfigureAutoLogin,
                      base::Unretained(this)));
   local_account_auto_login_delay_subscription_ =
       cros_settings_->AddSettingsObserver(
           kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-          base::Bind(&ExistingUserController::ConfigurePublicSessionAutoLogin,
+          base::Bind(&ExistingUserController::ConfigureAutoLogin,
                      base::Unretained(this)));
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
   time_init_ = base::Time::Now();
   UpdateLoginDisplay(users);
-  ConfigurePublicSessionAutoLogin();
+  ConfigureAutoLogin();
 }
 
 void ExistingUserController::UpdateLoginDisplay(
@@ -322,6 +322,14 @@ void ExistingUserController::Observe(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ExistingUserController, ArcKioskAppManager::ArcKioskAppManagerObserver
+// implementation:
+//
+
+void ExistingUserController::OnArcKioskAppsChanged() {
+  ConfigureAutoLogin();
+}
+////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
@@ -341,7 +349,7 @@ ExistingUserController::~ExistingUserController() {
 
 void ExistingUserController::CancelPasswordChangedFlow() {
   login_performer_.reset(nullptr);
-  PerformLoginFinishedActions(true /* start public session timer */);
+  PerformLoginFinishedActions(true /* start auto login timer */);
 }
 
 void ExistingUserController::CompleteLogin(const UserContext& user_context) {
@@ -434,8 +442,13 @@ void ExistingUserController::MigrateUserData(const std::string& old_password) {
 }
 
 void ExistingUserController::OnSigninScreenReady() {
-  signin_screen_ready_ = true;
-  StartPublicSessionAutoLoginTimer();
+  auto_launch_ready_ = true;
+  StartAutoLoginTimer();
+}
+
+void ExistingUserController::OnGaiaScreenReady() {
+  auto_launch_ready_ = true;
+  StartAutoLoginTimer();
 }
 
 void ExistingUserController::OnStartEnterpriseEnrollment() {
@@ -575,7 +588,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   guest_mode_url_ = GURL::EmptyGURL();
   std::string error = failure.GetErrorString();
 
-  PerformLoginFinishedActions(false /* don't start public session timer */);
+  PerformLoginFinishedActions(false /* don't start auto login timer */);
 
   if (ChromeUserManager::Get()
           ->GetUserFlow(last_login_attempt_account_id_)
@@ -596,7 +609,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   } else if (last_login_attempt_account_id_ == user_manager::GuestAccountId()) {
     // Show no errors, just re-enable input.
     login_display_->ClearAndEnablePassword();
-    StartPublicSessionAutoLoginTimer();
+    StartAutoLoginTimer();
   } else {
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
@@ -618,7 +631,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
       UMA_HISTOGRAM_BOOLEAN("Login.OfflineFailure.IsKnownUser", is_known_user);
 
     login_display_->ClearAndEnablePassword();
-    StartPublicSessionAutoLoginTimer();
+    StartAutoLoginTimer();
   }
 
   // Reset user flow to default, so that special flow will not affect next
@@ -653,7 +666,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
       ->GetUserFlow(user_context.GetAccountId())
       ->HandleLoginSuccess(user_context);
 
-  StopPublicSessionAutoLoginTimer();
+  StopAutoLoginTimer();
 
   // Truth table of |has_auth_cookies|:
   //                          Regular        SAML
@@ -760,7 +773,7 @@ void ExistingUserController::OnPasswordChangeDetected() {
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
-  PerformLoginFinishedActions(true /* start public session timer */);
+  PerformLoginFinishedActions(true /* start auto login timer */);
 
   login_display_->ShowWhitelistCheckFailedError();
 
@@ -775,7 +788,7 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
 void ExistingUserController::PolicyLoadFailed() {
   ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, "");
 
-  PerformLoginFinishedActions(false /* don't start public session timer */);
+  PerformLoginFinishedActions(false /* don't start auto login timer */);
   display_email_.clear();
 }
 
@@ -792,7 +805,7 @@ void ExistingUserController::DeviceSettingsChanged() {
   if (host_ != nullptr && !login_display_->is_signin_completed()) {
     // Signed settings or user list changed. Notify views and update them.
     UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
-    ConfigurePublicSessionAutoLogin();
+    ConfigureAutoLogin();
   }
 }
 
@@ -819,7 +832,7 @@ void ExistingUserController::LoginAsGuest() {
   if (!allow_guest) {
     // Disallowed. The UI should normally not show the guest session button.
     LOG(ERROR) << "Guest login attempt when guest mode is disallowed.";
-    PerformLoginFinishedActions(true /* start public session timer */);
+    PerformLoginFinishedActions(true /* start auto login timer */);
     display_email_.clear();
     return;
   }
@@ -841,7 +854,7 @@ void ExistingUserController::LoginAsPublicSession(
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-    PerformLoginFinishedActions(true /* start public session timer */);
+    PerformLoginFinishedActions(true /* start auto login timer */);
     return;
   }
 
@@ -914,7 +927,7 @@ void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
   login_performer_->LoginAsArcKioskAccount(account_id);
 }
 
-void ExistingUserController::ConfigurePublicSessionAutoLogin() {
+void ExistingUserController::ConfigureAutoLogin() {
   std::string auto_login_account_id;
   cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
                             &auto_login_account_id);
@@ -932,61 +945,91 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
     }
   }
 
-  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      public_session_auto_login_account_id_);
-  if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
+  const user_manager::User* public_session_user =
+      user_manager::UserManager::Get()->FindUser(
+          public_session_auto_login_account_id_);
+  if (!public_session_user ||
+      public_session_user->GetType() !=
+          user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     public_session_auto_login_account_id_ = EmptyAccountId();
-
-  if (!cros_settings_->GetInteger(
-          kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-          &public_session_auto_login_delay_)) {
-    public_session_auto_login_delay_ = 0;
   }
 
-  if (public_session_auto_login_account_id_.is_valid())
-    StartPublicSessionAutoLoginTimer();
-  else
-    StopPublicSessionAutoLoginTimer();
+  arc_kiosk_auto_login_account_id_ =
+      ArcKioskAppManager::Get()->GetAutoLaunchAccountId();
+  const user_manager::User* arc_kiosk_user =
+      user_manager::UserManager::Get()->FindUser(
+          arc_kiosk_auto_login_account_id_);
+  if (!arc_kiosk_user ||
+      arc_kiosk_user->GetType() != user_manager::USER_TYPE_ARC_KIOSK_APP) {
+    arc_kiosk_auto_login_account_id_ = EmptyAccountId();
+  }
+
+  if (!cros_settings_->GetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+                                  &auto_login_delay_)) {
+    auto_login_delay_ = 0;
+  }
+
+  if (public_session_auto_login_account_id_.is_valid() ||
+      arc_kiosk_auto_login_account_id_.is_valid()) {
+    StartAutoLoginTimer();
+  } else {
+    StopAutoLoginTimer();
+  }
 }
 
-void ExistingUserController::ResetPublicSessionAutoLoginTimer() {
+void ExistingUserController::ResetAutoLoginTimer() {
   // Only restart the auto-login timer if it's already running.
   if (auto_login_timer_ && auto_login_timer_->IsRunning()) {
-    StopPublicSessionAutoLoginTimer();
-    StartPublicSessionAutoLoginTimer();
+    StopAutoLoginTimer();
+    StartAutoLoginTimer();
   }
 }
 
 void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
-  CHECK(signin_screen_ready_ &&
-        public_session_auto_login_account_id_.is_valid());
+  CHECK(auto_launch_ready_ && public_session_auto_login_account_id_.is_valid());
   Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
                     public_session_auto_login_account_id_),
         SigninSpecifics());
 }
 
-void ExistingUserController::StopPublicSessionAutoLoginTimer() {
+void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
+  CHECK(auto_launch_ready_ && (arc_kiosk_auto_login_account_id_.is_valid()));
+  Login(UserContext(user_manager::USER_TYPE_ARC_KIOSK_APP,
+                    arc_kiosk_auto_login_account_id_),
+        SigninSpecifics());
+}
+
+void ExistingUserController::StopAutoLoginTimer() {
   if (auto_login_timer_)
     auto_login_timer_->Stop();
 }
 
-void ExistingUserController::StartPublicSessionAutoLoginTimer() {
-  if (!signin_screen_ready_ || is_login_in_progress_ ||
-      !public_session_auto_login_account_id_.is_valid()) {
+void ExistingUserController::StartAutoLoginTimer() {
+  if (!auto_launch_ready_ || is_login_in_progress_ ||
+      (!public_session_auto_login_account_id_.is_valid() &&
+       !arc_kiosk_auto_login_account_id_.is_valid())) {
     return;
+  }
+
+  if (auto_login_timer_ && auto_login_timer_->IsRunning()) {
+    StopAutoLoginTimer();
   }
 
   // Start the auto-login timer.
   if (!auto_login_timer_)
     auto_login_timer_.reset(new base::OneShotTimer);
 
-  auto_login_timer_->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(
-          public_session_auto_login_delay_),
-      base::Bind(
-          &ExistingUserController::OnPublicSessionAutoLoginTimerFire,
-          weak_factory_.GetWeakPtr()));
+  if (public_session_auto_login_account_id_.is_valid()) {
+    auto_login_timer_->Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
+        base::Bind(&ExistingUserController::OnPublicSessionAutoLoginTimerFire,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    auto_login_timer_->Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
+        base::Bind(&ExistingUserController::OnArcKioskAutoLoginTimerFire,
+                   weak_factory_.GetWeakPtr()));
+  }
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
@@ -1074,18 +1117,18 @@ void ExistingUserController::PerformPreLoginActions(
   num_login_attempts_++;
 
   // Stop the auto-login timer when attempting login.
-  StopPublicSessionAutoLoginTimer();
+  StopAutoLoginTimer();
 }
 
 void ExistingUserController::PerformLoginFinishedActions(
-    bool start_public_session_timer) {
+    bool start_auto_login_timer) {
   is_login_in_progress_ = false;
 
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
-  if (start_public_session_timer)
-    StartPublicSessionAutoLoginTimer();
+  if (start_auto_login_timer)
+    StartAutoLoginTimer();
 }
 
 void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
@@ -1094,7 +1137,7 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
   login_display_->SetUIEnabled(false);
 
   // Stop the auto-login timer.
-  StopPublicSessionAutoLoginTimer();
+  StopAutoLoginTimer();
 
   // Wait for the |cros_settings_| to become either trusted or permanently
   // untrusted.
@@ -1226,7 +1269,7 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
     // Reenable clicking on other windows and status area.
     login_display_->SetUIEnabled(true);
     // Restart the auto-login timer.
-    StartPublicSessionAutoLoginTimer();
+    StartAutoLoginTimer();
   }
 
   PerformPreLoginActions(user_context);
