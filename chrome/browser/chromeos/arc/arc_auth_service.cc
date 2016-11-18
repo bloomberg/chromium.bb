@@ -418,9 +418,24 @@ void ArcAuthService::RequestAccountInfoInternal(
     }
   }
 
-  // Otherwise, show LSO page to user, and let them click "Sign in" button.
-  if (support_host_)
+  // Otherwise, show LSO page to user after HTTP context preparation, and let
+  // them click "Sign in" button.
+  DCHECK(context_);
+  context_->Prepare(base::Bind(&ArcAuthService::OnContextPrepared,
+                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcAuthService::OnContextPrepared(
+    net::URLRequestContextGetter* request_context_getter) {
+  if (!support_host_)
+    return;
+
+  if (request_context_getter) {
     support_host_->ShowLso();
+  } else {
+    support_host_->ShowError(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR,
+                             false);
+  }
 }
 
 void ArcAuthService::OnRobotAuthCodeFetched(
@@ -1029,7 +1044,9 @@ void ArcAuthService::OnRetryClicked() {
   } else if (state_ == State::ACTIVE) {
     // This happens when ARC support Chrome app reports an error on "Sign in"
     // page.
-    support_host_->ShowLso();
+    DCHECK(context_);
+    context_->Prepare(base::Bind(&ArcAuthService::OnContextPrepared,
+                                 weak_ptr_factory_.GetWeakPtr()));
   } else {
     // Otherwise, we restart ARC. Note: this is the first boot case.
     // For second or later boot, either ERROR_WITH_FEEDBACK case or ACTIVE

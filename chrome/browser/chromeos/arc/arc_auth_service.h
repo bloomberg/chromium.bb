@@ -270,6 +270,9 @@ class ArcAuthService : public ArcService,
   void OnBackgroundAndroidManagementChecked(
       policy::AndroidManagementClient::Result result);
 
+  // Called when HTTP context is prepared.
+  void OnContextPrepared(net::URLRequestContextGetter* request_context_getter);
+
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
 
