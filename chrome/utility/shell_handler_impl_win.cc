@@ -212,7 +212,7 @@ ShellHandlerImpl::ShellHandlerImpl() = default;
 ShellHandlerImpl::~ShellHandlerImpl() = default;
 
 // static
-void ShellHandlerImpl::Create(mojom::ShellHandlerRequest request) {
+void ShellHandlerImpl::Create(chrome::mojom::ShellHandlerRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<ShellHandlerImpl>(),
                           std::move(request));
 }

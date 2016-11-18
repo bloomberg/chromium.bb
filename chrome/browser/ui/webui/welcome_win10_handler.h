@@ -36,7 +36,7 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
 
   void StartIsPinnedToTaskbarCheck();
 
-  // Callback for mojom::ShellHandler's call to IsPinnedToTaskbar().
+  // Callback for chrome::mojom::ShellHandler's call to IsPinnedToTaskbar().
   void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar);
 
   // Sets the internal result and optionally call
@@ -48,7 +48,8 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
   // promise.
   void SendPinnedToTaskbarStateResult();
 
-  std::unique_ptr<content::UtilityProcessMojoClient<mojom::ShellHandler>>
+  std::unique_ptr<
+      content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>>
       client_;
   base::OneShotTimer timer_;
 

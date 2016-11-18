@@ -440,7 +440,7 @@ void RecordPinnedToTaskbarProcessError(bool error) {
 // to this function holds a reference to the ShellHandlerClient to keep it alive
 // until invokation.
 void OnIsPinnedToTaskbarResult(
-    content::UtilityProcessMojoClient<mojom::ShellHandler>* client,
+    content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>* client,
     bool succeeded,
     bool is_pinned_to_taskbar) {
   // Clean up the utility process.
@@ -460,7 +460,7 @@ void OnIsPinnedToTaskbarResult(
 // to this function is mutially exclusive with a call to
 // OnIsPinnedToTaskbarResult().
 void OnShellHandlerConnectionError(
-    content::UtilityProcessMojoClient<mojom::ShellHandler>* client) {
+    content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>* client) {
   // Clean up the utility process.
   delete client;
 
@@ -715,8 +715,8 @@ void RecordIsPinnedToTaskbarHistogram() {
   // The code to check if Chrome is pinned to the taskbar brings in shell
   // extensions which can hinder stability so it is executed in a utility
   // process.
-  content::UtilityProcessMojoClient<mojom::ShellHandler>* client =
-      new content::UtilityProcessMojoClient<mojom::ShellHandler>(
+  content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>* client =
+      new content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>(
           l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME));
 
   client->set_error_callback(

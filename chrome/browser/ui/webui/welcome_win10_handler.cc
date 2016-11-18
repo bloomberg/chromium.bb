@@ -76,9 +76,9 @@ void WelcomeWin10Handler::HandleContinue(const base::ListValue* args) {
 
 void WelcomeWin10Handler::StartIsPinnedToTaskbarCheck() {
   // Start the utility process that will handle the IsPinnedToTaskbar() call.
-  client_ =
-      base::MakeUnique<content::UtilityProcessMojoClient<mojom::ShellHandler>>(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME));
+  client_ = base::MakeUnique<
+      content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>>(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME));
 
   // Assume that Chrome is pinned to the taskbar if an error occurs.
   client_->set_error_callback(
