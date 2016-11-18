@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.02",
+  "version": "12.03",
   "entries": [
     {
       "id": 1,
@@ -1355,6 +1355,10 @@ LONG_STRING_CONST(
         "type": "win"
       },
       "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "21.20.16.4542"
+      },
       "features": [
         "accelerated_vpx_decode"
       ]
