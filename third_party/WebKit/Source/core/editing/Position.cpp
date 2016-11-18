@@ -586,7 +586,7 @@ String PositionTemplate<Strategy>::toAnchorTypeAndOffsetString() const {
     case PositionAnchorType::OffsetInAnchor: {
       StringBuilder builder;
       builder.append("offsetInAnchor[");
-      builder.append(m_offset);
+      builder.appendNumber(m_offset);
       builder.append("]");
       return builder.toString();
     }
