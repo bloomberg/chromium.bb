@@ -8,8 +8,9 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container-box'",
-      "position": [10, 10],
-      "bounds": [100, 100],
+      "position": [-18, -18],
+      "transformOrigin": [78, 78],
+      "bounds": [157, 157],
       "drawsContent": true
     },
     {
