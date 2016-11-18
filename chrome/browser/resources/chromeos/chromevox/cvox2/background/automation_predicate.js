@@ -300,8 +300,11 @@ AutomationPredicate.container = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
+    Role.alertDialog,
+    Role.dialog,
     Role.rootWebArea,
     Role.webView,
+    Role.window,
     Role.embeddedObject,
     Role.iframe,
     Role.iframePresentational]);
@@ -359,7 +362,9 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
                                   Role.image,
                                   Role.staticText,
                                   Role.svgRoot,
-                                  Role.tableHeaderContainer])(node));
+                                  Role.tableHeaderContainer,
+                                  Role.unknown
+                                 ])(node));
 };
 
 /**

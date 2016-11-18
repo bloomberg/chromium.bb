@@ -400,8 +400,8 @@ Output.RULES = {
       speak: '$earcon(ALERT_NONMODAL) $role $descendants $state'
     },
     alertDialog: {
-      enter: '$nameFromNode $role $description',
-      speak: '$name $role $descendants $state'
+      enter: '$earcon(ALERT_MODAL) $name $state',
+      speak: '$earcon(ALERT_MODAL) $name $descendants $state $role'
     },
     cell: {
       enter: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +

@@ -46,6 +46,8 @@ views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
 void AXRootObjWrapper::GetChildren(
     std::vector<views::AXAuraObjWrapper*>* out_children) {
   views::AXAuraObjCache::GetInstance()->GetTopLevelWindows(out_children);
+  out_children->push_back(
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_));
 }
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
