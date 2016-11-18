@@ -219,6 +219,8 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, FloatBoundariesGiveEqualGroupSizes);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, DoesNotSurpassTotalProbability);
 
+  typedef SharedPersistentMemoryAllocator::Reference FieldTrialRef;
+
   friend class base::FieldTrialList;
 
   friend class RefCounted<FieldTrial>;
@@ -322,7 +324,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   bool trial_registered_;
 
   // Reference to related field trial struct and data in shared memory.
-  SharedPersistentMemoryAllocator::Reference ref_;
+  FieldTrialRef ref_;
 
   // When benchmarking is enabled, field trials all revert to the 'default'
   // group.
@@ -337,6 +339,8 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 // Only one instance of this class exists.
 class BASE_EXPORT FieldTrialList {
  public:
+  typedef SharedPersistentMemoryAllocator FieldTrialAllocator;
+
   // Year that is guaranteed to not be expired when instantiating a field trial
   // via |FactoryGetFieldTrial()|.  Set to two years from the build date.
   static int kNoExpirationYear;
@@ -540,6 +544,13 @@ class BASE_EXPORT FieldTrialList {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, InstantiateAllocator);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, AddTrialsToAllocator);
 
+#if defined(OS_WIN)
+  // Takes in |handle| that should have been retrieved from the command line and
+  // creates a SharedMemoryHandle from it, and then calls
+  // CreateTrialsFromSharedMemory(). Returns true on success, false on failure.
+  static bool CreateTrialsFromWindowsHandle(HANDLE handle);
+#endif
+
   // Expects a mapped piece of shared memory |shm| that was created from the
   // browser process's field_trial_allocator and shared via the command line.
   // This function recreates the allocator, iterates through all the field
@@ -601,8 +612,7 @@ class BASE_EXPORT FieldTrialList {
   // browser and child processes, but readonly in the child.
   // In the future, we may want to move this to a more generic place if we want
   // to start passing more data other than field trials.
-  std::unique_ptr<SharedPersistentMemoryAllocator> field_trial_allocator_ =
-      nullptr;
+  std::unique_ptr<FieldTrialAllocator> field_trial_allocator_ = nullptr;
 
 #if defined(OS_WIN)
   // Readonly copy of the handle to the allocator. Needs to be a member variable
