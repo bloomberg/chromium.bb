@@ -22,7 +22,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   static void Create(blink::mojom::OffscreenCanvasSurfaceRequest request);
 
   // blink::mojom::OffscreenCanvasSurface implementation.
-  void GetSurfaceId(const GetSurfaceIdCallback& callback) override;
+  void GetSurfaceId(GetSurfaceIdCallback callback) override;
   void Require(const cc::SurfaceId& surface_id,
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;

@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -26,7 +27,7 @@ class MockOffscreenCanvasSurface final
 
   mojom::blink::OffscreenCanvasSurfacePtr GetProxy();
 
-  void GetSurfaceId(const GetSurfaceIdCallback&) override;
+  void GetSurfaceId(GetSurfaceIdCallback) override;
   void Require(const cc::SurfaceId&, const cc::SurfaceSequence&) override {}
   void Satisfy(const cc::SurfaceSequence&) override {}
 
@@ -61,9 +62,8 @@ mojom::blink::OffscreenCanvasSurfacePtr MockOffscreenCanvasSurface::GetProxy() {
   return m_binding.CreateInterfacePtrAndBind();
 }
 
-void MockOffscreenCanvasSurface::GetSurfaceId(
-    const GetSurfaceIdCallback& callback) {
-  callback.Run(
+void MockOffscreenCanvasSurface::GetSurfaceId(GetSurfaceIdCallback callback) {
+  std::move(callback).Run(
       cc::SurfaceId(cc::FrameSinkId(10, 11),
                     cc::LocalFrameId(15, base::UnguessableToken::Create())));
 }

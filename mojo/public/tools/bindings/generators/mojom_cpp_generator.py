@@ -622,6 +622,7 @@ class Generator(generator.Generator):
       "extra_public_headers": self.GetExtraPublicHeaders(),
       "for_blink": self.for_blink,
       "use_new_wrapper_types": self.use_new_wrapper_types,
+      "use_once_callback": self.use_once_callback,
       "export_attribute": self.export_attribute,
       "export_header": self.export_header,
     }
@@ -670,6 +671,8 @@ class Generator(generator.Generator):
       _for_blink = self.for_blink
       global _use_new_wrapper_types
       _use_new_wrapper_types = self.use_new_wrapper_types
+      global _use_once_callback
+      _use_once_callback = self.use_once_callback
       global _variant
       _variant = self.variant
       suffix = "-%s" % self.variant if self.variant else ""

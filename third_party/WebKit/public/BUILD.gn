@@ -748,6 +748,7 @@ mojom("offscreen_canvas_mojo_bindings") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+  use_once_callback = true
 }
 
 group("generate_mojo_bindings") {

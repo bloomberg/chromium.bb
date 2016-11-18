@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
@@ -31,8 +33,7 @@ void OffscreenCanvasSurfaceImpl::Create(
                           std::move(request));
 }
 
-void OffscreenCanvasSurfaceImpl::GetSurfaceId(
-    const GetSurfaceIdCallback& callback) {
+void OffscreenCanvasSurfaceImpl::GetSurfaceId(GetSurfaceIdCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (frame_sink_id_.is_valid()) {
     // This IPC should be only called once for each HTMLCanvasElement. In this
@@ -54,7 +55,7 @@ void OffscreenCanvasSurfaceImpl::GetSurfaceId(
   OffscreenCanvasSurfaceManager::GetInstance()
       ->RegisterOffscreenCanvasSurfaceInstance(frame_sink_id_, this);
 
-  callback.Run(surface_id);
+  std::move(callback).Run(surface_id);
 }
 
 void OffscreenCanvasSurfaceImpl::Require(const cc::SurfaceId& surface_id,

@@ -55,8 +55,8 @@ class {{export_attribute}} {{interface.name}}
 {%-     endif %}
 
   using {{method.name}}Callback = {{interface_macros.declare_callback(method,
-      for_blink, use_new_wrapper_types)}};
+      for_blink, use_new_wrapper_types, use_once_callback)}};
 {%-   endif %}
-  virtual void {{method.name}}({{interface_macros.declare_request_params("", method)}}) = 0;
+  virtual void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) = 0;
 {%- endfor %}
 };

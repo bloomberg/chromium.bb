@@ -17,8 +17,12 @@ mojo::String {{prefix}}{{param.name}}
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro declare_callback(method, for_blink, use_new_wrapper_types) -%}
+{%- macro declare_callback(method, for_blink, use_new_wrapper_types, use_once_callback) -%}
+{%-   if use_once_callback -%}
+base::OnceCallback<void(
+{%-   else -%}
 base::Callback<void(
+{%-   endif -%}
 {%-   for param in method.response_parameters -%}
 {#- TODO(yzshen): For historical reasons, we use mojo::String here (instead of
     const mojo::String&) inconsistently. Preserve the behavior temporarily. #}
@@ -33,11 +37,15 @@ mojo::String
 )>
 {%- endmacro -%}
 
-{%- macro declare_request_params(prefix, method) -%}
+{%- macro declare_request_params(prefix, method, use_once_callback) -%}
 {{declare_params(prefix, method.parameters)}}
 {%-   if method.response_parameters != None -%}
-{%- if method.parameters %}, {% endif -%}
+{%-     if method.parameters %}, {% endif -%}
+{%-     if use_once_callback -%}
+{{method.name}}Callback callback
+{%-     else -%}
 const {{method.name}}Callback& callback
+{%-     endif -%}
 {%-   endif -%}
 {%- endmacro -%}
 
