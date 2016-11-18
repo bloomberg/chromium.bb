@@ -343,8 +343,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   params.enable_quic = quic_enabled();
 
   for (const auto& quic_hint : quic_hints_) {
-    net::AlternativeService alternative_service(net::AlternateProtocol::QUIC,
-                                                "", quic_hint.port());
+    net::AlternativeService alternative_service(net::kProtoQUIC, "",
+                                                quic_hint.port());
     url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
                                          quic_hint.port());
     main_context_->http_server_properties()->SetAlternativeService(
