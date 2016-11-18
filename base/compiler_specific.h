@@ -157,6 +157,16 @@
 // If available, it would look like:
 //   __attribute__((format(wprintf, format_param, dots_param)))
 
+// Sanitizers annotations.
+#if defined(__has_attribute)
+#if __has_attribute(no_sanitize)
+#define NO_SANITIZE(what) __attribute__((no_sanitize(what)))
+#endif
+#endif
+#if !defined(NO_SANITIZE)
+#define NO_SANITIZE(what)
+#endif
+
 // MemorySanitizer annotations.
 #if defined(MEMORY_SANITIZER) && !defined(OS_NACL)
 #include <sanitizer/msan_interface.h>
