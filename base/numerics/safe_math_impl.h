@@ -57,6 +57,8 @@ struct IntegerForSizeAndSign<8, true> {
 template <>
 struct IntegerForSizeAndSign<8, false> {
   typedef uint64_t type;
+  static_assert(sizeof(uintmax_t) == 8,
+                "Max integer size not supported for this toolchain.");
 };
 
 // WARNING: We have no IntegerForSizeAndSign<16, *>. If we ever add one to
