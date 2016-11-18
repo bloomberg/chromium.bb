@@ -485,8 +485,8 @@ TEST_F(CRWSessionControllerTest,
       [session_controller_ currentEntry]);
 }
 
-// Tests copying session controller state without replacing it.
-TEST_F(CRWSessionControllerTest, CopyStateFromSessionController) {
+// Tests inserting session controller state.
+TEST_F(CRWSessionControllerTest, InsertState) {
   // Add 1 committed and 1 pending entry to target controller.
   [session_controller_ addPendingEntry:GURL("http://www.url.com/2")
                               referrer:web::Referrer()
@@ -505,6 +505,7 @@ TEST_F(CRWSessionControllerTest, CopyStateFromSessionController) {
                                            openedByDOM:NO
                                  openerNavigationIndex:0
                                           browserState:&browser_state_]);
+  [other_session_controller setWindowName:@"test-window"];
   [other_session_controller addPendingEntry:GURL("http://www.url.com/0")
                                    referrer:web::Referrer()
                                  transition:ui::PAGE_TRANSITION_TYPED
@@ -515,13 +516,16 @@ TEST_F(CRWSessionControllerTest, CopyStateFromSessionController) {
                                  transition:ui::PAGE_TRANSITION_TYPED
                           rendererInitiated:NO];
 
-  // Copy and verify the state of target session controller.
+  // Insert and verify the state of target session controller.
   [session_controller_
       insertStateFromSessionController:other_session_controller.get()];
 
+  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
   EXPECT_EQ(2U, [[session_controller_ entries] count]);
   EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
+  EXPECT_EQ(-1, [session_controller_ pendingEntryIndex]);
+
   EXPECT_EQ(GURL("http://www.url.com/0"),
             [session_controller_ URLForSessionAtIndex:0]);
   EXPECT_EQ(GURL("http://www.url.com/2"),
@@ -530,10 +534,91 @@ TEST_F(CRWSessionControllerTest, CopyStateFromSessionController) {
             [[session_controller_ pendingEntry] navigationItem]->GetURL());
 }
 
-// Tests copying session controller state without replacing it. Verifies that
-// pending entry index remains valid.
+// Tests inserting session controller state from empty session controller.
+TEST_F(CRWSessionControllerTest, InsertStateFromEmptySessionController) {
+  // Add 2 committed entries to target controller.
+  [session_controller_ addPendingEntry:GURL("http://www.url.com/0")
+                              referrer:web::Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.url.com/1")
+                              referrer:web::Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+
+  // Create empty source session controller.
+  base::scoped_nsobject<CRWSessionController> other_session_controller(
+      [[CRWSessionController alloc] initWithWindowName:nil
+                                              openerId:nil
+                                           openedByDOM:NO
+                                 openerNavigationIndex:0
+                                          browserState:&browser_state_]);
+  [other_session_controller setWindowName:@"test-window"];
+
+  // Insert and verify the state of target session controller.
+  [session_controller_
+      insertStateFromSessionController:other_session_controller.get()];
+
+  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
+  EXPECT_EQ(2U, [[session_controller_ entries] count]);
+  EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
+  EXPECT_EQ(0, [session_controller_ previousNavigationIndex]);
+  EXPECT_EQ(-1, [session_controller_ pendingEntryIndex]);
+  EXPECT_FALSE([session_controller_ pendingEntry]);
+  EXPECT_EQ(GURL("http://www.url.com/0"),
+            [session_controller_ URLForSessionAtIndex:0]);
+  EXPECT_EQ(GURL("http://www.url.com/1"),
+            [session_controller_ URLForSessionAtIndex:1]);
+}
+
+// Tests inserting session controller state to empty session controller.
+TEST_F(CRWSessionControllerTest, InsertStateToEmptySessionController) {
+  // Create source session controller with 2 committed entries and one
+  // pending entry.
+  base::scoped_nsobject<CRWSessionController> other_session_controller(
+      [[CRWSessionController alloc] initWithWindowName:nil
+                                              openerId:nil
+                                           openedByDOM:NO
+                                 openerNavigationIndex:0
+                                          browserState:&browser_state_]);
+  [other_session_controller setWindowName:@"test-window"];
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/0")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+  [other_session_controller commitPendingEntry];
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/1")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+  [other_session_controller commitPendingEntry];
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/2")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+
+  // Insert and verify the state of target session controller.
+  [session_controller_
+      insertStateFromSessionController:other_session_controller.get()];
+
+  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
+  EXPECT_EQ(2U, [[session_controller_ entries] count]);
+  EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
+  EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
+  EXPECT_EQ(-1, [session_controller_ pendingEntryIndex]);
+  EXPECT_FALSE([session_controller_ pendingEntry]);
+  EXPECT_EQ(GURL("http://www.url.com/0"),
+            [session_controller_ URLForSessionAtIndex:0]);
+  EXPECT_EQ(GURL("http://www.url.com/1"),
+            [session_controller_ URLForSessionAtIndex:1]);
+}
+
+// Tests inserting session controller state. Verifies that pending entry index
+// remains valid.
 TEST_F(CRWSessionControllerTest,
-       CopyStateFromSessionControllerWithPendingEntryIndexInTargetController) {
+       InsertStateWithPendingEntryIndexInTargetController) {
   // Add 2 committed entries and make the first entry pending.
   [session_controller_ addPendingEntry:GURL("http://www.url.com/2")
                               referrer:web::Referrer()
@@ -554,16 +639,18 @@ TEST_F(CRWSessionControllerTest,
                                            openedByDOM:NO
                                  openerNavigationIndex:0
                                           browserState:&browser_state_]);
+  [other_session_controller setWindowName:@"test-window"];
   [other_session_controller addPendingEntry:GURL("http://www.url.com/0")
                                    referrer:web::Referrer()
                                  transition:ui::PAGE_TRANSITION_TYPED
                           rendererInitiated:NO];
   [other_session_controller commitPendingEntry];
 
-  // Copy and verify the state of target session controller.
+  // Insert and verify the state of target session controller.
   [session_controller_
       insertStateFromSessionController:other_session_controller.get()];
 
+  EXPECT_NSEQ(@"test-window", [session_controller_ windowName]);
   EXPECT_EQ(3U, [[session_controller_ entries] count]);
   EXPECT_EQ(2, [session_controller_ currentNavigationIndex]);
   EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);

@@ -571,58 +571,31 @@ NSString* const kWindowNameKey = @"windowName";
   return _pendingEntry != nil;
 }
 
-- (void)insertStateFromSessionController:(CRWSessionController*)other {
-  [self copyStateFromAndPrune:other replaceState:NO];
-}
+- (void)insertStateFromSessionController:(CRWSessionController*)sourceSession {
+  DCHECK(sourceSession);
+  self.windowName = sourceSession.windowName;
 
-- (void)copyStateFromAndPrune:(CRWSessionController*)otherSession
-                 replaceState:(BOOL)replaceState {
-  DCHECK(otherSession);
-  if (replaceState) {
-    [_entries removeAllObjects];
-    self.currentNavigationIndex = -1;
-    _previousNavigationIndex = -1;
-    _pendingEntryIndex = -1;
-  }
-  self.windowName = otherSession.windowName;
-  NSInteger numInitialEntries = [_entries count];
+  // The other session may not have any entries, in which case there is nothing
+  // to insert.  The other session's currentNavigationEntry will be bogus
+  // in such cases, so ignore it and return early.
+  NSArray* sourceEntries = sourceSession.entries;
+  if (!sourceEntries.count)
+    return;
 
   // Cycle through the entries from the other session and insert them before any
   // entries from this session.  Do not copy anything that comes after the other
-  // session's current entry unless replaceState is true.
-  NSArray* otherEntries = [otherSession entries];
-
-  // The other session may not have any entries, in which case there is nothing
-  // to copy or prune.  The other session's currentNavigationEntry will be bogus
-  // in such cases, so ignore it and return early.
-  // TODO(rohitrao): Do we need to copy over any pending entries?  We might not
-  // add the prerendered page into the back/forward history if we don't copy
-  // pending entries.
-  if (![otherEntries count])
-    return;
-
-  NSInteger maxCopyIndex = replaceState ? [otherEntries count] - 1 :
-                                          [otherSession currentNavigationIndex];
-  for (NSInteger i = 0; i <= maxCopyIndex; ++i) {
-    [_entries insertObject:[otherEntries objectAtIndex:i] atIndex:i];
-    ++_currentNavigationIndex;
-    _previousNavigationIndex = -1;
+  // session's current entry.
+  NSInteger lastIndexToCopy = sourceSession.currentNavigationIndex;
+  for (NSInteger i = 0; i <= lastIndexToCopy; ++i) {
+    [_entries insertObject:sourceEntries[i] atIndex:i];
   }
 
+  _previousNavigationIndex = -1;
+  _currentNavigationIndex += lastIndexToCopy + 1;
   if (_pendingEntryIndex != -1)
-    _pendingEntryIndex += maxCopyIndex + 1;
+    _pendingEntryIndex += lastIndexToCopy + 1;
 
-  // If this CRWSessionController has no entries initially, reset
-  // |currentNavigationIndex_| to be in bounds.
-  if (!numInitialEntries) {
-    if (replaceState) {
-      self.currentNavigationIndex = [otherSession currentNavigationIndex];
-      _previousNavigationIndex = [otherSession previousNavigationIndex];
-    } else {
-      self.currentNavigationIndex = maxCopyIndex;
-    }
-  }
-  DCHECK_LT((NSUInteger)_currentNavigationIndex, [_entries count]);
+  DCHECK_LT(static_cast<NSUInteger>(_currentNavigationIndex), _entries.count);
   DCHECK(_pendingEntryIndex == -1 || _pendingEntry);
 }
 
