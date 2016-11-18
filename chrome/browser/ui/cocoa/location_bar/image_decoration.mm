@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 
 // The amount of horizontal padding around the image.
-const CGFloat kImageHorizontalPadding = 9.0;
+const CGFloat kImageHorizontalPadding = 10.0;
 
 ImageDecoration::ImageDecoration() {
 }

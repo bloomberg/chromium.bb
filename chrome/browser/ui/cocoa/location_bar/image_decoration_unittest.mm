@@ -33,7 +33,7 @@ TEST_F(ImageDecorationTest, SetGetImage) {
 TEST_F(ImageDecorationTest, GetWidthForSpace) {
   const CGFloat kWide = 100.0;
   const CGFloat kNarrow = 10.0;
-  const CGFloat kImageHorizontalPadding = 9.0;
+  const CGFloat kImageHorizontalPadding = 10.0;
 
   // Decoration with no image is omitted.
   EXPECT_EQ(decoration_.GetWidthForSpace(kWide),

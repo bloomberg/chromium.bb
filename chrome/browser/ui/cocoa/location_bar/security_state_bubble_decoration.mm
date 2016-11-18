@@ -43,6 +43,7 @@ const CGFloat kRetinaBaselineOffset = 0.5;
 
 // The info-bubble point should look like it points to the bottom of the lock
 // icon. Determined with Pixie.app.
+const CGFloat kPageInfoBubblePointXOffset = 5.0;
 const CGFloat kPageInfoBubblePointYOffset = 6.0;
 
 // Minimum acceptable width for the ev bubble.
@@ -273,7 +274,7 @@ bool SecurityStateBubbleDecoration::AcceptsMousePress() {
 
 NSPoint SecurityStateBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
   NSRect image_rect = GetImageRectInFrame(frame);
-  return NSMakePoint(NSMidX(image_rect),
+  return NSMakePoint(NSMidX(image_rect) + kPageInfoBubblePointXOffset,
                      NSMaxY(image_rect) - kPageInfoBubblePointYOffset);
 }
 
