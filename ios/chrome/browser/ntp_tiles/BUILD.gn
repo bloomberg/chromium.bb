@@ -15,6 +15,7 @@ source_set("ntp_tiles") {
     "//components/image_fetcher",
     "//components/keyed_service/core",
     "//components/ntp_tiles",
+    "//components/ntp_tiles:json_unsafe_parser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",

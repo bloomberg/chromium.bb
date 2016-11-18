@@ -10,13 +10,12 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
@@ -48,42 +47,6 @@ using TestPopularSiteVector = std::vector<TestPopularSite>;
 ::testing::Matcher<const GURL&> URLEq(const std::string& s) {
   return ::testing::Eq(GURL(s));
 }
-
-// Copied from iOS code. Perhaps should be in a shared location.
-class JsonUnsafeParser {
- public:
-  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
-  using ErrorCallback = base::Callback<void(const std::string&)>;
-
-  // As with SafeJsonParser, runs either success_callback or error_callback on
-  // the calling thread, but not before the call returns.
-  static void Parse(const std::string& unsafe_json,
-                    const SuccessCallback& success_callback,
-                    const ErrorCallback& error_callback) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            [](const std::string& unsafe_json,
-               const SuccessCallback& success_callback,
-               const ErrorCallback& error_callback) {
-              std::string error_msg;
-              int error_line, error_column;
-              std::unique_ptr<base::Value> value =
-                  base::JSONReader::ReadAndReturnError(
-                      unsafe_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-                      &error_msg, &error_line, &error_column);
-              if (value) {
-                success_callback.Run(std::move(value));
-              } else {
-                error_callback.Run(base::StringPrintf(
-                    "%s (%d:%d)", error_msg.c_str(), error_line, error_column));
-              }
-            },
-            unsafe_json, success_callback, error_callback));
-  }
-
-  JsonUnsafeParser() = delete;
-};
 
 class PopularSitesTest : public ::testing::Test {
  protected:
