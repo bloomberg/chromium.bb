@@ -27,8 +27,6 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
                            unsigned resourceId);
   void releasePlaceholderFrame();
 
-  virtual void setSize(const IntSize&) = 0;
-
   static OffscreenCanvasPlaceholder* getPlaceholderById(unsigned placeholderId);
 
   void registerPlaceholder(unsigned placeholderId);

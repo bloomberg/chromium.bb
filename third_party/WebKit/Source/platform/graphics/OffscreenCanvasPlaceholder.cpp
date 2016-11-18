@@ -73,7 +73,6 @@ void OffscreenCanvasPlaceholder::setPlaceholderFrame(
   m_frameDispatcher = std::move(dispatcher);
   m_frameDispatcherTaskRunner = std::move(taskRunner);
   m_placeholderFrameResourceId = resourceId;
-  setSize(m_placeholderFrame->size());
 }
 
 void OffscreenCanvasPlaceholder::releasePlaceholderFrame() {

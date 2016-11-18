@@ -177,27 +177,10 @@ Node::InsertionNotificationRequest HTMLCanvasElement::insertedInto(
 }
 
 void HTMLCanvasElement::setHeight(int value, ExceptionState& exceptionState) {
-  if (surfaceLayerBridge()) {
-    // The existence of surfaceLayerBridge indicates that
-    // canvas.transferControlToOffscreen has been called.
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Resizing is not allowed for a canvas "
-                                     "that has transferred its control to "
-                                     "offscreen.");
-    return;
-  }
   setIntegralAttribute(heightAttr, value);
 }
 
 void HTMLCanvasElement::setWidth(int value, ExceptionState& exceptionState) {
-  if (surfaceLayerBridge()) {
-    // Same comment as above.
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Resizing is not allowed for a canvas "
-                                     "that has transferred its control to "
-                                     "offscreen.");
-    return;
-  }
   setIntegralAttribute(widthAttr, value);
 }
 
@@ -1266,6 +1249,8 @@ FloatSize HTMLCanvasElement::elementSize(const FloatSize&) const {
       return FloatSize(image->width(), image->height());
     return FloatSize(0, 0);
   }
+  if (placeholderFrame())
+    return FloatSize(placeholderFrame()->size());
   return FloatSize(width(), height());
 }
 

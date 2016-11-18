@@ -49,13 +49,7 @@ test(function() {
     assert_throws("InvalidStateError", function() {
         canvas4.getContext("2d");
     }, "canvas.getContext() is not allowed after transferring control to offscreen.");
-    assert_throws("InvalidStateError", function() {
-        canvas4.height = 20;
-    }, "canvas resizing height is not allowed after transferring control to offscreen.");
-    assert_throws("InvalidStateError", function() {
-        canvas4.width = 20;
-    }, "canvas resizing width is not allowed after transferring control to offscreen.");
-}, "Test if modifying canvas after it transfers controls to offscreen throw exceptions");
+}, "Test that getContext throw an exception if called after transferControlToOffscreen.");
 
 </script>
 </body>
