@@ -4,19 +4,26 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTableRow TR id='target'",
+      "position": [8, 96],
+      "bounds": [184, 64],
       "drawsContent": true,
+      "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCol COL id='target'",
-          "rect": [8, 26, 186, 134],
+          "object": "LayoutTableRow TR id='target'",
+          "rect": [0, 0, 184, 64],
           "reason": "style change"
         }
       ]
     },
     {
       "name": "LayoutTableCell TD",
-      "position": [72, 94],
-      "bounds": [59, 64],
+      "position": [63, 0],
+      "bounds": [58, 64],
       "drawsContent": true
     }
   ],
@@ -30,7 +37,11 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutTableCol COL id='target'",
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR id='target'",
       "reason": "style change"
     }
   ]

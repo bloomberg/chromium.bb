@@ -8,14 +8,20 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableCol COL id='target'",
-          "rect": [8, 26, 186, 134],
+          "rect": [8, 28, 184, 134],
           "reason": "style change"
         }
       ]
     },
     {
       "name": "LayoutTableCell TD",
-      "position": [72, 94],
+      "position": [71, 96],
+      "bounds": [58, 64],
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTableCell TD",
+      "position": [131, 96],
       "bounds": [59, 64],
       "drawsContent": true
     }
@@ -23,6 +29,14 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "RowBackground",
       "reason": "style change"
     },
     {
