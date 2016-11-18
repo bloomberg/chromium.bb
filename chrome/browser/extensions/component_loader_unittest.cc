@@ -134,47 +134,46 @@ TEST_F(ComponentLoaderTest, ParseManifest) {
   std::unique_ptr<base::DictionaryValue> manifest;
 
   // Test invalid JSON.
-  manifest.reset(
-      component_loader_.ParseManifest("{ 'test': 3 } invalid"));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("{ 'test': 3 } invalid");
+  EXPECT_FALSE(manifest);
 
   // Test manifests that are valid JSON, but don't have an object literal
   // at the root. ParseManifest() should always return NULL.
 
-  manifest.reset(component_loader_.ParseManifest(std::string()));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest(std::string());
+  EXPECT_FALSE(manifest);
 
-  manifest.reset(component_loader_.ParseManifest("[{ \"foo\": 3 }]"));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("[{ \"foo\": 3 }]");
+  EXPECT_FALSE(manifest);
 
-  manifest.reset(component_loader_.ParseManifest("\"Test\""));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("\"Test\"");
+  EXPECT_FALSE(manifest);
 
-  manifest.reset(component_loader_.ParseManifest("42"));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("42");
+  EXPECT_FALSE(manifest);
 
-  manifest.reset(component_loader_.ParseManifest("true"));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("true");
+  EXPECT_FALSE(manifest);
 
-  manifest.reset(component_loader_.ParseManifest("false"));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("false");
+  EXPECT_FALSE(manifest);
 
-  manifest.reset(component_loader_.ParseManifest("null"));
-  EXPECT_FALSE(manifest.get());
+  manifest = component_loader_.ParseManifest("null");
+  EXPECT_FALSE(manifest);
 
   // Test parsing valid JSON.
 
   int value = 0;
-  manifest.reset(component_loader_.ParseManifest(
-      "{ \"test\": { \"one\": 1 }, \"two\": 2 }"));
-  ASSERT_TRUE(manifest.get());
+  manifest = component_loader_.ParseManifest(
+      "{ \"test\": { \"one\": 1 }, \"two\": 2 }");
+  ASSERT_TRUE(manifest);
   EXPECT_TRUE(manifest->GetInteger("test.one", &value));
   EXPECT_EQ(1, value);
   ASSERT_TRUE(manifest->GetInteger("two", &value));
   EXPECT_EQ(2, value);
 
   std::string string_value;
-  manifest.reset(component_loader_.ParseManifest(manifest_contents_));
+  manifest = component_loader_.ParseManifest(manifest_contents_);
   ASSERT_TRUE(manifest->GetString("background.page", &string_value));
   EXPECT_EQ("backgroundpage.html", string_value);
 }

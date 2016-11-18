@@ -111,15 +111,32 @@ bool IsNormalSession() {
 }  // namespace
 
 ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
-    const base::DictionaryValue* manifest, const base::FilePath& directory)
-    : manifest(manifest),
-      root_directory(directory) {
+    std::unique_ptr<base::DictionaryValue> manifest_param,
+    const base::FilePath& directory)
+    : manifest(std::move(manifest_param)), root_directory(directory) {
   if (!root_directory.IsAbsolute()) {
     CHECK(PathService::Get(chrome::DIR_RESOURCES, &root_directory));
     root_directory = root_directory.Append(directory);
   }
-  extension_id = GenerateId(manifest, root_directory);
+  extension_id = GenerateId(manifest.get(), root_directory);
 }
+
+ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
+    ComponentExtensionInfo&& other)
+    : manifest(std::move(other.manifest)),
+      root_directory(std::move(other.root_directory)),
+      extension_id(std::move(other.extension_id)) {}
+
+ComponentLoader::ComponentExtensionInfo&
+ComponentLoader::ComponentExtensionInfo::operator=(
+    ComponentExtensionInfo&& other) {
+  manifest = std::move(other.manifest);
+  root_directory = std::move(other.root_directory);
+  extension_id = std::move(other.extension_id);
+  return *this;
+}
+
+ComponentLoader::ComponentExtensionInfo::~ComponentExtensionInfo() {}
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
                                  PrefService* profile_prefs,
@@ -133,54 +150,26 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
       weak_factory_(this) {}
 
 ComponentLoader::~ComponentLoader() {
-  ClearAllRegistered();
 }
 
 void ComponentLoader::LoadAll() {
   TRACE_EVENT0("browser,startup", "ComponentLoader::LoadAll");
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.LoadAllComponentTime");
 
-  for (RegisteredComponentExtensions::iterator it =
-          component_extensions_.begin();
-      it != component_extensions_.end(); ++it) {
-    Load(*it);
-  }
+  for (const auto& component_extension : component_extensions_)
+    Load(component_extension);
 }
 
-base::DictionaryValue* ComponentLoader::ParseManifest(
+std::unique_ptr<base::DictionaryValue> ComponentLoader::ParseManifest(
     base::StringPiece manifest_contents) const {
   JSONStringValueDeserializer deserializer(manifest_contents);
   std::unique_ptr<base::Value> manifest = deserializer.Deserialize(NULL, NULL);
 
   if (!manifest.get() || !manifest->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Failed to parse extension manifest.";
-    return NULL;
+    return std::unique_ptr<base::DictionaryValue>();
   }
-  // Transfer ownership to the caller.
-  return static_cast<base::DictionaryValue*>(manifest.release());
-}
-
-void ComponentLoader::ClearAllRegistered() {
-  for (RegisteredComponentExtensions::iterator it =
-          component_extensions_.begin();
-      it != component_extensions_.end(); ++it) {
-      delete it->manifest;
-  }
-
-  component_extensions_.clear();
-}
-
-std::string ComponentLoader::GetExtensionID(
-    int manifest_resource_id,
-    const base::FilePath& root_directory) {
-  base::DictionaryValue* manifest =
-      ParseManifest(ResourceBundle::GetSharedInstance().GetRawDataResource(
-          manifest_resource_id));
-  if (!manifest)
-    return std::string();
-
-  ComponentExtensionInfo info(manifest, root_directory);
-  return info.extension_id;
+  return base::DictionaryValue::From(std::move(manifest));
 }
 
 std::string ComponentLoader::Add(int manifest_resource_id,
@@ -205,25 +194,28 @@ std::string ComponentLoader::Add(const base::StringPiece& manifest_contents,
                                  bool skip_whitelist) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
-  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
+  std::unique_ptr<base::DictionaryValue> manifest =
+      ParseManifest(manifest_contents);
   if (manifest)
-    return Add(manifest, root_directory, skip_whitelist);
+    return Add(std::move(manifest), root_directory, skip_whitelist);
   return std::string();
 }
 
-std::string ComponentLoader::Add(const base::DictionaryValue* parsed_manifest,
-                                 const base::FilePath& root_directory,
-                                 bool skip_whitelist) {
-  ComponentExtensionInfo info(parsed_manifest, root_directory);
+std::string ComponentLoader::Add(
+    std::unique_ptr<base::DictionaryValue> parsed_manifest,
+    const base::FilePath& root_directory,
+    bool skip_whitelist) {
+  ComponentExtensionInfo info(std::move(parsed_manifest), root_directory);
   if (!ignore_whitelist_for_testing_ &&
       !skip_whitelist &&
       !IsComponentExtensionWhitelisted(info.extension_id))
     return std::string();
 
-  component_extensions_.push_back(info);
+  component_extensions_.push_back(std::move(info));
+  ComponentExtensionInfo& added_info = component_extensions_.back();
   if (extension_service_->is_ready())
-    Load(info);
-  return info.extension_id;
+    Load(added_info);
+  return added_info.extension_id;
 }
 
 std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
@@ -240,15 +232,13 @@ std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
 
   // We don't check component extensions loaded by path because this is only
   // used by developers for testing.
-  return Add(manifest.release(), absolute_path, true);
+  return Add(std::move(manifest), absolute_path, true);
 }
 
 void ComponentLoader::Reload(const std::string& extension_id) {
-  for (RegisteredComponentExtensions::iterator it =
-         component_extensions_.begin(); it != component_extensions_.end();
-         ++it) {
-    if (it->extension_id == extension_id) {
-      Load(*it);
+  for (const auto& component_extension : component_extensions_) {
+    if (component_extension.extension_id == extension_id) {
+      Load(component_extension);
       break;
     }
   }
@@ -268,32 +258,31 @@ void ComponentLoader::Load(const ComponentExtensionInfo& info) {
 
 void ComponentLoader::Remove(const base::FilePath& root_directory) {
   // Find the ComponentExtensionInfo for the extension.
-  RegisteredComponentExtensions::iterator it = component_extensions_.begin();
-  for (; it != component_extensions_.end(); ++it) {
-    if (it->root_directory == root_directory) {
-      Remove(GenerateId(it->manifest, root_directory));
+  for (const auto& component_extension : component_extensions_) {
+    if (component_extension.root_directory == root_directory) {
+      Remove(GenerateId(component_extension.manifest.get(), root_directory));
       break;
     }
   }
 }
 
 void ComponentLoader::Remove(const std::string& id) {
-  RegisteredComponentExtensions::iterator it = component_extensions_.begin();
-  for (; it != component_extensions_.end(); ++it) {
+  for (RegisteredComponentExtensions::iterator it =
+           component_extensions_.begin();
+       it != component_extensions_.end(); ++it) {
     if (it->extension_id == id) {
       UnloadComponent(&(*it));
-      it = component_extensions_.erase(it);
+      component_extensions_.erase(it);
       break;
     }
   }
 }
 
 bool ComponentLoader::Exists(const std::string& id) const {
-  RegisteredComponentExtensions::const_iterator it =
-      component_extensions_.begin();
-  for (; it != component_extensions_.end(); ++it)
-    if (it->extension_id == id)
+  for (const auto& component_extension : component_extensions_) {
+    if (component_extension.extension_id == id)
       return true;
+  }
   return false;
 }
 
@@ -400,12 +389,13 @@ void ComponentLoader::AddWithNameAndDescription(
 
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
-  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
+  std::unique_ptr<base::DictionaryValue> manifest =
+      ParseManifest(manifest_contents);
 
   if (manifest) {
     manifest->SetString(manifest_keys::kName, name_string);
     manifest->SetString(manifest_keys::kDescription, description_string);
-    Add(manifest, root_directory, true);
+    Add(std::move(manifest), root_directory, true);
   }
 }
 
@@ -638,7 +628,6 @@ void ComponentLoader::
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
-  delete component->manifest;
   if (extension_service_->is_ready()) {
     extension_service_->
         RemoveComponentExtension(component->extension_id);
@@ -692,10 +681,8 @@ void ComponentLoader::FinishAddComponentFromDir(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!manifest)
     return;  // Error already logged.
-  std::string actual_extension_id = Add(
-      manifest.release(),
-      root_directory,
-      false);
+  std::string actual_extension_id =
+      Add(std::move(manifest), root_directory, false);
   CHECK_EQ(extension_id, actual_extension_id);
   if (!done_cb.is_null())
     done_cb.Run();
