@@ -505,8 +505,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool widthAvailableToChildrenHasChanged();
 
  protected:
-  bool isPageLogicalHeightKnown(LayoutUnit logicalOffset) const {
-    return pageLogicalHeightForOffset(logicalOffset);
+  bool isPageLogicalHeightKnown() const {
+    return pageLogicalHeightForOffset(LayoutUnit());
   }
 
   // Returns the logical offset at the top of the next page, for a given offset.

@@ -1814,8 +1814,7 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
   // If margins would pull us past the top of the next page, then we need to
   // pull back and pretend like the margins collapsed into the page edge.
   LayoutState* layoutState = view()->layoutState();
-  if (layoutState->isPaginated() &&
-      isPageLogicalHeightKnown(beforeCollapseLogicalTop) &&
+  if (layoutState->isPaginated() && isPageLogicalHeightKnown() &&
       logicalTop > beforeCollapseLogicalTop) {
     LayoutUnit oldLogicalTop = logicalTop;
     logicalTop =
@@ -2107,7 +2106,7 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(
   // Adjust logicalTopEstimate down to the next page if the margins are so large
   // that we don't fit on the current page.
   LayoutState* layoutState = view()->layoutState();
-  if (layoutState->isPaginated() && isPageLogicalHeightKnown(logicalHeight()) &&
+  if (layoutState->isPaginated() && isPageLogicalHeightKnown() &&
       logicalTopEstimate > logicalHeight())
     logicalTopEstimate =
         std::min(logicalTopEstimate, nextPageLogicalTop(logicalHeight()));
