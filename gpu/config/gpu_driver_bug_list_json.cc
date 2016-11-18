@@ -2212,7 +2212,7 @@ LONG_STRING_CONST(
     {
       "id": 204,
       "cr_bugs": [665656],
-      "description": "Hardware readback from 2D canvas flaky on Mac Intel",
+      "description": "Hardware readback from 2D canvas to WebGL texture is flaky on Mac Intel",
       "os": {
         "type": "macosx"
       },
