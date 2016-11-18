@@ -88,11 +88,17 @@ void WatchTimeReporter::OnVolumeChange(double volume) {
 }
 
 void WatchTimeReporter::OnShown() {
+  if (!has_video_)
+    return;
+
   is_visible_ = true;
   MaybeStartReportingTimer(get_media_time_cb_.Run());
 }
 
 void WatchTimeReporter::OnHidden() {
+  if (!has_video_)
+    return;
+
   is_visible_ = false;
   MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
 }
@@ -116,11 +122,12 @@ void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
 }
 
 bool WatchTimeReporter::ShouldReportWatchTime() {
-  // Only report watch time for media of sufficient size with both audio and
-  // video tracks present.
-  return has_audio_ && has_video_ &&
-         initial_video_size_.height() >= kMinimumVideoSize.height() &&
-         initial_video_size_.width() >= kMinimumVideoSize.width();
+  // Report listen time or watch time only for tracks that are audio-only or
+  // have both an audio and video track of sufficient size.
+  return (!has_video_ && has_audio_) ||
+         (has_video_ && has_audio_ &&
+          initial_video_size_.height() >= kMinimumVideoSize.height() &&
+          initial_video_size_.width() >= kMinimumVideoSize.width());
 }
 
 void WatchTimeReporter::MaybeStartReportingTimer(
@@ -199,17 +206,25 @@ void WatchTimeReporter::UpdateWatchTime() {
         media_log_->CreateEvent(MediaLogEvent::Type::WATCH_TIME_UPDATE);
 
     log_event->params.SetDoubleWithoutPathExpansion(
-        MediaLog::kWatchTimeAudioVideoAll, elapsed.InSecondsF());
+        has_video_ ? MediaLog::kWatchTimeAudioVideoAll
+                   : MediaLog::kWatchTimeAudioAll,
+        elapsed.InSecondsF());
     if (is_mse_) {
       log_event->params.SetDoubleWithoutPathExpansion(
-          MediaLog::kWatchTimeAudioVideoMse, elapsed.InSecondsF());
+          has_video_ ? MediaLog::kWatchTimeAudioVideoMse
+                     : MediaLog::kWatchTimeAudioMse,
+          elapsed.InSecondsF());
     } else {
       log_event->params.SetDoubleWithoutPathExpansion(
-          MediaLog::kWatchTimeAudioVideoSrc, elapsed.InSecondsF());
+          has_video_ ? MediaLog::kWatchTimeAudioVideoSrc
+                     : MediaLog::kWatchTimeAudioSrc,
+          elapsed.InSecondsF());
     }
     if (is_encrypted_) {
       log_event->params.SetDoubleWithoutPathExpansion(
-          MediaLog::kWatchTimeAudioVideoEme, elapsed.InSecondsF());
+          has_video_ ? MediaLog::kWatchTimeAudioVideoEme
+                     : MediaLog::kWatchTimeAudioEme,
+          elapsed.InSecondsF());
     }
 
     // Record watch time using the last known value for |is_on_battery_power_|;
@@ -225,10 +240,14 @@ void WatchTimeReporter::UpdateWatchTime() {
     if (elapsed_power >= kMinimumElapsedWatchTime) {
       if (is_on_battery_power_) {
         log_event->params.SetDoubleWithoutPathExpansion(
-            MediaLog::kWatchTimeAudioVideoBattery, elapsed_power.InSecondsF());
+            has_video_ ? MediaLog::kWatchTimeAudioVideoBattery
+                       : MediaLog::kWatchTimeAudioBattery,
+            elapsed_power.InSecondsF());
       } else {
         log_event->params.SetDoubleWithoutPathExpansion(
-            MediaLog::kWatchTimeAudioVideoAc, elapsed_power.InSecondsF());
+            has_video_ ? MediaLog::kWatchTimeAudioVideoAc
+                       : MediaLog::kWatchTimeAudioAc,
+            elapsed_power.InSecondsF());
       }
     }
 

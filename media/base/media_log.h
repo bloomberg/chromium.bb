@@ -84,6 +84,12 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   void SetBooleanProperty(const std::string& key, bool value);
 
   // Histogram names used for reporting; also double as MediaLog key names.
+  static const char kWatchTimeAudioAll[];
+  static const char kWatchTimeAudioMse[];
+  static const char kWatchTimeAudioEme[];
+  static const char kWatchTimeAudioSrc[];
+  static const char kWatchTimeAudioBattery[];
+  static const char kWatchTimeAudioAc[];
   static const char kWatchTimeAudioVideoAll[];
   static const char kWatchTimeAudioVideoMse[];
   static const char kWatchTimeAudioVideoEme[];

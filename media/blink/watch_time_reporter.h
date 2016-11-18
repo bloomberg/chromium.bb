@@ -17,20 +17,19 @@
 namespace media {
 
 // Class for monitoring and reporting watch time in response to various state
-// changes during the playback of media. At present we are only recording the
-// watch time for audio+video playbacks.
-// TODO(dalecurtis): We want to introduce a similar "listening time" metric in
-// the near future to track audio only cases.
+// changes during the playback of media. We record metrics for audio only
+// playbacks as well as audio+video playbacks of sufficient size.
 //
 // Watch time for our purposes is defined as the amount of elapsed media time
-// for audio+video media. A minimum of 7 seconds of unmuted, foreground media
-// must be watched to start watch time monitoring. Watch time is checked every
-// 5 seconds from then on and reported to multiple buckets: All, MSE, SRC, EME,
-// AC, and battery.
+// for audio only or audio+video media. A minimum of 7 seconds of unmuted,
+// foreground (where this is video) media must be watched to start watch time
+// monitoring. Watch time is checked every 5 seconds from then on and reported
+// to multiple buckets: All, MSE, SRC, EME, AC, and battery.
 //
-// Any one of paused, hidden, or muted is sufficient to stop watch time metric
-// reports. Each of these has a hysteresis where if the state change is undone
-// within 5 seconds, the watch time will be counted as uninterrupted.
+// Any one of paused, hidden (where this is video), or muted is sufficient to
+// stop watch time metric reports. Each of these has a hysteresis where if the
+// state change is undone within 5 seconds, the watch time will be counted as
+// uninterrupted.
 //
 // Power events (on/off battery power) have a similar hysteresis, but unlike
 // the aforementioned properties, will not stop metric collection.

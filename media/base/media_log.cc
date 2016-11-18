@@ -16,6 +16,7 @@ namespace media {
 // unique IDs.
 static base::StaticAtomicSequenceNumber g_media_log_count;
 
+// Audio+video watch time metrics.
 const char MediaLog::kWatchTimeAudioVideoAll[] =
     "Media.WatchTime.AudioVideo.All";
 const char MediaLog::kWatchTimeAudioVideoMse[] =
@@ -27,6 +28,14 @@ const char MediaLog::kWatchTimeAudioVideoSrc[] =
 const char MediaLog::kWatchTimeAudioVideoBattery[] =
     "Media.WatchTime.AudioVideo.Battery";
 const char MediaLog::kWatchTimeAudioVideoAc[] = "Media.WatchTime.AudioVideo.AC";
+
+// Audio only "watch time" metrics.
+const char MediaLog::kWatchTimeAudioAll[] = "Media.WatchTime.Audio.All";
+const char MediaLog::kWatchTimeAudioMse[] = "Media.WatchTime.Audio.MSE";
+const char MediaLog::kWatchTimeAudioEme[] = "Media.WatchTime.Audio.EME";
+const char MediaLog::kWatchTimeAudioSrc[] = "Media.WatchTime.Audio.SRC";
+const char MediaLog::kWatchTimeAudioBattery[] = "Media.WatchTime.Audio.Battery";
+const char MediaLog::kWatchTimeAudioAc[] = "Media.WatchTime.Audio.AC";
 
 const char MediaLog::kWatchTimeFinalize[] = "FinalizeWatchTime";
 const char MediaLog::kWatchTimeFinalizePower[] = "FinalizePowerWatchTime";

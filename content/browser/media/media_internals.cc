@@ -335,7 +335,8 @@ class MediaInternals::MediaInternalsUMAHandler {
   }
 
   enum class FinalizeType { EVERYTHING, POWER_ONLY };
-  void FinalizeWatchTime(WatchTimeInfo* watch_time_info,
+  void FinalizeWatchTime(bool has_video,
+                         WatchTimeInfo* watch_time_info,
                          FinalizeType finalize_type) {
 // Use a macro instead of a function so we can use the histogram macro (which
 // checks that the uma name is a static value). We use a custom time range for
@@ -348,16 +349,29 @@ class MediaInternals::MediaInternalsUMAHandler {
     watch_time_info->watch_time = media::kNoTimestamp;                        \
   }
 
-    if (finalize_type == FinalizeType::EVERYTHING) {
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAll, all_watch_time);
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoMse, mse_watch_time);
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEme, eme_watch_time);
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoSrc, src_watch_time);
+    if (has_video) {
+      if (finalize_type == FinalizeType::EVERYTHING) {
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAll, all_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoMse, mse_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEme, eme_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoSrc, src_watch_time);
+      } else {
+        DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
+      }
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoBattery, battery_watch_time);
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAc, ac_watch_time);
     } else {
-      DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
+      if (finalize_type == FinalizeType::EVERYTHING) {
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioAll, all_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioMse, mse_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioEme, eme_watch_time);
+        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioSrc, src_watch_time);
+      } else {
+        DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
+      }
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioBattery, battery_watch_time);
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioAc, ac_watch_time);
     }
-    MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoBattery, battery_watch_time);
-    MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAc, ac_watch_time);
 #undef MAYBE_RECORD_WATCH_TIME
   }
 
@@ -425,7 +439,23 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
       break;
     case media::MediaLogEvent::Type::WATCH_TIME_UPDATE: {
       DVLOG(2) << "Processing watch time update.";
-      WatchTimeInfo& wti = player_info[event.id].watch_time_info;
+      PipelineInfo& info = player_info[event.id];
+      WatchTimeInfo& wti = info.watch_time_info;
+      // Save audio only watch time information.
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioAll,
+                         &wti.all_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioMse,
+                         &wti.mse_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioEme,
+                         &wti.eme_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioSrc,
+                         &wti.src_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioBattery,
+                         &wti.battery_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioAc,
+                         &wti.ac_watch_time);
+
+      // Save audio+video watch time information.
       MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAll,
                          &wti.all_watch_time);
       MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoMse,
@@ -444,14 +474,14 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
         DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalize,
                                        &should_finalize) &&
                should_finalize);
-        FinalizeWatchTime(&wti, FinalizeType::EVERYTHING);
+        FinalizeWatchTime(info.has_video, &wti, FinalizeType::EVERYTHING);
       } else if (event.params.HasKey(
                      media::MediaLog::kWatchTimeFinalizePower)) {
         bool should_finalize;
         DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalizePower,
                                        &should_finalize) &&
                should_finalize);
-        FinalizeWatchTime(&wti, FinalizeType::POWER_ONLY);
+        FinalizeWatchTime(info.has_video, &wti, FinalizeType::POWER_ONLY);
       }
       break;
     }
@@ -554,7 +584,8 @@ void MediaInternals::MediaInternalsUMAHandler::OnProcessTerminated(
   auto it = players_it->second.begin();
   while (it != players_it->second.end()) {
     ReportUMAForPipelineStatus(it->second);
-    FinalizeWatchTime(&(it->second.watch_time_info), FinalizeType::EVERYTHING);
+    FinalizeWatchTime(it->second.has_video, &(it->second.watch_time_info),
+                      FinalizeType::EVERYTHING);
     players_it->second.erase(it++);
   }
   renderer_info_.erase(players_it);
