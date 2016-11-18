@@ -1438,6 +1438,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WAKE_ON_PACKETS_DESCRIPTION, kOsCrOSOwnerOnly,
      SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnWifiPacket)},
 #endif  // OS_CHROMEOS
+    {"enable-memory-coordinator", IDS_FLAGS_MEMORY_COORDINATOR_NAME,
+     IDS_FLAGS_MEMORY_COORDINATOR_DESCRIPTION,
+     kOsAndroid | kOsCrOS | kOsLinux | kOsWin,
+     FEATURE_VALUE_TYPE(features::kMemoryCoordinator)},
     {"enable-tab-audio-muting", IDS_FLAGS_TAB_AUDIO_MUTING_NAME,
      IDS_FLAGS_TAB_AUDIO_MUTING_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableTabAudioMuting)},

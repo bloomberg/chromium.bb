@@ -6433,6 +6433,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SPECULATIVE_LAUNCH_SERVICE_WORKER_DESCRIPTION" desc="Description of the about::flags setting for speculative launch of service workers.">
         Speculatively launch service workers using touch and mouse events.
       </message>
+      <message name="IDS_FLAGS_MEMORY_COORDINATOR_NAME" desc="An about::flags experiment title to enable/disable memory coordinator">
+        Memory coordinator
+      </message>
+      <message name="IDS_FLAGS_MEMORY_COORDINATOR_DESCRIPTION" desc="Description of an about::flags to enable/disable memory coordinator">
+        Enable memory coordinator instead of memory pressure listeners.
+      </message>
 
       <!-- Data Reduction Proxy -->
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about:flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
