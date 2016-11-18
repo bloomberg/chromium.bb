@@ -29,8 +29,10 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   Element* elm = query->queryFirst(*document);
   EXPECT_EQ(nullptr, elm);
 
-  selectorList = CSSParser::parseSelector(CSSParserContext(*document, nullptr),
-                                          nullptr, "span");
+  selectorList = CSSParser::parseSelector(
+      CSSParserContext(*document, nullptr, KURL(), emptyString(),
+                       CSSParserContext::StaticProfile),
+      nullptr, "span");
   query = SelectorQuery::adopt(std::move(selectorList));
   elm = query->queryFirst(*document);
   EXPECT_NE(nullptr, elm);
@@ -46,7 +48,9 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   document->body()->beginParsingChildren();
 
   CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext(*document, nullptr), nullptr, "p:last-of-type");
+      CSSParserContext(*document, nullptr, KURL(), emptyString(),
+                       CSSParserContext::StaticProfile),
+      nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::adopt(std::move(selectorList));
   Element* elm = query->queryFirst(*document);
