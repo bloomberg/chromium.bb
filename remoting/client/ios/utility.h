@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_IOS_UTILITY_H_
-#define REMOTING_IOS_UTILITY_H_
+#ifndef REMOTING_CLIENT_IOS_UTILITY_H_
+#define REMOTING_CLIENT_IOS_UTILITY_H_
 
 #import <Foundation/Foundation.h>
 #import <GLKit/GLKit.h>
@@ -102,4 +102,4 @@ typedef struct {
 
 @end
 
-#endif  // REMOTING_IOS_UTILITY_H_
+#endif  // REMOTING_CLIENT_IOS_UTILITY_H_

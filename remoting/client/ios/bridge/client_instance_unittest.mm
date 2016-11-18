@@ -18,7 +18,6 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 
-
 @interface ClientProxyDelegateForClientInstanceTester
     : NSObject<ClientProxyDelegate>
 
@@ -194,10 +193,10 @@ TEST_F(ClientInstanceTest, SecretPin) {
   // credentials expect the stored value to be discarded before requesting the
   // PIN.
   instance_ = new ClientInstance(proxy_->AsWeakPtr(), "", "", "",
-      base::SysNSStringToUTF8(kHostId), "");
+                                 base::SysNSStringToUTF8(kHostId), "");
 
   instance_->Start(base::SysNSStringToUTF8(kPairingId),
-      base::SysNSStringToUTF8(kPairingSecret));
+                   base::SysNSStringToUTF8(kPairingSecret));
   RunCFMessageLoop();
 
   instance_->FetchSecret(false, base::Bind(&SecretPinCallBack));
@@ -211,7 +210,7 @@ TEST_F(ClientInstanceTest, SecretPin) {
   ASSERT_TRUE([host.pairSecret isEqualToString:@""]);
 
   instance_->ProvideSecret(base::SysNSStringToUTF8(kSecretPin), false,
-      base::SysNSStringToUTF8(kDeviceId));
+                           base::SysNSStringToUTF8(kDeviceId));
   RunCFMessageLoop();
 }
 
@@ -229,7 +228,7 @@ TEST_F(ClientInstanceTest, NoProxy) {
   AssertAcknowledged(false);
 
   instance_->ProvideSecret(base::SysNSStringToUTF8(kSecretPin), false,
-      base::SysNSStringToUTF8(kDeviceId));
+                           base::SysNSStringToUTF8(kDeviceId));
   AssertAcknowledged(false);
 
   instance_->PerformMouseAction(webrtc::DesktopVector(0, 0),

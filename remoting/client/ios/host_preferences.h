@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_IOS_HOST_PREFERENCES_H_
-#define REMOTING_IOS_HOST_PREFERENCES_H_
+#ifndef REMOTING_CLIENT_IOS_HOST_PREFERENCES_H_
+#define REMOTING_CLIENT_IOS_HOST_PREFERENCES_H_
 
 #import <CoreData/CoreData.h>
 
@@ -28,4 +28,4 @@
 
 @end
 
-#endif  // REMOTING_IOS_HOST_PREFERENCES_H_
+#endif  // REMOTING_CLIENT_IOS_HOST_PREFERENCES_H_

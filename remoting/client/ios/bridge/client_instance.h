@@ -30,7 +30,6 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
-
 //#include "remoting/client/ios/audio_player_ios.h"
 
 namespace remoting {
@@ -81,11 +80,10 @@ class ClientInstance : public ClientUserInterface,
 
   // Moves the host's cursor to the specified coordinates, optionally with some
   // mouse button depressed. If |button| is BUTTON_UNDEFINED, no click is made.
-  void PerformMouseAction(
-      const webrtc::DesktopVector& position,
-      const webrtc::DesktopVector& wheel_delta,
-      protocol::MouseEvent_MouseButton button,
-      bool button_down);
+  void PerformMouseAction(const webrtc::DesktopVector& position,
+                          const webrtc::DesktopVector& wheel_delta,
+                          protocol::MouseEvent_MouseButton button,
+                          bool button_down);
 
   // Sends the provided keyboard scan code to the host.
   void PerformKeyboardAction(int key_code, bool key_down);

@@ -61,7 +61,7 @@
 - (void)applyFrame:(const webrtc::DesktopSize&)size
             stride:(NSInteger)stride
               data:(uint8_t*)data
-           rects:(const std::vector<webrtc::DesktopRect>&)rects {
+             rects:(const std::vector<webrtc::DesktopRect>&)rects {
   _size = size;
   _stride = stride;
   _data = data;
@@ -173,12 +173,12 @@ class ClientProxyTest : public ::testing::Test {
                  kErrorHOST_OVERLOAD);
     TestForError(state, protocol::ErrorCode::INCOMPATIBLE_PROTOCOL,
                  expectedStatusMsg, kErrorINCOMPATIBLE_PROTOCOL);
-    TestForError(state, protocol::ErrorCode::PEER_IS_OFFLINE,
-                 expectedStatusMsg, kErrorPEER_IS_OFFLINE);
+    TestForError(state, protocol::ErrorCode::PEER_IS_OFFLINE, expectedStatusMsg,
+                 kErrorPEER_IS_OFFLINE);
     TestForError(state, protocol::ErrorCode::SESSION_REJECTED,
                  expectedStatusMsg, kErrorSESSION_REJECTED);
-    TestForError(state, protocol::ErrorCode::SIGNALING_ERROR,
-                 expectedStatusMsg, kErrorSIGNALING_ERROR);
+    TestForError(state, protocol::ErrorCode::SIGNALING_ERROR, expectedStatusMsg,
+                 kErrorSIGNALING_ERROR);
     TestForError(state, protocol::ErrorCode::SIGNALING_TIMEOUT,
                  expectedStatusMsg, kErrorSIGNALING_TIMEOUT);
     TestForError(state, protocol::ErrorCode::UNKNOWN_ERROR, expectedStatusMsg,
@@ -280,8 +280,8 @@ TEST_F(ClientProxyTest, CommitPairingCredentialsBasic) {
 
 TEST_F(ClientProxyTest, CommitPairingCredentialsExtended) {
   ValidateHost(base::SysNSStringToUTF8(kHostName),
-      base::SysNSStringToUTF8(kPairingId),
-      base::SysNSStringToUTF8(kPairingSecret));
+               base::SysNSStringToUTF8(kPairingId),
+               base::SysNSStringToUTF8(kPairingSecret));
 }
 
 // TODO(nicholss): Re-enable these tests.

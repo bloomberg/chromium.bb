@@ -32,7 +32,7 @@
 - (void)applyFrame:(const webrtc::DesktopSize&)size
             stride:(NSInteger)stride
               data:(uint8_t*)data
-           rects:(const std::vector<webrtc::DesktopRect>&)regions;
+             rects:(const std::vector<webrtc::DesktopRect>&)regions;
 
 // A new Cursor (mouse) update has arrived.
 - (void)applyCursor:(const webrtc::DesktopSize&)size
