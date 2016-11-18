@@ -10315,6 +10315,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="NewTabPage_ContentSuggestions_ArticlesUsage">
+  <owner>markusheintz@chromium.org</owner>
+  <description>
+    Counts the usage of the &quot;Articles for you&quot; section on the New Tab
+    Page. Examples for &quot;Articles for You&quot; usage are: A user opening an
+    article suggestion or a user viewing the articles suggestions section.
+  </description>
+</action>
+
 <action name="NewTabPage_ReopenTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

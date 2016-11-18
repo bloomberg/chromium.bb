@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/template_util.h"
 
@@ -40,7 +41,7 @@ const char kHistogramDismissedUnvisited[] =
     "NewTabPage.ContentSuggestions.DismissedUnvisited";
 const char kHistogramDismissedVisited[] =
     "NewTabPage.ContentSuggestions.DismissedVisited";
-const char kHistogramUsageTimeLocal[] =
+const char kHistogramArticlesUsageTimeLocal[] =
     "NewTabPage.ContentSuggestions.UsageTimeLocal";
 const char kHistogramVisitDuration[] =
     "NewTabPage.ContentSuggestions.VisitDuration";
@@ -215,9 +216,11 @@ void RecordContentSuggestionsUsage() {
   size_t bucket =
       (now_exploded.hour * 60 + now_exploded.minute) / kBucketSizeMins;
 
-  UMA_HISTOGRAM_ENUMERATION(kHistogramUsageTimeLocal, bucket, kNumBuckets);
+  UMA_HISTOGRAM_ENUMERATION(kHistogramArticlesUsageTimeLocal, bucket,
+                            kNumBuckets);
 
-  LOG(ERROR) << " ****************** Zine Usage";
+  base::RecordAction(
+      base::UserMetricsAction("NewTabPage_ContentSuggestions_ArticlesUsage"));
 }
 
 }  // namespace
