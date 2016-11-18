@@ -1196,12 +1196,10 @@ void ResourceFetcher::didFailLoading(Resource* resource,
   }
 }
 
-void ResourceFetcher::didReceiveResponse(Resource* resource,
-                                         const ResourceResponse& response,
-                                         WebDataConsumerHandle* rawHandle) {
-  // |rawHandle|'s ownership is transferred to the callee.
-  std::unique_ptr<WebDataConsumerHandle> handle = wrapUnique(rawHandle);
-
+void ResourceFetcher::didReceiveResponse(
+    Resource* resource,
+    const ResourceResponse& response,
+    std::unique_ptr<WebDataConsumerHandle> handle) {
   if (response.wasFetchedViaServiceWorker()) {
     if (resource->options().corsEnabled == IsCORSEnabled &&
         response.wasFallbackRequiredByServiceWorker()) {

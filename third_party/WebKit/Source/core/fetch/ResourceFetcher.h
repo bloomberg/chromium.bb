@@ -129,7 +129,7 @@ class CORE_EXPORT ResourceFetcher
   void didFailLoading(Resource*, const ResourceError&);
   void didReceiveResponse(Resource*,
                           const ResourceResponse&,
-                          WebDataConsumerHandle*);
+                          std::unique_ptr<WebDataConsumerHandle>);
   void didReceiveData(const Resource*,
                       const char* data,
                       int dataLength,

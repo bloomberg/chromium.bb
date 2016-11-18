@@ -769,9 +769,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     // will break if one of the following happens:
     //  1) The body data transfer is done (with or without an error).
     //  2) |read_handle| (and its reader) is detached.
-
-    // The client takes |read_handle|'s ownership.
-    client_->didReceiveResponse(loader_, response, read_handle.release());
+    client_->didReceiveResponse(loader_, response, std::move(read_handle));
     // TODO(yhirano): Support ftp listening and multipart
     return;
   } else {

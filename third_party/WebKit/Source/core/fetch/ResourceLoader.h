@@ -97,7 +97,7 @@ class CORE_EXPORT ResourceLoader final
   void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
   void didReceiveResponse(WebURLLoader*,
                           const WebURLResponse&,
-                          WebDataConsumerHandle*) override;
+                          std::unique_ptr<WebDataConsumerHandle>) override;
   void didReceiveCachedMetadata(WebURLLoader*,
                                 const char* data,
                                 int length) override;

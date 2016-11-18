@@ -33,6 +33,7 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDataConsumerHandle.h"
+#include <memory>
 
 namespace blink {
 
@@ -66,11 +67,10 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   virtual void didReceiveResponse(WebURLLoader*, const WebURLResponse&) {}
 
   // Called when response headers are received.
-  // The ownership of |handle| is transferred to the callee.
-  virtual void didReceiveResponse(WebURLLoader* loader,
-                                  const WebURLResponse& response,
-                                  WebDataConsumerHandle* handle) {
-    delete handle;
+  virtual void didReceiveResponse(
+      WebURLLoader* loader,
+      const WebURLResponse& response,
+      std::unique_ptr<WebDataConsumerHandle> handle) {
     didReceiveResponse(loader, response);
   }
 

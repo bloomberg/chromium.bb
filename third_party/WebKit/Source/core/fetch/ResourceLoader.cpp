@@ -202,12 +202,13 @@ void ResourceLoader::didSendData(WebURLLoader*,
   m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
-void ResourceLoader::didReceiveResponse(WebURLLoader*,
-                                        const WebURLResponse& response,
-                                        WebDataConsumerHandle* handle) {
+void ResourceLoader::didReceiveResponse(
+    WebURLLoader*,
+    const WebURLResponse& response,
+    std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!response.isNull());
   m_fetcher->didReceiveResponse(m_resource.get(), response.toResourceResponse(),
-                                handle);
+                                std::move(handle));
 }
 
 void ResourceLoader::didReceiveResponse(WebURLLoader* loader,
