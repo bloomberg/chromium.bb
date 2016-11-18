@@ -44,7 +44,8 @@ CanvasRenderingContext::CanvasRenderingContext(
       m_offscreenCanvas(offscreenCanvas),
       m_colorSpace(kLegacyCanvasColorSpace),
       m_creationAttributes(attrs) {
-  if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled()) {
+  if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
     if (m_creationAttributes.colorSpace() == kSRGBCanvasColorSpaceName)
       m_colorSpace = kSRGBCanvasColorSpace;
     else if (m_creationAttributes.colorSpace() ==

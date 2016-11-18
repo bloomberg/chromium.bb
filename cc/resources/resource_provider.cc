@@ -1260,8 +1260,9 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  resource_provider->PopulateSkBitmapWithResource(
-      &sk_bitmap_, resource_provider->LockForWrite(resource_id));
+  Resource* resource = resource_provider->LockForWrite(resource_id);
+  resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
+  sk_color_space_ = resource_provider->GetResourceSkColorSpace(resource);
   DCHECK(valid());
 }
 

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="../../../../../resources/testharness.js"></script>
+<script src="../../../../../resources/testharnessreport.js"></script>
 <script>
 function checkCanvasColorSpace(requestedColorSpace, expectedColorSpace) {
 	var canvas = document.createElement("canvas")
@@ -9,7 +9,8 @@ function checkCanvasColorSpace(requestedColorSpace, expectedColorSpace) {
 }
 
 generate_tests(checkCanvasColorSpace, [
-	['Unknown color space falls back to srgb.', 'bogus', 'legacy-srgb'], 
-	['srgb is supported', 'srgb', 'srgb']
+	['Unknown color space falls back to legacy-srgb.', 'bogus', 'legacy-srgb'], 
+	['srgb is supported', 'srgb', 'srgb'],
+	['linear-rgb is supported', 'linear-rgb', 'linear-rgb'],
 ]);
 </script>

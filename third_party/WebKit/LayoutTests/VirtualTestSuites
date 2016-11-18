@@ -1,5 +1,10 @@
 [
   {
+    "prefix": "color_space",
+    "base": "fast/canvas/color-space",
+    "args": ["--enable-color-correct-rendering"]
+  },
+  {
     "prefix": "gpu",
     "base": "fast/canvas",
     "args": ["--enable-accelerated-2d-canvas",

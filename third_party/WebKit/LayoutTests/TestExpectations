@@ -375,6 +375,8 @@ crbug.com/567837 fast/hidpi/static [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
 
+crbug.com/657946 [ Mac ] virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
+
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
