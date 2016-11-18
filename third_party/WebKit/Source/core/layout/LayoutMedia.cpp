@@ -180,7 +180,10 @@ LayoutUnit LayoutMedia::computePanelWidth(const LayoutRect& mediaRect) const {
           FloatPoint(mediaRect.location()),
           UseTransforms | ApplyContainerFlip | TraverseDocumentBoundaries)
           .x());
-  DCHECK_GE(visibleWidth - absoluteXOffset, 0);
+  const LayoutUnit newWidth = visibleWidth - absoluteXOffset;
+
+  if (newWidth < 0)
+    return mediaRect.width();
 
   return std::min(mediaRect.width(), visibleWidth - absoluteXOffset);
 }
