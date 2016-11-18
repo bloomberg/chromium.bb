@@ -5,6 +5,7 @@
 #include "components/cronet/url_request_context_config.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_network_session.h"
@@ -68,6 +69,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
       // Certificate verifier cache data.
       "");
 
+  base::MessageLoop message_loop;
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
@@ -156,6 +158,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // Certificate verifier cache data.
       "");
 
+  base::MessageLoop message_loop;
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
