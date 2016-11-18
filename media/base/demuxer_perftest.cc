@@ -238,12 +238,10 @@ TEST(DemuxerPerfTest, MAYBE_Demuxer) {
   RunDemuxerBenchmark("bear.ogv");
   RunDemuxerBenchmark("bear-640x360.webm");
   RunDemuxerBenchmark("sfx_s16le.wav");
+  RunDemuxerBenchmark("bear.flac");
 #if defined(USE_PROPRIETARY_CODECS)
   RunDemuxerBenchmark("bear-1280x720.mp4");
   RunDemuxerBenchmark("sfx.mp3");
-#endif
-#if defined(OS_CHROMEOS)
-  RunDemuxerBenchmark("bear.flac");
 #endif
 #if defined(USE_PROPRIETARY_CODECS) && defined(OS_CHROMEOS)
   RunDemuxerBenchmark("bear.avi");

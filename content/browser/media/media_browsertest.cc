@@ -220,13 +220,12 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear3gpAmrnbMpeg4) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavGsmms) {
   PlayAudio("bear_gsm_ms.wav", GetParam());
 }
-
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
-  PlayAudio("bear.flac", GetParam());
-}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 #endif  // defined(OS_CHROMEOS)
 
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac) {
+  PlayAudio("bear.flac", GetParam());
+}
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
   PlayAudio("bear_alaw.wav", GetParam());

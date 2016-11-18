@@ -574,13 +574,11 @@ const DecodedBufferExpectations kSfxAdtsExpectations[] = {
 };
 #endif
 
-#if defined(OS_CHROMEOS)
 const DecodedBufferExpectations kSfxFlacExpectations[] = {
     {0, 104489, "-2.42,-1.12,0.71,1.70,1.09,-0.68,"},
     {104489, 104489, "-1.99,-0.67,1.18,2.19,1.60,-0.16,"},
     {208979, 79433, "2.84,2.70,3.23,4.06,4.59,4.44,"},
 };
-#endif
 
 const DecodedBufferExpectations kSfxWaveExpectations[] = {
     {0, 23219, "-1.23,-0.87,0.47,1.85,1.88,0.29,"},
@@ -613,10 +611,8 @@ const DecoderTestData kFFmpegTests[] = {
     {FFMPEG, kCodecAAC, "sfx.adts", kSfxAdtsExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
 #endif
-#if defined(OS_CHROMEOS)
     {FFMPEG, kCodecFLAC, "sfx.flac", kSfxFlacExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
-#endif
     {FFMPEG, kCodecPCM, "sfx_f32le.wav", kSfxWaveExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
     {FFMPEG, kCodecPCM, "4ch.wav", kFourChannelWaveExpectations, 0, 44100,

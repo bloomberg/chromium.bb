@@ -408,6 +408,7 @@ void MimeUtil::AddSupportedMediaFormats() {
     AddContainerWithCodecs("video/ogg", ogg_codecs, false);
   // TODO(ddorwin): Should the application type support Opus?
   AddContainerWithCodecs("application/ogg", ogg_codecs, false);
+  AddContainerWithCodecs("audio/flac", implicit_codec, false);
 
 #if defined(USE_PROPRIETARY_CODECS)
   AddContainerWithCodecs("audio/mpeg", mp3_codecs, true);  // Allow "mp3".
@@ -565,6 +566,7 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
     case PCM:
     case MP3:
     case MPEG4_AAC:
+    case FLAC:
     case VORBIS:
       // These codecs are always supported; via a platform decoder (when used
       // with MSE/EME), a software decoder (the unified pipeline), or with
@@ -769,6 +771,7 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case PCM:
     case VORBIS:
     case OPUS:
+    case FLAC:
     case VP8:
     case VP9:
     case THEORA:
@@ -789,6 +792,11 @@ bool MimeUtil::GetDefaultCodecLowerCase(const std::string& mime_type_lower_case,
 
   if (mime_type_lower_case == "audio/aac") {
     *default_codec = MimeUtil::MPEG4_AAC;
+    return true;
+  }
+
+  if (mime_type_lower_case == "audio/flac") {
+    *default_codec = MimeUtil::FLAC;
     return true;
   }
 

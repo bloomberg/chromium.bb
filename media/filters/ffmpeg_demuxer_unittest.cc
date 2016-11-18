@@ -1451,4 +1451,24 @@ TEST_F(FFmpegDemuxerTest, UTCDateToTime_Invalid) {
   }
 }
 
+TEST_F(FFmpegDemuxerTest, Read_Flac) {
+  CreateDemuxer("sfx.flac");
+  InitializeDemuxer();
+
+  // Video stream should not be present.
+  EXPECT_EQ(nullptr, demuxer_->GetStream(DemuxerStream::VIDEO));
+
+  // Audio stream should be present.
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  ASSERT_TRUE(stream);
+  EXPECT_EQ(DemuxerStream::AUDIO, stream->type());
+
+  const AudioDecoderConfig& audio_config = stream->audio_decoder_config();
+  EXPECT_EQ(kCodecFLAC, audio_config.codec());
+  EXPECT_EQ(32, audio_config.bits_per_channel());
+  EXPECT_EQ(CHANNEL_LAYOUT_MONO, audio_config.channel_layout());
+  EXPECT_EQ(44100, audio_config.samples_per_second());
+  EXPECT_EQ(kSampleFormatS32, audio_config.sample_format());
+}
+
 }  // namespace media
