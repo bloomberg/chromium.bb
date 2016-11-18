@@ -52,10 +52,8 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
       m_layoutObject(layoutObject) {
   if (layoutObject.isLayoutFlowThread())
     m_flowThread = toLayoutFlowThread(&layoutObject);
-  else if (!layoutObject.isOutOfFlowPositioned())
-    m_flowThread = m_next->flowThread();
   else
-    m_flowThread = nullptr;
+    m_flowThread = m_next->flowThread();
   m_paginationStateChanged = m_next->m_paginationStateChanged;
   layoutObject.view()->pushLayoutState(*this);
   m_heightOffsetForTableHeaders = m_next->heightOffsetForTableHeaders();
