@@ -78,8 +78,8 @@ void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
                                 false);
   registry->RegisterIntegerPref(prefs::kSearchGeolocationDisclosureShownCount,
                                 0);
-  registry->RegisterDoublePref(prefs::kSearchGeolocationDisclosureLastShowDate,
-                               0);
+  registry->RegisterInt64Pref(prefs::kSearchGeolocationDisclosureLastShowDate,
+                              0);
 }
 
 void SearchGeolocationDisclosureTabHelper::
@@ -99,7 +99,7 @@ void SearchGeolocationDisclosureTabHelper::
 
   // Or if it has been shown too recently.
   base::Time last_shown = base::Time::FromInternalValue(
-      prefs->GetDouble(prefs::kSearchGeolocationDisclosureLastShowDate));
+      prefs->GetInt64(prefs::kSearchGeolocationDisclosureLastShowDate));
   if (base::Time::Now() - last_shown <
       base::TimeDelta::FromDays(GetDaysPerShow())) {
     return;
@@ -141,8 +141,8 @@ void SearchGeolocationDisclosureTabHelper::
   SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl);
   shown_count++;
   prefs->SetInteger(prefs::kSearchGeolocationDisclosureShownCount, shown_count);
-  prefs->SetDouble(prefs::kSearchGeolocationDisclosureLastShowDate,
-                   base::Time::Now().ToInternalValue());
+  prefs->SetInt64(prefs::kSearchGeolocationDisclosureLastShowDate,
+                  base::Time::Now().ToInternalValue());
 }
 
 Profile* SearchGeolocationDisclosureTabHelper::GetProfile() {
