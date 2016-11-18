@@ -37,8 +37,9 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   static void SetInstance(GvrDelegateProvider* delegate_provider);
   static GvrDelegateProvider* GetInstance();
 
+  virtual void SetDeviceProvider(
+      base::WeakPtr<GvrDeviceProvider> device_provider) = 0;
   virtual void RequestWebVRPresent(
-      base::WeakPtr<GvrDeviceProvider> device_provider,
       const base::Callback<void(bool)>& callback) = 0;
   virtual void ExitWebVRPresent() = 0;
   virtual base::WeakPtr<GvrDelegate> GetNonPresentingDelegate() = 0;

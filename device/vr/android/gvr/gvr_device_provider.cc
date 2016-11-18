@@ -14,6 +14,7 @@
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "device/vr/vr_device_manager.h"
+#include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_controller.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
@@ -49,7 +50,7 @@ void GvrDeviceProvider::Initialize() {
       device::GvrDelegateProvider::GetInstance();
   if (!delegate_provider)
     return;
-
+  delegate_provider->SetDeviceProvider(weak_ptr_factory_.GetWeakPtr());
   if (!vr_device_) {
     vr_device_.reset(
         new GvrDevice(this, delegate_provider->GetNonPresentingDelegate()));
@@ -64,8 +65,7 @@ void GvrDeviceProvider::RequestPresent(
     return callback.Run(false);
 
   // RequestWebVRPresent is async as a render thread may be created.
-  delegate_provider->RequestWebVRPresent(weak_ptr_factory_.GetWeakPtr(),
-                                         callback);
+  delegate_provider->RequestWebVRPresent(callback);
 }
 
 // VR presentation exit requested by the API.
@@ -105,6 +105,12 @@ void GvrDeviceProvider::OnDisplayFocus() {
   if (!vr_device_)
     return;
   vr_device_->OnFocus();
+}
+
+void GvrDeviceProvider::OnDisplayActivate() {
+  if (!vr_device_)
+    return;
+  vr_device_->OnActivate(mojom::VRDisplayEventReason::MOUNTED);
 }
 
 void GvrDeviceProvider::SwitchToNonPresentingDelegate() {

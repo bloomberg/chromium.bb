@@ -39,6 +39,7 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void OnGvrDelegateRemoved();
   void OnDisplayBlur();
   void OnDisplayFocus();
+  void OnDisplayActivate();
 
  private:
   void SwitchToNonPresentingDelegate();

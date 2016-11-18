@@ -70,8 +70,18 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env, jobject obj,
   present_callback_.Reset();
 }
 
+void VrShellDelegate::DisplayActivate(JNIEnv* env, jobject obj) {
+  if (device_provider_) {
+    device_provider_->OnDisplayActivate();
+  }
+}
+
+void VrShellDelegate::SetDeviceProvider(
+    base::WeakPtr<device::GvrDeviceProvider> device_provider) {
+  device_provider_ = device_provider;
+}
+
 void VrShellDelegate::RequestWebVRPresent(
-    base::WeakPtr<device::GvrDeviceProvider> device_provider,
     const base::Callback<void(bool)>& callback) {
   if (!present_callback_.is_null()) {
     // Can only handle one request at a time. This is also extremely unlikely to
@@ -80,9 +90,6 @@ void VrShellDelegate::RequestWebVRPresent(
     return;
   }
 
-  // TODO(mthiesse): Clean this up, there's no reason to be setting the device
-  // provider from RequestWebVRPresent.
-  device_provider_ = device_provider;
   present_callback_ = std::move(callback);
 
   // If/When VRShell is ready for use it will call SetPresentResult.

@@ -144,11 +144,15 @@ public class VrShellDelegate {
     }
 
     /**
-     * Handle a VR intent, entering VR in the process.
+     * Handle a VR intent, entering VR in the process unless we're unable to.
      */
     public void enterVRFromIntent(Intent intent) {
         if (!mVrAvailable) return;
         assert isVrIntent(intent);
+        if (mListeningForWebVrActivate && !mRequestedWebVR) {
+            nativeDisplayActivate(mNativeVrShellDelegate);
+            return;
+        }
         if (enterVR()) {
             if (mRequestedWebVR) {
                 nativeSetPresentResult(mNativeVrShellDelegate, true);
@@ -201,7 +205,7 @@ public class VrShellDelegate {
         // If vr isn't in the build, or we haven't initialized yet, or vr shell is not enabled and
         // this is not a web vr request, then return immediately.
         if (!mVrAvailable || mNativeVrShellDelegate == 0
-                || (!isVrShellEnabled() && !mRequestedWebVR)) {
+                || (!isVrShellEnabled() && !(mRequestedWebVR || mListeningForWebVrActivate))) {
             return false;
         }
         // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
@@ -267,9 +271,7 @@ public class VrShellDelegate {
      */
     public void maybeResumeVR() {
         if (!mVrAvailable) return;
-        // TODO(mthiesse): Register the intent when on a page that supports WebVR, even if VrShell
-        // isn't enabled.
-        if (isVrShellEnabled()) {
+        if (isVrShellEnabled() || mListeningForWebVrActivate) {
             registerDaydreamIntent();
         }
         // If this is still set, it means the user backed out of the DON flow, and we won't be
@@ -391,6 +393,11 @@ public class VrShellDelegate {
     @CalledByNative
     private void setListeningForWebVrActivate(boolean listening) {
         mListeningForWebVrActivate = listening;
+        if (listening) {
+            registerDaydreamIntent();
+        } else {
+            unregisterDaydreamIntent();
+        }
     }
 
     /**
@@ -556,4 +563,5 @@ public class VrShellDelegate {
 
     private native long nativeInit();
     private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
+    private native void nativeDisplayActivate(long nativeVrShellDelegate);
 }

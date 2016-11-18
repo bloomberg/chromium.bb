@@ -29,11 +29,12 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::WeakPtr<device::GvrDeviceProvider> GetDeviceProvider();
 
   void SetPresentResult(JNIEnv* env, jobject obj, jboolean result);
+  void DisplayActivate(JNIEnv* env, jobject obj);
 
   // device::GvrDelegateProvider implementation
-  void RequestWebVRPresent(
-      base::WeakPtr<device::GvrDeviceProvider> device_provider,
-      const base::Callback<void(bool)>& callback) override;
+  void SetDeviceProvider(
+      base::WeakPtr<device::GvrDeviceProvider> device_provider) override;
+  void RequestWebVRPresent(const base::Callback<void(bool)>& callback) override;
   void ExitWebVRPresent() override;
   base::WeakPtr<device::GvrDelegate> GetNonPresentingDelegate() override;
   void DestroyNonPresentingDelegate() override;
