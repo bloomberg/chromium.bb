@@ -869,9 +869,9 @@ int main(int argc, char* argv[]) {
   size_t benchmark_interval_ms = 5000;  // 5 seconds.
   if (command_line->HasSwitch(switches::kBenchmarkInterval) &&
       (!base::StringToSizeT(
-          command_line->GetSwitchValueASCII(switches::kBenchmark),
+          command_line->GetSwitchValueASCII(switches::kBenchmarkInterval),
           &benchmark_interval_ms))) {
-    LOG(ERROR) << "Invalid value for " << switches::kBenchmark;
+    LOG(ERROR) << "Invalid value for " << switches::kBenchmarkInterval;
     return 1;
   }
 
