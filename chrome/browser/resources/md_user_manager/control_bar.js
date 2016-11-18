@@ -33,7 +33,18 @@
     },
 
     /** @private {!signin.ProfileBrowserProxy} */
-    browserProxy_: Object
+    browserProxy_: Object,
+
+    /**
+     * True if the force sign in policy is enabled.
+     * @private {boolean}
+     */
+    isForceSigninEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isForceSigninEnabled');
+      },
+    }
   },
 
   /** @override */
@@ -49,7 +60,7 @@
   onLaunchGuestTap_: function(event) {
     this.browserProxy_.areAllProfilesLocked().then(
         function(allProfilesLocked) {
-          if (!allProfilesLocked) {
+          if (!allProfilesLocked || this.isForceSigninEnabled_) {
             this.browserProxy_.launchGuestUser();
           } else {
             document.querySelector('error-dialog').show(
@@ -66,7 +77,7 @@
   onAddUserTap_: function(event) {
     this.browserProxy_.areAllProfilesLocked().then(
         function(allProfilesLocked) {
-          if (!allProfilesLocked) {
+          if (!allProfilesLocked || this.isForceSigninEnabled_) {
             // Event is caught by user-manager-pages.
             this.fire('change-page', {page: 'create-user-page'});
           } else {
