@@ -23,10 +23,6 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for a merchant that does not require shipping address.
  */
 public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
-    private static final int DECEMBER = 11;
-    private static final int NEXT_YEAR = 1;
-    private static final int FIRST_BILLING_ADDRESS = 0;
-
     public PaymentRequestNoShippingTest() {
         super("payment_request_no_shipping_test.html");
     }
@@ -184,10 +180,8 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
         // Select December of next year for expiration and [Add address] in the billing address
         // dropdown.
-        int december = 11;
-        int nextYear = 1;
         int addBillingAddress = 1;
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {december, nextYear, addBillingAddress},
+        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, addBillingAddress},
                 mReadyToEdit);
 
         setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",

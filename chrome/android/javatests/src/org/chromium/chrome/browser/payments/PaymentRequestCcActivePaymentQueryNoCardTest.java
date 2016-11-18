@@ -39,7 +39,7 @@ public class PaymentRequestCcActivePaymentQueryNoCardTest extends PaymentRequest
     @Feature({"Payments"})
     public void testCannotMakeActivePayment() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 }

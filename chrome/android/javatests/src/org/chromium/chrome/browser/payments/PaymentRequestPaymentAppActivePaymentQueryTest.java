@@ -29,7 +29,7 @@ public class PaymentRequestPaymentAppActivePaymentQueryTest extends PaymentReque
     @Feature({"Payments"})
     public void testNoBobPayInstalled() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 
@@ -38,7 +38,7 @@ public class PaymentRequestPaymentAppActivePaymentQueryTest extends PaymentReque
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 
@@ -47,7 +47,7 @@ public class PaymentRequestPaymentAppActivePaymentQueryTest extends PaymentReque
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 
@@ -56,7 +56,7 @@ public class PaymentRequestPaymentAppActivePaymentQueryTest extends PaymentReque
     public void testPayViaFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
     }
 
@@ -65,7 +65,7 @@ public class PaymentRequestPaymentAppActivePaymentQueryTest extends PaymentReque
     public void testPayViaSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
     }
 }

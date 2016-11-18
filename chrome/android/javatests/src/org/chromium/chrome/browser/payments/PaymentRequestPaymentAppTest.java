@@ -30,7 +30,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testNoSupportedPaymentMethods() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mShowFailed);
+        openPageAndClickBuyAndWait(mShowFailed);
         expectResultContains(
                 new String[]{"show() rejected", "The payment method is not supported"});
     }
@@ -44,7 +44,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait(mShowFailed);
+        openPageAndClickBuyAndWait(mShowFailed);
         expectResultContains(
                 new String[]{"show() rejected", "The payment method is not supported"});
     }
@@ -58,7 +58,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
-        triggerUIAndWait(mShowFailed);
+        openPageAndClickBuyAndWait(mShowFailed);
         expectResultContains(
                 new String[]{"show() rejected", "The payment method is not supported"});
     }
@@ -91,7 +91,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     public void testPaymentAppNoInstrumentsResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         final TestPay app = installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        triggerUIAndWait(mShowFailed);
+        openPageAndClickBuyAndWait(mShowFailed);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

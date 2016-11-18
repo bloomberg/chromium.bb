@@ -44,7 +44,7 @@ public class PaymentRequestCcActivePaymentQueryTest extends PaymentRequestTestBa
     @Feature({"Payments"})
     public void testCanMakeActivePayment() throws InterruptedException, ExecutionException,
             TimeoutException {
-        triggerUIAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
 
         // Repeating a query does not count against the quota.

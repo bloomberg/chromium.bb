@@ -65,6 +65,15 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     /** Flag for installing a slow payment app. */
     protected static final int DELAYED_RESPONSE = 1;
 
+    /** The expiration month dropdown index for December. */
+    protected static final int DECEMBER = 11;
+
+    /** The expiration year dropdown index for the next year. */
+    protected static final int NEXT_YEAR = 1;
+
+    /** The billing address dropdown index for the first billing address. */
+    protected static final int FIRST_BILLING_ADDRESS = 0;
+
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyForInput;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mSelectionChecked;
@@ -118,22 +127,22 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
     protected void triggerUIAndWait(PaymentsCallbackHelper<PaymentRequestUI> helper)
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait("buy", (CallbackHelper) helper);
+        openPageAndClickNodeAndWait("buy", helper);
         mUI = helper.getTarget();
     }
 
-    protected void triggerUIAndWait(CallbackHelper helper)
+    protected void openPageAndClickBuyAndWait(CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait("buy", helper);
+        openPageAndClickNodeAndWait("buy", helper);
     }
 
     protected void triggerUIAndWait(String nodeId, PaymentsCallbackHelper<PaymentRequestUI> helper)
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(nodeId, (CallbackHelper) helper);
+        openPageAndClickNodeAndWait(nodeId, helper);
         mUI = helper.getTarget();
     }
 
-    protected void triggerUIAndWait(String nodeId, CallbackHelper helper)
+    protected void openPageAndClickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
         startMainActivityWithURL(mTestFilePath);
         onMainActivityStarted();

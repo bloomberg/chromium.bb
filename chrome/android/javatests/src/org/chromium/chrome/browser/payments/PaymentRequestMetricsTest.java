@@ -193,7 +193,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
             ExecutionException, TimeoutException {
         // Android Pay is supported but no instruments are present.
         installPaymentApp("https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
-        triggerUIAndWait("androidPayBuy", mShowFailed);
+        openPageAndClickNodeAndWait("androidPayBuy", mShowFailed);
         expectResultContains(new String[] {"The payment method is not supported"});
 
         assertOnlySpecificAbortMetricLogged(
@@ -209,7 +209,7 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testAbortMetrics_NoSupportedPaymentMethod() throws InterruptedException,
             ExecutionException, TimeoutException {
-        triggerUIAndWait("noSupported", mShowFailed);
+        openPageAndClickNodeAndWait("noSupported", mShowFailed);
         expectResultContains(new String[] {"The payment method is not supported"});
 
         assertOnlySpecificAbortMetricLogged(

@@ -20,10 +20,6 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for removing a billing address that is associated with a credit card.
  */
 public class PaymentRequestRemoveBillingAddressTest extends PaymentRequestTestBase {
-    private static final int DECEMBER = 11;
-    private static final int NEXT_YEAR = 1;
-    private static final int FIRST_BILLING_ADDRESS = 0;
-
     public PaymentRequestRemoveBillingAddressTest() {
         super("payment_request_no_shipping_test.html");
     }
