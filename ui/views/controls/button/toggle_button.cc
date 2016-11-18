@@ -154,13 +154,11 @@ void ToggleButton::UpdateThumb() {
 }
 
 SkColor ToggleButton::GetTrackColor(bool is_on) const {
-  const SkAlpha kOffTrackAlpha = 0x29;
-  const SkAlpha kOnTrackAlpha = kOffTrackAlpha * 2;
+  const SkAlpha kTrackAlpha = 0x66;
   ui::NativeTheme::ColorId color_id =
       is_on ? ui::NativeTheme::kColorId_ProminentButtonColor
             : ui::NativeTheme::kColorId_LabelEnabledColor;
-  return SkColorSetA(GetNativeTheme()->GetSystemColor(color_id),
-                     is_on ? kOnTrackAlpha : kOffTrackAlpha);
+  return SkColorSetA(GetNativeTheme()->GetSystemColor(color_id), kTrackAlpha);
 }
 
 gfx::Size ToggleButton::GetPreferredSize() const {
