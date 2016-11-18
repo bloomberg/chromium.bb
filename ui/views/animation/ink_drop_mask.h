@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
@@ -15,10 +16,16 @@
 namespace views {
 
 // Base class for different ink drop masks. It is responsible for creating the
-// ui::Layer that can be set as the mask layer for ink drop layer.
+// ui::Layer that can be set as the mask layer for ink drop layer. Note that the
+// mask's layer size (passed in the constructor) should always match size of the
+// layer it is masking.
 class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
  public:
   ~InkDropMask() override;
+
+  // Should be called whenever the masked layer is resized so that the mask
+  // layer size always matches that of the layer it is masking.
+  void UpdateLayerSize(const gfx::Size& new_layer_size);
 
   ui::Layer* layer() { return &layer_; }
 
@@ -40,14 +47,14 @@ class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
 class VIEWS_EXPORT RoundRectInkDropMask : public InkDropMask {
  public:
   RoundRectInkDropMask(const gfx::Size& layer_size,
-                       const gfx::Rect& mask_bounds,
+                       const gfx::Insets& mask_insets,
                        int corner_radius);
 
  private:
   // Overriden from InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
-  gfx::Rect mask_bounds_;
+  gfx::Insets mask_insets_;
   int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundRectInkDropMask);

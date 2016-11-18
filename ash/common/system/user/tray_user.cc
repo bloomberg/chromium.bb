@@ -157,6 +157,10 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
     }
     if (need_avatar) {
       avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius, true);
+      if (MaterialDesignController::IsShelfMaterial()) {
+        avatar_->SetPaintToLayer(true);
+        avatar_->layer()->SetFillsBoundsOpaquely(false);
+      }
       layout_view_->AddChildView(avatar_);
     } else {
       avatar_ = nullptr;

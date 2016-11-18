@@ -220,6 +220,8 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
 void InkDropHostView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (ink_drop_)
     ink_drop_->HostSizeChanged(size());
+  if (ink_drop_mask_)
+    ink_drop_mask_->UpdateLayerSize(size());
 }
 
 void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {

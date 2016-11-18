@@ -349,17 +349,21 @@ std::unique_ptr<views::InkDropMask> TrayPopupUtils::CreateInkDropMask(
     return nullptr;
 
   const gfx::Size layer_size = host->size();
-  const gfx::Rect mask_bounds = GetInkDropBounds(ink_drop_style, host);
   switch (ink_drop_style) {
     case TrayPopupInkDropStyle::HOST_CENTERED: {
+      const gfx::Rect mask_bounds =
+          GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, host);
       const int radius =
           std::min(mask_bounds.width(), mask_bounds.height()) / 2;
       return base::MakeUnique<views::CircleInkDropMask>(
           layer_size, mask_bounds.CenterPoint(), radius);
     }
-    case TrayPopupInkDropStyle::INSET_BOUNDS:
+    case TrayPopupInkDropStyle::INSET_BOUNDS: {
+      const gfx::Insets mask_insets =
+          GetInkDropInsets(TrayPopupInkDropStyle::INSET_BOUNDS);
       return base::MakeUnique<views::RoundRectInkDropMask>(
-          layer_size, mask_bounds, kTrayPopupInkDropCornerRadius);
+          layer_size, mask_insets, kTrayPopupInkDropCornerRadius);
+    }
     case TrayPopupInkDropStyle::FILL_BOUNDS:
       // Handled by quick return above.
       break;
@@ -369,13 +373,21 @@ std::unique_ptr<views::InkDropMask> TrayPopupUtils::CreateInkDropMask(
   return nullptr;
 }
 
+gfx::Insets TrayPopupUtils::GetInkDropInsets(
+    TrayPopupInkDropStyle ink_drop_style) {
+  gfx::Insets insets;
+  if (ink_drop_style == TrayPopupInkDropStyle::HOST_CENTERED ||
+      ink_drop_style == TrayPopupInkDropStyle::INSET_BOUNDS) {
+    insets.Set(kTrayPopupInkDropInset, kTrayPopupInkDropInset,
+               kTrayPopupInkDropInset, kTrayPopupInkDropInset);
+  }
+  return insets;
+}
+
 gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
                                            const views::View* host) {
   gfx::Rect bounds = host->GetLocalBounds();
-  if (ink_drop_style == TrayPopupInkDropStyle::HOST_CENTERED ||
-      ink_drop_style == TrayPopupInkDropStyle::INSET_BOUNDS) {
-    bounds.Inset(kTrayPopupInkDropInset, kTrayPopupInkDropInset);
-  }
+  bounds.Inset(GetInkDropInsets(ink_drop_style));
   return bounds;
 }
 

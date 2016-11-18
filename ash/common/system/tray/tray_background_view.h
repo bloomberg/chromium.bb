@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
@@ -157,6 +158,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Applies transformations to the |layer()| to animate the view when
   // SetVisible(false) is called.
   void HideTransformation();
+
+  // Helper function that calculates background insets relative to local bounds.
+  gfx::Insets GetBackgroundInsets() const;
+
+  // Helper function that calculates ink drop bounds relative to local bounds
+  // based on the background insets returned from GetBackgroundInsets().
+  gfx::Rect GetInkDropBounds() const;
 
   // The shelf containing the system tray for this view.
   WmShelf* wm_shelf_;

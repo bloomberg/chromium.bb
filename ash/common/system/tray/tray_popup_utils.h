@@ -168,6 +168,10 @@ class TrayPopupUtils {
   static bool CanOpenWebUISettings(LoginStatus status);
 
  private:
+  // Returns the effective ink drop insets for |host| according to the
+  // |ink_drop_style|.
+  static gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style);
+
   // Returns the effective ink drop bounds for |host| according to the
   // |ink_drop_style|.
   static gfx::Rect GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,

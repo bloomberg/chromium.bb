@@ -58,20 +58,29 @@ const int kShowAnimationDelayMs = 100;
 // and overview button dark background.
 const int kBackgroundAdjustPadding = 3;
 
-const gfx::Rect GetBackgroundBounds(const gfx::Rect& local_bounds,
-                                    ash::ShelfAlignment shelf_alignment) {
-  if (IsHorizontalAlignment(shelf_alignment)) {
-    return gfx::Rect(local_bounds.x() + ash::kHitRegionPadding,
-                     local_bounds.y(),
-                     local_bounds.width() - ash::kHitRegionPadding -
-                         ash::kHitRegionPadding - ash::kSeparatorWidth,
-                     local_bounds.height());
+// Switches left and right insets if RTL mode is active.
+void MirrorInsetsIfNecessary(gfx::Insets* insets) {
+  if (base::i18n::IsRTL()) {
+    insets->Set(insets->top(), insets->right(), insets->bottom(),
+                insets->left());
   }
-  return gfx::Rect(local_bounds.x(), local_bounds.y() + ash::kHitRegionPadding,
-                   local_bounds.width(),
-                   local_bounds.height() - ash::kHitRegionPadding -
-                       ash::kHitRegionPadding - ash::kSeparatorWidth);
 }
+
+// Returns background insets relative to the contents bounds of the view and
+// mirrored if RTL mode is active.
+gfx::Insets GetMirroredBackgroundInsets(ash::ShelfAlignment shelf_alignment) {
+  gfx::Insets insets;
+  if (IsHorizontalAlignment(shelf_alignment)) {
+    insets.Set(0, ash::kHitRegionPadding, 0,
+               ash::kHitRegionPadding + ash::kSeparatorWidth);
+  } else {
+    insets.Set(ash::kHitRegionPadding, 0,
+               ash::kHitRegionPadding + ash::kSeparatorWidth, 0);
+  }
+  MirrorInsetsIfNecessary(&insets);
+  return insets;
+}
+
 }  // namespace
 
 using views::TrayBubbleView;
@@ -129,9 +138,10 @@ class TrayBackground : public views::Background {
     SkPaint background_paint;
     background_paint.setFlags(SkPaint::kAntiAlias_Flag);
     background_paint.setColor(SkColorSetA(kShelfBaseColor, alpha_));
-    gfx::Rect local_bounds = view->GetLocalBounds();
-    gfx::Rect bounds =
-        GetBackgroundBounds(local_bounds, GetShelf()->GetAlignment());
+    gfx::Insets insets =
+        GetMirroredBackgroundInsets(GetShelf()->GetAlignment());
+    gfx::Rect bounds = view->GetLocalBounds();
+    bounds.Inset(insets);
     canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, background_paint);
 
     if (draws_active_ && tray_background_view_->is_active()) {
@@ -387,14 +397,13 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
     const {
   return base::MakeUnique<views::FloodFillInkDropRipple>(
-      GetBackgroundBounds(GetContentsBounds(), shelf_alignment_),
-      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
+      GetInkDropBounds(), GetInkDropCenterBasedOnLastEvent(),
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 TrayBackgroundView::CreateInkDropHighlight() const {
-  gfx::Rect bounds = GetBackgroundBounds(GetContentsBounds(), shelf_alignment_);
+  gfx::Rect bounds = GetInkDropBounds();
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(bounds.size(), 0,
                                   gfx::RectF(bounds).CenterPoint(),
@@ -529,8 +538,7 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
     const {
   return base::MakeUnique<views::RoundRectInkDropMask>(
-      size(), GetBackgroundBounds(GetContentsBounds(), shelf_alignment_),
-      kTrayRoundedBorderRadius);
+      size(), GetBackgroundInsets(), kTrayRoundedBorderRadius);
 }
 
 bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {
@@ -588,6 +596,36 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   gfx::RectF rect(gfx::ScaleRect(gfx::RectF(bounds), scale));
   canvas->DrawLine(horizontal_shelf ? rect.top_right() : rect.bottom_left(),
                    rect.bottom_right(), paint);
+}
+
+gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
+  gfx::Insets insets = GetMirroredBackgroundInsets(shelf_alignment_);
+
+  // |insets| are relative to contents bounds. Change them to be relative to
+  // local bounds.
+  gfx::Insets local_contents_insets =
+      GetLocalBounds().InsetsFrom(GetContentsBounds());
+  MirrorInsetsIfNecessary(&local_contents_insets);
+  insets += local_contents_insets;
+
+  return insets;
+}
+
+gfx::Rect TrayBackgroundView::GetInkDropBounds() const {
+  gfx::Insets insets = GetBackgroundInsets();
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(insets);
+  // Currently, we don't handle view resize. To compensate for that, enlarge the
+  // bounds by two tray icons so that ripple looks good even if two more icons
+  // are added when ripple is active. Note that ink drop mask handles resize
+  // correctly, so the extra ripple would be clipped.
+  // TODO(mohsen): Remove this extra size when resize is handled properly (see
+  // https://crbug.com/666175).
+  const int icon_size =
+      kTrayIconSize + 2 * GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
+  bounds.set_width(bounds.width() + 2 * icon_size);
+  bounds.set_height(bounds.height() + 2 * icon_size);
+  return bounds;
 }
 
 }  // namespace ash

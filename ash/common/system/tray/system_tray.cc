@@ -225,7 +225,12 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
-  SetContentsBackground(true);
+  if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    SetContentsBackground(false);
+  } else {
+    SetContentsBackground(true);
+  }
 }
 
 SystemTray::~SystemTray() {
