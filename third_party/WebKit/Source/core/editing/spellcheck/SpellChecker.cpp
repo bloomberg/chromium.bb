@@ -573,6 +573,10 @@ static void addMarker(Document* document,
   DCHECK_GE(location, 0);
   const EphemeralRange& rangeToMark =
       calculateCharacterSubrange(checkingRange, location, length);
+  if (!isSpellCheckingEnabledFor(rangeToMark.startPosition()))
+    return;
+  if (!isSpellCheckingEnabledFor(rangeToMark.endPosition()))
+    return;
   document->markers().addMarker(rangeToMark.startPosition(),
                                 rangeToMark.endPosition(), type, description,
                                 hash);

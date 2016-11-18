@@ -58,4 +58,10 @@ spellcheck_test(
     'insertText zz.',
     '<div contenteditable spellcheck="false"><span spellcheck="false">[zz.]</span></div>',
     'Typing in child with spellcheck=false whose parent node has spellcheck=false.');
+
+spellcheck_test(
+    '<div contenteditable><span spellcheck="false">zz</span>&nbsp;|</div>',
+    'insertText zz.',
+    '<div contenteditable><span spellcheck="false">zz</span>\u00A0#zz#.</div>',
+    'Typing in spellchecked parent should not check child with spellcheck=false.');
 </script>
