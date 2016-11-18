@@ -105,10 +105,6 @@ void RotationViewportAnchor::setAnchor() {
       m_rootFrameView->getRootFrameViewport();
   DCHECK(rootFrameViewport);
 
-  IntRect outerViewRect =
-      layoutViewport().visibleContentRect(IncludeScrollbars);
-  IntRect innerViewRect = rootFrameViewport->visibleContentRect();
-
   m_oldPageScaleFactor = m_visualViewport->scale();
   m_oldMinimumPageScaleFactor =
       m_pageScaleConstraintsSet.finalConstraints().minimumScale;
@@ -123,31 +119,31 @@ void RotationViewportAnchor::setAnchor() {
   m_anchorInNodeCoords = FloatSize();
   m_normalizedVisualViewportOffset = FloatSize();
 
-  if (innerViewRect.isEmpty())
+  IntRect innerViewRect = rootFrameViewport->visibleContentRect();
+
+  // Preserve origins at the absolute screen origin.
+  if (innerViewRect.location() == IntPoint::zero() || innerViewRect.isEmpty())
     return;
 
-  // Preserve origins at the absolute screen origin
-  if (innerViewRect.location() == IntPoint::zero())
-    return;
-
-  // Inner rectangle should be within the outer one.
-  DCHECK(outerViewRect.contains(innerViewRect));
-
-  // Outer rectangle is used as a scale, we need positive width and height.
-  DCHECK(!outerViewRect.isEmpty());
-
-  m_normalizedVisualViewportOffset =
-      FloatSize(innerViewRect.location() - outerViewRect.location());
+  IntRect outerViewRect =
+      layoutViewport().visibleContentRect(IncludeScrollbars);
 
   // Normalize by the size of the outer rect
+  DCHECK(!outerViewRect.isEmpty());
+  m_normalizedVisualViewportOffset = m_visualViewport->scrollOffset();
   m_normalizedVisualViewportOffset.scale(1.0 / outerViewRect.width(),
                                          1.0 / outerViewRect.height());
 
-  FloatPoint anchorOffset(innerViewRect.size());
+  // Note, we specifically use the unscaled visual viewport size here as the
+  // conversion into content-space below will apply the scale.
+  FloatPoint anchorOffset(m_visualViewport->size());
   anchorOffset.scale(m_anchorInInnerViewCoords.width(),
                      m_anchorInInnerViewCoords.height());
 
-  const FloatPoint anchorPointInContents = m_rootFrameView->rootFrameToContents(
+  // Note, we specifically convert to the rootFrameView contents here, rather
+  // than the layout viewport. That's because hit testing works from the
+  // FrameView's content coordinates even if it's not the layout viewport.
+  const FloatPoint anchorPointInContents = m_rootFrameView->frameToContents(
       m_visualViewport->viewportToRootFrame(anchorOffset));
 
   Node* node = findNonEmptyAnchorNode(flooredIntPoint(anchorPointInContents),
