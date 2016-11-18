@@ -11,37 +11,74 @@ package org.chromium.chrome.test;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import java.io.FileOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
-// Note: if you move this class, make sure you have also updated AndroidManifest.xml
+/**
+ * Content provider for testing content:// urls.
+ * Note: if you move this class, make sure you have also updated AndroidManifest.xml
+ *
+ * Important note about including chromium classes in this content provider:
+ * TestContentProvider is part of ChromePublicTest APK. However the instrumentation tests
+ * run in the process of the package under test, which is Chrome apk. Normally this is not
+ * a problem, however when debug is set to true, Chromium build files enable multidex. In
+ * multidex mode, the Chromium files main dex file is in Chrome apk, which are not accessible
+ * from the process that runs this ContentProvider.
+ *
+ * One of the possible workarounds is running this ContentProvider in the same process with
+ * Chrome apk (i.e the process that runs the instrumentation tests). However, this
+ * requires declaring a sharedUserId between the Chrome apk and ChromePublicTestApk and
+ * then setting the target process for ContentProvider for the instrumentation target package.
+ *     android:process="{{manifest_package}}"
+ *
+ * Note that modifying the application manifest file could be problematic as Chrome has
+ * side by side channels.
+ *
+ * The second one is moving the TestContentProvider to the ChromeTestSuport apk. This
+ * seems a lot better path than above.
+ */
 public class TestContentProvider extends ContentProvider {
+    private static final String ANDROID_DATA_FILE_PATH = "android/";
     private static final String AUTHORITY = "org.chromium.chrome.test.TestContentProvider";
     private static final String CONTENT_SCHEME = "content://";
-    private static final String CONTENT_TYPE = "image/png";
     private static final String GET_RESOURCE_REQUEST_COUNT = "get_resource_request_count";
-    private static final String RESET_RESOURCE_REQUEST_COUNT = "reset_resource_request_count";
+    private static final String RESET_RESOURCE_REQUEST_COUNTS = "reset_resource_request_counts";
+    private static final String SET_DATA_PATH = "set_data_path";
     private static final String TAG = "TestContentProvider";
     private enum ColumnIndex {
         RESOURCE_REQUEST_COUNT_COLUMN,
     }
-    private final Map<String, Integer> mResourceRequestCount;
+    private Map<String, Integer> mResourceRequestCount;
+    private String mDataFilePath;
+
+    // Content providers can be accessed from multiple threads.
+    private Object mLock = new Object();
 
     public static String createContentUrl(String target) {
         return CONTENT_SCHEME + AUTHORITY + "/" + target;
     }
 
     private static Uri createRequestUri(final String target, String resource) {
-        return Uri.parse(createContentUrl(target) + "?" + resource);
+        if (resource == null) {
+            return Uri.parse(createContentUrl(target));
+        } else {
+            return Uri.parse(createContentUrl(target) + "?" + resource);
+        }
+    }
+
+    public static void setDataFilePath(Context context, String resource) {
+        Uri uri = createRequestUri(SET_DATA_PATH, resource);
+        context.getContentResolver().query(uri, null, null, null, null);
     }
 
     public static int getResourceRequestCount(Context context, String resource) {
@@ -55,15 +92,10 @@ public class TestContentProvider extends ContentProvider {
         }
     }
 
-    public static void resetResourceRequestCount(Context context, String resource) {
-        Uri uri = createRequestUri(RESET_RESOURCE_REQUEST_COUNT, resource);
+    public static void resetResourceRequestCounts(Context context) {
+        Uri uri = createRequestUri(RESET_RESOURCE_REQUEST_COUNTS, null);
         // A null cursor is returned for this request.
         context.getContentResolver().query(uri, null, null, null, null);
-    }
-
-    public TestContentProvider() {
-        super();
-        mResourceRequestCount = new HashMap<String, Integer>();
     }
 
     @Override
@@ -72,19 +104,28 @@ public class TestContentProvider extends ContentProvider {
     }
 
     @Override
-    public AssetFileDescriptor openAssetFile(Uri uri, String mode) {
+    public ParcelFileDescriptor openFile(final Uri uri, String mode) throws FileNotFoundException {
         String resource = uri.getLastPathSegment();
-        if (mResourceRequestCount.containsKey(resource)) {
-            mResourceRequestCount.put(resource, mResourceRequestCount.get(resource) + 1);
-        } else {
-            mResourceRequestCount.put(resource, 1);
+        synchronized (mLock) {
+            if (mResourceRequestCount.containsKey(resource)) {
+                mResourceRequestCount.put(resource, mResourceRequestCount.get(resource) + 1);
+            } else {
+                mResourceRequestCount.put(resource, 1);
+            }
         }
-        return createImage();
+        try {
+            return ParcelFileDescriptor.open(
+                    new File(mDataFilePath + "/" + ANDROID_DATA_FILE_PATH + resource),
+                    ParcelFileDescriptor.MODE_READ_ONLY);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return null;
     }
 
     @Override
     public String getType(Uri uri) {
-        return CONTENT_TYPE;
+        return URLConnection.guessContentTypeFromName(uri.getLastPathSegment());
     }
 
     @Override
@@ -181,46 +222,18 @@ public class TestContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
-        String action = uri.getLastPathSegment();
-        String resource = uri.getQuery();
-        if (GET_RESOURCE_REQUEST_COUNT.equals(action)) {
-            return new ProviderStateCursor(mResourceRequestCount.containsKey(resource)
-                    ? mResourceRequestCount.get(resource) : 0);
-        } else if (RESET_RESOURCE_REQUEST_COUNT.equals(action)) {
-            mResourceRequestCount.put(resource, 0);
-        }
-        return null;
-    }
-
-    // 1x1 black dot png image.
-    private static final byte[] IMAGE = {
-        (byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00,
-        0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-        0x01, 0x08, 0x00, 0x00, 0x00, 0x00, 0x3a, 0x7e, (byte) 0x9b, 0x55, 0x00,
-        0x00, 0x00, 0x01, 0x73, 0x52, 0x47, 0x42, 0x00, (byte) 0xae, (byte) 0xce,
-        0x1c, (byte) 0xe9, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x44, 0x41, 0x54, 0x08,
-        0x1d, 0x01, 0x02, 0x00, (byte) 0xfd, (byte) 0xff, 0x00, 0x00, 0x00, 0x02,
-        0x00, 0x01, (byte) 0xcd, (byte) 0xe3, (byte) 0xd1, 0x2b, 0x00, 0x00, 0x00,
-        0x00, 0x49, 0x45, 0x4e, 0x44, (byte) 0xae, 0x42, 0x60, (byte) 0x82
-    };
-
-    private static AssetFileDescriptor createImage() {
-        ParcelFileDescriptor[] pfds = null;
-        FileOutputStream fileOut = null;
-        try {
-            try {
-                pfds = ParcelFileDescriptor.createPipe();
-                fileOut = new FileOutputStream(pfds[1].getFileDescriptor());
-                fileOut.write(IMAGE);
-                fileOut.flush();
-                return new AssetFileDescriptor(pfds[0], 0, -1);
-            } finally {
-                if (fileOut != null) fileOut.close();
-                if (pfds != null && pfds[1] != null) pfds[1].close();
+        synchronized (mLock) {
+            String action = uri.getLastPathSegment();
+            String resource = uri.getQuery();
+            if (GET_RESOURCE_REQUEST_COUNT.equals(action)) {
+                return new ProviderStateCursor(mResourceRequestCount.containsKey(resource)
+                        ? mResourceRequestCount.get(resource) : 0);
+            } else if (RESET_RESOURCE_REQUEST_COUNTS.equals(action)) {
+                mResourceRequestCount = new HashMap<String, Integer>();
+            } else if (SET_DATA_PATH.equals(action)) {
+                mDataFilePath = resource;
             }
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
+            return null;
         }
-        return null;
     }
 }
