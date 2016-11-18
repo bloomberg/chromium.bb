@@ -60,6 +60,10 @@ Polymer({
     }
   },
 
+  listeners: {
+    'refresh-pref': 'onRefreshPref_',
+  },
+
   /** @override */
   created: function() {
     settings.initializeRouteFromUrl();
@@ -141,6 +145,15 @@ Polymer({
     }
 
     this.$.main.searchContents(urlSearchQuery);
+  },
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onRefreshPref_: function(e) {
+    var prefName = /** @type {string} */(e.detail);
+    return /** @type {SettingsPrefsElement} */(this.$.prefs).refresh(prefName);
   },
 
   /**

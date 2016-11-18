@@ -33,6 +33,16 @@ Polymer({
   },
 
   /** @private */
+  onExtensionDisable_: function() {
+    // TODO(dbeam): this is a pretty huge bummer. It means there are things
+    // (inputs) that our prefs system is not observing. And that changes from
+    // other sources (i.e. disabling/enabling an extension from
+    // chrome://extensions or from the omnibox directly) will not update
+    // |this.prefs.proxy| directly (nor the UI). We should fix this eventually.
+    this.fire('refresh-pref', 'proxy');
+  },
+
+  /** @private */
   onRestartTap_: function() {
     // TODO(dbeam): we should prompt before restarting the browser.
     settings.LifetimeBrowserProxyImpl.getInstance().restart();

@@ -227,11 +227,16 @@
      * @private
      */
     setPrefCallback_: function(key, success) {
-      if (success)
-        return;
+      if (!success)
+        this.refresh(key);
+    },
 
-      // Get the current pref value from chrome.settingsPrivate to ensure the
-      // UI stays up to date.
+    /**
+     * Get the current pref value from chrome.settingsPrivate to ensure the UI
+     * stays up to date.
+     * @param {string} key
+     */
+    refresh: function(key) {
       this.settingsApi_.getPref(key, function(pref) {
         this.updatePrefs_([pref]);
       }.bind(this));
