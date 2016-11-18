@@ -134,13 +134,28 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Sets the attachment of the bubble.
+     * @param {!Attachment} attachment Bubble attachment.
+     */
+    setAttachment_: function(attachment) {
+      var styleClassList = ['bubble-right', 'bubble-left',
+                            'bubble-top', 'bubble-bottom'];
+      for (var i = 0; i < styleClassList.length; ++i)
+        this.classList.toggle(styleClassList[i], i == attachment);
+    },
+
+    /**
      * Shows the bubble for given anchor element.
      * @param {!Object} pos Bubble position (left, top, right, bottom in px).
      * @param {HTMLElement} opt_content Content to show in bubble.
      *     If not specified, bubble element content is shown.
+     * @param {Attachment=} opt_attachment Bubble attachment (on which side of
+     *     the element it should be displayed).
+     * @param {boolean=} opt_oldstyle Optional flag to force old style bubble,
+     *     i.e. pre-MD-style.
      * @private
      */
-    showContentAt_: function(pos, opt_content) {
+    showContentAt_: function(pos, opt_content, opt_attachment, opt_oldstyle) {
       this.style.top = this.style.left = this.style.right = this.style.bottom =
           'auto';
       for (var k in pos) {
@@ -149,6 +164,11 @@ cr.define('cr.ui', function() {
       }
       if (opt_content !== undefined)
         this.replaceContent(opt_content);
+
+      if (opt_oldstyle) {
+        this.setAttribute('oldstyle', '');
+        this.setAttachment_(opt_attachment);
+      }
 
       this.hidden = false;
       this.classList.remove('faded');
@@ -172,8 +192,12 @@ cr.define('cr.ui', function() {
      * @param {number=} opt_padding Optional padding of the bubble.
      */
     showForElement: function(el, attachment, opt_offset, opt_padding) {
+      /* showForElement() is used only to display Accessibility popup in
+       * oobe_screen_network*. It requires old-style bubble, so it is safe
+       * to always set this flag here.
+       */
       this.showContentForElement(
-          el, attachment, undefined, opt_offset, opt_padding);
+          el, attachment, undefined, opt_offset, opt_padding, undefined, true);
     },
 
     /**
@@ -191,15 +215,20 @@ cr.define('cr.ui', function() {
      * @param {number=} opt_padding Optional padding of the bubble.
      * @param {boolean=} opt_match_width Optional flag to force the bubble have
      *     the same width as the element it it attached to.
+     * @param {boolean=} opt_oldstyle Optional flag to force old style bubble,
+     *     i.e. pre-MD-style.
      */
     showContentForElement: function(el, attachment, opt_content,
-                                    opt_offset, opt_padding, opt_match_width) {
+                                    opt_offset, opt_padding, opt_match_width,
+                                    opt_oldstyle) {
       /** @const */ var ARROW_OFFSET = 25;
       /** @const */ var DEFAULT_PADDING = 18;
 
       if (opt_padding == undefined)
         opt_padding = DEFAULT_PADDING;
-      opt_padding += 10;
+
+      if (!opt_oldstyle)
+        opt_padding += 10;
 
       var origin = cr.ui.login.DisplayManager.getPosition(el);
       var offset = opt_offset == undefined ?
@@ -263,7 +292,7 @@ cr.define('cr.ui', function() {
       }
 
       this.anchor_ = el;
-      this.showContentAt_(pos, opt_content);
+      this.showContentAt_(pos, opt_content, attachment, opt_oldstyle);
     },
 
     /**
