@@ -146,6 +146,11 @@ Polymer({
   },
 
   /** @private */
+  onDisableExtension_: function() {
+    this.fire('refresh-pref', 'homepage');
+  },
+
+  /** @private */
   onThemesTap_: function() {
     window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
   },
