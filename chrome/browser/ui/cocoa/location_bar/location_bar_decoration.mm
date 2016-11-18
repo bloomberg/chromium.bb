@@ -23,9 +23,9 @@ const CGFloat kDividerIncognitoGrayScale = 1.0;
 
 // Color values for the hover and pressed background.
 const SkColor kHoverBackgroundColor = 0x14000000;
-const SkColor kHoverDarkBackgroundColor = 0x1E000000;
+const SkColor kHoverDarkBackgroundColor = 0x1EFFFFFF;
 const SkColor kPressedBackgroundColor = 0x1E000000;
-const SkColor kPressedDarkBackgroundColor = 0x3D000000;
+const SkColor kPressedDarkBackgroundColor = 0x3DFFFFFF;
 
 // Amount of inset for the background frame.
 const CGFloat kBackgroundFrameYInset = 2.0;
@@ -180,7 +180,7 @@ void LocationBarDecoration::DrawWithBackgroundInFrame(NSRect frame,
           in_dark_mode ? kHoverDarkBackgroundColor : kHoverBackgroundColor;
     } else {
       background_color =
-          in_dark_mode ? kPressedBackgroundColor : kPressedDarkBackgroundColor;
+          in_dark_mode ? kPressedDarkBackgroundColor : kPressedBackgroundColor;
     }
 
     [skia::SkColorToSRGBNSColor(background_color) setFill];
