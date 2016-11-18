@@ -588,6 +588,8 @@ template("shadows_core") {
   }
 
   java_library(target_name) {
+    forward_variables_from(invoker, [ "output_name" ])
+
     # TODO(mikecase): Remove this once crbug.com/638875 is fixed.
     enable_incremental_javac_override = false
 
@@ -654,11 +656,13 @@ template("shadows_core") {
 shadows_core("shadows-core-3.0-21_java") {
   api_level = 21
   android_sdk_deps = [ ":android-all-5.0.0_r2-robolectric-1_java" ]
+  output_name = "shadows-core-3.0-21"
 }
 
 shadows_core("shadows-core-3.0-18_java") {
   api_level = 18
   android_sdk_deps = [ ":android-all-4.3_r2-robolectric-0_java" ]
+  output_name = "shadows-core-3.0-18"
 }
 
 java_library("shadows-multidex-3.0_java") {
