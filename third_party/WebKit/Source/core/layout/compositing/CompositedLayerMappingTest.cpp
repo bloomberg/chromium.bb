@@ -837,6 +837,86 @@ TEST_P(CompositedLayerMappingTest,
 }
 
 TEST_P(CompositedLayerMappingTest,
+       DecorationOutlineLayerOnlyCreatedInCompositedScrolling) {
+  setBodyInnerHTML(
+      "<style>"
+      "#target { overflow: scroll; height: 200px; width: 200px; will-change: "
+      "transform; background: white local content-box; "
+      "outline: 1px solid blue; outline-offset: -2px;}"
+      "#scrolled { height: 300px; }"
+      "</style>"
+      "<div id=\"parent\">"
+      "  <div id=\"target\"><div id=\"scrolled\"></div></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* element = document().getElementById("target");
+  PaintLayer* paintLayer =
+      toLayoutBoxModelObject(element->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+
+  // Decoration outline layer is created when composited scrolling.
+  EXPECT_TRUE(paintLayer->hasCompositedLayerMapping());
+  EXPECT_TRUE(paintLayer->needsCompositedScrolling());
+
+  CompositedLayerMapping* mapping = paintLayer->compositedLayerMapping();
+  EXPECT_TRUE(mapping->decorationOutlineLayer());
+
+  // No decoration outline layer is created when not composited scrolling.
+  element->setAttribute(HTMLNames::styleAttr, "overflow: visible;");
+  document().view()->updateAllLifecyclePhases();
+  paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+
+  mapping = paintLayer->compositedLayerMapping();
+  EXPECT_FALSE(paintLayer->needsCompositedScrolling());
+  EXPECT_FALSE(mapping->decorationOutlineLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       DecorationOutlineLayerCreatedAndDestroyedInCompositedScrolling) {
+  setBodyInnerHTML(
+      "<style>"
+      "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
+      "white local content-box; outline: 1px solid blue;}"
+      "#scrolled { height: 300px; }"
+      "</style>"
+      "<div id=\"parent\">"
+      "  <div id=\"scroller\"><div id=\"scrolled\"></div></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* scroller = document().getElementById("scroller");
+  PaintLayer* paintLayer =
+      toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+
+  CompositedLayerMapping* mapping = paintLayer->compositedLayerMapping();
+  EXPECT_FALSE(mapping->decorationOutlineLayer());
+
+  // The decoration outline layer is created when composited scrolling
+  // with an outline drawn over the composited scrolling region.
+  scroller->setAttribute(HTMLNames::styleAttr, "outline-offset: -2px;");
+  document().view()->updateAllLifecyclePhases();
+  paintLayer = toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+
+  mapping = paintLayer->compositedLayerMapping();
+  EXPECT_TRUE(paintLayer->needsCompositedScrolling());
+  EXPECT_TRUE(mapping->decorationOutlineLayer());
+
+  // The decoration outline layer is destroyed when the scrolling region
+  // will not be covered up by the outline.
+  scroller->removeAttribute(HTMLNames::styleAttr);
+  document().view()->updateAllLifecyclePhases();
+  paintLayer = toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+
+  mapping = paintLayer->compositedLayerMapping();
+  EXPECT_FALSE(mapping->decorationOutlineLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
        BackgroundPaintedIntoGraphicsLayerIfNotCompositedScrolling) {
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
   setBodyInnerHTML(

@@ -7,7 +7,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -16,7 +17,8 @@
       "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -29,7 +31,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -49,7 +52,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintMask",
-        "GraphicsLayerPaintCompositedScroll"
+        "GraphicsLayerPaintCompositedScroll",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -60,7 +64,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -79,7 +84,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -89,7 +95,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -99,7 +106,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -110,7 +118,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     }
   ]

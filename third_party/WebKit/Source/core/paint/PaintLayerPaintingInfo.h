@@ -68,10 +68,12 @@ enum PaintLayerFlag {
   PaintLayerPaintingSkipRootBackground = 1 << 10,
   PaintLayerPaintingChildClippingMaskPhase = 1 << 11,
   PaintLayerPaintingRenderingClipPathAsMask = 1 << 12,
+  PaintLayerPaintingCompositingDecorationPhase = 1 << 13,
   PaintLayerPaintingCompositingAllPhases =
       (PaintLayerPaintingCompositingBackgroundPhase |
        PaintLayerPaintingCompositingForegroundPhase |
-       PaintLayerPaintingCompositingMaskPhase)
+       PaintLayerPaintingCompositingMaskPhase |
+       PaintLayerPaintingCompositingDecorationPhase)
 };
 
 typedef unsigned PaintLayerFlags;

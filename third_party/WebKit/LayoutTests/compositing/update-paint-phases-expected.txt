@@ -8,7 +8,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -20,7 +21,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintMask",
-        "GraphicsLayerPaintCompositedScroll"
+        "GraphicsLayerPaintCompositedScroll",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -31,7 +33,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -50,7 +53,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -60,7 +64,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -70,7 +75,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     },
     {
@@ -81,7 +87,8 @@
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
-        "GraphicsLayerPaintMask"
+        "GraphicsLayerPaintMask",
+        "GraphicsLayerPaintDecoration"
       ]
     }
   ]

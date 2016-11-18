@@ -120,6 +120,11 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
 
   GraphicsLayer* backgroundLayer() const { return m_backgroundLayer.get(); }
+
+  GraphicsLayer* decorationOutlineLayer() const {
+    return m_decorationOutlineLayer.get();
+  }
+
   bool backgroundLayerPaintsFixedRootBackground() const {
     return m_backgroundLayerPaintsFixedRootBackground;
   }
@@ -353,6 +358,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const IntRect& clippingBox);
   void updateBackgroundLayerGeometry(
       const FloatSize& relativeCompositingBoundsSize);
+  void updateDecorationOutlineLayerGeometry(
+      const FloatSize& relativeCompositingBoundsSize);
   void updateScrollingLayerGeometry(const IntRect& localCompositingBounds);
   void updateChildClippingMaskLayerGeometry();
 
@@ -383,6 +390,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
                                     bool needsAncestorClip);
   bool updateForegroundLayer(bool needsForegroundLayer);
   bool updateBackgroundLayer(bool needsBackgroundLayer);
+  bool updateDecorationOutlineLayer(bool needsDecorationOutlineLayer);
   bool updateMaskLayer(bool needsMaskLayer);
   void updateChildClippingMaskLayer(bool needsChildClippingMaskLayer);
   bool requiresHorizontalScrollbarLayer() const {
@@ -492,10 +500,11 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   //      |   <-OR->
   //      |   (m_scrollingLayer + m_scrollingContentsLayer) [OPTIONAL]
   //      + m_overflowControlsAncestorClippingLayer [OPTIONAL]
-  //        + m_overflowControlsHostLayer [OPTIONAL]
-  //          + m_layerForVerticalScrollbar [OPTIONAL]
-  //          + m_layerForHorizontalScrollbar [OPTIONAL]
-  //          + m_layerForScrollCorner [OPTIONAL]
+  //      | + m_overflowControlsHostLayer [OPTIONAL]
+  //      |   + m_layerForVerticalScrollbar [OPTIONAL]
+  //      |   + m_layerForHorizontalScrollbar [OPTIONAL]
+  //      |   + m_layerForScrollCorner [OPTIONAL]
+  //      + m_decorationOutlineLayer [OPTIONAL]
   // The overflow controls may need to be repositioned in the graphics layer
   // tree by the RLC to ensure that they stack above scrolling content.
   //
@@ -599,6 +608,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // overflow controls to compensate for this clip's offset. By using a separate
   // layer, the overflow controls can remain ignorant of ancestor clipping.
   std::unique_ptr<GraphicsLayer> m_overflowControlsAncestorClippingLayer;
+
+  // DecorationLayer which paints outline.
+  std::unique_ptr<GraphicsLayer> m_decorationOutlineLayer;
 
   // A squashing CLM has two possible squashing-related structures.
   //

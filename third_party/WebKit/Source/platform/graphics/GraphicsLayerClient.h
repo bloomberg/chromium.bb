@@ -43,9 +43,11 @@ enum GraphicsLayerPaintingPhaseFlags {
   GraphicsLayerPaintOverflowContents = (1 << 3),
   GraphicsLayerPaintCompositedScroll = (1 << 4),
   GraphicsLayerPaintChildClippingMask = (1 << 5),
+  GraphicsLayerPaintDecoration = (1 << 6),
   GraphicsLayerPaintAllWithOverflowClip =
       (GraphicsLayerPaintBackground | GraphicsLayerPaintForeground |
-       GraphicsLayerPaintMask)
+       GraphicsLayerPaintMask |
+       GraphicsLayerPaintDecoration)
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 

@@ -559,6 +559,22 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
     scrollingConfigChanged = true;
   }
 
+  // If the outline needs to draw over the composited scrolling contents layer
+  // or scrollbar layers it needs to be drawn into a separate layer.
+  int minBorderWidth =
+      std::min(layoutObject->style()->borderTopWidth(),
+               std::min(layoutObject->style()->borderLeftWidth(),
+                        std::min(layoutObject->style()->borderRightWidth(),
+                                 layoutObject->style()->borderBottomWidth())));
+  bool needsDecorationOutlineLayer =
+      m_owningLayer.getScrollableArea() &&
+      m_owningLayer.getScrollableArea()->usesCompositedScrolling() &&
+      layoutObject->style()->hasOutline() &&
+      layoutObject->style()->outlineOffset() < -minBorderWidth;
+
+  if (updateDecorationOutlineLayer(needsDecorationOutlineLayer))
+    layerConfigChanged = true;
+
   if (updateOverflowControlsLayers(
           requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(),
           requiresScrollCornerLayer(), needsAncestorClip))
@@ -944,6 +960,14 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
                           relativeCompositingBounds);
   updateForegroundLayerGeometry(contentsSize, clippingBox);
   updateBackgroundLayerGeometry(contentsSize);
+  // TODO(yigu): Currently the decoration layer uses the same contentSize
+  // as background layer and foreground layer. There are scenarios that
+  // the sizes could be different. The actual size of the decoration layer
+  // should be calculated separately.
+  // The size of the background layer should be different as well. We need to
+  // check whether we are painting the decoration layer into the background and
+  // then ignore or consider the outline when determining the contentSize.
+  updateDecorationOutlineLayerGeometry(contentsSize);
   updateScrollingLayerGeometry(localCompositingBounds);
   updateChildClippingMaskLayerGeometry();
 
@@ -1370,6 +1394,20 @@ void CompositedLayerMapping::updateBackgroundLayerGeometry(
       m_graphicsLayer->offsetFromLayoutObject());
 }
 
+void CompositedLayerMapping::updateDecorationOutlineLayerGeometry(
+    const FloatSize& relativeCompositingBoundsSize) {
+  if (!m_decorationOutlineLayer)
+    return;
+  FloatSize decorationSize = relativeCompositingBoundsSize;
+  m_decorationOutlineLayer->setPosition(FloatPoint());
+  if (decorationSize != m_decorationOutlineLayer->size()) {
+    m_decorationOutlineLayer->setSize(decorationSize);
+    m_decorationOutlineLayer->setNeedsDisplay();
+  }
+  m_decorationOutlineLayer->setOffsetFromLayoutObject(
+      m_graphicsLayer->offsetFromLayoutObject());
+}
+
 void CompositedLayerMapping::registerScrollingLayers() {
   // Register fixed position layers and their containers with the scrolling
   // coordinator.
@@ -1436,6 +1474,10 @@ void CompositedLayerMapping::updateInternalHierarchy() {
     m_overflowControlsHostLayer->addChild(m_layerForVerticalScrollbar.get());
   if (m_layerForScrollCorner)
     m_overflowControlsHostLayer->addChild(m_layerForScrollCorner.get());
+
+  // Now add the DecorationOutlineLayer as a subtree to GraphicsLayer
+  if (m_decorationOutlineLayer.get())
+    m_graphicsLayer->addChild(m_decorationOutlineLayer.get());
 
   // The squashing containment layer, if it exists, becomes a no-op parent.
   if (m_squashingLayer) {
@@ -1568,8 +1610,17 @@ void CompositedLayerMapping::updateDrawsContent() {
   if (m_foregroundLayer)
     m_foregroundLayer->setDrawsContent(hasPaintedContent);
 
+  // TODO(yigu): The background should no longer setDrawsContent(true) if we
+  // only have an outline and we are drawing the outline into the decoration
+  // layer (i.e. if there is nothing actually drawn into the
+  // background anymore.)
+  // "hasPaintedContent" should be calculated in a way that does not take the
+  // outline into consideration.
   if (m_backgroundLayer)
     m_backgroundLayer->setDrawsContent(hasPaintedContent);
+
+  if (m_decorationOutlineLayer)
+    m_decorationOutlineLayer->setDrawsContent(true);
 
   if (m_maskLayer)
     m_maskLayer->setDrawsContent(true);
@@ -1770,12 +1821,14 @@ enum ApplyToGraphicsLayersModeFlags {
       (1 << 6),  // layers between m_graphicsLayer and children
   ApplyToNonScrollingContentLayers = (1 << 7),
   ApplyToScrollingContentLayers = (1 << 8),
+  ApplyToDecorationOutlineLayer = (1 << 9),
   ApplyToAllGraphicsLayers =
       (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer |
        ApplyToMaskLayers |
        ApplyToLayersAffectedByPreserve3D |
        ApplyToContentLayers |
-       ApplyToScrollingContentLayers)
+       ApplyToScrollingContentLayers |
+       ApplyToDecorationOutlineLayer)
 };
 typedef unsigned ApplyToGraphicsLayersMode;
 
@@ -1838,6 +1891,11 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
     f(mapping->layerForVerticalScrollbar());
   if ((mode & ApplyToScrollbarLayers) && mapping->layerForScrollCorner())
     f(mapping->layerForScrollCorner());
+
+  if (((mode & ApplyToDecorationOutlineLayer) ||
+       (mode & ApplyToNonScrollingContentLayers)) &&
+      mapping->decorationOutlineLayer())
+    f(mapping->decorationOutlineLayer());
 }
 
 struct UpdateRenderingContextFunctor {
@@ -2012,6 +2070,24 @@ bool CompositedLayerMapping::updateBackgroundLayer(bool needsBackgroundLayer) {
 
   if (layerChanged && !m_owningLayer.layoutObject()->documentBeingDestroyed())
     compositor()->rootFixedBackgroundsChanged();
+
+  return layerChanged;
+}
+
+bool CompositedLayerMapping::updateDecorationOutlineLayer(
+    bool needsDecorationOutlineLayer) {
+  bool layerChanged = false;
+  if (needsDecorationOutlineLayer) {
+    if (!m_decorationOutlineLayer) {
+      m_decorationOutlineLayer =
+          createGraphicsLayer(CompositingReasonLayerForDecoration);
+      m_decorationOutlineLayer->setPaintingPhase(GraphicsLayerPaintDecoration);
+      layerChanged = true;
+    }
+  } else if (m_decorationOutlineLayer) {
+    m_decorationOutlineLayer = nullptr;
+    layerChanged = true;
+  }
 
   return layerChanged;
 }
@@ -2218,6 +2294,8 @@ CompositedLayerMapping::paintingPhaseForPrimaryLayer() const {
     phase |= GraphicsLayerPaintForeground;
   if (!m_maskLayer)
     phase |= GraphicsLayerPaintMask;
+  if (!m_decorationOutlineLayer)
+    phase |= GraphicsLayerPaintDecoration;
 
   if (m_scrollingContentsLayer) {
     phase &= ~GraphicsLayerPaintForeground;
@@ -2956,6 +3034,8 @@ void CompositedLayerMapping::paintContents(
     paintLayerFlags |= PaintLayerPaintingOverflowContents;
   if (graphicsLayerPaintingPhase & GraphicsLayerPaintCompositedScroll)
     paintLayerFlags |= PaintLayerPaintingCompositingScrollingPhase;
+  if (graphicsLayerPaintingPhase & GraphicsLayerPaintDecoration)
+    paintLayerFlags |= PaintLayerPaintingCompositingDecorationPhase;
 
   if (graphicsLayer == m_backgroundLayer.get())
     paintLayerFlags |= PaintLayerPaintingRootBackgroundOnly;
@@ -2968,7 +3048,8 @@ void CompositedLayerMapping::paintContents(
       graphicsLayer == m_backgroundLayer.get() ||
       graphicsLayer == m_maskLayer.get() ||
       graphicsLayer == m_childClippingMaskLayer.get() ||
-      graphicsLayer == m_scrollingContentsLayer.get()) {
+      graphicsLayer == m_scrollingContentsLayer.get() ||
+      graphicsLayer == m_decorationOutlineLayer.get()) {
     bool paintRootBackgroundOntoScrollingContentsLayer =
         m_backgroundPaintsOntoScrollingContentsLayer;
     DCHECK(!paintRootBackgroundOntoScrollingContentsLayer ||
@@ -3249,6 +3330,8 @@ String CompositedLayerMapping::debugName(
     name = "Scrolling Layer";
   } else if (graphicsLayer == m_scrollingContentsLayer.get()) {
     name = "Scrolling Contents Layer";
+  } else if (graphicsLayer == m_decorationOutlineLayer.get()) {
+    name = "Decoration Layer";
   } else {
     ASSERT_NOT_REACHED();
   }

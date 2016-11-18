@@ -145,9 +145,10 @@ TEST_F(PaintLayerScrollableAreaTest,
   // outline is drawn outside the padding box.
   EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller14"));
 
-  // #scroller15 cannot paint background into scrolling contents layer because
-  // the outline is drawn inside the padding box.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller15"));
+  // #scroller15 can paint background into scrolling contents layer because
+  // the outline is drawn into the decoration layer which will not be covered
+  // up.
+  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller15"));
 
   // #scroller16 cannot paint background into scrolling contents layer because
   // the scroller has a clip which would not be respected by the scrolling

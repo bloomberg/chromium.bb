@@ -724,6 +724,8 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
       paintingPhasesJSON->pushString("GraphicsLayerPaintOverflowContents");
     if (m_paintingPhase & GraphicsLayerPaintCompositedScroll)
       paintingPhasesJSON->pushString("GraphicsLayerPaintCompositedScroll");
+    if (m_paintingPhase & GraphicsLayerPaintDecoration)
+      paintingPhasesJSON->pushString("GraphicsLayerPaintDecoration");
     json->setArray("paintingPhases", std::move(paintingPhasesJSON));
   }
 

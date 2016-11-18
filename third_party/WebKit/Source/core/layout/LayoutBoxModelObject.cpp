@@ -112,12 +112,6 @@ bool LayoutBoxModelObject::usesCompositedScrolling() const {
 }
 
 bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
-  int minBorderWidth = std::min(
-      style()->borderTopWidth(),
-      std::min(
-          style()->borderLeftWidth(),
-          std::min(style()->borderRightWidth(), style()->borderBottomWidth())));
-  bool outlineOverlapsPaddingBox = style()->outlineOffset() < -minBorderWidth;
   bool hasCustomScrollbars = false;
   // TODO(flackr): Detect opaque custom scrollbars which would cover up a
   // border-box background.
@@ -145,15 +139,6 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
   for (; layer; layer = layer->next()) {
     if (layer->attachment() == LocalBackgroundAttachment)
       continue;
-
-    // If the outline draws inside the border, it intends to draw on top of the
-    // scroller's background, however because it is painted into a layer behind
-    // the scrolling contents layer we avoid auto promoting in this case to
-    // avoid obscuring the outline.
-    // TODO(flackr): Outlines should be drawn on top of the scrolling contents
-    // layer so that they cannot be covered up by composited scrolling contents.
-    if (outlineOverlapsPaddingBox)
-      return false;
 
     // Solid color layers with an effective background clip of the padding box
     // can be treated as local.

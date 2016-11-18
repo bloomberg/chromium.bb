@@ -131,6 +131,8 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
      "layerForScrollingBlockSelection",
      "Secondary layer, to house block selection gaps for composited scrolling "
      "with no scrolling contents"},
+    {CompositingReasonLayerForDecoration, "layerForDecoration",
+     "Layer painted on top of other layers as decoration"},
     {CompositingReasonInlineTransform, "inlineTransform",
      "Has an inline transform, which causes subsequent layers to assume "
      "overlap"},

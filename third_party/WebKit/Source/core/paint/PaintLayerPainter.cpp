@@ -271,19 +271,18 @@ PaintResult PaintLayerPainter::paintLayerContents(
       paintFlags & PaintLayerPaintingCompositingForegroundPhase;
   bool isPaintingCompositedBackground =
       paintFlags & PaintLayerPaintingCompositingBackgroundPhase;
+  bool isPaintingCompositedDecoration =
+      paintFlags & PaintLayerPaintingCompositingDecorationPhase;
   bool isPaintingOverflowContents =
       paintFlags & PaintLayerPaintingOverflowContents;
   // Outline always needs to be painted even if we have no visible content.
-  // Also, the outline is painted in the background phase during composited
-  // scrolling.  If it were painted in the foreground phase, it would move with
-  // the scrolled content. When not composited scrolling, the outline is painted
-  // in the foreground phase. Since scrolled contents are moved by paint
-  // invalidation in this case, the outline won't get 'dragged along'.
+  // It is painted as part of the decoration phase which paints content that
+  // is not scrolled and should be above scrolled content.
   bool shouldPaintSelfOutline =
       isSelfPaintingLayer && !isPaintingOverlayScrollbars &&
-      ((isPaintingScrollingContent && isPaintingCompositedBackground) ||
-       (!isPaintingScrollingContent && isPaintingCompositedForeground)) &&
+      (isPaintingCompositedDecoration || !isPaintingScrollingContent) &&
       m_paintLayer.layoutObject()->styleRef().hasOutline();
+
   bool shouldPaintContent = m_paintLayer.hasVisibleContent() &&
                             isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
