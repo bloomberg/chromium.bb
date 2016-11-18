@@ -38,7 +38,7 @@ class FakeBotTestExpectationsFactory(object):
             PASS PASS FAIL PASS TIMEOUT
         then _all_results_by_builder would be:
             {
-                'WebKit Linux Precise' : {
+                'WebKit Linux Trusty' : {
                     'mytest.html': ['FAIL', 'PASS', 'TIMEOUT']
                 }
             }
@@ -54,26 +54,25 @@ class FakeBotTestExpectationsFactory(object):
 
 class FakePortFactory(PortFactory):
 
-    def __init__(self, host):
+    def __init__(self, host, all_build_types=None, all_systems=None):
         super(FakePortFactory, self).__init__(host)
-        self._all_build_types = ()
-        self._all_systems = ()
+        self._all_build_types = all_build_types or ()
+        self._all_systems = all_systems or ()
         self._configuration_specifier_macros = {
             'mac': ['mac10.10'],
             'win': ['win7'],
-            'linux': ['precise']
+            'linux': ['trusty']
         }
 
     def get(self, port_name=None, options=None, **kwargs):
         """Returns an object implementing the Port interface.
 
-        This fake object will always return the 'test' port factory.
+        This fake object will always return the 'test' port.
         """
         port = super(FakePortFactory, self).get('test', None)
         port.all_build_types = self._all_build_types
         port.all_systems = self._all_systems
-        port.configuration_specifier_macros_dict = (
-            self._configuration_specifier_macros)
+        port.configuration_specifier_macros_dict = self._configuration_specifier_macros
         return port
 
 
@@ -101,7 +100,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._port.configuration_specifier_macros_dict = {
             'mac': ['mac10.10'],
             'win': ['win7'],
-            'linux': ['precise']
+            'linux': ['trusty']
         }
         filesystem = self._host.filesystem
         self._write_tests_into_filesystem(filesystem)
@@ -171,17 +170,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/f.html [ NeedsRebaseline ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS"],
                 "test/c.html": ["PASS", "PASS"],
@@ -209,17 +208,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/c.html [ Skip ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS"],
                 "test/b.html": ["PASS", "IMAGE"],
             }
@@ -239,17 +238,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/c.html [ Failure NeedsManualRebaseline Pass ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS"],
                 "test/c.html": ["PASS", "PASS"]
@@ -273,17 +272,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/f.html [ Failure Pass ]""")
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "IMAGE"],
                 "test/b.html": ["PASS", "TEXT"],
                 "test/c.html": ["PASS", "IMAGE+TEXT"],
@@ -317,17 +316,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/c.html [ Crash Pass ]""")
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "IMAGE", "PASS"],
                 "test/c.html": ["PASS", "CRASH", "PASS"],
@@ -346,17 +345,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/a.html [ Failure Pass ]""")
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["IMAGE", "IMAGE", "IMAGE"],
             }
         }
@@ -371,17 +370,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         test_expectations_before = ""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
             }
         }
@@ -400,9 +399,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/c.html [ Failure Pass ]""")
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
             "WebKit Mac10.10": {
                 "port_name": "mac-mac10.10",
@@ -412,11 +411,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         self._port.all_build_types = ('release',)
         self._port.all_systems = (('mac10.10', 'x86'),
-                                  ('precise', 'x86_64'))
+                                  ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS", "PASS"],
                 "test/c.html": ["AUDIO", "AUDIO", "AUDIO"],
@@ -452,9 +451,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 "port_name": "win-win7",
                 "specifiers": ['Win7', 'Release']
             },
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
             "WebKit Mac10.10": {
                 "port_name": "mac-mac10.10",
@@ -464,11 +463,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         self._port.all_build_types = ('release',)
         self._port.all_systems = (('mac10.10', 'x86'),
                                   ('win7', 'x86'),
-                                  ('precise', 'x86_64'))
+                                  ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS", "PASS"],
                 "test/c.html": ["PASS", "PASS", "PASS"],
@@ -518,29 +517,29 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 "port_name": "win-win7",
                 "specifiers": ['Win7', 'Debug']
             },
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
-            "WebKit Linux Precise (dbg)": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Debug']
+            "WebKit Linux Trusty (dbg)": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Debug']
             },
         })
         self._port.all_build_types = ('release', 'debug')
         self._port.all_systems = (('win7', 'x86'),
-                                  ('precise', 'x86_64'))
+                                  ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "IMAGE", "PASS"],
                 "test/c.html": ["PASS", "IMAGE", "PASS"],
                 "test/d.html": ["PASS", "PASS", "PASS"],
                 "test/e.html": ["PASS", "PASS", "PASS"],
             },
-            'WebKit Linux Precise (dbg)': {
+            'WebKit Linux Trusty (dbg)': {
                 "test/a.html": ["PASS", "IMAGE", "PASS"],
                 "test/b.html": ["PASS", "PASS", "PASS"],
                 "test/c.html": ["PASS", "PASS", "PASS"],
@@ -612,17 +611,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/e.html [ Failure Pass ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS", "PASS"],
                 "test/c.html": ["PASS", "IMAGE", "PASS"],
@@ -662,17 +661,17 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/e.html [ Crash Pass ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
             }
         }
         updated_expectations = (
@@ -718,21 +717,21 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) [ Linux Release ] test/e.html [ Failure Pass ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
 
         self._port.all_build_types = ('release', 'debug')
         self._port.all_systems = (
             ('win7', 'x86'),
-            ('precise', 'x86_64'),
+            ('trusty', 'x86_64'),
         )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS", "PASS"],
                 "test/c.html": ["PASS", "IMAGE", "PASS"],
@@ -749,13 +748,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'DEBUG: No builder with config <win7, x86, debug>\n',
             'WARNING: No matching builders for line, deleting line.\n',
             'INFO: Deleting line "Bug(test) [ Win ] test/a.html [ Failure Pass ]"\n',
-            'DEBUG: No builder with config <precise, x86_64, debug>\n',
-            'DEBUG: Checked builders:\n  WebKit Linux Precise\n',
+            'DEBUG: No builder with config <trusty, x86_64, debug>\n',
+            'DEBUG: Checked builders:\n  WebKit Linux Trusty\n',
             'INFO: Deleting line "Bug(test) [ Linux ] test/b.html [ Failure Pass ]"\n',
+            'DEBUG: No builder with config <trusty, x86_64, debug>\n',
             'DEBUG: No builder with config <win7, x86, release>\n',
             'DEBUG: No builder with config <win7, x86, debug>\n',
-            'DEBUG: No builder with config <precise, x86_64, debug>\n',
-            'DEBUG: Checked builders:\n  WebKit Linux Precise\n',
+            'DEBUG: Checked builders:\n  WebKit Linux Trusty\n',
             'INFO: Deleting line "Bug(test) test/d.html [ Failure Pass ]"\n',
         ])
         self._assert_expectations_match(
@@ -786,13 +785,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) [ Linux ] test/d.html [ Failure ]"""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
-            "WebKit Linux Precise (dbg)": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Debug']
+            "WebKit Linux Trusty (dbg)": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Debug']
             },
             "WebKit Win7": {
                 "port_name": "win-win7",
@@ -813,11 +812,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # (4) The third line needs and is missing results for Win Release.
         self._port.all_build_types = ('release', 'debug')
         self._port.all_systems = (('win7', 'x86'),
-                                  ('precise', 'x86_64'))
+                                  ('trusty', 'x86_64'))
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "IMAGE", "PASS"],
                 "test/c.html": ["PASS", "PASS", "PASS"],
@@ -834,9 +833,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         updated_expectations = (
             self._flake_remover.get_updated_test_expectations())
         self.assertLog([
-            'WARNING: Downloaded results are missing results for builder "WebKit Linux Precise (dbg)"\n',
+            'WARNING: Downloaded results are missing results for builder "WebKit Linux Trusty (dbg)"\n',
             'WARNING: Downloaded results are missing results for builder "WebKit Win7"\n',
-            'ERROR: Failed to find results for builder "WebKit Linux Precise (dbg)"\n',
+            'ERROR: Failed to find results for builder "WebKit Linux Trusty (dbg)"\n',
             'ERROR: Failed to find results for builder "WebKit Win7"\n',
         ])
 
@@ -849,21 +848,22 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """Tests that the call harness updates the TestExpectations file."""
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
-            "WebKit Linux Precise (dbg)": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Debug']
+            "WebKit Linux Trusty (dbg)": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Debug']
             },
         })
 
         # Setup the mock host and port.
         host = MockHost()
-        host.port_factory = FakePortFactory(host)
-        host.port_factory._all_build_types = ('release', 'debug')
-        host.port_factory._all_systems = (('precise', 'x86_64'),)
+        host.port_factory = FakePortFactory(
+            host,
+            all_build_types=('release', 'debug'),
+            all_systems=(('trusty', 'x86_64'),))
 
         # Write out a fake TestExpectations file.
         test_expectation_path = (
@@ -886,13 +886,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # Write out the fake builder bot results.
         expectation_factory = FakeBotTestExpectationsFactory()
         expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "IMAGE", "PASS"],
                 "test/c.html": ["PASS", "PASS", "PASS"],
                 "test/d.html": ["PASS", "PASS", "PASS"],
             },
-            'WebKit Linux Precise (dbg)': {
+            'WebKit Linux Trusty (dbg)': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
                 "test/b.html": ["PASS", "PASS", "PASS"],
                 "test/c.html": ["PASS", "PASS", "PASS"],
@@ -947,21 +947,22 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """
 
         self._define_builders({
-            "WebKit Linux Precise": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+            "WebKit Linux Trusty": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
-            "WebKit Linux Precise (dbg)": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Debug']
+            "WebKit Linux Trusty (dbg)": {
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Debug']
             },
         })
 
         # Setup the mock host and port.
         host = MockHost()
-        host.port_factory = FakePortFactory(host)
-        host.port_factory._all_build_types = ('release', 'debug')
-        host.port_factory._all_systems = (('precise', 'x86_64'),)
+        host.port_factory = FakePortFactory(
+            host,
+            all_build_types=('release', 'debug'),
+            all_systems=(('trusty', 'x86_64'),))
 
         # Write out a fake TestExpectations file.
         test_expectation_path = (
@@ -979,10 +980,10 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         # Write out the fake builder bot results.
         expectation_factory = FakeBotTestExpectationsFactory()
         expectation_factory._all_results_by_builder = {
-            'WebKit Linux Precise': {
+            'WebKit Linux Trusty': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
             },
-            'WebKit Linux Precise (dbg)': {
+            'WebKit Linux Trusty (dbg)': {
                 "test/a.html": ["PASS", "PASS", "PASS"],
             },
         }
@@ -1009,12 +1010,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         self._define_builders({
             "WebKit Linux": {
-                "port_name": "linux-precise",
-                "specifiers": ['Precise', 'Release']
+                "port_name": "linux-trusty",
+                "specifiers": ['Trusty', 'Release']
             },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('precise', 'x86_64'),)
+        self._port.all_systems = (('trusty', 'x86_64'),)
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {

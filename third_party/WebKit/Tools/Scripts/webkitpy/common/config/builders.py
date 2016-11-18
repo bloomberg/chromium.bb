@@ -39,17 +39,9 @@ BUILDERS = {
         "port_name": "win-win10",
         "specifiers": ['Win10', 'Release']
     },
-    "WebKit Linux Precise": {
-        "port_name": "linux-precise",
-        "specifiers": ['Precise', 'Release']
-    },
     "WebKit Linux Trusty": {
         "port_name": "linux-trusty",
         "specifiers": ['Trusty', 'Release']
-    },
-    "WebKit Linux Precise (dbg)": {
-        "port_name": "linux-precise",
-        "specifiers": ['Precise', 'Debug']
     },
     "WebKit Mac10.9": {
         "port_name": "mac-mac10.9",
@@ -74,11 +66,6 @@ BUILDERS = {
     "WebKit Android (Nexus4)": {
         "port_name": "android",
         "specifiers": ['Android', 'Release']
-    },
-    "linux_precise_blink_rel": {
-        "port_name": "linux-precise",
-        "specifiers": ['Precise', 'Release'],
-        "is_try_builder": True,
     },
     "linux_trusty_blink_rel": {
         "port_name": "linux-trusty",
