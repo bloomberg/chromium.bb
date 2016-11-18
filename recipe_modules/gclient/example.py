@@ -95,6 +95,8 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test('basic')
 
+  yield api.test('buildbot') + api.properties(path_config='buildbot')
+
   yield api.test('revision') + api.properties(revision='abc')
 
   yield api.test('tryserver') + api.properties.tryserver()

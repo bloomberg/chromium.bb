@@ -145,7 +145,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       if use_site_config_creds:
         try:
           build_path = self.m.path['build']
-        except KeyError:  # pragma: no cover | TODO(nodir): cover
+        except KeyError:
           raise self.m.step.StepFailure(
               'build path is not defined. This is normal for LUCI builds. '
               'In LUCI, use_site_config_creds parameter of '

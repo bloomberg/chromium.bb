@@ -67,7 +67,7 @@ class RietveldApi(recipe_api.RecipeApi):
     if authentication == 'oauth2':
       try:
         build_path = self.m.path['build']
-      except KeyError:  # pragma: no cover | TODO(nodir): cover
+      except KeyError:
         raise self.m.step.StepFailure(
           'build path is not defined. This is typical for LUCI builds. '
           'LUCI does not support rietveld.apply_issue; use bot_update instead')

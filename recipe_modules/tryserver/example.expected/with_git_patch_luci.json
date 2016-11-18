@@ -1,0 +1,8 @@
+[
+  {
+    "name": "$result",
+    "reason": "path[\"build\"] is not defined. Possibly this is a LUCI build. tryserver.apply_from_git is not supported in LUCI builds.",
+    "recipe_result": null,
+    "status_code": 1
+  }
+]

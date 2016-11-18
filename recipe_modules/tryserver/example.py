@@ -50,10 +50,18 @@ def GenTests(api):
 
   yield (api.test('with_git_patch') +
          api.properties(
+              path_config='buildbot',
               patch_storage='git',
               patch_project='v8',
               patch_repo_url='http://patch.url/',
               patch_ref='johndoe#123.diff'))
+
+  yield (api.test('with_git_patch_luci') +
+         api.properties(
+             patch_storage='git',
+             patch_project='v8',
+             patch_repo_url='http://patch.url/',
+             patch_ref='johndoe#123.diff'))
 
   yield (api.test('with_rietveld_patch') +
          api.properties.tryserver() +

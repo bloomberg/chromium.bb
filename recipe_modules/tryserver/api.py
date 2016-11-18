@@ -106,7 +106,7 @@ class TryserverApi(recipe_api.RecipeApi):
     patch_dir = self.m.path.mkdtemp('patch')
     try:
       build_path = self.m.path['build']
-    except KeyError:  # pragma: no cover | TODO(nodir): cover
+    except KeyError:
       raise self.m.step.StepFailure(
           'path["build"] is not defined. '
           'Possibly this is a LUCI build. '

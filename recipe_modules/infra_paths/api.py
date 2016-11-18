@@ -9,9 +9,10 @@ class InfraPathsApi(recipe_api.RecipeApi):
   """infra_paths module is glue for design mistakes. It will be removed."""
 
   def initialize(self):
-    # TODO(phajdan.jr): remove dupes from the engine and delete infra_ prefix.
-    self.m.path.set_config(
-        'infra_' + self.m.properties.get('path_config', 'buildbot'))
+    path_config = self.m.properties.get('path_config')
+    if path_config:
+      # TODO(phajdan.jr): remove dupes from the engine and delete infra_ prefix.
+      self.m.path.set_config('infra_' + path_config)
 
   @property
   def default_git_cache_dir(self):
@@ -24,5 +25,5 @@ class InfraPathsApi(recipe_api.RecipeApi):
     """
     try:
       return self.m.path['git_cache']
-    except KeyError:  # pragma: no cover | TODO(nodir): cover
+    except KeyError:
       return self.m.path['cache'].join('git')

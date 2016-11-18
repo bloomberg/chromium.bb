@@ -1,30 +1,8 @@
 [
   {
-    "cmd": [
-      "python",
-      "-u",
-      "RECIPE_PACKAGE_REPO[depot_tools]/apply_issue.py",
-      "-r",
-      "[START_DIR]/foo/bar",
-      "-i",
-      "1",
-      "-p",
-      "1",
-      "-s",
-      "http://review_tool.url",
-      "-E",
-      "[BUILD]/site_config/.rietveld_client_email",
-      "-k",
-      "[BUILD]/site_config/.rietveld_secret_key"
-    ],
-    "name": "apply_issue",
-    "~followup_annotations": [
-      "@@@STEP_LINK@Applied issue 1@http://review_tool.url/1@@@"
-    ]
-  },
-  {
     "name": "$result",
+    "reason": "build path is not defined. This is typical for LUCI builds. LUCI does not support rietveld.apply_issue; use bot_update instead",
     "recipe_result": null,
-    "status_code": 0
+    "status_code": 1
   }
 ]

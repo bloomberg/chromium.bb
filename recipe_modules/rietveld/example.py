@@ -17,8 +17,14 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield (api.test('basic')
-         + api.properties(issue=1,
-                          patchset=1,
-                          rietveld='http://review_tool.url')
-         )
+  yield api.test('basic') + api.properties(
+      issue=1,
+      patchset=1,
+      rietveld='http://review_tool.url',
+  )
+  yield api.test('buildbot') + api.properties(
+      path_config='buildbot',
+      issue=1,
+      patchset=1,
+      rietveld='http://review_tool.url',
+  )

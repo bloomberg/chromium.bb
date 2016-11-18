@@ -63,6 +63,11 @@ def GenTests(api):
       patch=False,
       revision='abc'
   )
+  yield api.test('buildbot') + api.properties(
+      path_config='buildbot',
+      patch=False,
+      revision='abc'
+  )
   yield api.test('basic_with_branch_heads') + api.properties(
       with_branch_heads=True,
       suffix='with branch heads'
@@ -79,6 +84,10 @@ def GenTests(api):
       refs=['+refs/change/1/2/333'],
   )
   yield api.test('trychange_oauth2') + api.properties(
+      oauth2=True,
+  )
+  yield api.test('trychange_oauth2_buildbot') + api.properties(
+      path_config='buildbot',
       oauth2=True,
   )
   yield api.test('trychange_oauth2_json') + api.properties(
