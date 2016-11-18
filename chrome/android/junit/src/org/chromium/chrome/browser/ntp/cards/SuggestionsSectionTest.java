@@ -403,8 +403,10 @@ public class SuggestionsSectionTest {
         verify(section.getCategoryInfo(),
                 (action == ActionItem.ACTION_VIEW_ALL ? times(1) : never()))
                 .performViewAllAction(manager);
-        verify(suggestionsSource, action == ActionItem.ACTION_FETCH_MORE ? times(1) : never())
+        verify(suggestionsSource,
+                action == ActionItem.ACTION_RELOAD || action == ActionItem.ACTION_FETCH_MORE
+                        ? times(1)
+                        : never())
                 .fetchSuggestions(anyInt(), any(String[].class));
-        verify(adapter, action == ActionItem.ACTION_RELOAD ? times(1) : never()).reloadSnippets();
     }
 }

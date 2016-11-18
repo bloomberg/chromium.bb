@@ -77,13 +77,10 @@ class ActionItem extends OptionalLeaf {
                 mCategoryInfo.performViewAllAction(manager);
                 return;
             case ACTION_FETCH_MORE:
+            case ACTION_RELOAD:
                 manager.getSuggestionsSource().fetchSuggestions(
                         mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
-                mParentSection.onFetchMore();
-                return;
-            case ACTION_RELOAD:
-                // TODO(dgn): reload only the current section. https://crbug.com/634892
-                adapter.reloadSnippets();
+                mParentSection.onFetchStarted();
                 return;
             case ACTION_NONE:
             default:
