@@ -59,9 +59,6 @@ class PLATFORM_EXPORT UTF16TextIterator {
   int offset() const { return m_offset; }
   const UChar* characters() const { return m_characters; }
   const UChar* glyphEnd() const { return m_characters + m_currentGlyphLength; }
-  // FIXME: Only used by SimpleShaper, should be removed once the SimpleShaper
-  // is removed.
-  unsigned glyphLength() const { return m_currentGlyphLength; }
 
  private:
   bool isValidSurrogatePair(UChar32&);
