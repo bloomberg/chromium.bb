@@ -194,9 +194,7 @@ void InitializeDefaultBrowserTaskScheduler() {
           switches::kDisableBrowserTaskScheduler) &&
       sequenced_worker_pool_param != variation_params.end() &&
       sequenced_worker_pool_param->second == "true") {
-    base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
-  } else {
-    base::SequencedWorkerPool::EnableForProcess();
+    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
   }
 }
 

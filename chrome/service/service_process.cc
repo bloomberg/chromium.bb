@@ -157,12 +157,6 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
     Teardown();
     return false;
   }
-
-  // Enable SequencedWorkerPool in the service process.
-  // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
-  // redirection experiment concludes https://crbug.com/622400.
-  base::SequencedWorkerPool::EnableForProcess();
-
   blocking_pool_ = new base::SequencedWorkerPool(
       3, "ServiceBlocking", base::TaskPriority::USER_VISIBLE);
 
