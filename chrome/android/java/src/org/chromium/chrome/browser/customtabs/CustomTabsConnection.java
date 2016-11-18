@@ -24,6 +24,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.widget.RemoteViews;
 
 import org.chromium.base.CommandLine;
@@ -877,13 +878,18 @@ public class CustomTabsConnection {
             referrer = getReferrerForSession(session).getUrl();
         }
         if (referrer == null) referrer = "";
-        WebContents webContents = mExternalPrerenderHandler.addPrerender(
+        Pair<WebContents, WebContents> webContentsPair = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer,
                 contentBounds,
                 shouldPrerenderOnCellularForSession(session));
-        if (webContents == null) return false;
+        if (webContentsPair == null) return false;
+        WebContents dummyWebContents = webContentsPair.first;
+        if (webContentsPair.second != null) {
+            mClientManager.resetPostMessageHandlerForSession(session, webContentsPair.second);
+        }
         if (throttle) mClientManager.registerPrerenderRequest(uid, url);
-        mSpeculation = SpeculationParams.forPrerender(session, url, webContents, referrer, extras);
+        mSpeculation = SpeculationParams.forPrerender(
+                session, url, dummyWebContents, referrer, extras);
 
         RecordHistogram.recordBooleanHistogram("CustomTabs.PrerenderSessionUsesDefaultParameters",
                 mClientManager.usesDefaultSessionParameters(session));

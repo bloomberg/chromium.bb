@@ -50,7 +50,8 @@ bool CheckAndConvertParams(JNIEnv* env,
 
 }  // namespace
 
-bool ExternalPrerenderHandlerAndroid::AddPrerender(
+base::android::ScopedJavaLocalRef<jobject>
+    ExternalPrerenderHandlerAndroid::AddPrerender(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jprofile,
@@ -66,8 +67,7 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
 
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
   if (!url.is_valid())
-    return false;
-
+    return nullptr;
   content::Referrer referrer;
   if (!jreferrer.is_null()) {
     GURL referrer_url(ConvertJavaStringToUTF16(env, jreferrer));
@@ -80,7 +80,7 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
   PrerenderManager* prerender_manager =
       PrerenderManagerFactory::GetForBrowserContext(profile);
   if (!prerender_manager)
-    return false;
+    return nullptr;
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
@@ -101,7 +101,12 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
         gfx::Rect(left, top, right - left, bottom - top));
   }
 
-  return !!prerender_handle_;
+  if (!prerender_handle_) {
+    return nullptr;
+  } else {
+    return prerender_handle_
+        ->contents()->prerender_contents()->GetJavaWebContents();
+  }
 }
 
 void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(

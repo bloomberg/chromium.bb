@@ -879,8 +879,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
-     * Tests that when we use a pre-created renderer, the page loaded is the
-     * only one in the navigation history.
+     * Tests that basic postMessage functionality works through sending a single postMessage
+     * request.
      */
     @SmallTest
     @RetryOnFailure
@@ -904,35 +904,29 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 return mTestPage.equals(currentTab.getUrl());
             }
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return connection.postMessage(token, "Message", null)
-                        == CustomTabsService.RESULT_SUCCESS;
-            }
-        });
+        assertTrue(connection.postMessage(token, "Message", null)
+                == CustomTabsService.RESULT_SUCCESS);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 getActivity().getActivityTab().loadUrl(new LoadUrlParams(mTestPage2));
             }
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = getActivity().getActivityTab();
-                return mTestPage2.equals(currentTab.getUrl());
+                return currentTab.isLoadingAndRenderingDone();
             }
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return connection.postMessage(token, "Message", null)
-                        == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR;
-            }
-        });
+        assertTrue(connection.postMessage(token, "Message", null)
+                == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
     }
 
+    /**
+     * Tests whether validatePostMessageOrigin is necessary for making successful postMessage
+     * requests.
+     */
     @SmallTest
     @RetryOnFailure
     public void testPostMessageRequiresValidation() throws InterruptedException {
@@ -954,10 +948,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 return mTestPage.equals(currentTab.getUrl());
             }
         });
-        assertEquals(connection.postMessage(token, "Message", null),
-                CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
+        assertTrue(connection.postMessage(token, "Message", null)
+                == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
     }
 
+    /**
+     * Tests the sent postMessage requests not only return success, but is also received by page.
+     */
     @SmallTest
     @RetryOnFailure
     public void testPostMessageReceivedInPage() throws InterruptedException {
@@ -982,13 +979,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 return url.equals(currentTab.getUrl());
             }
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return connection.postMessage(token, "New title", null)
-                        == CustomTabsService.RESULT_SUCCESS;
-            }
-        });
+        assertTrue(connection.postMessage(token, "New title", null)
+                == CustomTabsService.RESULT_SUCCESS);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -998,6 +990,9 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         });
     }
 
+    /**
+     * Tests the postMessage requests sent from the page is received on the client side.
+     */
     @SmallTest
     @RetryOnFailure
     public void testPostMessageReceivedFromPage() throws InterruptedException {
@@ -1023,8 +1018,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 getInstrumentation().getTargetContext(), ChromeLauncherActivity.class));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        assertEquals(session.postMessage("Message", null),
-                CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
+        assertTrue(session.postMessage("Message", null)
+                == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
 
         try {
             startCustomTabActivityWithIntent(intent);
@@ -1041,6 +1036,61 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (TimeoutException e) {
             fail();
         }
+    }
+
+    /**
+     * Tests a postMessage request chain can start while prerendering and continue afterwards.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughPrerender() throws InterruptedException {
+        final String url =
+                mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
+        warmUpAndWait();
+        final CallbackHelper channelReadyHelper = new CallbackHelper();
+        final CallbackHelper messageReceivedHelper = new CallbackHelper();
+        final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+            @Override
+            public void onMessageChannelReady(Uri origin, Bundle extras) {
+                channelReadyHelper.notifyCalled();
+            }
+
+            @Override
+            public void onPostMessage(String message, Bundle extras) {
+                messageReceivedHelper.notifyCalled();
+            }
+        });
+        session.validatePostMessageOrigin();
+        session.mayLaunchUrl(Uri.parse(url), null, null);
+        try {
+            channelReadyHelper.waitForCallback(0);
+        } catch (TimeoutException e) {
+            fail();
+        }
+        // Initial title update during prerender.
+        assertTrue(session.postMessage("Prerendering ", null)
+                == CustomTabsService.RESULT_SUCCESS);
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        intent.setData(Uri.parse(url));
+        intent.setComponent(new ComponentName(
+                getInstrumentation().getTargetContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        // Update title again and verify both updates went through with the channel still intact.
+        assertTrue(session.postMessage("and loading", null)
+                == CustomTabsService.RESULT_SUCCESS);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return "Prerendering and loading".equals(currentTab.getTitle());
+            }
+        });
     }
 
     /**
@@ -1254,6 +1304,19 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertEquals(Uri.parse(mTestPage).getHost() + ":" + Uri.parse(mTestPage).getPort(),
                 ((EditText) mActivity.findViewById(R.id.url_bar)).getText()
                         .toString());
+    }
+
+    /**
+     * Test whether invalid urls are avoided for prerendering.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testPrerenderingInvalidUrl() throws Exception {
+        final CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
+        connection.newSession(token);
+        assertFalse(connection.mayLaunchUrl(token, Uri.parse("chrome://version"), null, null));
     }
 
     /**

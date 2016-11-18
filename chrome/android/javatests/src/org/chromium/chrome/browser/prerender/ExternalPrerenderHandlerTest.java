@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -82,7 +83,7 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 mExternalPrerenderHandler.cancelCurrentPrerender();
-                assertFalse(mExternalPrerenderHandler.hasPrerenderedUrl(
+                assertFalse(ExternalPrerenderHandler.hasPrerenderedUrl(
                         mProfile, mTestPage, webContents));
             }
         });
@@ -100,7 +101,7 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(mExternalPrerenderHandler.hasPrerenderedUrl(
+                assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                         mProfile, mTestPage2, webContents2));
             }
         });
@@ -112,13 +113,15 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
         Callable<WebContents> addPrerenderCallable = new Callable<WebContents>() {
             @Override
             public WebContents call() {
-                WebContents webContents =
+                Pair<WebContents, WebContents> webContents =
                         mExternalPrerenderHandler.addPrerender(
                                 mProfile, url, "", new Rect(), false);
                 assertNotNull(webContents);
-                assertTrue(mExternalPrerenderHandler.hasPrerenderedUrl(
-                        mProfile, url, webContents));
-                return webContents;
+                assertNotNull(webContents.first);
+                assertNotNull(webContents.second);
+                assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
+                        mProfile, url, webContents.first));
+                return webContents.first;
             }
         };
         return ThreadUtils.runOnUiThreadBlocking(addPrerenderCallable);
