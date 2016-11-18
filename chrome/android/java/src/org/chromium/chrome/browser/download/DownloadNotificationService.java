@@ -271,7 +271,7 @@ public class DownloadNotificationService extends Service {
         boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         builder.setOngoing(true).setProgress(100, percentage, indeterminate);
         builder.setPriority(Notification.PRIORITY_HIGH);
-        if (!indeterminate) {
+        if (!indeterminate && !isOfflinePage) {
             String duration = formatRemainingTime(mContext, timeRemainingInMillis);
             if (Build.VERSION.CODENAME.equals("N")
                     || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
