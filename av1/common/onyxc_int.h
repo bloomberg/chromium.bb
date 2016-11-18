@@ -814,7 +814,7 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
 
   if (max_tx_size >= TX_8X8) {
     category = (tx_size != max_tx_size && max_tx_size > TX_8X8) +
-               (TX_SIZES - 1 - tx_size) * 2;
+               (TX_SIZES - 1 - max_tx_size) * 2;
   }
   if (category == TXFM_PARTITION_CONTEXTS - 1) return category;
   return category * 3 + above + left;
