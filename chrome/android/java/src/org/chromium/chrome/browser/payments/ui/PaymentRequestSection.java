@@ -264,8 +264,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     /**
      * Sets how the summary text should be displayed.
      *
-     * @param leftTruncate How to truncate the left summary text.  Set to null to clear.
-     * @param rightTruncate How to truncate the right summary text.  Set to null to clear.
+     * @param leftTruncate      How to truncate the left summary text.  Set to null to clear.
+     * @param leftIsSingleLine  Whether the left summary text should be a single line.
+     * @param rightTruncate     How to truncate the right summary text.  Set to null to clear.
+     * @param rightIsSingleLine Whether the right summary text should be a single line.
      */
     public void setSummaryProperties(@Nullable TruncateAt leftTruncate, boolean leftIsSingleLine,
             @Nullable TruncateAt rightTruncate, boolean rightIsSingleLine) {
@@ -967,8 +969,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
                             ? R.style.PaymentsUiSectionDefaultText
                             : R.style.PaymentsUiSectionDisabledText);
-                    labelView.setText(convertOptionToString(
-                            mOption, mDelegate.isBoldLabelNeeded(OptionSection.this)));
+                    labelView.setText(convertOptionToString(mOption,
+                            mDelegate.isBoldLabelNeeded(OptionSection.this),
+                            false /* singleLine */));
                     labelView.setEnabled(isEnabled);
                 } else if (mRowType == OPTION_ROW_TYPE_ADD) {
                     // Shows string saying that the user can add a new option, e.g. credit card no.
@@ -1070,6 +1073,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         /** SectionInformation that is used to populate the views in this section. */
         private SectionInformation mSectionInformation;
 
+        /** Indicates whether the summary should be a single line. */
+        private boolean mSummaryInSingleLine = false;
+
         /**
          * Constructs an OptionSection.
          *
@@ -1127,6 +1133,20 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         @Override
         protected boolean isLogoNecessary() {
             return true;
+        }
+
+        @Override
+        public void setSummaryProperties(@Nullable TruncateAt leftTruncate,
+                boolean leftIsSingleLine, @Nullable TruncateAt rightTruncate,
+                boolean rightIsSingleLine) {
+            super.setSummaryProperties(
+                    leftTruncate, leftIsSingleLine, rightTruncate, rightIsSingleLine);
+
+            // Updates the summary if necessary after properties are changed.
+            mSummaryInSingleLine = leftIsSingleLine;
+            if (mSectionInformation != null) {
+                updateSelectedItem(mSectionInformation.getSelectedItem());
+            }
         }
 
         @Override
@@ -1230,7 +1250,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 setSummaryText(null, null);
             } else {
                 setLogoDrawable(selectedItem.getDrawableIcon());
-                setSummaryText(convertOptionToString(selectedItem, false), null);
+                setSummaryText(
+                        convertOptionToString(selectedItem, false /* useBoldLabel */,
+                                mSummaryInSingleLine),
+                        null);
             }
 
             updateControlLayout();
@@ -1285,25 +1308,29 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             }
         }
 
-        private CharSequence convertOptionToString(PaymentOption item, boolean useBoldLabel) {
+        private CharSequence convertOptionToString(
+                PaymentOption item, boolean useBoldLabel, boolean singleLine) {
             SpannableStringBuilder builder = new SpannableStringBuilder(item.getLabel());
+            String labelSeparator = singleLine
+                    ? getContext().getString(R.string.autofill_address_summary_separator)
+                    : "\n";
             if (useBoldLabel) {
                 builder.setSpan(
                         new StyleSpan(android.graphics.Typeface.BOLD), 0, builder.length(), 0);
             }
 
             if (!TextUtils.isEmpty(item.getSublabel())) {
-                if (builder.length() > 0) builder.append("\n");
+                if (builder.length() > 0) builder.append(labelSeparator);
                 builder.append(item.getSublabel());
             }
 
             if (!TextUtils.isEmpty(item.getTertiaryLabel())) {
-                if (builder.length() > 0) builder.append("\n");
+                if (builder.length() > 0) builder.append(labelSeparator);
                 builder.append(item.getTertiaryLabel());
             }
 
             if (!item.isComplete() && !TextUtils.isEmpty(item.getEditMessage())) {
-                if (builder.length() > 0) builder.append("\n");
+                if (builder.length() > 0) builder.append(labelSeparator);
                 String editMessage = item.getEditMessage();
                 builder.append(editMessage);
                 Object foregroundSpanner = new ForegroundColorSpan(ApiCompatibilityUtils.getColor(

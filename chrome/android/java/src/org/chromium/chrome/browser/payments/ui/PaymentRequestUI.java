@@ -454,7 +454,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                         // Let the summary display a SELECT/ADD button for the first subsection
                         // that needs it.
                         mShippingSummarySection.setSummaryText(null, null);
-                        mShippingSummarySection.setSummaryProperties(null, false, null, false);
+                        mShippingSummarySection.setSummaryProperties(null /* leftTruncate */,
+                                false /* leftIsSingleLine */, null /* rightTruncate */,
+                                false /* rightIsSingleLine */);
 
                         PaymentRequestSection section =
                                 mShippingAddressSection.getEditButtonState() == EDIT_BUTTON_GONE
@@ -463,8 +465,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     } else {
                         // Show the shipping name in the summary section.
                         mShippingSummarySection.setSummaryText(selectedShippingName, null);
-                        mShippingSummarySection.setSummaryProperties(
-                                TruncateAt.END, true, null, false);
+                        mShippingSummarySection.setSummaryProperties(TruncateAt.END,
+                                true /* leftIsSingleLine */, null /* rightTruncate */,
+                                false /* rightIsSingleLine */);
 
                         // Show the shipping address, phone and option below the summary.
                         mShippingSummarySection.setExtraTexts(new String[] {selectedShippingAddress,
@@ -477,9 +480,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 }
 
                 if (mRequestContactDetails) {
+                    // Sets the summary of the contact displays in a single line.
+                    mContactDetailsSection.setSummaryProperties(TruncateAt.END,
+                            true /* leftIsSingleLine */, null /* rightTruncate */,
+                            false /* rightIsSingleLine */);
                     updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
                 }
 
+                // Sets the summary of the payment method displays in a single line.
+                mPaymentMethodSection.setSummaryProperties(TruncateAt.END,
+                        true /* leftIsSingleLine */, null /* rightTruncate */,
+                        false /* rightIsSingleLine */);
                 updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
                 updatePayButtonEnabled();
 
@@ -974,6 +985,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
             // Disable all but the first button.
             updateSectionButtons();
+
+            // Sets the summary of the payment method and contact displays in multiple lines.
+            mContactDetailsSection.setSummaryProperties(null /* leftTruncate */,
+                    false /* leftIsSingleLine */, null /* rightTruncate */,
+                    false /* rightIsSingleLine */);
+            mPaymentMethodSection.setSummaryProperties(null /* leftTruncate */,
+                    false /* leftIsSingleLine */, null /* rightTruncate */,
+                    false /* rightIsSingleLine */);
 
             mIsShowingEditDialog = true;
         }

@@ -78,7 +78,7 @@
   <message name="IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses.">
     , '''
   </message>
-  <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
+  <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address." formatter_data="android_java">
     , '''
   </message>
 
