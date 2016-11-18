@@ -127,7 +127,6 @@ static_library("arc_base") {
 # TODO(crbug.com/662510): Remove this altogether.
 mojom("arc_bindings_old_types") {
   sources = [
-    "common/bitmap.mojom",
     "common/bluetooth.mojom",
     "common/net.mojom",
   ]
@@ -146,6 +145,7 @@ mojom("arc_bindings") {
     "common/arc_bridge.mojom",
     "common/audio.mojom",
     "common/auth.mojom",
+    "common/bitmap.mojom",
     "common/boot_phase_monitor.mojom",
     "common/clipboard.mojom",
     "common/crash_collector.mojom",
