@@ -58,6 +58,7 @@
 
       /* Input field. */
       #searchTerm {
+        -webkit-font-smoothing: antialiased;
         -webkit-margin-start: 2px;
         flex: 1;
         line-height: 185%;
@@ -68,9 +69,11 @@
         bottom: 0;
         cursor: text;
         left: 0;
+        overflow: hidden;
         position: absolute;
         right: 0;
         top: 0;
+        white-space: nowrap;
       }
 
       :host([has-search-text_]) label {
@@ -82,9 +85,10 @@
         background: transparent;
         border: none;
         color: white;
-        font-family: inherit;
+        font: inherit;
         outline: none;
         padding: 0;
+        position: relative;
         width: 100%;
       }
 
