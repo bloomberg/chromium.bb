@@ -17,7 +17,6 @@ const char* WindowAudioWorklet::supplementName() {
   return "WindowAudioWorklet";
 }
 
-// static
 WindowAudioWorklet& WindowAudioWorklet::from(LocalDOMWindow& window) {
   WindowAudioWorklet* supplement = static_cast<WindowAudioWorklet*>(
       Supplement<LocalDOMWindow>::from(window, supplementName()));
@@ -28,7 +27,6 @@ WindowAudioWorklet& WindowAudioWorklet::from(LocalDOMWindow& window) {
   return *supplement;
 }
 
-// static
 Worklet* WindowAudioWorklet::audioWorklet(DOMWindow& window) {
   return from(toLocalDOMWindow(window)).audioWorklet();
 }
@@ -37,6 +35,11 @@ AudioWorklet* WindowAudioWorklet::audioWorklet() {
   if (!m_audioWorklet && frame())
     m_audioWorklet = AudioWorklet::create(frame());
   return m_audioWorklet.get();
+}
+
+void WindowAudioWorklet::frameDestroyed() {
+  m_audioWorklet.clear();
+  DOMWindowProperty::frameDestroyed();
 }
 
 DEFINE_TRACE(WindowAudioWorklet) {

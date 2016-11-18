@@ -28,6 +28,8 @@ class MODULES_EXPORT WindowAudioWorklet final
   static Worklet* audioWorklet(DOMWindow&);
   AudioWorklet* audioWorklet();
 
+  void frameDestroyed() override;
+
   DECLARE_TRACE();
 
  private:

@@ -12,7 +12,7 @@
 namespace blink {
 
 class LocalFrame;
-class ThreadedWorkletGlobalScopeProxy;
+class ThreadedWorkletMessagingProxy;
 class WorkletGlobalScopeProxy;
 
 class MODULES_EXPORT AudioWorklet final : public Worklet {
@@ -22,6 +22,9 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   static AudioWorklet* create(LocalFrame*);
   ~AudioWorklet() override;
 
+  void initialize() final;
+  bool isInitialized() const final;
+
   WorkletGlobalScopeProxy* workletGlobalScopeProxy() const final;
 
   DECLARE_VIRTUAL_TRACE();
@@ -29,8 +32,9 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
  private:
   explicit AudioWorklet(LocalFrame*);
 
-  // TODO(ikilpatrick): this will change to a raw ptr once we have a thread.
-  std::unique_ptr<ThreadedWorkletGlobalScopeProxy> m_workletGlobalScopeProxy;
+  // The proxy outlives the worklet as it is used to perform thread shutdown,
+  // it deletes itself once this has occurred.
+  ThreadedWorkletMessagingProxy* m_workletMessagingProxy;
 };
 
 }  // namespace blink
