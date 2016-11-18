@@ -29,7 +29,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
-#include "components/search/search.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -229,11 +228,8 @@ void ExtensionInstallUIDefault::OpenAppInstalledUI(const std::string& app_id) {
   Profile* current_profile = profile_->GetOriginalProfile();
   Browser* browser = FindOrCreateVisibleBrowser(current_profile);
   if (browser) {
-    GURL url(search::IsInstantExtendedAPIEnabled()
-                 ? chrome::kChromeUIAppsURL
-                 : chrome::kChromeUINewTabURL);
-    chrome::NavigateParams params(
-        chrome::GetSingletonTabNavigateParams(browser, url));
+    chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+        browser, GURL(chrome::kChromeUIAppsURL)));
     chrome::Navigate(&params);
 
     content::NotificationService::current()->Notify(
