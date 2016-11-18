@@ -7813,10 +7813,12 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_WARPED_MOTION
     x->skip = 0;
 
+    rd_stats->dist = 0;
+    rd_stats->sse = 0;
+    rd_stats->skip = 1;
     rd_stats->rate = tmp_rate2;
     if (allow_motvar)
       rd_stats->rate += cpi->motion_mode_cost[bsize][mbmi->motion_mode];
-    rd_stats->dist = 0;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     if (!skip_txfm_sb) {
       int64_t rdcosty = INT64_MAX;
@@ -7931,6 +7933,10 @@ static int64_t handle_inter_mode(
       rd_stats_uv->rate = 0;
       rd_stats->skip = 1;
     }
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+    if (!is_comp_pred && mbmi->motion_mode == SIMPLE_TRANSLATION)
+      single_skippable[this_mode][refs[0]] = rd_stats->skip;
+#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_GLOBAL_MOTION
     if (this_mode == ZEROMV) {
       rd_stats->rate += GLOBAL_MOTION_RATE(mbmi->ref_frame[0]);
@@ -7995,9 +8001,9 @@ static int64_t handle_inter_mode(
   *disable_skip = best_disable_skip;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
+#if !(CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION)
   if (!is_comp_pred) single_skippable[this_mode][refs[0]] = rd_stats->skip;
 
-#if !(CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION)
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     x->recon_variance = av1_high_get_sby_perpixel_variance(
