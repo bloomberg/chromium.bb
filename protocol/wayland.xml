@@ -1872,6 +1872,14 @@
 	enter event.
         The time argument is a timestamp with millisecond
         granularity, with an undefined base.
+
+	The button is a button code as defined in the Linux kernel's
+	linux/input-event-codes.h header file, e.g. BTN_LEFT.
+
+	Any 16-bit button code value is reserved for future additions to the
+	kernel's event code list. All other button codes above 0xFFFF are
+	currently undefined but may be used in future versions of this
+	protocol.
       </description>
       <arg name="serial" type="uint" summary="serial number of the button event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
