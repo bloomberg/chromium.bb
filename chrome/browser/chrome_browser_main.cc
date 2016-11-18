@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
 #include <set>
 #include <string>
 #include <utility>
@@ -34,10 +33,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/task_scheduler/switches.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -314,31 +311,6 @@ void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
   }
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-
-void MaybeInitializeTaskScheduler() {
-  static constexpr char kFieldTrialName[] = "BrowserScheduler";
-  std::map<std::string, std::string> variation_params;
-  if (!variations::GetVariationParams(kFieldTrialName, &variation_params)) {
-    DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserTaskScheduler))
-        << "The Browser Task Scheduler remains disabled with "
-        << switches::kEnableBrowserTaskScheduler
-        << " because there is no available variation param for this build or "
-           " the task scheduler is disabled in chrome://flags.";
-    return;
-  }
-
-  if (!task_scheduler_util::InitializeDefaultTaskScheduler(variation_params))
-    return;
-
-  // TODO(gab): Remove this when http://crbug.com/622400 concludes.
-  const auto sequenced_worker_pool_param =
-      variation_params.find("RedirectSequencedWorkerPools");
-  if (sequenced_worker_pool_param != variation_params.end() &&
-      sequenced_worker_pool_param->second == "true") {
-    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
-  }
-}
 
 // Returns the new local state object, guaranteed non-NULL.
 // |local_state_task_runner| must be a shutdown-blocking task runner.
@@ -1246,7 +1218,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   //         threads itself so instantiating it earlier is also incorrect.
   // To maintain scoping symmetry, if this line is moved, the corresponding
   // shutdown call may also need to be moved.
-  MaybeInitializeTaskScheduler();
+  task_scheduler_util::InitializeDefaultBrowserTaskScheduler();
 
   SetupMetrics();
 

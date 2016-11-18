@@ -4,6 +4,8 @@
 
 #include "components/task_scheduler_util/initialization_util.h"
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -13,9 +15,13 @@
 #include "base/strings/string_split.h"
 #include "base/task_scheduler/initialization_util.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/switches.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace task_scheduler_util {
 
@@ -95,9 +101,27 @@ size_t WorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   return is_background ? BACKGROUND_WORKER_POOL : FOREGROUND_WORKER_POOL;
 }
 
-}  // namespace
+std::map<std::string, std::string> GetDefaultBrowserVariationParams() {
+  std::map<std::string, std::string> variation_params;
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  variation_params["Background"] = "2;8;0.1;0;30000";
+  variation_params["BackgroundFileIO"] = "2;8;0.1;0;30000";
+  variation_params["Foreground"] = "3;8;0.3;0;30000";
+  variation_params["ForegroundFileIO"] = "3;8;0.3;0;30000";
+#else
+  variation_params["Background"] = "3;8;0.1;0;30000";
+  variation_params["BackgroundFileIO"] = "3;8;0.1;0;30000";
+  variation_params["Foreground"] = "8;32;0.3;0;30000";
+  variation_params["ForegroundFileIO"] = "8;32;0.3;0;30000";
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+  return variation_params;
+}
 
-bool InitializeDefaultTaskScheduler(
+// Converts a browser-based |variation_params| to
+// std::vector<base::SchedulerWorkerPoolParams>. Returns an empty vector on
+// failure.
+std::vector<base::SchedulerWorkerPoolParams>
+VariationsParamsToBrowserSchedulerWorkerPoolParams(
     const std::map<std::string, std::string>& variation_params) {
   using ThreadPriority = base::ThreadPriority;
   using IORestriction = base::SchedulerWorkerPoolParams::IORestriction;
@@ -114,14 +138,13 @@ bool InitializeDefaultTaskScheduler(
   };
   static_assert(arraysize(kAllPredefinedParams) == WORKER_POOL_COUNT,
                 "Mismatched Worker Pool Types and Predefined Parameters");
-
   std::vector<base::SchedulerWorkerPoolParams> params_vector;
   for (const auto& predefined_params : kAllPredefinedParams) {
     const auto pair = variation_params.find(predefined_params.name);
     if (pair == variation_params.end()) {
       DLOG(ERROR) << "Missing Worker Pool Configuration: "
                   << predefined_params.name;
-      return false;
+      return std::vector<base::SchedulerWorkerPoolParams>();
     }
 
     const WorkerPoolVariationValues variation_values =
@@ -131,7 +154,7 @@ bool InitializeDefaultTaskScheduler(
         variation_values.detach_period.is_zero()) {
       DLOG(ERROR) << "Invalid Worker Pool Configuration: " <<
           predefined_params.name << " [" << pair->second << "]";
-      return false;
+      return std::vector<base::SchedulerWorkerPoolParams>();
     }
 
     params_vector.emplace_back(predefined_params.name,
@@ -141,13 +164,38 @@ bool InitializeDefaultTaskScheduler(
                                variation_values.threads,
                                variation_values.detach_period);
   }
-
   DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
+  return params_vector;
+}
 
+}  // namespace
+
+void InitializeDefaultBrowserTaskScheduler() {
+  static constexpr char kFieldTrialName[] = "BrowserScheduler";
+  std::map<std::string, std::string> variation_params;
+  if (!variations::GetVariationParams(kFieldTrialName, &variation_params))
+    variation_params = GetDefaultBrowserVariationParams();
+
+  auto params_vector =
+      VariationsParamsToBrowserSchedulerWorkerPoolParams(variation_params);
+  if (params_vector.empty()) {
+    variation_params = GetDefaultBrowserVariationParams();
+    params_vector =
+        VariationsParamsToBrowserSchedulerWorkerPoolParams(variation_params);
+    DCHECK(!params_vector.empty());
+  }
   base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
       params_vector, base::Bind(WorkerPoolIndexForTraits));
 
-  return true;
+  // TODO(gab): Remove this when http://crbug.com/622400 concludes.
+  const auto sequenced_worker_pool_param =
+      variation_params.find("RedirectSequencedWorkerPools");
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBrowserTaskScheduler) &&
+      sequenced_worker_pool_param != variation_params.end() &&
+      sequenced_worker_pool_param->second == "true") {
+    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
+  }
 }
 
 }  // namespace task_scheduler_util

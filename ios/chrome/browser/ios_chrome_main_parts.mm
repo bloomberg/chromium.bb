@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
-#include "base/task_scheduler/switches.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/time/default_tick_clock.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -59,43 +58,6 @@
 #include "components/rlz/rlz_tracker.h"                        // nogncheck
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"  // nogncheck
 #endif
-
-namespace {
-
-void MaybeInitializeTaskScheduler() {
-  static constexpr char kFieldTrialName[] = "BrowserScheduler";
-  std::map<std::string, std::string> variation_params;
-  bool used_default_config = false;
-  if (!variations::GetVariationParams(kFieldTrialName, &variation_params)) {
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserTaskScheduler)) {
-      return;
-    }
-
-    // TODO(robliao): Remove below once iOS uses fieldtrial_testing_config.json.
-    // Synchronize the below from fieldtrial_testing_config.json.
-    DCHECK(variation_params.empty());
-    variation_params["Background"] = "3;8;0.1;0;30000";
-    variation_params["BackgroundFileIO"] = "3;8;0.1;0;30000";
-    variation_params["Foreground"] = "8;32;0.3;0;30000";
-    variation_params["ForegroundFileIO"] = "8;32;0.3;0;30000";
-    used_default_config = true;
-  }
-
-  if (!task_scheduler_util::InitializeDefaultTaskScheduler(variation_params))
-    return;
-
-  // TODO(gab): Remove this when http://crbug.com/622400 concludes.
-  const auto sequenced_worker_pool_param =
-      variation_params.find("RedirectSequencedWorkerPools");
-  if (used_default_config ||
-      (sequenced_worker_pool_param != variation_params.end() &&
-       sequenced_worker_pool_param->second == "true")) {
-    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
-  }
-}
-
-}  // namespace
 
 IOSChromeMainParts::IOSChromeMainParts(
     const base::CommandLine& parsed_command_line)
@@ -172,7 +134,7 @@ void IOSChromeMainParts::PreCreateThreads() {
   //         threads itself so instantiating it earlier is also incorrect.
   // To maintain scoping symmetry, if this line is moved, the corresponding
   // shutdown call may also need to be moved.
-  MaybeInitializeTaskScheduler();
+  task_scheduler_util::InitializeDefaultBrowserTaskScheduler();
 
   SetupMetrics();
 
