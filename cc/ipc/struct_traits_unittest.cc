@@ -195,10 +195,8 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.metadata.root_scroll_offset = root_scroll_offset;
   input.metadata.page_scale_factor = page_scale_factor;
   input.metadata.scrollable_viewport_size = scrollable_viewport_size;
-  input.delegated_frame_data.reset(new DelegatedFrameData);
-  input.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
-  input.delegated_frame_data->resource_list.push_back(resource);
+  input.render_pass_list.push_back(std::move(render_pass));
+  input.resource_list.push_back(resource);
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   CompositorFrame output;
@@ -209,18 +207,15 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(page_scale_factor, output.metadata.page_scale_factor);
   EXPECT_EQ(scrollable_viewport_size, output.metadata.scrollable_viewport_size);
 
-  EXPECT_NE(nullptr, output.delegated_frame_data);
-  ASSERT_EQ(1u, output.delegated_frame_data->resource_list.size());
-  TransferableResource out_resource =
-      output.delegated_frame_data->resource_list[0];
+  ASSERT_EQ(1u, output.resource_list.size());
+  TransferableResource out_resource = output.resource_list[0];
   EXPECT_EQ(tr_id, out_resource.id);
   EXPECT_EQ(tr_format, out_resource.format);
   EXPECT_EQ(tr_filter, out_resource.filter);
   EXPECT_EQ(tr_size, out_resource.size);
 
-  EXPECT_EQ(1u, output.delegated_frame_data->render_pass_list.size());
-  const RenderPass* out_render_pass =
-      output.delegated_frame_data->render_pass_list[0].get();
+  EXPECT_EQ(1u, output.render_pass_list.size());
+  const RenderPass* out_render_pass = output.render_pass_list[0].get();
   ASSERT_EQ(2u, out_render_pass->quad_list.size());
   ASSERT_EQ(1u, out_render_pass->shared_quad_state_list.size());
 

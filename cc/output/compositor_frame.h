@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/delegated_frame_data.h"
+#include "cc/quads/render_pass.h"
+#include "cc/resources/transferable_resource.h"
 
 namespace cc {
 
@@ -30,7 +31,8 @@ class CC_EXPORT CompositorFrame {
   CompositorFrame& operator=(CompositorFrame&& other);
 
   CompositorFrameMetadata metadata;
-  std::unique_ptr<DelegatedFrameData> delegated_frame_data;
+  TransferableResourceArray resource_list;
+  RenderPassList render_pass_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrame);

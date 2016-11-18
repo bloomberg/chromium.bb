@@ -221,7 +221,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
   DCHECK(sync_client_);
 
   if (fallback_tick_running_) {
-    DCHECK(frame.delegated_frame_data->resource_list.empty());
+    DCHECK(frame.resource_list.empty());
     cc::ReturnedResourceArray return_resources;
     ReturnResources(return_resources);
     did_submit_frame_ = true;
@@ -248,8 +248,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     // The layer compositor should be giving a frame that covers the
     // |sw_viewport_for_current_draw_| but at 0,0.
     gfx::Size child_size = sw_viewport_for_current_draw_.size();
-    DCHECK(gfx::Rect(child_size) ==
-           frame.delegated_frame_data->render_pass_list.back()->output_rect);
+    DCHECK(gfx::Rect(child_size) == frame.render_pass_list.back()->output_rect);
 
     // Make a size that covers from 0,0 and includes the area coming from the
     // layer compositor.
@@ -269,14 +268,10 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     // the CompositorFrameSink client too? (We'd have to do the same for
     // hardware frames in SurfacesInstance?)
     cc::CompositorFrame embed_frame;
-    embed_frame.delegated_frame_data =
-        base::MakeUnique<cc::DelegatedFrameData>();
-    embed_frame.delegated_frame_data->render_pass_list.push_back(
-        cc::RenderPass::Create());
+    embed_frame.render_pass_list.push_back(cc::RenderPass::Create());
 
     // The embedding RenderPass covers the entire Display's area.
-    const auto& embed_render_pass =
-        embed_frame.delegated_frame_data->render_pass_list.back();
+    const auto& embed_render_pass = embed_frame.render_pass_list.back();
     embed_render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(display_size),
                               gfx::Rect(display_size), gfx::Transform(), false);
 

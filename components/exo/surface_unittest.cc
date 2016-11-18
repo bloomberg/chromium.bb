@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/delegated_frame_data.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
@@ -188,13 +187,13 @@ TEST_F(SurfaceTest, SetCrop) {
   EXPECT_EQ(crop_size.ToString(), surface->content_size().ToString());
 }
 
-const cc::DelegatedFrameData* GetFrameFromSurface(Surface* surface) {
+const cc::CompositorFrame& GetFrameFromSurface(Surface* surface) {
   cc::SurfaceId surface_id = surface->GetSurfaceId();
   cc::SurfaceManager* surface_manager =
       aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
   const cc::CompositorFrame& frame =
       surface_manager->GetSurfaceForId(surface_id)->GetEligibleFrame();
-  return frame.delegated_frame_data.get();
+  return frame;
 }
 
 TEST_F(SurfaceTest, SetBlendMode) {
@@ -207,10 +206,10 @@ TEST_F(SurfaceTest, SetBlendMode) {
   surface->SetBlendMode(SkXfermode::kSrc_Mode);
   surface->Commit();
 
-  const cc::DelegatedFrameData* frame_data = GetFrameFromSurface(surface.get());
-  ASSERT_EQ(1u, frame_data->render_pass_list.size());
-  ASSERT_EQ(1u, frame_data->render_pass_list.back()->quad_list.size());
-  EXPECT_FALSE(frame_data->render_pass_list.back()
+  const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
+  ASSERT_EQ(1u, frame.render_pass_list.size());
+  ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+  EXPECT_FALSE(frame.render_pass_list.back()
                    ->quad_list.back()
                    ->ShouldDrawWithBlending());
 }
@@ -224,11 +223,10 @@ TEST_F(SurfaceTest, OverlayCandidate) {
   surface->Attach(buffer.get());
   surface->Commit();
 
-  const cc::DelegatedFrameData* frame_data = GetFrameFromSurface(surface.get());
-  ASSERT_EQ(1u, frame_data->render_pass_list.size());
-  ASSERT_EQ(1u, frame_data->render_pass_list.back()->quad_list.size());
-  cc::DrawQuad* draw_quad =
-      frame_data->render_pass_list.back()->quad_list.back();
+  const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
+  ASSERT_EQ(1u, frame.render_pass_list.size());
+  ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+  cc::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
   ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
 
   const cc::TextureDrawQuad* texture_quad =

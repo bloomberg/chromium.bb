@@ -135,8 +135,7 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   display_->SetLocalFrameId(delegated_local_frame_id_,
                             frame.metadata.device_scale_factor);
 
-  gfx::Size frame_size =
-      frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
+  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
 
   bool synchronous = !display_->has_scheduler();
@@ -179,9 +178,7 @@ void TestCompositorFrameSink::DidDrawCallback() {
 void TestCompositorFrameSink::ForceReclaimResources() {
   if (capabilities_.can_force_reclaim_resources &&
       delegated_local_frame_id_.is_valid()) {
-    surface_factory_->SubmitCompositorFrame(delegated_local_frame_id_,
-                                            CompositorFrame(),
-                                            SurfaceFactory::DrawCallback());
+    surface_factory_->ClearSurface(delegated_local_frame_id_);
   }
 }
 

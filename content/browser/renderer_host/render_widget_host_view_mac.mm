@@ -35,7 +35,6 @@
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
-#include "content/browser/bad_message.h"
 #import "content/browser/cocoa/system_hotkey_helper_mac.h"
 #import "content/browser/cocoa/system_hotkey_map.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -1416,15 +1415,9 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
-  if (frame.delegated_frame_data) {
-    browser_compositor_->SwapCompositorFrame(compositor_frame_sink_id,
-                                             std::move(frame));
-    UpdateDisplayVSyncParameters();
-  } else {
-    DLOG(ERROR) << "Received unexpected frame type.";
-    bad_message::ReceivedBadMessage(render_widget_host_->GetProcess(),
-                                    bad_message::RWHVM_UNEXPECTED_FRAME_TYPE);
-  }
+  browser_compositor_->SwapCompositorFrame(compositor_frame_sink_id,
+                                           std::move(frame));
+  UpdateDisplayVSyncParameters();
 }
 
 void RenderWidgetHostViewMac::ClearCompositorFrame() {

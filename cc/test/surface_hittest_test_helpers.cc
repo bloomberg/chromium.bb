@@ -5,7 +5,6 @@
 #include "cc/test/surface_hittest_test_helpers.h"
 
 #include "cc/output/compositor_frame.h"
-#include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -68,26 +67,13 @@ void CreateRenderPass(const RenderPassId& render_pass_id,
   render_pass_list->push_back(std::move(render_pass));
 }
 
-CompositorFrame CreateCompositorFrameWithRenderPassList(
-    RenderPassList* render_pass_list) {
-  std::unique_ptr<DelegatedFrameData> root_delegated_frame_data(
-      new DelegatedFrameData);
-  root_delegated_frame_data->render_pass_list.swap(*render_pass_list);
-  CompositorFrame root_frame;
-  root_frame.delegated_frame_data = std::move(root_delegated_frame_data);
-  return root_frame;
-}
-
 CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
                                       RenderPass** render_pass) {
-  RenderPassList render_pass_list;
+  CompositorFrame root_frame;
   RenderPassId root_id(1, 1);
-  CreateRenderPass(root_id, root_rect, gfx::Transform(), &render_pass_list);
-
-  CompositorFrame root_frame =
-      CreateCompositorFrameWithRenderPassList(&render_pass_list);
-
-  *render_pass = root_frame.delegated_frame_data->render_pass_list.back().get();
+  CreateRenderPass(root_id, root_rect, gfx::Transform(),
+                   &root_frame.render_pass_list);
+  *render_pass = root_frame.render_pass_list.back().get();
   return root_frame;
 }
 

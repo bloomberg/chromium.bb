@@ -66,6 +66,10 @@ class CC_SURFACES_EXPORT SurfaceFactory {
   void RequestCopyOfSurface(const LocalFrameId& local_frame_id,
                             std::unique_ptr<CopyOutputRequest> copy_request);
 
+  // Evicts the current frame on the surface. All the resources
+  // will be released and Surface::HasFrame will return false.
+  void ClearSurface(const LocalFrameId& local_frame_id);
+
   void WillDrawSurface(const LocalFrameId& id, const gfx::Rect& damage_rect);
 
   SurfaceFactoryClient* client() { return client_; }

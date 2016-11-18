@@ -5,7 +5,6 @@
 #include "cc/surfaces/surface_hittest.h"
 
 #include "cc/output/compositor_frame.h"
-#include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
@@ -259,20 +258,17 @@ const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return nullptr;
-
-  const CompositorFrame& surface_frame = surface->GetEligibleFrame();
-  if (!surface_frame.delegated_frame_data)
+  if (!surface->HasFrame())
     return nullptr;
+  const CompositorFrame& surface_frame = surface->GetEligibleFrame();
 
-  const DelegatedFrameData* frame_data =
-      surface_frame.delegated_frame_data.get();
-  if (frame_data->render_pass_list.empty())
+  if (surface_frame.render_pass_list.empty())
     return nullptr;
 
   if (!render_pass_id.IsValid())
-    return frame_data->render_pass_list.back().get();
+    return surface_frame.render_pass_list.back().get();
 
-  for (const auto& render_pass : frame_data->render_pass_list) {
+  for (const auto& render_pass : surface_frame.render_pass_list) {
     if (render_pass->id == render_pass_id)
       return render_pass.get();
   }
