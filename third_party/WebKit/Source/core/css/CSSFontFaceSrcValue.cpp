@@ -35,7 +35,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/loader/MixedContentChecker.h"
 #include "platform/CrossOriginAttributeValue.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -91,8 +90,6 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document) const {
   if (!m_fetched) {
     FetchRequest request(ResourceRequest(m_absoluteResource),
                          FetchInitiatorTypeNames::css);
-    if (RuntimeEnabledFeatures::webFontsCacheAwareTimeoutAdaptationEnabled())
-      request.setCacheAwareLoadingEnabled(IsCacheAwareLoadingEnabled);
     request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
     SecurityOrigin* securityOrigin = document->getSecurityOrigin();
     setCrossOriginAccessControl(request, securityOrigin);

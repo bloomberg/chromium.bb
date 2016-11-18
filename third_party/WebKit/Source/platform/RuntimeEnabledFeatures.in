@@ -257,7 +257,6 @@ ScrollCustomization
 AutoplayMutedVideos settable_from_internals=True
 VisualViewportAPI status=experimental
 WakeLock status=experimental
-WebFontsCacheAwareTimeoutAdaptation status=experimental
 WebFontsInterventionV2With2G
 WebFontsInterventionV2With3G
 WebFontsInterventionV2WithSlow2G

@@ -31,7 +31,6 @@
 #ifndef MockResourceClients_h
 #define MockResourceClients_h
 
-#include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
@@ -97,42 +96,6 @@ class MockImageResourceClient final : public MockResourceClient,
   size_t m_encodedSizeOnLastImageChanged;
   int m_imageNotifyFinishedCount;
   size_t m_encodedSizeOnImageNotifyFinished;
-};
-
-class MockFontResourceClient final
-    : public GarbageCollectedFinalized<MockFontResourceClient>,
-      public FontResourceClient {
-  USING_PRE_FINALIZER(MockFontResourceClient, dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(MockFontResourceClient);
-
- public:
-  explicit MockFontResourceClient(Resource*);
-  ~MockFontResourceClient() override;
-
-  void fontLoadShortLimitExceeded(FontResource*) override;
-  void fontLoadLongLimitExceeded(FontResource*) override;
-
-  bool fontLoadShortLimitExceededCalled() const {
-    return m_fontLoadShortLimitExceededCalled;
-  }
-
-  bool fontLoadLongLimitExceededCalled() const {
-    return m_fontLoadLongLimitExceededCalled;
-  }
-
-  DEFINE_INLINE_TRACE() {
-    visitor->trace(m_resource);
-    FontResourceClient::trace(visitor);
-  }
-
-  String debugName() const override { return "MockFontResourceClient"; }
-
- private:
-  void dispose();
-
-  Member<Resource> m_resource;
-  bool m_fontLoadShortLimitExceededCalled;
-  bool m_fontLoadLongLimitExceededCalled;
 };
 
 }  // namespace blink
