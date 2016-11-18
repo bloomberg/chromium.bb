@@ -6,6 +6,8 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
@@ -45,6 +47,16 @@ class LowDiskSpaceErrorNotificationDelegate
 };
 
 void ShowLowDiskSpaceErrorNotification() {
+  // We suppress the low-disk notification when there are multiple users on an
+  // enterprise managed device. crbug.com/656788.
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged() &&
+      user_manager::UserManager::Get()->GetUsers().size() > 1) {
+    LOG(WARNING) << "ARC booting is aborted due to low disk space, but the "
+                 << "notification was suppressed on a managed device.";
+    return;
+  }
   message_center::ButtonInfo storage_settings(
       l10n_util::GetStringUTF16(IDS_LOW_DISK_NOTIFICATION_BUTTON));
   storage_settings.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
