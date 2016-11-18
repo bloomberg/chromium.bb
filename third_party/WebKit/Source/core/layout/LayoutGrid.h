@@ -142,7 +142,6 @@ class LayoutGrid final : public LayoutBlock {
   void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
   void insertItemIntoGrid(LayoutBox&, const GridArea&);
 
-  void updateAutoRepeatTracksAndSetDirtyIfNeeded(SizingOperation);
   size_t computeAutoRepeatTracksCount(GridTrackSizingDirection,
                                       SizingOperation) const;
 
@@ -154,7 +153,7 @@ class LayoutGrid final : public LayoutBlock {
   bool isEmptyAutoRepeatTrack(GridTrackSizingDirection,
                               size_t lineNumber) const;
 
-  void placeItemsOnGrid();
+  void placeItemsOnGrid(SizingOperation);
   void populateExplicitGridAndOrderIterator();
   std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
       const LayoutBox&,
