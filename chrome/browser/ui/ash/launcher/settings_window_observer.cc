@@ -17,10 +17,13 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 
@@ -84,8 +87,10 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
                           l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   property_util::SetIntProperty(window, ash::kShelfItemTypeKey,
                                 ash::TYPE_DIALOG);
-  property_util::SetIntProperty(window, ash::kShelfIconResourceIdKey,
-                                IDR_ASH_SHELF_ICON_SETTINGS);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_SETTINGS);
+  // The new gfx::ImageSkia instance is owned by the window itself.
+  window->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia(*icon));
 
   if (chrome::IsRunningInMash())
     ui_window_tracker_->Add(aura::GetMusWindow(window));

@@ -58,8 +58,6 @@ interface WindowManager {
   const string kRestoreBounds_Property = "prop:restore-bounds";
   // Shadow style for the window. Type: mojom::ShadowStyle.
   const string kShadowStyle_Property = "prop:shadow-style";
-  // The image resource ID to be used as the shelf item's icon. Type: int
-  const string kShelfIconResourceId_Property = "prop:shelf-icon-resource-id";
   // The ID of the shelf item corresponding to this window. Type: int
   const string kShelfId_Property = "prop:shelf-id";
   // The type of item to be shown on the shelf for this window. Type: int

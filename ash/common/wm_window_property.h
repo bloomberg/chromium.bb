@@ -31,9 +31,6 @@ enum class WmWindowProperty {
   MODAL_TYPE,
 
   // Type int.
-  SHELF_ICON_RESOURCE_ID,
-
-  // Type int.
   SHELF_ID,
 
   // Type int, but cast to ShelfItemType.

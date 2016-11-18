@@ -107,8 +107,6 @@ WmWindowProperty WmWindowPropertyFromUI(const std::string& ui_window_key) {
     return WmWindowProperty::ALWAYS_ON_TOP;
   if (ui_window_key == ui::mojom::WindowManager::kExcludeFromMru_Property)
     return WmWindowProperty::EXCLUDE_FROM_MRU;
-  if (ui_window_key == ui::mojom::WindowManager::kShelfIconResourceId_Property)
-    return WmWindowProperty::SHELF_ICON_RESOURCE_ID;
   if (ui_window_key == ui::mojom::WindowManager::kShelfItemType_Property)
     return WmWindowProperty::SHELF_ITEM_TYPE;
   return WmWindowProperty::INVALID_PROPERTY;
@@ -425,18 +423,6 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
     return static_cast<int>(ui::MODAL_TYPE_NONE);
   }
 
-  if (key == WmWindowProperty::SHELF_ICON_RESOURCE_ID) {
-    if (window_->HasSharedProperty(
-            ui::mojom::WindowManager::kShelfIconResourceId_Property)) {
-      return window_->GetSharedProperty<int>(
-          ui::mojom::WindowManager::kShelfIconResourceId_Property);
-    }
-    // Mash provides a default shelf icon image.
-    // TODO(msw): Support icon resource ids and bitmaps:
-    // mojo::Array<uint8_t> app_icon = GetWindowAppIcon(window_);
-    return IDR_DEFAULT_FAVICON;
-  }
-
   if (key == WmWindowProperty::SHELF_ID) {
     if (window_->HasSharedProperty(
             ui::mojom::WindowManager::kShelfId_Property)) {
@@ -469,12 +455,6 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
 }
 
 void WmWindowMus::SetIntProperty(WmWindowProperty key, int value) {
-  if (key == WmWindowProperty::SHELF_ICON_RESOURCE_ID) {
-    window_->SetSharedProperty<int>(
-        ui::mojom::WindowManager::kShelfIconResourceId_Property, value);
-    return;
-  }
-
   if (key == WmWindowProperty::SHELF_ID) {
     window_->SetSharedProperty<int>(ui::mojom::WindowManager::kShelfId_Property,
                                     value);

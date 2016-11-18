@@ -19,10 +19,6 @@ DEFINE_WINDOW_PROPERTY_KEY(ui::WindowShowState,
                            kRestoreShowStateOverrideKey,
                            ui::SHOW_STATE_DEFAULT);
 
-DEFINE_WINDOW_PROPERTY_KEY(int,
-                           kShelfIconResourceIdKey,
-                           kInvalidImageResourceID);
-
 DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
 
 DEFINE_WINDOW_PROPERTY_KEY(int, kShelfItemTypeKey, TYPE_UNDEFINED);

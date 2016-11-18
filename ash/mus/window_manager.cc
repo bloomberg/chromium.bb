@@ -320,7 +320,6 @@ bool WindowManager::OnWmSetProperty(
   return name == ui::mojom::WindowManager::kShowState_Property ||
          name == ui::mojom::WindowManager::kPreferredSize_Property ||
          name == ui::mojom::WindowManager::kResizeBehavior_Property ||
-         name == ui::mojom::WindowManager::kShelfIconResourceId_Property ||
          name == ui::mojom::WindowManager::kShelfItemType_Property ||
          name == ui::mojom::WindowManager::kWindowAppIcon_Property ||
          name == ui::mojom::WindowManager::kWindowTitle_Property;

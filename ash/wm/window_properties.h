@@ -43,10 +43,6 @@ ASH_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 ASH_EXPORT extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateOverrideKey;
 
-// A property key to store the icon resource id for a window's shelf item.
-ASH_EXPORT extern const aura::WindowProperty<int>* const
-    kShelfIconResourceIdKey;
-
 // A property key to store the id for a window's shelf item.
 ASH_EXPORT extern const aura::WindowProperty<ShelfID>* const kShelfIDKey;
 

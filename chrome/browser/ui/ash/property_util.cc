@@ -17,8 +17,6 @@ namespace {
 // Get the corresponding ui::Window property key for an aura::Window key.
 template <typename T>
 const char* GetMusProperty(const aura::WindowProperty<T>* aura_key) {
-  if (aura_key == ash::kShelfIconResourceIdKey)
-    return ui::mojom::WindowManager::kShelfIconResourceId_Property;
   if (aura_key == ash::kShelfItemTypeKey)
     return ui::mojom::WindowManager::kShelfItemType_Property;
   NOTREACHED();

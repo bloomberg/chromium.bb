@@ -15,11 +15,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/resources/grit/ui_resources.h"
 
 namespace ash {
 namespace {
@@ -38,15 +35,9 @@ void UpdateShelfItemForWindow(ShelfItem* item, WmWindow* window) {
   item->app_id = window->GetStringProperty(WmWindowProperty::APP_ID);
 
   // Prefer app icons over window icons, they're typically larger.
-  gfx::ImageSkia image = window->GetAppIcon();
-  if (image.isNull())
-    image = window->GetWindowIcon();
-  if (image.isNull()) {
-    int icon = window->GetIntProperty(WmWindowProperty::SHELF_ICON_RESOURCE_ID);
-    if (icon != kInvalidImageResourceID)
-      image = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon);
-  }
-  item->image = image;
+  item->image = window->GetAppIcon();
+  if (item->image.isNull())
+    item->image = window->GetWindowIcon();
 }
 
 }  // namespace
@@ -90,7 +81,6 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
       property == WmWindowProperty::APP_ID ||
       property == WmWindowProperty::DRAW_ATTENTION ||
       property == WmWindowProperty::SHELF_ITEM_TYPE ||
-      property == WmWindowProperty::SHELF_ICON_RESOURCE_ID ||
       property == WmWindowProperty::WINDOW_ICON) {
     window_watcher_->OnUserWindowPropertyChanged(window);
   }

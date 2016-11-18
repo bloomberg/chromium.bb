@@ -333,9 +333,6 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
   if (key == WmWindowProperty::MODAL_TYPE)
     return window_->GetProperty(aura::client::kModalKey);
 
-  if (key == WmWindowProperty::SHELF_ICON_RESOURCE_ID)
-    return window_->GetProperty(kShelfIconResourceIdKey);
-
   if (key == WmWindowProperty::SHELF_ID)
     return window_->GetProperty(kShelfIDKey);
 
@@ -350,10 +347,6 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
 }
 
 void WmWindowAura::SetIntProperty(WmWindowProperty key, int value) {
-  if (key == WmWindowProperty::SHELF_ICON_RESOURCE_ID) {
-    window_->SetProperty(kShelfIconResourceIdKey, value);
-    return;
-  }
   if (key == WmWindowProperty::SHELF_ID) {
     window_->SetProperty(kShelfIDKey, value);
     return;
@@ -884,8 +877,6 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
   } else if (key == aura::client::kModalKey) {
     wm_property = WmWindowProperty::MODAL_TYPE;
-  } else if (key == kShelfIconResourceIdKey) {
-    wm_property = WmWindowProperty::SHELF_ICON_RESOURCE_ID;
   } else if (key == kShelfIDKey) {
     wm_property = WmWindowProperty::SHELF_ID;
   } else if (key == kShelfItemTypeKey) {

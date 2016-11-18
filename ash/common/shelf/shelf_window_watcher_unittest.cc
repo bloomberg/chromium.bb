@@ -105,10 +105,6 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   // Clearing twice doesn't do anything.
   window2->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_UNDEFINED);
   EXPECT_EQ(1, model_->item_count());
-
-  // Setting an icon id (without a valid item type) does not add a shelf item.
-  window2->SetIntProperty(WmWindowProperty::SHELF_ICON_RESOURCE_ID, 1234);
-  EXPECT_EQ(1, model_->item_count());
 }
 
 TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
