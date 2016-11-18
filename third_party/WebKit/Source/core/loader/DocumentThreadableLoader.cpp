@@ -767,10 +767,10 @@ void DocumentThreadableLoader::reportResponseReceived(
   DCHECK(frame);
   if (!frame)
     return;
+  TRACE_EVENT1(
+      "devtools.timeline", "ResourceReceiveResponse", "data",
+      InspectorReceiveResponseEvent::data(identifier, frame, response));
   DocumentLoader* loader = frame->loader().documentLoader();
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD,
-      "data", InspectorReceiveResponseEvent::data(identifier, frame, response));
   InspectorInstrumentation::didReceiveResourceResponse(
       frame, identifier, loader, response, resource());
   frame->console().reportResourceResponseReceived(loader, identifier, response);
