@@ -706,6 +706,17 @@ TEST_F(FuseMessagePipeTest, FuseAfterPeerWriteAndClosure) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 
+TEST_F(MessagePipeTest, ClosePipesStressTest) {
+  // Stress test to exercise https://crbug.com/665869.
+  const size_t kNumPipes = 100000;
+  for (size_t i = 0; i < kNumPipes; ++i) {
+    MojoHandle a, b;
+    CreateMessagePipe(&a, &b);
+    MojoClose(a);
+    MojoClose(b);
+  }
+}
+
 }  // namespace
 }  // namespace edk
 }  // namespace mojo

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -803,6 +804,11 @@ scoped_refptr<Port> Node::GetPort_Locked(const PortName& port_name) {
   auto iter = ports_.find(port_name);
   if (iter == ports_.end())
     return nullptr;
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARM64)
+  // Workaround for https://crbug.com/665869.
+  base::subtle::MemoryBarrier();
+#endif
 
   return iter->second;
 }
