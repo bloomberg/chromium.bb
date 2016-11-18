@@ -109,8 +109,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   bool IsEventLogRecordingsEnabled() const;
   const base::FilePath& GetEventLogFilePath() const;
 
-  int num_open_connections() { return num_open_connections_; }
-  bool IsPowerSavingBlocked() { return !!power_save_blocker_; }
+  int num_open_connections() const { return num_open_connections_; }
+  bool IsPowerSavingBlocked() const { return !!power_save_blocker_; }
 
  protected:
   // Constructor/Destructor are protected to allow tests to derive from the
