@@ -18,6 +18,8 @@ class AwLocaleManagerImpl : public AwLocaleManager {
 
   std::string GetLocale() override;
 
+  std::string GetLocaleList() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AwLocaleManagerImpl);
 };

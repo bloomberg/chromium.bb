@@ -18,4 +18,8 @@ std::string AwLocaleManagerImpl::GetLocale() {
   return AwContents::GetLocale();
 }
 
+std::string AwLocaleManagerImpl::GetLocaleList() {
+  return AwContents::GetLocaleList();
+}
+
 }  // namespace android_webview

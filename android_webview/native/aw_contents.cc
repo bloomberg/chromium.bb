@@ -107,6 +107,8 @@ bool g_force_auxiliary_bitmap_rendering = false;
 
 std::string g_locale;
 
+std::string g_locale_list;
+
 const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 
 class AwContentsUserData : public base::SupportsUserData::Data {
@@ -147,15 +149,22 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 }
 
 // static
-void SetLocale(JNIEnv* env,
-               const JavaParamRef<jclass>&,
-               const JavaParamRef<jstring>& locale) {
+void UpdateDefaultLocale(JNIEnv* env,
+                         const JavaParamRef<jclass>&,
+                         const JavaParamRef<jstring>& locale,
+                         const JavaParamRef<jstring>& locale_list) {
   g_locale = ConvertJavaStringToUTF8(env, locale);
+  g_locale_list = ConvertJavaStringToUTF8(env, locale_list);
 }
 
 // static
 std::string AwContents::GetLocale() {
   return g_locale;
+}
+
+// static
+std::string AwContents::GetLocaleList() {
+  return g_locale_list;
 }
 
 // static

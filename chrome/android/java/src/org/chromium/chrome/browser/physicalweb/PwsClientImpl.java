@@ -229,7 +229,7 @@ class PwsClientImpl implements PwsClient {
      */
     @VisibleForTesting
     String updateAcceptLanguage() {
-        String localeString = LocaleUtils.getDefaultLocaleString();
+        String localeString = LocaleUtils.getDefaultLocaleListString();
         if (sDefaultLocale == null || !sDefaultLocale.equals(localeString)) {
             String acceptLanguages = mContext.getResources().getString(R.string.accept_languages);
             acceptLanguages = prependToAcceptLanguagesIfNecessary(localeString, acceptLanguages);

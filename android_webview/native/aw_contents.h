@@ -76,6 +76,8 @@ class AwContents : public FindHelper::Listener,
 
   static std::string GetLocale();
 
+  static std::string GetLocaleList();
+
   AwContents(std::unique_ptr<content::WebContents> web_contents);
   ~AwContents() override;
 

@@ -158,17 +158,18 @@ AwLocaleManager* g_locale_manager = NULL;
 
 }  // anonymous namespace
 
+// TODO(yirui): can use similar logic as in PrependToAcceptLanguagesIfNecessary
+// in chrome/browser/android/preferences/pref_service_bridge.cc
 // static
 std::string AwContentBrowserClient::GetAcceptLangsImpl() {
-  // Start with the current locale.
-  std::string langs = g_locale_manager->GetLocale();
+  // Start with the current locale(s) in BCP47 format.
+  std::string locales_string = g_locale_manager->GetLocaleList();
 
-  // If we're not en-US, add in en-US which will be
+  // If accept languages do not contain en-US, add in en-US which will be
   // used with a lower q-value.
-  if (base::ToLowerASCII(langs) != "en-us") {
-    langs += ",en-US";
-  }
-  return langs;
+  if (locales_string.find("en-US") == std::string::npos)
+    locales_string += ",en-US";
+  return locales_string;
 }
 
 // static

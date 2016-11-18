@@ -182,7 +182,7 @@ public class ChromeActivitySessionTracker {
      */
     private void updateAcceptLanguages() {
         PrefServiceBridge instance = PrefServiceBridge.getInstance();
-        String localeString = LocaleUtils.getDefaultLocaleString();
+        String localeString = LocaleUtils.getDefaultLocaleListString();
         if (hasLocaleChanged(localeString)) {
             instance.resetAcceptLanguages(localeString);
             // Clear cache so that accept-languages change can be applied immediately.

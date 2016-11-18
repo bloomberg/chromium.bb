@@ -360,7 +360,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed = false;
 
-    private static String sCurrentLocale = "";
+    private static String sCurrentLocales = "";
 
     private static final class AwContentsDestroyRunnable implements Runnable {
         private final long mNativeAwContents;
@@ -694,7 +694,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
         @Override
         public void onConfigurationChanged(Configuration configuration) {
-            setLocale(LocaleUtils.toLanguageTag(configuration.locale));
+            updateDefaultLocale();
             mSettings.updateAcceptLanguages();
         }
     };
@@ -745,7 +745,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             InternalAccessDelegate internalAccessAdapter,
             NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
-        setLocale(LocaleUtils.getDefaultLocaleString());
+        updateDefaultLocale();
         settings.updateAcceptLanguages();
 
         mBrowserContext = browserContext;
@@ -1021,11 +1021,18 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         return wrapper;
     }
 
+    // Set current locales to native.
     @VisibleForTesting
-    public static void setLocale(String locale) {
-        if (!sCurrentLocale.equals(locale)) {
-            sCurrentLocale = locale;
-            nativeSetLocale(sCurrentLocale);
+    public static void updateDefaultLocale() {
+        String locales = LocaleUtils.getDefaultLocaleListString();
+        if (!sCurrentLocales.equals(locales)) {
+            sCurrentLocales = locales;
+
+            // We cannot use the first language in sCurrentLocales for the UI language even on
+            // Android N. LocaleUtils.getDefaultLocaleString() is capable for UI language but
+            // it is not guaranteed to be listed at the first of sCurrentLocales. Therefore,
+            // both values are passed to native.
+            nativeUpdateDefaultLocale(LocaleUtils.getDefaultLocaleString(), sCurrentLocales);
         }
     }
 
@@ -3157,7 +3164,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             postUpdateContentViewCoreVisibility();
             mCurrentFunctor.onAttachedToWindow();
 
-            setLocale(LocaleUtils.getDefaultLocaleString());
+            updateDefaultLocale();
             mSettings.updateAcceptLanguages();
 
             if (mComponentCallbacks != null) return;
@@ -3309,7 +3316,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     private static native void nativeSetAwDrawGLFunctionTable(long functionTablePointer);
     private static native int nativeGetNativeInstanceCount();
     private static native void nativeSetShouldDownloadFavicons();
-    private static native void nativeSetLocale(String locale);
+    private static native void nativeUpdateDefaultLocale(String locale, String localeList);
 
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
