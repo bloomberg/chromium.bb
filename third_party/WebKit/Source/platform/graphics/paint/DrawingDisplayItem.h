@@ -5,6 +5,7 @@
 #ifndef DrawingDisplayItem_h
 #define DrawingDisplayItem_h
 
+#include "base/compiler_specific.h"
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint.h"
@@ -16,6 +17,7 @@ namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
  public:
+  DISABLE_CFI_PERF
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
                      sk_sp<const SkPicture> picture,

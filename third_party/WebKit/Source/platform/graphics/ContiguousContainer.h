@@ -5,6 +5,7 @@
 #ifndef ContiguousContainer_h
 #define ContiguousContainer_h
 
+#include "base/compiler_specific.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Alignment.h"
 #include "wtf/Allocator.h"
@@ -208,6 +209,7 @@ class ContiguousContainer : public ContiguousContainerBase {
     ContiguousContainerBase::removeLast();
   }
 
+  DISABLE_CFI_PERF
   void clear() {
     for (auto& element : *this) {
       (void)element;  // MSVC incorrectly reports this variable as unused.

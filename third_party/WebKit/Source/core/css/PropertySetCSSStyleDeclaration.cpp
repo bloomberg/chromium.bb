@@ -57,6 +57,7 @@ class StyleAttributeMutationScope {
   STACK_ALLOCATED();
 
  public:
+  DISABLE_CFI_PERF
   StyleAttributeMutationScope(AbstractPropertySetCSSStyleDeclaration* decl) {
     ++s_scopeCount;
 
@@ -91,6 +92,7 @@ class StyleAttributeMutationScope {
     }
   }
 
+  DISABLE_CFI_PERF
   ~StyleAttributeMutationScope() {
     --s_scopeCount;
     if (s_scopeCount)

@@ -465,6 +465,7 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex) {
   }
 }
 
+DISABLE_CFI_PERF
 static IntRect visualRectForDisplayItem(
     const DisplayItem& displayItem,
     const LayoutSize& offsetFromLayoutObject) {
@@ -482,6 +483,7 @@ void PaintController::resetCurrentListIndices() {
   m_skippedProbableUnderInvalidationCount = 0;
 }
 
+DISABLE_CFI_PERF
 void PaintController::commitNewDisplayItems(
     const LayoutSize& offsetFromLayoutObject) {
   TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
