@@ -228,6 +228,7 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
     "//v8:regexp_fuzzer",
   ]
   dict = "dicts/regexp.dict"
+  seed_corpus = "//v8/test/fuzzer/regexp/"
   libfuzzer_options = [ "max_len=64" ]
 }
 
