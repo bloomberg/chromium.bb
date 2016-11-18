@@ -57,6 +57,8 @@ class WebContentsObserverAdapter : public content::WebContentsObserver {
     observer_->DevToolsTargetReady();
   }
 
+  HeadlessWebContents::Observer* observer() { return observer_; }
+
  private:
   HeadlessWebContents::Observer* observer_;  // Not owned.
 
@@ -157,12 +159,16 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
           new HeadlessWebContentsImpl::Delegate(browser_context)),
       web_contents_(web_contents),
       agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
-      browser_context_(browser_context) {
+      browser_context_(browser_context),
+      render_process_host_(web_contents->GetRenderProcessHost()) {
   web_contents_->SetDelegate(web_contents_delegate_.get());
+  render_process_host_->AddObserver(this);
 }
 
 HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
   web_contents_->Close();
+  if (render_process_host_)
+    render_process_host_->RemoveObserver(this);
 }
 
 void HeadlessWebContentsImpl::RenderFrameCreated(
@@ -212,6 +218,22 @@ void HeadlessWebContentsImpl::RemoveObserver(Observer* observer) {
   ObserverMap::iterator it = observer_map_.find(observer);
   DCHECK(it != observer_map_.end());
   observer_map_.erase(it);
+}
+
+void HeadlessWebContentsImpl::RenderProcessExited(
+    content::RenderProcessHost* host,
+    base::TerminationStatus status,
+    int exit_code) {
+  DCHECK_EQ(render_process_host_, host);
+  for (const auto& pair : observer_map_) {
+    pair.second->observer()->RenderProcessExited(status, exit_code);
+  }
+}
+
+void HeadlessWebContentsImpl::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  DCHECK_EQ(render_process_host_, host);
+  render_process_host_ = nullptr;
 }
 
 HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {

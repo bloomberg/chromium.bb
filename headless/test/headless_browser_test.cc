@@ -17,6 +17,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -184,7 +185,8 @@ void HeadlessBrowserTest::FinishAsynchronousTest() {
 
 HeadlessAsyncDevTooledBrowserTest::HeadlessAsyncDevTooledBrowserTest()
     : web_contents_(nullptr),
-      devtools_client_(HeadlessDevToolsClient::Create()) {}
+      devtools_client_(HeadlessDevToolsClient::Create()),
+      render_process_exited_(false) {}
 
 HeadlessAsyncDevTooledBrowserTest::~HeadlessAsyncDevTooledBrowserTest() {}
 
@@ -192,6 +194,17 @@ void HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady() {
   EXPECT_TRUE(web_contents_->GetDevToolsTarget());
   web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
   RunDevTooledTest();
+}
+
+void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
+    base::TerminationStatus status,
+    int exit_code) {
+  if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION)
+    return;
+
+  FAIL() << "Abnormal renderer termination";
+  FinishAsynchronousTest();
+  render_process_exited_ = true;
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
@@ -202,7 +215,8 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
 
   RunAsynchronousTest();
 
-  web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+  if (!render_process_exited_)
+    web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
   web_contents_->RemoveObserver(this);
   web_contents_->Close();
   web_contents_ = nullptr;

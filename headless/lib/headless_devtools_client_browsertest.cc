@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/emulation.h"
@@ -659,5 +660,22 @@ class HeadlessDevToolsNavigationControlTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsNavigationControlTest);
+
+class HeadlessCrashObserverTest : public HeadlessAsyncDevTooledBrowserTest {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Navigate(content::kChromeUICrashURL);
+  }
+
+  void RenderProcessExited(base::TerminationStatus status,
+                           int exit_code) override {
+    EXPECT_EQ(base::TERMINATION_STATUS_ABNORMAL_TERMINATION, status);
+    FinishAsynchronousTest();
+    render_process_exited_ = true;
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessCrashObserverTest);
 
 }  // namespace headless

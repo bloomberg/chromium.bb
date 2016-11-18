@@ -163,6 +163,8 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
 
   EventHandlerMap event_handlers_;
 
+  bool renderer_crashed_;
+
   accessibility::ExperimentalDomain accessibility_domain_;
   animation::ExperimentalDomain animation_domain_;
   application_cache::ExperimentalDomain application_cache_domain_;

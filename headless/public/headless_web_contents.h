@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/process/kill.h"
 #include "headless/public/headless_export.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/geometry/size.h"
@@ -38,6 +39,16 @@ class HEADLESS_EXPORT HeadlessWebContents {
     //
     // TODO(altimin): Support this event for pages that aren't created by us.
     virtual void DevToolsTargetReady() {}
+
+    // This method is invoked when the process of the observed RenderProcessHost
+    // exits (either normally or with a crash). To determine if the process
+    // closed normally or crashed, examine the |status| parameter.
+    //
+    // If |status| is TERMINATION_STATUS_LAUNCH_FAILED then |exit_code| will
+    // contain a platform specific launch failure error code. Otherwise, it will
+    // contain the exit code for the process.
+    virtual void RenderProcessExited(base::TerminationStatus status,
+                                     int exit_code) {}
 
    protected:
     Observer() {}

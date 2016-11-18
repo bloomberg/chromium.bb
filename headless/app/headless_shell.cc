@@ -119,7 +119,10 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     if (!RemoteDebuggingEnabled()) {
       devtools_client_->GetEmulation()->GetExperimental()->RemoveObserver(this);
       devtools_client_->GetPage()->RemoveObserver(this);
-      web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+      if (web_contents_->GetDevToolsTarget()) {
+        web_contents_->GetDevToolsTarget()->DetachClient(
+            devtools_client_.get());
+      }
     }
     web_contents_->RemoveObserver(this);
     web_contents_ = nullptr;
@@ -157,6 +160,15 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       PollReadyState();
     }
     // TODO(skyostil): Implement more features to demonstrate the devtools API.
+  }
+
+  void RenderProcessExited(base::TerminationStatus status,
+                           int exit_code) override {
+    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION)
+      return;
+
+    LOG(ERROR) << "Abnormal renderer termination.";
+    Shutdown();
   }
 
   void PollReadyState() {

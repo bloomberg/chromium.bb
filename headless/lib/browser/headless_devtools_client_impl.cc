@@ -32,6 +32,7 @@ HeadlessDevToolsClientImpl* HeadlessDevToolsClientImpl::From(
 HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
     : agent_host_(nullptr),
       next_message_id_(0),
+      renderer_crashed_(false),
       accessibility_domain_(this),
       animation_domain_(this),
       application_cache_domain_(this),
@@ -78,7 +79,8 @@ void HeadlessDevToolsClientImpl::AttachToHost(
 void HeadlessDevToolsClientImpl::DetachFromHost(
     content::DevToolsAgentHost* agent_host) {
   DCHECK_EQ(agent_host_, agent_host);
-  agent_host_->DetachClient(this);
+  if (!renderer_crashed_)
+    agent_host_->DetachClient(this);
   agent_host_ = nullptr;
   pending_messages_.clear();
 }
@@ -133,6 +135,13 @@ bool HeadlessDevToolsClientImpl::DispatchEvent(
     return false;
   EventHandlerMap::const_iterator it = event_handlers_.find(method);
   if (it == event_handlers_.end()) {
+    // Silently swallow errors related to the target crashing. This can be
+    // observed via HeadlessWebContents::Observer::RenderProcessExited.
+    if (method == "Inspector.targetCrashed") {
+      renderer_crashed_ = true;
+      return true;
+    }
+
     NOTREACHED() << "Unknown event: " << method;
     return false;
   }
@@ -292,6 +301,8 @@ template <typename CallbackType>
 void HeadlessDevToolsClientImpl::FinalizeAndSendMessage(
     base::DictionaryValue* message,
     CallbackType callback) {
+  if (renderer_crashed_)
+    return;
   DCHECK(agent_host_);
   int id = next_message_id_++;
   message->SetInteger("id", id);
