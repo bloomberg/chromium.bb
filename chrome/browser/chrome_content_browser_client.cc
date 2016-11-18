@@ -57,6 +57,7 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/payments/payment_request_impl.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -1436,6 +1437,15 @@ bool IsAutoReloadVisibleOnlyEnabled() {
   }
   return true;
 }
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+bool AreExperimentalWebPlatformFeaturesEnabled() {
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return browser_command_line.HasSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+}
+#endif
 
 void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     const base::CommandLine& browser_command_line,
@@ -3003,6 +3013,15 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
     registry->AddInterface(
         base::Bind(&ForwardShareServiceRequest,
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
+  }
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(render_frame_host);
+    if (web_contents) {
+      registry->AddInterface(
+          base::Bind(CreatePaymentRequestHandler, web_contents));
+    }
   }
 #endif
 }

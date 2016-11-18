@@ -1364,6 +1364,7 @@ split_static_library("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
+    "//components/payments:payment_request",
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/policy/proto",
@@ -3528,6 +3529,7 @@ split_static_library("browser") {
       "renderer_context_menu/spelling_options_submenu_observer.cc",
       "renderer_context_menu/spelling_options_submenu_observer.h",
     ]
+    deps += [ "//chrome/browser/payments:payments" ]
   }
 
   if (is_desktop_linux) {
