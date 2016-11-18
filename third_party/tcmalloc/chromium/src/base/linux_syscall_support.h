@@ -82,6 +82,7 @@
  *      sys_fcntl(
  *      sys_fstat(
  *      sys_futex(
+ *      sys_futex1(
  *      sys_getcpu(
  *      sys_getdents(
  *      sys_getppid(
