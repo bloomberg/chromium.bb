@@ -89,11 +89,10 @@ var FPS = 60;
 var IS_HIDPI = window.devicePixelRatio > 1;
 
 /** @const */
-var IS_IOS = window.navigator.userAgent.indexOf('CriOS') > -1 ||
-    window.navigator.userAgent == 'UIWebViewForStaticFileContent';
+var IS_IOS = /iPad|iPhone|iPod/.test(window.navigator.platform);
 
 /** @const */
-var IS_MOBILE = window.navigator.userAgent.indexOf('Mobi') > -1 || IS_IOS;
+var IS_MOBILE = /Android/.test(window.navigator.userAgent) || IS_IOS;
 
 /** @const */
 var IS_TOUCH_ENABLED = 'ontouchstart' in window;
