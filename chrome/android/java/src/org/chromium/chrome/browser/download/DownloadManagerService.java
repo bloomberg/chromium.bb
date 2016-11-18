@@ -207,9 +207,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Creates DownloadManagerService.
      */
     @SuppressFBWarnings("LI_LAZY_INIT") // Findbugs doesn't see this is only UI thread.
-    public static DownloadManagerService getDownloadManagerService(final Context context) {
+    public static DownloadManagerService getDownloadManagerService(Context context) {
         ThreadUtils.assertOnUiThread();
-        assert context == context.getApplicationContext();
+        context = context.getApplicationContext();
         if (sDownloadManagerService == null) {
             sDownloadManagerService = new DownloadManagerService(context,
                     new SystemDownloadNotifier(context),  new Handler(), UPDATE_DELAY_MILLIS);
