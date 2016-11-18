@@ -75,22 +75,6 @@ void DragCaretController::setCaretPosition(
   }
 }
 
-// TODO(yosin): We should inline |removingNodeRemovesPosition()| into
-// |nodeWillBeRemoved()| since there are no other callers.
-static bool removingNodeRemovesPosition(Node& node, const Position& position) {
-  if (!position.anchorNode())
-    return false;
-
-  if (position.anchorNode() == node)
-    return true;
-
-  if (!node.isElementNode())
-    return false;
-
-  Element& element = toElement(node);
-  return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
-}
-
 void DragCaretController::nodeChildrenWillBeRemoved(ContainerNode& container) {
   if (!hasCaret() || !container.inActiveDocument())
     return;
@@ -106,10 +90,11 @@ void DragCaretController::nodeChildrenWillBeRemoved(ContainerNode& container) {
 void DragCaretController::nodeWillBeRemoved(Node& node) {
   if (!hasCaret() || !node.inActiveDocument())
     return;
-
-  if (!removingNodeRemovesPosition(node, m_position.position()))
+  Node* const anchorNode = m_position.position().anchorNode();
+  if (!anchorNode)
     return;
-
+  if (!node.isShadowIncludingInclusiveAncestorOf(anchorNode))
+    return;
   m_position.document()->layoutViewItem().clearSelection();
   clear();
 }
