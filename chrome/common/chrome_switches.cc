@@ -375,11 +375,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // crbug.com/142458 .
 const char kEnableFastUnload[] = "enable-fast-unload";
 
-#if defined(OS_CHROMEOS)
-// Enables apps for the sign-in profile (on login and lock screens).
-const char kEnableSigninApps[] = "enable-signin-apps";
-#endif  // defined(OS_CHROMEOS)
-
 // Enables the Material Design feedback form.
 const char kEnableMaterialDesignFeedback[] = "enable-md-feedback";
 

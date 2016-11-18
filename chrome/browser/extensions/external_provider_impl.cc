@@ -497,21 +497,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   scoped_refptr<ExternalLoader> external_loader;
   scoped_refptr<ExternalLoader> external_recommended_loader;
   extensions::Manifest::Location crx_location = Manifest::INVALID_LOCATION;
-
 #if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    // Download apps installed by policy in the sign-in profile.
-    external_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
-        ExternalPolicyLoader::FORCED);
-    provider_list->push_back(
-        std::unique_ptr<ExternalProviderInterface>(new ExternalProviderImpl(
-            service, external_loader, profile, crx_location,
-            Manifest::EXTERNAL_POLICY_DOWNLOAD,
-            Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT)));
-    return;
-  }
-
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool is_chrome_os_public_session = false;

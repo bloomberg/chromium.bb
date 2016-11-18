@@ -206,11 +206,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   bool autoupdate_enabled = !profile_->IsGuestSession() &&
                             !profile_->IsSystemProfile();
 #if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSigninApps) &&
-      chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    extensions_enabled = true;
-  }
   if (!extensions_enabled)
     autoupdate_enabled = false;
 #endif  // defined(OS_CHROMEOS)

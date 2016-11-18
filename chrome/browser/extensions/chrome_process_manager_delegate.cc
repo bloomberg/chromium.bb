@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,10 +20,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/one_shot_event.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif
 
 namespace extensions {
 
@@ -49,34 +44,16 @@ bool ChromeProcessManagerDelegate::IsBackgroundPageAllowed(
 
   bool is_normal_session = !profile->IsGuestSession() &&
                            !profile->IsSystemProfile();
-  bool allow_for_signin_profile = false;
-
 #if defined(OS_CHROMEOS)
-  const bool is_signin_profile =
-      chromeos::ProfileHelper::IsSigninProfile(profile);
-
-  if (is_signin_profile) {
-    const bool signin_apps_enabled =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSigninApps);
-    const bool signin_apps_installed =
-        !ExtensionManagementFactory::GetForBrowserContext(context)
-             ->GetForceInstallList()
-             ->empty();
-    allow_for_signin_profile = signin_apps_enabled && signin_apps_installed;
-  } else {
-    const bool user_logged_in =
-        user_manager::UserManager::Get()->IsUserLoggedIn();
-    is_normal_session &= user_logged_in;
-  }
+  is_normal_session = is_normal_session &&
+                      user_manager::UserManager::Get()->IsUserLoggedIn();
 #endif
 
   // Disallow if the current session is a Guest mode session or login screen but
   // the current browser context is *not* off-the-record. Such context is
   // artificial and background page shouldn't be created in it.
   // http://crbug.com/329498
-  return is_normal_session || profile->IsOffTheRecord() ||
-         allow_for_signin_profile;
+  return is_normal_session || profile->IsOffTheRecord();
 }
 
 bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(

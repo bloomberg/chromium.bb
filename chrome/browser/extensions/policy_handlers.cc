@@ -99,43 +99,43 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
   return true;
 }
 
-// ExtensionInstallListPolicyHandler implementation ----------------------------
+// ExtensionInstallForcelistPolicyHandler implementation -----------------------
 
-ExtensionInstallListPolicyHandler::ExtensionInstallListPolicyHandler(
-    const char* policy_name,
-    const char* pref_name)
-    : policy::TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
-      pref_name_(pref_name) {}
+ExtensionInstallForcelistPolicyHandler::ExtensionInstallForcelistPolicyHandler()
+    : policy::TypeCheckingPolicyHandler(policy::key::kExtensionInstallForcelist,
+                                        base::Value::TYPE_LIST) {}
 
-ExtensionInstallListPolicyHandler::~ExtensionInstallListPolicyHandler() {}
+ExtensionInstallForcelistPolicyHandler::
+    ~ExtensionInstallForcelistPolicyHandler() {}
 
-bool ExtensionInstallListPolicyHandler::CheckPolicySettings(
+bool ExtensionInstallForcelistPolicyHandler::CheckPolicySettings(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors) {
   const base::Value* value;
   return CheckAndGetValue(policies, errors, &value) &&
-         ParseList(value, nullptr, errors);
+      ParseList(value, NULL, errors);
 }
 
-void ExtensionInstallListPolicyHandler::ApplyPolicySettings(
+void ExtensionInstallForcelistPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
-  const base::Value* value = nullptr;
+  const base::Value* value = NULL;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  if (CheckAndGetValue(policies, nullptr, &value) && value &&
-      ParseList(value, dict.get(), nullptr)) {
-    prefs->SetValue(pref_name(), std::move(dict));
+  if (CheckAndGetValue(policies, NULL, &value) &&
+      value &&
+      ParseList(value, dict.get(), NULL)) {
+    prefs->SetValue(pref_names::kInstallForceList, std::move(dict));
   }
 }
 
-bool ExtensionInstallListPolicyHandler::ParseList(
+bool ExtensionInstallForcelistPolicyHandler::ParseList(
     const base::Value* policy_value,
     base::DictionaryValue* extension_dict,
     policy::PolicyErrorMap* errors) {
   if (!policy_value)
     return true;
 
-  const base::ListValue* policy_list_value = nullptr;
+  const base::ListValue* policy_list_value = NULL;
   if (!policy_value->GetAsList(&policy_list_value)) {
     // This should have been caught in CheckPolicySettings.
     NOTREACHED();
@@ -167,8 +167,8 @@ bool ExtensionInstallListPolicyHandler::ParseList(
       continue;
     }
 
-    const std::string extension_id = entry_string.substr(0, pos);
-    const std::string update_url = entry_string.substr(pos + 1);
+    std::string extension_id = entry_string.substr(0, pos);
+    std::string update_url = entry_string.substr(pos+1);
     if (!crx_file::id_util::IdIsValid(extension_id) ||
         !GURL(update_url).is_valid()) {
       if (errors) {
@@ -180,33 +180,13 @@ bool ExtensionInstallListPolicyHandler::ParseList(
     }
 
     if (extension_dict) {
-      ExternalPolicyLoader::AddExtension(extension_dict, extension_id,
-                                         update_url);
+      extensions::ExternalPolicyLoader::AddExtension(
+          extension_dict, extension_id, update_url);
     }
   }
 
   return true;
 }
-
-// ExtensionInstallForcelistPolicyHandler implementation -----------------------
-
-ExtensionInstallForcelistPolicyHandler::ExtensionInstallForcelistPolicyHandler()
-    : ExtensionInstallListPolicyHandler(policy::key::kExtensionInstallForcelist,
-                                        pref_names::kInstallForceList) {}
-
-ExtensionInstallForcelistPolicyHandler::
-    ~ExtensionInstallForcelistPolicyHandler() {}
-
-// ExtensionInstallSigninlistPolicyHandler implementation
-// -----------------------
-
-ExtensionInstallSigninListPolicyHandler::
-    ExtensionInstallSigninListPolicyHandler()
-    : ExtensionInstallListPolicyHandler(policy::key::kLoginApps,
-                                        pref_names::kInstallSigninList) {}
-
-ExtensionInstallSigninListPolicyHandler::
-    ~ExtensionInstallSigninListPolicyHandler() {}
 
 // ExtensionURLPatternListPolicyHandler implementation -------------------------
 

@@ -51,8 +51,6 @@ ExtensionManagement::ExtensionManagement(PrefService* pref_service)
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kInstallForceList,
                              pref_change_callback);
-  pref_change_registrar_.Add(pref_names::kInstallSigninList,
-                             pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedInstallSites,
                              pref_change_callback);
   pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
@@ -112,27 +110,33 @@ ExtensionManagement::InstallationMode ExtensionManagement::GetInstallationMode(
 }
 
 std::unique_ptr<base::DictionaryValue>
-ExtensionManagement::GetInstallListByMode(
-    InstallationMode installation_mode) const {
-  std::unique_ptr<base::DictionaryValue> extension_dict(
-      new base::DictionaryValue);
-  for (const SettingsIdMap::value_type& it : settings_by_id_) {
-    if (it.second->installation_mode == installation_mode) {
-      ExternalPolicyLoader::AddExtension(extension_dict.get(), it.first,
-                                         it.second->update_url);
+ExtensionManagement::GetForceInstallList() const {
+  std::unique_ptr<base::DictionaryValue> install_list(
+      new base::DictionaryValue());
+  for (SettingsIdMap::const_iterator it = settings_by_id_.begin();
+       it != settings_by_id_.end();
+       ++it) {
+    if (it->second->installation_mode == INSTALLATION_FORCED) {
+      ExternalPolicyLoader::AddExtension(
+          install_list.get(), it->first, it->second->update_url);
     }
   }
-  return extension_dict;
-}
-
-std::unique_ptr<base::DictionaryValue>
-ExtensionManagement::GetForceInstallList() const {
-  return GetInstallListByMode(INSTALLATION_FORCED);
+  return install_list;
 }
 
 std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetRecommendedInstallList() const {
-  return GetInstallListByMode(INSTALLATION_RECOMMENDED);
+  std::unique_ptr<base::DictionaryValue> install_list(
+      new base::DictionaryValue());
+  for (SettingsIdMap::const_iterator it = settings_by_id_.begin();
+       it != settings_by_id_.end();
+       ++it) {
+    if (it->second->installation_mode == INSTALLATION_RECOMMENDED) {
+      ExternalPolicyLoader::AddExtension(
+          install_list.get(), it->first, it->second->update_url);
+    }
+  }
+  return install_list;
 }
 
 bool ExtensionManagement::IsInstallationExplicitlyAllowed(
@@ -255,9 +259,6 @@ void ExtensionManagement::Refresh() {
   const base::DictionaryValue* forced_list_pref =
       static_cast<const base::DictionaryValue*>(LoadPreference(
           pref_names::kInstallForceList, true, base::Value::TYPE_DICTIONARY));
-  const base::DictionaryValue* signin_list_pref =
-      static_cast<const base::DictionaryValue*>(LoadPreference(
-          pref_names::kInstallSigninList, true, base::Value::TYPE_DICTIONARY));
   const base::ListValue* install_sources_pref =
       static_cast<const base::ListValue*>(LoadPreference(
           pref_names::kAllowedInstallSites, true, base::Value::TYPE_LIST));
@@ -318,8 +319,22 @@ void ExtensionManagement::Refresh() {
     }
   }
 
-  UpdateForcedExtensions(forced_list_pref);
-  UpdateForcedExtensions(signin_list_pref);
+  if (forced_list_pref) {
+    std::string update_url;
+    for (base::DictionaryValue::Iterator it(*forced_list_pref); !it.IsAtEnd();
+         it.Advance()) {
+      if (!crx_file::id_util::IdIsValid(it.key()))
+        continue;
+      const base::DictionaryValue* dict_value = NULL;
+      if (it.value().GetAsDictionary(&dict_value) &&
+          dict_value->GetStringWithoutPathExpansion(
+              ExternalProviderImpl::kExternalUpdateUrl, &update_url)) {
+        internal::IndividualSettings* by_id = AccessById(it.key());
+        by_id->installation_mode = INSTALLATION_FORCED;
+        by_id->update_url = update_url;
+      }
+    }
+  }
 
   if (install_sources_pref) {
     global_settings_->has_restricted_install_sources = true;
@@ -425,27 +440,6 @@ void ExtensionManagement::OnExtensionPrefChanged() {
 void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
   for (auto& observer : observer_list_)
     observer.OnExtensionManagementSettingsChanged();
-}
-
-void ExtensionManagement::UpdateForcedExtensions(
-    const base::DictionaryValue* extension_dict) {
-  if (!extension_dict)
-    return;
-
-  std::string update_url;
-  for (base::DictionaryValue::Iterator it(*extension_dict); !it.IsAtEnd();
-       it.Advance()) {
-    if (!crx_file::id_util::IdIsValid(it.key()))
-      continue;
-    const base::DictionaryValue* dict_value = nullptr;
-    if (it.value().GetAsDictionary(&dict_value) &&
-        dict_value->GetStringWithoutPathExpansion(
-            ExternalProviderImpl::kExternalUpdateUrl, &update_url)) {
-      internal::IndividualSettings* by_id = AccessById(it.key());
-      by_id->installation_mode = INSTALLATION_FORCED;
-      by_id->update_url = update_url;
-    }
-  }
 }
 
 internal::IndividualSettings* ExtensionManagement::AccessById(

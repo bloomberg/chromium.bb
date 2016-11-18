@@ -49,22 +49,17 @@ class ExtensionListPolicyHandler
   DISALLOW_COPY_AND_ASSIGN(ExtensionListPolicyHandler);
 };
 
-class ExtensionInstallListPolicyHandler
+class ExtensionInstallForcelistPolicyHandler
     : public policy::TypeCheckingPolicyHandler {
  public:
+  ExtensionInstallForcelistPolicyHandler();
+  ~ExtensionInstallForcelistPolicyHandler() override;
+
   // ConfigurationPolicyHandler methods:
   bool CheckPolicySettings(const policy::PolicyMap& policies,
                            policy::PolicyErrorMap* errors) override;
   void ApplyPolicySettings(const policy::PolicyMap& policies,
                            PrefValueMap* prefs) override;
-
- protected:
-  ExtensionInstallListPolicyHandler(const char* policy_name,
-                                    const char* pref_name);
-
-  ~ExtensionInstallListPolicyHandler() override;
-
-  const char* pref_name() const { return pref_name_; }
 
  private:
   // Parses the data in |policy_value| and writes them to |extension_dict|.
@@ -72,29 +67,7 @@ class ExtensionInstallListPolicyHandler
                  base::DictionaryValue* extension_dict,
                  policy::PolicyErrorMap* errors);
 
-  const char* const pref_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallListPolicyHandler);
-};
-
-class ExtensionInstallForcelistPolicyHandler
-    : public ExtensionInstallListPolicyHandler {
- public:
-  ExtensionInstallForcelistPolicyHandler();
-  ~ExtensionInstallForcelistPolicyHandler() override;
-
- private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallForcelistPolicyHandler);
-};
-
-class ExtensionInstallSigninListPolicyHandler
-    : public ExtensionInstallListPolicyHandler {
- public:
-  ExtensionInstallSigninListPolicyHandler();
-  ~ExtensionInstallSigninListPolicyHandler() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallSigninListPolicyHandler);
 };
 
 // Implements additional checks for policies that are lists of extension

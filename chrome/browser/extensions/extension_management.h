@@ -153,14 +153,6 @@ class ExtensionManagement : public KeyedService {
   void OnExtensionPrefChanged();
   void NotifyExtensionManagementPrefChanged();
 
-  // Helper to update |extension_dict| for forced installs.
-  void UpdateForcedExtensions(const base::DictionaryValue* extension_dict);
-
-  // Helper to return an extension install list, in format specified by
-  // ExternalPolicyLoader::AddExtension().
-  std::unique_ptr<base::DictionaryValue> GetInstallListByMode(
-      InstallationMode installation_mode) const;
-
   // Helper function to access |settings_by_id_| with |id| as key.
   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for
   // |id| yet.
