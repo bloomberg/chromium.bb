@@ -1035,6 +1035,7 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   // Go to entry at index 1 and test API from that state.
   [session_controller_ goToEntryAtIndex:1];
   ASSERT_EQ(1, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(-1, [session_controller_ pendingEntryIndex]);
   EXPECT_EQ(-1, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(-2, [session_controller_ indexOfEntryForDelta:-2]);
   EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:1]);
@@ -1044,6 +1045,7 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   // Go to entry at index 2 and test API from that state.
   [session_controller_ goToEntryAtIndex:2];
   ASSERT_EQ(2, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(-1, [session_controller_ pendingEntryIndex]);
   EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(-1, [session_controller_ indexOfEntryForDelta:-2]);
   EXPECT_EQ(4, [session_controller_ indexOfEntryForDelta:1]);
@@ -1052,6 +1054,7 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   // Go to entry at index 4 and test API from that state.
   [session_controller_ goToEntryAtIndex:4];
   ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(-1, [session_controller_ pendingEntryIndex]);
   EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-2]);
   EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:1]);
@@ -1061,6 +1064,79 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   [session_controller_ addTransientEntryWithURL:GURL("http://www.example.com")];
   ASSERT_EQ(5U, [[session_controller_ entries] count]);
   ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(-1, [session_controller_ pendingEntryIndex]);
+  EXPECT_EQ(4, [session_controller_ indexOfEntryForDelta:-1]);
+  EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:-2]);
+  EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-3]);
+  EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:1]);
+  EXPECT_EQ(6, [session_controller_ indexOfEntryForDelta:2]);
+}
+
+// Tests -[CRWSessionController indexOfEntryForDelta:] API for positive,
+// negative and zero delta. Tested session controller will have redirect entries
+// to make sure they are appropriately skipped and pending enty index.
+TEST_F(CRWSessionControllerTest, IndexOfEntryForDeltaWithPendingEntryIndex) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/redirect")
+                              referrer:MakeReferrer("http://www.example.com/r")
+                            transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/1")
+                              referrer:MakeReferrer("http://www.example.com/b")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/2")
+                              referrer:MakeReferrer("http://www.example.com/c")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/redirect")
+                              referrer:MakeReferrer("http://www.example.com/r")
+                            transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(5U, [[session_controller_ entries] count]);
+
+  // Make entry at index 1 pending and test API from that state.
+  [session_controller_ setPendingEntryIndex:1];
+  ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(1, [session_controller_ pendingEntryIndex]);
+  EXPECT_EQ(-1, [session_controller_ indexOfEntryForDelta:-1]);
+  EXPECT_EQ(-2, [session_controller_ indexOfEntryForDelta:-2]);
+  EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:1]);
+  EXPECT_EQ(4, [session_controller_ indexOfEntryForDelta:2]);
+  EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:3]);
+
+  // Make entry at index 2 pending and test API from that state.
+  [session_controller_ setPendingEntryIndex:2];
+  ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(2, [session_controller_ pendingEntryIndex]);
+  EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-1]);
+  EXPECT_EQ(-1, [session_controller_ indexOfEntryForDelta:-2]);
+  EXPECT_EQ(4, [session_controller_ indexOfEntryForDelta:1]);
+  EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:2]);
+
+  // Make entry at index 4 pending and test API from that state.
+  [session_controller_ setPendingEntryIndex:4];
+  ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(4, [session_controller_ pendingEntryIndex]);
+  EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:-1]);
+  EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-2]);
+  EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:1]);
+  EXPECT_EQ(6, [session_controller_ indexOfEntryForDelta:2]);
+
+  // Now try with existing transient entry.
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.example.com")];
+  ASSERT_EQ(5U, [[session_controller_ entries] count]);
+  ASSERT_EQ(4, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(4, [session_controller_ pendingEntryIndex]);
   EXPECT_EQ(4, [session_controller_ indexOfEntryForDelta:-1]);
   EXPECT_EQ(2, [session_controller_ indexOfEntryForDelta:-2]);
   EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-3]);

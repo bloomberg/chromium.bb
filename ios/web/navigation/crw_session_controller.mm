@@ -737,7 +737,9 @@ NSString* const kWindowNameKey = @"windowName";
 }
 
 - (NSInteger)indexOfEntryForDelta:(int)delta {
-  NSInteger result = _currentNavigationIndex;
+  NSInteger result =
+      _pendingEntryIndex == -1 ? _currentNavigationIndex : _pendingEntryIndex;
+
   if (delta < 0) {
     if (_transientEntry) {
       // Going back from transient entry is a matter of discarding it and there
