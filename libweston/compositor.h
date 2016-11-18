@@ -1451,9 +1451,6 @@ weston_compositor_set_default_pointer_grab(struct weston_compositor *compositor,
 int
 weston_environment_get_fd(const char *env);
 
-struct wl_list *
-weston_compositor_top(struct weston_compositor *compositor);
-
 struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor);
 
