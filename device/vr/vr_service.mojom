@@ -75,6 +75,8 @@ interface VRService {
   // TODO(shaobo.yan@intel.com) : Use a factory function which took a VRServiceClient
   // so we would never have a half-initialized VRService.
   SetClient(VRServiceClient client) => (uint32 numberOfConnectedDevices);
+  // Inform the service that the page is listening for vrdisplayactivate events.
+  SetListeningForActivate(bool listening);
 };
 
 interface VRServiceClient {

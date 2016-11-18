@@ -12,7 +12,7 @@
 
 namespace device {
 
-VRServiceImpl::VRServiceImpl() {}
+VRServiceImpl::VRServiceImpl() : listening_for_activate_(false) {}
 
 VRServiceImpl::~VRServiceImpl() {
   RemoveFromDeviceManager();
@@ -65,6 +65,12 @@ void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
   // connected events.
   device_manager->AddService(this);
   callback.Run(device_manager->GetNumberOfConnectedDevices());
+}
+
+void VRServiceImpl::SetListeningForActivate(bool listening) {
+  listening_for_activate_ = listening;
+  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
+  device_manager->ListeningForActivateChanged(listening);
 }
 
 }  // namespace device

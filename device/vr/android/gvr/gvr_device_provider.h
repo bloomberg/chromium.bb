@@ -29,6 +29,8 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void GetDevices(std::vector<VRDevice*>* devices) override;
   void Initialize() override;
 
+  void SetListeningForActivate(bool listening) override;
+
   // Called from GvrDevice.
   void RequestPresent(const base::Callback<void(bool)>& callback);
   void ExitPresent();

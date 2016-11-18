@@ -52,6 +52,11 @@ void VRController::getDisplays(ScriptPromiseResolver* resolver) {
       makeUnique<VRGetDevicesCallback>(resolver));
 }
 
+void VRController::setListeningForActivate(bool listening) {
+  if (m_service)
+    m_service->SetListeningForActivate(listening);
+}
+
 // Each time a new VRDisplay is connected we'll recieve a VRDisplayPtr for it
 // here. Upon calling SetClient in the constructor we should receive one call
 // for each VRDisplay that was already connected at the time.

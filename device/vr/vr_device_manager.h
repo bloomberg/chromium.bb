@@ -39,6 +39,8 @@ class VRDeviceManager {
   DEVICE_VR_EXPORT bool GetVRDevices(VRServiceImpl* service);
   DEVICE_VR_EXPORT unsigned int GetNumberOfConnectedDevices();
 
+  void ListeningForActivateChanged(bool listening);
+
  private:
   friend class VRDeviceManagerTest;
   friend class VRServiceImplTest;
@@ -76,6 +78,8 @@ class VRDeviceManager {
   bool keep_alive_;
 
   bool has_scheduled_poll_;
+
+  bool has_activate_listeners_;
 
   base::ThreadChecker thread_checker_;
 

@@ -120,6 +120,12 @@ void VrShellDelegate::DestroyNonPresentingDelegate() {
   }
 }
 
+void VrShellDelegate::SetListeningForActivate(bool listening) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_VrShellDelegate_setListeningForWebVrActivate(
+      env, j_vr_shell_delegate_.obj(), listening);
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

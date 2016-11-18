@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "modules/ModulesExport.h"
 #include "modules/vr/VRDisplay.h"
 #include "modules/vr/VRDisplayEvent.h"
@@ -24,7 +25,8 @@ class VRController;
 class MODULES_EXPORT NavigatorVR final
     : public GarbageCollectedFinalized<NavigatorVR>,
       public Supplement<Navigator>,
-      public DOMWindowProperty {
+      public DOMWindowProperty,
+      public LocalDOMWindow::EventListenerObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
   WTF_MAKE_NONCOPYABLE(NavigatorVR);
 
@@ -44,6 +46,11 @@ class MODULES_EXPORT NavigatorVR final
 
   // Dispatches a user gesture event immediately.
   void dispatchVRGestureEvent(VRDisplayEvent*);
+
+  // Inherited from LocalDOMWindow::EventListenerObserver.
+  void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

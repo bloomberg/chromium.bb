@@ -24,7 +24,8 @@ VRDeviceManager* g_vr_device_manager = nullptr;
 VRDeviceManager::VRDeviceManager()
     : vr_initialized_(false),
       keep_alive_(false),
-      has_scheduled_poll_(false) {
+      has_scheduled_poll_(false),
+      has_activate_listeners_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
   RegisterProvider(base::MakeUnique<GvrDeviceProvider>());
@@ -80,6 +81,10 @@ void VRDeviceManager::RemoveService(VRServiceImpl* service) {
     device.second->RemoveService(service);
   }
 
+  if (service->listening_for_activate()) {
+    ListeningForActivateChanged(false);
+  }
+
   if (services_.empty() && !keep_alive_) {
     // Delete the device manager when it has no active connections.
     delete g_vr_device_manager;
@@ -115,6 +120,27 @@ unsigned int VRDeviceManager::GetNumberOfConnectedDevices() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return static_cast<unsigned int>(devices_.size());
+}
+
+void VRDeviceManager::ListeningForActivateChanged(bool listening) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  bool activate_listeners = listening;
+  if (!activate_listeners) {
+    for (const auto& service : services_) {
+      if (service->listening_for_activate()) {
+        activate_listeners = true;
+        break;
+      }
+    }
+  }
+
+  // Notify all the providers if this changes
+  if (has_activate_listeners_ != activate_listeners) {
+    has_activate_listeners_ = activate_listeners;
+    for (const auto& provider : providers_)
+      provider->SetListeningForActivate(has_activate_listeners_);
+  }
 }
 
 VRDevice* VRDeviceManager::GetDevice(unsigned int index) {

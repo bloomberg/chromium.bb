@@ -119,4 +119,13 @@ void GvrDeviceProvider::SwitchToNonPresentingDelegate() {
       GAMEPAD_SOURCE_GVR);
 }
 
+void GvrDeviceProvider::SetListeningForActivate(bool listening) {
+  device::GvrDelegateProvider* delegate_provider =
+      device::GvrDelegateProvider::GetInstance();
+  if (!delegate_provider)
+    return;
+
+  delegate_provider->SetListeningForActivate(listening);
+}
+
 }  // namespace device

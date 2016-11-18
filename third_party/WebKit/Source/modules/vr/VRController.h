@@ -32,6 +32,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   virtual ~VRController();
 
   void getDisplays(ScriptPromiseResolver*);
+  void setListeningForActivate(bool);
 
   void OnDisplayConnected(device::mojom::blink::VRDisplayPtr,
                           device::mojom::blink::VRDisplayClientRequest,

@@ -83,6 +83,7 @@ public class VrShellDelegate {
     private Tab mTab;
     private boolean mRequestedWebVR;
     private long mLastVRExit;
+    private boolean mListeningForWebVrActivate;
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
@@ -385,6 +386,11 @@ public class VrShellDelegate {
     private void shutdownNonPresentingNativeContext() {
         mNonPresentingGvrContext.shutdown();
         mNonPresentingGvrContext = null;
+    }
+
+    @CalledByNative
+    private void setListeningForWebVrActivate(boolean listening) {
+        mListeningForWebVrActivate = listening;
     }
 
     /**

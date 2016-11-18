@@ -28,6 +28,8 @@ class VRServiceImpl : public mojom::VRService {
 
   VRDisplayImpl* GetVRDisplayImpl(VRDevice* device);
 
+  bool listening_for_activate() { return listening_for_activate_; }
+
  private:
   friend class VRServiceTestBinding;
   friend class VRDeviceManagerTest;
@@ -43,11 +45,14 @@ class VRServiceImpl : public mojom::VRService {
   // mojom::VRService implementation
   void SetClient(mojom::VRServiceClientPtr service_client,
                  const SetClientCallback& callback) override;
+  void SetListeningForActivate(bool listening) override;
 
   using DisplayImplMap = std::map<VRDevice*, std::unique_ptr<VRDisplayImpl>>;
   DisplayImplMap displays_;
 
   mojom::VRServiceClientPtr client_;
+
+  bool listening_for_activate_;
 
   std::unique_ptr<mojo::Binding<mojom::VRService>> binding_;
 

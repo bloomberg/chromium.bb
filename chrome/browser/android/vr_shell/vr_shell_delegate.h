@@ -37,6 +37,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void ExitWebVRPresent() override;
   base::WeakPtr<device::GvrDelegate> GetNonPresentingDelegate() override;
   void DestroyNonPresentingDelegate() override;
+  void SetListeningForActivate(bool listening) override;
 
  private:
   std::unique_ptr<device::GvrDelegate> non_presenting_delegate_;

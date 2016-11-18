@@ -43,6 +43,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual void ExitWebVRPresent() = 0;
   virtual base::WeakPtr<GvrDelegate> GetNonPresentingDelegate() = 0;
   virtual void DestroyNonPresentingDelegate() = 0;
+  virtual void SetListeningForActivate(bool listening) = 0;
 
  private:
   static GvrDelegateProvider* delegate_provider_;
