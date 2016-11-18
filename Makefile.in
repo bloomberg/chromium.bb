@@ -498,12 +498,12 @@ src_testing_libtesting_a_AR = $(AR) $(ARFLAGS)
 src_testing_libtesting_a_LIBADD =
 am__src_testing_libtesting_a_SOURCES_DIST =  \
 	src/breakpad_googletest_includes.h \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/gtest/src/gtest_main.cc \
-	src/testing/src/gmock-all.cc
-@SYSTEM_TEST_LIBS_FALSE@am_src_testing_libtesting_a_OBJECTS = src/testing/gtest/src/src_testing_libtesting_a-gtest-all.$(OBJEXT) \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/src_testing_libtesting_a-gtest_main.$(OBJEXT) \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/src/src_testing_libtesting_a-gmock-all.$(OBJEXT)
+	src/testing/googletest/src/gtest-all.cc \
+	src/testing/googletest/src/gtest_main.cc \
+	src/testing/googlemock/src/gmock-all.cc
+@SYSTEM_TEST_LIBS_FALSE@am_src_testing_libtesting_a_OBJECTS = src/testing/googletest/src/src_testing_libtesting_a-gtest-all.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googletest/src/src_testing_libtesting_a-gtest_main.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.$(OBJEXT)
 src_testing_libtesting_a_OBJECTS =  \
 	$(am_src_testing_libtesting_a_OBJECTS)
 src_third_party_libdisasm_libdisasm_a_AR = $(AR) $(ARFLAGS)
@@ -609,9 +609,9 @@ src_client_linux_linux_client_unittest_LINK = $(CCLD) $(AM_CFLAGS) \
 	$(LDFLAGS) -o $@
 am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 	src/breakpad_googletest_includes.h \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/gtest/src/gtest_main.cc \
-	src/testing/src/gmock-all.cc \
+	src/testing/googletest/src/gtest-all.cc \
+	src/testing/googletest/src/gtest_main.cc \
+	src/testing/googlemock/src/gmock-all.cc \
 	src/client/linux/handler/exception_handler_unittest.cc \
 	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 	src/client/linux/minidump_writer/cpu_set_unittest.cc \
@@ -636,9 +636,9 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 	src/common/android/breakpad_getcontext.S \
 	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 	src/common/android/breakpad_getcontext_unittest.cc
-@SYSTEM_TEST_LIBS_FALSE@am__objects_2 = src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.$(OBJEXT) \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT) \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT)
+@SYSTEM_TEST_LIBS_FALSE@am__objects_2 = src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT) \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT)
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_3 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT)
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_4 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext_unittest.$(OBJEXT)
 @LINUX_HOST_TRUE@am_src_client_linux_linux_client_unittest_shlib_OBJECTS =  \
@@ -2057,8 +2057,10 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(am__append_6) $(am__append_9)
 @SYSTEM_TEST_LIBS_FALSE@TEST_CFLAGS = \
 @SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/include \
-@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/gtest/include \
-@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/gtest \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/googletest/include \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/googletest \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/googlemock/include \
+@SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/googlemock \
 @SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing
 
 @SYSTEM_TEST_LIBS_TRUE@TEST_CFLAGS = $(GTEST_CFLAGS) $(GMOCK_CFLAGS)
@@ -2072,9 +2074,9 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 CLEANFILES = $(am__append_13)
 @SYSTEM_TEST_LIBS_FALSE@src_testing_libtesting_a_SOURCES = \
 @SYSTEM_TEST_LIBS_FALSE@	src/breakpad_googletest_includes.h \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/gtest-all.cc \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/gtest/src/gtest_main.cc \
-@SYSTEM_TEST_LIBS_FALSE@	src/testing/src/gmock-all.cc
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googletest/src/gtest-all.cc \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googletest/src/gtest_main.cc \
+@SYSTEM_TEST_LIBS_FALSE@	src/testing/googlemock/src/gmock-all.cc
 
 @SYSTEM_TEST_LIBS_FALSE@src_testing_libtesting_a_CPPFLAGS = \
 @SYSTEM_TEST_LIBS_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
@@ -3252,54 +3254,61 @@ EXTRA_DIST = \
 	src/processor/testdata/symbols/overflow/B0E1FC01EF48E39CAF5C881D2DF0C3840/overflow.sym \
 	src/processor/testdata/symbols/test_app.pdb/5A9832E5287241C1838ED98914E9B7FF1/test_app.sym \
 	src/processor/testdata/test_app.cc \
-	src/testing/gtest/include/gtest/gtest.h \
-	src/testing/gtest/include/gtest/gtest-death-test.h \
-	src/testing/gtest/include/gtest/gtest-message.h \
-	src/testing/gtest/include/gtest/gtest-param-test.h \
-	src/testing/gtest/include/gtest/gtest-printers.h \
-	src/testing/gtest/include/gtest/gtest-spi.h \
-	src/testing/gtest/include/gtest/gtest-test-part.h \
-	src/testing/gtest/include/gtest/gtest-typed-test.h \
-	src/testing/gtest/include/gtest/gtest_pred_impl.h \
-	src/testing/gtest/include/gtest/gtest_prod.h \
-	src/testing/gtest/include/gtest/internal/gtest-death-test-internal.h \
-	src/testing/gtest/include/gtest/internal/gtest-filepath.h \
-	src/testing/gtest/include/gtest/internal/gtest-internal.h \
-	src/testing/gtest/include/gtest/internal/gtest-linked_ptr.h \
-	src/testing/gtest/include/gtest/internal/gtest-param-util-generated.h \
-	src/testing/gtest/include/gtest/internal/gtest-param-util.h \
-	src/testing/gtest/include/gtest/internal/gtest-port.h \
-	src/testing/gtest/include/gtest/internal/gtest-string.h \
-	src/testing/gtest/include/gtest/internal/gtest-tuple.h \
-	src/testing/gtest/include/gtest/internal/gtest-type-util.h \
-	src/testing/gtest/src/gtest.cc \
-	src/testing/gtest/src/gtest-death-test.cc \
-	src/testing/gtest/src/gtest-filepath.cc \
-	src/testing/gtest/src/gtest-internal-inl.h \
-	src/testing/gtest/src/gtest-port.cc \
-	src/testing/gtest/src/gtest-printers.cc \
-	src/testing/gtest/src/gtest-test-part.cc \
-	src/testing/gtest/src/gtest-typed-test.cc \
-	src/testing/include/gmock/gmock.h \
-	src/testing/include/gmock/gmock-actions.h \
-	src/testing/include/gmock/gmock-cardinalities.h \
-	src/testing/include/gmock/gmock-generated-actions.h \
-	src/testing/include/gmock/gmock-generated-function-mockers.h \
-	src/testing/include/gmock/gmock-generated-matchers.h \
-	src/testing/include/gmock/gmock-generated-nice-strict.h \
-	src/testing/include/gmock/gmock-matchers.h \
-	src/testing/include/gmock/gmock-more-actions.h \
-	src/testing/include/gmock/gmock-more-matchers.h \
-	src/testing/include/gmock/gmock-spec-builders.h \
-	src/testing/include/gmock/internal/gmock-generated-internal-utils.h \
-	src/testing/include/gmock/internal/gmock-internal-utils.h \
-	src/testing/include/gmock/internal/gmock-port.h \
-	src/testing/src/gmock.cc \
-	src/testing/src/gmock-cardinalities.cc \
-	src/testing/src/gmock-internal-utils.cc \
-	src/testing/src/gmock-matchers.cc \
-	src/testing/src/gmock-spec-builders.cc \
-	src/testing/src/gmock_main.cc \
+	src/testing/googletest/include/gtest/gtest.h \
+	src/testing/googletest/include/gtest/gtest-death-test.h \
+	src/testing/googletest/include/gtest/gtest-message.h \
+	src/testing/googletest/include/gtest/gtest-param-test.h \
+	src/testing/googletest/include/gtest/gtest-printers.h \
+	src/testing/googletest/include/gtest/gtest-spi.h \
+	src/testing/googletest/include/gtest/gtest-test-part.h \
+	src/testing/googletest/include/gtest/gtest-typed-test.h \
+	src/testing/googletest/include/gtest/gtest_pred_impl.h \
+	src/testing/googletest/include/gtest/gtest_prod.h \
+	src/testing/googletest/include/gtest/internal/custom/gtest-port.h \
+	src/testing/googletest/include/gtest/internal/custom/gtest-printers.h \
+	src/testing/googletest/include/gtest/internal/custom/gtest.h \
+	src/testing/googletest/include/gtest/internal/gtest-death-test-internal.h \
+	src/testing/googletest/include/gtest/internal/gtest-filepath.h \
+	src/testing/googletest/include/gtest/internal/gtest-internal.h \
+	src/testing/googletest/include/gtest/internal/gtest-linked_ptr.h \
+	src/testing/googletest/include/gtest/internal/gtest-param-util-generated.h \
+	src/testing/googletest/include/gtest/internal/gtest-param-util.h \
+	src/testing/googletest/include/gtest/internal/gtest-port-arch.h \
+	src/testing/googletest/include/gtest/internal/gtest-port.h \
+	src/testing/googletest/include/gtest/internal/gtest-string.h \
+	src/testing/googletest/include/gtest/internal/gtest-tuple.h \
+	src/testing/googletest/include/gtest/internal/gtest-type-util.h \
+	src/testing/googletest/src/gtest.cc \
+	src/testing/googletest/src/gtest-death-test.cc \
+	src/testing/googletest/src/gtest-filepath.cc \
+	src/testing/googletest/src/gtest-internal-inl.h \
+	src/testing/googletest/src/gtest-port.cc \
+	src/testing/googletest/src/gtest-printers.cc \
+	src/testing/googletest/src/gtest-test-part.cc \
+	src/testing/googletest/src/gtest-typed-test.cc \
+	src/testing/googlemock/include/gmock/gmock.h \
+	src/testing/googlemock/include/gmock/gmock-actions.h \
+	src/testing/googlemock/include/gmock/gmock-cardinalities.h \
+	src/testing/googlemock/include/gmock/gmock-generated-actions.h \
+	src/testing/googlemock/include/gmock/gmock-generated-function-mockers.h \
+	src/testing/googlemock/include/gmock/gmock-generated-matchers.h \
+	src/testing/googlemock/include/gmock/gmock-generated-nice-strict.h \
+	src/testing/googlemock/include/gmock/gmock-matchers.h \
+	src/testing/googlemock/include/gmock/gmock-more-actions.h \
+	src/testing/googlemock/include/gmock/gmock-more-matchers.h \
+	src/testing/googlemock/include/gmock/gmock-spec-builders.h \
+	src/testing/googlemock/include/gmock/internal/custom/gmock-generated-actions.h \
+	src/testing/googlemock/include/gmock/internal/custom/gmock-matchers.h \
+	src/testing/googlemock/include/gmock/internal/custom/gmock-port.h \
+	src/testing/googlemock/include/gmock/internal/gmock-generated-internal-utils.h \
+	src/testing/googlemock/include/gmock/internal/gmock-internal-utils.h \
+	src/testing/googlemock/include/gmock/internal/gmock-port.h \
+	src/testing/googlemock/src/gmock.cc \
+	src/testing/googlemock/src/gmock-cardinalities.cc \
+	src/testing/googlemock/src/gmock-internal-utils.cc \
+	src/testing/googlemock/src/gmock-matchers.cc \
+	src/testing/googlemock/src/gmock-spec-builders.cc \
+	src/testing/googlemock/src/gmock_main.cc \
 	src/third_party/curl/COPYING \
 	src/third_party/curl/curlbuild.h \
 	src/third_party/curl/curl.h \
@@ -3708,27 +3717,27 @@ src/libbreakpad.a: $(src_libbreakpad_a_OBJECTS) $(src_libbreakpad_a_DEPENDENCIES
 	$(AM_V_at)-rm -f src/libbreakpad.a
 	$(AM_V_AR)$(src_libbreakpad_a_AR) src/libbreakpad.a $(src_libbreakpad_a_OBJECTS) $(src_libbreakpad_a_LIBADD)
 	$(AM_V_at)$(RANLIB) src/libbreakpad.a
-src/testing/gtest/src/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/gtest/src
-	@: > src/testing/gtest/src/$(am__dirstamp)
-src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/gtest/src/$(DEPDIR)
-	@: > src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/gtest/src/src_testing_libtesting_a-gtest-all.$(OBJEXT):  \
-	src/testing/gtest/src/$(am__dirstamp) \
-	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/gtest/src/src_testing_libtesting_a-gtest_main.$(OBJEXT):  \
-	src/testing/gtest/src/$(am__dirstamp) \
-	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/src/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/src
-	@: > src/testing/src/$(am__dirstamp)
-src/testing/src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/testing/src/$(DEPDIR)
-	@: > src/testing/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/src/src_testing_libtesting_a-gmock-all.$(OBJEXT):  \
-	src/testing/src/$(am__dirstamp) \
-	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googletest/src/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/googletest/src
+	@: > src/testing/googletest/src/$(am__dirstamp)
+src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/googletest/src/$(DEPDIR)
+	@: > src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googletest/src/src_testing_libtesting_a-gtest-all.$(OBJEXT):  \
+	src/testing/googletest/src/$(am__dirstamp) \
+	src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googletest/src/src_testing_libtesting_a-gtest_main.$(OBJEXT):  \
+	src/testing/googletest/src/$(am__dirstamp) \
+	src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googlemock/src/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/googlemock/src
+	@: > src/testing/googlemock/src/$(am__dirstamp)
+src/testing/googlemock/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/testing/googlemock/src/$(DEPDIR)
+	@: > src/testing/googlemock/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.$(OBJEXT):  \
+	src/testing/googlemock/src/$(am__dirstamp) \
+	src/testing/googlemock/src/$(DEPDIR)/$(am__dirstamp)
 src/testing/$(am__dirstamp):
 	@$(MKDIR_P) src/testing
 	@: > src/testing/$(am__dirstamp)
@@ -3842,15 +3851,15 @@ clean-noinstPROGRAMS:
 src/client/linux/linux_client_unittest$(EXEEXT): $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_DEPENDENCIES) $(EXTRA_src_client_linux_linux_client_unittest_DEPENDENCIES) src/client/linux/$(am__dirstamp)
 	@rm -f src/client/linux/linux_client_unittest$(EXEEXT)
 	$(AM_V_CCLD)$(src_client_linux_linux_client_unittest_LINK) $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_LDADD) $(LIBS)
-src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.$(OBJEXT):  \
-	src/testing/gtest/src/$(am__dirstamp) \
-	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT):  \
-	src/testing/gtest/src/$(am__dirstamp) \
-	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT):  \
-	src/testing/src/$(am__dirstamp) \
-	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.$(OBJEXT):  \
+	src/testing/googletest/src/$(am__dirstamp) \
+	src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT):  \
+	src/testing/googletest/src/$(am__dirstamp) \
+	src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT):  \
+	src/testing/googlemock/src/$(am__dirstamp) \
+	src/testing/googlemock/src/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/handler/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.$(OBJEXT):  \
 	src/client/linux/handler/$(am__dirstamp) \
 	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
@@ -4653,8 +4662,8 @@ mostlyclean-compile:
 	-rm -f src/common/mac/*.$(OBJEXT)
 	-rm -f src/common/tests/*.$(OBJEXT)
 	-rm -f src/processor/*.$(OBJEXT)
-	-rm -f src/testing/gtest/src/*.$(OBJEXT)
-	-rm -f src/testing/src/*.$(OBJEXT)
+	-rm -f src/testing/googlemock/src/*.$(OBJEXT)
+	-rm -f src/testing/googletest/src/*.$(OBJEXT)
 	-rm -f src/third_party/libdisasm/*.$(OBJEXT)
 	-rm -f src/tools/linux/core2md/*.$(OBJEXT)
 	-rm -f src/tools/linux/dump_syms/*.$(OBJEXT)
@@ -4904,12 +4913,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/symbolic_constants_win.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/tokenize.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_implicit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_insn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_invariant.Po@am__quote@
@@ -4994,89 +5003,89 @@ src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcont
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-src/testing/gtest/src/src_testing_libtesting_a-gtest-all.o: src/testing/gtest/src/gtest-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_testing_libtesting_a-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_testing_libtesting_a-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_testing_libtesting_a-gtest-all.o: src/testing/googletest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_testing_libtesting_a-gtest-all.o -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest-all.o `test -f 'src/testing/googletest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest-all.cc' object='src/testing/googletest/src/src_testing_libtesting_a-gtest-all.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest-all.o `test -f 'src/testing/googletest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest-all.cc
 
-src/testing/gtest/src/src_testing_libtesting_a-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_testing_libtesting_a-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_testing_libtesting_a-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_testing_libtesting_a-gtest-all.obj: src/testing/googletest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_testing_libtesting_a-gtest-all.obj -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest-all.obj `if test -f 'src/testing/googletest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Tpo src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest-all.cc' object='src/testing/googletest/src/src_testing_libtesting_a-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest-all.obj `if test -f 'src/testing/googletest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest-all.cc'; fi`
 
-src/testing/gtest/src/src_testing_libtesting_a-gtest_main.o: src/testing/gtest/src/gtest_main.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_testing_libtesting_a-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_testing_libtesting_a-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_testing_libtesting_a-gtest_main.o: src/testing/googletest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_testing_libtesting_a-gtest_main.o -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest_main.o `test -f 'src/testing/googletest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest_main.cc' object='src/testing/googletest/src/src_testing_libtesting_a-gtest_main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest_main.o `test -f 'src/testing/googletest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest_main.cc
 
-src/testing/gtest/src/src_testing_libtesting_a-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_testing_libtesting_a-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_testing_libtesting_a-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_testing_libtesting_a-gtest_main.obj: src/testing/googletest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_testing_libtesting_a-gtest_main.obj -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest_main.obj `if test -f 'src/testing/googletest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Tpo src/testing/googletest/src/$(DEPDIR)/src_testing_libtesting_a-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest_main.cc' object='src/testing/googletest/src/src_testing_libtesting_a-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_testing_libtesting_a-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_testing_libtesting_a-gtest_main.obj `if test -f 'src/testing/googletest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest_main.cc'; fi`
 
-src/testing/src/src_testing_libtesting_a-gmock-all.o: src/testing/src/gmock-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_testing_libtesting_a-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo -c -o src/testing/src/src_testing_libtesting_a-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_testing_libtesting_a-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.o: src/testing/googlemock/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.o -MD -MP -MF src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo -c -o src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.o `test -f 'src/testing/googlemock/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/googlemock/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googlemock/src/gmock-all.cc' object='src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_testing_libtesting_a-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.o `test -f 'src/testing/googlemock/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/googlemock/src/gmock-all.cc
 
-src/testing/src/src_testing_libtesting_a-gmock-all.obj: src/testing/src/gmock-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_testing_libtesting_a-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo -c -o src/testing/src/src_testing_libtesting_a-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_testing_libtesting_a-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.obj: src/testing/googlemock/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.obj -MD -MP -MF src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo -c -o src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.obj `if test -f 'src/testing/googlemock/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/googlemock/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googlemock/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Tpo src/testing/googlemock/src/$(DEPDIR)/src_testing_libtesting_a-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googlemock/src/gmock-all.cc' object='src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_testing_libtesting_a-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_testing_libtesting_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googlemock/src/src_testing_libtesting_a-gmock-all.obj `if test -f 'src/testing/googlemock/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/googlemock/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googlemock/src/gmock-all.cc'; fi`
 
-src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o: src/testing/gtest/src/gtest-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o: src/testing/googletest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o `test -f 'src/testing/googletest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest-all.cc' object='src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.o `test -f 'src/testing/googletest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest-all.cc
 
-src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj: src/testing/googletest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj `if test -f 'src/testing/googletest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Tpo src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest-all.cc' object='src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest-all.obj `if test -f 'src/testing/googletest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest-all.cc'; fi`
 
-src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o: src/testing/gtest/src/gtest_main.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o: src/testing/googletest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o `test -f 'src/testing/googletest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest_main.cc' object='src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.o `test -f 'src/testing/googletest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/googletest/src/gtest_main.cc
 
-src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj: src/testing/googletest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj -MD -MP -MF src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj `if test -f 'src/testing/googletest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Tpo src/testing/googletest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googletest/src/gtest_main.cc' object='src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googletest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.obj `if test -f 'src/testing/googletest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/googletest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googletest/src/gtest_main.cc'; fi`
 
-src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o: src/testing/src/gmock-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo -c -o src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o: src/testing/googlemock/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o -MD -MP -MF src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo -c -o src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o `test -f 'src/testing/googlemock/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/googlemock/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googlemock/src/gmock-all.cc' object='src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.o `test -f 'src/testing/googlemock/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/googlemock/src/gmock-all.cc
 
-src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj: src/testing/src/gmock-all.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo -c -o src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/src/gmock-all.cc' object='src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj: src/testing/googlemock/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj -MD -MP -MF src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo -c -o src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj `if test -f 'src/testing/googlemock/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/googlemock/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googlemock/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Tpo src/testing/googlemock/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/testing/googlemock/src/gmock-all.cc' object='src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/googlemock/src/src_client_linux_linux_client_unittest_shlib-gmock-all.obj `if test -f 'src/testing/googlemock/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/googlemock/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/googlemock/src/gmock-all.cc'; fi`
 
 src/client/linux/handler/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.o: src/client/linux/handler/exception_handler_unittest.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/handler/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.o -MD -MP -MF src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.Tpo -c -o src/client/linux/handler/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.o `test -f 'src/client/linux/handler/exception_handler_unittest.cc' || echo '$(srcdir)/'`src/client/linux/handler/exception_handler_unittest.cc
@@ -8400,10 +8409,10 @@ distclean-generic:
 	-rm -f src/processor/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/processor/$(am__dirstamp)
 	-rm -f src/testing/$(am__dirstamp)
-	-rm -f src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
-	-rm -f src/testing/gtest/src/$(am__dirstamp)
-	-rm -f src/testing/src/$(DEPDIR)/$(am__dirstamp)
-	-rm -f src/testing/src/$(am__dirstamp)
+	-rm -f src/testing/googlemock/src/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/testing/googlemock/src/$(am__dirstamp)
+	-rm -f src/testing/googletest/src/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/testing/googletest/src/$(am__dirstamp)
 	-rm -f src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/third_party/libdisasm/$(am__dirstamp)
 	-rm -f src/tools/linux/core2md/$(DEPDIR)/$(am__dirstamp)
@@ -8428,7 +8437,7 @@ clean-am: clean-binPROGRAMS clean-checkLIBRARIES clean-checkPROGRAMS \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/microdump_writer/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/mac/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR) src/tools/mac/dump_syms/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/microdump_writer/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/mac/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/googlemock/src/$(DEPDIR) src/testing/googletest/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR) src/tools/mac/dump_syms/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -8481,7 +8490,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/microdump_writer/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/mac/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR) src/tools/mac/dump_syms/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/microdump_writer/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/mac/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/googlemock/src/$(DEPDIR) src/testing/googletest/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR) src/tools/mac/dump_syms/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
