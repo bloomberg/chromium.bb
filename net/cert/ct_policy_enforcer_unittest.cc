@@ -178,7 +178,15 @@ TEST_F(CTPolicyEnforcerTest,
                 chain_.get(), nullptr, scts, NetLogWithSource()));
 }
 
-TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
+#if defined(OS_ANDROID)
+#define MAYBE_ConformsToCTEVPolicyIfSCTBeforeEnforcementDate
+DISABLED_ConformsToCTEVPolicyIfSCTBeforeEnforcementDate
+#else
+#define MAYBE_ConformsToCTEVPolicyIfSCTBeforeEnforcementDate \
+  ConformsToCTEVPolicyIfSCTBeforeEnforcementDate
+#endif
+TEST_F(CTPolicyEnforcerTest,
+       MAYBE_ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
   ct::SCTList scts;
   // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   // All 5 SCTs will be from non-Google logs.
