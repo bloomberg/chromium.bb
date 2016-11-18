@@ -67,15 +67,25 @@ void dumpToTracedValue(const LayoutObject& object,
     tracedValue->setBoolean("childNeeds", object.normalChildNeedsLayout());
   if (object.posChildNeedsLayout())
     tracedValue->setBoolean("posChildNeeds", object.posChildNeedsLayout());
+
   if (object.isTableCell()) {
-    const LayoutTableCell& c = toLayoutTableCell(object);
-    tracedValue->setDouble("row", c.rowIndex());
-    tracedValue->setDouble("col", c.absoluteColumnIndex());
-    if (c.rowSpan() != 1)
-      tracedValue->setDouble("rowSpan", c.rowSpan());
-    if (c.colSpan() != 1)
-      tracedValue->setDouble("colSpan", c.colSpan());
+    // Table layout might be dirty if traceGeometry is false.
+    // See https://crbug.com/664271 .
+    if (traceGeometry) {
+      const LayoutTableCell& c = toLayoutTableCell(object);
+      tracedValue->setDouble("row", c.rowIndex());
+      tracedValue->setDouble("col", c.absoluteColumnIndex());
+      if (c.rowSpan() != 1)
+        tracedValue->setDouble("rowSpan", c.rowSpan());
+      if (c.colSpan() != 1)
+        tracedValue->setDouble("colSpan", c.colSpan());
+    } else {
+      // At least indicate that object is a table cell.
+      tracedValue->setDouble("row", 0);
+      tracedValue->setDouble("col", 0);
+    }
   }
+
   if (object.isAnonymous())
     tracedValue->setBoolean("anonymous", object.isAnonymous());
   if (object.isRelPositioned())
