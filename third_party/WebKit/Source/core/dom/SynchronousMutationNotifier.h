@@ -23,6 +23,10 @@ class CORE_EXPORT SynchronousMutationNotifier
   // TODO(yosin): We will have |notifyXXX()| functions defined in
   // |SynchronousMutationObserver|.
 
+  void notifyUpdateCharacterData(CharacterData*,
+                                 unsigned offset,
+                                 unsigned oldLength,
+                                 unsigned newLength);
   void notifyNodeChildrenWillBeRemoved(ContainerNode&);
   void notifyNodeWillBeRemoved(Node&);
 

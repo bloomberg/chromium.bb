@@ -190,6 +190,9 @@ void CharacterData::setDataAndUpdate(const String& newData,
     if (getNodeType() == kProcessingInstructionNode)
       toProcessingInstruction(this)->didAttributeChanged();
 
+    document().notifyUpdateCharacterData(this, offsetOfReplacedData, oldLength,
+                                         newLength);
+
     if (document().frame())
       document().frame()->selection().didUpdateCharacterData(
           this, offsetOfReplacedData, oldLength, newLength);

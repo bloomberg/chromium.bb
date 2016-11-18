@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class CharacterData;
 class ContainerNode;
 class Document;
 
@@ -38,6 +39,14 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
   //  - didMergeTextNodes(Text& oldNode, unsigned offset);
   //  - didSplitTextNode(Text& oldNode);
+
+  // Called when |CharacterData| is updated at |offset|, |oldLength| is a
+  // number of deleted character and |newLength| is a number of added
+  // characters.
+  virtual void didUpdateCharacterData(CharacterData*,
+                                      unsigned offset,
+                                      unsigned oldLength,
+                                      unsigned newLength);
 
   // Called before removing container node.
   virtual void nodeChildrenWillBeRemoved(ContainerNode&);

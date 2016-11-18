@@ -78,6 +78,25 @@ class TestSynchronousMutationObserver
   USING_GARBAGE_COLLECTED_MIXIN(TestSynchronousMutationObserver);
 
  public:
+  struct UpdateCharacterDataRecord
+      : GarbageCollected<UpdateCharacterDataRecord> {
+    Member<CharacterData> m_node;
+    unsigned m_offset = 0;
+    unsigned m_oldLength = 0;
+    unsigned m_newLength = 0;
+
+    UpdateCharacterDataRecord(CharacterData* node,
+                              unsigned offset,
+                              unsigned oldLength,
+                              unsigned newLength)
+        : m_node(node),
+          m_offset(offset),
+          m_oldLength(oldLength),
+          m_newLength(newLength) {}
+
+    DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
+  };
+
   TestSynchronousMutationObserver(Document&);
   virtual ~TestSynchronousMutationObserver() = default;
 
@@ -93,17 +112,27 @@ class TestSynchronousMutationObserver
     return m_removedNodes;
   }
 
+  const HeapVector<Member<UpdateCharacterDataRecord>>&
+  updatedCharacterDataRecords() const {
+    return m_updatedCharacterDataRecords;
+  }
+
   DECLARE_TRACE();
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
+  void didUpdateCharacterData(CharacterData*,
+                              unsigned offset,
+                              unsigned oldLength,
+                              unsigned newLength) final;
   void nodeChildrenWillBeRemoved(ContainerNode&) final;
   void nodeWillBeRemoved(Node&) final;
 
   int m_contextDestroyedCalledCounter = 0;
   HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
   HeapVector<Member<Node>> m_removedNodes;
+  HeapVector<Member<UpdateCharacterDataRecord>> m_updatedCharacterDataRecords;
 
   DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
 };
@@ -115,6 +144,15 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
 
 void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
+}
+
+void TestSynchronousMutationObserver::didUpdateCharacterData(
+    CharacterData* characterData,
+    unsigned offset,
+    unsigned oldLength,
+    unsigned newLength) {
+  m_updatedCharacterDataRecords.append(new UpdateCharacterDataRecord(
+      characterData, offset, oldLength, newLength));
 }
 
 void TestSynchronousMutationObserver::nodeChildrenWillBeRemoved(
@@ -129,6 +167,7 @@ void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
 DEFINE_TRACE(TestSynchronousMutationObserver) {
   visitor->trace(m_removedChildrenNodes);
   visitor->trace(m_removedNodes);
+  visitor->trace(m_updatedCharacterDataRecords);
   SynchronousMutationObserver::trace(visitor);
 }
 
@@ -394,6 +433,52 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   document().shutdown();
   EXPECT_EQ(observer.lifecycleContext(), nullptr);
   EXPECT_EQ(observer.countContextDestroyedCalled(), 1);
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+
+  Text* appendSample = document().createTextNode("a123456789");
+  document().body()->appendChild(appendSample);
+
+  Text* deleteSample = document().createTextNode("b123456789");
+  document().body()->appendChild(deleteSample);
+
+  Text* insertSample = document().createTextNode("c123456789");
+  document().body()->appendChild(insertSample);
+
+  Text* replaceSample = document().createTextNode("c123456789");
+  document().body()->appendChild(replaceSample);
+
+  EXPECT_EQ(observer.updatedCharacterDataRecords().size(), 0u);
+
+  appendSample->appendData("abc");
+  ASSERT_EQ(observer.updatedCharacterDataRecords().size(), 1u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[0]->m_node, appendSample);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[0]->m_offset, 10u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[0]->m_oldLength, 0u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[0]->m_newLength, 3u);
+
+  deleteSample->deleteData(3, 4, ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(observer.updatedCharacterDataRecords().size(), 2u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[1]->m_node, deleteSample);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[1]->m_offset, 3u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[1]->m_oldLength, 4u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[1]->m_newLength, 0u);
+
+  insertSample->insertData(3, "def", ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(observer.updatedCharacterDataRecords().size(), 3u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[2]->m_node, insertSample);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[2]->m_offset, 3u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[2]->m_oldLength, 0u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[2]->m_newLength, 3u);
+
+  replaceSample->replaceData(6, 4, "ghi", ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(observer.updatedCharacterDataRecords().size(), 4u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[3]->m_node, replaceSample);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[3]->m_offset, 6u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[3]->m_oldLength, 4u);
+  EXPECT_EQ(observer.updatedCharacterDataRecords()[3]->m_newLength, 3u);
 }
 
 }  // namespace blink

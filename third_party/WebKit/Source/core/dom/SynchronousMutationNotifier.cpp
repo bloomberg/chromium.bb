@@ -11,6 +11,17 @@ namespace blink {
 
 SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
+void SynchronousMutationNotifier::notifyUpdateCharacterData(
+    CharacterData* characterData,
+    unsigned offset,
+    unsigned oldLength,
+    unsigned newLength) {
+  for (SynchronousMutationObserver* observer : m_observers) {
+    observer->didUpdateCharacterData(characterData, offset, oldLength,
+                                     newLength);
+  }
+}
+
 void SynchronousMutationNotifier::notifyNodeChildrenWillBeRemoved(
     ContainerNode& container) {
   for (SynchronousMutationObserver* observer : m_observers)
