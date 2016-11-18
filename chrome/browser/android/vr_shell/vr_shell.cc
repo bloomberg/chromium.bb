@@ -546,6 +546,7 @@ void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
 }
 
 uint32_t GetPixelEncodedPoseIndex() {
+  TRACE_EVENT0("gpu", "VrShell::GetPixelEncodedPoseIndex");
   // Read the pose index encoded in a bottom left pixel as color values.
   // See also third_party/WebKit/Source/modules/vr/VRDisplay.cpp which
   // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
@@ -559,6 +560,7 @@ uint32_t GetPixelEncodedPoseIndex() {
 }
 
 void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  TRACE_EVENT0("gpu", "VrShell::DrawFrame");
   // Reset the viewport list to just the pair of viewports for the
   // primary buffer each frame. Head-locked viewports get added by
   // DrawVrShell if needed.
@@ -638,6 +640,7 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
                           gvr::Frame &frame) {
+  TRACE_EVENT0("gpu", "VrShell::DrawVrShell");
   std::vector<const ContentRectangle*> head_locked_elements;
   std::vector<const ContentRectangle*> world_elements;
   for (const auto& rect : scene_->GetUiElements()) {
@@ -711,6 +714,7 @@ gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
 void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
                          const std::vector<const ContentRectangle*>& elements,
                          const gvr::Sizei& render_size, int viewport_offset) {
+  TRACE_EVENT0("gpu", "VrShell::DrawUiView");
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     buffer_viewport_list_->GetBufferViewport(
         eye + viewport_offset, buffer_viewport_.get());
@@ -838,6 +842,7 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
 }
 
 void VrShell::DrawWebVr() {
+  TRACE_EVENT0("gpu", "VrShell::DrawWebVr");
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
   glDisable(GL_CULL_FACE);
   glDepthMask(GL_FALSE);
@@ -931,6 +936,7 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint width,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
+  TRACE_EVENT0("gpu", "VrShell::ContentSurfaceChanged");
   // If we have a delegate, must trigger "ready" callback one time only.
   // Do so the first time we got a nonzero size. (This assumes it doesn't
   // change, but once we get resize ability we'll no longer need this hack.)
