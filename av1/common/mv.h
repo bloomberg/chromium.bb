@@ -165,7 +165,7 @@ static INLINE void set_default_gmparams(WarpedMotionParams *wm) {
 typedef struct candidate_mv {
   int_mv this_mv;
   int_mv comp_mv;
-  int_mv pred_mv[2];
+  uint8_t pred_diff[2];
   int weight;
 } CANDIDATE_MV;
 #endif

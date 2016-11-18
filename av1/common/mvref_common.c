@@ -35,8 +35,8 @@ static uint8_t add_ref_mv_candidate(
         // Add a new item to the list.
         if (index == *refmv_count) {
           ref_mv_stack[index].this_mv = this_refmv;
-          ref_mv_stack[index].pred_mv[0] =
-              get_sub_block_pred_mv(candidate_mi, ref, col, block);
+          ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
+              get_sub_block_pred_mv(candidate_mi, ref, col, block), this_refmv);
           ref_mv_stack[index].weight = 2 * len;
           ++(*refmv_count);
 
@@ -61,8 +61,9 @@ static uint8_t add_ref_mv_candidate(
           // Add a new item to the list.
           if (index == *refmv_count) {
             ref_mv_stack[index].this_mv = this_refmv;
-            ref_mv_stack[index].pred_mv[0] =
-                get_sub_block_pred_mv(candidate_mi, ref, col, alt_block);
+            ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
+                get_sub_block_pred_mv(candidate_mi, ref, col, alt_block),
+                this_refmv);
             ref_mv_stack[index].weight = len;
             ++(*refmv_count);
 
@@ -97,10 +98,10 @@ static uint8_t add_ref_mv_candidate(
       if (index == *refmv_count) {
         ref_mv_stack[index].this_mv = this_refmv[0];
         ref_mv_stack[index].comp_mv = this_refmv[1];
-        ref_mv_stack[index].pred_mv[0] =
-            get_sub_block_pred_mv(candidate_mi, 0, col, block);
-        ref_mv_stack[index].pred_mv[1] =
-            get_sub_block_pred_mv(candidate_mi, 1, col, block);
+        ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
+            get_sub_block_pred_mv(candidate_mi, 0, col, block), this_refmv[0]);
+        ref_mv_stack[index].pred_diff[1] = av1_get_pred_diff_ctx(
+            get_sub_block_pred_mv(candidate_mi, 1, col, block), this_refmv[1]);
         ref_mv_stack[index].weight = 2 * len;
         ++(*refmv_count);
 
@@ -131,10 +132,12 @@ static uint8_t add_ref_mv_candidate(
         if (index == *refmv_count) {
           ref_mv_stack[index].this_mv = this_refmv[0];
           ref_mv_stack[index].comp_mv = this_refmv[1];
-          ref_mv_stack[index].pred_mv[0] =
-              get_sub_block_pred_mv(candidate_mi, 0, col, block);
-          ref_mv_stack[index].pred_mv[1] =
-              get_sub_block_pred_mv(candidate_mi, 1, col, block);
+          ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
+              get_sub_block_pred_mv(candidate_mi, 0, col, block),
+              this_refmv[0]);
+          ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
+              get_sub_block_pred_mv(candidate_mi, 1, col, block),
+              this_refmv[1]);
           ref_mv_stack[index].weight = len;
           ++(*refmv_count);
 
@@ -356,7 +359,8 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
 #if CONFIG_SIMP_MV_PRED
         ref_mv_stack[idx].pred_mv[0] = prev_frame_mvs->mv[ref];
 #else
-        ref_mv_stack[idx].pred_mv[0] = prev_frame_mvs->pred_mv[ref];
+        ref_mv_stack[idx].pred_diff[0] =
+            av1_get_pred_diff_ctx(prev_frame_mvs->pred_mv[ref], this_refmv);
 #endif
         ref_mv_stack[idx].weight = 2;
         ++(*refmv_count);
