@@ -22,7 +22,7 @@
 #  www.compassbraille.org
 #  Last updated 9th November 2016
 
-include cb-ur-pk-g1.utb
+include ur-pk-g1.utb
 
 #---------------------------------------
 # Contractions of Aspirated Digraphs
