@@ -329,14 +329,14 @@ TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
       attributedSubstringForProposedRange:NSMakeRange(NSNotFound, 0u)
                               actualRange:&actualRange];
   EXPECT_EQ(nil, actualString);
-  EXPECT_EQ(NSNotFound, actualRange.location);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), actualRange.location);
   EXPECT_EQ(0u, actualRange.length);
 
   actualString = [rwhv_cocoa_
       attributedSubstringForProposedRange:NSMakeRange(NSNotFound, 15u)
                               actualRange:&actualRange];
   EXPECT_EQ(nil, actualString);
-  EXPECT_EQ(NSNotFound, actualRange.location);
+  EXPECT_EQ(static_cast<NSUInteger>(NSNotFound), actualRange.location);
   EXPECT_EQ(0u, actualRange.length);
 }
 
