@@ -72,12 +72,20 @@ class ScrollContentsView : public views::View,
       if (child_at(i)->id() != VIEW_ID_STICKY_HEADER && !child_at(i)->layer())
         child_at(i)->Paint(context);
     }
+    bool did_draw_shadow = false;
     // Paint header rows above other children in Z-order.
     for (auto& header : headers_) {
       if (!header.view->layer())
         header.view->Paint(context);
-      PaintDelineation(header, context);
+      did_draw_shadow = PaintDelineation(header, context) || did_draw_shadow;
     }
+
+    // Draw a shadow at the top of the viewport when scrolled, but only if a
+    // header didn't already draw one. Overlap the shadow with the separator
+    // that's below the header view so we don't get both a separator and a full
+    // shadow.
+    if (y() != 0 && !did_draw_shadow)
+      DrawShadow(context, gfx::Rect(0, 0, width(), -y() - kSeparatorWidth));
   }
 
   void Layout() override {
@@ -128,7 +136,6 @@ class ScrollContentsView : public views::View,
   }
 
  private:
-  const int kSeparatorThickness = 1;
   const SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
   const int kShadowOffsetY = 2;
   const int kShadowBlur = 2;
@@ -178,8 +185,9 @@ class ScrollContentsView : public views::View,
 
   // Paints a separator for a header view. The separator can be a horizontal
   // rule or a horizontal shadow, depending on whether the header is sticking to
-  // the top of the scroll viewport.
-  void PaintDelineation(const Header& header, const ui::PaintContext& context) {
+  // the top of the scroll viewport. The return value indicates whether a shadow
+  // was drawn.
+  bool PaintDelineation(const Header& header, const ui::PaintContext& context) {
     const View* view = header.view;
     const bool at_top = view->y() == -y();
 
@@ -187,23 +195,31 @@ class ScrollContentsView : public views::View,
     if (view->y() == header.natural_offset) {
       // But if the header is at the very top of the viewport, draw nothing.
       if (at_top)
-        return;
+        return false;
 
       // TODO(estade): look better at 1.5x scale.
       ui::PaintRecorder recorder(context, size());
       gfx::Canvas* canvas = recorder.canvas();
       gfx::Rect separator = view->bounds();
-      separator.set_height(kSeparatorThickness);
+      separator.set_height(kSeparatorWidth);
       canvas->FillRect(separator, kSeparatorColor);
-      return;
+      return false;
     }
 
     // If the header is displaced but is not at the top of the viewport, it's
     // being pushed out by another header. Draw nothing.
     if (!at_top)
-      return;
+      return false;
 
     // Otherwise, draw a shadow below.
+    DrawShadow(context,
+               gfx::Rect(0, 0, view->width(), view->bounds().bottom()));
+    return true;
+  }
+
+  // Draws a drop shadow below |shadowed_area|.
+  void DrawShadow(const ui::PaintContext& context,
+                  const gfx::Rect& shadowed_area) {
     ui::PaintRecorder recorder(context, size());
     gfx::Canvas* canvas = recorder.canvas();
     SkPaint paint;
@@ -212,9 +228,8 @@ class ScrollContentsView : public views::View,
                         kSeparatorColor);
     paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
     paint.setAntiAlias(true);
-    gfx::Rect rect(0, 0, view->width(), view->bounds().bottom());
-    canvas->ClipRect(rect, SkRegion::kDifference_Op);
-    canvas->DrawRect(rect, paint);
+    canvas->ClipRect(shadowed_area, SkRegion::kDifference_Op);
+    canvas->DrawRect(shadowed_area, paint);
   }
 
   views::BoxLayout* box_layout_;
@@ -228,7 +243,6 @@ class ScrollContentsView : public views::View,
 // Constants for the title row in material design.
 const int kTitleRowVerticalPadding = 4;
 const int kTitleRowProgressBarHeight = 2;
-const int kTitleRowSeparatorHeight = 1;
 const int kTitleRowPaddingTop = kTitleRowVerticalPadding;
 const int kTitleRowPaddingBottom =
     kTitleRowVerticalPadding - kTitleRowProgressBarHeight;
@@ -338,9 +352,9 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
     views::Separator* separator =
         new views::Separator(views::Separator::HORIZONTAL);
     separator->SetColor(kHorizontalSeparatorColor);
-    separator->SetPreferredSize(kTitleRowSeparatorHeight);
+    separator->SetPreferredSize(kSeparatorWidth);
     separator->SetBorder(views::CreateEmptyBorder(
-        kTitleRowProgressBarHeight - kTitleRowSeparatorHeight, 0, 0, 0));
+        kTitleRowProgressBarHeight - kSeparatorWidth, 0, 0, 0));
     AddChildViewAt(separator, kTitleRowSeparatorIndex);
   } else {
     title_row_ = new SpecialPopupRow();
