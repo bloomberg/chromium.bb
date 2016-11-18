@@ -1117,7 +1117,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value) {
     setCSPDirective<SourceListDirective>(name, value, m_baseURI);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::ChildSrc)) {
     setCSPDirective<SourceListDirective>(name, value, m_childSrc);
-  } else if (equalIgnoringCase(name, ContentSecurityPolicy::WorkerSrc)) {
+  } else if (equalIgnoringCase(name, ContentSecurityPolicy::WorkerSrc) &&
+             m_policy->experimentalFeaturesEnabled()) {
     setCSPDirective<SourceListDirective>(name, value, m_workerSrc);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::FormAction)) {
     setCSPDirective<SourceListDirective>(name, value, m_formAction);
