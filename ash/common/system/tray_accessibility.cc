@@ -277,10 +277,17 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
     container->AddIconAndLabelCustomSize(
         image, text, highlight,
         image.width() + kMenuSeparatorVerticalPadding * 2, padding, padding);
-    gfx::ImageSkia check_mark =
-        CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
-    container->AddRightIcon(check_mark, check_mark.width());
-    container->SetRightViewVisible(checked);
+    if (checked) {
+      gfx::ImageSkia check_mark = CreateVectorIcon(
+          gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
+      container->AddRightIcon(check_mark, check_mark.width());
+      container->SetRightViewVisible(true);
+      container->SetAccessiblityState(
+          HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
+    } else {
+      container->SetAccessiblityState(
+          HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+    }
   } else {
     container->AddCheckableLabel(text, highlight, checked);
   }
