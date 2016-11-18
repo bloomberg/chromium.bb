@@ -36,6 +36,9 @@ extern const char kEngineTransport[];
 // Enables downloading the complete page from the engine.
 extern const char kDownloadWholeDocument[];
 
+// Specifies directory where android fonts are stored for use in Linux client.
+extern const char kAndroidFontsPath[];
+
 }  // namespace switches
 }  // namespace blimp
 
