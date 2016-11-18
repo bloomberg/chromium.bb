@@ -68,6 +68,10 @@ class PpdCacheImpl : public PpdCache {
   base::Optional<base::FilePath> Store(
       const Printer::PpdReference& reference,
       const std::string& ppd_contents) override {
+    base::ThreadRestrictions::AssertIOAllowed();
+    if (!EnsureCacheDirectoryExists()) {
+      return base::nullopt;
+    }
     base::Optional<base::FilePath> ret;
     base::FilePath contents_path =
         GetCachePathBase(reference).AddExtension(".ppd");
@@ -141,6 +145,10 @@ class PpdCacheImpl : public PpdCache {
   // values seems reasonable.
   void StoreAvailablePrinters(std::unique_ptr<PpdProvider::AvailablePrintersMap>
                                   available_printers) override {
+    base::ThreadRestrictions::AssertIOAllowed();
+    if (!EnsureCacheDirectoryExists()) {
+      return;
+    }
     available_printers_ = std::move(available_printers);
     available_printers_timestamp_ = base::Time::Now();
     // Convert the map to Values, in preparation for jsonification.
@@ -168,6 +176,18 @@ class PpdCacheImpl : public PpdCache {
   }
 
  private:
+  // Create the cache directory if it doesn't already exist.  Returns true
+  // on success.
+  bool EnsureCacheDirectoryExists() {
+    if (base::PathExists(cache_base_dir_) ||
+        base::CreateDirectory(cache_base_dir_)) {
+      return true;
+    }
+    LOG(ERROR) << "Failed to create ppd cache directory "
+               << cache_base_dir_.MaybeAsASCII();
+    return false;
+  }
+
   // Get the file path at which we expect to find a PPD if it's cached.
   //
   // This is, ultimately, just a hash function.  It's extremely infrequently

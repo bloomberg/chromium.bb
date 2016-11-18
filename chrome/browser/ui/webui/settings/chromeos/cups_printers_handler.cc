@@ -82,11 +82,6 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
       weak_factory_(this) {
   base::FilePath ppd_cache_path =
       profile_->GetPath().Append(FILE_PATH_LITERAL("PPDCache"));
-  if (!base::PathExists(ppd_cache_path) &&
-      !base::CreateDirectory(ppd_cache_path)) {
-    LOG(ERROR) << "Failed to create ppd cache directory "
-               << ppd_cache_path.MaybeAsASCII();
-  }
   ppd_provider_ = chromeos::printing::PpdProvider::Create(
       google_apis::GetAPIKey(), g_browser_process->system_request_context(),
       content::BrowserThread::GetTaskRunnerForThread(

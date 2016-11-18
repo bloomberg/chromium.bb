@@ -52,10 +52,13 @@ class PpdCacheTest : public ::testing::Test {
   }
 
   // Make and return a cache for the test that uses a temporary directory
-  // which is cleaned up at the end of the test.
+  // which is cleaned up at the end of the test.  Note that we pass
+  // a (nonexistant) subdirectory of temp_dir_ to the cache to exercise
+  // the lazy-creation-of-the-cache-directory code.
   std::unique_ptr<PpdCache> CreateTestCache(
       const PpdCache::Options& options = PpdCache::Options()) {
-    return PpdCache::Create(ppd_cache_temp_dir_.GetPath(), options);
+    return PpdCache::Create(ppd_cache_temp_dir_.GetPath().Append("Cache"),
+                            options);
   }
 
  protected:

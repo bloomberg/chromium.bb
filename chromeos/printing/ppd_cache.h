@@ -46,7 +46,9 @@ class CHROMEOS_EXPORT PpdCache {
     size_t max_available_list_cached_size = 10 * 1024 * 1024;
   };
 
-  // Create and return a Ppdcache that uses cache_dir to store state.
+  // Create and return a Ppdcache that uses cache_dir to store state.  If
+  // cache_base_dir does not exist, it will be lazily created the first time the
+  // cache needs to store state.
   static std::unique_ptr<PpdCache> Create(const base::FilePath& cache_base_dir,
                                           const Options& options = Options());
   virtual ~PpdCache() {}
