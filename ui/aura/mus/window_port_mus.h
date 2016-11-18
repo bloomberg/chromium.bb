@@ -108,6 +108,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     ADD,
     ADD_TRANSIENT,
     BOUNDS,
+    DESTROY,
     PROPERTY,
     REMOVE,
     REMOVE_TRANSIENT,
@@ -192,6 +193,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const std::vector<uint8_t>* property_data) override;
   void SetSurfaceIdFromServer(
       std::unique_ptr<SurfaceInfo> surface_info) override;
+  void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;

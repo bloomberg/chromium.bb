@@ -307,6 +307,9 @@ bool WindowTree::AddTransientWindow(const ClientWindowId& window_id,
 
 bool WindowTree::DeleteWindow(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "removing window from parent client=" << id_
+           << " client window_id= " << window_id.id << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0);
   if (!window)
     return false;
 
@@ -1195,8 +1198,16 @@ void WindowTree::AddWindow(uint32_t change_id, Id parent_id, Id child_id) {
 void WindowTree::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
   bool success = false;
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  if (window && window->parent() &&
-      access_policy_->CanRemoveWindowFromParent(window)) {
+  DVLOG(3) << "removing window from parent client=" << id_
+           << " client window_id= " << window_id << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0);
+  if (!window) {
+    DVLOG(1) << "remove failing, invalid window id=" << change_id;
+  } else if (!window->parent()) {
+    DVLOG(1) << "remove failing, no parent id=" << change_id;
+  } else if (!access_policy_->CanRemoveWindowFromParent(window)) {
+    DVLOG(1) << "remove failing, access policy disallowed id=" << change_id;
+  } else {
     success = true;
     Operation op(this, window_server_,
                  OperationType::REMOVE_WINDOW_FROM_PARENT);

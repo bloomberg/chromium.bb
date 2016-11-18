@@ -1227,4 +1227,17 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithExistingWindow) {
   EXPECT_EQ(window2, server_window->children()[1]);
 }
 
+// Ensures when WindowTreeClient::OnWindowDeleted() is called nothing is
+// scheduled on the server side.
+TEST_F(WindowTreeClientClientTest, OnWindowDeletedDoesntNotifyServer) {
+  Window window1(nullptr);
+  window1.Init(ui::LAYER_NOT_DRAWN);
+  Window* window2 = new Window(nullptr);
+  window2->Init(ui::LAYER_NOT_DRAWN);
+  window1.AddChild(window2);
+  window_tree()->AckAllChanges();
+  window_tree_client()->OnWindowDeleted(server_id(window2));
+  EXPECT_FALSE(window_tree()->has_change());
+}
+
 }  // namespace aura

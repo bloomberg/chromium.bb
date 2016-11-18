@@ -34,7 +34,13 @@ WindowPortMus::~WindowPortMus() {
   if (surface_info_)
     SetSurfaceIdFromServer(nullptr);
 
-  window_tree_client_->OnWindowMusDestroyed(this);
+  // DESTROY is only scheduled from DestroyFromServer(), meaning if DESTROY is
+  // present then the server originated the change.
+  const WindowTreeClient::Origin origin =
+      RemoveChangeByTypeAndData(ServerChangeType::DESTROY, ServerChangeData())
+          ? WindowTreeClient::Origin::SERVER
+          : WindowTreeClient::Origin::CLIENT;
+  window_tree_client_->OnWindowMusDestroyed(this, origin);
 }
 
 // static
@@ -123,6 +129,9 @@ bool WindowPortMus::RemoveChangeByTypeAndData(const ServerChangeType type,
         if (iter->data.bounds == data.bounds)
           break;
         continue;
+      case ServerChangeType::DESTROY:
+        // No extra data for delete.
+        break;
       case ServerChangeType::PROPERTY:
         if (iter->data.property_name == data.property_name)
           break;
@@ -232,6 +241,22 @@ void WindowPortMus::SetSurfaceIdFromServer(
                                                              &surface_info);
   }
   surface_info_ = std::move(surface_info);
+}
+
+void WindowPortMus::DestroyFromServer() {
+  std::unique_ptr<ScopedServerChange> remove_from_parent_change;
+  if (window_->parent()) {
+    ServerChangeData data;
+    data.child_id = server_id();
+    WindowPortMus* parent = Get(window_->parent());
+    remove_from_parent_change = base::MakeUnique<ScopedServerChange>(
+        parent, ServerChangeType::REMOVE, data);
+  }
+  // NOTE: this can't use ScopedServerChange as |this| is destroyed before the
+  // function returns (ScopedServerChange would attempt to access |this| after
+  // destruction).
+  ScheduleChange(ServerChangeType::DESTROY, ServerChangeData());
+  delete window_;
 }
 
 void WindowPortMus::AddTransientChildFromServer(WindowMus* child) {

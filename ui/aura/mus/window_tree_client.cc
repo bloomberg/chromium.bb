@@ -592,12 +592,13 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
   }
 }
 
-void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window) {
+void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
   if (focus_synchronizer_->focused_window() == window)
     focus_synchronizer_->OnFocusedWindowDestroyed();
 
   // TODO: decide how to deal with windows not owned by this client.
-  if (WasCreatedByThisClient(window) || IsRoot(window)) {
+  if (origin == Origin::CLIENT &&
+      (WasCreatedByThisClient(window) || IsRoot(window))) {
     const uint32_t change_id =
         ScheduleInFlightChange(base::MakeUnique<CrashInFlightChange>(
             window, ChangeType::DELETE_WINDOW));
@@ -1030,9 +1031,9 @@ void WindowTreeClient::OnWindowReordered(Id window_id,
 }
 
 void WindowTreeClient::OnWindowDeleted(Id window_id) {
-  // TODO(sky): decide how best to deal with this. It seems we should let the
-  // delegate do the actualy deletion.
-  delete GetWindowByServerId(window_id)->GetWindow();
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (window)
+    window->DestroyFromServer();
 }
 
 void WindowTreeClient::OnWindowVisibilityChanged(Id window_id, bool visible) {
