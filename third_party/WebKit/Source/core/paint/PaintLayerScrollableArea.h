@@ -492,6 +492,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void updateScrollOrigin();
   void updateScrollDimensions();
+  void updateScrollbarEnabledState();
 
   void updateScrollOffset(const ScrollOffset&, ScrollType) override;
 

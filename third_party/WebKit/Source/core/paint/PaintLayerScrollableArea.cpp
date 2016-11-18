@@ -553,6 +553,8 @@ bool PaintLayerScrollableArea::shouldSuspendScrollAnimations() const {
 }
 
 void PaintLayerScrollableArea::scrollbarVisibilityChanged() {
+  updateScrollbarEnabledState();
+
   if (LayoutView* view = box().view())
     return view->clearHitTestCache();
 }
@@ -656,6 +658,20 @@ void PaintLayerScrollableArea::updateScrollDimensions() {
   updateScrollOrigin();
 }
 
+void PaintLayerScrollableArea::updateScrollbarEnabledState() {
+  bool forceDisabled =
+      ScrollbarTheme::theme().shouldDisableInvisibleScrollbars() &&
+      scrollbarsHidden();
+  // overflow:scroll should just enable/disable.
+  if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar()) {
+    horizontalScrollbar()->setEnabled(hasHorizontalOverflow() &&
+                                      !forceDisabled);
+  }
+  if (box().style()->overflowY() == OverflowScroll && verticalScrollbar()) {
+    verticalScrollbar()->setEnabled(hasVerticalOverflow() && !forceDisabled);
+  }
+}
+
 void PaintLayerScrollableArea::setScrollOffsetUnconditionally(
     const ScrollOffset& offset,
     ScrollType scrollType) {
@@ -749,11 +765,7 @@ void PaintLayerScrollableArea::updateAfterLayout() {
     // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
     DisableCompositingQueryAsserts disabler;
 
-    // overflow:scroll should just enable/disable.
-    if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar())
-      horizontalScrollbar()->setEnabled(hasHorizontalOverflow());
-    if (box().style()->overflowY() == OverflowScroll && verticalScrollbar())
-      verticalScrollbar()->setEnabled(hasVerticalOverflow());
+    updateScrollbarEnabledState();
 
     // Set up the range (and page step/line step).
     if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {

@@ -2463,6 +2463,7 @@ bool FrameView::scrollbarsCanBeActive() const {
 }
 
 void FrameView::scrollbarVisibilityChanged() {
+  updateScrollbarEnabledState();
   LayoutViewItem viewItem = layoutViewItem();
   if (!viewItem.isNull())
     viewItem.clearHitTestCache();
@@ -3824,10 +3825,25 @@ void FrameView::computeScrollbarExistence(
   }
 }
 
+void FrameView::updateScrollbarEnabledState() {
+  bool forceDisabled =
+      ScrollbarTheme::theme().shouldDisableInvisibleScrollbars() &&
+      scrollbarsHidden();
+
+  if (horizontalScrollbar()) {
+    horizontalScrollbar()->setEnabled(contentsWidth() > visibleWidth() &&
+                                      !forceDisabled);
+  }
+  if (verticalScrollbar()) {
+    verticalScrollbar()->setEnabled(contentsHeight() > visibleHeight() &&
+                                    !forceDisabled);
+  }
+}
+
 void FrameView::updateScrollbarGeometry() {
+  updateScrollbarEnabledState();
   if (horizontalScrollbar()) {
     int thickness = horizontalScrollbar()->scrollbarThickness();
-    int clientWidth = visibleWidth();
     IntRect oldRect(horizontalScrollbar()->frameRect());
     IntRect hBarRect(
         (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar())
@@ -3840,14 +3856,12 @@ void FrameView::updateScrollbarGeometry() {
     if (oldRect != horizontalScrollbar()->frameRect())
       setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
-    horizontalScrollbar()->setEnabled(contentsWidth() > clientWidth);
-    horizontalScrollbar()->setProportion(clientWidth, contentsWidth());
+    horizontalScrollbar()->setProportion(visibleWidth(), contentsWidth());
     horizontalScrollbar()->offsetDidChange();
   }
 
   if (verticalScrollbar()) {
     int thickness = verticalScrollbar()->scrollbarThickness();
-    int clientHeight = visibleHeight();
     IntRect oldRect(verticalScrollbar()->frameRect());
     IntRect vBarRect(
         shouldPlaceVerticalScrollbarOnLeft() ? 0 : (width() - thickness), 0,
@@ -3858,8 +3872,7 @@ void FrameView::updateScrollbarGeometry() {
     if (oldRect != verticalScrollbar()->frameRect())
       setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
-    verticalScrollbar()->setEnabled(contentsHeight() > clientHeight);
-    verticalScrollbar()->setProportion(clientHeight, contentsHeight());
+    verticalScrollbar()->setProportion(visibleHeight(), contentsHeight());
     verticalScrollbar()->offsetDidChange();
   }
 }

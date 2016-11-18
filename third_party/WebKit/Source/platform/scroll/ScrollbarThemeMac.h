@@ -51,6 +51,12 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   bool supportsControlTints() const override { return true; }
 
+  // On Mac, the painting code itself animates the opacity so there's no need
+  // to disable in order to make the scrollbars invisible. In fact,
+  // disabling/enabling causes invalidations which can cause endless loops as
+  // Mac queues up scrollbar paint timers.
+  bool shouldDisableInvisibleScrollbars() const override { return false; }
+
   double initialAutoscrollTimerDelay() override;
   double autoscrollTimerDelay() override;
 

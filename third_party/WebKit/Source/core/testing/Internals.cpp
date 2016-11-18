@@ -137,6 +137,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/tracing/TraceEvent.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -3028,9 +3029,11 @@ void Internals::setCapsLockState(bool enabled) {
 
 bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
                                                        bool visible) {
-  if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
-    return scrollableArea->scrollAnimator().setScrollbarsVisibleForTesting(
-        visible);
+  if (ScrollableArea* scrollableArea = scrollableAreaForNode(node)) {
+    scrollableArea->setScrollbarsHidden(!visible);
+    scrollableArea->scrollAnimator().setScrollbarsVisibleForTesting(visible);
+    return ScrollbarTheme::theme().usesOverlayScrollbars();
+  }
   return false;
 }
 

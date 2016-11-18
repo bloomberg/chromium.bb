@@ -906,6 +906,7 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-z
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled-after-onload.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 
 crbug.com/651343 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Pass Failure ]
 

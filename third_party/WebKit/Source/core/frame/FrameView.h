@@ -814,6 +814,8 @@ class CORE_EXPORT FrameView final
 
   void updateScrollOffset(const ScrollOffset&, ScrollType) override;
 
+  void updateScrollbarEnabledState();
+
   void updateLifecyclePhasesInternal(
       DocumentLifecycle::LifecycleState targetState);
 

@@ -50,6 +50,14 @@ class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
     m_delayInSeconds = delayInSeconds;
   }
 
+  void paintThumb(GraphicsContext& gc,
+                  const Scrollbar& scrollbar,
+                  const IntRect& rect) override {
+    if (!scrollbar.enabled())
+      return;
+    ScrollbarThemeOverlay::paintThumb(gc, scrollbar, rect);
+  }
+
  private:
   double m_delayInSeconds;
   bool isMockTheme() const final { return true; }

@@ -71,6 +71,13 @@ class PLATFORM_EXPORT ScrollbarTheme {
   virtual bool usesOverlayScrollbars() const { return false; }
   virtual void updateScrollbarOverlayColorTheme(const ScrollbarThemeClient&) {}
 
+  // If true, scrollbars that become invisible (i.e. overlay scrollbars that
+  // fade out) should be marked as disabled. This option exists since Mac and
+  // Aura overlays implement the fade out differently, with Mac painting code
+  // fading out the scrollbars. Aura scrollbars require disabling the scrollbar
+  // to prevent painting it.
+  virtual bool shouldDisableInvisibleScrollbars() const { return true; }
+
   virtual bool invalidateOnMouseEnterExit() { return false; }
   virtual bool invalidateOnWindowActiveChange() const { return false; }
 
