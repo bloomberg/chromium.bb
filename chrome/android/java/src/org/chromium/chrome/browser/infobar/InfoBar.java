@@ -114,6 +114,11 @@ public abstract class InfoBar implements InfoBarView {
         return messageView.getText() + mContext.getString(R.string.bottom_bar_screen_position);
     }
 
+    @Override
+    public boolean isLegalDisclosure() {
+        return false;
+    }
+
     /**
      * @return whether the infobar actually needed closing.
      */

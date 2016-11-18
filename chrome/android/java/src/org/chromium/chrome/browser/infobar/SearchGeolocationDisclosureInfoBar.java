@@ -73,6 +73,11 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
         layout.setMessage(message);
     }
 
+    @Override
+    public boolean isLegalDisclosure() {
+        return true;
+    }
+
     @CalledByNative
     private static void showSettingsPage(String searchUrl) {
         Context context = ContextUtils.getApplicationContext();
