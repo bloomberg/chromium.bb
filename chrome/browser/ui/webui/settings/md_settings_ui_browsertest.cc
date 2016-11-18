@@ -32,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ViewSourceDoesntCrash) {
 // May not complete on memory and Windows debug bots. TODO(dbeam): investigate
 // and fix. See https://crbug.com/558434, https://crbug.com/620370 and
 // https://crbug.com/651296.
-#if defined(MEMORY_SANITIZER) || defined(OS_WIN)
+#if defined(MEMORY_SANITIZER) || defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_BackForwardDoesntCrash DISABLED_BackForwardDoesntCrash
 #else
 #define MAYBE_BackForwardDoesntCrash BackForwardDoesntCrash
