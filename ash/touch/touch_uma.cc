@@ -232,7 +232,7 @@ GestureActionType TouchUMA::FindGestureActionType(
     return GESTURE_UNKNOWN;
   }
 
-  std::string name = window ? window->name() : std::string();
+  std::string name = window ? window->GetName() : std::string();
 
   const char kWallpaperView[] = "WallpaperView";
   if (name == kWallpaperView) {

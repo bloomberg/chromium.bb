@@ -32,7 +32,7 @@ ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
 }
 
 base::string16 WindowWatcherShelfItemDelegate::GetTitle() {
-  return watcher_->GetWindowByID(id_)->title();
+  return watcher_->GetWindowByID(id_)->GetTitle();
 }
 
 ShelfMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(

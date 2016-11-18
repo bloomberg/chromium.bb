@@ -73,7 +73,7 @@ aura::client::ActivationClient* GetActivationClient() {
 
 // Checks if a window renders ARC apps.
 bool IsArcWindow(aura::Window* window) {
-  if (!window || window->name() != kExoShellSurfaceWindowName)
+  if (!window || window->GetName() != kExoShellSurfaceWindowName)
     return false;
   std::string application_id = exo::ShellSurface::GetApplicationId(window);
   return base::StartsWith(application_id, kArcProcessNamePrefix,

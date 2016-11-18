@@ -320,7 +320,7 @@ bool DesktopWindowTreeHostMus::IsVisibleOnAllWorkspaces() const {
 }
 
 bool DesktopWindowTreeHostMus::SetWindowTitle(const base::string16& title) {
-  if (window()->title() == title)
+  if (window()->GetTitle() == title)
     return false;
   window()->SetTitle(title);
   return true;

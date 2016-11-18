@@ -103,10 +103,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
 
-  const std::string& name() const { return name_; }
+  const std::string& GetName() const;
   void SetName(const std::string& name);
 
-  const base::string16 title() const { return title_; }
+  const base::string16& GetTitle() const;
   void SetTitle(const base::string16& title);
 
   bool transparent() const { return transparent_; }
@@ -500,9 +500,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool visible_;
 
   int id_;
-  std::string name_;
-
-  base::string16 title_;
 
   // Whether layer is initialized as non-opaque.
   bool transparent_;

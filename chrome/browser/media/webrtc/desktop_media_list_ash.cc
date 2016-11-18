@@ -55,7 +55,7 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
         content::DesktopMediaID::TYPE_WINDOW, *it);
     if (id.aura_id == view_dialog_id_.aura_id)
       continue;
-    SourceDescription window_source(id, (*it)->title());
+    SourceDescription window_source(id, (*it)->GetTitle());
     sources->push_back(window_source);
 
     CaptureThumbnail(window_source.id, *it);
@@ -73,7 +73,7 @@ void DesktopMediaListAsh::EnumerateSources(
       SourceDescription screen_source(
           content::DesktopMediaID::RegisterAuraWindow(
               content::DesktopMediaID::TYPE_SCREEN, root_windows[i]),
-          root_windows[i]->title());
+          root_windows[i]->GetTitle());
 
       if (root_windows[i] == ash::Shell::GetPrimaryRootWindow())
         sources->insert(sources->begin(), screen_source);

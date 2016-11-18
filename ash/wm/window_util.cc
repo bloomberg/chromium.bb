@@ -94,7 +94,7 @@ void SnapWindowToPixelBoundary(aura::Window* window) {
 
 void SetSnapsChildrenToPhysicalPixelBoundary(aura::Window* container) {
   DCHECK(!container->GetProperty(kSnapChildrenToPixelBoundary))
-      << container->name();
+      << container->GetName();
   container->SetProperty(kSnapChildrenToPixelBoundary, true);
 }
 

@@ -159,7 +159,7 @@ void WmWindowAura::SetName(const char* name) {
 }
 
 std::string WmWindowAura::GetName() const {
-  return window_->name();
+  return window_->GetName();
 }
 
 void WmWindowAura::SetTitle(const base::string16& title) {
@@ -167,7 +167,7 @@ void WmWindowAura::SetTitle(const base::string16& title) {
 }
 
 base::string16 WmWindowAura::GetTitle() const {
-  return window_->title();
+  return window_->GetTitle();
 }
 
 void WmWindowAura::SetShellWindowId(int id) {

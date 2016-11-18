@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
@@ -69,6 +70,9 @@ AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
 // A property key to store the window modality.
 AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 
+// A property key to store the name of the window; mostly used for debugging.
+AURA_EXPORT extern const WindowProperty<std::string*>* const kNameKey;
+
 // A property key to store the restore bounds for a window.
 AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 
@@ -81,6 +85,9 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
 // See ui/base/ui_base_types.h for its definition.
 AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kShowStateKey;
+
+// A property key to store the title of the window; sometimes shown to users.
+AURA_EXPORT extern const WindowProperty<base::string16*>* const kTitleKey;
 
 // The inset of the topmost view in the client view from the top of the
 // non-client view. The topmost view depends on the window type. The topmost

@@ -44,7 +44,7 @@ std::string ChildWindowNamesAsString(const aura::Window& parent) {
        it != parent.children().end(); ++it) {
     if (!names.empty())
       names += " ";
-    names += (*it)->name();
+    names += (*it)->GetName();
   }
   return names;
 }

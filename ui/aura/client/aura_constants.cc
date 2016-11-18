@@ -8,6 +8,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, bool)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, base::string16*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::ModalType)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::ImageSkia*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::Rect*)
@@ -38,6 +39,7 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kExcludeFromMruKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kMirroringEnabledKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(Window*, kHostWindowKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kNameKey, nullptr);
 // gfx::Rect object for RestoreBoundsKey property is owned by the window
 // and will be freed automatically.
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
@@ -45,6 +47,7 @@ DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(base::string16, kTitleKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(int, kTopViewInset, 0);
 DEFINE_WINDOW_PROPERTY_KEY(SkColor, kTopViewColor, SK_ColorTRANSPARENT);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr);

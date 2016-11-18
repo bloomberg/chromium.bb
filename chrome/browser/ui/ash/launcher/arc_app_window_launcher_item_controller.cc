@@ -73,7 +73,8 @@ ArcAppWindowLauncherItemController::GetApplicationList(int event_flags) {
     gfx::Image image;
     aura::Window* window = (*it)->GetNativeWindow();
     items.push_back(new ChromeLauncherAppMenuItemV2App(
-        ((window && !window->title().empty()) ? window->title() : GetTitle()),
+        ((window && !window->GetTitle().empty()) ? window->GetTitle()
+                                                 : GetTitle()),
         &image, app_id(), launcher_controller(), i,
         i == 0 /* has_leading_separator */));
   }

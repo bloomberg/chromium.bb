@@ -8,7 +8,6 @@
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::TooltipClient*)
-DECLARE_WINDOW_PROPERTY_TYPE(base::string16*)
 DECLARE_WINDOW_PROPERTY_TYPE(void**)
 
 namespace aura {

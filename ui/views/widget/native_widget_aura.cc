@@ -372,7 +372,7 @@ void NativeWidgetAura::GetWindowPlacement(
 bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
   if (!window_)
     return false;
-  if (window_->title() == title)
+  if (window_->GetTitle() == title)
     return false;
   window_->SetTitle(title);
   return true;
@@ -774,7 +774,7 @@ void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
 }
 
 std::string NativeWidgetAura::GetName() const {
-  return window_ ? window_->name() : std::string();
+  return window_ ? window_->GetName() : std::string();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

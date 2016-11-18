@@ -50,7 +50,7 @@ std::string GetWindowNames(const aura::Window* window) {
   for (size_t i = 0; i < window->children().size(); ++i) {
     if (i != 0)
       result += " ";
-    result += window->children()[i]->name();
+    result += window->children()[i]->GetName();
   }
   return result;
 }
@@ -64,7 +64,7 @@ std::string GetLayerNames(const aura::Window* window) {
   LayerToWindowNameMap window_names;
   for (size_t i = 0; i < window->children().size(); ++i) {
     window_names[window->children()[i]->layer()] =
-        window->children()[i]->name();
+        window->children()[i]->GetName();
   }
 
   std::string result;

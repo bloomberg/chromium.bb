@@ -135,7 +135,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
   // See crbug.com/603745 for more details.
   const bool pass_through_surface =
       wm::GetActiveWindow() &&
-      wm::GetActiveWindow()->name() == kExoShellSurfaceWindowName;
+      wm::GetActiveWindow()->GetName() == kExoShellSurfaceWindowName;
 
   const bool spoken_feedback_enabled =
       WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
