@@ -54,6 +54,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -64,6 +65,7 @@
 #include "media/audio/audio_logging.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
+#include "media/base/output_device_info.h"
 #include "url/origin.h"
 
 namespace media {
@@ -100,6 +102,8 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Returns true if any streams managed by this host are actively playing.  Can
   // be called from any thread.
   bool HasActiveAudio();
+
+  void OverrideDevicePermissionsForTesting(bool has_access);
 
  private:
   friend class AudioRendererHostTest;
@@ -144,6 +148,14 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
                                     int session_id,
                                     const std::string& device_id,
                                     const url::Origin& security_origin);
+
+  void AuthorizationCompleted(int stream_id,
+                              const url::Origin& security_origin,
+                              base::TimeTicks auth_start_time,
+                              media::OutputDeviceStatus status,
+                              bool should_send_id,
+                              const media::AudioParameters& params,
+                              const std::string& raw_device_id);
 
   // Creates an audio output stream with the specified format.
   // Upon success/failure, the peer is notified via the NotifyStreamCreated
@@ -199,39 +211,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // ResourceScheduler when the renderer starts or stops playing an audiostream.
   void UpdateNumPlayingStreams(AudioEntry* entry, bool is_playing);
 
-  // Check if the renderer process has access to the requested output device.
-  void CheckOutputDeviceAccess(int render_frame_id,
-                               const std::string& device_id,
-                               const url::Origin& security_origin,
-                               int stream_id,
-                               base::TimeTicks auth_start_time);
-
-  // Proceed with device authorization after checking permissions.
-  void AccessChecked(const std::string& device_id,
-                     const url::Origin& security_origin,
-                     int stream_id,
-                     base::TimeTicks auth_start_time,
-                     bool have_access);
-
-  // Translate the hashed |device_id| to a unique device ID.
-  void TranslateDeviceID(const std::string& device_id,
-                         const url::Origin& security_origin,
-                         int stream_id,
-                         base::TimeTicks auth_start_time,
-                         const MediaDeviceEnumeration& enumeration);
-
-  // Get audio hardware parameters on the device thread.
-  media::AudioParameters GetDeviceParametersOnDeviceThread(
-      const std::string& device_id);
-
-  // Proceed with device authorization after translating device ID and
-  // receiving hardware parameters.
-  void DeviceParametersReceived(int stream_id,
-                                base::TimeTicks auth_start_time,
-                                bool device_found,
-                                const std::string& unique_id,
-                                const media::AudioParameters& output_params);
-
   // Helper method to check if the authorization procedure for stream
   // |stream_id| has started.
   bool IsAuthorizationStarted(int stream_id);
@@ -249,9 +228,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   media::AudioManager* const audio_manager_;
   AudioMirroringManager* const mirroring_manager_;
   std::unique_ptr<media::AudioLog> audio_log_;
-
-  // Used to access to AudioInputDeviceManager.
-  MediaStreamManager* media_stream_manager_;
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
@@ -277,6 +253,8 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // The maximum number of simultaneous streams during the lifetime of this
   // host. Reported as UMA stat at shutdown.
   size_t max_simultaneous_streams_;
+
+  AudioOutputAuthorizationHandler authorization_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

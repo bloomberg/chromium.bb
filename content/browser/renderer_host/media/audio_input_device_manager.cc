@@ -148,11 +148,20 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
 
   MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;
 
+  // Add preferred output device information if a matching output device
+  // exists.
+  out.device.matched_output_device_id =
+      audio_manager_->GetAssociatedOutputDeviceID(info.device.id);
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
     // Don't need to query the hardware information if using fake device.
     input_params.sample_rate = 44100;
     input_params.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+    if (!out.device.matched_output_device_id.empty()) {
+      out.device.matched_output.sample_rate = 44100;
+      out.device.matched_output.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+    }
   } else {
     // Get the preferred sample rate and channel configuration for the
     // audio device.
@@ -163,11 +172,6 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
     input_params.frames_per_buffer = params.frames_per_buffer();
     input_params.effects = params.effects();
     input_params.mic_positions = params.mic_positions();
-
-    // Add preferred output device information if a matching output device
-    // exists.
-    out.device.matched_output_device_id =
-        audio_manager_->GetAssociatedOutputDeviceID(info.device.id);
     if (!out.device.matched_output_device_id.empty()) {
       params = audio_manager_->GetOutputStreamParameters(
           out.device.matched_output_device_id);

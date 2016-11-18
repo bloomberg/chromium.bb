@@ -40,6 +40,8 @@ CONTENT_EXPORT bool GetMediaDeviceIDForHMAC(MediaStreamType stream_type,
                                             const std::string& source_id,
                                             std::string* device_id);
 
+CONTENT_EXPORT bool IsValidDeviceId(const std::string& device_id);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_MEDIA_DEVICE_ID_H_

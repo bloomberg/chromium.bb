@@ -4,6 +4,9 @@
 
 #include "media/audio/fake_audio_manager.h"
 
+#include <algorithm>
+#include <utility>
+
 namespace media {
 
 namespace {
@@ -20,11 +23,9 @@ FakeAudioManager::FakeAudioManager(
     : AudioManagerBase(std::move(task_runner),
                        std::move(worker_task_runner),
                        audio_log_factory) {
-  LOG(INFO) << __func__;
 }
 
 FakeAudioManager::~FakeAudioManager() {
-  LOG(INFO) << __func__;
   Shutdown();
 }
 

@@ -1075,6 +1075,8 @@ source_set("browser") {
     "renderer_host/media/audio_input_renderer_host.h",
     "renderer_host/media/audio_input_sync_writer.cc",
     "renderer_host/media/audio_input_sync_writer.h",
+    "renderer_host/media/audio_output_authorization_handler.cc",
+    "renderer_host/media/audio_output_authorization_handler.h",
     "renderer_host/media/audio_renderer_host.cc",
     "renderer_host/media/audio_renderer_host.h",
     "renderer_host/media/audio_sync_reader.cc",
