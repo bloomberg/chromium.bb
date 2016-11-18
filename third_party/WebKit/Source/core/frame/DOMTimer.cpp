@@ -134,7 +134,8 @@ void DOMTimer::fired() {
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
                InspectorTimerFireEvent::data(context, m_timeoutID));
-  PerformanceMonitor::HandlerCall handlerCall(context, m_action);
+  PerformanceMonitor::HandlerCall handlerCall(
+      context, repeatInterval() ? "setInterval" : "setTimeout", true);
   InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
       context, "timerFired", false);
   InspectorInstrumentation::AsyncTask asyncTask(context, this);

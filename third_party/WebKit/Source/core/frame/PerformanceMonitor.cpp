@@ -19,49 +19,45 @@
 namespace blink {
 
 PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
-                                             EventListener* eventListener)
-    : m_context(context),
-      m_performanceMonitor(PerformanceMonitor::instrumentingMonitor(context)),
-      m_eventListener(eventListener),
-      m_violation(kHandler) {
-  start();
+                                             bool recurring)
+    : m_performanceMonitor(PerformanceMonitor::instrumentingMonitor(context)) {
+  if (!m_performanceMonitor)
+    return;
+  Violation violation = recurring ? kRecurringHandler : kHandler;
+  if (!m_performanceMonitor->m_thresholds[violation]) {
+    m_performanceMonitor = nullptr;
+    return;
+  }
+  if (!m_performanceMonitor->m_handlerDepth)
+    m_performanceMonitor->m_handlerType = violation;
+  ++m_performanceMonitor->m_handlerDepth;
 }
 
 PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
-                                             ScheduledAction* scheduledAction)
-    : m_context(context),
-      m_performanceMonitor(PerformanceMonitor::instrumentingMonitor(context)),
-      m_scheduledAction(scheduledAction),
-      m_violation(kRecurringHandler) {
-  start();
+                                             const char* name,
+                                             bool recurring)
+    : HandlerCall(context, recurring) {
+  if (m_performanceMonitor && m_performanceMonitor->m_handlerDepth == 1)
+    m_performanceMonitor->m_handlerName = name;
 }
 
-void PerformanceMonitor::HandlerCall::start() {
-  if (!m_performanceMonitor || !m_performanceMonitor->m_thresholds[m_violation])
-    return;
-  m_startTime = WTF::monotonicallyIncreasingTime();
+PerformanceMonitor::HandlerCall::HandlerCall(ExecutionContext* context,
+                                             const AtomicString& name,
+                                             bool recurring)
+    : HandlerCall(context, recurring) {
+  if (m_performanceMonitor && m_performanceMonitor->m_handlerDepth == 1)
+    m_performanceMonitor->m_handlerAtomicName = name;
 }
 
 PerformanceMonitor::HandlerCall::~HandlerCall() {
   if (!m_performanceMonitor)
     return;
-  double threshold = m_performanceMonitor->m_thresholds[m_violation];
-  if (!threshold)
-    return;
-  double time = WTF::monotonicallyIncreasingTime() - m_startTime;
-  if (time < threshold)
-    return;
-
-  String text = String::format("Handler took %ldms of runtime (%ldms allowed)",
-                               lround(time * 1000), lround(threshold * 1000));
-  std::unique_ptr<SourceLocation> location;
-  if (m_eventListener) {
-    location = getFunctionLocation(m_context, m_eventListener.get());
-  } else {
-    location = m_scheduledAction->handlerLocation();
+  --m_performanceMonitor->m_handlerDepth;
+  if (!m_performanceMonitor->m_handlerDepth) {
+    m_performanceMonitor->m_handlerType = PerformanceMonitor::kAfterLast;
+    m_performanceMonitor->m_handlerName = nullptr;
+    m_performanceMonitor->m_handlerAtomicName = AtomicString();
   }
-  m_performanceMonitor->reportGenericViolation(m_violation, text, time,
-                                               location.get());
 }
 
 // static
@@ -78,6 +74,23 @@ void PerformanceMonitor::didExecuteScript(ExecutionContext* context) {
       PerformanceMonitor::instrumentingMonitor(context);
   if (performanceMonitor)
     performanceMonitor->didExecuteScript();
+}
+
+// static
+void PerformanceMonitor::willCallFunction(ExecutionContext* context) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->innerWillCallFunction(context);
+}
+
+// static
+void PerformanceMonitor::didCallFunction(ExecutionContext* context,
+                                         v8::Local<v8::Function> function) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(context);
+  if (performanceMonitor)
+    performanceMonitor->didCallFunction(function);
 }
 
 // static
@@ -220,7 +233,6 @@ void PerformanceMonitor::updateInstrumentation() {
 }
 
 void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
-  m_isExecutingScript = true;
   // Heuristic for minimal frame context attribution: note the frame context
   // for each script execution. When a long task is encountered,
   // if there is only one frame context involved, then report it.
@@ -230,38 +242,75 @@ void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
   // accounted for detailed and more accurate attribution.
   if (context->isDocument() && toDocument(context)->frame())
     m_frameContexts.add(toDocument(context)->frame());
+  ++m_scriptDepth;
 }
 
 void PerformanceMonitor::didExecuteScript() {
-  m_isExecutingScript = false;
+  --m_scriptDepth;
+}
+
+void PerformanceMonitor::innerWillCallFunction(ExecutionContext* context) {
+  if (!m_scriptDepth && m_thresholds[m_handlerType])
+    m_scriptStartTime = WTF::monotonicallyIncreasingTime();
+  innerWillExecuteScript(context);
+}
+
+void PerformanceMonitor::didCallFunction(v8::Local<v8::Function> function) {
+  didExecuteScript();
+  if (m_scriptDepth)
+    return;
+  if (m_handlerType == kAfterLast)
+    return;
+  double threshold = m_thresholds[m_handlerType];
+  if (!threshold)
+    return;
+
+  double time = WTF::monotonicallyIncreasingTime() - m_scriptStartTime;
+  if (time < threshold)
+    return;
+  String name = m_handlerName ? m_handlerName : m_handlerAtomicName;
+  String text = String::format("'%s' handler took %ldms", name.utf8().data(),
+                               lround(time * 1000));
+  reportGenericViolation(m_handlerType, text, time,
+                         SourceLocation::fromFunction(function).get());
 }
 
 void PerformanceMonitor::willUpdateLayout() {
-  if (m_isExecutingScript)
+  if (m_scriptDepth && !m_layoutDepth)
     m_layoutStartTime = WTF::monotonicallyIncreasingTime();
+  ++m_layoutDepth;
 }
 
 void PerformanceMonitor::didUpdateLayout() {
-  if (m_isExecutingScript) {
+  --m_layoutDepth;
+  if (m_scriptDepth && !m_layoutDepth) {
     m_perTaskStyleAndLayoutTime +=
         WTF::monotonicallyIncreasingTime() - m_layoutStartTime;
   }
 }
 
 void PerformanceMonitor::willRecalculateStyle() {
-  if (m_isExecutingScript)
+  if (m_scriptDepth)
     m_styleStartTime = WTF::monotonicallyIncreasingTime();
 }
 
 void PerformanceMonitor::didRecalculateStyle() {
-  if (m_isExecutingScript) {
+  if (m_scriptDepth) {
     m_perTaskStyleAndLayoutTime +=
         WTF::monotonicallyIncreasingTime() - m_styleStartTime;
   }
 }
 
 void PerformanceMonitor::willProcessTask() {
+  m_scriptDepth = 0;
+  m_scriptStartTime = 0;
+  m_layoutStartTime = 0;
+  m_layoutDepth = 0;
+  m_styleStartTime = 0;
   m_perTaskStyleAndLayoutTime = 0;
+  m_handlerType = Violation::kAfterLast;
+  m_handlerDepth = 0;
+
   // Reset m_frameContexts. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   m_frameContexts.clear();

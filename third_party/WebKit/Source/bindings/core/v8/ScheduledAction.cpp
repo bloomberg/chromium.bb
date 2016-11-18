@@ -172,10 +172,4 @@ void ScheduledAction::createLocalHandlesForArgs(
     handles->append(m_info.Get(i));
 }
 
-std::unique_ptr<SourceLocation> ScheduledAction::handlerLocation() {
-  v8::HandleScope handles(m_scriptState->isolate());
-  return SourceLocation::fromFunction(
-      v8::Local<v8::Function>::New(m_scriptState->isolate(), m_function.get()));
-}
-
 }  // namespace blink

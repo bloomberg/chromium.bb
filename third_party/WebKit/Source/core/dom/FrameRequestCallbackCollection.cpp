@@ -5,6 +5,7 @@
 #include "core/dom/FrameRequestCallbackCollection.h"
 
 #include "core/dom/FrameRequestCallback.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 
@@ -78,6 +79,8 @@ void FrameRequestCallbackCollection::executeCallbacks(
       InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
           m_context, "animationFrameFired", false);
       InspectorInstrumentation::AsyncTask asyncTask(m_context, callback);
+      PerformanceMonitor::HandlerCall handlerCall(
+          m_context, "requestAnimationFrame", true);
       if (callback->m_useLegacyTimeBase)
         callback->handleEvent(highResNowMsLegacy);
       else

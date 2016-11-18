@@ -9,17 +9,17 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/base/task_time_observer.h"
+#include "wtf/text/AtomicString.h"
+#include <v8.h>
 
 namespace blink {
 
 class DOMWindow;
 class Document;
-class EventListener;
 class ExecutionContext;
 class Frame;
 class LocalFrame;
 class Performance;
-class ScheduledAction;
 class SourceLocation;
 
 // Performance monitor for Web Performance APIs and logging.
@@ -45,21 +45,14 @@ class CORE_EXPORT PerformanceMonitor final
 
   class CORE_EXPORT HandlerCall {
     STACK_ALLOCATED();
-
    public:
-    HandlerCall(ExecutionContext*, ScheduledAction*);
-    HandlerCall(ExecutionContext*, EventListener*);
+    HandlerCall(ExecutionContext*, bool recurring);
+    HandlerCall(ExecutionContext*, const char* name, bool recurring);
+    HandlerCall(ExecutionContext*, const AtomicString& name, bool recurring);
     ~HandlerCall();
 
    private:
-    void start();
-
-    Member<ExecutionContext> m_context;
     Member<PerformanceMonitor> m_performanceMonitor;
-    Member<ScheduledAction> m_scheduledAction;
-    Member<EventListener> m_eventListener;
-    Violation m_violation;
-    double m_startTime = 0;
   };
 
   class CORE_EXPORT Client : public GarbageCollectedMixin {
@@ -79,6 +72,8 @@ class CORE_EXPORT PerformanceMonitor final
   // Instrumenting methods.
   static void willExecuteScript(ExecutionContext*);
   static void didExecuteScript(ExecutionContext*);
+  static void willCallFunction(ExecutionContext*);
+  static void didCallFunction(ExecutionContext*, v8::Local<v8::Function>);
   static void willUpdateLayout(Document*);
   static void didUpdateLayout(Document*);
   static void willRecalculateStyle(Document*);
@@ -111,6 +106,8 @@ class CORE_EXPORT PerformanceMonitor final
 
   void innerWillExecuteScript(ExecutionContext*);
   void didExecuteScript();
+  void innerWillCallFunction(ExecutionContext*);
+  void didCallFunction(v8::Local<v8::Function>);
   void willUpdateLayout();
   void didUpdateLayout();
   void willRecalculateStyle();
@@ -134,10 +131,17 @@ class CORE_EXPORT PerformanceMonitor final
       Frame* observerFrame);
 
   bool m_enabled = false;
-  bool m_isExecutingScript = false;
+  double m_scriptStartTime = 0;
   double m_layoutStartTime = 0;
   double m_styleStartTime = 0;
   double m_perTaskStyleAndLayoutTime = 0;
+  unsigned m_scriptDepth = 0;
+  unsigned m_layoutDepth = 0;
+  unsigned m_handlerDepth = 0;
+  Violation m_handlerType = Violation::kAfterLast;
+
+  const char* m_handlerName = nullptr;
+  AtomicString m_handlerAtomicName;
 
   double m_thresholds[kAfterLast];
 

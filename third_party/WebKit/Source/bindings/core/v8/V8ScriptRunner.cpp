@@ -632,13 +632,13 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
 
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
-  PerformanceMonitor::willExecuteScript(context);
+  PerformanceMonitor::willCallFunction(context);
   ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   crashIfIsolateIsDead(isolate);
   ThreadDebugger::didExecuteScript(isolate);
-  PerformanceMonitor::didExecuteScript(context);
+  PerformanceMonitor::didCallFunction(context, function);
   if (!depth)
     TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   return result;

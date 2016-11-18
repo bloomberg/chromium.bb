@@ -684,7 +684,7 @@ bool EventTarget::fireEventListeners(Event* event,
 
     InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this,
                                                                 event);
-    PerformanceMonitor::HandlerCall handlerCall(context, listener);
+    PerformanceMonitor::HandlerCall handlerCall(context, event->type(), false);
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.
