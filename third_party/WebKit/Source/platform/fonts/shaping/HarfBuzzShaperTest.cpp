@@ -38,8 +38,8 @@ static inline ShapeResultTestInfo* testInfo(RefPtr<ShapeResult>& result) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
   TextRun latinCommon(reinterpret_cast<const LChar*>("ABC DEF."), 8);
-  HarfBuzzShaper shaper(&font, latinCommon);
-  RefPtr<ShapeResult> result = shaper.shapeResult();
+  HarfBuzzShaper shaper(latinCommon);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -51,8 +51,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon) {
   TextRun leadingCommon(reinterpret_cast<const LChar*>("... test"), 8);
-  HarfBuzzShaper shaper(&font, leadingCommon);
-  RefPtr<ShapeResult> result = shaper.shapeResult();
+  HarfBuzzShaper shaper(leadingCommon);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -77,8 +77,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
   for (auto& test : testlist) {
     String str(test.string);
     TextRun run(str);
-    HarfBuzzShaper shaper(&font, run);
-    RefPtr<ShapeResult> result = shaper.shapeResult();
+    HarfBuzzShaper shaper(run);
+    RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
     EXPECT_EQ(1u, testInfo(result)->numberOfRunsForTesting()) << test.name;
     ASSERT_TRUE(
@@ -105,8 +105,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
   UChar devanagariCommonString[] = {0x915, 0x94d, 0x930, 0x28, 0x20, 0x29};
   TextRun devanagariCommonLatin(devanagariCommonString, 6);
-  HarfBuzzShaper shaper(&font, devanagariCommonLatin);
-  RefPtr<ShapeResult> result = shaper.shapeResult();
+  HarfBuzzShaper shaper(devanagariCommonLatin);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(2u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -126,8 +126,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
   UChar devanagariCommonLatinString[] = {0x915, 0x94d, 0x930, 0x20,
                                          0x61,  0x62,  0x2E};
   TextRun devanagariCommonLatin(devanagariCommonLatinString, 7);
-  HarfBuzzShaper shaper(&font, devanagariCommonLatin);
-  RefPtr<ShapeResult> result = shaper.shapeResult();
+  HarfBuzzShaper shaper(devanagariCommonLatin);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(3u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -152,8 +152,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
   UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
   TextRun mixed(mixedString, 6);
-  HarfBuzzShaper shaper(&font, mixed);
-  RefPtr<ShapeResult> result = shaper.shapeResult();
+  HarfBuzzShaper shaper(mixed);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -181,11 +181,24 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
   EXPECT_EQ(HB_SCRIPT_LATIN, script);
 }
 
+TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
+  UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
+  TextRun mixed(mixedString, 6);
+  HarfBuzzShaper shaper(mixed);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
+
+  // Shape again on the same shape object and check the number of runs.
+  // Should be equal if no state was retained between shape calls.
+  RefPtr<ShapeResult> result2 = shaper.shapeResult(&font);
+  ASSERT_EQ(4u, testInfo(result2)->numberOfRunsForTesting());
+}
+
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
   UChar arabicString[] = {0x628, 0x64A, 0x629};
   TextRun arabic(arabicString, 3);
-  HarfBuzzShaper shaper(&font, arabic);
-  RefPtr<ShapeResult> result = shaper.shapeResult();
+  HarfBuzzShaper shaper(arabic);
+  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
