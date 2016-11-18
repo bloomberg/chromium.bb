@@ -317,12 +317,26 @@ void InstallAttributes::OnReadImmutableAttributes(
   callback.Run(LOCK_SUCCESS);
 }
 
-bool InstallAttributes::IsEnterpriseDevice() const {
+bool InstallAttributes::IsEnterpriseManaged() const {
   if (!device_locked_) {
     return false;
   }
   return registration_mode_ == policy::DEVICE_MODE_ENTERPRISE ||
       registration_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD;
+}
+
+bool InstallAttributes::IsActiveDirectoryManaged() const {
+  if (!device_locked_) {
+    return false;
+  }
+  return registration_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD;
+}
+
+bool InstallAttributes::IsCloudManaged() const {
+  if (!device_locked_) {
+    return false;
+  }
+  return registration_mode_ == policy::DEVICE_MODE_ENTERPRISE;
 }
 
 bool InstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {

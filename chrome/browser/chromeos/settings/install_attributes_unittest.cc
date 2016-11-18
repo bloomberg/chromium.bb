@@ -121,28 +121,32 @@ TEST_F(InstallAttributesTest, Lock) {
                 std::string()));  // device id
 }
 
-TEST_F(InstallAttributesTest, IsEnterpriseDeviceCloud) {
+TEST_F(InstallAttributesTest, IsEnterpriseManagedCloud) {
   install_attributes_->Init(GetTempPath());
-  EXPECT_FALSE(install_attributes_->IsEnterpriseDevice());
+  EXPECT_FALSE(install_attributes_->IsEnterpriseManaged());
   ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
                 policy::DEVICE_MODE_ENTERPRISE,
                 kTestDomain,
                 std::string(),  // realm
                 kTestDeviceId));
-  EXPECT_TRUE(install_attributes_->IsEnterpriseDevice());
+  EXPECT_TRUE(install_attributes_->IsEnterpriseManaged());
+  EXPECT_TRUE(install_attributes_->IsCloudManaged());
+  EXPECT_FALSE(install_attributes_->IsActiveDirectoryManaged());
 }
 
-TEST_F(InstallAttributesTest, IsEnterpriseDeviceRealm) {
+TEST_F(InstallAttributesTest, IsEnterpriseManagedRealm) {
   install_attributes_->Init(GetTempPath());
-  EXPECT_FALSE(install_attributes_->IsEnterpriseDevice());
+  EXPECT_FALSE(install_attributes_->IsEnterpriseManaged());
   ASSERT_EQ(InstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
                 policy::DEVICE_MODE_ENTERPRISE_AD,
                 std::string(),  // domain
                 kTestRealm,
                 kTestDeviceId));
-  EXPECT_TRUE(install_attributes_->IsEnterpriseDevice());
+  EXPECT_TRUE(install_attributes_->IsEnterpriseManaged());
+  EXPECT_FALSE(install_attributes_->IsCloudManaged());
+  EXPECT_TRUE(install_attributes_->IsActiveDirectoryManaged());
 }
 
 TEST_F(InstallAttributesTest, GettersCloud) {

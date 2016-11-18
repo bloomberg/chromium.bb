@@ -452,10 +452,14 @@ void CoreOobeHandler::UpdateLabel(const std::string& id,
 }
 
 void CoreOobeHandler::UpdateDeviceRequisition() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  CallJSOrDefer("updateDeviceRequisition",
-         connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition());
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  if (policy_manager) {
+    CallJSOrDefer("updateDeviceRequisition",
+                  policy_manager->GetDeviceRequisition());
+  }
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {

@@ -136,7 +136,7 @@ void EPKPChallengeKeyBase::GetDeviceAttestationEnabled(
 }
 
 bool EPKPChallengeKeyBase::IsEnterpriseDevice() const {
-  return install_attributes_->IsEnterpriseDevice();
+  return install_attributes_->IsEnterpriseManaged();
 }
 
 bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {

@@ -30,7 +30,7 @@ class PolicyFetchResponse;
 namespace policy {
 
 // CloudPolicyStore implementation for device policy on Chrome OS. Policy is
-// stored/loaded via D-Bus to/from session_manager.
+// stored/loaded via DBus to/from session_manager.
 class DeviceCloudPolicyStoreChromeOS
     : public CloudPolicyStore,
       public chromeos::DeviceSettingsService::Observer {

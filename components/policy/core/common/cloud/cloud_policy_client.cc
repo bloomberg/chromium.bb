@@ -658,7 +658,7 @@ void CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted(
     int net_error,
     const em::DeviceManagementResponse& response) {
   // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
-  LOG(WARNING) << "Recieve DeviceAttributeUpdatePermissionResponse status="
+  LOG(WARNING) << "Receive DeviceAttributeUpdatePermissionResponse status="
                << status << " net_error=" << net_error;
   bool success = false;
 

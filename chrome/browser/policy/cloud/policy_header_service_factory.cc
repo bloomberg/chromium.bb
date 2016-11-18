@@ -105,6 +105,9 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
   CloudPolicyStore* user_store = manager->core()->store();
   CloudPolicyStore* device_store = NULL;
 #if defined(OS_CHROMEOS)
+  // TODO(tnagel): Add support for Active Directory management.
+  if (!connector->GetDeviceCloudPolicyManager())
+    return NULL;
   device_store = connector->GetDeviceCloudPolicyManager()->core()->store();
 #endif
 

@@ -75,6 +75,9 @@ class POLICY_EXPORT PolicyMap {
            std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
   void Set(const std::string& policy, Entry entry);
 
+  // For all policies, overwrite the PolicySource with |source|.
+  void SetSourceForAll(PolicySource source);
+
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
 

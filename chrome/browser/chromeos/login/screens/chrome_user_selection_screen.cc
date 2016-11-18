@@ -40,11 +40,15 @@ ChromeUserSelectionScreen::ChromeUserSelectionScreen(
       weak_factory_(this) {
   device_local_account_policy_service_ = g_browser_process->platform_part()->
       browser_policy_connector_chromeos()->GetDeviceLocalAccountPolicyService();
-  device_local_account_policy_service_->AddObserver(this);
+  if (device_local_account_policy_service_) {
+    device_local_account_policy_service_->AddObserver(this);
+  }
 }
 
 ChromeUserSelectionScreen::~ChromeUserSelectionScreen() {
-  device_local_account_policy_service_->RemoveObserver(this);
+  if (device_local_account_policy_service_) {
+    device_local_account_policy_service_->RemoveObserver(this);
+  }
 }
 
 void ChromeUserSelectionScreen::Init(const user_manager::UserList& users,

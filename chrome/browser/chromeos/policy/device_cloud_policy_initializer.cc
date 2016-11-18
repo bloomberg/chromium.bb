@@ -148,7 +148,7 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
       config.auth_mechanism == EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE)
     config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE;
   // If OOBE is done and we are enrolled, check for need to recover enrollment.
-  if (oobe_complete && install_attributes_->IsEnterpriseDevice()) {
+  if (oobe_complete && install_attributes_->IsEnterpriseManaged()) {
     // Regardless what mode is applicable, the enrollment domain is fixed.
     config.management_domain = install_attributes_->GetDomain();
 

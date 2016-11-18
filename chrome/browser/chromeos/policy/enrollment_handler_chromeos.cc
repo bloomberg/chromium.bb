@@ -172,7 +172,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   // If this is re-enrollment, make sure that the new policy matches the
   // previously-enrolled domain.
   std::string domain;
-  if (install_attributes_->IsEnterpriseDevice()) {
+  if (install_attributes_->IsEnterpriseManaged()) {
     domain = install_attributes_->GetDomain();
     validator->ValidateDomain(domain);
   }

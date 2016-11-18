@@ -1001,6 +1001,8 @@ source_set("chromeos") {
     "policy/cloud_external_data_store.h",
     "policy/configuration_policy_handler_chromeos.cc",
     "policy/configuration_policy_handler_chromeos.h",
+    "policy/device_active_directory_policy_manager.cc",
+    "policy/device_active_directory_policy_manager.h",
     "policy/device_cloud_policy_initializer.cc",
     "policy/device_cloud_policy_initializer.h",
     "policy/device_cloud_policy_manager_chromeos.cc",

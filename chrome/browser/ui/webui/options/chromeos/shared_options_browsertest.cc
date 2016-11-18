@@ -8,12 +8,14 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -27,6 +29,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -114,6 +118,12 @@ class SharedOptionsTest : public LoginManagerTest {
         settings->RemoveSettingsProvider(settings->GetProvider(kDeviceOwner));
     settings->AddSettingsProvider(std::move(stub_settings_provider_));
     settings->AddSettingsProvider(std::move(device_settings_provider));
+
+    // Notify ChromeUserManager of ownership change.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
+        content::Source<SharedOptionsTest>(this),
+        content::NotificationService::NoDetails());
   }
 
   void TearDownOnMainThread() override {
@@ -126,6 +136,7 @@ class SharedOptionsTest : public LoginManagerTest {
   void CheckOptionsUI(const user_manager::User* user,
                       bool is_owner,
                       bool is_primary) {
+    ASSERT_NE(nullptr, user);
     Browser* browser = CreateBrowserForUser(user);
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();

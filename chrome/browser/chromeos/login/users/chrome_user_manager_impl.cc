@@ -219,20 +219,23 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   multi_profile_user_controller_.reset(
       new MultiProfileUserController(this, GetLocalState()));
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  avatar_policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
-      cros_settings_,
-      connector->GetDeviceLocalAccountPolicyService(),
-      policy::key::kUserAvatarImage,
-      this));
-  avatar_policy_observer_->Init();
+  policy::DeviceLocalAccountPolicyService* device_local_account_policy_service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceLocalAccountPolicyService();
+  if (!device_local_account_policy_service) {
+    return;
+  }
 
-  wallpaper_policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
-      cros_settings_,
-      connector->GetDeviceLocalAccountPolicyService(),
-      policy::key::kWallpaperImage,
-      this));
+  avatar_policy_observer_ =
+      base::MakeUnique<policy::CloudExternalDataPolicyObserver>(
+          cros_settings_, device_local_account_policy_service,
+          policy::key::kUserAvatarImage, this);
+  avatar_policy_observer_->Init();
+  wallpaper_policy_observer_ =
+      base::MakeUnique<policy::CloudExternalDataPolicyObserver>(
+          cros_settings_, device_local_account_policy_service,
+          policy::key::kWallpaperImage, this);
   wallpaper_policy_observer_->Init();
 }
 

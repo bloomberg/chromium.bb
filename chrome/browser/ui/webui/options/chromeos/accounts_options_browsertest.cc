@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -22,6 +23,8 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -58,6 +61,12 @@ class AccountsOptionsTest : public LoginManagerTest {
     device_settings_provider_ =
         settings->RemoveSettingsProvider(device_settings_provider);
     settings->AddSettingsProvider(std::move(stub_settings_provider_));
+
+    // Notify ChromeUserManager of ownership change.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
+        content::Source<AccountsOptionsTest>(this),
+        content::NotificationService::NoDetails());
   }
 
   void TearDownOnMainThread() override {

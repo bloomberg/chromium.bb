@@ -26,6 +26,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
@@ -90,8 +91,13 @@ void ProfilePolicyConnector::Init(
   }
 
 #if defined(OS_CHROMEOS)
-  if (connector->GetDeviceCloudPolicyManager())
+  if (connector->GetDeviceCloudPolicyManager()) {
     policy_providers_.push_back(connector->GetDeviceCloudPolicyManager());
+  }
+  if (connector->GetDeviceActiveDirectoryPolicyManager()) {
+    policy_providers_.push_back(
+        connector->GetDeviceActiveDirectoryPolicyManager());
+  }
 #endif
 
   if (user_cloud_policy_manager)

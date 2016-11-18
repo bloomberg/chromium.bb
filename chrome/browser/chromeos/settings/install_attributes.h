@@ -74,8 +74,14 @@ class InstallAttributes {
                   const std::string& device_id,
                   const LockResultCallback& callback);
 
-  // Checks whether this is an enterprise device.
-  bool IsEnterpriseDevice() const;
+  // Checks whether this devices is under any kind of enterprise management.
+  bool IsEnterpriseManaged() const;
+
+  // Checks whether this is a cloud managed enterprise device.
+  bool IsCloudManaged() const;
+
+  // Checks whether this is an Active Directory managed enterprise device.
+  bool IsActiveDirectoryManaged() const;
 
   // Checks whether this is a consumer kiosk enabled device.
   bool IsConsumerKioskDeviceWithAutoLaunch();

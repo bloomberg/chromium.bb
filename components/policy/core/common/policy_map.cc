@@ -89,6 +89,12 @@ void PolicyMap::Set(const std::string& policy, Entry entry) {
   map_[policy] = std::move(entry);
 }
 
+void PolicyMap::SetSourceForAll(PolicySource source) {
+  for (auto& it : map_) {
+    it.second.source = source;
+  }
+}
+
 void PolicyMap::Erase(const std::string& policy) {
   map_.erase(policy);
 }

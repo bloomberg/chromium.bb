@@ -31,7 +31,7 @@ struct PolicyStringMap {
   int string_id;
 };
 
-class CloudPolicyStatusProvider;
+class PolicyStatusProvider;
 
 // The JavaScript message handler for the chrome://policy page.
 class PolicyUIHandler : public content::WebUIMessageHandler,
@@ -111,8 +111,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // Providers that supply status dictionaries for user and device policy,
   // respectively. These are created on initialization time as appropriate for
   // the platform (Chrome OS / desktop) and type of policy that is in effect.
-  std::unique_ptr<CloudPolicyStatusProvider> user_status_provider_;
-  std::unique_ptr<CloudPolicyStatusProvider> device_status_provider_;
+  std::unique_ptr<PolicyStatusProvider> user_status_provider_;
+  std::unique_ptr<PolicyStatusProvider> device_status_provider_;
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 

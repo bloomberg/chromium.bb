@@ -64,10 +64,6 @@ class SessionManagerOperation {
   // Whether the load operation is underway.
   bool is_loading() const { return is_loading_; }
 
-  void set_force_key_load(bool force_key_load) {
-    force_key_load_ = force_key_load;
-  }
-
  protected:
   // Runs the operation. The result is reported through |callback_|.
   virtual void Run() = 0;
@@ -85,6 +81,13 @@ class SessionManagerOperation {
   SessionManagerClient* session_manager_client() {
     return session_manager_client_;
   }
+
+  // Whether to verify the loaded policy's signature against |public_key_| and
+  // perform other cloud-specific validations.  (Active Directory policy has no
+  // signature that could be verified.)
+  bool cloud_validations_ = true;
+
+  bool force_key_load_ = false;
 
  private:
   // Loads the owner key from disk. Must be run on a thread that can do I/O.
@@ -105,15 +108,14 @@ class SessionManagerOperation {
   // Extracts status and device settings from the validator and reports them.
   void ReportValidatorStatus(policy::DeviceCloudPolicyValidator* validator);
 
-  SessionManagerClient* session_manager_client_;
+  SessionManagerClient* session_manager_client_ = nullptr;
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
   Callback callback_;
 
   scoped_refptr<ownership::PublicKey> public_key_;
-  bool force_key_load_;
 
-  bool is_loading_;
+  bool is_loading_ = false;
   std::unique_ptr<enterprise_management::PolicyData> policy_data_;
   std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>
       device_settings_;
@@ -127,8 +129,11 @@ class SessionManagerOperation {
 // the policy blob from session manager, and validates the loaded policy blob.
 class LoadSettingsOperation : public SessionManagerOperation {
  public:
-  // Creates a new load operation.
-  explicit LoadSettingsOperation(const Callback& callback);
+  // Creates a new load operation.  If |cloud_validations| is true, signature
+  // validation and other cloud-specific checks are performed.
+  LoadSettingsOperation(bool force_key_load,
+                        bool cloud_validations,
+                        const Callback& callback);
   ~LoadSettingsOperation() override;
 
  protected:

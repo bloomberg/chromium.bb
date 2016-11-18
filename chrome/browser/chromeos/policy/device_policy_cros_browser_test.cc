@@ -85,6 +85,8 @@ DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 }
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
+  InstallOwnerKey();
+  MarkAsEnterpriseOwned();
   dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
   dbus_setter_->SetSessionManagerClient(
       std::unique_ptr<chromeos::SessionManagerClient>(

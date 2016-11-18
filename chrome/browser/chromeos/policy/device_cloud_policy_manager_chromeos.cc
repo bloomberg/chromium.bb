@@ -270,7 +270,7 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   // monitoring is currently inactive, in case monitoring is turned back on in
   // a future policy fetch - the classes themselves track the current state of
   // the monitoring settings and only perform monitoring if it is active.
-  if (install_attributes->IsEnterpriseDevice()) {
+  if (install_attributes->IsEnterpriseManaged()) {
     CreateStatusUploader();
     syslog_uploader_.reset(new SystemLogUploader(nullptr, task_runner_));
     heartbeat_scheduler_.reset(new HeartbeatScheduler(

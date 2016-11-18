@@ -107,6 +107,7 @@ class SessionManagerOperationTest : public testing::Test {
 
 TEST_F(SessionManagerOperationTest, LoadNoPolicyNoKey) {
   LoadSettingsOperation op(
+      false /* force_key_load */, true /* cloud_validations */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
@@ -126,6 +127,7 @@ TEST_F(SessionManagerOperationTest, LoadNoPolicyNoKey) {
 TEST_F(SessionManagerOperationTest, LoadOwnerKey) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
   LoadSettingsOperation op(
+      false /* force_key_load */, true /* cloud_validations */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
@@ -143,6 +145,7 @@ TEST_F(SessionManagerOperationTest, LoadPolicy) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
   LoadSettingsOperation op(
+      false /* force_key_load */, true /* cloud_validations */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
@@ -165,6 +168,7 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
   owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
   LoadSettingsOperation op(
+      false /* force_key_load */, true /* cloud_validations */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 

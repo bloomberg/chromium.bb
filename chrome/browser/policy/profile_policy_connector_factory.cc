@@ -110,12 +110,15 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
   Profile* const profile = Profile::FromBrowserContext(context);
   const user_manager::User* user = nullptr;
   if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    policy::BrowserPolicyConnectorChromeOS* browser_policy_connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     policy::DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager =
-        browser_policy_connector->GetDeviceCloudPolicyManager();
-    device_cloud_policy_manager->SetSigninProfileSchemaRegistry(
-        schema_registry);
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetDeviceCloudPolicyManager();
+    // TODO(tnagel): Do we need to do something for Active Directory management?
+    if (device_cloud_policy_manager) {
+      device_cloud_policy_manager->SetSigninProfileSchemaRegistry(
+          schema_registry);
+    }
   } else {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
