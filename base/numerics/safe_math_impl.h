@@ -258,6 +258,15 @@ struct IsIntegerArithmeticSafe {
                             sizeof(T) >= (2 * sizeof(Rhs));
 };
 
+// Probe for builtin math overflow support on Clang and version check on GCC.
+#if defined(__has_builtin)
+#define USE_OVERFLOW_BUILTINS (__has_builtin(__builtin_add_overflow))
+#elif defined(__GNUC__)
+#define USE_OVERFLOW_BUILTINS (__GNUC__ >= 5)
+#else
+#define USE_OVERFLOW_BUILTINS (0)
+#endif
+
 // Here are the actual portable checked integer math implementations.
 // TODO(jschuh): Break this code out from the enable_if pattern and find a clean
 // way to coalesce things into the CheckedNumericState specializations below.
@@ -287,6 +296,9 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedAdd(T x, U y, V* result) {
+#if USE_OVERFLOW_BUILTINS
+  return !__builtin_add_overflow(x, y, result);
+#else
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   Promotion presult;
@@ -303,6 +315,7 @@ CheckedAdd(T x, U y, V* result) {
   }
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
+#endif
 }
 
 template <typename T>
@@ -329,6 +342,9 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedSub(T x, U y, V* result) {
+#if USE_OVERFLOW_BUILTINS
+  return !__builtin_sub_overflow(x, y, result);
+#else
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   Promotion presult;
@@ -345,6 +361,7 @@ CheckedSub(T x, U y, V* result) {
   }
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
+#endif
 }
 
 // Integer multiplication is a bit complicated. In the fast case we just
@@ -408,6 +425,20 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedMul(T x, U y, V* result) {
+#if USE_OVERFLOW_BUILTINS
+#if defined(__clang__)
+  // TODO(jschuh): Get the Clang runtime library issues sorted out so we can
+  // support full-width, mixed-sign multiply builtins. https://crbug.com/613003
+  static const bool kUseMaxInt =
+      sizeof(__typeof__(x * y)) < sizeof(intptr_t) ||
+      (sizeof(__typeof__(x * y)) == sizeof(intptr_t) &&
+       std::is_signed<T>::value == std::is_signed<U>::value);
+#else
+  static const bool kUseMaxInt = true;
+#endif
+  if (kUseMaxInt)
+    return !__builtin_mul_overflow(x, y, result);
+#endif
   using Promotion =
       typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   Promotion presult;
@@ -425,6 +456,9 @@ CheckedMul(T x, U y, V* result) {
   *result = static_cast<V>(presult);
   return is_valid && IsValueInRangeForNumericType<V>(presult);
 }
+
+// Avoid poluting the namespace once we're done with the macro.
+#undef USE_OVERFLOW_BUILTINS
 
 // Division just requires a check for a zero denominator or an invalid negation
 // on signed min/-1.
