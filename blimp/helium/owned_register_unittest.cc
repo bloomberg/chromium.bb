@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/helium/coded_value_serializer.h"
+#include "blimp/helium/helium_test.h"
 #include "blimp/helium/syncable_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,7 @@ namespace blimp {
 namespace helium {
 namespace {
 
-class OwnedRegisterTest : public testing::Test {
+class OwnedRegisterTest : public HeliumTest {
  public:
   OwnedRegisterTest() {}
 
