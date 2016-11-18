@@ -109,6 +109,9 @@ class ScriptContextSet {
   // they're deleted asynchronously.
   std::set<ScriptContext*> OnExtensionUnloaded(const std::string& extension_id);
 
+  // Adds the given |context| for testing purposes.
+  void AddForTesting(std::unique_ptr<ScriptContext> context);
+
  private:
   // Finds the extension for the JavaScript context associated with the
   // specified |frame| and isolated world. If |world_id| is zero, finds the

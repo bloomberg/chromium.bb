@@ -96,6 +96,8 @@ source_set("renderer") {
     "messaging_bindings.h",
     "module_system.cc",
     "module_system.h",
+    "native_extension_bindings_system.cc",
+    "native_extension_bindings_system.h",
     "native_handler.cc",
     "native_handler.h",
     "object_backed_native_handler.cc",
@@ -286,6 +288,7 @@ source_set("unit_tests") {
     "module_system_test.h",
     "module_system_unittest.cc",
     "mojo/keep_alive_client_unittest.cc",
+    "native_extension_bindings_system_unittest.cc",
     "safe_builtins_unittest.cc",
     "scoped_web_frame.cc",
     "scoped_web_frame.h",
@@ -297,8 +300,10 @@ source_set("unit_tests") {
   deps = [
     ":renderer",
     "//base",
+    "//components/crx_file:crx_file",
     "//content/public/child",
     "//extensions:extensions_renderer_resources",
+    "//extensions:test_support",
     "//gin:gin_test",
 
     # TODO(brettw) these tests should not be including headers from browser.

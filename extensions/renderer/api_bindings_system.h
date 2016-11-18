@@ -36,14 +36,17 @@ class APIBindingsSystem {
     Request();
     ~Request();
 
-    std::string request_id;
+    int request_id = -1;
     std::string method_name;
+    bool has_callback = false;
+    bool has_user_gesture = false;
     std::unique_ptr<base::ListValue> arguments;
   };
 
   using GetAPISchemaMethod =
       base::Callback<const base::DictionaryValue&(const std::string&)>;
-  using SendRequestMethod = base::Callback<void(std::unique_ptr<Request>)>;
+  using SendRequestMethod =
+      base::Callback<void(std::unique_ptr<Request>, v8::Local<v8::Context>)>;
 
   APIBindingsSystem(const binding::RunJSFunction& call_js,
                     const GetAPISchemaMethod& get_api_schema,
@@ -59,8 +62,7 @@ class APIBindingsSystem {
 
   // Responds to the request with the given |request_id|, calling the callback
   // with |response|.
-  void CompleteRequest(const std::string& request_id,
-                       const base::ListValue& response);
+  void CompleteRequest(int request_id, const base::ListValue& response);
 
   // Notifies the APIEventHandler to fire the corresponding event, notifying
   // listeners.

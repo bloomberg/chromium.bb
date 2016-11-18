@@ -66,7 +66,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
   ASSERT_FALSE(function.IsEmpty());
 
-  std::string request_id =
+  int request_id =
       request_handler.AddPendingRequest(isolate, function, context);
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
@@ -99,7 +99,7 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
   ASSERT_FALSE(function.IsEmpty());
 
-  std::string request_id =
+  int request_id =
       request_handler.AddPendingRequest(isolate, function, context);
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
@@ -109,7 +109,7 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   ASSERT_TRUE(response_arguments);
 
   // Try running with a non-existent request id.
-  std::string fake_request_id = base::GenerateGUID();
+  int fake_request_id = 42;
   request_handler.CompleteRequest(fake_request_id, *response_arguments);
   EXPECT_FALSE(did_run_js());
 
@@ -137,9 +137,9 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   v8::Local<v8::Function> function_b = FunctionFromString(
       context_b, "(function(res) { this.result = res + 'beta'; })");
 
-  std::string request_a =
+  int request_a =
       request_handler.AddPendingRequest(isolate, function_a, context_a);
-  std::string request_b =
+  int request_b =
       request_handler.AddPendingRequest(isolate, function_b, context_b);
 
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),

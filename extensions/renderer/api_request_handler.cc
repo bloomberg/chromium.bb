@@ -30,20 +30,20 @@ APIRequestHandler::APIRequestHandler(const CallJSFunction& call_js)
 
 APIRequestHandler::~APIRequestHandler() {}
 
-std::string APIRequestHandler::AddPendingRequest(
-    v8::Isolate* isolate,
-    v8::Local<v8::Function> callback,
-    v8::Local<v8::Context> context) {
+int APIRequestHandler::AddPendingRequest(v8::Isolate* isolate,
+                                         v8::Local<v8::Function> callback,
+                                         v8::Local<v8::Context> context) {
   // TODO(devlin): We could *probably* get away with just using an integer here,
-  // but it's a little less foolproof. How slow is GenerateGUID?
+  // but it's a little less foolproof. How slow is GenerateGUID? Should we use
+  // that instead? It means updating the IPC (ExtensionHostMsg_Request).
   // base::UnguessableToken is another good option.
-  std::string id = base::GenerateGUID();
+  int id = next_request_id_++;
   pending_requests_.insert(
       std::make_pair(id, PendingRequest(isolate, callback, context)));
   return id;
 }
 
-void APIRequestHandler::CompleteRequest(const std::string& request_id,
+void APIRequestHandler::CompleteRequest(int request_id,
                                         const base::ListValue& response_args) {
   auto iter = pending_requests_.find(request_id);
   // The request may have been removed if the context was invalidated before a
@@ -79,9 +79,8 @@ void APIRequestHandler::InvalidateContext(v8::Local<v8::Context> context) {
   }
 }
 
-std::set<std::string> APIRequestHandler::GetPendingRequestIdsForTesting()
-    const {
-  std::set<std::string> result;
+std::set<int> APIRequestHandler::GetPendingRequestIdsForTesting() const {
+  std::set<int> result;
   for (const auto& pair : pending_requests_)
     result.insert(pair.first);
   return result;

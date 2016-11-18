@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -35,20 +34,19 @@ class APIRequestHandler {
 
   // Adds a pending request to the map. Returns a unique identifier for that
   // request.
-  std::string AddPendingRequest(v8::Isolate* isolate,
-                                v8::Local<v8::Function> callback,
-                                v8::Local<v8::Context> context);
+  int AddPendingRequest(v8::Isolate* isolate,
+                        v8::Local<v8::Function> callback,
+                        v8::Local<v8::Context> context);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.
   // Invalid ids are ignored.
-  void CompleteRequest(const std::string& request_id,
-                       const base::ListValue& response);
+  void CompleteRequest(int request_id, const base::ListValue& response);
 
   // Invalidates any requests that are associated with |context|.
   void InvalidateContext(v8::Local<v8::Context> context);
 
-  std::set<std::string> GetPendingRequestIdsForTesting() const;
+  std::set<int> GetPendingRequestIdsForTesting() const;
 
  private:
   struct PendingRequest {
@@ -64,8 +62,11 @@ class APIRequestHandler {
     v8::Global<v8::Context> context;
   };
 
+  // The next available request identifier.
+  int next_request_id_ = 0;
+
   // A map of all pending requests.
-  std::map<std::string, PendingRequest> pending_requests_;
+  std::map<int, PendingRequest> pending_requests_;
 
   // The method to call into a JS with specific arguments. We curry this in
   // because the manner we want to do this is a unittest (e.g.

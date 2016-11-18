@@ -83,7 +83,8 @@ class APIBindingsSystemTestBase : public APIBindingTest {
       const std::string& api_name) = 0;
 
   // Stores the request in |last_request_|.
-  void OnAPIRequest(std::unique_ptr<APIBindingsSystem::Request> request) {
+  void OnAPIRequest(std::unique_ptr<APIBindingsSystem::Request> request,
+                    v8::Local<v8::Context> context) {
     ASSERT_FALSE(last_request_);
     last_request_ = std::move(request);
   }
@@ -283,7 +284,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     const char kTestCall[] = "obj.simpleFunc(2)";
     CallFunctionOnObject(context, beta_api, kTestCall);
     ValidateLastRequest("beta.simpleFunc", "[2]");
-    EXPECT_TRUE(last_request()->request_id.empty());
+    EXPECT_EQ(-1, last_request()->request_id);
     reset_last_request();
   }
 }
@@ -374,7 +375,7 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
     const char kTestCall[] = "chrome.power.requestKeepAwake('display');";
     ExecuteScript(context, kTestCall);
     ValidateLastRequest("power.requestKeepAwake", "['display']");
-    EXPECT_TRUE(last_request()->request_id.empty());
+    EXPECT_EQ(-1, last_request()->request_id);
     reset_last_request();
   }
 
@@ -382,7 +383,7 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
     const char kTestCall[] = "chrome.power.releaseKeepAwake()";
     ExecuteScript(context, kTestCall);
     ValidateLastRequest("power.releaseKeepAwake", "[]");
-    EXPECT_TRUE(last_request()->request_id.empty());
+    EXPECT_EQ(-1, last_request()->request_id);
     reset_last_request();
   }
 
@@ -390,7 +391,7 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
     const char kTestCall[] = "chrome.idle.queryState(30, function() {})";
     ExecuteScript(context, kTestCall);
     ValidateLastRequest("idle.queryState", "[30]");
-    EXPECT_FALSE(last_request()->request_id.empty());
+    EXPECT_NE(-1, last_request()->request_id);
     reset_last_request();
   }
 
@@ -398,7 +399,7 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
     const char kTestCall[] = "chrome.idle.setDetectionInterval(30);";
     ExecuteScript(context, kTestCall);
     ValidateLastRequest("idle.setDetectionInterval", "[30]");
-    EXPECT_TRUE(last_request()->request_id.empty());
+    EXPECT_EQ(-1, last_request()->request_id);
     reset_last_request();
   }
 

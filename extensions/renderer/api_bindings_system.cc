@@ -53,7 +53,7 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
       &type_reference_map_);
 }
 
-void APIBindingsSystem::CompleteRequest(const std::string& request_id,
+void APIBindingsSystem::CompleteRequest(int request_id,
                                         const base::ListValue& response) {
   request_handler_.CompleteRequest(request_id, response);
 }
@@ -73,11 +73,14 @@ void APIBindingsSystem::OnAPICall(const std::string& name,
   if (!callback.IsEmpty()) {
     request->request_id =
         request_handler_.AddPendingRequest(isolate, callback, context);
+    request->has_callback = true;
   }
+  // TODO(devlin): Query and curry user gestures around.
+  request->has_user_gesture = false;
   request->arguments = std::move(arguments);
   request->method_name = name;
 
-  send_request_.Run(std::move(request));
+  send_request_.Run(std::move(request), context);
 }
 
 }  // namespace extensions

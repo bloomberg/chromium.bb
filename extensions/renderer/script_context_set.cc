@@ -131,6 +131,10 @@ std::set<ScriptContext*> ScriptContextSet::OnExtensionUnloaded(
   return removed;
 }
 
+void ScriptContextSet::AddForTesting(std::unique_ptr<ScriptContext> context) {
+  contexts_.insert(context.release());  // Takes ownership
+}
+
 const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
     const blink::WebLocalFrame* frame,
     int world_id,
