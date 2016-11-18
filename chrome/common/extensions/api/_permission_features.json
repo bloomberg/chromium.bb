@@ -46,8 +46,10 @@
   },
   "autotestPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"],
-    "location": "component"
+    "extension_types": ["extension"],
+    "whitelist": [
+      "0D209B5E4401BB8E7873B5AB5B1346A1CB067015"  // Autotest: crbug.com/654525
+    ]
   },
   "background": {
     "channel": "stable",
