@@ -831,7 +831,8 @@ Background.prototype = {
     // If nothing is focusable, set the sequential focus navigation starting
     // point, which ensures that the next time you press Tab, you'll reach
     // the next or previous focusable node from |start|.
-    start.setSequentialFocusNavigationStartingPoint();
+    if (!start.state.offscreen)
+      start.setSequentialFocusNavigationStartingPoint();
   }
 };
 
