@@ -49,6 +49,7 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpEngineTransport {
   std::unique_ptr<net::ServerSocket> server_socket_;
   std::unique_ptr<net::StreamSocket> accepted_socket_;
   net::CompletionCallback connect_callback_;
+  base::WeakPtrFactory<TCPEngineTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPEngineTransport);
 };

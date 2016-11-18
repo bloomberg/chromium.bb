@@ -22,7 +22,7 @@ namespace blimp {
 
 TCPEngineTransport::TCPEngineTransport(const net::IPEndPoint& address,
                                        net::NetLog* net_log)
-    : address_(address), net_log_(net_log) {}
+    : address_(address), net_log_(net_log), weak_factory_(this) {}
 
 TCPEngineTransport::~TCPEngineTransport() {}
 
@@ -43,20 +43,17 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
   }
 
   net::CompletionCallback accept_callback = base::Bind(
-      &TCPEngineTransport::OnTCPConnectAccepted, base::Unretained(this));
+      &TCPEngineTransport::OnTCPConnectAccepted, weak_factory_.GetWeakPtr());
 
+  connect_callback_ = callback;
   int result = server_socket_->Accept(&accepted_socket_, accept_callback);
   if (result == net::ERR_IO_PENDING) {
-    connect_callback_ = callback;
     return;
   }
 
-  if (result != net::OK) {
-    server_socket_.reset();
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&TCPEngineTransport::OnTCPConnectAccepted,
+                            weak_factory_.GetWeakPtr(), result));
 }
 
 std::unique_ptr<MessagePort> TCPEngineTransport::TakeMessagePort() {
