@@ -2233,12 +2233,16 @@ class FormatConverter {
 
  public:
   FormatConverter(const IntRect& sourceDataSubRectangle,
+                  int depth,
+                  int unpackImageHeight,
                   const void* srcStart,
                   void* dstStart,
                   int srcStride,
                   int srcRowOffset,
                   int dstStride)
       : m_srcSubRectangle(sourceDataSubRectangle),
+        m_depth(depth),
+        m_unpackImageHeight(unpackImageHeight),
         m_srcStart(srcStart),
         m_dstStart(dstStart),
         m_srcStride(srcStride),
@@ -2273,6 +2277,8 @@ class FormatConverter {
   void convert();
 
   const IntRect& m_srcSubRectangle;
+  const int m_depth;
+  const int m_unpackImageHeight;
   const void* const m_srcStart;
   void* const m_dstStart;
   const int m_srcStride, m_srcRowOffset, m_dstStride;
@@ -2457,30 +2463,52 @@ void FormatConverter::convert() {
       static_cast<const SrcType*>(static_cast<const void*>(
           static_cast<const uint8_t*>(m_srcStart) +
           ((m_srcStride * m_srcSubRectangle.y()) + m_srcRowOffset)));
+
+  // If packing multiple images into a 3D texture, and flipY is true,
+  // then the sub-rectangle is pointing at the start of the
+  // "bottommost" of those images. Since the source pointer strides in
+  // the positive direction, we need to back it up to point at the
+  // last, or "topmost", of these images.
+  if (m_dstStride < 0 && m_depth > 1) {
+    srcRowStart -= (m_depth - 1) * srcStrideInElements * m_unpackImageHeight;
+  }
+
   DstType* dstRowStart = static_cast<DstType*>(m_dstStart);
   if (trivialUnpack) {
-    for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
-      pack<DstFormat, alphaOp>(srcRowStart, dstRowStart,
-                               m_srcSubRectangle.width());
-      srcRowStart += srcStrideInElements;
-      dstRowStart += dstStrideInElements;
+    for (int d = 0; d < m_depth; ++d) {
+      for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
+        pack<DstFormat, alphaOp>(srcRowStart, dstRowStart,
+                                 m_srcSubRectangle.width());
+        srcRowStart += srcStrideInElements;
+        dstRowStart += dstStrideInElements;
+      }
+      srcRowStart += srcStrideInElements *
+                     (m_unpackImageHeight - m_srcSubRectangle.height());
     }
   } else if (trivialPack) {
-    for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
-      unpack<SrcFormat>(srcRowStart, dstRowStart, m_srcSubRectangle.width());
-      srcRowStart += srcStrideInElements;
-      dstRowStart += dstStrideInElements;
+    for (int d = 0; d < m_depth; ++d) {
+      for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
+        unpack<SrcFormat>(srcRowStart, dstRowStart, m_srcSubRectangle.width());
+        srcRowStart += srcStrideInElements;
+        dstRowStart += dstStrideInElements;
+      }
+      srcRowStart += srcStrideInElements *
+                     (m_unpackImageHeight - m_srcSubRectangle.height());
     }
   } else {
-    for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
-      unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermType*>(
-                                         m_unpackedIntermediateSrcData.get()),
-                        m_srcSubRectangle.width());
-      pack<DstFormat, alphaOp>(
-          reinterpret_cast<IntermType*>(m_unpackedIntermediateSrcData.get()),
-          dstRowStart, m_srcSubRectangle.width());
-      srcRowStart += srcStrideInElements;
-      dstRowStart += dstStrideInElements;
+    for (int d = 0; d < m_depth; ++d) {
+      for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
+        unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermType*>(
+                                           m_unpackedIntermediateSrcData.get()),
+                          m_srcSubRectangle.width());
+        pack<DstFormat, alphaOp>(
+            reinterpret_cast<IntermType*>(m_unpackedIntermediateSrcData.get()),
+            dstRowStart, m_srcSubRectangle.width());
+        srcRowStart += srcStrideInElements;
+        dstRowStart += dstStrideInElements;
+      }
+      srcRowStart += srcStrideInElements *
+                     (m_unpackImageHeight - m_srcSubRectangle.height());
     }
   }
   m_success = true;
@@ -2869,7 +2897,9 @@ bool WebGLImageConversion::packImageData(Image* image,
                                          unsigned sourceImageWidth,
                                          unsigned sourceImageHeight,
                                          const IntRect& sourceImageSubRectangle,
+                                         int depth,
                                          unsigned sourceUnpackAlignment,
+                                         int unpackImageHeight,
                                          Vector<uint8_t>& data) {
   if (!pixels)
     return false;
@@ -2879,30 +2909,33 @@ bool WebGLImageConversion::packImageData(Image* image,
   PixelStoreParams params;
   params.alignment = 1;
   if (computeImageSizeInBytes(format, type, sourceImageSubRectangle.width(),
-                              sourceImageSubRectangle.height(), 1, params,
+                              sourceImageSubRectangle.height(), depth, params,
                               &packedSize, 0, 0) != GL_NO_ERROR)
     return false;
   data.resize(packedSize);
 
   if (!packPixels(reinterpret_cast<const uint8_t*>(pixels), sourceFormat,
                   sourceImageWidth, sourceImageHeight, sourceImageSubRectangle,
-                  sourceUnpackAlignment, format, type, alphaOp, data.data(),
-                  flipY))
+                  depth, sourceUnpackAlignment, unpackImageHeight, format, type,
+                  alphaOp, data.data(), flipY))
     return false;
   if (ImageObserver* observer = image->getImageObserver())
     observer->didDraw(image);
   return true;
 }
 
-bool WebGLImageConversion::extractImageData(const uint8_t* imageData,
-                                            DataFormat sourceDataFormat,
-                                            const IntSize& imageDataSize,
-                                            const IntRect& sourceImageSubRect,
-                                            GLenum format,
-                                            GLenum type,
-                                            bool flipY,
-                                            bool premultiplyAlpha,
-                                            Vector<uint8_t>& data) {
+bool WebGLImageConversion::extractImageData(
+    const uint8_t* imageData,
+    DataFormat sourceDataFormat,
+    const IntSize& imageDataSize,
+    const IntRect& sourceImageSubRectangle,
+    int depth,
+    int unpackImageHeight,
+    GLenum format,
+    GLenum type,
+    bool flipY,
+    bool premultiplyAlpha,
+    Vector<uint8_t>& data) {
   if (!imageData)
     return false;
   int width = imageDataSize.width();
@@ -2912,15 +2945,15 @@ bool WebGLImageConversion::extractImageData(const uint8_t* imageData,
   // Output data is tightly packed (alignment == 1).
   PixelStoreParams params;
   params.alignment = 1;
-  if (computeImageSizeInBytes(format, type, sourceImageSubRect.width(),
-                              sourceImageSubRect.height(), 1, params,
+  if (computeImageSizeInBytes(format, type, sourceImageSubRectangle.width(),
+                              sourceImageSubRectangle.height(), depth, params,
                               &packedSize, 0, 0) != GL_NO_ERROR)
     return false;
   data.resize(packedSize);
 
   if (!packPixels(imageData, sourceDataFormat, width, height,
-                  sourceImageSubRect, 0, format, type,
-                  premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing,
+                  sourceImageSubRectangle, depth, 0, unpackImageHeight, format,
+                  type, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing,
                   data.data(), flipY))
     return false;
 
@@ -2948,8 +2981,8 @@ bool WebGLImageConversion::extractTextureData(unsigned width,
   data.resize(width * height * bytesPerPixel);
 
   if (!packPixels(static_cast<const uint8_t*>(pixels), sourceDataFormat, width,
-                  height, IntRect(0, 0, width, height), unpackAlignment, format,
-                  type,
+                  height, IntRect(0, 0, width, height), 1, unpackAlignment, 0,
+                  format, type,
                   (premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing),
                   data.data(), flipY))
     return false;
@@ -2962,12 +2995,18 @@ bool WebGLImageConversion::packPixels(const uint8_t* sourceData,
                                       unsigned sourceDataWidth,
                                       unsigned sourceDataHeight,
                                       const IntRect& sourceDataSubRectangle,
+                                      int depth,
                                       unsigned sourceUnpackAlignment,
+                                      int unpackImageHeight,
                                       unsigned destinationFormat,
                                       unsigned destinationType,
                                       AlphaOp alphaOp,
                                       void* destinationData,
                                       bool flipY) {
+  DCHECK_GE(depth, 1);
+  if (unpackImageHeight == 0) {
+    unpackImageHeight = sourceDataSubRectangle.height();
+  }
   int validSrc = sourceDataWidth * TexelBytesForFormat(sourceDataFormat);
   int remainder =
       sourceUnpackAlignment ? (validSrc % sourceUnpackAlignment) : 0;
@@ -2980,8 +3019,9 @@ bool WebGLImageConversion::packPixels(const uint8_t* sourceData,
   int dstStride =
       sourceDataSubRectangle.width() * TexelBytesForFormat(dstDataFormat);
   if (flipY) {
-    destinationData = static_cast<uint8_t*>(destinationData) +
-                      dstStride * (sourceDataSubRectangle.height() - 1);
+    destinationData =
+        static_cast<uint8_t*>(destinationData) +
+        dstStride * ((depth * sourceDataSubRectangle.height()) - 1);
     dstStride = -dstStride;
   }
   if (!HasAlpha(sourceDataFormat) || !HasColor(sourceDataFormat) ||
@@ -2989,21 +3029,43 @@ bool WebGLImageConversion::packPixels(const uint8_t* sourceData,
     alphaOp = AlphaDoNothing;
 
   if (sourceDataFormat == dstDataFormat && alphaOp == AlphaDoNothing) {
-    const uint8_t* ptr = sourceData + srcStride * sourceDataSubRectangle.y();
-    const uint8_t* ptrEnd =
+    const uint8_t* basePtr =
+        sourceData + srcStride * sourceDataSubRectangle.y();
+    const uint8_t* baseEnd =
         sourceData + srcStride * sourceDataSubRectangle.maxY();
+
+    // If packing multiple images into a 3D texture, and flipY is true,
+    // then the sub-rectangle is pointing at the start of the
+    // "bottommost" of those images. Since the source pointer strides in
+    // the positive direction, we need to back it up to point at the
+    // last, or "topmost", of these images.
+    if (flipY && depth > 1) {
+      const ptrdiff_t distanceToTopImage =
+          (depth - 1) * srcStride * unpackImageHeight;
+      basePtr -= distanceToTopImage;
+      baseEnd -= distanceToTopImage;
+    }
+
     unsigned rowSize = (dstStride > 0) ? dstStride : -dstStride;
     uint8_t* dst = static_cast<uint8_t*>(destinationData);
-    while (ptr < ptrEnd) {
-      memcpy(dst, ptr + srcRowOffset, rowSize);
-      ptr += srcStride;
-      dst += dstStride;
+
+    for (int i = 0; i < depth; ++i) {
+      const uint8_t* ptr = basePtr;
+      const uint8_t* ptrEnd = baseEnd;
+      while (ptr < ptrEnd) {
+        memcpy(dst, ptr + srcRowOffset, rowSize);
+        ptr += srcStride;
+        dst += dstStride;
+      }
+      basePtr += unpackImageHeight * srcStride;
+      baseEnd += unpackImageHeight * srcStride;
     }
     return true;
   }
 
-  FormatConverter converter(sourceDataSubRectangle, sourceData, destinationData,
-                            srcStride, srcRowOffset, dstStride);
+  FormatConverter converter(sourceDataSubRectangle, depth, unpackImageHeight,
+                            sourceData, destinationData, srcStride,
+                            srcRowOffset, dstStride);
   converter.convert(sourceDataFormat, dstDataFormat, alphaOp);
   if (!converter.Success())
     return false;

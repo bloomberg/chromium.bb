@@ -1067,15 +1067,32 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     if (functionID == TexImage3D || functionID == TexSubImage3D) {
       DCHECK_GE(unpackImageHeight, 0);
 
-      // Verify that the image data can cover the required depth.
-      WTF::CheckedNumeric<GLint> maxDepthSupported = 1;
-      if (unpackImageHeight) {
-        maxDepthSupported = subRect.height();
-        maxDepthSupported /= unpackImageHeight;
+      if (depth < 1) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                          "Can't define a 3D texture with depth < 1");
+        return false;
       }
 
-      if (!maxDepthSupported.IsValid() ||
-          maxDepthSupported.ValueOrDie() < depth) {
+      // According to the WebGL 2.0 spec, specifying depth > 1 means
+      // to select multiple rectangles stacked vertically.
+      WTF::CheckedNumeric<GLint> maxYAccessed;
+      if (unpackImageHeight) {
+        maxYAccessed = unpackImageHeight;
+      } else {
+        maxYAccessed = subRect.height();
+      }
+      maxYAccessed *= depth - 1;
+      maxYAccessed += subRect.height();
+      maxYAccessed += subRect.y();
+
+      if (!maxYAccessed.IsValid()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                          "Out-of-range parameters passed for 3D texture "
+                          "upload");
+        return false;
+      }
+
+      if (maxYAccessed.ValueOrDie() > imageHeight) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName,
                           "Not enough data supplied to upload to a 3D texture "
                           "with depth > 1");

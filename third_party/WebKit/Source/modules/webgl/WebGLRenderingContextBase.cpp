@@ -4403,14 +4403,15 @@ void WebGLRenderingContextBase::texImageImpl(
   if (type == GL_UNSIGNED_BYTE &&
       sourceDataFormat == WebGLImageConversion::DataFormatRGBA8 &&
       format == GL_RGBA && alphaOp == WebGLImageConversion::AlphaDoNothing &&
-      !flipY && !selectingSubRectangle) {
+      !flipY && !selectingSubRectangle && depth == 1) {
     needConversion = false;
   } else {
     if (!WebGLImageConversion::packImageData(
             image, imagePixelData, format, type, flipY, alphaOp,
             sourceDataFormat, imageExtractor.imageWidth(),
-            imageExtractor.imageHeight(), adjustedSourceImageRect,
-            imageExtractor.imageSourceUnpackAlignment(), data)) {
+            imageExtractor.imageHeight(), adjustedSourceImageRect, depth,
+            imageExtractor.imageSourceUnpackAlignment(), unpackImageHeight,
+            data)) {
       synthesizeGLError(GL_INVALID_VALUE, funcName, "packImage error");
       return;
     }
@@ -4429,22 +4430,17 @@ void WebGLRenderingContextBase::texImageImpl(
                                needConversion ? data.data() : imagePixelData);
   } else {
     // 3D functions.
-    GLint uploadHeight = adjustedSourceImageRect.height();
-    if (unpackImageHeight) {
-      // GL_UNPACK_IMAGE_HEIGHT overrides the passed-in height.
-      uploadHeight = unpackImageHeight;
-    }
     if (functionID == TexImage3D) {
-      contextGL()->TexImage3D(target, level, internalformat,
-                              adjustedSourceImageRect.width(), uploadHeight,
-                              depth, 0, format, type,
-                              needConversion ? data.data() : imagePixelData);
+      contextGL()->TexImage3D(
+          target, level, internalformat, adjustedSourceImageRect.width(),
+          adjustedSourceImageRect.height(), depth, 0, format, type,
+          needConversion ? data.data() : imagePixelData);
     } else {
       DCHECK_EQ(functionID, TexSubImage3D);
-      contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset,
-                                 adjustedSourceImageRect.width(), uploadHeight,
-                                 depth, format, type,
-                                 needConversion ? data.data() : imagePixelData);
+      contextGL()->TexSubImage3D(
+          target, level, xoffset, yoffset, zoffset,
+          adjustedSourceImageRect.width(), adjustedSourceImageRect.height(),
+          depth, format, type, needConversion ? data.data() : imagePixelData);
     }
   }
   restoreUnpackParameters();
@@ -4640,7 +4636,8 @@ void WebGLRenderingContextBase::texImageHelperDOMArrayBufferView(
     }
     changeUnpackAlignment = true;
   }
-  // FIXME: implement flipY and premultiplyAlpha for tex(Sub)3D.
+  // TODO(crbug.com/666064): implement flipY and premultiplyAlpha for
+  // tex(Sub)3D.
   if (functionID == TexImage3D) {
     contextGL()->TexImage3D(target, level,
                             convertTexInternalFormat(internalformat, type),
@@ -4734,7 +4731,7 @@ void WebGLRenderingContextBase::texImageHelperImageData(
   // No conversion is needed if destination format is RGBA and type is
   // UNSIGNED_BYTE and no Flip or Premultiply operation is required.
   if (!m_unpackFlipY && !m_unpackPremultiplyAlpha && format == GL_RGBA &&
-      type == GL_UNSIGNED_BYTE && !selectingSubRectangle) {
+      type == GL_UNSIGNED_BYTE && !selectingSubRectangle && depth == 1) {
     needConversion = false;
   } else {
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
@@ -4744,8 +4741,8 @@ void WebGLRenderingContextBase::texImageHelperImageData(
     if (!WebGLImageConversion::extractImageData(
             pixels->data()->data(),
             WebGLImageConversion::DataFormat::DataFormatRGBA8, pixels->size(),
-            adjustedSourceImageRect, format, type, m_unpackFlipY,
-            m_unpackPremultiplyAlpha, data)) {
+            adjustedSourceImageRect, depth, unpackImageHeight, format, type,
+            m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
       synthesizeGLError(GL_INVALID_VALUE, funcName, "bad image data");
       return;
     }
@@ -5031,28 +5028,6 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(
     return;
   }
 
-  if (functionID == TexImage3D || functionID == TexSubImage3D) {
-    DCHECK_GE(unpackImageHeight, 0);
-
-    // Verify that the image data can cover the required depth.
-    CheckedNumeric<GLint> maxDepthSupported = 1;
-    if (unpackImageHeight) {
-      maxDepthSupported = sourceSubRectangle.height();
-      maxDepthSupported /= unpackImageHeight;
-    }
-
-    if (!maxDepthSupported.IsValid() ||
-        maxDepthSupported.ValueOrDie() < depth) {
-      synthesizeGLError(
-          GL_INVALID_OPERATION, funcName,
-          "Not enough data supplied to upload to a 3D texture with depth > 1");
-      return;
-    }
-  } else {
-    DCHECK_EQ(depth, 1);
-    DCHECK_EQ(unpackImageHeight, 0);
-  }
-
   if (functionID == TexImage2D || functionID == TexSubImage2D) {
     // texImageByGPU relies on copyTextureCHROMIUM which doesn't support
     // float/integer/sRGB internal format.
@@ -5164,8 +5139,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
       sourceImageRect == sentinelEmptyRect() ||
       sourceImageRect ==
           IntRect(0, 0, video->videoWidth(), video->videoHeight());
-  if (functionID == TexImage2D && sourceImageRectIsDefault && depth == 1 &&
-      unpackImageHeight == 0) {
+  if (functionID == TexImage2D && sourceImageRectIsDefault && depth == 1) {
     DCHECK_EQ(xoffset, 0);
     DCHECK_EQ(yoffset, 0);
     DCHECK_EQ(zoffset, 0);
@@ -5297,6 +5271,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     return;
   ASSERT(bitmap->bitmapImage());
 
+  // TODO(kbr): make this work for sub-rectangles of ImageBitmaps.
   if (functionID != TexSubImage3D && functionID != TexImage3D &&
       bitmap->isAccelerated() &&
       canUseTexImageByGPU(functionID, internalformat, type) &&
@@ -5334,7 +5309,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
        pixmap.colorType() == SkColorType::kRGBA_8888_SkColorType);
   bool isPixelDataRGBA = (havePeekableRGBA || !peekSucceed);
   if (isPixelDataRGBA && format == GL_RGBA && type == GL_UNSIGNED_BYTE &&
-      !selectingSubRectangle) {
+      !selectingSubRectangle && depth == 1) {
     needConversion = false;
   } else {
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
@@ -5348,13 +5323,13 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
     if ((isPixelDataBGRA &&
          !WebGLImageConversion::extractImageData(
              pixelDataPtr, WebGLImageConversion::DataFormat::DataFormatBGRA8,
-             bitmap->size(), sourceSubRect, format, type, false, false,
-             data)) ||
+             bitmap->size(), sourceSubRect, depth, unpackImageHeight, format,
+             type, false, false, data)) ||
         (isPixelDataRGBA &&
          !WebGLImageConversion::extractImageData(
              pixelDataPtr, WebGLImageConversion::DataFormat::DataFormatRGBA8,
-             bitmap->size(), sourceSubRect, format, type, false, false,
-             data))) {
+             bitmap->size(), sourceSubRect, depth, unpackImageHeight, format,
+             type, false, false, data))) {
       synthesizeGLError(GL_INVALID_VALUE, funcName, "bad image data");
       return;
     }
