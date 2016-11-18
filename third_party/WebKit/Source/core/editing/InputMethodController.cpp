@@ -223,13 +223,18 @@ bool InputMethodController::finishComposingText(
     PlainTextRange oldOffsets = getSelectionOffsets();
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
-    bool result = replaceComposition(composingText());
+    const String& composing = composingText();
+    const bool result = replaceComposition(composing);
 
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     setSelectionOffsets(oldOffsets);
+
+    // No DOM update after 'compositionend'.
+    dispatchCompositionEndEvent(frame(), composing);
+
     return result;
   }
 
@@ -286,9 +291,6 @@ bool InputMethodController::replaceComposition(const String& text) {
   if (!isAvailable())
     return false;
 
-  // No DOM update after 'compositionend'.
-  dispatchCompositionEndEvent(frame(), text);
-
   return true;
 }
 
@@ -316,7 +318,13 @@ bool InputMethodController::replaceCompositionAndMoveCaret(
 
   int absoluteCaretPosition = computeAbsoluteCaretPosition(
       textStart, text.length(), relativeCaretPosition);
-  return moveCaret(absoluteCaretPosition);
+  if (!moveCaret(absoluteCaretPosition))
+    return false;
+
+  // No DOM update after 'compositionend'.
+  dispatchCompositionEndEvent(frame(), text);
+
+  return true;
 }
 
 bool InputMethodController::insertText(const String& text) {
@@ -627,7 +635,9 @@ void InputMethodController::setComposition(
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     setEditableSelectionOffsets(selectedRange);
-    return;
+
+    // No DOM update after 'compositionend'.
+    return dispatchCompositionEndEvent(frame(), text);
   }
 
   // We should send a 'compositionstart' event only when the given text is not

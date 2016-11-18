@@ -28,6 +28,8 @@ class InputMethodControllerTest : public ::testing::Test {
   Document& document() const { return *m_document; }
   LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
   Element* insertHTMLElement(const char* elementCode, const char* elementId);
+  void createHTMLWithCompositionInputEventListeners();
+  void createHTMLWithCompositionEndEventListener(const SelectionType);
 
  private:
   void SetUp() override;
@@ -49,6 +51,68 @@ Element* InputMethodControllerTest::insertHTMLElement(const char* elementCode,
   Element* element = document().getElementById(elementId);
   element->focus();
   return element;
+}
+
+void InputMethodControllerTest::createHTMLWithCompositionInputEventListeners() {
+  document().settings()->setScriptEnabled(true);
+  Element* editable =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+  Element* script = document().createElement("script");
+  script->setInnerHTML(
+      "document.getElementById('sample').addEventListener('beforeinput', "
+      "  event => document.title = `beforeinput.data:${event.data};`);"
+      "document.getElementById('sample').addEventListener('input', "
+      "  event => document.title += `input.data:${event.data};`);"
+      "document.getElementById('sample').addEventListener('compositionend', "
+      "  event => document.title += `compositionend.data:${event.data};`);");
+  document().body()->appendChild(script);
+  document().view()->updateAllLifecyclePhases();
+  editable->focus();
+}
+
+void InputMethodControllerTest::createHTMLWithCompositionEndEventListener(
+    const SelectionType type) {
+  document().settings()->setScriptEnabled(true);
+  Element* editable =
+      insertHTMLElement("<div id='sample' contentEditable></div>", "sample");
+  Element* script = document().createElement("script");
+
+  switch (type) {
+    case NoSelection:
+      script->setInnerHTML(
+          // If the caret position is set before firing 'compositonend' event
+          // (and it should), the final caret position will be reset to null.
+          "document.getElementById('sample').addEventListener('compositionend',"
+          "  event => getSelection().removeAllRanges());");
+      break;
+    case CaretSelection:
+      script->setInnerHTML(
+          // If the caret position is set before firing 'compositonend' event
+          // (and it should), the final caret position will be reset to [3,3].
+          "document.getElementById('sample').addEventListener('compositionend',"
+          "  event => {"
+          "    const node = document.getElementById('sample').firstChild;"
+          "    getSelection().collapse(node, 3);"
+          "});");
+      break;
+    case RangeSelection:
+      script->setInnerHTML(
+          // If the caret position is set before firing 'compositonend' event
+          // (and it should), the final caret position will be reset to [2,4].
+          "document.getElementById('sample').addEventListener('compositionend',"
+          "  event => {"
+          "    const node = document.getElementById('sample').firstChild;"
+          "    const selection = getSelection();"
+          "    selection.collapse(node, 2);"
+          "    selection.extend(node, 4);"
+          "});");
+      break;
+    default:
+      NOTREACHED();
+  }
+  document().body()->appendChild(script);
+  document().view()->updateAllLifecyclePhases();
+  editable->focus();
 }
 
 TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput) {
@@ -103,7 +167,7 @@ TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput) {
 
 TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'>hello world</div>", "sample");
+      "<div id='sample' contenteditable>hello world</div>", "sample");
 
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
@@ -121,7 +185,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
 TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
   Element* div = insertHTMLElement(
       "<div id='sample' "
-      "contenteditable='true'>abc1<b>2</b>34567<b>8</b>9</div>",
+      "contenteditable>abc1<b>2</b>34567<b>8</b>9</div>",
       "sample");
 
   Vector<CompositionUnderline> underlines;
@@ -144,8 +208,7 @@ TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
 TEST_F(InputMethodControllerTest, SetCompositionWithEmojiKeepingStyle) {
   // U+1F3E0 = 0xF0 0x9F 0x8F 0xA0 (UTF8). It's an emoji character.
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'><b>&#x1f3e0</b></div>",
-      "sample");
+      "<div id='sample' contenteditable><b>&#x1f3e0</b></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
@@ -169,7 +232,7 @@ TEST_F(InputMethodControllerTest,
   // It's one grapheme cluster if separated. It can also form one grapheme
   // cluster with another code point(e.g, itself).
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'><b>&#xc03</b></div>", "sample");
+      "<div id='sample' contenteditable><b>&#xc03</b></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
@@ -188,7 +251,7 @@ TEST_F(InputMethodControllerTest,
 }
 
 TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
-  insertHTMLElement("<div id='sample' contenteditable='true'>hello world</div>",
+  insertHTMLElement("<div id='sample' contenteditable>hello world</div>",
                     "sample");
 
   Vector<CompositionUnderline> underlines;
@@ -232,7 +295,7 @@ TEST_F(InputMethodControllerTest,
   // Creates a div with one leading new line char. The new line char is hidden
   // from the user and IME, but is visible to InputMethodController.
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'>\nhello world</div>", "sample");
+      "<div id='sample' contenteditable>\nhello world</div>", "sample");
 
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
@@ -249,8 +312,7 @@ TEST_F(InputMethodControllerTest,
 
 TEST_F(InputMethodControllerTest,
        SetCompositionFromExistingTextWithInvalidOffsets) {
-  insertHTMLElement("<div id='sample' contenteditable='true'>test</div>",
-                    "sample");
+  insertHTMLElement("<div id='sample' contenteditable>test</div>", "sample");
 
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(7, 8, Color(255, 0, 0), false, 0));
@@ -557,11 +619,11 @@ TEST_F(InputMethodControllerTest,
 
 TEST_F(InputMethodControllerTest, DeleteSurroundingTextForMultipleNodes) {
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'>aaa"
-      "<div id='sample2' contenteditable='true'>bbb"
-      "<div id='sample3' contenteditable='true'>ccc"
-      "<div id='sample4' contenteditable='true'>ddd"
-      "<div id='sample5' contenteditable='true'>eee"
+      "<div id='sample' contenteditable>aaa"
+      "<div id='sample2' contenteditable>bbb"
+      "<div id='sample3' contenteditable>ccc"
+      "<div id='sample4' contenteditable>ddd"
+      "<div id='sample5' contenteditable>eee"
       "</div></div></div></div></div>",
       "sample");
 
@@ -648,9 +710,9 @@ TEST_F(InputMethodControllerTest,
   // There are 7 nodes and 5+1+5+1+3+4+3 characters: "hello", '\n', "world",
   // "\n", "012", "3456", "789".
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'>"
+      "<div id='sample' contenteditable>"
       "hello"
-      "<div id='sample2' contenteditable='true'>world"
+      "<div id='sample2' contenteditable>world"
       "<p>012<b>3456</b><i>789</i></p>"
       "</div>"
       "</div>",
@@ -744,7 +806,7 @@ TEST_F(InputMethodControllerTest,
 
 TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
   Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'>hello</div>", "sample");
+      "<div id='sample' contenteditable>hello</div>", "sample");
 
   controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
   EXPECT_STREQ("hello", div->innerText().utf8().data());
@@ -771,8 +833,8 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
 }
 
 TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
-  Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'></div>", "sample");
+  Element* div =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
@@ -788,8 +850,8 @@ TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
 }
 
 TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
-  Element* div = insertHTMLElement(
-      "<div id='sample' contenteditable='true'></div>", "sample");
+  Element* div =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   controller().commitText("hello", 0);
   EXPECT_STREQ("hello", div->innerText().utf8().data());
@@ -806,18 +868,16 @@ TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
 
 TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
   document().settings()->setScriptEnabled(true);
-  Element* editable = insertHTMLElement(
-      "<div id='sample' contentEditable='true'></div>", "sample");
+  Element* editable =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
   Element* script = document().createElement("script");
   script->setInnerHTML(
       "document.getElementById('sample').addEventListener('beforeinput', "
-      "function(event) {"
-      "    document.title = `beforeinput.isComposing:${event.isComposing};`;"
-      "});"
+      "  event => document.title = "
+      "  `beforeinput.isComposing:${event.isComposing};`);"
       "document.getElementById('sample').addEventListener('input', "
-      "function(event) {"
-      "    document.title += `input.isComposing:${event.isComposing};`;"
-      "});");
+      "  event => document.title += "
+      "  `input.isComposing:${event.isComposing};`);");
   document().body()->appendChild(script);
   document().view()->updateAllLifecyclePhases();
 
@@ -838,42 +898,168 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
                document().title().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, CompositionInputEventData) {
-  document().settings()->setScriptEnabled(true);
-  Element* editable = insertHTMLElement(
-      "<div id='sample' contentEditable='true'></div>", "sample");
-  Element* script = document().createElement("script");
-  script->setInnerHTML(
-      "document.getElementById('sample').addEventListener('beforeinput', "
-      "function(event) {"
-      "    document.title = `beforeinput.data:${event.data};`;"
-      "});"
-      "document.getElementById('sample').addEventListener('input', "
-      "function(event) {"
-      "    document.title += `input.data:${event.data};`;"
-      "});");
-  document().body()->appendChild(script);
-  document().view()->updateAllLifecyclePhases();
+TEST_F(InputMethodControllerTest, CompositionInputEventForReplace) {
+  createHTMLWithCompositionInputEventListeners();
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
   underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-  editable->focus();
 
   document().setTitle(emptyString());
-  controller().setComposition("n", underlines, 0, 1);
+  controller().setComposition("hell", underlines, 4, 4);
+  EXPECT_STREQ("beforeinput.data:hell;input.data:hell;",
+               document().title().utf8().data());
+
+  // Replace the existing composition.
+  // TODO(yabinh): should be "beforeinput.data:hello;input.data:hello;".
+  document().setTitle(emptyString());
+  controller().setComposition("hello", underlines, 0, 0);
+  EXPECT_STREQ("beforeinput.data:o;input.data:o;",
+               document().title().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CompositionInputEventForConfirm) {
+  createHTMLWithCompositionInputEventListeners();
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  document().setTitle(emptyString());
+  controller().setComposition("hello", underlines, 5, 5);
+  EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
+               document().title().utf8().data());
+
+  // Confirm the ongoing composition.
+  document().setTitle(emptyString());
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  EXPECT_STREQ(
+      "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
+      document().title().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
+  createHTMLWithCompositionInputEventListeners();
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  document().setTitle(emptyString());
+  controller().setComposition("hello", underlines, 5, 5);
+  EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
+               document().title().utf8().data());
+
+  // Delete the existing composition.
+  document().setTitle(emptyString());
+  controller().setComposition("", underlines, 0, 0);
+  EXPECT_STREQ("beforeinput.data:;compositionend.data:;",
+               document().title().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
+  createHTMLWithCompositionInputEventListeners();
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  // Insert new text without previous composition.
+  document().setTitle(emptyString());
+  document().updateStyleAndLayout();
+  controller().commitText("hello", 0);
+  EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
+               document().title().utf8().data());
+
+  document().setTitle(emptyString());
+  controller().setComposition("n", underlines, 1, 1);
   EXPECT_STREQ("beforeinput.data:n;input.data:n;",
                document().title().utf8().data());
 
+  // Insert new text with previous composition.
   document().setTitle(emptyString());
-  controller().setComposition("ni", underlines, 0, 1);
-  EXPECT_STREQ("beforeinput.data:i;input.data:i;",
-               document().title().utf8().data());
+  document().updateStyleAndLayout();
+  controller().commitText("hello", 1);
+  EXPECT_STREQ(
+      "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
+      document().title().utf8().data());
+}
 
-  document().setTitle(emptyString());
-  controller().finishComposingText(InputMethodController::KeepSelection);
-  EXPECT_STREQ("beforeinput.data:ni;input.data:ni;",
-               document().title().utf8().data());
+TEST_F(InputMethodControllerTest, CompositionEndEventForConfirm) {
+  createHTMLWithCompositionEndEventListener(CaretSelection);
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  controller().setComposition("hello", underlines, 1, 1);
+  document().updateStyleAndLayout();
+  EXPECT_EQ(1u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(1u, controller().getSelectionOffsets().end());
+
+  // Confirm the ongoing composition. Note that it moves the caret to the end of
+  // text [5,5] before firing 'compositonend' event.
+  controller().finishComposingText(InputMethodController::DoNotKeepSelection);
+  document().updateStyleAndLayout();
+  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, CompositionEndEventForInsert) {
+  createHTMLWithCompositionEndEventListener(CaretSelection);
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  controller().setComposition("n", underlines, 1, 1);
+
+  // Insert new text with previous composition. Note that it moves the caret to
+  // [4,4] before firing 'compositonend' event.
+  document().updateStyleAndLayout();
+  controller().commitText("hello", -1);
+  document().updateStyleAndLayout();
+  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, CompositionEndEventWithRangeSelection) {
+  createHTMLWithCompositionEndEventListener(RangeSelection);
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  controller().setComposition("hello", underlines, 1, 1);
+  document().updateStyleAndLayout();
+  EXPECT_EQ(1u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(1u, controller().getSelectionOffsets().end());
+
+  // Confirm the ongoing composition. Note that it moves the caret to the end of
+  // text [5,5] before firing 'compositonend' event.
+  controller().finishComposingText(InputMethodController::DoNotKeepSelection);
+  document().updateStyleAndLayout();
+  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(4u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, CompositionEndEventWithNoSelection) {
+  createHTMLWithCompositionEndEventListener(NoSelection);
+
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+
+  controller().setComposition("hello", underlines, 1, 1);
+  document().updateStyleAndLayout();
+  EXPECT_EQ(1u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(1u, controller().getSelectionOffsets().end());
+
+  // Confirm the ongoing composition. Note that it moves the caret to the end of
+  // text [5,5] before firing 'compositonend' event.
+  controller().finishComposingText(InputMethodController::DoNotKeepSelection);
+  document().updateStyleAndLayout();
+  EXPECT_TRUE(controller().getSelectionOffsets().isNull());
 }
 
 }  // namespace blink
