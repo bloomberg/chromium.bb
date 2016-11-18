@@ -448,6 +448,15 @@ crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout 
 
 crbug.com/658287 fast/forms/relayout-shifts-inner-editor.html [ Crash Failure Pass ]
 
+crbug.com/462142 [ Retina ] fast/css/first-line-text-decoration-inherited-from-parent.html [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-all.html [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] svg/W3C-SVG-1.1/text-deco-01-b.svg [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] svg/batik/text/textDecoration.svg [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] svg/batik/text/textDecoration2.svg [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] svg/text/text-selection-deco-01-b.svg [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] tables/mozilla/bugs/bug126742.html [ NeedsRebaseline ]
+crbug.com/462142 [ Retina ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
+
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
