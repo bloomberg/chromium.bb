@@ -635,6 +635,7 @@ component("base") {
     "process/port_provider_mac.h",
     "process/process.h",
     "process/process_handle.cc",
+    "process/process_handle.h",
 
     #"process/process_handle_freebsd.cc",  # Unused in Chromium build.
     "process/process_handle_linux.cc",
