@@ -1214,12 +1214,15 @@ void PDFiumEngine::OnPendingRequestComplete() {
 }
 
 void PDFiumEngine::OnNewDataAvailable() {
-  const float progress = doc_loader_->GetProgress();
-  if (progress < 0.001) {
-    client_->DocumentLoadProgress(0, 0);
-  } else {
-    client_->DocumentLoadProgress(progress * 10000, 10000);
+  if (!doc_loader_->GetDocumentSize()) {
+    client_->DocumentLoadProgress(doc_loader_->count_of_bytes_received(), 0);
+    return;
   }
+
+  const float progress = doc_loader_->GetProgress();
+  DCHECK_GE(progress, 0.0);
+  DCHECK_LE(progress, 1.0);
+  client_->DocumentLoadProgress(progress * 10000, 10000);
 }
 
 void PDFiumEngine::OnDocumentComplete() {
