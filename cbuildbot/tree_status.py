@@ -28,6 +28,8 @@ CROS_TREE_STATUS_UPDATE_URL = '%s/status' % CROS_TREE_STATUS_URL
 _USER_NAME = 'buildbot@chromium.org'
 _PASSWORD_PATH = '/home/chrome-bot/.status_password_chromiumos'
 
+_LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
+
 # The tree status json file contains the following keywords.
 TREE_STATUS_STATE = 'general_state'
 TREE_STATUS_USERNAME = 'username'
@@ -388,8 +390,28 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                      extra_fields=extra_fields)
 
 
-def ConstructDashboardURL(buildbot_url, builder_name, build_number,
-                          stage=None):
+def ConstructDashboardURL(buildbot_master_name, builder_name, build_number):
+  """Return the dashboard (luci-milo) URL for this run
+
+  Args:
+    buildbot_master_name: Name of buildbot master, e.g. chromeos
+    builder_name: Builder name on buildbot dashboard.
+    build_number: Build number for this validation attempt.
+
+  Returns:
+    The fully formed URL.
+  """
+  url_suffix = '%s/%s' % (builder_name, str(build_number))
+  url_suffix = urllib.quote(url_suffix)
+  return os.path.join(
+      _LUCI_MILO_BUILDBOT_URL, buildbot_master_name, url_suffix)
+
+
+# TODO(akeshet): This method still produces links to stage logs as hosted on
+# buildbot (rather then the newer replacement, LogDog). We will transition these
+# links to point at LogDog at a later date.
+def ConstructBuildStageURL(buildbot_url, builder_name, build_number,
+                           stage=None):
   """Return the dashboard (buildbot) URL for this run
 
   Args:

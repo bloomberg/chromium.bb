@@ -88,6 +88,7 @@ class FakeBuilderRun(object):
     FakeConfig = collections.namedtuple('FakeConfig', ['name'])
     self.config = FakeConfig(name='master-paladin')
     self.GetBuildbotUrl = lambda: constants.WATERFALL_INTERNAL
+    self.GetWaterfall = lambda: constants.WATERFALL_INTERNAL
 
   def GetCIDBHandle(self):
     """Get the build_id and cidb handle, if available.

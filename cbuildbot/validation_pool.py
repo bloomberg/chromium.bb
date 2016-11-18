@@ -1266,7 +1266,7 @@ class ValidationPool(object):
   def build_log(self):
     if self._run:
       return tree_status.ConstructDashboardURL(
-          self._run.GetBuildbotUrl(), self._builder_name, self._build_number)
+          self._run.GetWaterfall(), self._builder_name, self._build_number)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):

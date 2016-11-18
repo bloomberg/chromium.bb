@@ -338,12 +338,13 @@ class BuilderStageTest(AbstractStageTestCase):
     """Basic test for the ConstructDashboardURL() function."""
     stage = self.ConstructStage()
 
-    exp_url = ('https://uberchromegw.corp.google.com/i/chromeos/builders/'
-               'x86-generic-paladin/builds/%s' % DEFAULT_BUILD_NUMBER)
+    exp_url = ('https://luci-milo.appspot.com/buildbot/chromiumos/'
+               'x86-generic-paladin/%s' % DEFAULT_BUILD_NUMBER)
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
     stage_name = 'Archive'
-    exp_url = '%s/steps/%s/logs/stdio' % (exp_url, stage_name)
+    exp_url = ('https://uberchromegw.corp.google.com/i/chromeos/builders/'
+               'x86-generic-paladin/builds/1234321/steps/Archive/logs/stdio')
     self.assertEqual(stage.ConstructDashboardURL(stage=stage_name), exp_url)
 
   def test_ExtractOverlaysSmoke(self):

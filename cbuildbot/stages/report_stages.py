@@ -67,6 +67,10 @@ def WriteBasicMetadata(builder_run):
       'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
       'build-number': builder_run.buildnumber,
       'builder-name': builder_run.GetBuilderName(),
+      # This is something like https://uberchromegw.corp.google.com/i/chromeos/
+      # Note that we are phasing out using the buildbot UI, transitioning
+      # instead to luci-milo.
+      # Once we phase out completely, we can get rid of this metadata entry.
       'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
       'buildbot-master-name':
           os.environ.get('BUILDBOT_MASTERNAME', ''),
@@ -300,7 +304,7 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
             failure['build_status'] == constants.BUILDER_STATUS_INFLIGHT):
           continue
         waterfall_url = constants.WATERFALL_TO_DASHBOARD[failure['waterfall']]
-        slave_stage_url = tree_status.ConstructDashboardURL(
+        slave_stage_url = tree_status.ConstructBuildStageURL(
             waterfall_url,
             failure['builder_name'],
             failure['build_number'],
