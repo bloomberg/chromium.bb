@@ -25,8 +25,7 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
     public long getTotalBytes() {
         long totalSize = 0;
         for (DownloadHistoryItemWrapper item : this) {
-            if (!item.isComplete()) continue;
-            totalSize += item.getFileSize();
+            if (item.isVisibleToUser(DownloadFilter.FILTER_ALL)) totalSize += item.getFileSize();
         }
         return totalSize;
     }
@@ -40,11 +39,7 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
      */
     public void filter(int filterType, BackendItems filteredItems) {
         for (DownloadHistoryItemWrapper item : this) {
-            if (!item.isComplete()) continue;
-
-            if (item.getFilterType() == filterType || filterType == DownloadFilter.FILTER_ALL) {
-                filteredItems.add(item);
-            }
+            if (item.isVisibleToUser(filterType)) filteredItems.add(item);
         }
     }
 

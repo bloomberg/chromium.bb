@@ -28,13 +28,10 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 bool ShouldShowDownloadItem(content::DownloadItem* item) {
-  return !item->IsTemporary() &&
-      !item->GetFileNameToReportUser().empty() &&
-      !item->GetTargetFilePath().empty() &&
-      item->GetState() != content::DownloadItem::CANCELLED;
+  return !item->IsTemporary();
 }
 
-void updateNotifier(DownloadManagerService* service,
+void UpdateNotifier(DownloadManagerService* service,
                     content::DownloadManager* manager,
                     std::unique_ptr<AllDownloadItemNotifier>& notifier) {
   if (manager) {
@@ -276,13 +273,25 @@ void DownloadManagerService::OnHistoryQueryComplete() {
     GetAllDownloadsInternal(true);
 
   // Monitor all DownloadItems for changes.
-  updateNotifier(this, GetDownloadManager(false), original_notifier_);
-  updateNotifier(this, GetDownloadManager(true), off_the_record_notifier_);
+  UpdateNotifier(this, GetDownloadManager(false), original_notifier_);
+  UpdateNotifier(this, GetDownloadManager(true), off_the_record_notifier_);
+}
+
+void DownloadManagerService::OnDownloadCreated(
+    content::DownloadManager* manager, content::DownloadItem* item) {
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_item = CreateJavaDownloadItem(env, item);
+  Java_DownloadManagerService_onDownloadItemCreated(
+      env, java_ref_.obj(), j_item);
 }
 
 void DownloadManagerService::OnDownloadUpdated(
     content::DownloadManager* manager, content::DownloadItem* item) {
   if (java_ref_.is_null())
+    return;
+
+  if (item->IsTemporary())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -420,7 +429,7 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
       content::BrowserContext::GetDownloadManager(profile);
 
   // Update notifiers to monitor any newly created DownloadManagers.
-  updateNotifier(
+  UpdateNotifier(
       this, manager,
       is_off_the_record ? off_the_record_notifier_ : original_notifier_);
 

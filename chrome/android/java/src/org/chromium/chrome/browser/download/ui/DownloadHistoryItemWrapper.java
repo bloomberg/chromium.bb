@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
@@ -24,7 +25,9 @@ import java.io.File;
 public abstract class DownloadHistoryItemWrapper extends TimedItem {
     protected final BackendProvider mBackendProvider;
     protected final ComponentName mComponentName;
+    protected File mFile;
     private Long mStableId;
+    private boolean mIsDeletionPending;
 
     private DownloadHistoryItemWrapper(BackendProvider provider, ComponentName component) {
         mBackendProvider = provider;
@@ -41,8 +44,30 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         return mStableId;
     }
 
+    /** @return Whether the file will soon be deleted. */
+    final boolean isDeletionPending() {
+        return mIsDeletionPending;
+    }
+
+    /** Track whether or not the file will soon be deleted. */
+    final void setIsDeletionPending(boolean state) {
+        mIsDeletionPending = state;
+    }
+
+    /** @return Whether this download should be shown to the user. */
+    boolean isVisibleToUser(int filter) {
+        if (isDeletionPending()) return false;
+        return filter == getFilterType() || filter == DownloadFilter.FILTER_ALL;
+    }
+
     /** @return Item that is being wrapped. */
     abstract Object getItem();
+
+    /**
+     * Replaces the item being wrapped with a new one.
+     * @return Whether or not the user needs to be informed of changes to the data.
+     */
+    abstract boolean replaceItem(Object item);
 
     /** @return ID representing the download. */
     abstract String getId();
@@ -51,7 +76,10 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     abstract String getFilePath();
 
     /** @return The file where the download resides. */
-    public abstract File getFile();
+    public final File getFile() {
+        if (mFile == null) mFile = new File(getFilePath());
+        return mFile;
+    }
 
     /** @return String to display for the file. */
     abstract String getDisplayFileName();
@@ -71,8 +99,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return How much of the download has completed, or -1 if there is no progress. */
     public abstract int getDownloadProgress();
 
-    /** @return Whether or not the file is completely downloaded. */
-    public abstract boolean isComplete();
+    /** @return Whether the file for this item has been removed through an external action. */
+    abstract boolean hasBeenExternallyRemoved();
+
+    /** @return Whether this download is associated with the off the record profile. */
+    abstract boolean isOffTheRecord();
 
     /** Called when the user wants to open the file. */
     abstract void open();
@@ -83,17 +114,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
      * @return Whether the file associated with the download item was deleted.
      */
     abstract boolean remove();
-
-    /**
-     * @return Whether the file associated with this item has been removed through an external
-     *         action.
-     */
-    abstract boolean hasBeenExternallyRemoved();
-
-    /**
-     * @return Whether this download is associated with the off the record profile.
-     */
-    abstract boolean isOffTheRecord();
 
     protected void recordOpenSuccess() {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenSucceeded",
@@ -107,8 +127,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
     /** Wraps a {@link DownloadItem}. */
     public static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
-        private final DownloadItem mItem;
-        private File mFile;
+        private DownloadItem mItem;
 
         DownloadItemWrapper(DownloadItem item, BackendProvider provider, ComponentName component) {
             super(provider, component);
@@ -118,6 +137,18 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public DownloadItem getItem() {
             return mItem;
+        }
+
+        @Override
+        public boolean replaceItem(Object item) {
+            assert item instanceof DownloadItem;
+            DownloadItem downloadItem = (DownloadItem) item;
+            assert TextUtils.equals(mItem.getId(), downloadItem.getId());
+
+            boolean visuallyChanged = isNewItemVisiblyDifferent(downloadItem);
+            mItem = downloadItem;
+            mFile = null;
+            return visuallyChanged;
         }
 
         @Override
@@ -133,12 +164,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public String getFilePath() {
             return mItem.getDownloadInfo().getFilePath();
-        }
-
-        @Override
-        public File getFile() {
-            if (mFile == null) mFile = new File(getFilePath());
-            return mFile;
         }
 
         @Override
@@ -210,15 +235,43 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
-        public boolean isComplete() {
-            return mItem.getDownloadInfo().state() == DownloadState.COMPLETE;
+        boolean isVisibleToUser(int filter) {
+            if (!super.isVisibleToUser(filter)) return false;
+
+            if (TextUtils.isEmpty(getFilePath()) || TextUtils.isEmpty(getDisplayFileName())) {
+                return false;
+            }
+
+            if (mItem.getDownloadInfo().state() == DownloadState.CANCELLED) {
+                return false;
+            }
+
+            // TODO(dfalcantara): Show in-progress downloads.  Adjust space calculation to account
+            //                    for making in-progress downloads visible.
+            if (mItem.getDownloadInfo().state() != DownloadState.COMPLETE) {
+                return false;
+            }
+
+            return true;
+        }
+
+        /** @return whether the given DownloadItem is visibly different from the current one. */
+        private boolean isNewItemVisiblyDifferent(DownloadItem newItem) {
+            DownloadInfo oldInfo = mItem.getDownloadInfo();
+            DownloadInfo newInfo = newItem.getDownloadInfo();
+
+            if (oldInfo.getPercentCompleted() != newInfo.getPercentCompleted()) return true;
+            if (oldInfo.state() != newInfo.state()) return true;
+            if (oldInfo.isPaused() != newInfo.isPaused()) return true;
+            if (!TextUtils.equals(oldInfo.getFilePath(), newInfo.getFilePath())) return true;
+
+            return false;
         }
     }
 
     /** Wraps a {@link OfflinePageDownloadItem}. */
     public static class OfflinePageItemWrapper extends DownloadHistoryItemWrapper {
-        private final OfflinePageDownloadItem mItem;
-        private File mFile;
+        private OfflinePageDownloadItem mItem;
 
         OfflinePageItemWrapper(OfflinePageDownloadItem item, BackendProvider provider,
                 ComponentName component) {
@@ -229,6 +282,17 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public OfflinePageDownloadItem getItem() {
             return mItem;
+        }
+
+        @Override
+        public boolean replaceItem(Object item) {
+            assert item instanceof OfflinePageDownloadItem;
+            OfflinePageDownloadItem newItem = (OfflinePageDownloadItem) item;
+            assert TextUtils.equals(newItem.getGuid(), mItem.getGuid());
+
+            mItem = newItem;
+            mFile = null;
+            return true;
         }
 
         @Override
@@ -244,12 +308,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public String getFilePath() {
             return mItem.getTargetPath();
-        }
-
-        @Override
-        public File getFile() {
-            if (mFile == null) mFile = new File(getFilePath());
-            return mFile;
         }
 
         @Override
@@ -309,12 +367,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         boolean isOffTheRecord() {
             return false;
-        }
-
-        @Override
-        public boolean isComplete() {
-            // Incomplete offline pages aren't shown yet.
-            return true;
         }
     }
 }

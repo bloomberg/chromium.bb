@@ -98,6 +98,8 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
   void OnHistoryQueryComplete() override;
 
   // AllDownloadItemNotifier::Observer methods.
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
                          content::DownloadItem* item) override;
   void OnDownloadRemoved(content::DownloadManager* manager,

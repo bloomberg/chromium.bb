@@ -1579,6 +1579,13 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @CalledByNative
+    private void onDownloadItemCreated(DownloadItem item) {
+        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+            adapter.onDownloadItemCreated(item);
+        }
+    }
+
+    @CalledByNative
     private void onDownloadItemUpdated(DownloadItem item) {
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
             adapter.onDownloadItemUpdated(item);

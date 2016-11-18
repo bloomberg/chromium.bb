@@ -121,7 +121,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             List<DownloadHistoryItemWrapper> items = (List<DownloadHistoryItemWrapper>) actionData;
 
             // Deletion was undone. Add items back to the adapter.
-            mHistoryAdapter.reAddItemsToAdapter(items);
+            mHistoryAdapter.unmarkItemsForDeletion(items);
 
             RecordUserAction.record("Android.DownloadManager.UndoDelete");
         }
@@ -394,7 +394,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         if (itemsToDelete.isEmpty()) return;
 
-        mHistoryAdapter.removeItemsFromAdapter(itemsToDelete);
+        mHistoryAdapter.markItemsForDeletion(itemsToDelete);
 
         dismissUndoDeletionSnackbars();
 

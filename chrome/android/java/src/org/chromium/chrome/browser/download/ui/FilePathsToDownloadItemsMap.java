@@ -19,7 +19,7 @@ class FilePathsToDownloadItemsMap {
 
     /**
      * Adds a DownloadHistoryItemWrapper to the map. This method does not check whether the item
-     * already exists in the map. If an item is being updated, use {@link #replaceItem}.
+     * already exists in the map.
      * @param wrapper The item to add to the map.
      */
     void addItem(DownloadHistoryItemWrapper wrapper) {
@@ -27,23 +27,6 @@ class FilePathsToDownloadItemsMap {
             mMap.put(wrapper.getFilePath(), new ArrayList<DownloadHistoryItemWrapper>());
         }
         mMap.get(wrapper.getFilePath()).add(wrapper);
-    }
-
-    /**
-     * Replaces a DownloadHistoryItemWrapper using the item's ID. Does nothing if the item does not
-     * exist in the map.
-     * @param wrapper The item to replace in the map
-     */
-    void replaceItem(DownloadHistoryItemWrapper wrapper) {
-        ArrayList<DownloadHistoryItemWrapper> matchingItems = mMap.get(wrapper.getFilePath());
-        if (matchingItems == null) return;
-
-        for (int i = 0; i < matchingItems.size(); i++) {
-            if (matchingItems.get(i).getId().equals(wrapper.getId())
-                    && matchingItems.get(i).isOffTheRecord() == wrapper.isOffTheRecord()) {
-                matchingItems.set(i, wrapper);
-            }
-        }
     }
 
     /**

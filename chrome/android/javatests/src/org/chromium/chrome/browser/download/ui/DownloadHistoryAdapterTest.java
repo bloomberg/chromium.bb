@@ -17,18 +17,29 @@ import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDe
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflinePageDelegate;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content_public.browser.DownloadState;
 
 /**
  * Tests a DownloadHistoryAdapter that is isolated from the real bridges.
  */
 public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
 
-    private static class Observer extends RecyclerView.AdapterDataObserver {
+    private static class Observer extends RecyclerView.AdapterDataObserver
+            implements DownloadHistoryAdapter.TestObserver {
         public CallbackHelper onChangedCallback = new CallbackHelper();
+        public CallbackHelper onDownloadItemCreatedCallback = new CallbackHelper();
+
+        public DownloadItem createdItem;
 
         @Override
         public void onChanged() {
             onChangedCallback.notifyCalled();
+        }
+
+        @Override
+        public void onDownloadItemCreated(DownloadItem item) {
+            createdItem = item;
+            onDownloadItemCreatedCallback.notifyCalled();
         }
     }
 
@@ -51,6 +62,7 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         mObserver = new Observer();
         mAdapter = new DownloadHistoryAdapter(showOffTheRecord, null);
         mAdapter.registerAdapterDataObserver(mObserver);
+        mAdapter.registerObserverForTest(mObserver);
 
         // Initialize the Adapter with all the DownloadItems and OfflinePageDownloadItems.
         int callCount = mObserver.onChangedCallback.getCallCount();
@@ -158,7 +170,7 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         // Add the first item.
         assertEquals(1, mObserver.onChangedCallback.getCallCount());
         DownloadItem item0 = StubbedProvider.createDownloadItem(0, "19840116 12:00");
-        mAdapter.onDownloadItemUpdated(item0);
+        mAdapter.onDownloadItemCreated(item0);
         mObserver.onChangedCallback.waitForCallback(1);
         checkAdapterContents(null, item0);
         assertEquals(1, mAdapter.getTotalDownloadSize());
@@ -166,39 +178,44 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         // Add a second item with a different date.
         assertEquals(2, mObserver.onChangedCallback.getCallCount());
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840117 12:00");
-        mAdapter.onDownloadItemUpdated(item1);
+        mAdapter.onDownloadItemCreated(item1);
         mObserver.onChangedCallback.waitForCallback(2);
         checkAdapterContents(null, item1, null, item0);
         assertEquals(11, mAdapter.getTotalDownloadSize());
 
-        // Add a third item with the same date as the second item.
-        assertEquals(3, mObserver.onChangedCallback.getCallCount());
-        DownloadItem item2 = StubbedProvider.createDownloadItem(2, "19840117 18:00");
-        mAdapter.onDownloadItemUpdated(item2);
-        mObserver.onChangedCallback.waitForCallback(3);
-        checkAdapterContents(null, item2, item1, null, item0);
-        assertEquals(111, mAdapter.getTotalDownloadSize());
+        // Add a third item with the same date as the second item.  Shouldn't be displayed yet
+        // because it's in progress.
+        assertEquals(2, mObserver.onDownloadItemCreatedCallback.getCallCount());
+        DownloadItem item2 = StubbedProvider.createDownloadItem(
+                2, "19840117 18:00", false, DownloadState.IN_PROGRESS);
+        mAdapter.onDownloadItemCreated(item2);
+        mObserver.onDownloadItemCreatedCallback.waitForCallback(2);
+        assertEquals(mObserver.createdItem, item2);
+        checkAdapterContents(null, item1, null, item0);
+        assertEquals(11, mAdapter.getTotalDownloadSize());
 
-        // An item with the same download ID as the second item should just update the old one.
-        assertEquals(4, mObserver.onChangedCallback.getCallCount());
-        DownloadItem item3 = StubbedProvider.createDownloadItem(2, "19840117 18:00");
+        // An item with the same download ID as the second item should just update the old one,
+        // but it should now be visible.
+        assertEquals(3, mObserver.onChangedCallback.getCallCount());
+        DownloadItem item3 = StubbedProvider.createDownloadItem(
+                2, "19840117 18:00", false, DownloadState.COMPLETE);
         mAdapter.onDownloadItemUpdated(item3);
-        mObserver.onChangedCallback.waitForCallback(4);
+        mObserver.onChangedCallback.waitForCallback(3);
         checkAdapterContents(null, item3, item1, null, item0);
         assertEquals(111, mAdapter.getTotalDownloadSize());
 
         // Throw on a new OfflinePageItem.
-        assertEquals(5, mObserver.onChangedCallback.getCallCount());
+        assertEquals(4, mObserver.onChangedCallback.getCallCount());
         OfflinePageDownloadItem item4 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
         mOfflineDelegate.observer.onItemAdded(item4);
-        mObserver.onChangedCallback.waitForCallback(5);
+        mObserver.onChangedCallback.waitForCallback(4);
         checkAdapterContents(null, item4, item3, item1, null, item0);
 
         // Update the existing OfflinePageItem.
-        assertEquals(6, mObserver.onChangedCallback.getCallCount());
+        assertEquals(5, mObserver.onChangedCallback.getCallCount());
         OfflinePageDownloadItem item5 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
         mOfflineDelegate.observer.onItemUpdated(item5);
-        mObserver.onChangedCallback.waitForCallback(6);
+        mObserver.onChangedCallback.waitForCallback(5);
         checkAdapterContents(null, item5, item3, item1, null, item0);
     }
 
@@ -207,8 +224,8 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
     public void testRemove_ThreeItemsTwoDates() throws Exception {
         // Initialize the DownloadHistoryAdapter with three items in two date buckets.
         DownloadItem regularItem = StubbedProvider.createDownloadItem(0, "19840116 18:00");
-        DownloadItem offTheRecordItem =
-                StubbedProvider.createDownloadItem(1, "19840116 12:00", true);
+        DownloadItem offTheRecordItem = StubbedProvider.createDownloadItem(
+                1, "19840116 12:00", true, DownloadState.COMPLETE);
         OfflinePageDownloadItem offlineItem =
                 StubbedProvider.createOfflineItem(2, "19840117 12:01");
         mDownloadDelegate.regularItems.add(regularItem);
