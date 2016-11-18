@@ -28,4 +28,7 @@ specific_include_rules = {
   "view_unittest\.cc": [
     "+cc/playback"
   ],
+  "views_test_suite\.cc": [
+    "+gpu/ipc/service",
+  ]
 }

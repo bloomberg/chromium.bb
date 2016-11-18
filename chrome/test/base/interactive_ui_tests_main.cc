@@ -8,6 +8,7 @@
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/base/test/ui_controls.h"
 
 #if defined(USE_AURA)
@@ -36,6 +37,10 @@ class InteractiveUITestSuite : public ChromeTestSuite {
   // ChromeTestSuite overrides:
   void Initialize() override {
     ChromeTestSuite::Initialize();
+
+#if defined(OS_MACOSX)
+    gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
+#endif
 
     // Only allow ui_controls to be used in interactive_ui_tests, since they
     // depend on focus and can't be sharded.

@@ -10,6 +10,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 namespace blimp {
 namespace client {
@@ -38,7 +39,7 @@ cc::FrameSinkId CompositorDependenciesImpl::AllocateFrameSinkId() {
 void CompositorDependenciesImpl::GetContextProviders(
     const CompositorDependencies::ContextProviderCallback& callback) {
   scoped_refptr<cc::ContextProvider> compositor_context =
-      BlimpContextProvider::Create(gfx::kNullAcceleratedWidget,
+      BlimpContextProvider::Create(gpu::kNullSurfaceHandle,
                                    gpu_memory_buffer_manager_.get());
 
   // TODO(khushalsagar): Make a worker context and bind to the current thread.

@@ -209,4 +209,8 @@ void DeferredGpuCommandService::Release() const {
   base::RefCountedThreadSafe<DeferredGpuCommandService>::Release();
 }
 
+bool DeferredGpuCommandService::BlockThreadOnWaitSyncToken() const {
+  return true;
+}
+
 }  // namespace android_webview

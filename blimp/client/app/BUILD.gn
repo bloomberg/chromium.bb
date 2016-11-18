@@ -34,6 +34,7 @@ source_set("app") {
     "//cc/surfaces",
     "//components/safe_json",
     "//components/url_formatter",
+    "//gpu/ipc/common",
     "//skia",
     "//ui/events",
     "//ui/gfx/geometry",

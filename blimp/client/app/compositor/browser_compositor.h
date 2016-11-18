@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "blimp/client/support/compositor/blimp_embedder_compositor.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blimp {
@@ -37,6 +38,7 @@ class BrowserCompositor : public BlimpEmbedderCompositor {
   // BlimpEmbedderCompositor implementation.
   void DidReceiveCompositorFrameAck() override;
 
+  gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
   base::Closure did_complete_swap_buffers_;
 
  private:

@@ -19,6 +19,8 @@ group("command_buffer") {
 source_set("command_buffer_sources") {
   visibility = [ "//gpu/*" ]
   sources = [
+    "gpu_in_process_thread_service.cc",
+    "gpu_in_process_thread_service.h",
     "in_process_command_buffer.cc",
     "in_process_command_buffer.h",
   ]
@@ -31,6 +33,8 @@ source_set("command_buffer_sources") {
     "//gpu/command_buffer/common:common_sources",
     "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",
+    "//gpu/ipc/client:ipc_client_sources",
+    "//gpu/ipc/service:ipc_service_sources",
     "//ui/gfx",
     "//ui/gl",
     "//ui/gl/init",

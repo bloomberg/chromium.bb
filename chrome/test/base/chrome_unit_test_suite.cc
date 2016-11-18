@@ -20,6 +20,7 @@
 #include "components/update_client/update_query_params.h"
 #include "content/public/common/content_paths.h"
 #include "extensions/features/features.h"
+#include "gpu/ipc/service/image_transport_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
@@ -146,6 +147,10 @@ void ChromeUnitTestSuite::InitializeProviders() {
       ChromeWebUIControllerFactory::GetInstance());
 
   gl::GLSurfaceTestSupport::InitializeOneOff();
+
+#if defined(OS_MACOSX)
+  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
+#endif
 
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());

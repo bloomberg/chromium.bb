@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "gpu/ipc/service/image_transport_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -41,6 +42,11 @@ int ViewsTestSuite::RunTestsSerially() {
 void ViewsTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
+
+#if defined(OS_MACOSX)
+  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
+#endif
+
   ui::RegisterPathProvider();
 
   base::FilePath ui_test_pak_path;

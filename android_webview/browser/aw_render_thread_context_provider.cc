@@ -62,7 +62,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   limits.min_transfer_buffer_size = 64 * 1024;
 
   context_.reset(gpu::GLInProcessContext::Create(
-      service, surface, surface->IsOffscreen(), gfx::kNullAcceleratedWidget,
+      service, surface, surface->IsOffscreen(), gpu::kNullSurfaceHandle,
       nullptr /* share_context */, attributes, limits, nullptr, nullptr,
       nullptr));
 

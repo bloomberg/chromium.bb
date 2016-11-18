@@ -54,7 +54,7 @@ class GLInProcessContextImpl
   bool Initialize(scoped_refptr<gl::GLSurface> surface,
                   bool is_offscreen,
                   GLInProcessContext* share_context,
-                  gfx::AcceleratedWidget window,
+                  SurfaceHandle window,
                   const gpu::gles2::ContextCreationAttribHelper& attribs,
                   const scoped_refptr<InProcessCommandBuffer::Service>& service,
                   const SharedMemoryLimits& mem_limits,
@@ -64,6 +64,12 @@ class GLInProcessContextImpl
 
   // GLInProcessContext implementation:
   gles2::GLES2Implementation* GetImplementation() override;
+  void SetSwapBuffersCompletionCallback(
+      const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
+          callback) override;
+  void SetUpdateVSyncParametersCallback(
+      const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
+          callback) override;
   void SetLock(base::Lock* lock) override;
 
  private:
@@ -88,6 +94,18 @@ gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
   return gles2_implementation_.get();
 }
 
+void GLInProcessContextImpl::SetSwapBuffersCompletionCallback(
+    const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
+        callback) {
+  command_buffer_->SetSwapBuffersCompletionCallback(callback);
+}
+
+void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(
+    const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
+        callback) {
+  command_buffer_->SetUpdateVSyncParametersCallback(callback);
+}
+
 void GLInProcessContextImpl::SetLock(base::Lock* lock) {
   NOTREACHED();
 }
@@ -96,7 +114,7 @@ bool GLInProcessContextImpl::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
     GLInProcessContext* share_context,
-    gfx::AcceleratedWidget window,
+    SurfaceHandle window,
     const gles2::ContextCreationAttribHelper& attribs,
     const scoped_refptr<InProcessCommandBuffer::Service>& service,
     const SharedMemoryLimits& mem_limits,
@@ -183,7 +201,7 @@ GLInProcessContext* GLInProcessContext::Create(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
-    gfx::AcceleratedWidget window,
+    SurfaceHandle window,
     GLInProcessContext* share_context,
     const ::gpu::gles2::ContextCreationAttribHelper& attribs,
     const SharedMemoryLimits& memory_limits,
@@ -196,7 +214,7 @@ GLInProcessContext* GLInProcessContext::Create(
 
   if (surface) {
     DCHECK_EQ(surface->IsOffscreen(), is_offscreen);
-    DCHECK_EQ(gfx::kNullAcceleratedWidget, window);
+    DCHECK_EQ(kNullSurfaceHandle, window);
   }
 
   std::unique_ptr<GLInProcessContextImpl> context(new GLInProcessContextImpl);

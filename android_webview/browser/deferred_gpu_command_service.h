@@ -63,6 +63,7 @@ class DeferredGpuCommandService
 
   void AddRef() const override;
   void Release() const override;
+  bool BlockThreadOnWaitSyncToken() const override;
 
  protected:
   ~DeferredGpuCommandService() override;

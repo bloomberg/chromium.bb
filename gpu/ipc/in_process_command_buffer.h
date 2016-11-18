@@ -25,9 +25,12 @@
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/service/command_executor.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -48,9 +51,11 @@ class Size;
 }
 
 namespace gpu {
+
 class SyncPointClient;
 class SyncPointOrderData;
 class SyncPointManager;
+struct GpuProcessHostedCALayerTreeParamsMac;
 
 namespace gles2 {
 struct ContextCreationAttribHelper;
@@ -72,7 +77,8 @@ class TransferBufferManagerInterface;
 // However, the behavior for accessing one context (i.e. one instance of this
 // class) from different client threads is undefined.
 class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
-                                          public GpuControl {
+                                          public GpuControl,
+                                          public ImageTransportSurfaceDelegate {
  public:
   class Service;
   explicit InProcessCommandBuffer(const scoped_refptr<Service>& service);
@@ -83,7 +89,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // a new GLSurface.
   bool Initialize(scoped_refptr<gl::GLSurface> surface,
                   bool is_offscreen,
-                  gfx::AcceleratedWidget window,
+                  SurfaceHandle window,
                   const gles2::ContextCreationAttribHelper& attribs,
                   InProcessCommandBuffer* share_group,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -130,11 +136,38 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                        const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken* sync_token) override;
 
+// ImageTransportSurfaceDelegate implementation:
+#if defined(OS_WIN)
+  void DidCreateAcceleratedSurfaceChildWindow(
+      SurfaceHandle parent_window,
+      SurfaceHandle child_window) override;
+#endif
+  void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
+  const gles2::FeatureInfo* GetFeatureInfo() const override;
+  void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override;
+  void UpdateVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
+
+  using SwapBuffersCompletionCallback = base::Callback<void(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>;
+  void SetSwapBuffersCompletionCallback(
+      const SwapBuffersCompletionCallback& callback);
+
+  using UpdateVSyncParametersCallback =
+      base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
+  void SetUpdateVSyncParametersCallback(
+      const UpdateVSyncParametersCallback& callback);
+
   // The serializer interface to the GPU service (i.e. thread).
   class Service {
    public:
     Service();
     Service(const gpu::GpuPreferences& gpu_preferences);
+    Service(gpu::gles2::MailboxManager* mailbox_manager,
+            scoped_refptr<gl::GLShareGroup> share_group);
+
     virtual ~Service();
 
     virtual void AddRef() const = 0;
@@ -158,19 +191,20 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     scoped_refptr<gl::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
     gpu::gles2::ProgramCache* program_cache();
+    virtual bool BlockThreadOnWaitSyncToken() const = 0;
 
-   private:
+   protected:
     const GpuPreferences gpu_preferences_;
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
-    scoped_refptr<gl::GLShareGroup> share_group_;
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+    scoped_refptr<gl::GLShareGroup> share_group_;
     std::unique_ptr<gpu::gles2::ProgramCache> program_cache_;
   };
 
  private:
   struct InitializeOnGpuThreadParams {
     bool is_offscreen;
-    gfx::AcceleratedWidget window;
+    SurfaceHandle window;
     const gles2::ContextCreationAttribHelper& attribs;
     gpu::Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
@@ -178,7 +212,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
     InitializeOnGpuThreadParams(
         bool is_offscreen,
-        gfx::AcceleratedWidget window,
+        SurfaceHandle window,
         const gles2::ContextCreationAttribHelper& attribs,
         gpu::Capabilities* capabilities,
         InProcessCommandBuffer* share_group,
@@ -194,16 +228,20 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   void Destroy();
   bool DestroyOnGpuThread();
-  void FlushOnGpuThread(int32_t put_offset, uint32_t order_num);
+  void FlushOnGpuThread(int32_t put_offset);
   void ScheduleDelayedWorkOnGpuThread();
   bool MakeCurrent();
   base::Closure WrapCallback(const base::Closure& callback);
   State GetStateFast();
-  void QueueTask(const base::Closure& task) { service_->ScheduleTask(task); }
+  void QueueTask(bool out_of_order, const base::Closure& task);
+  void ProcessTasksOnGpuThread();
   void CheckSequencedThread();
   void FenceSyncReleaseOnGpuThread(uint64_t release);
   bool WaitFenceSyncOnGpuThread(gpu::CommandBufferNamespace namespace_id,
                                 gpu::CommandBufferId command_buffer_id,
+                                uint64_t release);
+  void OnWaitFenceSyncCompleted(CommandBufferNamespace namespace_id,
+                                CommandBufferId command_buffer_id,
                                 uint64_t release);
   void DescheduleUntilFinishedOnGpuThread();
   void RescheduleAfterFinishedOnGpuThread();
@@ -216,7 +254,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                               const gfx::Size& size,
                               gfx::BufferFormat format,
                               uint32_t internalformat,
-                              uint32_t order_num,
+                              // uint32_t order_num,
                               uint64_t fence_sync);
   void DestroyImageOnGpuThread(int32_t id);
   void SetGetBufferOnGpuThread(int32_t shm_id, base::WaitableEvent* completion);
@@ -232,6 +270,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
+  bool waiting_for_sync_point_ = false;
+
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   std::unique_ptr<CommandExecutor> executor_;
@@ -265,6 +305,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<Service> service_;
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
+
+  // The group of contexts that share namespaces with this context.
+  scoped_refptr<gles2::ContextGroup> context_group_;
+
   scoped_refptr<gl::GLShareGroup> gl_share_group_;
   base::WaitableEvent fence_sync_wait_event_;
 
@@ -272,42 +316,24 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // the client thread.
   std::unique_ptr<base::SequenceChecker> sequence_checker_;
 
+  base::Lock task_queue_lock_;
+  struct GpuTask {
+    GpuTask(const base::Closure& callback, uint32_t order_number);
+    ~GpuTask();
+    base::Closure callback;
+    uint32_t order_number;
+  };
+  std::queue<std::unique_ptr<GpuTask>> task_queue_;
+
+  SwapBuffersCompletionCallback swap_buffers_completion_callback_;
+  UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
+
   base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
   base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;
   base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
-};
-
-// Default Service class when a null service is used.
-class GPU_EXPORT GpuInProcessThread
-    : public base::Thread,
-      public NON_EXPORTED_BASE(InProcessCommandBuffer::Service),
-      public base::RefCountedThreadSafe<GpuInProcessThread> {
- public:
-  explicit GpuInProcessThread(SyncPointManager* sync_point_manager);
-
-  void AddRef() const override;
-  void Release() const override;
-  void ScheduleTask(const base::Closure& task) override;
-  void ScheduleDelayedWork(const base::Closure& callback) override;
-  bool UseVirtualizedGLContexts() override;
-  scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
-      override;
-  scoped_refptr<gles2::FramebufferCompletenessCache>
-  framebuffer_completeness_cache() override;
-  SyncPointManager* sync_point_manager() override;
-
- private:
-  ~GpuInProcessThread() override;
-  friend class base::RefCountedThreadSafe<GpuInProcessThread>;
-
-  SyncPointManager* sync_point_manager_;  // Non-owning.
-  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
-  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-      framebuffer_completeness_cache_;
-  DISALLOW_COPY_AND_ASSIGN(GpuInProcessThread);
 };
 
 }  // namespace gpu

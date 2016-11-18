@@ -22,3 +22,17 @@ include_rules = [
   "+ui/gl",
   "-cc/blink",
 ]
+  
+specific_include_rules = {
+  "in_process_context_provider\.cc": [
+    "+gpu/command_buffer/client",
+    "+gpu/command_buffer/common",
+    "+gpu/command_buffer/service",
+    "+gpu/ipc",
+    "+gpu/skia_bindings",
+  ],
+  "in_process_context_provider\.h": [
+    "+gpu/command_buffer/common",
+    "+gpu/ipc",
+  ],
+}

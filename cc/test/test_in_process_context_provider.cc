@@ -45,7 +45,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
 
   std::unique_ptr<gpu::GLInProcessContext> context =
       base::WrapUnique(gpu::GLInProcessContext::Create(
-          nullptr, nullptr, is_offscreen, gfx::kNullAcceleratedWidget,
+          nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle,
           shared_context, attribs, gpu::SharedMemoryLimits(),
           gpu_memory_buffer_manager, image_factory, std::move(task_runner)));
 

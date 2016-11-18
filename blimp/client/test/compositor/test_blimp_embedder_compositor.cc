@@ -12,6 +12,7 @@
 #include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -22,7 +23,7 @@ TestBlimpEmbedderCompositor::TestBlimpEmbedderCompositor(
     CompositorDependencies* compositor_dependencies)
     : BlimpEmbedderCompositor(compositor_dependencies) {
   SetContextProvider(BlimpContextProvider::Create(
-      gfx::kNullAcceleratedWidget,
+      gpu::kNullSurfaceHandle,
       compositor_dependencies->GetGpuMemoryBufferManager()));
 }
 

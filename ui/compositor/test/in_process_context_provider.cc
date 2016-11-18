@@ -29,7 +29,7 @@ scoped_refptr<InProcessContextProvider> InProcessContextProvider::Create(
     InProcessContextProvider* shared_context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
-    gfx::AcceleratedWidget window,
+    gpu::SurfaceHandle window,
     const std::string& debug_name) {
   return new InProcessContextProvider(attribs, shared_context,
                                       gpu_memory_buffer_manager, image_factory,
@@ -55,7 +55,7 @@ InProcessContextProvider::CreateOffscreen(
   attribs.bind_generates_resource = false;
   return new InProcessContextProvider(attribs, shared_context,
                                       gpu_memory_buffer_manager, image_factory,
-                                      gfx::kNullAcceleratedWidget, "Offscreen");
+                                      gpu::kNullSurfaceHandle, "Offscreen");
 }
 
 InProcessContextProvider::InProcessContextProvider(
@@ -63,7 +63,7 @@ InProcessContextProvider::InProcessContextProvider(
     InProcessContextProvider* shared_context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
-    gfx::AcceleratedWidget window,
+    gpu::SurfaceHandle window,
     const std::string& debug_name)
     : attribs_(attribs),
       shared_context_(shared_context),

@@ -17,6 +17,7 @@ source_set("compositor") {
   deps = [
     "//cc:test_support",
     "//cc/proto",
+    "//gpu/ipc/common",
   ]
 
   public_deps = [

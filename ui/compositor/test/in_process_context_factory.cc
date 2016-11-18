@@ -32,6 +32,10 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+#include "gpu/ipc/common/gpu_surface_tracker.h"
+#endif
+
 namespace ui {
 namespace {
 
@@ -113,6 +117,11 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 }  // namespace
 
+struct InProcessContextFactory::PerCompositorData {
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+  std::unique_ptr<cc::Display> display;
+};
+
 InProcessContextFactory::InProcessContextFactory(
     bool context_factory_for_test,
     cc::SurfaceManager* surface_manager)
@@ -166,10 +175,14 @@ void InProcessContextFactory::CreateCompositorFrameSink(
   attribs.sample_buffers = 0;
   attribs.fail_if_major_perf_caveat = false;
   attribs.bind_generates_resource = false;
+  PerCompositorData* data = per_compositor_data_[compositor.get()].get();
+  if (!data)
+    data = CreatePerCompositorData(compositor.get());
+
   scoped_refptr<InProcessContextProvider> context_provider =
       InProcessContextProvider::Create(
           attribs, shared_worker_context_provider_.get(),
-          &gpu_memory_buffer_manager_, &image_factory_, compositor->widget(),
+          &gpu_memory_buffer_manager_, &image_factory_, data->surface_handle,
           "UICompositor");
 
   std::unique_ptr<cc::OutputSurface> display_output_surface;
@@ -189,14 +202,15 @@ void InProcessContextFactory::CreateCompositorFrameSink(
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
       begin_frame_source.get(), compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending));
-  per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
+
+  data->display = base::MakeUnique<cc::Display>(
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
       compositor->GetRendererSettings(), compositor->frame_sink_id(),
       std::move(begin_frame_source), std::move(display_output_surface),
       std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
                                 compositor->task_runner().get()));
 
-  auto* display = per_compositor_data_[compositor.get()].get();
+  auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
       compositor->frame_sink_id(), surface_manager_, display, context_provider,
       shared_worker_context_provider_, &gpu_memory_buffer_manager_,
@@ -230,9 +244,16 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
 }
 
 void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
-  if (!per_compositor_data_.count(compositor))
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
     return;
-  per_compositor_data_.erase(compositor);
+  PerCompositorData* data = it->second.get();
+  DCHECK(data);
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+  if (data->surface_handle)
+    gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
+#endif
+  per_compositor_data_.erase(it);
 }
 
 bool InProcessContextFactory::DoesCreateTestContexts() {
@@ -266,14 +287,14 @@ void InProcessContextFactory::SetDisplayVisible(ui::Compositor* compositor,
                                                 bool visible) {
   if (!per_compositor_data_.count(compositor))
     return;
-  per_compositor_data_[compositor]->SetVisible(visible);
+  per_compositor_data_[compositor]->display->SetVisible(visible);
 }
 
 void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                             const gfx::Size& size) {
   if (!per_compositor_data_.count(compositor))
     return;
-  per_compositor_data_[compositor]->Resize(size);
+  per_compositor_data_[compositor]->display->Resize(size);
 }
 
 void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
@@ -282,6 +303,29 @@ void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
 
 void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+InProcessContextFactory::PerCompositorData*
+InProcessContextFactory::CreatePerCompositorData(ui::Compositor* compositor) {
+  DCHECK(!per_compositor_data_[compositor]);
+
+  gfx::AcceleratedWidget widget = compositor->widget();
+
+  auto data = base::MakeUnique<PerCompositorData>();
+  if (widget == gfx::kNullAcceleratedWidget) {
+    data->surface_handle = gpu::kNullSurfaceHandle;
+  } else {
+#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+    data->surface_handle = widget;
+#else
+    gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
+    data->surface_handle = tracker->AddSurfaceForNativeWidget(widget);
+#endif
+  }
+
+  PerCompositorData* return_ptr = data.get();
+  per_compositor_data_[compositor] = std::move(data);
+  return return_ptr;
 }
 
 }  // namespace ui

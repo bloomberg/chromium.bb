@@ -14,6 +14,7 @@
 #include "cc/test/test_image_factory.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/compositor/compositor.h"
 
 namespace cc {
@@ -72,6 +73,10 @@ class InProcessContextFactory : public ContextFactory {
   void RemoveObserver(ContextFactoryObserver* observer) override;
 
  private:
+  struct PerCompositorData;
+
+  PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
+
   scoped_refptr<InProcessContextProvider> shared_main_thread_contexts_;
   scoped_refptr<InProcessContextProvider> shared_worker_context_provider_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
@@ -84,8 +89,9 @@ class InProcessContextFactory : public ContextFactory {
   cc::SurfaceManager* surface_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 
-  base::hash_map<Compositor*, std::unique_ptr<cc::Display>>
-      per_compositor_data_;
+  using PerCompositorDataMap =
+      base::hash_map<ui::Compositor*, std::unique_ptr<PerCompositorData>>;
+  PerCompositorDataMap per_compositor_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };

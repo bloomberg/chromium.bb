@@ -8,6 +8,10 @@
 #include "blimp/client/support/compositor/blimp_context_provider.h"
 #include "cc/output/context_provider.h"
 
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+#include "gpu/ipc/common/gpu_surface_tracker.h"
+#endif
+
 namespace blimp {
 namespace client {
 
@@ -15,14 +19,27 @@ BrowserCompositor::BrowserCompositor(
     CompositorDependencies* compositor_dependencies)
     : BlimpEmbedderCompositor(compositor_dependencies) {}
 
-BrowserCompositor::~BrowserCompositor() = default;
+BrowserCompositor::~BrowserCompositor() {
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+  if (surface_handle_ != gpu::kNullSurfaceHandle)
+    gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_handle_);
+#endif
+}
 
 void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   scoped_refptr<cc::ContextProvider> provider;
 
   if (widget != gfx::kNullAcceleratedWidget) {
+    DCHECK_EQ(gpu::kNullSurfaceHandle, surface_handle_);
+#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+    surface_handle_ =
+        gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(widget);
+#else
+    surface_handle_ = widget;
+#endif
     provider = BlimpContextProvider::Create(
-        widget, compositor_dependencies()->GetGpuMemoryBufferManager());
+        surface_handle_,
+        compositor_dependencies()->GetGpuMemoryBufferManager());
   }
 
   SetContextProvider(std::move(provider));

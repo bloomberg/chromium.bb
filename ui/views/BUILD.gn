@@ -718,6 +718,7 @@ static_library("test_support_internal") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//gpu/ipc/service",
     "//ipc:test_support",
     "//skia",
     "//testing/gtest",

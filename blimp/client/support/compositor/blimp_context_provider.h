@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "ui/gl/gl_surface.h"
 
@@ -27,7 +28,7 @@ namespace client {
 class BlimpContextProvider : public cc::ContextProvider {
  public:
   static scoped_refptr<BlimpContextProvider> Create(
-      gfx::AcceleratedWidget widget,
+      gpu::SurfaceHandle widget,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   // cc::ContextProvider implementation.
@@ -44,7 +45,7 @@ class BlimpContextProvider : public cc::ContextProvider {
       const LostContextCallback& lost_context_callback) override;
 
  protected:
-  BlimpContextProvider(gfx::AcceleratedWidget widget,
+  BlimpContextProvider(gpu::SurfaceHandle widget,
                        gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~BlimpContextProvider() override;
 

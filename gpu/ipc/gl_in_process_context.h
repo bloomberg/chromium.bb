@@ -28,6 +28,7 @@ class SurfaceTexture;
 #endif
 
 namespace gpu {
+class InProcessCommandBuffer;
 struct SharedMemoryLimits;
 
 namespace gles2 {
@@ -50,7 +51,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
-      gfx::AcceleratedWidget window,
+      SurfaceHandle window,
       GLInProcessContext* share_context,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       const SharedMemoryLimits& memory_limits,
@@ -63,6 +64,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   virtual gles2::GLES2Implementation* GetImplementation() = 0;
 
   virtual void SetLock(base::Lock* lock) = 0;
+
+  virtual void SetSwapBuffersCompletionCallback(
+      const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
+          callback) = 0;
+
+  virtual void SetUpdateVSyncParametersCallback(
+      const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
+          callback) = 0;
 };
 
 }  // namespace gpu
