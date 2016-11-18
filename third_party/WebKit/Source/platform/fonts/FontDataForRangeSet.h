@@ -43,17 +43,6 @@ class PLATFORM_EXPORT FontDataForRangeSet
                                PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
       : m_fontData(fontData), m_rangeSet(rangeSet) {}
 
-  // Shorthand for GlyphPageTreeNode tests.
-  explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData,
-                               UChar32 from,
-                               UChar32 to)
-      : m_fontData(fontData) {
-    UnicodeRange range(from, to);
-    Vector<UnicodeRange> rangeVector;
-    rangeVector.append(range);
-    m_rangeSet = adoptRef(new UnicodeRangeSet(rangeVector));
-  }
-
   FontDataForRangeSet(const FontDataForRangeSet& other);
 
   virtual ~FontDataForRangeSet(){};

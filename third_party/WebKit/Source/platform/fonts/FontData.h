@@ -42,7 +42,7 @@ class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
   WTF_MAKE_NONCOPYABLE(FontData);
 
  public:
-  FontData() : m_maxGlyphPageTreeLevel(0) {}
+  FontData() {}
 
   virtual ~FontData();
 
@@ -54,14 +54,6 @@ class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
   virtual bool isLoadingFallback() const = 0;
   virtual bool isSegmented() const = 0;
   virtual bool shouldSkipDrawing() const = 0;
-
-  void setMaxGlyphPageTreeLevel(unsigned level) const {
-    m_maxGlyphPageTreeLevel = level;
-  }
-  unsigned maxGlyphPageTreeLevel() const { return m_maxGlyphPageTreeLevel; }
-
- private:
-  mutable unsigned m_maxGlyphPageTreeLevel;
 };
 
 #define DEFINE_FONT_DATA_TYPE_CASTS(thisType, predicate)     \

@@ -40,8 +40,7 @@
 namespace blink {
 
 FontFallbackList::FontFallbackList()
-    : m_pageZero(0),
-      m_cachedPrimarySimpleFontData(0),
+    : m_cachedPrimarySimpleFontData(0),
       m_fontSelector(nullptr),
       m_fontSelectorVersion(0),
       m_familyIndex(0),
@@ -51,8 +50,6 @@ FontFallbackList::FontFallbackList()
 void FontFallbackList::invalidate(FontSelector* fontSelector) {
   releaseFontData();
   m_fontList.clear();
-  m_pageZero = 0;
-  m_pages.clear();
   m_cachedPrimarySimpleFontData = 0;
   m_familyIndex = 0;
   m_hasLoadingFallback = false;

@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class GlyphPageTreeNodeBase;
 class FontDescription;
 
 const int cAllFamiliesScanned = -1;
@@ -42,28 +41,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   WTF_MAKE_NONCOPYABLE(FontFallbackList);
 
  public:
-  typedef HashMap<int, GlyphPageTreeNodeBase*, DefaultHash<int>::Hash>
-      GlyphPages;
-
-  class GlyphPagesStateSaver {
-    STACK_ALLOCATED();
-
-   public:
-    GlyphPagesStateSaver(FontFallbackList& fallbackList)
-        : m_fallbackList(fallbackList),
-          m_pages(fallbackList.m_pages),
-          m_pageZero(fallbackList.m_pageZero) {}
-
-    ~GlyphPagesStateSaver() {
-      m_fallbackList.m_pages = m_pages;
-      m_fallbackList.m_pageZero = m_pageZero;
-    }
-
-   private:
-    FontFallbackList& m_fallbackList;
-    GlyphPages& m_pages;
-    GlyphPageTreeNodeBase* m_pageZero;
-  };
 
   static PassRefPtr<FontFallbackList> create() {
     return adoptRef(new FontFallbackList());
@@ -104,17 +81,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   }
   const FontData* fontDataAt(const FontDescription&, unsigned index) const;
 
-  GlyphPageTreeNodeBase* getPageNode(unsigned pageNumber) const {
-    return pageNumber ? m_pages.get(pageNumber) : m_pageZero;
-  }
-
-  void setPageNode(unsigned pageNumber, GlyphPageTreeNodeBase* node) {
-    if (pageNumber)
-      m_pages.set(pageNumber, node);
-    else
-      m_pageZero = node;
-  }
-
   FallbackListCompositeKey compositeKey(const FontDescription&) const;
 
  private:
@@ -129,8 +95,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   void releaseFontData();
 
   mutable Vector<RefPtr<FontData>, 1> m_fontList;
-  GlyphPages m_pages;
-  GlyphPageTreeNodeBase* m_pageZero;
   mutable const SimpleFontData* m_cachedPrimarySimpleFontData;
   Persistent<FontSelector> m_fontSelector;
   unsigned m_fontSelectorVersion;
