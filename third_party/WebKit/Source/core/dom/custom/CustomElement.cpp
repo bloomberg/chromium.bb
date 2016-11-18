@@ -61,13 +61,25 @@ bool CustomElement::isHyphenatedSpecElementName(const AtomicString& name) {
   return hyphenatedSpecElementNames.contains(name);
 }
 
-bool CustomElement::shouldCreateCustomElement(const AtomicString& localName) {
-  return RuntimeEnabledFeatures::customElementsV1Enabled() &&
-         isValidName(localName);
+bool CustomElement::shouldCreateCustomElement(const AtomicString& name) {
+  return RuntimeEnabledFeatures::customElementsV1Enabled() && isValidName(name);
 }
 
 bool CustomElement::shouldCreateCustomElement(const QualifiedName& tagName) {
   return shouldCreateCustomElement(tagName.localName()) &&
+         tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
+}
+
+bool CustomElement::shouldCreateCustomizedBuiltinElement(
+    const AtomicString& localName) {
+  return htmlElementTypeForTag(localName) !=
+             HTMLElementType::kHTMLUnknownElement &&
+         RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+}
+
+bool CustomElement::shouldCreateCustomizedBuiltinElement(
+    const QualifiedName& tagName) {
+  return shouldCreateCustomizedBuiltinElement(tagName.localName()) &&
          tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
 }
 
@@ -81,26 +93,36 @@ static CustomElementDefinition* definitionFor(
 
 HTMLElement* CustomElement::createCustomElementSync(
     Document& document,
+    const QualifiedName& tagName) {
+  CustomElementDefinition* definition = nullptr;
+  CustomElementRegistry* registry = CustomElement::registry(document);
+  if (registry) {
+    definition = registry->definitionFor(
+        CustomElementDescriptor(tagName.localName(), tagName.localName()));
+  }
+  return createCustomElementSync(document, tagName, definition);
+}
+
+HTMLElement* CustomElement::createCustomElementSync(
+    Document& document,
     const AtomicString& localName,
-    const AtomicString& is) {
+    CustomElementDefinition* definition) {
   return createCustomElementSync(
       document,
-      QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI), is);
+      QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI),
+      definition);
 }
 
 // https://dom.spec.whatwg.org/#concept-create-element
 HTMLElement* CustomElement::createCustomElementSync(
     Document& document,
     const QualifiedName& tagName,
-    const AtomicString& is) {
-  const AtomicString& name =
-      (is.isNull() || is.isEmpty()) ? tagName.localName() : is;
-  DCHECK(shouldCreateCustomElement(name));
-  const CustomElementDescriptor desc(name, tagName.localName());
-  CustomElementDefinition* definition = definitionFor(document, desc);
+    CustomElementDefinition* definition) {
+  DCHECK(shouldCreateCustomElement(tagName) ||
+         shouldCreateCustomizedBuiltinElement(tagName));
   HTMLElement* element;
 
-  if (definition && desc.isAutonomous()) {
+  if (definition && definition->descriptor().isAutonomous()) {
     // 6. If definition is non-null and we have an autonomous custom element
     element = definition->createElementSync(document, tagName);
   } else if (definition) {
@@ -135,10 +157,7 @@ HTMLElement* CustomElement::createCustomElementAsync(
 HTMLElement* CustomElement::createUndefinedElement(
     Document& document,
     const QualifiedName& tagName) {
-  bool shouldCreateBuiltin =
-      htmlElementTypeForTag(tagName.localName()) !=
-          HTMLElementType::kHTMLUnknownElement &&
-      RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+  bool shouldCreateBuiltin = shouldCreateCustomizedBuiltinElement(tagName);
   DCHECK(shouldCreateCustomElement(tagName) || shouldCreateBuiltin);
 
   HTMLElement* element;

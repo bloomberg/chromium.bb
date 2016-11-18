@@ -675,12 +675,14 @@ Element* Document::createElement(const AtomicString& name,
     // 2. If the context object is an HTML document, let localName be
     // converted to ASCII lowercase.
     AtomicString localName = convertLocalName(name);
-    if (CustomElement::shouldCreateCustomElement(localName))
-      return CustomElement::createCustomElementSync(*this, localName);
+    if (CustomElement::shouldCreateCustomElement(localName)) {
+      return CustomElement::createCustomElementSync(
+          *this,
+          QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI));
+    }
     return HTMLElementFactory::createHTMLElement(localName, *this, 0,
                                                  CreatedByCreateElement);
   }
-
   return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
 
@@ -760,8 +762,8 @@ Element* Document::createElement(const AtomicString& localName,
   Element* element;
 
   if (definition) {
-    element =
-        CustomElement::createCustomElementSync(*this, convertedLocalName, name);
+    element = CustomElement::createCustomElementSync(*this, convertedLocalName,
+                                                     definition);
   } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
     element = registrationContext()->createCustomTagElement(
         *this, QualifiedName(nullAtom, convertedLocalName, xhtmlNamespaceURI));
@@ -869,7 +871,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI,
   Element* element;
 
   if (CustomElement::shouldCreateCustomElement(qName) || createV1Builtin) {
-    element = CustomElement::createCustomElementSync(*this, qName, is);
+    element = CustomElement::createCustomElementSync(*this, qName, definition);
   } else if (V0CustomElement::isValidName(qName.localName()) &&
              registrationContext()) {
     element = registrationContext()->createCustomTagElement(*this, qName);
