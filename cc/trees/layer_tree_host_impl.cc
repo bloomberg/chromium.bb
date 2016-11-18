@@ -1828,6 +1828,9 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
     SetNeedsRedraw();
   }
 
+  if (input_handler_client_)
+    input_handler_client_->DeliverInputForBeginFrame();
+
   Animate();
 
   for (auto* it : video_frame_controllers_)

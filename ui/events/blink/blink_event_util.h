@@ -27,6 +27,12 @@ struct GestureEventData;
 struct GestureEventDetails;
 class MotionEvent;
 
+bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
+                 const blink::WebInputEvent& event);
+
+void Coalesce(const blink::WebInputEvent& event_to_coalesce,
+              blink::WebInputEvent* event);
+
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
     bool may_cause_scrolling);
@@ -73,6 +79,10 @@ int WebEventModifiersToEventFlags(int modifiers);
 
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
     ui::DomCode code);
+
+bool IsGestureScollOrPinch(blink::WebInputEvent::Type);
+
+bool IsContinuousGestureEvent(blink::WebInputEvent::Type);
 
 }  // namespace ui
 

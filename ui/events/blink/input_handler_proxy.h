@@ -15,16 +15,24 @@
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
+#include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace ui {
 
 namespace test {
 class InputHandlerProxyTest;
+class InputHandlerProxyEventQueueTest;
 }
 
+class CompositorThreadEventQueue;
+class EventWithCallback;
 class InputHandlerProxyClient;
 class InputScrollElasticityController;
 class SynchronousInputHandler;
@@ -81,6 +89,7 @@ class InputHandlerProxy
       float page_scale_factor,
       float min_page_scale_factor,
       float max_page_scale_factor) override;
+  void DeliverInputForBeginFrame() override;
 
   // SynchronousInputHandlerProxy implementation.
   void SetOnlySynchronouslyAnimateRootFlings(
@@ -105,6 +114,11 @@ class InputHandlerProxy
 
  private:
   friend class test::InputHandlerProxyTest;
+  friend class test::InputHandlerProxyEventQueueTest;
+
+  void DispatchSingleInputEvent(std::unique_ptr<EventWithCallback>,
+                                const base::TimeTicks);
+  void DispatchQueuedInputEvents();
 
   // Helper functions for handling more complicated input events.
   EventDisposition HandleMouseWheel(
@@ -162,6 +176,8 @@ class InputHandlerProxy
   void HandleScrollElasticityOverscroll(
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
+
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
   std::unique_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
@@ -228,6 +244,11 @@ class InputHandlerProxy
   // bundled in the event ack, saving an IPC.  Note that we must continue
   // supporting overscroll IPC notifications due to fling animation updates.
   std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
+
+  std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
+  bool has_ongoing_compositor_scroll_pinch_;
+
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

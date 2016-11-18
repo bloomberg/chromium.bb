@@ -12,13 +12,18 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/compositor_thread_event_queue.h"
 #include "ui/events/blink/did_overscroll_params.h"
+#include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -61,6 +66,8 @@ const double kMinBoostTouchScrollSpeedSquare = 150 * 150.;
 // are received. The default value on Android native views is 40ms, but we use a
 // slightly increased value to accomodate small IPC message delays.
 const double kFlingBoostTimeoutDelaySeconds = 0.05;
+
+const size_t kTenSeconds = 10 * 1000 * 1000;
 
 gfx::Vector2dF ToClientScrollIncrement(const WebFloatSize& increment) {
   return gfx::Vector2dF(-increment.width, -increment.height);
@@ -242,7 +249,9 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       smooth_scroll_enabled_(false),
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
       touch_start_result_(kEventDispositionUndefined),
-      current_overscroll_params_(nullptr) {
+      current_overscroll_params_(nullptr),
+      has_ongoing_compositor_scroll_pinch_(false),
+      tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
   DCHECK(client);
   input_handler_->BindToClient(this);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
@@ -251,6 +260,10 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
     scroll_elasticity_controller_.reset(
         new InputScrollElasticityController(scroll_elasticity_helper));
   }
+  compositor_event_queue_ =
+      base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)
+          ? base::MakeUnique<CompositorThreadEventQueue>()
+          : nullptr;
 }
 
 InputHandlerProxy::~InputHandlerProxy() {}
@@ -275,15 +288,102 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "HandleInputEventImpl");
 
-  ui::LatencyInfo monitored_latency_info = latency_info;
+  std::unique_ptr<EventWithCallback> event_with_callback =
+      base::MakeUnique<EventWithCallback>(std::move(event), latency_info,
+                                          tick_clock_->NowTicks(), callback);
+
+  // Note: Other input can race ahead of gesture input as they don't have to go
+  // through the queue, but we believe it's OK to do so.
+  if (!compositor_event_queue_ ||
+      !IsGestureScollOrPinch(event_with_callback->event().type)) {
+    DispatchSingleInputEvent(std::move(event_with_callback),
+                             tick_clock_->NowTicks());
+    return;
+  }
+
+  if (has_ongoing_compositor_scroll_pinch_) {
+    bool needs_animate_input = compositor_event_queue_->empty();
+    compositor_event_queue_->Queue(std::move(event_with_callback),
+                                   tick_clock_->NowTicks());
+    if (needs_animate_input)
+      input_handler_->SetNeedsAnimateInput();
+    return;
+  }
+
+  // We have to dispatch the event to know whether the gesture sequence will be
+  // handled by the compositor or not.
+  DispatchSingleInputEvent(std::move(event_with_callback),
+                           tick_clock_->NowTicks());
+}
+
+void InputHandlerProxy::DispatchSingleInputEvent(
+    std::unique_ptr<EventWithCallback> event_with_callback,
+    const base::TimeTicks now) {
+  if (compositor_event_queue_ &&
+      IsGestureScollOrPinch(event_with_callback->event().type)) {
+    // Report the coalesced count only for continuous events to avoid the noise
+    // from non-continuous events.
+    if (IsContinuousGestureEvent(event_with_callback->event().type)) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.CompositorThreadEventQueue.Continuous.HeadQueueingTime",
+          (now - event_with_callback->creation_timestamp()).InMicroseconds(), 1,
+          kTenSeconds, 50);
+
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.CompositorThreadEventQueue.Continuous.TailQueueingTime",
+          (now - event_with_callback->last_coalesced_timestamp())
+              .InMicroseconds(),
+          1, kTenSeconds, 50);
+
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Event.CompositorThreadEventQueue.CoalescedCount",
+          static_cast<int>(event_with_callback->coalesced_count()));
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.CompositorThreadEventQueue.NonContinuous.QueueingTime",
+          (now - event_with_callback->creation_timestamp()).InMicroseconds(), 1,
+          kTenSeconds, 50);
+    }
+  }
+
+  ui::LatencyInfo monitored_latency_info = event_with_callback->latency_info();
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(
           &monitored_latency_info);
 
   current_overscroll_params_.reset();
-  InputHandlerProxy::EventDisposition disposition = HandleInputEvent(*event);
-  callback.Run(disposition, std::move(event), monitored_latency_info,
-               std::move(current_overscroll_params_));
+  InputHandlerProxy::EventDisposition disposition =
+      HandleInputEvent(event_with_callback->event());
+
+  switch (event_with_callback->event().type) {
+    case blink::WebGestureEvent::GestureScrollBegin:
+    case blink::WebGestureEvent::GesturePinchBegin:
+    case blink::WebGestureEvent::GestureScrollUpdate:
+    case blink::WebGestureEvent::GesturePinchUpdate:
+      has_ongoing_compositor_scroll_pinch_ = disposition == DID_HANDLE;
+      break;
+
+    case blink::WebGestureEvent::GestureScrollEnd:
+    case blink::WebGestureEvent::GesturePinchEnd:
+      has_ongoing_compositor_scroll_pinch_ = false;
+      break;
+    default:
+      break;
+  }
+
+  // Will run callback for every original events.
+  event_with_callback->RunCallbacks(disposition, monitored_latency_info,
+                                    std::move(current_overscroll_params_));
+}
+
+void InputHandlerProxy::DispatchQueuedInputEvents() {
+  if (!compositor_event_queue_)
+    return;
+
+  // Calling |NowTicks()| is expensive so we only want to do it once.
+  base::TimeTicks now = tick_clock_->NowTicks();
+  while (!compositor_event_queue_->empty())
+    DispatchSingleInputEvent(compositor_event_queue_->Pop(), now);
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
@@ -1138,6 +1238,10 @@ void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
   }
 }
 
+void InputHandlerProxy::DeliverInputForBeginFrame() {
+  DispatchQueuedInputEvents();
+}
+
 void InputHandlerProxy::SetOnlySynchronouslyAnimateRootFlings(
     SynchronousInputHandler* synchronous_input_handler) {
   allow_root_animate_ = !synchronous_input_handler;
@@ -1420,6 +1524,11 @@ void InputHandlerProxy::HandleScrollElasticityOverscroll(
       base::Bind(&InputScrollElasticityController::ObserveGestureEventAndResult,
                  scroll_elasticity_controller_->GetWeakPtr(), gesture_event,
                  scroll_result));
+}
+
+void InputHandlerProxy::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  tick_clock_ = std::move(tick_clock);
 }
 
 }  // namespace ui

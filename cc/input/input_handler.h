@@ -61,6 +61,7 @@ class CC_EXPORT InputHandlerClient {
       float page_scale_factor,
       float min_page_scale_factor,
       float max_page_scale_factor) = 0;
+  virtual void DeliverInputForBeginFrame() = 0;
 
  protected:
   InputHandlerClient() {}

@@ -10,31 +10,11 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
-namespace internal {
-
-bool CONTENT_EXPORT CanCoalesce(const blink::WebMouseEvent& event_to_coalesce,
-                                const blink::WebMouseEvent& event);
-void CONTENT_EXPORT Coalesce(const blink::WebMouseEvent& event_to_coalesce,
-                             blink::WebMouseEvent* event);
-bool CONTENT_EXPORT
-CanCoalesce(const blink::WebMouseWheelEvent& event_to_coalesce,
-            const blink::WebMouseWheelEvent& event);
-void CONTENT_EXPORT Coalesce(const blink::WebMouseWheelEvent& event_to_coalesce,
-                             blink::WebMouseWheelEvent* event);
-bool CONTENT_EXPORT CanCoalesce(const blink::WebTouchEvent& event_to_coalesce,
-                                const blink::WebTouchEvent& event);
-void CONTENT_EXPORT Coalesce(const blink::WebTouchEvent& event_to_coalesce,
-                             blink::WebTouchEvent* event);
-bool CONTENT_EXPORT CanCoalesce(const blink::WebGestureEvent& event_to_coalesce,
-                                const blink::WebGestureEvent& event);
-void CONTENT_EXPORT Coalesce(const blink::WebGestureEvent& event_to_coalesce,
-                             blink::WebGestureEvent* event);
-
-}  // namespace internal
 
 class ScopedWebInputEventWithLatencyInfo {
  public:
@@ -78,7 +58,7 @@ class EventWithLatencyInfo {
     DCHECK_EQ(sizeof(T), event.size);
     DCHECK_EQ(sizeof(T), other.event.size);
 
-    return internal::CanCoalesce(other.event, event);
+    return ui::CanCoalesce(other.event, event);
   }
 
   void CoalesceWith(const EventWithLatencyInfo& other) {
@@ -89,7 +69,7 @@ class EventWithLatencyInfo {
     // New events get coalesced into older events, and the newer timestamp
     // should always be preserved.
     const double time_stamp_seconds = other.event.timeStampSeconds;
-    internal::Coalesce(other.event, &event);
+    ui::Coalesce(other.event, &event);
     event.timeStampSeconds = time_stamp_seconds;
 
     // When coalescing two input events, we keep the oldest LatencyInfo
