@@ -22,7 +22,8 @@ namespace blimp {
 
 sk_sp<const SkPicture> CreateSkPicture(SkColor color) {
   SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(SkRect::MakeWH(1, 1));
+  sk_sp<SkCanvas> canvas =
+      sk_ref_sp(recorder.beginRecording(SkRect::MakeWH(1, 1)));
   canvas->drawColor(color);
   return recorder.finishRecordingAsPicture();
 }

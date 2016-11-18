@@ -58,9 +58,8 @@ bool TransportDIB::is_valid_handle(Handle dib) {
   return dib.IsValid();
 }
 
-std::unique_ptr<SkCanvas> TransportDIB::GetPlatformCanvas(int w,
-                                                          int h,
-                                                          bool opaque) {
+SkCanvas* TransportDIB::GetPlatformCanvas(int w, int h,
+                                                      bool opaque) {
   // This DIB already mapped the file into this process, but PlatformCanvas
   // will map it again.
   DCHECK(!memory()) << "Mapped file twice in the same process.";
@@ -68,7 +67,7 @@ std::unique_ptr<SkCanvas> TransportDIB::GetPlatformCanvas(int w,
   // We can't check the canvas size before mapping, but it's safe because
   // Windows will fail to map the section if the dimensions of the canvas
   // are too large.
-  std::unique_ptr<SkCanvas> canvas = skia::CreatePlatformCanvas(
+  SkCanvas* canvas = skia::CreatePlatformCanvas(
       w, h, opaque, shared_memory_.handle().GetHandle(),
       skia::RETURN_NULL_ON_FAILURE);
 

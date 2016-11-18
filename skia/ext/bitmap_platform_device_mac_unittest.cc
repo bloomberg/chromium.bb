@@ -32,8 +32,7 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithTranslate) {
   SkMatrix transform;
   transform.setTranslate(50, 140);
 
-  std::unique_ptr<SkCanvas> canvas =
-      skia::CreateCanvas(bitmap_, CRASH_ON_FAILURE);
+  sk_sp<SkCanvas> canvas(skia::CreateCanvas(bitmap_, CRASH_ON_FAILURE));
   canvas->setMatrix(transform);
 
   ScopedPlatformPaint p(canvas.get());
@@ -51,8 +50,7 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithScale) {
   SkMatrix transform;
   transform.setScale(0.5, 0.5);
 
-  std::unique_ptr<SkCanvas> canvas =
-      skia::CreateCanvas(bitmap_, CRASH_ON_FAILURE);
+  sk_sp<SkCanvas> canvas(skia::CreateCanvas(bitmap_, CRASH_ON_FAILURE));
   canvas->setMatrix(transform);
 
   ScopedPlatformPaint p(canvas.get());

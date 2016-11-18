@@ -89,9 +89,7 @@ class GFX_EXPORT Canvas {
   // Creates a Canvas backed by an |sk_canvas| with |image_scale_|.
   // |sk_canvas| is assumed to be already scaled based on |image_scale|
   // so no additional scaling is applied.
-  // Note: the caller must ensure that sk_canvas outlives this object, or until
-  // RecreateBackingCanvas is called.
-  Canvas(SkCanvas* sk_canvas, float image_scale);
+  Canvas(sk_sp<SkCanvas> sk_canvas, float image_scale);
 
   virtual ~Canvas();
 
@@ -483,7 +481,7 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
-  SkCanvas* sk_canvas() { return canvas_; }
+  SkCanvas* sk_canvas() { return canvas_.get(); }
   float image_scale() const { return image_scale_; }
 
  private:
@@ -511,12 +509,7 @@ class GFX_EXPORT Canvas {
   // Canvas::Scale() does not affect |image_scale_|.
   float image_scale_;
 
-  // canvas_ is our active canvas object. Sometimes we are also the owner,
-  // in which case canvas_owner_ will be set. Other times we are just
-  // borrowing someone else's canvas, in which case canvas_ will point there
-  // but canvas_owner_ will be null.
-  std::unique_ptr<SkCanvas> canvas_owner_;
-  SkCanvas* canvas_;
+  sk_sp<SkCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);
 };

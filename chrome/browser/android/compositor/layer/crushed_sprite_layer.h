@@ -49,7 +49,7 @@ class CrushedSpriteLayer : public Layer {
   // Draws the rectangles for |frame| to |canvas|.
   void DrawRectanglesForFrame(ui::CrushedSpriteResource* resource,
                               int frame,
-                              SkCanvas* canvas);
+                              sk_sp<SkCanvas> canvas);
 
   scoped_refptr<cc::UIResourceLayer> layer_;
   int frame_count_;

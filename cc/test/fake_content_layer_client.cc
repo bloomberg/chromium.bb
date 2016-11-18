@@ -58,12 +58,13 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       DisplayItemList::Create(settings);
   display_list->SetRetainVisualRectsForTesting(true);
   SkPictureRecorder recorder;
+  sk_sp<SkCanvas> canvas;
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
        it != draw_rects_.end(); ++it) {
     const gfx::RectF& draw_rect = it->first;
     const SkPaint& paint = it->second;
-    SkCanvas* canvas = recorder.beginRecording(gfx::RectFToSkRect(draw_rect));
+    canvas = sk_ref_sp(recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
     canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         ToEnclosingRect(draw_rect), recorder.finishRecordingAsPicture());
@@ -75,8 +76,8 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       display_list->CreateAndAppendPairedBeginItem<TransformDisplayItem>(
           it->transform);
     }
-    SkCanvas* canvas =
-        recorder.beginRecording(it->image->width(), it->image->height());
+    canvas = sk_ref_sp(
+        recorder.beginRecording(it->image->width(), it->image->height()));
     canvas->drawImage(it->image.get(), it->point.x(), it->point.y(),
                       &it->paint);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -92,7 +93,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     while (!draw_rect.IsEmpty()) {
       SkPaint paint;
       paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
-      SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(draw_rect));
+      canvas = sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(draw_rect)));
       canvas->drawIRect(gfx::RectToSkIRect(draw_rect), paint);
       display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
           draw_rect, recorder.finishRecordingAsPicture());

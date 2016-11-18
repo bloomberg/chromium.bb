@@ -60,11 +60,8 @@ NativeDrawingContext BitmapPlatformDevice::BeginPlatformPaint(
 
 // PlatformCanvas impl
 
-std::unique_ptr<SkCanvas> CreatePlatformCanvas(int width,
-                                               int height,
-                                               bool is_opaque,
-                                               uint8_t* data,
-                                               OnFailureType failureType) {
+SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
+                               uint8_t* data, OnFailureType failureType) {
   sk_sp<SkBaseDevice> dev(
       BitmapPlatformDevice::Create(width, height, is_opaque, data));
   return CreateCanvas(dev, failureType);

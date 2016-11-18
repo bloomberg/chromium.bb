@@ -8,7 +8,6 @@
 
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "jni/JavaBrowserViewRendererHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -36,7 +35,7 @@ class JavaCanvasHolder : public SoftwareCanvasHolder {
 
  private:
   AwPixelInfo* pixels_;
-  std::unique_ptr<SkCanvas> canvas_;
+  sk_sp<SkCanvas> canvas_;
   DISALLOW_COPY_AND_ASSIGN(JavaCanvasHolder);
 };
 
@@ -50,7 +49,8 @@ JavaCanvasHolder::JavaCanvasHolder(JNIEnv* env,
   if (!pixels_ || !pixels_->state)
     return;
 
-  canvas_ = SkCanvasStateUtils::MakeFromCanvasState(pixels_->state);
+  canvas_ = sk_sp<SkCanvas>(
+      SkCanvasStateUtils::CreateFromCanvasState(pixels_->state));
   // Workarounds for http://crbug.com/271096: SW draw only supports
   // translate & scale transforms, and a simple rectangular clip.
   if (canvas_ && (!canvas_->isClipRect() ||
@@ -88,7 +88,7 @@ class AuxiliaryCanvasHolder : public SoftwareCanvasHolder {
   ScopedJavaLocalRef<jobject> jbitmap_;
   gfx::Vector2d scroll_;
   std::unique_ptr<SkBitmap> bitmap_;
-  std::unique_ptr<SkCanvas> canvas_;
+  sk_sp<SkCanvas> canvas_;
   DISALLOW_COPY_AND_ASSIGN(AuxiliaryCanvasHolder);
 };
 
@@ -121,7 +121,7 @@ AuxiliaryCanvasHolder::AuxiliaryCanvasHolder(
       SkImageInfo::MakeN32Premul(bitmap_info.width, bitmap_info.height);
   bitmap_.reset(new SkBitmap);
   bitmap_->installPixels(info, pixels, bitmap_info.stride);
-  canvas_ = base::MakeUnique<SkCanvas>(*bitmap_);
+  canvas_ = sk_make_sp<SkCanvas>(*bitmap_);
 }
 
 AuxiliaryCanvasHolder::~AuxiliaryCanvasHolder() {

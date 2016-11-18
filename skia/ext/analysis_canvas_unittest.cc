@@ -329,7 +329,7 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
   SkPictureRecorder recorder;
 
   // Create a picture with 3 commands, last of which is non-solid.
-  SkCanvas* record_canvas = recorder.beginRecording(256, 256, &factory);
+  sk_sp<SkCanvas> record_canvas = sk_ref_sp(recorder.beginRecording(256, 256, &factory));
 
   std::string text = "text";
   SkPoint point = SkPoint::Make(SkIntToScalar(25), SkIntToScalar(25));
