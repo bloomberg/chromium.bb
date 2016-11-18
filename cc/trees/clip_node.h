@@ -59,14 +59,14 @@ struct CC_EXPORT ClipNode {
   int target_transform_id;
 
   // The id of the effect node that defines the clip node's target space.
+  // TODO(crbug.com/642581 crbug.com/642584): As we progress toward SPv2 and
+  // layer list mode, there may be layers having the same clip but draw onto
+  // different target. Target information shall be removed from here.
   int target_effect_id;
 
   // When true, |clip_in_target_space| does not include clips from ancestor
   // nodes.
   bool layer_clipping_uses_only_local_clip : 1;
-
-  // True if target surface needs to be drawn with a clip applied.
-  bool target_is_clipped : 1;
 
   // True if layers with this clip tree node need to be drawn with a clip
   // applied.

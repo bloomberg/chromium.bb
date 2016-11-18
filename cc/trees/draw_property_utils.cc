@@ -397,7 +397,8 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
     // When both the layer and the target are unclipped, we only have to apply
     // the viewport clip.
     const bool fully_visible =
-        !clip_node->layers_are_clipped && !clip_node->target_is_clipped;
+        !clip_node->layers_are_clipped &&
+        !effect_tree.Node(clip_node->target_effect_id)->surface_is_clipped;
 
     if (fully_visible) {
       if (!transform_node->ancestors_are_invertible) {
@@ -748,6 +749,9 @@ void ComputeClips(PropertyTrees* property_trees,
         transform_tree.Node(clip_node->transform_id);
     ClipNode* parent_clip_node = clip_tree->parent(clip_node);
 
+    bool target_is_clipped =
+        effect_tree.Node(clip_node->target_effect_id)->surface_is_clipped;
+
     gfx::Transform parent_to_current;
     const TransformNode* parent_target_transform_node =
         transform_tree.Node(parent_clip_node->target_transform_id);
@@ -807,7 +811,7 @@ void ComputeClips(PropertyTrees* property_trees,
             gfx::IntersectRects(clip_node->clip_in_target_space,
                                 parent_combined_clip_in_target_space);
       } else {
-        DCHECK(!clip_node->target_is_clipped);
+        DCHECK(!target_is_clipped);
         DCHECK(!clip_node->layers_are_clipped);
         clip_node->combined_clip_in_target_space =
             parent_combined_clip_in_target_space;
@@ -823,7 +827,7 @@ void ComputeClips(PropertyTrees* property_trees,
       if (!non_root_surfaces_enabled) {
         clip_node->clip_in_target_space =
             parent_clip_node->clip_in_target_space;
-      } else if (!clip_node->target_is_clipped) {
+      } else if (!target_is_clipped) {
         clip_node->clip_in_target_space = parent_clip_in_target_space;
       } else {
         // Render Surface applies clip and the owning layer itself applies
@@ -1190,14 +1194,6 @@ static void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
   render_surface->SetDrawTransform(render_surface_transform);
 }
 
-static void SetSurfaceIsClipped(const ClipNode* clip_node,
-                                RenderSurfaceImpl* render_surface) {
-  DCHECK(render_surface->OwningLayerId() == clip_node->owner_id)
-      << "we now create clip node for every render surface";
-
-  render_surface->SetIsClipped(clip_node->target_is_clipped);
-}
-
 static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
                                const PropertyTrees* property_trees,
                                RenderSurfaceImpl* render_surface) {
@@ -1345,10 +1341,9 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
 
 void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                   RenderSurfaceImpl* render_surface) {
-  const ClipNode* clip_node =
-      property_trees->clip_tree.Node(render_surface->ClipTreeIndex());
-
-  SetSurfaceIsClipped(clip_node, render_surface);
+  const EffectNode* effect_node =
+      property_trees->effect_tree.Node(render_surface->EffectTreeIndex());
+  render_surface->SetIsClipped(effect_node->surface_is_clipped);
   SetSurfaceDrawOpacity(property_trees->effect_tree, render_surface);
   SetSurfaceDrawTransform(property_trees, render_surface);
   render_surface->SetScreenSpaceTransform(
@@ -1356,6 +1351,8 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
           render_surface->TransformTreeIndex(),
           render_surface->EffectTreeIndex()));
 
+  const ClipNode* clip_node =
+      property_trees->clip_tree.Node(render_surface->ClipTreeIndex());
   SetSurfaceClipRect(property_trees->clip_tree.parent(clip_node),
                      property_trees, render_surface);
 }

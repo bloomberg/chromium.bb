@@ -52,7 +52,6 @@ struct DataForRecursion {
   bool affected_by_inner_viewport_bounds_delta;
   bool affected_by_outer_viewport_bounds_delta;
   bool should_flatten;
-  bool target_is_clipped;
   bool is_hidden;
   uint32_t main_thread_scrolling_reasons;
   bool scroll_tree_parent_created_by_uninheritable_criteria;
@@ -374,12 +373,15 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     // A surface with unclipped descendants cannot be clipped by its ancestor
     // clip at draw time since the unclipped descendants aren't affected by the
     // ancestor clip.
-    data_for_children->target_is_clipped =
+    EffectNode* effect_node =
+        data_for_children->property_trees->effect_tree.Node(
+            data_for_children->render_target);
+    DCHECK(effect_node->owner_id == layer->id());
+    effect_node->surface_is_clipped =
         ancestor_clips_subtree && !NumUnclippedDescendants(layer);
   } else {
     // Without a new render surface, layer clipping state from ancestors needs
     // to continue to propagate.
-    data_for_children->target_is_clipped = data_from_ancestor.target_is_clipped;
     layers_are_clipped = ancestor_clips_subtree;
   }
 
@@ -434,7 +436,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     else
       node.clip_type = ClipNode::ClipType::NONE;
     node.resets_clip = has_unclipped_surface;
-    node.target_is_clipped = data_for_children->target_is_clipped;
     node.layers_are_clipped = layers_are_clipped;
     node.layers_are_clipped_when_surfaces_disabled =
         layers_are_clipped_when_surfaces_disabled;
@@ -1389,7 +1390,6 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.affected_by_inner_viewport_bounds_delta = false;
   data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
-  data_for_recursion.target_is_clipped = false;
   data_for_recursion.is_hidden = false;
   data_for_recursion.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;

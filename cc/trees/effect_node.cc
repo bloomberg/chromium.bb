@@ -18,6 +18,7 @@ EffectNode::EffectNode()
       blend_mode(SkXfermode::kSrcOver_Mode),
       has_render_surface(false),
       render_surface(nullptr),
+      surface_is_clipped(false),
       has_copy_request(false),
       hidden_by_backface_visibility(false),
       double_sided(false),
@@ -42,6 +43,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          owner_id == other.owner_id && opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
          has_render_surface == other.has_render_surface &&
+         surface_is_clipped == other.surface_is_clipped &&
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
          background_filters == other.background_filters &&
@@ -71,6 +73,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("owner_id", owner_id);
   value->SetDouble("opacity", opacity);
   value->SetBoolean("has_render_surface", has_render_surface);
+  value->SetBoolean("surface_is_clipped", surface_is_clipped);
   value->SetBoolean("has_copy_request", has_copy_request);
   value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("is_drawn", is_drawn);
