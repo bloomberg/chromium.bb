@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -23,6 +24,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -990,6 +992,61 @@ TEST_F(AssociatedInterfaceTest, AssociatedRequestResetWithReason) {
 
   request.ResetWithReason(789u, "long time no see");
 
+  run_loop.Run();
+}
+
+TEST_F(AssociatedInterfaceTest, ThreadSafeAssociatedInterfacePtr) {
+  IntegerSenderConnectionPtr connection_ptr;
+  IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
+
+  IntegerSenderAssociatedPtr sender;
+  connection_ptr->GetSender(
+      GetProxy(&sender, connection_ptr.associated_group()));
+
+  scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr> thread_safe_sender =
+      ThreadSafeIntegerSenderAssociatedPtr::Create(std::move(sender));
+
+  {
+    // Test the thread safe pointer can be used from the interface ptr thread.
+    int32_t echoed_value = 0;
+    base::RunLoop run_loop;
+    (*thread_safe_sender)
+        ->Echo(123, base::Bind(&CaptureInt32, &echoed_value,
+                               run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(123, echoed_value);
+  }
+
+  // Test the thread safe pointer can be used from another thread.
+  base::RunLoop run_loop;
+  base::Thread other_thread("service test thread");
+  other_thread.Start();
+
+  auto run_method = base::Bind(
+      [](const scoped_refptr<base::TaskRunner>& main_task_runner,
+         const base::Closure& quit_closure,
+         const scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr>&
+             thread_safe_sender) {
+        auto done_callback = base::Bind(
+            [](const scoped_refptr<base::TaskRunner>& main_task_runner,
+               const base::Closure& quit_closure,
+               base::PlatformThreadId thread_id, int32_t result) {
+              EXPECT_EQ(123, result);
+              // Validate the callback is invoked on the calling thread.
+              EXPECT_EQ(thread_id, base::PlatformThread::CurrentId());
+              // Notify the run_loop to quit.
+              main_task_runner->PostTask(FROM_HERE, quit_closure);
+            });
+        (*thread_safe_sender)
+            ->Echo(123,
+                   base::Bind(done_callback, main_task_runner, quit_closure,
+                              base::PlatformThread::CurrentId()));
+      },
+      base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
+      thread_safe_sender);
+  other_thread.message_loop()->task_runner()->PostTask(FROM_HERE, run_method);
+
+  // Block until the method callback is called on the background thread.
   run_loop.Run();
 }
 

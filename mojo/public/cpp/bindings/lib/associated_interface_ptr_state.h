@@ -142,6 +142,13 @@ class AssociatedInterfacePtrState {
     return endpoint_client_ ? endpoint_client_->associated_group() : nullptr;
   }
 
+  void ForwardMessage(Message message) { endpoint_client_->Accept(&message); }
+
+  void ForwardMessageWithResponder(Message message,
+                                   std::unique_ptr<MessageReceiver> responder) {
+    endpoint_client_->AcceptWithResponder(&message, responder.release());
+  }
+
  private:
   using Proxy = typename Interface::Proxy_;
 

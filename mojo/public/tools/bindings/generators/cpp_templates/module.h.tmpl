@@ -117,6 +117,8 @@ using ThreadSafe{{interface.name}}Ptr =
 using {{interface.name}}Request = mojo::InterfaceRequest<{{interface.name}}>;
 using {{interface.name}}AssociatedPtr =
     mojo::AssociatedInterfacePtr<{{interface.name}}>;
+using ThreadSafe{{interface.name}}AssociatedPtr =
+    mojo::ThreadSafeAssociatedInterfacePtr<{{interface.name}}>;
 using {{interface.name}}AssociatedPtrInfo =
     mojo::AssociatedInterfacePtrInfo<{{interface.name}}>;
 using {{interface.name}}AssociatedRequest =

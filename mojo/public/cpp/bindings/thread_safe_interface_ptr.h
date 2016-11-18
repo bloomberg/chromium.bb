@@ -2,81 +2,80 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_H_
-
-namespace mojo {
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_BASE_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_BASE_H_
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
 #include "mojo/public/cpp/bindings/message.h"
+
+namespace mojo {
 
 struct ThreadSafeInterfacePtrDeleter;
 
-// ThreadSafeInterfacePtr is a version of InterfacePtr that lets caller invoke
-// interface methods from any threads. Callbacks are called on the thread that
+// ThreadSafeInterfacePtr and ThreadSafeAssociatedInterfacePtr are versions of
+// InterfacePtr and AssociatedInterfacePtr that let caller invoke
+// interface methods from any threads. Callbacks are received on the thread that
 // performed the interface call.
-// To create a ThreadSafeInterfacePtr, create first a regular InterfacePtr that
-// you then provide to ThreadSafeInterfacePtr::Create.
-// You can then call methods on the ThreadSafeInterfacePtr from any thread.
 //
-// Ex:
+// To create a ThreadSafeInterfacePtr/ThreadSafeAssociatedInterfacePtr, first
+// create a regular InterfacePtr/AssociatedInterfacePtr that
+// you then provide to ThreadSafeInterfacePtr/AssociatedInterfacePtr::Create.
+// You can then call methods on the
+// ThreadSafeInterfacePtr/AssociatedInterfacePtr instance from any thread.
+//
+// Ex for ThreadSafeInterfacePtr:
 // frob::FrobinatorPtr frobinator;
 // frob::FrobinatorImpl impl(GetProxy(&frobinator));
 // scoped_refptr<frob::ThreadSafeFrobinatorPtr> thread_safe_frobinator =
 //     frob::ThreadSafeFrobinatorPtr::Create(std::move(frobinator));
 // (*thread_safe_frobinator)->FrobinateToTheMax();
 
-template <typename Interface>
-class ThreadSafeInterfacePtr : public MessageReceiverWithResponder,
-    public base::RefCountedThreadSafe<ThreadSafeInterfacePtr<Interface>,
-                                      ThreadSafeInterfacePtrDeleter> {
+template <typename Interface, template <typename> class InterfacePtrType>
+class ThreadSafeInterfacePtrBase
+    : public MessageReceiverWithResponder,
+      public base::RefCountedThreadSafe<
+          ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>,
+          ThreadSafeInterfacePtrDeleter> {
  public:
   using ProxyType = typename Interface::Proxy_;
 
-  using AcceptCallback = base::Callback<void(Message)>;
-  using AcceptWithResponderCallback =
-      base::Callback<void(Message, std::unique_ptr<MessageReceiver>)>;
+  static scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>
+  Create(InterfacePtrType<Interface> interface_ptr) {
+    if (!interface_ptr.is_bound()) {
+      LOG(ERROR) << "Attempting to create a ThreadSafe[Associated]InterfacePtr "
+          "from an unbound InterfacePtr.";
+      return nullptr;
+    }
+    return new ThreadSafeInterfacePtrBase(std::move(interface_ptr),
+                                          base::ThreadTaskRunnerHandle::Get());
+  }
+
+  ~ThreadSafeInterfacePtrBase() override {}
 
   Interface* get() { return &proxy_; }
   Interface* operator->() { return get(); }
   Interface& operator*() { return *get(); }
 
-  static scoped_refptr<ThreadSafeInterfacePtr<Interface>> Create(
-      InterfacePtr<Interface> interface_ptr) {
-    if (!interface_ptr.is_bound()) {
-      LOG(ERROR) << "Attempting to create a ThreadSafeInterfacePtr from an "
-          "unbound InterfacePtr.";
-      return nullptr;
-    }
-    return new ThreadSafeInterfacePtr(std::move(interface_ptr),
-                                      base::ThreadTaskRunnerHandle::Get());
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<ThreadSafeInterfacePtr<Interface>>;
-  friend struct ThreadSafeInterfacePtrDeleter;
-
-  ThreadSafeInterfacePtr(
-      InterfacePtr<Interface> interface_ptr,
+ protected:
+  ThreadSafeInterfacePtrBase(
+      InterfacePtrType<Interface> interface_ptr,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : interface_ptr_task_runner_(task_runner),
         proxy_(this),
-        interface_ptr_(std::move(interface_ptr)) {
-    // Note that it's important we do get the callback after interface_ptr_ has
-    // been set, as they would become invalid if interface_ptr_ is copied.
-    accept_callback_ = interface_ptr_.internal_state()->
-        GetThreadSafePtrAcceptCallback();
-    accept_with_responder_callback_ = interface_ptr_.internal_state()->
-        GetThreadSafePtrAcceptWithResponderCallback();
-  }
+        interface_ptr_(std::move(interface_ptr)),
+        weak_ptr_factory_(this) {}
+
+ private:
+  friend class base::RefCountedThreadSafe<
+      ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>;
+  friend struct ThreadSafeInterfacePtrDeleter;
 
   void DeleteOnCorrectThread() const {
     if (!interface_ptr_task_runner_->BelongsToCurrentThread() &&
@@ -90,7 +89,9 @@ class ThreadSafeInterfacePtr : public MessageReceiverWithResponder,
   bool Accept(Message* message) override {
     interface_ptr_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(accept_callback_, base::Passed(std::move(*message))));
+        base::Bind(&ThreadSafeInterfacePtrBase::AcceptOnInterfacePtrThread,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(std::move(*message))));
     return true;
   }
 
@@ -99,11 +100,22 @@ class ThreadSafeInterfacePtr : public MessageReceiverWithResponder,
     auto forward_responder = base::MakeUnique<ForwardToCallingThread>(
         base::WrapUnique(responder));
     interface_ptr_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(accept_with_responder_callback_,
-                   base::Passed(std::move(*message)),
-                   base::Passed(std::move(forward_responder))));
+        FROM_HERE, base::Bind(&ThreadSafeInterfacePtrBase::
+                                  AcceptWithResponderOnInterfacePtrThread,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(std::move(*message)),
+                              base::Passed(std::move(forward_responder))));
     return true;
+  }
+
+  void AcceptOnInterfacePtrThread(Message message) {
+    interface_ptr_.internal_state()->ForwardMessage(std::move(message));
+  }
+  void AcceptWithResponderOnInterfacePtrThread(
+      Message message,
+      std::unique_ptr<MessageReceiver> responder) {
+    interface_ptr_.internal_state()->ForwardMessageWithResponder(
+        std::move(message), std::move(responder));
   }
 
   class ForwardToCallingThread : public MessageReceiver {
@@ -137,18 +149,27 @@ class ThreadSafeInterfacePtr : public MessageReceiverWithResponder,
 
   scoped_refptr<base::SingleThreadTaskRunner> interface_ptr_task_runner_;
   ProxyType proxy_;
-  AcceptCallback accept_callback_;
-  AcceptWithResponderCallback accept_with_responder_callback_;
-  InterfacePtr<Interface> interface_ptr_;
+  InterfacePtrType<Interface> interface_ptr_;
+  base::WeakPtrFactory<ThreadSafeInterfacePtrBase> weak_ptr_factory_;
 };
 
 struct ThreadSafeInterfacePtrDeleter {
-  template <typename Interface>
-  static void Destruct(const ThreadSafeInterfacePtr<Interface>* interface_ptr) {
+  template <typename Interface, template <typename> class InterfacePtrType>
+  static void Destruct(
+      const ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>*
+          interface_ptr) {
     interface_ptr->DeleteOnCorrectThread();
   }
 };
 
+template <typename Interface>
+using ThreadSafeAssociatedInterfacePtr =
+    ThreadSafeInterfacePtrBase<Interface, AssociatedInterfacePtr>;
+
+template <typename Interface>
+using ThreadSafeInterfacePtr =
+    ThreadSafeInterfacePtrBase<Interface, InterfacePtr>;
+
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_BASE_H_

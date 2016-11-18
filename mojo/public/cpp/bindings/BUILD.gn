@@ -144,6 +144,7 @@ component("bindings") {
     "sync_call_restrictions.h",
     "sync_handle_registry.h",
     "sync_handle_watcher.h",
+    "thread_safe_interface_ptr.h",
     "type_converter.h",
     "union_traits.h",
   ]

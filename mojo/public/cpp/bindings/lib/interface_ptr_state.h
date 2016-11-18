@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -210,7 +209,7 @@ class InterfacePtrState<Interface, false> {
 template <typename Interface>
 class InterfacePtrState<Interface, true> {
  public:
-  InterfacePtrState() : version_(0u), weak_ptr_factory_(this) {}
+  InterfacePtrState() : version_(0u) {}
 
   ~InterfacePtrState() {
     endpoint_client_.reset();
@@ -332,15 +331,15 @@ class InterfacePtrState<Interface, true> {
     router_->EnableTestingMode();
   }
 
-  base::Callback<void(Message)> GetThreadSafePtrAcceptCallback() {
-    return base::Bind(&InterfacePtrState::ForwardMessage,
-                      weak_ptr_factory_.GetWeakPtr());
+  void ForwardMessage(Message message) {
+    ConfigureProxyIfNecessary();
+    endpoint_client_->Accept(&message);
   }
 
-  base::Callback<void(Message, std::unique_ptr<MessageReceiver>)>
-  GetThreadSafePtrAcceptWithResponderCallback() {
-    return base::Bind(&InterfacePtrState::ForwardMessageWithResponder,
-                      weak_ptr_factory_.GetWeakPtr());
+  void ForwardMessageWithResponder(Message message,
+                                   std::unique_ptr<MessageReceiver> responder) {
+    ConfigureProxyIfNecessary();
+    endpoint_client_->AcceptWithResponder(&message, responder.release());
   }
 
  private:
@@ -383,17 +382,6 @@ class InterfacePtrState<Interface, true> {
     callback.Run(version);
   }
 
-  void ForwardMessage(Message message) {
-    ConfigureProxyIfNecessary();
-    endpoint_client_->Accept(&message);
-  }
-
-  void ForwardMessageWithResponder(Message message,
-                                   std::unique_ptr<MessageReceiver> responder) {
-    ConfigureProxyIfNecessary();
-    endpoint_client_->AcceptWithResponder(&message, responder.release());
-  }
-
   scoped_refptr<MultiplexRouter> router_;
 
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
@@ -406,8 +394,6 @@ class InterfacePtrState<Interface, true> {
   scoped_refptr<base::SingleThreadTaskRunner> runner_;
 
   uint32_t version_;
-
-  base::WeakPtrFactory<InterfacePtrState> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfacePtrState);
 };
