@@ -99,7 +99,7 @@ public class VrShellDelegate {
             public void onContentChanged(Tab tab) {
                 if (tab.getNativePage() != null || tab.isShowingSadTab()) {
                     // For now we don't handle native pages. crbug.com/661609
-                    exitVRIfNecessary(true);
+                    shutdownVR(true, true);
                 }
             }
 
@@ -262,7 +262,7 @@ public class VrShellDelegate {
         // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
         // should no longer exit the shell outright. Need a way to determine
         // how VrShell was created.
-        shutdownVR(true);
+        shutdownVR(true, !isVrShellEnabled());
         return true;
     }
 
@@ -334,7 +334,7 @@ public class VrShellDelegate {
     public boolean exitVRIfNecessary(boolean returnTo2D) {
         if (!mVrAvailable) return false;
         if (!mInVr) return false;
-        shutdownVR(returnTo2D);
+        shutdownVR(returnTo2D, false);
         return true;
     }
 
@@ -403,11 +403,15 @@ public class VrShellDelegate {
     /**
      * Exits VR Shell, performing all necessary cleanup.
      */
-    private void shutdownVR(boolean returnTo2D) {
+    private void shutdownVR(boolean returnTo2D, boolean showTransition) {
         if (!mInVr) return;
         mRequestedWebVR = false;
         if (returnTo2D) {
-            mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent());
+            if (showTransition) {
+                mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent());
+            } else {
+                mVrDaydreamApi.setVrModeEnabled(false);
+            }
         } else {
             mVrDaydreamApi.setVrModeEnabled(false);
             mLastVRExit = SystemClock.uptimeMillis();
