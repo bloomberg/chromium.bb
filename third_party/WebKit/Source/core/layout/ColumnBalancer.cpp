@@ -173,14 +173,19 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(
     const LayoutBox& box,
     LayoutUnit childLogicalHeight,
     EBreak previousBreakAfterValue) {
+  if (m_lastBreakSeen > flowThreadOffset()) {
+    // We have moved backwards. We're probably in a parallel flow, caused by
+    // floats, sibling table cells, etc.
+    m_lastBreakSeen = LayoutUnit();
+  }
   if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
     if (box.needsForcedBreakBefore(previousBreakAfterValue)) {
       addContentRun(flowThreadOffset());
-    } else {
-      if (isFirstAfterBreak(flowThreadOffset())) {
-        // This box is first after a soft break.
-        recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
-      }
+    } else if (isFirstAfterBreak(flowThreadOffset()) &&
+               m_lastBreakSeen != flowThreadOffset()) {
+      // This box is first after a soft break.
+      m_lastBreakSeen = flowThreadOffset();
+      recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
     }
   }
 
@@ -233,8 +238,11 @@ void InitialColumnHeightFinder::examineLine(const RootInlineBox& line) {
   ASSERT(
       isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut() ||
       !isLogicalTopWithinBounds(lineTopInFlowThread - line.paginationStrut()));
-  if (isFirstAfterBreak(lineTopInFlowThread))
+  if (isFirstAfterBreak(lineTopInFlowThread) &&
+      m_lastBreakSeen != lineTopInFlowThread) {
+    m_lastBreakSeen = lineTopInFlowThread;
     recordStrutBeforeOffset(lineTopInFlowThread, line.paginationStrut());
+  }
 }
 
 void InitialColumnHeightFinder::recordStrutBeforeOffset(
@@ -244,7 +252,7 @@ void InitialColumnHeightFinder::recordStrutBeforeOffset(
   ASSERT(m_shortestStruts.size() == columnCount);
   unsigned index = groupAtOffset(offsetInFlowThread)
                        .columnIndexAtOffset(offsetInFlowThread - strut,
-                                            LayoutBox::AssociateWithLatterPage);
+                                            LayoutBox::AssociateWithFormerPage);
   if (index >= columnCount)
     return;
   m_shortestStruts[index] = std::min(m_shortestStruts[index], strut);

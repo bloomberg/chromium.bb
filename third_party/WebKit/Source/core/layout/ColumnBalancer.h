@@ -225,6 +225,7 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
   Vector<LayoutUnit, 32> m_shortestStruts;
 
   LayoutUnit m_tallestUnbreakableLogicalHeight;
+  LayoutUnit m_lastBreakSeen;
 };
 
 // If we have previously used InitialColumnHeightFinder to estimate an initial

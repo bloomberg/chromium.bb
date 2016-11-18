@@ -46,16 +46,24 @@ void MultiColumnFragmentainerGroup::resetColumnHeight() {
         flowThread->enclosingFragmentationContext();
     if (enclosingFragmentationContext &&
         enclosingFragmentationContext->isFragmentainerLogicalHeightKnown()) {
-      // Even if height is auto, we set an initial height, in order to tell how
-      // much content this MultiColumnFragmentainerGroup can hold, and when we
-      // need to append a new one.
+      // Set an initial height, based on the fragmentainer height in the outer
+      // fragmentation context, in order to tell how much content this
+      // MultiColumnFragmentainerGroup can hold, and when we need to append a
+      // new one.
       m_columnHeight = m_maxColumnHeight;
-    } else {
-      m_columnHeight = LayoutUnit();
+      return;
     }
+  }
+  // If the multicol container has a definite height, use it as the column
+  // height. This even applies when we are to balance the columns. We'll still
+  // use the definite height as an initial height, and lay out once at that
+  // column height. If it turns out that the content needs less than this
+  // height, we have to balance and shrink the height and lay out the columns
+  // over again.
+  if (LayoutUnit logicalHeight = flowThread->columnHeightAvailable()) {
+    setAndConstrainColumnHeight(heightAdjustedForRowOffset(logicalHeight));
   } else {
-    setAndConstrainColumnHeight(
-        heightAdjustedForRowOffset(flowThread->columnHeightAvailable()));
+    m_columnHeight = LayoutUnit();
   }
 }
 
