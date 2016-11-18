@@ -799,7 +799,7 @@ ALWAYS_INLINE void partitionFree(void* ptr) {
 ALWAYS_INLINE PartitionBucket* partitionGenericSizeToBucket(
     PartitionRootGeneric* root,
     size_t size) {
-  size_t order = kBitsPerSizet - countLeadingZerosSizet(size);
+  size_t order = kBitsPerSizet - CountLeadingZeroBitsSizeT(size);
   // The order index is simply the next few bits after the most significant bit.
   size_t orderIndex = (size >> root->orderIndexShifts[order]) &
                       (kGenericNumBucketsPerOrder - 1);

@@ -2113,30 +2113,6 @@ TEST(PartitionAllocTest, PurgeDiscardable) {
   TestShutdown();
 }
 
-// Tests that the countLeadingZeros() functions work to our satisfaction.
-// It doesn't seem worth the overhead of a whole new file for these tests, so
-// we'll put them here since partitionAllocGeneric will depend heavily on these
-// functions working correctly.
-TEST(PartitionAllocTest, CLZWorks) {
-  EXPECT_EQ(32u, countLeadingZeros32(0u));
-  EXPECT_EQ(31u, countLeadingZeros32(1u));
-  EXPECT_EQ(1u, countLeadingZeros32(1u << 30));
-  EXPECT_EQ(0u, countLeadingZeros32(1u << 31));
-
-#if CPU(64BIT)
-  EXPECT_EQ(64u, countLeadingZerosSizet(0ull));
-  EXPECT_EQ(63u, countLeadingZerosSizet(1ull));
-  EXPECT_EQ(32u, countLeadingZerosSizet(1ull << 31));
-  EXPECT_EQ(1u, countLeadingZerosSizet(1ull << 62));
-  EXPECT_EQ(0u, countLeadingZerosSizet(1ull << 63));
-#else
-  EXPECT_EQ(32u, countLeadingZerosSizet(0u));
-  EXPECT_EQ(31u, countLeadingZerosSizet(1u));
-  EXPECT_EQ(1u, countLeadingZerosSizet(1u << 30));
-  EXPECT_EQ(0u, countLeadingZerosSizet(1u << 31));
-#endif
-}
-
 }  // namespace WTF
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
