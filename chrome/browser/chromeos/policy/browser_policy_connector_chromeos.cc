@@ -156,7 +156,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   }
 
   DCHECK(install_attributes_);
-  if (install_attributes_->IsCloudManaged()) {
+  if (!install_attributes_->IsActiveDirectoryManaged()) {
     device_local_account_policy_service_ =
         base::MakeUnique<DeviceLocalAccountPolicyService>(
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
