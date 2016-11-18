@@ -153,6 +153,7 @@ class IMEDetailedView : public ImeListView {
 
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override {
+    ImeListView::HandleButtonPressed(sender, event);
     if (sender == settings_button_)
       ShowSettings();
   }

@@ -399,9 +399,10 @@ void ImeListView::HandleViewClicked(views::View* view) {
 
 void ImeListView::HandleButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  DCHECK(material_keyboard_status_view_);
-  DCHECK_EQ(sender, material_keyboard_status_view_->toggle());
-  WmShell::Get()->ToggleIgnoreExternalKeyboard();
+  if (material_keyboard_status_view_ &&
+      sender == material_keyboard_status_view_->toggle()) {
+    WmShell::Get()->ToggleIgnoreExternalKeyboard();
+  }
 }
 
 }  // namespace ash
