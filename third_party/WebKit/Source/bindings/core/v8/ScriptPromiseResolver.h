@@ -12,6 +12,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
@@ -133,6 +134,16 @@ class CORE_EXPORT ScriptPromiseResolver
     if (getExecutionContext()->activeDOMObjectsAreSuspended()) {
       // Retain this object until it is actually resolved or rejected.
       keepAliveWhilePending();
+      return;
+    }
+    // TODO(esprehn): This is a hack, instead we should RELEASE_ASSERT that
+    // script is allowed, and v8 should be running the entry hooks below and
+    // crashing if script is forbidden. We should then audit all users of
+    // ScriptPromiseResolver and the related specs and switch to an async
+    // resolve.
+    // See: http://crbug.com/663476
+    if (ScriptForbiddenScope::isScriptForbidden()) {
+      m_timer.startOneShot(0, BLINK_FROM_HERE);
       return;
     }
     resolveOrRejectImmediately();
