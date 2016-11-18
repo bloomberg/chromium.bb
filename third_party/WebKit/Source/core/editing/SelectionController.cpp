@@ -398,7 +398,7 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
   return true;
 }
 
-void SelectionController::selectClosestWordFromHitTestResult(
+bool SelectionController::selectClosestWordFromHitTestResult(
     const HitTestResult& result,
     AppendTrailingWhitespace appendTrailingWhitespace,
     SelectInputEventType selectInputEventType) {
@@ -406,7 +406,7 @@ void SelectionController::selectClosestWordFromHitTestResult(
   VisibleSelectionInFlatTree newSelection;
 
   if (!innerNode || !innerNode->layoutObject())
-    return;
+    return false;
 
   // Special-case image local offset to always be zero, to avoid triggering
   // LayoutReplaced::positionFromPoint's advancement of the position at the
@@ -436,20 +436,20 @@ void SelectionController::selectClosestWordFromHitTestResult(
                              ? TextIteratorEmitsObjectReplacementCharacter
                              : TextIteratorDefaultBehavior);
     if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
-      return;
+      return false;
 
     if (newSelection.rootEditableElement() &&
         pos.deepEquivalent() ==
             VisiblePositionInFlatTree::lastPositionInNode(
                 newSelection.rootEditableElement())
                 .deepEquivalent())
-      return;
+      return false;
   }
 
   if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend)
     newSelection.appendTrailingWhitespace();
 
-  updateSelectionForMouseDownDispatchingSelectStart(
+  return updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),
       WordGranularity);
 }
@@ -501,7 +501,7 @@ void SelectionController::selectClosestWordFromMouseEvent(
 
   DCHECK(!m_frame->document()->needsLayoutTreeUpdate());
 
-  return selectClosestWordFromHitTestResult(
+  selectClosestWordFromHitTestResult(
       result.hitTestResult(), appendTrailingWhitespace,
       result.event().fromTouch() ? SelectInputEventType::Touch
                                  : SelectInputEventType::Mouse);
@@ -647,6 +647,30 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
       FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle;
   selection().setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
                            granularity);
+}
+
+bool SelectionController::setCaretAtHitTestResult(
+    const HitTestResult& hitTestResult) {
+  Node* innerNode = hitTestResult.innerNode();
+  if (!innerNode)
+    return false;
+
+  const VisiblePositionInFlatTree& visibleHitPos =
+      visiblePositionOfHitTestResult(hitTestResult);
+  const VisiblePositionInFlatTree& visiblePos =
+      visibleHitPos.isNull()
+          ? createVisiblePosition(
+                PositionInFlatTree::firstPositionInOrBeforeNode(innerNode))
+          : visibleHitPos;
+
+  return updateSelectionForMouseDownDispatchingSelectStart(
+      innerNode,
+      expandSelectionToRespectUserSelectAll(
+          innerNode, createVisibleSelection(
+                         SelectionInFlatTree::Builder()
+                             .collapse(visiblePos.toPositionWithAffinity())
+                             .build())),
+      CharacterGranularity);
 }
 
 bool SelectionController::handleMousePressEventDoubleClick(
@@ -880,15 +904,23 @@ bool SelectionController::handleGestureLongPress(
   if (!innerNodeIsSelectable)
     return false;
 
-  selectClosestWordFromHitTestResult(hitTestResult,
-                                     AppendTrailingWhitespace::DontAppend,
-                                     SelectInputEventType::Touch);
-  if (!selection().isAvailable()) {
-    // "editing/selection/longpress-selection-in-iframe-removed-crash.html"
-    // reach here.
-    return false;
-  }
-  return selection().isRange();
+  if (selectClosestWordFromHitTestResult(hitTestResult,
+                                         AppendTrailingWhitespace::DontAppend,
+                                         SelectInputEventType::Touch))
+    return selection().isAvailable();
+
+  setCaretAtHitTestResult(hitTestResult);
+  return false;
+}
+
+void SelectionController::handleGestureTwoFingerTap(
+    const GestureEventWithHitTestResults& targetedEvent) {
+  setCaretAtHitTestResult(targetedEvent.hitTestResult());
+}
+
+void SelectionController::handleGestureLongTap(
+    const GestureEventWithHitTestResults& targetedEvent) {
+  setCaretAtHitTestResult(targetedEvent.hitTestResult());
 }
 
 static bool hitTestResultIsMisspelled(const HitTestResult& result) {

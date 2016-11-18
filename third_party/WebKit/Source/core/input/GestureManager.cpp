@@ -332,6 +332,7 @@ WebInputEventResult GestureManager::handleGestureLongTap(
 #if !OS(ANDROID)
   if (m_longTapShouldInvokeContextMenu) {
     m_longTapShouldInvokeContextMenu = false;
+    m_selectionController->handleGestureLongTap(targetedEvent);
     return sendContextMenuEventForGesture(targetedEvent);
   }
 #endif
@@ -340,6 +341,7 @@ WebInputEventResult GestureManager::handleGestureLongTap(
 
 WebInputEventResult GestureManager::handleGestureTwoFingerTap(
     const GestureEventWithHitTestResults& targetedEvent) {
+  m_selectionController->handleGestureTwoFingerTap(targetedEvent);
   return sendContextMenuEventForGesture(targetedEvent);
 }
 
@@ -364,8 +366,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
   PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
   if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
     eventType = PlatformEvent::MouseReleased;
-  // TODO(crbug.com/661200): We don't want a mousedown here but text area
-  // cursor doesn't appear on long-tap focus w/o the mousedown.
+
   PlatformMouseEvent mouseEvent(
       targetedEvent.event().position(), targetedEvent.event().globalPosition(),
       WebPointerProperties::Button::Right, eventType, /* clickCount */ 1,
@@ -373,27 +374,6 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
           modifiers | PlatformEvent::Modifiers::RightButtonDown),
       PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(),
       WebPointerProperties::PointerType::Mouse);
-
-  if (!m_suppressMouseEventsFromGestures && m_frame->view()) {
-    HitTestRequest request(HitTestRequest::Active);
-    LayoutPoint documentPoint =
-        m_frame->view()->rootFrameToContents(targetedEvent.event().position());
-    MouseEventWithHitTestResults mev =
-        m_frame->document()->performMouseEventHitTest(request, documentPoint,
-                                                      mouseEvent);
-
-    WebInputEventResult eventResult =
-        m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
-            mev.innerNode(), EventTypeNames::mousedown, mouseEvent);
-
-    if (eventResult == WebInputEventResult::NotHandled)
-      eventResult = m_mouseEventManager->handleMouseFocus(
-          mev.hitTestResult(),
-          InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
-
-    if (eventResult == WebInputEventResult::NotHandled)
-      m_mouseEventManager->handleMousePressEvent(mev);
-  }
 
   return m_frame->eventHandler().sendContextMenuEvent(mouseEvent);
 }

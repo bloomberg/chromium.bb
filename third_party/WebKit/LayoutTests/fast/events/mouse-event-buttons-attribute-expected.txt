@@ -99,37 +99,33 @@ TEST COMPLETE
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
 3. targetDiv received mousemove buttons: 0
-4. targetDiv received mousedown buttons: 2
-5. targetDiv received contextmenu buttons: 2
-6. targetDiv received mouseout buttons: 0
-7. targetDiv received mouseleave buttons: 0
+4. targetDiv received contextmenu buttons: 2
+5. targetDiv received mouseout buttons: 0
+6. targetDiv received mouseleave buttons: 0
 
 ===== longPressAction with initial state=[] and showContextMenuOnMouseUp=true =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
 3. targetDiv received mousemove buttons: 0
-4. targetDiv received mousedown buttons: 2
-5. targetDiv received contextmenu buttons: 2
-6. targetDiv received mouseout buttons: 0
-7. targetDiv received mouseleave buttons: 0
+4. targetDiv received contextmenu buttons: 2
+5. targetDiv received mouseout buttons: 0
+6. targetDiv received mouseleave buttons: 0
 
 ===== longTapAction with initial state=[] and showContextMenuOnMouseUp=false =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
 3. targetDiv received mousemove buttons: 0
-4. targetDiv received mousedown buttons: 2
-5. targetDiv received contextmenu buttons: 2
-6. targetDiv received mouseout buttons: 0
-7. targetDiv received mouseleave buttons: 0
+4. targetDiv received contextmenu buttons: 2
+5. targetDiv received mouseout buttons: 0
+6. targetDiv received mouseleave buttons: 0
 
 ===== longTapAction with initial state=[] and showContextMenuOnMouseUp=true =====
 1. targetDiv received mouseover buttons: 0
 2. targetDiv received mouseenter buttons: 0
 3. targetDiv received mousemove buttons: 0
-4. targetDiv received mousedown buttons: 2
-5. targetDiv received contextmenu buttons: 2
-6. targetDiv received mouseout buttons: 0
-7. targetDiv received mouseleave buttons: 0
+4. targetDiv received contextmenu buttons: 2
+5. targetDiv received mouseout buttons: 0
+6. targetDiv received mouseleave buttons: 0
 
 ===== dragDropAction with initial state=[] =====
 1. dragImg received mouseover buttons: 0

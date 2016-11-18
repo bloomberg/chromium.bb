@@ -65,6 +65,8 @@ class CORE_EXPORT SelectionController final
   bool handlePasteGlobalSelection(const PlatformMouseEvent&);
   bool handleGestureLongPress(const PlatformGestureEvent&,
                               const HitTestResult&);
+  void handleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
+  void handleGestureLongTap(const GestureEventWithHitTestResults&);
 
   void updateSelectionForMouseDrag(Node*, const LayoutPoint&, const IntPoint&);
   void updateSelectionForMouseDrag(const HitTestResult&,
@@ -98,7 +100,8 @@ class CORE_EXPORT SelectionController final
 
   Document& document() const;
 
-  void selectClosestWordFromHitTestResult(const HitTestResult&,
+  // Returns |true| if a word was selected.
+  bool selectClosestWordFromHitTestResult(const HitTestResult&,
                                           AppendTrailingWhitespace,
                                           SelectInputEventType);
   void selectClosestMisspellingFromHitTestResult(const HitTestResult&,
@@ -111,6 +114,7 @@ class CORE_EXPORT SelectionController final
   void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&,
                                           TextGranularity,
                                           EndPointsAdjustmentMode);
+  bool setCaretAtHitTestResult(const HitTestResult&);
   bool updateSelectionForMouseDownDispatchingSelectStart(
       Node*,
       const VisibleSelectionInFlatTree&,

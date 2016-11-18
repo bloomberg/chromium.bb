@@ -5,11 +5,11 @@ PASS successfullyParsed is true
 TEST COMPLETE
 
 showContextMenuOnMouseUp = true
-Event sequence: mouseover mouseenter mousemove mousedown contextmenu
+Event sequence: mouseover mouseenter mousemove contextmenu
 PASS: Context Menu event seen.
 
 showContextMenuOnMouseUp = false
-Event sequence: mousemove mousedown contextmenu
+Event sequence: mousemove contextmenu
 PASS: Context Menu event seen.
 
 

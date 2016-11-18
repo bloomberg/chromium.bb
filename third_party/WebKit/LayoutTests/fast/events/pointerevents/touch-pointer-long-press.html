@@ -44,7 +44,7 @@ function runTests() {
   var rect = document.getElementById("target").getBoundingClientRect();
   eventSender.gestureLongPress(rect.left + 5, rect.top + 5);
   testReceivedEvents([
-    "mouseover", "mouseenter", "mousemove", "mousedown", "contextmenu"
+    "mouseover", "mouseenter", "mousemove", "contextmenu"
   ], "Long press events");
 
 }
