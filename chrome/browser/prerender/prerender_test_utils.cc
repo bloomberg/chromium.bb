@@ -104,6 +104,55 @@ class CountingInterceptor : public net::URLRequestInterceptor {
   mutable base::WeakPtrFactory<CountingInterceptor> weak_factory_;
 };
 
+// URLRequestJob (and associated handler) which hangs.
+class HangingURLRequestJob : public net::URLRequestJob {
+ public:
+  HangingURLRequestJob(net::URLRequest* request,
+                          net::NetworkDelegate* network_delegate)
+      : net::URLRequestJob(request, network_delegate) {
+  }
+
+  void Start() override {}
+
+ private:
+  ~HangingURLRequestJob() override {}
+};
+
+class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
+ public:
+  HangingFirstRequestInterceptor(const base::FilePath& file,
+                                 base::Closure callback)
+      : file_(file),
+        callback_(callback),
+        first_run_(true) {
+  }
+  ~HangingFirstRequestInterceptor() override {}
+
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    if (first_run_) {
+      first_run_ = false;
+      if (!callback_.is_null()) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE, callback_);
+      }
+      return new HangingURLRequestJob(request, network_delegate);
+    }
+    return new net::URLRequestMockHTTPJob(
+        request,
+        network_delegate,
+        file_,
+        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  }
+
+ private:
+  base::FilePath file_;
+  base::Closure callback_;
+  mutable bool first_run_;
+};
+
 // An ExternalProtocolHandler that blocks everything and asserts it never is
 // called.
 class NeverRunsExternalProtocolHandlerDelegate
@@ -654,6 +703,15 @@ void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
                file, content::BrowserThread::GetBlockingPool()));
+}
+
+void CreateHangingFirstRequestInterceptorOnIO(
+    const GURL& url, const base::FilePath& file, base::Closure callback) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::unique_ptr<net::URLRequestInterceptor> interceptor(
+      new HangingFirstRequestInterceptor(file, callback));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::move(interceptor));
 }
 
 }  // namespace test_utils

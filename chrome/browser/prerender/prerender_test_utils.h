@@ -378,6 +378,12 @@ void CreateCountingInterceptorOnIO(
 // Makes |url| respond to requests with the contents of |file|.
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file);
 
+// Makes |url| never respond on the first load, and then with the contents of
+// |file| afterwards. When the first load has been scheduled, runs |callback| on
+// the UI thread.
+void CreateHangingFirstRequestInterceptorOnIO(
+    const GURL& url, const base::FilePath& file, base::Closure callback);
+
 }  // namespace test_utils
 
 }  // namespace prerender

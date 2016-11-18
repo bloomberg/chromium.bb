@@ -136,6 +136,7 @@ using content::WebContentsObserver;
 using net::NetworkChangeNotifier;
 using prerender::test_utils::RequestCounter;
 using prerender::test_utils::CreateCountingInterceptorOnIO;
+using prerender::test_utils::CreateHangingFirstRequestInterceptorOnIO;
 using prerender::test_utils::CreateMockInterceptorOnIO;
 using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
@@ -487,67 +488,6 @@ class RestorePrerenderMode {
  private:
   PrerenderManager::PrerenderManagerMode prev_mode_;
 };
-
-// URLRequestJob (and associated handler) which hangs.
-class HangingURLRequestJob : public net::URLRequestJob {
- public:
-  HangingURLRequestJob(net::URLRequest* request,
-                          net::NetworkDelegate* network_delegate)
-      : net::URLRequestJob(request, network_delegate) {
-  }
-
-  void Start() override {}
-
- private:
-  ~HangingURLRequestJob() override {}
-};
-
-class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
- public:
-  HangingFirstRequestInterceptor(const base::FilePath& file,
-                                 base::Closure callback)
-      : file_(file),
-        callback_(callback),
-        first_run_(true) {
-  }
-  ~HangingFirstRequestInterceptor() override {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    if (first_run_) {
-      first_run_ = false;
-      if (!callback_.is_null()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE, callback_);
-      }
-      return new HangingURLRequestJob(request, network_delegate);
-    }
-    return new net::URLRequestMockHTTPJob(
-        request,
-        network_delegate,
-        file_,
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  }
-
- private:
-  base::FilePath file_;
-  base::Closure callback_;
-  mutable bool first_run_;
-};
-
-// Makes |url| never respond on the first load, and then with the contents of
-// |file| afterwards. When the first load has been scheduled, runs |callback| on
-// the UI thread.
-void CreateHangingFirstRequestInterceptorOnIO(
-    const GURL& url, const base::FilePath& file, base::Closure callback) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::unique_ptr<net::URLRequestInterceptor> never_respond_handler(
-      new HangingFirstRequestInterceptor(file, callback));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::move(never_respond_handler));
-}
 
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
 class TestContentBrowserClient : public ChromeContentBrowserClient {

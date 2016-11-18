@@ -200,10 +200,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, MetaTagCSP) {
   first_script.WaitForCount(0);
 }
 
-// Checks that the second prefetch request succeeds. TODO(pasko): This test
-// waits for Prerender Stop before starting the second request, add a test that
-// starts the second request from the UI thread immediately without waiting.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
+// Checks that the second prefetch request succeeds. This test waits for
+// Prerender Stop before starting the second request.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchMultipleRequest) {
   RequestCounter first_main_counter;
   CountRequestFor(kPrefetchPage, &first_main_counter);
   RequestCounter second_main_counter;
@@ -213,14 +212,41 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
   RequestCounter second_script_counter;
   CountRequestFor(kPrefetchScript2, &second_script_counter);
 
-  // The first prerender is marked as canceled. When the second prerender
-  // starts, it sees that the first has been abandoned (because the earlier
-  // prerender is detached immediately and so dies quickly).
   PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   PrefetchFromFile(kPrefetchPage2, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   first_main_counter.WaitForCount(1);
   second_main_counter.WaitForCount(1);
   first_script_counter.WaitForCount(1);
+  second_script_counter.WaitForCount(1);
+}
+
+// Checks that a second prefetch request, started before the first stops,
+// succeeds.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
+  RequestCounter second_main_counter;
+  CountRequestFor(kPrefetchPage2, &second_main_counter);
+  RequestCounter second_script_counter;
+  CountRequestFor(kPrefetchScript2, &second_script_counter);
+
+  GURL first_url = src_server()->GetURL(MakeAbsolute(kPrefetchPage));
+  base::FilePath first_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath().AppendASCII(kPrefetchPage));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&test_utils::CreateHangingFirstRequestInterceptorOnIO,
+                 first_url, first_path, base::Closure()));
+
+  // Start the first prefetch directly instead of via PrefetchFromFile for the
+  // first prefetch to avoid the wait on prerender stop.
+  GURL first_loader_url = ServeLoaderURL(
+      kPrefetchLoaderPath, "REPLACE_WITH_PREFETCH_URL", first_url, "");
+  std::vector<FinalStatus> first_expected_status_queue(1,
+                                                       FINAL_STATUS_CANCELLED);
+  NavigateWithPrerenders(first_loader_url, first_expected_status_queue);
+
+  PrefetchFromFile(kPrefetchPage2, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  second_main_counter.WaitForCount(1);
   second_script_counter.WaitForCount(1);
 }
 
