@@ -29,9 +29,7 @@ namespace arc {
 class ArcAuthCodeFetcher : public OAuth2TokenService::Consumer,
                            public net::URLFetcherDelegate {
  public:
-  ArcAuthCodeFetcher(Profile* profile,
-                     ArcAuthContext* context,
-                     const std::string& auth_endpoint);
+  ArcAuthCodeFetcher(Profile* profile, ArcAuthContext* context);
   ~ArcAuthCodeFetcher() override;
 
   // Starts to fetch the token. On success fetched |auth_token| is passed.
@@ -57,9 +55,6 @@ class ArcAuthCodeFetcher : public OAuth2TokenService::Consumer,
   Profile* const profile_;
   ArcAuthContext* const context_;
   net::URLRequestContextGetter* request_context_getter_ = nullptr;
-
-  // URL to request auth code.
-  const std::string auth_endpoint_;
 
   FetchCallback callback_;
 

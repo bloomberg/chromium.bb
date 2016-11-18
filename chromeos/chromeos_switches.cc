@@ -61,10 +61,6 @@ const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 // Signals the availability of the ARC instance on this device.
 const char kArcAvailable[] = "arc-available";
 
-// Specifies ARC authorization endpoint to enable automatic sign-in in OptIn
-// flow.
-const char kArcUseAuthEndpoint[] = "arc-use-auth-endpoint";
-
 // Screenshot testing: specifies the directoru where artifacts will be stored.
 const char kArtifactsDir[] = "artifacts-dir";
 

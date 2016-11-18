@@ -16,6 +16,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_features.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace arc {
@@ -224,20 +225,12 @@ void ArcAuthService::RequestAccountInfoInternal(
     return;
   }
 
-  // If endpoint is passed via command line flag, use automatic auth code
-  // fetching.
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  std::string auth_endpoint;
-  if (command_line->HasSwitch(chromeos::switches::kArcUseAuthEndpoint)) {
-    auth_endpoint = command_line->GetSwitchValueASCII(
-        chromeos::switches::kArcUseAuthEndpoint);
-  }
-  if (!auth_endpoint.empty()) {
+  // Optionally retrive auth code in silent mode.
+  if (base::FeatureList::IsEnabled(arc::kArcUseAuthEndpointFeature)) {
     DCHECK(!auth_code_fetcher_);
     auth_code_fetcher_ = base::MakeUnique<ArcAuthCodeFetcher>(
         ArcSessionManager::Get()->profile(),
-        ArcSessionManager::Get()->auth_context(), auth_endpoint);
+        ArcSessionManager::Get()->auth_context());
     auth_code_fetcher_->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
                                          weak_ptr_factory_.GetWeakPtr()));
     return;

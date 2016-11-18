@@ -40,16 +40,16 @@ constexpr char kLoginScopedToken[] = "login_scoped_token";
 constexpr char kGetAuthCodeHeaders[] =
     "Content-Type: application/json; charset=utf-8";
 constexpr char kContentTypeJSON[] = "application/json";
+constexpr char kEndPoint[] =
+    "https://www.googleapis.com/oauth2/v4/ExchangeToken";
 
 }  // namespace
 
 ArcAuthCodeFetcher::ArcAuthCodeFetcher(Profile* profile,
-                                       ArcAuthContext* context,
-                                       const std::string& auth_endpoint)
+                                       ArcAuthContext* context)
     : OAuth2TokenService::Consumer(kConsumerName),
       profile_(profile),
       context_(context),
-      auth_endpoint_(auth_endpoint),
       weak_ptr_factory_(this) {}
 
 ArcAuthCodeFetcher::~ArcAuthCodeFetcher() = default;
@@ -99,9 +99,8 @@ void ArcAuthCodeFetcher::OnGetTokenSuccess(
   std::string request_string;
   base::JSONWriter::Write(request_data, &request_string);
 
-  DCHECK(!auth_endpoint_.empty());
-  auth_code_fetcher_ = net::URLFetcher::Create(0, GURL(auth_endpoint_),
-                                               net::URLFetcher::POST, this);
+  auth_code_fetcher_ =
+      net::URLFetcher::Create(0, GURL(kEndPoint), net::URLFetcher::POST, this);
   auth_code_fetcher_->SetRequestContext(request_context_getter_);
   auth_code_fetcher_->SetUploadData(kContentTypeJSON, request_string);
   auth_code_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
