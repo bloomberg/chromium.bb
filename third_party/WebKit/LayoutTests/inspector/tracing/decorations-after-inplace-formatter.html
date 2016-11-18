@@ -1,0 +1,77 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/decorations-after-inplace-formatter.css">
+<script>
+
+function test()
+{
+    Runtime.experiments.enableForTest("timelineRuleUsageRecording");
+
+    var panel = UI.panels.timeline;
+    panel._markUnusedCSS.set(true);
+
+    var scriptFormatter;
+
+    InspectorTest.startTimeline(timelineStarted);
+
+    function timelineStarted()
+    {
+        InspectorTest.stopTimeline(onTracingFinished);
+    }
+
+    function onTracingFinished()
+    {
+        UI.inspectorView.showPanel("sources").then(formatterSetup);
+    }
+    function formatterSetup()
+    {
+        inplaceFormatter().then(function(sf) {
+            scriptFormatter = sf;
+            showSource();
+        });
+    }
+    function showSource()
+    {
+        InspectorTest.addSniffer(Components.CoverageProfile.LineDecorator.prototype, "decorate", formatSource);
+        InspectorTest.showScriptSource("decorations-after-inplace-formatter.css");
+    }
+
+    function formatSource(frame) 
+    {
+        InspectorTest.addSniffer(Components.CoverageProfile.LineDecorator.prototype, "decorate", uiSourceCodeScriptFormatted);
+        scriptFormatter._formatSourceInPlace();
+    }
+
+    function uiSourceCodeScriptFormatted()
+    {
+        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-line-marker-coverage"), 
+                                                e => e.parentElement.previousSibling.textContent);
+
+        InspectorTest.addResult("Formatted line numbers of rules that were not used:");
+        InspectorTest.addResult(lines);   
+        InspectorTest.completeTest();
+    }
+    
+    function inplaceFormatter()
+    {
+        return self.runtime.allInstances(Sources.SourcesView.EditorAction).then(function(editorActions) {
+            for (var i = 0; i < editorActions.length; ++i) {
+                if (editorActions[i] instanceof Sources.InplaceFormatterEditorAction)
+                    return editorActions[i];
+            }
+            return null;
+        });
+    }
+}
+</script>
+</head>
+<p id="id">PASS</p>
+<body onload="runTest()">
+<p>Tests the CSS highlight in sources after the Pretty print formatting.</p>
+</body>
+</html>

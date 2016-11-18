@@ -1,0 +1,7 @@
+PASS
+
+Tests the CSS highlight in sources after the Pretty print formatting.
+
+Formatted line numbers of rules that were not used:
+5,6,7,9,10,11,12,18,19,20,22,23,24
+
