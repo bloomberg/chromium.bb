@@ -3696,7 +3696,7 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
                         logicalTopMarginEdge + marginBeforeForChild(child));
 
   SubtreeLayoutScope layoutScope(child);
-  if (isPaginated && !child.needsLayout())
+  if (!child.needsLayout())
     markChildForPaginationRelayoutIfNeeded(child, layoutScope);
 
   child.layoutIfNeeded();
