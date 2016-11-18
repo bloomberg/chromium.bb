@@ -274,4 +274,60 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
   }
 }
 
+TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInDynamicProfile) {
+  const char* testCases[] = {"div >>>> span", "div >>> span", "div >> span"};
+
+  CSSParserContext context(HTMLStandardMode, nullptr,
+                           CSSParserContext::DynamicProfile);
+  StyleSheetContents* sheet = StyleSheetContents::create(context);
+
+  for (auto testCase : testCases) {
+    SCOPED_TRACE(testCase);
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
+    CSSSelectorList list =
+        CSSSelectorParser::parseSelector(range, context, sheet);
+    EXPECT_FALSE(list.isValid());
+  }
+}
+
+TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInStaticProfile) {
+  const char* testCases[] = {"div >>>> span", "div >> span", "div >> > span",
+                             "div > >> span", "div > > > span"};
+
+  CSSParserContext context(HTMLStandardMode, nullptr,
+                           CSSParserContext::StaticProfile);
+  StyleSheetContents* sheet = StyleSheetContents::create(context);
+
+  for (auto testCase : testCases) {
+    SCOPED_TRACE(testCase);
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
+    CSSSelectorList list =
+        CSSSelectorParser::parseSelector(range, context, sheet);
+    EXPECT_FALSE(list.isValid());
+  }
+}
+
+TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
+  const char* testCases[][2] = {{"div >>> span", "div >>> span"},
+                                {"div >>/**/> span", "div >>> span"},
+                                {"div >/**/>> span", "div >>> span"},
+                                {"div >/**/>/**/> span", "div >>> span"}};
+
+  CSSParserContext context(HTMLStandardMode, nullptr,
+                           CSSParserContext::StaticProfile);
+  StyleSheetContents* sheet = StyleSheetContents::create(context);
+
+  for (auto testCase : testCases) {
+    SCOPED_TRACE(testCase[0]);
+    CSSTokenizer tokenizer(testCase[0]);
+    CSSParserTokenRange range = tokenizer.tokenRange();
+    CSSSelectorList list =
+        CSSSelectorParser::parseSelector(range, context, sheet);
+    EXPECT_TRUE(list.isValid());
+    EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
+  }
+}
+
 }  // namespace blink

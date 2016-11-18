@@ -88,7 +88,9 @@ class CORE_EXPORT CSSParserContext {
   // https://drafts.csswg.org/selectors/#profiles
   enum SelectorProfile { DynamicProfile, StaticProfile };
 
-  CSSParserContext(CSSParserMode, UseCounter*);
+  CSSParserContext(CSSParserMode,
+                   UseCounter*,
+                   SelectorProfile = DynamicProfile);
   // FIXME: We shouldn't need the UseCounter argument as we could infer it from
   // the Document but some callers want to disable use counting (e.g. the
   // WebInspector).

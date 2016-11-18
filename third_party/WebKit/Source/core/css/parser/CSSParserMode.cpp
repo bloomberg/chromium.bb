@@ -36,9 +36,12 @@
 
 namespace blink {
 
-CSSParserContext::CSSParserContext(CSSParserMode mode, UseCounter* useCounter)
+CSSParserContext::CSSParserContext(CSSParserMode mode,
+                                   UseCounter* useCounter,
+                                   SelectorProfile profile)
     : m_mode(mode),
       m_matchMode(mode),
+      m_profile(profile),
       m_isHTMLDocument(false),
       m_useLegacyBackgroundSizeShorthandBehavior(false),
       m_shouldCheckContentSecurityPolicy(DoNotCheckContentSecurityPolicy),

@@ -762,6 +762,8 @@ String CSSSelector::selectorText(const String& rightSide) const {
       case ShadowDeep:
         return tagHistory->selectorText(" /deep/ " + str.toString() +
                                         rightSide);
+      case ShadowPiercingDescendant:
+        return tagHistory->selectorText(" >>> " + str.toString() + rightSide);
       case DirectAdjacent:
         return tagHistory->selectorText(" + " + str.toString() + rightSide);
       case IndirectAdjacent:

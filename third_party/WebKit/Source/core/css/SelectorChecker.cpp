@@ -397,6 +397,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(
       return matchSelector(nextContext, result);
     }
 
+    case CSSSelector::ShadowPiercingDescendant:
     case CSSSelector::ShadowDeep: {
       if (!m_isUARule && !m_isQuerySelector)
         Deprecation::countDeprecation(context.element->document(),

@@ -129,10 +129,11 @@ class CORE_EXPORT CSSSelector {
     Child,             // > combinator
     DirectAdjacent,    // + combinator
     IndirectAdjacent,  // ~ combinator
-    // Special case of shadow DOM pseudo elements / shadow pseudo element
-    ShadowPseudo,
-    ShadowDeep,  // /deep/ combinator
-    ShadowSlot   // slotted to <slot> element
+    // Special cases for shadow DOM related selectors.
+    ShadowPiercingDescendant,  // >>> combinator
+    ShadowDeep,                // /deep/ combinator
+    ShadowPseudo,              // ::shadow pseudo element
+    ShadowSlot                 // ::slotted() pseudo element
   };
 
   enum PseudoType {
@@ -347,7 +348,7 @@ class CORE_EXPORT CSSSelector {
   bool needsUpdatedDistribution() const;
 
  private:
-  unsigned m_relation : 3;    // enum RelationType
+  unsigned m_relation : 4;    // enum RelationType
   unsigned m_match : 4;       // enum MatchType
   unsigned m_pseudoType : 8;  // enum PseudoType
   unsigned m_isLastInSelectorList : 1;
