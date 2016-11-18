@@ -620,11 +620,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     throttles->push_back(first_throttle);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  bool is_subresource_request =
-      resource_type != content::RESOURCE_TYPE_MAIN_FRAME;
-  throttles->push_back(new SupervisedUserResourceThrottle(
-        request, !is_subresource_request,
-        io_data->supervised_user_url_filter()));
+  std::unique_ptr<content::ResourceThrottle> supervised_user_throttle =
+      SupervisedUserResourceThrottle::MaybeCreate(
+          request, resource_type, io_data->supervised_user_url_filter());
+  if (supervised_user_throttle)
+    throttles->push_back(supervised_user_throttle.release());
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

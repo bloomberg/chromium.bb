@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
@@ -109,12 +110,26 @@ void RecordFilterResultEvent(
 
 }  // namespace
 
+// static
+std::unique_ptr<SupervisedUserResourceThrottle>
+SupervisedUserResourceThrottle::MaybeCreate(
+    const net::URLRequest* request,
+    content::ResourceType resource_type,
+    const SupervisedUserURLFilter* url_filter) {
+  // Only treat main frame requests (ignoring subframes and subresources).
+  bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  if (!is_main_frame)
+    return nullptr;
+
+  // Can't use base::MakeUnique because the constructor is private.
+  return base::WrapUnique(
+      new SupervisedUserResourceThrottle(request, url_filter));
+}
+
 SupervisedUserResourceThrottle::SupervisedUserResourceThrottle(
     const net::URLRequest* request,
-    bool is_main_frame,
     const SupervisedUserURLFilter* url_filter)
     : request_(request),
-      is_main_frame_(is_main_frame),
       url_filter_(url_filter),
       deferred_(false),
       behavior_(SupervisedUserURLFilter::INVALID),
@@ -122,13 +137,7 @@ SupervisedUserResourceThrottle::SupervisedUserResourceThrottle(
 
 SupervisedUserResourceThrottle::~SupervisedUserResourceThrottle() {}
 
-void SupervisedUserResourceThrottle::ShowInterstitialIfNeeded(bool is_redirect,
-                                                              const GURL& url,
-                                                              bool* defer) {
-  // Only treat main frame requests for now (ignoring subresources).
-  if (!is_main_frame_)
-    return;
-
+void SupervisedUserResourceThrottle::CheckURL(const GURL& url, bool* defer) {
   deferred_ = false;
   DCHECK_EQ(SupervisedUserURLFilter::INVALID, behavior_);
   bool got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
@@ -158,13 +167,13 @@ void SupervisedUserResourceThrottle::ShowInterstitial(
 }
 
 void SupervisedUserResourceThrottle::WillStartRequest(bool* defer) {
-  ShowInterstitialIfNeeded(false, request_->url(), defer);
+  CheckURL(request_->url(), defer);
 }
 
 void SupervisedUserResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
-  ShowInterstitialIfNeeded(true, redirect_info.new_url, defer);
+  CheckURL(redirect_info.new_url, defer);
 }
 
 const char* SupervisedUserResourceThrottle::GetNameForLogging() const {
