@@ -1,5 +1,0 @@
-CONSOLE ERROR: line 2448: Uncaught Error: assert_equals: expected "navigate-child-src-about-blank.html" but got ""
-This is a testharness.js-based test.
-FAIL Set the src attribute to about:blank and check referrer Uncaught Error: assert_equals: expected "file:///.../html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-src-about-blank.html" but got ""
-Harness: the test ran to completion.
-

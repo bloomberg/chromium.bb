@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Accessing location object from different origins doesn't raise SECURITY_ERR exception Failed to set the 'location' property on 'Window': 'http://www1.{{host}}:{{ports[http][0]}}/' is not a valid URL.
-Harness: the test ran to completion.
-

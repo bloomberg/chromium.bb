@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Request: end-to-end assert_equals: Default User-Agent header should not be passed to onfetch event. expected (undefined) undefined but got (string) "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.77.34.5 Safari/537.36"
-Harness: the test ran to completion.
-

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Visibility of defaulted headers during interception assert_unreached: unexpected rejection: withUA FAIL - expected "custom_ua", got "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.77.34.5 Safari/537.36" Reached unreachable code
-Harness: the test ran to completion.
-

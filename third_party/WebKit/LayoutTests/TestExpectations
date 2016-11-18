@@ -1433,9 +1433,6 @@ crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/dr
 crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/workers/semantics/xhr/003.html [ Pass ]
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/dom/nodes/Document-createElement.html [ Pass ]
-crbug.com/626703 [ Precise Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/dom/nodes/Document-createElementNS.html [ Pass ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
@@ -1513,7 +1510,6 @@ crbug.com/655458 imported/wpt/workers/semantics/reporting-errors/002.html [ Fail
 crbug.com/655458 imported/wpt/workers/interfaces/DedicatedWorkerGlobalScope/postMessage/structured-clone-message.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/semantics/reporting-errors/001.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/semantics/run-a-worker/003.html [ Failure ]
-crbug.com/655458 imported/wpt/workers/Worker_cross_origin_security_err.htm [ Failure ]
 crbug.com/655458 imported/wpt/workers/constructors/Worker/AbstractWorker.onerror.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/interfaces/WorkerGlobalScope/onerror/exception-in-onerror.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/interfaces/WorkerGlobalScope/onerror/not-handled.html [ Failure ]
@@ -1587,15 +1583,6 @@ crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-5
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 
-# Most of these tests fail without wptserve
-crbug.com/602693 imported/wpt/service-workers [ Failure ]
-# Some of the tests pass without wptserve
-crbug.com/602693 imported/wpt/service-workers/service-worker/rejections.https.html [ Pass ]
-# Some of the tests time out without wptserve
-crbug.com/602693 imported/wpt/service-workers/service-worker/register-closed-window.https.html [ Timeout ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
-crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-outscope.https.html [ Timeout ]
-
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 
 crbug.com/660308 [ Mac ] fast/css-grid-layout/grid-auto-repeat-intrinsic.html [ Pass Failure Timeout Crash ]
@@ -1621,5 +1608,64 @@ crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Fa
 
 crbug.com/664450 inspector/console/console-on-animation-worklet.html [ Skip ]
 
+# Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
+crbug.com/508730 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_01.html [ Failure ]
+crbug.com/508730 imported/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/addCue.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/endTime.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/id.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/pauseOnExit.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/startTime.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/track.html [ Failure ]
+crbug.com/508730 crbug.com/472300 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/removeCue.html [ Failure ]
+crbug.com/508730 imported/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
+crbug.com/508730 imported/wpt/html/browsers/browsing-the-web/read-media/pageload-image.html [ Failure ]
+crbug.com/508730 imported/wpt/html/browsers/browsing-the-web/read-media/pageload-video.html [ Failure ]
+crbug.com/508730 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-data-url.html [ Failure ]
+crbug.com/508730 imported/wpt/workers/data-url.html [ Failure ]
+
+# Fail when run with --enable-wptserve: (crbug.com/508734)
+crbug.com/508734 imported/wpt/html/semantics/document-metadata/the-link-element/link-style-error-01.html [ Failure ]
+crbug.com/508734 imported/wpt/html/semantics/scripting-1/the-script-element/data-url.html [ Failure ]
+crbug.com/508734 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/004.xhtml [ Failure ]
+crbug.com/508734 imported/wpt/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html [ Failure ]
+crbug.com/508734 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Failure Timeout ]
+
+# Fail differently when run with --enable-wptserve: (crbug.com/508728)
+crbug.com/508728 crbug.com/664268 imported/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Failure Timeout ]
+crbug.com/508728 imported/wpt/webstorage/document-domain.html [ Failure Timeout ]
+crbug.com/508728 imported/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
+
+# This test needs to be updated: fails because it expects showModalDialog and some other APIs.
+crbug.com/508728 imported/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
+
+crbug.com/602693 imported/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
+
+# TODO(shimazu): remove the following after the wpt auto-roller imports
+# dc159d2c7ab068b4c6e51774b595b355781efde6 or later from the github repository.
+crbug.com/602693 imported/wpt/service-workers/stub-3.1-service-worker-obj.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-3.2-navigator-service-worker.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.1-service-worker-global-scope.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.2-client.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.3-service-worker-clients.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.4-request-objects.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.5-response-objects.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.6.2-cache.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.6.3-cache-storage.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.7.1-install-phase-event.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.7.2.1-install-event-section.html [ Failure ]
+crbug.com/602693 imported/wpt/service-workers/stub-4.7.4.1-fetch-event-section.html [ Failure ]
+
+crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Pass Timeout ]
+crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
+crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-outscope.https.html [ Timeout ]
+
+# Untriaged service-worker timeout. Is it crbug.com/618616?
+crbug.com/618616 imported/wpt/service-workers/service-worker/update-after-oneday.https.html [ Timeout ]
+
 crbug.com/666142 inspector/console/console-error-on-call-frame.html [ NeedsManualRebaseline ]
 crbug.com/666142 inspector/sources/debugger-pause/debugger-eval-while-paused-throws.html [ NeedsManualRebaseline ]
+
+# These tests (erroneously) see a platform-specific User-Agent header
+crbug.com/595993 imported/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
+crbug.com/595993 imported/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]

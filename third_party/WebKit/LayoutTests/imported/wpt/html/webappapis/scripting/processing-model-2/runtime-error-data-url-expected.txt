@@ -1,6 +1,6 @@
 CONSOLE ERROR: line 1: Uncaught ReferenceError: undefined_variable is not defined
 This is a testharness.js-based test.
-PASS window.onerror - runtime error in <script src=data:...> 
+FAIL window.onerror - runtime error in <script src=data:...> assert_equals: second arg expected "data:text/javascript,undefined_variable;" but got ""
 PASS window.onerror - runtime error in <script src=data:...> (column) 
 Harness: the test ran to completion.
 

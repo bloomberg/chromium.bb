@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL HTTP Referer should use the pushed state (before onload) assert_equals: expected "file:///.../html/browsers/history/the-history-interface/010-2.html?1234" but got "{{headers[referer]}}"
-FAIL document.referrer should use the pushed state (before onload) assert_equals: expected "file:///.../html/browsers/history/the-history-interface/010-2.html?1234" but got ""
-FAIL HTTP Referer should use the replaced state (before onload) assert_equals: expected "file:///.../html/browsers/history/the-history-interface/010-4.html?2345" but got "{{headers[referer]}}"
-FAIL document.referrer should use the replaced state (before onload) assert_equals: expected "file:///.../html/browsers/history/the-history-interface/010-4.html?2345" but got ""
-Harness: the test ran to completion.
-

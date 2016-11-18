@@ -136,24 +136,24 @@ FAIL applet.code: IDL set to object "test-toString" assert_equals: getAttribute(
 FAIL applet.code: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 FAIL applet.codeBase: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL applet.codeBase: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to "" assert_equals: IDL get expected (string) "file:///.../html/dom/reflection-obsolete.html" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to " foo " assert_equals: IDL get expected (string) "file:///.../html/dom/foo" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to "" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/reflection-obsolete.html" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to " foo " assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/foo" but got (undefined) undefined
 FAIL applet.codeBase: setAttribute() to "http://site.example/" assert_equals: IDL get expected (string) "http://site.example/" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to "//site.example/path???@#l" assert_equals: IDL get expected (string) "file://site.example/path???@#l" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to "\0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f " assert_equals: IDL get expected (string) "file:///.../html/dom/reflection-obsolete.html" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to undefined assert_equals: IDL get expected (string) "file:///.../html/dom/undefined" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to 7 assert_equals: IDL get expected (string) "file:///.../html/dom/7" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to 1.5 assert_equals: IDL get expected (string) "file:///.../html/dom/1.5" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to true assert_equals: IDL get expected (string) "file:///.../html/dom/true" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to false assert_equals: IDL get expected (string) "file:///.../html/dom/false" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "file:///.../html/dom/[object%20Object]" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to NaN assert_equals: IDL get expected (string) "file:///.../html/dom/NaN" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to Infinity assert_equals: IDL get expected (string) "file:///.../html/dom/Infinity" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to -Infinity assert_equals: IDL get expected (string) "file:///.../html/dom/-Infinity" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to "\0" assert_equals: IDL get expected (string) "file:///.../html/dom/reflection-obsolete.html" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to null assert_equals: IDL get expected (string) "file:///.../html/dom/null" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "file:///.../html/dom/test-toString" but got (undefined) undefined
-FAIL applet.codeBase: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "file:///.../html/dom/test-valueOf" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to "//site.example/path???@#l" assert_equals: IDL get expected (string) "http://site.example/path???@#l" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to "\0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f " assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/reflection-obsolete.html" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to undefined assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/undefined" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to 7 assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/7" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to 1.5 assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/1.5" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to true assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/true" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to false assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/false" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/[object%20Object]" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to NaN assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/NaN" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to Infinity assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/Infinity" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to -Infinity assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/-Infinity" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to "\0" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/reflection-obsolete.html" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to null assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/null" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/test-toString" but got (undefined) undefined
+FAIL applet.codeBase: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/test-valueOf" but got (undefined) undefined
 FAIL applet.codeBase: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
 FAIL applet.codeBase: IDL set to " foo " assert_equals: getAttribute() expected " foo " but got "test-valueOf"
 FAIL applet.codeBase: IDL set to "http://site.example/" assert_equals: getAttribute() expected "http://site.example/" but got "test-valueOf"
@@ -171,7 +171,7 @@ FAIL applet.codeBase: IDL set to -Infinity assert_equals: getAttribute() expecte
 FAIL applet.codeBase: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
 FAIL applet.codeBase: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
 FAIL applet.codeBase: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL applet.codeBase: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "file:///.../html/dom/test-valueOf" but got (object) object "test-valueOf"
+FAIL applet.codeBase: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/test-valueOf" but got (object) object "test-valueOf"
 FAIL applet.height: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL applet.height: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
 FAIL applet.height: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
@@ -300,24 +300,24 @@ FAIL applet.name: IDL set to object "test-toString" assert_equals: getAttribute(
 FAIL applet.name: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 FAIL applet.object: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL applet.object: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL applet.object: setAttribute() to "" assert_equals: IDL get expected (string) "file:///.../html/dom/reflection-obsolete.html" but got (undefined) undefined
-FAIL applet.object: setAttribute() to " foo " assert_equals: IDL get expected (string) "file:///.../html/dom/foo" but got (undefined) undefined
+FAIL applet.object: setAttribute() to "" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/reflection-obsolete.html" but got (undefined) undefined
+FAIL applet.object: setAttribute() to " foo " assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/foo" but got (undefined) undefined
 FAIL applet.object: setAttribute() to "http://site.example/" assert_equals: IDL get expected (string) "http://site.example/" but got (undefined) undefined
-FAIL applet.object: setAttribute() to "//site.example/path???@#l" assert_equals: IDL get expected (string) "file://site.example/path???@#l" but got (undefined) undefined
-FAIL applet.object: setAttribute() to "\0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f " assert_equals: IDL get expected (string) "file:///.../html/dom/reflection-obsolete.html" but got (undefined) undefined
-FAIL applet.object: setAttribute() to undefined assert_equals: IDL get expected (string) "file:///.../html/dom/undefined" but got (undefined) undefined
-FAIL applet.object: setAttribute() to 7 assert_equals: IDL get expected (string) "file:///.../html/dom/7" but got (undefined) undefined
-FAIL applet.object: setAttribute() to 1.5 assert_equals: IDL get expected (string) "file:///.../html/dom/1.5" but got (undefined) undefined
-FAIL applet.object: setAttribute() to true assert_equals: IDL get expected (string) "file:///.../html/dom/true" but got (undefined) undefined
-FAIL applet.object: setAttribute() to false assert_equals: IDL get expected (string) "file:///.../html/dom/false" but got (undefined) undefined
-FAIL applet.object: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "file:///.../html/dom/[object%20Object]" but got (undefined) undefined
-FAIL applet.object: setAttribute() to NaN assert_equals: IDL get expected (string) "file:///.../html/dom/NaN" but got (undefined) undefined
-FAIL applet.object: setAttribute() to Infinity assert_equals: IDL get expected (string) "file:///.../html/dom/Infinity" but got (undefined) undefined
-FAIL applet.object: setAttribute() to -Infinity assert_equals: IDL get expected (string) "file:///.../html/dom/-Infinity" but got (undefined) undefined
-FAIL applet.object: setAttribute() to "\0" assert_equals: IDL get expected (string) "file:///.../html/dom/reflection-obsolete.html" but got (undefined) undefined
-FAIL applet.object: setAttribute() to null assert_equals: IDL get expected (string) "file:///.../html/dom/null" but got (undefined) undefined
-FAIL applet.object: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "file:///.../html/dom/test-toString" but got (undefined) undefined
-FAIL applet.object: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "file:///.../html/dom/test-valueOf" but got (undefined) undefined
+FAIL applet.object: setAttribute() to "//site.example/path???@#l" assert_equals: IDL get expected (string) "http://site.example/path???@#l" but got (undefined) undefined
+FAIL applet.object: setAttribute() to "\0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f " assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/reflection-obsolete.html" but got (undefined) undefined
+FAIL applet.object: setAttribute() to undefined assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/undefined" but got (undefined) undefined
+FAIL applet.object: setAttribute() to 7 assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/7" but got (undefined) undefined
+FAIL applet.object: setAttribute() to 1.5 assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/1.5" but got (undefined) undefined
+FAIL applet.object: setAttribute() to true assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/true" but got (undefined) undefined
+FAIL applet.object: setAttribute() to false assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/false" but got (undefined) undefined
+FAIL applet.object: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/[object%20Object]" but got (undefined) undefined
+FAIL applet.object: setAttribute() to NaN assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/NaN" but got (undefined) undefined
+FAIL applet.object: setAttribute() to Infinity assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/Infinity" but got (undefined) undefined
+FAIL applet.object: setAttribute() to -Infinity assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/-Infinity" but got (undefined) undefined
+FAIL applet.object: setAttribute() to "\0" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/reflection-obsolete.html" but got (undefined) undefined
+FAIL applet.object: setAttribute() to null assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/null" but got (undefined) undefined
+FAIL applet.object: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/test-toString" but got (undefined) undefined
+FAIL applet.object: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/test-valueOf" but got (undefined) undefined
 FAIL applet.object: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
 FAIL applet.object: IDL set to " foo " assert_equals: getAttribute() expected " foo " but got "test-valueOf"
 FAIL applet.object: IDL set to "http://site.example/" assert_equals: getAttribute() expected "http://site.example/" but got "test-valueOf"
@@ -335,7 +335,7 @@ FAIL applet.object: IDL set to -Infinity assert_equals: getAttribute() expected 
 FAIL applet.object: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
 FAIL applet.object: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
 FAIL applet.object: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL applet.object: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "file:///.../html/dom/test-valueOf" but got (object) object "test-valueOf"
+FAIL applet.object: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "http://web-platform.test:8001/html/dom/test-valueOf" but got (object) object "test-valueOf"
 FAIL applet.vspace: typeof IDL attribute assert_equals: expected "number" but got "undefined"
 FAIL applet.vspace: IDL get with DOM attribute unset assert_equals: expected (number) 0 but got (undefined) undefined
 FAIL applet.vspace: setAttribute() to -2147483649 assert_equals: IDL get expected (number) 0 but got (undefined) undefined

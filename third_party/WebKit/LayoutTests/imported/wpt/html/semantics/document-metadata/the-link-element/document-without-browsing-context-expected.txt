@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Create a document, adopt the node assert_equals: expected "1" but got "def main(request, response):\n    try:\n        count = int(request.server.stash.take(request.GET[\"id\"]))\n    except:\n        count = 0\n    if \"count\" in request.GET:\n        return str(count)\n    request.server.stash.put(request.GET[\"id\"], str(count + 1))\n    return 'body { color: red }'\n"
-FAIL Create a stylesheet in innerHTML document assert_equals: expected "1" but got "def main(request, response):\n    try:\n        count = int(request.server.stash.take(request.GET[\"id\"]))\n    except:\n        count = 0\n    if \"count\" in request.GET:\n        return str(count)\n    request.server.stash.put(request.GET[\"id\"], str(count + 1))\n    return 'body { color: red }'\n"
-Harness: the test ran to completion.
-

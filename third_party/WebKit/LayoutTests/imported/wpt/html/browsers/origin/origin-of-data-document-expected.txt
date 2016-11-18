@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL The origin of a 'data:' document in a frame is opaque. assert_throws: The 'data:' frame should be cross-origin. function "function () {
-            var couldAccessCrossOriginProperty = e.source.location.href;
-          }" did not throw
-Harness: the test ran to completion.
-

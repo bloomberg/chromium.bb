@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL history replaceState SECURITY_ERR assert_throws: function "function () {
-        window.history.replaceState(1, document.title, 'http://www.microsoft.com/test.html');
-      }" did not throw
-Harness: the test ran to completion.
-

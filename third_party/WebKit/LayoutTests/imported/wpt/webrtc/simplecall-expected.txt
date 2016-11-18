@@ -1,4 +1,5 @@
+CONSOLE WARNING: line 113: getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
 This is a testharness.js-based test.
-FAIL Can set up a basic WebRTC call. assert_unreached: WebRTC called error callback for createOffer Reached unreachable code
+FAIL Can set up a basic WebRTC call. assert_unreached: WebRTC called error callback for getUserMedia Reached unreachable code
 Harness: the test ran to completion.
 

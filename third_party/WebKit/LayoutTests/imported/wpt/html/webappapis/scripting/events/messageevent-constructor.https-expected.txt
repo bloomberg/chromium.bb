@@ -10,6 +10,6 @@ FAIL Passing null for ports parameter to initMessageEvent assert_throws: functio
     ev.initMessageEvent("test", true, false, "testData", "testOrigin", "testId", window, null)
   }" did not throw
 FAIL All parameters to initMessageEvent should be mandatory assert_equals: MessageEvent.prototype.initMessageEvent.length should be 8 expected 8 but got 0
-FAIL Passing ServiceWorker for source member assert_unreached: unregister should not fail: Failed to get a ServiceWorkerRegistration: The URL protocol of the current origin ('file://') is not supported. Reached unreachable code
+FAIL Passing ServiceWorker for source member promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'MessageEvent': The optional 'source' property is neither a Window nor MessagePort."
 Harness: the test ran to completion.
 

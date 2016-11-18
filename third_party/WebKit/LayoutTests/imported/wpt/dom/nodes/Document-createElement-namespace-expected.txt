@@ -12,43 +12,43 @@ PASS Created element's namespace in created XHTML document by DOMParser ('applic
 PASS Created element's namespace in created SVG document by DOMParser ('image/svg+xml') 
 PASS Created element's namespace in empty.html 
 PASS Created element's namespace in empty.xhtml 
-FAIL Created element's namespace in empty.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in empty.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in empty.xml 
+FAIL Created element's namespace in empty.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in minimal_html.html 
 PASS Created element's namespace in minimal_html.xhtml 
-FAIL Created element's namespace in minimal_html.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in minimal_html.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in minimal_html.xml 
+FAIL Created element's namespace in minimal_html.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in xhtml.html 
 PASS Created element's namespace in xhtml.xhtml 
 FAIL Created element's namespace in xhtml.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "application/xhtml+xml"
-FAIL Created element's namespace in xhtml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+FAIL Created element's namespace in xhtml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in svg.html 
 PASS Created element's namespace in svg.xhtml 
-FAIL Created element's namespace in svg.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in svg.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in svg.xml 
+FAIL Created element's namespace in svg.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in mathml.html 
 PASS Created element's namespace in mathml.xhtml 
-FAIL Created element's namespace in mathml.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in mathml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in mathml.xml 
+FAIL Created element's namespace in mathml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in bare_xhtml.html 
 PASS Created element's namespace in bare_xhtml.xhtml 
-FAIL Created element's namespace in bare_xhtml.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in bare_xhtml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in bare_xhtml.xml 
+FAIL Created element's namespace in bare_xhtml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in bare_svg.html 
 PASS Created element's namespace in bare_svg.xhtml 
-FAIL Created element's namespace in bare_svg.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in bare_svg.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in bare_svg.xml 
+FAIL Created element's namespace in bare_svg.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in bare_mathml.html 
 PASS Created element's namespace in bare_mathml.xhtml 
-FAIL Created element's namespace in bare_mathml.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "text/xml"
-FAIL Created element's namespace in bare_mathml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+PASS Created element's namespace in bare_mathml.xml 
+FAIL Created element's namespace in bare_mathml.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in xhtml_ns_removed.html 
 PASS Created element's namespace in xhtml_ns_removed.xhtml 
 FAIL Created element's namespace in xhtml_ns_removed.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "application/xhtml+xml"
-FAIL Created element's namespace in xhtml_ns_removed.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+FAIL Created element's namespace in xhtml_ns_removed.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 PASS Created element's namespace in xhtml_ns_changed.html 
 PASS Created element's namespace in xhtml_ns_changed.xhtml 
 FAIL Created element's namespace in xhtml_ns_changed.xml assert_equals: Wrong MIME type returned from doc.contentType expected "application/xml" but got "application/xhtml+xml"
-FAIL Created element's namespace in xhtml_ns_changed.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "text/html"
+FAIL Created element's namespace in xhtml_ns_changed.svg assert_equals: Wrong MIME type returned from doc.contentType expected "image/svg+xml" but got "application/json"
 Harness: the test ran to completion.
 

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL FileAPI Test: Creating Blob URL via XMLHttpRequest assert_equals: The status is 200 expected 200 but got 0
-Harness: the test ran to completion.
-

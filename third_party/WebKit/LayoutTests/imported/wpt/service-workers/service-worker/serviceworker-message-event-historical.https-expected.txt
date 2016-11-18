@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test MessageEvent supplants ServiceWorkerMessageEvent. assert_equals: ServiceWorkerMessageEvent should not be defined. expected (undefined) undefined but got (function) function "function ServiceWorkerMessageEvent() { [native code] }"
+Harness: the test ran to completion.
+
