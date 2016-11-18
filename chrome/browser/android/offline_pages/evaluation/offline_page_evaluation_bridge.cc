@@ -47,12 +47,6 @@ namespace offline_pages {
 namespace android {
 
 namespace {
-const bool kPreferUntriedRequest = false;
-const bool kPreferEarlierRequest = true;
-const bool kPreferRetryCountOverRecency = false;
-const int kMaxStartedTries = 4;
-const int kMaxCompletedTries = 1;
-const int kImmediateRequestExpirationTimeInSeconds = 3600;
 
 void ToJavaOfflinePageList(JNIEnv* env,
                            jobject j_result_obj,
@@ -170,12 +164,7 @@ bool OfflinePageEvaluationBridge::Register(JNIEnv* env) {
 std::unique_ptr<KeyedService>
 OfflinePageEvaluationBridge::GetTestingRequestCoordinator(
     content::BrowserContext* context) {
-  // Create a new OfflinerPolicy with a larger background processing
-  // budget (3600 sec). Other values are the same with default ones.
-  std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy(
-      kPreferUntriedRequest, kPreferEarlierRequest,
-      kPreferRetryCountOverRecency, kMaxStartedTries, kMaxCompletedTries,
-      kImmediateRequestExpirationTimeInSeconds));
+  std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
   std::unique_ptr<OfflinerFactory> prerenderer_offliner(
       new PrerenderingOfflinerFactory(context));
 
