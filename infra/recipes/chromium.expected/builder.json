@@ -340,6 +340,8 @@
       "[CACHE]/chrome_staging",
       "--src-dir",
       "[BUILDER_CACHE]/Linux_remote_run_Builder/src",
+      "--slave-utils-gsutil-py-path",
+      "RECIPE_PACKAGE_REPO[depot_tools]/gsutil.py",
       "--build-url",
       "gs://chromium-fyi-archive/chromium.fyi/Linux remote_run Builder",
       "--build_revision",
