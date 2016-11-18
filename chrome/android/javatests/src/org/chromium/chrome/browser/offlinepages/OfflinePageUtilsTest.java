@@ -32,7 +32,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link OfflinePageUtils}. */
-@CommandLineFlags.Add("enable-features=OfflineBookmarks")
+@CommandLineFlags.Add({"enable-features=OfflineBookmarks", "enable-features=OfflinePagesSharing"})
 public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
@@ -304,9 +304,15 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     private void clearSharedOfflineFilesAndWait() {
-        Context context = getActivity().getBaseContext();
+        final Context context = getActivity().getBaseContext();
         final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
-        OfflinePageUtils.clearSharedOfflineFiles(context);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                OfflinePageUtils.clearSharedOfflineFiles(context);
+            }
+        });
+
         try {
             CriteriaHelper.pollInstrumentationThread(
                     new Criteria("Failed while waiting for file operation to complete.") {

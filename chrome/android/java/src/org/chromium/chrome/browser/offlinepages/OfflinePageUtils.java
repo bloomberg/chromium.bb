@@ -526,6 +526,7 @@ public class OfflinePageUtils {
      * @param context Context that is used to access external cache directory.
      */
     public static void clearSharedOfflineFiles(final Context context) {
+        if (!OfflinePageBridge.isPageSharingEnabled()) return;
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
