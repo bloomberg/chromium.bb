@@ -262,16 +262,11 @@ void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   DCHECK(object.isSVG() && !object.isSVGRoot());
-  // SVG (other than SVGForeignObject) does not use paint offset internally.
-  DCHECK(object.isSVGForeignObject() ||
-         context.current.paintOffset == LayoutPoint());
+  // SVG does not use paint offset internally.
+  DCHECK(context.current.paintOffset == LayoutPoint());
 
   if (object.needsPaintPropertyUpdate()) {
-    // TODO(pdr): Refactor this so all non-root SVG objects use the same
-    // transform function.
-    const AffineTransform& transform = object.isSVGForeignObject()
-                                           ? object.localSVGTransform()
-                                           : object.localToSVGParentTransform();
+    const AffineTransform& transform = object.localToSVGParentTransform();
     // TODO(pdr): Check for the presence of a transform instead of the value.
     // Checking for an identity matrix will cause the property tree structure
     // to change during animations if the animation passes through the
@@ -855,12 +850,8 @@ static void deriveBorderBoxFromContainerContext(
       ASSERT_NOT_REACHED();
   }
 
-  // SVGForeignObject needs paint offset because its viewport offset is baked
-  // into its location(), while its localSVGTransform() doesn't contain the
-  // offset.
   if (boxModelObject.isBox() &&
-      (!boxModelObject.isSVG() || boxModelObject.isSVGRoot() ||
-       boxModelObject.isSVGForeignObject())) {
+      (!boxModelObject.isSVG() || boxModelObject.isSVGRoot())) {
     // TODO(pdr): Several calls in this function walk back up the tree to
     // calculate containers (e.g., topLeftLocation, offsetForInFlowPosition*).
     // The containing block and other containers can be stored on

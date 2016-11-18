@@ -27,9 +27,8 @@
 
 namespace blink {
 
-// This is used for non-root <svg> elements and <marker> elements, neither of
-// which are SVGTransformable thus we inherit from LayoutSVGContainer instead of
-// LayoutSVGTransformableContainer
+// This is used for non-root <svg> elements which are SVGTransformable thus we
+// inherit from LayoutSVGContainer instead of LayoutSVGTransformableContainer.
 class LayoutSVGViewportContainer final : public LayoutSVGContainer {
  public:
   explicit LayoutSVGViewportContainer(SVGElement*);

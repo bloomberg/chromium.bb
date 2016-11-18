@@ -90,10 +90,10 @@ void LayoutSVGForeignObject::layout() {
   // Cache viewport boundaries
   SVGLengthContext lengthContext(foreign);
   FloatPoint viewportLocation(
-      lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(),
-                                   SVGLengthMode::Width),
-      lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(),
-                                   SVGLengthMode::Height));
+      roundf(lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(),
+                                          SVGLengthMode::Width)),
+      roundf(lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(),
+                                          SVGLengthMode::Height)));
   m_viewport = FloatRect(
       viewportLocation,
       FloatSize(lengthContext.valueForLength(styleRef().width(), styleRef(),
@@ -108,10 +108,7 @@ void LayoutSVGForeignObject::layout() {
   // would pull this information from ComputedStyle - in SVG those properties
   // are ignored for non <svg> elements, so we mimic what happens when
   // specifying them through CSS.
-
-  // FIXME: Investigate in location rounding issues - only affects
-  // LayoutSVGForeignObject & LayoutSVGText
-  setLocation(roundedIntPoint(viewportLocation));
+  setLocation(LayoutPoint(viewportLocation));
 
   bool layoutChanged = everHadLayout() && selfNeedsLayout();
   LayoutBlock::layout();

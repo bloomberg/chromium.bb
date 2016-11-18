@@ -40,17 +40,19 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo) {
 
   PaintInfo paintInfoBeforeFiltering(paintInfo);
   paintInfoBeforeFiltering.updateCullRect(
-      m_layoutSVGForeignObject.localSVGTransform());
+      m_layoutSVGForeignObject.localToSVGParentTransform());
   SVGTransformContext transformContext(
       paintInfoBeforeFiltering.context, m_layoutSVGForeignObject,
-      m_layoutSVGForeignObject.localSVGTransform());
+      m_layoutSVGForeignObject.localToSVGParentTransform());
 
   Optional<FloatClipRecorder> clipRecorder;
-  if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject))
-    clipRecorder.emplace(paintInfoBeforeFiltering.context,
-                         m_layoutSVGForeignObject,
-                         paintInfoBeforeFiltering.phase,
-                         m_layoutSVGForeignObject.viewportRect());
+  if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject)) {
+    clipRecorder.emplace(
+        paintInfoBeforeFiltering.context, m_layoutSVGForeignObject,
+        paintInfoBeforeFiltering.phase,
+        FloatRect(FloatPoint(),
+                  m_layoutSVGForeignObject.viewportRect().size()));
+  }
 
   SVGPaintContext paintContext(m_layoutSVGForeignObject,
                                paintInfoBeforeFiltering);
@@ -65,8 +67,10 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo) {
     // BlockPainter::paint(), instead of m_layoutSVGForeignObject.paint() (which
     // would call this method again).
     BlockPainterDelegate delegate(m_layoutSVGForeignObject);
-    ObjectPainter(delegate).paintAllPhasesAtomically(paintContext.paintInfo(),
-                                                     LayoutPoint());
+    // We have included location() in transform, so pass -location() to adjust
+    // paint offset that will be added by location() in BlockPainter::paint().
+    ObjectPainter(delegate).paintAllPhasesAtomically(
+        paintContext.paintInfo(), -m_layoutSVGForeignObject.location());
   }
 }
 

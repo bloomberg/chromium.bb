@@ -74,13 +74,13 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
 
   FloatRect viewportRect() const { return m_viewport; }
 
+  const AffineTransform& localToSVGParentTransform() const override;
+
  private:
   void updateLogicalWidth() override;
   void computeLogicalHeight(LayoutUnit logicalHeight,
                             LayoutUnit logicalTop,
                             LogicalExtentComputedValues&) const override;
-
-  const AffineTransform& localToSVGParentTransform() const override;
 
   bool m_needsTransformUpdate : 1;
   FloatRect m_viewport;
