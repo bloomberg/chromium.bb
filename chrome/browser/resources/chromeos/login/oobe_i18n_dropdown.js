@@ -37,61 +37,28 @@ Polymer({
   },
 
   /**
-   * This flag prevents recursive calls of observers and callbacks.
+   * Mapping from item id to item.
+   * @type {!Map<string,I18nMenuItem>}
    */
-  observersDisabled_: false,
+  idToItem_: null,
 
   /**
-   * @param {!{detail: !{item: { item: {!I18nMenuItem}}}}} event
+   * @param {string} value Option value.
    * @private
    */
-  onSelect_: function(event) {
-    if (this.observersDisabled_)
-      return;
-
-    var selectedModel = this.$.domRepeat.modelForElement(event.detail.item);
-    if (!selectedModel.item)
-      return;
-
-    selectedModel.set('item.selected', true);
-    this.fire('select-item', selectedModel.item);
-  },
-
-  onDeselect_: function(event) {
-    if (this.observersDisabled_)
-      return;
-
-    var deSelectedModel = this.$.domRepeat.modelForElement(event.detail.item);
-    if (!deSelectedModel.item)
-      return;
-
-    deSelectedModel.set('item.selected', false);
+  onSelected_: function(value) {
+    this.fire('select-item', this.idToItem_.get(value));
   },
 
   onItemsChanged_: function(items) {
-    if (this.observersDisabled_)
-      return;
-
-    if (!items)
-      return;
-
-    this.observersDisabled_ = true;
-
-    var index = items.findIndex(function(item) { return item.selected; });
-    if (index != -1) {
-      // This is needed for selectIndex() to pick up values from updated
-      // this.items (for example, translated into other language).
-      Polymer.dom.flush();
-
-      if (this.$.listboxDropdown.selected == index) {
-        // This is to force update real <input> element value even if selection
-        // index has not changed.
-        this.$.listboxDropdown.selectIndex(null);
-      }
-      this.$.listboxDropdown.selectIndex(index);
+    this.idToItem_ = new Map();
+    for (var i = 0; i < items.length; ++i) {
+      var item = items[i];
+      this.idToItem_.set(item.value, item);
     }
-
-    this.observersDisabled_ = false;
+    Oobe.setupSelect(this.$.select,
+                       items,
+                       this.onSelected_.bind(this));
   },
 });
 })();

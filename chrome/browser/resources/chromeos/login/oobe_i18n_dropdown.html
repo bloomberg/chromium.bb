@@ -1,50 +1,15 @@
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-
-<iron-iconset-svg name="oobe-i18n-dropdown" size="24">
-  <svg>
-    <defs>
-      <!--
-      These icons are copied from Polymer's iron-icons and kept in sorted order.
-      See http://goo.gl/Y1OdAq for instructions on adding additional icons.
-      -->
-      <g id="check">
-        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z">
-        </path>
-      </g>
-    </defs>
-  </svg>
-</iron-iconset-svg>
 
 <dom-module id="oobe-i18n-dropdown">
   <template>
     <link rel="stylesheet" href="oobe_i18n_dropdown.css">
-    <paper-dropdown-menu no-label-float>
-      <paper-listbox id="listboxDropdown" class="dropdown-content"
-          on-iron-select="onSelect_"
-          on-iron-deselect="onDeselect_">
-        <template is="dom-repeat" id="domRepeat" items="[[items]]">
-          <paper-item item="[[item]]" disabled="[[item.optionGroupName]]"
-              hr$="[[item.optionGroupName]]">
-            <div class="option-entry flex horizontal layout justified"
-                hidden="[[item.optionGroupName]]">
-              <div class="option-name">
-                [[item.title]]
-              </div>
-              <iron-icon icon="oobe-i18n-dropdown:check" class="selected-icon"
-                  hidden="[[!item.selected]]">
-              </iron-icon>
-            </div>
-            <div class="hr" hidden="[[!item.optionGroupName]]"></div>
-          </paper-item>
-        </template>
-      </paper-listbox>
-    </paper-dropdown-menu>
+    <style include="md-select"></style>
+    <div id="container"
+        class="flex vertical layout center center-justified md-select-wrapper">
+      <select id="select" class="md-select" ></select>
+      <span class="md-select-underline"></span>
+    </div>
   </template>
 </dom-module>

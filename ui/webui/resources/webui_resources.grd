@@ -314,6 +314,9 @@ without changes to the corresponding grd file. -->
                  file="html/icon.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_I18N_TEMPLATE"
                  file="html/i18n_template.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_MD_SELECT_CSS_HTML"
+                 file="html/md_select_css.html" type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_WEBUI_HTML_LOAD_TIME_DATA"
                  file="html/load_time_data.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_PARSE_HTML_SUBSET"

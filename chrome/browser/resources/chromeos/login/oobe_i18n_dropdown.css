@@ -3,36 +3,11 @@
  * found in the LICENSE file. */
 
 :host {
-  --paper-font-subhead: {
-    @apply(--paper-font-common-base);
-    font-family: Roboto;
-    font-size: 13px;
-  };
+  font-family: Roboto, sans-serif;
+  font-size: 13px;
+  width: 240px;
 }
 
-.selected-icon {
-  --iron-icon-height: 16px;
-  --iron-icon-width: 16px;
-  -webkit-padding-start: 8px;
-  color: var(--google-blue-500);
-}
-
-paper-item {
-  -webkit-padding-end: 8px;
-  -webkit-padding-start: 16px;
-  min-height: 32px;
-}
-
-paper-item[hr] {
-  min-height: 10px;
-}
-
-.option-name {
-  color: rgba(0, 0, 0, 0.87);
-  font: 13px Roboto, sans-serif;
-}
-
-.hr {
-  border-top: 1px solid rgba(0, 0, 0, 0.14);
-  width: 100%;
+#container {
+  height: 100%;
 }
