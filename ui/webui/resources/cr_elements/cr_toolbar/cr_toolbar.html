@@ -16,6 +16,7 @@
 
       h1 {
         -webkit-margin-start: 6px;
+        -webkit-padding-end: 2px;
         flex: 1;
         font-size: 123%;
         font-weight: 400;
@@ -25,8 +26,9 @@
       }
 
       #leftContent {
-        -webkit-margin-start: 18px;
+        -webkit-padding-start: 18px;
         align-items: center;
+        box-sizing: border-box;
         display: flex;
         position: absolute;
         transition: opacity 100ms;
@@ -57,7 +59,9 @@
       }
 
       :host(:not([narrow_])) #leftContent {
-        max-width: calc((100% - var(--cr-toolbar-field-width) - 18px) / 2);
+        /* The amount of space left of the search field:
+           (width of window - width of search field) / 2. */
+        max-width: calc((100% - var(--cr-toolbar-field-width)) / 2);
         @apply(--cr-toolbar-left-content-wide);
       }
 
