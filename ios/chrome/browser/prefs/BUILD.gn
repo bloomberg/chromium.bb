@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("prefs") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "browser_prefs.h",
     "browser_prefs.mm",
