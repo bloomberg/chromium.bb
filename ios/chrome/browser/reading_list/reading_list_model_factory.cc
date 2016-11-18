@@ -17,11 +17,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_pref_names.h"
 
 // static
-bool ReadingListModelFactory::IsReadingListEnabled() {
-  return experimental_flags::IsReadingListEnabled();
-}
-
-// static
 ReadingListModel* ReadingListModelFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<ReadingListModelImpl*>(

@@ -24,7 +24,6 @@ class ChromeBrowserState;
 // ios::ChromeBrowserState.
 class ReadingListModelFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static bool IsReadingListEnabled();
   static ReadingListModel* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
   static ReadingListModel* GetForBrowserStateIfExists(
