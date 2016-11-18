@@ -23,12 +23,12 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
       is_local_(is_local),
       custom_controller_path_(custom_controller_path),
       for_display_(for_display),
-      is_incognito_(false) {}
+      is_incognito_(false),
+      is_offscreen_presentation_(false) {}
 
 MediaRoute::MediaRoute(const MediaRoute& other) = default;
 
-MediaRoute::~MediaRoute() {
-}
+MediaRoute::~MediaRoute() = default;
 
 bool MediaRoute::Equals(const MediaRoute& other) const {
   return media_route_id_ == other.media_route_id_;

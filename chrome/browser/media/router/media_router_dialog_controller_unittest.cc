@@ -62,7 +62,7 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void RequestSuccess(const content::PresentationSessionInfo&,
-                      const MediaRoute::Id&) {}
+                      const MediaRoute&) {}
   void RequestError(const content::PresentationError& error) {}
 
   std::unique_ptr<CreatePresentationConnectionRequest> GetRequest() {

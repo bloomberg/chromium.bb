@@ -28,7 +28,7 @@ class MediaRouterDialogControllerImplTest : public MediaRouterWebUITest {
 
   MOCK_METHOD2(PresentationSuccessCallback,
                void(const content::PresentationSessionInfo&,
-                    const MediaRoute::Id&));
+                    const MediaRoute&));
   MOCK_METHOD1(PresentationErrorCallback,
                void(const content::PresentationError& error));
 

@@ -44,8 +44,7 @@ class PresentationRequestCallbacks {
       const content::PresentationError& expected_error)
       : expected_error_(expected_error) {}
 
-  void Success(const content::PresentationSessionInfo&, const MediaRoute::Id&) {
-  }
+  void Success(const content::PresentationSessionInfo&, const MediaRoute&) {}
 
   void Error(const content::PresentationError& error) {
     EXPECT_EQ(expected_error_.error_type, error.error_type);

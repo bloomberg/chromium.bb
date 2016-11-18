@@ -32,7 +32,7 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
 
   void OnSuccess(const content::PresentationSessionInfo& expected_info,
                  const content::PresentationSessionInfo& actual_info,
-                 const MediaRoute::Id& route_id) {
+                 const MediaRoute& route) {
     cb_invoked_ = true;
     EXPECT_EQ(expected_info.presentation_url, actual_info.presentation_url);
     EXPECT_EQ(expected_info.presentation_id, actual_info.presentation_id);
@@ -46,7 +46,7 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
   }
 
   void FailOnSuccess(const content::PresentationSessionInfo& info,
-                     const MediaRoute::Id& route_id) {
+                     const MediaRoute& route) {
     FAIL() << "Success callback should not have been called.";
   }
 
@@ -87,7 +87,9 @@ TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
                  base::Unretained(this), session_info),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnError,
                  base::Unretained(this)));
-  request.InvokeSuccessCallback(kPresentationId, kRouteId);
+  MediaRoute route(kRouteId, MediaSourceForTab(1), "sinkId", "Description",
+                   false, "", false);
+  request.InvokeSuccessCallback(kPresentationId, route);
   EXPECT_TRUE(cb_invoked_);
 }
 

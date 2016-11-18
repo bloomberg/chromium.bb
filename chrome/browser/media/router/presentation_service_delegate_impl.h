@@ -183,7 +183,8 @@ class PresentationServiceDelegateImpl
   void OnJoinRouteResponse(
       int render_process_id,
       int render_frame_id,
-      const content::PresentationSessionInfo& session,
+      const GURL& presentation_url,
+      const std::string& presentation_id,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb,
       const RouteRequestResult& result);
@@ -193,7 +194,7 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionInfo& new_session,
-      const MediaRoute::Id& route_id);
+      const MediaRoute& route);
 
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.

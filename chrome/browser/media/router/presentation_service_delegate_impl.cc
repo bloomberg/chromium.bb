@@ -731,7 +731,8 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrls(
 void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     int render_process_id,
     int render_frame_id,
-    const content::PresentationSessionInfo& session,
+    const GURL& presentation_url,
+    const std::string& presentation_id,
     const content::PresentationSessionStartedCallback& success_cb,
     const content::PresentationSessionErrorCallback& error_cb,
     const RouteRequestResult& result) {
@@ -741,9 +742,11 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
   } else {
     DVLOG(1) << "OnJoinRouteResponse: "
              << "route_id: " << result.route()->media_route_id()
-             << ", presentation URL: " << session.presentation_url
-             << ", presentation ID: " << session.presentation_id;
-    DCHECK_EQ(session.presentation_id, result.presentation_id());
+             << ", presentation URL: " << presentation_url
+             << ", presentation ID: " << presentation_id;
+    DCHECK_EQ(presentation_id, result.presentation_id());
+    content::PresentationSessionInfo session(presentation_url,
+                                             result.presentation_id());
     frame_manager_->OnPresentationSessionStarted(
         RenderFrameHostId(render_process_id, render_frame_id), session,
         result.route()->media_route_id());
@@ -756,7 +759,8 @@ void PresentationServiceDelegateImpl::OnStartSessionSucceeded(
     int render_frame_id,
     const content::PresentationSessionStartedCallback& success_cb,
     const content::PresentationSessionInfo& new_session,
-    const MediaRoute::Id& route_id) {
+    const MediaRoute& route) {
+  const MediaRoute::Id& route_id = route.media_route_id();
   DVLOG(1) << "OnStartSessionSucceeded: "
            << "route_id: " << route_id
            << ", presentation URL: " << new_session.presentation_url
@@ -824,11 +828,10 @@ void PresentationServiceDelegateImpl::JoinSession(
   const GURL& presentation_url = presentation_urls[0];
   bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
-      &PresentationServiceDelegateImpl::OnJoinRouteResponse,
-      weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
-      content::PresentationSessionInfo(presentation_url, presentation_id),
-      success_cb, error_cb));
+  route_response_callbacks.push_back(
+      base::Bind(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
+                 weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
+                 presentation_url, presentation_id, success_cb, error_cb));
   router_->JoinRoute(
       MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
       GetLastCommittedURLForFrame(

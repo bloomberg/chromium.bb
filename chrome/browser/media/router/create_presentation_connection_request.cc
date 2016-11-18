@@ -38,13 +38,13 @@ CreatePresentationConnectionRequest::~CreatePresentationConnectionRequest() {
 
 void CreatePresentationConnectionRequest::InvokeSuccessCallback(
     const std::string& presentation_id,
-    const MediaRoute::Id& route_id) {
+    const MediaRoute& route) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
     success_cb_.Run(
         content::PresentationSessionInfo(
             presentation_request_.presentation_url(), presentation_id),
-        route_id);
+        route);
     cb_invoked_ = true;
   }
 }
@@ -66,8 +66,8 @@ void CreatePresentationConnectionRequest::HandleRouteResponse(
     presentation_request->InvokeErrorCallback(content::PresentationError(
         content::PRESENTATION_ERROR_UNKNOWN, result.error()));
   } else {
-    presentation_request->InvokeSuccessCallback(
-        result.presentation_id(), result.route()->media_route_id());
+    presentation_request->InvokeSuccessCallback(result.presentation_id(),
+                                                *result.route());
   }
 }
 
