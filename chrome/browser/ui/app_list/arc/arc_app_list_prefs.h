@@ -19,7 +19,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/instance_holder.h"
@@ -55,7 +55,7 @@ class ArcAppListPrefs
     : public KeyedService,
       public arc::mojom::AppHost,
       public arc::InstanceHolder<arc::mojom::AppInstance>::Observer,
-      public arc::ArcAuthService::Observer,
+      public arc::ArcSessionManager::Observer,
       public ArcDefaultAppList::Delegate {
  public:
   struct AppInfo {
@@ -226,7 +226,7 @@ class ArcAppListPrefs
   void RemoveObserver(Observer* observer);
   bool HasObserver(Observer* observer);
 
-  // arc::ArcAuthService::Observer:
+  // arc::ArcSessionManager::Observer:
   void OnOptInEnabled(bool enabled) override;
 
   // ArcDefaultAppList::Delegate:

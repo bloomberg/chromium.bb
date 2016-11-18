@@ -40,7 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
@@ -261,9 +261,10 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
 #if defined(OS_CHROMEOS)
     if (item->GetItemType() == ArcAppItem::kItemType) {
       // Don't sync remove changes coming as result of disabling Arc.
-      const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-      DCHECK(auth_service);
-      if (!auth_service->IsArcEnabled())
+      const arc::ArcSessionManager* arc_session_manager =
+          arc::ArcSessionManager::Get();
+      DCHECK(arc_session_manager);
+      if (!arc_session_manager->IsArcEnabled())
         return;
     }
 #endif
@@ -394,7 +395,7 @@ void AppListSyncableService::BuildModel() {
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
 #if defined(OS_CHROMEOS)
-  if (arc::ArcAuthService::IsAllowedForProfile(profile_))
+  if (arc::ArcSessionManager::IsAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
 #endif
   DCHECK(profile_);

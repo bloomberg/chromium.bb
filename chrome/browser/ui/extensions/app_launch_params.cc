@@ -13,7 +13,7 @@
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #endif
 
@@ -35,7 +35,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       play_store_status(PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN) {
 #if defined(OS_CHROMEOS)
   if (set_playstore_status) {
-    if (arc::ArcAuthService::IsAllowedForProfile(profile)) {
+    if (arc::ArcSessionManager::IsAllowedForProfile(profile)) {
       play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_ENABLED;
     } else if (arc::ArcBridgeService::GetAvailable(
                    base::CommandLine::ForCurrentProcess())) {

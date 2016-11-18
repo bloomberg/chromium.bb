@@ -59,21 +59,21 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 ArcAppDeferredLauncherController::ArcAppDeferredLauncherController(
     ChromeLauncherControllerImpl* owner)
     : owner_(owner), weak_ptr_factory_(this) {
-  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
+  if (arc::ArcSessionManager::IsAllowedForProfile(owner->profile())) {
     observed_profile_ = owner->profile();
     ArcAppListPrefs::Get(observed_profile_)->AddObserver(this);
   }
-  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  // arc::ArcAuthService might not be set in tests.
-  if (auth_service)
-    auth_service->AddObserver(this);
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  // arc::ArcSessionManager might not be set in tests.
+  if (arc_session_manager)
+    arc_session_manager->AddObserver(this);
 }
 
 ArcAppDeferredLauncherController::~ArcAppDeferredLauncherController() {
-  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  // arc::ArcAuthService may be released first.
-  if (auth_service)
-    auth_service->RemoveObserver(this);
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  // arc::ArcSessionManager may be released first.
+  if (arc_session_manager)
+    arc_session_manager->RemoveObserver(this);
   if (observed_profile_)
     ArcAppListPrefs::Get(observed_profile_)->RemoveObserver(this);
 }
@@ -180,10 +180,13 @@ void ArcAppDeferredLauncherController::RegisterNextUpdate() {
 
 void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
     const std::string& app_id) {
-  const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  DCHECK(auth_service);
-  DCHECK(auth_service->state() != arc::ArcAuthService::State::STOPPED);
-  DCHECK(auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED);
+  const arc::ArcSessionManager* arc_session_manager =
+      arc::ArcSessionManager::Get();
+  DCHECK(arc_session_manager);
+  DCHECK(arc_session_manager->state() !=
+         arc::ArcSessionManager::State::STOPPED);
+  DCHECK(arc_session_manager->state() !=
+         arc::ArcSessionManager::State::NOT_INITIALIZED);
 
   const std::string shelf_app_id =
       ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);

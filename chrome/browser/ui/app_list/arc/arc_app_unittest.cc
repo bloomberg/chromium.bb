@@ -941,14 +941,14 @@ TEST_F(ArcPlayStoreAppTest, PlayStore) {
   ASSERT_TRUE(app_info);
   EXPECT_TRUE(app_info->ready);
 
-  arc_test()->arc_auth_service()->DisableArc();
+  arc_test()->arc_session_manager()->DisableArc();
 
   app_info = prefs->GetApp(arc::kPlayStoreAppId);
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
 
   arc::LaunchApp(profile(), arc::kPlayStoreAppId);
-  EXPECT_TRUE(arc_test()->arc_auth_service()->IsArcEnabled());
+  EXPECT_TRUE(arc_test()->arc_session_manager()->IsArcEnabled());
 }
 
 // TODO(crbug.com/628425) -- reenable once this test is less flaky.
@@ -1138,7 +1138,7 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   ValidateHaveApps(all_apps);
 
   // OptOut and default apps should exist minus first.
-  arc_test()->arc_auth_service()->DisableArc();
+  arc_test()->arc_session_manager()->DisableArc();
   all_apps = fake_default_apps();
   all_apps.erase(all_apps.begin());
   ValidateHaveApps(all_apps);

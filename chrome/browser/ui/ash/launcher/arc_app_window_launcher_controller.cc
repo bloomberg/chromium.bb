@@ -18,7 +18,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -247,7 +247,7 @@ ArcAppWindowLauncherController::ArcAppWindowLauncherController(
     ChromeLauncherController* owner,
     ash::ShelfDelegate* shelf_delegate)
     : AppWindowLauncherController(owner), shelf_delegate_(shelf_delegate) {
-  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
+  if (arc::ArcSessionManager::IsAllowedForProfile(owner->profile())) {
     observed_profile_ = owner->profile();
     StartObserving(observed_profile_);
   }
@@ -307,7 +307,7 @@ void ArcAppWindowLauncherController::ActiveUserChanged(
 
 void ArcAppWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
-  DCHECK(!arc::ArcAuthService::IsAllowedForProfile(profile));
+  DCHECK(!arc::ArcSessionManager::IsAllowedForProfile(profile));
 }
 
 void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {

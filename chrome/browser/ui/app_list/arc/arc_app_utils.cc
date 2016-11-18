@@ -221,18 +221,18 @@ bool LaunchApp(content::BrowserContext* context,
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (app_info && !app_info->ready) {
-    ArcAuthService* auth_service = ArcAuthService::Get();
-    DCHECK(auth_service);
+    ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
+    DCHECK(arc_session_manager);
 
     bool arc_activated = false;
-    if (!auth_service->IsArcEnabled()) {
+    if (!arc_session_manager->IsArcEnabled()) {
       if (!prefs->IsDefault(app_id)) {
         NOTREACHED();
         return false;
       }
 
-      auth_service->EnableArc();
-      if (!auth_service->IsArcEnabled()) {
+      arc_session_manager->EnableArc();
+      if (!arc_session_manager->IsArcEnabled()) {
         NOTREACHED();
         return false;
       }

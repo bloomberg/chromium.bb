@@ -24,7 +24,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #endif
 
@@ -67,11 +67,11 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
-    arc::ArcAuthService::DisableUIForTesting();
+    arc::ArcSessionManager::DisableUIForTesting();
     bridge_service_ = base::MakeUnique<arc::FakeArcBridgeService>();
-    auth_service_ =
-        base::MakeUnique<arc::ArcAuthService>(bridge_service_.get());
-    auth_service_->OnPrimaryUserProfilePrepared(
+    arc_session_manager_ =
+        base::MakeUnique<arc::ArcSessionManager>(bridge_service_.get());
+    arc_session_manager_->OnPrimaryUserProfilePrepared(
         extension_environment_.profile());
 #endif
     widget_ = views::DialogDelegate::CreateDialogWidget(
@@ -92,9 +92,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     EXPECT_TRUE(widget_destroyed_);
     extension_ = nullptr;
 #if defined(OS_CHROMEOS)
-    if (auth_service_) {
-      auth_service_->Shutdown();
-      auth_service_ = nullptr;
+    if (arc_session_manager_) {
+      arc_session_manager_->Shutdown();
+      arc_session_manager_ = nullptr;
     }
 #endif
     BrowserWithTestWindowTest::TearDown();
@@ -107,9 +107,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
 
   void DestroyProfile(TestingProfile* profile) override {
 #if defined(OS_CHROMEOS)
-    if (auth_service_) {
-      auth_service_->Shutdown();
-      auth_service_ = nullptr;
+    if (arc_session_manager_) {
+      arc_session_manager_->Shutdown();
+      arc_session_manager_ = nullptr;
     }
 #endif
   }
@@ -138,7 +138,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   extensions::TestExtensionEnvironment extension_environment_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
-  std::unique_ptr<arc::ArcAuthService> auth_service_;
+  std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
 #endif
 
  private:

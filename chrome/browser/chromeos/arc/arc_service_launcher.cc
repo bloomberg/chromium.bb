@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_service.h"
@@ -31,6 +32,13 @@ void ArcServiceLauncher::Initialize() {
   // Create ARC service manager.
   arc_service_manager_ = base::MakeUnique<ArcServiceManager>(
       content::BrowserThread::GetBlockingPool());
+
+  // Creates ArcSessionManager at first.
+  // TODO(hidehiko): ArcSessionManager should be rather than an ArcService but
+  // its manager. Restructure it to reflect the concept.
+  arc_service_manager_->AddService(base::MakeUnique<ArcSessionManager>(
+      arc_service_manager_->arc_bridge_service()));
+
   arc_service_manager_->AddService(base::MakeUnique<ArcAuthService>(
       arc_service_manager_->arc_bridge_service()));
   arc_service_manager_->AddService(base::MakeUnique<ArcBootErrorNotification>(

@@ -139,7 +139,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
           profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
-  if (arc::ArcAuthService::IsAllowedForProfile(profile_)) {
+  if (arc::ArcSessionManager::IsAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> arc_app_icon_loader =
         base::MakeUnique<ArcAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_SMALL, this);

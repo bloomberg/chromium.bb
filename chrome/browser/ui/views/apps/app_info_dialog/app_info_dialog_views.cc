@@ -34,7 +34,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.h"
 #endif
 
@@ -147,7 +147,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
 
 #if defined(OS_CHROMEOS)
   // When ARC is enabled, show the "Manage supported links" link for Chrome.
-  if (arc::ArcAuthService::Get()->IsArcEnabled() &&
+  if (arc::ArcSessionManager::Get()->IsArcEnabled() &&
       app->id() == extension_misc::kChromeAppId)
     dialog_body_contents->AddChildView(new ArcAppInfoLinksPanel(profile, app));
 #endif

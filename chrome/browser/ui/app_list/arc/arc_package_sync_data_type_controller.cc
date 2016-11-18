@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -19,8 +19,8 @@ namespace {
 
 // Indicates whether ARC is enabled on this machine.
 bool IsArcEnabled(Profile* profile) {
-  return arc::ArcAuthService::IsAllowedForProfile(profile) &&
-      profile->GetPrefs()->GetBoolean(prefs::kArcEnabled);
+  return arc::ArcSessionManager::IsAllowedForProfile(profile) &&
+         profile->GetPrefs()->GetBoolean(prefs::kArcEnabled);
 }
 
 }  // namespace

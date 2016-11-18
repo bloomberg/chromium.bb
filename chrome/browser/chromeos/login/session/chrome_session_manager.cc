@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -118,8 +118,8 @@ void StartRestoreAfterCrashSession(Profile* user_profile,
       arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
           multi_user_util::GetAccountIdFromProfile(user_profile),
           std::move(arc_enabled_pref));
-      DCHECK(arc::ArcAuthService::Get());
-      arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(user_profile);
+      DCHECK(arc::ArcSessionManager::Get());
+      arc::ArcSessionManager::Get()->OnPrimaryUserProfilePrepared(user_profile);
     }
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()

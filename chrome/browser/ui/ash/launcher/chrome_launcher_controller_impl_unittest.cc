@@ -809,10 +809,10 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void EnableArc(bool enable) {
-    enable ? arc_test_.arc_auth_service()->EnableArc()
-           : arc_test_.arc_auth_service()->DisableArc();
-    arc_test_.arc_auth_service()->OnSyncedPrefChanged(prefs::kArcEnabled,
-                                                      false);
+    enable ? arc_test_.arc_session_manager()->EnableArc()
+           : arc_test_.arc_session_manager()->DisableArc();
+    arc_test_.arc_session_manager()->OnSyncedPrefChanged(prefs::kArcEnabled,
+                                                         false);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -824,11 +824,11 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   void ValidateArcState(bool arc_enabled,
                         bool arc_managed,
-                        arc::ArcAuthService::State state,
+                        arc::ArcSessionManager::State state,
                         const std::string& pin_status) {
-    EXPECT_EQ(arc_managed, arc_test_.arc_auth_service()->IsArcManaged());
-    EXPECT_EQ(arc_enabled, arc_test_.arc_auth_service()->IsArcEnabled());
-    EXPECT_EQ(state, arc_test_.arc_auth_service()->state());
+    EXPECT_EQ(arc_managed, arc_test_.arc_session_manager()->IsArcManaged());
+    EXPECT_EQ(arc_enabled, arc_test_.arc_session_manager()->IsArcEnabled());
+    EXPECT_EQ(state, arc_test_.arc_session_manager()->state());
     EXPECT_EQ(pin_status, GetPinnedAppStatus());
   }
 
@@ -2027,9 +2027,9 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
   // Disable/Enable Arc should persist pin state.
   launcher_controller_->PinAppWithID(arc_app_id);
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
-  arc::ArcAuthService::Get()->Shutdown();
+  arc::ArcSessionManager::Get()->Shutdown();
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
-  arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile());
+  arc::ArcSessionManager::Get()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
 
   // Opt-Out/Opt-In remove item from the shelf.
@@ -3561,11 +3561,12 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   EnableArc(false);
 
   InitLauncherController();
-  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+  arc::ArcSessionManager::SetShelfDelegateForTesting(
+      launcher_controller_.get());
 
   // Initial run, Arc is not managed and disabled, Play Store pin should be
   // available.
-  ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
+  ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome, Play Store");
 
   // Arc is managed and enabled, Play Store pin should be available.
@@ -3574,38 +3575,38 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
       prefs::kArcEnabled, new base::FundamentalValue(true));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(true, true,
-                   arc::ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+                   arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
   // Arc is managed and disabled, Play Store pin should not be available.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, new base::FundamentalValue(false));
   base::RunLoop().RunUntilIdle();
-  ValidateArcState(false, true, arc::ArcAuthService::State::STOPPED,
+  ValidateArcState(false, true, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");
 
   // Arc is not managed and disabled, Play Store pin should be available.
   profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
   base::RunLoop().RunUntilIdle();
-  ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
+  ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome, Play Store");
 
   // Arc is not managed and enabled, Play Store pin should be available.
   EnableArc(true);
   ValidateArcState(true, false,
-                   arc::ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+                   arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
   // User disables Arc. Arc is not managed and disabled, Play Store pin should
   // be automatically removed.
   EnableArc(false);
-  ValidateArcState(false, false, arc::ArcAuthService::State::STOPPED,
+  ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");
 
   // Even if re-enable it again, Play Store pin does not appear automatically.
   EnableArc(true);
   ValidateArcState(true, false,
-                   arc::ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+                   arc::ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
                    "AppList, Chrome");
 }
 
@@ -3711,7 +3712,8 @@ TEST_F(ChromeLauncherControllerOrientationTest,
   EnableArc(true);
 
   InitLauncherController();
-  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+  arc::ArcSessionManager::SetShelfDelegateForTesting(
+      launcher_controller_.get());
 
   ash::ScreenOrientationController* controller =
       ash::Shell::GetInstance()->screen_orientation_controller();
@@ -3762,7 +3764,8 @@ TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   EnableTabletMode(true);
 
   InitLauncherController();
-  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+  arc::ArcSessionManager::SetShelfDelegateForTesting(
+      launcher_controller_.get());
 
   InitApps();
   ash::ScreenOrientationController* controller =
@@ -3860,7 +3863,8 @@ TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
   EnableTabletMode(true);
 
   InitLauncherController();
-  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+  arc::ArcSessionManager::SetShelfDelegateForTesting(
+      launcher_controller_.get());
 
   InitApps();
   ash::ScreenOrientationController* controller =
@@ -3918,18 +3922,19 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
   ChromeLauncherController::set_instance_for_test(launcher_controller_.get());
-  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+  arc::ArcSessionManager::SetShelfDelegateForTesting(
+      launcher_controller_.get());
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnableArc(false);
-  EXPECT_FALSE(arc_test_.arc_auth_service()->IsArcEnabled());
+  EXPECT_FALSE(arc_test_.arc_session_manager()->IsArcEnabled());
   ASSERT_TRUE(prefs->GetAppIds().size());
 
   const std::string app_id =
       ArcAppTest::GetAppId(arc_test_.fake_default_apps()[0]);
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(app_id));
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id));
-  EXPECT_TRUE(arc_test_.arc_auth_service()->IsArcEnabled());
+  EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcEnabled());
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(app_id));
 
   // Stop Arc again. Shelf item should go away.
@@ -3937,7 +3942,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(app_id));
 
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id));
-  EXPECT_TRUE(arc_test_.arc_auth_service()->IsArcEnabled());
+  EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcEnabled());
 
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(app_id));
   EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));

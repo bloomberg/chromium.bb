@@ -256,7 +256,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
   data_sources_.push_back(
       std::unique_ptr<DataSource>(new ExtensionDataSource(profile, this)));
 #if defined(OS_CHROMEOS)
-  if (arc::ArcAuthService::IsAllowedForProfile(profile)) {
+  if (arc::ArcSessionManager::IsAllowedForProfile(profile)) {
     data_sources_.push_back(
         std::unique_ptr<DataSource>(new ArcDataSource(profile, this)));
   }

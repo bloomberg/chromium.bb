@@ -21,7 +21,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
@@ -411,9 +411,9 @@ void StorageManagerHandler::UpdateArcSize() {
   updating_arc_size_ = true;
 
   Profile* const profile = Profile::FromWebUI(web_ui());
-  if (!arc::ArcAuthService::IsAllowedForProfile(profile) ||
-      arc::ArcAuthService::IsOptInVerificationDisabled() ||
-      !arc::ArcAuthService::Get()->IsArcEnabled()) {
+  if (!arc::ArcSessionManager::IsAllowedForProfile(profile) ||
+      arc::ArcSessionManager::IsOptInVerificationDisabled() ||
+      !arc::ArcSessionManager::Get()->IsArcEnabled()) {
     return;
   }
 

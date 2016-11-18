@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -85,7 +85,7 @@ namespace arc {
 class ArcSettingsServiceImpl
     : public chromeos::system::TimezoneSettings::Observer,
       public device::BluetoothAdapter::Observer,
-      public ArcAuthService::Observer,
+      public ArcSessionManager::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
   explicit ArcSettingsServiceImpl(ArcBridgeService* arc_bridge_service);
@@ -102,7 +102,7 @@ class ArcSettingsServiceImpl
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                              bool powered) override;
 
-  // ArcAuthService::Observer:
+  // ArcSessionManager::Observer:
   void OnInitialStart() override;
 
   // NetworkStateHandlerObserver:
@@ -169,16 +169,16 @@ ArcSettingsServiceImpl::ArcSettingsServiceImpl(
     : arc_bridge_service_(arc_bridge_service), weak_factory_(this) {
   StartObservingSettingsChanges();
   SyncRuntimeSettings();
-  DCHECK(ArcAuthService::Get());
-  ArcAuthService::Get()->AddObserver(this);
+  DCHECK(ArcSessionManager::Get());
+  ArcSessionManager::Get()->AddObserver(this);
 }
 
 ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {
   StopObservingSettingsChanges();
 
-  ArcAuthService* arc_auth_service = ArcAuthService::Get();
-  if (arc_auth_service)
-    arc_auth_service->RemoveObserver(this);
+  ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
+  if (arc_session_manager)
+    arc_session_manager->RemoveObserver(this);
 
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);

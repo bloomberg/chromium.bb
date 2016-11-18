@@ -137,10 +137,12 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-    arc::ArcAuthService::DisableUIForTesting();
+    arc::ArcSessionManager::DisableUIForTesting();
   }
 
-  void SetUpOnMainThread() override { arc::ArcAuthService::Get()->EnableArc(); }
+  void SetUpOnMainThread() override {
+    arc::ArcSessionManager::Get()->EnableArc();
+  }
 
   void InstallTestApps(bool multi_app) {
     app_host()->OnAppListRefreshed(GetTestAppsList(multi_app));
@@ -178,13 +180,13 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   void SendPackageRemoved() { app_host()->OnPackageRemoved(kTestAppPackage); }
 
   void StartInstance() {
-    if (auth_service()->profile() != profile())
-      auth_service()->OnPrimaryUserProfilePrepared(profile());
+    if (arc_session_manager()->profile() != profile())
+      arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
     app_instance_observer()->OnInstanceReady();
   }
 
   void StopInstance() {
-    auth_service()->Shutdown();
+    arc_session_manager()->Shutdown();
     app_instance_observer()->OnInstanceClosed();
   }
 
@@ -201,7 +203,9 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     return app_prefs();
   }
 
-  arc::ArcAuthService* auth_service() { return arc::ArcAuthService::Get(); }
+  arc::ArcSessionManager* arc_session_manager() {
+    return arc::ArcSessionManager::Get();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherBrowserTest);

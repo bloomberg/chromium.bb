@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -60,58 +60,20 @@ constexpr char kManagedAuthToken[] = "managed-auth-token";
 constexpr char kUnmanagedAuthToken[] = "unmanaged-auth-token";
 constexpr char kWellKnownConsumerName[] = "test@gmail.com";
 constexpr char kFakeUserName[] = "test@example.com";
-constexpr char kFakeAuthCode[] = "fake-auth-code";
-
-// JobCallback for the interceptor.
-net::URLRequestJob* ResponseJob(net::URLRequest* request,
-                                net::NetworkDelegate* network_delegate) {
-  const net::UploadDataStream* upload = request->get_upload();
-  if (!upload || !upload->GetElementReaders() ||
-      upload->GetElementReaders()->size() != 1 ||
-      !(*upload->GetElementReaders())[0]->AsBytesReader())
-    return nullptr;
-
-  const net::UploadBytesElementReader* bytes_reader =
-      (*upload->GetElementReaders())[0]->AsBytesReader();
-
-  enterprise_management::DeviceManagementRequest parsed_request;
-  EXPECT_TRUE(parsed_request.ParseFromArray(bytes_reader->bytes(),
-                                            bytes_reader->length()));
-  // Check if auth code is requested.
-  EXPECT_TRUE(parsed_request.has_service_api_access_request());
-
-  enterprise_management::DeviceManagementResponse response;
-  response.mutable_service_api_access_response()->set_auth_code(kFakeAuthCode);
-
-  std::string response_data;
-  EXPECT_TRUE(response.SerializeToString(&response_data));
-
-  return new net::URLRequestTestJob(request, network_delegate,
-                                    net::URLRequestTestJob::test_headers(),
-                                    response_data, true);
-}
-
-class FakeAuthInstance : public arc::mojom::AuthInstance {
- public:
-  void Init(arc::mojom::AuthHostPtr host_ptr) override {}
-  void OnAccountInfoReady(arc::mojom::AccountInfoPtr account_info) override {
-    ASSERT_FALSE(callback.is_null());
-    callback.Run(account_info);
-  }
-  base::Callback<void(const arc::mojom::AccountInfoPtr&)> callback;
-};
 
 }  // namespace
 
 namespace arc {
 
 // Observer of ARC bridge shutdown.
-class ArcAuthServiceShutdownObserver : public ArcAuthService::Observer {
+class ArcSessionManagerShutdownObserver : public ArcSessionManager::Observer {
  public:
-  ArcAuthServiceShutdownObserver() { ArcAuthService::Get()->AddObserver(this); }
+  ArcSessionManagerShutdownObserver() {
+    ArcSessionManager::Get()->AddObserver(this);
+  }
 
-  ~ArcAuthServiceShutdownObserver() override {
-    ArcAuthService::Get()->RemoveObserver(this);
+  ~ArcSessionManagerShutdownObserver() override {
+    ArcSessionManager::Get()->RemoveObserver(this);
   }
 
   void Wait() {
@@ -120,7 +82,7 @@ class ArcAuthServiceShutdownObserver : public ArcAuthService::Observer {
     run_loop_.reset();
   }
 
-  // ArcAuthService::Observer:
+  // ArcSessionManager::Observer:
   void OnShutdownBridge() override {
     if (!run_loop_)
       return;
@@ -130,15 +92,15 @@ class ArcAuthServiceShutdownObserver : public ArcAuthService::Observer {
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceShutdownObserver);
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerShutdownObserver);
 };
 
-class ArcAuthServiceTest : public InProcessBrowserTest {
+class ArcSessionManagerTest : public InProcessBrowserTest {
  protected:
-  ArcAuthServiceTest() {}
+  ArcSessionManagerTest() {}
 
   // InProcessBrowserTest:
-  ~ArcAuthServiceTest() override {}
+  ~ArcSessionManagerTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     // Start test device management server.
@@ -171,9 +133,9 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
         new chromeos::FakeChromeUserManager));
-    // Init ArcAuthService for testing.
-    ArcAuthService::DisableUIForTesting();
-    ArcAuthService::EnableCheckAndroidManagementForTesting();
+    // Init ArcSessionManager for testing.
+    ArcSessionManager::DisableUIForTesting();
+    ArcSessionManager::EnableCheckAndroidManagementForTesting();
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -203,11 +165,11 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
         multi_user_util::GetAccountIdFromProfile(profile()),
         std::move(arc_enabled_pref));
-    ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile());
+    ArcSessionManager::Get()->OnPrimaryUserProfilePrepared(profile());
   }
 
   void TearDownOnMainThread() override {
-    ArcAuthService::Get()->Shutdown();
+    ArcSessionManager::Get()->Shutdown();
     ArcServiceManager::Get()->Shutdown();
     profile_.reset();
     user_manager_enabler_.reset();
@@ -234,26 +196,28 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   std::unique_ptr<TestingProfile> profile_;
   FakeProfileOAuth2TokenService* token_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ConsumerAccount) {
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {
   PrefService* const prefs = profile()->GetPrefs();
   prefs->SetBoolean(prefs::kArcEnabled, true);
   token_service()->IssueTokenForAllPendingRequests(kUnmanagedAuthToken,
                                                    base::Time::Max());
-  ASSERT_EQ(ArcAuthService::State::ACTIVE, ArcAuthService::Get()->state());
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE,
+            ArcSessionManager::Get()->state());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, WellKnownConsumerAccount) {
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, WellKnownConsumerAccount) {
   set_profile_name(kWellKnownConsumerName);
   PrefService* const prefs = profile()->GetPrefs();
 
   prefs->SetBoolean(prefs::kArcEnabled, true);
-  ASSERT_EQ(ArcAuthService::State::ACTIVE, ArcAuthService::Get()->state());
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE,
+            ArcSessionManager::Get()->state());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ManagedChromeAccount) {
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
   policy::ProfilePolicyConnector* const connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
   connector->OverrideIsManagedForTesting(true);
@@ -261,115 +225,20 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ManagedChromeAccount) {
   PrefService* const pref = profile()->GetPrefs();
 
   pref->SetBoolean(prefs::kArcEnabled, true);
-  ASSERT_EQ(ArcAuthService::State::ACTIVE, ArcAuthService::Get()->state());
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE,
+            ArcSessionManager::Get()->state());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ManagedAndroidAccount) {
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   PrefService* const prefs = profile()->GetPrefs();
 
   prefs->SetBoolean(prefs::kArcEnabled, true);
   token_service()->IssueTokenForAllPendingRequests(kManagedAuthToken,
                                                    base::Time::Max());
-  ArcAuthServiceShutdownObserver observer;
+  ArcSessionManagerShutdownObserver observer;
   observer.Wait();
-  ASSERT_EQ(ArcAuthService::State::STOPPED, ArcAuthService::Get()->state());
-}
-
-class KioskArcAuthServiceTest : public InProcessBrowserTest {
- protected:
-  KioskArcAuthServiceTest() = default;
-
-  // InProcessBrowserTest:
-  ~KioskArcAuthServiceTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                    "http://localhost");
-    command_line->AppendSwitch(chromeos::switches::kEnableArc);
-  }
-
-  void SetUpOnMainThread() override {
-    interceptor_.reset(new policy::TestRequestInterceptor(
-        "localhost", content::BrowserThread::GetTaskRunnerForThread(
-                         content::BrowserThread::IO)));
-
-    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-        new chromeos::FakeChromeUserManager));
-
-    const AccountId account_id(AccountId::FromUserEmail(kFakeUserName));
-    GetFakeUserManager()->AddArcKioskAppUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
-
-    policy::BrowserPolicyConnectorChromeOS* const connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    policy::DeviceCloudPolicyManagerChromeOS* const cloud_policy_manager =
-        connector->GetDeviceCloudPolicyManager();
-
-    cloud_policy_manager->StartConnection(
-        base::MakeUnique<policy::MockCloudPolicyClient>(),
-        connector->GetInstallAttributes());
-
-    policy::MockCloudPolicyClient* const cloud_policy_client =
-        static_cast<policy::MockCloudPolicyClient*>(
-            cloud_policy_manager->core()->client());
-    cloud_policy_client->SetDMToken("fake-dm-token");
-    cloud_policy_client->client_id_ = "client-id";
-
-    ArcBridgeService::Get()->auth()->SetInstance(&auth_instance_);
-  }
-
-  void TearDownOnMainThread() override {
-    ArcBridgeService::Get()->auth()->SetInstance(nullptr);
-    ArcAuthService::Get()->Shutdown();
-    ArcServiceManager::Get()->Shutdown();
-    user_manager_enabler_.reset();
-
-    // Verify that all the expected requests were handled.
-    EXPECT_EQ(0u, interceptor_->GetPendingSize());
-    interceptor_.reset();
-  }
-
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
-        user_manager::UserManager::Get());
-  }
-
-  std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
-  FakeAuthInstance auth_instance_;
-
- private:
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskArcAuthServiceTest);
-};
-
-IN_PROC_BROWSER_TEST_F(KioskArcAuthServiceTest, RequestAccountInfoSuccess) {
-  interceptor_->PushJobCallback(base::Bind(&ResponseJob));
-
-  auth_instance_.callback =
-      base::Bind([](const mojom::AccountInfoPtr& account_info) {
-        EXPECT_EQ(kFakeAuthCode, account_info->auth_code.value());
-        EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
-                  account_info->account_type);
-        EXPECT_FALSE(account_info->is_managed);
-      });
-
-  ArcAuthService::Get()->RequestAccountInfo();
-  base::RunLoop().RunUntilIdle();
-}
-
-IN_PROC_BROWSER_TEST_F(KioskArcAuthServiceTest, RequestAccountInfoError) {
-  interceptor_->PushJobCallback(
-      policy::TestRequestInterceptor::BadRequestJob());
-
-  auth_instance_.callback =
-      base::Bind([](const mojom::AccountInfoPtr&) { FAIL(); });
-
-  ArcAuthService::Get()->RequestAccountInfo();
-  // This MessageLoop will be stopped by AttemptUserExit(), that is called as
-  // a result of error of auth code fetching.
-  base::RunLoop().Run();
+  ASSERT_EQ(ArcSessionManager::State::STOPPED,
+            ArcSessionManager::Get()->state());
 }
 
 }  // namespace arc

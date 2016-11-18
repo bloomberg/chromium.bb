@@ -13,7 +13,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -44,19 +45,19 @@
 
 namespace arc {
 
-class ArcAuthServiceTest : public testing::Test {
+class ArcSessionManagerTest : public testing::Test {
  public:
-  ArcAuthServiceTest()
+  ArcSessionManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
-  ~ArcAuthServiceTest() override = default;
+  ~ArcSessionManagerTest() override = default;
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kEnableArc);
-    ArcAuthService::DisableUIForTesting();
+    ArcSessionManager::DisableUIForTesting();
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
@@ -66,7 +67,7 @@ class ArcAuthServiceTest : public testing::Test {
     StartPreferenceSyncing();
 
     bridge_service_.reset(new FakeArcBridgeService());
-    auth_service_.reset(new ArcAuthService(bridge_service_.get()));
+    arc_session_manager_.reset(new ArcSessionManager(bridge_service_.get()));
 
     // Check initial conditions.
     EXPECT_EQ(bridge_service_.get(), ArcBridgeService::Get());
@@ -93,7 +94,9 @@ class ArcAuthServiceTest : public testing::Test {
  protected:
   Profile* profile() { return profile_.get(); }
   FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
-  ArcAuthService* auth_service() { return auth_service_.get(); }
+  ArcSessionManager* arc_session_manager() {
+    return arc_session_manager_.get();
+  }
 
  private:
   void StartPreferenceSyncing() const {
@@ -109,34 +112,35 @@ class ArcAuthServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<FakeArcBridgeService> bridge_service_;
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<ArcAuthService> auth_service_;
+  std::unique_ptr<ArcSessionManager> arc_session_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
-TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+TEST_F(ArcSessionManagerTest, PrefChangeTriggersService) {
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
   PrefService* const pref = profile()->GetPrefs();
   ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, true);
-  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
-            auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, false);
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
+TEST_F(ArcSessionManagerTest, DisabledForEphemeralDataUsers) {
   PrefService* const prefs = profile()->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
@@ -146,22 +150,25 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
 
   fake_user_manager->AddUser(fake_user_manager->GetGuestAccountId());
   fake_user_manager->SwitchActiveUser(fake_user_manager->GetGuestAccountId());
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
   fake_user_manager->AddUser(user_manager::DemoAccountId());
   fake_user_manager->SwitchActiveUser(user_manager::DemoAccountId());
-  auth_service()->Shutdown();
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->Shutdown();
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
   const AccountId public_account_id(
       AccountId::FromUserEmail("public_user@gmail.com"));
   fake_user_manager->AddPublicAccountUser(public_account_id);
   fake_user_manager->SwitchActiveUser(public_account_id);
-  auth_service()->Shutdown();
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->Shutdown();
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
   const AccountId not_in_list_account_id(
       AccountId::FromUserEmail("not_in_list_user@gmail.com"));
@@ -169,153 +176,157 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
   fake_user_manager->AddUser(not_in_list_account_id);
   fake_user_manager->SwitchActiveUser(not_in_list_account_id);
   fake_user_manager->RemoveUserFromList(not_in_list_account_id);
-  auth_service()->Shutdown();
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->Shutdown();
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, BaseWorkflow) {
+TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   ASSERT_FALSE(bridge_service()->ready());
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
   // By default ARC is not enabled.
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
   // Setting profile and pref initiates a code fetching process.
-  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
-            auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
 
   // TODO(hidehiko): Verify state transition from SHOWING_TERMS_OF_SERVICE ->
   // CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
-  auth_service()->StartArc();
+  arc_session_manager()->StartArc();
 
-  ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   ASSERT_TRUE(bridge_service()->ready());
 
-  auth_service()->Shutdown();
-  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->Shutdown();
+  ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
   ASSERT_FALSE(bridge_service()->ready());
 
   // Send profile and don't provide a code.
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
   // Setting profile initiates a code fetching process.
-  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
-            auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
 
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   // UI is disabled in unit tests and this code is unchanged.
-  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
-            auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, CancelFetchingDisablesArc) {
+TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
   PrefService* const pref = profile()->GetPrefs();
 
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
-  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
-            auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
 
-  auth_service()->CancelAuthCode();
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  arc_session_manager()->CancelAuthCode();
+  ASSERT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
   ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
+TEST_F(ArcSessionManagerTest, CloseUIKeepsArcEnabled) {
   PrefService* const pref = profile()->GetPrefs();
 
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
 
-  auth_service()->StartArc();
+  arc_session_manager()->StartArc();
 
-  ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  auth_service()->CancelAuthCode();
-  ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  arc_session_manager()->CancelAuthCode();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   ASSERT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, EnableDisablesArc) {
+TEST_F(ArcSessionManagerTest, EnableDisablesArc) {
   const PrefService* pref = profile()->GetPrefs();
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-  auth_service()->EnableArc();
+  arc_session_manager()->EnableArc();
   EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
-  auth_service()->DisableArc();
+  arc_session_manager()->DisableArc();
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, SignInStatus) {
+TEST_F(ArcSessionManagerTest, SignInStatus) {
   PrefService* const prefs = profile()->GetPrefs();
 
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
 
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
-            auth_service()->state());
-  auth_service()->StartArc();
-  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArc();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(bridge_service()->ready());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
-  auth_service()->OnSignInComplete();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
-  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(bridge_service()->ready());
 
   // Second start, no fetching code is expected.
-  auth_service()->Shutdown();
-  EXPECT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->Shutdown();
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
   EXPECT_FALSE(bridge_service()->ready());
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
-  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(bridge_service()->ready());
 
   // Report failure.
-  auth_service()->OnSignInFailed(
-      mojom::ArcSignInFailureReason::GMS_NETWORK_ERROR);
+  arc_session_manager()->OnProvisioningFinished(
+      ProvisioningResult::GMS_NETWORK_ERROR);
   // On error, UI to send feedback is showing. In that case,
   // the ARC is still necessary to run on background for gathering the logs.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
-  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(bridge_service()->ready());
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
+TEST_F(ArcSessionManagerTest, DisabledForDeviceLocalAccount) {
   PrefService* const prefs = profile()->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  auth_service()->StartArc();
-  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->StartArc();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Create device local account and set it as active.
   const std::string email = "device-local-account@fake-email.com";
@@ -332,18 +343,20 @@ TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
 
   // Check that user without GAIA account can't use ARC.
   device_local_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  auth_service()->OnPrimaryUserProfilePrepared(device_local_profile.get());
-  EXPECT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(
+      device_local_profile.get());
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
 
   // Correctly stop service.
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
-TEST_F(ArcAuthServiceTest, DisabledForNonPrimaryProfile) {
+TEST_F(ArcSessionManagerTest, DisabledForNonPrimaryProfile) {
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
-  auth_service()->OnPrimaryUserProfilePrepared(profile());
-  auth_service()->StartArc();
-  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
+  arc_session_manager()->StartArc();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Create a second profile and set it as the active profile.
   const std::string email = "test@example.com";
@@ -359,7 +372,7 @@ TEST_F(ArcAuthServiceTest, DisabledForNonPrimaryProfile) {
   EXPECT_FALSE(chromeos::ProfileHelper::IsPrimaryProfile(second_profile.get()));
   EXPECT_FALSE(ArcAppListPrefs::Get(second_profile.get()));
 
-  auth_service()->Shutdown();
+  arc_session_manager()->Shutdown();
 }
 
 }  // namespace arc

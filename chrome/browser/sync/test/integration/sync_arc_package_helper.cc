@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -80,7 +80,7 @@ void SyncArcPackageHelper::SetupTest(SyncTest* test) {
 }
 
 void SyncArcPackageHelper::CleanUp() {
-  ArcAuthService::Get()->Shutdown();
+  ArcSessionManager::Get()->Shutdown();
   user_manager_enabler_.reset();
 }
 
@@ -154,11 +154,11 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                                     profile);
 
-  ArcAuthService* auth_service = ArcAuthService::Get();
-  DCHECK(auth_service);
-  ArcAuthService::DisableUIForTesting();
-  auth_service->OnPrimaryUserProfilePrepared(profile);
-  auth_service->EnableArc();
+  ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
+  DCHECK(arc_session_manager);
+  ArcSessionManager::DisableUIForTesting();
+  arc_session_manager->OnPrimaryUserProfilePrepared(profile);
+  arc_session_manager->EnableArc();
 
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);

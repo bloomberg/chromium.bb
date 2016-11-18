@@ -209,7 +209,7 @@ ChromeLauncherControllerImpl::ChromeLauncherControllerImpl(
   AttachProfile(profile);
   model_->AddObserver(this);
 
-  if (arc::ArcAuthService::IsAllowedForProfile(this->profile()))
+  if (arc::ArcSessionManager::IsAllowedForProfile(this->profile()))
     arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
 
   // In multi profile mode we might have a window manager. We try to create it
@@ -883,7 +883,7 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile_to_attach) {
       new LauncherExtensionAppUpdater(this, profile()));
   app_updaters_.push_back(std::move(extension_app_updater));
 
-  if (arc::ArcAuthService::IsAllowedForProfile(profile())) {
+  if (arc::ArcSessionManager::IsAllowedForProfile(profile())) {
     std::unique_ptr<LauncherAppUpdater> arc_app_updater(
         new LauncherArcAppUpdater(this, profile()));
     app_updaters_.push_back(std::move(arc_app_updater));

@@ -123,7 +123,7 @@
 #include "ash/shell.h"  // nogncheck
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
@@ -1163,10 +1163,10 @@ void BrowserOptionsHandler::InitializePage() {
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
           user->GetAccountId()));
 
-  if (arc::ArcAuthService::IsAllowedForProfile(profile) &&
-      !arc::ArcAuthService::IsOptInVerificationDisabled()) {
+  if (arc::ArcSessionManager::IsAllowedForProfile(profile) &&
+      !arc::ArcSessionManager::IsOptInVerificationDisabled()) {
     base::FundamentalValue is_arc_enabled(
-        arc::ArcAuthService::Get()->IsArcEnabled());
+        arc::ArcSessionManager::Get()->IsArcEnabled());
     web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.showAndroidAppsSection",
         is_arc_enabled);
@@ -2003,7 +2003,7 @@ void BrowserOptionsHandler::ShowAndroidAppsSettings(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Settings in secondary profile cannot access ARC.
-  if (!arc::ArcAuthService::IsAllowedForProfile(profile)) {
+  if (!arc::ArcSessionManager::IsAllowedForProfile(profile)) {
     LOG(ERROR) << "Settings can't be invoked for non-primary profile";
     return;
   }
@@ -2015,7 +2015,7 @@ void BrowserOptionsHandler::ShowAccessibilityTalkBackSettings(
     const base::ListValue *args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Settings in secondary profile cannot access ARC.
-  if (!arc::ArcAuthService::IsAllowedForProfile(profile)) {
+  if (!arc::ArcSessionManager::IsAllowedForProfile(profile)) {
     LOG(WARNING) << "Settings can't be invoked for non-primary profile";
     return;
   }

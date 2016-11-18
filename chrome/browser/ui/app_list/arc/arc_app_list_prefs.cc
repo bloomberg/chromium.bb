@@ -143,10 +143,11 @@ void DeleteAppFolderFromFileThread(const base::FilePath& path) {
 }
 
 bool IsArcEnabled() {
-  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  return auth_service &&
-         auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED &&
-         auth_service->IsArcEnabled();
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  return arc_session_manager &&
+         arc_session_manager->state() !=
+             arc::ArcSessionManager::State::NOT_INITIALIZED &&
+         arc_session_manager->IsArcEnabled();
 }
 
 bool GetInt64FromPref(const base::DictionaryValue* dict,
@@ -241,11 +242,11 @@ ArcAppListPrefs::ArcAppListPrefs(
   const base::FilePath& base_path = profile->GetPath();
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
-  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  if (!auth_service)
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (!arc_session_manager)
     return;
 
-  DCHECK(arc::ArcAuthService::IsAllowedForProfile(profile));
+  DCHECK(arc::ArcSessionManager::IsAllowedForProfile(profile));
 
   // Once default apps are ready OnDefaultAppsReady is called.
 }
@@ -258,18 +259,19 @@ ArcAppListPrefs::~ArcAppListPrefs() {
   if (bridge_service)
     app_instance_holder_->RemoveObserver(this);
 
-  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  if (auth_service)
-    auth_service->RemoveObserver(this);
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (arc_session_manager)
+    arc_session_manager->RemoveObserver(this);
 }
 
 void ArcAppListPrefs::StartPrefs() {
-  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
-  CHECK(auth_service);
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  CHECK(arc_session_manager);
 
-  if (auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED)
-    OnOptInEnabled(auth_service->IsArcEnabled());
-  auth_service->AddObserver(this);
+  if (arc_session_manager->state() !=
+      arc::ArcSessionManager::State::NOT_INITIALIZED)
+    OnOptInEnabled(arc_session_manager->IsArcEnabled());
+  arc_session_manager->AddObserver(this);
 
   app_instance_holder_->AddObserver(this);
   if (!app_instance_holder_->has_instance())

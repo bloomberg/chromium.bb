@@ -151,13 +151,15 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   if (!GetExtensionByID(profile_, id))
     return false;
   if (id == ArcSupportHost::kHostAppId) {
-    if (!arc::ArcAuthService::IsAllowedForProfile(profile()))
+    if (!arc::ArcSessionManager::IsAllowedForProfile(profile()))
       return false;
-    const arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-    DCHECK(arc_auth_service);
-    if (!arc_auth_service->IsAllowed())
+    const arc::ArcSessionManager* arc_session_manager =
+        arc::ArcSessionManager::Get();
+    DCHECK(arc_session_manager);
+    if (!arc_session_manager->IsAllowed())
       return false;
-    if (!arc_auth_service->IsArcEnabled() && arc_auth_service->IsArcManaged())
+    if (!arc_session_manager->IsArcEnabled() &&
+        arc_session_manager->IsArcManaged())
       return false;
   }
 

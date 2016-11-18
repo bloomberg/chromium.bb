@@ -196,7 +196,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -3952,14 +3952,12 @@ class ArcPolicyTest : public PolicyTest {
 
  protected:
   void SetUpTest() {
-    arc::ArcAuthService::DisableUIForTesting();
+    arc::ArcSessionManager::DisableUIForTesting();
 
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
   }
 
-  void TearDownTest() {
-    arc::ArcAuthService::Get()->Shutdown();
-  }
+  void TearDownTest() { arc::ArcSessionManager::Get()->Shutdown(); }
 
   void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
@@ -3977,8 +3975,8 @@ class ArcPolicyTest : public PolicyTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // ArcAuthService functionality is available only when Arc is enabled. Use
-    // kEnableArc switch that activates it.
+    // ArcSessionManager functionality is available only when Arc is enabled.
+    // Use kEnableArc switch that activates it.
     command_line->AppendSwitch(chromeos::switches::kEnableArc);
   }
 

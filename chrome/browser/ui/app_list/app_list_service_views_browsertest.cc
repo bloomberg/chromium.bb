@@ -29,7 +29,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -134,14 +134,14 @@ class AppListControllerAppInfoDialogBrowserTest :
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 #if defined(OS_CHROMEOS)
-    arc::ArcAuthService::DisableUIForTesting();
+    arc::ArcSessionManager::DisableUIForTesting();
 #endif
   }
 
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
     if (GetParam())
-      arc::ArcAuthService::Get()->EnableArc();
+      arc::ArcSessionManager::Get()->EnableArc();
 #endif
     // Install a test extension.
     base::FilePath test_extension_path;

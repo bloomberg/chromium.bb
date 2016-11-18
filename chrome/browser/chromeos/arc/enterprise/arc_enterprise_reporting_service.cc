@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/user_data/arc_user_data_service.h"
@@ -42,8 +42,8 @@ void ArcEnterpriseReportingService::ReportManagementState(
 
   if (state == mojom::ManagementState::MANAGED_DO_LOST) {
     DCHECK(ArcServiceManager::Get());
-    ArcAuthService::Get()->RemoveArcData();
-    ArcAuthService::Get()->StopAndEnableArc();
+    ArcSessionManager::Get()->RemoveArcData();
+    ArcSessionManager::Get()->StopAndEnableArc();
   }
 }
 

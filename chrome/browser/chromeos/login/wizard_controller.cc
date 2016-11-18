@@ -27,7 +27,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -564,7 +564,7 @@ void WizardController::ShowArcTermsOfServiceScreen() {
   } else if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
     VLOG(1) << "Skip Arc Terms of Service screen because user is not "
             << "logged in.";
-  } else if (!arc::ArcAuthService::IsAllowedForProfile(profile)) {
+  } else if (!arc::ArcSessionManager::IsAllowedForProfile(profile)) {
     VLOG(1) << "Skip Arc Terms of Service screen because Arc is not allowed.";
   } else if (profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled) &&
              !profile->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
