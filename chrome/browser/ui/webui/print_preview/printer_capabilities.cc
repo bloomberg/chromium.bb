@@ -95,10 +95,10 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
   printer_info->SetString(kSettingPrinterName, printer_name);
   printer_info->SetString(kSettingPrinterDescription, printer_description);
 
-  std::unique_ptr<base::DictionaryValue> capabilities =
-      GetPrinterCapabilitiesOnBlockingPoolThread(device_name);
-  if (capabilities)
-    printer_info->Set(kPrinterCapabilities, std::move(capabilities));
+  auto capabilities = GetPrinterCapabilitiesOnBlockingPoolThread(device_name);
+  if (!capabilities)
+    capabilities = base::MakeUnique<base::DictionaryValue>();
+  printer_info->Set(kPrinterCapabilities, std::move(capabilities));
 
   return printer_info;
 }

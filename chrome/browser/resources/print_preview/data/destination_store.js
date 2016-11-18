@@ -509,6 +509,9 @@ cr.define('print_preview', function() {
    * @private
    */
   DestinationStore.localizeCapabilities_ = function(capabilities) {
+    if (!capabilities.printer)
+      return capabilities;
+
     var mediaSize = capabilities.printer.media_size;
     if (!mediaSize)
       return capabilities;
@@ -545,6 +548,9 @@ cr.define('print_preview', function() {
    * @private
    */
   DestinationStore.sortMediaSizes_ = function(capabilities) {
+    if (!capabilities.printer)
+      return capabilities;
+
     var mediaSize = capabilities.printer.media_size;
     if (!mediaSize)
       return capabilities;
