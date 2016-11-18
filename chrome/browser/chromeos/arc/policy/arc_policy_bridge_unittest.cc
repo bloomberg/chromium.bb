@@ -341,18 +341,24 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
       "}"));
 }
 
-TEST_F(ArcPolicyBridgeTest, EmptyReportComplianceTest) {
+// Disabled due to memory leak https://crbug.com/666371.
+// TODO(poromov): Fix leak and re-enable.
+TEST_F(ArcPolicyBridgeTest, DISABLED_EmptyReportComplianceTest) {
   policy_bridge()->ReportCompliance(
       "", PolicyComplianceCallback(kPolicyCompliantResponse));
 }
 
-TEST_F(ArcPolicyBridgeTest, ParsableReportComplianceTest) {
+// Disabled due to memory leak https://crbug.com/666371.
+// TODO(poromov): Fix leak and re-enable.
+TEST_F(ArcPolicyBridgeTest, DISABLED_ParsableReportComplianceTest) {
   policy_bridge()->ReportCompliance(
       "{\"nonComplianceDetails\" : []}",
       PolicyComplianceCallback(kPolicyCompliantResponse));
 }
 
-TEST_F(ArcPolicyBridgeTest, NonParsableReportComplianceTest) {
+// Disabled due to memory leak https://crbug.com/666371.
+// TODO(poromov): Fix leak and re-enable.
+TEST_F(ArcPolicyBridgeTest, DISABLED_NonParsableReportComplianceTest) {
   policy_bridge()->ReportCompliance(
       "\"nonComplianceDetails\" : [}",
       PolicyComplianceCallback(kPolicyNonCompliantResponse));
