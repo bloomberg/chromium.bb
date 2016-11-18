@@ -120,7 +120,7 @@ void NotificationManager::showPersistent(
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)
-          ->registration_id();
+          ->registrationId();
 
   std::unique_ptr<blink::WebNotificationShowCallbacks> owned_callbacks(
       callbacks);
@@ -172,7 +172,7 @@ void NotificationManager::getNotifications(
 
   GURL origin = GURL(service_worker_registration_impl->scope()).GetOrigin();
   int64_t service_worker_registration_id =
-      service_worker_registration_impl->registration_id();
+      service_worker_registration_impl->registrationId();
 
   // TODO(peter): GenerateNotificationId is more of a request id. Consider
   // renaming the method in the NotificationDispatcher if this makes sense.

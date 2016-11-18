@@ -68,9 +68,6 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       override;
   int64_t registrationId() const override;
 
-  // TODO(adithyas): Remove this function and use registrationId() instead
-  int64_t registration_id() const;
-
   using WebServiceWorkerRegistrationHandle =
       blink::WebServiceWorkerRegistration::Handle;
 

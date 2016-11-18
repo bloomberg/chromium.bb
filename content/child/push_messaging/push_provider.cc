@@ -33,7 +33,7 @@ int64_t GetServiceWorkerRegistrationId(
     blink::WebServiceWorkerRegistration* service_worker_registration) {
   return static_cast<WebServiceWorkerRegistrationImpl*>(
              service_worker_registration)
-      ->registration_id();
+      ->registrationId();
 }
 
 }  // namespace

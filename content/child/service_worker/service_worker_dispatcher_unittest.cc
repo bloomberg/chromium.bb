@@ -435,7 +435,7 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
       dispatcher()->GetOrCreateRegistration(info, attrs));
   EXPECT_TRUE(registration1);
   EXPECT_TRUE(ContainsRegistration(info.handle_id));
-  EXPECT_EQ(info.registration_id, registration1->registration_id());
+  EXPECT_EQ(info.registration_id, registration1->registrationId());
   ASSERT_EQ(4UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementRegistrationRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -483,7 +483,7 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrAdoptRegistration) {
       dispatcher()->GetOrAdoptRegistration(info, attrs));
   EXPECT_TRUE(registration1);
   EXPECT_TRUE(ContainsRegistration(info.handle_id));
-  EXPECT_EQ(info.registration_id, registration1->registration_id());
+  EXPECT_EQ(info.registration_id, registration1->registrationId());
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   ipc_sink()->ClearMessages();

@@ -102,7 +102,7 @@ void PushMessagingDispatcher::DoSubscribe(
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)
-          ->registration_id();
+          ->registrationId();
 
   if (options.sender_info.empty()) {
     OnSubscribeFromDocumentError(request_id,
