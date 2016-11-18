@@ -249,19 +249,25 @@
         var success = true;
         var options = {
           panningModel: "HRTF",
-          positionX: 3,
-          positionY: 4,
-          positionZ: 5,
-          orientationX: -3,
-          orientationY: -4,
-          orientationZ: -5,
+          // We use full double float values here to verify also that the actual
+          // AudioParam value is properly rounded to a float.  The actual value
+          // is immaterial as long as x != Math.fround(x).
+          positionX: Math.SQRT2,
+          positionY: 2 * Math.SQRT2,
+          positionZ: 3 * Math.SQRT2,
+          orientationX: -Math.SQRT2,
+          orientationY: -2 * Math.SQRT2,
+          orientationZ: -3 * Math.SQRT2,
           distanceModel: "linear",
-          refDistance: 42,
-          maxDistance: 99,
-          rolloffFactor: .25,
-          coneInnerAngle: 10,
-          coneOuterAngle: 50,
-          coneOuterGain: .25
+          // We use full double float values here to verify also that the actual
+          // attribute is a double float.  The actual value is immaterial as
+          // long as x != Math.fround(x).
+          refDistance: Math.PI,
+          maxDistance: 2 * Math.PI,
+          rolloffFactor: 3 * Math.PI,
+          coneInnerAngle: 4 * Math.PI,
+          coneOuterAngle: 5 * Math.PI,
+          coneOuterGain: 6 * Math.PI
         };
 
         success = Should("node = new PannerNode(c, " + JSON.stringify(options) + ")", function () {
@@ -273,17 +279,17 @@
         success = Should("node.panningModel", node.panningModel)
           .beEqualTo(options.panningModel) && success;
         success = Should("node.positionX.value", node.positionX.value)
-          .beEqualTo(options.positionX) && success;
+          .beEqualTo(Math.fround(options.positionX)) && success;
         success = Should("node.positionY.value", node.positionY.value)
-          .beEqualTo(options.positionY) && success;
+          .beEqualTo(Math.fround(options.positionY)) && success;
         success = Should("node.positionZ.value", node.positionZ.value)
-          .beEqualTo(options.positionZ) && success;
+          .beEqualTo(Math.fround(options.positionZ)) && success;
         success = Should("node.orientationX.value", node.orientationX.value)
-          .beEqualTo(options.orientationX) && success;
+          .beEqualTo(Math.fround(options.orientationX)) && success;
         success = Should("node.orientationY.value", node.orientationY.value)
-          .beEqualTo(options.orientationY) && success;
+          .beEqualTo(Math.fround(options.orientationY)) && success;
         success = Should("node.orientationZ.value", node.orientationZ.value)
-          .beEqualTo(options.orientationZ) && success;
+          .beEqualTo(Math.fround(options.orientationZ)) && success;
         success = Should("node.distanceModel", node.distanceModel)
           .beEqualTo(options.distanceModel) && success;
         success = Should("node.refDistance", node.refDistance)

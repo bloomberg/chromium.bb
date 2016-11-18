@@ -14,10 +14,10 @@ dictionary PannerOptions : AudioNodeOptions {
     float orientationY;
     float orientationZ;
 
-    float refDistance;
-    float maxDistance;
-    float rolloffFactor;
-    float coneInnerAngle;
-    float coneOuterAngle;
-    float coneOuterGain;
+    double refDistance;
+    double maxDistance;
+    double rolloffFactor;
+    double coneInnerAngle;
+    double coneOuterAngle;
+    double coneOuterGain;
 };
