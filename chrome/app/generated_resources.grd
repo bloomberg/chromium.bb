@@ -15013,6 +15013,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_DESCRIPTION" desc="Description for the flag to enable offline pages for downloads.">
         Enables downloading pages in the background in case page is not yet loaded in current tab.
       </message>
+      <message name="IDS_FLAGS_NEW_BACKGROUND_LOADER_NAME" desc="Name for the flag to use background loader to offline and download pages">
+        Use background loader instead of prerenderer to load pages.
+      </message>
+      <message name="IDS_FLAGS_NEW_BACKGROUND_LOADER_DESCRIPTION" desc="Description for the flag to enable background offlining of pages to use background loader rather than prerenderer.">
+        Use background loader instead of prerenderer to asynchronously download pages.
+      </message>
       <message name="IDS_FLAGS_NTP_POPULAR_SITES_NAME" desc="Name for the flag to enable showing non-personalized popular suggestions on the New Tab Page, when no personal suggestions are available yet.">
         Show popular sites on the New Tab page
       </message>

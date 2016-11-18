@@ -35,6 +35,10 @@ const base::Feature kOfflinePagesAsyncDownloadFeature {
    "OfflinePagesAsyncDownload", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+const base::Feature kNewBackgroundLoaderFeature {
+    "BackgroundLoader", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 bool IsOfflineBookmarksEnabled() {
   return base::FeatureList::IsEnabled(kOfflineBookmarksFeature);
 }
@@ -62,6 +66,10 @@ bool IsBackgroundLoaderForDownloadsEnabled() {
 
 bool IsOfflinePagesAsyncDownloadEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesAsyncDownloadFeature);
+}
+
+bool ShouldUseNewBackgroundLoader() {
+  return base::FeatureList::IsEnabled(kNewBackgroundLoaderFeature);
 }
 
 }  // namespace offline_pages
