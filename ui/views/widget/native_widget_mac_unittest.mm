@@ -1045,7 +1045,11 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
 }
 
 // Tests behavior of window-modal dialogs, displayed as sheets.
-TEST_F(NativeWidgetMacTest, WindowModalSheet) {
+// Disabled: fails due to sharding adjustments. DCHECK fails during closure when
+// the parent window receives an asynchronous occlusion state change from the
+// window server, after the child has its parent window relationship removed.
+// TODO(tapted): Fix it. http://cbrug.com/666503.
+TEST_F(NativeWidgetMacTest, DISABLED_WindowModalSheet) {
   NSWindow* native_parent =
       MakeNativeParentWithStyle(NSClosableWindowMask | NSTitledWindowMask);
 
