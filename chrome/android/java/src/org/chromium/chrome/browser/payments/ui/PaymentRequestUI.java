@@ -533,8 +533,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentContainer = (ScrollView) mRequestView.findViewById(R.id.option_container);
         mPaymentContainerLayout =
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
-        mOrderSummarySection = new LineItemBreakdownSection(
-                activity, activity.getString(R.string.payments_order_summary_label), this);
+        mOrderSummarySection = new LineItemBreakdownSection(activity,
+                activity.getString(R.string.payments_order_summary_label), this,
+                activity.getString(R.string.payments_updated_label));
         mShippingSummarySection = new ExtraTextsSection(
                 activity, activity.getString(mShippingStrings.getSummaryLabel()), this);
         mShippingAddressSection = new OptionSection(

@@ -2655,6 +2655,9 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified.">
         Checking
       </message>
+      <message name="IDS_PAYMENTS_UPDATED_LABEL" desc="The text that informs the user that the total value of their cart has been updated.">
+        Updated
+      </message>
 
       <!-- Shipping address in web payments API -->
       <message name="IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL" desc="The title for the section of shipping information. Shipping is typically used for packages.">

@@ -9,6 +9,8 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
@@ -20,6 +22,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
@@ -185,6 +189,18 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         assert isLogoNecessary();
         mLogo = logo;
         mLogoView.setImageDrawable(mLogo);
+    }
+
+    /** Returns the LinearLayout containing the summary texts of the section. */
+    protected LinearLayout getSummaryLayout() {
+        assert mSummaryLayout != null;
+        return mSummaryLayout;
+    }
+
+    /** Returns the right summary TextView. */
+    protected TextView getSummaryRightTextView() {
+        assert mSummaryRightTextView != null;
+        return mSummaryRightTextView;
     }
 
     @Override
@@ -554,7 +570,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
      * ............................................................................
      * . TITLE                                                          |         .
      * .................................................................| CHERVON .
-     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |    or   .
+     * . LEFT SUMMARY TEXT          | UPDATE TEXT |  RIGHT SUMMARY TEXT |    or   .
      * .................................................................|   ADD   .
      * .                                      | Line item 1 |    $13.99 |    or   .
      * .                                      | Line item 2 |      $.99 |  SELECT .
@@ -562,16 +578,53 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
      * ............................................................................
      */
     public static class LineItemBreakdownSection extends PaymentRequestSection {
+        /** The duration of the animation to show and hide the update text. */
+        static final int UPDATE_TEXT_ANIMATION_DURATION_MS = 500;
+
+        /** The amount of time where the update text is visible before fading out. */
+        static final int UPDATE_TEXT_VISIBILITY_DURATION_MS = 5000;
+
+        /** The GridLayout that shows a breakdown of all the items in the user's card. */
         private GridLayout mBreakdownLayout;
 
+        /**
+         * The TextView that is used to display the updated message to the user when the total price
+         * of their cart changes. It's the second child of the mSummaryLayout.
+         */
+        private TextView mUpdatedView;
+
+        /** The runnable used to fade out the mUpdatedView. */
+        private Runnable mFadeOutRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Animation out = new AlphaAnimation(mUpdatedView.getAlpha(), 0.0f);
+                out.setDuration(UPDATE_TEXT_ANIMATION_DURATION_MS);
+                out.setInterpolator(new LinearOutSlowInInterpolator());
+                out.setFillAfter(true);
+                mUpdatedView.startAnimation(out);
+            }
+        };
+
+        /** The Handler used to post the mFadeOutRunnables. */
+        private Handler mHandler = new Handler();
+
         public LineItemBreakdownSection(
-                Context context, String sectionName, SectionDelegate delegate) {
+                Context context, String sectionName, SectionDelegate delegate, String updatedText) {
             super(context, sectionName, delegate);
+
+            // The mUpdatedView should have been created in the base constructor's call to
+            // createMainSectionContent(...).
+            assert mUpdatedView != null;
+            mUpdatedView.setText(updatedText);
         }
 
+        // This method is called in PaymentRequestSection's constructor.
         @Override
         protected void createMainSectionContent(LinearLayout mainSectionLayout) {
             Context context = mainSectionLayout.getContext();
+
+            // Add a label that will be used to indicate that the total cart price has been updated.
+            addUpdateText(mainSectionLayout);
 
             // The breakdown is represented by an end-aligned GridLayout that takes up only as much
             // space as it needs.  The GridLayout ensures a consistent margin between the columns.
@@ -584,6 +637,38 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         }
 
         /**
+         * Adds a text view to the summary layout that will be used to indicate that the total price
+         * of the card been updated. The text to display should be set later in the constructor.
+         *
+         * @param mainSectionLayout The layout of this section.
+         */
+        private void addUpdateText(LinearLayout mainSectionLayout) {
+            assert mUpdatedView == null;
+
+            Context context = mainSectionLayout.getContext();
+
+            // Create the view and set the text appearance and layout parameters.
+            mUpdatedView = new TextView(context);
+            ApiCompatibilityUtils.setTextAppearance(
+                    mUpdatedView, R.style.PaymentsUiSectionDefaultText);
+            LinearLayout.LayoutParams updatedLayoutParams = new LinearLayout.LayoutParams(
+                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            ApiCompatibilityUtils.setTextAlignment(mUpdatedView, TEXT_ALIGNMENT_TEXT_END);
+            mUpdatedView.setTextColor(ApiCompatibilityUtils.getColor(
+                    context.getResources(), R.color.google_green_700));
+            ApiCompatibilityUtils.setMarginEnd(
+                    updatedLayoutParams, context.getResources().getDimensionPixelSize(
+                                                 R.dimen.payments_section_small_spacing));
+
+            // Set the view to initially be invisible.
+            mUpdatedView.setVisibility(View.INVISIBLE);
+
+            // Add the update text just before the last summary text.
+            getSummaryLayout().addView(
+                    mUpdatedView, getSummaryLayout().getChildCount() - 1, updatedLayoutParams);
+        }
+
+        /**
          * Updates the total and how it's broken down.
          *
          * @param cart The shopping cart contents and the total.
@@ -591,9 +676,14 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         public void update(ShoppingCart cart) {
             Context context = mBreakdownLayout.getContext();
 
+            CharSequence totalPrice = createValueString(
+                    cart.getTotal().getCurrency(), cart.getTotal().getPrice(), true);
+
+            // Show the updated text view if the total changed.
+            showUpdateIfTextChanged(totalPrice);
+
             // Update the summary to display information about the total.
-            setSummaryText(cart.getTotal().getLabel(), createValueString(
-                    cart.getTotal().getCurrency(), cart.getTotal().getPrice(), true));
+            setSummaryText(cart.getTotal().getLabel(), totalPrice);
 
             mBreakdownLayout.removeAllViews();
             if (cart.getContents() == null) return;
@@ -638,6 +728,42 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 mBreakdownLayout.addView(description, descriptionParams);
                 mBreakdownLayout.addView(amount, amountParams);
             }
+        }
+
+        /**
+         * Show the update text if the cart total has changed. Should be called before changing the
+         * cart total because the old total is needed for comparison.
+         *
+         * @param rightText The new cart total that will replace the one currently displayed.
+         */
+        private void showUpdateIfTextChanged(@Nullable CharSequence rightText) {
+            // If either the old or new text was null do nothing.
+            if (rightText == null || getSummaryRightTextView().getText() == null) return;
+
+            // Show the update text only if the current and new cart totals are different and if the
+            // old total was visible to the user.
+            if (!TextUtils.equals(getSummaryRightTextView().getText(), rightText)
+                    && getSummaryRightTextView().getVisibility() == VISIBLE) {
+                startUpdateViewAnimation();
+            }
+        }
+
+        /**
+         * Starts the animation to make the update text view fade in then fade out.
+         */
+        private void startUpdateViewAnimation() {
+            // Create and start a fade in anmiation for the mUpdatedView. Re-use the current alpha
+            // to avoid restarting a previous or current fade in animation.
+            Animation in = new AlphaAnimation(mUpdatedView.getAlpha(), 1.0f);
+            in.setDuration(UPDATE_TEXT_ANIMATION_DURATION_MS);
+            in.setInterpolator(new LinearOutSlowInInterpolator());
+            in.setFillAfter(true);
+            mUpdatedView.startAnimation(in);
+
+            // Cancel all pending fade out animations and create a new on to be executed a little
+            // while after the fade in.
+            mHandler.removeCallbacks(mFadeOutRunnable);
+            mHandler.postDelayed(mFadeOutRunnable, UPDATE_TEXT_VISIBILITY_DURATION_MS);
         }
 
         /**
