@@ -19,6 +19,7 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 namespace arc {
 
@@ -26,9 +27,14 @@ namespace arc {
 class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
  public:
   struct Icons {
-    Icons(const gfx::Image& icon16, const gfx::Image& icon20);
+    Icons(const gfx::Image& icon16, const gfx::Image& icon20,
+          const scoped_refptr<base::RefCountedData<GURL>>& icon16_dataurl);
+    Icons(const Icons& other);
+    ~Icons();
+
     const gfx::Image icon16;  // 16 dip
     const gfx::Image icon20;  // 20 dip
+    const scoped_refptr<base::RefCountedData<GURL>> icon16_dataurl;  // as URL
   };
 
   struct ActivityName {
@@ -77,8 +83,7 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
 
   void OnIconsResizedForTesting(const OnIconsReadyCallback& cb,
                                 std::unique_ptr<ActivityToIconsMap> result);
-  void AddIconToCacheForTesting(const ActivityName& activity,
-                                const gfx::Image& image);
+  void AddCacheEntryForTesting(const ActivityName& activity);
 
   // Returns true if |result| indicates that the |cb| object passed to
   // GetActivityIcons() has already called.
@@ -95,8 +100,8 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
                     const OnIconsReadyCallback& cb,
                     std::vector<mojom::ActivityIconPtr> icons);
 
-  // Resize |icons| and returns the results as ActivityToIconsMap.
-  std::unique_ptr<ActivityToIconsMap> ResizeIcons(
+  // Resizes and encodes |icons| and returns the results as ActivityToIconsMap.
+  std::unique_ptr<ActivityToIconsMap> ResizeAndEncodeIcons(
       std::vector<mojom::ActivityIconPtr> icons);
 
   // A function called when ResizeIcons finishes. Append items in |result| to

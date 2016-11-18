@@ -53,12 +53,9 @@ void OnIconsReady3(
 // Tests if InvalidateIcons properly cleans up the cache.
 TEST(ActivityIconLoaderTest, TestInvalidateIcons) {
   scoped_refptr<ActivityIconLoader> loader(new ActivityIconLoader);
-  loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p0", "a0"),
-                                   gfx::Image());
-  loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p0", "a1"),
-                                   gfx::Image());
-  loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p1", "a0"),
-                                   gfx::Image());
+  loader->AddCacheEntryForTesting(ActivityIconLoader::ActivityName("p0", "a0"));
+  loader->AddCacheEntryForTesting(ActivityIconLoader::ActivityName("p0", "a1"));
+  loader->AddCacheEntryForTesting(ActivityIconLoader::ActivityName("p1", "a0"));
   EXPECT_EQ(3U, loader->cached_icons_for_testing().size());
 
   loader->InvalidateIcons("p2");  // delete none.
@@ -77,12 +74,9 @@ TEST(ActivityIconLoaderTest, TestInvalidateIcons) {
 // Tests if GetActivityIcons immediately returns cached icons.
 TEST(ActivityIconLoaderTest, TestGetActivityIcons) {
   scoped_refptr<ActivityIconLoader> loader(new ActivityIconLoader);
-  loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p0", "a0"),
-                                   gfx::Image());
-  loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p1", "a1"),
-                                   gfx::Image());
-  loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p1", "a0"),
-                                   gfx::Image());
+  loader->AddCacheEntryForTesting(ActivityIconLoader::ActivityName("p0", "a0"));
+  loader->AddCacheEntryForTesting(ActivityIconLoader::ActivityName("p1", "a1"));
+  loader->AddCacheEntryForTesting(ActivityIconLoader::ActivityName("p1", "a0"));
 
   // Check that GetActivityIcons() immediately calls OnIconsReady0() with all
   // locally cached icons.
@@ -111,19 +105,19 @@ TEST(ActivityIconLoaderTest, TestOnIconsResized) {
   scoped_refptr<ActivityIconLoader> loader(new ActivityIconLoader);
   std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> activity_to_icons(
       new ActivityIconLoader::ActivityToIconsMap);
-  activity_to_icons->insert(
-      std::make_pair(ActivityIconLoader::ActivityName("p0", "a0"),
-                     ActivityIconLoader::Icons(gfx::Image(), gfx::Image())));
-  activity_to_icons->insert(
-      std::make_pair(ActivityIconLoader::ActivityName("p1", "a1"),
-                     ActivityIconLoader::Icons(gfx::Image(), gfx::Image())));
-  activity_to_icons->insert(
-      std::make_pair(ActivityIconLoader::ActivityName("p1", "a0"),
-                     ActivityIconLoader::Icons(gfx::Image(), gfx::Image())));
+  activity_to_icons->insert(std::make_pair(
+      ActivityIconLoader::ActivityName("p0", "a0"),
+      ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
+  activity_to_icons->insert(std::make_pair(
+      ActivityIconLoader::ActivityName("p1", "a1"),
+      ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
+  activity_to_icons->insert(std::make_pair(
+      ActivityIconLoader::ActivityName("p1", "a0"),
+      ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
   // Duplicated entey which should be ignored.
-  activity_to_icons->insert(
-      std::make_pair(ActivityIconLoader::ActivityName("p0", "a0"),
-                     ActivityIconLoader::Icons(gfx::Image(), gfx::Image())));
+  activity_to_icons->insert(std::make_pair(
+      ActivityIconLoader::ActivityName("p0", "a0"),
+      ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
 
   // Call OnIconsResized() and check that the cache is properly updated.
   loader->OnIconsResizedForTesting(base::Bind(&OnIconsReady0),
@@ -140,13 +134,13 @@ TEST(ActivityIconLoaderTest, TestOnIconsResized) {
   // remove the cache the previous call added.
   activity_to_icons.reset(new ActivityIconLoader::ActivityToIconsMap);
   // Duplicated entry.
-  activity_to_icons->insert(
-      std::make_pair(ActivityIconLoader::ActivityName("p1", "a1"),
-                     ActivityIconLoader::Icons(gfx::Image(), gfx::Image())));
+  activity_to_icons->insert(std::make_pair(
+      ActivityIconLoader::ActivityName("p1", "a1"),
+      ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
   // New entry.
-  activity_to_icons->insert(
-      std::make_pair(ActivityIconLoader::ActivityName("p2", "a2"),
-                     ActivityIconLoader::Icons(gfx::Image(), gfx::Image())));
+  activity_to_icons->insert(std::make_pair(
+      ActivityIconLoader::ActivityName("p2", "a2"),
+      ActivityIconLoader::Icons(gfx::Image(), gfx::Image(), nullptr)));
   loader->OnIconsResizedForTesting(base::Bind(&OnIconsReady3),
                                    std::move(activity_to_icons));
   EXPECT_EQ(4U, loader->cached_icons_for_testing().size());

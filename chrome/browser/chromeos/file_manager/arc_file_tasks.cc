@@ -4,13 +4,11 @@
 
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
 
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -39,7 +37,6 @@ constexpr int kArcIntentHelperVersionWithUrlListSupport = 4;
 constexpr int kArcIntentHelperVersionWithFullActivityName = 5;
 
 constexpr char kAppIdSeparator = '/';
-constexpr char kPngDataUrlPrefix[] = "data:image/png;base64,";
 
 // Returns the Mojo interface for ARC Intent Helper, with version |minVersion|
 // or above. If the ARC bridge is not established, returns null.
@@ -125,17 +122,6 @@ void OnArcIconLoaded(
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons);
 
-typedef std::map<arc::ActivityIconLoader::ActivityName, GURL> IconUrlMap;
-
-std::unique_ptr<IconUrlMap> EncodeIconsToDataURLs(
-    std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons);
-
-void OnArcIconEncoded(
-    std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
-    std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
-    std::unique_ptr<IconUrlMap> icons);
-
 // Called after the handlers from ARC is obtained. Proceeds to OnArcIconLoaded.
 void OnArcHandlerList(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
@@ -169,42 +155,6 @@ void OnArcIconLoaded(
     std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&EncodeIconsToDataURLs, base::Passed(&icons)),
-      base::Bind(&OnArcIconEncoded, base::Passed(&result_list), callback,
-                 base::Passed(&handlers)));
-}
-
-// Encode the set of icon images to data URLs.
-std::unique_ptr<IconUrlMap> EncodeIconsToDataURLs(
-    std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  std::unique_ptr<IconUrlMap> result(new IconUrlMap);
-  for (const auto& entry : *icons) {
-    scoped_refptr<base::RefCountedMemory> img =
-        entry.second.icon16.As1xPNGBytes();
-    if (!img)
-      continue;
-
-    std::string encoded;
-    base::Base64Encode(base::StringPiece(img->front_as<char>(), img->size()),
-                       &encoded);
-    result->insert(
-        std::make_pair(entry.first, GURL(kPngDataUrlPrefix + encoded)));
-  }
-  return result;
-}
-
-// Called after icon data is encoded on the blocking pool.
-void OnArcIconEncoded(
-    std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
-    std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
-    std::unique_ptr<IconUrlMap> icons) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   using extensions::api::file_manager_private::Verb;
   for (const arc::mojom::IntentHandlerInfoPtr& handler : handlers) {
     std::string action(arc::kIntentActionView);
@@ -216,8 +166,11 @@ void OnArcIconEncoded(
         action == arc::kIntentActionSendMultiple) {
       handler_verb = Verb::VERB_SHARE_WITH;
     }
-    const GURL& icon_url = (*icons)[arc::ActivityIconLoader::ActivityName(
-        handler->package_name, handler->activity_name)];
+    auto it = icons->find(arc::ActivityIconLoader::ActivityName(
+        handler->package_name, handler->activity_name));
+    const GURL& icon_url =
+        (it == icons->end() ? GURL::EmptyGURL()
+                            : it->second.icon16_dataurl->data);
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(
             ActivityNameToAppId(handler->package_name, handler->activity_name),
