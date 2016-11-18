@@ -7008,6 +7008,9 @@ static int64_t handle_inter_mode(
   else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
     tmp_buf = tmp_buf_;
+  // Make sure that we didn't leave the plane destination buffers set
+  // to tmp_buf at the end of the last iteration
+  assert(xd->plane[0].dst.buf != tmp_buf);
 
   if (is_comp_pred) {
     if (frame_mv[refs[0]].as_int == INVALID_MV ||
@@ -7505,8 +7508,10 @@ static int64_t handle_inter_mode(
       }
     }
     if (ref_best_rd < INT64_MAX &&
-        AOMMIN(best_rd_wedge, best_rd_nowedge) / 3 > ref_best_rd)
+        AOMMIN(best_rd_wedge, best_rd_nowedge) / 3 > ref_best_rd) {
+      restore_dst_buf(xd, orig_dst, orig_dst_stride);
       return INT64_MAX;
+    }
 
     pred_exists = 0;
 
@@ -7575,6 +7580,7 @@ static int64_t handle_inter_mode(
     best_interintra_rd = rd;
 
     if (ref_best_rd < INT64_MAX && best_interintra_rd > 2 * ref_best_rd) {
+      // Don't need to call restore_dst_buf here
       return INT64_MAX;
     }
     if (is_interintra_wedge_used(bsize)) {
