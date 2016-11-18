@@ -719,6 +719,11 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
 }
 
 void NodeController::AcceptIncomingMessages() {
+  // This is an impactically large value which should never be reached in
+  // practice. See the CHECK below for usage.
+  constexpr size_t kMaxAcceptedMessages = 1000000;
+
+  size_t num_messages_accepted = 0;
   while (incoming_messages_flag_) {
     // TODO: We may need to be more careful to avoid starving the rest of the
     // thread here. Revisit this if it turns out to be a problem. One
@@ -738,11 +743,23 @@ void NodeController::AcceptIncomingMessages() {
     incoming_messages_flag_.Set(false);
     messages_lock_.Release();
 
+    num_messages_accepted += messages.size();
     while (!messages.empty()) {
       node_->AcceptMessage(std::move(messages.front()));
       messages.pop();
     }
+
+    // This is effectively a safeguard against potential bugs which might lead
+    // to runaway message cycles. If any such cycles arise, we'll start seeing
+    // crash reports from this location.
+    CHECK_LE(num_messages_accepted, kMaxAcceptedMessages);
   }
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.MessagesAcceptedPerEvent",
+                              static_cast<int32_t>(num_messages_accepted),
+                              1 /* min */,
+                              500 /* max */,
+                              50 /* bucket count */);
 
   AttemptShutdownIfRequested();
 }
