@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_UI_MODEL_WORKER_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_UI_MODEL_WORKER_H_
+#ifndef COMPONENTS_SYNC_ENGINE_UI_MODEL_WORKER_H_
+#define COMPONENTS_SYNC_ENGINE_UI_MODEL_WORKER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -37,4 +37,4 @@ class UIModelWorker : public ModelSafeWorker {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_UI_MODEL_WORKER_H_
+#endif  // COMPONENTS_SYNC_ENGINE_UI_MODEL_WORKER_H_

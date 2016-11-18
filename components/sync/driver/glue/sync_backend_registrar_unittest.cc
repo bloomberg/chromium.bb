@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "components/sync/driver/glue/browser_thread_model_worker.h"
+#include "components/sync/engine/browser_thread_model_worker.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/model/change_processor_mock.h"
 #include "components/sync/syncable/test_user_share.h"
