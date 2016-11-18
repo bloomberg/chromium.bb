@@ -7,12 +7,14 @@
 #include <stdint.h>
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "chrome/browser/history/browsing_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -40,11 +42,6 @@
 
 namespace {
 
-struct TestResult {
-  std::string url;
-  int64_t hour_offset;  // Visit time in hours past the baseline time.
-};
-
 // Duplicates on the same day in the local timezone are removed, so set a
 // baseline time in local time.
 const base::Time baseline_time = base::Time::UnixEpoch().LocalMidnight();
@@ -64,33 +61,6 @@ base::Time PretendNow() {
   EXPECT_TRUE(
       base::Time::FromLocalExploded(exploded_reference_time, &out_time));
   return out_time;
-}
-
-// For each item in |results|, create a new Value representing the visit, and
-// insert it into |list_value|.
-void AddQueryResults(
-    TestResult* test_results,
-    int test_results_size,
-    std::vector<BrowsingHistoryHandler::HistoryEntry>* results) {
-  for (int i = 0; i < test_results_size; ++i) {
-    BrowsingHistoryHandler::HistoryEntry entry;
-    entry.time = baseline_time +
-                 base::TimeDelta::FromHours(test_results[i].hour_offset);
-    entry.url = GURL(test_results[i].url);
-    entry.all_timestamps.insert(entry.time.ToInternalValue());
-    results->push_back(entry);
-  }
-}
-
-// Returns true if |result| matches the test data given by |correct_result|,
-// otherwise returns false.
-bool ResultEquals(
-    const BrowsingHistoryHandler::HistoryEntry& result,
-    const TestResult& correct_result) {
-  base::Time correct_time =
-      baseline_time + base::TimeDelta::FromHours(correct_result.hour_offset);
-
-  return result.time == correct_time && result.url == correct_result.url;
 }
 
 void IgnoreBoolAndDoNothing(bool ignored_argument) {}
@@ -127,7 +97,6 @@ class BrowsingHistoryHandlerWithWebUIForTesting
     test_clock_->SetNow(PretendNow());
 
   }
-  using BrowsingHistoryHandler::QueryComplete;
 
   base::SimpleTestClock* test_clock() { return test_clock_; }
 
@@ -204,94 +173,6 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
   std::unique_ptr<content::WebContents> web_contents_;
 };
 
-// Tests that the MergeDuplicateResults method correctly removes duplicate
-// visits to the same URL on the same day.
-// Fails on Android.  http://crbug.com/2345
-#if defined(OS_ANDROID)
-#define MAYBE_MergeDuplicateResults DISABLED_MergeDuplicateResults
-#else
-#define MAYBE_MergeDuplicateResults MergeDuplicateResults
-#endif
-TEST_F(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
-  {
-    // Basic test that duplicates on the same day are removed.
-    TestResult test_data[] = {
-      { "http://google.com/", 0 },
-      { "http://google.de/", 1 },
-      { "http://google.com/", 2 },
-      { "http://google.com/", 3 }  // Most recent.
-    };
-    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
-    AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(2U, results.size());
-    EXPECT_TRUE(ResultEquals(results[0], test_data[3]));
-    EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
-  }
-
-  {
-    // Test that a duplicate URL on the next day is not removed.
-    TestResult test_data[] = {
-      { "http://google.com/", 0 },
-      { "http://google.com/", 23 },
-      { "http://google.com/", 24 },  // Most recent.
-    };
-    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
-    AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(2U, results.size());
-    EXPECT_TRUE(ResultEquals(results[0], test_data[2]));
-    EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
-  }
-
-  {
-    // Test multiple duplicates across multiple days.
-    TestResult test_data[] = {
-      // First day.
-      { "http://google.de/", 0 },
-      { "http://google.com/", 1 },
-      { "http://google.de/", 2 },
-      { "http://google.com/", 3 },
-
-      // Second day.
-      { "http://google.de/", 24 },
-      { "http://google.com/", 25 },
-      { "http://google.de/", 26 },
-      { "http://google.com/", 27 },  // Most recent.
-    };
-    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
-    AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(4U, results.size());
-    EXPECT_TRUE(ResultEquals(results[0], test_data[7]));
-    EXPECT_TRUE(ResultEquals(results[1], test_data[6]));
-    EXPECT_TRUE(ResultEquals(results[2], test_data[3]));
-    EXPECT_TRUE(ResultEquals(results[3], test_data[2]));
-  }
-
-  {
-    // Test that timestamps for duplicates are properly saved.
-    TestResult test_data[] = {
-      { "http://google.com/", 0 },
-      { "http://google.de/", 1 },
-      { "http://google.com/", 2 },
-      { "http://google.com/", 3 }  // Most recent.
-    };
-    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
-    AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(2U, results.size());
-    EXPECT_TRUE(ResultEquals(results[0], test_data[3]));
-    EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
-    EXPECT_EQ(3u, results[0].all_timestamps.size());
-    EXPECT_EQ(1u, results[1].all_timestamps.size());
-  }
-}
-
 TEST_F(BrowsingHistoryHandlerTest, SetQueryTimeInWeeks) {
   BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
   history::QueryOptions options;
@@ -353,11 +234,13 @@ TEST_F(BrowsingHistoryHandlerTest, SetQueryTimeInMonths) {
   EXPECT_EQ(first_jul_2014_midnight, options.begin_time);
 }
 
-// Tests that BrowsingHistoryHandler observes WebHistoryService deletions.
+// Tests that BrowsingHistoryHandler is informed about WebHistoryService
+// deletions.
 TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
   base::Callback<void(bool)> callback = base::Bind(&IgnoreBoolAndDoNothing);
 
-  // BrowsingHistoryHandler listens to WebHistoryService history deletions.
+  // BrowsingHistoryHandler is informed about WebHistoryService history
+  // deletions.
   {
     sync_service()->SetSyncActive(true);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
@@ -370,8 +253,8 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
   }
 
-  // BrowsingHistoryHandler will listen to WebHistoryService deletions even if
-  // history sync is activated later.
+  // BrowsingHistoryHandler will be informed about WebHistoryService deletions
+  // even if history sync is activated later.
   {
     sync_service()->SetSyncActive(false);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
@@ -393,12 +276,13 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     handler.RegisterMessages();
 
     // Simulate an ongoing delete request.
-    handler.has_pending_delete_request_ = true;
+    handler.browsing_history_service_->has_pending_delete_request_ = true;
 
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(),
-        base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
-                   handler.weak_factory_.GetWeakPtr()));
+        base::Bind(
+            &BrowsingHistoryService::RemoveWebHistoryComplete,
+            handler.browsing_history_service_->weak_factory_.GetWeakPtr()));
 
     EXPECT_EQ(3U, web_ui()->call_data().size());
     EXPECT_EQ("deleteComplete", web_ui()->call_data().back()->function_name());
@@ -438,9 +322,11 @@ TEST_F(BrowsingHistoryHandlerTest, MdTruncatesTitles) {
   results.AppendURLBySwapping(&long_result);
 
   BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+  handler.RegisterMessages();  // Needed to create BrowsingHistoryService.
   web_ui()->ClearTrackedCalls();
 
-  handler.QueryComplete(base::string16(), history::QueryOptions(), &results);
+  handler.browsing_history_service_->QueryComplete(
+      base::string16(), history::QueryOptions(), &results);
   ASSERT_FALSE(web_ui()->call_data().empty());
 
   const base::ListValue* arg2;
