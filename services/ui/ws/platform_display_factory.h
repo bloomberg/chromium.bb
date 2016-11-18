@@ -11,12 +11,14 @@ namespace ui {
 namespace ws {
 
 class PlatformDisplay;
+struct PlatformDisplayInitParams;
 
 // Abstract factory for PlatformDisplays. Used by tests to construct test
 // PlatformDisplays.
 class PlatformDisplayFactory {
  public:
-  virtual std::unique_ptr<PlatformDisplay> CreatePlatformDisplay() = 0;
+  virtual std::unique_ptr<PlatformDisplay> CreatePlatformDisplay(
+      const PlatformDisplayInitParams& init_params) = 0;
 };
 
 }  // namespace ws

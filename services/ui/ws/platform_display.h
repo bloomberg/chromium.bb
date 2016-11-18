@@ -66,8 +66,6 @@ class PlatformDisplay {
 
   virtual const display::ViewportMetrics& GetViewportMetrics() const = 0;
 
-  virtual bool IsPrimaryDisplay() const = 0;
-
   // Notifies the PlatformDisplay that a connection to the gpu has been
   // established.
   virtual void OnGpuChannelEstablished(

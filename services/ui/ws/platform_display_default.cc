@@ -125,11 +125,6 @@ gfx::Rect PlatformDisplayDefault::GetBounds() const {
   return metrics_.bounds;
 }
 
-bool PlatformDisplayDefault::IsPrimaryDisplay() const {
-  return display::PlatformScreen::GetInstance()->GetPrimaryDisplayId() ==
-         display_id_;
-}
-
 void PlatformDisplayDefault::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   frame_generator_->OnGpuChannelEstablished(channel);

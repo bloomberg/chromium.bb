@@ -44,7 +44,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   gfx::Rect GetBounds() const override;
   bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
   const display::ViewportMetrics& GetViewportMetrics() const override;
-  bool IsPrimaryDisplay() const override;
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
 
@@ -72,7 +71,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   // FrameGeneratorDelegate:
   bool IsInHighContrastMode() override;
 
-  int64_t display_id_;
+  const int64_t display_id_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ui::CursorLoader> cursor_loader_;

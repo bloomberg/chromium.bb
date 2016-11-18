@@ -36,23 +36,6 @@ namespace ws {
 namespace test {
 namespace {
 
-// Stub PlatformScreen implementation so PlatformScreen::GetInstance() doesn't
-// fail.
-class TestPlatformScreen : public display::PlatformScreen {
- public:
-  TestPlatformScreen() {}
-  ~TestPlatformScreen() override {}
-
-  // display::PlatformScreen:
-  void AddInterfaces(service_manager::InterfaceRegistry* registry) override {}
-  void Init(display::PlatformScreenDelegate* delegate) override {}
-  void RequestCloseDisplay(int64_t display_id) override {}
-  int64_t GetPrimaryDisplayId() const override { return 1; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformScreen);
-};
-
 class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
  public:
   TestDisplayManagerObserver() {}
@@ -121,14 +104,21 @@ class UserDisplayManagerTest : public testing::Test {
     return ws_test_helper_.window_server_delegate();
   }
 
+  TestPlatformScreen& platform_screen() { return platform_screen_; }
+
  private:
-  TestPlatformScreen platform_screen_;
+  // testing::Test:
+  void SetUp() override {
+    platform_screen_.Init(window_server()->display_manager());
+  }
+
   WindowServerTestHelper ws_test_helper_;
+  TestPlatformScreen platform_screen_;
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTest);
 };
 
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
-  window_server_delegate()->CreateDisplays(1);
+  platform_screen().AddDisplay();
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
@@ -156,7 +146,7 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
-  window_server_delegate()->CreateDisplays(1);
+  platform_screen().AddDisplay();
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
@@ -180,7 +170,7 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
-  window_server_delegate()->CreateDisplays(1);
+  platform_screen().AddDisplay();
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
@@ -200,16 +190,14 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Add another display.
-  Display* display2 = new Display(window_server());
-  display2->Init(PlatformDisplayInitParams(), nullptr);
+  const int64_t second_display_id = platform_screen().AddDisplay();
 
   // Observer should be notified immediately as frame decorations were set.
   EXPECT_EQ("OnDisplaysChanged 2",
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Remove the display and verify observer is notified.
-  display_manager->DestroyDisplay(display2);
-  display2 = nullptr;
+  platform_screen().RemoveDisplay(second_display_id);
   EXPECT_EQ("OnDisplayRemoved 2",
             display_manager_observer1.GetAndClearObserverCalls());
 
@@ -217,7 +205,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 }
 
 TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
-  window_server_delegate()->CreateDisplays(1);
+  platform_screen().AddDisplay();
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
