@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.17",
+  "version": "9.18",
   "entries": [
     {
       "id": 1,
@@ -2172,14 +2172,15 @@ LONG_STRING_CONST(
     },
     {
       "id": 201,
-      "cr_bugs": [659326],
+      "cr_bugs": [659326,639760],
       "description": "AMD drivers in Linux require invariant qualifier to match between vertex and fragment shaders",
       "os": {
         "type": "linux"
       },
       "vendor_id": "0x1002",
       "features": [
-        "dont_remove_invariant_for_fragment_input"
+        "dont_remove_invariant_for_fragment_input",
+        "remove_invariant_and_centroid_for_essl3"
       ]
     },
     {

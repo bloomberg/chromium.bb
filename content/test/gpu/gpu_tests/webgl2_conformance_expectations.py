@@ -706,8 +706,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=633022)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
-    self.Fail('conformance2/glsl3/valid-invariant.html',
-        ['linux', 'amd'], bug=639760)
 
     # Uniform buffer related failures
     self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
