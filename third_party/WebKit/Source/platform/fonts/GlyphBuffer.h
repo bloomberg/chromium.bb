@@ -111,36 +111,6 @@ class GlyphBuffer {
     m_offsets.append(offset.y());
   }
 
-  void reverseForSimpleRTL(float afterOffset, float totalWidth) {
-    ASSERT(!hasVerticalOffsets());
-
-    if (isEmpty())
-      return;
-
-    m_fontData.reverse();
-    m_glyphs.reverse();
-
-    // | .. [X0 X1 ..   Xn]     ..   |
-    // ^                   ^         ^
-    // 0             afterOffset totalWidth
-    //
-    // The input buffer is shaped using RTL advances, but since the right edge
-    // is unknown at that time, offsets are computed as if the advances were
-    // LTR. This method performs the required adjustments by reconstructing
-    // advances and positioning offsets in an RTL progression.
-
-    // FIXME: we should get rid of this (idea: store negative offsets while
-    //        shaping, and adjust the initial advance accordingly -> should
-    //        yield correctly positioned RTL glyphs without any post-shape
-    //        munging).
-    SECURITY_DCHECK(!m_offsets.isEmpty());
-    for (unsigned i = 0; i + 1 < m_offsets.size(); ++i)
-      m_offsets[i] = totalWidth - m_offsets[i + 1];
-    m_offsets.last() = totalWidth - afterOffset;
-
-    m_offsets.reverse();
-  }
-
  protected:
   Vector<const SimpleFontData*, 2048> m_fontData;
   Vector<Glyph, 2048> m_glyphs;

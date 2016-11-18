@@ -181,31 +181,4 @@ TEST(GlyphBufferTest, OffsetArrayWithNonZeroIndex) {
   }
 }
 
-TEST(GlyphBufferTest, ReverseForSimpleRTL) {
-  RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
-  RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
-
-  GlyphBuffer glyphBuffer;
-  glyphBuffer.add(42, font1.get(), 10);
-  glyphBuffer.add(43, font1.get(), 15);
-  glyphBuffer.add(44, font2.get(), 25);
-
-  EXPECT_FALSE(glyphBuffer.isEmpty());
-  EXPECT_EQ(3u, glyphBuffer.size());
-
-  glyphBuffer.reverseForSimpleRTL(30, 100);
-
-  EXPECT_FALSE(glyphBuffer.isEmpty());
-  EXPECT_EQ(3u, glyphBuffer.size());
-  EXPECT_EQ(44, glyphBuffer.glyphAt(0));
-  EXPECT_EQ(43, glyphBuffer.glyphAt(1));
-  EXPECT_EQ(42, glyphBuffer.glyphAt(2));
-  EXPECT_EQ(font2.get(), glyphBuffer.fontDataAt(0));
-  EXPECT_EQ(font1.get(), glyphBuffer.fontDataAt(1));
-  EXPECT_EQ(font1.get(), glyphBuffer.fontDataAt(2));
-  EXPECT_EQ(70, glyphBuffer.xOffsetAt(0));
-  EXPECT_EQ(75, glyphBuffer.xOffsetAt(1));
-  EXPECT_EQ(85, glyphBuffer.xOffsetAt(2));
-}
-
 }  // namespace blink
