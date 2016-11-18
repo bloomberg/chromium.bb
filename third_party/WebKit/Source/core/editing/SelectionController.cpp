@@ -63,6 +63,7 @@ SelectionController::SelectionController(LocalFrame& frame)
 DEFINE_TRACE(SelectionController) {
   visitor->trace(m_frame);
   visitor->trace(m_originalBaseInFlatTree);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 namespace {
@@ -118,12 +119,14 @@ VisiblePositionInFlatTree visiblePositionOfHitTestResult(
 
 }  // namespace
 
+SelectionController::~SelectionController() = default;
+
 Document& SelectionController::document() const {
   DCHECK(m_frame->document());
   return *m_frame->document();
 }
 
-void SelectionController::documentDetached() {
+void SelectionController::contextDestroyed() {
   m_originalBaseInFlatTree = VisiblePositionInFlatTree();
 }
 
@@ -625,6 +628,7 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
   if (newBase.deepEquivalent() != base.deepEquivalent() ||
       newExtent.deepEquivalent() != extent.deepEquivalent()) {
     m_originalBaseInFlatTree = base;
+    setContext(&document());
     newSelection.setBase(newBase);
     newSelection.setExtent(newExtent);
   } else if (originalBase.isNotNull()) {

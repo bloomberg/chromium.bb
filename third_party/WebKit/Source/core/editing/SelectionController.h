@@ -28,6 +28,7 @@
 #define SelectionController_h
 
 #include "core/CoreExport.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/page/EventWithHitTestResults.h"
@@ -40,14 +41,16 @@ class HitTestResult;
 class LocalFrame;
 
 class CORE_EXPORT SelectionController final
-    : public GarbageCollectedFinalized<SelectionController> {
+    : public GarbageCollectedFinalized<SelectionController>,
+      public SynchronousMutationObserver {
   WTF_MAKE_NONCOPYABLE(SelectionController);
+  USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
  public:
   static SelectionController* create(LocalFrame&);
+  virtual ~SelectionController();
   DECLARE_TRACE();
 
-  void documentDetached();
   void handleMousePressEvent(const MouseEventWithHitTestResults&);
   bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
   bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
@@ -114,6 +117,11 @@ class CORE_EXPORT SelectionController final
       TextGranularity);
 
   FrameSelection& selection() const;
+
+  // Implements |SynchronousMutationObserver|.
+  // TODO(yosin): We should relocate |m_originalBaseInFlatTree| when DOM tree
+  // changed.
+  void contextDestroyed() final;
 
   Member<LocalFrame> const m_frame;
   // TODO(yosin): We should use |PositionWIthAffinityInFlatTree| since we

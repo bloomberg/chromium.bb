@@ -122,7 +122,6 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
-#include "core/editing/SelectionController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
@@ -2396,7 +2395,6 @@ void Document::shutdown() {
   // we need to have |static_cast<SynchronousMutationNotifier>| here.
   static_cast<SynchronousMutationNotifier*>(this)->notifyContextDestroyed();
   m_frame->selection().documentDetached(*this);
-  m_frame->eventHandler().selectionController().documentDetached();
   m_frame->inputMethodController().documentDetached();
 
   // If this Document is associated with a live DocumentLoader, the
