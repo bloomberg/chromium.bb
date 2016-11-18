@@ -8,14 +8,17 @@ div
 }
 </style>
 <script>
-if(window.testRunner)
-	testRunner.waitUntilDone();
-
-setTimeout(function() {
-	if(window.testRunner)
-		testRunner.notifyDone();
-}, 200);
+    if(window.testRunner)
+    	testRunner.waitUntilDone();
+    
+    window.onload = function() {
+        setTimeout(function() {
+    	    if(window.testRunner)
+    		    testRunner.notifyDone();
+        }, 100);
+    }
 </script>
-<!--The first cross-fade should appear as a light green square with a darker green circle inside it.-->
+<!-- The cross-fade should appear as a light green square with a darker green circle inside it. -->
+<!-- The green-circle.svg content is a circle with animated fill from red to green taking 10ms. -->
 <div style="background-image: -webkit-cross-fade(url(resources/green-circle.svg), url(resources/green-100.png), 50%);"></div>
 </html>
