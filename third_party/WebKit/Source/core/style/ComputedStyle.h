@@ -219,7 +219,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_listStylePosition == other.m_listStylePosition) &&
              (m_textAlign == other.m_textAlign) &&
              (m_textTransform == other.m_textTransform) &&
-             (m_textUnderline == other.m_textUnderline) &&
+             (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
              (m_whiteSpace == other.m_whiteSpace) &&
@@ -236,7 +236,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_listStylePosition : 1;  // EListStylePosition
     unsigned m_textAlign : 4;          // ETextAlign
     unsigned m_textTransform : 2;      // ETextTransform
-    unsigned m_textUnderline : 1;
+    unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
+                                        // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
     unsigned m_direction : 1;       // TextDirection
     unsigned m_whiteSpace : 3;      // EWhiteSpace
@@ -369,7 +370,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialListStylePosition());
     m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
     m_inheritedData.m_textTransform = initialTextTransform();
-    m_inheritedData.m_textUnderline = false;
+    m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
+    m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
     m_inheritedData.m_whiteSpace = initialWhiteSpace();
@@ -3565,7 +3567,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void clearCursorList();
 
   // Text decoration utility functions.
-  void applyTextDecorations();
+  void applyTextDecorations(const Color& parentTextDecorationColor,
+                            bool overrideExistingColors);
   void clearAppliedTextDecorations();
   void restoreParentTextDecorations(const ComputedStyle& parentStyle);
   const Vector<AppliedTextDecoration>& appliedTextDecorations() const;
@@ -3997,6 +4000,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   Color lightingColor() const { return svgStyle().lightingColor(); }
 
   void addAppliedTextDecoration(const AppliedTextDecoration&);
+  void overrideTextDecorationColors(Color propagatedColor);
   void applyMotionPathTransform(float originX,
                                 float originY,
                                 const FloatRect& boundingBox,

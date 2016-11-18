@@ -20,6 +20,7 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
+#include "core/style/AppliedTextDecoration.h"
 #include "core/style/ShadowList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include <memory>
@@ -175,11 +176,14 @@ void SVGInlineTextBoxPainter::paintTextFragments(
     // Spec: All text decorations except line-through should be drawn before the
     // text is filled and stroked; thus, the text is rendered on top of these
     // decorations.
-    unsigned decorations = style.textDecorationsInEffect();
-    if (decorations & TextDecorationUnderline)
-      paintDecoration(paintInfo, TextDecorationUnderline, fragment);
-    if (decorations & TextDecorationOverline)
-      paintDecoration(paintInfo, TextDecorationOverline, fragment);
+    const Vector<AppliedTextDecoration>& decorations =
+        style.appliedTextDecorations();
+    for (const AppliedTextDecoration& decoration : decorations) {
+      if (decoration.lines() & TextDecorationUnderline)
+        paintDecoration(paintInfo, TextDecorationUnderline, fragment);
+      if (decoration.lines() & TextDecorationOverline)
+        paintDecoration(paintInfo, TextDecorationOverline, fragment);
+    }
 
     for (int i = 0; i < 3; i++) {
       switch (svgStyle.paintOrderType(i)) {
@@ -204,8 +208,10 @@ void SVGInlineTextBoxPainter::paintTextFragments(
 
     // Spec: Line-through should be drawn after the text is filled and stroked;
     // thus, the line-through is rendered on top of the text.
-    if (decorations & TextDecorationLineThrough)
-      paintDecoration(paintInfo, TextDecorationLineThrough, fragment);
+    for (const AppliedTextDecoration& decoration : decorations) {
+      if (decoration.lines() & TextDecorationLineThrough)
+        paintDecoration(paintInfo, TextDecorationLineThrough, fragment);
+    }
   }
 }
 

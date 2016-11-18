@@ -108,7 +108,18 @@ static bool doesNotInheritTextDecoration(const ComputedStyle& style,
          style.display() == EDisplay::InlineBlock ||
          style.display() == EDisplay::InlineBox ||
          isAtShadowBoundary(element) || style.isFloating() ||
-         style.hasOutOfFlowPosition() || isOutermostSVGElement(element);
+         style.hasOutOfFlowPosition() || isOutermostSVGElement(element) ||
+         isHTMLRTElement(element);
+}
+
+// Certain elements (<a>, <font>) override text decoration colors.  "The font
+// element is expected to override the color of any text decoration that spans
+// the text of the element to the used value of the element's 'color' property."
+// (https://html.spec.whatwg.org/multipage/rendering.html#phrasing-content-3)
+// The <a> behavior is non-standard.
+static bool overridesTextDecorationColors(const Element* element) {
+  return element &&
+         (isHTMLFontElement(element) || isHTMLAnchorElement(element));
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null
@@ -430,7 +441,9 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
     style.clearAppliedTextDecorations();
   else
     style.restoreParentTextDecorations(parentStyle);
-  style.applyTextDecorations();
+  style.applyTextDecorations(
+      parentStyle.visitedDependentColor(CSSPropertyTextDecorationColor),
+      overridesTextDecorationColors(element));
 
   // Cull out any useless layers and also repeat patterns into additional
   // layers.

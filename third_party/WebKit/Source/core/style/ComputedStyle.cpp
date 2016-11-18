@@ -1099,8 +1099,8 @@ void ComputedStyle::updatePropertySpecificDifferences(
     if (m_styleInheritedData->color != other.m_styleInheritedData->color ||
         m_styleInheritedData->visitedLinkColor !=
             other.m_styleInheritedData->visitedLinkColor ||
-        m_inheritedData.m_textUnderline !=
-            other.m_inheritedData.m_textUnderline ||
+        m_inheritedData.m_hasSimpleUnderline !=
+            other.m_inheritedData.m_hasSimpleUnderline ||
         m_visual->textDecoration != other.m_visual->textDecoration) {
       diff.setTextDecorationOrColorChanged();
     } else if (m_rareNonInheritedData.get() !=
@@ -1712,27 +1712,38 @@ FontStretch ComputedStyle::fontStretch() const {
 }
 
 TextDecoration ComputedStyle::textDecorationsInEffect() const {
+  if (m_inheritedData.m_hasSimpleUnderline)
+    return TextDecorationUnderline;
+  if (!m_rareInheritedData->appliedTextDecorations)
+    return TextDecorationNone;
+
   int decorations = 0;
 
   const Vector<AppliedTextDecoration>& applied = appliedTextDecorations();
 
   for (size_t i = 0; i < applied.size(); ++i)
-    decorations |= applied[i].line();
+    decorations |= applied[i].lines();
 
   return static_cast<TextDecoration>(decorations);
 }
 
 const Vector<AppliedTextDecoration>& ComputedStyle::appliedTextDecorations()
     const {
-  if (!m_inheritedData.m_textUnderline &&
-      !m_rareInheritedData->appliedTextDecorations) {
+  if (m_inheritedData.m_hasSimpleUnderline) {
+    DEFINE_STATIC_LOCAL(
+        Vector<AppliedTextDecoration>, underline,
+        (1, AppliedTextDecoration(
+                TextDecorationUnderline, TextDecorationStyleSolid,
+                visitedDependentColor(CSSPropertyTextDecorationColor))));
+    // Since we only have one of these in memory, just update the color before
+    // returning.
+    underline.at(0).setColor(
+        visitedDependentColor(CSSPropertyTextDecorationColor));
+    return underline;
+  }
+  if (!m_rareInheritedData->appliedTextDecorations) {
     DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
     return empty;
-  }
-  if (m_inheritedData.m_textUnderline) {
-    DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, underline,
-                        (1, AppliedTextDecoration(TextDecorationUnderline)));
-    return underline;
   }
 
   return m_rareInheritedData->appliedTextDecorations->vector();
@@ -1943,45 +1954,62 @@ void ComputedStyle::addAppliedTextDecoration(
   else if (!list->hasOneRef())
     list = list->copy();
 
-  if (m_inheritedData.m_textUnderline) {
-    m_inheritedData.m_textUnderline = false;
-    list->append(AppliedTextDecoration(TextDecorationUnderline));
-  }
-
   list->append(decoration);
 }
 
-void ComputedStyle::applyTextDecorations() {
-  if (getTextDecoration() == TextDecorationNone)
+void ComputedStyle::overrideTextDecorationColors(Color overrideColor) {
+  RefPtr<AppliedTextDecorationList>& list =
+      m_rareInheritedData.access()->appliedTextDecorations;
+  DCHECK(list);
+  if (!list->hasOneRef())
+    list = list->copy();
+
+  for (size_t i = 0; i < list->size(); ++i)
+    list->at(i).setColor(overrideColor);
+}
+
+void ComputedStyle::applyTextDecorations(const Color& parentTextDecorationColor,
+                                         bool overrideExistingColors) {
+  if (getTextDecoration() == TextDecorationNone &&
+      !m_inheritedData.m_hasSimpleUnderline &&
+      !m_rareInheritedData->appliedTextDecorations)
     return;
 
-  TextDecorationStyle style = getTextDecorationStyle();
-  StyleColor styleColor =
-      decorationColorIncludingFallback(insideLink() == InsideVisitedLink);
-
-  int decorations = getTextDecoration();
-
-  if (decorations & TextDecorationUnderline) {
-    // To save memory, we don't use AppliedTextDecoration objects in the
-    // common case of a single simple underline.
-    AppliedTextDecoration underline(TextDecorationUnderline, style, styleColor);
-
-    if (!m_rareInheritedData->appliedTextDecorations &&
-        underline.isSimpleUnderline())
-      m_inheritedData.m_textUnderline = true;
-    else
-      addAppliedTextDecoration(underline);
+  // If there are any color changes or decorations set by this element, stop
+  // using m_hasSimpleUnderline.
+  Color currentTextDecorationColor =
+      visitedDependentColor(CSSPropertyTextDecorationColor);
+  if (m_inheritedData.m_hasSimpleUnderline &&
+      (getTextDecoration() != TextDecorationNone ||
+       currentTextDecorationColor != parentTextDecorationColor)) {
+    m_inheritedData.m_hasSimpleUnderline = false;
+    addAppliedTextDecoration(AppliedTextDecoration(TextDecorationUnderline,
+                                                   TextDecorationStyleSolid,
+                                                   parentTextDecorationColor));
   }
-  if (decorations & TextDecorationOverline)
-    addAppliedTextDecoration(
-        AppliedTextDecoration(TextDecorationOverline, style, styleColor));
-  if (decorations & TextDecorationLineThrough)
-    addAppliedTextDecoration(
-        AppliedTextDecoration(TextDecorationLineThrough, style, styleColor));
+  if (overrideExistingColors && m_rareInheritedData->appliedTextDecorations)
+    overrideTextDecorationColors(currentTextDecorationColor);
+  if (getTextDecoration() == TextDecorationNone)
+    return;
+  DCHECK(!m_inheritedData.m_hasSimpleUnderline);
+  // To save memory, we don't use AppliedTextDecoration objects in the common
+  // case of a single simple underline of currentColor.
+  TextDecoration decorationLines = getTextDecoration();
+  TextDecorationStyle decorationStyle = getTextDecorationStyle();
+  bool isSimpleUnderline = decorationLines == TextDecorationUnderline &&
+                           decorationStyle == TextDecorationStyleSolid &&
+                           textDecorationColor().isCurrentColor();
+  if (isSimpleUnderline && !m_rareInheritedData->appliedTextDecorations) {
+    m_inheritedData.m_hasSimpleUnderline = true;
+    return;
+  }
+
+  addAppliedTextDecoration(AppliedTextDecoration(
+      decorationLines, decorationStyle, currentTextDecorationColor));
 }
 
 void ComputedStyle::clearAppliedTextDecorations() {
-  m_inheritedData.m_textUnderline = false;
+  m_inheritedData.m_hasSimpleUnderline = false;
 
   if (m_rareInheritedData->appliedTextDecorations)
     m_rareInheritedData.access()->appliedTextDecorations = nullptr;
@@ -1989,7 +2017,8 @@ void ComputedStyle::clearAppliedTextDecorations() {
 
 void ComputedStyle::restoreParentTextDecorations(
     const ComputedStyle& parentStyle) {
-  m_inheritedData.m_textUnderline = parentStyle.m_inheritedData.m_textUnderline;
+  m_inheritedData.m_hasSimpleUnderline =
+      parentStyle.m_inheritedData.m_hasSimpleUnderline;
   if (m_rareInheritedData->appliedTextDecorations !=
       parentStyle.m_rareInheritedData->appliedTextDecorations)
     m_rareInheritedData.access()->appliedTextDecorations =

@@ -1910,6 +1910,7 @@ Bug(none) fast/events/middleClickAutoscroll-drag.html [ Timeout ]
 Bug(none) fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout ]
 Bug(none) fast/events/middleClickAutoscroll-nested-divs.html [ Timeout ]
 Bug(none) fast/events/middleClickAutoscroll-event-fired.html [ Timeout ]
+Bug(none) fast/events/middleClickAutoscroll-latching.html [ Timeout ]
 Bug(none) fast/events/mouse-wheel-main-frame-scroll.html [ Timeout ]
 Bug(none) fast/scrolling/hover-during-scroll.html [ Timeout ]
 
@@ -2074,6 +2075,8 @@ Bug(none) fast/scrolling/overflow-scrollability.html [ Failure ]
 Bug(none) fast/scrolling/scrollbar-prevent-default.html [ Failure ]
 Bug(none) compositing/lots-of-img-layers-with-opacity.html [ Failure ]
 Bug(none) compositing/lots-of-img-layers.html [ Failure ]
+
+crbug.com/462142 fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Failure ]
 
 Bug(none) fast/events/overflow-composited-scroll-fake-mouse-move.html [ Skip ]
 

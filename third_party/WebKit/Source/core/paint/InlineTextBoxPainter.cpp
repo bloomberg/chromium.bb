@@ -15,6 +15,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainter.h"
+#include "core/style/AppliedTextDecoration.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "wtf/Optional.h"
@@ -284,14 +285,14 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
   }
 
   // Paint decorations
-  TextDecoration textDecorations = styleToUse.textDecorationsInEffect();
-  if (textDecorations != TextDecorationNone && !paintSelectedTextOnly) {
+  if (styleToUse.textDecorationsInEffect() != TextDecorationNone &&
+      !paintSelectedTextOnly) {
     GraphicsContextStateSaver stateSaver(context, false);
     TextPainter::updateGraphicsContext(
         context, textStyle, m_inlineTextBox.isHorizontal(), stateSaver);
     if (combinedText)
       context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
-    paintDecoration(paintInfo, boxOrigin, textDecorations);
+    paintDecorations(paintInfo, boxOrigin, styleToUse.appliedTextDecorations());
     if (combinedText)
       context.concatCTM(
           TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
@@ -721,17 +722,15 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
   return fontMetrics.ascent() + gap;
 }
 
-static bool shouldSetDecorationAntialias(TextDecorationStyle decorationStyle) {
-  return decorationStyle == TextDecorationStyleDotted ||
-         decorationStyle == TextDecorationStyleDashed;
-}
-
-static bool shouldSetDecorationAntialias(TextDecorationStyle underline,
-                                         TextDecorationStyle overline,
-                                         TextDecorationStyle linethrough) {
-  return shouldSetDecorationAntialias(underline) ||
-         shouldSetDecorationAntialias(overline) ||
-         shouldSetDecorationAntialias(linethrough);
+static bool shouldSetDecorationAntialias(
+    const Vector<AppliedTextDecoration>& decorations) {
+  for (const AppliedTextDecoration& decoration : decorations) {
+    TextDecorationStyle decorationStyle = decoration.style();
+    if (decorationStyle == TextDecorationStyleDotted ||
+        decorationStyle == TextDecorationStyleDashed)
+      return true;
+  }
+  return false;
 }
 
 static StrokeStyle textDecorationStyleToStrokeStyle(
@@ -885,20 +884,19 @@ static void strokeWavyTextDecoration(GraphicsContext& context,
   context.strokePath(path);
 }
 
-static void paintAppliedDecoration(
-    GraphicsContext& context,
-    FloatPoint start,
-    float width,
-    float doubleOffset,
-    int wavyOffsetFactor,
-    LayoutObject::AppliedTextDecoration decoration,
-    float thickness,
-    bool antialiasDecoration,
-    bool isPrinting) {
-  context.setStrokeStyle(textDecorationStyleToStrokeStyle(decoration.style));
-  context.setStrokeColor(decoration.color);
+static void paintAppliedDecoration(GraphicsContext& context,
+                                   FloatPoint start,
+                                   float width,
+                                   float doubleOffset,
+                                   int wavyOffsetFactor,
+                                   AppliedTextDecoration decoration,
+                                   float thickness,
+                                   bool antialiasDecoration,
+                                   bool isPrinting) {
+  context.setStrokeStyle(textDecorationStyleToStrokeStyle(decoration.style()));
+  context.setStrokeColor(decoration.color());
 
-  switch (decoration.style) {
+  switch (decoration.style()) {
     case TextDecorationStyleWavy:
       strokeWavyTextDecoration(
           context, start + FloatPoint(0, doubleOffset * wavyOffsetFactor),
@@ -912,15 +910,16 @@ static void paintAppliedDecoration(
     default:
       context.drawLineForText(FloatPoint(start), width, isPrinting);
 
-      if (decoration.style == TextDecorationStyleDouble)
+      if (decoration.style() == TextDecorationStyleDouble)
         context.drawLineForText(start + FloatPoint(0, doubleOffset), width,
                                 isPrinting);
   }
 }
 
-void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
-                                           const LayoutPoint& boxOrigin,
-                                           TextDecoration deco) {
+void InlineTextBoxPainter::paintDecorations(
+    const PaintInfo& paintInfo,
+    const LayoutPoint& boxOrigin,
+    const Vector<AppliedTextDecoration>& decorations) {
   if (m_inlineTextBox.truncation() == cFullTruncation)
     return;
 
@@ -945,18 +944,10 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
       localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
   }
 
-  // Get the text decoration colors.
-  LayoutObject::AppliedTextDecoration underline, overline, linethrough;
-  LayoutObject& textBoxLayoutObject = inlineLayoutObject();
-  textBoxLayoutObject.getTextDecorations(deco, underline, overline, linethrough,
-                                         true);
-  if (m_inlineTextBox.isFirstLineStyle())
-    textBoxLayoutObject.getTextDecorations(deco, underline, overline,
-                                           linethrough, true, true);
-
   // Use a special function for underlines to get the positioning exactly right.
   bool isPrinting = paintInfo.isPrinting();
 
+  LayoutObject& textBoxLayoutObject = inlineLayoutObject();
   const ComputedStyle& styleToUse =
       textBoxLayoutObject.styleRef(m_inlineTextBox.isFirstLineStyle());
   const SimpleFontData* fontData = styleToUse.font().primaryFont();
@@ -982,32 +973,34 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
 
   context.setStrokeThickness(textDecorationThickness);
 
-  bool antialiasDecoration = shouldSetDecorationAntialias(
-      overline.style, underline.style, linethrough.style);
+  bool antialiasDecoration = shouldSetDecorationAntialias(decorations);
 
   // Offset between lines - always non-zero, so lines never cross each other.
   float doubleOffset = textDecorationThickness + 1.f;
 
-  if ((deco & TextDecorationUnderline) && fontData) {
-    const int underlineOffset = computeUnderlineOffset(
-        styleToUse.getTextUnderlinePosition(), fontData->getFontMetrics(),
-        &m_inlineTextBox, textDecorationThickness);
-    paintAppliedDecoration(
-        context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset),
-        width.toFloat(), doubleOffset, 1, underline, textDecorationThickness,
-        antialiasDecoration, isPrinting);
-  }
-  if (deco & TextDecorationOverline) {
-    paintAppliedDecoration(context, FloatPoint(localOrigin), width.toFloat(),
-                           -doubleOffset, 1, overline, textDecorationThickness,
-                           antialiasDecoration, isPrinting);
-  }
-  if (deco & TextDecorationLineThrough) {
-    const float lineThroughOffset = 2 * baseline / 3;
-    paintAppliedDecoration(
-        context, FloatPoint(localOrigin) + FloatPoint(0, lineThroughOffset),
-        width.toFloat(), doubleOffset, 0, linethrough, textDecorationThickness,
-        antialiasDecoration, isPrinting);
+  for (const AppliedTextDecoration& decoration : decorations) {
+    TextDecoration lines = decoration.lines();
+    if (lines & TextDecorationUnderline && fontData) {
+      const int underlineOffset = computeUnderlineOffset(
+          styleToUse.getTextUnderlinePosition(), fontData->getFontMetrics(),
+          &m_inlineTextBox, textDecorationThickness);
+      paintAppliedDecoration(
+          context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset),
+          width.toFloat(), doubleOffset, 1, decoration, textDecorationThickness,
+          antialiasDecoration, isPrinting);
+    }
+    if (lines & TextDecorationOverline) {
+      paintAppliedDecoration(
+          context, FloatPoint(localOrigin), width.toFloat(), -doubleOffset, 1,
+          decoration, textDecorationThickness, antialiasDecoration, isPrinting);
+    }
+    if (lines & TextDecorationLineThrough) {
+      const float lineThroughOffset = 2 * baseline / 3;
+      paintAppliedDecoration(
+          context, FloatPoint(localOrigin) + FloatPoint(0, lineThroughOffset),
+          width.toFloat(), doubleOffset, 0, decoration, textDecorationThickness,
+          antialiasDecoration, isPrinting);
+    }
   }
 }
 

@@ -13,6 +13,7 @@ namespace blink {
 
 struct PaintInfo;
 
+class AppliedTextDecoration;
 class Color;
 class CompositionUnderline;
 class ComputedStyle;
@@ -81,9 +82,9 @@ class InlineTextBoxPainter {
                       const Font&,
                       Color textColor,
                       LayoutTextCombine* = nullptr);
-  void paintDecoration(const PaintInfo&,
-                       const LayoutPoint& boxOrigin,
-                       TextDecoration);
+  void paintDecorations(const PaintInfo&,
+                        const LayoutPoint& boxOrigin,
+                        const Vector<AppliedTextDecoration>&);
   void paintCompositionUnderline(GraphicsContext&,
                                  const LayoutPoint& boxOrigin,
                                  const CompositionUnderline&);

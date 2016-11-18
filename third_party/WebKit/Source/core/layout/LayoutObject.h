@@ -1274,21 +1274,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
-  struct AppliedTextDecoration {
-    STACK_ALLOCATED();
-    Color color;
-    TextDecorationStyle style;
-    AppliedTextDecoration()
-        : color(Color::transparent), style(TextDecorationStyleSolid) {}
-  };
-
-  void getTextDecorations(unsigned decorations,
-                          AppliedTextDecoration& underline,
-                          AppliedTextDecoration& overline,
-                          AppliedTextDecoration& linethrough,
-                          bool quirksMode = false,
-                          bool firstlineStyle = false);
-
   // Return the LayoutBoxModelObject in the container chain which is responsible
   // for painting this object. The function crosses frames boundaries so the
   // returned value can be in a different document.
