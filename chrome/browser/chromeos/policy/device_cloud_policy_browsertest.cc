@@ -278,8 +278,10 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
   std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
 
+// DISABLED: see crbug.com/666720, crbug.com/644304. TODO(emaxx): Enable the
+// test back.
 IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
-                       InstallAndRunInWindow) {
+                       DISABLED_InstallAndRunInWindow) {
   const extensions::Extension* extension = InstallAndLoadTestExtension();
   ASSERT_TRUE(extension);
   Browser* browser = CreateBrowser(GetSigninProfile());
@@ -354,8 +356,10 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
   }
 };
 
+// DISABLED: see crbug.com/666720, crbug.com/644304. TODO(emaxx): Enable the
+// test back.
 IN_PROC_BROWSER_TEST_F(PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest,
-                       OfflineStart) {
+                       DISABLED_OfflineStart) {
   const extensions::Extension* extension = GetTestExtension();
   ASSERT_TRUE(extension);
   Browser* browser = CreateBrowser(GetSigninProfile());

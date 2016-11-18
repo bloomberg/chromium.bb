@@ -176,7 +176,11 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
       signin_profile_forwarding_schema_registry_;
 
   // Whether the component cloud policy service should be created.
-  bool is_component_policy_enabled_ = true;
+  // TODO(emaxx): Change the default to true once both the client and the
+  // DMServer are ready for handling policy fetches with the
+  // google/chromeos/signinextension type. See crbug.com/666720,
+  // crbug.com/644304 for reference.
+  bool is_component_policy_enabled_ = false;
 
   base::ObserverList<Observer, true> observers_;
 
