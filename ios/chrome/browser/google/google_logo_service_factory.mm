@@ -11,6 +11,10 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/google/google_logo_service.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // static
 GoogleLogoService* GoogleLogoServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {

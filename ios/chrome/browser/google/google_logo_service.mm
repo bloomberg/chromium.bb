@@ -18,6 +18,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/image/image.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using search_provider_logos::Logo;
 using search_provider_logos::LogoDelegate;
 using search_provider_logos::LogoTracker;

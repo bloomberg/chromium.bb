@@ -22,6 +22,7 @@ source_set("google") {
 }
 
 source_set("google_logo") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "google_logo_service.h",
     "google_logo_service.mm",
