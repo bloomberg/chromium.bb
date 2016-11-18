@@ -70,7 +70,17 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
 
   void readColorProfile();
   bool updateDemuxer();
-  bool initFrameBuffer(size_t frameIndex);
+
+  // Set |m_frameBackgroundHasAlpha| based on this frame's characteristics.
+  // Before calling this method, the caller must verify that the frame exists.
+  void onInitFrameBuffer(size_t frameIndex) override;
+
+  // When the blending method of this frame is BlendAtopPreviousFrame, the
+  // previous frame's buffer is necessary to decode this frame in
+  // applyPostProcessing, so we can't take over the data. Before calling this
+  // method, the caller must verify that the frame exists.
+  bool canReusePreviousFrameBuffer(size_t frameIndex) const override;
+
   void applyPostProcessing(size_t frameIndex);
   void clearFrameBuffer(size_t frameIndex) override;
 

@@ -82,10 +82,15 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   // data. If parsing fails, sets the "decode failure" flag.
   void parse(GIFParseQuery);
 
-  // Called to initialize the frame buffer with the given index, based on
-  // the previous frame's disposal method. Returns true on success. On
-  // failure, this will mark the image as failed.
-  bool initFrameBuffer(size_t frameIndex);
+  // Reset the alpha tracker for this frame. Before calling this method, the
+  // caller must verify that the frame exists.
+  void onInitFrameBuffer(size_t) override;
+
+  // When the disposal method of the frame is DisposeOverWritePrevious, the
+  // next frame will use the previous frame's buffer as its starting state, so
+  // we can't take over the data in that case. Before calling this method, the
+  // caller must verify that the frame exists.
+  bool canReusePreviousFrameBuffer(size_t) const override;
 
   bool m_currentBufferSawAlpha;
   mutable int m_repetitionCount;

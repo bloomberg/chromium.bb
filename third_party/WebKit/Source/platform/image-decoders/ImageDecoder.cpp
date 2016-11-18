@@ -258,6 +258,53 @@ bool ImageDecoder::postDecodeProcessing(size_t index) {
   return true;
 }
 
+bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
+  DCHECK(frameIndex < m_frameBufferCache.size());
+
+  ImageFrame* const buffer = &m_frameBufferCache[frameIndex];
+
+  // If the frame is already initialized, return true.
+  if (buffer->getStatus() != ImageFrame::FrameEmpty)
+    return true;
+
+  size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
+  if (requiredPreviousFrameIndex == kNotFound) {
+    // This frame doesn't rely on any previous data.
+    if (!buffer->setSizeAndColorSpace(size().width(), size().height(),
+                                      colorSpace())) {
+      return setFailed();
+    }
+  } else {
+    ImageFrame* const prevBuffer =
+        &m_frameBufferCache[requiredPreviousFrameIndex];
+    DCHECK(prevBuffer->getStatus() == ImageFrame::FrameComplete);
+
+    // We try to reuse |prevBuffer| as starting state to avoid copying.
+    // If canReusePreviousFrameBuffer returns false, we must copy the data since
+    // |prevBuffer| is necessary to decode this or later frames. In that case,
+    // copy the data instead.
+    if ((!canReusePreviousFrameBuffer(frameIndex) ||
+         !buffer->takeBitmapDataIfWritable(prevBuffer)) &&
+        !buffer->copyBitmapData(*prevBuffer))
+      return setFailed();
+
+    if (prevBuffer->getDisposalMethod() ==
+        ImageFrame::DisposeOverwriteBgcolor) {
+      // We want to clear the previous frame to transparent, without
+      // affecting pixels in the image outside of the frame.
+      const IntRect& prevRect = prevBuffer->originalFrameRect();
+      DCHECK(!prevRect.contains(IntRect(IntPoint(), size())));
+      buffer->zeroFillFrameRect(prevRect);
+    }
+  }
+
+  // Update our status to be partially complete.
+  buffer->setStatus(ImageFrame::FramePartial);
+
+  onInitFrameBuffer(frameIndex);
+  return true;
+}
+
 void ImageDecoder::updateAggressivePurging(size_t index) {
   if (m_purgeAggressively)
     return;

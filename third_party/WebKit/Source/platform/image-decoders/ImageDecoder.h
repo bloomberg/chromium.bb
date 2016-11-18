@@ -304,6 +304,12 @@ class PLATFORM_EXPORT ImageDecoder {
   // returns that number.
   virtual size_t decodeFrameCount() { return 1; }
 
+  // Called to initialize the frame buffer with the given index, based on the
+  // provided and previous frame's characteristics. Returns true on success. On
+  // failure, this will mark the image as failed. Before calling this method,
+  // the caller must verify that the frame exists.
+  bool initFrameBuffer(size_t);
+
   // Performs any additional setup of the requested frame after it has been
   // initially created, e.g. setting a duration or disposal method.
   virtual void initializeNewFrame(size_t) {}
@@ -357,6 +363,14 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
   bool m_purgeAggressively;
+
+  // This methods gets called at the end of initFrameBuffer. Subclasses can do
+  // format specific initialization, for e.g. alpha settings, here.
+  virtual void onInitFrameBuffer(size_t){};
+
+  // Called by initFrameBuffer to determine if it can take the bitmap of the
+  // previous frame. This condition is different for GIF and WEBP.
+  virtual bool canReusePreviousFrameBuffer(size_t) const { return false; }
 
   IntSize m_size;
   bool m_sizeAvailable = false;

@@ -132,8 +132,7 @@ bool GIFImageDecoder::haveDecodedRow(size_t frameIndex,
 
   // Initialize the frame if necessary.
   ImageFrame& buffer = m_frameBufferCache[frameIndex];
-  if ((buffer.getStatus() == ImageFrame::FrameEmpty) &&
-      !initFrameBuffer(frameIndex))
+  if (!initFrameBuffer(frameIndex))
     return false;
 
   const size_t transparentPixel = frameContext->transparentPixel();
@@ -190,8 +189,7 @@ bool GIFImageDecoder::frameComplete(size_t frameIndex) {
   // Initialize the frame if necessary.  Some GIFs insert do-nothing frames,
   // in which case we never reach haveDecodedRow() before getting here.
   ImageFrame& buffer = m_frameBufferCache[frameIndex];
-  if ((buffer.getStatus() == ImageFrame::FrameEmpty) &&
-      !initFrameBuffer(frameIndex))
+  if (!initFrameBuffer(frameIndex))
     return false;  // initFrameBuffer() has already called setFailed().
 
   buffer.setStatus(ImageFrame::FrameComplete);
@@ -337,45 +335,14 @@ void GIFImageDecoder::parse(GIFParseQuery query) {
     setFailed();
 }
 
-bool GIFImageDecoder::initFrameBuffer(size_t frameIndex) {
-  // Initialize the frame rect in our buffer.
-  ImageFrame* const buffer = &m_frameBufferCache[frameIndex];
-
-  size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
-  if (requiredPreviousFrameIndex == kNotFound) {
-    // This frame doesn't rely on any previous data.
-    if (!buffer->setSizeAndColorSpace(size().width(), size().height(),
-                                      colorSpace())) {
-      return setFailed();
-    }
-  } else {
-    ImageFrame* prevBuffer = &m_frameBufferCache[requiredPreviousFrameIndex];
-    ASSERT(prevBuffer->getStatus() == ImageFrame::FrameComplete);
-
-    // We try to reuse |prevBuffer| as starting state to avoid copying.
-    // For DisposeOverwritePrevious, the next frame will also use
-    // |prevBuffer| as its starting state, so we can't take over its image
-    // data using takeBitmapDataIfWritable.  Copy the data instead.
-    if ((buffer->getDisposalMethod() == ImageFrame::DisposeOverwritePrevious ||
-         !buffer->takeBitmapDataIfWritable(prevBuffer)) &&
-        !buffer->copyBitmapData(*prevBuffer))
-      return setFailed();
-
-    if (prevBuffer->getDisposalMethod() ==
-        ImageFrame::DisposeOverwriteBgcolor) {
-      // We want to clear the previous frame to transparent, without
-      // affecting pixels in the image outside of the frame.
-      const IntRect& prevRect = prevBuffer->originalFrameRect();
-      ASSERT(!prevRect.contains(IntRect(IntPoint(), size())));
-      buffer->zeroFillFrameRect(prevRect);
-    }
-  }
-
-  // Update our status to be partially complete.
-  buffer->setStatus(ImageFrame::FramePartial);
-
-  // Reset the alpha pixel tracker for this frame.
+void GIFImageDecoder::onInitFrameBuffer(size_t frameIndex) {
   m_currentBufferSawAlpha = false;
-  return true;
 }
+
+bool GIFImageDecoder::canReusePreviousFrameBuffer(size_t frameIndex) const {
+  DCHECK(frameIndex < m_frameBufferCache.size());
+  return m_frameBufferCache[frameIndex].getDisposalMethod() !=
+         ImageFrame::DisposeOverwritePrevious;
+}
+
 }  // namespace blink

@@ -237,51 +237,32 @@ bool WEBPImageDecoder::updateDemuxer() {
   return true;
 }
 
-bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex) {
+void WEBPImageDecoder::onInitFrameBuffer(size_t frameIndex) {
+  // ImageDecoder::initFrameBuffer does a DCHECK if |frameIndex| exists.
   ImageFrame& buffer = m_frameBufferCache[frameIndex];
-  if (buffer.getStatus() != ImageFrame::FrameEmpty)  // Already initialized.
-    return true;
 
   const size_t requiredPreviousFrameIndex = buffer.requiredPreviousFrameIndex();
   if (requiredPreviousFrameIndex == kNotFound) {
-    // This frame doesn't rely on any previous data.
-    if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
-                                     colorSpace()))
-      return setFailed();
     m_frameBackgroundHasAlpha =
         !buffer.originalFrameRect().contains(IntRect(IntPoint(), size()));
   } else {
-    ImageFrame& prevBuffer = m_frameBufferCache[requiredPreviousFrameIndex];
-    ASSERT(prevBuffer.getStatus() == ImageFrame::FrameComplete);
-
-    // Preserve the last frame as the starting state for this frame. We try
-    // to reuse |prevBuffer| as starting state to avoid copying.
-    // For BlendAtopPreviousFrame, both frames are required, so we can't
-    // take over its image data using takeBitmapDataIfWritable.
-    if ((buffer.getAlphaBlendSource() == ImageFrame::BlendAtopPreviousFrame ||
-         !buffer.takeBitmapDataIfWritable(&prevBuffer)) &&
-        !buffer.copyBitmapData(prevBuffer))
-      return setFailed();
-
-    if (prevBuffer.getDisposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {
-      // We want to clear the previous frame to transparent, without
-      // affecting pixels in the image outside of the frame.
-      const IntRect& prevRect = prevBuffer.originalFrameRect();
-      ASSERT(!prevRect.contains(IntRect(IntPoint(), size())));
-      buffer.zeroFillFrameRect(prevRect);
-    }
-
+    const ImageFrame& prevBuffer =
+        m_frameBufferCache[requiredPreviousFrameIndex];
     m_frameBackgroundHasAlpha =
         prevBuffer.hasAlpha() ||
         (prevBuffer.getDisposalMethod() == ImageFrame::DisposeOverwriteBgcolor);
   }
 
-  buffer.setStatus(ImageFrame::FramePartial);
   // The buffer is transparent outside the decoded area while the image is
   // loading. The correct alpha value for the frame will be set when it is fully
   // decoded.
   buffer.setHasAlpha(true);
-  return true;
+}
+
+bool WEBPImageDecoder::canReusePreviousFrameBuffer(size_t frameIndex) const {
+  DCHECK(frameIndex < m_frameBufferCache.size());
+  return m_frameBufferCache[frameIndex].getAlphaBlendSource() !=
+         ImageFrame::BlendAtopPreviousFrame;
 }
 
 size_t WEBPImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
