@@ -102,12 +102,14 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
     @Override
     public void onAndroidPermissionAccepted() {
         mDialogDelegate.onAccept(mSwitchView.isChecked());
+        destroyDelegate();
         scheduleDisplay();
     }
 
     @Override
     public void onAndroidPermissionCanceled() {
         mDialogDelegate.onDismiss();
+        destroyDelegate();
         scheduleDisplay();
     }
 
@@ -126,7 +128,7 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
         // so act as though the user dismissed it.
         if (activity == null) {
             mDialogDelegate.onDismiss();
-            mDialogDelegate.destroy();
+            destroyDelegate();
             return;
         }
 
@@ -208,7 +210,7 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
                     } else {
                         mDialogDelegate.onDismiss();
                     }
-                    mDialogDelegate.destroy();
+                    destroyDelegate();
                     scheduleDisplay();
                 }
             }
@@ -242,5 +244,10 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
         }
 
         return fullString;
+    }
+
+    private void destroyDelegate() {
+        mDialogDelegate.destroy();
+        mDialogDelegate = null;
     }
 }
