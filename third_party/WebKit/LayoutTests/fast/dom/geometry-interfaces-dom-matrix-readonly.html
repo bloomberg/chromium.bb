@@ -3,6 +3,12 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="./resources/geometry-interfaces-test-helpers.js"></script>
 <script>
+
+test(() => {
+  var matrix = new DOMMatrixReadOnly();
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrixReadOnly constructor");
+
 test(() => {
   var matrix2d = new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]);
   assert_2d_matrix_equals(matrix2d, [1, 2, 3, 3.1, 2, 1]);

@@ -25,6 +25,7 @@ class CORE_EXPORT DOMMatrixReadOnly
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static DOMMatrixReadOnly* create(ExceptionState&);
   static DOMMatrixReadOnly* create(Vector<double>, ExceptionState&);
   static DOMMatrixReadOnly* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
   static DOMMatrixReadOnly* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
@@ -100,6 +101,7 @@ class CORE_EXPORT DOMMatrixReadOnly
 
  protected:
   DOMMatrixReadOnly() {}
+  DOMMatrixReadOnly(const TransformationMatrix&, bool is2D = true);
 
   template <typename T>
   DOMMatrixReadOnly(T sequence, int size) {

@@ -5,6 +5,7 @@
 // http://dev.w3.org/fxtf/geometry/#DOMMatrix
 
 [
+    Constructor,
     Constructor(sequence<unrestricted double> numberSequence),
     RaisesException=Constructor,
     // FIXME: Exposed=(Window,Worker)

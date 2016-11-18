@@ -85,6 +85,10 @@ bool DOMMatrixReadOnly::validateAndFixup(DOMMatrixInit& other,
   return true;
 }
 
+DOMMatrixReadOnly* DOMMatrixReadOnly::create(ExceptionState& exceptionState) {
+  return new DOMMatrixReadOnly(TransformationMatrix());
+}
+
 DOMMatrixReadOnly* DOMMatrixReadOnly::create(Vector<double> sequence,
                                              ExceptionState& exceptionState) {
   if (sequence.size() != 6 && sequence.size() != 16) {
@@ -247,6 +251,12 @@ DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit& point) {
   double w = point.x() * m14() + point.y() * m24() + point.z() * m34() +
              point.w() * m44();
   return DOMPoint::create(x, y, z, w);
+}
+
+DOMMatrixReadOnly::DOMMatrixReadOnly(const TransformationMatrix& matrix,
+                                     bool is2D) {
+  m_matrix = TransformationMatrix::create(matrix);
+  m_is2D = is2D;
 }
 
 DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const {

@@ -66,10 +66,8 @@ template <typename T>
 DOMMatrix::DOMMatrix(T sequence, int size)
     : DOMMatrixReadOnly(sequence, size) {}
 
-DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D) {
-  m_matrix = TransformationMatrix::create(matrix);
-  m_is2D = is2D;
-}
+DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D)
+    : DOMMatrixReadOnly(matrix, is2D) {}
 
 DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit& other,
                                  ExceptionState& exceptionState) {
