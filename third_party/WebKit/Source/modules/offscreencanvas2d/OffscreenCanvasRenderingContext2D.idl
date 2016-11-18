@@ -62,6 +62,9 @@
     void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
     void resetTransform();
 
+    // compositing
+    attribute DOMString globalCompositeOperation; // (default source-over)
+
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)
     attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")

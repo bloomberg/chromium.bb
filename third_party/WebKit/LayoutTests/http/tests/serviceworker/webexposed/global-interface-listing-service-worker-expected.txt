@@ -486,6 +486,7 @@ interface OffscreenCanvas : EventTarget
 interface OffscreenCanvasRenderingContext2D
     getter canvas
     getter fillStyle
+    getter globalCompositeOperation
     getter imageSmoothingEnabled
     getter imageSmoothingQuality
     getter lineCap
@@ -534,6 +535,7 @@ interface OffscreenCanvasRenderingContext2D
     method transform
     method translate
     setter fillStyle
+    setter globalCompositeOperation
     setter imageSmoothingEnabled
     setter imageSmoothingQuality
     setter lineCap

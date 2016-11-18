@@ -4377,6 +4377,7 @@ interface OffscreenCanvasRenderingContext2D
     getter canvas
     getter fillStyle
     getter filter
+    getter globalCompositeOperation
     getter imageSmoothingEnabled
     getter imageSmoothingQuality
     getter lineCap
@@ -4426,6 +4427,7 @@ interface OffscreenCanvasRenderingContext2D
     method translate
     setter fillStyle
     setter filter
+    setter globalCompositeOperation
     setter imageSmoothingEnabled
     setter imageSmoothingQuality
     setter lineCap
