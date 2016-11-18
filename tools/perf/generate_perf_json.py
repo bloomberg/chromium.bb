@@ -32,10 +32,6 @@ SCRIPT_TESTS = [
     'testers': {
       'chromium.perf': [
         {
-          'name': 'Android Galaxy S5 Perf',
-          'shards': [3]
-        },
-        {
           'name': 'Android Nexus5 Perf',
           'shards': [2]
         },
@@ -49,12 +45,6 @@ SCRIPT_TESTS = [
         #  'shards': [2]
         #}
       ],
-      'chromium.perf.fyi': [
-        {
-          'name': 'Android Galaxy S5 Perf',
-          'shards': [1]
-        },
-      ]
     }
   },
   {
@@ -67,10 +57,6 @@ SCRIPT_TESTS = [
     'script': 'gtest_perf_test.py',
     'testers': {
       'chromium.perf': [
-        {
-          'name': 'Android Galaxy S5 Perf',
-          'shards': [3]
-        },
         {
           'name': 'Android Nexus5 Perf',
           'shards': [2]
@@ -88,12 +74,6 @@ SCRIPT_TESTS = [
           'shards': [2]
         },
       ],
-      'chromium.perf.fyi': [
-        {
-          'name': 'Android Galaxy S5 Perf',
-          'shards': [1]
-        },
-      ]
     }
   },
   {
@@ -138,10 +118,6 @@ SCRIPT_TESTS = [
     'script': 'gtest_perf_test.py',
     'testers': {
       'chromium.perf': [
-        {
-          'name': 'Android Galaxy S5 Perf',
-          'shards': [3]
-        },
         {
           'name': 'Android Nexus5 Perf',
           'shards': [2]
@@ -286,9 +262,6 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
 def get_fyi_waterfall_config():
   waterfall = {'builders':[], 'testers': {}}
   waterfall = add_tester(
-    waterfall, 'Android Galaxy S5 Perf',
-    'android-galaxy-s5-perf', 'android')
-  waterfall = add_tester(
     waterfall, 'Win 10 Low-End Perf Tests',
     'win-10-low-end', 'win',
     swarming=[
@@ -331,10 +304,6 @@ def get_waterfall_config():
   # These configurations are taken from chromium_perf.py in
   # build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
   # to generate the correct json for each tester
-  waterfall = add_tester(
-    waterfall, 'Android Galaxy S5 Perf',
-    'android-galaxy-s5', 'android', target_bits=32,
-    num_device_shards=7, num_host_shards=3)
   waterfall = add_tester(
     waterfall, 'Android Nexus5 Perf', 'android-nexus5',
     'android', target_bits=32, num_device_shards=7, num_host_shards=3)
