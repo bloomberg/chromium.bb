@@ -76,9 +76,6 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
-#include "core/page/DragController.h"
-#include "core/page/DragData.h"
-#include "core/page/DragSession.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -123,7 +120,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebDragData.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebImage.h"
@@ -238,22 +234,6 @@ pageLoadDeferrerStack() {
                       deferrerStack, ());
   return deferrerStack;
 }
-
-// Ensure that the WebDragOperation enum values stay in sync with the original
-// DragOperation constants.
-// TODO(paulmeyer): Move this into WebFrameWidgetBase once all drag-and-drop
-// functions are out of WebViewImpl. See crbug.com/647249.
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum : " #a)
-STATIC_ASSERT_ENUM(DragOperationNone, WebDragOperationNone);
-STATIC_ASSERT_ENUM(DragOperationCopy, WebDragOperationCopy);
-STATIC_ASSERT_ENUM(DragOperationLink, WebDragOperationLink);
-STATIC_ASSERT_ENUM(DragOperationGeneric, WebDragOperationGeneric);
-STATIC_ASSERT_ENUM(DragOperationPrivate, WebDragOperationPrivate);
-STATIC_ASSERT_ENUM(DragOperationMove, WebDragOperationMove);
-STATIC_ASSERT_ENUM(DragOperationDelete, WebDragOperationDelete);
-STATIC_ASSERT_ENUM(DragOperationEvery, WebDragOperationEvery);
 
 static bool shouldUseExternalPopupMenus = false;
 
@@ -379,7 +359,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_enableFakePageScaleAnimationForTesting(false),
       m_fakePageScaleAnimationPageScaleFactor(0),
       m_fakePageScaleAnimationUseAnchor(false),
-      m_doingDragAndDrop(false),
       m_ignoreInputEvents(false),
       m_compositorDeviceScaleFactorOverride(0),
       m_suppressNextKeypressEvent(false),
@@ -456,13 +435,15 @@ WebViewImpl::~WebViewImpl() {
 }
 
 WebViewImpl::UserGestureNotifier::UserGestureNotifier(WebViewImpl* view)
+    // TODO(kenrb, alexmos): |m_frame| should be set to the local root frame,
+    // not the main frame. See crbug.com/589894.
     : m_frame(view->mainFrameImpl()),
       m_userGestureObserved(&view->m_userGestureObserved) {
   DCHECK(m_userGestureObserved);
 }
 
 WebViewImpl::UserGestureNotifier::~UserGestureNotifier() {
-  if (!*m_userGestureObserved &&
+  if (!*m_userGestureObserved && m_frame &&
       m_frame->frame()->document()->hasReceivedUserGesture()) {
     *m_userGestureObserved = true;
     if (m_frame && m_frame->autofillClient())
@@ -2142,9 +2123,9 @@ WebInputEventResult WebViewImpl::handleInputEvent(
 
   TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type",
                WebInputEvent::GetName(inputEvent.type));
-  // If we've started a drag and drop operation, ignore input events until
-  // we're done.
-  if (m_doingDragAndDrop)
+
+  // If a drag-and-drop operation is in progress, ignore input events.
+  if (mainFrameImpl()->frameWidget()->doingDragAndDrop())
     return WebInputEventResult::HandledSuppressed;
 
   if (m_devToolsEmulator->handleInputEvent(inputEvent))

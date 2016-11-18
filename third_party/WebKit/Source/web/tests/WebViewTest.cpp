@@ -2108,9 +2108,15 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
   WebViewImpl* webView =
       WebViewImpl::create(nullptr, WebPageVisibilityStateVisible);
   FrameTestHelpers::TestWebFrameClient webFrameClient;
+  FrameTestHelpers::TestWebWidgetClient webWidgetClient;
   WebLocalFrame* localFrame =
       WebLocalFrame::create(WebTreeScopeType::Document, &webFrameClient);
   webView->setMainFrame(localFrame);
+
+  // TODO(dcheng): The main frame widget currently has a special case.
+  // Eliminate this once WebView is no longer a WebWidget.
+  blink::WebFrameWidget::create(&webWidgetClient, webView, localFrame);
+
   WebGestureEvent event;
   event.type = WebInputEvent::GestureTap;
   event.sourceDevice = WebGestureDeviceTouchscreen;

@@ -14,10 +14,35 @@
 #include "core/page/Page.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebDocument.h"
+#include "public/web/WebWidgetClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
+
+namespace {
+
+// Helper to get LocalFrame* from WebLocalFrame*.
+// TODO(dcheng): This should be moved into WebLocalFrame.
+LocalFrame* toCoreFrame(WebLocalFrame* frame) {
+  return toWebLocalFrameImpl(frame)->frame();
+}
+
+}  // namespace
+
+// Ensure that the WebDragOperation enum values stay in sync with the original
+// DragOperation constants.
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enum : " #a)
+STATIC_ASSERT_ENUM(DragOperationNone, WebDragOperationNone);
+STATIC_ASSERT_ENUM(DragOperationCopy, WebDragOperationCopy);
+STATIC_ASSERT_ENUM(DragOperationLink, WebDragOperationLink);
+STATIC_ASSERT_ENUM(DragOperationGeneric, WebDragOperationGeneric);
+STATIC_ASSERT_ENUM(DragOperationPrivate, WebDragOperationPrivate);
+STATIC_ASSERT_ENUM(DragOperationMove, WebDragOperationMove);
+STATIC_ASSERT_ENUM(DragOperationDelete, WebDragOperationDelete);
+STATIC_ASSERT_ENUM(DragOperationEvery, WebDragOperationEvery);
 
 WebDragOperation WebFrameWidgetBase::dragTargetDragEnter(
     const WebDragData& webDragData,
@@ -51,7 +76,7 @@ void WebFrameWidgetBase::dragTargetDragLeave() {
   DragData dragData(m_currentDragData.get(), IntPoint(), IntPoint(),
                     static_cast<DragOperation>(m_operationsAllowed));
 
-  page()->dragController().dragExited(&dragData);
+  page()->dragController().dragExited(&dragData, *toCoreFrame(localRoot()));
 
   // FIXME: why is the drag scroll timer not stopped here?
 
@@ -86,7 +111,7 @@ void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
   DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
                     static_cast<DragOperation>(m_operationsAllowed));
 
-  page()->dragController().performDrag(&dragData);
+  page()->dragController().performDrag(&dragData, *toCoreFrame(localRoot()));
 
   m_dragOperation = WebDragOperationNone;
   m_currentDragData = nullptr;
@@ -103,17 +128,27 @@ void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
       PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
       PlatformMouseEvent::RealOrIndistinguishable,
       WTF::monotonicallyIncreasingTime());
-  page()->deprecatedLocalMainFrame()->eventHandler().dragSourceEndedAt(
-      pme, static_cast<DragOperation>(operation));
+  toCoreFrame(localRoot())
+      ->eventHandler()
+      .dragSourceEndedAt(pme, static_cast<DragOperation>(operation));
 }
 
 void WebFrameWidgetBase::dragSourceSystemDragEnded() {
   // It's possible for us to get this callback while not doing a drag if it's
   // from a previous page that got unloaded.
-  if (view()->doingDragAndDrop()) {
+  if (m_doingDragAndDrop) {
     page()->dragController().dragEnded();
-    view()->setDoingDragAndDrop(false);
+    m_doingDragAndDrop = false;
   }
+}
+
+void WebFrameWidgetBase::startDragging(WebReferrerPolicy policy,
+                                       const WebDragData& data,
+                                       WebDragOperationsMask mask,
+                                       const WebImage& dragImage,
+                                       const WebPoint& dragImageOffset) {
+  m_doingDragAndDrop = true;
+  client()->startDragging(policy, data, mask, dragImage, dragImageOffset);
 }
 
 WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(
@@ -130,7 +165,8 @@ WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(
                     static_cast<DragOperation>(m_operationsAllowed));
 
   DragSession dragSession;
-  dragSession = page()->dragController().dragEnteredOrUpdated(&dragData);
+  dragSession = page()->dragController().dragEnteredOrUpdated(
+      &dragData, *toCoreFrame(localRoot()));
 
   DragOperation dropEffect = dragSession.operation;
 
@@ -151,7 +187,7 @@ WebPoint WebFrameWidgetBase::viewportToRootFrame(
 }
 
 WebViewImpl* WebFrameWidgetBase::view() const {
-  return static_cast<WebLocalFrameImpl*>(localRoot())->viewImpl();
+  return toWebLocalFrameImpl(localRoot())->viewImpl();
 }
 
 Page* WebFrameWidgetBase::page() const {

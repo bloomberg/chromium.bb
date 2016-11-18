@@ -326,6 +326,10 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
   TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type",
                WebInputEvent::GetName(inputEvent.type));
 
+  // If a drag-and-drop operation is in progress, ignore input events.
+  if (m_doingDragAndDrop)
+    return WebInputEventResult::HandledSuppressed;
+
   // Don't handle events once we've started shutting down.
   if (!page())
     return WebInputEventResult::NotHandled;

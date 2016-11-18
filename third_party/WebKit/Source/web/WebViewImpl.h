@@ -501,9 +501,6 @@ class WEB_EXPORT WebViewImpl final
 
   ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
 
-  void setDoingDragAndDrop(bool doing) { m_doingDragAndDrop = doing; }
-  bool doingDragAndDrop() { return m_doingDragAndDrop; }
-
   // Returns the currently active WebInputMethodController which the one
   // corresponding to the focused frame. It will return nullptr if there are
   // none or |m_imeAcceptEvents| is false.
@@ -653,10 +650,6 @@ class WEB_EXPORT WebViewImpl final
   IntPoint m_fakePageScaleAnimationTargetPosition;
   float m_fakePageScaleAnimationPageScaleFactor;
   bool m_fakePageScaleAnimationUseAnchor;
-
-  // TODO(paulmeyer): Move this to WebWidget once all drag-and-drop functions
-  // are there.
-  bool m_doingDragAndDrop;
 
   bool m_ignoreInputEvents;
 

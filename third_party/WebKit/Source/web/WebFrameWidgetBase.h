@@ -16,6 +16,7 @@ class CompositorAnimationTimeline;
 class CompositorProxyClient;
 class DragController;
 class GraphicsLayer;
+class WebImage;
 class WebLayer;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -63,6 +64,15 @@ class WebFrameWidgetBase : public WebFrameWidget {
                          const WebPoint& screenPoint,
                          WebDragOperation) override;
   void dragSourceSystemDragEnded() override;
+
+  // Called when a drag-n-drop operation should begin.
+  void startDragging(WebReferrerPolicy,
+                     const WebDragData&,
+                     WebDragOperationsMask,
+                     const WebImage& dragImage,
+                     const WebPoint& dragImageOffset);
+
+  bool doingDragAndDrop() { return m_doingDragAndDrop; }
 
  protected:
   enum DragAction { DragEnter, DragOver };

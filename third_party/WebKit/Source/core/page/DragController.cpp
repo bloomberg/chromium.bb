@@ -208,11 +208,10 @@ void DragController::dragEnded() {
   m_page->dragCaretController().clear();
 }
 
-void DragController::dragExited(DragData* dragData) {
+void DragController::dragExited(DragData* dragData, LocalFrame& localRoot) {
   DCHECK(dragData);
-  LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
 
-  FrameView* frameView(mainFrame->view());
+  FrameView* frameView(localRoot.view());
   if (frameView) {
     DataTransferAccessPolicy policy =
         (!m_documentUnderMouse ||
@@ -221,8 +220,8 @@ void DragController::dragExited(DragData* dragData) {
             : DataTransferTypesReadable;
     DataTransfer* dataTransfer = createDraggingDataTransfer(policy, dragData);
     dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
-    mainFrame->eventHandler().cancelDragAndDrop(createMouseEvent(dragData),
-                                                dataTransfer);
+    localRoot.eventHandler().cancelDragAndDrop(createMouseEvent(dragData),
+                                               dataTransfer);
     dataTransfer->setAccessPolicy(
         DataTransferNumb);  // invalidate clipboard here for security
   }
@@ -232,22 +231,20 @@ void DragController::dragExited(DragData* dragData) {
   m_fileInputElementUnderMouse = nullptr;
 }
 
-bool DragController::performDrag(DragData* dragData) {
+bool DragController::performDrag(DragData* dragData, LocalFrame& localRoot) {
   DCHECK(dragData);
-  m_documentUnderMouse = m_page->deprecatedLocalMainFrame()->documentAtPoint(
-      dragData->clientPosition());
+  m_documentUnderMouse = localRoot.documentAtPoint(dragData->clientPosition());
   UserGestureIndicator gesture(DocumentUserGestureToken::create(
       m_documentUnderMouse, UserGestureToken::NewGesture));
   if ((m_dragDestinationAction & DragDestinationActionDHTML) &&
       m_documentIsHandlingDrag) {
-    LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
     bool preventedDefault = false;
-    if (mainFrame->view()) {
+    if (localRoot.view()) {
       // Sending an event can result in the destruction of the view and part.
       DataTransfer* dataTransfer =
           createDraggingDataTransfer(DataTransferReadable, dragData);
       dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
-      EventHandler& eventHandler = mainFrame->eventHandler();
+      EventHandler& eventHandler = localRoot.eventHandler();
       preventedDefault = eventHandler.performDragAndDrop(
                              createMouseEvent(dragData), dataTransfer) !=
                          WebInputEventResult::NotHandled;
@@ -255,7 +252,7 @@ bool DragController::performDrag(DragData* dragData) {
         // When drop target is plugin element and it can process drag, we
         // should prevent default behavior.
         const IntPoint point =
-            mainFrame->view()->rootFrameToContents(dragData->clientPosition());
+            localRoot.view()->rootFrameToContents(dragData->clientPosition());
         const HitTestResult result = eventHandler.hitTestResultAtPoint(point);
         preventedDefault |=
             isHTMLPlugInElement(*result.innerNode()) &&
@@ -280,7 +277,7 @@ bool DragController::performDrag(DragData* dragData) {
 
   m_documentUnderMouse = nullptr;
 
-  if (operationForLoad(dragData) == DragOperationNone)
+  if (operationForLoad(dragData, localRoot) == DragOperationNone)
     return false;
 
   if (m_page->settings().navigateOnDragDrop()) {
@@ -300,11 +297,11 @@ void DragController::mouseMovedIntoDocument(Document* newDocument) {
   m_documentUnderMouse = newDocument;
 }
 
-DragSession DragController::dragEnteredOrUpdated(DragData* dragData) {
+DragSession DragController::dragEnteredOrUpdated(DragData* dragData,
+                                                 LocalFrame& localRoot) {
   DCHECK(dragData);
-  DCHECK(m_page->mainFrame());
-  mouseMovedIntoDocument(m_page->deprecatedLocalMainFrame()->documentAtPoint(
-      dragData->clientPosition()));
+
+  mouseMovedIntoDocument(localRoot.documentAtPoint(dragData->clientPosition()));
 
   // TODO(esprehn): Replace acceptsLoadDrops with a Setting used in core.
   m_dragDestinationAction =
@@ -314,11 +311,11 @@ DragSession DragController::dragEnteredOrUpdated(DragData* dragData) {
                                                DragDestinationActionEdit);
 
   DragSession dragSession;
-  m_documentIsHandlingDrag =
-      tryDocumentDrag(dragData, m_dragDestinationAction, dragSession);
+  m_documentIsHandlingDrag = tryDocumentDrag(dragData, m_dragDestinationAction,
+                                             dragSession, localRoot);
   if (!m_documentIsHandlingDrag &&
       (m_dragDestinationAction & DragDestinationActionLoad))
-    dragSession.operation = operationForLoad(dragData);
+    dragSession.operation = operationForLoad(dragData, localRoot);
   return dragSession;
 }
 
@@ -350,7 +347,8 @@ static Element* elementUnderMouse(Document* documentUnderMouse,
 
 bool DragController::tryDocumentDrag(DragData* dragData,
                                      DragDestinationAction actionMask,
-                                     DragSession& dragSession) {
+                                     DragSession& dragSession,
+                                     LocalFrame& localRoot) {
   DCHECK(dragData);
 
   if (!m_documentUnderMouse)
@@ -363,7 +361,7 @@ bool DragController::tryDocumentDrag(DragData* dragData,
 
   bool isHandlingDrag = false;
   if (actionMask & DragDestinationActionDHTML) {
-    isHandlingDrag = tryDHTMLDrag(dragData, dragSession.operation);
+    isHandlingDrag = tryDHTMLDrag(dragData, dragSession.operation, localRoot);
     // Do not continue if m_documentUnderMouse has been reset by tryDHTMLDrag.
     // tryDHTMLDrag fires dragenter event. The event listener that listens
     // to this event may create a nested message loop (open a modal dialog),
@@ -384,7 +382,8 @@ bool DragController::tryDocumentDrag(DragData* dragData,
     return true;
   }
 
-  if ((actionMask & DragDestinationActionEdit) && canProcessDrag(dragData)) {
+  if ((actionMask & DragDestinationActionEdit) &&
+      canProcessDrag(dragData, localRoot)) {
     IntPoint point = frameView->rootFrameToContents(dragData->clientPosition());
     Element* element = elementUnderMouse(m_documentUnderMouse.get(), point);
     if (!element)
@@ -442,10 +441,10 @@ bool DragController::tryDocumentDrag(DragData* dragData,
   return false;
 }
 
-DragOperation DragController::operationForLoad(DragData* dragData) {
+DragOperation DragController::operationForLoad(DragData* dragData,
+                                               LocalFrame& localRoot) {
   DCHECK(dragData);
-  Document* doc = m_page->deprecatedLocalMainFrame()->documentAtPoint(
-      dragData->clientPosition());
+  Document* doc = localRoot.documentAtPoint(dragData->clientPosition());
 
   if (doc &&
       (m_didInitiateDrag || doc->isPluginDocument() || hasEditableStyle(*doc)))
@@ -534,7 +533,9 @@ bool DragController::concludeEditDrag(DragData* dragData) {
     return fileInput->receiveDroppedFiles(dragData);
   }
 
-  if (!m_page->dragController().canProcessDrag(dragData)) {
+  // TODO(paulmeyer): Isn't |m_page->dragController()| the same as |this|?
+  if (!m_page->dragController().canProcessDrag(dragData,
+                                               *innerFrame->localFrameRoot())) {
     m_page->dragCaretController().clear();
     return false;
   }
@@ -655,21 +656,19 @@ bool DragController::concludeEditDrag(DragData* dragData) {
   return true;
 }
 
-bool DragController::canProcessDrag(DragData* dragData) {
+bool DragController::canProcessDrag(DragData* dragData, LocalFrame& localRoot) {
   DCHECK(dragData);
 
   if (!dragData->containsCompatibleContent())
     return false;
 
-  IntPoint point =
-      m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(
-          dragData->clientPosition());
-  if (m_page->deprecatedLocalMainFrame()->contentLayoutItem().isNull())
+  if (localRoot.contentLayoutItem().isNull())
     return false;
 
-  HitTestResult result =
-      m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(
-          point);
+  IntPoint point =
+      localRoot.view()->rootFrameToContents(dragData->clientPosition());
+
+  HitTestResult result = localRoot.eventHandler().hitTestResultAtPoint(point);
 
   if (!result.innerNode())
     return false;
@@ -712,11 +711,11 @@ static DragOperation defaultOperationForDrag(DragOperation srcOpMask) {
 }
 
 bool DragController::tryDHTMLDrag(DragData* dragData,
-                                  DragOperation& operation) {
+                                  DragOperation& operation,
+                                  LocalFrame& localRoot) {
   DCHECK(dragData);
   DCHECK(m_documentUnderMouse);
-  LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
-  if (!mainFrame->view())
+  if (!localRoot.view())
     return false;
 
   DataTransferAccessPolicy policy =
@@ -728,7 +727,7 @@ bool DragController::tryDHTMLDrag(DragData* dragData,
   dataTransfer->setSourceOperation(srcOpMask);
 
   PlatformMouseEvent event = createMouseEvent(dragData);
-  if (mainFrame->eventHandler().updateDragAndDrop(event, dataTransfer) ==
+  if (localRoot.eventHandler().updateDragAndDrop(event, dataTransfer) ==
       WebInputEventResult::NotHandled) {
     dataTransfer->setAccessPolicy(
         DataTransferNumb);  // invalidate clipboard here for security
