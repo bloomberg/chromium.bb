@@ -143,8 +143,8 @@ cr.define('site_details', function() {
         testElement.category = category;
         testElement.site = site
 
-        assertTrue(testElement.$.usage.hidden);
-        assertTrue(testElement.$.storage.hidden);
+        //expect usage to not be rendered
+        assertFalse(!!testElement.$$('#usage'));
 
         // TODO(finnur): Check for the Permission heading hiding when no
         // permissions are showing.
@@ -205,8 +205,10 @@ cr.define('site_details', function() {
           embeddingOrigin: '',
         };
 
-        assertFalse(testElement.$.usage.hidden);
-        assertFalse(testElement.$.storage.hidden);
+        Polymer.dom.flush();
+
+        //expect usage to be rendered
+        assertTrue(!!testElement.$$('#usage'));
       });
     });
   }
