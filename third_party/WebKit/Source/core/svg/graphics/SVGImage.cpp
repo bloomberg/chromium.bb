@@ -491,8 +491,13 @@ void SVGImage::serviceAnimations(double monotonicAnimationStartTime) {
   // that will keep the associated SVGImageChromeClient object alive.
   Persistent<ImageObserver> protect(getImageObserver());
   m_page->animator().serviceScriptedAnimations(monotonicAnimationStartTime);
-  m_page->animator().updateAllLifecyclePhases(
-      *toLocalFrame(m_page->mainFrame()));
+  // Do *not* update the paint phase. It's critical to paint only when
+  // actually generating painted output, not only for performance reasons,
+  // but to preserve correct coherence of the cache of the output with
+  // the needsRepaint bits of the PaintLayers in the image.
+  toLocalFrame(m_page->mainFrame())
+      ->view()
+      ->updateAllLifecyclePhasesExceptPaint();
 }
 
 void SVGImage::advanceAnimationForTesting() {
