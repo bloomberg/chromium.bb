@@ -605,7 +605,6 @@
             "chrome_sdk": true,
             "description": "Full release build with next minor GCC toolchain revision",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-            "gcc_githash": "svn-mirror/google/gcc-4_9",
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -640,7 +639,8 @@
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_security_OpenFDs",
-                "chrome_internal"
+                "chrome_internal",
+                "next_gcc"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []

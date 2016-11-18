@@ -1567,7 +1567,7 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
       'gcc_toolchain',
       site_config.templates.toolchain,
       description='Full release build with next minor GCC toolchain revision',
-      gcc_githash='svn-mirror/google/gcc-4_9',
+      useflags=append_useflags(['next_gcc']),
       latest_toolchain=True,
       hw_tests=hw_test_list.ToolchainTestFull(),
       hw_tests_override=hw_test_list.ToolchainTestFull(),
