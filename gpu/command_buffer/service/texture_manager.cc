@@ -785,11 +785,15 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
     return false;
   }
 
-  if (!Texture::ColorRenderable(feature_info, base.internal_format,
-                                immutable_) ||
-      !Texture::TextureFilterable(feature_info, base.internal_format, base.type,
-                                  immutable_)) {
-    return false;
+  if (!feature_info->validators()->texture_unsized_internal_format.IsValid(
+      base.internal_format)) {
+    if (!Texture::ColorRenderable(feature_info, base.internal_format,
+                                  immutable_) ||
+        !Texture::TextureFilterable(feature_info, base.internal_format,
+                                    base.type,
+                                    immutable_)) {
+      return false;
+    }
   }
 
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
@@ -869,7 +873,9 @@ bool Texture::ColorRenderable(const FeatureInfo* feature_info,
                               bool immutable) {
   if (feature_info->validators()->texture_unsized_internal_format.IsValid(
       internal_format)) {
-    return true;
+    return internal_format != GL_ALPHA && internal_format != GL_LUMINANCE &&
+           internal_format != GL_LUMINANCE_ALPHA &&
+           internal_format != GL_SRGB_EXT;
   }
 
   return SizedFormatAvailable(feature_info, immutable, internal_format) &&
@@ -1772,16 +1778,8 @@ bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
   DCHECK(level >= 0 &&
          level < static_cast<GLint>(face_infos_[0].level_infos.size()));
   GLenum internal_format = face_infos_[0].level_infos[level].internal_format;
-  bool color_renderable =
-      ((feature_info->validators()->texture_unsized_internal_format.IsValid(
-            internal_format) &&
-        internal_format != GL_ALPHA && internal_format != GL_LUMINANCE &&
-        internal_format != GL_LUMINANCE_ALPHA &&
-        internal_format != GL_SRGB_EXT) ||
-       (SizedFormatAvailable(feature_info, immutable_, internal_format) &&
-        feature_info->validators()
-            ->texture_sized_color_renderable_internal_format.IsValid(
-                internal_format)));
+  bool color_renderable = ColorRenderable(feature_info, internal_format,
+                                          immutable_);
   bool depth_renderable = feature_info->validators()->
       texture_depth_renderable_internal_format.IsValid(internal_format);
   bool stencil_renderable = feature_info->validators()->

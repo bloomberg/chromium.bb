@@ -13757,7 +13757,7 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
   }
   if (feature_info_->IsWebGL2OrES3Context()) {
     GLint color_encoding = GetColorEncodingFromInternalFormat(read_format);
-    bool float_mismatch= feature_info_->ext_color_buffer_float_available() ?
+    bool float_mismatch = feature_info_->ext_color_buffer_float_available() ?
         (GLES2Util::IsIntegerFormat(internal_format) !=
          GLES2Util::IsIntegerFormat(read_format)) :
         GLES2Util::IsFloatFormat(internal_format);

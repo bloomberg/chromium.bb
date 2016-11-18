@@ -785,6 +785,34 @@ TEST_F(TextureTest, ZeroSizeCanNotRender) {
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
 }
 
+TEST_F(TextureTest, CanRenderTo) {
+  TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), "");
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
+  feature_info->InitializeForTesting();
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 1,
+                         0, GL_RGB, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
+  EXPECT_TRUE(texture_ref_->texture()->CanRenderTo(feature_info.get(), 0));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
+  EXPECT_TRUE(texture_ref_->texture()->CanRenderTo(feature_info.get(), 0));
+}
+
+TEST_F(TextureTest, CanNotRenderTo) {
+  TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), "");
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
+  feature_info->InitializeForTesting();
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_LUMINANCE, 1,
+                         1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         gfx::Rect(1, 1));
+  EXPECT_FALSE(texture_ref_->texture()->CanRenderTo(feature_info.get(), 0));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0,
+                         GL_LUMINANCE_ALPHA, 0, 0, 1, 0, GL_LUMINANCE_ALPHA,
+                         GL_UNSIGNED_BYTE, gfx::Rect());
+  EXPECT_FALSE(texture_ref_->texture()->CanRenderTo(feature_info.get(), 0));
+}
+
 TEST_F(TextureTest, EstimatedSize) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1,
