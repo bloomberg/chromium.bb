@@ -144,7 +144,6 @@ gfx::Rect ToggleButton::GetThumbBounds() const {
                          (thumb_bounds.width() - thumb_bounds.height()));
   // The thumb is a circle, so the width should match the height.
   thumb_bounds.set_width(thumb_bounds.height());
-  thumb_bounds.set_x(GetMirroredXForRect(thumb_bounds));
   thumb_bounds.Inset(ThumbView::GetShadowOutsets());
   return thumb_bounds;
 }
