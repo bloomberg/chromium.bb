@@ -173,12 +173,15 @@ typedef enum ATTRIBUTE_PACKED {
 
 // frame transform mode
 typedef enum {
-  ONLY_4X4 = 0,        // only 4x4 transform used
-  ALLOW_8X8 = 1,       // allow block transform size up to 8x8
-  ALLOW_16X16 = 2,     // allow block transform size up to 16x16
-  ALLOW_32X32 = 3,     // allow block transform size up to 32x32
-  TX_MODE_SELECT = 4,  // transform specified for each block
-  TX_MODES = 5,
+  ONLY_4X4 = 0,     // only 4x4 transform used
+  ALLOW_8X8 = 1,    // allow block transform size up to 8x8
+  ALLOW_16X16 = 2,  // allow block transform size up to 16x16
+  ALLOW_32X32 = 3,  // allow block transform size up to 32x32
+#if CONFIG_TX64X64
+  ALLOW_64X64 = 4,  // allow block transform size up to 64x64
+#endif
+  TX_MODE_SELECT,  // transform specified for each block
+  TX_MODES,
 } TX_MODE;
 
 // 1D tx types

@@ -3166,9 +3166,17 @@ static void update_seg_probs(AV1_COMP *cpi, aom_writer *w) {
 }
 #endif
 
-static void write_txfm_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
+static void write_tx_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
+#if CONFIG_TX64X64
+  aom_wb_write_bit(wb, mode == TX_MODE_SELECT);
+  if (mode != TX_MODE_SELECT) {
+    aom_wb_write_literal(wb, AOMMIN(mode, ALLOW_32X32), 2);
+    if (mode >= ALLOW_32X32) aom_wb_write_bit(wb, mode == ALLOW_64X64);
+  }
+#else
   aom_wb_write_bit(wb, mode == TX_MODE_SELECT);
   if (mode != TX_MODE_SELECT) aom_wb_write_literal(wb, mode, 2);
+#endif  // CONFIG_TX64X64
 }
 
 static void update_txfm_probs(AV1_COMMON *cm, aom_writer *w,
@@ -3949,7 +3957,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   if (!cm->seg.enabled && xd->lossless[0])
     cm->tx_mode = ONLY_4X4;
   else
-    write_txfm_mode(cm->tx_mode, wb);
+    write_tx_mode(cm->tx_mode, wb);
 
   if (cpi->allow_comp_inter_inter) {
     const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;

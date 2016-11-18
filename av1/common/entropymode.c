@@ -938,6 +938,10 @@ const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)] = {
       // Max tx_size is 32X32
       -0, 2, -1, 4, -2, -3,
   },
+#if CONFIG_TX64X64
+  { // Max tx_size is 64X64
+    -0, 2, -1, 4, -2, 6, -3, -4 },
+#endif  // CONFIG_TX64X64
 };
 
 static const aom_prob default_tx_size_prob[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
@@ -957,6 +961,13 @@ static const aom_prob default_tx_size_prob[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
                                                 { 3, 136, 37 },
                                                 { 5, 52, 13 },
                                             },
+#if CONFIG_TX64X64
+                                            {
+                                                // Max tx_size is 64X64
+                                                { 1, 64, 136, 127 },
+                                                { 1, 32, 52, 67 },
+                                            },
+#endif  // CONFIG_TX64X64
                                           };
 
 #if CONFIG_LOOP_RESTORATION
