@@ -15,8 +15,8 @@
 # 2. Prepare a list of urls.
 # 3. Run the script (use -d when you have more than one device connected.)
 #   run_offline_page_evaluation_test.py --output-directory
-#   ~/offline_eval_short_output/ --url-timeout 150 --user-requested=true
-#   --use-test-scheduler=true $CHROME_SRC/out/Default ~/offline_eval_urls.txt
+#   ~/offline_eval_short_output/ --user-requested=true -use-test-scheduler=true
+#   $CHROME_SRC/out/Default ~/offline_eval_urls.txt
 # 4. Check the results in the output directory.
 
 import argparse
@@ -25,13 +25,11 @@ import shutil
 import subprocess
 import sys
 
-DEFAULT_URL_TIMEOUT = 60 * 8
 DEFAULT_USER_REQUEST = True
 DEFAULT_USE_TEST_SCHEDULER = False
 DEFAULT_VERBOSE = False
 CONFIG_FILENAME = 'test_config'
 CONFIG_TEMPLATE = """\
-TimeoutPerUrlInSeconds = {timeout_per_url_in_seconds}
 IsUserRequested = {is_user_requested}
 UseTestScheduler = {use_test_scheduler}
 """
@@ -44,11 +42,6 @@ def main(args):
       '--output-directory',
       dest='output_dir',
       help='Directory for output. Default is ~/offline_eval_output/')
-  parser.add_argument(
-      '--url-timeout',
-      type=int,
-      dest='url_timeout',
-      help='Time out per url, in seconds. Default is 480 seconds.')
   parser.add_argument(
       '--user-requested',
       dest='user_request',
@@ -86,7 +79,6 @@ def main(args):
       'test_urls_file', help='Path to input file with urls to be tested.')
   parser.set_defaults(
       output_dir=os.path.expanduser('~/offline_eval_output'),
-      url_timeout=DEFAULT_URL_TIMEOUT,
       user_request=DEFAULT_USER_REQUEST,
       user_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
       verbose=DEFAULT_VERBOSE)
@@ -120,7 +112,6 @@ def main(args):
   with open(config_output_path, 'w') as config:
     config.write(
         CONFIG_TEMPLATE.format(
-            timeout_per_url_in_seconds=options.url_timeout,
             is_user_requested=options.user_request,
             use_test_scheduler=options.use_test_scheduler))
 
@@ -138,7 +129,7 @@ def main(args):
   # Run test
   test_runner_cmd = [
       test_runner_path, '-f',
-      'OfflinePageSavePageLaterEvaluationTest.testFailureRateWithTimeout'
+      'OfflinePageSavePageLaterEvaluationTest.testFailureRate'
   ]
   if options.verbose:
     test_runner_cmd += ['-v']

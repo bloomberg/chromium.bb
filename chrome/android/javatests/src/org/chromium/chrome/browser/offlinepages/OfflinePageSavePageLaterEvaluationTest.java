@@ -35,6 +35,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -88,15 +89,13 @@ public class OfflinePageSavePageLaterEvaluationTest
     private OfflinePageEvaluationBridge mBridge;
     private OfflinePageEvaluationObserver mObserver;
 
-    private Semaphore mDoneSemaphore;
+    private CountDownLatch mCompletionLatch;
     private List<String> mUrls;
     private int mCount;
     private boolean mIsUserRequested;
     private boolean mUseTestScheduler;
 
     private LongSparseArray<RequestMetadata> mRequestMetadata;
-    // TODO(romax): Use actual policy to determine the timeout.
-    private Long mTimeoutPerUrlInSeconds = 0L;
     private OutputStreamWriter mLogOutput;
 
     public OfflinePageSavePageLaterEvaluationTest() {
@@ -183,8 +182,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                         }
                     }
                 }
-            }
-            if (!externalArchiveDir.mkdir()) {
+            } else if (!externalArchiveDir.mkdir()) {
                 logError("Cannot create directory on external storage to store saved pages.");
             }
         } catch (SecurityException e) {
@@ -280,6 +278,8 @@ public class OfflinePageSavePageLaterEvaluationTest
         checkTrue(mUrls != null, "URLs weren't loaded.");
         checkTrue(mUrls.size() > 0, "No valid URLs in the input file.");
 
+        mCompletionLatch = new CountDownLatch(1);
+
         initializeBridgeForProfile(useCustomScheduler);
         mObserver = new OfflinePageEvaluationObserver() {
             public void savePageRequestAdded(SavePageRequest request) {
@@ -300,7 +300,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 }
                 metadata.mStatus = status;
                 if (mCount == mUrls.size()) {
-                    mDoneSemaphore.release();
+                    mCompletionLatch.countDown();
                     return;
                 }
             }
@@ -329,16 +329,12 @@ public class OfflinePageSavePageLaterEvaluationTest
             logError("Test initialization error, aborting. No results would be written.");
             return;
         }
-        mDoneSemaphore = new Semaphore(0);
         for (String url : mUrls) {
             savePageLater(url, NAMESPACE);
         }
 
-        if (!mDoneSemaphore.tryAcquire(urls.size() * mTimeoutPerUrlInSeconds, TimeUnit.SECONDS)) {
-            writeResults(false);
-        } else {
-            writeResults(true);
-        }
+        mCompletionLatch.await();
+        writeResults();
     }
 
     private void getUrlListFromInputFile(String inputFilePath)
@@ -426,12 +422,12 @@ public class OfflinePageSavePageLaterEvaluationTest
      * At the end of the file there will be a summary:
      * Total requested URLs: XX, Completed: XX, Failed: XX, Failure Rate: XX.XX%
      */
-    private void writeResults(boolean completed) throws IOException, InterruptedException {
+    private void writeResults() throws IOException, InterruptedException {
         loadSavedPages();
         OutputStreamWriter output = getOutputStream(RESULT_OUTPUT_FILE_PATH);
         try {
             int failedCount = 0;
-            if (!completed) {
+            if (mCount < mUrls.size()) {
                 logError("Test terminated before all requests completed.");
             }
             File externalArchiveDir = getExternalArchiveDir();
@@ -485,8 +481,6 @@ public class OfflinePageSavePageLaterEvaluationTest
             inputStream = new FileInputStream(configFile);
             properties.load(inputStream);
             mIsUserRequested = Boolean.parseBoolean(properties.getProperty("IsUserRequested"));
-            mTimeoutPerUrlInSeconds =
-                    Long.parseLong(properties.getProperty("TimeoutPerUrlInSeconds"));
             mUseTestScheduler = Boolean.parseBoolean(properties.getProperty("UseTestScheduler"));
         } catch (FileNotFoundException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -504,7 +498,7 @@ public class OfflinePageSavePageLaterEvaluationTest
      * It is encouraged to use run_offline_page_evaluation_test.py to run this test.
      */
     @Manual
-    public void testFailureRateWithTimeout() throws IOException, InterruptedException {
+    public void testFailureRate() throws IOException, InterruptedException {
         parseConfigFile();
         setUpIOAndBridge(mUseTestScheduler);
         processUrls(mUrls);
