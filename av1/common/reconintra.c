@@ -322,10 +322,18 @@ static intra_high_pred_fn dc_pred_high[2][2][TX_SIZES];
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 static void av1_init_intra_predictors_internal(void) {
+#if CONFIG_TX64X64
+#define INIT_NO_4X4(p, type)                  \
+  p[TX_8X8] = aom_##type##_predictor_8x8;     \
+  p[TX_16X16] = aom_##type##_predictor_16x16; \
+  p[TX_32X32] = aom_##type##_predictor_32x32; \
+  p[TX_64X64] = aom_##type##_predictor_64x64
+#else
 #define INIT_NO_4X4(p, type)                  \
   p[TX_8X8] = aom_##type##_predictor_8x8;     \
   p[TX_16X16] = aom_##type##_predictor_16x16; \
   p[TX_32X32] = aom_##type##_predictor_32x32
+#endif  // CONFIG_TX64X64
 
 #define INIT_ALL_SIZES(p, type)           \
   p[TX_4X4] = aom_##type##_predictor_4x4; \
@@ -910,17 +918,46 @@ int av1_filter_intra_taps_4[TX_SIZES][INTRA_MODES][4] = {
       { 589, 646, -495, 255 },
       { 740, 884, -728, 77 },
   },
+#if CONFIG_TX64X64
+  {
+      { 477, 737, -393, 150 },
+      { 881, 630, -546, 67 },
+      { 506, 984, -443, -20 },
+      { 114, 459, -270, 528 },
+      { 433, 528, 14, 3 },
+      { 837, 470, -301, -30 },
+      { 181, 777, 89, -107 },
+      { -29, 716, -232, 259 },
+      { 589, 646, -495, 255 },
+      { 740, 884, -728, 77 },
+  },
+#endif  // CONFIG_TX64X64
 };
+
+static INLINE TX_SIZE get_txsize_from_blocklen(int bs) {
+  switch (bs) {
+    case 4: return TX_4X4;
+    case 8: return TX_8X8;
+    case 16: return TX_16X16;
+    case 32: return TX_32X32;
+#if CONFIG_TX64X64
+    case 64: return TX_64X64;
+#endif  // CONFIG_TX64X64
+    default: assert(0);
+  }
+}
 
 static void filter_intra_predictors_4tap(uint8_t *dst, ptrdiff_t stride, int bs,
                                          const uint8_t *above,
                                          const uint8_t *left, int mode) {
   int k, r, c;
-  int buffer[33][65];
   int mean, ipred;
-  const TX_SIZE tx_size =
-      (bs == 32) ? TX_32X32
-                 : ((bs == 16) ? TX_16X16 : ((bs == 8) ? TX_8X8 : (TX_4X4)));
+#if CONFIG_TX64X64
+  int buffer[65][129];
+#else
+  int buffer[33][65];
+#endif  // CONFIG_TX64X64
+  const TX_SIZE tx_size = get_txsize_from_blocklen(bs);
   const int c0 = av1_filter_intra_taps_4[tx_size][mode][0];
   const int c1 = av1_filter_intra_taps_4[tx_size][mode][1];
   const int c2 = av1_filter_intra_taps_4[tx_size][mode][2];
@@ -1040,11 +1077,13 @@ static void highbd_filter_intra_predictors_4tap(uint16_t *dst, ptrdiff_t stride,
                                                 const uint16_t *left, int mode,
                                                 int bd) {
   int k, r, c;
-  int preds[33][65];
   int mean, ipred;
-  const TX_SIZE tx_size =
-      (bs == 32) ? TX_32X32
-                 : ((bs == 16) ? TX_16X16 : ((bs == 8) ? TX_8X8 : (TX_4X4)));
+#if CONFIG_TX64X64
+  int preds[65][129];
+#else
+  int preds[33][65];
+#endif  // CONFIG_TX64X64
+  const TX_SIZE tx_size = get_txsize_from_blocklen(bs);
   const int c0 = av1_filter_intra_taps_4[tx_size][mode][0];
   const int c1 = av1_filter_intra_taps_4[tx_size][mode][1];
   const int c2 = av1_filter_intra_taps_4[tx_size][mode][2];

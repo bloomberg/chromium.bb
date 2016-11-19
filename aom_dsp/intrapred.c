@@ -149,6 +149,15 @@ static INLINE void d117_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
 static INLINE void d135_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
                                   const uint8_t *above, const uint8_t *left) {
   int i;
+#if CONFIG_TX64X64
+#if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ > 7
+  // silence a spurious -Warray-bounds warning, possibly related to:
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56273
+  uint8_t border[133];
+#else
+  uint8_t border[64 + 64 - 1];  // outer border from bottom-left to top-right
+#endif
+#else
 #if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ > 7
   // silence a spurious -Warray-bounds warning, possibly related to:
   // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56273
@@ -156,6 +165,7 @@ static INLINE void d135_predictor(uint8_t *dst, ptrdiff_t stride, int bs,
 #else
   uint8_t border[32 + 32 - 1];  // outer border from bottom-left to top-right
 #endif
+#endif  // CONFIG_TX64X64
 
   // dst(bs, bs - 2)[0], i.e., border starting at bottom-left
   for (i = 0; i < bs - 2; ++i) {
@@ -965,6 +975,31 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
   }
 
 /* clang-format off */
+#if CONFIG_TX64X64
+#define intra_pred_allsizes(type) \
+  intra_pred_sized(type, 2) \
+  intra_pred_sized(type, 4) \
+  intra_pred_sized(type, 8) \
+  intra_pred_sized(type, 16) \
+  intra_pred_sized(type, 32) \
+  intra_pred_sized(type, 64) \
+  intra_pred_highbd_sized(type, 4) \
+  intra_pred_highbd_sized(type, 8) \
+  intra_pred_highbd_sized(type, 16) \
+  intra_pred_highbd_sized(type, 32) \
+  intra_pred_highbd_sized(type, 64)
+
+#define intra_pred_above_4x4(type) \
+  intra_pred_sized(type, 8) \
+  intra_pred_sized(type, 16) \
+  intra_pred_sized(type, 32) \
+  intra_pred_sized(type, 64) \
+  intra_pred_highbd_sized(type, 4) \
+  intra_pred_highbd_sized(type, 8) \
+  intra_pred_highbd_sized(type, 16) \
+  intra_pred_highbd_sized(type, 32) \
+  intra_pred_highbd_sized(type, 64)
+#else  // CONFIG_TX64X64
 #define intra_pred_allsizes(type) \
   intra_pred_sized(type, 2) \
   intra_pred_sized(type, 4) \
@@ -984,8 +1019,25 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
   intra_pred_highbd_sized(type, 8) \
   intra_pred_highbd_sized(type, 16) \
   intra_pred_highbd_sized(type, 32)
+#endif  // CONFIG_TX64X64
 
 #else
+
+#if CONFIG_TX64X64
+#define intra_pred_allsizes(type) \
+  intra_pred_sized(type, 2) \
+  intra_pred_sized(type, 4) \
+  intra_pred_sized(type, 8) \
+  intra_pred_sized(type, 16) \
+  intra_pred_sized(type, 32) \
+  intra_pred_sized(type, 64)
+
+#define intra_pred_above_4x4(type) \
+  intra_pred_sized(type, 8) \
+  intra_pred_sized(type, 16) \
+  intra_pred_sized(type, 32) \
+  intra_pred_sized(type, 64)
+#else  // CONFIG_TX64X64
 #define intra_pred_allsizes(type) \
   intra_pred_sized(type, 2) \
   intra_pred_sized(type, 4) \
@@ -997,6 +1049,7 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
   intra_pred_sized(type, 8) \
   intra_pred_sized(type, 16) \
   intra_pred_sized(type, 32)
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 intra_pred_above_4x4(d207)
