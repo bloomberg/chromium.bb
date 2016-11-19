@@ -20,8 +20,9 @@ function test()
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
         var element = uiMessage.contentElement();
-        var href = element.querySelector(".webkit-html-external-link");
-        InspectorTest.addResult("linked url:" + href.href);
+        var hrefs = element.querySelectorAll(".webkit-html-resource-link");
+        for (var href of hrefs)
+            InspectorTest.addResult("linked url:" + href.href);
     }
 
     InspectorTest.completeTest();
