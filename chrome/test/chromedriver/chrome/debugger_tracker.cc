@@ -4,7 +4,6 @@
 
 #include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"

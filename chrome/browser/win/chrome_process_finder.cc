@@ -14,7 +14,6 @@
 #include "base/process/process.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"

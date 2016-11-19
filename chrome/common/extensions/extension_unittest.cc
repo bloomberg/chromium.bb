@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_test_util.h"

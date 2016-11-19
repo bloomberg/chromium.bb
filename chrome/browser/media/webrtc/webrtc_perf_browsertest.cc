@@ -9,7 +9,6 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"

@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_bug_tracker.h"

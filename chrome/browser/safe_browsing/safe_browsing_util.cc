@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "components/google/core/browser/google_util.h"
 

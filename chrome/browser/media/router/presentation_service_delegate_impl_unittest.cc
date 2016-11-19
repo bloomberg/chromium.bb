@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"

@@ -6,7 +6,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -98,7 +97,6 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   net::SpawnedTestServer proxy_server_;
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ProxyBrowserTest);
 };
 

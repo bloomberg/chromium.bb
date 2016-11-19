@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/strings/stringprintf.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 

@@ -6,7 +6,6 @@
 
 #include "base/guid.h"
 #include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
 GCAPITestRegistryOverrider::GCAPITestRegistryOverrider() {

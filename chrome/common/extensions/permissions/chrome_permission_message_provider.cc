@@ -9,7 +9,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
 #include "chrome/grit/generated_resources.h"

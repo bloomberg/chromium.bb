@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -263,6 +262,7 @@ class AndroidProviderBackendTest : public testing::Test {
   std::unique_ptr<history::HistoryClient> history_client_;
   std::unique_ptr<history::HistoryBackendClient> history_backend_client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackendTest);
 };
 

@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/rand_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_responder.h"

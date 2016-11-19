@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/pref_names.h"

@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"

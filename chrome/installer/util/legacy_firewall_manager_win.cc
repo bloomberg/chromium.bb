@@ -5,7 +5,6 @@
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
 
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/win/scoped_bstr.h"
 
 namespace installer {

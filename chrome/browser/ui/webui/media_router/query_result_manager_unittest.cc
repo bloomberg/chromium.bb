@@ -6,7 +6,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"

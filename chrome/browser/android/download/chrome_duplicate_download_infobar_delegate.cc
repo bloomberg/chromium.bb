@@ -8,7 +8,6 @@
 
 #include "base/android/path_utils.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/infobars/infobar_service.h"

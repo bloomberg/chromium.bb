@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"

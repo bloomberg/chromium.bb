@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"

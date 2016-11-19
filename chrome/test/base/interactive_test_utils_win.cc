@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/test/base/interactive_test_utils_aura.h"
 #include "ui/aura/window_tree_host.h"

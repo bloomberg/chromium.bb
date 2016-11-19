@@ -4,7 +4,6 @@
 
 #include "chrome/browser/printing/cloud_print/privet_confirm_api_flow.h"
 
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 #include "chrome/browser/printing/cloud_print/gcd_constants.h"

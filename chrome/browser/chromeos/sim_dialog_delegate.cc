@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"

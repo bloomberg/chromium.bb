@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
