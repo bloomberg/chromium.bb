@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "blimp/net/blob_channel/blob_channel_sender.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace blimp {
@@ -73,12 +74,13 @@ void BlobChannelService::PutBlob(const std::string& id,
 
   // Map |data| into the address space and copy out its contents.
   if (!data.is_valid()) {
-    LOG(ERROR) << "Invalid data handle received from renderer process.";
+    mojo::ReportBadMessage(
+        "Invalid data handle received from renderer process.");
     return;
   }
 
   if (size > kMaxBlobSizeBytes) {
-    LOG(ERROR) << "Blob size too big: " << size;
+    mojo::ReportBadMessage("Blob size too large.");
     return;
   }
 
