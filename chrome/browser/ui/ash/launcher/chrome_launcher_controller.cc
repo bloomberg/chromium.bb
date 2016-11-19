@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -56,7 +57,8 @@ bool ChromeLauncherController::ConnectToShelfController() {
   if (chrome::IsRunningInMash()) {
     connector->ConnectToInterface("ash", &shelf_controller_);
   } else {
-    connector->ConnectToInterface("content_browser", &shelf_controller_);
+    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                  &shelf_controller_);
   }
   return true;
 }

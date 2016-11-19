@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "mash/session/public/interfaces/constants.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -372,15 +373,18 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       NOTIMPLEMENTED();
     } else if (sender == lock_button_) {
       mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface("mash_session", &session);
+      connector_->ConnectToInterface(mash::session::mojom::kServiceName,
+                                     &session);
       session->LockScreen();
     } else if (sender == logout_button_) {
       mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface("mash_session", &session);
+      connector_->ConnectToInterface(mash::session::mojom::kServiceName,
+                                     &session);
       session->Logout();
     } else if (sender == switch_user_button_) {
       mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface("mash_session", &session);
+      connector_->ConnectToInterface(mash::session::mojom::kServiceName,
+                                     &session);
       session->SwitchUser();
     } else if (sender == widgets_button_) {
       NOTIMPLEMENTED();

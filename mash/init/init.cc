@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
+#include "mash/login/public/interfaces/constants.mojom.h"
 #include "mash/login/public/interfaces/login.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -67,7 +68,8 @@ void Init::StartTracing() {
 }
 
 void Init::StartLogin() {
-  login_connection_ = context()->connector()->Connect("login");
+  login_connection_ =
+      context()->connector()->Connect(login::mojom::kServiceName);
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);
   login->ShowLoginUI();

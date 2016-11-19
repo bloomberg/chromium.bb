@@ -26,4 +26,8 @@ specific_include_rules = {
     "+ash/shelf/shelf.h",
     "+ash/shelf/shelf_widget.h",
   ],
+
+  "app_launch_unittest.cc": [
+    "+mash/quick_launch/public",
+  ],
 }

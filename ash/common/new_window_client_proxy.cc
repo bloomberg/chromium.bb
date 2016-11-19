@@ -5,6 +5,7 @@
 #include "ash/common/new_window_client_proxy.h"
 
 #include "base/logging.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
@@ -68,7 +69,7 @@ void NewWindowClientProxy::EnsureInterface() {
 
   if (client_)
     return;
-  connector_->ConnectToInterface("content_browser", &client_);
+  connector_->ConnectToInterface(content::mojom::kBrowserServiceName, &client_);
   client_.set_connection_error_handler(base::Bind(
       &NewWindowClientProxy::OnClientConnectionError, base::Unretained(this)));
 }

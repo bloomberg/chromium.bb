@@ -8,6 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
@@ -128,7 +129,8 @@ bool SystemTrayController::ConnectToSystemTrayClient() {
     return true;
 
   // Connect (or reconnect) to the interface.
-  connector_->ConnectToInterface("content_browser", &system_tray_client_);
+  connector_->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                 &system_tray_client_);
 
   // Handle chrome crashes by forcing a reconnect on the next request.
   system_tray_client_.set_connection_error_handler(base::Bind(

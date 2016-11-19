@@ -11,8 +11,12 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "mash/catalog_viewer/catalog_viewer.h"
+#include "mash/catalog_viewer/public/interfaces/constants.mojom.h"
+#include "mash/quick_launch/public/interfaces/constants.mojom.h"
 #include "mash/quick_launch/quick_launch.h"
+#include "mash/session/public/interfaces/constants.mojom.h"
 #include "mash/session/session.h"
+#include "mash/task_viewer/public/interfaces/constants.mojom.h"
 #include "mash/task_viewer/task_viewer.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
@@ -77,17 +81,17 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
   if (name == "accessibility_autoclick")
     return base::WrapUnique(new ash::autoclick::AutoclickApplication);
-  if (name == "catalog_viewer")
+  if (name == catalog_viewer::mojom::kServiceName)
     return base::WrapUnique(new mash::catalog_viewer::CatalogViewer);
   if (name == "touch_hud")
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
-  if (name == "mash_session")
+  if (name == session::mojom::kServiceName)
     return base::WrapUnique(new mash::session::Session);
   if (name == ui::mojom::kServiceName)
     return base::WrapUnique(new ui::Service);
-  if (name == "quick_launch")
+  if (name == quick_launch::mojom::kServiceName)
     return base::WrapUnique(new mash::quick_launch::QuickLaunch);
-  if (name == "task_viewer")
+  if (name == task_viewer::mojom::kServiceName)
     return base::WrapUnique(new mash::task_viewer::TaskViewer);
   if (name == "test_ime_driver")
     return base::WrapUnique(new ui::test::TestIMEApplication);

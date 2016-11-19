@@ -140,7 +140,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   void Launch(const std::string& name, bool new_window) {
     std::unique_ptr<service_manager::Connection> connection =
         connector_->Connect(name);
-    mojom::LaunchablePtr launchable;
+    ::mash::mojom::LaunchablePtr launchable;
     connection->GetInterface(&launchable);
     connections_.push_back(std::move(connection));
     launchable->Launch(mojom::kWindow,
@@ -183,7 +183,7 @@ void QuickLaunch::OnStart() {
 
 bool QuickLaunch::OnConnect(const service_manager::ServiceInfo& remote_info,
                             service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Launchable>(this);
+  registry->AddInterface<::mash::mojom::Launchable>(this);
   return true;
 }
 
@@ -206,7 +206,7 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
 }
 
 void QuickLaunch::Create(const service_manager::Identity& remote_identity,
-                         mojom::LaunchableRequest request) {
+                         ::mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

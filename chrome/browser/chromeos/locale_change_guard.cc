@@ -25,6 +25,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -75,7 +76,8 @@ void LocaleChangeGuard::ConnectToLocaleNotificationController() {
   if (chrome::IsRunningInMash()) {
     connector->ConnectToInterface("ash", &notification_controller_);
   } else {
-    connector->ConnectToInterface("content_browser", &notification_controller_);
+    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                  &notification_controller_);
   }
 }
 

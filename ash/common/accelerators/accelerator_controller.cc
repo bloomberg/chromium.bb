@@ -35,6 +35,7 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -1166,7 +1167,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
 mojom::VolumeController* AcceleratorController::GetVolumeController() {
   if (!volume_controller_ && WmShell::Get()->delegate()->GetShellConnector()) {
     WmShell::Get()->delegate()->GetShellConnector()->ConnectToInterface(
-        "content_browser", &volume_controller_);
+        content::mojom::kBrowserServiceName, &volume_controller_);
     volume_controller_.set_connection_error_handler(
         base::Bind(&AcceleratorController::OnVolumeControllerConnectionError,
                    base::Unretained(this)));

@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/task_runner.h"
 #include "components/wallpaper/wallpaper_resizer.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -197,7 +198,8 @@ void WallpaperController::OpenSetWallpaperPage() {
     return;
 
   mojom::WallpaperManagerPtr wallpaper_manager;
-  connector->ConnectToInterface("content_browser", &wallpaper_manager);
+  connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                &wallpaper_manager);
   wallpaper_manager->Open();
 }
 

@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "mash/quick_launch/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
@@ -42,7 +43,7 @@ class AppLaunchTest : public service_manager::test::ServiceTest {
 #endif  // defined(USE_OZONE)
 TEST_F(AppLaunchTest, MAYBE_TestQuickLaunch) {
   connector()->Connect("ash");
-  connector()->Connect("quick_launch");
+  connector()->Connect(mash::quick_launch::mojom::kServiceName);
 
   ui::mojom::WindowServerTestPtr test_interface;
   connector()->ConnectToInterface(ui::mojom::kServiceName, &test_interface);
@@ -50,7 +51,7 @@ TEST_F(AppLaunchTest, MAYBE_TestQuickLaunch) {
   base::RunLoop run_loop;
   bool success = false;
   test_interface->EnsureClientHasDrawnWindow(
-      "quick_launch",
+      mash::quick_launch::mojom::kServiceName,
       base::Bind(&RunCallback, &success, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(success);

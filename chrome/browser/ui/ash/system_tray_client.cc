@@ -32,6 +32,7 @@
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -304,10 +305,12 @@ void SystemTrayClient::ConnectToSystemTray() {
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   // Under mash the SystemTray interface is in the ash process. In classic ash
   // we provide it to ourself.
-  if (chrome::IsRunningInMash())
+  if (chrome::IsRunningInMash()) {
     connector->ConnectToInterface("ash", &system_tray_);
-  else
-    connector->ConnectToInterface("content_browser", &system_tray_);
+  } else {
+    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                  &system_tray_);
+  }
 
   // Tolerate ash crashing and coming back up.
   system_tray_.set_connection_error_handler(base::Bind(

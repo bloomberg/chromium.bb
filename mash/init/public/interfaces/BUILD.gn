@@ -8,4 +8,14 @@ mojom("interfaces") {
   sources = [
     "init.mojom",
   ]
+
+  public_deps = [
+    ":constants",
+  ]
+}
+
+mojom("constants") {
+  sources = [
+    "constants.mojom",
+  ]
 }

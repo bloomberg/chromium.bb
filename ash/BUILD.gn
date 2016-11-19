@@ -853,6 +853,10 @@ component("ash") {
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/shared:app_types",
+
+    # This is a tiny dependency that just defines some service name strings & is
+    # not equivalent to depending on content in a more substantial manner.
+    "//content/public/common:service_names",
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
@@ -994,7 +998,10 @@ component("ash") {
   }
 
   # Usage of content should be in ash_content_unittests.
-  assert_no_deps = [ "//content/*" ]
+  assert_no_deps = [
+    "//content/public/browser",
+    "//content/public/common",
+  ]
 }
 
 component("ash_with_content") {
@@ -1064,7 +1071,10 @@ static_library("ash_shell_lib") {
   ]
 
   # Usage of content should be in ash_shell_lib_with_content.
-  assert_no_deps = [ "//content/*" ]
+  assert_no_deps = [
+    "//content/public/browser",
+    "//content/public/common",
+  ]
 
   deps = [
     ":ash",
@@ -1467,7 +1477,10 @@ test("ash_unittests") {
   }
 
   # Usage of content should be in ash_with_content.
-  assert_no_deps = [ "//content/*" ]
+  assert_no_deps = [
+    "//content/public/browser",
+    "//content/public/common",
+  ]
 }
 
 executable("ash_shell_with_content") {

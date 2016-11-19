@@ -4,6 +4,7 @@
 
 #include "ash/mus/app_list_presenter_mus.h"
 
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
@@ -51,7 +52,8 @@ bool AppListPresenterMus::GetTargetVisibility() const {
 void AppListPresenterMus::ConnectIfNeeded() {
   if (!connector_ || HasConnection(&presenter_))
     return;
-  connector_->ConnectToInterface("content_browser", &presenter_);
+  connector_->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                 &presenter_);
   CHECK(HasConnection(&presenter_))
       << "Could not connect to app_list::mojom::AppListPresenter.";
 }

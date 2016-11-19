@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -29,10 +30,12 @@ void ShutdownPolicyForwarder::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
 
   // Under mash the ShutdownController interface is in the ash process. In
   // classic ash the browser provides it to itself.
-  if (chrome::IsRunningInMash())
+  if (chrome::IsRunningInMash()) {
     connector->ConnectToInterface("ash", &shutdown_controller);
-  else
-    connector->ConnectToInterface("content_browser", &shutdown_controller);
+  } else {
+    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                  &shutdown_controller);
+  }
 
   // Forward the setting to ash.
   shutdown_controller->SetRebootOnShutdown(reboot_on_shutdown);

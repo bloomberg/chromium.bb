@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mash/session/public/interfaces/constants.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -60,7 +61,7 @@ class ScreenlockView : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, unlock_button_);
     mash::session::mojom::SessionPtr session;
-    connector_->ConnectToInterface("mash_session", &session);
+    connector_->ConnectToInterface(session::mojom::kServiceName, &session);
     session->UnlockScreen();
   }
 
@@ -79,7 +80,8 @@ void Screenlock::OnStart() {
   tracing_.Initialize(context()->connector(), context()->identity().name());
 
   mash::session::mojom::SessionPtr session;
-  context()->connector()->ConnectToInterface("mash_session", &session);
+  context()->connector()->ConnectToInterface(session::mojom::kServiceName,
+                                             &session);
   session->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 

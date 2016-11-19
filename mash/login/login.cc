@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mash/init/public/interfaces/constants.mojom.h"
 #include "mash/init/public/interfaces/init.mojom.h"
 #include "mash/login/public/interfaces/login.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -145,7 +146,8 @@ class Login : public service_manager::Service,
   void LoginAs(const std::string& user_id) {
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
-    context()->connector()->ConnectToInterface("mash_init", &init);
+    context()->connector()->ConnectToInterface(init::mojom::kServiceName,
+                                               &init);
     init->StartService("mash_session", user_id);
   }
 

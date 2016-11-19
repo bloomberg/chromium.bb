@@ -85,6 +85,7 @@ source_set("lib") {
   deps = [
     "//components/user_manager",
     "//components/wallpaper",
+    "//content/public/common:service_names",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
     "//ui/keyboard",
@@ -257,6 +258,7 @@ source_set("unittests") {
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
+    "//mash/quick_launch/public/interfaces:constants",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/common:mus_common",

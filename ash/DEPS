@@ -20,6 +20,7 @@ include_rules = [
   "+win8",
   "-ash/host",
   "-content",
+  "+content/public/common/service_names.mojom.h",
 
   # Only allow Chrome OS services and D-Bus clients accessible to the mustash
   # ash process.

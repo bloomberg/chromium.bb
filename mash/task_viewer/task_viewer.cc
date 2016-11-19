@@ -302,7 +302,7 @@ void TaskViewer::OnStart() {
 
 bool TaskViewer::OnConnect(const service_manager::ServiceInfo& remote_info,
                            service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::Launchable>(this);
+  registry->AddInterface<::mash::mojom::Launchable>(this);
   return true;
 }
 
@@ -336,7 +336,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
 }
 
 void TaskViewer::Create(const service_manager::Identity& remote_identity,
-                        mojom::LaunchableRequest request) {
+                        ::mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
