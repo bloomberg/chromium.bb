@@ -1040,6 +1040,10 @@ class CONTENT_EXPORT RenderFrameImpl
   media::CdmFactory* GetCdmFactory();
   media::DecoderFactory* GetDecoderFactory();
 
+#if defined(ENABLE_PLUGINS)
+  void HandlePepperImeCommit(const base::string16& text);
+#endif  // ENABLE_PLUGINS
+
   void RegisterMojoInterfaces();
 
   // Connect to an interface provided by the service registry.
