@@ -450,7 +450,6 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
-crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
@@ -521,8 +520,6 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
-crbug.com/659464 [ Precise ] images/imagemap-case.html [ NeedsRebaseline ]
-crbug.com/659464 [ Precise ] virtual/gpu-rasterization/images/imagemap-case.html [ NeedsRebaseline ]
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
@@ -608,8 +605,6 @@ crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto-mock.html [ Pass ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-locale.html [ Pass ]
 
 crbug.com/655963 inspector/console/console-dir.html [ NeedsManualRebaseline ]
-
-crbug.com/657831 [ Precise ] fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ NeedsRebaseline ]
 
 crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
@@ -801,21 +796,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression-vlr-009.xht [ Failure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vrl-006.xht [ Failure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vlr-007.xht [ Failure ]
-
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-initial-empty.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-col.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-col-initial-empty.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-col-span.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-col-span-initial-empty.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-colgroup.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-colgroup-initial-empty.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-composited-row.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-composited-row-initial-empty.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-section.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-section-initial-empty.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-section-composited-row.html [ NeedsRebaseline ]
-crbug.com/658874 [ Precise ] paint/invalidation/table/composited-table-background-section-composited-row-initial-empty.html [ NeedsRebaseline ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
@@ -1414,6 +1394,7 @@ crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.ht
 # These tests have different baselines on Linux Precise than Linux Trusty;
 # Linux Precise is being phased out, so until it's phased out, any tests
 # that have baselines that behave differently can be disabled.
+crbug.com/518929 [ Precise ] http/tests/appcache/obsolete-error-events.html [ Skip ]
 crbug.com/660580 [ Precise ] compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Skip ]
 crbug.com/660580 [ Precise ] fast/borders/border-antialiasing.html [ Skip ]
 crbug.com/660580 [ Precise ] fast/canvas/canvas-composite-video-shadow.html [ Skip ]
@@ -1436,6 +1417,24 @@ crbug.com/660580 [ Precise ] virtual/scalefactor150/fast/hidpi/static/drag-image
 crbug.com/660580 [ Precise ] virtual/scalefactor200/fast/hidpi/static/drag-image.html [ Skip ]
 crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/drag-image.html [ Skip ]
 crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col-span.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col-span-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-colgroup.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-colgroup-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-composited-row.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-composited-row-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section-composited-row.html [ Skip ]
+crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section-composited-row-initial-empty.html [ Skip ]
+crbug.com/660580 [ Precise ] fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Skip ]
+crbug.com/660580 [ Precise ] images/imagemap-case.html [ Skip ]
+crbug.com/660580 [ Precise ] virtual/gpu-rasterization/images/imagemap-case.html [ Skip ]
+crbug.com/660580 [ Precise ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Skip ] 
 
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
@@ -1681,7 +1680,8 @@ crbug.com/595993 imported/wpt/service-workers/service-worker/request-end-to-end.
 
 # Flaky failures (text diff).
 crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Failure ]
+
 # TODO(mgiuca): This was previously marked as [ NeedsRebaseline ] for [ Precise ] only.
-crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Failure NeedsRebaseline ]
+crbug.com/666628 [ Mac Win Trusty ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
 
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
