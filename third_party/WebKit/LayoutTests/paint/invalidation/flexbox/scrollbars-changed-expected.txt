@@ -57,6 +57,16 @@
         },
         {
           "object": "Vertical Scrollbar Layer",
+          "rect": [0, 0, 15, 210],
+          "reason": "full"
+        },
+        {
+          "object": "Vertical Scrollbar Layer",
+          "rect": [0, 0, 15, 100],
+          "reason": "full"
+        },
+        {
+          "object": "Vertical Scrollbar Layer",
           "rect": [0, 0, 15, 100],
           "reason": "full"
         },

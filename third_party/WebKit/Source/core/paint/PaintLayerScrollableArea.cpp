@@ -659,17 +659,14 @@ void PaintLayerScrollableArea::updateScrollDimensions() {
 }
 
 void PaintLayerScrollableArea::updateScrollbarEnabledState() {
-  bool forceDisabled =
+  bool forceDisable =
       ScrollbarTheme::theme().shouldDisableInvisibleScrollbars() &&
       scrollbarsHidden();
-  // overflow:scroll should just enable/disable.
-  if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar()) {
-    horizontalScrollbar()->setEnabled(hasHorizontalOverflow() &&
-                                      !forceDisabled);
-  }
-  if (box().style()->overflowY() == OverflowScroll && verticalScrollbar()) {
-    verticalScrollbar()->setEnabled(hasVerticalOverflow() && !forceDisabled);
-  }
+
+  if (horizontalScrollbar())
+    horizontalScrollbar()->setEnabled(hasHorizontalOverflow() && !forceDisable);
+  if (verticalScrollbar())
+    verticalScrollbar()->setEnabled(hasVerticalOverflow() && !forceDisable);
 }
 
 void PaintLayerScrollableArea::setScrollOffsetUnconditionally(
