@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "content/browser/android/content_startup_flags.h"
+#include "ppapi/features/features.h"
 
 #include "jni/BrowserStartupController_jni.h"
 
@@ -57,7 +58,7 @@ static jboolean IsOfficialBuild(JNIEnv* env,
 
 static jboolean IsPluginEnabled(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   return true;
 #else
   return false;

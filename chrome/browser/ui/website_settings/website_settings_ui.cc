@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -90,7 +91,7 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
      IDR_BLOCKED_JAVASCRIPT, IDR_ALLOWED_JAVASCRIPT},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_WEBSITE_SETTINGS_TYPE_POPUPS,
      IDR_BLOCKED_POPUPS, IDR_ALLOWED_POPUPS},
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_WEBSITE_SETTINGS_TYPE_FLASH,
      IDR_BLOCKED_PLUGINS, IDR_ALLOWED_PLUGINS},
 #endif
@@ -246,7 +247,7 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
   if (effective_setting == CONTENT_SETTING_DEFAULT)
     effective_setting = default_setting;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   effective_setting = PluginsFieldTrial::EffectiveContentSetting(

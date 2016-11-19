@@ -178,7 +178,7 @@
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
 #endif
 
@@ -755,7 +755,7 @@ int BrowserMainLoop::PreCreateThreads() {
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
     MemoryCoordinator::GetInstance()->Start();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Prior to any processing happening on the IO thread, we create the
   // plugin service as it is predominantly used from the IO thread,
   // but must be created on the main thread. The service ctor is

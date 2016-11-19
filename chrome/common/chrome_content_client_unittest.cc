@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
+#include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -98,7 +99,7 @@ TEST(ChromeContentClientTest, Basic) {
 #endif
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 TEST(ChromeContentClientTest, FindMostRecent) {
   std::vector<std::unique_ptr<content::PepperPluginInfo>> version_vector;
   // Test an empty vector.
@@ -164,7 +165,7 @@ TEST(ChromeContentClientTest, FindMostRecent) {
   most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
   EXPECT_STREQ("system_flash", most_recent->name.c_str());
 }
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 TEST(ChromeContentClientTest, AdditionalSchemes) {
   EXPECT_TRUE(url::IsStandard(

@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
+import("//ppapi/features/features.gni")
 
 # Implements "content_main" given the defines and visibility. On Windows this
 # is compiled with a different define for browser and child, but all code needs
@@ -28,6 +29,7 @@ template("implement_content_app") {
     "//crypto",
     "//services/service_manager/public/interfaces",
     "//mojo/edk/system",
+    "//ppapi/features",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/base",
     "//ui/gfx",

@@ -127,6 +127,7 @@ static_library("test_support") {
     "//gpu/ipc/service",
     "//net",
     "//net:test_support",
+    "//ppapi/features",
     "//printing/features",
     "//skia",
     "//sql",
@@ -1231,6 +1232,7 @@ test("browser_tests") {
     "//components/spellcheck:build_features",
     "//components/sync:test_support_model",
     "//extensions/features",
+    "//ppapi/features",
     "//printing/features",
     "//third_party/WebKit/public:features",
   ]

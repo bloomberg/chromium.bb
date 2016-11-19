@@ -59,6 +59,7 @@
 #include "extensions/features/features.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
+#include "ppapi/features/features.h"
 #include "storage/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID)
@@ -149,7 +150,7 @@ void OffTheRecordProfileImpl::Init() {
 
   TrackZoomLevelsFromParent();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       this, io_data_->GetResourceContextNoInit());
 #endif
@@ -173,7 +174,7 @@ void OffTheRecordProfileImpl::Init() {
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   MaybeSendDestroyedNotification();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
       io_data_->GetResourceContextNoInit());
 #endif

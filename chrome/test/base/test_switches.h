@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_TEST_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "ppapi/features/features.h"
 
 namespace switches {
 
@@ -13,7 +14,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kAlsoEmitSuccessLogs[];
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 extern const char kRebaselinePixelTests[];
 #endif
 

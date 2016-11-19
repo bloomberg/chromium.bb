@@ -21,13 +21,14 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
+#include "ppapi/features/features.h"
 
 namespace extensions {
 
 class ExtensionGarbageCollectorUnitTest : public ExtensionServiceTestBase {
  protected:
   void InitPluginService() {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService::GetInstance()->Init();
 #endif
   }

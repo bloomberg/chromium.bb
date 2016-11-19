@@ -15,8 +15,9 @@
 #include "content/public/common/webplugininfo.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
+#include "ppapi/features/features.h"
 
-#if !defined(ENABLE_PLUGINS)
+#if !BUILDFLAG(ENABLE_PLUGINS)
 #error "Plugins should be enabled"
 #endif
 

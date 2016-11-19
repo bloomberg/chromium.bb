@@ -29,10 +29,11 @@
 #include "components/offline_pages/offline_page_model.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
+#include "ppapi/features/features.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #endif
 
@@ -95,7 +96,7 @@ class URLRequestContextGetter;
 ////////////////////////////////////////////////////////////////////////////////
 
 class BrowsingDataRemover : public KeyedService
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
                             , public PepperFlashSettingsManager::Client
 #endif
 {
@@ -276,7 +277,7 @@ class BrowsingDataRemover : public KeyedService
       std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   void OverrideFlashLSOHelperForTesting(
       scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper);
 #endif
@@ -348,7 +349,7 @@ class BrowsingDataRemover : public KeyedService
   // clears the respective waiting flag, and invokes NotifyIfDone.
   void OnKeywordsLoaded(base::Callback<bool(const GURL&)> url_filter);
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
@@ -499,7 +500,7 @@ class BrowsingDataRemover : public KeyedService
   // to artificially delay completion. Used for testing.
   static CompletionInhibitor* completion_inhibitor_;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Used to delete plugin data.
   std::unique_ptr<content::PluginDataRemover> plugin_data_remover_;
   base::WaitableEventWatcher watcher_;

@@ -15,9 +15,10 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
+#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/common/pepper_renderer_instance_data.h"
 #endif
 
@@ -123,7 +124,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                   const GetCookiesCallback& callback) override;
 
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   void OnGetPlugins(bool refresh,
                     const url::Origin& main_frame_origin,
                     IPC::Message* reply_msg);
@@ -159,7 +160,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   // Only call on the IO thread.
   net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginServiceImpl* plugin_service_;
   base::FilePath profile_data_directory_;
 

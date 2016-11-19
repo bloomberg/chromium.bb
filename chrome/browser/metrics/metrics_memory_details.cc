@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/process_type.h"
+#include "ppapi/features/features.h"
 
 MemoryGrowthTracker::MemoryGrowthTracker() {
 }
@@ -142,7 +143,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         other_count++;
         continue;
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
       case content::PROCESS_TYPE_PPAPI_PLUGIN: {
         const std::vector<base::string16>& titles =
             browser.processes[index].titles;

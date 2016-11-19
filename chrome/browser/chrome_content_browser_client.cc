@@ -184,6 +184,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "ppapi/features/features.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
 #include "services/image_decoder/public/interfaces/constants.mojom.h"
@@ -315,7 +316,7 @@
 #include "extensions/common/switches.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 #include "chrome/browser/plugins/flash_download_interception.h"
 #endif
@@ -386,7 +387,7 @@ using extensions::InfoMap;
 using extensions::Manifest;
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 using plugins::ChromeContentBrowserClientPluginsPart;
 #endif
 
@@ -396,7 +397,7 @@ namespace {
 // thread.
 base::LazyInstance<std::string> g_io_thread_application_locale;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // TODO(teravest): Add renderer-side API-specific checking for these APIs so
 // that blanket permission isn't granted to all dev channel APIs for these.
 // http://crbug.com/386743
@@ -641,7 +642,7 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
   popup_helper->AddBlockedPopup(params);
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 void HandleFlashDownloadActionOnUIThread(int render_process_id,
                                          int render_frame_id,
                                          const GURL& source_url) {
@@ -655,7 +656,7 @@ void HandleFlashDownloadActionOnUIThread(int render_process_id,
   FlashDownloadInterception::InterceptFlashDownloadNavigation(web_contents,
                                                               source_url);
 }
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // An implementation of the SSLCertReporter interface used by
 // SSLErrorHandler. Uses the SafeBrowsing UI manager to send invalid
@@ -820,7 +821,7 @@ WebContents* GetWebContents(int render_process_id, int render_frame_id) {
 
 ChromeContentBrowserClient::ChromeContentBrowserClient()
     : weak_factory_(this) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < arraysize(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
   for (size_t i = 0; i < arraysize(kPredefinedAllowedFileHandleOrigins); ++i)
@@ -2356,7 +2357,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (FlashDownloadInterception::ShouldStopFlashDownloadAction(
           content_settings, opener_top_level_frame_url, target_url,
           user_gesture)) {
@@ -2688,7 +2689,7 @@ base::FilePath ChromeContentBrowserClient::GetShaderDiskCacheDirectory() {
 
 void ChromeContentBrowserClient::DidCreatePpapiPlugin(
     content::BrowserPpapiHost* browser_host) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ChromeContentBrowserClientPluginsPart::DidCreatePpapiPlugin(browser_host);
 #endif
 }
@@ -2726,7 +2727,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     const GURL& url,
     bool private_api,
     const content::SocketPermissionRequest* params) {
-#if defined(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::AllowPepperSocketAPI(
       browser_context, url, private_api, params, allowed_socket_origins_);
 #else
@@ -2737,7 +2738,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
 bool ChromeContentBrowserClient::IsPepperVpnProviderAPIAllowed(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::IsPepperVpnProviderAPIAllowed(
       browser_context, url);
 #else
@@ -3127,7 +3128,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   ScopedVector<content::NavigationThrottle> throttles;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<content::NavigationThrottle> flash_url_throttle =
       FlashDownloadInterception::MaybeCreateThrottleFor(handle);
   if (flash_url_throttle)
@@ -3219,7 +3220,7 @@ content::TracingDelegate* ChromeContentBrowserClient::GetTracingDelegate() {
 bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::
       IsPluginAllowedToCallRequestOSFileHandle(browser_context, url,
                                                allowed_file_handle_origins_);
@@ -3231,7 +3232,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
 bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::
       IsPluginAllowedToUseDevChannelAPIs(browser_context, url,
                                          allowed_dev_channel_origins_);

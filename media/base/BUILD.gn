@@ -279,6 +279,7 @@ target(link_target_type, "base") {
     "//gpu",
     "//media:media_features",
     "//media:shared_memory_support",
+    "//ppapi/features",
     "//skia",
     "//third_party/libyuv",
     "//ui/events:events_base",

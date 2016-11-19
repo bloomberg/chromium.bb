@@ -27,6 +27,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/fake_plugin_service.h"
 #include "net/url_request/url_request_context.h"
+#include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -668,7 +669,7 @@ TEST_F(MimeSniffingResourceHandlerTest, AcceptHeaders) {
 
 // Test that stream requests are correctly intercepted under the right
 // circumstances. Test is not relevent when plugins are disabled.
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
   bool allow_download;
   bool must_download;

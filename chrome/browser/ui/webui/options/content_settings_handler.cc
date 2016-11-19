@@ -74,6 +74,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -724,7 +725,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
   ContentSetting default_setting =
       host_content_settings_map->GetDefaultContentSetting(type, &provider_id);
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   default_setting = PluginsFieldTrial::EffectiveContentSetting(
       host_content_settings_map, type, default_setting);
 #endif

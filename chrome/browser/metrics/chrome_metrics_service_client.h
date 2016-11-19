@@ -23,6 +23,7 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ppapi/features/features.h"
 
 class AntiVirusMetricsProvider;
 class ChromeOSMetricsProvider;
@@ -177,7 +178,7 @@ class ChromeMetricsServiceClient
   // MetricsService. Has the same lifetime as |metrics_service_|.
   metrics::ProfilerMetricsProvider* profiler_metrics_provider_;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // The PluginMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
   PluginMetricsProvider* plugin_metrics_provider_;

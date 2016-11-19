@@ -9,6 +9,7 @@
 #include "chrome/common/features.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
+#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace extensions {
@@ -49,15 +50,15 @@ class ChromeWebViewPermissionHelperDelegate :
                               const GURL& url,
                               bool blocked_by_policy,
                               IPC::Message* reply_msg) override;
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message) override;
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
  private:
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Message handlers:
   void OnBlockedUnauthorizedPlugin(const base::string16& name,
                                    const std::string& identifier);
@@ -74,7 +75,7 @@ class ChromeWebViewPermissionHelperDelegate :
   void OnPermissionResponse(const std::string& identifier,
                             bool allow,
                             const std::string& user_input);
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   void OnGeolocationPermissionResponse(
       int bridge_id,

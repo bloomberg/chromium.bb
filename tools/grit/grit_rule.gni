@@ -240,12 +240,6 @@ if (enable_media_router) {
     "enable_media_router",
   ]
 }
-if (enable_plugins) {
-  grit_defines += [
-    "-D",
-    "enable_plugins",
-  ]
-}
 if (enable_themes) {
   grit_defines += [
     "-D",

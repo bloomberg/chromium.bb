@@ -176,6 +176,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/features/features.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -225,7 +226,7 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
 #endif
 
@@ -1021,7 +1022,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   render_frame_message_filter_ = new RenderFrameMessageFilter(
       GetID(),
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
       PluginServiceImpl::GetInstance(),
 #else
       nullptr,
@@ -1091,7 +1092,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       media_stream_manager));
   AddFilter(new MediaStreamTrackMetricsHost());
 #endif
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
   AddFilter(new SpeechRecognitionDispatcherHost(
@@ -1778,7 +1779,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kBrowserControlsHideThreshold,
     cc::switches::kBrowserControlsShowThreshold,
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,
 #endif
 #if defined(ENABLE_WEBRTC)

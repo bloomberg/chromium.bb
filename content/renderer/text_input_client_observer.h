@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "ppapi/features/features.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/range/range.h"
 
@@ -41,7 +42,7 @@ class TextInputClientObserver : public IPC::Listener, public IPC::Sender {
 
   blink::WebLocalFrame* GetFocusedFrame() const;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Returns the currently focused pepper plugin on the page. The expectation is
   // that the focused pepper plugin is inside a frame whose local root is equal
   // to GetWebFrameWidget()->localRoot().

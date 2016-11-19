@@ -20,6 +20,8 @@ include_rules = [
   "+google_apis/gaia",
   "+grit/extensions_strings.h",
   "+net",
+  # This directory contains build flags and does not pull all of PPAPI in.
+  "+ppapi/features",
   "+services/service_manager/public/cpp",
   "+skia/ext/image_operations.h",
   "+storage/browser/fileapi",

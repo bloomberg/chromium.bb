@@ -28,6 +28,7 @@ public_deps = [
   "//media",
   "//media/base/ipc",
   "//net",
+  "//ppapi/features",
   "//ui/accessibility",
   "//ui/base/ime:text_input_types",
   "//ui/gfx/ipc",

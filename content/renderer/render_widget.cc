@@ -59,6 +59,7 @@
 #include "content/renderer/resizing_mode_selector.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_sync_message.h"
+#include "ppapi/features/features.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
@@ -1516,7 +1517,7 @@ void RenderWidget::OnImeSetComposition(
     const std::vector<WebCompositionUnderline>& underlines,
     const gfx::Range& replacement_range,
     int selection_start, int selection_end) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->render_frame()->OnImeSetComposition(
         text, underlines, selection_start, selection_end);
@@ -1548,7 +1549,7 @@ void RenderWidget::OnImeSetComposition(
 void RenderWidget::OnImeCommitText(const base::string16& text,
                                    const gfx::Range& replacement_range,
                                    int relative_cursor_pos) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->render_frame()->OnImeCommitText(
         text, replacement_range, relative_cursor_pos);
@@ -1571,7 +1572,7 @@ void RenderWidget::OnImeCommitText(const base::string16& text,
 }
 
 void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->render_frame()->OnImeFinishComposingText(
         keep_selection);
@@ -1738,7 +1739,7 @@ void RenderWidget::showImeIfNeeded() {
 }
 
 ui::TextInputType RenderWidget::GetTextInputType() {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_)
     return focused_pepper_plugin_->text_input_type();
 #endif
@@ -1952,7 +1953,7 @@ void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
 }
 
 void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     // TODO(kinaba) http://crbug.com/101101
     // Current Pepper IME API does not handle selection bounds. So we simply
@@ -2042,7 +2043,7 @@ void RenderWidget::GetCompositionCharacterBounds(
   DCHECK(bounds);
   bounds->clear();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_)
     return;
 #endif
@@ -2060,7 +2061,7 @@ void RenderWidget::GetCompositionCharacterBounds(
 }
 
 void RenderWidget::GetCompositionRange(gfx::Range* range) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_)
     return;
 #endif
@@ -2088,7 +2089,7 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
 }
 
 bool RenderWidget::CanComposeInline() {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_)
     return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
 #endif

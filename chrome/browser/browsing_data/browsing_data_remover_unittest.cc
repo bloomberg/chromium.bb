@@ -89,6 +89,7 @@
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -113,7 +114,7 @@
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/browsing_data/mock_browsing_data_flash_lso_helper.h"
 #endif
 
@@ -1061,7 +1062,7 @@ class RemovePermissionPromptCountsTest {
   DISALLOW_COPY_AND_ASSIGN(RemovePermissionPromptCountsTest);
 };
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // A small modification to MockBrowsingDataFlashLSOHelper so that it responds
 // immediately and does not wait for the Notify() call. Otherwise it would
 // deadlock BrowsingDataRemover::RemoveImpl.
@@ -2822,7 +2823,7 @@ TEST_F(BrowsingDataRemoverTest, ClearPermissionPromptCounts) {
   }
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(BrowsingDataRemoverTest, RemovePluginData) {
   RemovePluginDataTester tester(GetProfile());
 

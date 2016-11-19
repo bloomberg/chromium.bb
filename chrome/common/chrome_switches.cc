@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 namespace switches {
@@ -1244,7 +1245,7 @@ const char kWindows8Search[]                = "windows8-search";
 const char kDebugPrint[] = "debug-print";
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to CRX file system APIs.
 const char kAllowNaClCrxFsAPI[]             = "allow-nacl-crxfs-api";

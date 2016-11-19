@@ -55,6 +55,7 @@
 #include "chrome/common/features.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "ppapi/features/features.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
@@ -126,7 +127,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MenuManagerFactory::GetInstance();
   extensions::OmniboxAPI::GetFactoryInstance();
   extensions::PasswordsPrivateEventRouterFactory::GetInstance();
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();
 #endif
   extensions::PreferenceAPI::GetFactoryInstance();

@@ -9,6 +9,7 @@ import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//ppapi/features/features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/grit/grit_rule.gni")
 if (is_android) {
@@ -248,6 +249,7 @@ static_library("content_shell_lib") {
     "//mojo/edk/js",
     "//net",
     "//net:net_resources",
+    "//ppapi/features",
     "//sandbox",
     "//services/service_manager/public/cpp",
     "//skia",

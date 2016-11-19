@@ -80,6 +80,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
@@ -744,7 +745,7 @@ void RendererBlinkPlatformImpl::getPluginList(
     bool refresh,
     const blink::WebSecurityOrigin& mainFrameOrigin,
     blink::WebPluginListBuilder* builder) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   std::vector<WebPluginInfo> plugins;
   if (!plugin_refresh_allowed_)
     refresh = false;

@@ -67,6 +67,7 @@
 #include "content/utility/in_process_utility_thread.h"
 #include "ipc/ipc_descriptors.h"
 #include "media/base/media.h"
+#include "ppapi/features/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -112,7 +113,7 @@
 
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #if !defined(OS_LINUX)
 extern int PluginMain(const content::MainFunctionParams&);
 #endif
@@ -299,7 +300,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
               ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
     { switches::kRendererProcess,    RendererMain },
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     { switches::kPpapiPluginProcess, PpapiPluginMain },
 #endif
     { switches::kUtilityProcess,     UtilityMain },
@@ -377,7 +378,7 @@ int RunNamedProcessTypeMain(
     { "",                            BrowserMain },
 #endif
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     { switches::kPpapiPluginProcess, PpapiPluginMain },
     { switches::kPpapiBrokerProcess, PpapiBrokerMain },
 #endif  // ENABLE_PLUGINS

@@ -15,6 +15,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_message.h"
+#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -70,7 +71,7 @@ blink::WebLocalFrame* TextInputClientObserver::GetFocusedFrame() const {
                                                                   : nullptr;
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 PepperPluginInstanceImpl* TextInputClientObserver::GetFocusedPepperPlugin()
     const {
   blink::WebLocalFrame* focusedFrame = GetFocusedFrame();
@@ -106,7 +107,7 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
 
 void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
   gfx::Rect rect;
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PepperPluginInstanceImpl* focused_plugin = GetFocusedPepperPlugin();
   if (focused_plugin) {
     rect = focused_plugin->GetCaretBounds();

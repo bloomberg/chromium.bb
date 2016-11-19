@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_features.h"
 
 #include "extensions/features/features.h"
+#include "ppapi/features/features.h"
 
 namespace features {
 
@@ -159,7 +160,7 @@ const base::Feature kOfflinePageDownloadSuggestionsFeature{
 const base::Feature kOverrideYouTubeFlashEmbed{
     "OverrideYouTubeFlashEmbed", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728
 const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
@@ -184,7 +185,7 @@ const base::Feature kRuntimeMemoryLeakDetector{
     "RuntimeMemoryLeakDetector", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Disables Plugin Power Saver when Flash is in ALLOW mode.
 const base::Feature kRunAllFlashInAllowMode{"RunAllFlashInAllowMode",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

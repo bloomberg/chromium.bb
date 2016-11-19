@@ -65,9 +65,6 @@ config("feature_flags") {
   if (enable_notifications) {
     defines += [ "ENABLE_NOTIFICATIONS" ]
   }
-  if (enable_plugins) {
-    defines += [ "ENABLE_PLUGINS=1" ]
-  }
   if (enable_pdf) {
     defines += [ "ENABLE_PDF=1" ]
   }

@@ -72,6 +72,7 @@
 #include "chrome/common/features.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/features/features.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -291,7 +292,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
 #endif
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
 #endif
   PrefsTabHelper::GetServiceInstance();

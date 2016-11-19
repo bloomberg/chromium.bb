@@ -109,6 +109,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "ppapi/features/features.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -1731,7 +1732,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
       std::move(handler), request, std::move(post_mime_sniffing_throttles)));
 
   PluginService* plugin_service = nullptr;
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   plugin_service = PluginService::GetInstance();
 #endif
 

@@ -11,5 +11,8 @@ import("//ppapi/features/features.gni")
 
 buildflag_header("features") {
   header = "features.h"
-  flags = [ "ENABLE_PEPPER_CDMS=$enable_pepper_cdms" ]
+  flags = [
+    "ENABLE_PEPPER_CDMS=$enable_pepper_cdms",
+    "ENABLE_PLUGINS=$enable_plugins",
+  ]
 }

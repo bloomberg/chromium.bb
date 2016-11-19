@@ -37,6 +37,7 @@ static_library("browser") {
     "//gpu/config",
     "//mojo/common:common_base",
     "//net",
+    "//ppapi/features",
     "//services/service_manager/public/cpp",
     "//sql",
     "//third_party/icu",

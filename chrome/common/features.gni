@@ -8,6 +8,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//extensions/features/features.gni")
 import("//net/features.gni")
+import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 
 # Please keep features in alphabetical order.
@@ -90,6 +91,7 @@ chrome_grit_defines = [
   "enable_google_now=$enable_google_now",
   "enable_hangout_services_extension=$enable_hangout_services_extension",
   "enable_hotwording=$enable_hotwording",
+  "enable_plugins=$enable_plugins",
   "enable_print_preview=$enable_print_preview",
   "enable_printing=$_enable_printing",
   "enable_service_discovery=$enable_service_discovery",

@@ -40,6 +40,7 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -494,7 +495,7 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   Add(pdf_extension_util::GetManifest(),
       base::FilePath(FILE_PATH_LITERAL("pdf")));
 #endif
@@ -517,7 +518,7 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
 
   AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   Add(pdf_extension_util::GetManifest(),
       base::FilePath(FILE_PATH_LITERAL("pdf")));
 #endif

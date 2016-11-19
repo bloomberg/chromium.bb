@@ -29,6 +29,7 @@
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "ppapi/features/features.h"
 
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
@@ -437,7 +438,7 @@ void ChildProcessLauncher::Launch(SandboxedProcessLauncherDelegate* delegate,
       cmd_line->GetSwitchValueASCII(switches::kProcessType);
   CHECK(process_type == switches::kGpuProcess ||
         process_type == switches::kRendererProcess ||
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
         process_type == switches::kPpapiPluginProcess ||
 #endif
         process_type == switches::kUtilityProcess)

@@ -18,8 +18,9 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/webplugininfo.h"
+#include "ppapi/features/features.h"
 
-#if !defined(ENABLE_PLUGINS)
+#if !BUILDFLAG(ENABLE_PLUGINS)
 #error "Plugins should be enabled"
 #endif
 

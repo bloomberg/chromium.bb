@@ -21,11 +21,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "ppapi/features/features.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "third_party/kasko/kasko_features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/ppapi_plugin_process_host.h"
 #endif
 
@@ -55,7 +56,7 @@ const char kKaskoSendReport[] = "/send-report";
 #endif
 
 void HandlePpapiFlashDebugURL(const GURL& url) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   bool crash = url == kChromeUIPpapiFlashCrashURL;
 
   std::vector<PpapiPluginProcessHost*> hosts;

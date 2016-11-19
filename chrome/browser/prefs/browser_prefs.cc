@@ -108,6 +108,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/features/features.h"
 #include "net/http/http_server_properties_manager.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)
@@ -377,7 +378,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   EasyUnlockService::RegisterPrefs(registry);
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginFinder::RegisterPrefs(registry);
 #endif
 
@@ -538,7 +539,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginsUI::RegisterProfilePrefs(registry);
 #endif
 

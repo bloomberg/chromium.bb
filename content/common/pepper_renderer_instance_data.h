@@ -5,9 +5,10 @@
 #ifndef CONTENT_COMMON_PEPPER_RENDERER_INSTANCE_DATA_H_
 #define CONTENT_COMMON_PEPPER_RENDERER_INSTANCE_DATA_H_
 
+#include "ppapi/features/features.h"
 #include "url/gurl.h"
 
-#if !defined(ENABLE_PLUGINS)
+#if !BUILDFLAG(ENABLE_PLUGINS)
 #error "Plugins should be enabled"
 #endif
 

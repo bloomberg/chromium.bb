@@ -73,6 +73,7 @@
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/features/features.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -88,7 +89,7 @@
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
 #endif
 
@@ -272,7 +273,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
       waiting_for_collect_final_metrics_step_(false),
       num_async_histogram_fetches_in_progress_(0),
       profiler_metrics_provider_(nullptr),
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
       plugin_metrics_provider_(nullptr),
 #endif
 #if defined(OS_WIN)
@@ -328,9 +329,9 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   AndroidMetricsProvider::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginMetricsProvider::RegisterPrefs(registry);
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 metrics::MetricsService* ChromeMetricsServiceClient::GetMetricsService() {
@@ -422,12 +423,12 @@ void ChromeMetricsServiceClient::InitializeSystemProfileMetrics(
                  base::Unretained(chromeos_metrics_provider_), next_task));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Load plugin information.
   initialize_task_queue_.push_back(
       base::Bind(&PluginMetricsProvider::GetPluginInformation,
                  base::Unretained(plugin_metrics_provider_), next_task));
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Launch task to gather Google Update statistics.
@@ -518,11 +519,11 @@ base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
 
 void ChromeMetricsServiceClient::OnPluginLoadingError(
     const base::FilePath& plugin_path) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   plugin_metrics_provider_->LogPluginLoadingError(plugin_path);
 #else
   NOTREACHED();
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 bool ChromeMetricsServiceClient::IsReportingPolicyManaged() {
@@ -644,11 +645,11 @@ void ChromeMetricsServiceClient::Initialize() {
       std::unique_ptr<metrics::MetricsProvider>(antivirus_metrics_provider_));
 #endif  // defined(OS_WIN)
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   plugin_metrics_provider_ = new PluginMetricsProvider(local_state);
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(plugin_metrics_provider_));
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)
   ChromeOSMetricsProvider* chromeos_metrics_provider =

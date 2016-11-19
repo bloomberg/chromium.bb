@@ -8,9 +8,10 @@
 #include "base/files/file.h"
 #include "base/sync_socket.h"
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/features/features.h"
 #include "storage/common/fileapi/file_system_types.h"
 
-#if !defined(ENABLE_PLUGINS)
+#if !BUILDFLAG(ENABLE_PLUGINS)
 #error "Plugins should be enabled"
 #endif
 

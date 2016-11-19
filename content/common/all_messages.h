@@ -7,7 +7,10 @@
 // up to date when adding a new value to the IPCMessageStart enum in
 // ipc/ipc_message_start.h to ensure the corresponding message file is
 // included here.
+//
+#include "ppapi/features/features.h"
+
 #include "content/common/content_message_generator.h"
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "ppapi/proxy/ppapi_messages.h"
 #endif

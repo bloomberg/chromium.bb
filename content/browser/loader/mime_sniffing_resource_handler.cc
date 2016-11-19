@@ -36,6 +36,7 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "ppapi/features/features.h"
 #include "url/origin.h"
 
 namespace content {
@@ -74,7 +75,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
     : LayeredResourceHandler(request, std::move(next_handler)),
       state_(STATE_STARTING),
       host_(host),
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
       plugin_service_(plugin_service),
 #endif
       must_download_(false),
@@ -425,7 +426,7 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
     bool* defer,
     bool* handled_by_plugin) {
   *handled_by_plugin = false;
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ResourceRequestInfoImpl* info = GetRequestInfo();
   bool allow_wildcard = false;
   bool stale;

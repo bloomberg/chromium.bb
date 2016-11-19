@@ -891,6 +891,7 @@ static_library("extensions") {
     "//extensions/features",
     "//extensions/strings",
     "//net",
+    "//ppapi/features",
     "//printing/features",
     "//skia",
     "//sql",

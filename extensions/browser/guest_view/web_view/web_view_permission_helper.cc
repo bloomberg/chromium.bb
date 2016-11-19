@@ -19,6 +19,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
+#include "ppapi/features/features.h"
 
 using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
@@ -182,7 +183,7 @@ WebViewPermissionHelper* WebViewPermissionHelper::FromWebContents(
   return web_view_guest->web_view_permission_helper_.get();
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 bool WebViewPermissionHelper::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
@@ -193,7 +194,7 @@ bool WebViewPermissionHelper::OnMessageReceived(
 bool WebViewPermissionHelper::OnMessageReceived(const IPC::Message& message) {
   return web_view_permission_helper_delegate_->OnMessageReceived(message);
 }
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 void WebViewPermissionHelper::RequestMediaAccessPermission(
     content::WebContents* source,

@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_PLUGIN_PRIVATE_STORAGE_HELPER_H_
 #define CONTENT_BROWSER_PLUGIN_PRIVATE_STORAGE_HELPER_H_
 
-#if !defined(ENABLE_PLUGINS)
+#include "ppapi/features/features.h"
+
+#if !BUILDFLAG(ENABLE_PLUGINS)
 #error This file should only be included when plugins are enabled.
 #endif
 

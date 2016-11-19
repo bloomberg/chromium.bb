@@ -16,6 +16,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/menu_item.h"
+#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using blink::WebContextMenuData;
@@ -309,7 +310,7 @@ void RenderViewContextMenuBase::ExecuteCommand(int id, int event_flags) {
   if (IsContentCustomCommandId(id)) {
     unsigned action = id - content_context_custom_first;
     const content::CustomContextMenuContext& context = params_.custom_context;
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     if (context.request_id && !context.is_pepper_menu)
       HandleAuthorizeAllPlugins();
 #endif

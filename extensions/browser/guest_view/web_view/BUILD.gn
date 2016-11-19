@@ -29,5 +29,6 @@ source_set("web_view") {
     "//content/public/common",
     "//extensions/common/api",
     "//extensions/strings",
+    "//ppapi/features",
   ]
 }

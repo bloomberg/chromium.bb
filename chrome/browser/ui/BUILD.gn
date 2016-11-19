@@ -10,6 +10,7 @@ import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
+import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 
 config("ui_warnings") {
@@ -570,6 +571,7 @@ split_static_library("ui") {
     "//extensions/features",
     "//media",
     "//net:net_with_v8",
+    "//ppapi/features",
     "//printing/features",
     "//services/service_manager/runner/common",
     "//skia",

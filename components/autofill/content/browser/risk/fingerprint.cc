@@ -41,6 +41,7 @@
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/geoposition.h"
 #include "gpu/config/gpu_info.h"
+#include "ppapi/features/features.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -293,7 +294,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
   }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Load plugin data.
   content::PluginService::GetInstance()->GetPlugins(
       base::Bind(&FingerprintDataLoader::OnGotPlugins,

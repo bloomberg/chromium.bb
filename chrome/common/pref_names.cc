@@ -9,6 +9,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "extensions/features/features.h"
+#include "ppapi/features/features.h"
 
 namespace prefs {
 
@@ -1007,7 +1008,7 @@ const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 const char kPluginsAlwaysOpenPdfExternally[] =
     "plugins.always_open_pdf_externally";
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
 #endif
@@ -1058,7 +1059,7 @@ const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 const char kBackShortcutBubbleShownCount[] =
     "browser.back_shortcut_bubble_shown_count";
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // Which plugins have been whitelisted manually by the user.
 const char kContentSettingsPluginWhitelist[] =
     "profile.content_settings.plugin_whitelist";

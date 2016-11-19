@@ -120,6 +120,7 @@
 #include "extensions/features/features.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1082,7 +1083,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   ApplyMetricsReportingPolicy();
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
 
@@ -1094,7 +1095,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   plugins_resource_service_.reset(new PluginsResourceService(local_state()));
   plugins_resource_service_->Init();
 #endif
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if !defined(OS_ANDROID)
   storage_monitor::StorageMonitor::Create();

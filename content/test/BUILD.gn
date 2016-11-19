@@ -8,6 +8,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//ppapi/features/features.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//v8/gni/v8.gni")
@@ -701,6 +702,7 @@ test("content_browsertests") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
     "//net:test_support",
+    "//ppapi/features",
     "//services/service_manager/public/cpp",
     "//storage/browser",
     "//testing/gmock",
@@ -1411,6 +1413,7 @@ test("content_unittests") {
     "//net:extras",
     "//net:test_support",
     "//ppapi/c",
+    "//ppapi/features",
     "//printing",
     "//skia",
     "//sql",

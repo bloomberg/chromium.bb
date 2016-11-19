@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//ppapi/features/features.gni")
 import("//third_party/webrtc/build/webrtc.gni")
 
 # See //content/BUILD.gn for how this works.
@@ -252,6 +253,7 @@ source_set("common_sources") {
     "//mojo/common",
     "//net",
     "//ppapi/c",
+    "//ppapi/features",
     "//services/service_manager/public/cpp",
     "//skia",
     "//storage/common",

@@ -322,6 +322,7 @@ if (is_win) {
       "//content/app/resources",
       "//crypto",
       "//net:net_resources",
+      "//ppapi/features",
       "//third_party/cld",
       "//third_party/wtl",
       "//ui/views",

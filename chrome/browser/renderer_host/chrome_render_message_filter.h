@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "extensions/features/features.h"
+#include "ppapi/features/features.h"
 
 class GURL;
 class Profile;
@@ -123,7 +124,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                         const GURL& top_origin_url,
                         const base::string16& name,
                         bool* allowed);
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   void OnIsCrashReportingEnabled(bool* enabled);
 #endif
 

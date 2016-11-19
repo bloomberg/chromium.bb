@@ -26,11 +26,12 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_module.h"
 #include "net/grit/net_resources.h"
+#include "ppapi/features/features.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
 #include "content/shell/browser/shell_plugin_service_filter.h"
 #endif
@@ -83,7 +84,7 @@ void LayoutTestBrowserMainParts::InitializeMessageLoopContext() {
                      storage::QuotaManager::kPerHostTemporaryPortion,
                  storage::QuotaCallback()));
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service_filter_.reset(new ShellPluginServiceFilter);
   plugin_service->SetFilter(plugin_service_filter_.get());

@@ -71,7 +71,7 @@
 #include "extensions/common/features/feature_util.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
 #include "flapper_version.h"  // nogncheck  In SHARED_INTERMEDIATE_DIR.
 #include "ppapi/shared_impl/ppapi_permissions.h"
@@ -89,7 +89,7 @@
 
 namespace {
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #if defined(ENABLE_PDF)
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
@@ -383,7 +383,7 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
 
   return TryCreatePepperFlashInfo(flash_filename, plugin);
 }
-#endif  //  defined(ENABLE_PLUGINS)
+#endif  //  BUILDFLAG(ENABLE_PLUGINS)
 
 std::string GetProduct() {
   return version_info::GetProductNameAndVersionForUserAgent();
@@ -425,7 +425,7 @@ void ChromeContentClient::SetNaClEntryFunctions(
 }
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 void ChromeContentClient::SetPDFEntryFunctions(
     content::PepperPluginInfo::GetInterfaceFunc get_interface,
     content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
@@ -462,7 +462,7 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 #endif
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // static
 content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
     const std::vector<std::unique_ptr<content::PepperPluginInfo>>& plugins) {
@@ -481,11 +481,11 @@ content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
 
   return plugin_map.rbegin()->second;
 }
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   ComputeBuiltInPlugins(plugins);
 
   std::vector<std::unique_ptr<content::PepperPluginInfo>> flash_versions;
@@ -528,7 +528,7 @@ void ChromeContentClient::AddPepperPlugins(
         FLAPPER_VERSION_STRING, false));
 #endif  // defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
   }
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 void ChromeContentClient::AddContentDecryptionModules(

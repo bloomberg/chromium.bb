@@ -9,6 +9,7 @@
 #define CHROME_COMMON_CHROME_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
 // Don't add more switch files here. This is linked into some places like the
@@ -375,7 +376,7 @@ extern const char kWindows8Search[];
 extern const char kDebugPrint[];
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 extern const char kAllowNaClCrxFsAPI[];
 extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];

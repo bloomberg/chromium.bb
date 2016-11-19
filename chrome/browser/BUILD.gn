@@ -1450,6 +1450,7 @@ split_static_library("browser") {
     "//mojo/public/js",
     "//net:extras",
     "//net:net_with_v8",
+    "//ppapi/features",
     "//printing/features",
     "//services/image_decoder/public/cpp",
     "//services/service_manager/public/cpp",

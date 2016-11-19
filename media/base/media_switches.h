@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
+#include "ppapi/features/features.h"
 
 namespace switches {
 
@@ -43,13 +44,13 @@ MEDIA_EXPORT extern const char kWaveOutBuffers[];
 MEDIA_EXPORT extern const char kUseCras[];
 #endif
 
-#if !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
+#if !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 MEDIA_EXPORT extern const char kEnableDefaultMediaSession[];
-#endif  // !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
+#endif  // !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 MEDIA_EXPORT extern const char kEnableDefaultMediaSessionDuckFlash[];
-#endif  // defined(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];

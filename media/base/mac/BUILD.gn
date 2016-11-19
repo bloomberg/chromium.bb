@@ -38,6 +38,10 @@ source_set("mac") {
     "//media:media_config",
     "//media:media_implementation",
   ]
+
+  deps = [
+    "//ppapi/features",
+  ]
 }
 
 source_set("unit_tests") {

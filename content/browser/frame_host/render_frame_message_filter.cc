@@ -33,6 +33,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/features/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -42,7 +43,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -52,7 +53,7 @@ namespace content {
 
 namespace {
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 const int kPluginsRefreshThresholdInSeconds = 3;
 #endif
 
@@ -130,7 +131,7 @@ class RenderMessageCompletionCallback {
 
 }  // namespace
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 
 class RenderFrameMessageFilter::OpenChannelToPpapiBrokerCallback
     : public PpapiPluginProcessHost::BrokerClient {
@@ -214,7 +215,7 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
     RenderWidgetHelper* render_widget_helper)
     : BrowserMessageFilter(FrameMsgStart),
       BrowserAssociatedInterface<mojom::RenderFrameMessageFilter>(this, this),
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),
 #endif  // ENABLE_PLUGINS
@@ -241,7 +242,7 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_RenderProcessGone,
                                 OnRenderProcessGone())
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPepperPlugin,
@@ -455,7 +456,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
                  render_frame_id, url, first_party_for_cookies, callback));
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 
 void RenderFrameMessageFilter::OnGetPlugins(
     bool refresh,

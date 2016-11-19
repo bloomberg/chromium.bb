@@ -19,6 +19,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
+#include "ppapi/features/features.h"
 
 class ChromeContentBrowserClientParts;
 
@@ -351,7 +352,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::Callback<void(bool)>& callback);
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;
   // Set of origins that can get a handle for FileIO from NaCl.

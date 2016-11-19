@@ -107,6 +107,7 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/features/features.h"
 #include "net/base/escape.h"
+#include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
@@ -910,7 +911,7 @@ bool RenderViewContextMenu::IsHTML5Fullscreen() const {
   return controller->IsTabFullscreen();
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 void RenderViewContextMenu::HandleAuthorizeAllPlugins() {
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
       source_web_contents_, false, std::string());
