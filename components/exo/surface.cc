@@ -318,7 +318,7 @@ void Surface::AddSubSurface(Surface* sub_surface) {
 }
 
 void Surface::RemoveSubSurface(Surface* sub_surface) {
-  TRACE_EVENT1("exo", "Surface::AddSubSurface", "sub_surface",
+  TRACE_EVENT1("exo", "Surface::RemoveSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
 
   window_->RemoveChild(sub_surface->window());
