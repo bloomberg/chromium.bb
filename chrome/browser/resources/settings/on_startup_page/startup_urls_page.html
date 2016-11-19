@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
+<link rel="import" href="/controls/extension_controlled_indicator.html">
 <link rel="import" href="/settings_shared_css.html">
 <link rel="import" href="/on_startup_page/startup_url_dialog.html">
 <link rel="import" href="/on_startup_page/startup_url_entry.html">
@@ -15,8 +16,14 @@
         @apply(--settings-list-frame-padding);
         max-height: 395px;  /** Enough height to show six entries. */
       }
+
       #container iron-list > settings-startup-url-entry:not(:first-of-type) {
         border-top: var(--settings-separator-line);
+      }
+
+      #container settings-startup-url-entry:not([editable]) {
+        background: none;
+        cursor: default;
       }
     </style>
     <div id="outer" class="layout vertical flex">
@@ -24,16 +31,29 @@
         <iron-list items="[[startupPages_]]" scroll-target="container">
           <template>
             <settings-startup-url-entry model="[[item]]"
-                tabindex$="[[tabIndex]]">
+                tabindex$="[[tabIndex]]"
+                editable="[[!prefs.session.startup_urls.controlledBy]]">
             </settings-startup-url-entry>
           </template>
         </iron-list>
       </div>
-      <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_">
-        $i18n{onStartupAddNewPage}
-      </div>
-      <div class="list-item list-button" id="useCurrentPages"
-          on-tap="onUseCurrentPagesTap_">$i18n{onStartupUseCurrent}</div>
+      <template is="dom-if" if="[[!prefs.session.startup_urls.controlledBy]]"
+          restamp>
+        <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_">
+          $i18n{onStartupAddNewPage}
+        </div>
+        <div class="list-item list-button" id="useCurrentPages"
+            on-tap="onUseCurrentPagesTap_">$i18n{onStartupUseCurrent}</div>
+      </template>
+      <template is="dom-if" if="[[prefs.session.startup_urls.extensionId]]"
+          restamp>
+        <extension-controlled-indicator
+            extension-id="[[prefs.session.startup_urls.extensionId]]"
+            extension-name="[[prefs.session.startup_urls.controlledByName]]"
+            extension-can-be-disabled="[[
+                prefs.session.startup_urls.extensionCanBeDisabled]]">
+        </extension-controlled-indicator>
+      </template>
     </div>
     <template is="dom-if" if="[[showStartupUrlDialog_]]" restamp>
       <settings-startup-url-dialog model="[[startupUrlDialogModel_]]"

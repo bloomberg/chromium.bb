@@ -21,6 +21,11 @@ Polymer({
   is: 'settings-startup-url-entry',
 
   properties: {
+    editable: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     /** @type {!StartupPageInfo} */
     model: Object,
   },
@@ -50,7 +55,7 @@ Polymer({
   /** @private */
   onDotsTap_: function() {
     var actionMenu = /** @type {!CrActionMenuElement} */(
-        this.$.menu.get());
-    actionMenu.showAt(assert(this.$.dots));
+        this.$$('#menu').get());
+    actionMenu.showAt(assert(this.$$('#dots')));
   },
 });

@@ -17,6 +17,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(EXTERNS_GYP):settings_private',
         '../prefs/compiled_resources2.gyp:pref_util',
         'pref_control_behavior',
       ],

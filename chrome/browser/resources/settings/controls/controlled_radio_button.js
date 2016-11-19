@@ -5,7 +5,7 @@
 Polymer({
   is: 'controlled-radio-button',
 
-  behaviors: [CrPolicyPrefBehavior, PrefControlBehavior],
+  behaviors: [PrefControlBehavior],
 
   properties: {
     name: {
@@ -30,7 +30,7 @@ Polymer({
    * @private
    */
   computeControlled_: function() {
-    return this.isPrefPolicyControlled(assert(this.pref));
+    return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**

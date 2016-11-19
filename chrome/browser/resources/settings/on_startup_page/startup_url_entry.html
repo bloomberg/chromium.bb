@@ -22,19 +22,21 @@
         <div class="text-elide">[[model.title]]</div>
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
-      <paper-icon-button id="dots" icon="cr:more-vert" tabindex$="[[tabindex]]"
-          on-tap="onDotsTap_">
-      </paper-icon-button>
-      <template is="cr-lazy-render" id="menu">
-        <dialog is="cr-action-menu">
-          <button class="dropdown-item" role="option" on-tap="onEditTap_">
-            $i18n{onStartupEdit}
-          </button>
-          <button class="dropdown-item" role="option" id="remove"
-              on-tap="onRemoveTap_">
-            $i18n{onStartupRemove}
-          </button>
-        </dialog>
+      <template is="dom-if" if="[[editable]]">
+        <paper-icon-button id="dots" icon="cr:more-vert"
+            tabindex$="[[tabindex]]" on-tap="onDotsTap_">
+        </paper-icon-button>
+        <template is="cr-lazy-render" id="menu">
+          <dialog is="cr-action-menu">
+            <button class="dropdown-item" role="option" on-tap="onEditTap_">
+              $i18n{onStartupEdit}
+            </button>
+            <button class="dropdown-item" role="option" id="remove"
+                on-tap="onRemoveTap_">
+              $i18n{onStartupRemove}
+            </button>
+          </dialog>
+        </template>
       </template>
     </div>
   </template>

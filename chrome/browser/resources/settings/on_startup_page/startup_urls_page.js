@@ -13,6 +13,8 @@ Polymer({
   behaviors: [CrScrollableBehavior, WebUIListenerBehavior],
 
   properties: {
+    prefs: Object,
+
     /** @type {settings.StartupUrlsPageBrowserProxy} */
     browserProxy_: Object,
 

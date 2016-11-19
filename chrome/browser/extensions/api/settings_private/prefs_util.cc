@@ -696,12 +696,24 @@ const Extension* PrefsUtil::GetExtensionControllingPref(
   // corresponds with some indiciator that should be shown in the settings UI.
   if (pref_object.key == ::prefs::kHomePage)
     return GetExtensionOverridingHomepage(profile_);
+
+  if (pref_object.key == ::prefs::kRestoreOnStartup) {
+    int restore_on_startup;
+    CHECK(pref_object.value->GetAsInteger(&restore_on_startup));
+
+    if (restore_on_startup == SessionStartupPref::kPrefValueURLs)
+      return GetExtensionOverridingStartupPages(profile_);
+  }
+
   if (pref_object.key == ::prefs::kURLsToRestoreOnStartup)
     return GetExtensionOverridingStartupPages(profile_);
+
   if (pref_object.key == ::prefs::kDefaultSearchProviderEnabled)
     return GetExtensionOverridingSearchEngine(profile_);
+
   if (pref_object.key == proxy_config::prefs::kProxy)
     return GetExtensionOverridingProxy(profile_);
+
   return nullptr;
 }
 
