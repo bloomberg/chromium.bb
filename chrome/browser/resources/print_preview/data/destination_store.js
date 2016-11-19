@@ -656,6 +656,15 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @return {boolean} Whether the selected destination is valid.
+     */
+    selectedDestinationValid_: function() {
+      return this.appState_.selectedDestination &&
+             this.appState_.selectedDestination.id &&
+             this.appState_.selectedDestination.origin;
+    },
+
+    /*
      * Initializes the destination store. Sets the initially selected
      * destination. If any inserted destinations match this ID, that destination
      * will be automatically selected. This method must be called after the
@@ -675,8 +684,7 @@ cr.define('print_preview', function() {
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
 
-      if (!this.appState_.selectedDestinationId ||
-          !this.appState_.selectedDestinationOrigin) {
+      if (!this.selectedDestinationValid_()) {
         var destinationMatch = this.convertToDestinationMatch_(
             serializedDefaultDestinationSelectionRulesStr);
         if (destinationMatch) {
@@ -686,8 +694,7 @@ cr.define('print_preview', function() {
       }
 
       if (!this.systemDefaultDestinationId_ &&
-          !(this.appState_.selectedDestinationId &&
-            this.appState_.selectedDestinationOrigin)) {
+          !this.selectedDestinationValid_()) {
         this.selectPdfDestination_();
         return;
       }
@@ -701,10 +708,12 @@ cr.define('print_preview', function() {
       var extensionName = '';
       var foundDestination = false;
       if (this.appState_.recentDestinations) {
-        // Run through the destinations backwards the most recently used is set
-        // as the initially selected destination.
-        for (var i = this.appState_.recentDestinations.length - 1; i >= 0;
-             i--) {
+        // Run through the destinations forward. As soon as we find a
+        // destination, don't select any future destinations, just mark
+        // them recent. Otherwise, there is a race condition between selecting
+        // destinations/updating the print ticket and this selecting a new
+        // destination that causes random print preview errors.
+        for (var i = 0; i < this.appState_.recentDestinations.length; i++) {
           origin = this.appState_.recentDestinations[i].origin;
           id = this.appState_.recentDestinations[i].id;
           account = this.appState_.recentDestinations[i].account || '';
@@ -718,10 +727,11 @@ cr.define('print_preview', function() {
               this.destinationMap_[this.getDestinationKey_(origin,
                                                            id, account)];
           if (candidate != null) {
-            this.selectDestination(candidate);
+            if (!foundDestination)
+              this.selectDestination(candidate);
             candidate.isRecent = true;
             foundDestination = true;
-          } else {
+          } else if (!foundDestination) {
             foundDestination = this.fetchPreselectedDestination_(
                                     origin,
                                     id,
@@ -939,11 +949,10 @@ cr.define('print_preview', function() {
      * @private
      */
     convertPreselectedToDestinationMatch_: function() {
-      if (this.appState_.selectedDestinationId &&
-          this.appState_.selectedDestinationOrigin) {
+      if (this.selectedDestinationValid_()) {
         return this.createExactDestinationMatch_(
-            this.appState_.selectedDestinationOrigin,
-            this.appState_.selectedDestinationId);
+            this.appState_.selectedDestination.origin,
+            this.appState_.selectedDestination.id);
       }
       if (this.systemDefaultDestinationId_) {
         return this.createExactDestinationMatch_(
@@ -1344,8 +1353,9 @@ cr.define('print_preview', function() {
         this.insertDestination_(destination);
       }
 
-      if (existingDestination == this.selectedDestination_ ||
-          destination == this.selectedDestination_) {
+      if (this.selectedDestination_ &&
+          (existingDestination == this.selectedDestination_ ||
+           destination == this.selectedDestination_)) {
         this.appState_.persistSelectedDestination(this.selectedDestination_);
         cr.dispatchSimpleEvent(
             this,

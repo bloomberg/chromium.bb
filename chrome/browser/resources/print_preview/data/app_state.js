@@ -125,73 +125,13 @@ cr.define('print_preview', function() {
   AppState.NATIVE_FUNCTION_NAME_ = 'saveAppState';
 
   AppState.prototype = {
-
-    /**
-     * Helper function to get the most recent destination.
-     * @return {?RecentDestination} The most recent value of the
-     *     destination.
-     */
-    getSelectedDestination_: function() {
-      return (this.state_[AppState.Field.RECENT_DESTINATIONS].length > 0) ?
-          this.state_[AppState.Field.RECENT_DESTINATIONS][0] : null;
-    },
-
-    /** @return {?string} ID of the selected destination. */
-    get selectedDestinationId() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.id : null;
-    },
-
-    /** @return {?string} Account the selected destination is registered for. */
-    get selectedDestinationAccount() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.account : null;
-    },
-
-    /**
-     * @return {?print_preview.Destination.Origin<string>} Origin of the
-     *     selected destination.
-     */
-    get selectedDestinationOrigin() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.origin : null;
-    },
-
-    /** @return {?print_preview.Cdd} CDD of the selected destination. */
-    get selectedDestinationCapabilities() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.capabilities : null;
-    },
-
-    /** @return {?string} Name of the selected destination. */
-    get selectedDestinationName() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.name : null;
-    },
-
-    /**
-     * @return {?string} Extension ID associated with the selected destination.
-     */
-    get selectedDestinationExtensionId() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.extensionId : null;
-    },
-
-    /**
-     * @return {?string} Extension name associated with the selected
-     *     destination.
-     */
-    get selectedDestinationExtensionName() {
-      return this.getSelectedDestination_ ?
-          this.getSelectedDestination_.extensionName : null;
-    },
-
     /**
      * @return {?RecentDestination} The most recent destination, which is
      *     currently the selected destination.
      */
     get selectedDestination() {
-      return this.getSelectedDestination_;
+      return (this.state_[AppState.Field.RECENT_DESTINATIONS].length > 0) ?
+          this.state_[AppState.Field.RECENT_DESTINATIONS][0] : null;
     },
 
     /**
