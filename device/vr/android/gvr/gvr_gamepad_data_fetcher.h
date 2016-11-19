@@ -42,8 +42,8 @@ class GvrGamepadDataFetcher : public GamepadDataFetcher {
 
  private:
   std::unique_ptr<gvr::ControllerApi> controller_api_;
-  std::unique_ptr<gvr::UserPrefs> user_prefs_;
   gvr::ControllerState controller_state_;
+  gvr::ControllerHandedness handedness_;
   unsigned int display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrGamepadDataFetcher);
