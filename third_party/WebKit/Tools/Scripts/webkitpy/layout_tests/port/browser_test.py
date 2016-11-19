@@ -27,10 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from webkitpy.layout_tests.models import test_run_results
+from webkitpy.layout_tests.port import browser_test_driver
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import mac
 from webkitpy.layout_tests.port import win
-from webkitpy.layout_tests.port import browser_test_driver
 
 
 def get_port_class_name(port_name):

@@ -34,7 +34,6 @@ import re
 import sys
 
 from webkitpy.common.system.executive import Executive
-from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.filesystem import FileSystem
 
 _log = logging.getLogger(__name__)

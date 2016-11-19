@@ -41,7 +41,6 @@ import os
 import os.path
 import re
 import sre_compile
-import string
 import unicodedata
 
 from webkitpy.common.memoized import memoized

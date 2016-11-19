@@ -29,12 +29,11 @@
 import base64
 import time
 
+from webkitpy.common.system.crashlogs import CrashLogs
+from webkitpy.layout_tests.models import test_run_results
+from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.driver import DeviceFailure, Driver, DriverOutput
-from webkitpy.layout_tests.models.test_configuration import TestConfiguration
-from webkitpy.layout_tests.models import test_run_results
-from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.crashlogs import CrashLogs
 
 
 # This sets basic expectations for a test. Each individual expectation

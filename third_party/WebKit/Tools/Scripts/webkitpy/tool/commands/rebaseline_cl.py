@@ -12,9 +12,9 @@ import json
 import logging
 import optparse
 
+from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web import Web
-from webkitpy.common.net.git_cl import GitCL
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 

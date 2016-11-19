@@ -35,8 +35,8 @@ import os
 import signal
 import subprocess
 import sys
-import time
 import threading
+import time
 
 from webkitpy.common.system.filesystem import FileSystem
 

@@ -21,13 +21,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 """Supports checking WebKit style in png files."""
-
 
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.system.systemhost import SystemHost
-from webkitpy.common.checkout.scm.detection import SCMDetector
 
 
 class PNGChecker(object):

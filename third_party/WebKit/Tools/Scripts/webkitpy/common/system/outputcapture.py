@@ -30,7 +30,6 @@
 
 import logging
 import sys
-import unittest
 
 from StringIO import StringIO
 

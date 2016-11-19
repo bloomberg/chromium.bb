@@ -29,7 +29,6 @@ import HTMLParser
 import logging
 import re
 
-from webkitpy.common.host import Host
 from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup
 
 

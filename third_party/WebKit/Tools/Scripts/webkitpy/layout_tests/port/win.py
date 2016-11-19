@@ -29,7 +29,6 @@
 """Windows implementation of the Port interface."""
 
 import errno
-import os
 import logging
 
 try:

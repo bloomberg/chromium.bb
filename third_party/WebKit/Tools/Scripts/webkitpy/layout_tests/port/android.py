@@ -29,9 +29,7 @@
 import logging
 import os
 import re
-import signal
 import sys
-import subprocess
 import threading
 import time
 

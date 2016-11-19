@@ -28,15 +28,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import errno
 import logging
 import math
 import re
-import signal
 
-from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.port.driver import DriverInput
-from webkitpy.layout_tests.port.driver import DriverOutput
 
 DEFAULT_TEST_RUNNER_COUNT = 4
 

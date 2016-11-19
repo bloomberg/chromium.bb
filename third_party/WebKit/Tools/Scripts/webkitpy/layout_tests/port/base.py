@@ -30,8 +30,9 @@
 test infrastructure (the Port and Driver classes).
 """
 
-import collections
+from functools import reduce  # pylint: disable=redefined-builtin
 import cgi
+import collections
 import difflib
 import errno
 import functools
@@ -59,7 +60,6 @@ from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http
 from webkitpy.layout_tests.servers import pywebsocket
 from webkitpy.layout_tests.servers import wptserve
-from functools import reduce  # pylint: disable=redefined-builtin
 
 _log = logging.getLogger(__name__)
 

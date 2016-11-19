@@ -34,7 +34,6 @@ from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.servers.apache_http import ApacheHTTP
-from webkitpy.layout_tests.servers.server_base import ServerError
 
 
 class TestApacheHTTP(unittest.TestCase):

@@ -54,7 +54,6 @@ from idl_compiler import (generate_bindings,
                           generate_callback_function_impl)
 from utilities import ComponentInfoProviderCore
 from utilities import ComponentInfoProviderModules
-from utilities import write_file
 
 
 PASS_MESSAGE = 'All tests PASS!'
