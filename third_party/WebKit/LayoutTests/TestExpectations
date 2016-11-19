@@ -47,6 +47,7 @@ crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ P
 # SkiaBitLocker should avoid allocating huge offscreen buffer
 crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
 crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
+crbug.com/619427 [ Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 # --- End SPV2 Tests ---
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
@@ -1682,3 +1683,5 @@ crbug.com/595993 imported/wpt/service-workers/service-worker/request-end-to-end.
 crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Failure ]
 # TODO(mgiuca): This was previously marked as [ NeedsRebaseline ] for [ Precise ] only.
 crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Failure NeedsRebaseline ]
+
+crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
