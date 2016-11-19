@@ -668,18 +668,29 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual FloatRect strokeBoundingBox() const;
 
   // Returns the smallest rectangle enclosing all of the painted content
-  // respecting clipping, masking, filters, opacity, stroke-width and markers
+  // respecting clipping, masking, filters, opacity, stroke-width and markers.
+  // For most SVG objects, the local SVG coordinate space is the space where
+  // localSVGTransform applies. For SVG objects defining viewports (e.g.
+  // LayoutSVGForeignObject, LayoutSVGViewportContainer,
+  // LayoutSVGResourceMarker), the local SVG coordinate space is the viewport
+  // space.
   virtual FloatRect visualRectInLocalSVGCoordinates() const;
 
-  // This only returns the transform="" value from the SVG element.
-  // Most callsites want localToParentTransform() instead.
+  // This returns the transform applying to the local SVG coordinate space,
+  // which combines the transform attribute value or CSS transform properties,
+  // and animation motion transform.
+  // See SVGGraphicsElement::calculateAnimatedLocalTransform().
+  // Most callsites want localToSVGParentTransform() instead.
   virtual AffineTransform localSVGTransform() const;
 
-  // Returns the full transform mapping from local coordinates to local coords
-  // for the parent SVG layoutObject
-  // This includes any viewport transforms and x/y offsets as well as the
-  // transform="" value off the element.
-  virtual const AffineTransform& localToSVGParentTransform() const;
+  // Returns the full transform mapping from local coordinates to parent's local
+  // coordinates. For most SVG objects, this is the same as localSVGTransform.
+  // For SVG objects defining viewports (see visualRectInLocalSVGCoordinates),
+  // this includes any viewport transforms and x/y offsets as well as
+  // localSVGTransform.
+  virtual AffineTransform localToSVGParentTransform() const {
+    return localSVGTransform();
+  }
 
   // SVG uses FloatPoint precise hit testing, and passes the point in parent
   // coordinates instead of in paint invalidation container coordinates.

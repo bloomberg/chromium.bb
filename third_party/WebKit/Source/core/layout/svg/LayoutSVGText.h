@@ -60,10 +60,6 @@ class LayoutSVGText final : public LayoutSVGBlock {
   void subtreeChildWillBeRemoved();
   void subtreeTextDidChange();
 
-  const AffineTransform& localToSVGParentTransform() const override {
-    return m_localTransform;
-  }
-
   const char* name() const override { return "LayoutSVGText"; }
 
  private:

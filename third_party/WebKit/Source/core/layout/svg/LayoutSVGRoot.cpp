@@ -342,17 +342,10 @@ void LayoutSVGRoot::buildLocalToBorderBoxTransform() {
   m_localToBorderBoxTransform.preMultiply(viewToBorderBoxTransform);
 }
 
-const AffineTransform& LayoutSVGRoot::localToSVGParentTransform() const {
-  // Slightly optimized version of m_localToParentTransform =
-  // AffineTransform::translation(x(), y()) * m_localToBorderBoxTransform;
-  m_localToParentTransform = m_localToBorderBoxTransform;
-  if (location().x())
-    m_localToParentTransform.setE(m_localToParentTransform.e() +
-                                  roundToInt(location().x()));
-  if (location().y())
-    m_localToParentTransform.setF(m_localToParentTransform.f() +
-                                  roundToInt(location().y()));
-  return m_localToParentTransform;
+AffineTransform LayoutSVGRoot::localToSVGParentTransform() const {
+  return AffineTransform::translation(roundToInt(location().x()),
+                                      roundToInt(location().y())) *
+         m_localToBorderBoxTransform;
 }
 
 LayoutRect LayoutSVGRoot::localVisualRect() const {

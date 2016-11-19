@@ -74,7 +74,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
 
   FloatRect viewportRect() const { return m_viewport; }
 
-  const AffineTransform& localToSVGParentTransform() const override;
+  AffineTransform localToSVGParentTransform() const override;
 
  private:
   void updateLogicalWidth() override;
@@ -84,7 +84,6 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
 
   bool m_needsTransformUpdate : 1;
   FloatRect m_viewport;
-  mutable AffineTransform m_localToParentTransform;
 };
 
 }  // namespace blink

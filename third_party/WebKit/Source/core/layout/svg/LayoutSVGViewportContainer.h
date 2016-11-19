@@ -50,7 +50,7 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
   }
 
   AffineTransform viewportTransform() const;
-  const AffineTransform& localToSVGParentTransform() const override {
+  AffineTransform localToSVGParentTransform() const override {
     return m_localToParentTransform;
   }
 

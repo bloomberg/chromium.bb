@@ -46,11 +46,11 @@ void LayoutSVGForeignObject::paint(const PaintInfo& paintInfo,
   SVGForeignObjectPainter(*this).paint(paintInfo);
 }
 
-const AffineTransform& LayoutSVGForeignObject::localToSVGParentTransform()
-    const {
-  m_localToParentTransform = localSVGTransform();
-  m_localToParentTransform.translate(m_viewport.x(), m_viewport.y());
-  return m_localToParentTransform;
+AffineTransform LayoutSVGForeignObject::localToSVGParentTransform() const {
+  // Unlike other viewport-defining SVG objects, here localSVGTransform applies
+  // to the viewport offset.
+  return localSVGTransform() *
+         AffineTransform::translation(m_viewport.x(), m_viewport.y());
 }
 
 void LayoutSVGForeignObject::updateLogicalWidth() {

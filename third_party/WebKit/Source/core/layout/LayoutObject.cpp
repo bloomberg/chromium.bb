@@ -3280,13 +3280,7 @@ FloatRect LayoutObject::visualRectInLocalSVGCoordinates() const {
 }
 
 AffineTransform LayoutObject::localSVGTransform() const {
-  static const AffineTransform identity;
-  return identity;
-}
-
-const AffineTransform& LayoutObject::localToSVGParentTransform() const {
-  static const AffineTransform identity;
-  return identity;
+  return AffineTransform();
 }
 
 bool LayoutObject::nodeAtFloatPoint(HitTestResult&,

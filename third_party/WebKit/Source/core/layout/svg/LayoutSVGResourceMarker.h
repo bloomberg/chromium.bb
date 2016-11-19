@@ -43,7 +43,7 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   // space.
   FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
 
-  const AffineTransform& localToSVGParentTransform() const override;
+  AffineTransform localToSVGParentTransform() const override;
   AffineTransform markerTransformation(const FloatPoint& origin,
                                        float angle,
                                        float strokeWidth) const;
@@ -66,7 +66,6 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
 
   AffineTransform viewportTransform() const;
 
-  mutable AffineTransform m_localToParentTransform;
   FloatRect m_viewport;
 };
 

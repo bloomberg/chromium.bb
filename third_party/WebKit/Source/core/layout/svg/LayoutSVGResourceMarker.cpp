@@ -72,15 +72,9 @@ FloatRect LayoutSVGResourceMarker::markerBoundaries(
   return markerTransformation.mapRect(coordinates);
 }
 
-const AffineTransform& LayoutSVGResourceMarker::localToSVGParentTransform()
-    const {
-  m_localToParentTransform =
-      AffineTransform::translation(m_viewport.x(), m_viewport.y()) *
-      viewportTransform();
-  return m_localToParentTransform;
-  // If this class were ever given a localTransform(), then the above would
-  // read:
-  // return viewportTranslation * localTransform() * viewportTransform();
+AffineTransform LayoutSVGResourceMarker::localToSVGParentTransform() const {
+  return AffineTransform::translation(m_viewport.x(), m_viewport.y()) *
+         viewportTransform();
 }
 
 FloatPoint LayoutSVGResourceMarker::referencePoint() const {

@@ -37,9 +37,6 @@ class LayoutSVGTransformableContainer final : public LayoutSVGContainer {
     return type == LayoutObjectSVGTransformableContainer ||
            LayoutSVGContainer::isOfType(type);
   }
-  const AffineTransform& localToSVGParentTransform() const override {
-    return m_localTransform;
-  }
   const FloatSize& additionalTranslation() const {
     return m_additionalTranslation;
   }

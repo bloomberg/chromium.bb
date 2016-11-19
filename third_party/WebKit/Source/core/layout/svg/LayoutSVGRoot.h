@@ -121,7 +121,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   void insertedIntoTree() override;
   void willBeRemovedFromTree() override;
 
-  const AffineTransform& localToSVGParentTransform() const override;
+  AffineTransform localToSVGParentTransform() const override;
 
   FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
   FloatRect strokeBoundingBox() const override { return m_strokeBoundingBox; }
@@ -165,7 +165,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool m_objectBoundingBoxValid;
   FloatRect m_strokeBoundingBox;
   FloatRect m_visualRectInLocalSVGCoordinates;
-  mutable AffineTransform m_localToParentTransform;
   AffineTransform m_localToBorderBoxTransform;
   bool m_isLayoutSizeChanged : 1;
   bool m_didScreenScaleFactorChange : 1;

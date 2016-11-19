@@ -132,10 +132,6 @@ class LayoutSVGShape : public LayoutSVGModelObject {
                     const WindRule fillRule = RULE_NONZERO);
   bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-  const AffineTransform& localToSVGParentTransform() const final {
-    return m_localTransform;
-  }
-
   bool isOfType(LayoutObjectType type) const override {
     return type == LayoutObjectSVGShape || LayoutSVGModelObject::isOfType(type);
   }

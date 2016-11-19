@@ -44,10 +44,6 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
     return m_imageResource.get();
   }
 
-  const AffineTransform& localToSVGParentTransform() const override {
-    return m_localTransform;
-  }
-
   FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
   bool isOfType(LayoutObjectType type) const override {
     return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type);
