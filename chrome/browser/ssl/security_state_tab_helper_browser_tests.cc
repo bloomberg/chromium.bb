@@ -281,6 +281,9 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
+    command_line->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNeutral);
   }
 
  protected:

@@ -866,6 +866,23 @@
             ]
         }
     ],
+    "MarkNonSecureAs": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "show-non-secure-passwords-cc-ui"
+                }
+            ]
+        }
+    ],
     "MaterialDesignDownloads": [
         {
             "platforms": [
