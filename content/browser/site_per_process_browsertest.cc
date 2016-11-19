@@ -1997,6 +1997,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(site_b_url, observer.last_navigation_url());
 }
 
+// This test ensures that WebContentsImpl::FocusOwningWebContents does not crash
+// the browser if the currently focused frame's renderer has disappeared.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RemoveFocusFromKilledFrame) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/cross_site_iframe_factory.html?foo.com(bar.com)"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+  ASSERT_EQ(1U, root->child_count());
+
+  // Make sure node2 points to the correct cross-site page.
+  GURL site_b_url = embedded_test_server()->GetURL(
+      "bar.com", "/cross_site_iframe_factory.html?bar.com()");
+  FrameTreeNode* node2 = root->child_at(0);
+  EXPECT_EQ(site_b_url, node2->current_url());
+
+  web_contents()->SetFocusedFrame(
+      node2, node2->current_frame_host()->GetSiteInstance());
+
+  // Kill that cross-site renderer.
+  RenderProcessHost* child_process = node2->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // Try to focus the root's owning WebContents.
+  web_contents()->FocusOwningWebContents(
+      root->current_frame_host()->GetRenderWidgetHost());
+}
+
 // This test is similar to
 // SitePerProcessBrowserTest.NavigateRemoteFrameToKilledProcess with
 // addition that node2 also has a cross-origin frame to site C.

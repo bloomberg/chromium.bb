@@ -4726,7 +4726,8 @@ void WebContentsImpl::FocusOwningWebContents(
       GetFocusedRenderWidgetHost(render_widget_host);
 
   if (focused_widget != render_widget_host &&
-      focused_widget->delegate() != render_widget_host->delegate()) {
+      (!focused_widget ||
+       focused_widget->delegate() != render_widget_host->delegate())) {
     SetAsFocusedWebContentsIfNecessary();
   }
 }
