@@ -133,6 +133,27 @@ var TEST_TARGETS = [
   //  [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
   //  [methodIsPOST]],
 
+  // Custom header
+  [REDIRECT_URL +
+   encodeURIComponent(
+     OTHER_BASE_URL +
+     'ACAOrigin=*&ACAHeaders=x-serviceworker-test') +
+   '&mode=cors&credentials=same-origin&method=GET&headers=CUSTOM',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader, authCheckNone]],
+  [REDIRECT_URL +
+   encodeURIComponent(
+     OTHER_BASE_URL +
+     'ACAOrigin=*') +
+   '&mode=cors&credentials=same-origin&method=GET&headers=CUSTOM',
+   [fetchRejected]],
+  [REDIRECT_URL +
+   encodeURIComponent(
+     OTHER_BASE_URL +
+     'ACAHeaders=x-serviceworker-test') +
+   '&mode=cors&credentials=same-origin&method=GET&headers=CUSTOM',
+   [fetchRejected]],
+
   // Server header
   [REDIRECT_URL +
    encodeURIComponent(

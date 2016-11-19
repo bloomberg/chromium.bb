@@ -199,22 +199,10 @@ void DocumentThreadableLoader::start(const ResourceRequest& request) {
 
   m_requestStartedSeconds = monotonicallyIncreasingTime();
 
-  // Save any CORS simple headers on the request here. If this request redirects
+  // Save any headers on the request here. If this request redirects
   // cross-origin, we cancel the old request create a new one, and copy these
   // headers.
-  const HTTPHeaderMap& headerMap = request.httpHeaderFields();
-  for (const auto& header : headerMap) {
-    if (FetchUtils::isSimpleHeader(header.key, header.value)) {
-      m_simpleRequestHeaders.add(header.key, header.value);
-    } else if (equalIgnoringCase(header.key, HTTPNames::Range) &&
-               m_options.crossOriginRequestPolicy == UseAccessControl &&
-               m_options.preflightPolicy == PreventPreflight) {
-      // Allow an exception for the "range" header for when CORS callers request
-      // no preflight, this ensures cross-origin redirects work correctly for
-      // crossOrigin enabled WebURLRequest::RequestContextVideo type requests.
-      m_simpleRequestHeaders.add(header.key, header.value);
-    }
-  }
+  m_requestHeaders = request.httpHeaderFields();
 
   // DocumentThreadableLoader is used by all javascript initiated fetch, so we
   // use this chance to record non-GET fetch script requests. However, this is
@@ -647,9 +635,9 @@ bool DocumentThreadableLoader::redirectReceived(
   crossOriginRequest.clearHTTPReferrer();
   crossOriginRequest.clearHTTPOrigin();
   crossOriginRequest.clearHTTPUserAgent();
-  // Add any CORS simple request headers which we previously saved from the
+  // Add any request headers which we previously saved from the
   // original request.
-  for (const auto& header : m_simpleRequestHeaders)
+  for (const auto& header : m_requestHeaders)
     crossOriginRequest.setHTTPHeaderField(header.key, header.value);
   makeCrossOriginAccessRequest(crossOriginRequest);
 
