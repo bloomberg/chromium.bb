@@ -12,6 +12,11 @@
 
 namespace {
 
+const char kHTTPBadNavigationHistogram[] =
+    "Security.HTTPBad.NavigationStartedAfterUserWarnedAboutSensitiveInput";
+const char kHTTPBadWebContentsDestroyedHistogram[] =
+    "Security.HTTPBad.WebContentsDestroyedAfterUserWarnedAboutSensitiveInput";
+
 class SecurityStateTabHelperHistogramTest
     : public ChromeRenderViewHostTestHarness,
       public testing::WithParamInterface<bool> {
@@ -24,11 +29,11 @@ class SecurityStateTabHelperHistogramTest
 
     SecurityStateTabHelper::CreateForWebContents(web_contents());
     helper_ = SecurityStateTabHelper::FromWebContents(web_contents());
-    navigate_to_http();
+    NavigateToHTTP();
   }
 
  protected:
-  void signal_sensitive_input() {
+  void SignalSensitiveInput() {
     if (GetParam())
       web_contents()->OnPasswordInputShownOnHttp();
     else
@@ -36,16 +41,16 @@ class SecurityStateTabHelperHistogramTest
     helper_->VisibleSecurityStateChanged();
   }
 
-  const std::string histogram_name() {
+  const std::string HistogramName() {
     if (GetParam())
       return "Security.HTTPBad.UserWarnedAboutSensitiveInput.Password";
     else
       return "Security.HTTPBad.UserWarnedAboutSensitiveInput.CreditCard";
   }
 
-  void navigate_to_http() { NavigateAndCommit(GURL("http://example.test")); }
+  void NavigateToHTTP() { NavigateAndCommit(GURL("http://example.test")); }
 
-  void navigate_to_different_http_page() {
+  void NavigateToDifferentHTTPPage() {
     NavigateAndCommit(GURL("http://example2.test"));
   }
 
@@ -53,6 +58,84 @@ class SecurityStateTabHelperHistogramTest
   SecurityStateTabHelper* helper_;
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperHistogramTest);
 };
+
+// Tests that an UMA histogram is recorded after setting the security
+// level to HTTP_SHOW_WARNING and navigating away.
+TEST_P(SecurityStateTabHelperHistogramTest,
+       HTTPOmniboxWarningNavigationHistogram) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
+
+  base::HistogramTester histograms;
+  SignalSensitiveInput();
+  // Make sure that if the omnibox warning gets dynamically hidden, the
+  // histogram still gets recorded.
+  NavigateToDifferentHTTPPage();
+  if (GetParam())
+    web_contents()->OnAllPasswordInputsHiddenOnHttp();
+  // Destroy the WebContents to simulate the tab being closed after a
+  // navigation.
+  SetContents(nullptr);
+  histograms.ExpectTotalCount(kHTTPBadNavigationHistogram, 1);
+  histograms.ExpectTotalCount(kHTTPBadWebContentsDestroyedHistogram, 0);
+}
+
+// Tests that an UMA histogram is recorded after showing a console
+// warning for a sensitive input on HTTP and navigating away.
+TEST_P(SecurityStateTabHelperHistogramTest,
+       HTTPConsoleWarningNavigationHistogram) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNeutral);
+
+  // Same as HTTPOmniboxWarningNavigationHistogram, but ensuring that
+  // the histogram gets recorded even if the command-line switch to show
+  // the omnibox warning is not set.
+  base::HistogramTester histograms;
+  SignalSensitiveInput();
+  NavigateToDifferentHTTPPage();
+  // Destroy the WebContents to simulate the tab being closed after a
+  // navigation.
+  SetContents(nullptr);
+  histograms.ExpectTotalCount(kHTTPBadNavigationHistogram, 1);
+  histograms.ExpectTotalCount(kHTTPBadWebContentsDestroyedHistogram, 0);
+}
+
+// Tests that an UMA histogram is recorded after setting the security
+// level to HTTP_SHOW_WARNING and closing the tab.
+TEST_P(SecurityStateTabHelperHistogramTest,
+       HTTPOmniboxWarningTabClosedHistogram) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
+
+  base::HistogramTester histograms;
+  SignalSensitiveInput();
+  // Destroy the WebContents to simulate the tab being closed.
+  SetContents(nullptr);
+  histograms.ExpectTotalCount(kHTTPBadNavigationHistogram, 0);
+  histograms.ExpectTotalCount(kHTTPBadWebContentsDestroyedHistogram, 1);
+}
+
+// Tests that an UMA histogram is recorded after showing a console
+// warning for a sensitive input on HTTP and closing the tab.
+TEST_P(SecurityStateTabHelperHistogramTest,
+       HTTPConsoleWarningTabClosedHistogram) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNeutral);
+
+  // Same as HTTPOmniboxWarningTabClosedHistogram, but ensuring that the
+  // histogram gets recorded even if the command-line switch to show the
+  // omnibox warning is not set.
+  base::HistogramTester histograms;
+  SignalSensitiveInput();
+  // Destroy the WebContents to simulate the tab being closed.
+  SetContents(nullptr);
+  histograms.ExpectTotalCount(kHTTPBadNavigationHistogram, 0);
+  histograms.ExpectTotalCount(kHTTPBadWebContentsDestroyedHistogram, 1);
+}
 
 // Tests that UMA logs the omnibox warning when security level is
 // HTTP_SHOW_WARNING.
@@ -63,18 +146,18 @@ TEST_P(SecurityStateTabHelperHistogramTest, HTTPOmniboxWarningHistogram) {
       security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
 
   base::HistogramTester histograms;
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), true, 1);
+  SignalSensitiveInput();
+  histograms.ExpectUniqueSample(HistogramName(), true, 1);
 
   // Fire again and ensure no sample is recorded.
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), true, 1);
+  SignalSensitiveInput();
+  histograms.ExpectUniqueSample(HistogramName(), true, 1);
 
   // Navigate to a new page and ensure a sample is recorded.
-  navigate_to_different_http_page();
-  histograms.ExpectUniqueSample(histogram_name(), true, 1);
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), true, 2);
+  NavigateToDifferentHTTPPage();
+  histograms.ExpectUniqueSample(HistogramName(), true, 1);
+  SignalSensitiveInput();
+  histograms.ExpectUniqueSample(HistogramName(), true, 2);
 }
 
 // Tests that UMA logs the console warning when security level is NONE.
@@ -85,18 +168,18 @@ TEST_P(SecurityStateTabHelperHistogramTest, HTTPConsoleWarningHistogram) {
       security_state::switches::kMarkHttpAsNeutral);
 
   base::HistogramTester histograms;
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), false, 1);
+  SignalSensitiveInput();
+  histograms.ExpectUniqueSample(HistogramName(), false, 1);
 
   // Fire again and ensure no sample is recorded.
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), false, 1);
+  SignalSensitiveInput();
+  histograms.ExpectUniqueSample(HistogramName(), false, 1);
 
   // Navigate to a new page and ensure a sample is recorded.
-  navigate_to_different_http_page();
-  histograms.ExpectUniqueSample(histogram_name(), false, 1);
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), false, 2);
+  NavigateToDifferentHTTPPage();
+  histograms.ExpectUniqueSample(HistogramName(), false, 1);
+  SignalSensitiveInput();
+  histograms.ExpectUniqueSample(HistogramName(), false, 2);
 }
 
 INSTANTIATE_TEST_CASE_P(SecurityStateTabHelperHistogramTest,

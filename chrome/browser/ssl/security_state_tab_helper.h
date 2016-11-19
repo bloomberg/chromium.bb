@@ -36,8 +36,11 @@ class SecurityStateTabHelper
   void VisibleSecurityStateChanged();
 
   // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WebContentsDestroyed() override;
 
  private:
   explicit SecurityStateTabHelper(content::WebContents* web_contents);
@@ -52,6 +55,13 @@ class SecurityStateTabHelper
   // will be shown in future versions of Chrome for insecure HTTP pages. This
   // message should only be logged once per main-frame navigation.
   bool logged_http_warning_on_current_navigation_;
+
+  // The time that a console or omnibox warning was shown for insecure
+  // HTTP pages that contain password or credit card fields. This is set
+  // at most once per main-frame navigation (the first time that an HTTP
+  // warning triggers on that navigation) and is used for UMA
+  // histogramming.
+  base::Time time_of_http_warning_on_current_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelper);
 };

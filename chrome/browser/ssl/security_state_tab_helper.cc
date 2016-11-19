@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -55,6 +56,9 @@ void SecurityStateTabHelper::VisibleSecurityStateChanged() {
     return;
   }
 
+  DCHECK(time_of_http_warning_on_current_navigation_.is_null());
+  time_of_http_warning_on_current_navigation_ = base::Time::Now();
+
   std::string warning;
   bool warning_is_user_visible = false;
   switch (security_info.security_level) {
@@ -92,6 +96,26 @@ void SecurityStateTabHelper::VisibleSecurityStateChanged() {
   }
 }
 
+void SecurityStateTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (time_of_http_warning_on_current_navigation_.is_null() ||
+      !navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage()) {
+    return;
+  }
+  // Record how quickly a user leaves a site after encountering an
+  // HTTP-bad warning. A navigation here only counts if it is a
+  // main-frame, not-same-page navigation, since it aims to measure how
+  // quickly a user leaves a site after seeing the HTTP warning.
+  UMA_HISTOGRAM_LONG_TIMES(
+      "Security.HTTPBad.NavigationStartedAfterUserWarnedAboutSensitiveInput",
+      base::Time::Now() - time_of_http_warning_on_current_navigation_);
+  // After recording the histogram, clear the time of the warning. A
+  // timing histogram will not be recorded again on this page, because
+  // the time is only set the first time the HTTP-bad warning is shown
+  // per page.
+  time_of_http_warning_on_current_navigation_ = base::Time();
+}
+
 void SecurityStateTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage()) {
@@ -99,6 +123,18 @@ void SecurityStateTabHelper::DidFinishNavigation(
     // and not for same-page navigations like reference fragments and pushState.
     logged_http_warning_on_current_navigation_ = false;
   }
+}
+
+void SecurityStateTabHelper::WebContentsDestroyed() {
+  if (time_of_http_warning_on_current_navigation_.is_null()) {
+    return;
+  }
+  // Record how quickly the tab is closed after a user encounters an
+  // HTTP-bad warning. This histogram will only be recorded if the
+  // WebContents is destroyed before another navigation begins.
+  UMA_HISTOGRAM_LONG_TIMES(
+      "Security.HTTPBad.WebContentsDestroyedAfterUserWarnedAboutSensitiveInput",
+      base::Time::Now() - time_of_http_warning_on_current_navigation_);
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {
