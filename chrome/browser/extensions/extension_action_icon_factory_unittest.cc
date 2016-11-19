@@ -275,19 +275,20 @@ TEST_P(ExtensionActionIconFactoryTest, DefaultIcon) {
   ASSERT_FALSE(browser_action->default_icon());
   ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
+  scoped_refptr<const Extension> extension_with_icon =
+      CreateExtension("browser_action_with_icon", Manifest::INVALID_LOCATION);
+  ASSERT_TRUE(extension_with_icon);
+
   int icon_size = ExtensionAction::ActionIconSize();
   gfx::Image default_icon =
-      EnsureImageSize(LoadIcon("browser_action/no_icon/icon.png"), icon_size);
+      EnsureImageSize(LoadIcon("browser_action_with_icon/icon.png"), icon_size);
   ASSERT_FALSE(default_icon.IsEmpty());
 
-  std::unique_ptr<ExtensionIconSet> default_icon_set(new ExtensionIconSet());
-  default_icon_set->Add(icon_size, "icon.png");
-
-  browser_action->SetDefaultIconForTest(std::move(default_icon_set));
+  browser_action = GetBrowserAction(*extension_with_icon);
   ASSERT_TRUE(browser_action->default_icon());
 
   ExtensionActionIconFactory icon_factory(
-      profile(), extension.get(), browser_action, this);
+      profile(), extension_with_icon.get(), browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 

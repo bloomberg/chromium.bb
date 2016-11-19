@@ -4,14 +4,17 @@
 
 #include "chrome/browser/extensions/extension_action_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace extensions {
 
@@ -107,8 +110,16 @@ ExtensionAction* GetOrCreateOrNull(
     return nullptr;
   }
 
-  std::unique_ptr<ExtensionAction> action(
-      new ExtensionAction(extension, action_type, *action_info));
+  auto action =
+      base::MakeUnique<ExtensionAction>(extension, action_type, *action_info);
+
+  if (action->default_icon()) {
+    action->SetDefaultIconImage(base::MakeUnique<IconImage>(
+        profile, &extension, *action->default_icon(),
+        ExtensionAction::ActionIconSize(),
+        ExtensionAction::FallbackIcon().AsImageSkia(), nullptr));
+  }
+
   ExtensionAction* raw_action = action.get();
   (*map)[extension.id()] = std::move(action);
   return raw_action;

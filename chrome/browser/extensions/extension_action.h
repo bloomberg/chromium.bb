@@ -19,10 +19,6 @@
 
 class GURL;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 class Extension;
 class IconImage;
@@ -50,6 +46,10 @@ class ExtensionAction {
   };
 
   static extension_misc::ExtensionIcons ActionIconSize();
+
+  // Returns the default icon to use when no other is available (the puzzle
+  // piece).
+  static gfx::Image FallbackIcon();
 
   // Use this ID to indicate the default state for properties that take a tab_id
   // parameter.
@@ -181,14 +181,11 @@ class ExtensionAction {
   // Remove all tab-specific state.
   void ClearAllValuesForTab(int tab_id);
 
-  // Lazily loads and returns the default icon image, if one exists for the
-  // action.
-  extensions::IconImage* LoadDefaultIconImage(
-      const extensions::Extension& extension,
-      content::BrowserContext* browser_context);
+  // Sets the default IconImage for this action.
+  void SetDefaultIconImage(std::unique_ptr<extensions::IconImage> icon_image);
 
   // Returns the image to use as the default icon for the action. Can only be
-  // called after LoadDefaultIconImage().
+  // called after SetDefaultIconImage().
   gfx::Image GetDefaultIconImage() const;
 
   // Determine whether or not the ExtensionAction has a value set for the given
@@ -200,6 +197,10 @@ class ExtensionAction {
   bool HasBadgeTextColor(int tab_id) const;
   bool HasIsVisible(int tab_id) const;
   bool HasIcon(int tab_id) const;
+
+  extensions::IconImage* default_icon_image() {
+    return default_icon_image_.get();
+  }
 
   void SetDefaultIconForTest(std::unique_ptr<ExtensionIconSet> default_icon);
 
@@ -285,8 +286,10 @@ class ExtensionAction {
   // image representations will be selected.
   std::unique_ptr<ExtensionIconSet> default_icon_;
 
-  // The default icon image, if |default_icon_| exists.
-  // Lazily initialized via LoadDefaultIconImage().
+  // The default icon image, if |default_icon_| exists. Set via
+  // SetDefaultIconImage(). Since IconImages depend upon BrowserContexts, we
+  // don't have the ExtensionAction load it directly to keep this class's
+  // knowledge limited.
   std::unique_ptr<extensions::IconImage> default_icon_image_;
 
   // The lazily-initialized image for a placeholder icon, in the event that the

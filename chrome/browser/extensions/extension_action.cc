@@ -38,12 +38,6 @@
 
 namespace {
 
-// Returns the default icon image for extensions.
-gfx::Image GetDefaultIcon() {
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_EXTENSIONS_FAVICON);
-}
-
 class GetAttentionImageSource : public gfx::ImageSkiaSource {
  public:
   explicit GetAttentionImageSource(const gfx::ImageSkia& icon)
@@ -77,8 +71,15 @@ bool HasValue(const std::map<int, T>& map, int tab_id) {
 
 }  // namespace
 
+// static
 extension_misc::ExtensionIcons ExtensionAction::ActionIconSize() {
   return extension_misc::EXTENSION_ICON_BITTY;
+}
+
+// static
+gfx::Image ExtensionAction::FallbackIcon() {
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_EXTENSIONS_FAVICON);
 }
 
 const int ExtensionAction::kDefaultTabId = -1;
@@ -224,15 +225,9 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   // which prevents me from cleaning everything up now.
 }
 
-extensions::IconImage* ExtensionAction::LoadDefaultIconImage(
-    const extensions::Extension& extension,
-    content::BrowserContext* browser_context) {
-  if (default_icon_ && !default_icon_image_) {
-    default_icon_image_.reset(new extensions::IconImage(
-        browser_context, &extension, *default_icon(), ActionIconSize(),
-        *GetDefaultIcon().ToImageSkia(), nullptr));
-  }
-  return default_icon_image_.get();
+void ExtensionAction::SetDefaultIconImage(
+    std::unique_ptr<extensions::IconImage> icon_image) {
+  default_icon_image_ = std::move(icon_image);
 }
 
 gfx::Image ExtensionAction::GetDefaultIconImage() const {
@@ -250,7 +245,7 @@ gfx::Image ExtensionAction::GetDefaultIconImage() const {
           extensions::ExtensionIconPlaceholder::CreateImage(ActionIconSize(),
                                                             extension_name_);
     } else {
-      placeholder_icon_image_ = GetDefaultIcon();
+      placeholder_icon_image_ = FallbackIcon();
     }
   }
 
