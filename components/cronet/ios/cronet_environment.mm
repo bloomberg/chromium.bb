@@ -27,6 +27,7 @@
 #include "components/cronet/ios/version.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
+#include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/web/public/user_agent.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -36,6 +37,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
+#include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -263,7 +265,7 @@ void CronetEnvironment::Start() {
 }
 
 CronetEnvironment::~CronetEnvironment() {
-// net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
+  // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
 }
 
 void CronetEnvironment::InitializeOnNetworkThread() {
@@ -370,6 +372,10 @@ void CronetEnvironment::InitializeOnNetworkThread() {
       new net::HttpCache(http_network_session, std::move(main_backend),
                          true /* set_up_quic_server_info */);
   main_context_->set_http_transaction_factory(main_cache);
+  // Cookies
+  cookie_store_ = net::CookieStoreIOS::CreateCookieStore(
+      [NSHTTPCookieStorage sharedHTTPCookieStorage]);
+  main_context_->set_cookie_store(cookie_store_.get());
 
   net::URLRequestJobFactoryImpl* job_factory =
       new net::URLRequestJobFactoryImpl;

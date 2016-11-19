@@ -57,6 +57,11 @@
   [super dealloc];
 }
 
+- (void)reset {
+  _responseBody = nil;
+  _error = nil;
+}
+
 - (void)URLSession:(NSURLSession*)session
     didBecomeInvalidWithError:(NSError*)error {
 }
@@ -147,6 +152,7 @@ class HttpTest : public ::testing::Test {
   // Launches the supplied |task| and blocks until it completes, with a timeout
   // of 1 second.
   void StartDataTaskAndWaitForCompletion(NSURLSessionDataTask* task) {
+    [delegate_ reset];
     [task resume];
     int64_t deadline_ns = 1 * ns_in_second;
     dispatch_semaphore_wait([delegate_ semaphore],
@@ -213,6 +219,28 @@ TEST_F(HttpTest, SetUserAgentIsExact) {
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_EQ(nil, [delegate_ error]);
   EXPECT_STREQ(kUserAgent, [[delegate_ responseBody] UTF8String]);
+}
+
+TEST_F(HttpTest, SetCookie) {
+  const char kCookieHeader[] = "Cookie";
+  const char kCookieLine[] = "aaaa=bbb";
+  NSURL* echoCookieUrl =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL(kCookieHeader)));
+  StartDataTaskAndWaitForCompletion([session_ dataTaskWithURL:echoCookieUrl]);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_EQ(nil, [delegate_ responseBody]);
+
+  NSURL* setCookieUrl =
+      net::NSURLWithGURL(GURL(TestServer::GetSetCookieURL(kCookieLine)));
+  StartDataTaskAndWaitForCompletion([session_ dataTaskWithURL:setCookieUrl]);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody]
+      containsString:base::SysUTF8ToNSString(kCookieLine)]);
+
+  StartDataTaskAndWaitForCompletion([session_ dataTaskWithURL:echoCookieUrl]);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody]
+      containsString:base::SysUTF8ToNSString(kCookieLine)]);
 }
 
 TEST_F(HttpTest, FilterOutRequest) {

@@ -53,8 +53,8 @@ source_set("cronet_sources") {
     "../url_request_context_config.h",
     "Cronet.h",
     "Cronet.mm",
-    "cronet_environment.cc",
     "cronet_environment.h",
+    "cronet_environment.mm",
   ]
 
   include_dirs = [ "//components/grpc_support/include" ]

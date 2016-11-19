@@ -27,6 +27,7 @@ class WaitableEvent;
 }  // namespace base
 
 namespace net {
+class CookieStore;
 class HttpCache;
 class NetworkChangeNotifier;
 class NetLog;
@@ -138,6 +139,7 @@ class CronetEnvironment {
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::HttpServerProperties> http_server_properties_;
+  std::unique_ptr<net::CookieStore> cookie_store_;
   std::unique_ptr<net::URLRequestContext> main_context_;
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
   std::string user_agent_;
