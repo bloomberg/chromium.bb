@@ -39,15 +39,15 @@ struct RequestLog {
 
 class ReloadCacheControlBrowserTest : public ContentBrowserTest {
  protected:
-  ReloadCacheControlBrowserTest() = default;
-  ~ReloadCacheControlBrowserTest() override = default;
-
-  void SetUpOnMainThread() override {
+  ReloadCacheControlBrowserTest() {
     // TODO(toyoshim): Tests in this file depend on current reload behavior,
     // and should be modified when we enable the new reload behavior.
     scoped_feature_list_.InitAndDisableFeature(
         features::kNonValidatingReloadOnNormalReload);
+  }
+  ~ReloadCacheControlBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
     SetUpTestServerOnMainThread();
   }
 
@@ -85,13 +85,13 @@ class ReloadCacheControlBrowserTest : public ContentBrowserTest {
 class ReloadCacheControlWithAnExperimentBrowserTest
     : public ReloadCacheControlBrowserTest {
  protected:
-  ReloadCacheControlWithAnExperimentBrowserTest() = default;
+  ReloadCacheControlWithAnExperimentBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kNonValidatingReloadOnNormalReload);
+  }
   ~ReloadCacheControlWithAnExperimentBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kNonValidatingReloadOnNormalReload);
-
     SetUpTestServerOnMainThread();
   }
 
