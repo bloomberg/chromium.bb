@@ -15,6 +15,10 @@ DEPS = [
 
 
 def RunSteps(api):
+  if api.properties.get('set_failure_hash_with_no_steps'):
+    with api.tryserver.set_failure_hash():
+      raise api.step.StepFailure('boom!')
+
   api.path['checkout'] = api.path['start_dir']
   if api.properties.get('patch_text'):
     api.step('patch_text test', [
@@ -106,3 +110,6 @@ def GenTests(api):
              'parse description (2)',
              api.json.output({'Foo': ['bar']}))
   )
+
+  yield (api.test('set_failure_hash_with_no_steps') +
+         api.properties(set_failure_hash_with_no_steps=True))
