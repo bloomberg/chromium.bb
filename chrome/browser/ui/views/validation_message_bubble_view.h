@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
@@ -38,6 +39,10 @@ class ValidationMessageBubbleView
   void CloseValidationMessage() override;
 
  private:
+  gfx::Rect RootViewToScreenRect(
+      const gfx::Rect& rect_in_root_view,
+      const content::RenderWidgetHostView* render_widget_host_view) const;
+
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidationMessageBubbleView);

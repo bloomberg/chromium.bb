@@ -6,9 +6,10 @@
 
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -27,14 +28,14 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
-  content::RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
-  set_parent_window(rwhv->GetNativeView());
+  content::RenderWidgetHostView* render_widget_host_view =
+      web_contents->GetRenderWidgetHostView();
+  set_parent_window(render_widget_host_view->GetNativeView());
 
   set_can_activate(false);
   set_arrow(views::BubbleBorder::TOP_LEFT);
-  const gfx::Rect anchor_in_screen =
-      anchor_in_root_view + rwhv->GetViewBounds().origin().OffsetFromOrigin();
-  SetAnchorRect(anchor_in_screen);
+  SetAnchorRect(
+      RootViewToScreenRect(anchor_in_root_view, render_widget_host_view));
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* icon = new views::ImageView();
@@ -82,6 +83,17 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
 ValidationMessageBubbleView::~ValidationMessageBubbleView() {
 }
 
+gfx::Rect ValidationMessageBubbleView::RootViewToScreenRect(
+    const gfx::Rect& rect_in_root_view,
+    const content::RenderWidgetHostView* render_widget_host_view) const {
+  gfx::NativeView view = render_widget_host_view->GetNativeView();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(view);
+  const float scale = display.device_scale_factor();
+  return gfx::ScaleToEnclosingRect(rect_in_root_view, 1 / scale) +
+         render_widget_host_view->GetViewBounds().origin().OffsetFromOrigin();
+}
+
 gfx::Size ValidationMessageBubbleView::GetPreferredSize() const {
   return size_;
 }
@@ -93,8 +105,8 @@ int ValidationMessageBubbleView::GetDialogButtons() const {
 void ValidationMessageBubbleView::SetPositionRelativeToAnchor(
     content::RenderWidgetHost* widget_host,
     const gfx::Rect& anchor_in_root_view) {
-  SetAnchorRect(anchor_in_root_view +
-      widget_host->GetView()->GetViewBounds().origin().OffsetFromOrigin());
+  SetAnchorRect(
+      RootViewToScreenRect(anchor_in_root_view, widget_host->GetView()));
 }
 
 void ValidationMessageBubbleView::CloseValidationMessage() {
