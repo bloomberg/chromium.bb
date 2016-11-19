@@ -373,6 +373,8 @@ class NET_EXPORT NetworkQualityEstimator
                            TestExternalEstimateProviderMergeEstimates);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            UnknownEffectiveConnectionType);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           TypicalNetworkQualities);
 
   // Value of round trip time observations is in base::TimeDelta.
   typedef nqe::internal::Observation<base::TimeDelta> RttObservation;
@@ -624,6 +626,10 @@ class NET_EXPORT NetworkQualityEstimator
   // types behave in general. In future, complex encodings (e.g., curve
   // fitting) may be used.
   nqe::internal::NetworkQuality connection_thresholds_
+      [EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST];
+
+  // Typical network quality for different effective connection types.
+  nqe::internal::NetworkQuality typical_network_quality_
       [EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST];
 
   // Latest time when the headers for a main frame request were received.

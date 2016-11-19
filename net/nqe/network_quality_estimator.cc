@@ -316,6 +316,7 @@ void NetworkQualityEstimator::ObtainOperatingParams(
                                            default_observations_);
   nqe::internal::ObtainEffectiveConnectionTypeModelParams(
       variation_params, connection_thresholds_);
+  nqe::internal::ObtainTypicalNetworkQuality(typical_network_quality_);
 }
 
 void NetworkQualityEstimator::AddDefaultEstimates() {
