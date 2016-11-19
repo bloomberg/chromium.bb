@@ -120,6 +120,7 @@ class WebMediaPlayer {
   virtual void requestRemotePlayback() {}
   virtual void requestRemotePlaybackControl() {}
   virtual void requestRemotePlaybackStop() {}
+  virtual void requestRemotePlaybackDisabled(bool disabled) {}
   virtual void setPreload(Preload) {}
   virtual void setBufferingStrategy(BufferingStrategy) {}
   virtual WebTimeRanges buffered() const = 0;

@@ -37,6 +37,7 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   void OnExitedFullscreen() override;
   void OnSetCdm(CdmContext* cdm_context) override;
   void OnMetadataChanged(const PipelineMetadata& metadata) override;
+  void OnRemotePlaybackDisabled(bool disabled) override;
 
   void SetSwitchRendererCallback(const base::Closure& cb);
 
@@ -102,6 +103,15 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Current audio/video config.
   VideoDecoderConfig video_decoder_config_;
   AudioDecoderConfig audio_decoder_config_;
+
+  // Indicates whether remote playback is currently disabled. This starts out as
+  // true, and should be updated at least once via a call to
+  // OnRemotePlaybackDisabled() at some point in the future. A web page
+  // typically sets/removes the disableRemotePlayback attribute on a
+  // HTMLMediaElement to disable/enable remoting of its content. Please see the
+  // Remote Playback API spec for more details:
+  // https://w3c.github.io/remote-playback
+  bool is_remote_playback_disabled_ = true;
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;

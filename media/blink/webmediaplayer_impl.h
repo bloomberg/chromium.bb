@@ -192,6 +192,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
 
+  void requestRemotePlaybackDisabled(bool disabled) override;
 #if defined(OS_ANDROID)  // WMPI_CAST
   bool isRemote() const override;
   void requestRemotePlayback() override;

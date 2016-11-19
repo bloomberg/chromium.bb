@@ -1386,6 +1386,11 @@ void WebMediaPlayerImpl::ScheduleRestart() {
   }
 }
 
+void WebMediaPlayerImpl::requestRemotePlaybackDisabled(bool disabled) {
+  if (observer_)
+    observer_->OnRemotePlaybackDisabled(disabled);
+}
+
 #if defined(OS_ANDROID)  // WMPI_CAST
 bool WebMediaPlayerImpl::isRemote() const {
   return cast_impl_.isRemote();

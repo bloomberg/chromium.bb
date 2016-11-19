@@ -594,9 +594,15 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name,
   } else if (name == preloadAttr) {
     setPlayerPreload();
   } else if (name == disableremoteplaybackAttr) {
+    // This attribute is an extension described in the Remote Playback API spec.
+    // Please see: https://w3c.github.io/remote-playback
     UseCounter::count(document(), UseCounter::DisableRemotePlaybackAttribute);
-    if (mediaControls() && (oldValue != value))
-      mediaControls()->refreshCastButtonVisibility();
+    if (oldValue != value) {
+      if (m_webMediaPlayer)
+        m_webMediaPlayer->requestRemotePlaybackDisabled(!value.isNull());
+      if (mediaControls())
+        mediaControls()->refreshCastButtonVisibility();
+    }
   } else {
     HTMLElement::parseAttribute(name, oldValue, value);
   }
@@ -1189,6 +1195,9 @@ void HTMLMediaElement::startPlayerLoad(const KURL& playerProvidedUrl) {
   m_webMediaPlayer->setPoster(posterImageURL());
 
   m_webMediaPlayer->setPreload(effectivePreloadType());
+
+  m_webMediaPlayer->requestRemotePlaybackDisabled(
+      fastHasAttribute(disableremoteplaybackAttr));
 
   m_webMediaPlayer->load(loadType(), source, corsMode());
 

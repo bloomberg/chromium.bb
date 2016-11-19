@@ -26,6 +26,12 @@ class MEDIA_EXPORT MediaObserver {
 
   // Called after demuxer is initialized.
   virtual void OnMetadataChanged(const PipelineMetadata& metadata) = 0;
+
+  // Called to indicate whether the site requests that remote playback be
+  // disabled. The "disabled" naming corresponds with the
+  // "disableRemotePlayback" media element attribute, as described in the
+  // Remote Playback API spec: https://w3c.github.io/remote-playback
+  virtual void OnRemotePlaybackDisabled(bool disabled) = 0;
 };
 
 }  // namespace media

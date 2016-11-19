@@ -69,7 +69,7 @@ class RemotingRendererControllerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RemotingRendererControllerTest);
 };
 
-TEST_F(RemotingRendererControllerTest, ToggleRenderer) {
+TEST_F(RemotingRendererControllerTest, ToggleRendererOnFullscreenChange) {
   EXPECT_FALSE(is_rendering_remotely_);
   scoped_refptr<RemotingSourceImpl> remoting_source_impl =
       CreateRemotingSourceImpl(false);
@@ -87,13 +87,18 @@ TEST_F(RemotingRendererControllerTest, ToggleRenderer) {
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
   RunUntilIdle();
-  EXPECT_TRUE(is_rendering_remotely_);
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+
+  // Leaving fullscreen should shut down remoting.
   remoting_renderer_controller_->OnExitedFullscreen();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
 }
 
-TEST_F(RemotingRendererControllerTest, SinkCapabilities) {
+TEST_F(RemotingRendererControllerTest, ToggleRendererOnSinkCapabilities) {
   EXPECT_FALSE(is_rendering_remotely_);
   scoped_refptr<RemotingSourceImpl> remoting_source_impl =
       CreateRemotingSourceImpl(false);
@@ -104,6 +109,9 @@ TEST_F(RemotingRendererControllerTest, SinkCapabilities) {
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnEnteredFullscreen();
@@ -127,6 +135,39 @@ TEST_F(RemotingRendererControllerTest, SinkCapabilities) {
   EXPECT_FALSE(is_rendering_remotely_);
 }
 
+TEST_F(RemotingRendererControllerTest, ToggleRendererOnDisableChange) {
+  EXPECT_FALSE(is_rendering_remotely_);
+  scoped_refptr<RemotingSourceImpl> remoting_source_impl =
+      CreateRemotingSourceImpl(false);
+  remoting_renderer_controller_ =
+      base::MakeUnique<RemotingRendererController>(remoting_source_impl);
+  remoting_renderer_controller_->SetSwitchRendererCallback(base::Bind(
+      &RemotingRendererControllerTest::ToggleRenderer, base::Unretained(this)));
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(true);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_source_impl->OnSinkAvailable(kAllCapabilities);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnEnteredFullscreen();
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  RunUntilIdle();
+  EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
+
+  // If the page disables remote playback (e.g., by setting the
+  // disableRemotePlayback attribute), this should shut down remoting.
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(true);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+}
+
 TEST_F(RemotingRendererControllerTest, StartFailed) {
   EXPECT_FALSE(is_rendering_remotely_);
   scoped_refptr<RemotingSourceImpl> remoting_source_impl =
@@ -146,6 +187,9 @@ TEST_F(RemotingRendererControllerTest, StartFailed) {
   remoting_renderer_controller_->OnMetadataChanged(DefaultMetadata());
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
 }
 
 TEST_F(RemotingRendererControllerTest, EncryptedWithRemotingCdm) {
@@ -157,6 +201,7 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithRemotingCdm) {
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnMetadataChanged(EncryptedMetadata());
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   scoped_refptr<RemotingSourceImpl> cdm_remoting_source_impl =
@@ -195,7 +240,8 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithRemotingCdm) {
   RunUntilIdle();
   EXPECT_EQ(RemotingSessionState::SESSION_PERMANENTLY_STOPPED,
             remoting_renderer_controller_->remoting_source()->state());
-  // Don't switch renderer in this case. Still in remoting.
+  // Don't switch renderer in this case. Still using the remoting renderer to
+  // show the failure interstitial.
   EXPECT_TRUE(is_rendering_remotely_);
 }
 
@@ -216,6 +262,9 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithLocalCdm) {
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnMetadataChanged(EncryptedMetadata());
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
 
@@ -245,6 +294,9 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithFailedRemotingCdm) {
   remoting_renderer_controller_->OnMetadataChanged(EncryptedMetadata());
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
 
   scoped_refptr<RemotingSourceImpl> cdm_remoting_source_impl =
       CreateRemotingSourceImpl(false);
@@ -271,8 +323,8 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithFailedRemotingCdm) {
       base::MakeUnique<RemotingCdmContext>(remoting_cdm.get());
   remoting_renderer_controller_->OnSetCdm(remoting_cdm_context.get());
   RunUntilIdle();
-  // Switch to remoting renderer even when the remoting CDM session was already
-  // terminated.
+  // Switch to using the remoting renderer, even when the remoting CDM session
+  // was already terminated, to show the failure interstitial.
   EXPECT_TRUE(is_rendering_remotely_);
   EXPECT_EQ(RemotingSessionState::SESSION_PERMANENTLY_STOPPED,
             remoting_renderer_controller_->remoting_source()->state());

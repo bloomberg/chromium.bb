@@ -73,6 +73,13 @@ void RemotingRendererController::OnSetCdm(CdmContext* cdm_context) {
   UpdateAndMaybeSwitch();
 }
 
+void RemotingRendererController::OnRemotePlaybackDisabled(bool disabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  is_remote_playback_disabled_ = disabled;
+  UpdateAndMaybeSwitch();
+}
+
 void RemotingRendererController::SetSwitchRendererCallback(
     const base::Closure& cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -204,6 +211,9 @@ bool RemotingRendererController::ShouldBeRemoting() {
       (has_audio() && !IsAudioCodecSupported())) {
     return false;
   }
+
+  if (is_remote_playback_disabled_)
+    return false;
 
   // Normally, entering fullscreen is the signal that starts remote rendering.
   // However, current technical limitations require encrypted content be remoted
