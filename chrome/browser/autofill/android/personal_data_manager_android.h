@@ -68,6 +68,13 @@ class PersonalDataManagerAndroid
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jprofile);
 
+  // Adds or modifies a profile like SetProfile interface if |jprofile| is
+  // local. Otherwise it creates a local copy of it.
+  base::android::ScopedJavaLocalRef<jstring> SetProfileToLocal(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jprofile);
+
   // Gets the labels for all known profiles. These labels are useful for
   // distinguishing the profiles from one another.
   //

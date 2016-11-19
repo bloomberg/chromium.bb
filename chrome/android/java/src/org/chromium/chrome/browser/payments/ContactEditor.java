@@ -148,24 +148,26 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                 String name = null;
                 String phone = null;
                 String email = null;
+                AutofillProfile profile = contact.getProfile();
 
                 if (nameField != null) {
                     name = nameField.getValue().toString();
-                    contact.getProfile().setFullName(name);
+                    profile.setFullName(name);
                 }
 
                 if (phoneField != null) {
                     phone = phoneField.getValue().toString();
-                    contact.getProfile().setPhoneNumber(phone);
+                    profile.setPhoneNumber(phone);
                 }
 
                 if (emailField != null) {
                     email = emailField.getValue().toString();
-                    contact.getProfile().setEmailAddress(email);
+                    profile.setEmailAddress(email);
                 }
 
-                String guid = PersonalDataManager.getInstance().setProfile(contact.getProfile());
-                contact.completeContact(guid, name, phone, email);
+                profile.setGUID(PersonalDataManager.getInstance().setProfileToLocal(profile));
+                profile.setIsLocal(true);
+                contact.completeContact(profile.getGUID(), name, phone, email);
                 callback.onResult(contact);
             }
         });

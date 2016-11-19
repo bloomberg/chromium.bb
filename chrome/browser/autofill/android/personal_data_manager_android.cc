@@ -384,6 +384,28 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
   return ConvertUTF8ToJavaString(env, profile.guid());
 }
 
+ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfileToLocal(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jobject>& jprofile) {
+  AutofillProfile profile;
+  PopulateNativeProfileFromJava(jprofile, env, &profile);
+
+  AutofillProfile* target_profile =
+      personal_data_manager_->GetProfileByGUID(ConvertJavaStringToUTF8(
+          env, Java_AutofillProfile_getGUID(env, jprofile).obj()));
+
+  if (target_profile != nullptr &&
+      target_profile->record_type() == AutofillProfile::LOCAL_PROFILE) {
+    profile.set_guid(target_profile->guid());
+    personal_data_manager_->UpdateProfile(profile);
+  } else {
+    personal_data_manager_->AddProfile(profile);
+  }
+
+  return ConvertUTF8ToJavaString(env, profile.guid());
+}
+
 ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetProfileLabelsForSettings(
     JNIEnv* env,

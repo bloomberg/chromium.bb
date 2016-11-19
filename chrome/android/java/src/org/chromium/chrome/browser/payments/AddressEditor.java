@@ -223,8 +223,9 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
         // TODO(crbug.com/666048): New billing address label is wrong.
         profile.setLabel(pdm.getAddressLabelForPaymentRequest(profile));
 
-        // Save the edited autofill profile.
-        profile.setGUID(pdm.setProfile(profile));
+        // Save the edited autofill profile locally.
+        profile.setGUID(pdm.setProfileToLocal(profile));
+        profile.setIsLocal(true);
     }
 
     /** Writes the given value into the specified autofill profile field. */

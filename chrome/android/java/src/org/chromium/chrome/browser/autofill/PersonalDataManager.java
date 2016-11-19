@@ -292,6 +292,10 @@ public class PersonalDataManager {
             mLanguageCode = languageCode;
         }
 
+        public void setIsLocal(boolean isLocal) {
+            mIsLocal = isLocal;
+        }
+
         /** Used by ArrayAdapter in credit card settings. */
         @Override
         public String toString() {
@@ -607,6 +611,11 @@ public class PersonalDataManager {
         return nativeSetProfile(mPersonalDataManagerAndroid, profile);
     }
 
+    public String setProfileToLocal(AutofillProfile profile) {
+        ThreadUtils.assertOnUiThread();
+        return nativeSetProfileToLocal(mPersonalDataManagerAndroid, profile);
+    }
+
     /**
      * Gets the credit cards to show in the settings page. Returns all the cards without any
      * processing.
@@ -848,8 +857,10 @@ public class PersonalDataManager {
             boolean includeCountryInLabel);
     private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,
             String guid);
-    private native String nativeSetProfile(long nativePersonalDataManagerAndroid,
-            AutofillProfile profile);
+    private native String nativeSetProfile(
+            long nativePersonalDataManagerAndroid, AutofillProfile profile);
+    private native String nativeSetProfileToLocal(
+            long nativePersonalDataManagerAndroid, AutofillProfile profile);
     private native String nativeGetAddressLabelForPaymentRequest(
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
     private native String[] nativeGetCreditCardGUIDsForSettings(
