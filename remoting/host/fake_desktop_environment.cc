@@ -85,7 +85,7 @@ FakeDesktopEnvironment::CreateVideoCapturer() {
   std::unique_ptr<DesktopCapturerProxy> result(
       new DesktopCapturerProxy(capture_thread_));
   result->set_capturer(std::move(fake_capturer));
-  return result;
+  return std::move(result);
 }
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
