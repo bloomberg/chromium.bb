@@ -187,9 +187,9 @@ TEST_F(QuicServerDispatchPacketTest, DispatchPacket) {
     0x00
   };
   // clang-format on
-  QuicReceivedPacket encrypted_valid_packet(QuicUtils::AsChars(valid_packet),
-                                            arraysize(valid_packet),
-                                            QuicTime::Zero(), false);
+  QuicReceivedPacket encrypted_valid_packet(
+      reinterpret_cast<char*>(valid_packet), arraysize(valid_packet),
+      QuicTime::Zero(), false);
 
   EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _)).Times(1);
   DispatchPacket(encrypted_valid_packet);

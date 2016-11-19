@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
     cerr << "Failed to connect to " << host_port
-         << ". Error: " << net::QuicUtils::ErrorToString(error) << endl;
+         << ". Error: " << net::QuicErrorCodeToString(error) << endl;
     return 1;
   }
   cout << "Connected to " << host_port << endl;

@@ -27,8 +27,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   ~QuicSpdyClientStream() override;
 
   // Override the base class to close the write side as soon as we get a
-  // response.
-  // SPDY/HTTP does not support bidirectional streaming.
+  // response (if bidirectional streaming is not enabled).
   void OnStreamFrame(const QuicStreamFrame& frame) override;
 
   // Override the base class to parse and store headers.

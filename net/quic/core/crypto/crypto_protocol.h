@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_tag.h"
 
 // Version and Crypto tags are written to the wire with a big-endian
 // representation of the name of the tag.  For example

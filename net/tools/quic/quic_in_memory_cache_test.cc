@@ -109,7 +109,8 @@ TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
-  ASSERT_FALSE(ContainsKey(response->headers(), "connection"));
+  // Connection headers are not valid in HTTP/2.
+  EXPECT_FALSE(ContainsKey(response->headers(), "connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
@@ -139,7 +140,8 @@ TEST_F(QuicInMemoryCacheTest, UsesOriginalUrl) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(ContainsKey(response->headers(), ":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
-  ASSERT_FALSE(ContainsKey(response->headers(), "connection"));
+  // Connection headers are not valid in HTTP/2.
+  EXPECT_FALSE(ContainsKey(response->headers(), "connection"));
   EXPECT_LT(0U, response->body().length());
 }
 

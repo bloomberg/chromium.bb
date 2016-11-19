@@ -56,6 +56,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/core/quic_error_codes.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
@@ -289,7 +290,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
     cerr << "Failed to connect to " << host_port
-         << ". Error: " << net::QuicUtils::ErrorToString(error) << endl;
+         << ". Error: " << net::QuicErrorCodeToString(error) << endl;
     return 1;
   }
   cout << "Connected to " << host_port << endl;

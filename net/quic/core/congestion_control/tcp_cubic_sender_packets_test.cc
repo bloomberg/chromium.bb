@@ -958,7 +958,6 @@ TEST_F(TcpCubicSenderPacketsTest, DefaultMaxCwnd) {
 }
 
 TEST_F(TcpCubicSenderPacketsTest, LimitCwndIncreaseInCongestionAvoidance) {
-  FLAGS_quic_limit_cubic_cwnd_increase = true;
   // Enable Cubic.
   sender_.reset(new TcpCubicSenderPacketsPeer(
       &clock_, false, kDefaultMaxCongestionWindowPackets));

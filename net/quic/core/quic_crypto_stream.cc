@@ -49,7 +49,7 @@ QuicByteCount QuicCryptoStream::CryptoMessageFramingOverhead(
 
 void QuicCryptoStream::OnError(CryptoFramer* framer) {
   DLOG(WARNING) << "Error processing crypto data: "
-                << QuicUtils::ErrorToString(framer->error());
+                << QuicErrorCodeToString(framer->error());
 }
 
 void QuicCryptoStream::OnHandshakeMessage(

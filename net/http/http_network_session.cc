@@ -27,6 +27,7 @@
 #include "net/quic/core/quic_clock.h"
 #include "net/quic/core/quic_crypto_client_stream_factory.h"
 #include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
@@ -296,7 +297,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   for (QuicTagVector::const_iterator it =
            params_.quic_connection_options.begin();
        it != params_.quic_connection_options.end(); ++it) {
-    connection_options->AppendString("'" + QuicUtils::TagToString(*it) + "'");
+    connection_options->AppendString("'" + QuicTagToString(*it) + "'");
   }
   dict->Set("connection_options", std::move(connection_options));
 

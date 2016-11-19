@@ -60,10 +60,10 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       clock_->ApproximateNow(), &bytes_written, &error_details);
   if (result != QUIC_NO_ERROR) {
     string details = "Stream" + base::Uint64ToString(stream_->id()) + ": " +
-                     QuicUtils::ErrorToString(result) + ": " + error_details +
+                     QuicErrorCodeToString(result) + ": " + error_details +
                      "\nPeer Address: " +
                      stream_->PeerAddressOfLatestPacket().ToString();
-    DLOG(WARNING) << QuicUtils::ErrorToString(result);
+    DLOG(WARNING) << QuicErrorCodeToString(result);
     DLOG(WARNING) << details;
     stream_->CloseConnectionWithDetails(result, details);
     return;

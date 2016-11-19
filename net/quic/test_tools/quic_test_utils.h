@@ -24,6 +24,7 @@
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_framer.h"
+#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_sent_packet_manager_interface.h"
 #include "net/quic/core/quic_server_session_base.h"
@@ -189,14 +190,9 @@ QuicConfig DefaultQuicConfigStatelessRejects();
 // Returns a version vector consisting of |version|.
 QuicVersionVector SupportedVersions(QuicVersion version);
 
-// Testing convenience method to construct a QuicAckFrame with entropy_hash set
-// to 0 and largest_observed from peer set to |largest_observed|.
+// Testing convenience method to construct a QuicAckFrame with largest_observed
+// from peer set to |largest_observed|.
 QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed);
-
-// Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
-// nack ranges of width 1 packet, starting from |least_unacked|.
-QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
-                                        QuicPacketNumber least_unacked);
 
 // Testing convenience method to construct a QuicAckFrame with |num_ack_blocks|
 // ack blocks of width 1 packet, starting from |least_unacked| + 2.
@@ -811,31 +807,6 @@ class MockLossAlgorithm : public LossDetectionInterface {
   DISALLOW_COPY_AND_ASSIGN(MockLossAlgorithm);
 };
 
-class TestEntropyCalculator
-    : public QuicReceivedEntropyHashCalculatorInterface {
- public:
-  TestEntropyCalculator();
-  ~TestEntropyCalculator() override;
-
-  QuicPacketEntropyHash EntropyHash(
-      QuicPacketNumber packet_number) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestEntropyCalculator);
-};
-
-class MockEntropyCalculator : public TestEntropyCalculator {
- public:
-  MockEntropyCalculator();
-  ~MockEntropyCalculator() override;
-
-  MOCK_CONST_METHOD1(EntropyHash,
-                     QuicPacketEntropyHash(QuicPacketNumber packet_number));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockEntropyCalculator);
-};
-
 class MockAckListener : public QuicAckListenerInterface {
  public:
   MockAckListener();
@@ -1075,6 +1046,15 @@ QuicHeaderList AsHeaderList(const T& container) {
   }
   l.OnHeaderBlockEnd(total_size);
   return l;
+}
+
+// Utility function that returns an QuicIOVector object wrapped around |str|.
+// // |str|'s data is stored in |iov|.
+inline QuicIOVector MakeIOVector(base::StringPiece str, struct iovec* iov) {
+  iov->iov_base = const_cast<char*>(str.data());
+  iov->iov_len = static_cast<size_t>(str.size());
+  QuicIOVector quic_iov(iov, 1, str.size());
+  return quic_iov;
 }
 
 }  // namespace test

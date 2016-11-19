@@ -227,7 +227,8 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
   const string& cached_scfg = state->server_config();
   test::CompareCharArraysWithHexError(
       "scfg", cached_scfg.data(), cached_scfg.length(),
-      QuicUtils::AsChars(scfg), arraysize(scfg));
+      reinterpret_cast<char*>(scfg), arraysize(scfg));
+
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(stream());
   EXPECT_NE(FLAGS_quic_release_crypto_stream_buffer,
             QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));

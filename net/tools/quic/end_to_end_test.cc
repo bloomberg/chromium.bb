@@ -109,7 +109,7 @@ struct TestParams {
     os << " server_uses_stateless_rejects_if_peer_supported: "
        << p.server_uses_stateless_rejects_if_peer_supported;
     os << " congestion_control_tag: "
-       << QuicUtils::TagToString(p.congestion_control_tag);
+       << QuicTagToString(p.congestion_control_tag);
     os << " disable_hpack_dynamic_table: " << p.disable_hpack_dynamic_table;
     os << " force_hol_blocking: " << p.force_hol_blocking;
     os << " use_cheap_stateless_reject: " << p.use_cheap_stateless_reject
@@ -139,23 +139,15 @@ std::vector<TestParams> GetTestParams() {
   // to do 0-RTT across incompatible versions. Chromium only supports
   // a single version at a time anyway. :)
   QuicVersionVector all_supported_versions = AllSupportedVersions();
-  QuicVersionVector version_buckets[3];
+  // Even though this currently has one element, it may well get another
+  // with future versions of QUIC, so don't remove it.
+  QuicVersionVector version_buckets[1];
 
   for (const QuicVersion version : all_supported_versions) {
-    if (version <= QUIC_VERSION_32) {
-      // Versions: 31-32
-      // v31 adds a hash of the CHLO into the proof signature.
-      version_buckets[0].push_back(version);
-    } else if (version <= QUIC_VERSION_33) {
-      // Versions: 33
-      // v33 adds a diversification nonce into the hkdf.
-      version_buckets[1].push_back(version);
-    } else {
-      // Versions: 34+
-      // QUIC_VERSION_34 deprecates entropy and uses new ack and stop waiting
-      // wire formats.
-      version_buckets[2].push_back(version);
-    }
+    // Versions: 34+
+    // QUIC_VERSION_34 deprecates entropy and uses new ack and stop waiting
+    // wire formats.
+    version_buckets[0].push_back(version);
   }
 
   // This must be kept in sync with the number of nested for-loops below as it
@@ -285,7 +277,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         client_writer_(nullptr),
         server_writer_(nullptr),
         server_started_(false),
-        strike_register_no_startup_period_(false),
         chlo_multiplier_(0),
         stream_factory_(nullptr),
         support_server_push_(false) {
@@ -441,8 +432,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     auto test_server =
         new QuicTestServer(CryptoTestUtils::ProofSourceForTesting(),
                            server_config_, server_supported_versions_);
-    server_thread_.reset(new ServerThread(test_server, server_address_,
-                                          strike_register_no_startup_period_));
+    server_thread_.reset(new ServerThread(test_server, server_address_));
     if (chlo_multiplier_ != 0) {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
     }
@@ -579,7 +569,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   QuicVersionVector client_supported_versions_;
   QuicVersionVector server_supported_versions_;
   QuicVersion negotiated_version_;
-  bool strike_register_no_startup_period_;
   size_t chlo_multiplier_;
   QuicTestServer::StreamFactory* stream_factory_;
   bool support_server_push_;
@@ -858,9 +847,6 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
 }
 
 TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
-  // Have the server accept 0-RTT without waiting a startup period.
-  strike_register_no_startup_period_ = true;
-
   // Send a request and then disconnect. This prepares the client to attempt
   // a 0-RTT handshake for the next request.
   ASSERT_TRUE(Initialize());
@@ -895,14 +881,8 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
 
-  if (negotiated_version_ <= QUIC_VERSION_32) {
-    EXPECT_EQ(expected_num_hellos_latest_session,
-              client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
-  } else {
-    EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
-  }
+  EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
+  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -928,9 +908,6 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
 }
 
 TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
-  // Have the server accept 0-RTT without waiting a startup period.
-  strike_register_no_startup_period_ = true;
-
   // Send a request and then disconnect. This prepares the client to attempt
   // a 0-RTT handshake for the next request.
   ASSERT_TRUE(Initialize());
@@ -955,14 +932,8 @@ TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
 
-  if (negotiated_version_ <= QUIC_VERSION_32) {
-    EXPECT_EQ(expected_num_hellos_latest_session,
-              client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
-  } else {
-    EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
-  }
+  EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
+  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -987,9 +958,6 @@ TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
 }
 
 TEST_P(EndToEndTest, LargePostSynchronousRequest) {
-  // Have the server accept 0-RTT without waiting a startup period.
-  strike_register_no_startup_period_ = true;
-
   // Send a request and then disconnect. This prepares the client to attempt
   // a 0-RTT handshake for the next request.
   ASSERT_TRUE(Initialize());
@@ -1024,14 +992,8 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
 
-  if (negotiated_version_ <= QUIC_VERSION_32) {
-    EXPECT_EQ(expected_num_hellos_latest_session,
-              client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
-  } else {
-    EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
-  }
+  EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
+  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -2961,11 +2923,6 @@ INSTANTIATE_TEST_CASE_P(EndToEndBufferedPacketsTests,
 
 TEST_P(EndToEndBufferedPacketsTest, Buffer0RttRequest) {
   ASSERT_TRUE(Initialize());
-  if (negotiated_version_ <= QUIC_VERSION_32) {
-    // Since no 0-rtt for v32 and under, and this test relies on 0-rtt, skip
-    // this test if QUIC doesn't do 0-rtt.
-    return;
-  }
   // Finish one request to make sure handshake established.
   client_->SendSynchronousRequest("/foo");
   // Disconnect for next 0-rtt request.

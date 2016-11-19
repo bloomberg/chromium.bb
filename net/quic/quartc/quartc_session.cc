@@ -35,13 +35,12 @@ class DummyProofSource : public net::ProofSource {
                 base::StringPiece chlo_hash,
                 const net::QuicTagVector& connection_options,
                 scoped_refptr<net::ProofSource::Chain>* out_chain,
-                std::string* out_signature,
-                std::string* out_leaf_cert_sct) override {
+                net::QuicCryptoProof* proof) override {
     std::vector<std::string> certs;
     certs.push_back("Dummy cert");
     *out_chain = new ProofSource::Chain(certs);
-    *out_signature = "Dummy signature";
-    *out_leaf_cert_sct = "Dummy timestamp";
+    proof->signature = "Dummy signature";
+    proof->leaf_cert_scts = "Dummy timestamp";
     return true;
   }
 

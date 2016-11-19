@@ -90,7 +90,6 @@ class StatelessConnectionTerminator {
         framer_(framer),
         creator_(connection_id,
                  framer,
-                 helper->GetRandomGenerator(),
                  helper->GetBufferAllocator(),
                  &collector_),
         time_wait_list_manager_(time_wait_list_manager) {}
@@ -312,6 +311,11 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   QuicVersion version = GetSupportedVersions().front();
   if (header.version_flag) {
     QuicVersion packet_version = header.versions.front();
+    if (FLAGS_quic_fix_version_manager &&
+        framer_.supported_versions() != GetSupportedVersions()) {
+      // Reset framer's version if version flags change in flight.
+      framer_.SetSupportedVersions(GetSupportedVersions());
+    }
     if (!framer_.IsSupportedVersion(packet_version)) {
       if (ShouldCreateSessionForUnknownVersion(framer_.last_version_tag())) {
         return true;
@@ -429,6 +433,7 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
 
   // Check that the sequence number is within the range that the client is
   // expected to send before receiving a response from the server.
+  const int kInvalidPacketNumber = 0;
   if (header.packet_number == kInvalidPacketNumber ||
       header.packet_number > kMaxReasonableInitialPacketNumber) {
     return kFateTimeWait;
@@ -493,14 +498,14 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
   if (it == session_map_.end()) {
     QUIC_BUG << "ConnectionId " << connection_id
              << " does not exist in the session map.  Error: "
-             << QuicUtils::ErrorToString(error);
+             << QuicErrorCodeToString(error);
     QUIC_BUG << base::debug::StackTrace().ToString();
     return;
   }
 
   DVLOG_IF(1, error != QUIC_NO_ERROR)
       << "Closing connection (" << connection_id
-      << ") due to error: " << QuicUtils::ErrorToString(error)
+      << ") due to error: " << QuicErrorCodeToString(error)
       << ", with details: " << error_details;
 
   if (closed_session_list_.empty()) {
@@ -536,7 +541,7 @@ void QuicDispatcher::OnPacket() {}
 void QuicDispatcher::OnError(QuicFramer* framer) {
   QuicErrorCode error = framer->error();
   SetLastError(error);
-  DVLOG(1) << QuicUtils::ErrorToString(error);
+  DVLOG(1) << QuicErrorCodeToString(error);
 }
 
 bool QuicDispatcher::ShouldCreateSessionForUnknownVersion(QuicTag version_tag) {
@@ -549,7 +554,7 @@ bool QuicDispatcher::OnProtocolVersionMismatch(
                   current_connection_id_) &&
               !ShouldCreateSessionForUnknownVersion(framer_.last_version_tag()))
       << "Unexpected version mismatch: "
-      << QuicUtils::TagToString(framer_.last_version_tag());
+      << QuicTagToString(framer_.last_version_tag());
 
   // Keep processing after protocol mismatch - this will be dealt with by the
   // time wait list or connection that we will create.
@@ -719,8 +724,8 @@ void QuicDispatcher::ProcessChlo() {
       !ShouldCreateOrBufferPacketForConnection(current_connection_id_)) {
     return;
   }
-
-  if (FLAGS_quic_limit_num_new_sessions_per_epoll_loop &&
+  if (FLAGS_quic_allow_chlo_buffering &&
+      FLAGS_quic_limit_num_new_sessions_per_epoll_loop &&
       new_sessions_allowed_per_event_loop_ <= 0) {
     // Can't create new session any more. Wait till next event loop.
     if (!buffered_packets_.HasChloForConnection(current_connection_id_)) {
@@ -828,12 +833,13 @@ class StatelessRejectorProcessDoneCallback
 void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
                                             const QuicPacketHeader& header) {
   // TODO(rch): This logic should probably live completely inside the rejector.
-  if (!FLAGS_quic_use_cheap_stateless_rejects ||
+  if (!FLAGS_quic_allow_chlo_buffering ||
+      !FLAGS_quic_use_cheap_stateless_rejects ||
       !FLAGS_enable_quic_stateless_reject_support ||
-      header.public_header.versions.front() <= QUIC_VERSION_32 ||
       !ShouldAttemptCheapStatelessRejection()) {
     // Not use cheap stateless reject.
-    if (!ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
+    if (FLAGS_quic_allow_chlo_buffering &&
+        !ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
                                 nullptr)) {
       // Buffer non-CHLO packets.
       ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id,

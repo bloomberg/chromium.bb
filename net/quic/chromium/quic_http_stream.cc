@@ -132,10 +132,6 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
   switch (quic_version) {
     case QUIC_VERSION_UNSUPPORTED:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
-    case QUIC_VERSION_32:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_32;
-    case QUIC_VERSION_33:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_33;
     case QUIC_VERSION_34:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_34;
     case QUIC_VERSION_35:

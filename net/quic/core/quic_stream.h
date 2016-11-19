@@ -30,6 +30,7 @@
 #include "net/base/iovec.h"
 #include "net/base/net_export.h"
 #include "net/quic/core/quic_flow_controller.h"
+#include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_stream_sequencer.h"
 #include "net/quic/core/quic_types.h"
