@@ -1690,7 +1690,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
   EXPECT_EQ(nullptr, svgProperties->paintOffsetTranslation());
   EXPECT_EQ(LayoutPoint(LayoutUnit(8.6), LayoutUnit(8.3)),
             svgProperties->localBorderBoxProperties()->paintOffset);
-  // Paint offset of SVGRoot be baked into svgLocalToBorderBoxTransform after
+  // Paint offset of SVGRoot is baked into svgLocalToBorderBoxTransform after
   // snapped to pixels.
   EXPECT_EQ(TransformationMatrix().translate(9, 8),
             svgProperties->svgLocalToBorderBoxTransform()->matrix());

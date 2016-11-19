@@ -2136,6 +2136,8 @@ crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance-
 crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Crash Timeout ]
 crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Crash Timeout ]
 
+crbug.com/667071 svg/foreignObject/vertical-foreignObject.html [ Failure ]
+
 # Notes about rebaselined tests:
 #
 # Rebaselined for small pixel differences.

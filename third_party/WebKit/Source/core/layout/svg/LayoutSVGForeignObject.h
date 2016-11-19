@@ -53,13 +53,11 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   void layout() override;
 
   FloatRect objectBoundingBox() const override {
-    return FloatRect(FloatPoint(), m_viewport.size());
+    return FloatRect(FloatPoint(), FloatSize(size()));
   }
-  FloatRect strokeBoundingBox() const override {
-    return FloatRect(FloatPoint(), m_viewport.size());
-  }
+  FloatRect strokeBoundingBox() const override { return objectBoundingBox(); }
   FloatRect visualRectInLocalSVGCoordinates() const override {
-    return FloatRect(FloatPoint(), m_viewport.size());
+    return objectBoundingBox();
   }
 
   bool nodeAtFloatPoint(HitTestResult&,
@@ -72,18 +70,19 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
 
   void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-  FloatRect viewportRect() const { return m_viewport; }
-
   AffineTransform localToSVGParentTransform() const override;
 
  private:
+  LayoutUnit elementX() const;
+  LayoutUnit elementY() const;
+  LayoutUnit elementWidth() const;
+  LayoutUnit elementHeight() const;
   void updateLogicalWidth() override;
   void computeLogicalHeight(LayoutUnit logicalHeight,
                             LayoutUnit logicalTop,
                             LogicalExtentComputedValues&) const override;
 
-  bool m_needsTransformUpdate : 1;
-  FloatRect m_viewport;
+  bool m_needsTransformUpdate;
 };
 
 }  // namespace blink

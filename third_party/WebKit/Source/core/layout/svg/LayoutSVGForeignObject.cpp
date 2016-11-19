@@ -50,26 +50,46 @@ AffineTransform LayoutSVGForeignObject::localToSVGParentTransform() const {
   // Unlike other viewport-defining SVG objects, here localSVGTransform applies
   // to the viewport offset.
   return localSVGTransform() *
-         AffineTransform::translation(m_viewport.x(), m_viewport.y());
+         AffineTransform::translation(location().x(), location().y());
+}
+
+LayoutUnit LayoutSVGForeignObject::elementX() const {
+  return LayoutUnit(
+      roundf(SVGLengthContext(toSVGElement(node()))
+                 .valueForLength(styleRef().svgStyle().x(), styleRef(),
+                                 SVGLengthMode::Width)));
+}
+
+LayoutUnit LayoutSVGForeignObject::elementY() const {
+  return LayoutUnit(
+      roundf(SVGLengthContext(toSVGElement(node()))
+                 .valueForLength(styleRef().svgStyle().y(), styleRef(),
+                                 SVGLengthMode::Height)));
+}
+
+LayoutUnit LayoutSVGForeignObject::elementWidth() const {
+  return LayoutUnit(SVGLengthContext(toSVGElement(node()))
+                        .valueForLength(styleRef().width(), styleRef(),
+                                        SVGLengthMode::Width));
+}
+
+LayoutUnit LayoutSVGForeignObject::elementHeight() const {
+  return LayoutUnit(SVGLengthContext(toSVGElement(node()))
+                        .valueForLength(styleRef().height(), styleRef(),
+                                        SVGLengthMode::Height));
 }
 
 void LayoutSVGForeignObject::updateLogicalWidth() {
-  // FIXME: Investigate in size rounding issues
-  // FIXME: Remove unnecessary rounding when layout is off ints:
-  // webkit.org/b/63656
-  setWidth(LayoutUnit(static_cast<int>(roundf(m_viewport.width()))));
+  setLogicalWidth(styleRef().isHorizontalWritingMode() ? elementWidth()
+                                                       : elementHeight());
 }
 
 void LayoutSVGForeignObject::computeLogicalHeight(
     LayoutUnit,
     LayoutUnit logicalTop,
     LogicalExtentComputedValues& computedValues) const {
-  // FIXME: Investigate in size rounding issues
-  // FIXME: Remove unnecessary rounding when layout is off ints:
-  // webkit.org/b/63656
-  // FIXME: Is this correct for vertical writing mode?
   computedValues.m_extent =
-      LayoutUnit(static_cast<int>(roundf(m_viewport.height())));
+      styleRef().isHorizontalWritingMode() ? elementHeight() : elementWidth();
   computedValues.m_position = logicalTop;
 }
 
@@ -85,36 +105,23 @@ void LayoutSVGForeignObject::layout() {
     updateCachedBoundariesInParents = true;
   }
 
-  FloatRect oldViewport = m_viewport;
-
-  // Cache viewport boundaries
-  SVGLengthContext lengthContext(foreign);
-  FloatPoint viewportLocation(
-      roundf(lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(),
-                                          SVGLengthMode::Width)),
-      roundf(lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(),
-                                          SVGLengthMode::Height)));
-  m_viewport = FloatRect(
-      viewportLocation,
-      FloatSize(lengthContext.valueForLength(styleRef().width(), styleRef(),
-                                             SVGLengthMode::Width),
-                lengthContext.valueForLength(styleRef().height(), styleRef(),
-                                             SVGLengthMode::Height)));
-  if (!updateCachedBoundariesInParents)
-    updateCachedBoundariesInParents = oldViewport != m_viewport;
+  LayoutRect oldViewport = frameRect();
 
   // Set box origin to the foreignObject x/y translation, so positioned objects
   // in XHTML content get correct positions. A regular LayoutBoxModelObject
   // would pull this information from ComputedStyle - in SVG those properties
   // are ignored for non <svg> elements, so we mimic what happens when
   // specifying them through CSS.
-  setLocation(LayoutPoint(viewportLocation));
+  setX(elementX());
+  setY(elementY());
 
   bool layoutChanged = everHadLayout() && selfNeedsLayout();
   LayoutBlock::layout();
   ASSERT(!needsLayout());
 
   // If our bounds changed, notify the parents.
+  if (!updateCachedBoundariesInParents)
+    updateCachedBoundariesInParents = oldViewport != frameRect();
   if (updateCachedBoundariesInParents)
     LayoutSVGBlock::setNeedsBoundariesUpdate();
 
@@ -138,7 +145,7 @@ bool LayoutSVGForeignObject::nodeAtFloatPoint(HitTestResult& result,
 
   // Early exit if local point is not contained in clipped viewport area
   if (SVGLayoutSupport::isOverflowHidden(this) &&
-      !m_viewport.contains(localPoint))
+      !frameRect().contains(LayoutPoint(localPoint)))
     return false;
 
   // FOs establish a stacking context, so we need to hit-test all layers.
