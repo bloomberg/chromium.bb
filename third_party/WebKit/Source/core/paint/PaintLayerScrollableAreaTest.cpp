@@ -17,7 +17,7 @@ namespace blink {
 class PaintLayerScrollableAreaTest : public RenderingTest {
  public:
   PaintLayerScrollableAreaTest()
-      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+      : RenderingTest(EmptyFrameLoaderClient::create()) {}
 
   bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId) {
     PaintLayer* paintLayer =

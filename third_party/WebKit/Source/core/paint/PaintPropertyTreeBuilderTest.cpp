@@ -274,8 +274,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 300, 400),
             absPosProperties->overflowClip()->clipRect());
   EXPECT_EQ(frameContentClip(), absPosProperties->overflowClip()->parent());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(123, 456, 300, 400),
-                            absPos->layoutObject(), frameView->layoutView());
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(123, 456, 300, 400),
+                          absPos->layoutObject(), frameView->layoutView());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
@@ -348,9 +348,9 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
             transformProperties->paintOffsetTranslation()->matrix());
   EXPECT_EQ(frameScrollTranslation(),
             transformProperties->paintOffsetTranslation()->parent());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
-                            transform->layoutObject(),
-                            document().view()->layoutView());
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
+                          transform->layoutObject(),
+                          document().view()->layoutView());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
@@ -962,12 +962,12 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
       "<style>body { margin: 0; }</style>"
       "<div id='divWithTransform' style='transform: translate3d(1px, 2px, "
       "3px);'>"
-      "  <iframe style='border: 7px solid black' id='frame'></iframe>"
+      "  <iframe style='border: 7px solid black'></iframe>"
       "</div>");
-  Document& frameDocument = setupChildIframe(
-      "frame",
+  setChildFrameHTML(
       "<style>body { margin: 0; }</style><div id='transform' style='transform: "
       "translate3d(4px, 5px, 6px); width: 100px; height: 200px'></div>");
+
   FrameView* frameView = document().view();
   frameView->updateAllLifecyclePhases();
 
@@ -977,11 +977,11 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
       divWithTransform->paintProperties();
   EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3),
             divWithTransformProperties->transform()->matrix());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 164), divWithTransform,
-                            frameView->layoutView());
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 164), divWithTransform,
+                          frameView->layoutView());
 
   LayoutObject* innerDivWithTransform =
-      frameDocument.getElementById("transform")->layoutObject();
+      childDocument().getElementById("transform")->layoutObject();
   const ObjectPaintProperties* innerDivWithTransformProperties =
       innerDivWithTransform->paintProperties();
   auto* innerDivTransform = innerDivWithTransformProperties->transform();
@@ -1013,14 +1013,13 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
       "<style>body { margin: 0; }</style>"
       "<div id='divWithTransform' style='transform: translate3d(1px, 2px, "
       "3px);'>"
-      "  <iframe id='frame' style='transform: translate3d(4px, 5px, 6px); "
+      "  <iframe style='transform: translate3d(4px, 5px, 6px); "
       "border: 42px solid; margin: 7px;'></iframe>"
       "</div>");
-  Document& frameDocument =
-      setupChildIframe("frame",
-                       "<style>body { margin: 31px; }</style><div "
-                       "id='transform' style='transform: translate3d(7px, 8px, "
-                       "9px); width: 100px; height: 200px'></div>");
+  setChildFrameHTML(
+      "<style>body { margin: 31px; }</style><div "
+      "id='transform' style='transform: translate3d(7px, 8px, "
+      "9px); width: 100px; height: 200px'></div>");
   FrameView* frameView = document().view();
   frameView->updateAllLifecyclePhases();
 
@@ -1035,7 +1034,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
   //               Transform transform=translation=7.000000,8.000000,9.000000
 
   LayoutObject* innerDivWithTransform =
-      frameDocument.getElementById("transform")->layoutObject();
+      childDocument().getElementById("transform")->layoutObject();
   auto* innerDivTransform =
       innerDivWithTransform->paintProperties()->transform();
   EXPECT_EQ(TransformationMatrix().translate3d(7, 8, 9),
@@ -1067,8 +1066,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
       document().getElementById("divWithTransform")->layoutObject();
   EXPECT_EQ(divWithTransformTransform,
             divWithTransform->paintProperties()->transform());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 248), divWithTransform,
-                            frameView->layoutView());
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 248), divWithTransform,
+                          frameView->layoutView());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
@@ -1135,8 +1134,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(
       scrollerProperties->effect(),
       childProperties->localBorderBoxProperties()->propertyTreeState.effect());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
-                            document().view()->layoutView());
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
+                          document().view()->layoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), &child,
                           document().view()->layoutView());
 }

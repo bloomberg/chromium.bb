@@ -688,12 +688,10 @@ TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div style='width: 200; height: 8000px'></div>"
-      "<iframe id=frame src='http://test.com' width='500' height='500' "
+      "<iframe src='http://test.com' width='500' height='500' "
       "frameBorder='0'>"
       "</iframe>");
-
-  Document& frameDocument = setupChildIframe(
-      "frame",
+  setChildFrameHTML(
       "<style>body { margin: 0; } #target { width: 200px; height: 200px; "
       "position:fixed}</style><div id=target></div>");
 
@@ -701,7 +699,7 @@ TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
       ScrollOffset(0.0, 1000), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
-  Element* target = frameDocument.getElementById("target");
+  Element* target = childDocument().getElementById("target");
   ASSERT_TRUE(target);
   FloatPoint mappedPoint =
       mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(10, 70),
@@ -718,22 +716,20 @@ TEST_P(MapCoordinatesTest, IFrameTransformed) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
-      "<iframe style='transform: scale(2)' id=frame src='http://test.com' "
+      "<iframe style='transform: scale(2)' src='http://test.com' "
       "width='500' height='500' frameBorder='0'>"
       "</iframe>");
-
-  Document& frameDocument =
-      setupChildIframe("frame",
-                       "<style>body { margin: 0; } #target { width: 200px; "
-                       "height: 8000px}</style><div id=target></div>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; } #target { width: 200px; "
+      "height: 8000px}</style><div id=target></div>");
 
   document().view()->updateAllLifecyclePhases();
 
-  frameDocument.view()->layoutViewportScrollableArea()->setScrollOffset(
+  childDocument().view()->layoutViewportScrollableArea()->setScrollOffset(
       ScrollOffset(0.0, 1000), ProgrammaticScroll);
-  frameDocument.view()->updateAllLifecyclePhases();
+  childDocument().view()->updateAllLifecyclePhases();
 
-  Element* target = frameDocument.getElementById("target");
+  Element* target = childDocument().getElementById("target");
   ASSERT_TRUE(target);
   FloatPoint mappedPoint =
       mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(200, 200),
@@ -754,23 +750,20 @@ TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
       "<style>* { margin: 0; }</style>"
       "<div style='position: absolute; left: 0px; top: 0px; width: 1024px; "
       "height: 768px; transform-origin: 0 0; transform: scale(0.5, 0.5);'>"
-      "    <iframe id='frame' frameborder=0 src='http://test.com' "
-      "class='frame' sandbox='allow-same-origin' width='1024' "
-      "height='768'></iframe>"
+      "    <iframe frameborder=0 src='http://test.com' "
+      "sandbox='allow-same-origin' width='1024' height='768'></iframe>"
       "</div>");
-
-  Document& frameDocument = setupChildIframe(
-      "frame",
+  setChildFrameHTML(
       "<style>* { margin: 0; } #target { width: 200px; height: 200px; "
       "position:fixed}</style><div id=target></div>"
       "<div style='width: 200; height: 8000px'></div>");
 
   document().view()->updateAllLifecyclePhases();
-  frameDocument.view()->layoutViewportScrollableArea()->setScrollOffset(
+  childDocument().view()->layoutViewportScrollableArea()->setScrollOffset(
       ScrollOffset(0.0, 1000), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
 
-  Element* target = frameDocument.getElementById("target");
+  Element* target = childDocument().getElementById("target");
   ASSERT_TRUE(target);
   FloatPoint mappedPoint =
       mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(0, 0),

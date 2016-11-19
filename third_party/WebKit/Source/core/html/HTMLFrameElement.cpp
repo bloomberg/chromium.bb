@@ -41,7 +41,7 @@ DEFINE_NODE_FACTORY(HTMLFrameElement)
 
 bool HTMLFrameElement::layoutObjectIsNeeded(const ComputedStyle&) {
   // For compatibility, frames render even when display: none is set.
-  return isURLAllowed();
+  return contentFrame();
 }
 
 LayoutObject* HTMLFrameElement::createLayoutObject(const ComputedStyle&) {

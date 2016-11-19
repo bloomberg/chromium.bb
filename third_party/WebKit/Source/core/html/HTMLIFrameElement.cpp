@@ -146,7 +146,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name,
 }
 
 bool HTMLIFrameElement::layoutObjectIsNeeded(const ComputedStyle& style) {
-  return isURLAllowed() && HTMLElement::layoutObjectIsNeeded(style);
+  return contentFrame() && HTMLElement::layoutObjectIsNeeded(style);
 }
 
 LayoutObject* HTMLIFrameElement::createLayoutObject(const ComputedStyle&) {

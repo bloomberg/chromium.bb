@@ -316,8 +316,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
       "  iframe { display: block; width: 100px; height: 100px; border: none; }"
       "</style>"
       "<iframe id='iframe'></iframe>");
-  Document& frameDocument = setupChildIframe(
-      "iframe",
+  setChildFrameHTML(
       "<style>"
       "  ::-webkit-scrollbar { display: none }"
       "  body { margin: 0; background: green; height: 0 }"
@@ -325,7 +324,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
       "<div id='content' style='width: 200px; height: 200px'></div>");
   document().view()->updateAllLifecyclePhases();
   Element* iframe = document().getElementById("iframe");
-  Element* content = frameDocument.getElementById("content");
+  Element* content = childDocument().getElementById("content");
   EXPECT_EQ(layoutView(),
             content->layoutObject()->containerForPaintInvalidation());
 
@@ -370,8 +369,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
       "  iframe { display: block; width: 100px; height: 100px; border: none; }"
       "</style>"
       "<iframe id='iframe'></iframe>");
-  Document& frameDocument = setupChildIframe(
-      "iframe",
+  setChildFrameHTML(
       "<style>"
       "  ::-webkit-scrollbar { display: none }"
       "  body {"
@@ -383,7 +381,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
       "<div id='content' style='width: 200px; height: 200px'></div>");
   document().view()->updateAllLifecyclePhases();
   Element* iframe = document().getElementById("iframe");
-  Element* content = frameDocument.getElementById("content");
+  Element* content = childDocument().getElementById("content");
   LayoutView* frameLayoutView = content->layoutObject()->view();
   EXPECT_EQ(layoutView(),
             content->layoutObject()->containerForPaintInvalidation());

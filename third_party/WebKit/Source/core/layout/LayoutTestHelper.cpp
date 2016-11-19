@@ -11,6 +11,26 @@
 
 namespace blink {
 
+LocalFrame* SingleChildFrameLoaderClient::createFrame(
+    const FrameLoadRequest&,
+    const AtomicString& name,
+    HTMLFrameOwnerElement* ownerElement) {
+  DCHECK(!m_child) << "This test helper only supports one child frame.";
+
+  LocalFrame* parentFrame = ownerElement->document().frame();
+  auto* childClient = FrameLoaderClientWithParent::create(parentFrame);
+  m_child = LocalFrame::create(childClient, parentFrame->host(), ownerElement);
+  m_child->createView(IntSize(500, 500), Color(), true /* transparent */);
+  m_child->init();
+
+  return m_child.get();
+}
+
+void FrameLoaderClientWithParent::detached(FrameDetachType) {
+  static_cast<SingleChildFrameLoaderClient*>(parent()->client())
+      ->didDetachChild();
+}
+
 RenderingTest::RenderingTest(FrameLoaderClient* frameLoaderClient)
     : m_frameLoaderClient(frameLoaderClient) {}
 
@@ -20,9 +40,8 @@ void RenderingTest::SetUp() {
   DEFINE_STATIC_LOCAL(EmptyChromeClient, chromeClient,
                       (EmptyChromeClient::create()));
   pageClients.chromeClient = &chromeClient;
-  m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients,
-                                         m_frameLoaderClient.release(),
-                                         settingOverrider());
+  m_pageHolder = DummyPageHolder::create(
+      IntSize(800, 600), &pageClients, m_frameLoaderClient, settingOverrider());
 
   Settings::setMockScrollbarsEnabled(true);
   RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
@@ -34,13 +53,6 @@ void RenderingTest::SetUp() {
 }
 
 void RenderingTest::TearDown() {
-  if (m_subframe) {
-    m_subframe->detach(FrameDetachType::Remove);
-    static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())
-        ->setChild(nullptr);
-    document().frame()->host()->decrementSubframeCount();
-  }
-
   // We need to destroy most of the Blink structure here because derived tests
   // may restore RuntimeEnabledFeatures setting during teardown, which happens
   // before our destructor getting invoked, breaking the assumption that REF
@@ -51,29 +63,9 @@ void RenderingTest::TearDown() {
   memoryCache()->evictResources();
 }
 
-Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId,
-                                          const String& htmlContentOfIframe) {
-  // TODO(pdr): This should be refactored to share code with the actual setup
-  // instead of partially duplicating it here (e.g., LocalFrame::createView).
-  HTMLIFrameElement& iframe =
-      *toHTMLIFrameElement(document().getElementById(iframeElementId));
-  m_childFrameLoaderClient =
-      FrameLoaderClientWithParent::create(document().frame());
-  m_subframe = LocalFrame::create(m_childFrameLoaderClient.get(),
-                                  document().frame()->host(), &iframe);
-  m_subframe->setView(FrameView::create(*m_subframe, IntSize(500, 500)));
-  m_subframe->init();
-  m_subframe->view()->setParentVisible(true);
-  m_subframe->view()->setSelfVisible(true);
-  iframe.setWidget(m_subframe->view());
-  static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())
-      ->setChild(m_subframe.get());
-  document().frame()->host()->incrementSubframeCount();
-  Document& frameDocument = *iframe.contentDocument();
-
-  frameDocument.setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
-  frameDocument.body()->setInnerHTML(htmlContentOfIframe, ASSERT_NO_EXCEPTION);
-  return frameDocument;
+void RenderingTest::setChildFrameHTML(const String& html) {
+  childDocument().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+  childDocument().body()->setInnerHTML(html, ASSERT_NO_EXCEPTION);
 }
 
 }  // namespace blink

@@ -13,8 +13,7 @@ namespace blink {
 
 class PaintLayerClipperTest : public RenderingTest {
  public:
-  PaintLayerClipperTest()
-      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+  PaintLayerClipperTest() : RenderingTest(EmptyFrameLoaderClient::create()) {}
 };
 
 TEST_F(PaintLayerClipperTest, LayoutSVGRoot) {

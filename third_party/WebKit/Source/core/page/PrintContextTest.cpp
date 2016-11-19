@@ -301,21 +301,19 @@ TEST_F(PrintContextTest, LinkTargetBoundingBox) {
 }
 
 TEST_F(PrintContextFrameTest, WithSubframe) {
-  MockCanvas canvas;
   document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
   setBodyInnerHTML(
       "<style>::-webkit-scrollbar { display: none }</style>"
-      "<iframe id='frame' src='http://b.com/' width='500' height='500'"
+      "<iframe src='http://b.com/' width='500' height='500'"
       " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; "
       "left: 90px'></iframe>");
+  setChildFrameHTML(
+      absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
+      absoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
+      absoluteBlockHtmlForLink(250, 260, 270, 280,
+                               "http://www.google.com#fragment"));
 
-  setupChildIframe(
-      "frame", absoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
-                   absoluteBlockHtmlForLink(150, 160, 170, 180,
-                                            "http://www.google.com") +
-                   absoluteBlockHtmlForLink(250, 260, 270, 280,
-                                            "http://www.google.com#fragment"));
-
+  MockCanvas canvas;
   printSinglePage(canvas);
 
   const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
@@ -327,28 +325,24 @@ TEST_F(PrintContextFrameTest, WithSubframe) {
 }
 
 TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
-  MockCanvas canvas;
   document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
   setBodyInnerHTML(
       "<style>::-webkit-scrollbar { display: none }</style>"
-      "<iframe id='frame' src='http://b.com/' width='500' height='500'"
+      "<iframe src='http://b.com/' width='500' height='500'"
       " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; "
       "left: 90px'></iframe>");
-
-  Document& frameDocument = setupChildIframe(
-      "frame",
+  setChildFrameHTML(
       absoluteBlockHtmlForLink(10, 10, 20, 20, "http://invisible.com") +
-          absoluteBlockHtmlForLink(50, 60, 70, 80,
-                                   "http://partly.visible.com") +
-          absoluteBlockHtmlForLink(150, 160, 170, 180,
-                                   "http://www.google.com") +
-          absoluteBlockHtmlForLink(250, 260, 270, 280,
-                                   "http://www.google.com#fragment") +
-          absoluteBlockHtmlForLink(850, 860, 70, 80,
-                                   "http://another.invisible.com"));
+      absoluteBlockHtmlForLink(50, 60, 70, 80, "http://partly.visible.com") +
+      absoluteBlockHtmlForLink(150, 160, 170, 180, "http://www.google.com") +
+      absoluteBlockHtmlForLink(250, 260, 270, 280,
+                               "http://www.google.com#fragment") +
+      absoluteBlockHtmlForLink(850, 860, 70, 80,
+                               "http://another.invisible.com"));
 
-  frameDocument.domWindow()->scrollTo(100, 100);
+  childDocument().domWindow()->scrollTo(100, 100);
 
+  MockCanvas canvas;
   printSinglePage(canvas);
 
   const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();

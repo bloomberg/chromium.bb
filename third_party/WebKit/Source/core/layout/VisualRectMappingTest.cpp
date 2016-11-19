@@ -124,25 +124,25 @@ TEST_F(VisualRectMappingTest, LayoutView) {
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div id=frameContainer>"
-      "  <iframe id=frame src='http://test.com' width='50' height='50' "
+      "  <iframe src='http://test.com' width='50' height='50' "
       "frameBorder='0'></iframe>"
       "</div>");
-
-  Document& frameDocument = setupChildIframe(
-      "frame",
+  setChildFrameHTML(
       "<style>body { margin: 0; }</style><span><img style='width: 20px; "
       "height: 100px'></span>text text text");
+
   document().view()->updateAllLifecyclePhases();
 
   LayoutBlock* frameContainer =
       toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
-  LayoutBlock* frameBody = toLayoutBlock(frameDocument.body()->layoutObject());
+  LayoutBlock* frameBody =
+      toLayoutBlock(childDocument().body()->layoutObject());
   LayoutText* frameText = toLayoutText(frameBody->lastChild());
 
   // This case involves clipping: frame height is 50, y-coordinate of result
   // rect is 13, so height should be clipped to (50 - 13) == 37.
-  frameDocument.view()->setScrollOffset(ScrollOffset(0, 47),
-                                        ProgrammaticScroll);
+  childDocument().view()->setScrollOffset(ScrollOffset(0, 47),
+                                          ProgrammaticScroll);
   LayoutRect originalRect(4, 60, 20, 80);
   LayoutRect rect = originalRect;
   EXPECT_TRUE(frameText->mapToVisualRectInAncestorSpace(frameContainer, rect));
@@ -165,19 +165,19 @@ TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding) {
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div id=frameContainer style='position: relative; left: 0.5px'>"
-      "  <iframe id=frame style='position: relative; left: 0.5px' "
+      "  <iframe style='position: relative; left: 0.5px' "
       "src='http://test.com' width='200' height='200' frameBorder='0'></iframe>"
       "</div>");
-
-  Document& frameDocument = setupChildIframe(
-      "frame",
+  setChildFrameHTML(
       "<style>body { margin: 0; }</style><div id='target' style='position: "
       "relative; width: 100px; height: 100px; left: 0.5px'>");
+
   document().view()->updateAllLifecyclePhases();
 
   LayoutBlock* frameContainer =
       toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
-  LayoutObject* target = frameDocument.getElementById("target")->layoutObject();
+  LayoutObject* target =
+      childDocument().getElementById("target")->layoutObject();
   LayoutRect rect(0, 0, 100, 100);
   EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(frameContainer, rect));
   // When passing from the iframe to the parent frame, the rect of (0.5, 0, 100,
@@ -192,25 +192,25 @@ TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div id=frameContainer>"
-      "  <iframe id=frame src='http://test.com' width='50' height='50' "
+      "  <iframe id='frame' src='http://test.com' width='50' height='50' "
       "frameBorder='0'></iframe>"
       "</div>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; }</style><div "
+      "style='width:100px;height:100px;'></div>");
 
-  Document& frameDocument =
-      setupChildIframe("frame",
-                       "<style>body { margin: 0; }</style><div "
-                       "style='width:100px;height:100px;'></div>");
   document().view()->updateAllLifecyclePhases();
 
   LayoutBlock* frameContainer =
       toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
-  LayoutBlock* frameBody = toLayoutBlock(frameDocument.body()->layoutObject());
+  LayoutBlock* frameBody =
+      toLayoutBlock(childDocument().body()->layoutObject());
   LayoutBlock* frameDiv = toLayoutBlock(frameBody->lastChild());
 
   // This part is copied from the LayoutView test, just to ensure that the
   // mapped rect is valid before display:none is set on the iframe.
-  frameDocument.view()->setScrollOffset(ScrollOffset(0, 47),
-                                        ProgrammaticScroll);
+  childDocument().view()->setScrollOffset(ScrollOffset(0, 47),
+                                          ProgrammaticScroll);
   LayoutRect originalRect(4, 60, 20, 80);
   LayoutRect rect = originalRect;
   EXPECT_TRUE(frameDiv->mapToVisualRectInAncestorSpace(frameContainer, rect));

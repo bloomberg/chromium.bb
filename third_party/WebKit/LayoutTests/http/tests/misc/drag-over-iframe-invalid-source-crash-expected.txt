@@ -3,4 +3,3 @@ This page tests that we don't crash if we drag something to an iframe that has a
 
 
 SUCCESS - didn't crash
-

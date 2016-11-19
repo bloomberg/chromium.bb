@@ -41,8 +41,6 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
  protected:
   HTMLFrameElementBase(const QualifiedName&, Document&);
 
-  bool isURLAllowed() const;
-
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,
                       const AtomicString&) override;
@@ -72,6 +70,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
 
   void setLocation(const String&);
   void setNameAndOpenURL();
+  bool isURLAllowed() const;
   void openURL(bool replaceCurrentItem = true);
 
   ScrollbarMode m_scrollingMode;
