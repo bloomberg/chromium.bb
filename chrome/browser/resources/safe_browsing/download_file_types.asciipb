@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 7
+version_id: 8
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -2656,6 +2656,11 @@ file_types {
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_ANDROID
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+  platform_settings {
+    platform: PLATFORM_LINUX
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
   }
