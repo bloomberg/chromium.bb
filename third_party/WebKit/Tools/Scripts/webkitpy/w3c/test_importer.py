@@ -158,6 +158,10 @@ class TestImporter(object):
 
         self.import_list = []
 
+        # This is just a FYI list of CSS properties that still need to be prefixed,
+        # which may be output after importing.
+        self._prefixed_properties = {}
+
     def do_import(self):
         _log.info("Importing %s into %s", self.source_repo_path, self.destination_directory)
         self.find_importable_tests()
@@ -318,88 +322,29 @@ class TestImporter(object):
         total_imported_tests = 0
         total_imported_reftests = 0
         total_imported_jstests = 0
-        total_prefixed_properties = {}
 
         for dir_to_copy in self.import_list:
             total_imported_tests += dir_to_copy['total_tests']
             total_imported_reftests += dir_to_copy['reftests']
             total_imported_jstests += dir_to_copy['jstests']
 
-            prefixed_properties = []
-
             if not dir_to_copy['copy_list']:
                 continue
 
             orig_path = dir_to_copy['dirname']
 
-            subpath = self.filesystem.relpath(orig_path, self.source_repo_path)
-            new_path = self.filesystem.join(self.destination_directory, subpath)
+            relative_dir = self.filesystem.relpath(orig_path, self.source_repo_path)
+            dest_dir = self.filesystem.join(self.destination_directory, relative_dir)
 
-            if not self.filesystem.exists(new_path):
-                self.filesystem.maybe_make_directory(new_path)
+            if not self.filesystem.exists(dest_dir):
+                self.filesystem.maybe_make_directory(dest_dir)
 
             copied_files = []
 
             for file_to_copy in dir_to_copy['copy_list']:
-                # FIXME: Split this block into a separate function.
-                orig_filepath = self.filesystem.normpath(file_to_copy['src'])
-
-                if self.filesystem.isdir(orig_filepath):
-                    # FIXME: Figure out what is triggering this and what to do about it.
-                    _log.error('%s refers to a directory', orig_filepath)
-                    continue
-
-                if not self.filesystem.exists(orig_filepath):
-                    _log.error('%s not found. Possible error in the test.', orig_filepath)
-                    continue
-
-                new_filepath = self.filesystem.join(new_path, file_to_copy['dest'])
-                if 'reference_support_info' in file_to_copy.keys() and file_to_copy['reference_support_info'] != {}:
-                    reference_support_info = file_to_copy['reference_support_info']
-                else:
-                    reference_support_info = None
-
-                if not self.filesystem.exists(self.filesystem.dirname(new_filepath)):
-                    if not self.import_in_place and not self.options.dry_run:
-                        self.filesystem.maybe_make_directory(self.filesystem.dirname(new_filepath))
-
-                relpath = self.filesystem.relpath(new_filepath, self.layout_tests_dir)
-                if not self.options.overwrite and self.filesystem.exists(new_filepath):
-                    _log.info('  skipping %s', relpath)
-                else:
-                    # FIXME: Maybe doing a file diff is in order here for existing files?
-                    # In other words, there's no sense in overwriting identical files, but
-                    # there's no harm in copying the identical thing.
-                    _log.info('  %s', relpath)
-
-                # Only HTML, XML, or CSS should be converted.
-                # FIXME: Eventually, so should JS when support is added for this type of conversion.
-                mimetype = mimetypes.guess_type(orig_filepath)
-                if 'is_jstest' not in file_to_copy and (
-                        'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
-                    converted_file = convert_for_webkit(
-                        new_path, filename=orig_filepath,
-                        reference_support_info=reference_support_info,
-                        host=self.host)
-
-                    if not converted_file:
-                        if not self.import_in_place and not self.options.dry_run:
-                            self.filesystem.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
-                    else:
-                        for prefixed_property in converted_file[0]:
-                            total_prefixed_properties.setdefault(prefixed_property, 0)
-                            total_prefixed_properties[prefixed_property] += 1
-
-                        prefixed_properties.extend(set(converted_file[0]) - set(prefixed_properties))
-                        if not self.options.dry_run:
-                            self.filesystem.write_text_file(new_filepath, converted_file[1])
-                else:
-                    if not self.import_in_place and not self.options.dry_run:
-                        self.filesystem.copyfile(orig_filepath, new_filepath)
-                        if self.filesystem.read_binary_file(orig_filepath)[:2] == '#!':
-                            self.filesystem.make_executable(new_filepath)
-
-                copied_files.append(new_filepath.replace(self._webkit_root, ''))
+                copied_file = self.copy_file(file_to_copy, dest_dir)
+                if copied_file:
+                    copied_files.append(copied_file)
 
         _log.info('')
         _log.info('Import complete')
@@ -410,10 +355,82 @@ class TestImporter(object):
         _log.info('Imported %d pixel/manual tests', total_imported_tests - total_imported_jstests - total_imported_reftests)
         _log.info('')
 
-        if total_prefixed_properties:
+        if self._prefixed_properties:
             _log.info('Properties needing prefixes (by count):')
-            for prefixed_property in sorted(total_prefixed_properties, key=lambda p: total_prefixed_properties[p]):
-                _log.info('  %s: %s', prefixed_property, total_prefixed_properties[prefixed_property])
+            for prefixed_property in sorted(self._prefixed_properties, key=lambda p: self._prefixed_properties[p]):
+                _log.info('  %s: %s', prefixed_property, self._prefixed_properties[prefixed_property])
+
+    def copy_file(self, file_to_copy, dest_dir):
+        """Converts and copies a file, if it should be copied.
+
+        Args:
+            file_to_copy: A dict in a file copy list constructed by
+                find_importable_tests, which represents one file to copy, including
+                the keys:
+                    "src": Absolute path to the source location of the file.
+                    "destination": File name of the destination file.
+                And possibly also the keys "reference_support_info" or "is_jstest".
+            dest_dir: Path to the directory where the file should be copied.
+
+        Returns:
+            The path to the new file, relative to the Blink root (//third_party/WebKit).
+        """
+        source_path = self.filesystem.normpath(file_to_copy['src'])
+        dest_path = self.filesystem.join(dest_dir, file_to_copy['dest'])
+
+        if self.filesystem.isdir(source_path):
+            _log.error('%s refers to a directory', source_path)
+            return None
+
+        if not self.filesystem.exists(source_path):
+            _log.error('%s not found. Possible error in the test.', source_path)
+            return None
+
+        if file_to_copy.get('reference_support_info'):
+            reference_support_info = file_to_copy['reference_support_info']
+        else:
+            reference_support_info = None
+
+        if not self.filesystem.exists(self.filesystem.dirname(dest_path)):
+            if not self.import_in_place and not self.options.dry_run:
+                self.filesystem.maybe_make_directory(self.filesystem.dirname(dest_path))
+
+        relpath = self.filesystem.relpath(dest_path, self.layout_tests_dir)
+        if not self.options.overwrite and self.filesystem.exists(dest_path):
+            _log.info('  skipping %s', relpath)
+        else:
+            # FIXME: Maybe doing a file diff is in order here for existing files?
+            # In other words, there's no sense in overwriting identical files, but
+            # there's no harm in copying the identical thing.
+            _log.info('  %s', relpath)
+
+        # Only HTML, XML, or CSS should be converted.
+        # FIXME: Eventually, so should JS when support is added for this type of conversion.
+        mimetype = mimetypes.guess_type(source_path)
+        if 'is_jstest' not in file_to_copy and (
+                'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
+            converted_file = convert_for_webkit(
+                dest_dir, filename=source_path,
+                reference_support_info=reference_support_info,
+                host=self.host)
+
+            if not converted_file:
+                if not self.import_in_place and not self.options.dry_run:
+                    self.filesystem.copyfile(source_path, dest_path)  # The file was unmodified.
+            else:
+                for prefixed_property in converted_file[0]:
+                    self._prefixed_properties.setdefault(prefixed_property, 0)
+                    self._prefixed_properties[prefixed_property] += 1
+
+                if not self.options.dry_run:
+                    self.filesystem.write_text_file(dest_path, converted_file[1])
+        else:
+            if not self.import_in_place and not self.options.dry_run:
+                self.filesystem.copyfile(source_path, dest_path)
+                if self.filesystem.read_binary_file(source_path)[:2] == '#!':
+                    self.filesystem.make_executable(dest_path)
+
+        return dest_path.replace(self._webkit_root, '')
 
     def path_too_long(self, source_path):
         """Checks whether a source path is too long to import.
