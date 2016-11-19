@@ -167,14 +167,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
 
   div1->SetFirstChild(div2);
 
-  NGLogicalSize size(LayoutUnit(100), NGSizeIndefinite);
-  NGConstraintSpaceBuilder builder(HorizontalTopBottom);
-  builder.SetAvailableSize(size)
-      .SetPercentageResolutionSize(size)
-      .SetIsNewFormattingContext(true);
-  auto* space = new NGConstraintSpace(HorizontalTopBottom, LTR,
-                                      builder.ToConstraintSpace());
-
+  auto* space = ConstructConstraintSpace(
+      HorizontalTopBottom, LTR,
+      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  space->SetIsNewFormattingContext(true);
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   EXPECT_TRUE(frag->MarginStrut().IsEmpty());

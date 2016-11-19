@@ -225,6 +225,9 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       space_builder_->SetPercentageResolutionSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
 
+      constraint_space_->SetSize(
+          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+
       content_size_ = border_and_padding_.block_start;
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
