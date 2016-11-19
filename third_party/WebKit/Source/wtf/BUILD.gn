@@ -110,7 +110,6 @@ component("wtf") {
     "SaturatedArithmetic.h",
     "SizeAssertions.h",
     "SizeLimits.cpp",
-    "SpinLock.cpp",
     "SpinLock.h",
     "StaticConstructors.h",
     "StdLibExtras.h",
