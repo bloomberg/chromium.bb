@@ -258,11 +258,10 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName) {
 bool decodeImageData(SharedBuffer* data,
                      bool colorCorrection,
                      size_t packetSize) {
-  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
-      *data, ImageDecoder::AlphaPremultiplied,
-      colorCorrection ? ImageDecoder::GammaAndColorProfileApplied
-                      : ImageDecoder::GammaAndColorProfileIgnored);
-
+  std::unique_ptr<ImageDecoder> decoder =
+      ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
+                           colorCorrection ? ImageDecoder::ColorSpaceApplied
+                                           : ImageDecoder::ColorSpaceIgnored);
   if (!packetSize) {
     bool allDataReceived = true;
     decoder->setData(data, allDataReceived);
@@ -309,8 +308,12 @@ int main(int argc, char* argv[]) {
 
   bool applyColorCorrection = false;
 
-  if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0)
+  if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0) {
     applyColorCorrection = (--argc, ++argv, true);
+    WebVector<char> profile;
+    getScreenColorProfile(&profile);  // Returns a color spin color profile.
+    ImageDecoder::setTargetColorProfile(profile);
+  }
 
   if (argc < 2) {
     fprintf(stderr,
@@ -348,14 +351,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  // Create a web platform without V8.
+  // Create a web platform.  blink::Platform can't be used directly because its
+  // constructor is protected.
 
-  class WebPlatform : public blink::Platform {
-   public:
-    void screenColorProfile(WebVector<char>* profile) override {
-      getScreenColorProfile(profile);  // Returns a color spin color profile.
-    }
-  };
+  class WebPlatform : public blink::Platform {};
 
   Platform::initialize(new WebPlatform());
 

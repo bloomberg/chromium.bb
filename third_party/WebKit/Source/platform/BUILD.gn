@@ -1832,6 +1832,28 @@ test("blink_platform_unittests") {
   include_dirs = [ "$root_gen_dir/blink" ]
 }
 
+test("image_decode_bench") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+
+  sources = [
+    "testing/ImageDecodeBench.cpp",
+  ]
+
+  deps = [
+    ":blink_common",
+    ":platform",
+    "//third_party/WebKit/Source/wtf",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
+
+  defines = [ "INSIDE_BLINK" ]
+}
+
 test("blink_platform_perftests") {
   sources = [
     "scheduler/base/task_queue_manager_delegate_for_test.cc",
