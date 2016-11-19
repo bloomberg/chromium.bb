@@ -81,6 +81,7 @@ void PepperMediaDeviceManager::EnumerateDevices(
 #if defined(ENABLE_WEBRTC)
   bool request_audio_input = type == PP_DEVICETYPE_DEV_AUDIOCAPTURE;
   bool request_video_input = type == PP_DEVICETYPE_DEV_VIDEOCAPTURE;
+  CHECK(request_audio_input || request_video_input);
   GetMediaDevicesDispatcher()->EnumerateDevices(
       request_audio_input, request_video_input, false /* audio_output */,
       url::Origin(document_url.GetOrigin()),
