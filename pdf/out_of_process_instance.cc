@@ -14,6 +14,7 @@
 #include <list>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -44,6 +45,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace chrome_pdf {
+
+namespace {
 
 const char kChromePrint[] = "chrome://print/";
 const char kChromeExtension[] =
@@ -153,9 +156,7 @@ const int kAccessibilityPageDelayMs = 100;
 
 const double kMinZoom = 0.01;
 
-namespace {
-
-static const char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
+const char kPPPPdfInterface[] = PPP_PDF_INTERFACE_1;
 
 // Used for UMA. Do not delete entries, and keep in sync with histograms.xml.
 enum PDFFeatures {
@@ -269,8 +270,7 @@ pp::Var ModalDialog(const pp::Instance* instance,
       interface->GetWindowObject(instance->pp_instance()));
   if (default_answer.empty())
     return window.Call(type, message);
-  else
-    return window.Call(type, message, default_answer);
+  return window.Call(type, message, default_answer);
 }
 
 }  // namespace
@@ -352,7 +352,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   if (full_)
     SetPluginToHandleFindRequests();
 
-  text_input_.reset(new pp::TextInput_Dev(this));
+  text_input_ = base::MakeUnique<pp::TextInput_Dev>(this);
 
   const char* stream_url = nullptr;
   const char* original_url = nullptr;
@@ -544,7 +544,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSLoadPreviewPageType &&
              dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
              dict.Get(pp::Var(kJSPreviewPageIndex)).is_int()) {
-
     std::string url = dict.Get(pp::Var(kJSPreviewPageUrl)).AsString();
     // For security reasons we crash if the URL that is trying to be loaded here
     // isn't a print preview one.
@@ -950,7 +949,7 @@ void OutOfProcessInstance::DidOpen(int32_t result) {
 
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
   if (result == PP_OK) {
-    preview_client_.reset(new PreviewModeClient(this));
+    preview_client_ = base::MakeUnique<PreviewModeClient>(this);
     preview_engine_.reset(PDFEngine::Create(preview_client_.get()));
     preview_engine_->HandleDocumentLoad(embed_preview_loader_);
   } else {
@@ -1141,8 +1140,8 @@ void OutOfProcessInstance::GetDocumentPassword(
     return;
   }
 
-  password_callback_.reset(
-      new pp::CompletionCallbackWithOutput<pp::Var>(callback));
+  password_callback_ =
+      base::MakeUnique<pp::CompletionCallbackWithOutput<pp::Var>>(callback);
   pp::VarDictionary message;
   message.Set(pp::Var(kType), pp::Var(kJSGetPasswordType));
   PostMessage(message);
@@ -1286,7 +1285,7 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   // Clear focus state for OSK.
   FormTextFieldFocusChange(false);
 
-  DCHECK(document_load_state_ == LOAD_STATE_LOADING);
+  DCHECK_EQ(LOAD_STATE_LOADING, document_load_state_);
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
   uma_.HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT,
@@ -1381,7 +1380,7 @@ void OutOfProcessInstance::PreviewDocumentLoadComplete() {
 }
 
 void OutOfProcessInstance::DocumentLoadFailed() {
-  DCHECK(document_load_state_ == LOAD_STATE_LOADING);
+  DCHECK_EQ(LOAD_STATE_LOADING, document_load_state_);
   UserMetricsRecordAction("PDF.LoadFailure");
 
   if (did_call_start_loading_) {
@@ -1447,17 +1446,14 @@ void OutOfProcessInstance::DocumentHasUnsupportedFeature(
 void OutOfProcessInstance::DocumentLoadProgress(uint32_t available,
                                                 uint32_t doc_size) {
   double progress = 0.0;
-  if (doc_size == 0) {
+  if (doc_size) {
+    progress = 100.0 * static_cast<double>(available) / doc_size;
+  } else {
     // Document size is unknown. Use heuristics.
     // We'll make progress logarithmic from 0 to 100M.
     static const double kFactor = log(100000000.0) / 100.0;
-    if (available > 0) {
-      progress = log(static_cast<double>(available)) / kFactor;
-      if (progress > 100.0)
-        progress = 100.0;
-    }
-  } else {
-    progress = 100.0 * static_cast<double>(available) / doc_size;
+    if (available > 0)
+      progress = std::min(log(static_cast<double>(available)) / kFactor, 100.0);
   }
 
   // We send 100% load progress in DocumentLoadComplete.
@@ -1483,10 +1479,8 @@ void OutOfProcessInstance::FormTextFieldFocusChange(bool in_focus) {
   message.Set(pp::Var(kJSFieldFocus), pp::Var(in_focus));
   PostMessage(message);
 
-  if (in_focus)
-    text_input_->SetTextInputType(PP_TEXTINPUT_TYPE_DEV_TEXT);
-  else
-    text_input_->SetTextInputType(PP_TEXTINPUT_TYPE_DEV_NONE);
+  text_input_->SetTextInputType(in_focus ? PP_TEXTINPUT_TYPE_DEV_TEXT
+                                         : PP_TEXTINPUT_TYPE_DEV_NONE);
 }
 
 void OutOfProcessInstance::ResetRecentlySentFindUpdate(int32_t /* unused */) {
