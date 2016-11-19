@@ -41,7 +41,7 @@ function test()
 
             function fileSystemCreated()
             {
-                var fileSystemProjectId = Bindings.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+                var fileSystemProjectId = Persistence.FileSystemWorkspaceBinding.projectId(fileSystemPath);
                 uiSourceCode = Workspace.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/foo.css");
                 InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
             }

@@ -8,7 +8,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 
     InspectorTest.testTargetManager = new SDK.TargetManager();
     InspectorTest.testWorkspace = new Workspace.Workspace();
-    InspectorTest.testFileSystemWorkspaceBinding = new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, InspectorTest.testWorkspace);
+    InspectorTest.testFileSystemWorkspaceBinding = new Persistence.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, InspectorTest.testWorkspace);
     InspectorTest.testNetworkProjectManager = new Bindings.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
     InspectorTest.testDebuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
     InspectorTest.testCSSWorkspaceBinding = new Bindings.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
