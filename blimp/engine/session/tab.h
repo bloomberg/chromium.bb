@@ -14,6 +14,7 @@
 namespace content {
 class RenderViewHost;
 class WebContents;
+struct FormFieldData;
 }
 
 namespace blimp {
@@ -69,12 +70,20 @@ class Tab : public content::WebContentsObserver,
       content::RenderWidgetHost* render_widget_host,
       const std::vector<uint8_t>& message) override;
 
+  // Text input related methods.
+  void ShowTextInputUI();
+  void HideTextInputUI();
+
  private:
   // content::WebContentsObserver implementation.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
+
+  // Sends text input field related information to the client.
+  void ProcessTextInputInfo(int request_id,
+                            const content::FormFieldData& field_data);
 
   std::unique_ptr<content::WebContents> web_contents_;
   const int tab_id_;
@@ -83,6 +92,11 @@ class Tab : public content::WebContentsObserver,
 
   // Tracks the page load status for a tab.
   PageLoadTracker page_load_tracker_;
+
+  // Tracks the number of text input requests.
+  int current_form_request_id_;
+
+  base::WeakPtrFactory<Tab> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };

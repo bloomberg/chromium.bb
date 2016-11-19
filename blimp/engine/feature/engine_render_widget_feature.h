@@ -25,6 +25,7 @@ class WebGestureEvent;
 
 namespace content {
 class RenderWidgetHost;
+struct FormFieldData;
 }
 
 namespace blimp {
@@ -93,7 +94,7 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
   // Notifies the client to show/hide IME.
   void SendShowImeRequest(const int tab_id,
                           content::RenderWidgetHost* render_widget_host,
-                          const ui::TextInputClient* client);
+                          const content::FormFieldData& field);
   void SendHideImeRequest(const int tab_id,
                           content::RenderWidgetHost* render_widget_host);
 
