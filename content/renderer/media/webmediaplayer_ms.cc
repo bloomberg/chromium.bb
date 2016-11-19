@@ -84,7 +84,7 @@ class WebMediaPlayerMS::FrameDeliverer {
     if (!received_first_frame_) {
       received_first_frame_ = true;
       last_frame_opaque_ = is_opaque;
-      media::VideoRotation video_rotation;
+      media::VideoRotation video_rotation = media::VIDEO_ROTATION_0;
       ignore_result(frame->metadata()->GetRotation(
           media::VideoFrameMetadata::ROTATION, &video_rotation));
       main_task_runner_->PostTask(
