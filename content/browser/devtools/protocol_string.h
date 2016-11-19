@@ -13,6 +13,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class Value;
+}
+
 namespace content {
 namespace protocol {
 
@@ -43,7 +47,10 @@ class CONTENT_EXPORT StringUtil {
     return base::IntToString(number);
   }
   static String fromDouble(double number) {
-    return base::DoubleToString(number);
+    String s = base::DoubleToString(number);
+    if (!s.empty() && s[0] == '.')
+      s = "0" + s;
+    return s;
   }
   static const size_t kNotFound = static_cast<size_t>(-1);
   static void builderReserve(StringBuilder& builder, unsigned capacity) {
@@ -51,6 +58,10 @@ class CONTENT_EXPORT StringUtil {
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
 };
+
+std::unique_ptr<protocol::Value> toProtocolValue(
+    const base::Value* value, int depth);
+std::unique_ptr<base::Value> toBaseValue(protocol::Value* value, int depth);
 
 }  // namespace protocol
 }  // namespace content

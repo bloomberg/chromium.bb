@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted_memory.h"
 
 namespace content {
-namespace devtools {
 
 class DevToolsIOContext {
  public:
@@ -61,5 +60,4 @@ class DevToolsIOContext {
   StreamsMap streams_;
 };
 
-}  // namespace devtools
 }  // namespace content

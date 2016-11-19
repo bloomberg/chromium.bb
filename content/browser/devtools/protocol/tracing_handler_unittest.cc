@@ -9,8 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-namespace devtools {
-namespace tracing {
+namespace protocol {
 
 namespace {
 
@@ -54,7 +53,7 @@ const char kCustomTraceConfigStringDevToolsStyle[] =
     "\"synthetic_delays\":[\"test.Delay1;16\",\"test.Delay2;32\"]"
   "}";
 
-}
+}  // namespace
 
 TEST(TracingHandlerTest, GetTraceConfigFromDevToolsConfig) {
   std::unique_ptr<base::Value> value =
@@ -68,6 +67,5 @@ TEST(TracingHandlerTest, GetTraceConfigFromDevToolsConfig) {
   EXPECT_STREQ(kCustomTraceConfigString, trace_config.ToString().c_str());
 }
 
-}  // namespace tracing
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content

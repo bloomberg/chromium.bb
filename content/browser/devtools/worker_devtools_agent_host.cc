@@ -5,6 +5,7 @@
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
 #include "base/guid.h"
+#include "base/json/json_reader.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
@@ -47,11 +48,13 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
   if (state_ != WORKER_INSPECTED)
     return true;
 
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
   int call_id;
   std::string method;
-  if (protocol_handler_->HandleOptionalMessage(session()->session_id(), message,
-                                               &call_id, &method))
+  if (protocol_handler_->HandleOptionalMessage(
+          session()->session_id(), std::move(value), &call_id, &method)) {
     return true;
+  }
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(

@@ -15,7 +15,11 @@
             },
             {
                 "domain": "Tracing",
-                "async": ["start", "end"]
+                "async": ["start", "end", "getCategories", "requestMemoryDump"]
+            },
+            {
+                "domain": "IO",
+                "async": ["read"]
             }
         ]
     },

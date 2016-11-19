@@ -13,6 +13,8 @@ class DevToolsSession : public protocol::FrontendChannel {
   DevToolsSession(DevToolsAgentHostImpl* agent_host, int session_id);
   ~DevToolsSession() override;
 
+  void ResetDispatcher();
+
   int session_id() { return session_id_; }
   protocol::UberDispatcher* dispatcher() { return dispatcher_.get(); }
 

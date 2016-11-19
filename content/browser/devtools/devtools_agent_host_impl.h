@@ -73,7 +73,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
   void NotifyCreated();
   void HostClosed();
-  devtools::DevToolsIOContext* GetIOContext() { return &io_context_; }
+  DevToolsIOContext* GetIOContext() { return &io_context_; }
 
   DevToolsSession* session() { return session_.get(); }
 
@@ -90,7 +90,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   int last_session_id_;
   std::unique_ptr<DevToolsSession> session_;
   DevToolsAgentHostClient* client_;
-  devtools::DevToolsIOContext io_context_;
+  DevToolsIOContext io_context_;
   static int s_attached_count_;
   static int s_force_creation_count_;
 };

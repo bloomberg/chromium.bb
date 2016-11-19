@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
-namespace devtools {
 
 namespace {
 unsigned s_last_stream_handle = 0;
@@ -140,5 +139,4 @@ void DevToolsIOContext::DiscardAllStreams() {
   return streams_.clear();
 }
 
-}  // namespace devtools
 }  // namespace content

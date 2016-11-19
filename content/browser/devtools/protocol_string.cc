@@ -5,11 +5,12 @@
 #include "content/browser/devtools/protocol_string.h"
 
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/browser/devtools/protocol/protocol.h"
 
 namespace content {
-namespace {
+namespace protocol {
 
 std::unique_ptr<protocol::Value> toProtocolValue(
     const base::Value* value, int depth) {
@@ -68,9 +69,57 @@ std::unique_ptr<protocol::Value> toProtocolValue(
   return nullptr;
 }
 
-}  // namespace
-
-namespace protocol {
+std::unique_ptr<base::Value> toBaseValue(
+    protocol::Value* value, int depth) {
+  if (!value || !depth)
+    return nullptr;
+  if (value->type() == protocol::Value::TypeNull)
+    return base::Value::CreateNullValue();
+  if (value->type() == protocol::Value::TypeBoolean) {
+    bool inner;
+    value->asBoolean(&inner);
+    return base::WrapUnique(new base::FundamentalValue(inner));
+  }
+  if (value->type() == protocol::Value::TypeInteger) {
+    int inner;
+    value->asInteger(&inner);
+    return base::WrapUnique(new base::FundamentalValue(inner));
+  }
+  if (value->type() == protocol::Value::TypeDouble) {
+    double inner;
+    value->asDouble(&inner);
+    return base::WrapUnique(new base::FundamentalValue(inner));
+  }
+  if (value->type() == protocol::Value::TypeString) {
+    std::string inner;
+    value->asString(&inner);
+    return base::WrapUnique(new base::StringValue(inner));
+  }
+  if (value->type() == protocol::Value::TypeArray) {
+    protocol::ListValue* list = protocol::ListValue::cast(value);
+    std::unique_ptr<base::ListValue> result(new base::ListValue());
+    for (size_t i = 0; i < list->size(); i++) {
+      std::unique_ptr<base::Value> converted =
+          toBaseValue(list->at(i), depth - 1);
+      if (converted)
+        result->Append(std::move(converted));
+    }
+    return std::move(result);
+  }
+  if (value->type() == protocol::Value::TypeObject) {
+    protocol::DictionaryValue* dict = protocol::DictionaryValue::cast(value);
+    std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+    for (size_t i = 0; i < dict->size(); i++) {
+      protocol::DictionaryValue::Entry entry = dict->at(i);
+      std::unique_ptr<base::Value> converted =
+          toBaseValue(entry.second, depth - 1);
+      if (converted)
+        result->SetWithoutPathExpansion(entry.first, std::move(converted));
+    }
+    return std::move(result);
+  }
+  return nullptr;
+}
 
 // static
 std::unique_ptr<protocol::Value> StringUtil::parseJSON(

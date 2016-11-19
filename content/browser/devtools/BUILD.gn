@@ -55,9 +55,9 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
+    "protocol/forward.h",
     "protocol/io.cc",
     "protocol/io.h",
-    "protocol/forward.h",
     "protocol/protocol.cc",
     "protocol/protocol.h",
     "protocol/tracing.cc",

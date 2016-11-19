@@ -204,6 +204,7 @@ public:
       {%- endfor -%}
         ) = 0;
         virtual void sendFailure(const DispatchResponse&) = 0;
+        virtual void fallThrough() = 0;
         virtual ~{{command.name | to_title_case}}Callback() { }
     };
     {% endif %}
@@ -263,6 +264,7 @@ public:
   {% endfor %}
 
     void flush();
+    void sendRawNotification(const String&);
 private:
     FrontendChannel* m_frontendChannel;
 };

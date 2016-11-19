@@ -19,6 +19,10 @@ DevToolsSession::DevToolsSession(
 
 DevToolsSession::~DevToolsSession() {}
 
+void DevToolsSession::ResetDispatcher() {
+  dispatcher_.reset();
+}
+
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     const std::string& message) {

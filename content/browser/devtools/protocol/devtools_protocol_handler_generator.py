@@ -644,7 +644,7 @@ includes = []
 fields_init = []
 
 browser_domains_list = ["Inspector", "Memory", "Page", "Emulation", "Security",
-    "IO", "Target", "ServiceWorker", "Input", "Tracing", "Storage",
+    "Target", "ServiceWorker", "Input", "Storage",
     "SystemInfo", "Tethering", "Schema"]
 browser_commands_list = [
     "DOM.setFileInputFiles",
@@ -664,14 +664,9 @@ async_commands_list = [
     "Network.getCookies",
     "Network.deleteCookie",
     "Network.setCookie",
-    "IO.read",
     "Input.synthesizePinchGesture",
     "Input.synthesizeScrollGesture",
     "Input.synthesizeTapGesture",
-    "Tracing.start",
-    "Tracing.end",
-    "Tracing.getCategories",
-    "Tracing.requestMemoryDump",
     "SystemInfo.getInfo",
     "Tethering.bind",
     "Tethering.unbind"]

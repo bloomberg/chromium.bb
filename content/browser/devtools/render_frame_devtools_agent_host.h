@@ -44,7 +44,6 @@ namespace dom { class DOMHandler; }
 namespace emulation { class EmulationHandler; }
 namespace input { class InputHandler; }
 namespace inspector { class InspectorHandler; }
-namespace io { class IOHandler; }
 namespace network { class NetworkHandler; }
 namespace page { class PageHandler; }
 namespace schema { class SchemaHandler; }
@@ -52,8 +51,12 @@ namespace security { class SecurityHandler; }
 namespace service_worker { class ServiceWorkerHandler; }
 namespace storage { class StorageHandler; }
 namespace target { class TargetHandler; }
-namespace tracing { class TracingHandler; }
 }
+
+namespace protocol {
+class IOHandler;
+class TracingHandler;
+}  // namespace protocol
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -183,7 +186,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<devtools::dom::DOMHandler> dom_handler_;
   std::unique_ptr<devtools::input::InputHandler> input_handler_;
   std::unique_ptr<devtools::inspector::InspectorHandler> inspector_handler_;
-  std::unique_ptr<devtools::io::IOHandler> io_handler_;
+  std::unique_ptr<protocol::IOHandler> io_handler_;
   std::unique_ptr<devtools::network::NetworkHandler> network_handler_;
   std::unique_ptr<devtools::page::PageHandler> page_handler_;
   std::unique_ptr<devtools::schema::SchemaHandler> schema_handler_;
@@ -193,7 +196,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<devtools::storage::StorageHandler>
       storage_handler_;
   std::unique_ptr<devtools::target::TargetHandler> target_handler_;
-  std::unique_ptr<devtools::tracing::TracingHandler> tracing_handler_;
+  std::unique_ptr<protocol::TracingHandler> tracing_handler_;
   std::unique_ptr<devtools::emulation::EmulationHandler> emulation_handler_;
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)

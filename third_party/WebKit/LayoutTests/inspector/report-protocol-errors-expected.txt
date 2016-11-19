@@ -3,31 +3,28 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
 {
     error : {
         code : -32700
-        message : "Message must be in JSON format"
+        message : "Message must be a valid JSON"
     }
-    id : null
 }
 -------------------------------------------------------
 {
     error : {
         code : -32600
-        message : "The type of 'id' property must be number"
+        message : "Message must have integer 'id' porperty"
     }
-    id : null
 }
 -------------------------------------------------------
 {
     error : {
         code : -32600
-        message : "The type of 'id' property must be number"
+        message : "Message must have integer 'id' porperty"
     }
-    id : null
 }
 -------------------------------------------------------
 {
     error : {
         code : -32600
-        message : "The type of 'method' property must be string"
+        message : "Message must have string 'method' porperty"
     }
     id : 1
 }

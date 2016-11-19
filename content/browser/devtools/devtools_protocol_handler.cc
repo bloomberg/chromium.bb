@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -47,10 +47,11 @@ DevToolsProtocolHandler::DevToolsProtocolHandler(
 DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 }
 
-void DevToolsProtocolHandler::HandleMessage(int session_id,
-                                            const std::string& message) {
+void DevToolsProtocolHandler::HandleMessage(
+    int session_id,
+    std::unique_ptr<base::Value> message) {
   std::unique_ptr<base::DictionaryValue> command =
-      ParseCommand(session_id, message);
+      ParseCommand(session_id, std::move(message));
   if (!command)
     return;
   if (PassCommandToDelegate(session_id, command.get()))
@@ -58,12 +59,13 @@ void DevToolsProtocolHandler::HandleMessage(int session_id,
   HandleCommand(session_id, std::move(command));
 }
 
-bool DevToolsProtocolHandler::HandleOptionalMessage(int session_id,
-                                                    const std::string& message,
-                                                    int* call_id,
-                                                    std::string* method) {
+bool DevToolsProtocolHandler::HandleOptionalMessage(
+    int session_id,
+    std::unique_ptr<base::Value> message,
+    int* call_id,
+    std::string* method) {
   std::unique_ptr<base::DictionaryValue> command =
-      ParseCommand(session_id, message);
+      ParseCommand(session_id, std::move(message));
   if (!command)
     return true;
   if (PassCommandToDelegate(session_id, command.get()))
@@ -91,8 +93,7 @@ bool DevToolsProtocolHandler::PassCommandToDelegate(
 
 std::unique_ptr<base::DictionaryValue> DevToolsProtocolHandler::ParseCommand(
     int session_id,
-    const std::string& message) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+    std::unique_ptr<base::Value> value) {
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     client_.SendError(
         DevToolsCommandId(DevToolsCommandId::kNoId, session_id),

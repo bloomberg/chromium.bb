@@ -178,13 +178,19 @@ void Frontend::flush()
     m_frontendChannel->flushProtocolNotifications();
 }
 
+void Frontend::sendRawNotification(const String& notification)
+{
+    m_frontendChannel->sendProtocolNotification(notification);
+}
+
 // --------------------- Dispatcher.
 
 class DispatcherImpl : public protocol::DispatcherBase {
 public:
-    DispatcherImpl(FrontendChannel* frontendChannel, Backend* backend)
+    DispatcherImpl(FrontendChannel* frontendChannel, Backend* backend, bool fallThroughForNotFound)
         : DispatcherBase(frontendChannel)
-        , m_backend(backend) {
+        , m_backend(backend)
+        , m_fallThroughForNotFound(fallThroughForNotFound) {
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if not generate_command(domain.domain, command.name) %}{% continue %}{% endif %}
@@ -206,12 +212,15 @@ protected:
   {% endfor %}
 
     Backend* m_backend;
+    bool m_fallThroughForNotFound;
 };
 
 DispatchResponse::Status DispatcherImpl::dispatch(int callId, const String& method, std::unique_ptr<protocol::DictionaryValue> messageObject)
 {
     protocol::HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
+        if (m_fallThroughForNotFound)
+            return DispatchResponse::kFallThrough;
         reportProtocolError(callId, DispatchResponse::kMethodNotFound, "'" + method + "' wasn't found", nullptr);
         return DispatchResponse::kError;
     }
@@ -227,8 +236,8 @@ DispatchResponse::Status DispatcherImpl::dispatch(int callId, const String& meth
 
 class {{command.name | to_title_case}}CallbackImpl : public Backend::{{command.name | to_title_case}}Callback, public DispatcherBase::Callback {
 public:
-    {{command.name | to_title_case}}CallbackImpl(std::unique_ptr<DispatcherBase::WeakPtr> backendImpl, int callId)
-        : DispatcherBase::Callback(std::move(backendImpl), callId) { }
+    {{command.name | to_title_case}}CallbackImpl(std::unique_ptr<DispatcherBase::WeakPtr> backendImpl, int callId, int callbackId)
+        : DispatcherBase::Callback(std::move(backendImpl), callId, callbackId) { }
 
     void sendSuccess(
       {%- for parameter in command.returns -%}
@@ -250,6 +259,11 @@ public:
             {% endif %}
           {% endfor %}
         sendIfActive(std::move(resultObject), DispatchResponse::OK());
+    }
+
+    void fallThrough() override
+    {
+        fallThroughIfActive();
     }
 
     void sendFailure(const DispatchResponse& response) override
@@ -335,7 +349,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
       {% endif %}
     return response.status();
     {% else %}
-    std::unique_ptr<{{command.name | to_title_case}}CallbackImpl> callback(new {{command.name | to_title_case}}CallbackImpl(weakPtr(), callId));
+    std::unique_ptr<{{command.name | to_title_case}}CallbackImpl> callback(new {{command.name | to_title_case}}CallbackImpl(weakPtr(), callId, nextCallbackId()));
     m_backend->{{command.name | to_method_case}}(
       {%- for property in command.parameters -%}
         {%- if not loop.first -%}, {% endif -%}
@@ -347,7 +361,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
       {%- endfor -%}
         {%- if command.parameters -%}, {% endif -%}
         std::move(callback));
-    return DispatchResponse::kAsync;
+    return lastCallbackFallThrough() ? DispatchResponse::kFallThrough : DispatchResponse::kAsync;
     {% endif %}
 }
   {% endfor %}
@@ -355,7 +369,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
 // static
 void Dispatcher::wire(UberDispatcher* dispatcher, Backend* backend)
 {
-    dispatcher->registerBackend("{{domain.domain}}", std::unique_ptr<protocol::DispatcherBase>(new DispatcherImpl(dispatcher->channel(), backend)));
+    dispatcher->registerBackend("{{domain.domain}}", std::unique_ptr<protocol::DispatcherBase>(new DispatcherImpl(dispatcher->channel(), backend, dispatcher->fallThroughForNotFound())));
 }
 
 } // {{domain.domain}}

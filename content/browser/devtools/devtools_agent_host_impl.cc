@@ -179,6 +179,7 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
 }
 
 void DevToolsAgentHostImpl::InnerDetach() {
+  session_->ResetDispatcher();
   Detach();
   io_context_.DiscardAllStreams();
   session_.reset();

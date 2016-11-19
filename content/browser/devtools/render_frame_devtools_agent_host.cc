@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -25,6 +26,7 @@
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
+#include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/service_worker_handler.h"
@@ -396,7 +398,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       dom_handler_(new devtools::dom::DOMHandler()),
       input_handler_(new devtools::input::InputHandler()),
       inspector_handler_(new devtools::inspector::InspectorHandler()),
-      io_handler_(new devtools::io::IOHandler(GetIOContext())),
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(nullptr),
       schema_handler_(new devtools::schema::SchemaHandler()),
@@ -405,10 +406,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
           new devtools::service_worker::ServiceWorkerHandler()),
       storage_handler_(new devtools::storage::StorageHandler()),
       target_handler_(new devtools::target::TargetHandler()),
-      tracing_handler_(new devtools::tracing::TracingHandler(
-          devtools::tracing::TracingHandler::Renderer,
-          host->GetFrameTreeNodeId(),
-          GetIOContext())),
       emulation_handler_(nullptr),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
@@ -420,13 +417,11 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetDOMHandler(dom_handler_.get());
   dispatcher->SetInputHandler(input_handler_.get());
   dispatcher->SetInspectorHandler(inspector_handler_.get());
-  dispatcher->SetIOHandler(io_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
   dispatcher->SetSchemaHandler(schema_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetStorageHandler(storage_handler_.get());
   dispatcher->SetTargetHandler(target_handler_.get());
-  dispatcher->SetTracingHandler(tracing_handler_.get());
 
   if (!host->GetParent()) {
     security_handler_.reset(new devtools::security::SecurityHandler());
@@ -500,6 +495,17 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 }
 
 void RenderFrameDevToolsAgentHost::Attach() {
+  session()->dispatcher()->setFallThroughForNotFound(true);
+
+  io_handler_.reset(new protocol::IOHandler(GetIOContext()));
+  io_handler_->Wire(session()->dispatcher());
+
+  tracing_handler_.reset(new protocol::TracingHandler(
+      protocol::TracingHandler::Renderer,
+      frame_tree_node_->frame_tree_node_id(),
+      GetIOContext()));
+  tracing_handler_->Wire(session()->dispatcher());
+
   if (current_)
     current_->Attach();
   if (pending_)
@@ -508,6 +514,11 @@ void RenderFrameDevToolsAgentHost::Attach() {
 }
 
 void RenderFrameDevToolsAgentHost::Detach() {
+  io_handler_->Disable();
+  io_handler_.reset();
+  tracing_handler_->Disable();
+  tracing_handler_.reset();
+
   if (current_)
     current_->Detach();
   if (pending_)
@@ -517,11 +528,20 @@ void RenderFrameDevToolsAgentHost::Detach() {
 
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+  std::unique_ptr<protocol::Value> protocolValue =
+      protocol::toProtocolValue(value.get(), 1000);
+  if (session()->dispatcher()->dispatch(std::move(protocolValue)) !=
+      protocol::Response::kFallThrough) {
+    return true;
+  }
+
   int call_id = 0;
   std::string method;
-  if (protocol_handler_->HandleOptionalMessage(session()->session_id(), message,
-                                               &call_id, &method))
+  if (protocol_handler_->HandleOptionalMessage(
+          session()->session_id(), std::move(value), &call_id, &method)) {
     return true;
+  }
 
   if (!navigating_handles_.empty()) {
     DCHECK(IsBrowserSideNavigationEnabled());
@@ -566,7 +586,6 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
     page_handler_->Detached();
   service_worker_handler_->Detached();
   target_handler_->Detached();
-  tracing_handler_->Detached();
   frame_trace_recorder_.reset();
   in_navigation_protocol_message_buffer_.clear();
 }
