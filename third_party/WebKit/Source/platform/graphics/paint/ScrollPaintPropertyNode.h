@@ -32,24 +32,27 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   static ScrollPaintPropertyNode* root();
 
   static PassRefPtr<ScrollPaintPropertyNode> create(
-      PassRefPtr<ScrollPaintPropertyNode> parent,
+      PassRefPtr<const ScrollPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,
       const IntSize& clip,
       const IntSize& bounds,
       bool userScrollableHorizontal,
-      bool userScrollableVertical) {
+      bool userScrollableVertical,
+      MainThreadScrollingReasons mainThreadScrollingReasons) {
     return adoptRef(new ScrollPaintPropertyNode(
         std::move(parent), std::move(scrollOffsetTranslation), clip, bounds,
-        userScrollableHorizontal, userScrollableVertical));
+        userScrollableHorizontal, userScrollableVertical,
+        mainThreadScrollingReasons));
   }
 
   void update(
-      PassRefPtr<ScrollPaintPropertyNode> parent,
+      PassRefPtr<const ScrollPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,
       const IntSize& clip,
       const IntSize& bounds,
       bool userScrollableHorizontal,
-      bool userScrollableVertical) {
+      bool userScrollableVertical,
+      MainThreadScrollingReasons mainThreadScrollingReasons) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -59,10 +62,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     m_bounds = bounds;
     m_userScrollableHorizontal = userScrollableHorizontal;
     m_userScrollableVertical = userScrollableVertical;
-    m_mainThreadScrollingReasons = 0;
+    m_mainThreadScrollingReasons = mainThreadScrollingReasons;
   }
 
-  ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
+  const ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
   bool isRoot() const { return !m_parent; }
 
   // Transform that the scroll is relative to.
@@ -83,13 +86,18 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   MainThreadScrollingReasons mainThreadScrollingReasons() const {
     return m_mainThreadScrollingReasons;
   }
-  bool hasMainThreadScrollingReasons(MainThreadScrollingReasons reasons) const {
-    return m_mainThreadScrollingReasons & reasons;
+
+  // Main thread scrolling reason for the threaded scrolling disabled setting.
+  bool threadedScrollingDisabled() const {
+    return m_mainThreadScrollingReasons &
+           MainThreadScrollingReason::kThreadedScrollingDisabled;
   }
-  void addMainThreadScrollingReasons(MainThreadScrollingReasons reasons) {
-    m_mainThreadScrollingReasons |= reasons;
+
+  // Main thread scrolling reason for background attachment fixed descendants.
+  bool hasBackgroundAttachmentFixedDescendants() const {
+    return m_mainThreadScrollingReasons &
+           MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
-  void clearMainThreadScrollingReasons() { m_mainThreadScrollingReasons = 0; }
 
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
@@ -98,53 +106,49 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     RefPtr<ScrollPaintPropertyNode> cloned =
         adoptRef(new ScrollPaintPropertyNode(
             m_parent, m_scrollOffsetTranslation, m_clip, m_bounds,
-            m_userScrollableHorizontal, m_userScrollableVertical));
-    cloned->addMainThreadScrollingReasons(m_mainThreadScrollingReasons);
+            m_userScrollableHorizontal, m_userScrollableVertical,
+            m_mainThreadScrollingReasons));
     return cloned;
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    // TODO(pdr): Check main thread scrolling reason equality as well. We do
-    // not yet mark nodes as needing a paint property update on main thread
-    // scrolling reason changes. See: See: https://crbug.com/664672.
     return m_parent == o.m_parent &&
            m_scrollOffsetTranslation == o.m_scrollOffsetTranslation &&
            m_clip == o.m_clip && m_bounds == o.m_bounds &&
            m_userScrollableHorizontal == o.m_userScrollableHorizontal &&
-           m_userScrollableVertical == o.m_userScrollableVertical;
+           m_userScrollableVertical == o.m_userScrollableVertical &&
+           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons;
   }
 #endif
 
  private:
   ScrollPaintPropertyNode(
-      PassRefPtr<ScrollPaintPropertyNode> parent,
+      PassRefPtr<const ScrollPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation,
       IntSize clip,
       IntSize bounds,
       bool userScrollableHorizontal,
-      bool userScrollableVertical)
+      bool userScrollableVertical,
+      MainThreadScrollingReasons mainThreadScrollingReasons)
       : m_parent(parent),
         m_scrollOffsetTranslation(scrollOffsetTranslation),
         m_clip(clip),
         m_bounds(bounds),
         m_userScrollableHorizontal(userScrollableHorizontal),
         m_userScrollableVertical(userScrollableVertical),
-        m_mainThreadScrollingReasons(0) {
+        m_mainThreadScrollingReasons(mainThreadScrollingReasons) {
     DCHECK(m_scrollOffsetTranslation->matrix().isIdentityOr2DTranslation());
   }
 
-  RefPtr<ScrollPaintPropertyNode> m_parent;
+  RefPtr<const ScrollPaintPropertyNode> m_parent;
   RefPtr<const TransformPaintPropertyNode> m_scrollOffsetTranslation;
   IntSize m_clip;
   IntSize m_bounds;
-  bool m_userScrollableHorizontal;
-  bool m_userScrollableVertical;
+  bool m_userScrollableHorizontal : 1;
+  bool m_userScrollableVertical : 1;
   MainThreadScrollingReasons m_mainThreadScrollingReasons;
-  // TODO(pdr): Add an offset for the clip and bounds to the transform.
-  // TODO(pdr): Add 2 bits for whether this is a viewport scroll node.
-  // TODO(pdr): Add a bit for whether this is affected by page scale.
 };
 
 // Redeclared here to avoid ODR issues.

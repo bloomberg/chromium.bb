@@ -48,7 +48,7 @@ struct PaintPropertyTreeBuilderContext {
     // scroll space, the extent that can be scrolled, etc. Because scroll nodes
     // reference a scroll offset transform, scroll nodes should be updated if
     // the transform tree changes.
-    ScrollPaintPropertyNode* scroll = nullptr;
+    const ScrollPaintPropertyNode* scroll = nullptr;
   };
 
   ContainingBlockContext current;
@@ -111,9 +111,6 @@ class PaintPropertyTreeBuilder {
   static void updateScrollbarPaintOffset(
       const LayoutObject&,
       const PaintPropertyTreeBuilderContext&);
-  static void updateMainThreadScrollingReasons(
-      const LayoutObject&,
-      PaintPropertyTreeBuilderContext&);
   static void updateOverflowClip(const LayoutObject&,
                                  PaintPropertyTreeBuilderContext&);
   static void updatePerspective(const LayoutObject&,

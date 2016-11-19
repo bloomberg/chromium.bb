@@ -1480,8 +1480,12 @@ void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object) {
     scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(
         this);
 
-  // TODO(pdr): When slimming paint v2 is enabled, invalidate the scroll paint
-  // property subtree for this so main thread scroll reasons are recomputed.
+  // Ensure main thread scrolling reasons are recomputed.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    setNeedsPaintPropertyUpdate();
+    // The object's scroll properties are not affected by its own background.
+    object->setAllAncestorsNeedPaintPropertyUpdate();
+  }
 }
 
 void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
@@ -1492,8 +1496,12 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
     scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(
         this);
 
-  // TODO(pdr): When slimming paint v2 is enabled, invalidate the scroll paint
-  // property subtree for this so main thread scroll reasons are recomputed.
+  // Ensure main thread scrolling reasons are recomputed.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    setNeedsPaintPropertyUpdate();
+    // The object's scroll properties are not affected by its own background.
+    object->setAllAncestorsNeedPaintPropertyUpdate();
+  }
 }
 
 void FrameView::addViewportConstrainedObject(LayoutObject* object) {
@@ -1597,6 +1605,17 @@ void FrameView::scrollContentsIfNeededRecursive() {
 void FrameView::invalidateBackgroundAttachmentFixedObjects() {
   for (const auto& layoutObject : m_backgroundAttachmentFixedObjects)
     layoutObject->setShouldDoFullPaintInvalidation();
+}
+
+bool FrameView::hasBackgroundAttachmentFixedDescendants(
+    const LayoutObject& object) const {
+  for (const auto* potentialDescendant : m_backgroundAttachmentFixedObjects) {
+    if (potentialDescendant == &object)
+      continue;
+    if (potentialDescendant->isDescendantOf(&object))
+      return true;
+  }
+  return false;
 }
 
 bool FrameView::invalidateViewportConstrainedObjects() {

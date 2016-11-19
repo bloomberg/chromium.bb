@@ -1739,6 +1739,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void setNeedsPaintPropertyUpdate() {
     m_bitfields.setNeedsPaintPropertyUpdate(true);
   }
+  // TODO(pdr): This can be removed once we have more granular update flags.
+  void setAllAncestorsNeedPaintPropertyUpdate() {
+    if (m_parent) {
+      m_parent->setNeedsPaintPropertyUpdate();
+      m_parent->setAllAncestorsNeedPaintPropertyUpdate();
+    }
+  }
   void clearNeedsPaintPropertyUpdate() {
     DCHECK_EQ(document().lifecycle().state(), DocumentLifecycle::InPrePaint);
     m_bitfields.setNeedsPaintPropertyUpdate(false);

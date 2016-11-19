@@ -23,7 +23,6 @@ namespace blink {
 PaintPropertyTreeBuilderContext
 PaintPropertyTreeBuilder::setupInitialContext() {
   PaintPropertyTreeBuilderContext context;
-
   context.current.clip = context.absolutePosition.clip =
       context.fixedPosition.clip = ClipPaintPropertyNode::root();
   context.currentEffect = EffectPaintPropertyNode::root();
@@ -31,11 +30,6 @@ PaintPropertyTreeBuilder::setupInitialContext() {
       context.fixedPosition.transform = TransformPaintPropertyNode::root();
   context.current.scroll = context.absolutePosition.scroll =
       context.fixedPosition.scroll = ScrollPaintPropertyNode::root();
-
-  // Ensure scroll tree properties are reset. They will be rebuilt during the
-  // tree walk.
-  ScrollPaintPropertyNode::root()->clearMainThreadScrollingReasons();
-
   return context;
 }
 
@@ -84,21 +78,23 @@ void updateFrameViewScrollTranslation(
 
 void updateFrameViewScroll(
     FrameView& frameView,
-    PassRefPtr<ScrollPaintPropertyNode> parent,
+    PassRefPtr<const ScrollPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
     const IntSize& clip,
     const IntSize& bounds,
     bool userScrollableHorizontal,
-    bool userScrollableVertical) {
+    bool userScrollableVertical,
+    MainThreadScrollingReasons mainThreadScrollingReasons) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
   if (auto* existingScroll = frameView.scroll()) {
     existingScroll->update(std::move(parent), std::move(scrollOffset), clip,
                            bounds, userScrollableHorizontal,
-                           userScrollableVertical);
+                           userScrollableVertical, mainThreadScrollingReasons);
   } else {
     frameView.setScroll(ScrollPaintPropertyNode::create(
         std::move(parent), std::move(scrollOffset), clip, bounds,
-        userScrollableHorizontal, userScrollableVertical));
+        userScrollableHorizontal, userScrollableVertical,
+        mainThreadScrollingReasons));
   }
 }
 
@@ -148,10 +144,18 @@ void PaintPropertyTreeBuilder::updateProperties(
           frameView.userInputScrollable(HorizontalScrollbar);
       bool userScrollableVertical =
           frameView.userInputScrollable(VerticalScrollbar);
+
+      MainThreadScrollingReasons reasons = 0;
+      if (!frameView.frame().settings()->threadedScrollingEnabled())
+        reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+      if (frameView.hasBackgroundAttachmentFixedObjects()) {
+        reasons |=
+            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+      }
       updateFrameViewScroll(frameView, context.current.scroll,
                             frameView.scrollTranslation(), scrollClip,
                             scrollBounds, userScrollableHorizontal,
-                            userScrollableVertical);
+                            userScrollableVertical, reasons);
     } else {
       // Ensure pre-existing properties are cleared when there is no scrolling.
       frameView.setScrollTranslation(nullptr);
@@ -172,7 +176,7 @@ void PaintPropertyTreeBuilder::updateProperties(
   context.current.clip = frameView.contentClip();
   if (const auto* scrollTranslation = frameView.scrollTranslation())
     context.current.transform = scrollTranslation;
-  if (auto* scroll = frameView.scroll())
+  if (const auto* scroll = frameView.scroll())
     context.current.scroll = scroll;
   context.current.paintOffset = LayoutPoint();
   context.current.renderingContextID = 0;
@@ -497,32 +501,6 @@ void PaintPropertyTreeBuilder::updateScrollbarPaintOffset(
     properties->clearScrollbarPaintOffset();
 }
 
-void PaintPropertyTreeBuilder::updateMainThreadScrollingReasons(
-    const LayoutObject& object,
-    PaintPropertyTreeBuilderContext& context) {
-  // TODO(pdr): Mark properties as needing an update for main thread scroll
-  // reasons and ensure reason changes are propagated to ancestors to account
-  // for the parent walk below. https://crbug.com/664672.
-
-  if (context.current.scroll &&
-      !object.document().settings()->threadedScrollingEnabled()) {
-    context.current.scroll->addMainThreadScrollingReasons(
-        MainThreadScrollingReason::kThreadedScrollingDisabled);
-  }
-
-  if (object.isBackgroundAttachmentFixedObject()) {
-    auto* scrollNode = context.current.scroll;
-    while (
-        scrollNode &&
-        !scrollNode->hasMainThreadScrollingReasons(
-            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)) {
-      scrollNode->addMainThreadScrollingReasons(
-          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
-      scrollNode = scrollNode->parent();
-    }
-  }
-}
-
 void PaintPropertyTreeBuilder::updateOverflowClip(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -670,10 +648,25 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
             scrollableArea->userInputScrollable(HorizontalScrollbar);
         bool userScrollableVertical =
             scrollableArea->userInputScrollable(VerticalScrollbar);
+        MainThreadScrollingReasons reasons = 0;
+        if (!object.document().settings()->threadedScrollingEnabled())
+          reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+        // Checking for descendants in the layout tree has two downsides:
+        // 1) There can be more descendants in layout order than in paint
+        //    order (e.g., fixed position objects).
+        // 2) Iterating overall all background attachment fixed objects for
+        //    every scroll node can be slow, though there will be no objects
+        //    in the common case.
+        const FrameView& frameView = *object.frameView();
+        if (frameView.hasBackgroundAttachmentFixedDescendants(object)) {
+          reasons |=
+              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+        }
         object.getMutableForPainting().ensurePaintProperties().updateScroll(
             context.current.scroll,
             object.paintProperties()->scrollTranslation(), scrollClip,
-            scrollBounds, userScrollableHorizontal, userScrollableVertical);
+            scrollBounds, userScrollableHorizontal, userScrollableVertical,
+            reasons);
       } else {
         // Ensure pre-existing properties are cleared when there is no
         // scrolling.
@@ -688,9 +681,7 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
 
   if (object.paintProperties() && object.paintProperties()->scroll()) {
     context.current.transform = object.paintProperties()->scrollTranslation();
-    const auto* scroll = object.paintProperties()->scroll();
-    // TODO(pdr): Remove this const cast.
-    context.current.scroll = const_cast<ScrollPaintPropertyNode*>(scroll);
+    context.current.scroll = object.paintProperties()->scroll();
     context.current.shouldFlattenInheritedTransform = false;
   }
 }
@@ -706,7 +697,7 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(
   if (object.isLayoutView()) {
     if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       const auto* initialFixedTransform = context.fixedPosition.transform;
-      auto* initialFixedScroll = context.fixedPosition.scroll;
+      const auto* initialFixedScroll = context.fixedPosition.scroll;
 
       context.fixedPosition = context.current;
 
@@ -782,8 +773,7 @@ static void overrideContaineringBlockContextFromRealContainingBlock(
   context.renderingContextID =
       context.transform ? context.transform->renderingContextID() : 0;
   context.clip = properties->propertyTreeState.clip();
-  context.scroll = const_cast<ScrollPaintPropertyNode*>(
-      properties->propertyTreeState.scroll());
+  context.scroll = properties->propertyTreeState.scroll();
 }
 
 static void deriveBorderBoxFromContainerContext(
@@ -888,7 +878,6 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
   updateCssClip(object, context);
   updateLocalBorderBoxContext(object, context);
   updateScrollbarPaintOffset(object, context);
-  updateMainThreadScrollingReasons(object, context);
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForChildren(

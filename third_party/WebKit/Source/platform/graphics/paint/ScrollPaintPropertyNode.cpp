@@ -10,7 +10,7 @@ ScrollPaintPropertyNode* ScrollPaintPropertyNode::root() {
   DEFINE_STATIC_REF(ScrollPaintPropertyNode, root,
                     (ScrollPaintPropertyNode::create(
                         nullptr, TransformPaintPropertyNode::root(), IntSize(),
-                        IntSize(), false, false)));
+                        IntSize(), false, false, 0)));
   return root;
 }
 

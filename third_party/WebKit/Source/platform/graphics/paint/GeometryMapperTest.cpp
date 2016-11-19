@@ -51,7 +51,7 @@ class GeometryMapperTest : public ::testing::Test {
         nullptr, rootTransformNode, rootClipNode, CompositorFilterOperations(),
         1.0);
     rootScrollNode = ScrollPaintPropertyNode::create(
-        nullptr, rootTransformNode, IntSize(), IntSize(), false, false);
+        nullptr, rootTransformNode, IntSize(), IntSize(), false, false, 0);
     geometryMapper = makeUnique<GeometryMapper>();
   }
 

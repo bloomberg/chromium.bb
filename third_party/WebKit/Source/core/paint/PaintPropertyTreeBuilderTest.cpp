@@ -2609,31 +2609,27 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "</div>"
       "<div class='forceScroll'></div>");
   Element* overflowA = document().getElementById("overflowA");
-  EXPECT_FALSE(frameScroll()->hasMainThreadScrollingReasons(
-      MainThreadScrollingReason::kThreadedScrollingDisabled));
+  EXPECT_FALSE(frameScroll()->threadedScrollingDisabled());
   EXPECT_FALSE(overflowA->layoutObject()
                    ->paintProperties()
                    ->scroll()
-                   ->hasMainThreadScrollingReasons(
-                       MainThreadScrollingReason::kThreadedScrollingDisabled));
+                   ->threadedScrollingDisabled());
 
   document().settings()->setThreadedScrollingEnabled(false);
+  // TODO(pdr): The main thread scrolling setting should invalidate properties.
+  document().view()->setNeedsPaintPropertyUpdate();
+  overflowA->layoutObject()->setNeedsPaintPropertyUpdate();
   document().view()->updateAllLifecyclePhases();
 
-  EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(
-      MainThreadScrollingReason::kThreadedScrollingDisabled));
+  EXPECT_TRUE(frameScroll()->threadedScrollingDisabled());
   EXPECT_TRUE(overflowA->layoutObject()
                   ->paintProperties()
                   ->scroll()
-                  ->hasMainThreadScrollingReasons(
-                      MainThreadScrollingReason::kThreadedScrollingDisabled));
+                  ->threadedScrollingDisabled());
 }
 
-// Disabled due to missing main thread scrolling property invalidation support.
-// See: https://crbug.com/664672
-TEST_P(
-    PaintPropertyTreeBuilderTest,
-    DISABLED_BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
+TEST_P(PaintPropertyTreeBuilderTest,
+       BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
   setBodyInnerHTML(
       "<style>"
       "  #overflowA {"
@@ -2666,63 +2662,45 @@ TEST_P(
   Element* overflowA = document().getElementById("overflowA");
   Element* overflowB = document().getElementById("overflowB");
 
-  EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_TRUE(
-      overflowA->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+  EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(overflowA->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowB->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflowB->removeAttribute("class");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_FALSE(frameScroll()->hasMainThreadScrollingReasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowA->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+  EXPECT_FALSE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowA->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowB->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
 
   // Adding a main thread scrolling reason should update the entire tree.
   overflowB->setAttribute(HTMLNames::classAttr, "backgroundAttachmentFixed");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_TRUE(
-      overflowA->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+  EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(overflowA->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowB->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
 }
 
-// Disabled due to missing main thread scrolling property invalidation support.
-// See: https://crbug.com/664672
-TEST_P(
-    PaintPropertyTreeBuilderTest,
-    DISABLED_BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
+TEST_P(PaintPropertyTreeBuilderTest,
+       BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
   setBodyInnerHTML(
       "<style>"
       "  #overflowA {"
@@ -2755,48 +2733,38 @@ TEST_P(
   Element* overflowA = document().getElementById("overflowA");
   Element* overflowB = document().getElementById("overflowB");
 
-  EXPECT_FALSE(
-      overflowA->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_TRUE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->parent()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+  // This should be false. We are not as strict about main thread scrolling
+  // reasons as we could be.
+  EXPECT_TRUE(overflowA->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowB->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(overflowB->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->parent()
+                  ->isRoot());
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflowB->removeAttribute("class");
   document().view()->updateAllLifecyclePhases();
-  EXPECT_FALSE(
-      overflowA->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_FALSE(
-      overflowB->layoutObject()
-          ->paintProperties()
-          ->scroll()
-          ->parent()
-          ->hasMainThreadScrollingReasons(
-              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+  EXPECT_FALSE(overflowA->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowB->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(overflowB->layoutObject()
+                   ->paintProperties()
+                   ->scroll()
+                   ->parent()
+                   ->hasBackgroundAttachmentFixedDescendants());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {

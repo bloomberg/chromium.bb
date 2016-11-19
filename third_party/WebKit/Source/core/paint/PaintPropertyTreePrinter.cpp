@@ -292,13 +292,11 @@ class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
     stringBuilder.append(node->userScrollableHorizontal() ? "yes" : "no");
     stringBuilder.append(" userScrollableVertical=");
     stringBuilder.append(node->userScrollableVertical() ? "yes" : "no");
+    stringBuilder.append(" threadedScrollingDisabled=");
+    stringBuilder.append(node->threadedScrollingDisabled() ? "yes" : "no");
+    stringBuilder.append(" hasBackgroundAttachmentFixedDescendants=");
     stringBuilder.append(
-        " hasBackgroundAttachmentFixedMainThreadScrollingReason=");
-    stringBuilder.append(
-        node->hasMainThreadScrollingReasons(
-            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)
-            ? "yes"
-            : "no");
+        node->hasBackgroundAttachmentFixedDescendants() ? "yes" : "no");
   }
 };
 
@@ -534,7 +532,7 @@ class PaintPropertyTreeGraphBuilder {
     ClipPaintPropertyNode* contentClip = frameView.contentClip();
     if (contentClip)
       writePaintPropertyNode(*contentClip, &frameView, "contentClip");
-    ScrollPaintPropertyNode* scroll = frameView.scroll();
+    const ScrollPaintPropertyNode* scroll = frameView.scroll();
     if (scroll)
       writePaintPropertyNode(*scroll, &frameView, "scroll");
   }

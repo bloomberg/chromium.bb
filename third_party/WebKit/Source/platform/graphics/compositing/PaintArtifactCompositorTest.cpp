@@ -629,7 +629,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
                                          FloatPoint3D());
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
       ScrollPaintPropertyNode::root(), scrollTranslation, IntSize(11, 13),
-      IntSize(27, 31), true, false);
+      IntSize(27, 31), true, false, 0);
 
   TestPaintArtifact artifact;
   artifact
@@ -671,8 +671,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
           TransformationMatrix().translate(11, 13), FloatPoint3D());
   RefPtr<ScrollPaintPropertyNode> scrollA = ScrollPaintPropertyNode::create(
       ScrollPaintPropertyNode::root(), scrollTranslationA, IntSize(2, 3),
-      IntSize(5, 7), false, true);
-  scrollA->addMainThreadScrollingReasons(
+      IntSize(5, 7), false, true,
       MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
   RefPtr<TransformPaintPropertyNode> scrollTranslationB =
       TransformPaintPropertyNode::create(
@@ -680,7 +679,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
           FloatPoint3D());
   RefPtr<ScrollPaintPropertyNode> scrollB = ScrollPaintPropertyNode::create(
       scrollA, scrollTranslationB, IntSize(19, 23), IntSize(29, 31), true,
-      false);
+      false, 0);
   TestPaintArtifact artifact;
   artifact
       .chunk(scrollTranslationA, ClipPaintPropertyNode::root(), effect, scrollA)

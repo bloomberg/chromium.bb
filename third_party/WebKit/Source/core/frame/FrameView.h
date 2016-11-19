@@ -234,6 +234,7 @@ class CORE_EXPORT FrameView final
   bool hasBackgroundAttachmentFixedObjects() const {
     return m_backgroundAttachmentFixedObjects.size();
   }
+  bool hasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
   void invalidateBackgroundAttachmentFixedObjects();
 
   void handleLoadCompleted();
