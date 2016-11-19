@@ -29,7 +29,7 @@ NGLayoutOpportunity CreateLayoutOpportunityFromConstraintSpace(
     const NGLogicalOffset& origin_point) {
   NGLayoutOpportunity opportunity;
   opportunity.offset = space.Offset();
-  opportunity.size = space.Size();
+  opportunity.size = space.AvailableSize();
 
   // adjust to the origin_point.
   opportunity.offset += origin_point;

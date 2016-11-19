@@ -79,12 +79,6 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalOffset Offset() const { return offset_; }
   void SetOffset(const NGLogicalOffset& offset) { offset_ = offset; }
 
-  // Returns the effective size of the constraint space. Equal to the
-  // AvailableSize() for the root constraint space but derived constraint spaces
-  // return the size of the layout opportunity.
-  virtual NGLogicalSize Size() const { return size_; }
-  void SetSize(const NGLogicalSize& size) { size_ = size; }
-
   // Whether the current constraint space is for the newly established
   // Formatting Context.
   bool IsNewFormattingContext() const;
@@ -118,13 +112,6 @@ class CORE_EXPORT NGConstraintSpace final
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(physical_space_); }
 
-  // The setters for the NGConstraintSpace should only be used when constructing
-  // a derived NGConstraintSpace.
-  void SetOverflowTriggersScrollbar(bool inlineTriggers, bool blockTriggers);
-  void SetFixedSize(bool inlineFixed, bool blockFixed);
-  void SetFragmentationType(NGFragmentationType);
-  void SetIsNewFormattingContext(bool is_new_fc);
-
   NGConstraintSpace* ChildSpace(const ComputedStyle* style) const;
 
   String ToString() const;
@@ -132,7 +119,6 @@ class CORE_EXPORT NGConstraintSpace final
  private:
   Member<NGPhysicalConstraintSpace> physical_space_;
   NGLogicalOffset offset_;
-  NGLogicalSize size_;
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
 };
