@@ -46,6 +46,7 @@ class NativeInitializationController {
     private boolean mLibraryLoaded;
     private boolean mHasDoneFirstDraw;
     private boolean mWaitingForVariationsFetch;
+    private boolean mHasSignaledLibraryLoaded;
     private boolean mInitializationComplete;
 
     /**
@@ -99,11 +100,13 @@ class NativeInitializationController {
                     != null) {
                 mWaitingForVariationsFetch = true;
                 IntentFilter filter = new IntentFilter(VariationsSeedService.COMPLETE_BROADCAST);
-                LocalBroadcastManager.getInstance(context).registerReceiver(
+                final LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
+                manager.registerReceiver(
                         new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
                                 mWaitingForVariationsFetch = false;
+                                manager.unregisterReceiver(this);
                                 signalNativeLibraryLoadedIfReady();
                             }
                         },
@@ -155,6 +158,10 @@ class NativeInitializationController {
 
         // Called on UI thread when any of the booleans below have changed.
         if (mHasDoneFirstDraw && mLibraryLoaded && !mWaitingForVariationsFetch) {
+            // This block should only be hit once.
+            assert !mHasSignaledLibraryLoaded;
+            mHasSignaledLibraryLoaded = true;
+
             // Allow the UI thread to continue its initialization - so that this call back
             // doesn't block priority work on the UI thread until it's idle.
             mHandler.post(new Runnable() {
