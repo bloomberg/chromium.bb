@@ -41,10 +41,7 @@ Section::Section(const Dump &dump)
   : test_assembler::Section(dump.endianness()) { }
 
 void Section::CiteLocationIn(test_assembler::Section *section) const {
-  if (this)
-    (*section).D32(size_).D32(file_offset_);
-  else
-    (*section).D32(0).D32(0);
+  (*section).D32(size_).D32(file_offset_);
 }
 
 void Stream::CiteStreamIn(test_assembler::Section *section) const {
@@ -272,8 +269,14 @@ Module::Module(const Dump &dump,
   D32(version_info.file_subtype);
   D32(version_info.file_date_hi);
   D32(version_info.file_date_lo);
-  cv_record->CiteLocationIn(this);
-  misc_record->CiteLocationIn(this);
+  if (cv_record)
+    cv_record->CiteLocationIn(this);
+  else
+    D32(0).D32(0);
+  if (misc_record)
+    misc_record->CiteLocationIn(this);
+  else
+    D32(0).D32(0);
   D64(0).D64(0);
 }
 

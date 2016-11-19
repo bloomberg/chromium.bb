@@ -138,13 +138,6 @@ class Section: public test_assembler::Section {
   explicit Section(const Dump &dump);
 
   // Append an MDLocationDescriptor referring to this section to SECTION.
-  // If 'this' is NULL, append a descriptor with a zero length and MDRVA.
-  //
-  // (I couldn't find the language in the C++ standard that says that
-  // invoking member functions of a NULL pointer to a class type is
-  // bad, if such language exists. Having this function handle NULL
-  // 'this' is convenient, but if it causes trouble, it's not hard to
-  // do differently.)
   void CiteLocationIn(test_assembler::Section *section) const;
 
   // Note that this section's contents are complete, and that it has
