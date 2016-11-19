@@ -845,8 +845,7 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   // But the bounds of the WindowTreeHost is display relative.
   EXPECT_EQ(bounds_from_server,
             top_level->GetRootWindow()->GetHost()->GetBounds());
-  ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
-      WindowTreeChangeType::PROPERTY, false));
+  window_tree()->AckAllChangesOfType(WindowTreeChangeType::PROPERTY, false);
   EXPECT_EQ(server_test_property1_value,
             top_level->GetProperty(kTestPropertyKey1));
   EXPECT_EQ(server_test_property2_value,

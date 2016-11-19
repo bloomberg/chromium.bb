@@ -65,6 +65,8 @@ class AURA_EXPORT PropertyConverter {
                         const char* transport_name);
   void RegisterProperty(const WindowProperty<std::string*>* property,
                         const char* transport_name);
+  void RegisterProperty(const WindowProperty<base::string16*>* property,
+                        const char* transport_name);
 
  private:
   // A pair with the aura::WindowProperty::name and the mus property name.
@@ -77,6 +79,8 @@ class AURA_EXPORT PropertyConverter {
   // This supports types that can be serialized for Mojo, eg. T=std::string*.
   std::map<const WindowProperty<gfx::Rect*>*, const char*> rect_properties_;
   std::map<const WindowProperty<std::string*>*, const char*> string_properties_;
+  std::map<const WindowProperty<base::string16*>*, const char*>
+      string16_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(PropertyConverter);
 };

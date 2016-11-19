@@ -9,14 +9,16 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/geometry/rect.h"
 
-// See aura_constants.cc for bool, int32_t, int64_t, std::string, and gfx::Rect.
-// That same file also declares the uint32_t type via SkColor.
+// See aura_constants.cc for bool, int32_t, int64_t, std::string, gfx::Rect,
+// and base::string16. It also declares the uint32_t type via SkColor.
 DECLARE_WINDOW_PROPERTY_TYPE(uint8_t)
 DECLARE_WINDOW_PROPERTY_TYPE(uint16_t)
 DECLARE_WINDOW_PROPERTY_TYPE(uint64_t)
@@ -39,6 +41,8 @@ DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey8, 0);
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kTestStringPropertyKey, nullptr);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
+                                 nullptr);
 
 const char kTestPropertyServerKey0[] = "test-property-server0";
 const char kTestPropertyServerKey1[] = "test-property-server1";
@@ -52,6 +56,7 @@ const char kTestPropertyServerKey8[] = "test-property-server8";
 
 const char kTestRectPropertyServerKey[] = "test-rect-property-server";
 const char kTestStringPropertyServerKey[] = "test-string-property-server";
+const char kTestString16PropertyServerKey[] = "test-string16-property-server";
 
 // Test registration, naming and value conversion for primitive property types.
 template <typename T>
@@ -192,6 +197,37 @@ TEST_F(PropertyConverterTest, StringProperty) {
   property_converter.SetPropertyFromTransportValue(
       window.get(), kTestStringPropertyServerKey, &transport_value);
   EXPECT_EQ(value_2, *window->GetProperty(kTestStringPropertyKey));
+}
+
+// Verifies property setting behavior for a base::string16* property.
+TEST_F(PropertyConverterTest, String16Property) {
+  PropertyConverter property_converter;
+  property_converter.RegisterProperty(kTestString16PropertyKey,
+                                      kTestString16PropertyServerKey);
+  EXPECT_EQ(kTestString16PropertyServerKey,
+            property_converter.GetTransportNameForPropertyKey(
+                kTestString16PropertyKey));
+
+  base::string16 value_1 = base::ASCIIToUTF16("test value");
+  std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
+  window->SetProperty(kTestString16PropertyKey, new base::string16(value_1));
+  EXPECT_EQ(value_1, *window->GetProperty(kTestString16PropertyKey));
+
+  std::string transport_name_out;
+  std::unique_ptr<std::vector<uint8_t>> transport_value_out;
+  EXPECT_TRUE(property_converter.ConvertPropertyForTransport(
+      window.get(), kTestString16PropertyKey, &transport_name_out,
+      &transport_value_out));
+  EXPECT_EQ(kTestString16PropertyServerKey, transport_name_out);
+  EXPECT_EQ(mojo::ConvertTo<std::vector<uint8_t>>(value_1),
+            *transport_value_out.get());
+
+  base::string16 value_2 = base::ASCIIToUTF16("another test value");
+  std::vector<uint8_t> transport_value =
+      mojo::ConvertTo<std::vector<uint8_t>>(value_2);
+  property_converter.SetPropertyFromTransportValue(
+      window.get(), kTestString16PropertyServerKey, &transport_value);
+  EXPECT_EQ(value_2, *window->GetProperty(kTestString16PropertyKey));
 }
 
 }  // namespace aura

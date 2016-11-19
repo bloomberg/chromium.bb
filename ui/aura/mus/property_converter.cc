@@ -36,8 +36,11 @@ PropertyConverter::PropertyConverter() {
                    ui::mojom::WindowManager::kAppID_Property);
   RegisterProperty(client::kExcludeFromMruKey,
                    ui::mojom::WindowManager::kExcludeFromMru_Property);
+  RegisterProperty(client::kNameKey, ui::mojom::WindowManager::kName_Property);
   RegisterProperty(client::kRestoreBoundsKey,
                    ui::mojom::WindowManager::kRestoreBounds_Property);
+  RegisterProperty(client::kTitleKey,
+                   ui::mojom::WindowManager::kWindowTitle_Property);
 }
 
 PropertyConverter::~PropertyConverter() {}
@@ -63,6 +66,12 @@ bool PropertyConverter::ConvertPropertyForTransport(
     return true;
   }
 
+  auto string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
+  if (string16_properties_.count(string16_key) > 0) {
+    *transport_value = GetArray(window, string16_key);
+    return true;
+  }
+
   // Handle primitive property types generically.
   DCHECK_GT(primitive_properties_.count(key), 0u);
   // TODO(msw): Using the int64_t accessor is wasteful for smaller types.
@@ -83,6 +92,10 @@ std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
   auto string_key = static_cast<const WindowProperty<std::string*>*>(key);
   if (string_properties_.count(string_key) > 0)
     return string_properties_[string_key];
+
+  auto string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
+  if (string16_properties_.count(string16_key) > 0)
+    return string16_properties_[string16_key];
 
   return std::string();
 }
@@ -128,6 +141,15 @@ void PropertyConverter::SetPropertyFromTransportValue(
     }
   }
 
+  for (const auto& string16_property : string16_properties_) {
+    if (string16_property.second == transport_name) {
+      // TODO(msw): Validate the data somehow, before trying to convert?
+      const base::string16 value = mojo::ConvertTo<base::string16>(*data);
+      window->SetProperty(string16_property.first, new base::string16(value));
+      return;
+    }
+  }
+
   DVLOG(2) << "Unknown mus property name: " << transport_name;
 }
 
@@ -141,6 +163,12 @@ void PropertyConverter::RegisterProperty(
     const WindowProperty<std::string*>* property,
     const char* transport_name) {
   string_properties_[property] = transport_name;
+}
+
+void PropertyConverter::RegisterProperty(
+    const WindowProperty<base::string16*>* property,
+    const char* transport_name) {
+  string16_properties_[property] = transport_name;
 }
 
 }  // namespace aura
