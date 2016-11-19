@@ -12,6 +12,7 @@
 #include <ppapi/c/pp_errors.h>
 
 #include "nacl_io/httpfs/http_fs.h"
+#include "nacl_io/http_status_codes.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/osinttypes.h"
 
@@ -27,11 +28,6 @@ namespace {
 // request, we need to read all of the data up to the start of our partial
 // request into a dummy buffer. This is the maximum size of that buffer.
 const int MAX_READ_BUFFER_SIZE = 64 * 1024;
-const int32_t STATUSCODE_OK = 200;
-const int32_t STATUSCODE_PARTIAL_CONTENT = 206;
-const int32_t STATUSCODE_FORBIDDEN = 403;
-const int32_t STATUSCODE_NOT_FOUND = 404;
-const int32_t STATUSCODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
 
 StringMap_t ParseHeaders(const char* headers, int32_t headers_length) {
   enum State {

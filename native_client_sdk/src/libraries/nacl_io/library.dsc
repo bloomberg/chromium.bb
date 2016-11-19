@@ -174,6 +174,7 @@
         "html5fs/html5_fs_node.h",
         "httpfs/http_fs.h",
         "httpfs/http_fs_node.h",
+        "http_status_codes.h",
         "inode_pool.h",
         "ioctl.h",
         "jsfs/js_fs.h",
