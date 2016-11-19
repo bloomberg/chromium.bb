@@ -219,7 +219,8 @@ if (use_allocator == "tcmalloc") {
     configs -= [
       "//build/config/compiler:chromium_code",
 
-      # The asm code in tcmalloc is not currently thumb compatible
+      # Thumb mode disabled due to bug in clang integrated assembler
+      # TODO(https://llvm.org/bugs/show_bug.cgi?id=31058)
       "//build/config/compiler:compiler_arm_thumb",
     ]
     configs += [
