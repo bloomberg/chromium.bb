@@ -34,7 +34,6 @@ SyncManager::SyncManager(ServiceWorkerRegistration* registration)
 }
 
 ScriptPromise SyncManager::registerFunction(ScriptState* scriptState,
-                                            ExecutionContext* context,
                                             const String& tag) {
   // TODO(jkarlin): Wait for the registration to become active instead of
   // rejecting. See crbug.com/542437.

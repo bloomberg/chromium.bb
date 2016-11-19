@@ -26,9 +26,7 @@ class SyncManager final : public GarbageCollected<SyncManager>,
     return new SyncManager(registration);
   }
 
-  ScriptPromise registerFunction(ScriptState*,
-                                 ExecutionContext*,
-                                 const String&);
+  ScriptPromise registerFunction(ScriptState*, const String& tag);
   ScriptPromise getTags(ScriptState*);
 
   DECLARE_TRACE();
