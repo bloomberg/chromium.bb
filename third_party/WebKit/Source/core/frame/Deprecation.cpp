@@ -281,11 +281,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return "'webkitCancelAnimationFrame' is vendor-specific. Please use the "
              "standard 'cancelAnimationFrame' instead.";
 
-    case UseCounter::PrefixedCancelRequestAnimationFrame:
-      return replacedWillBeRemoved("webkitCancelRequestAnimationFrame",
-                                   "cancelAnimationFrame", M57,
-                                   "5588435494502400");
-
     case UseCounter::PictureSourceSrc:
       return "<source src> with a <picture> parent is invalid and therefore "
              "ignored. Please use <source srcset> instead.";

@@ -8906,7 +8906,6 @@ interface webkitURL
     method setTimeout
     method stop
     method webkitCancelAnimationFrame
-    method webkitCancelRequestAnimationFrame
     method webkitRequestAnimationFrame
     method webkitRequestFileSystem
     method webkitResolveLocalFileSystemURL

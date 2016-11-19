@@ -1,6 +1,0 @@
-CONSOLE WARNING: line 5: 'webkitRequestAnimationFrame' is vendor-specific. Please use the standard 'requestAnimationFrame' instead.
-CONSOLE WARNING: line 6: webkitCancelRequestAnimationFrame is deprecated and will be removed in M57, around March 2017. Please use cancelAnimationFrame instead. See https://www.chromestatus.com/features/5588435494502400 for more details.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

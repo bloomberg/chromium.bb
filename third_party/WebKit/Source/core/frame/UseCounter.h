@@ -254,7 +254,6 @@ class CORE_EXPORT UseCounter {
     AnimationConstructorKeyframeListEffectObjectTiming = 300,
     AnimationConstructorKeyframeListEffectNoTiming = 302,
     PrefixedCancelAnimationFrame = 304,
-    PrefixedCancelRequestAnimationFrame = 305,
     NamedNodeMapGetNamedItem = 306,
     NamedNodeMapSetNamedItem = 307,
     NamedNodeMapRemoveNamedItem = 308,
