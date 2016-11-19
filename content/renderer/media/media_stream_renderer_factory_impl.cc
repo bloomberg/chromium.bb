@@ -61,6 +61,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
+    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
@@ -76,9 +77,9 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
     return NULL;
   }
 
-  return new MediaStreamVideoRendererSink(video_tracks[0], error_cb, repaint_cb,
-                                          media_task_runner, worker_task_runner,
-                                          gpu_factories);
+  return new MediaStreamVideoRendererSink(
+      video_tracks[0], error_cb, repaint_cb, compositor_task_runner,
+      media_task_runner, worker_task_runner, gpu_factories);
 }
 
 scoped_refptr<MediaStreamAudioRenderer>

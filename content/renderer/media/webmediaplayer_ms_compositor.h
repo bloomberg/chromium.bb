@@ -60,7 +60,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   ~WebMediaPlayerMSCompositor() override;
 
-  void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame);
+  void EnqueueFrame(scoped_refptr<media::VideoFrame> frame);
 
   // Statistical data
   gfx::Size GetCurrentSize();

@@ -203,8 +203,8 @@ void WebMediaPlayerMSCompositor::SetVideoFrameProviderClient(
 }
 
 void WebMediaPlayerMSCompositor::EnqueueFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    scoped_refptr<media::VideoFrame> frame) {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(current_frame_lock_);
   ++total_frame_count_;
 

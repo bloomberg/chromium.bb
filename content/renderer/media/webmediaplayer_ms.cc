@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
@@ -23,6 +24,7 @@
 #include "content/renderer/media/webmediaplayer_ms_compositor.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
@@ -35,6 +37,103 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 
 namespace content {
+
+// FrameDeliverer is responsible for delivering frames received on
+// compositor thread by calling of EnqueueFrame() method of |compositor_|.
+//
+// It is created on the main thread, but methods should be called and class
+// should be destructed on the compositor thread.
+class WebMediaPlayerMS::FrameDeliverer {
+ public:
+  typedef base::Callback<void(scoped_refptr<media::VideoFrame>)>
+      EnqueueFrameCallback;
+
+  FrameDeliverer(const base::WeakPtr<WebMediaPlayerMS>& player,
+                 const EnqueueFrameCallback& enqueue_frame_cb)
+      : last_frame_opaque_(true),
+        received_first_frame_(false),
+        main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        player_(player),
+        enqueue_frame_cb_(enqueue_frame_cb),
+        weak_factory_for_compositor_(this) {
+    compositor_thread_checker_.DetachFromThread();
+  }
+
+  ~FrameDeliverer() {
+    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+  }
+
+  void OnVideoFrame(scoped_refptr<media::VideoFrame> frame) {
+    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+
+#if defined(OS_ANDROID)
+    if (render_frame_suspended_)
+      return;
+#endif  // defined(OS_ANDROID)
+
+    base::TimeTicks render_time;
+    if (frame->metadata()->GetTimeTicks(
+            media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+      TRACE_EVENT1("webrtc", "WebMediaPlayerMS::OnFrameAvailable",
+                   "Ideal Render Instant", render_time.ToInternalValue());
+    } else {
+      TRACE_EVENT0("webrtc", "WebMediaPlayerMS::OnFrameAvailable");
+    }
+    const bool is_opaque = media::IsOpaque(frame->format());
+
+    if (!received_first_frame_) {
+      received_first_frame_ = true;
+      last_frame_opaque_ = is_opaque;
+      media::VideoRotation video_rotation;
+      ignore_result(frame->metadata()->GetRotation(
+          media::VideoFrameMetadata::ROTATION, &video_rotation));
+      main_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&WebMediaPlayerMS::OnFirstFrameReceived,
+                                player_, video_rotation, is_opaque));
+    }
+
+    if (last_frame_opaque_ != is_opaque) {
+      last_frame_opaque_ = is_opaque;
+      main_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&WebMediaPlayerMS::OnOpacityChanged, player_, is_opaque));
+    }
+
+    enqueue_frame_cb_.Run(frame);
+  }
+
+#if defined(OS_ANDROID)
+  void SetRenderFrameSuspended(bool render_frame_suspended) {
+    DCHECK(compositor_thread_checker_.CalledOnValidThread());
+    render_frame_suspended_ = render_frame_suspended;
+  }
+#endif  // defined(OS_ANDROID)
+
+  MediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
+    return base::Bind(&FrameDeliverer::OnVideoFrame,
+                      weak_factory_for_compositor_.GetWeakPtr());
+  }
+
+ private:
+  bool last_frame_opaque_;
+  bool received_first_frame_;
+
+#if defined(OS_ANDROID)
+  bool render_frame_suspended_ = false;
+#endif  // defined(OS_ANDROID)
+
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  const base::WeakPtr<WebMediaPlayerMS> player_;
+  const EnqueueFrameCallback enqueue_frame_cb_;
+
+  // Used for DCHECKs to ensure method calls executed on the correct thread,
+  // i.e. compositor thread.
+  base::ThreadChecker compositor_thread_checker_;
+
+  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_compositor_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
+};
 
 WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebFrame* frame,
@@ -55,10 +154,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       client_(client),
       delegate_(delegate),
       delegate_id_(0),
-      last_frame_opaque_(true),
       paused_(true),
-      render_frame_suspended_(false),
-      received_first_frame_(false),
       video_rotation_(media::VIDEO_ROTATION_0),
       media_log_(media_log),
       renderer_factory_(std::move(factory)),
@@ -90,6 +186,10 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   get_client()->setWebLayer(nullptr);
   if (video_weblayer_)
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
+
+  if (frame_deliverer_)
+    compositor_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
+
   if (compositor_)
     compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_.release());
 
@@ -129,9 +229,15 @@ void WebMediaPlayerMS::load(LoadType load_type,
       web_stream.isNull() ? std::string() : web_stream.id().utf8();
   media_log_->AddEvent(media_log_->CreateLoadEvent(stream_id));
 
+  // base::Unretained usage is safe here because |compositor_| is destroyed
+  // after |frame_deliverer_|.
+  frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
+      AsWeakPtr(), base::Bind(&WebMediaPlayerMSCompositor::EnqueueFrame,
+                              base::Unretained(compositor_.get()))));
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
-      web_stream, base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr()),
-      base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()),
+      web_stream, media::BindToCurrentLoop(base::Bind(
+                      &WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
+      frame_deliverer_->GetRepaintCallback(), compositor_task_runner_,
       media_task_runner_, worker_task_runner_, gpu_factories_);
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
@@ -402,8 +508,12 @@ void WebMediaPlayerMS::OnHidden() {
   //
   // During undoable tab closures OnHidden() may be called back to back, so we
   // can't rely on |render_frame_suspended_| being false here.
+  if (frame_deliverer_) {
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
+                              base::Unretained(frame_deliverer_.get()), true));
+  }
 
-  render_frame_suspended_ = true;
   if (!paused_)
     compositor_->ReplaceCurrentFrameWithACopy();
 #endif  // defined(OS_ANDROID)
@@ -413,7 +523,11 @@ void WebMediaPlayerMS::OnShown() {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  render_frame_suspended_ = false;
+  if (frame_deliverer_) {
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
+                              base::Unretained(frame_deliverer_.get()), false));
+  }
 
   // Resume playback on visibility. play() clears |should_play_upon_shown_|.
   if (should_play_upon_shown_)
@@ -434,8 +548,12 @@ bool WebMediaPlayerMS::OnSuspendRequested(bool must_suspend) {
   if (delegate_)
     delegate_->PlayerGone(delegate_id_);
 
-  render_frame_suspended_ = true;
-#endif
+  if (frame_deliverer_) {
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
+                              base::Unretained(frame_deliverer_.get()), true));
+  }
+#endif  // defined(OS_ANDROID)
   return true;
 }
 
@@ -482,50 +600,26 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
       premultiply_alpha, flip_y);
 }
 
-void WebMediaPlayerMS::OnFrameAvailable(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  DVLOG(3) << __func__;
+void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
+                                            bool is_opaque) {
+  DVLOG(1) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  video_rotation_ = video_rotation;
+  SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+  SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+
+  video_weblayer_.reset(new cc_blink::WebLayerImpl(
+      cc::VideoLayer::Create(compositor_.get(), video_rotation_)));
+  video_weblayer_->layer()->SetContentsOpaque(is_opaque);
+  video_weblayer_->SetContentsOpaqueIsFixed(true);
+  get_client()->setWebLayer(video_weblayer_.get());
+}
+
+void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (render_frame_suspended_)
-    return;
-
-  base::TimeTicks render_time;
-  if (frame->metadata()->GetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
-                                      &render_time)) {
-    TRACE_EVENT1("webrtc", "WebMediaPlayerMS::OnFrameAvailable",
-                 "Ideal Render Instant", render_time.ToInternalValue());
-  } else {
-    TRACE_EVENT0("webrtc", "WebMediaPlayerMS::OnFrameAvailable");
-  }
-  const bool is_opaque = media::IsOpaque(frame->format());
-
-  if (!received_first_frame_) {
-    received_first_frame_ = true;
-    last_frame_opaque_ = is_opaque;
-    SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-
-    if (video_frame_provider_.get()) {
-      ignore_result(frame->metadata()->GetRotation(
-          media::VideoFrameMetadata::ROTATION, &video_rotation_));
-
-      video_weblayer_.reset(new cc_blink::WebLayerImpl(
-          cc::VideoLayer::Create(compositor_.get(), video_rotation_)));
-      video_weblayer_->layer()->SetContentsOpaque(is_opaque);
-      video_weblayer_->SetContentsOpaqueIsFixed(true);
-      get_client()->setWebLayer(video_weblayer_.get());
-    }
-  }
-
-  // Only configure opacity on changes, since marking it as transparent is
-  // expensive, see https://crbug.com/647886.
-  if (video_weblayer_ && last_frame_opaque_ != is_opaque) {
-    last_frame_opaque_ = is_opaque;
-    video_weblayer_->layer()->SetContentsOpaque(is_opaque);
-  }
-
-  compositor_->EnqueueFrame(frame);
+  video_weblayer_->layer()->SetContentsOpaque(is_opaque);
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
