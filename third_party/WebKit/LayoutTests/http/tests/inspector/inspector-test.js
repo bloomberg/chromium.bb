@@ -1000,12 +1000,15 @@ function runAfterIframeIsLoaded()
     setTimeout(step, 100);
 }
 
-function runTest(enableWatchDogWhileDebugging)
+function runTest(pixelTest, enableWatchDogWhileDebugging)
 {
     if (!window.testRunner)
         return;
 
-    testRunner.dumpAsText();
+    if (pixelTest)
+        testRunner.dumpAsTextWithPixelResults();
+    else
+        testRunner.dumpAsText();
     testRunner.waitUntilDone();
 
     function initializeFrontend(initializationFunctions)

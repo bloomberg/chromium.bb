@@ -3,4 +3,4 @@ function thisTest() {
     s.innerText = "alert('FAIL.');"
     document.body.appendChild(s);
 }
-window.onload = runTest;
+window.onload = () => runTest();

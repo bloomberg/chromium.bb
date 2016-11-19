@@ -23,7 +23,7 @@ function addStyleSheetAndRunTest()
         testRunner.waitUntilDone();
     var link = document.head.querySelector("link");
     link.href = "resources/style.css";
-    link.onload = runTest;
+    link.onload = () => runTest();
 }
 
 function test()
