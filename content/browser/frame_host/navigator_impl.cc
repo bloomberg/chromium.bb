@@ -435,6 +435,8 @@ bool NavigatorImpl::NavigateToEntry(
               controller_->GetIndexOfEntry(&entry),
               controller_->GetLastCommittedEntryIndex(),
               controller_->GetEntryCount()));
+    } else {
+      dest_render_frame_host->navigation_handle()->set_is_transferring(false);
     }
   }
 

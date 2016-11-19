@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/frame_messages.h"
@@ -36,6 +37,12 @@ void UpdateThrottleCheckResult(
     NavigationThrottle::ThrottleCheckResult* to_update,
     NavigationThrottle::ThrottleCheckResult result) {
   *to_update = result;
+}
+
+void NotifyAbandonedTransferNavigation(const GlobalRequestID& id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get())
+    rdh->CancelRequest(id.child_id, id.request_id);
 }
 
 }  // namespace
@@ -105,6 +112,15 @@ NavigationHandleImpl::NavigationHandleImpl(
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
+  // Transfer requests that have not matched up with another navigation request
+  // from the renderer need to be cleaned up. These are marked as protected in
+  // the RDHI, so they do not get cancelled when frames are destroyed.
+  if (is_transferring()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&NotifyAbandonedTransferNavigation, GetGlobalRequestID()));
+  }
+
   if (!IsRendererDebugURL(url_))
     GetDelegate()->DidFinishNavigation(this);
 

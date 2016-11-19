@@ -482,7 +482,10 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // transfered to a RenderFrameHost. In the other cases, it should be cleared.
   // If the NavigationHandle wasn't claimed, this will lead to the cancelation
   // of the request in the network stack.
-  transfer_navigation_handle_.reset();
+  if (transfer_navigation_handle_) {
+    transfer_navigation_handle_->set_is_transferring(false);
+    transfer_navigation_handle_.reset();
+  }
 
   // If the navigation in the new renderer did not start, inform the
   // FrameTreeNode that it stopped loading.

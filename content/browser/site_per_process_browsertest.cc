@@ -14,11 +14,13 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -54,6 +56,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_security_test_util.h"
@@ -8594,6 +8597,65 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(ExecuteScript(
       shell(), "window.open('','popup2').postMessage('foo', '*');"));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+// Checks that everything is cleaned up even when the frame tree is destroyed
+// during a transfer.  See also https://crbug.com/657195.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameTreeDestroyedInMiddleOfTransfer) {
+  // Transfer navigations don't occur with PlzNavigate.
+  if (IsBrowserSideNavigationEnabled())
+    return;
+  GURL page_url(embedded_test_server()->GetURL(
+      "main.com", "/frame_tree/page_with_one_frame.html"));
+  GURL initial_frame_url(embedded_test_server()->GetURL(
+      "main.com", "/cross-site/baz.com/title1.html"));
+
+  {
+    // Navigation below is needed to make OpenPopup (next statement) work.
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+    // Create a separate Shell + WebContents - these will be destroyed during
+    // the test at a very special moment.
+    Shell* other_shell = OpenPopup(shell()->web_contents(), GURL(), "popup");
+
+    // Load the test page, while monitoring navigations of the frame (to catch
+    // when the frame navigation will initiate a transfer to another renderer).
+    TestNavigationManager navigation_manager(other_shell->web_contents(),
+                                             initial_frame_url);
+    other_shell->LoadURL(page_url);
+
+    // Wait until |navigation_manager| detects a WillProcessResponse associated
+    // with the frame navigation.
+    ASSERT_TRUE(navigation_manager.WaitForResponse());
+
+    // At this point we have almost (but not quite) triggered a transfer
+    // request. The transfer will be initiated when resuming the navigation.
+    // Posting a task to destroy the frame being navigated means that the
+    // destruction won't happen now, but will happen right after initiating the
+    // transfer AND before the transfer completes. i.e. This task will be
+    // executed on the message queue before the task to process the
+    // DidStartProvisionalLoad IPC from the renderer.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&WebContents::Close,
+                              base::Unretained(other_shell->web_contents())));
+
+    // Resume the navigation. This will 1) initiate the transfer and 2) shortly
+    // after destroy the |other_shell| via WebContents::Close task posted above.
+    // Destroying the NavigationHandle at this special moment used to trigger
+    // https://crbug.com/657195.
+    navigation_manager.WaitForNavigationFinished();
+  }
+
+  // Start a URLRequest to the same URL. This should succeed. This would have
+  // hit the 20 seconds delay before https://crbug.com/657195 was fixed.
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  EXPECT_EQ(page_url, shell()->web_contents()->GetLastCommittedURL());
+
+  // Note: even if the test fails and for some reason, the test has not timed
+  // out by this point, the test teardown code will still hit a DCHECK when it
+  // calls AssertNoURLRequests() in the shell's URLRequestContext destructor.
 }
 
 }  // namespace content
