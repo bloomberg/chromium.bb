@@ -274,7 +274,7 @@ void TrayBrightness::HandleBrightnessChanged(double percent,
   if (!display::Display::HasInternalDisplay())
     return;
 
-  if (brightness_view_)
+  if (brightness_view_ && brightness_view_->visible())
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
   else
     PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
