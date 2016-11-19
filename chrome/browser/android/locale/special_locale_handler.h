@@ -14,10 +14,13 @@
 using base::android::JavaParamRef;
 
 class TemplateURLService;
+class Profile;
 
 class SpecialLocaleHandler {
  public:
-  explicit SpecialLocaleHandler(const std::string& locale);
+  explicit SpecialLocaleHandler(Profile* profile,
+                                const std::string& locale,
+                                TemplateURLService* service);
   void Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj);
   jboolean LoadTemplateUrls(JNIEnv* env, const JavaParamRef<jobject>& obj);
   void RemoveTemplateUrls(JNIEnv* env, const JavaParamRef<jobject>& obj);
@@ -25,8 +28,15 @@ class SpecialLocaleHandler {
                                      const JavaParamRef<jobject>& obj);
   void SetGoogleAsDefaultSearch(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
- private:
   virtual ~SpecialLocaleHandler();
+
+ protected:
+  virtual std::vector<std::unique_ptr<TemplateURLData>>
+    GetLocalPrepopulatedEngines(Profile* profile);
+  virtual int GetDesignatedSearchEngine();
+
+ private:
+  Profile* profile_;
 
   std::string locale_;
 
