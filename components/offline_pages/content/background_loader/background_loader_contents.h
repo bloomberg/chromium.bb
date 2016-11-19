@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
 
 namespace content {
 class WebContents;
+class BrowserContext;
 }
 
 namespace background_loader {
@@ -74,6 +74,9 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
                                   content::MediaStreamType type) override;
 
  private:
+  friend class BackgroundLoaderContentsTest;
+  BackgroundLoaderContents();
+
   std::unique_ptr<content::WebContents> web_contents_;
   content::BrowserContext* browser_context_;
 
