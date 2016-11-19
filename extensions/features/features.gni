@@ -6,4 +6,8 @@ import("//build/config/features.gni")
 
 declare_args() {
   enable_extensions = !is_android && !is_ios
+
+  # Enables Wi-Fi Display functionality
+  # WARNING: This enables MPEG Transport Stream (MPEG-TS) encoding!
+  enable_wifi_display = false
 }

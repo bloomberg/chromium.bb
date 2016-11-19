@@ -59,10 +59,6 @@ declare_args() {
   # Note: this setting is ignored if is_chrome_branded.
   fieldtrial_testing_like_official_build = is_chrome_branded
 
-  # Enables Wi-Fi Display functionality
-  # WARNING: This enables MPEG Transport Stream (MPEG-TS) encoding!
-  enable_wifi_display = false
-
   # libudev usage. This currently only affects the content layer.
   use_udev = is_linux && !is_chromecast
 

@@ -4,7 +4,9 @@
 
 #include "extensions/renderer/api/display_source/display_source_session.h"
 
-#if defined(ENABLE_WIFI_DISPLAY)
+#include "extensions/features/features.h"
+
+#if BUILDFLAG(ENABLE_WIFI_DISPLAY)
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_session.h"
 #endif
 
@@ -38,7 +40,7 @@ void DisplaySourceSession::SetNotificationCallbacks(
 std::unique_ptr<DisplaySourceSession>
 DisplaySourceSessionFactory::CreateSession(
     const DisplaySourceSessionParams& params) {
-#if defined(ENABLE_WIFI_DISPLAY)
+#if BUILDFLAG(ENABLE_WIFI_DISPLAY)
   return std::unique_ptr<DisplaySourceSession>(new WiFiDisplaySession(params));
 #else
   return nullptr;

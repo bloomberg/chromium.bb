@@ -18,9 +18,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/switches.h"
+#include "extensions/features/features.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
-#if defined(ENABLE_WIFI_DISPLAY)
+#if BUILDFLAG(ENABLE_WIFI_DISPLAY)
 #include "extensions/browser/api/display_source/wifi_display/wifi_display_media_service_impl.h"
 #include "extensions/browser/api/display_source/wifi_display/wifi_display_session_service_impl.h"
 #endif
@@ -28,7 +29,7 @@
 namespace extensions {
 namespace {
 
-#if defined(ENABLE_WIFI_DISPLAY)
+#if BUILDFLAG(ENABLE_WIFI_DISPLAY)
 bool ExtensionHasPermission(const Extension* extension,
                             content::RenderProcessHost* render_process_host,
                             const std::string& permission_name) {
@@ -54,7 +55,7 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
       KeepAliveImpl::Create,
       render_frame_host->GetProcess()->GetBrowserContext(), extension));
 
-#if defined(ENABLE_WIFI_DISPLAY)
+#if BUILDFLAG(ENABLE_WIFI_DISPLAY)
   if (ExtensionHasPermission(extension, render_frame_host->GetProcess(),
                              "displaySource")) {
     registry->AddInterface(

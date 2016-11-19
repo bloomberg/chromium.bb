@@ -12,5 +12,8 @@ import("//extensions/features/features.gni")
 
 buildflag_header("features") {
   header = "features.h"
-  flags = [ "ENABLE_EXTENSIONS=$enable_extensions" ]
+  flags = [
+    "ENABLE_EXTENSIONS=$enable_extensions",
+    "ENABLE_WIFI_DISPLAY=$enable_wifi_display",
+  ]
 }
