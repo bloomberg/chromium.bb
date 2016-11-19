@@ -386,7 +386,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestMatchMalwareIP) {
   // '::ffff:192.168.1.2')).digest() + chr(128)
   // '\xb3\xe0z\xafAv#h\x9a\xcf<\xf3ee\x94\xda\xf6y\xb1\xad\x80'
   StoreAndHashPrefixes store_and_hash_prefixes;
-  store_and_hash_prefixes.emplace_back(GetAnyIpMalwareId(),
+  store_and_hash_prefixes.emplace_back(GetIpMalwareId(),
                                        FullHash("\xB3\xE0z\xAF"
                                                 "Av#h\x9A\xCF<\xF3"
                                                 "ee\x94\xDA\xF6y\xB1\xAD\x80"));

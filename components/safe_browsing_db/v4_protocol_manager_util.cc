@@ -87,8 +87,8 @@ return LINUX_PLATFORM;
 #endif
 }
 
-const ListIdentifier GetAnyIpMalwareId() {
-  return ListIdentifier(ANY_PLATFORM, IP_RANGE, MALWARE_THREAT);
+const ListIdentifier GetCertCsdDownloadWhitelistId() {
+  return ListIdentifier(GetCurrentPlatformType(), CERT, CSD_DOWNLOAD_WHITELIST);
 }
 
 const ListIdentifier GetChromeExtensionMalwareId() {
@@ -99,8 +99,24 @@ const ListIdentifier GetChromeUrlApiId() {
   return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
+const ListIdentifier GetChromeFilenameClientIncidentId() {
+  return ListIdentifier(CHROME_PLATFORM, FILENAME, CLIENT_INCIDENT);
+}
+
 const ListIdentifier GetChromeUrlClientIncidentId() {
   return ListIdentifier(CHROME_PLATFORM, URL, CLIENT_INCIDENT);
+}
+
+const ListIdentifier GetIpMalwareId() {
+  return ListIdentifier(GetCurrentPlatformType(), IP_RANGE, MALWARE_THREAT);
+}
+
+const ListIdentifier GetUrlCsdDownloadWhitelistId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, CSD_DOWNLOAD_WHITELIST);
+}
+
+const ListIdentifier GetUrlCsdWhitelistId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, CSD_WHITELIST);
 }
 
 const ListIdentifier GetUrlMalwareId() {

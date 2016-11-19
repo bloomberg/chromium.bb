@@ -141,10 +141,14 @@ struct ListIdentifier {
 std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 
 PlatformType GetCurrentPlatformType();
-const ListIdentifier GetAnyIpMalwareId();
+const ListIdentifier GetCertCsdDownloadWhitelistId();
 const ListIdentifier GetChromeExtensionMalwareId();
 const ListIdentifier GetChromeUrlApiId();
+const ListIdentifier GetChromeFilenameClientIncidentId();
 const ListIdentifier GetChromeUrlClientIncidentId();
+const ListIdentifier GetIpMalwareId();
+const ListIdentifier GetUrlCsdDownloadWhitelistId();
+const ListIdentifier GetUrlCsdWhitelistId();
 const ListIdentifier GetUrlMalwareId();
 const ListIdentifier GetUrlMalBinId();
 const ListIdentifier GetUrlSocEngId();
