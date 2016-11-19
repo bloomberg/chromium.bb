@@ -18,7 +18,7 @@ struct NGPhysicalOffset;
 struct NGPhysicalSize;
 struct NGBoxStrut;
 
-struct MinAndMaxContentSizes {
+struct CORE_EXPORT MinAndMaxContentSizes {
   LayoutUnit min_content;
   LayoutUnit max_content;
   LayoutUnit ShrinkToFit(LayoutUnit available_size) const;
