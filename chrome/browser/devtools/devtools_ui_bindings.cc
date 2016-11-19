@@ -450,6 +450,8 @@ DevToolsUIBindings::~DevToolsUIBindings() {
 // content::DevToolsFrontendHost::Delegate implementation ---------------------
 void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
+  if (!web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme))
+    return;
   std::string method;
   base::ListValue empty_params;
   base::ListValue* params = &empty_params;
@@ -478,6 +480,8 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
 void DevToolsUIBindings::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host, const std::string& message) {
   DCHECK(agent_host == agent_host_.get());
+  if (!web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme))
+    return;
 
   if (message.length() < kMaxMessageChunkSize) {
     std::string param;
@@ -1135,6 +1139,8 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
                                             const base::Value* arg1,
                                             const base::Value* arg2,
                                             const base::Value* arg3) {
+  if (!web_contents_->GetURL().SchemeIs(content::kChromeDevToolsScheme))
+    return;
   std::string javascript = function_name + "(";
   if (arg1) {
     std::string json;
