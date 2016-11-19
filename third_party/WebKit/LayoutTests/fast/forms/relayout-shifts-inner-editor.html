@@ -1,26 +1,5 @@
 <!DOCTYPE html>
 <script src="../../resources/run-after-layout-and-paint.js"></script>
-<script>
-var i = 0;
-var refreshIntervalId;
-function repaintTest()
-{
-    refreshIntervalId = setInterval(function(){moveInputElement();}, 10);
-}
-function moveInputElement()
-{
-    i++;
-    input.style.left = i*10 + 'px';
-    if (i >= 3) {
-        runAfterLayoutAndPaint(function() {
-            clearInterval(refreshIntervalId);
-            }, true);
-    }
-}
-if (window.testRunner)
-    testRunner.waitUntilDone();
-window.onload = repaintTest();
-</script>
 <style>
 input {
   position: absolute;
@@ -33,3 +12,16 @@ input {
 <div>This change checks that the caret in the &gt;input&lt; below doesn't shift out of it after several layouts.</div>
 <div>This test has passed if the caret is centered <b>inside</b> the &gt;input&lt;</div>
 <input id="input" type="text" autofocus>
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+runAfterLayoutAndPaint(function() {
+  input.style.left = '10px';
+  runAfterLayoutAndPaint(function() {
+    input.style.left = '20px';
+    runAfterLayoutAndPaint(function() {
+      input.style.left = '30px';
+    }, true);
+  });
+});
+</script>
