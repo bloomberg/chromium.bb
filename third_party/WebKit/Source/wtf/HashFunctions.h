@@ -111,11 +111,12 @@ inline unsigned hashInt(uint64_t key) {
 inline unsigned hashInts(unsigned key1, unsigned key2) {
   unsigned shortRandom1 = 277951225;          // A random 32-bit value.
   unsigned shortRandom2 = 95187966;           // A random 32-bit value.
-  uint64_t longRandom = 19248658165952622LL;  // A random 64-bit value.
+  uint64_t longRandom = 19248658165952623LL;  // A random, odd 64-bit value.
 
-  uint64_t product = longRandom * (shortRandom1 * key1 + shortRandom2 * key2);
-  unsigned highBits =
-      static_cast<unsigned>(product >> (sizeof(uint64_t) - sizeof(unsigned)));
+  uint64_t product =
+      longRandom * shortRandom1 * key1 + longRandom * shortRandom2 * key2;
+  unsigned highBits = static_cast<unsigned>(
+      product >> (8 * (sizeof(uint64_t) - sizeof(unsigned))));
   return highBits;
 }
 
