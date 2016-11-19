@@ -997,6 +997,7 @@ if (!is_android) {
       "data/webui/accessibility_audit_browsertest.js",
       "data/webui/assertions.js",
       "data/webui/async_gen.js",
+      "data/webui/bluetooth_internals_browsertest.js",
       "data/webui/certificate_viewer_dialog_test.js",
       "data/webui/chrome_send_browsertest.js",
       "data/webui/cr_elements/cr_elements_browsertest.js",
