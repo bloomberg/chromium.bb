@@ -51,8 +51,6 @@ namespace {
 const int kSectionHeaderRowSize = 48;
 const int kSectionHeaderRowVerticalInset = 4;
 const int kSectionHeaderRowLeftInset = 18;
-const int kSectionHeaderRowRightInset = 14;
-const int kSectionHeaderRowChildSpacing = 14;
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
@@ -134,14 +132,14 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
     // https://crbug.com/614453.
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     container_ = new views::View;
-    container_->SetBorder(views::CreateEmptyBorder(
-        0, kSectionHeaderRowLeftInset, 0, kSectionHeaderRowRightInset));
+    container_->SetBorder(
+        views::CreateEmptyBorder(0, kSectionHeaderRowLeftInset, 0, 0));
     views::FillLayout* layout = new views::FillLayout;
     SetLayoutManager(layout);
     AddChildView(container_);
 
-    views::BoxLayout* container_layout = new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, kSectionHeaderRowChildSpacing);
+    views::BoxLayout* container_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     container_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     container_->SetLayoutManager(container_layout);
@@ -160,12 +158,8 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
   }
 
   void AddToggleButton(bool enabled) {
-    toggle_ = new views::ToggleButton(this);
-    toggle_->SetAccessibleName(l10n_util::GetStringUTF16(title_id_));
+    toggle_ = TrayPopupUtils::CreateToggleButton(this, title_id_);
     toggle_->SetIsOn(enabled, false);
-    // TODO(varkha): Implement focus painter for toggle. See
-    // https://crbug.com/652677 for context.
-    toggle_->SetFocusForPlatform();
     container_->AddChildView(toggle_);
   }
 

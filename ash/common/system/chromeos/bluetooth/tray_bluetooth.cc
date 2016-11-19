@@ -542,13 +542,8 @@ class BluetoothDetailedView : public TrayDetailsView {
 
       tri_view()->SetContainerVisible(TriView::Container::END, true);
 
-      // TODO(tdanderson): Move common toggle-creation logic to TrayPopupUtils.
-      // See crbug.com/614453.
-      toggle_ = new views::ToggleButton(this);
-      toggle_->SetFocusForPlatform();
-      toggle_->SetAccessibleName(
-          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-              IDS_ASH_STATUS_TRAY_BLUETOOTH));
+      toggle_ = TrayPopupUtils::CreateToggleButton(
+          this, IDS_ASH_STATUS_TRAY_BLUETOOTH);
       tri_view()->AddView(TriView::Container::END, toggle_);
 
       settings_ = CreateSettingsButton(login_);

@@ -210,11 +210,8 @@ class MaterialKeyboardStatusRowView : public views::View {
     tri_view->AddView(TriView::Container::CENTER, label_);
 
     // The on-screen keyboard toggle button.
-    toggle_ = new views::ToggleButton(listener_);
-    toggle_->SetFocusForPlatform();
-    toggle_->SetAccessibleName(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
+    toggle_ = TrayPopupUtils::CreateToggleButton(
+        listener_, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD);
     tri_view->AddView(TriView::Container::END, toggle_);
   }
 

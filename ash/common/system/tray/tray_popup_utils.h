@@ -25,6 +25,7 @@ class LayoutManager;
 class Separator;
 class Slider;
 class SliderListener;
+class ToggleButton;
 }  // namespace views
 
 namespace ash {
@@ -90,6 +91,11 @@ class TrayPopupUtils {
   // Returns a slider configured for proper layout within a TriView container
   // with a FillLayout.
   static views::Slider* CreateSlider(views::SliderListener* listener);
+
+  // Returns a ToggleButton that has been configured for system menu layout.
+  static views::ToggleButton* CreateToggleButton(
+      views::ButtonListener* listener,
+      int accessible_name_id);
 
   // Sets up |view| to be a sticky header in a tray detail scroll view.
   static void ConfigureAsStickyHeader(views::View* view);

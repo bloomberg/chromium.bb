@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/wm_shell.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -25,12 +26,14 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 
@@ -249,6 +252,24 @@ views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
         views::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   }
   return slider;
+}
+
+views::ToggleButton* TrayPopupUtils::CreateToggleButton(
+    views::ButtonListener* listener,
+    int accessible_name_id) {
+  views::ToggleButton* toggle = new views::ToggleButton(listener);
+  const gfx::Size toggle_size(toggle->GetPreferredSize());
+  const int vertical_padding = (kMenuButtonSize - toggle_size.height()) / 2;
+  const int horizontal_padding =
+      (kTrayToggleButtonWidth - toggle_size.width()) / 2;
+  toggle->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_padding, horizontal_padding)));
+  // TODO(tdanderson): Update the focus rect color, border thickness, and
+  // location for material design.
+  toggle->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, gfx::Insets(1)));
+  toggle->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+  return toggle;
 }
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {

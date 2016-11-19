@@ -55,6 +55,8 @@ const SkColor kTrayPopupHoverBackgroundColor = SkColorSetRGB(0xe4, 0xe4, 0xe4);
 const int kTrayPopupScrollSeparatorHeight = 15;
 const int kTrayRoundedBorderRadius = 2;
 
+const int kTrayToggleButtonWidth = 68;
+
 const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf3, 0xf3, 0xf3);
 const SkColor kPublicAccountBackgroundColor = SkColorSetRGB(0xf8, 0xe5, 0xb6);
