@@ -77,6 +77,8 @@ message AudioDecoderConfig {
     kSampleFormatPlanarF32 = 6;
     kSampleFormatPlanarS32 = 7;
     kSampleFormatS24 = 8;
+    kSampleFormatAc3 = 9;
+    kSampleFormatEac3 = 10;
   };
 
   // Should align with ::media::ChannelLayout

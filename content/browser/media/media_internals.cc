@@ -81,6 +81,10 @@ std::string FormatToString(media::AudioParameters::Format format) {
       return "pcm_linear";
     case media::AudioParameters::AUDIO_PCM_LOW_LATENCY:
       return "pcm_low_latency";
+    case media::AudioParameters::AUDIO_BITSTREAM_AC3:
+      return "ac3";
+    case media::AudioParameters::AUDIO_BITSTREAM_EAC3:
+      return "eac3";
     case media::AudioParameters::AUDIO_FAKE:
       return "fake";
   }

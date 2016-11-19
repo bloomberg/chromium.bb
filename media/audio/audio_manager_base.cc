@@ -135,6 +135,12 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     case AudioParameters::AUDIO_PCM_LOW_LATENCY:
       stream = MakeLowLatencyOutputStream(params, device_id, log_callback);
       break;
+    case AudioParameters::AUDIO_BITSTREAM_AC3:
+    case AudioParameters::AUDIO_BITSTREAM_EAC3:
+      // TODO(tsunghung): create passthrough output stream.
+      NOTREACHED();
+      stream = nullptr;
+      break;
     case AudioParameters::AUDIO_FAKE:
       stream = FakeAudioOutputStream::MakeFakeStream(this, params);
       break;

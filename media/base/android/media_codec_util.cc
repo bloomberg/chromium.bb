@@ -31,6 +31,8 @@ namespace {
 const char kMp4aMimeType[] = "audio/mp4a-latm";
 const char kOpusMimeType[] = "audio/opus";
 const char kVorbisMimeType[] = "audio/vorbis";
+const char kAc3MimeType[] = "audio/ac3";
+const char kEac3MimeType[] = "audio/eac3";
 const char kAvcMimeType[] = "video/avc";
 const char kHevcMimeType[] = "video/hevc";
 const char kVp8MimeType[] = "video/x-vnd.on2.vp8";
@@ -54,6 +56,11 @@ static std::string CodecTypeToAndroidMimeType(const std::string& codec) {
     return kVorbisMimeType;
   if (codec == "opus")
     return kOpusMimeType;
+  if (codec == "ac3")
+    return kAc3MimeType;
+  if (codec == "eac3")
+    return kEac3MimeType;
+
   DLOG(WARNING) << "Cannot convert codec to Android MIME type: " << codec;
   return std::string();
 }

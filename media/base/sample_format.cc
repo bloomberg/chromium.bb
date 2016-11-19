@@ -13,6 +13,8 @@ int SampleFormatToBytesPerChannel(SampleFormat sample_format) {
     case kUnknownSampleFormat:
       return 0;
     case kSampleFormatU8:
+    case kSampleFormatAc3:
+    case kSampleFormatEac3:
       return 1;
     case kSampleFormatS16:
     case kSampleFormatPlanarS16:
@@ -49,6 +51,10 @@ const char* SampleFormatToString(SampleFormat sample_format) {
       return "Float 32-bit planar";
     case kSampleFormatPlanarS32:
       return "Signed 32-bit planar";
+    case kSampleFormatAc3:
+      return "Compressed AC3 bitstream";
+    case kSampleFormatEac3:
+      return "Compressed E-AC3 bitstream";
   }
   NOTREACHED() << "Invalid sample format provided: " << sample_format;
   return "";
@@ -66,6 +72,8 @@ bool IsPlanar(SampleFormat sample_format) {
     case kSampleFormatS24:
     case kSampleFormatS32:
     case kSampleFormatF32:
+    case kSampleFormatAc3:
+    case kSampleFormatEac3:
       return false;
   }
 
@@ -80,8 +88,31 @@ bool IsInterleaved(SampleFormat sample_format) {
     case kSampleFormatS24:
     case kSampleFormatS32:
     case kSampleFormatF32:
+    case kSampleFormatAc3:
+    case kSampleFormatEac3:
       return true;
     case kUnknownSampleFormat:
+    case kSampleFormatPlanarS16:
+    case kSampleFormatPlanarF32:
+    case kSampleFormatPlanarS32:
+      return false;
+  }
+
+  NOTREACHED() << "Invalid sample format provided: " << sample_format;
+  return false;
+}
+
+bool IsBitstream(SampleFormat sample_format) {
+  switch (sample_format) {
+    case kSampleFormatAc3:
+    case kSampleFormatEac3:
+      return true;
+    case kUnknownSampleFormat:
+    case kSampleFormatU8:
+    case kSampleFormatS16:
+    case kSampleFormatS24:
+    case kSampleFormatS32:
+    case kSampleFormatF32:
     case kSampleFormatPlanarS16:
     case kSampleFormatPlanarF32:
     case kSampleFormatPlanarS32:

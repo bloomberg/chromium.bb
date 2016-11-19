@@ -72,6 +72,8 @@ class MEDIA_EXPORT AudioParameters {
   enum Format {
     AUDIO_PCM_LINEAR = 0,            // PCM is 'raw' amplitude samples.
     AUDIO_PCM_LOW_LATENCY,           // Linear PCM, low latency requested.
+    AUDIO_BITSTREAM_AC3,             // Compressed AC3 bitstream.
+    AUDIO_BITSTREAM_EAC3,            // Compressed E-AC3 bitstream.
     AUDIO_FAKE,                      // Creates a fake AudioOutputStream object.
     AUDIO_FORMAT_LAST = AUDIO_FAKE,  // Only used for validation of format.
   };
@@ -138,6 +140,9 @@ class MEDIA_EXPORT AudioParameters {
 
   // Comparison with other AudioParams.
   bool Equals(const AudioParameters& other) const;
+
+  // Return true if |format_| is compressed bitstream.
+  bool IsBitstreamFormat() const;
 
   void set_format(Format format) { format_ = format; }
   Format format() const { return format_; }

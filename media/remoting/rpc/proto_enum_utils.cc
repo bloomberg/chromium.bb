@@ -101,6 +101,8 @@ base::Optional<::media::SampleFormat> ToMediaSampleFormat(
     CASE_RETURN_OTHER(kSampleFormatPlanarF32);
     CASE_RETURN_OTHER(kSampleFormatPlanarS32);
     CASE_RETURN_OTHER(kSampleFormatS24);
+    CASE_RETURN_OTHER(kSampleFormatAc3);
+    CASE_RETURN_OTHER(kSampleFormatEac3);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -119,6 +121,8 @@ ToProtoAudioDecoderConfigSampleFormat(::media::SampleFormat value) {
     CASE_RETURN_OTHER(kSampleFormatPlanarF32);
     CASE_RETURN_OTHER(kSampleFormatPlanarS32);
     CASE_RETURN_OTHER(kSampleFormatS24);
+    CASE_RETURN_OTHER(kSampleFormatAc3);
+    CASE_RETURN_OTHER(kSampleFormatEac3);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

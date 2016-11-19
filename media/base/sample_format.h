@@ -23,9 +23,11 @@ enum SampleFormat {
   kSampleFormatPlanarF32,  // Float 32-bit planar.
   kSampleFormatPlanarS32,  // Signed 32-bit planar.
   kSampleFormatS24,        // Signed 24-bit.
+  kSampleFormatAc3,        // Compressed AC3 bitstream.
+  kSampleFormatEac3,       // Compressed E-AC3 bitstream.
 
   // Must always be equal to largest value ever logged.
-  kSampleFormatMax = kSampleFormatS24,
+  kSampleFormatMax = kSampleFormatEac3,
 };
 
 // Returns the number of bytes used per channel for the specified
@@ -40,6 +42,9 @@ MEDIA_EXPORT bool IsPlanar(SampleFormat sample_format);
 
 // Returns true if |sample_format| is interleaved, false otherwise.
 MEDIA_EXPORT bool IsInterleaved(SampleFormat sample_format);
+
+// Returns true if |sample_format| is compressed bitstream, false otherwise.
+MEDIA_EXPORT bool IsBitstream(SampleFormat sample_format);
 
 }  // namespace media
 

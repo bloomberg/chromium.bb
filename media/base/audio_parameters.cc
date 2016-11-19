@@ -97,6 +97,10 @@ bool AudioParameters::Equals(const AudioParameters& other) const {
          effects_ == other.effects() && mic_positions_ == other.mic_positions_;
 }
 
+bool AudioParameters::IsBitstreamFormat() const {
+  return format_ == AUDIO_BITSTREAM_AC3 || format_ == AUDIO_BITSTREAM_EAC3;
+}
+
 // static
 AudioParameters AudioParameters::UnavailableDeviceParams() {
   return media::AudioParameters(

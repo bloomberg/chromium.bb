@@ -44,6 +44,8 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
 SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   switch (sample_format) {
     case ::media::kUnknownSampleFormat:
+    case ::media::kSampleFormatAc3:
+    case ::media::kSampleFormatEac3:
       return kUnknownSampleFormat;
     case ::media::kSampleFormatU8:
       return kSampleFormatU8;
