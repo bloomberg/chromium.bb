@@ -22,6 +22,327 @@
 
 namespace blink {
 
+static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
+                                  const FontMetrics& fontMetrics,
+                                  const InlineTextBox* inlineTextBox,
+                                  const float textDecorationThickness) {
+  // Compute the gap between the font and the underline. Use at least one
+  // pixel gap, if underline is thick then use a bigger gap.
+  int gap = 0;
+
+  // Underline position of zero means draw underline on Baseline Position,
+  // in Blink we need at least 1-pixel gap to adding following check.
+  // Positive underline Position means underline should be drawn above baselin e
+  // and negative value means drawing below baseline, negating the value as in
+  // Blink
+  // downward Y-increases.
+
+  if (fontMetrics.underlinePosition())
+    gap = -fontMetrics.underlinePosition();
+  else
+    gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
+
+  // FIXME: We support only horizontal text for now.
+  switch (underlinePosition) {
+    case TextUnderlinePositionAuto:
+      return fontMetrics.ascent() +
+             gap;  // Position underline near the alphabetic baseline.
+    case TextUnderlinePositionUnder: {
+      // Position underline relative to the under edge of the lowest element's
+      // content box.
+      const LayoutUnit offset =
+          inlineTextBox->root().maxLogicalTop() - inlineTextBox->logicalTop();
+      if (offset > 0)
+        return (inlineTextBox->logicalHeight() + gap + offset).toInt();
+      return (inlineTextBox->logicalHeight() + gap).toInt();
+    }
+  }
+
+  NOTREACHED();
+  return fontMetrics.ascent() + gap;
+}
+
+static bool shouldSetDecorationAntialias(
+    const Vector<AppliedTextDecoration>& decorations) {
+  for (const AppliedTextDecoration& decoration : decorations) {
+    TextDecorationStyle decorationStyle = decoration.style();
+    if (decorationStyle == TextDecorationStyleDotted ||
+        decorationStyle == TextDecorationStyleDashed)
+      return true;
+  }
+  return false;
+}
+
+static StrokeStyle textDecorationStyleToStrokeStyle(
+    TextDecorationStyle decorationStyle) {
+  StrokeStyle strokeStyle = SolidStroke;
+  switch (decorationStyle) {
+    case TextDecorationStyleSolid:
+      strokeStyle = SolidStroke;
+      break;
+    case TextDecorationStyleDouble:
+      strokeStyle = DoubleStroke;
+      break;
+    case TextDecorationStyleDotted:
+      strokeStyle = DottedStroke;
+      break;
+    case TextDecorationStyleDashed:
+      strokeStyle = DashedStroke;
+      break;
+    case TextDecorationStyleWavy:
+      strokeStyle = WavyStroke;
+      break;
+  }
+
+  return strokeStyle;
+}
+
+static void adjustStepToDecorationLength(float& step,
+                                         float& controlPointDistance,
+                                         float length) {
+  DCHECK_GT(step, 0);
+
+  if (length <= 0)
+    return;
+
+  unsigned stepCount = static_cast<unsigned>(length / step);
+
+  // Each Bezier curve starts at the same pixel that the previous one
+  // ended. We need to subtract (stepCount - 1) pixels when calculating the
+  // length covered to account for that.
+  float uncoveredLength = length - (stepCount * step - (stepCount - 1));
+  float adjustment = uncoveredLength / stepCount;
+  step += adjustment;
+  controlPointDistance += adjustment;
+}
+
+class AppliedDecorationPainter final {
+  STACK_ALLOCATED();
+
+ public:
+  AppliedDecorationPainter(GraphicsContext& context,
+                           FloatPoint startPoint,
+                           float width,
+                           const AppliedTextDecoration& decoration,
+                           float thickness,
+                           float doubleOffset,
+                           int wavyOffsetFactor,
+                           bool antialiasDecoration)
+      : m_context(context),
+        m_startPoint(startPoint),
+        m_width(width),
+        m_decoration(decoration),
+        m_thickness(thickness),
+        m_doubleOffset(doubleOffset),
+        m_wavyOffsetFactor(wavyOffsetFactor),
+        m_shouldAntialias(antialiasDecoration){};
+
+  void paint();
+  FloatRect decorationBounds();
+
+ private:
+  void strokeWavyTextDecoration();
+
+  Path prepareWavyStrokePath();
+  Path prepareDottedDashedStrokePath();
+
+  GraphicsContext& m_context;
+  FloatPoint m_startPoint;
+  float m_width;
+  const AppliedTextDecoration& m_decoration;
+  float m_thickness;
+  const float m_doubleOffset;
+  const int m_wavyOffsetFactor;
+  bool m_shouldAntialias;
+};
+
+Path AppliedDecorationPainter::prepareDottedDashedStrokePath() {
+  // These coordinate transforms need to match what's happening in
+  // GraphicsContext's drawLineForText and drawLine.
+  int y = floorf(m_startPoint.y() + std::max<float>(m_thickness / 2.0f, 0.5f));
+  Path strokePath;
+  FloatPoint roundedStartPoint(m_startPoint.x(), y);
+  FloatPoint roundedEndPoint(roundedStartPoint + FloatPoint(m_width, 0));
+  m_context.adjustLineToPixelBoundaries(roundedStartPoint, roundedEndPoint,
+                                        roundf(m_thickness),
+                                        m_context.getStrokeStyle());
+  strokePath.moveTo(roundedStartPoint);
+  strokePath.addLineTo(roundedEndPoint);
+  return strokePath;
+}
+
+FloatRect AppliedDecorationPainter::decorationBounds() {
+  StrokeData strokeData;
+  strokeData.setThickness(m_thickness);
+
+  switch (m_decoration.style()) {
+    case TextDecorationStyleDotted:
+    case TextDecorationStyleDashed: {
+      strokeData.setStyle(
+          textDecorationStyleToStrokeStyle(m_decoration.style()));
+      return prepareDottedDashedStrokePath().strokeBoundingRect(
+          strokeData, Path::BoundsType::Exact);
+    }
+    case TextDecorationStyleWavy:
+      return prepareWavyStrokePath().strokeBoundingRect(
+          strokeData, Path::BoundsType::Exact);
+      break;
+    case TextDecorationStyleDouble:
+      if (m_doubleOffset > 0) {
+        return FloatRect(m_startPoint.x(), m_startPoint.y(), m_width,
+                         m_doubleOffset + m_thickness);
+      }
+      return FloatRect(m_startPoint.x(), m_startPoint.y() + m_doubleOffset,
+                       m_width, -m_doubleOffset + m_thickness);
+      break;
+    case TextDecorationStyleSolid:
+      return FloatRect(m_startPoint.x(), m_startPoint.y(), m_width,
+                       m_thickness);
+    default:
+      break;
+  }
+  NOTREACHED();
+  return FloatRect();
+}
+
+void AppliedDecorationPainter::paint() {
+  m_context.setStrokeStyle(
+      textDecorationStyleToStrokeStyle(m_decoration.style()));
+  m_context.setStrokeColor(m_decoration.color());
+
+  switch (m_decoration.style()) {
+    case TextDecorationStyleWavy:
+      strokeWavyTextDecoration();
+      break;
+    case TextDecorationStyleDotted:
+    case TextDecorationStyleDashed:
+      m_context.setShouldAntialias(m_shouldAntialias);
+    // Fall through
+    default:
+      m_context.drawLineForText(m_startPoint, m_width);
+
+      if (m_decoration.style() == TextDecorationStyleDouble) {
+        m_context.drawLineForText(m_startPoint + FloatPoint(0, m_doubleOffset),
+                                  m_width);
+      }
+  }
+}
+
+void AppliedDecorationPainter::strokeWavyTextDecoration() {
+  m_context.setShouldAntialias(true);
+  m_context.strokePath(prepareWavyStrokePath());
+}
+
+/*
+ * Prepare a path for a cubic Bezier curve and repeat the same pattern long the
+ * the decoration's axis.  The start point (p1), controlPoint1, controlPoint2
+ * and end point (p2) of the Bezier curve form a diamond shape:
+ *
+ *                              step
+ *                         |-----------|
+ *
+ *                   controlPoint1
+ *                         +
+ *
+ *
+ *                  . .
+ *                .     .
+ *              .         .
+ * (x1, y1) p1 +           .            + p2 (x2, y2) - <--- Decoration's axis
+ *                          .         .               |
+ *                            .     .                 |
+ *                              . .                   | controlPointDistance
+ *                                                    |
+ *                                                    |
+ *                         +                          -
+ *                   controlPoint2
+ *
+ *             |-----------|
+ *                 step
+ */
+Path AppliedDecorationPainter::prepareWavyStrokePath() {
+  FloatPoint p1(m_startPoint +
+                FloatPoint(0, m_doubleOffset * m_wavyOffsetFactor));
+  FloatPoint p2(m_startPoint +
+                FloatPoint(m_width, m_doubleOffset * m_wavyOffsetFactor));
+
+  m_context.adjustLineToPixelBoundaries(p1, p2, m_thickness,
+                                        m_context.getStrokeStyle());
+
+  Path path;
+  path.moveTo(p1);
+
+  // Distance between decoration's axis and Bezier curve's control points.
+  // The height of the curve is based on this distance. Use a minimum of 6
+  // pixels distance since
+  // the actual curve passes approximately at half of that distance, that is 3
+  // pixels.
+  // The minimum height of the curve is also approximately 3 pixels. Increases
+  // the curve's height
+  // as strockThickness increases to make the curve looks better.
+  float controlPointDistance = 3 * std::max<float>(2, m_thickness);
+
+  // Increment used to form the diamond shape between start point (p1), control
+  // points and end point (p2) along the axis of the decoration. Makes the
+  // curve wider as strockThickness increases to make the curve looks better.
+  float step = 2 * std::max<float>(2, m_thickness);
+
+  bool isVerticalLine = (p1.x() == p2.x());
+
+  if (isVerticalLine) {
+    DCHECK(p1.x() == p2.x());
+
+    float xAxis = p1.x();
+    float y1;
+    float y2;
+
+    if (p1.y() < p2.y()) {
+      y1 = p1.y();
+      y2 = p2.y();
+    } else {
+      y1 = p2.y();
+      y2 = p1.y();
+    }
+
+    adjustStepToDecorationLength(step, controlPointDistance, y2 - y1);
+    FloatPoint controlPoint1(xAxis + controlPointDistance, 0);
+    FloatPoint controlPoint2(xAxis - controlPointDistance, 0);
+
+    for (float y = y1; y + 2 * step <= y2;) {
+      controlPoint1.setY(y + step);
+      controlPoint2.setY(y + step);
+      y += 2 * step;
+      path.addBezierCurveTo(controlPoint1, controlPoint2, FloatPoint(xAxis, y));
+    }
+  } else {
+    DCHECK(p1.y() == p2.y());
+
+    float yAxis = p1.y();
+    float x1;
+    float x2;
+
+    if (p1.x() < p2.x()) {
+      x1 = p1.x();
+      x2 = p2.x();
+    } else {
+      x1 = p2.x();
+      x2 = p1.x();
+    }
+
+    adjustStepToDecorationLength(step, controlPointDistance, x2 - x1);
+    FloatPoint controlPoint1(0, yAxis + controlPointDistance);
+    FloatPoint controlPoint2(0, yAxis - controlPointDistance);
+
+    for (float x = x1; x + 2 * step <= x2;) {
+      controlPoint1.setX(x + step);
+      controlPoint2.setX(x + step);
+      x += 2 * step;
+      path.addBezierCurveTo(controlPoint1, controlPoint2, FloatPoint(x, yAxis));
+    }
+  }
+  return path;
+}
+
 typedef WTF::HashMap<const InlineTextBox*, TextBlobPtr>
     InlineTextBoxBlobCacheMap;
 static InlineTextBoxBlobCacheMap* gTextBlobCache;
@@ -288,11 +609,14 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
   if (styleToUse.textDecorationsInEffect() != TextDecorationNone &&
       !paintSelectedTextOnly) {
     GraphicsContextStateSaver stateSaver(context, false);
+
     TextPainter::updateGraphicsContext(
         context, textStyle, m_inlineTextBox.isHorizontal(), stateSaver);
+
     if (combinedText)
       context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
-    paintDecorations(paintInfo, boxOrigin, styleToUse.appliedTextDecorations());
+    paintDecorations(textPainter, paintInfo, boxOrigin,
+                     styleToUse.appliedTextDecorations());
     if (combinedText)
       context.concatCTM(
           TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
@@ -683,240 +1007,8 @@ void InlineTextBoxPainter::expandToIncludeNewlineForSelection(
   rect.expand(outsets);
 }
 
-static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
-                                  const FontMetrics& fontMetrics,
-                                  const InlineTextBox* inlineTextBox,
-                                  const float textDecorationThickness) {
-  // Compute the gap between the font and the underline. Use at least one
-  // pixel gap, if underline is thick then use a bigger gap.
-  int gap = 0;
-
-  // Underline position of zero means draw underline on Baseline Position,
-  // in Blink we need at least 1-pixel gap to adding following check.
-  // Positive underline Position means underline should be drawn above baselin e
-  // and negative value means drawing below baseline, negating the value as in
-  // Blink downward Y-increases.
-
-  if (fontMetrics.underlinePosition())
-    gap = -fontMetrics.underlinePosition();
-  else
-    gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
-
-  // FIXME: We support only horizontal text for now.
-  switch (underlinePosition) {
-    case TextUnderlinePositionAuto:
-      return fontMetrics.ascent() +
-             gap;  // Position underline near the alphabetic baseline.
-    case TextUnderlinePositionUnder: {
-      // Position underline relative to the under edge of the lowest element's
-      // content box.
-      const LayoutUnit offset =
-          inlineTextBox->root().maxLogicalTop() - inlineTextBox->logicalTop();
-      if (offset > 0)
-        return (inlineTextBox->logicalHeight() + gap + offset).toInt();
-      return (inlineTextBox->logicalHeight() + gap).toInt();
-    }
-  }
-
-  ASSERT_NOT_REACHED();
-  return fontMetrics.ascent() + gap;
-}
-
-static bool shouldSetDecorationAntialias(
-    const Vector<AppliedTextDecoration>& decorations) {
-  for (const AppliedTextDecoration& decoration : decorations) {
-    TextDecorationStyle decorationStyle = decoration.style();
-    if (decorationStyle == TextDecorationStyleDotted ||
-        decorationStyle == TextDecorationStyleDashed)
-      return true;
-  }
-  return false;
-}
-
-static StrokeStyle textDecorationStyleToStrokeStyle(
-    TextDecorationStyle decorationStyle) {
-  StrokeStyle strokeStyle = SolidStroke;
-  switch (decorationStyle) {
-    case TextDecorationStyleSolid:
-      strokeStyle = SolidStroke;
-      break;
-    case TextDecorationStyleDouble:
-      strokeStyle = DoubleStroke;
-      break;
-    case TextDecorationStyleDotted:
-      strokeStyle = DottedStroke;
-      break;
-    case TextDecorationStyleDashed:
-      strokeStyle = DashedStroke;
-      break;
-    case TextDecorationStyleWavy:
-      strokeStyle = WavyStroke;
-      break;
-  }
-
-  return strokeStyle;
-}
-
-static void adjustStepToDecorationLength(float& step,
-                                         float& controlPointDistance,
-                                         float length) {
-  DCHECK_GT(step, 0);
-
-  if (length <= 0)
-    return;
-
-  unsigned stepCount = static_cast<unsigned>(length / step);
-
-  // Each Bezier curve starts at the same pixel that the previous one
-  // ended. We need to subtract (stepCount - 1) pixels when calculating the
-  // length covered to account for that.
-  float uncoveredLength = length - (stepCount * step - (stepCount - 1));
-  float adjustment = uncoveredLength / stepCount;
-  step += adjustment;
-  controlPointDistance += adjustment;
-}
-
-/*
- * Draw one cubic Bezier curve and repeat the same pattern long the the
- * decoration's axis.  The start point (p1), controlPoint1, controlPoint2 and
- * end point (p2) of the Bezier curve form a diamond shape:
- *
- *                              step
- *                         |-----------|
- *
- *                   controlPoint1
- *                         +
- *
- *
- *                  . .
- *                .     .
- *              .         .
- * (x1, y1) p1 +           .            + p2 (x2, y2) - <--- Decoration's axis
- *                          .         .               |
- *                            .     .                 |
- *                              . .                   | controlPointDistance
- *                                                    |
- *                                                    |
- *                         +                          -
- *                   controlPoint2
- *
- *             |-----------|
- *                 step
- */
-static void strokeWavyTextDecoration(GraphicsContext& context,
-                                     FloatPoint p1,
-                                     FloatPoint p2,
-                                     float strokeThickness) {
-  context.adjustLineToPixelBoundaries(p1, p2, strokeThickness,
-                                      context.getStrokeStyle());
-
-  Path path;
-  path.moveTo(p1);
-
-  // Distance between decoration's axis and Bezier curve's control points.
-  // The height of the curve is based on this distance. Use a minimum of 6
-  // pixels distance since the actual curve passes approximately at half of that
-  // distance, that is 3 pixels.  The minimum height of the curve is also
-  // approximately 3 pixels. Increases the curve's height
-  // as strockThickness increases to make the curve looks better.
-  float controlPointDistance = 3 * std::max<float>(2, strokeThickness);
-
-  // Increment used to form the diamond shape between start point (p1), control
-  // points and end point (p2) along the axis of the decoration. Makes the
-  // curve wider as strockThickness increases to make the curve looks better.
-  float step = 2 * std::max<float>(2, strokeThickness);
-
-  bool isVerticalLine = (p1.x() == p2.x());
-
-  if (isVerticalLine) {
-    DCHECK(p1.x() == p2.x());
-
-    float xAxis = p1.x();
-    float y1;
-    float y2;
-
-    if (p1.y() < p2.y()) {
-      y1 = p1.y();
-      y2 = p2.y();
-    } else {
-      y1 = p2.y();
-      y2 = p1.y();
-    }
-
-    adjustStepToDecorationLength(step, controlPointDistance, y2 - y1);
-    FloatPoint controlPoint1(xAxis + controlPointDistance, 0);
-    FloatPoint controlPoint2(xAxis - controlPointDistance, 0);
-
-    for (float y = y1; y + 2 * step <= y2;) {
-      controlPoint1.setY(y + step);
-      controlPoint2.setY(y + step);
-      y += 2 * step;
-      path.addBezierCurveTo(controlPoint1, controlPoint2, FloatPoint(xAxis, y));
-    }
-  } else {
-    DCHECK(p1.y() == p2.y());
-
-    float yAxis = p1.y();
-    float x1;
-    float x2;
-
-    if (p1.x() < p2.x()) {
-      x1 = p1.x();
-      x2 = p2.x();
-    } else {
-      x1 = p2.x();
-      x2 = p1.x();
-    }
-
-    adjustStepToDecorationLength(step, controlPointDistance, x2 - x1);
-    FloatPoint controlPoint1(0, yAxis + controlPointDistance);
-    FloatPoint controlPoint2(0, yAxis - controlPointDistance);
-
-    for (float x = x1; x + 2 * step <= x2;) {
-      controlPoint1.setX(x + step);
-      controlPoint2.setX(x + step);
-      x += 2 * step;
-      path.addBezierCurveTo(controlPoint1, controlPoint2, FloatPoint(x, yAxis));
-    }
-  }
-
-  context.setShouldAntialias(true);
-  context.strokePath(path);
-}
-
-static void paintAppliedDecoration(GraphicsContext& context,
-                                   FloatPoint start,
-                                   float width,
-                                   float doubleOffset,
-                                   int wavyOffsetFactor,
-                                   AppliedTextDecoration decoration,
-                                   float thickness,
-                                   bool antialiasDecoration,
-                                   bool isPrinting) {
-  context.setStrokeStyle(textDecorationStyleToStrokeStyle(decoration.style()));
-  context.setStrokeColor(decoration.color());
-
-  switch (decoration.style()) {
-    case TextDecorationStyleWavy:
-      strokeWavyTextDecoration(
-          context, start + FloatPoint(0, doubleOffset * wavyOffsetFactor),
-          start + FloatPoint(width, doubleOffset * wavyOffsetFactor),
-          thickness);
-      break;
-    case TextDecorationStyleDotted:
-    case TextDecorationStyleDashed:
-      context.setShouldAntialias(antialiasDecoration);
-    // Fall through
-    default:
-      context.drawLineForText(FloatPoint(start), width, isPrinting);
-
-      if (decoration.style() == TextDecorationStyleDouble)
-        context.drawLineForText(start + FloatPoint(0, doubleOffset), width,
-                                isPrinting);
-  }
-}
-
 void InlineTextBoxPainter::paintDecorations(
+    TextPainter& textPainter,
     const PaintInfo& paintInfo,
     const LayoutPoint& boxOrigin,
     const Vector<AppliedTextDecoration>& decorations) {
@@ -944,15 +1036,13 @@ void InlineTextBoxPainter::paintDecorations(
       localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
   }
 
-  // Use a special function for underlines to get the positioning exactly right.
-  bool isPrinting = paintInfo.isPrinting();
-
   LayoutObject& textBoxLayoutObject = inlineLayoutObject();
+
   const ComputedStyle& styleToUse =
       textBoxLayoutObject.styleRef(m_inlineTextBox.isFirstLineStyle());
   const SimpleFontData* fontData = styleToUse.font().primaryFont();
   DCHECK(fontData);
-  float baseline = fontData ? fontData->getFontMetrics().ascent() : 0;
+  float baseline = fontData ? fontData->getFontMetrics().floatAscent() : 0;
 
   // Set the thick of the line to be 10% (or something else ?)of the computed
   // font size and not less than 1px.  Using computedFontSize should take care
@@ -977,29 +1067,55 @@ void InlineTextBoxPainter::paintDecorations(
 
   // Offset between lines - always non-zero, so lines never cross each other.
   float doubleOffset = textDecorationThickness + 1.f;
+  bool skipIntercepts =
+      styleToUse.getTextDecorationSkip() & TextDecorationSkipInk;
 
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.lines();
-    if (lines & TextDecorationUnderline && fontData) {
+    if ((lines & TextDecorationUnderline) && fontData) {
       const int underlineOffset = computeUnderlineOffset(
           styleToUse.getTextUnderlinePosition(), fontData->getFontMetrics(),
           &m_inlineTextBox, textDecorationThickness);
-      paintAppliedDecoration(
+      AppliedDecorationPainter decorationPainter(
           context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset),
-          width.toFloat(), doubleOffset, 1, decoration, textDecorationThickness,
-          antialiasDecoration, isPrinting);
+          width.toFloat(), decoration, textDecorationThickness, doubleOffset, 1,
+          antialiasDecoration);
+      if (skipIntercepts) {
+        textPainter.clipDecorationsStripe(
+            -baseline + decorationPainter.decorationBounds().y() -
+                FloatPoint(localOrigin).y(),
+            decorationPainter.decorationBounds().height(),
+            textDecorationThickness);
+      }
+      decorationPainter.paint();
     }
     if (lines & TextDecorationOverline) {
-      paintAppliedDecoration(
-          context, FloatPoint(localOrigin), width.toFloat(), -doubleOffset, 1,
-          decoration, textDecorationThickness, antialiasDecoration, isPrinting);
+      AppliedDecorationPainter decorationPainter(
+          context, FloatPoint(localOrigin), width.toFloat(), decoration,
+          textDecorationThickness, -doubleOffset, 1, antialiasDecoration);
+      if (skipIntercepts) {
+        textPainter.clipDecorationsStripe(
+            -baseline + decorationPainter.decorationBounds().y() -
+                FloatPoint(localOrigin).y(),
+            decorationPainter.decorationBounds().height(),
+            textDecorationThickness);
+      }
+      decorationPainter.paint();
     }
     if (lines & TextDecorationLineThrough) {
       const float lineThroughOffset = 2 * baseline / 3;
-      paintAppliedDecoration(
+      AppliedDecorationPainter decorationPainter(
           context, FloatPoint(localOrigin) + FloatPoint(0, lineThroughOffset),
-          width.toFloat(), doubleOffset, 0, decoration, textDecorationThickness,
-          antialiasDecoration, isPrinting);
+          width.toFloat(), decoration, textDecorationThickness, doubleOffset, 0,
+          antialiasDecoration);
+      if (skipIntercepts) {
+        textPainter.clipDecorationsStripe(
+            -baseline + decorationPainter.decorationBounds().y() -
+                FloatPoint(localOrigin).y(),
+            decorationPainter.decorationBounds().height(),
+            textDecorationThickness);
+      }
+      decorationPainter.paint();
     }
   }
 }
@@ -1081,7 +1197,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(
           boxOrigin.x() + start,
           (boxOrigin.y() + m_inlineTextBox.logicalHeight() - lineThickness)
               .toFloat()),
-      width, m_inlineTextBox.getLineLayoutItem().document().printing());
+      width);
 }
 
 void InlineTextBoxPainter::paintTextMatchMarkerForeground(

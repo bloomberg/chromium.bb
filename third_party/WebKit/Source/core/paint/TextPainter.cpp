@@ -253,6 +253,38 @@ void TextPainter::paintInternal(unsigned startOffset,
   }
 }
 
+void TextPainter::clipDecorationsStripe(float upper,
+                                        float stripeWidth,
+                                        float dilation) {
+  TextRunPaintInfo textRunPaintInfo(m_run);
+
+  if (!m_run.length())
+    return;
+
+  Vector<Font::TextIntercept> textIntercepts;
+  m_font.getTextIntercepts(
+      textRunPaintInfo, m_graphicsContext.deviceScaleFactor(),
+      m_graphicsContext.fillPaint(),
+      std::make_tuple(upper, upper + stripeWidth), textIntercepts);
+
+  for (auto intercept : textIntercepts) {
+    FloatPoint clipOrigin(m_textOrigin);
+    FloatRect clipRect(
+        clipOrigin + FloatPoint(intercept.m_begin, upper),
+        FloatSize(intercept.m_end - intercept.m_begin, stripeWidth));
+    clipRect.inflateX(dilation);
+    // We need to ensure the clip rectangle is covering the full underline
+    // extent. For horizontal drawing, using enclosingIntRect would be
+    // sufficient, since we can clamp to full device pixels that way. However,
+    // for vertical drawing, we have a transformation applied, which breaks the
+    // integers-equal-device pixels assumption, so vertically inflating by 1
+    // pixel makes sure we're always covering. This should only be done on the
+    // clipping rectangle, not when computing the glyph intersects.
+    clipRect.inflateY(1.0);
+    m_graphicsContext.clipOut(clipRect);
+  }
+}
+
 void TextPainter::paintEmphasisMarkForCombinedText() {
   const SimpleFontData* fontData = m_font.primaryFont();
   DCHECK(fontData);

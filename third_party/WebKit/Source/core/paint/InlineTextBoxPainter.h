@@ -24,6 +24,7 @@ class InlineTextBox;
 class LayoutObject;
 class LayoutPoint;
 class LayoutTextCombine;
+class TextPainter;
 
 enum class DocumentMarkerPaintPhase { Foreground, Background };
 
@@ -82,7 +83,8 @@ class InlineTextBoxPainter {
                       const Font&,
                       Color textColor,
                       LayoutTextCombine* = nullptr);
-  void paintDecorations(const PaintInfo&,
+  void paintDecorations(TextPainter&,
+                        const PaintInfo&,
                         const LayoutPoint& boxOrigin,
                         const Vector<AppliedTextDecoration>&);
   void paintCompositionUnderline(GraphicsContext&,

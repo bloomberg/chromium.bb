@@ -370,7 +370,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialListStylePosition());
     m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
     m_inheritedData.m_textTransform = initialTextTransform();
-    m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();

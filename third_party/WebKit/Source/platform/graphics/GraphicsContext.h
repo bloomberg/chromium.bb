@@ -261,7 +261,7 @@ class PLATFORM_EXPORT GraphicsContext {
                             int from = 0,
                             int to = -1);
 
-  void drawLineForText(const FloatPoint&, float width, bool printing);
+  void drawLineForText(const FloatPoint&, float width);
   enum DocumentMarkerLineStyle {
     DocumentMarkerSpellingLineStyle,
     DocumentMarkerGrammarLineStyle

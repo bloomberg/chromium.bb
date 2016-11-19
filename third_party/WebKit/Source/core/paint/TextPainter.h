@@ -53,6 +53,7 @@ class CORE_EXPORT TextPainter {
                                     bool horizontal,
                                     GraphicsContextStateSaver&);
 
+  void clipDecorationsStripe(float upper, float stripeWidth, float dilation);
   void paint(unsigned startOffset,
              unsigned endOffset,
              unsigned length,

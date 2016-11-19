@@ -46,6 +46,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -639,9 +640,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
     restore();
 }
 
-void GraphicsContext::drawLineForText(const FloatPoint& pt,
-                                      float width,
-                                      bool printing) {
+void GraphicsContext::drawLineForText(const FloatPoint& pt, float width) {
   if (contextDisabled())
     return;
 
@@ -652,8 +651,7 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt,
   switch (getStrokeStyle()) {
     case NoStroke:
     case SolidStroke:
-    case DoubleStroke:
-    case WavyStroke: {
+    case DoubleStroke: {
       int thickness = SkMax32(static_cast<int>(strokeThickness()), 1);
       SkRect r;
       r.fLeft = WebCoreFloatToSkScalar(pt.x());
@@ -674,6 +672,9 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt,
       drawLine(IntPoint(pt.x(), y), IntPoint(pt.x() + width, y));
       return;
     }
+    case WavyStroke:
+    default:
+      break;
   }
 
   ASSERT_NOT_REACHED();
