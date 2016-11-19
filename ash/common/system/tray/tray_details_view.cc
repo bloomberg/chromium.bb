@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
+#include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -469,18 +470,37 @@ void TrayDetailsView::HandleButtonPressed(views::Button* sender,
 void TrayDetailsView::CreateExtraTitleRowButtons() {}
 
 void TrayDetailsView::TransitionToDefaultView() {
-  // Cache pointer to owner in this function scope. TrayDetailsView will be
-  // deleted after called ShowDefaultView.
-  SystemTrayItem* owner = owner_;
   if (UseMd()) {
     if (back_button_ && back_button_->HasFocus())
-      owner->set_restore_focus(true);
+      owner_->set_restore_focus(true);
   } else {
     if (title_row_ && title_row_->content() &&
         title_row_->content()->HasFocus()) {
-      owner->set_restore_focus(true);
+      owner_->set_restore_focus(true);
     }
+    DoTransitionToDefaultView();
+    return;
   }
+
+  const int transition_delay =
+      GetTrayConstant(TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY);
+  if (transition_delay <= 0) {
+    DoTransitionToDefaultView();
+    return;
+  }
+
+  transition_delay_timer_.reset(new base::OneShotTimer());
+  transition_delay_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(transition_delay), this,
+      &TrayDetailsView::DoTransitionToDefaultView);
+}
+
+void TrayDetailsView::DoTransitionToDefaultView() {
+  transition_delay_timer_.reset();
+
+  // Cache pointer to owner in this function scope. TrayDetailsView will be
+  // deleted after called ShowDefaultView.
+  SystemTrayItem* owner = owner_;
   owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   owner->set_restore_focus(false);
 }

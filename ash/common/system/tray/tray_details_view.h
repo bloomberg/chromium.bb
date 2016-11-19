@@ -5,12 +5,19 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
 #define ASH_COMMON_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/common/system/tray/special_popup_row.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+
+namespace base {
+class OneShotTimer;
+}  // namespace base
 
 namespace views {
 class BoxLayout;
@@ -110,7 +117,13 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Transition to default view from details view. If |title_row_| has focus
   // before transition, the default view should focus on the owner of this
   // details view.
+  //
+  // In Material Design the actual transition is intentionally delayed to allow
+  // the user to perceive the ink drop animation on the clicked target.
   void TransitionToDefaultView();
+
+  // Actually transitions to the default view.
+  void DoTransitionToDefaultView();
 
   // Helper function which creates and returns the back button used in the
   // material design top-most header row. The caller assumes ownership of the
@@ -134,6 +147,9 @@ class ASH_EXPORT TrayDetailsView : public views::View,
 
   // The back button that appears in the material design title row. Not owned.
   views::Button* back_button_;
+
+  // Used to delay the transition to the default view.
+  std::unique_ptr<base::OneShotTimer> transition_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
 };

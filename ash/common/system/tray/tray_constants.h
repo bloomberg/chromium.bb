@@ -171,6 +171,12 @@ enum TrayConstant {
   // The minimum default width for the right container of the system menu rows.
   TRAY_POPUP_ITEM_MIN_END_WIDTH,
 
+  // Duration to delay transitions to the default view.
+  TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY,
+
+  // Duration to delay transitions to the detailed view.
+  TRAY_POPUP_TRANSITION_TO_DETAILED_DELAY,
+
   // The width and height of the virtual keyboard button in the status tray
   // area. For non-MD, adjustments are made to the button dimensions based on
   // the shelf orientation, so this constant does not specify the true
@@ -184,7 +190,7 @@ enum TrayConstant {
   TRAY_IMAGE_ITEM_PADDING,
 };
 
-int GetTrayConstant(TrayConstant constant);
+ASH_EXPORT int GetTrayConstant(TrayConstant constant);
 
 namespace test {
 const int kSettingsTrayItemViewId = 10000;

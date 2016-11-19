@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <deque>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -83,6 +84,7 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
   // source. The returned TickClock will hold a reference to |this|.
   std::unique_ptr<TickClock> GetMockTickClock() const;
 
+  std::deque<TestPendingTask> TakePendingTasks();
   bool HasPendingTask() const;
   size_t GetPendingTaskCount() const;
   TimeDelta NextPendingTaskDelay() const;

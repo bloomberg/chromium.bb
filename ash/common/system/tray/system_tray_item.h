@@ -5,10 +5,16 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_ITEM_H_
 #define ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_ITEM_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
+
+namespace base {
+class OneShotTimer;
+}  // namespace base
 
 namespace views {
 class View;
@@ -105,8 +111,9 @@ class ASH_EXPORT SystemTrayItem {
   // currently visible, then making this call would use the existing window to
   // display the detailed item. The detailed item will inherit the bounds of the
   // existing window.
-  // If there is no existing view, then this is equivalent to calling
-  // PopupDetailedView(0, true).
+  //
+  // In Material Design the actual transition is intentionally delayed to allow
+  // the user to perceive the ink drop animation on the clicked target.
   void TransitionDetailedView();
 
   // Pops up the detailed view for this item. An item can request to show its
@@ -142,6 +149,9 @@ class ASH_EXPORT SystemTrayItem {
   void set_restore_focus(bool restore_focus) { restore_focus_ = restore_focus; }
 
  private:
+  // Actually transitions to the detailed view.
+  void DoTransitionToDetailedView();
+
   // Accesses uma_type().
   friend class SystemTrayBubble;
 
@@ -150,6 +160,9 @@ class ASH_EXPORT SystemTrayItem {
   SystemTray* system_tray_;
   UmaType uma_type_;
   bool restore_focus_;
+
+  // Used to delay the transition to the detailed view.
+  std::unique_ptr<base::OneShotTimer> transition_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayItem);
 };

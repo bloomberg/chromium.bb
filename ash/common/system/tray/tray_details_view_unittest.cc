@@ -9,10 +9,13 @@
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/events/test/event_generator.h"
@@ -136,6 +139,8 @@ class TrayDetailsViewTest : public AshTestBase {
 
   void TransitionFromDetailedToDefaultView(TestDetailsView* detailed) {
     detailed->TransitionToDefaultView();
+    scoped_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(
+        GetTrayConstant(TRAY_POPUP_TRANSITION_TO_DEFAULT_DELAY)));
   }
 
   void FocusBackButton(TestDetailsView* detailed) {
@@ -143,6 +148,9 @@ class TrayDetailsViewTest : public AshTestBase {
   }
 
  private:
+  // Used to control the |transition_delay_timer_|.
+  base::ScopedMockTimeMessageLoopTaskRunner scoped_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsViewTest);
 };
 

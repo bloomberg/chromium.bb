@@ -6,6 +6,8 @@
 
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
+#include "base/timer/timer.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -40,7 +42,16 @@ void SystemTrayItem::DestroyDetailedView() {}
 void SystemTrayItem::DestroyNotificationView() {}
 
 void SystemTrayItem::TransitionDetailedView() {
-  system_tray()->ShowDetailedView(this, 0, true, BUBBLE_USE_EXISTING);
+  const int transition_delay =
+      GetTrayConstant(TRAY_POPUP_TRANSITION_TO_DETAILED_DELAY);
+  if (transition_delay <= 0) {
+    DoTransitionToDetailedView();
+    return;
+  }
+  transition_delay_timer_.reset(new base::OneShotTimer());
+  transition_delay_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(transition_delay), this,
+      &SystemTrayItem::DoTransitionToDetailedView);
 }
 
 void SystemTrayItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
@@ -71,6 +82,11 @@ void SystemTrayItem::HideNotificationView() {
 
 bool SystemTrayItem::ShouldShowShelf() const {
   return true;
+}
+
+void SystemTrayItem::DoTransitionToDetailedView() {
+  transition_delay_timer_.reset();
+  system_tray()->ShowDetailedView(this, 0, true, BUBBLE_USE_EXISTING);
 }
 
 }  // namespace ash
