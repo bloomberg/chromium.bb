@@ -246,14 +246,7 @@ TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithPooledNonEmbeddedSCTs) {
                 chain_.get(), nullptr, scts, NetLogWithSource()));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_ConformsToCTEVPolicyWithPooledEmbeddedSCTs \
-  DISABLED_ConformsToCTEVPolicyWithPooledEmbeddedSCTs
-#else
-#define MAYBE_ConformsToCTEVPolicyWithPooledEmbeddedSCTs \
-  ConformsToCTEVPolicyWithPooledEmbeddedSCTs
-#endif
-TEST_F(CTPolicyEnforcerTest, MAYBE_ConformsToCTEVPolicyWithPooledEmbeddedSCTs) {
+TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithPooledEmbeddedSCTs) {
   ct::SCTList scts;
   std::vector<std::string> desired_logs;
 
