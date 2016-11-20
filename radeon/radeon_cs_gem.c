@@ -189,7 +189,7 @@ static int cs_gem_write_reloc(struct radeon_cs_int *cs,
     /* check domains */
     if ((read_domain && write_domain) || (!read_domain && !write_domain)) {
         /* in one CS a bo can only be in read or write domain but not
-         * in read & write domain at the same sime
+         * in read & write domain at the same time
          */
         return -EINVAL;
     }
@@ -242,7 +242,7 @@ static int cs_gem_write_reloc(struct radeon_cs_int *cs,
     }
     /* new relocation */
     if (csg->base.crelocs >= csg->nrelocs) {
-        /* allocate more memory (TODO: should use a slab allocatore maybe) */
+        /* allocate more memory (TODO: should use a slab allocator maybe) */
         uint32_t *tmp, size;
         size = ((csg->nrelocs + 1) * sizeof(struct radeon_bo*));
         tmp = (uint32_t*)realloc(csg->relocs_bo, size);
@@ -268,7 +268,7 @@ static int cs_gem_write_reloc(struct radeon_cs_int *cs,
     reloc->flags = flags;
     csg->chunks[1].length_dw += RELOC_SIZE;
     radeon_bo_ref(bo);
-    /* bo might be referenced from another context so have to use atomic opertions */
+    /* bo might be referenced from another context so have to use atomic operations */
     atomic_add((atomic_t *)radeon_gem_get_reloc_in_cs(bo), cs->id);
     cs->relocs_total_size += boi->size;
     radeon_cs_write_dword((struct radeon_cs *)cs, 0xc0001000);
@@ -449,7 +449,7 @@ static int cs_gem_emit(struct radeon_cs_int *cs)
                             &csg->cs, sizeof(struct drm_radeon_cs));
     for (i = 0; i < csg->base.crelocs; i++) {
         csg->relocs_bo[i]->space_accounted = 0;
-        /* bo might be referenced from another context so have to use atomic opertions */
+        /* bo might be referenced from another context so have to use atomic operations */
         atomic_dec((atomic_t *)radeon_gem_get_reloc_in_cs((struct radeon_bo*)csg->relocs_bo[i]), cs->id);
         radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
         csg->relocs_bo[i] = NULL;
@@ -481,7 +481,7 @@ static int cs_gem_erase(struct radeon_cs_int *cs)
     if (csg->relocs_bo) {
         for (i = 0; i < csg->base.crelocs; i++) {
             if (csg->relocs_bo[i]) {
-                /* bo might be referenced from another context so have to use atomic opertions */
+                /* bo might be referenced from another context so have to use atomic operations */
                 atomic_dec((atomic_t *)radeon_gem_get_reloc_in_cs((struct radeon_bo*)csg->relocs_bo[i]), cs->id);
                 radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
                 csg->relocs_bo[i] = NULL;

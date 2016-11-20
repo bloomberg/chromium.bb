@@ -89,7 +89,7 @@ Nearly all headers:
 Status: Trivial.
 
 Most UMS headers:
- - Not using fixed size interers - compat ioctls are broken.
+ - Not using fixed size integers - compat ioctls are broken.
 Status: ?
 Promote to fixed size ints, which match the current (32bit) ones.
 

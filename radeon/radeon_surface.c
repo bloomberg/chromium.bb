@@ -981,7 +981,7 @@ static int eg_surface_best(struct radeon_surface_manager *surf_man,
     /* bankw or bankh greater than 1 increase alignment requirement, not
      * sure if it's worth using smaller bankw & bankh to stick with 2D
      * tiling on small surface rather than falling back to 1D tiling.
-     * Use recommanded value based on tile size for now.
+     * Use recommended value based on tile size for now.
      *
      * fmask buffer has different optimal value figure them out once we
      * use it.

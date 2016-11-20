@@ -1,7 +1,7 @@
 libdrm - userspace library for drm
 
 This  is libdrm,  a userspace  library for  accessing the  DRM, direct
-rendering  manager, on  Linux,  BSD and  other  operating systes  that
+rendering  manager, on  Linux,  BSD and  other  operating systems that
 support the  ioctl interface.  The library  provides wrapper functions
 for the  ioctls to avoid  exposing the kernel interface  directly, and
 for chipsets with drm memory manager, support for tracking relocations

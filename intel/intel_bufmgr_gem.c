@@ -256,7 +256,7 @@ struct _drm_intel_bo_gem {
 	 * Boolean of whether the GPU is definitely not accessing the buffer.
 	 *
 	 * This is only valid when reusable, since non-reusable
-	 * buffers are those that have been shared wth other
+	 * buffers are those that have been shared with other
 	 * processes, so we don't know their state.
 	 */
 	bool idle;
@@ -294,7 +294,7 @@ struct _drm_intel_bo_gem {
 	 */
 	int reloc_tree_fences;
 
-	/** Flags that we may need to do the SW_FINSIH ioctl on unmap. */
+	/** Flags that we may need to do the SW_FINISH ioctl on unmap. */
 	bool mapped_cpu_write;
 };
 
@@ -1719,7 +1719,7 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	}
 
 	/* We need to unmap after every innovation as we cannot track
-	 * an open vma for every bo as that will exhaasut the system
+	 * an open vma for every bo as that will exhaust the system
 	 * limits and cause later failures.
 	 */
 	if (--bo_gem->map_count == 0) {
