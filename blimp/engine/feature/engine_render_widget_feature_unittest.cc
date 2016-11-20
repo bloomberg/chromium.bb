@@ -17,7 +17,6 @@
 #include "blimp/net/input_message_generator.h"
 #include "blimp/net/test_common.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/common/form_field_data.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -265,13 +264,8 @@ TEST_F(EngineRenderWidgetFeatureTest, ImeRequestSentCorrectly) {
       *ime_message_sender_,
       MockableProcessMessage(BlimpImeMsgEquals(2, ImeMessage::HIDE_IME), _));
 
-  content::FormFieldData field;
-  field.text = "green apple";
-  field.placeholder = "fruit name";
-  field.text_input_type = ui::TEXT_INPUT_TYPE_TEXT;
-
   feature_.OnRenderWidgetCreated(2, &render_widget_host1_);
-  feature_.SendShowImeRequest(2, &render_widget_host1_, field);
+  feature_.SendShowImeRequest(2, &render_widget_host1_, &text_input_client_);
   feature_.SendHideImeRequest(2, &render_widget_host1_);
 }
 

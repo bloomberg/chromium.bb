@@ -31,7 +31,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
-#include "content/public/common/form_field_data.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_importance_signals.h"
@@ -522,12 +521,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(source)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::FormFieldData)
-  IPC_STRUCT_TRAITS_MEMBER(text)
-  IPC_STRUCT_TRAITS_MEMBER(placeholder)
-  IPC_STRUCT_TRAITS_MEMBER(text_input_type)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(file_path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
@@ -731,10 +724,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 // will be sent via FrameHostMsg_TextSurroundingSelectionResponse.
 IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
                     uint32_t /* max_length */)
-
-// Requests information about currently focused text input element from the
-// renderer.
-IPC_MESSAGE_ROUTED1(FrameMsg_FocusedFormFieldDataRequest, int /* request_id */)
 
 // Tells the renderer to insert a link to the specified stylesheet. This is
 // needed to support navigation transitions.
@@ -1371,12 +1360,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     base::string16,  /* content */
                     uint32_t, /* startOffset */
                     uint32_t/* endOffset */)
-
-// Response for FrameMsg_FocusedFormFieldDataRequest. Sends info about the
-// currently focused form field.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_FocusedFormFieldDataResponse,
-                    int, /* request_id */
-                    content::FormFieldData /* form field info */)
 
 // Register a new handler for URL requests with the given scheme.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,
