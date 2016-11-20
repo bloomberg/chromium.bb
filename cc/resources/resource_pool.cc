@@ -55,17 +55,29 @@ void ResourcePool::PoolResource::OnMemoryDump(
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
-                           bool use_gpu_memory_buffers,
+                           gfx::BufferUsage usage,
                            const base::TimeDelta& expiration_delay)
     : resource_provider_(resource_provider),
-      use_gpu_memory_buffers_(use_gpu_memory_buffers),
-      max_memory_usage_bytes_(0),
-      max_resource_count_(0),
-      in_use_memory_usage_bytes_(0),
-      total_memory_usage_bytes_(0),
-      total_resource_count_(0),
+      use_gpu_memory_buffers_(true),
+      usage_(usage),
       task_runner_(task_runner),
-      evict_expired_resources_pending_(false),
+      resource_expiration_delay_(expiration_delay),
+      weak_ptr_factory_(this) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "cc::ResourcePool", task_runner_.get());
+
+  // Register this component with base::MemoryCoordinatorClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+}
+
+ResourcePool::ResourcePool(ResourceProvider* resource_provider,
+                           base::SingleThreadTaskRunner* task_runner,
+                           ResourceProvider::TextureHint hint,
+                           const base::TimeDelta& expiration_delay)
+    : resource_provider_(resource_provider),
+      use_gpu_memory_buffers_(false),
+      hint_(hint),
+      task_runner_(task_runner),
       resource_expiration_delay_(expiration_delay),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -132,8 +144,7 @@ Resource* ResourcePool::CreateResource(const gfx::Size& size,
     pool_resource->AllocateWithGpuMemoryBuffer(size, format, usage_,
                                                color_space);
   } else {
-    pool_resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                            format, color_space);
+    pool_resource->Allocate(size, hint_, format, color_space);
   }
 
   DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(pool_resource->size(),

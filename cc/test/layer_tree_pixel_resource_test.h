@@ -52,6 +52,7 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
  protected:
   unsigned draw_texture_target_;
   RasterBufferProviderType raster_buffer_provider_type_;
+  ResourceProvider::TextureHint texture_hint_;
   bool initialized_;
 
   void InitializeFromTestCase(PixelResourceTestCase test_case);

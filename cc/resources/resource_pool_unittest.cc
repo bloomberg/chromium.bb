@@ -28,6 +28,7 @@ class ResourcePoolTest : public testing::Test {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                             ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                              ResourcePool::kDefaultExpirationDelay);
   }
 
@@ -158,6 +159,7 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
   // to run.
   resource_pool_ =
       ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                           ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                            base::TimeDelta::FromMilliseconds(10));
 
   // Limits high enough to not be hit by this test.
@@ -198,6 +200,7 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   // to run.
   resource_pool_ =
       ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                           ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                            base::TimeDelta::FromMilliseconds(100));
 
   // Limits high enough to not be hit by this test.
@@ -365,6 +368,29 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
   EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+}
+
+TEST_F(ResourcePoolTest, TextureHintRespected) {
+  gfx::Size size(100, 100);
+  ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space;
+
+  resource_pool_ =
+      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                           ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+                           base::TimeDelta::FromMilliseconds(100));
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+  EXPECT_TRUE(resource_provider_->IsImmutable(resource->id()));
+  resource_pool_->ReleaseResource(resource);
+
+  resource_pool_ =
+      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                           ResourceProvider::TEXTURE_HINT_DEFAULT,
+                           base::TimeDelta::FromMilliseconds(100));
+  resource = resource_pool_->AcquireResource(size, format, color_space);
+  EXPECT_FALSE(resource_provider_->IsImmutable(resource->id()));
+  resource_pool_->ReleaseResource(resource);
 }
 
 }  // namespace cc

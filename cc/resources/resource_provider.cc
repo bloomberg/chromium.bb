@@ -796,6 +796,9 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(gl);
     gl->DeleteTextures(1, &resource->gl_id);
     resource->gl_id = 0;
+    // Shallow flush after deleting a texture to make sure the memory is freed
+    // as soon as possible.
+    gl->ShallowFlushCHROMIUM();
   }
   if (resource->shared_bitmap) {
     DCHECK(resource->origin != Resource::EXTERNAL);
