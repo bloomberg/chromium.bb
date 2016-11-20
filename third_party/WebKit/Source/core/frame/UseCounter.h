@@ -1390,6 +1390,7 @@ class CORE_EXPORT UseCounter {
     V8Document_RootScroller_AttributeGetter = 1687,
     V8Document_RootScroller_AttributeSetter = 1688,
     CustomElementRegistryDefine = 1689,
+    LinkHeaderServiceWorker = 1690,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

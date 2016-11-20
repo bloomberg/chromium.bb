@@ -412,6 +412,9 @@ void LinkLoader::loadLinksFromHeader(
                       LinkCalledFromHeader, errorOccurred, viewportDescription,
                       ReferrerPolicyDefault);
     }
+    if (relAttribute.isServiceWorker()) {
+      UseCounter::count(*document, UseCounter::LinkHeaderServiceWorker);
+    }
     // TODO(yoav): Add more supported headers as needed.
   }
 }
