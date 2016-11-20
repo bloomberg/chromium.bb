@@ -214,12 +214,16 @@ ScriptValue CustomElementRegistry::get(const AtomicString& name) {
 // At this point, what the spec calls 'is' is 'name' from desc
 CustomElementDefinition* CustomElementRegistry::definitionFor(
     const CustomElementDescriptor& desc) const {
-  // 4&5. If there is a definition in registry with name equal to is/localName
-  // Autonomous elements have the same name and local name
-  CustomElementDefinition* definition = definitionForName(desc.name());
-  // 4&5. and name equal to localName, return that definition
-  if (definition and definition->descriptor().localName() == desc.localName())
+  // desc.name() is 'is' attribute
+  // 4. If definition in registry with name equal to local name...
+  CustomElementDefinition* definition = definitionForName(desc.localName());
+  // 5. If definition in registry with name equal to name...
+  if (!definition)
+    definition = definitionForName(desc.name());
+  // 4&5. ...and local name equal to localName, return that definition
+  if (definition and definition->descriptor().localName() == desc.localName()) {
     return definition;
+  }
   // 6. Return null
   return nullptr;
 }

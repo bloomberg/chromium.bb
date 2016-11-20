@@ -17,20 +17,24 @@
 // 4. If 'is' is non-null and definition is null, then throw a NotFoundError
 //    Different from createElement: localName is not converted to ASCII lowercase
 
-function setup(w) {
-  class A extends w.HTMLElement {
-    constructor() {
-      super();
-    }
-  }
-  w.customElements.define('a-a', A);
+// https://html.spec.whatwg.org/multipage/scripting.html#custom-elements-core-concepts
+// After a customized built-in element is created, changing the value of the 'is' attribute has no effect
 
-  class B extends w.HTMLDivElement {
+
+function setup(w) {
+  w.A = class extends w.HTMLElement {
     constructor() {
       super();
     }
   }
-  w.customElements.define('b-b', B, {extends: 'div'});
+  w.customElements.define('a-a', w.A);
+
+  w.B = class extends w.HTMLDivElement {
+    constructor() {
+      super();
+    }
+  }
+  w.customElements.define('b-b', w.B, {extends: 'div'});
 }
 
 test_with_window((w) => {
@@ -42,7 +46,7 @@ test_with_window((w) => {
 test_with_window((w) => {
   setup(w);
 
-  assert_not_equals(w.document.createElement('A-a').constructor, w.HTMLElement);
+  assert_equals(w.document.createElement('A-a').constructor, w.A);
   assert_throws_dom_exception(w, 'NotFoundError', () => {
     w.document.createElement('div', {is: 'b-B'});
   }, 'The \'is\' option should not be converted to ASCII lowercase');
@@ -50,6 +54,12 @@ test_with_window((w) => {
 
 test_with_window((w) => {
   setup(w);
+
+  assert_equals(w.document.createElement('a-a', {}).constructor, w.A,
+  'Setting \'is\' attribute for defined autonomous element \'a-a\' has no effect');
+  assert_equals(w.document.createElement('a-a', {is: 'b-b'}).constructor, w.A,
+  'Setting \'is\' attribute for defined autonomous element \'a-a\' has no effect');
+
   assert_throws_dom_exception(w, 'NotFoundError', () => {
     w.document.createElement('div', {is: 'a-a'});
   }, 'Custom element definition named \'a-a\' is not a customized built-in element');
@@ -57,7 +67,7 @@ test_with_window((w) => {
     w.document.createElement('button', {is: 'b-b'});
   }, 'Custom element definition named \'b-b\' is not an HTMLButtonElement');
   assert_throws_dom_exception(w, 'NotFoundError', () => {
-    w.document.createElement('button', {id: 'b-b'});
+    w.document.createElement('div', {id: 'b-b'});
   }, 'An \'is\' attribute is needed to create a customized built-in element');
   assert_throws_dom_exception(w, 'NotFoundError', () => {
     w.document.createElement('div', {is: ''});
@@ -69,10 +79,8 @@ test_with_window((w) => {
 
 test_with_window((w) => {
   setup(w);
-  let a = w.document.createElement('a-a');
-  let b = w.document.createElement('div', {is : 'b-b'});
-  assert_equals(a.getAttribute('is'), null);
-  assert_equals(b.getAttribute('is'), 'b-b');
+  assert_equals(w.document.createElement('a-a').getAttribute('is'), null);
+  assert_equals(w.document.createElement('div', {is : 'b-b'}).getAttribute('is'), 'b-b');
 }, 'createElement   6. If \'is\' is non-null, then set is-attribute to \'is\'');
 
 test_with_window((w) => {
@@ -82,6 +90,14 @@ test_with_window((w) => {
     w.document.createElementNS('http://www.w3.org/1999/xhtml', 'dIv', {is: 'b-b'});
   });
 }, 'createElementNS 4. If \'is\' is non-null and definition is null, then throw a NotFoundError');
+
+test_with_window((w) => {
+  setup(w);
+  var b = w.document.createElement('div', {is: 'b-b'});
+  assert_equals(b.constructor, w.B);
+  b.setAttribute('is', 'dirty');
+  assert_equals(b.constructor, w.B);
+}, 'core concepts   After a customized built-in element is created, changing the value of the \'is\' attribute has no effect');
 
 </script>
 </body>
