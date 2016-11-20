@@ -26,26 +26,11 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/sample_format.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/opus_audio_decoder.h"
 
 namespace chromecast {
 namespace media {
 
 namespace {
-
-const int kOpusSamplingRate = 48000;
-const uint8_t kFakeOpusExtraData[19] = {
-  'O', 'p', 'u', 's', 'H', 'e', 'a', 'd',  // offset 0, OpusHead
-  0,  // offset 8, version
-  2,  // offset 9, channels
-  0, 0,  // offset 10, skip
-  static_cast<uint8_t>(kOpusSamplingRate & 0xFF),  // offset 12, LE
-  static_cast<uint8_t>((kOpusSamplingRate >> 8) & 0xFF),
-  static_cast<uint8_t>((kOpusSamplingRate >> 16) & 0xFF),
-  static_cast<uint8_t>((kOpusSamplingRate >> 24) & 0xFF),
-  0, 0,  // offset 16, gain
-  0,  // offset 18, stereo mapping
-};
 
 const int kOutputChannelCount = 2;  // Always output stereo audio.
 const int kMaxChannelInput = 2;
@@ -82,19 +67,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                                              ::media::CHANNEL_LAYOUT_STEREO));
     }
     base::WeakPtr<CastAudioDecoderImpl> self = weak_factory_.GetWeakPtr();
-    if (config.codec == media::kCodecOpus) {
-      // Insert fake extradata to make OpusAudioDecoder work with v2mirroring.
-      if (config_.extra_data.empty() &&
-          config_.samples_per_second == kOpusSamplingRate &&
-          config_.channel_number == 2)
-        config_.extra_data.assign(
-            kFakeOpusExtraData,
-            kFakeOpusExtraData + sizeof(kFakeOpusExtraData));
-      decoder_.reset(new ::media::OpusAudioDecoder(task_runner_));
-    } else {
-      decoder_.reset(new ::media::FFmpegAudioDecoder(
-          task_runner_, make_scoped_refptr(new ::media::MediaLog())));
-    }
+    decoder_.reset(new ::media::FFmpegAudioDecoder(
+        task_runner_, make_scoped_refptr(new ::media::MediaLog())));
     decoder_->Initialize(
         media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config_),
         nullptr, base::Bind(&CastAudioDecoderImpl::OnInitialized, self),

@@ -1601,7 +1601,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
   EXPECT_EQ(592, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   // Verify preroll is stripped.
-  EXPECT_HASH_EQ("-0.06,0.97,-0.90,-0.70,-0.53,-0.34,", GetAudioHash());
+  EXPECT_HASH_EQ("-0.25,0.67,0.04,0.14,-0.49,-0.41,", GetAudioHash());
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {

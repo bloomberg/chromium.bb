@@ -22,13 +22,15 @@ static void WarnOnNonMonotonicTimestamps(base::TimeDelta last_timestamp,
                 << " diff " << diff.InMicroseconds() << " us";
 }
 
-AudioDiscardHelper::AudioDiscardHelper(int sample_rate, size_t decoder_delay)
+AudioDiscardHelper::AudioDiscardHelper(int sample_rate,
+                                       size_t decoder_delay,
+                                       bool delayed_discard)
     : sample_rate_(sample_rate),
       decoder_delay_(decoder_delay),
       timestamp_helper_(sample_rate_),
       discard_frames_(0),
       last_input_timestamp_(kNoTimestamp),
-      delayed_discard_(false),
+      delayed_discard_(delayed_discard),
       delayed_end_discard_(0) {
   DCHECK_GT(sample_rate_, 0);
 }
@@ -45,7 +47,6 @@ void AudioDiscardHelper::Reset(size_t initial_discard) {
   discard_frames_ = initial_discard;
   last_input_timestamp_ = kNoTimestamp;
   timestamp_helper_.SetBaseTimestamp(kNoTimestamp);
-  delayed_discard_ = false;
   delayed_discard_padding_ = DecoderBuffer::DiscardPadding();
 }
 
@@ -62,8 +63,7 @@ bool AudioDiscardHelper::ProcessBuffers(
   last_input_timestamp_ = encoded_buffer->timestamp();
 
   // If this is the first buffer seen, setup the timestamp helper.
-  const bool first_buffer = !initialized();
-  if (first_buffer) {
+  if (!initialized()) {
     // Clamp the base timestamp to zero.
     timestamp_helper_.SetBaseTimestamp(
         std::max(base::TimeDelta(), encoded_buffer->timestamp()));
@@ -73,10 +73,8 @@ bool AudioDiscardHelper::ProcessBuffers(
   if (!decoded_buffer.get()) {
     // If there's a one buffer delay for decoding, we need to save it so it can
     // be processed with the next decoder buffer.
-    if (first_buffer) {
-      delayed_discard_ = true;
+    if (delayed_discard_)
       delayed_discard_padding_ = encoded_buffer->discard_padding();
-    }
     return false;
   }
 

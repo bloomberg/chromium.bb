@@ -329,21 +329,6 @@ bool AVCodecContextToAudioDecoderConfig(
 
   int sample_rate = codec_context->sample_rate;
   switch (codec) {
-    case kCodecOpus:
-      // |codec_context->sample_fmt| is not set by FFmpeg because Opus decoding
-      // is not enabled in FFmpeg.  It doesn't matter what value is set here, so
-      // long as it's valid, the true sample format is selected inside the
-      // decoder.
-      sample_format = kSampleFormatF32;
-
-      // Always use 48kHz for OPUS.  Technically we should match to the highest
-      // supported hardware sample rate among [8, 12, 16, 24, 48] kHz, but we
-      // don't know the hardware sample rate at this point and those rates are
-      // rarely used for output.  See the "Input Sample Rate" section of the
-      // spec: http://tools.ietf.org/html/draft-terriberry-oggopus-01#page-11
-      sample_rate = 48000;
-      break;
-
     // For AC3/EAC3 we enable only demuxing, but not decoding, so FFmpeg does
     // not fill |sample_fmt|.
     case kCodecAC3:
@@ -387,21 +372,17 @@ bool AVCodecContextToAudioDecoderConfig(
                      extra_data, encryption_scheme, seek_preroll,
                      codec_context->delay);
 
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  // These are bitstream formats unknown to ffmpeg, so they don't have
+  // a known sample format size.
+  if (codec == kCodecAC3 || codec == kCodecEAC3)
+    return true;
+#endif
+
   // Verify that AudioConfig.bits_per_channel was calculated correctly for
   // codecs that have |sample_fmt| set by FFmpeg.
-  switch (codec) {
-    case kCodecOpus:
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-    case kCodecAC3:
-    case kCodecEAC3:
-#endif
-      break;
-    default:
-      DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
-                config->bits_per_channel());
-      break;
-  }
-
+  DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
+            config->bits_per_channel());
   return true;
 }
 

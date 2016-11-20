@@ -23,7 +23,6 @@
 #endif
 #include "media/filters/file_data_source.h"
 #include "media/filters/memory_data_source.h"
-#include "media/filters/opus_audio_decoder.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #if !defined(MEDIA_DISABLE_LIBVPX)
@@ -343,8 +342,6 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   audio_decoders.push_back(
       new FFmpegAudioDecoder(message_loop_.task_runner(), new MediaLog()));
 #endif
-
-  audio_decoders.push_back(new OpusAudioDecoder(message_loop_.task_runner()));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.task_runner());

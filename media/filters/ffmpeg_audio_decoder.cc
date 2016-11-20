@@ -392,18 +392,6 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
 
-  // Use OpusAudioDecoder for Opus for now, even if FFmpeg claims to support
-  // Opus decode. Failure to configure here should lead to fall-back to
-  // OpusAudioDecoder.
-  // TODO(wolenetz,dalecurtis): Remove OpusAudioDecoder and use
-  // FFmpegAudioDecoder instead for Opus.
-  if (config_.codec() == kCodecOpus) {
-    MEDIA_LOG(DEBUG, media_log_)
-        << "Opus decode via FFmpegAudioDecoder is disabled";
-    state_ = kUninitialized;
-    return false;
-  }
-
   // Initialize AVCodecContext structure.
   codec_context_.reset(avcodec_alloc_context3(NULL));
   AudioDecoderConfigToAVCodecContext(config_, codec_context_.get());
@@ -411,6 +399,9 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   codec_context_->opaque = this;
   codec_context_->get_buffer2 = GetAudioBuffer;
   codec_context_->refcounted_frames = 1;
+
+  if (config_.codec() == kCodecOpus)
+    codec_context_->request_sample_fmt = AV_SAMPLE_FMT_FLT;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec || avcodec_open2(codec_context_.get(), codec, NULL) < 0) {
@@ -441,9 +432,13 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 }
 
 void FFmpegAudioDecoder::ResetTimestampState() {
-  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second(),
-                                               config_.codec_delay()));
-  discard_helper_->Reset(config_.codec_delay());
+  // Opus codec delay is handled by ffmpeg.
+  const int codec_delay =
+      config_.codec() == kCodecOpus ? 0 : config_.codec_delay();
+  discard_helper_.reset(
+      new AudioDiscardHelper(config_.samples_per_second(), codec_delay,
+                             config_.codec() == kCodecVorbis));
+  discard_helper_->Reset(codec_delay);
 }
 
 }  // namespace media

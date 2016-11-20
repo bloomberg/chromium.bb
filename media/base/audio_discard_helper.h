@@ -30,11 +30,16 @@ class MEDIA_EXPORT AudioDiscardHelper {
   // specify this if the decoder inserts frames which have no corresponding
   // encoded buffer.
   //
+  // |delayed_discard| indicates that the codec requires two encoded buffers
+  // before the first decoded output buffer.  Used only for vorbis currently.
+  //
   // For example, most MP3 decoders will output 529 junk frames before the data
   // corresponding to the first encoded buffer is output.  These frames are not
   // represented in the encoded data stream and instead are an artifact of how
   // most MP3 decoders work.  See http://lame.sourceforge.net/tech-FAQ.txt
-  AudioDiscardHelper(int sample_rate, size_t decoder_delay);
+  AudioDiscardHelper(int sample_rate,
+                     size_t decoder_delay,
+                     bool delayed_discard);
   ~AudioDiscardHelper();
 
   // Converts a TimeDelta to a frame count based on the constructed sample rate.
@@ -90,9 +95,8 @@ class MEDIA_EXPORT AudioDiscardHelper {
 
   // Certain codecs require two encoded buffers before they'll output the first
   // decoded buffer.  In this case DiscardPadding must be carried over from the
-  // previous encoded buffer.  Enabled automatically if an encoded buffer is
-  // given to ProcessBuffers() with a NULL decoded buffer.
-  bool delayed_discard_;
+  // previous encoded buffer.  Set during construction.
+  const bool delayed_discard_;
   DecoderBuffer::DiscardPadding delayed_discard_padding_;
 
   // When |decoder_delay_| > 0, the number of frames which should be discarded

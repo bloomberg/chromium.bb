@@ -29,7 +29,6 @@
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/in_memory_url_protocol.h"
-#include "media/filters/opus_audio_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -66,14 +65,9 @@ namespace media {
 
 // The number of packets to read and then decode from each file.
 static const size_t kDecodeRuns = 3;
-static const uint8_t kOpusExtraData[] = {
-    0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64, 0x01, 0x02,
-    // The next two bytes represent the codec delay.
-    0x00, 0x00, 0x80, 0xbb, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 enum AudioDecoderType {
   FFMPEG,
-  OPUS,
 #if defined(OS_ANDROID)
   MEDIA_CODEC,
 #endif
@@ -142,10 +136,6 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
         decoder_.reset(new FFmpegAudioDecoder(message_loop_.task_runner(),
                                               new MediaLog()));
         break;
-      case OPUS:
-        decoder_.reset(
-            new OpusAudioDecoder(message_loop_.task_runner()));
-        break;
 #if defined(OS_ANDROID)
       case MEDIA_CODEC:
         decoder_.reset(new MediaCodecAudioDecoder(message_loop_.task_runner()));
@@ -173,9 +163,7 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     ASSERT_FALSE(pending_decode_);
   }
 
-  void SendEndOfStream() {
-    DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
-  }
+  void SendEndOfStream() { DecodeBuffer(DecoderBuffer::CreateEOSBuffer()); }
 
   void Initialize() {
     // Load the test data file.
@@ -257,7 +245,7 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
 
     // Don't set discard padding for Opus, it already has discard behavior set
     // based on the codec delay in the AudioDecoderConfig.
-    if (GetParam().decoder_type == FFMPEG)
+    if (GetParam().decoder_type == FFMPEG && GetParam().codec != kCodecOpus)
       SetDiscardPadding(&packet, buffer, GetParam().samples_per_second);
 
     // DecodeBuffer() shouldn't need the original packet since it uses the copy.
@@ -392,7 +380,6 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderTest);
 };
 
-class OpusAudioDecoderBehavioralTest : public AudioDecoderTest {};
 class FFmpegAudioDecoderBehavioralTest : public AudioDecoderTest {};
 
 TEST_P(AudioDecoderTest, Initialize) {
@@ -464,70 +451,11 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
   EXPECT_EQ(DecodeStatus::DECODE_ERROR, last_decode_status());
 }
 
-TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
-  ASSERT_EQ(GetParam().decoder_type, OPUS);
-  std::vector<uint8_t> extra_data(
-      kOpusExtraData,
-      kOpusExtraData + arraysize(kOpusExtraData));
-  AudioDecoderConfig decoder_config;
-  decoder_config.Initialize(kCodecOpus, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
-                            48000, extra_data, Unencrypted(),
-                            base::TimeDelta::FromMilliseconds(80), 0);
-  InitializeDecoder(decoder_config);
-}
-
-TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
-  ASSERT_EQ(GetParam().decoder_type, OPUS);
-  std::vector<uint8_t> extra_data(
-      kOpusExtraData,
-      kOpusExtraData + arraysize(kOpusExtraData));
-  AudioDecoderConfig decoder_config;
-  decoder_config.Initialize(
-      kCodecOpus, kSampleFormatF32, CHANNEL_LAYOUT_STEREO, 48000, extra_data,
-      Unencrypted(), base::TimeDelta::FromMilliseconds(80),
-      // Use a different codec delay than in the extradata.
-      100);
-  InitializeDecoderWithResult(decoder_config, true);
-}
-
-#if defined(OPUS_FIXED_POINT)
-const DecodedBufferExpectations kSfxOpusExpectations[] = {
-    {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},
-    {13500, 20000, "5.48,5.93,6.05,5.83,5.54,5.46,"},
-    {33500, 20000, "-3.44,-3.34,-3.57,-4.11,-4.74,-5.13,"},
-};
-#else
-const DecodedBufferExpectations kSfxOpusExpectations[] = {
-    {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},
-    {13500, 20000, "5.48,5.93,6.04,5.83,5.54,5.45,"},
-    {33500, 20000, "-3.45,-3.35,-3.57,-4.12,-4.74,-5.14,"},
-};
-#endif
-
 const DecodedBufferExpectations kBearOpusExpectations[] = {
     {500, 3500, "-0.26,0.87,1.36,0.84,-0.30,-1.22,"},
     {4000, 10000, "0.09,0.23,0.21,0.03,-0.17,-0.24,"},
     {14000, 10000, "0.10,0.24,0.23,0.04,-0.14,-0.23,"},
 };
-
-const DecoderTestData kOpusTests[] = {
-    {OPUS, kCodecOpus, "sfx-opus.ogg", kSfxOpusExpectations, -312, 48000,
-     CHANNEL_LAYOUT_MONO},
-    {OPUS, kCodecOpus, "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
-     CHANNEL_LAYOUT_STEREO},
-};
-
-// Dummy data for behavioral tests.
-const DecoderTestData kOpusBehavioralTest[] = {
-    {OPUS, kUnknownAudioCodec, "", NULL, 0, 0, CHANNEL_LAYOUT_NONE},
-};
-
-INSTANTIATE_TEST_CASE_P(OpusAudioDecoderTest,
-                        AudioDecoderTest,
-                        testing::ValuesIn(kOpusTests));
-INSTANTIATE_TEST_CASE_P(OpusAudioDecoderBehavioralTest,
-                        OpusAudioDecoderBehavioralTest,
-                        testing::ValuesIn(kOpusBehavioralTest));
 
 #if defined(OS_ANDROID)
 #if defined(USE_PROPRIETARY_CODECS)
@@ -604,6 +532,20 @@ const DecodedBufferExpectations kBearOgvExpectations[] = {
     {36281, 23219, "-1.43,-1.25,0.11,1.29,1.86,0.14,"},
 };
 
+#if defined(OPUS_FIXED_POINT)
+const DecodedBufferExpectations kSfxOpusExpectations[] = {
+    {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},
+    {13500, 20000, "5.48,5.93,6.05,5.83,5.54,5.46,"},
+    {33500, 20000, "-3.44,-3.34,-3.57,-4.11,-4.74,-5.13,"},
+};
+#else
+const DecodedBufferExpectations kSfxOpusExpectations[] = {
+    {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},
+    {13500, 20000, "5.48,5.93,6.04,5.83,5.54,5.45,"},
+    {33500, 20000, "-3.45,-3.35,-3.57,-4.12,-4.74,-5.14,"},
+};
+#endif
+
 const DecoderTestData kFFmpegTests[] = {
 #if defined(USE_PROPRIETARY_CODECS)
     {FFMPEG, kCodecMP3, "sfx.mp3", kSfxMp3Expectations, 0, 44100,
@@ -622,6 +564,10 @@ const DecoderTestData kFFmpegTests[] = {
     // Note: bear.ogv is incorrectly muxed such that valid samples are given
     // negative timestamps, this marks them for discard per the ogg vorbis spec.
     {FFMPEG, kCodecVorbis, "bear.ogv", kBearOgvExpectations, -704, 44100,
+     CHANNEL_LAYOUT_STEREO},
+    {FFMPEG, kCodecOpus, "sfx-opus.ogg", kSfxOpusExpectations, -312, 48000,
+     CHANNEL_LAYOUT_MONO},
+    {FFMPEG, kCodecOpus, "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
      CHANNEL_LAYOUT_STEREO},
 };
 

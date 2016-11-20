@@ -125,23 +125,6 @@ TEST_F(FFmpegCommonTest, AVStreamToDecoderConfig) {
   ASSERT_TRUE(found_video);
 }
 
-TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {
-  AVCodecContext context = {0};
-  context.codec_type = AVMEDIA_TYPE_AUDIO;
-  context.codec_id = AV_CODEC_ID_OPUS;
-  context.channel_layout = CHANNEL_LAYOUT_STEREO;
-  context.channels = 2;
-  context.sample_fmt = AV_SAMPLE_FMT_FLT;
-
-  // During conversion this sample rate should be changed to 48kHz.
-  context.sample_rate = 44100;
-
-  AudioDecoderConfig decoder_config;
-  ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(&context, Unencrypted(),
-                                                 &decoder_config));
-  EXPECT_EQ(48000, decoder_config.samples_per_second());
-}
-
 TEST_F(FFmpegCommonTest, TimeBaseConversions) {
   const int64_t test_data[][5] = {
       {1, 2, 1, 500000, 1}, {1, 3, 1, 333333, 1}, {1, 3, 2, 666667, 2},

@@ -162,8 +162,6 @@ component("media") {
     "filters/jpeg_parser.h",
     "filters/memory_data_source.cc",
     "filters/memory_data_source.h",
-    "filters/opus_audio_decoder.cc",
-    "filters/opus_audio_decoder.h",
     "filters/opus_constants.cc",
     "filters/opus_constants.h",
     "filters/pipeline_controller.cc",
@@ -283,7 +281,10 @@ component("media") {
   include_dirs = [ "." ]
   if (media_use_ffmpeg) {
     public_deps += [ "//media/ffmpeg" ]
-    deps += [ "//third_party/ffmpeg" ]
+    deps += [
+      "//third_party/ffmpeg",
+      "//third_party/opus",
+    ]
     sources += [
       "filters/audio_file_reader.cc",
       "filters/audio_file_reader.h",
@@ -486,7 +487,6 @@ component("media") {
     ":shared_memory_support",
     "//media/audio",
     "//media/base",
-    "//third_party/opus",
   ]
 
   deps += [
