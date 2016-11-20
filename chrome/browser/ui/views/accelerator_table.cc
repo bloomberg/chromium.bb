@@ -17,7 +17,6 @@
 #include "ash/common/accelerators/accelerator_table.h"  // nogncheck
 #endif
 
-namespace chrome {
 namespace {
 
 // For many commands, the Mac equivalent uses Cmd instead of Ctrl. We only need
@@ -288,5 +287,3 @@ bool IsCommandRepeatable(int command_id) {
   }
   return false;
 }
-
-}  // namespace chrome

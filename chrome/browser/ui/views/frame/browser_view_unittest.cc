@@ -163,8 +163,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
 // Test that repeated accelerators are processed or ignored depending on the
 // commands that they refer to. The behavior for different commands is dictated
-// by chrome::IsCommandRepeatable() in
-// chrome/browser/ui/views/accelerator_table.h.
+// by IsCommandRepeatable() in chrome/browser/ui/views/accelerator_table.h.
 TEST_F(BrowserViewTest, RepeatedAccelerators) {
   // A non-repeated Ctrl-L accelerator should be processed.
   const ui::Accelerator kLocationAccel(ui::VKEY_L, ui::EF_CONTROL_DOWN);
