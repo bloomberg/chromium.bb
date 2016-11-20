@@ -4,14 +4,11 @@
 
 #include "services/ui/public/cpp/gpu/gpu_service.h"
 
-#include "base/command_line.h"
-#include "base/memory/singleton.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/common/switches.h"
 #include "services/ui/public/cpp/gpu/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
