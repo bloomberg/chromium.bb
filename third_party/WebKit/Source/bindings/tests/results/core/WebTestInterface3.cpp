@@ -11,6 +11,7 @@
 #include "WebTestInterface3.h"
 
 // TODO(dglazkov): Implement generating includes.
+#include "WebDOMString.h"
 
 namespace blink {
 namespace api {
@@ -20,15 +21,11 @@ namespace api {
 // TODO(dglazkov): Implement constructor generation
 
 // TODO(dglazkov): Implement attribute getter/setter generation
-// readonlyStringifierAttribute
+// DOMString readonlyStringifierAttribute
 
 // TODO(dglazkov): Implement method generation
 // void CppTestInterface3::voidMethodDocument
-// Iterator* CppTestInterface3::keys
-// Iterator* CppTestInterface3::values
-// Iterator* CppTestInterface3::entries
-// void CppTestInterface3::forEach
-// String CppTestInterface3::toString
+// Iterator CppTestInterface3::keys
 
 }  // namespace api
 }  // namespace blink

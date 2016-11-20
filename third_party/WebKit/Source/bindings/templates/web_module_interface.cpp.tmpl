@@ -7,7 +7,7 @@
 
 // TODO(dglazkov): Implement generating includes.
 {% for filename in cpp_includes %}
-#include "{{filename}}"
+#include "Web{{filename}}.h"
 {% endfor %}
 
 namespace blink {
@@ -22,12 +22,12 @@ namespace api {
 
 // TODO(dglazkov): Implement attribute getter/setter generation
 {% for attribute in attributes %}
-// {{attribute.name}}
+// {{attribute.return_type}} {{attribute.name}}
 {% endfor %}
 
 // TODO(dglazkov): Implement method generation
 {% for method in methods %}
-// {{method.cpp_type}} Cpp{{class_name}}::{{method.name}}
+// {{method.return_type}} Cpp{{class_name}}::{{method.name}}
 {% endfor %}
 
 }  // namespace api
