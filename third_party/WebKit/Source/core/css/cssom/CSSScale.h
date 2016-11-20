@@ -21,9 +21,7 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
     return new CSSScale(x, y, z);
   }
 
-  static CSSScale* fromCSSValue(const CSSFunctionValue& value) {
-    return nullptr;
-  }
+  static CSSScale* fromCSSValue(const CSSFunctionValue&);
 
   double x() const { return m_x; }
   double y() const { return m_y; }
