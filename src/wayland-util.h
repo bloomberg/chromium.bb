@@ -684,9 +684,11 @@ typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
 
 typedef void (*wl_log_func_t)(const char *, va_list) WL_PRINTF(1, 0);
 
-/** \enum wl_iterator_result
+/**
+ * Return value of an iterator function
  *
- * This enum represents the return value of an iterator function.
+ * \sa wl_client_for_each_resource_iterator_func_t
+ * \sa wl_client_for_each_resource
  */
 enum wl_iterator_result {
 	/** Stop the iteration */
