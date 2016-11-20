@@ -1678,8 +1678,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
 TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
   setBodyInnerHTML(
       "<svg id=svg style='position: relative; left: 0.6px; top: 0.3px'>"
-      "  <foreignObject id=foreign x='3.6' y='5.2'"
-      "      transform='translate(1.5, 1.5) scale(2)'>"
+      "  <foreignObject id=foreign x='3.5' y='5.4' transform='translate(1,1)'>"
       "    <div id=div style='position: absolute; left: 5.6px; top: 7.3px'>"
       "    </div>"
       "  </foreignObject>"
@@ -1695,22 +1694,19 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
   EXPECT_EQ(TransformationMatrix().translate(9, 8),
             svgProperties->svgLocalToBorderBoxTransform()->matrix());
 
-  const auto* foreignObject =
-      toLayoutBox(getLayoutObjectByElementId("foreign"));
-  const auto* foreignObjectProperties = foreignObject->paintProperties();
-  // The offset of foreign object should be snapped to pixels before applying
-  // the local transforms.
-  EXPECT_EQ(TransformationMatrix().translate(1.5, 1.5).scale(2).translate(4, 5),
-            foreignObjectProperties->transform()->matrix());
-  EXPECT_EQ(LayoutPoint(4, 5), foreignObject->location());
+  const auto* foreignObjectProperties =
+      getLayoutObjectByElementId("foreign")->paintProperties();
   EXPECT_EQ(nullptr, foreignObjectProperties->paintOffsetTranslation());
-  EXPECT_EQ(LayoutPoint(),
+  // Paint offset of foreignObject should be originated from SVG root and
+  // snapped to pixels.
+  EXPECT_EQ(LayoutPoint(4, 5),
             foreignObjectProperties->localBorderBoxProperties()->paintOffset);
 
   const auto* divProperties =
       getLayoutObjectByElementId("div")->paintProperties();
-  // Paint offsets of contents of the foreign object originate from (0, 0).
-  EXPECT_EQ(LayoutPoint(LayoutUnit(5.6), LayoutUnit(7.3)),
+  // Paint offset of descendant of foreignObject accumulates on paint offset of
+  // foreignObject.
+  EXPECT_EQ(LayoutPoint(LayoutUnit(4 + 5.6), LayoutUnit(5 + 7.3)),
             divProperties->localBorderBoxProperties()->paintOffset);
 }
 

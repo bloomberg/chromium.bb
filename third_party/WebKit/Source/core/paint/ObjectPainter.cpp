@@ -699,11 +699,14 @@ void ObjectPainter::doCheckPaintOffset(const PaintInfo& paintInfo,
                                        const LayoutPoint& paintOffset) {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-  // Actual paint offsets of SVGInline and SVGInlineText include location()
-  // of the containing SVGText, but PaintPropertyTreeBuilder doesn't output
-  // the paint offsets. TODO(wangxianzhu): Avoid the special treatment.
-  if (m_layoutObject.isSVGInline() || m_layoutObject.isSVGInlineText())
+  // TODO(pdr,wangxianzhu): Refactor to avoid the special treatment for SVGText,
+  // SVGInline, SVGInlineText and SVGForeignObject.
+  if (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot() &&
+      !m_layoutObject.isSVGForeignObject()) {
+    if (!m_layoutObject.isSVGInline() && !m_layoutObject.isSVGInlineText())
+      DCHECK(paintOffset == LayoutPoint());
     return;
+  }
 
   // TODO(pdr): Let painter and paint property tree builder generate the same
   // paint offset for LayoutScrollbarPart. crbug.com/664249.
@@ -711,8 +714,7 @@ void ObjectPainter::doCheckPaintOffset(const PaintInfo& paintInfo,
     return;
 
   LayoutPoint adjustedPaintOffset = paintOffset;
-  // TODO(wangxianzhu): Avoid the special treatment for SVGText.
-  if (m_layoutObject.isBox() && !m_layoutObject.isSVGText())
+  if (m_layoutObject.isBox())
     adjustedPaintOffset += toLayoutBox(m_layoutObject).location();
   DCHECK(m_layoutObject.previousPaintOffset() == adjustedPaintOffset)
       << " Paint offset mismatch: " << m_layoutObject.debugName()

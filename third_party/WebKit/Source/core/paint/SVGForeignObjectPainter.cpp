@@ -40,20 +40,20 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo) {
 
   PaintInfo paintInfoBeforeFiltering(paintInfo);
   paintInfoBeforeFiltering.updateCullRect(
-      m_layoutSVGForeignObject.localToSVGParentTransform());
+      m_layoutSVGForeignObject.localSVGTransform());
   SVGTransformContext transformContext(
       paintInfoBeforeFiltering.context, m_layoutSVGForeignObject,
-      m_layoutSVGForeignObject.localToSVGParentTransform());
+      m_layoutSVGForeignObject.localSVGTransform());
 
   // In theory we should just let BlockPainter::paint() handle the clip, but for
   // now we don't allow normal overflow clip for LayoutSVGBlock, so we have to
   // apply clip manually. See LayoutSVGBlock::allowsOverflowClip() for details.
   Optional<FloatClipRecorder> clipRecorder;
   if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject)) {
-    clipRecorder.emplace(
-        paintInfoBeforeFiltering.context, m_layoutSVGForeignObject,
-        paintInfoBeforeFiltering.phase,
-        m_layoutSVGForeignObject.visualRectInLocalSVGCoordinates());
+    clipRecorder.emplace(paintInfoBeforeFiltering.context,
+                         m_layoutSVGForeignObject,
+                         paintInfoBeforeFiltering.phase,
+                         FloatRect(m_layoutSVGForeignObject.frameRect()));
   }
 
   SVGPaintContext paintContext(m_layoutSVGForeignObject,
@@ -69,10 +69,8 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo) {
     // BlockPainter::paint(), instead of m_layoutSVGForeignObject.paint() (which
     // would call this method again).
     BlockPainterDelegate delegate(m_layoutSVGForeignObject);
-    // We have included location() in transform, so pass -location() to adjust
-    // paint offset that will be added by location() in BlockPainter::paint().
-    ObjectPainter(delegate).paintAllPhasesAtomically(
-        paintContext.paintInfo(), -m_layoutSVGForeignObject.location());
+    ObjectPainter(delegate).paintAllPhasesAtomically(paintContext.paintInfo(),
+                                                     LayoutPoint());
   }
 }
 
