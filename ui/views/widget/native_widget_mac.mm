@@ -603,8 +603,6 @@ ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
   return ui::NativeThemeMac::instance();
 }
 
-void NativeWidgetMac::OnRootViewLayout() {}
-
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
   return false;
 }

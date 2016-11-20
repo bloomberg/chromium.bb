@@ -753,9 +753,6 @@ ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 #endif
 }
 
-void NativeWidgetAura::OnRootViewLayout() {
-}
-
 bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
   return true;
 }

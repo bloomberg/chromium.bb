@@ -105,7 +105,6 @@ class VIEWS_EXPORT RootView : public View,
   const Widget* GetWidget() const override;
   Widget* GetWidget() override;
   bool IsDrawn() const override;
-  void Layout() override;
   const char* GetClassName() const override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

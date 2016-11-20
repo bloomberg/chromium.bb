@@ -759,10 +759,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // mouse location to refresh hovering status in the widget.
   void SynthesizeMouseMoveEvent();
 
-  // Called by our RootView after it has performed a Layout. Used to forward
-  // window sizing information to the window server on some platforms.
-  void OnRootViewLayout();
-
   // Whether the widget supports translucency.
   bool IsTranslucentWindowOpacitySupported() const;
 

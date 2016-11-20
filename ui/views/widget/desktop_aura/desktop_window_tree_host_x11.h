@@ -147,7 +147,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
                       const gfx::ImageSkia& app_icon) override;
   void InitModalType(ui::ModalType modal_type) override;
   void FlashFrame(bool flash_frame) override;
-  void OnRootViewLayout() override;
   bool IsAnimatingClosed() const override;
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;

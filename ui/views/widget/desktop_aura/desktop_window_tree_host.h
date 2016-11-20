@@ -147,8 +147,6 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual void FlashFrame(bool flash_frame) = 0;
 
-  virtual void OnRootViewLayout() = 0;
-
   // Returns true if the Widget was closed but is still showing because of
   // animations.
   virtual bool IsAnimatingClosed() const = 0;

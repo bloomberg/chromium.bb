@@ -317,11 +317,6 @@ bool RootView::IsDrawn() const {
   return visible();
 }
 
-void RootView::Layout() {
-  View::Layout();
-  widget_->OnRootViewLayout();
-}
-
 const char* RootView::GetClassName() const {
   return kViewClassName;
 }

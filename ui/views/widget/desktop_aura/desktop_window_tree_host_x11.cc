@@ -1148,10 +1148,6 @@ void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
   urgency_hint_set_ = flash_frame;
 }
 
-void DesktopWindowTreeHostX11::OnRootViewLayout() {
-  UpdateMinAndMaxSize();
-}
-
 bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
   return false;
 }

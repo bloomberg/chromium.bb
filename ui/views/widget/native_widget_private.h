@@ -224,7 +224,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetVisibilityAnimationTransition(
       Widget::VisibilityTransition transition) = 0;
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
-  virtual void OnRootViewLayout() = 0;
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;
   virtual void OnSizeConstraintsChanged() = 0;
 

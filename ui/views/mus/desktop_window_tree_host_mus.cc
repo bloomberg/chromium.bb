@@ -398,8 +398,6 @@ void DesktopWindowTreeHostMus::FlashFrame(bool flash_frame) {
   window()->SetProperty(aura::client::kDrawAttentionKey, flash_frame);
 }
 
-void DesktopWindowTreeHostMus::OnRootViewLayout() {}
-
 bool DesktopWindowTreeHostMus::IsAnimatingClosed() const {
   return false;
 }

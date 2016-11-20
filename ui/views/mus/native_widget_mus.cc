@@ -1323,10 +1323,6 @@ ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
   return ui::NativeThemeAura::instance();
 }
 
-void NativeWidgetMus::OnRootViewLayout() {
-  NOTIMPLEMENTED();
-}
-
 bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {
   NOTIMPLEMENTED();
   return true;

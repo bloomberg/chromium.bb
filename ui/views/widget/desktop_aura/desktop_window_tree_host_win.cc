@@ -465,9 +465,6 @@ void DesktopWindowTreeHostWin::FlashFrame(bool flash_frame) {
   message_handler_->FlashFrame(flash_frame);
 }
 
-void DesktopWindowTreeHostWin::OnRootViewLayout() {
-}
-
 bool DesktopWindowTreeHostWin::IsAnimatingClosed() const {
   return pending_close_;
 }
