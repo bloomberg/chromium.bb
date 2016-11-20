@@ -682,6 +682,30 @@ typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
 				    const struct wl_message *,
 				    union wl_argument *);
 
+/**
+ * Log function type alias
+ *
+ * The C implementation of the Wayland protocol abstracts the details of
+ * logging. Users may customize the logging behavior, with a function conforming
+ * to the `wl_log_func_t` type, via `wl_log_set_handler_client` and
+ * `wl_log_set_handler_server`.
+ *
+ * A `wl_log_func_t` must conform to the expectations of `vprintf`, and
+ * expects two arguments: a string to write and a corresponding variable
+ * argument list. While the string to write may contain format specifiers and
+ * use values in the variable argument list, the behavior of any `wl_log_func_t`
+ * depends on the implementation.
+ *
+ * \note Take care to not confuse this with `wl_protocol_logger_func_t`, which
+ *       is a specific server-side logger for requests and events.
+ *
+ * \param "const char *" String to write to the log, containing optional format
+ *                       specifiers
+ * \param "va_list" Variable argument list
+ *
+ * \sa wl_log_set_handler_client
+ * \sa wl_log_set_handler_server
+ */
 typedef void (*wl_log_func_t)(const char *, va_list) WL_PRINTF(1, 0);
 
 /**
