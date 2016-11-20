@@ -219,6 +219,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         assert card.getBillingAddressId() != null;
         assert card.getBillingAddressId().equals(billingAddress.getGUID());
         assert card.getIssuerIconDrawableId() != 0;
+        assert AutofillAddress.checkAddressCompletionStatus(billingAddress)
+                == AutofillAddress.COMPLETE;
 
         mCard = card;
         mBillingAddress = billingAddress;

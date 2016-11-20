@@ -49,6 +49,13 @@ public class AutofillPaymentApp implements PaymentApp {
             CreditCard card = cards.get(i);
             AutofillProfile billingAddress = TextUtils.isEmpty(card.getBillingAddressId())
                     ? null : pdm.getProfile(card.getBillingAddressId());
+
+            if (billingAddress != null
+                    && AutofillAddress.checkAddressCompletionStatus(billingAddress)
+                            != AutofillAddress.COMPLETE) {
+                billingAddress = null;
+            }
+
             instruments.add(new AutofillPaymentInstrument(mContext, mWebContents, card,
                     billingAddress));
         }
