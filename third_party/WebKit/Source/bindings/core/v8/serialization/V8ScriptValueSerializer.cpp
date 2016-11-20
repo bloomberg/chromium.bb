@@ -373,7 +373,7 @@ void* V8ScriptValueSerializer::ReallocateBufferMemory(void* oldBuffer,
                                                       size_t size,
                                                       size_t* actualSize) {
   *actualSize = WTF::Partitions::bufferActualSize(size);
-  return WTF::Partitions::bufferRealloc(oldBuffer, size,
+  return WTF::Partitions::bufferRealloc(oldBuffer, *actualSize,
                                         "SerializedScriptValue buffer");
 }
 
