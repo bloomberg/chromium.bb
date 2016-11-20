@@ -71,10 +71,10 @@ DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2D)
 
 DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit& other,
                                  ExceptionState& exceptionState) {
-  validateAndFixup(other, exceptionState);
-  if (exceptionState.hadException())
+  if (!validateAndFixup(other, exceptionState)) {
+    DCHECK(exceptionState.hadException());
     return nullptr;
-
+  }
   if (other.is2D()) {
     return new DOMMatrix({other.m11(), other.m12(), other.m21(), other.m22(),
                           other.m41(), other.m42()},
@@ -115,6 +115,10 @@ void DOMMatrix::setNAN() {
 DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
                                    ExceptionState& exceptionState) {
   DOMMatrix* otherMatrix = DOMMatrix::fromMatrix(other, exceptionState);
+  if (!otherMatrix) {
+    DCHECK(exceptionState.hadException());
+    return nullptr;
+  }
   if (!otherMatrix->is2D())
     m_is2D = false;
 
@@ -126,6 +130,10 @@ DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
 DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrixInit& other,
                                       ExceptionState& exceptionState) {
   DOMMatrix* otherMatrix = DOMMatrix::fromMatrix(other, exceptionState);
+  if (!otherMatrix) {
+    DCHECK(exceptionState.hadException());
+    return nullptr;
+  }
   if (!otherMatrix->is2D())
     m_is2D = false;
 

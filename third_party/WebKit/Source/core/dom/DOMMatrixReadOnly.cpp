@@ -34,7 +34,7 @@ void setDictionaryMembers(DOMMatrixInit& other) {
 }
 
 String getErrorMessage(const char* a, const char* b) {
-  return String::format("The '%s' property should eqaul the '%s' property.", a,
+  return String::format("The '%s' property should equal the '%s' property.", a,
                         b);
 }
 
@@ -127,8 +127,10 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
     DOMMatrixInit& other,
     ExceptionState& exceptionState) {
-  if (!validateAndFixup(other, exceptionState))
+  if (!validateAndFixup(other, exceptionState)) {
+    DCHECK(exceptionState.hadException());
     return nullptr;
+  }
 
   if (other.is2D()) {
     double args[] = {other.m11(), other.m12(), other.m21(),
