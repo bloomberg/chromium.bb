@@ -285,6 +285,14 @@ static inline Element* parentOrV0ShadowHostElement(const Element& element) {
   return element.parentOrShadowHostElement();
 }
 
+static inline Element* parentOrOpenShadowHostElement(const Element& element) {
+  if (element.parentNode() && element.parentNode()->isShadowRoot()) {
+    if (toShadowRoot(element.parentNode())->type() != ShadowRootType::Open)
+      return nullptr;
+  }
+  return element.parentOrShadowHostElement();
+}
+
 SelectorChecker::Match SelectorChecker::matchForRelation(
     const SelectorCheckingContext& context,
     MatchResult& result) const {
@@ -397,7 +405,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(
       return matchSelector(nextContext, result);
     }
 
-    case CSSSelector::ShadowPiercingDescendant:
     case CSSSelector::ShadowDeep: {
       if (!m_isUARule && !m_isQuerySelector)
         Deprecation::countDeprecation(context.element->document(),
@@ -435,6 +442,26 @@ SelectorChecker::Match SelectorChecker::matchForRelation(
           return match;
         if (nextSelectorExceedsScope(nextContext))
           return SelectorFailsCompletely;
+      }
+      return SelectorFailsCompletely;
+    }
+
+    case CSSSelector::ShadowPiercingDescendant: {
+      DCHECK(m_isQuerySelector);
+      // TODO(kochi): parentOrOpenShadowHostElement() is necessary because
+      // SelectorQuery can pass V0 shadow roots. All closed shadow roots are
+      // already filtered out, thus once V0 is removed this logic can use
+      // parentOrShadowHostElement() instead.
+      for (nextContext.element =
+               parentOrOpenShadowHostElement(*context.element);
+           nextContext.element;
+           nextContext.element =
+               parentOrOpenShadowHostElement(*nextContext.element)) {
+        Match match = matchSelector(nextContext, result);
+        if (match == SelectorMatches || match == SelectorFailsCompletely)
+          return match;
+        if (nextSelectorExceedsScope(nextContext))
+          break;
       }
       return SelectorFailsCompletely;
     }

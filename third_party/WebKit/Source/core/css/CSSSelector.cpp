@@ -971,6 +971,7 @@ bool CSSSelector::hasDeepCombinatorOrShadowPseudo() const {
   return forEachTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.relation() == CSSSelector::ShadowDeep ||
+               selector.relation() == CSSSelector::ShadowPiercingDescendant ||
                selector.getPseudoType() == CSSSelector::PseudoShadow;
       },
       *this);

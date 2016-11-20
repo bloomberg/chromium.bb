@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<body>
+  <div id="testroot">
+    <div id="openhost">
+      <template data-mode="open">
+        <div id="inner-open"></div>
+      </template>
+    </div>
+    <div id="closedhost">
+      <template data-mode="closed">
+        <div id="inner-closed"></div>
+      </template>
+    </div>
+    <div id="v0host">
+      <template data-mode="v0">
+        <div id="inner-v0"></div>
+      </template>
+    </div>
+    <div id="nestedhost">
+      <template data-mode="open" data-expose-as="nestedRoot">
+        <div id="inner-div">
+          <div>
+            <template data-mode="open">
+              <div id="inner-nested-open"></div>
+            </template>
+          </div>
+          <div>
+            <template data-mode="closed">
+              <div id="inner-nested-closed"></div>
+            </template>
+          </div>
+          <div>
+            <template data-mode="v0">
+              <div id="inner-nested-v0"></div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</body>
+<script>
+convertTemplatesToShadowRootsWithin(testroot);
+test(() => {
+  assert_equals(document.querySelectorAll('body >>> #inner-open').length, 1);
+  assert_equals(document.querySelectorAll('body >>> #inner-closed').length, 0);
+  assert_equals(document.querySelectorAll('body >>> #inner-v0').length, 0);
+  assert_equals(document.querySelectorAll('body >>> #inner-nested-open').length, 1);
+  assert_equals(document.querySelectorAll('body >>> #inner-nested-closed').length, 0);
+  assert_equals(document.querySelectorAll('body >>> #inner-nested-v0').length, 0);
+}, '>>> should match only through open shadow roots.');
+
+test(() => {
+  let innerDiv = nestedRoot.querySelector('#inner-div');
+  assert_equals(innerDiv.querySelectorAll('body >>> #inner-nested-open').length, 0);
+  assert_equals(innerDiv.querySelectorAll('body >>> #inner-nested-closed').length, 0);
+  assert_equals(innerDiv.querySelectorAll('body >>> #inner-nested-v0').length, 0);
+  assert_equals(innerDiv.querySelectorAll('#inner-div >>> #inner-nested-open').length, 1);
+  assert_equals(innerDiv.querySelectorAll('#inner-div >>> #inner-nested-closed').length, 0);
+  assert_equals(innerDiv.querySelectorAll('#inner-div >>> #inner-nested-v0').length, 0);
+}, 'leftmost compound should match an element in the same node tree as context object.');
+
+test(() => {
+  assert_equals(document.querySelector('#testroot >>> #openhost').id, 'openhost');
+  assert_equals(document.querySelector('#testroot >>> #closedhost').id, 'closedhost');
+  assert_equals(document.querySelector('#testroot >>> #v0host').id, 'v0host');
+}, '>>> should match without piercing through shadow roots.');
+
+</script>
