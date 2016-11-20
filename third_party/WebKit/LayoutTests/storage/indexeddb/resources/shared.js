@@ -83,7 +83,7 @@ function evalAndExpectException(cmd, exceptionCode, exceptionName, _quiet)
             shouldBe("ename", exceptionName, _quiet);
         }
         if (!_quiet)
-            debug("Exception message: " + e.message);
+            debug("Exception message: " + escapeHTML(e.message));
     }
 }
 
