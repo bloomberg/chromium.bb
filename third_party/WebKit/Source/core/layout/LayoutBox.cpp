@@ -2247,6 +2247,8 @@ LayoutRect LayoutBox::localVisualRect() const {
   if (style()->visibility() != EVisibility::Visible)
     return LayoutRect();
 
+  if (hasMask() && !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return LayoutRect(layer()->boxForFilterOrMask());
   return selfVisualOverflowRect();
 }
 

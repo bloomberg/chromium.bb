@@ -424,7 +424,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
   LayoutRect fragmentsBoundingBox(const PaintLayer* ancestorLayer) const;
 
-  FloatRect boxForFilter() const;
+  FloatRect boxForFilterOrMask() const;
   LayoutRect boxForClipPath() const;
 
   LayoutRect boundingBoxForCompositingOverlapTest() const;

@@ -2339,7 +2339,7 @@ PaintLayer* PaintLayer::hitTestChildren(
   return resultLayer;
 }
 
-FloatRect PaintLayer::boxForFilter() const {
+FloatRect PaintLayer::boxForFilterOrMask() const {
   return FloatRect(physicalBoundingBoxIncludingStackingChildren(
       LayoutPoint(), PaintLayer::CalculateBoundsOptions::
                          IncludeTransformsAndCompositedChildLayers));
@@ -3021,7 +3021,7 @@ PaintLayer::createCompositorFilterOperationsForFilter(
     const ComputedStyle& style) {
   FloatRect zoomedReferenceBox;
   if (style.filter().hasReferenceFilter())
-    zoomedReferenceBox = boxForFilter();
+    zoomedReferenceBox = boxForFilterOrMask();
   FilterEffectBuilder builder(enclosingNode(), zoomedReferenceBox,
                               style.effectiveZoom());
   return builder.buildFilterOperations(addReflectionToFilterOperations(style));
@@ -3032,7 +3032,7 @@ PaintLayer::createCompositorFilterOperationsForBackdropFilter(
     const ComputedStyle& style) {
   FloatRect zoomedReferenceBox;
   if (style.backdropFilter().hasReferenceFilter())
-    zoomedReferenceBox = boxForFilter();
+    zoomedReferenceBox = boxForFilterOrMask();
   FilterEffectBuilder builder(enclosingNode(), zoomedReferenceBox,
                               style.effectiveZoom());
   return builder.buildFilterOperations(style.backdropFilter());
@@ -3080,7 +3080,7 @@ FilterEffect* PaintLayer::lastFilterEffect() const {
   const ComputedStyle& style = layoutObject()->styleRef();
   FloatRect zoomedReferenceBox;
   if (style.filter().hasReferenceFilter())
-    zoomedReferenceBox = boxForFilter();
+    zoomedReferenceBox = boxForFilterOrMask();
   FilterEffectBuilder builder(enclosingNode(), zoomedReferenceBox,
                               style.effectiveZoom());
   resourceInfo->setLastEffect(
