@@ -4527,16 +4527,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSString* host = base::SysUTF8ToNSString(_documentURL.host());
   BOOL hasOnlySecureContent = [_webView hasOnlySecureContent];
   base::ScopedCFTypeRef<SecTrustRef> trust;
-// TODO(crbug.com/628696): Remove these guards after moving to iOS10 SDK.
-#if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
   if (base::ios::IsRunningOnIOS10OrLater()) {
     trust.reset([_webView serverTrust], base::scoped_policy::RETAIN);
   } else {
     trust = web::CreateServerTrustFromChain([_webView certificateChain], host);
   }
-#else
-  trust = web::CreateServerTrustFromChain([_webView certificateChain], host);
-#endif
 
   [_SSLStatusUpdater updateSSLStatusForNavigationItem:currentNavItem
                                          withCertHost:host
