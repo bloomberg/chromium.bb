@@ -23,15 +23,15 @@ TEST(ScanTest, av1_augment_prob) {
   av1_augment_prob(prob, tx1d_size, tx1d_size);
   for (int r = 0; r < tx1d_size; ++r) {
     for (int c = 0; c < tx1d_size; ++c) {
-      const int idx = r * tx1d_size + c;
+      const uint32_t idx = r * tx1d_size + c;
       EXPECT_EQ(ref_prob[idx], prob[idx] >> 16);
     }
   }
 
-  const int mask = (1 << 10) - 1;
+  const uint32_t mask = (1 << 10) - 1;
   for (int r = 0; r < tx1d_size; ++r) {
     for (int c = 0; c < tx1d_size; ++c) {
-      const int idx = r * tx1d_size + c;
+      const uint32_t idx = r * tx1d_size + c;
       EXPECT_EQ(idx, mask ^ (prob[r * tx1d_size + c] & mask));
     }
   }
