@@ -89,7 +89,19 @@ class RTCVideoEncoderTest
 
   void CreateEncoder(webrtc::VideoCodecType codec_type) {
     DVLOG(3) << __FUNCTION__;
-    rtc_encoder_ = base::MakeUnique<RTCVideoEncoder>(codec_type,
+    media::VideoCodecProfile media_profile;
+    switch (codec_type) {
+      case webrtc::kVideoCodecVP8:
+        media_profile = media::VP8PROFILE_ANY;
+        break;
+      case webrtc::kVideoCodecH264:
+        media_profile = media::H264PROFILE_BASELINE;
+        break;
+      default:
+        ADD_FAILURE() << "Unexpected codec type: " << codec_type;
+        media_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
+    }
+    rtc_encoder_ = base::MakeUnique<RTCVideoEncoder>(media_profile,
                                                      mock_gpu_factories_.get());
   }
 

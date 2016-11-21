@@ -32,25 +32,6 @@ namespace content {
 
 namespace {
 
-// Translate from webrtc::VideoCodecType and webrtc::VideoCodec to
-// media::VideoCodecProfile.
-media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
-    webrtc::VideoCodecType type,
-    const webrtc::VideoCodec* codec_settings) {
-  DCHECK_EQ(type, codec_settings->codecType);
-  switch (type) {
-    case webrtc::kVideoCodecVP8:
-      return media::VP8PROFILE_ANY;
-    case webrtc::kVideoCodecH264:
-      // TODO(magjed): WebRTC is only using Baseline profile for now. Update
-      // once http://crbug/webrtc/6337 is fixed.
-      return media::H264PROFILE_BASELINE;
-    default:
-      NOTREACHED() << "Unrecognized video codec type";
-      return media::VIDEO_CODEC_PROFILE_UNKNOWN;
-  }
-}
-
 // Populates struct webrtc::RTPFragmentationHeader for H264 codec.
 // Each entry specifies the offset and length (excluding start code) of a NALU.
 // Returns true if successful.
@@ -136,8 +117,6 @@ class RTCVideoEncoder::Impl
 
   // Return the status of Impl. One of WEBRTC_VIDEO_CODEC_XXX value.
   int32_t GetStatus() const;
-
-  webrtc::VideoCodecType video_codec_type() { return video_codec_type_; }
 
   // media::VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -727,12 +706,12 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
 }
 
 RTCVideoEncoder::RTCVideoEncoder(
-    webrtc::VideoCodecType type,
+    media::VideoCodecProfile profile,
     media::GpuVideoAcceleratorFactories* gpu_factories)
-    : video_codec_type_(type),
+    : profile_(profile),
       gpu_factories_(gpu_factories),
       gpu_task_runner_(gpu_factories->GetTaskRunner()) {
-  DVLOG(1) << "RTCVideoEncoder(): codec type=" << type;
+  DVLOG(1) << "RTCVideoEncoder(): profile=" << GetProfileName(profile);
 }
 
 RTCVideoEncoder::~RTCVideoEncoder() {
@@ -753,9 +732,17 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
     Release();
   }
 
-  impl_ = new Impl(gpu_factories_, video_codec_type_);
-  const media::VideoCodecProfile profile = WebRTCVideoCodecToVideoCodecProfile(
-      impl_->video_codec_type(), codec_settings);
+  webrtc::VideoCodecType video_codec_type;
+  if (profile_ >= media::VP8PROFILE_MIN && profile_ <= media::VP8PROFILE_MAX) {
+    video_codec_type = webrtc::kVideoCodecVP8;
+  } else if (profile_ >= media::H264PROFILE_MIN &&
+             profile_ <= media::H264PROFILE_MAX) {
+    video_codec_type = webrtc::kVideoCodecH264;
+  } else {
+    NOTREACHED() << "Invalid video codec type";
+    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
+  }
+  impl_ = new Impl(gpu_factories_, video_codec_type);
 
   base::WaitableEvent initialization_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
@@ -767,13 +754,13 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
                  impl_,
                  gfx::Size(codec_settings->width, codec_settings->height),
                  codec_settings->startBitrate,
-                 profile,
+                 profile_,
                  &initialization_waiter,
                  &initialization_retval));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   initialization_waiter.Wait();
-  RecordInitEncodeUMA(initialization_retval, profile);
+  RecordInitEncodeUMA(initialization_retval, profile_);
   return initialization_retval;
 }
 
