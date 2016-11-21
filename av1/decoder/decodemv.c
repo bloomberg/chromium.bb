@@ -1034,37 +1034,66 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 }
 
-static INLINE InterpFilter read_mb_interp_filter(AV1_COMMON *const cm,
-                                                 MACROBLOCKD *const xd,
+static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
+                                         MACROBLOCKD *const xd,
+                                         MB_MODE_INFO *const mbmi,
+                                         aom_reader *r) {
+  FRAME_COUNTS *counts = xd->counts;
 #if CONFIG_DUAL_FILTER
-                                                 int dir,
-#endif
-                                                 aom_reader *r) {
-#if CONFIG_EXT_INTERP
-  if (!av1_is_interp_needed(xd)) return EIGHTTAP_REGULAR;
-#endif
+  int dir;
   if (cm->interp_filter != SWITCHABLE) {
-    return cm->interp_filter;
+    for (dir = 0; dir < 4; ++dir) mbmi->interp_filter[dir] = cm->interp_filter;
   } else {
-#if CONFIG_DUAL_FILTER
-    const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-#else
-    const int ctx = av1_get_pred_context_switchable_interp(xd);
-#endif
-    FRAME_COUNTS *counts = xd->counts;
+    for (dir = 0; dir < 2; ++dir) {
+      const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
+      mbmi->interp_filter[dir] = EIGHTTAP_REGULAR;
+
+      if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
+          (mbmi->ref_frame[1] > INTRA_FRAME &&
+           has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
 #if CONFIG_DAALA_EC
-    const InterpFilter type =
+        mbmi->interp_filter[dir] =
+            (InterpFilter)av1_switchable_interp_inv[aom_read_symbol(
+                r, cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS,
+                ACCT_STR)];
+#else
+        mbmi->interp_filter[dir] = (InterpFilter)aom_read_tree(
+            r, av1_switchable_interp_tree, cm->fc->switchable_interp_prob[ctx],
+            ACCT_STR);
+#endif
+        if (counts) ++counts->switchable_interp[ctx][mbmi->interp_filter[dir]];
+      }
+    }
+    // The index system works as:
+    // (0, 1) -> (vertical, horizontal) filter types for the first ref frame.
+    // (2, 3) -> (vertical, horizontal) filter types for the second ref frame.
+    mbmi->interp_filter[2] = mbmi->interp_filter[0];
+    mbmi->interp_filter[3] = mbmi->interp_filter[1];
+  }
+#else  // CONFIG_DUAL_FILTER
+#if CONFIG_EXT_INTERP
+  if (!av1_is_interp_needed(xd)) {
+    mbmi->interp_filter = EIGHTTAP_REGULAR;
+    return;
+  }
+#endif  // CONFIG_EXT_INTERP
+  if (cm->interp_filter != SWITCHABLE) {
+    mbmi->interp_filter = cm->interp_filter;
+  } else {
+    const int ctx = av1_get_pred_context_switchable_interp(xd);
+#if CONFIG_DAALA_EC
+    mbmi->interp_filter =
         (InterpFilter)av1_switchable_interp_inv[aom_read_symbol(
             r, cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS,
             ACCT_STR)];
 #else
-    const InterpFilter type = (InterpFilter)aom_read_tree(
+    mbmi->interp_filter = (InterpFilter)aom_read_tree(
         r, av1_switchable_interp_tree, cm->fc->switchable_interp_prob[ctx],
         ACCT_STR);
 #endif
-    if (counts) ++counts->switchable_interp[ctx][type];
-    return type;
+    if (counts) ++counts->switchable_interp[ctx][mbmi->interp_filter];
   }
+#endif  // CONFIG_DUAL_FILTER
 }
 
 static void read_intra_block_mode_info(AV1_COMMON *const cm,
@@ -1563,7 +1592,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif
 
 #if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
-  mbmi->interp_filter = read_mb_interp_filter(cm, xd, r);
+  read_mb_interp_filter(cm, xd, mbmi, r);
 #endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
 
   if (bsize < BLOCK_8X8) {
@@ -1778,27 +1807,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_DUAL_FILTER
-  for (ref = 0; ref < 2; ++ref) {
-    mbmi->interp_filter[ref] = (cm->interp_filter == SWITCHABLE)
-                                   ? EIGHTTAP_REGULAR
-                                   : cm->interp_filter;
-
-    if (has_subpel_mv_component(xd->mi[0], xd, ref) ||
-        (mbmi->ref_frame[1] > INTRA_FRAME &&
-         has_subpel_mv_component(xd->mi[0], xd, ref + 2)))
-      mbmi->interp_filter[ref] = read_mb_interp_filter(cm, xd, ref, r);
-  }
-  // The index system worsk as:
-  // (0, 1) -> (vertical, horizontal) filter types for the first ref frame.
-  // (2, 3) -> (vertical, horizontal) filter types for the second ref frame.
-  mbmi->interp_filter[2] = mbmi->interp_filter[0];
-  mbmi->interp_filter[3] = mbmi->interp_filter[1];
-#else
-#if CONFIG_EXT_INTERP
-  mbmi->interp_filter = read_mb_interp_filter(cm, xd, r);
-#endif  // CONFIG_EXT_INTERP
-#endif  // CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP
+  read_mb_interp_filter(cm, xd, mbmi, r);
+#endif  // CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,
