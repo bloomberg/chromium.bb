@@ -9,7 +9,6 @@
 
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/WebKit/public/platform/modules/background_sync/WebSyncError.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 

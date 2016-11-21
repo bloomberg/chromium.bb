@@ -12,7 +12,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/background_sync/BackgroundSyncProvider.h"
-#include "modules/background_sync/SyncCallbacks.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
@@ -54,8 +53,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState,
       blink::mojom::BackgroundSyncNetworkState::ONLINE;
 
   backgroundSyncProvider()->registerBackgroundSync(
-      std::move(syncRegistration), m_registration->webRegistration(),
-      makeUnique<SyncRegistrationCallbacks>(resolver, m_registration));
+      std::move(syncRegistration), m_registration->webRegistration(), resolver);
 
   return promise;
 }
@@ -64,9 +62,8 @@ ScriptPromise SyncManager::getTags(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  backgroundSyncProvider()->getRegistrations(
-      m_registration->webRegistration(),
-      makeUnique<SyncGetRegistrationsCallbacks>(resolver, m_registration));
+  backgroundSyncProvider()->getRegistrations(m_registration->webRegistration(),
+                                             resolver);
 
   return promise;
 }

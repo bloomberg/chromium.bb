@@ -5,13 +5,12 @@
 #ifndef BackgroundSyncProvider_h
 #define BackgroundSyncProvider_h
 
-#include "modules/background_sync/SyncCallbacks.h"
 #include "public/platform/modules/background_sync/background_sync.mojom-blink.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
+class ScriptPromiseResolver;
 class WebServiceWorkerRegistration;
 
 // The BackgroundSyncProvider is called by the SyncManager and SyncRegistration
@@ -28,18 +27,16 @@ class BackgroundSyncProvider {
 
   void registerBackgroundSync(mojom::blink::SyncRegistrationPtr options,
                               WebServiceWorkerRegistration*,
-                              std::unique_ptr<SyncRegistrationCallbacks>);
-  void getRegistrations(WebServiceWorkerRegistration*,
-                        std::unique_ptr<SyncGetRegistrationsCallbacks>);
+                              ScriptPromiseResolver*);
+  void getRegistrations(WebServiceWorkerRegistration*, ScriptPromiseResolver*);
 
  private:
   // Callback handlers
-  static void registerCallback(
-      std::unique_ptr<blink::SyncRegistrationCallbacks>,
-      mojom::blink::BackgroundSyncError,
-      mojom::blink::SyncRegistrationPtr options);
+  static void registerCallback(ScriptPromiseResolver*,
+                               mojom::blink::BackgroundSyncError,
+                               mojom::blink::SyncRegistrationPtr options);
   static void getRegistrationsCallback(
-      std::unique_ptr<SyncGetRegistrationsCallbacks>,
+      ScriptPromiseResolver*,
       mojom::blink::BackgroundSyncError,
       mojo::WTFArray<mojom::blink::SyncRegistrationPtr> registrations);
 

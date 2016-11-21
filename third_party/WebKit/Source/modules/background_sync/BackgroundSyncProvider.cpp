@@ -4,9 +4,12 @@
 
 #include "modules/background_sync/BackgroundSyncProvider.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "platform/heap/Persistent.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/background_sync/WebSyncError.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "wtf/Functional.h"
 
@@ -15,24 +18,24 @@ namespace blink {
 void BackgroundSyncProvider::registerBackgroundSync(
     mojom::blink::SyncRegistrationPtr options,
     WebServiceWorkerRegistration* serviceWorkerRegistration,
-    std::unique_ptr<SyncRegistrationCallbacks> callbacks) {
+    ScriptPromiseResolver* resolver) {
   DCHECK(options);
   DCHECK(serviceWorkerRegistration);
-  DCHECK(callbacks);
+  DCHECK(resolver);
   int64_t serviceWorkerRegistrationId =
       serviceWorkerRegistration->registrationId();
 
   GetBackgroundSyncServicePtr()->Register(
       std::move(options), serviceWorkerRegistrationId,
       convertToBaseCallback(WTF::bind(&BackgroundSyncProvider::registerCallback,
-                                      WTF::passed(std::move(callbacks)))));
+                                      wrapPersistent(resolver))));
 }
 
 void BackgroundSyncProvider::getRegistrations(
     WebServiceWorkerRegistration* serviceWorkerRegistration,
-    std::unique_ptr<SyncGetRegistrationsCallbacks> callbacks) {
+    ScriptPromiseResolver* resolver) {
   DCHECK(serviceWorkerRegistration);
-  DCHECK(callbacks);
+  DCHECK(resolver);
   int64_t serviceWorkerRegistrationId =
       serviceWorkerRegistration->registrationId();
 
@@ -40,57 +43,60 @@ void BackgroundSyncProvider::getRegistrations(
       serviceWorkerRegistrationId,
       convertToBaseCallback(
           WTF::bind(&BackgroundSyncProvider::getRegistrationsCallback,
-                    WTF::passed(std::move(callbacks)))));
+                    wrapPersistent(resolver))));
 }
 
 // static
 void BackgroundSyncProvider::registerCallback(
-    std::unique_ptr<SyncRegistrationCallbacks> callbacks,
+    ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundSyncError error,
     mojom::blink::SyncRegistrationPtr options) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE:
-      if (!options.is_null())
-        callbacks->onSuccess(std::move(options));
+      if (!options) {
+        resolver->resolve(v8::Null(resolver->getScriptState()->isolate()));
+        return;
+      }
+      resolver->resolve();
       break;
     case mojom::blink::BackgroundSyncError::NOT_FOUND:
       NOTREACHED();
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:
-      callbacks->onError(blink::WebSyncError(WebSyncError::ErrorTypeUnknown,
-                                             "Background Sync is disabled."));
+      resolver->reject(
+          DOMException::create(UnknownError, "Background Sync is disabled."));
       break;
     case mojom::blink::BackgroundSyncError::NOT_ALLOWED:
-      callbacks->onError(
-          blink::WebSyncError(WebSyncError::ErrorTypeNoPermission,
-                              "Attempted to register a sync event without a "
-                              "window or registration tag too long."));
+      resolver->reject(
+          DOMException::create(InvalidAccessError,
+                               "Attempted to register a sync event without a "
+                               "window or registration tag too long."));
       break;
     case mojom::blink::BackgroundSyncError::PERMISSION_DENIED:
-      callbacks->onError(blink::WebSyncError(
-          WebSyncError::ErrorTypePermissionDenied, "Permission denied."));
+      resolver->reject(
+          DOMException::create(PermissionDeniedError, "Permission denied."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
-      callbacks->onError(blink::WebSyncError(WebSyncError::ErrorTypeUnknown,
-                                             "No service worker is active."));
+      resolver->reject(
+          DOMException::create(UnknownError, "No service worker is active."));
       break;
   }
 }
 
 // static
 void BackgroundSyncProvider::getRegistrationsCallback(
-    std::unique_ptr<SyncGetRegistrationsCallbacks> syncGetRegistrationCallbacks,
+    ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundSyncError error,
     mojo::WTFArray<mojom::blink::SyncRegistrationPtr> registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE: {
-      WebVector<mojom::blink::SyncRegistration*> results(registrations.size());
-      for (size_t i = 0; i < registrations.size(); ++i) {
-        results[i] = registrations[i].get();
+      Vector<String> tags;
+      for (const auto& r : registrations.storage()) {
+        tags.append(r->tag);
       }
-      syncGetRegistrationCallbacks->onSuccess(results);
+      resolver->resolve(tags);
       break;
     }
     case mojom::blink::BackgroundSyncError::NOT_FOUND:
@@ -101,12 +107,12 @@ void BackgroundSyncProvider::getRegistrationsCallback(
       NOTREACHED();
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:
-      syncGetRegistrationCallbacks->onError(blink::WebSyncError(
-          WebSyncError::ErrorTypeUnknown, "Background Sync is disabled."));
+      resolver->reject(
+          DOMException::create(UnknownError, "Background Sync is disabled."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
-      syncGetRegistrationCallbacks->onError(blink::WebSyncError(
-          WebSyncError::ErrorTypeUnknown, "No service worker is active."));
+      resolver->reject(
+          DOMException::create(UnknownError, "No service worker is active."));
       break;
   }
 }

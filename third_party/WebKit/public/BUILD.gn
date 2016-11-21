@@ -327,8 +327,6 @@ source_set("blink_headers") {
     "platform/linux/WebFontRenderStyle.h",
     "platform/linux/WebSandboxSupport.h",
     "platform/mac/WebSandboxSupport.h",
-    "platform/modules/background_sync/WebSyncClient.h",
-    "platform/modules/background_sync/WebSyncError.h",
     "platform/modules/bluetooth/WebBluetooth.h",
     "platform/modules/bluetooth/WebBluetoothDevice.h",
     "platform/modules/bluetooth/WebBluetoothError.h",
