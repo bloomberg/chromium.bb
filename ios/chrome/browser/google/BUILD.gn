@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("google") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "google_brand.h",
     "google_brand.mm",
