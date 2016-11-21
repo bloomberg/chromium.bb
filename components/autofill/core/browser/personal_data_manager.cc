@@ -349,6 +349,10 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_creditcards_query_ = 0;
     else if (h == pending_profiles_query_)
       pending_profiles_query_ = 0;
+    else if (h == pending_server_creditcards_query_)
+      pending_server_creditcards_query_ = 0;
+    else if (h == pending_server_profiles_query_)
+      pending_server_profiles_query_ = 0;
     return;
   }
 
