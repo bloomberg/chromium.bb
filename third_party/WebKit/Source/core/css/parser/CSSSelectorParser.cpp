@@ -604,53 +604,48 @@ CSSSelector::RelationType CSSSelectorParser::consumeCombinator(
   if (range.peek().type() != DelimiterToken)
     return fallbackResult;
 
-  switch (range.peek().delimiter()) {
-    case '+':
-      range.consumeIncludingWhitespace();
+  UChar delimiter = range.peek().delimiter();
+
+  if (delimiter == '+' || delimiter == '~') {
+    range.consumeIncludingWhitespace();
+    if (delimiter == '+')
       return CSSSelector::DirectAdjacent;
-
-    case '~':
-      range.consumeIncludingWhitespace();
-      return CSSSelector::IndirectAdjacent;
-
-    case '>':
-      if (!RuntimeEnabledFeatures::
-              shadowPiercingDescendantCombinatorEnabled() ||
-          m_context.isDynamicProfile() ||
-          range.peek(1).type() != DelimiterToken ||
-          range.peek(1).delimiter() != '>') {
-        range.consumeIncludingWhitespace();
-        return CSSSelector::Child;
-      }
-      range.consume();
-
-      // Check the 3rd '>'.
-      if (range.peek(1).type() != DelimiterToken ||
-          range.peek(1).delimiter() != '>') {
-        // TODO: Treat '>>' as a CSSSelector::Descendant here.
-        return CSSSelector::Child;
-      }
-      range.consume();
-      range.consumeIncludingWhitespace();
-      return CSSSelector::ShadowPiercingDescendant;
-
-    case '/': {
-      // Match /deep/
-      range.consume();
-      const CSSParserToken& ident = range.consume();
-      if (ident.type() != IdentToken ||
-          !equalIgnoringASCIICase(ident.value(), "deep"))
-        m_failedParsing = true;
-      const CSSParserToken& slash = range.consumeIncludingWhitespace();
-      if (slash.type() != DelimiterToken || slash.delimiter() != '/')
-        m_failedParsing = true;
-      return CSSSelector::ShadowDeep;
-    }
-
-    default:
-      break;
+    return CSSSelector::IndirectAdjacent;
   }
-  return fallbackResult;
+
+  if (delimiter == '>') {
+    if (!RuntimeEnabledFeatures::shadowPiercingDescendantCombinatorEnabled() ||
+        m_context.isDynamicProfile() ||
+        range.peek(1).type() != DelimiterToken ||
+        range.peek(1).delimiter() != '>') {
+      range.consumeIncludingWhitespace();
+      return CSSSelector::Child;
+    }
+    range.consume();
+
+    // Check the 3rd '>'.
+    if (range.peek(1).type() != DelimiterToken ||
+        range.peek(1).delimiter() != '>') {
+      // TODO: Treat '>>' as a CSSSelector::Descendant here.
+      return CSSSelector::Child;
+    }
+    range.consume();
+    range.consumeIncludingWhitespace();
+    return CSSSelector::ShadowPiercingDescendant;
+  }
+
+  // Match /deep/
+  if (delimiter != '/')
+    return fallbackResult;
+  range.consume();
+  const CSSParserToken& ident = range.consume();
+  if (ident.type() != IdentToken ||
+      !equalIgnoringASCIICase(ident.value(), "deep"))
+    m_failedParsing = true;
+  const CSSParserToken& slash = range.consumeIncludingWhitespace();
+  if (slash.type() != DelimiterToken || slash.delimiter() != '/')
+    m_failedParsing = true;
+  return CSSSelector::ShadowDeep;
 }
 
 CSSSelector::MatchType CSSSelectorParser::consumeAttributeMatch(
