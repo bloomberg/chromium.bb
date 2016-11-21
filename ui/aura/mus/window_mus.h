@@ -100,6 +100,11 @@ class AURA_EXPORT WindowMus {
   virtual std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) = 0;
 
+  // See TransientWindowClientObserver::OnWillRestackTransientChildAbove() for
+  // details on this and OnTransientRestackDone().
+  virtual void PrepareForTransientRestack(WindowMus* window) = 0;
+  virtual void OnTransientRestackDone(WindowMus* window) = 0;
+
   virtual void NotifyEmbeddedAppDisconnected() = 0;
 
  private:

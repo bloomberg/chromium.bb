@@ -200,7 +200,7 @@ void TestWindowTree::ReorderWindow(uint32_t change_id,
                                    uint32_t window_id,
                                    uint32_t relative_window_id,
                                    ui::mojom::OrderDirection direction) {
-  OnChangeReceived(change_id);
+  OnChangeReceived(change_id, WindowTreeChangeType::REORDER);
 }
 
 void TestWindowTree::GetWindowTree(uint32_t window_id,

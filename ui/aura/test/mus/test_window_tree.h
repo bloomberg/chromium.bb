@@ -26,6 +26,7 @@ enum class WindowTreeChangeType {
   NEW_WINDOW,
   PROPERTY,
   REMOVE_TRANSIENT,
+  REORDER,
   VISIBLE,
 
   // This covers all cases that aren't used in tests.
@@ -58,6 +59,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
 
   // True if at least one function has been called that takes a change id.
   bool has_change() const { return !changes_.empty(); }
+
+  size_t number_of_changes() const { return changes_.size(); }
 
   // Acks all changes with a value of true.
   void AckAllChanges();

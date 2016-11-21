@@ -857,14 +857,29 @@ WindowId WindowTree::GenerateNewWindowId() {
 bool WindowTree::CanReorderWindow(const ServerWindow* window,
                                   const ServerWindow* relative_window,
                                   mojom::OrderDirection direction) const {
-  if (!window || !relative_window)
+  if (!window) {
+    DVLOG(1) << "reorder failing: invalid window";
     return false;
+  }
+  if (!relative_window) {
+    DVLOG(1) << "reorder failing: invalid relative window";
+    return false;
+  }
 
-  if (!window->parent() || window->parent() != relative_window->parent())
+  if (!window->parent()) {
+    DVLOG(1) << "reorder failing: no parent";
     return false;
+  }
 
-  if (!access_policy_->CanReorderWindow(window, relative_window, direction))
+  if (window->parent() != relative_window->parent()) {
+    DVLOG(1) << "reorder failing: parents differ";
     return false;
+  }
+
+  if (!access_policy_->CanReorderWindow(window, relative_window, direction)) {
+    DVLOG(1) << "reorder failing: access policy denied";
+    return false;
+  }
 
   const ServerWindow::Windows& children = window->parent()->children();
   const size_t child_i =
@@ -874,6 +889,7 @@ bool WindowTree::CanReorderWindow(const ServerWindow* window,
       children.begin();
   if ((direction == mojom::OrderDirection::ABOVE && child_i == target_i + 1) ||
       (direction == mojom::OrderDirection::BELOW && child_i + 1 == target_i)) {
+    DVLOG(1) << "reorder failing: already in position";
     return false;
   }
 
@@ -1250,6 +1266,13 @@ void WindowTree::ReorderWindow(uint32_t change_id,
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   ServerWindow* relative_window =
       GetWindowByClientId(ClientWindowId(relative_window_id));
+  DVLOG(3) << "reorder client=" << id_ << " client window_id=" << window_id
+           << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0)
+           << " relative client window_id=" << relative_window_id
+           << " relative global window_id="
+           << (relative_window ? WindowIdToTransportId(relative_window->id())
+                               : 0);
   if (CanReorderWindow(window, relative_window, direction)) {
     success = true;
     Operation op(this, window_server_, OperationType::REORDER_WINDOW);

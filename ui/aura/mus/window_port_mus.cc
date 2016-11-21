@@ -111,8 +111,18 @@ void WindowPortMus::RemoveChangeById(ServerChangeIdType change_id) {
 
 bool WindowPortMus::RemoveChangeByTypeAndData(const ServerChangeType type,
                                               const ServerChangeData& data) {
-  for (auto iter = server_changes_.begin(); iter != server_changes_.end();
-       ++iter) {
+  auto iter = FindChangeByTypeAndData(type, data);
+  if (iter == server_changes_.end())
+    return false;
+  server_changes_.erase(iter);
+  return true;
+}
+
+WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
+    const ServerChangeType type,
+    const ServerChangeData& data) {
+  auto iter = server_changes_.begin();
+  for (; iter != server_changes_.end(); ++iter) {
     if (iter->type != type)
       continue;
 
@@ -122,29 +132,28 @@ bool WindowPortMus::RemoveChangeByTypeAndData(const ServerChangeType type,
       case ServerChangeType::REMOVE:
       case ServerChangeType::REMOVE_TRANSIENT:
       case ServerChangeType::REORDER:
+      case ServerChangeType::TRANSIENT_REORDER:
         if (iter->data.child_id == data.child_id)
-          break;
-        continue;
+          return iter;
+        break;
       case ServerChangeType::BOUNDS:
         if (iter->data.bounds == data.bounds)
-          break;
-        continue;
+          return iter;
+        break;
       case ServerChangeType::DESTROY:
         // No extra data for delete.
-        break;
+        return iter;
       case ServerChangeType::PROPERTY:
         if (iter->data.property_name == data.property_name)
-          break;
-        continue;
+          return iter;
+        break;
       case ServerChangeType::VISIBLE:
         if (iter->data.visible == data.visible)
-          break;
-        continue;
+          return iter;
+        break;
     }
-    server_changes_.erase(iter);
-    return true;
   }
-  return false;
+  return iter;
 }
 
 PropertyConverter* WindowPortMus::GetPropertyConverter() {
@@ -320,6 +329,20 @@ WindowPortMus::PrepareForServerVisibilityChange(bool value) {
   return std::move(data);
 }
 
+void WindowPortMus::PrepareForTransientRestack(WindowMus* window) {
+  ServerChangeData change_data;
+  change_data.child_id = window->server_id();
+  ScheduleChange(ServerChangeType::TRANSIENT_REORDER, change_data);
+}
+
+void WindowPortMus::OnTransientRestackDone(WindowMus* window) {
+  ServerChangeData change_data;
+  change_data.child_id = window->server_id();
+  const bool removed = RemoveChangeByTypeAndData(
+      ServerChangeType::TRANSIENT_REORDER, change_data);
+  DCHECK(removed);
+}
+
 void WindowPortMus::NotifyEmbeddedAppDisconnected() {
   for (WindowObserver& observer : *GetObservers(window_))
     observer.OnEmbeddedAppDisconnected(window_);
@@ -352,8 +375,13 @@ void WindowPortMus::OnWillRemoveChild(Window* child) {
 void WindowPortMus::OnWillMoveChild(size_t current_index, size_t dest_index) {
   ServerChangeData change_data;
   change_data.child_id = Get(window_->children()[current_index])->server_id();
-  if (!RemoveChangeByTypeAndData(ServerChangeType::REORDER, change_data))
+  // See description of TRANSIENT_REORDER for details on why it isn't removed
+  // here.
+  if (!RemoveChangeByTypeAndData(ServerChangeType::REORDER, change_data) &&
+      FindChangeByTypeAndData(ServerChangeType::TRANSIENT_REORDER,
+                              change_data) == server_changes_.end()) {
     window_tree_client_->OnWindowMusMoveChild(this, current_index, dest_index);
+  }
 }
 
 void WindowPortMus::OnVisibilityChanged(bool visible) {

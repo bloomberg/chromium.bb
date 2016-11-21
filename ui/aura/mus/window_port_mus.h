@@ -113,12 +113,18 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     REMOVE,
     REMOVE_TRANSIENT,
     REORDER,
+    // This is used when a REORDER *may* occur as the result of a transient
+    // child being added or removed. As there is no guarantee the move will
+    // actually happen (the window may be in place already) this change is not
+    // automatically removed. Instead the change is explicitly removed.
+    TRANSIENT_REORDER,
     VISIBLE,
   };
 
   // Contains data needed to identify a change from the server.
   struct ServerChangeData {
-    // Applies to ADD, ADD_TRANSIENT, REMOVE, REMOVE_TRANSIENT and REORDER.
+    // Applies to ADD, ADD_TRANSIENT, REMOVE, REMOVE_TRANSIENT, REORDER and
+    // TRANSIENT_REORDER.
     Id child_id;
     // Applies to BOUNDS.
     gfx::Rect bounds;
@@ -136,6 +142,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     ServerChangeIdType server_change_id;
     ServerChangeData data;
   };
+
+  using ServerChanges = std::vector<ServerChange>;
 
   // Convenience for adding/removing a ScopedChange.
   class ScopedServerChange {
@@ -175,6 +183,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   bool RemoveChangeByTypeAndData(const ServerChangeType type,
                                  const ServerChangeData& data);
 
+  ServerChanges::iterator FindChangeByTypeAndData(const ServerChangeType type,
+                                                  const ServerChangeData& data);
+
   PropertyConverter* GetPropertyConverter();
 
   // WindowMus:
@@ -202,6 +213,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) override;
+  void PrepareForTransientRestack(WindowMus* window) override;
+  void OnTransientRestackDone(WindowMus* window) override;
   void NotifyEmbeddedAppDisconnected() override;
 
   // WindowPort:
@@ -223,7 +236,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   Window* window_ = nullptr;
 
   ServerChangeIdType next_server_change_id_ = 0;
-  std::vector<ServerChange> server_changes_;
+  ServerChanges server_changes_;
 
   SurfaceIdHandler* surface_id_handler_;
   std::unique_ptr<SurfaceInfo> surface_info_;

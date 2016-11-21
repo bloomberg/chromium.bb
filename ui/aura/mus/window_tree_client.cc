@@ -1532,6 +1532,24 @@ void WindowTreeClient::OnTransientChildWindowRemoved(Window* parent,
   tree_->RemoveTransientWindowFromParent(change_id, child_mus->server_id());
 }
 
+void WindowTreeClient::OnWillRestackTransientChildAbove(
+    Window* parent,
+    Window* transient_child) {
+  DCHECK(parent->parent());
+  DCHECK_EQ(parent->parent(), transient_child->parent());
+  WindowMus::Get(parent->parent())
+      ->PrepareForTransientRestack(WindowMus::Get(transient_child));
+}
+
+void WindowTreeClient::OnDidRestackTransientChildAbove(
+    Window* parent,
+    Window* transient_child) {
+  DCHECK(parent->parent());
+  DCHECK_EQ(parent->parent(), transient_child->parent());
+  WindowMus::Get(parent->parent())
+      ->OnTransientRestackDone(WindowMus::Get(transient_child));
+}
+
 uint32_t WindowTreeClient::CreateChangeIdForDrag(WindowMus* window) {
   return ScheduleInFlightChange(
       base::MakeUnique<InFlightDragChange>(window, ChangeType::DRAG_LOOP));

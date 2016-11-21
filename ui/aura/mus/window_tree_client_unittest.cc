@@ -910,6 +910,117 @@ TEST_F(WindowTreeClientClientTest, Transients) {
   EXPECT_EQ(server_id(&transient), window_tree()->transient_data().child_id);
 }
 
+// Verifies adding/removing a transient child doesn't notify the server of the
+// restack when the change originates from the server.
+TEST_F(WindowTreeClientClientTest,
+       TransientChildServerMutateDoesntNotifyOfRestack) {
+  Window* w1 = new Window(nullptr);
+  w1->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(w1);
+  Window* w2 = new Window(nullptr);
+  w2->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(w2);
+  Window* w3 = new Window(nullptr);
+  w3->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(w3);
+  // Three children of root: |w1|, |w2| and |w3| (in that order). Make |w1| a
+  // transient child of |w2|. Should trigger moving |w1| on top of |w2|, but not
+  // notify the server of the reorder.
+  window_tree()->AckAllChanges();
+  window_tree_client()->OnTransientWindowAdded(server_id(w2), server_id(w1));
+  EXPECT_EQ(w2, root_window()->children()[0]);
+  EXPECT_EQ(w1, root_window()->children()[1]);
+  EXPECT_EQ(w3, root_window()->children()[2]);
+  // No changes should be scheduled.
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+
+  // Make |w3| also a transient child of |w2|. Order shouldn't change.
+  window_tree_client()->OnTransientWindowAdded(server_id(w2), server_id(w3));
+  EXPECT_EQ(w2, root_window()->children()[0]);
+  EXPECT_EQ(w1, root_window()->children()[1]);
+  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+
+  // Remove |w1| as a transient child, this should move |w3| on top of |w2|.
+  window_tree_client()->OnTransientWindowRemoved(server_id(w2), server_id(w1));
+  EXPECT_EQ(w2, root_window()->children()[0]);
+  EXPECT_EQ(w3, root_window()->children()[1]);
+  EXPECT_EQ(w1, root_window()->children()[2]);
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+}
+
+// Verifies adding/removing a transient child doesn't notify the server of the
+// restack when the change originates from the client.
+TEST_F(WindowTreeClientClientTest,
+       TransientChildClientMutateDoesntNotifyOfRestack) {
+  client::TransientWindowClient* transient_client =
+      client::GetTransientWindowClient();
+  Window* w1 = new Window(nullptr);
+  w1->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(w1);
+  Window* w2 = new Window(nullptr);
+  w2->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(w2);
+  Window* w3 = new Window(nullptr);
+  w3->Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(w3);
+  // Three children of root: |w1|, |w2| and |w3| (in that order). Make |w1| a
+  // transient child of |w2|. Should trigger moving |w1| on top of |w2|, but not
+  // notify the server of the reorder.
+  window_tree()->AckAllChanges();
+  transient_client->AddTransientChild(w2, w1);
+  EXPECT_EQ(w2, root_window()->children()[0]);
+  EXPECT_EQ(w1, root_window()->children()[1]);
+  EXPECT_EQ(w3, root_window()->children()[2]);
+  // Only a single add transient change should be added.
+  EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::ADD_TRANSIENT, true));
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+
+  // Make |w3| also a transient child of |w2|. Order shouldn't change.
+  transient_client->AddTransientChild(w2, w3);
+  EXPECT_EQ(w2, root_window()->children()[0]);
+  EXPECT_EQ(w1, root_window()->children()[1]);
+  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::ADD_TRANSIENT, true));
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+
+  // Remove |w1| as a transient child, this should move |w3| on top of |w2|.
+  transient_client->RemoveTransientChild(w2, w1);
+  EXPECT_EQ(w2, root_window()->children()[0]);
+  EXPECT_EQ(w3, root_window()->children()[1]);
+  EXPECT_EQ(w1, root_window()->children()[2]);
+  EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::REMOVE_TRANSIENT, true));
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+
+  // Make |w1| the first child and ensure a REORDER was scheduled.
+  root_window()->StackChildAtBottom(w1);
+  EXPECT_EQ(w1, root_window()->children()[0]);
+  EXPECT_EQ(w2, root_window()->children()[1]);
+  EXPECT_EQ(w3, root_window()->children()[2]);
+  EXPECT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::REORDER, true));
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+
+  // Try stacking |w2| above |w3|. This should be disallowed as that would
+  // result in placing |w2| above its transient parent.
+  root_window()->StackChildAbove(w2, w3);
+  EXPECT_EQ(w1, root_window()->children()[0]);
+  EXPECT_EQ(w2, root_window()->children()[1]);
+  EXPECT_EQ(w3, root_window()->children()[2]);
+  // NOTE: even though the order didn't change, internally the order was
+  // changed and then changed back. That is the StackChildAbove() call really
+  // succeeded, but then TransientWindowManager reordered the windows back to
+  // a valid configuration. We expect only one REORDER here as the second
+  // results from TransientWindowManager and we assume the server applied it as
+  // well.
+  EXPECT_EQ(1u, window_tree()->number_of_changes());
+  window_tree()->AckAllChangesOfType(WindowTreeChangeType::REORDER, true);
+  EXPECT_EQ(0u, window_tree()->number_of_changes());
+}
+
 TEST_F(WindowTreeClientClientTest,
        TopLevelWindowDestroyedBeforeCreateComplete) {
   const size_t initial_root_count =
