@@ -42,11 +42,6 @@ using PluginGroups =
 
 namespace {
 
-// Callback function to process result of EnablePlugin method.
-void AssertPluginEnabled(bool did_enable) {
-  DCHECK(did_enable);
-}
-
 base::string16 PluginTypeToString(int type) {
   // The type is stored as an |int|, but doing the switch on the right
   // enumeration type gives us better build-time error checking (if someone adds
@@ -120,33 +115,12 @@ PluginsPageHandler::~PluginsPageHandler() {}
 
 void PluginsPageHandler::SetPluginEnabled(const std::string& plugin_path,
                                           bool enable) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
-  plugin_prefs->EnablePlugin(
-      enable, base::FilePath(
-                  mojo::String(plugin_path).To<base::FilePath::StringType>()),
-      base::Bind(&AssertPluginEnabled));
+  // TODO(http://crbug.com/615738): Remove this page altogether.
 }
 
 void PluginsPageHandler::SetPluginGroupEnabled(const std::string& group_name,
                                                bool enable) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
-  base::string16 group_name_as_string16 = base::UTF8ToUTF16(group_name);
-  plugin_prefs->EnablePluginGroup(enable, group_name_as_string16);
-  if (!enable) {
-    return;
-  }
-
-  // See http://crbug.com/50105 for background.
-  base::string16 adobereader =
-      base::ASCIIToUTF16(PluginMetadata::kAdobeReaderGroupName);
-  base::string16 internalpdf =
-      base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
-  if (group_name_as_string16 == adobereader)
-    plugin_prefs->EnablePluginGroup(false, internalpdf);
-  else if (group_name_as_string16 == internalpdf)
-    plugin_prefs->EnablePluginGroup(false, adobereader);
+  // TODO(http://crbug.com/615738): Remove this page altogether.
 }
 
 void PluginsPageHandler::GetShowDetails(

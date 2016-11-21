@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 
@@ -63,7 +62,8 @@ void ChromePDFWebContentsHelperClient::UpdateContentRestrictions(
 
 void ChromePDFWebContentsHelperClient::OnPDFHasUnsupportedFeature(
     content::WebContents* contents) {
-  PDFHasUnsupportedFeature(GetWebContentsToUse(contents));
+  // There is no more Adobe pluging for PDF so there is not much we can do in
+  // this case. Maybe simply download the file.
 }
 
 void ChromePDFWebContentsHelperClient::OnSaveURL(

@@ -5,34 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PDF_ADOBE_READER_INFO_WIN_H_
 #define CHROME_BROWSER_UI_PDF_ADOBE_READER_INFO_WIN_H_
 
-#include "base/callback_forward.h"
-#include "content/public/common/webplugininfo.h"
-
 class Profile;
-
-struct AdobeReaderPluginInfo {
-  bool is_installed;
-  bool is_enabled;    // Only valid in the context of a given Profile.
-  bool is_secure;     // Whether the plugin is up to date.
-  content::WebPluginInfo plugin_info;
-};
-
-typedef base::Callback<void(const AdobeReaderPluginInfo&)>
-    GetAdobeReaderPluginInfoCallback;
-
-// Fetches information about the Adobe Reader plugin asynchronously.
-// If |profile| is NULL, then the plugin's enable status cannot be
-// determined.
-void GetAdobeReaderPluginInfoAsync(
-    Profile* profile,
-    const GetAdobeReaderPluginInfoCallback& callback);
-
-// Fetches information about the Adobe Reader plugin synchronously.
-// Returns true if the plugin info is not stale.
-// If |profile| is NULL, then the plugin's enable status cannot be
-// determined.
-bool GetAdobeReaderPluginInfo(Profile* profile,
-                              AdobeReaderPluginInfo* reader_info);
 
 // Returns true if Adobe Reader or Adobe Acrobat is the default viewer for the
 // .pdf extension.

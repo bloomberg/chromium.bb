@@ -776,8 +776,6 @@ split_static_library("ui") {
       "pdf/adobe_reader_info_win.h",
       "pdf/chrome_pdf_web_contents_helper_client.cc",
       "pdf/chrome_pdf_web_contents_helper_client.h",
-      "pdf/pdf_unsupported_feature.cc",
-      "pdf/pdf_unsupported_feature.h",
       "sad_tab.cc",
       "sad_tab.h",
       "sad_tab_helper.cc",

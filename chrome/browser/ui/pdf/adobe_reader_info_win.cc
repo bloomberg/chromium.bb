@@ -16,23 +16,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugin_metadata.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "content/public/browser/plugin_service.h"
 
 namespace {
 
 // Hardcoded value for the secure version of Acrobat Reader.
 const char kSecureVersion[] = "11.0.8.4";
 
-const char kAdobeReaderIdentifier[] = "adobe-reader";
-const char kPdfMimeType[] = "application/pdf";
 const base::char16 kRegistryAcrobat[] = L"Acrobat.exe";
 const base::char16 kRegistryAcrobatReader[] = L"AcroRd32.exe";
 const base::char16 kRegistryApps[] =
@@ -61,63 +54,6 @@ base::FilePath GetInstalledPath(const base::char16* app) {
   return filepath.Append(app);
 }
 
-bool IsPdfMimeType(const content::WebPluginMimeType& plugin_mime_type) {
-  return plugin_mime_type.mime_type == kPdfMimeType;
-}
-
-AdobeReaderPluginInfo GetReaderPlugin(
-    Profile* profile,
-    const std::vector<content::WebPluginInfo>& plugins) {
-  AdobeReaderPluginInfo reader_info;
-  reader_info.is_installed = false;
-  reader_info.is_enabled = false;
-  reader_info.is_secure = false;
-
-  PluginFinder* plugin_finder = PluginFinder::GetInstance();
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    const content::WebPluginInfo& plugin = plugins[i];
-    if (plugin.is_pepper_plugin())
-      continue;
-    if (std::find_if(plugin.mime_types.begin(), plugin.mime_types.end(),
-                     IsPdfMimeType) == plugin.mime_types.end())
-      continue;
-    std::unique_ptr<PluginMetadata> plugin_metadata(
-        plugin_finder->GetPluginMetadata(plugins[i]));
-    if (plugin_metadata->identifier() != kAdobeReaderIdentifier)
-      continue;
-
-    reader_info.is_installed = true;
-
-    if (profile) {
-      scoped_refptr<PluginPrefs> plugin_prefs =
-          PluginPrefs::GetForProfile(profile);
-      PluginPrefs::PolicyStatus plugin_status =
-          plugin_prefs->PolicyStatusForPlugin(plugin_metadata->name());
-      reader_info.is_enabled = plugin_status != PluginPrefs::POLICY_DISABLED;
-    }
-
-    // Adobe Reader will likely always come up as "requires_authorization".
-    // See http://crbug.com/311655.
-    PluginMetadata::SecurityStatus security_stat =
-        plugin_metadata->GetSecurityStatus(plugins[i]);
-    reader_info.is_secure =
-        security_stat == PluginMetadata::SECURITY_STATUS_UP_TO_DATE ||
-        security_stat == PluginMetadata::SECURITY_STATUS_REQUIRES_AUTHORIZATION;
-
-    reader_info.plugin_info = plugins[i];
-    break;
-  }
-  return reader_info;
-}
-
-void OnGotPluginInfo(Profile* profile,
-                     const GetAdobeReaderPluginInfoCallback& callback,
-                     const std::vector<content::WebPluginInfo>& plugins) {
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    profile = NULL;
-  callback.Run(GetReaderPlugin(profile, plugins));
-}
-
 bool IsAdobeReaderDefaultPDFViewerInternal(base::FilePath* path) {
   base::char16 app_cmd_buf[MAX_PATH];
   DWORD app_cmd_buf_len = MAX_PATH;
@@ -141,24 +77,6 @@ bool IsAdobeReaderDefaultPDFViewerInternal(base::FilePath* path) {
 }
 
 }  // namespace
-
-void GetAdobeReaderPluginInfoAsync(
-    Profile* profile,
-    const GetAdobeReaderPluginInfoCallback& callback) {
-  DCHECK(!callback.is_null());
-  content::PluginService::GetInstance()->GetPlugins(
-      base::Bind(&OnGotPluginInfo, profile, callback));
-}
-
-bool GetAdobeReaderPluginInfo(Profile* profile,
-                              AdobeReaderPluginInfo* reader_info) {
-  DCHECK(reader_info);
-  std::vector<content::WebPluginInfo> plugins;
-  bool up_to_date = content::PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), kPdfMimeType, false, &plugins, NULL);
-  *reader_info = GetReaderPlugin(profile, plugins);
-  return up_to_date;
-}
 
 bool IsAdobeReaderDefaultPDFViewer() {
   return IsAdobeReaderDefaultPDFViewerInternal(NULL);

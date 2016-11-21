@@ -137,24 +137,6 @@ class ChromePluginTest : public InProcessBrowserTest {
     return plugins;
   }
 
-  static void EnableFlash(bool enable, Profile* profile) {
-    std::vector<base::FilePath> paths;
-    GetFlashPath(&paths);
-    ASSERT_FALSE(paths.empty());
-
-    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-    scoped_refptr<CallbackBarrier> callback_barrier(
-        new CallbackBarrier(runner->QuitClosure()));
-    for (std::vector<base::FilePath>::iterator iter = paths.begin();
-         iter != paths.end(); ++iter) {
-      plugin_prefs->EnablePlugin(enable, *iter,
-                                 callback_barrier->CreateCallback());
-    }
-    runner->Run();
-  }
-
   static void EnsureFlashProcessCount(int expected) {
     int actual = 0;
     scoped_refptr<content::MessageLoopRunner> runner =
@@ -230,18 +212,6 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, DISABLED_Flash) {
   CrashFlash();
   EnsureFlashProcessCount(0);
 
-  ASSERT_NO_FATAL_FAILURE(LoadAndWait(browser(), url, true));
-  EnsureFlashProcessCount(1);
-
-  // Now try disabling it.
-  EnableFlash(false, profile);
-  CrashFlash();
-
-  ASSERT_NO_FATAL_FAILURE(LoadAndWait(browser(), url, false));
-  EnsureFlashProcessCount(0);
-
-  // Now enable it again.
-  EnableFlash(true, profile);
   ASSERT_NO_FATAL_FAILURE(LoadAndWait(browser(), url, true));
   EnsureFlashProcessCount(1);
 }
