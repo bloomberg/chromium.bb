@@ -20,6 +20,11 @@ class CommandLineHelper {
   static void AddEnabledFeature(base::CommandLine& command_line,
                                 const std::string& feature_name);
 
+  // Add a feature to the --disabled-features list, but only if it's not already
+  // enabled or disabled.
+  static void AddDisabledFeature(base::CommandLine& command_line,
+                                 const std::string& feature_name);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(CommandLineHelper);
 };

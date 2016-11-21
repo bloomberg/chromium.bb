@@ -15,28 +15,50 @@
 using std::string;
 using std::vector;
 
-// static
-void CommandLineHelper::AddEnabledFeature(base::CommandLine& command_line,
-                                          const string& feature_name) {
-  const string enabled_features_list =
-      command_line.GetSwitchValueASCII(switches::kEnableFeatures);
-  const string disabled_features_list =
-      command_line.GetSwitchValueASCII(switches::kDisableFeatures);
+namespace {
 
-  if (enabled_features_list.empty() && disabled_features_list.empty()) {
-    command_line.AppendSwitchASCII(switches::kEnableFeatures, feature_name);
+// Adds |feature_name| to the list of features in |feature_list_name|, but only
+// if the |feature_name| is absent from the list of features in both
+// |feature_list_name| and |other_feature_list_name|.
+void AddFeatureToList(base::CommandLine& command_line,
+                      const string& feature_name,
+                      const char* feature_list_name,
+                      const char* other_feature_list_name) {
+  const string features_list =
+      command_line.GetSwitchValueASCII(feature_list_name);
+  const string other_features_list =
+      command_line.GetSwitchValueASCII(other_feature_list_name);
+
+  if (features_list.empty() && other_features_list.empty()) {
+    command_line.AppendSwitchASCII(feature_list_name, feature_name);
     return;
   }
 
-  vector<string> enabled_features =
-      base::FeatureList::SplitFeatureListString(enabled_features_list);
-  vector<string> disabled_features =
-      base::FeatureList::SplitFeatureListString(disabled_features_list);
+  vector<string> features =
+      base::FeatureList::SplitFeatureListString(features_list);
+  vector<string> other_features =
+      base::FeatureList::SplitFeatureListString(other_features_list);
 
-  if (!base::ContainsValue(enabled_features, feature_name) &&
-      !base::ContainsValue(disabled_features, feature_name)) {
-    enabled_features.push_back(feature_name);
-    command_line.AppendSwitchASCII(switches::kEnableFeatures,
-                                   base::JoinString(enabled_features, ","));
+  if (!base::ContainsValue(features, feature_name) &&
+      !base::ContainsValue(other_features, feature_name)) {
+    features.push_back(feature_name);
+    command_line.AppendSwitchASCII(feature_list_name,
+                                   base::JoinString(features, ","));
   }
+}
+
+}  // namespace
+
+// static
+void CommandLineHelper::AddEnabledFeature(base::CommandLine& command_line,
+                                          const string& feature_name) {
+  AddFeatureToList(command_line, feature_name, switches::kEnableFeatures,
+                   switches::kDisableFeatures);
+}
+
+// static
+void CommandLineHelper::AddDisabledFeature(base::CommandLine& command_line,
+                                           const string& feature_name) {
+  AddFeatureToList(command_line, feature_name, switches::kDisableFeatures,
+                   switches::kEnableFeatures);
 }
