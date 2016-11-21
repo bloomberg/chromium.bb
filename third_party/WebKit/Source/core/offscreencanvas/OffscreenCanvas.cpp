@@ -204,7 +204,9 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
   }
 
   if (!this->isPaintable()) {
-    return ScriptPromise();
+    exceptionState.throwDOMException(
+        IndexSizeError, "The size of the OffscreenCanvas is zero.");
+    return exceptionState.reject(scriptState);
   }
 
   double startTime = WTF::monotonicallyIncreasingTime();
