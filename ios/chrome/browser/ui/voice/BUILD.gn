@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("voice") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "text_to_speech_player.h",
     "text_to_speech_player.mm",
