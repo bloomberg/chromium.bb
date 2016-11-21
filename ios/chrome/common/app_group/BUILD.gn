@@ -24,6 +24,7 @@ source_set("app_group") {
 # This target will be included into application extensions and the list
 # of its dependencies must be kept as short as possible.
 source_set("client") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "app_group_metrics_client.h",
     "app_group_metrics_client.mm",
