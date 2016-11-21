@@ -178,6 +178,7 @@ source_set("browser_impl") {
 # other files (which would increase the compilation time when changing
 # the value).
 source_set("about_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "about_flags.h",
     "about_flags.mm",

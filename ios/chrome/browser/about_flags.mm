@@ -38,6 +38,10 @@
 #include "components/variations/variations_switches.h"
 #endif
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // To add a new entry, add to the end of kFeatureEntries. There are two
 // distinct types of entries:
