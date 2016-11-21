@@ -585,6 +585,7 @@ void BrowserChildProcessHostImpl::OnMojoError(
     task_runner->PostTask(
         FROM_HERE, base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                               process, task_runner, error));
+    return;
   }
   if (!process)
     return;
