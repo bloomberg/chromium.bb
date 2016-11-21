@@ -73,10 +73,6 @@ UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(
   return [[TestStyledTextField alloc] initWithFrame:frame];
 }
 
-NSArray* TestChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
-  return voice_search_provider_->GetAvailableLanguages();
-}
-
 VoiceSearchProvider* TestChromeBrowserProvider::GetVoiceSearchProvider() const {
   return voice_search_provider_.get();
 }

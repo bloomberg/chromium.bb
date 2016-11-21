@@ -150,10 +150,6 @@ class ChromeBrowserProvider {
   // metrics_services_manager_client.h for details on |on_update_callback|.
   virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
 
-  // Returns the list of available voice search languages.
-  // TODO(rohitrao): Remove once callers are going through VoiceSearchProvider.
-  virtual NSArray* GetAvailableVoiceSearchLanguages() const;
-
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
 
@@ -172,10 +168,6 @@ class ChromeBrowserProvider {
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
-
-  // TODO(rohitrao): This is a temporary method, used to prevent the tree from
-  // breaking due to duplicate prefs registration.
-  virtual bool ShouldEmbedderRegisterVoiceSearchPrefs() const;
 
   // Returns the NativeAppWhitelistManager implementation.
   virtual id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const;

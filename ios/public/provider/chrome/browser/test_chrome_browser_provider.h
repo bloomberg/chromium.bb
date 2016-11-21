@@ -32,7 +32,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   LiveTabContextProvider* GetLiveTabContextProvider() override;
   UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const override NS_RETURNS_RETAINED;
-  NSArray* GetAvailableVoiceSearchLanguages() const override;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
   AppDistributionProvider* GetAppDistributionProvider() const override;
   OmahaServiceProvider* GetOmahaServiceProvider() const override;

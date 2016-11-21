@@ -123,10 +123,6 @@ ChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
   return nullptr;
 }
 
-NSArray* ChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
-  return [NSArray array];
-}
-
 VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
   return nullptr;
 }
@@ -149,10 +145,6 @@ OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
 id<NativeAppWhitelistManager>
 ChromeBrowserProvider::GetNativeAppWhitelistManager() const {
   return nil;
-}
-
-bool ChromeBrowserProvider::ShouldEmbedderRegisterVoiceSearchPrefs() const {
-  return false;
 }
 
 void ChromeBrowserProvider::HideModalViewStack() const {}
