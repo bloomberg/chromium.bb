@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/power/tablet_power_button_controller.h"
 
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
@@ -175,6 +176,10 @@ void TabletPowerButtonController::SetBacklightsForcedOff(bool forced_off) {
       ->GetPowerManagerClient()
       ->SetBacklightsForcedOff(forced_off);
   backlights_forced_off_ = forced_off;
+
+  // Send an a11y alert.
+  WmShell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
+      forced_off ? A11Y_ALERT_SCREEN_OFF : A11Y_ALERT_SCREEN_ON);
 }
 
 void TabletPowerButtonController::GetInitialBacklightsForcedOff() {

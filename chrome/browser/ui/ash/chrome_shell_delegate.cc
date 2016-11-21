@@ -290,6 +290,12 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
         case ash::A11Y_ALERT_CAPS_OFF:
           msg = IDS_A11Y_ALERT_CAPS_OFF;
           break;
+        case ash::A11Y_ALERT_SCREEN_ON:
+          msg = IDS_A11Y_ALERT_SCREEN_ON;
+          break;
+        case ash::A11Y_ALERT_SCREEN_OFF:
+          msg = IDS_A11Y_ALERT_SCREEN_OFF;
+          break;
         case ash::A11Y_ALERT_WINDOW_NEEDED:
           msg = IDS_A11Y_ALERT_WINDOW_NEEDED;
           break;
