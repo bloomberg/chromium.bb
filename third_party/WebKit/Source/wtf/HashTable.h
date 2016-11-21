@@ -42,26 +42,28 @@
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
 #include "wtf/DataLog.h"
+#include <type_traits>
 #endif
 
 #if DUMP_HASHTABLE_STATS
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-#define UPDATE_PROBE_COUNTS()                         \
-  ++probeCount;                                       \
-  HashTableStats::recordCollisionAtCount(probeCount); \
-  ++perTableProbeCount;                               \
+
+#define UPDATE_PROBE_COUNTS()                                    \
+  ++probeCount;                                                  \
+  HashTableStats::instance().recordCollisionAtCount(probeCount); \
+  ++perTableProbeCount;                                          \
   m_stats->recordCollisionAtCount(perTableProbeCount)
-#define UPDATE_ACCESS_COUNTS()                   \
-  atomicIncrement(&HashTableStats::numAccesses); \
-  int probeCount = 0;                            \
-  ++m_stats->numAccesses;                        \
+#define UPDATE_ACCESS_COUNTS()                              \
+  atomicIncrement(&HashTableStats::instance().numAccesses); \
+  int probeCount = 0;                                       \
+  ++m_stats->numAccesses;                                   \
   int perTableProbeCount = 0
 #else
 #define UPDATE_PROBE_COUNTS() \
   ++probeCount;               \
-  HashTableStats::recordCollisionAtCount(probeCount)
-#define UPDATE_ACCESS_COUNTS()                   \
-  atomicIncrement(&HashTableStats::numAccesses); \
+  HashTableStats::instance().recordCollisionAtCount(probeCount)
+#define UPDATE_ACCESS_COUNTS()                              \
+  atomicIncrement(&HashTableStats::instance().numAccesses); \
   int probeCount = 0
 #endif
 #else
@@ -85,25 +87,92 @@
 namespace WTF {
 
 #if DUMP_HASHTABLE_STATS
-
 struct WTF_EXPORT HashTableStats {
-  STATIC_ONLY(HashTableStats);
+  HashTableStats()
+      : numAccesses(0),
+        numRehashes(0),
+        numRemoves(0),
+        numReinserts(0),
+        maxCollisions(0),
+        numCollisions(0),
+        collisionGraph() {}
+
   // The following variables are all atomically incremented when modified.
-  static int numAccesses;
-  static int numRehashes;
-  static int numRemoves;
-  static int numReinserts;
+  int numAccesses;
+  int numRehashes;
+  int numRemoves;
+  int numReinserts;
 
   // The following variables are only modified in the recordCollisionAtCount
   // method within a mutex.
-  static int maxCollisions;
-  static int numCollisions;
-  static int collisionGraph[4096];
+  int maxCollisions;
+  int numCollisions;
+  int collisionGraph[4096];
 
-  static void recordCollisionAtCount(int count);
-  static void dumpStats();
+  void copy(const HashTableStats* other);
+  void recordCollisionAtCount(int count);
+  void dumpStats();
+
+  static HashTableStats& instance();
+
+  template <typename VisitorDispatcher>
+  void trace(VisitorDispatcher) {}
 };
 
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+template <typename Allocator, bool isGCType = Allocator::isGarbageCollected>
+class HashTableStatsPtr;
+
+template <typename Allocator>
+class HashTableStatsPtr<Allocator, false> final {
+  STATIC_ONLY(HashTableStatsPtr);
+
+ public:
+  static std::unique_ptr<HashTableStats> create() {
+    return wrapUnique(new HashTableStats);
+  }
+
+  static std::unique_ptr<HashTableStats> copy(
+      const std::unique_ptr<HashTableStats>& other) {
+    if (!other)
+      return nullptr;
+    return wrapUnique(new HashTableStats(*other));
+  }
+
+  static void swap(std::unique_ptr<HashTableStats>& stats,
+                   std::unique_ptr<HashTableStats>& other) {
+    stats.swap(other);
+  }
+};
+
+template <typename Allocator>
+class HashTableStatsPtr<Allocator, true> final {
+  STATIC_ONLY(HashTableStatsPtr);
+
+ public:
+  static HashTableStats* create() {
+    // Resort to manually allocating this POD on the vector
+    // backing heap, as blink::GarbageCollected<> isn't in scope
+    // in WTF.
+    void* storage = reinterpret_cast<void*>(
+        Allocator::template allocateVectorBacking<unsigned char>(
+            sizeof(HashTableStats)));
+    return new (storage) HashTableStats;
+  }
+
+  static HashTableStats* copy(const HashTableStats* other) {
+    if (!other)
+      return nullptr;
+    HashTableStats* obj = create();
+    obj->copy(other);
+    return obj;
+  }
+
+  static void swap(HashTableStats*& stats, HashTableStats*& other) {
+    std::swap(stats, other);
+  }
+};
+#endif
 #endif
 
 template <typename Key,
@@ -596,55 +665,6 @@ class HashTable final
   typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
   typedef HashTableAddResult<HashTable, ValueType> AddResult;
 
-#if DUMP_HASHTABLE_STATS_PER_TABLE
-  struct Stats {
-    DISALLOW_NEW(Stats);
-    Stats()
-        : numAccesses(0),
-          numRehashes(0),
-          numRemoves(0),
-          numReinserts(0),
-          maxCollisions(0),
-          numCollisions(0),
-          collisionGraph() {}
-
-    int numAccesses;
-    int numRehashes;
-    int numRemoves;
-    int numReinserts;
-
-    int maxCollisions;
-    int numCollisions;
-    int collisionGraph[4096];
-
-    void recordCollisionAtCount(int count) {
-      if (count > maxCollisions)
-        maxCollisions = count;
-      numCollisions++;
-      collisionGraph[count]++;
-    }
-
-    void dumpStats() {
-      dataLogF("\nWTF::HashTable::Stats dump\n\n");
-      dataLogF("%d accesses\n", numAccesses);
-      dataLogF("%d total collisions, average %.2f probes per access\n",
-               numCollisions,
-               1.0 * (numAccesses + numCollisions) / numAccesses);
-      dataLogF("longest collision chain: %d\n", maxCollisions);
-      for (int i = 1; i <= maxCollisions; i++) {
-        dataLogF(
-            "  %d lookups with exactly %d collisions (%.2f%% , %.2f%% with "
-            "this many or more)\n",
-            collisionGraph[i], i,
-            100.0 * (collisionGraph[i] - collisionGraph[i + 1]) / numAccesses,
-            100.0 * collisionGraph[i] / numAccesses);
-      }
-      dataLogF("%d rehashes\n", numRehashes);
-      dataLogF("%d reinserts\n", numReinserts);
-    }
-  };
-#endif
-
   HashTable();
   void finalize() {
     ASSERT(!Allocator::isGarbageCollected);
@@ -860,7 +880,10 @@ class HashTable final
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
  public:
-  mutable std::unique_ptr<Stats> m_stats;
+  mutable
+      typename std::conditional<Allocator::isGarbageCollected,
+                                HashTableStats*,
+                                std::unique_ptr<HashTableStats>>::type m_stats;
 #endif
 
   template <WeakHandlingFlag x,
@@ -902,7 +925,7 @@ inline HashTable<Key,
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
       ,
-      m_stats(wrapUnique(new Stats))
+      m_stats(nullptr)
 #endif
 {
   static_assert(Allocator::isGarbageCollected ||
@@ -1330,7 +1353,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   ASSERT(
       !isDeletedBucket(*(lookupForWriting(Extractor::extract(entry)).first)));
 #if DUMP_HASHTABLE_STATS
-  atomicIncrement(&HashTableStats::numReinserts);
+  atomicIncrement(&HashTableStats::instance().numReinserts);
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   ++m_stats->numReinserts;
@@ -1425,7 +1448,7 @@ void HashTable<Key,
                Allocator>::remove(ValueType* pos) {
   registerModification();
 #if DUMP_HASHTABLE_STATS
-  atomicIncrement(&HashTableStats::numRemoves);
+  atomicIncrement(&HashTableStats::instance().numRemoves);
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   ++m_stats->numRemoves;
@@ -1666,7 +1689,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
 #if DUMP_HASHTABLE_STATS
   if (oldTableSize != 0)
-    atomicIncrement(&HashTableStats::numRehashes);
+    atomicIncrement(&HashTableStats::instance().numRehashes);
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
@@ -1692,6 +1715,11 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
   m_deletedCount = 0;
 
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+  if (!m_stats)
+    m_stats = HashTableStatsPtr<Allocator>::create();
+#endif
+
   return newEntry;
 }
 
@@ -1710,7 +1738,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
 #if DUMP_HASHTABLE_STATS
   if (oldTableSize != 0)
-    atomicIncrement(&HashTableStats::numRehashes);
+    atomicIncrement(&HashTableStats::instance().numRehashes);
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
@@ -1795,7 +1823,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
       ,
-      m_stats(wrapUnique(new Stats(*other.m_stats)))
+      m_stats(HashTableStatsPtr<Allocator>::copy(other.m_stats))
 #endif
 {
   // Copy the hash table the dumb way, by adding each element to the new
@@ -1827,7 +1855,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
       ,
-      m_stats(wrapUnique(new Stats(*other.m_stats)))
+      m_stats(HashTableStatsPtr<Allocator>::copy(other.m_stats))
 #endif
 {
   swap(other);
@@ -1863,7 +1891,7 @@ void HashTable<Key,
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  m_stats.swap(other.m_stats);
+  HashTableStatsPtr<Allocator>::swap(m_stats, other.m_stats);
 #endif
 }
 
@@ -2028,11 +2056,16 @@ void HashTable<Key,
                Traits,
                KeyTraits,
                Allocator>::trace(VisitorDispatcher visitor) {
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+  Allocator::markNoTracing(visitor, m_stats);
+#endif
+
   // If someone else already marked the backing and queued up the trace and/or
   // weak callback then we are done. This optimization does not happen for
   // ListHashSet since its iterator does not point at the backing.
   if (!m_table || Allocator::isHeapObjectAlive(m_table))
     return;
+
   // Normally, we mark the backing store without performing trace. This means
   // it is marked live, but the pointers inside it are not marked.  Instead we
   // will mark the pointers below. However, for backing stores that contain

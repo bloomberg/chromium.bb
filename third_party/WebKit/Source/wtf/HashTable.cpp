@@ -26,29 +26,47 @@
 
 namespace WTF {
 
-int HashTableStats::numAccesses;
-int HashTableStats::numCollisions;
-int HashTableStats::collisionGraph[4096];
-int HashTableStats::maxCollisions;
-int HashTableStats::numRehashes;
-int HashTableStats::numRemoves;
-int HashTableStats::numReinserts;
-
 static Mutex& hashTableStatsMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
   return mutex;
 }
 
+HashTableStats& HashTableStats::instance() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(HashTableStats, stats, new HashTableStats);
+  return stats;
+}
+
+void HashTableStats::copy(const HashTableStats* other) {
+  numAccesses = other->numAccesses;
+  numRehashes = other->numRehashes;
+  numRemoves = other->numRemoves;
+  numReinserts = other->numReinserts;
+
+  maxCollisions = other->maxCollisions;
+  numCollisions = other->numCollisions;
+  memcpy(collisionGraph, other->collisionGraph, sizeof(collisionGraph));
+}
+
 void HashTableStats::recordCollisionAtCount(int count) {
-  MutexLocker lock(hashTableStatsMutex());
+  // The global hash table singleton needs to be atomically updated.
+  bool isGlobalSingleton = this == &instance();
+  if (isGlobalSingleton)
+    hashTableStatsMutex().lock();
+
   if (count > maxCollisions)
     maxCollisions = count;
   numCollisions++;
   collisionGraph[count]++;
+
+  if (isGlobalSingleton)
+    hashTableStatsMutex().unlock();
 }
 
 void HashTableStats::dumpStats() {
-  MutexLocker lock(hashTableStatsMutex());
+  // Lock the global hash table singleton while dumping.
+  bool isGlobalSingleton = this == &instance();
+  if (isGlobalSingleton)
+    hashTableStatsMutex().lock();
 
   dataLogF("\nWTF::HashTable statistics\n\n");
   dataLogF("%d accesses\n", numAccesses);
@@ -65,6 +83,9 @@ void HashTableStats::dumpStats() {
   }
   dataLogF("%d rehashes\n", numRehashes);
   dataLogF("%d reinserts\n", numReinserts);
+
+  if (isGlobalSingleton)
+    hashTableStatsMutex().unlock();
 }
 
 }  // namespace WTF
