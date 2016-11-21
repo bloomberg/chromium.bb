@@ -25,6 +25,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1513,7 +1514,7 @@ usage(const char *program_name, int exit_code)
 {
 	unsigned k;
 
-	fprintf(stderr, "Usage: %s [OPTIONS]\n\n", program_name);
+	fprintf(stderr, "Usage: %s [OPTIONS] [FILENAME]\n\n", program_name);
 	for (k = 0; k < ARRAY_LENGTH(editor_options); k++) {
 		const struct weston_option *p = &editor_options[k];
 		if (p->name) {
@@ -1532,10 +1533,58 @@ usage(const char *program_name, int exit_code)
 	exit(exit_code);
 }
 
+/* Load the contents of a file into a UTF-8 text buffer and return it.
+ *
+ * Caller is responsible for freeing the buffer when done.
+ * On error, returns NULL.
+ */
+static char *
+read_file(char *filename)
+{
+	char *buffer = NULL;
+	int buf_size, read_size;
+	FILE *fin;
+	int errsv;
+
+	fin = fopen(filename, "r");
+	if (fin == NULL)
+		goto error;
+
+	/* Determine required buffer size */
+	if (fseek(fin, 0, SEEK_END) != 0)
+		goto error;
+	buf_size = ftell(fin);
+	if (buf_size < 0)
+		goto error;
+	rewind(fin);
+
+	/* Create buffer and read in the text */
+	buffer = (char*) malloc(sizeof(char) * (buf_size + 1));
+	if (buffer == NULL)
+		goto error;
+	read_size = fread(buffer, sizeof(char), buf_size, fin);
+	fclose(fin);
+	if (buf_size != read_size)
+		goto error;
+	buffer[buf_size] = '\0';
+
+	return buffer;
+
+error:
+	errsv = errno;
+	if (fin)
+		fclose(fin);
+	free(buffer);
+	errno = errsv || EINVAL;
+
+	return NULL;
+}
+
 int
 main(int argc, char *argv[])
 {
 	struct editor editor;
+	char *text_buffer = NULL;
 
 	parse_options(editor_options, ARRAY_LENGTH(editor_options),
 		      &argc, argv);
@@ -1543,9 +1592,14 @@ main(int argc, char *argv[])
 		usage(argv[0], EXIT_SUCCESS);
 
 	if (argc > 1) {
-		usage(argv[0], EXIT_FAILURE);
-		/* FIXME: Use remaining arguments as a path/filename to load */
-		return 0;
+		if (argv[1][0] == '-')
+			usage(argv[0], EXIT_FAILURE);
+
+		text_buffer = read_file(argv[1]);
+		if (text_buffer == NULL) {
+			fprintf(stderr, "could not read file '%s': %m\n", argv[1]);
+			return -1;
+		}
 	}
 
 	memset(&editor, 0, sizeof editor);
@@ -1571,7 +1625,10 @@ main(int argc, char *argv[])
 	editor.window = window_create(editor.display);
 	editor.widget = window_frame_create(editor.window, &editor);
 
-	editor.entry = text_entry_create(&editor, "Entry");
+	if (text_buffer)
+		editor.entry = text_entry_create(&editor, text_buffer);
+	else
+		editor.entry = text_entry_create(&editor, "Entry");
 	editor.entry->click_to_show = opt_click_to_show;
 	if (opt_preferred_language)
 		editor.entry->preferred_language = strdup(opt_preferred_language);
@@ -1605,6 +1662,7 @@ main(int argc, char *argv[])
 	widget_destroy(editor.widget);
 	window_destroy(editor.window);
 	display_destroy(editor.display);
+	free(text_buffer);
 
 	return 0;
 }
