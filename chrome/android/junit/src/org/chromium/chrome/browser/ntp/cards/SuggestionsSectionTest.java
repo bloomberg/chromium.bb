@@ -389,13 +389,12 @@ public class SuggestionsSectionTest {
     }
 
     private static void verifyAction(SuggestionsSection section, @ActionItem.Action int action) {
-        NewTabPageAdapter adapter = mock(NewTabPageAdapter.class);
         SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
         NewTabPageManager manager = mock(NewTabPageManager.class);
         when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
 
         try {
-            section.getActionItem().performAction(manager, adapter);
+            section.getActionItem().performAction(manager);
         } catch (AssertionError e) {
             if (action != ActionItem.ACTION_NONE) throw e;
         }

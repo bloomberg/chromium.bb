@@ -66,17 +66,20 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     /**
-     * Fetches new snippets.
-     */
-    public static void fetchSnippets(boolean forceRequest) {
-        nativeFetchSnippets(forceRequest);
-    }
-
-    /**
      * Reschedules the fetching of snippets.
      */
     public static void rescheduleFetching() {
         nativeRescheduleFetching();
+    }
+
+    public static void fetchRemoteSuggestionsFromBackground() {
+        // Do not force regular background fetches.
+        nativeFetchSnippets(/* forceRequest = */ false);
+    }
+
+    @Override
+    public void fetchRemoteSuggestions() {
+        nativeFetchSnippets(/* forceRequest = */ true);
     }
 
     @Override

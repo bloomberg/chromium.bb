@@ -55,7 +55,7 @@ public class AllDismissedItem extends Leaf {
                                     NewTabPageUma.ACTION_CLICKED_ALL_DISMISSED_REFRESH);
                             manager.getSuggestionsSource().restoreDismissedCategories();
                             adapter.resetSections(/*allowEmptySections=*/true);
-                            adapter.reloadSnippets();
+                            manager.getSuggestionsSource().fetchRemoteSuggestions();
                         }
                     });
         }

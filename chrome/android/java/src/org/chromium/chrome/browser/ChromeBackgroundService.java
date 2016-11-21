@@ -116,8 +116,7 @@ public class ChromeBackgroundService extends GcmTaskService {
 
     @VisibleForTesting
     protected void fetchSnippets() {
-        // Do not force regular background fetches.
-        SnippetsBridge.fetchSnippets(/*forceRequest=*/false);
+        SnippetsBridge.fetchRemoteSuggestionsFromBackground();
     }
 
     @VisibleForTesting

@@ -38,6 +38,11 @@ public interface SuggestionsSource {
     }
 
     /**
+     * Fetches new snippets for all remote categories.
+     */
+    void fetchRemoteSuggestions();
+
+    /**
      * Gets the categories in the order in which they should be displayed.
      * @return The categories.
      */

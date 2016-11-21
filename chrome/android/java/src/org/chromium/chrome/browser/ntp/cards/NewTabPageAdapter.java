@@ -403,11 +403,6 @@ public class NewTabPageAdapter
         return RecyclerView.NO_POSITION;
     }
 
-    /** Start a request for new snippets. */
-    public void reloadSnippets() {
-        SnippetsBridge.fetchSnippets(/*forceRequest=*/true);
-    }
-
     private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
             @CategoryStatusEnum int status) {
         // Count the number of suggestions before this category.

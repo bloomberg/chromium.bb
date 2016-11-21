@@ -69,7 +69,7 @@ class ActionItem extends OptionalLeaf {
     }
 
     @VisibleForTesting
-    void performAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
+    void performAction(NewTabPageManager manager) {
         manager.trackSnippetCategoryActionClick(mCategoryInfo.getCategory(), getPosition());
 
         switch (mCurrentAction) {
@@ -109,8 +109,7 @@ class ActionItem extends OptionalLeaf {
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mActionListItem.performAction(
-                                    manager, recyclerView.getNewTabPageAdapter());
+                            mActionListItem.performAction(manager);
                         }
                     });
 

@@ -97,6 +97,9 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
+    public void fetchRemoteSuggestions() {}
+
+    @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
         for (List<SnippetArticle> suggestions : mSuggestions.values()) {
             suggestions.remove(suggestion);
