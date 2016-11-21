@@ -37,6 +37,7 @@
 
 #include <pango/pangocairo.h>
 
+#include "shared/config-parser.h"
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
 #include "window.h"
@@ -1489,28 +1490,62 @@ global_handler(struct display *display, uint32_t name,
 	}
 }
 
+/** Display help for command line options, and exit */
+static uint32_t opt_help = 0;
+
+/** Require a distinct click to show the input panel (virtual keyboard) */
+static uint32_t opt_click_to_show = 0;
+
+/** Set a specific (RFC-3066) language.  Used for the virtual keyboard, etc. */
+static const char *opt_preferred_language = NULL;
+
+/**
+ * \brief command line options for editor
+ */
+static const struct weston_option editor_options[] = {
+	{ WESTON_OPTION_BOOLEAN, "help", 'h', &opt_help },
+	{ WESTON_OPTION_BOOLEAN, "click-to-show", 'C', &opt_click_to_show },
+	{ WESTON_OPTION_STRING, "preferred-language", 'L', &opt_preferred_language },
+};
+
+static void
+usage(const char *program_name, int exit_code)
+{
+	unsigned k;
+
+	fprintf(stderr, "Usage: %s [OPTIONS]\n\n", program_name);
+	for (k = 0; k < ARRAY_LENGTH(editor_options); k++) {
+		const struct weston_option *p = &editor_options[k];
+		if (p->name) {
+			fprintf(stderr, "  --%s", p->name);
+			if (p->type != WESTON_OPTION_BOOLEAN)
+				fprintf(stderr, "=VALUE");
+			fprintf(stderr, "\n");
+		}
+		if (p->short_name) {
+			fprintf(stderr, "  -%c", p->short_name);
+			if (p->type != WESTON_OPTION_BOOLEAN)
+				fprintf(stderr, "VALUE");
+			fprintf(stderr, "\n");
+		}
+	}
+	exit(exit_code);
+}
+
 int
 main(int argc, char *argv[])
 {
 	struct editor editor;
-	int i;
-	uint32_t click_to_show = 0;
-	const char *preferred_language = NULL;
 
-	for (i = 1; i < argc; i++) {
-		if (strcmp("--click-to-show", argv[i]) == 0)
-			click_to_show = 1;
-		else if (strcmp("--preferred-language", argv[i]) == 0 &&
-			 i + 1 < argc) {
-			preferred_language = argv[i + 1];
-			i++;
-		} else {
-			printf("Usage: %s [OPTIONS]\n"
-			       "  --click-to-show\n"
-			       "  --preferred-language LANGUAGE\n",
-			       argv[0]);
-			return 1;
-		}
+	parse_options(editor_options, ARRAY_LENGTH(editor_options),
+		      &argc, argv);
+	if (opt_help)
+		usage(argv[0], EXIT_SUCCESS);
+
+	if (argc > 1) {
+		usage(argv[0], EXIT_FAILURE);
+		/* FIXME: Use remaining arguments as a path/filename to load */
+		return 0;
 	}
 
 	memset(&editor, 0, sizeof editor);
@@ -1537,12 +1572,12 @@ main(int argc, char *argv[])
 	editor.widget = window_frame_create(editor.window, &editor);
 
 	editor.entry = text_entry_create(&editor, "Entry");
-	editor.entry->click_to_show = click_to_show;
-	if (preferred_language)
-		editor.entry->preferred_language = strdup(preferred_language);
+	editor.entry->click_to_show = opt_click_to_show;
+	if (opt_preferred_language)
+		editor.entry->preferred_language = strdup(opt_preferred_language);
 	editor.editor = text_entry_create(&editor, "Numeric");
 	editor.editor->content_purpose = ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_NUMBER;
-	editor.editor->click_to_show = click_to_show;
+	editor.editor->click_to_show = opt_click_to_show;
 	editor.selection = NULL;
 	editor.selected_text = NULL;
 
