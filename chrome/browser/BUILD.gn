@@ -2260,11 +2260,7 @@ split_static_library("browser") {
     ]
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
-    if (use_gtk3) {
-      deps += [ "//chrome/browser/ui/libgtkui:libgtk3ui" ]
-    } else {
-      deps += [ "//chrome/browser/ui/libgtkui:libgtk2ui" ]
-    }
+    deps += [ "//chrome/browser/ui/libgtkui" ]
   }
   if (is_posix && !is_mac) {
     sources += [

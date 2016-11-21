@@ -338,11 +338,7 @@ static_library("host") {
       "//build/config/linux:xrandr",
     ]
     if (is_desktop_linux) {
-      if (use_gtk3) {
-        deps += [ "//build/config/linux/gtk3" ]
-      } else {
-        deps += [ "//build/config/linux/gtk2" ]
-      }
+      deps += [ "//build/config/linux/gtk" ]
     }
   } else {
     sources -= [
@@ -752,11 +748,7 @@ if (enable_me2me_host) {
     }
 
     if (is_desktop_linux) {
-      if (use_gtk3) {
-        deps += [ "//build/config/linux/gtk3" ]
-      } else {
-        deps += [ "//build/config/linux/gtk2" ]
-      }
+      deps += [ "//build/config/linux/gtk" ]
     }
     if ((is_linux && !is_chromeos) || is_mac) {
       libs = [ "pam" ]

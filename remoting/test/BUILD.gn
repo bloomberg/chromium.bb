@@ -194,21 +194,13 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
       ":it2me_standalone_host",
     ]
 
-    if (is_win) {
-      deps += [ "//remoting/host/win:dpi_aware_exe_manifest" ]
-    }
-
     if (is_desktop_linux) {
-      if (use_gtk3) {
-        deps += [ "//build/config/linux/gtk3" ]
-      } else {
-        deps += [ "//build/config/linux/gtk2" ]
-      }
+      deps += [ "//build/config/linux/gtk" ]
     }
 
     if (is_win) {
       defines += [ "_ALT_NO_EXCEPTIONS" ]
-
+      deps += [ "//remoting/host/win:dpi_aware_exe_manifest" ]
       libs += [
         "rpcrt4.lib",
         "wtsapi32.lib",

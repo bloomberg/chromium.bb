@@ -57,12 +57,7 @@ source_set("common") {
     # disabled.
     # See crbug.com/462689 for details.
     all_dependent_configs = [ "//third_party/harfbuzz-ng:pangoft2_link_hack" ]
-
-    if (use_gtk3) {
-      deps += [ "//build/config/linux/gtk3" ]
-    } else {
-      deps += [ "//build/config/linux/gtk2" ]
-    }
+    deps += [ "//build/config/linux/gtk" ]
   }
 }
 
@@ -233,11 +228,7 @@ if (!is_chromeos && enable_remoting_host) {
       }
 
       if (is_desktop_linux) {
-        if (use_gtk3) {
-          deps += [ "//build/config/linux/gtk3" ]
-        } else {
-          deps += [ "//build/config/linux/gtk2" ]
-        }
+        deps += [ "//build/config/linux/gtk" ]
       }
     }
   }

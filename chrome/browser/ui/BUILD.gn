@@ -1924,12 +1924,8 @@ split_static_library("ui") {
     deps += [ "//build/linux/libgio" ]
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
-    # These are the only components that can interact with gtk.
-    if (use_gtk3) {
-      deps += [ "//chrome/browser/ui/libgtkui:libgtk3ui" ]
-    } else {
-      deps += [ "//chrome/browser/ui/libgtkui:libgtk2ui" ]
-    }
+    # This is the only component that can interact with gtk.
+    deps += [ "//chrome/browser/ui/libgtkui" ]
   }
   if (is_win || is_mac || is_desktop_linux) {
     sources += [

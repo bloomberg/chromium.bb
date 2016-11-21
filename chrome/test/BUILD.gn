@@ -590,11 +590,7 @@ if (!is_android) {
           ]
           if (!use_ozone) {
             sources += [ "../browser/ui/libgtkui/select_file_dialog_interactive_uitest.cc" ]
-            if (use_gtk3) {
-              configs += [ "//build/config/linux/gtk3:gtk3_internal_config" ]
-            } else {
-              configs += [ "//build/config/linux/gtk2:gtk2_internal_config" ]
-            }
+            deps += [ "//build/config/linux/gtk" ]
           }
         }
       }
@@ -4135,11 +4131,7 @@ test("unit_tests") {
     deps += [ "//build/linux/libgio" ]
   }
   if (!is_chromeos && !use_ozone && is_linux) {
-    if (use_gtk3) {
-      deps += [ "//chrome/browser/ui/libgtkui:libgtk3ui" ]
-    } else {
-      deps += [ "//chrome/browser/ui/libgtkui:libgtk2ui" ]
-    }
+    deps += [ "//chrome/browser/ui/libgtkui" ]
   }
 
   if (enable_task_manager) {

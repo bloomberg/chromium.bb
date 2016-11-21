@@ -5,7 +5,7 @@
 assert(is_linux, "This file should only be referenced on Linux")
 
 import("//build/config/features.gni")
-import("//build/config/ui.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//printing/features/features.gni")
 
 # gn orders flags on a target before flags from configs. The default config
@@ -114,6 +114,20 @@ common_deps = [
   "//ui/views",
 ]
 
+# Automatically depends on the GTK version associated with the current build
+# flags.
+group("libgtkui") {
+  if (use_gtk3) {
+    public_deps = [
+      ":libgtk3ui",
+    ]
+  } else {
+    public_deps = [
+      ":libgtk2ui",
+    ]
+  }
+}
+
 component("libgtk2ui") {
   sources = common_sources
   configs += common_configs
@@ -135,6 +149,8 @@ component("libgtk2ui") {
   ]
 }
 
+# This is compiled with "all" even when it's not referenced to ensure that
+# GTK3 continues to build. GTK3 is explicitly specified by some distros.
 component("libgtk3ui") {
   sources = common_sources
   configs += common_configs
