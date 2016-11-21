@@ -36,9 +36,14 @@ static inline ShapeResultTestInfo* testInfo(RefPtr<ShapeResult>& result) {
   return static_cast<ShapeResultTestInfo*>(result.get());
 }
 
+static inline String to16Bit(const char* text, unsigned length) {
+  return String::make16BitFrom8BitSource(reinterpret_cast<const LChar*>(text),
+                                         length);
+}
+
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
-  TextRun latinCommon(reinterpret_cast<const LChar*>("ABC DEF."), 8);
-  HarfBuzzShaper shaper(latinCommon);
+  String latinCommon = to16Bit("ABC DEF.", 8);
+  HarfBuzzShaper shaper(latinCommon.characters16(), 8, LTR);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
@@ -50,8 +55,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon) {
-  TextRun leadingCommon(reinterpret_cast<const LChar*>("... test"), 8);
-  HarfBuzzShaper shaper(leadingCommon);
+  String leadingCommon = to16Bit("... test", 8);
+  HarfBuzzShaper shaper(leadingCommon.characters16(), 8, LTR);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
@@ -66,18 +71,17 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
   struct {
     const char* name;
     UChar string[4];
+    unsigned length;
     hb_script_t script;
   } testlist[] = {
-      {"Standard Variants text style", {0x30, 0xFE0E}, HB_SCRIPT_COMMON},
-      {"Standard Variants emoji style", {0x203C, 0xFE0F}, HB_SCRIPT_COMMON},
-      {"Standard Variants of Ideograph", {0x4FAE, 0xFE00}, HB_SCRIPT_HAN},
-      {"Ideographic Variants", {0x3402, 0xDB40, 0xDD00}, HB_SCRIPT_HAN},
-      {"Not-defined Variants", {0x41, 0xDB40, 0xDDEF}, HB_SCRIPT_LATIN},
+      {"Standard Variants text style", {0x30, 0xFE0E}, 2, HB_SCRIPT_COMMON},
+      {"Standard Variants emoji style", {0x203C, 0xFE0F}, 2, HB_SCRIPT_COMMON},
+      {"Standard Variants of Ideograph", {0x4FAE, 0xFE00}, 2, HB_SCRIPT_HAN},
+      {"Ideographic Variants", {0x3402, 0xDB40, 0xDD00}, 3, HB_SCRIPT_HAN},
+      {"Not-defined Variants", {0x41, 0xDB40, 0xDDEF}, 3, HB_SCRIPT_LATIN},
   };
   for (auto& test : testlist) {
-    String str(test.string);
-    TextRun run(str);
-    HarfBuzzShaper shaper(run);
+    HarfBuzzShaper shaper(test.string, test.length, LTR);
     RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
     EXPECT_EQ(1u, testInfo(result)->numberOfRunsForTesting()) << test.name;
@@ -106,8 +110,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
   UChar devanagariCommonString[] = {0x915, 0x94d, 0x930, 0x28, 0x20, 0x29};
-  TextRun devanagariCommonLatin(devanagariCommonString, 6);
-  HarfBuzzShaper shaper(devanagariCommonLatin);
+  String devanagariCommonLatin(devanagariCommonString, 6);
+  HarfBuzzShaper shaper(devanagariCommonLatin.characters16(), 6, LTR);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(2u, testInfo(result)->numberOfRunsForTesting());
@@ -127,8 +131,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
   UChar devanagariCommonLatinString[] = {0x915, 0x94d, 0x930, 0x20,
                                          0x61,  0x62,  0x2E};
-  TextRun devanagariCommonLatin(devanagariCommonLatinString, 7);
-  HarfBuzzShaper shaper(devanagariCommonLatin);
+  HarfBuzzShaper shaper(devanagariCommonLatinString, 7, LTR);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(3u, testInfo(result)->numberOfRunsForTesting());
@@ -153,8 +156,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
   UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  TextRun mixed(mixedString, 6);
-  HarfBuzzShaper shaper(mixed);
+  HarfBuzzShaper shaper(mixedString, 6, LTR);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
@@ -185,8 +187,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
   UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  TextRun mixed(mixedString, 6);
-  HarfBuzzShaper shaper(mixed);
+  HarfBuzzShaper shaper(mixedString, 6, LTR);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
   ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
 
@@ -198,8 +199,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
   UChar arabicString[] = {0x628, 0x64A, 0x629};
-  TextRun arabic(arabicString, 3);
-  HarfBuzzShaper shaper(arabic);
+  HarfBuzzShaper shaper(arabicString, 3, RTL);
   RefPtr<ShapeResult> result = shaper.shapeResult(&font);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());

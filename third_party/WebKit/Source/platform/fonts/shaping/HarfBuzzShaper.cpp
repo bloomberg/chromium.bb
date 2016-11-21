@@ -31,7 +31,6 @@
 
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackIterator.h"
@@ -43,7 +42,6 @@
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "platform/text/Character.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"
@@ -83,53 +81,12 @@ class HarfBuzzScopedPtr {
   DestroyFunction m_destroy;
 };
 
-static void normalizeCharacters(const TextRun& run,
-                                unsigned length,
-                                UChar* destination,
-                                unsigned* destinationLength) {
-  unsigned position = 0;
-  bool error = false;
-  const UChar* source;
-  String stringFor8BitRun;
-  if (run.is8Bit()) {
-    stringFor8BitRun =
-        String::make16BitFrom8BitSource(run.characters8(), run.length());
-    source = stringFor8BitRun.characters16();
-  } else {
-    source = run.characters16();
-  }
-
-  *destinationLength = 0;
-  while (position < length) {
-    UChar32 character;
-    U16_NEXT(source, position, length, character);
-    // Don't normalize tabs as they are not treated as spaces for word-end.
-    if (run.normalizeSpace() &&
-        Character::isNormalizedCanvasSpaceCharacter(character)) {
-      character = spaceCharacter;
-    } else if (Character::treatAsSpace(character) &&
-               character != noBreakSpaceCharacter) {
-      character = spaceCharacter;
-    } else if (!RuntimeEnabledFeatures::
-                   renderUnicodeControlCharactersEnabled() &&
-               Character::legacyTreatAsZeroWidthSpaceInComplexScript(
-                   character)) {
-      character = zeroWidthSpaceCharacter;
-    } else if (Character::treatAsZeroWidthSpaceInComplexScript(character)) {
-      character = zeroWidthSpaceCharacter;
-    }
-
-    U16_APPEND(destination, *destinationLength, length, character, error);
-    DCHECK(!error);
-  }
-}
-
-HarfBuzzShaper::HarfBuzzShaper(const TextRun& run)
-    : m_textRun(run), m_normalizedBufferLength(0) {
-  m_normalizedBuffer = wrapArrayUnique(new UChar[m_textRun.length() + 1]);
-  normalizeCharacters(m_textRun, m_textRun.length(), m_normalizedBuffer.get(),
-                      &m_normalizedBufferLength);
-}
+HarfBuzzShaper::HarfBuzzShaper(const UChar* text,
+                               unsigned length,
+                               TextDirection direction)
+    : m_normalizedBuffer(text),
+      m_normalizedBufferLength(length),
+      m_textDirection(direction) {}
 
 namespace {
 
@@ -303,7 +260,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
     // choice than adding boxes to the ShapeResult.
     if ((currentClusterResult == NotDef && numCharacters) || isLastResort) {
       hb_direction_t direction = TextDirectionToHBDirection(
-          m_textRun.direction(), font->getFontDescription().orientation(),
+          m_textDirection, font->getFontDescription().orientation(),
           currentFont);
       // Here we need to specify glyph positions.
       ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
@@ -348,7 +305,7 @@ bool HarfBuzzShaper::collectFallbackHintChars(
     UChar32 hintChar;
     RELEASE_ASSERT(it->m_startIndex + it->m_numCharacters <=
                    m_normalizedBufferLength);
-    UTF16TextIterator iterator(m_normalizedBuffer.get() + it->m_startIndex,
+    UTF16TextIterator iterator(m_normalizedBuffer + it->m_startIndex,
                                it->m_numCharacters);
     while (iterator.consume(hintChar)) {
       hint.append(hintChar);
@@ -597,8 +554,8 @@ CapsFeatureSettingsScopedOverlay::~CapsFeatureSettingsScopedOverlay() {
 }  // namespace
 
 PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) const {
-  RefPtr<ShapeResult> result = ShapeResult::create(
-      font, m_normalizedBufferLength, m_textRun.direction());
+  RefPtr<ShapeResult> result =
+      ShapeResult::create(font, m_normalizedBufferLength, m_textDirection);
   HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(),
                                                 hb_buffer_destroy);
   FeaturesVector fontFeatures;
@@ -615,7 +572,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) const {
   RunSegmenter::RunSegmenterRange segmentRange = {
       0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationInvalid,
       FontFallbackPriority::Invalid};
-  RunSegmenter runSegmenter(m_normalizedBuffer.get(), m_normalizedBufferLength,
+  RunSegmenter runSegmenter(m_normalizedBuffer, m_normalizedBufferLength,
                             orientation);
 
   Vector<UChar32> fallbackCharsHint;
@@ -670,7 +627,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) const {
                                 fontDescription.variantCaps(),
                                 ICUScriptToHBScript(segmentRange.script));
         if (capsSupport.needsRunCaseSplitting()) {
-          splitUntilNextCaseChange(m_normalizedBuffer.get(), &holesQueue,
+          splitUntilNextCaseChange(m_normalizedBuffer, &holesQueue,
                                    currentQueueItem, smallCapsBehavior);
         }
       }
@@ -696,16 +653,14 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) const {
 
       CaseMappingHarfBuzzBufferFiller(
           caseMapIntend, fontDescription.localeOrDefault(),
-          harfBuzzBuffer.get(), m_normalizedBuffer.get(),
-          m_normalizedBufferLength, currentQueueItem.m_startIndex,
-          currentQueueItem.m_numCharacters);
+          harfBuzzBuffer.get(), m_normalizedBuffer, m_normalizedBufferLength,
+          currentQueueItem.m_startIndex, currentQueueItem.m_numCharacters);
 
       CapsFeatureSettingsScopedOverlay capsOverlay(
           &fontFeatures, capsSupport.fontFeatureToUse(smallCapsBehavior));
 
-      hb_direction_t direction =
-          TextDirectionToHBDirection(m_textRun.direction(), orientation,
-                                     directionAndSmallCapsAdjustedFont);
+      hb_direction_t direction = TextDirectionToHBDirection(
+          m_textDirection, orientation, directionAndSmallCapsAdjustedFont);
 
       if (!shapeRange(harfBuzzBuffer.get(),
                       fontFeatures.isEmpty() ? 0 : fontFeatures.data(),

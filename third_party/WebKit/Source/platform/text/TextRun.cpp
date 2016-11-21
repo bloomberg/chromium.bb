@@ -25,6 +25,7 @@
 
 #include "platform/text/TextRun.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/Character.h"
 
 namespace blink {
@@ -55,6 +56,49 @@ void TextRun::setText(const String& string) {
     m_data.characters8 = string.characters8();
   else
     m_data.characters16 = string.characters16();
+}
+
+std::unique_ptr<UChar[]> TextRun::normalizedUTF16(
+    unsigned* resultLength) const {
+  const UChar* source;
+  String stringFor8BitRun;
+  if (is8Bit()) {
+    stringFor8BitRun = String::make16BitFrom8BitSource(characters8(), length());
+    source = stringFor8BitRun.characters16();
+  } else {
+    source = characters16();
+  }
+
+  UChar* buffer = new UChar[m_len + 1];
+  *resultLength = 0;
+
+  bool error = false;
+  unsigned position = 0;
+  while (position < m_len) {
+    UChar32 character;
+    U16_NEXT(source, position, m_len, character);
+    // Don't normalize tabs as they are not treated as spaces for word-end.
+    if (normalizeSpace() &&
+        Character::isNormalizedCanvasSpaceCharacter(character)) {
+      character = spaceCharacter;
+    } else if (Character::treatAsSpace(character) &&
+               character != noBreakSpaceCharacter) {
+      character = spaceCharacter;
+    } else if (!RuntimeEnabledFeatures::
+                   renderUnicodeControlCharactersEnabled() &&
+               Character::legacyTreatAsZeroWidthSpaceInComplexScript(
+                   character)) {
+      character = zeroWidthSpaceCharacter;
+    } else if (Character::treatAsZeroWidthSpaceInComplexScript(character)) {
+      character = zeroWidthSpaceCharacter;
+    }
+
+    U16_APPEND(buffer, *resultLength, m_len, character, error);
+    DCHECK(!error);
+  }
+
+  DCHECK(*resultLength <= m_len);
+  return wrapArrayUnique(buffer);
 }
 
 }  // namespace blink

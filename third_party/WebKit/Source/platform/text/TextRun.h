@@ -258,6 +258,11 @@ class PLATFORM_EXPORT TextRun final {
     return static_cast<TextJustify>(m_textJustify);
   }
 
+  // Up-converts to UTF-16 as needed and normalizes spaces and Unicode control
+  // characters as per the CSS Text Module Level 3 specification.
+  // https://drafts.csswg.org/css-text-3/#white-space-processing
+  std::unique_ptr<UChar[]> normalizedUTF16(unsigned* resultLength) const;
+
  private:
   union {
     const LChar* characters8;

@@ -131,7 +131,7 @@ class UnicodeRangeSet;
 // sub-run, and the result is inserted into ShapeResult as well.
 class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
-  HarfBuzzShaper(const TextRun&);
+  HarfBuzzShaper(const UChar*, unsigned length, TextDirection);
   PassRefPtr<ShapeResult> shapeResult(const Font*) const;
   ~HarfBuzzShaper() {}
 
@@ -166,9 +166,9 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
       unsigned numGlyphs,
       hb_buffer_t*);
 
-  const TextRun& m_textRun;
-  std::unique_ptr<UChar[]> m_normalizedBuffer;
+  const UChar* m_normalizedBuffer;
   unsigned m_normalizedBufferLength;
+  TextDirection m_textDirection;
 };
 
 }  // namespace blink
