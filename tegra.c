@@ -135,7 +135,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		/* Encode blocklinear parameters for EGLImage creation. */
 		bo->tiling = (kind & 0xff) |
 			     ((block_height_log2 & 0xf) << 8);
-		bo->format_modifiers[0] = drv_fourcc_mod_code(NV, bo->tiling);
+		bo->format_modifiers[0] = fourcc_mod_code(NV, bo->tiling);
 	}
 
 	return 0;
@@ -170,14 +170,14 @@ const struct backend backend_tegra =
 	.bo_map = tegra_bo_map,
 	.format_list = {
 		/* Linear support */
-		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR
+		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR
 				      | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
-		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR
+		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR
 				      | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
 		/* Blocklinear support */
-		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
+		{DRM_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
 				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
-		{DRV_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
+		{DRM_FORMAT_ARGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING |
 				      DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
 	}
 };

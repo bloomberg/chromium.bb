@@ -164,12 +164,12 @@ drv_get_name(struct driver *drv)
 	return drv->backend->name;
 }
 
-int drv_is_format_supported(struct driver *drv, drv_format_t format,
+int drv_is_format_supported(struct driver *drv, uint32_t format,
 			    uint64_t usage)
 {
 	unsigned int i;
 
-	if (format == DRV_FORMAT_NONE || usage == DRV_BO_USE_NONE)
+	if (format == DRM_FORMAT_NONE || usage == DRV_BO_USE_NONE)
 		return 0;
 
 	for (i = 0 ; i < ARRAY_SIZE(drv->backend->format_list); i++)
@@ -186,7 +186,7 @@ int drv_is_format_supported(struct driver *drv, drv_format_t format,
 }
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,
-		      drv_format_t format)
+		      uint32_t format)
 {
 
 	struct bo *bo;
@@ -210,7 +210,7 @@ struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,
 }
 
 struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
-			 drv_format_t format, uint64_t flags)
+			 uint32_t format, uint64_t flags)
 {
 	int ret;
 	size_t plane;
@@ -443,12 +443,12 @@ uint64_t drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane)
 	return bo->format_modifiers[plane];
 }
 
-drv_format_t drv_bo_get_format(struct bo *bo)
+uint32_t drv_bo_get_format(struct bo *bo)
 {
 	return bo->format;
 }
 
-drv_format_t drv_resolve_format(struct driver *drv, drv_format_t format)
+uint32_t drv_resolve_format(struct driver *drv, uint32_t format)
 {
 	if (drv->backend->resolve_format)
 		return drv->backend->resolve_format(format);
@@ -471,8 +471,8 @@ int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 	 */
 	if (plane != 0) {
 		switch (format) {
-		case DRV_FORMAT_NV12:
-		case DRV_FORMAT_YVU420:
+		case DRM_FORMAT_NV12:
+		case DRM_FORMAT_YVU420:
 			stride = stride / 2;
 			break;
 		}
@@ -484,57 +484,57 @@ int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 size_t drv_num_planes_from_format(uint32_t format)
 {
 	switch (format) {
-	case DRV_FORMAT_C8:
-	case DRV_FORMAT_R8:
-	case DRV_FORMAT_RG88:
-	case DRV_FORMAT_GR88:
-	case DRV_FORMAT_RGB332:
-	case DRV_FORMAT_BGR233:
-	case DRV_FORMAT_XRGB4444:
-	case DRV_FORMAT_XBGR4444:
-	case DRV_FORMAT_RGBX4444:
-	case DRV_FORMAT_BGRX4444:
-	case DRV_FORMAT_ARGB4444:
-	case DRV_FORMAT_ABGR4444:
-	case DRV_FORMAT_RGBA4444:
-	case DRV_FORMAT_BGRA4444:
-	case DRV_FORMAT_XRGB1555:
-	case DRV_FORMAT_XBGR1555:
-	case DRV_FORMAT_RGBX5551:
-	case DRV_FORMAT_BGRX5551:
-	case DRV_FORMAT_ARGB1555:
-	case DRV_FORMAT_ABGR1555:
-	case DRV_FORMAT_RGBA5551:
-	case DRV_FORMAT_BGRA5551:
-	case DRV_FORMAT_RGB565:
-	case DRV_FORMAT_BGR565:
-	case DRV_FORMAT_YUYV:
-	case DRV_FORMAT_YVYU:
-	case DRV_FORMAT_UYVY:
-	case DRV_FORMAT_VYUY:
-	case DRV_FORMAT_RGB888:
-	case DRV_FORMAT_BGR888:
-	case DRV_FORMAT_XRGB8888:
-	case DRV_FORMAT_XBGR8888:
-	case DRV_FORMAT_RGBX8888:
-	case DRV_FORMAT_BGRX8888:
-	case DRV_FORMAT_ARGB8888:
-	case DRV_FORMAT_ABGR8888:
-	case DRV_FORMAT_RGBA8888:
-	case DRV_FORMAT_BGRA8888:
-	case DRV_FORMAT_XRGB2101010:
-	case DRV_FORMAT_XBGR2101010:
-	case DRV_FORMAT_RGBX1010102:
-	case DRV_FORMAT_BGRX1010102:
-	case DRV_FORMAT_ARGB2101010:
-	case DRV_FORMAT_ABGR2101010:
-	case DRV_FORMAT_RGBA1010102:
-	case DRV_FORMAT_BGRA1010102:
-	case DRV_FORMAT_AYUV:
+	case DRM_FORMAT_C8:
+	case DRM_FORMAT_R8:
+	case DRM_FORMAT_RG88:
+	case DRM_FORMAT_GR88:
+	case DRM_FORMAT_RGB332:
+	case DRM_FORMAT_BGR233:
+	case DRM_FORMAT_XRGB4444:
+	case DRM_FORMAT_XBGR4444:
+	case DRM_FORMAT_RGBX4444:
+	case DRM_FORMAT_BGRX4444:
+	case DRM_FORMAT_ARGB4444:
+	case DRM_FORMAT_ABGR4444:
+	case DRM_FORMAT_RGBA4444:
+	case DRM_FORMAT_BGRA4444:
+	case DRM_FORMAT_XRGB1555:
+	case DRM_FORMAT_XBGR1555:
+	case DRM_FORMAT_RGBX5551:
+	case DRM_FORMAT_BGRX5551:
+	case DRM_FORMAT_ARGB1555:
+	case DRM_FORMAT_ABGR1555:
+	case DRM_FORMAT_RGBA5551:
+	case DRM_FORMAT_BGRA5551:
+	case DRM_FORMAT_RGB565:
+	case DRM_FORMAT_BGR565:
+	case DRM_FORMAT_YUYV:
+	case DRM_FORMAT_YVYU:
+	case DRM_FORMAT_UYVY:
+	case DRM_FORMAT_VYUY:
+	case DRM_FORMAT_RGB888:
+	case DRM_FORMAT_BGR888:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_XBGR8888:
+	case DRM_FORMAT_RGBX8888:
+	case DRM_FORMAT_BGRX8888:
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_RGBA8888:
+	case DRM_FORMAT_BGRA8888:
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_XBGR2101010:
+	case DRM_FORMAT_RGBX1010102:
+	case DRM_FORMAT_BGRX1010102:
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_ABGR2101010:
+	case DRM_FORMAT_RGBA1010102:
+	case DRM_FORMAT_BGRA1010102:
+	case DRM_FORMAT_AYUV:
 		return 1;
-	case DRV_FORMAT_NV12:
+	case DRM_FORMAT_NV12:
 		return 2;
-	case DRV_FORMAT_YVU420:
+	case DRM_FORMAT_YVU420:
 		return 3;
 	}
 
@@ -542,15 +542,15 @@ size_t drv_num_planes_from_format(uint32_t format)
 	return 0;
 }
 
-uint32_t drv_size_from_format(drv_format_t format, uint32_t stride,
+uint32_t drv_size_from_format(uint32_t format, uint32_t stride,
 			      uint32_t height, size_t plane)
 {
 	assert(plane < drv_num_planes_from_format(format));
 	uint32_t vertical_subsampling;
 
 	switch (format) {
-	case DRV_FORMAT_YVU420:
-	case DRV_FORMAT_NV12:
+	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_NV12:
 		vertical_subsampling = (plane == 0) ? 1 : 2;
 		break;
 	default:

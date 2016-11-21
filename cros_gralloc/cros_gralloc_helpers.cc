@@ -56,7 +56,7 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	return usage;
 }
 
-drv_format_t cros_gralloc_convert_format(int format)
+uint32_t cros_gralloc_convert_format(int format)
 {
 	/*
 	 * Conversion from HAL to fourcc-based DRV formats based on
@@ -65,24 +65,24 @@ drv_format_t cros_gralloc_convert_format(int format)
 
 	switch (format) {
 	case HAL_PIXEL_FORMAT_BGRA_8888:
-		return DRV_FORMAT_ARGB8888;
+		return DRM_FORMAT_ARGB8888;
 	case HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED:
-		return DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED;
+		return DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED;
 	case HAL_PIXEL_FORMAT_RGB_565:
-		return DRV_FORMAT_RGB565;
+		return DRM_FORMAT_RGB565;
 	case HAL_PIXEL_FORMAT_RGB_888:
-		return DRV_FORMAT_RGB888;
+		return DRM_FORMAT_RGB888;
 	case HAL_PIXEL_FORMAT_RGBA_8888:
-		return DRV_FORMAT_ABGR8888;
+		return DRM_FORMAT_ABGR8888;
 	case HAL_PIXEL_FORMAT_RGBX_8888:
-		return DRV_FORMAT_XBGR8888;
+		return DRM_FORMAT_XBGR8888;
 	case HAL_PIXEL_FORMAT_YCbCr_420_888:
-		return DRV_FORMAT_FLEX_YCbCr_420_888;
+		return DRM_FORMAT_FLEX_YCbCr_420_888;
 	case HAL_PIXEL_FORMAT_YV12:
-		return DRV_FORMAT_YVU420;
+		return DRM_FORMAT_YVU420;
 	}
 
-	return DRV_FORMAT_NONE;
+	return DRM_FORMAT_NONE;
 }
 
 static int32_t cros_gralloc_query_rendernode(struct driver **drv,

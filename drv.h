@@ -11,20 +11,10 @@
 extern "C" {
 #endif
 
+#include <drm_fourcc.h>
 #include <stdint.h>
 
 #define DRV_MAX_PLANES 4
-
-/* Vendor ids and mod_code fourcc function must match gbm.h */
-#define DRV_FORMAT_MOD_NONE           0
-#define DRV_FORMAT_MOD_VENDOR_INTEL   0x01
-#define DRV_FORMAT_MOD_VENDOR_AMD     0x02
-#define DRV_FORMAT_MOD_VENDOR_NV      0x03
-#define DRV_FORMAT_MOD_VENDOR_SAMSUNG 0x04
-#define DRV_FORMAT_MOD_VENDOR_QCOM    0x05
-
-#define drv_fourcc_mod_code(vendor, val) \
-	((((__u64)DRV_FORMAT_MOD_VENDOR_## vendor) << 56) | (val & 0x00ffffffffffffffULL))
 
 /* Use flags */
 #define DRV_BO_USE_NONE				 0
@@ -47,72 +37,14 @@ extern "C" {
 #define DRV_BO_USE_HW_CAMERA_ZSL	(1ull << 15)
 #define DRV_BO_USE_RENDERSCRIPT		(1ull << 16)
 
-typedef enum {
-	DRV_FORMAT_NONE,
-	DRV_FORMAT_C8,
-	DRV_FORMAT_R8,
-	DRV_FORMAT_RG88,
-	DRV_FORMAT_GR88,
-	DRV_FORMAT_RGB332,
-	DRV_FORMAT_BGR233,
-	DRV_FORMAT_XRGB4444,
-	DRV_FORMAT_XBGR4444,
-	DRV_FORMAT_RGBX4444,
-	DRV_FORMAT_BGRX4444,
-	DRV_FORMAT_ARGB4444,
-	DRV_FORMAT_ABGR4444,
-	DRV_FORMAT_RGBA4444,
-	DRV_FORMAT_BGRA4444,
-	DRV_FORMAT_XRGB1555,
-	DRV_FORMAT_XBGR1555,
-	DRV_FORMAT_RGBX5551,
-	DRV_FORMAT_BGRX5551,
-	DRV_FORMAT_ARGB1555,
-	DRV_FORMAT_ABGR1555,
-	DRV_FORMAT_RGBA5551,
-	DRV_FORMAT_BGRA5551,
-	DRV_FORMAT_RGB565,
-	DRV_FORMAT_BGR565,
-	DRV_FORMAT_RGB888,
-	DRV_FORMAT_BGR888,
-	DRV_FORMAT_XRGB8888,
-	DRV_FORMAT_XBGR8888,
-	DRV_FORMAT_RGBX8888,
-	DRV_FORMAT_BGRX8888,
-	DRV_FORMAT_ARGB8888,
-	DRV_FORMAT_ABGR8888,
-	DRV_FORMAT_RGBA8888,
-	DRV_FORMAT_BGRA8888,
-	DRV_FORMAT_XRGB2101010,
-	DRV_FORMAT_XBGR2101010,
-	DRV_FORMAT_RGBX1010102,
-	DRV_FORMAT_BGRX1010102,
-	DRV_FORMAT_ARGB2101010,
-	DRV_FORMAT_ABGR2101010,
-	DRV_FORMAT_RGBA1010102,
-	DRV_FORMAT_BGRA1010102,
-	DRV_FORMAT_YUYV,
-	DRV_FORMAT_YVYU,
-	DRV_FORMAT_UYVY,
-	DRV_FORMAT_VYUY,
-	DRV_FORMAT_AYUV,
-	DRV_FORMAT_NV12,
-	DRV_FORMAT_NV21,
-	DRV_FORMAT_NV16,
-	DRV_FORMAT_NV61,
-	DRV_FORMAT_YUV410,
-	DRV_FORMAT_YVU410,
-	DRV_FORMAT_YUV411,
-	DRV_FORMAT_YVU411,
-	DRV_FORMAT_YUV420,
-	DRV_FORMAT_YVU420,
-	DRV_FORMAT_YUV422,
-	DRV_FORMAT_YVU422,
-	DRV_FORMAT_YUV444,
-	DRV_FORMAT_YVU444,
-	DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED,
-	DRV_FORMAT_FLEX_YCbCr_420_888,
-} drv_format_t;
+/* This is our extension to <drm_fourcc.h>.  We need to make sure we don't step
+ * on the namespace of already defined formats, which can be done by using invalid
+ * fourcc codes.
+ */
+
+#define DRM_FORMAT_NONE				fourcc_code('0', '0', '0', '0')
+#define DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED	fourcc_code('9', '9', '9', '8')
+#define DRM_FORMAT_FLEX_YCbCr_420_888		fourcc_code('9', '9', '9', '9')
 
 struct driver;
 struct bo;
@@ -133,7 +65,7 @@ struct drv_import_fd_data {
 	uint64_t format_modifiers[DRV_MAX_PLANES];
 	uint32_t width;
 	uint32_t height;
-	drv_format_t format;
+	uint32_t format;
 };
 
 struct driver *
@@ -149,16 +81,16 @@ const char *
 drv_get_name(struct driver *drv);
 
 int
-drv_is_format_supported(struct driver *drv, drv_format_t format,
+drv_is_format_supported(struct driver *drv, uint32_t format,
 			uint64_t usage);
 
 struct bo *
 drv_bo_new(struct driver *drv, uint32_t width, uint32_t height,
-	   drv_format_t format);
+	   uint32_t format);
 
 struct bo *
 drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
-	      drv_format_t format, uint64_t flags);
+	      uint32_t format, uint64_t flags);
 
 void
 drv_bo_destroy(struct bo *bo);
@@ -203,11 +135,11 @@ drv_bo_get_plane_stride(struct bo *bo, size_t plane);
 uint64_t
 drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane);
 
-drv_format_t
+uint32_t
 drv_bo_get_format(struct bo *bo);
 
-drv_format_t
-drv_resolve_format(struct driver *drv, drv_format_t format);
+uint32_t
+drv_resolve_format(struct driver *drv, uint32_t format);
 
 int
 drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
@@ -216,7 +148,7 @@ size_t
 drv_num_planes_from_format(uint32_t format);
 
 uint32_t
-drv_size_from_format(drv_format_t format, uint32_t stride, uint32_t height,
+drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height,
 		     size_t plane);
 
 uint32_t

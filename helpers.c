@@ -21,11 +21,11 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 	assert(plane < drv_num_planes_from_format(format));
 
 	switch (format) {
-	case DRV_FORMAT_C8:
-	case DRV_FORMAT_R8:
-	case DRV_FORMAT_RGB332:
-	case DRV_FORMAT_BGR233:
-	case DRV_FORMAT_YVU420:
+	case DRM_FORMAT_C8:
+	case DRM_FORMAT_R8:
+	case DRM_FORMAT_RGB332:
+	case DRM_FORMAT_BGR233:
+	case DRM_FORMAT_YVU420:
 		return 8;
 
 	/*
@@ -45,56 +45,56 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 	 * Y0_1, Cb01_01 and Cr01_01.  So for a single pixel, 2 bytes of luma data
 	 * are required.
 	 */
-	case DRV_FORMAT_NV12:
+	case DRM_FORMAT_NV12:
 		return (plane == 0) ? 8 : 16;
 
-	case DRV_FORMAT_RG88:
-	case DRV_FORMAT_GR88:
-	case DRV_FORMAT_XRGB4444:
-	case DRV_FORMAT_XBGR4444:
-	case DRV_FORMAT_RGBX4444:
-	case DRV_FORMAT_BGRX4444:
-	case DRV_FORMAT_ARGB4444:
-	case DRV_FORMAT_ABGR4444:
-	case DRV_FORMAT_RGBA4444:
-	case DRV_FORMAT_BGRA4444:
-	case DRV_FORMAT_XRGB1555:
-	case DRV_FORMAT_XBGR1555:
-	case DRV_FORMAT_RGBX5551:
-	case DRV_FORMAT_BGRX5551:
-	case DRV_FORMAT_ARGB1555:
-	case DRV_FORMAT_ABGR1555:
-	case DRV_FORMAT_RGBA5551:
-	case DRV_FORMAT_BGRA5551:
-	case DRV_FORMAT_RGB565:
-	case DRV_FORMAT_BGR565:
-	case DRV_FORMAT_YUYV:
-	case DRV_FORMAT_YVYU:
-	case DRV_FORMAT_UYVY:
-	case DRV_FORMAT_VYUY:
+	case DRM_FORMAT_RG88:
+	case DRM_FORMAT_GR88:
+	case DRM_FORMAT_XRGB4444:
+	case DRM_FORMAT_XBGR4444:
+	case DRM_FORMAT_RGBX4444:
+	case DRM_FORMAT_BGRX4444:
+	case DRM_FORMAT_ARGB4444:
+	case DRM_FORMAT_ABGR4444:
+	case DRM_FORMAT_RGBA4444:
+	case DRM_FORMAT_BGRA4444:
+	case DRM_FORMAT_XRGB1555:
+	case DRM_FORMAT_XBGR1555:
+	case DRM_FORMAT_RGBX5551:
+	case DRM_FORMAT_BGRX5551:
+	case DRM_FORMAT_ARGB1555:
+	case DRM_FORMAT_ABGR1555:
+	case DRM_FORMAT_RGBA5551:
+	case DRM_FORMAT_BGRA5551:
+	case DRM_FORMAT_RGB565:
+	case DRM_FORMAT_BGR565:
+	case DRM_FORMAT_YUYV:
+	case DRM_FORMAT_YVYU:
+	case DRM_FORMAT_UYVY:
+	case DRM_FORMAT_VYUY:
 		return 16;
 
-	case DRV_FORMAT_RGB888:
-	case DRV_FORMAT_BGR888:
+	case DRM_FORMAT_RGB888:
+	case DRM_FORMAT_BGR888:
 		return 24;
 
-	case DRV_FORMAT_XRGB8888:
-	case DRV_FORMAT_XBGR8888:
-	case DRV_FORMAT_RGBX8888:
-	case DRV_FORMAT_BGRX8888:
-	case DRV_FORMAT_ARGB8888:
-	case DRV_FORMAT_ABGR8888:
-	case DRV_FORMAT_RGBA8888:
-	case DRV_FORMAT_BGRA8888:
-	case DRV_FORMAT_XRGB2101010:
-	case DRV_FORMAT_XBGR2101010:
-	case DRV_FORMAT_RGBX1010102:
-	case DRV_FORMAT_BGRX1010102:
-	case DRV_FORMAT_ARGB2101010:
-	case DRV_FORMAT_ABGR2101010:
-	case DRV_FORMAT_RGBA1010102:
-	case DRV_FORMAT_BGRA1010102:
-	case DRV_FORMAT_AYUV:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_XBGR8888:
+	case DRM_FORMAT_RGBX8888:
+	case DRM_FORMAT_BGRX8888:
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_RGBA8888:
+	case DRM_FORMAT_BGRA8888:
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_XBGR2101010:
+	case DRM_FORMAT_RGBX1010102:
+	case DRM_FORMAT_BGRX1010102:
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_ABGR2101010:
+	case DRM_FORMAT_RGBA1010102:
+	case DRM_FORMAT_BGRA1010102:
+	case DRM_FORMAT_AYUV:
 		return 32;
 	}
 
@@ -108,7 +108,7 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
  * buffer object.
  */
 int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
-		       drv_format_t format)
+		       uint32_t format)
 {
 
 	size_t p, num_planes;

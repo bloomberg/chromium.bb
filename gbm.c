@@ -34,17 +34,15 @@ PUBLIC int
 gbm_device_is_format_supported(struct gbm_device *gbm,
 			       uint32_t format, uint32_t usage)
 {
-	uint32_t drv_format;
 	uint64_t drv_usage;
 
 	if (usage & GBM_BO_USE_CURSOR &&
 		usage & GBM_BO_USE_RENDERING)
 		return 0;
 
-	drv_format = gbm_convert_format(format);
 	drv_usage = gbm_convert_flags(usage);
 
-	return drv_is_format_supported(gbm->drv, drv_format, drv_usage);
+	return drv_is_format_supported(gbm->drv, format, drv_usage);
 }
 
 PUBLIC struct gbm_device *gbm_create_device(int fd)
@@ -127,8 +125,7 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	if (!bo)
 		return NULL;
 
-	bo->bo = drv_bo_create(gbm->drv, width, height,
-			       gbm_convert_format(format),
+	bo->bo = drv_bo_create(gbm->drv, width, height, format,
 			       gbm_convert_flags(flags));
 
 	if (!bo->bo) {
@@ -169,7 +166,7 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 		gbm_format = fd_data->format;
 		drv_data.width = fd_data->width;
 		drv_data.height = fd_data->height;
-		drv_data.format = gbm_convert_format(fd_data->format);
+		drv_data.format = fd_data->format;
 		drv_data.fds[0] = fd_data->fd;
 		drv_data.strides[0] = fd_data->stride;
 		drv_data.sizes[0] = fd_data->height * fd_data->stride;
@@ -178,7 +175,7 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 		gbm_format = fd_planar_data->format;
 		drv_data.width = fd_planar_data->width;
 		drv_data.height = fd_planar_data->height;
-		drv_data.format = gbm_convert_format(fd_planar_data->format);
+		drv_data.format = fd_planar_data->format;
 		num_planes = drv_num_planes_from_format(drv_data.format);
 
 		assert(num_planes);

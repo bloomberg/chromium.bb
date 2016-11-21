@@ -7,7 +7,6 @@
 #ifndef GBM_HELPERS_H
 #define GBM_HELPERS_H
 
-drv_format_t gbm_convert_format(uint32_t format);
 uint64_t gbm_convert_flags(uint32_t flags);
 
 #endif

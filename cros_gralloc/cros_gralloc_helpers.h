@@ -71,7 +71,7 @@ constexpr uint32_t sw_write(void)
 
 uint64_t cros_gralloc_convert_flags(int flags);
 
-drv_format_t cros_gralloc_convert_format(int format);
+uint32_t cros_gralloc_convert_format(int format);
 
 int32_t cros_gralloc_rendernode_open(struct driver **drv);
 

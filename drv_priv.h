@@ -53,12 +53,12 @@ struct backend
 	int (*init)(struct driver *drv);
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height,
-			 drv_format_t format, uint32_t flags);
+			 uint32_t format, uint32_t flags);
 	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
 	int (*bo_destroy)(struct bo *bo);
-	drv_format_t (*resolve_format)(drv_format_t format);
+	uint32_t (*resolve_format)(uint32_t format);
 	struct format_supported {
-		drv_format_t format;
+		uint32_t format;
 		uint64_t usage;
 	}
 	format_list[19];

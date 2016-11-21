@@ -11,7 +11,7 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 						      int format, int usage)
 {
 	uint64_t drv_usage;
-	drv_format_t drv_format;
+	uint32_t drv_format;
 	struct cros_gralloc_bo *bo;
 
 	drv_format = cros_gralloc_convert_format(format);
