@@ -65,11 +65,20 @@ void HandleServiceWorkerLink(
   if (!service_worker_context)
     return;
 
+  ServiceWorkerProviderHost* provider_host =
+      ServiceWorkerRequestHandler::GetProviderHost(request);
+
+  // If fetched from a service worker, make sure fetching service worker is
+  // controlling at least one client to prevent a service worker from spawning
+  // new service workers in the background.
+  if (provider_host && provider_host->IsHostToRunningServiceWorker()) {
+    if (!provider_host->running_hosted_version()->HasControllee())
+      return;
+  }
+
   if (ServiceWorkerUtils::IsMainResourceType(request_info->GetResourceType())) {
     // In case of navigations, make sure the navigation will actually result in
     // a secure context.
-    ServiceWorkerProviderHost* provider_host =
-        ServiceWorkerRequestHandler::GetProviderHost(request);
     if (!provider_host || !provider_host->IsContextSecureForServiceWorker())
       return;
   } else {

@@ -262,6 +262,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void NotifyControllerLost();
 
  private:
+  friend class LinkHeaderServiceWorkerTest;
   friend class ServiceWorkerProviderHostTestP;
   friend class ServiceWorkerWriteToCacheJobTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
