@@ -16,7 +16,7 @@ interface GpuService {
   // GPUInfo.
   [Sync]
   EstablishGpuChannel() => (int32 client_id,
-                            handle<message_pipe> channel_handle,
+                            handle<message_pipe>? channel_handle,
                             gpu.mojom.GpuInfo gpu_info);
 
   // Tells the GPU service to create a new GPU memory buffer.

@@ -113,7 +113,7 @@ void GpuService::OnEstablishedGpuChannel(
   DCHECK(gpu_service_.get());
   DCHECK(!gpu_channel_);
 
-  if (client_id) {
+  if (client_id && channel_handle.is_valid()) {
     gpu_channel_ = gpu::GpuChannelHost::Create(
         this, client_id, gpu_info, IPC::ChannelHandle(channel_handle.release()),
         &shutdown_event_, gpu_memory_buffer_manager_.get());
