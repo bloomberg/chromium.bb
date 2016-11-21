@@ -662,21 +662,28 @@ union wl_argument {
 };
 
 /**
- * \brief A function pointer type for a dispatcher.
+ * Dispatcher function type alias
  *
  * A dispatcher is a function that handles the emitting of callbacks in client
- * code.  For programs directly using the C library, this is done by using
- * libffi to call function pointers.  When binding to languages other than C,
+ * code. For programs directly using the C library, this is done by using
+ * libffi to call function pointers. When binding to languages other than C,
  * dispatchers provide a way to abstract the function calling process to be
  * friendlier to other function calling systems.
  *
- * A dispatcher takes five arguments:  The first is the dispatcher-specific
- * implementation data associated with the target object.  The second is the
- * object on which the callback is being invoked (either wl_proxy or
- * wl_resource).  The third and fourth arguments are the opcode the wl_message
- * structure corresponding to the callback being emitted.  The final argument
- * is an array of arguments received from the other process via the wire
- * protocol.
+ * A dispatcher takes five arguments: The first is the dispatcher-specific
+ * implementation associated with the target object. The second is the object
+ * upon which the callback is being invoked (either wl_proxy or wl_resource).
+ * The third and fourth arguments are the opcode and the wl_message
+ * corresponding to the callback. The final argument is an array of arguments
+ * received from the other process via the wire protocol.
+ *
+ * \param "const void *" Dispatcher-specific implementation data
+ * \param "void *" Callback invocation target (wl_proxy or `wl_resource`)
+ * \param uint32_t Callback opcode
+ * \param "const struct wl_message *" Callback message signature
+ * \param "union wl_argument *" Array of received arguments
+ *
+ * \return 0 on success, or -1 on failure
  */
 typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
 				    const struct wl_message *,
