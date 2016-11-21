@@ -2299,10 +2299,12 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_SUPERTX
   if (partition != PARTITION_NONE && supertx_enabled && pack_token) {
     int skip;
+    const int bsw = num_8x8_blocks_wide_lookup[bsize];
+    const int bsh = num_8x8_blocks_high_lookup[bsize];
     xd->mi = cm->mi_grid_visible + mi_offset;
     supertx_size = mbmi->tx_size;
-    set_mi_row_col(xd, tile, mi_row, num_8x8_blocks_high_lookup[bsize], mi_col,
-                   num_8x8_blocks_wide_lookup[bsize], cm->mi_rows, cm->mi_cols);
+    set_mi_row_col(xd, tile, mi_row, bsh, mi_col, bsw, cm->mi_rows,
+                   cm->mi_cols);
 
     assert(IMPLIES(!cm->seg.enabled, mbmi->segment_id_supertx == 0));
     assert(mbmi->segment_id_supertx < MAX_SEGMENTS);
@@ -2346,6 +2348,12 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         (*tok)++;
       }
     }
+#if CONFIG_VAR_TX
+    xd->above_txfm_context = cm->above_txfm_context + mi_col;
+    xd->left_txfm_context =
+        xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+    set_txfm_ctxs(xd->mi[0]->mbmi.tx_size, bsw, bsh, skip, xd);
+#endif
   }
 #endif  // CONFIG_SUPERTX
 
