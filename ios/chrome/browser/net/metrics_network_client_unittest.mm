@@ -9,6 +9,10 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Dummy client to be registered as underlying client for the
 // MetricsNetworkClient.
 @interface MetricsMockClient : CRNForwardingNetworkClient
