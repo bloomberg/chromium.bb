@@ -16,6 +16,8 @@ source_set("browser_state") {
     "//ios/web",
     "//net",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("browser_state_impl") {

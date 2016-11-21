@@ -20,6 +20,10 @@
 #include "ios/web/webui/url_data_manager_ios_backend.h"
 #include "net/url_request/url_request_interceptor.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios {
 
 ChromeBrowserState::ChromeBrowserState() {}
