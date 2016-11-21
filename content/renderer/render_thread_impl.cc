@@ -30,6 +30,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -903,6 +904,13 @@ void RenderThreadImpl::Init(
   is_renderer_suspended_ = false;
 
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+
+  // If this renderer doesn't run inside the browser process, enable
+  // SequencedWorkerPool. Otherwise, it should already have been enabled.
+  // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
+  // redirection experiment concludes https://crbug.com/622400.
+  if (!command_line.HasSwitch(switches::kSingleProcess))
+    base::SequencedWorkerPool::EnableForProcess();
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
