@@ -13,6 +13,10 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const char kTestCertFileName[] = "ok_cert.pem";
 const char kTestHostName[] = "https://chromium.test/";

@@ -28,6 +28,7 @@ source_set("ssl") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "ios_ssl_error_handler_unittest.mm",
