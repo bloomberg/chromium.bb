@@ -248,7 +248,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     // non CSS2 inherited
     unsigned m_rtlOrdering : 1;  // Order
-    unsigned m_printColorAdjust : PrintColorAdjustBits;
+    unsigned m_printColorAdjust : 1;  // PrintColorAdjust
     unsigned m_pointerEvents : 4;  // EPointerEvents
     unsigned m_insideLink : 2;     // EInsideLink
 
@@ -377,7 +377,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_borderCollapse = initialBorderCollapse();
     m_inheritedData.m_rtlOrdering = initialRTLOrdering();
     m_inheritedData.m_boxDirection = initialBoxDirection();
-    m_inheritedData.m_printColorAdjust = initialPrintColorAdjust();
+    m_inheritedData.m_printColorAdjust =
+        static_cast<unsigned>(initialPrintColorAdjust());
     m_inheritedData.m_pointerEvents = initialPointerEvents();
     m_inheritedData.m_insideLink = NotInsideLink;
     m_inheritedData.m_writingMode = initialWritingMode();
@@ -2422,13 +2423,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // -webkit-print-color-adjust
   static PrintColorAdjust initialPrintColorAdjust() {
-    return PrintColorAdjustEconomy;
+    return PrintColorAdjust::Economy;
   }
   PrintColorAdjust getPrintColorAdjust() const {
     return static_cast<PrintColorAdjust>(m_inheritedData.m_printColorAdjust);
   }
   void setPrintColorAdjust(PrintColorAdjust value) {
-    m_inheritedData.m_printColorAdjust = value;
+    m_inheritedData.m_printColorAdjust = static_cast<unsigned>(value);
   }
 
   // -webkit-rtl-ordering

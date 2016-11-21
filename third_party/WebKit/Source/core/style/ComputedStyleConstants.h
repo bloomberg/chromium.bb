@@ -54,8 +54,7 @@ enum StyleRecalcChange {
   ReattachNoLayoutObject
 };
 
-static const size_t PrintColorAdjustBits = 1;
-enum PrintColorAdjust { PrintColorAdjustEconomy, PrintColorAdjustExact };
+enum class PrintColorAdjust : unsigned { Economy, Exact };
 
 // Static pseudo styles. Dynamic ones are produced on the fly.
 enum PseudoId {

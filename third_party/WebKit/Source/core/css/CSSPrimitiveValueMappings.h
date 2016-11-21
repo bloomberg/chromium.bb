@@ -198,10 +198,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(PrintColorAdjust value)
     : CSSValue(IdentifierClass) {
   switch (value) {
-    case PrintColorAdjustExact:
+    case PrintColorAdjust::Exact:
       m_valueID = CSSValueExact;
       break;
-    case PrintColorAdjustEconomy:
+    case PrintColorAdjust::Economy:
       m_valueID = CSSValueEconomy;
       break;
   }
@@ -211,15 +211,15 @@ template <>
 inline PrintColorAdjust CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueEconomy:
-      return PrintColorAdjustEconomy;
+      return PrintColorAdjust::Economy;
     case CSSValueExact:
-      return PrintColorAdjustExact;
+      return PrintColorAdjust::Exact;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return PrintColorAdjustEconomy;
+  return PrintColorAdjust::Economy;
 }
 
 template <>
