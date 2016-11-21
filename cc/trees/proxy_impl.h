@@ -8,28 +8,28 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/delayed_unique_notifier.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/scheduler/scheduler.h"
-#include "cc/trees/channel_impl.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
 namespace cc {
 class LayerTreeHostInProcess;
+class ProxyMain;
 
 // This class aggregates all the interactions that the main side of the
-// compositor needs to have with the impl side. It is created and owned by the
-// ChannelImpl implementation. The class lives entirely on the impl thread.
+// compositor needs to have with the impl side.
+// The class is created and lives on the impl thread.
 class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
                             public NON_EXPORTED_BASE(SchedulerClient) {
  public:
-  ProxyImpl(ChannelImpl* channel_impl,
+  ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
             LayerTreeHostInProcess* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
   ~ProxyImpl() override;
 
-  // Virtual for testing.
   void UpdateBrowserControlsStateOnImpl(BrowserControlsState constraints,
                                         BrowserControlsState current,
                                         bool animate);
@@ -108,6 +108,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
 
   bool IsImplThread() const;
   bool IsMainThreadBlocked() const;
+  base::SingleThreadTaskRunner* MainThreadTaskRunner();
 
   const int layer_tree_host_id_;
 
@@ -137,11 +138,12 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
 
   std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
 
-  ChannelImpl* channel_impl_;
-
   // Use accessors instead of this variable directly.
   BlockedMainCommitOnly main_thread_blocked_commit_vars_unsafe_;
   BlockedMainCommitOnly& blocked_main_commit();
+
+  // Used to post tasks to ProxyMain on the main thread.
+  base::WeakPtr<ProxyMain> proxy_main_weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyImpl);
 };

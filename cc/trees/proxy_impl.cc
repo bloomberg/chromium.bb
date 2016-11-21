@@ -22,6 +22,7 @@
 #include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/proxy_main.h"
 #include "cc/trees/task_runner_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -36,7 +37,7 @@ unsigned int nextBeginFrameId = 0;
 
 }  // namespace
 
-ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
+ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
                      LayerTreeHostInProcess* layer_tree_host,
                      TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_id_(layer_tree_host->GetId()),
@@ -54,7 +55,7 @@ ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
               kSmoothnessTakesPriorityExpirationDelay)),
       rendering_stats_instrumentation_(
           layer_tree_host->rendering_stats_instrumentation()),
-      channel_impl_(channel_impl) {
+      proxy_main_weak_ptr_(proxy_main_weak_ptr) {
   TRACE_EVENT0("cc", "ProxyImpl::ProxyImpl");
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
@@ -127,7 +128,9 @@ void ProxyImpl::InitializeCompositorFrameSinkOnImpl(
 
   LayerTreeHostImpl* host_impl = layer_tree_host_impl_.get();
   bool success = host_impl->InitializeRenderer(compositor_frame_sink);
-  channel_impl_->DidInitializeCompositorFrameSink(success);
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::DidInitializeCompositorFrameSink,
+                            proxy_main_weak_ptr_, success));
   if (success)
     scheduler_->DidCreateAndInitializeCompositorFrameSink();
 }
@@ -255,7 +258,9 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
 void ProxyImpl::DidLoseCompositorFrameSinkOnImplThread() {
   TRACE_EVENT0("cc", "ProxyImpl::DidLoseCompositorFrameSinkOnImplThread");
   DCHECK(IsImplThread());
-  channel_impl_->DidLoseCompositorFrameSink();
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ProxyMain::DidLoseCompositorFrameSink, proxy_main_weak_ptr_));
   scheduler_->DidLoseCompositorFrameSink();
 }
 
@@ -274,7 +279,9 @@ void ProxyImpl::DidReceiveCompositorFrameAckOnImplThread() {
                "ProxyImpl::DidReceiveCompositorFrameAckOnImplThread");
   DCHECK(IsImplThread());
   scheduler_->DidReceiveCompositorFrameAck();
-  channel_impl_->DidReceiveCompositorFrameAck();
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::DidReceiveCompositorFrameAck,
+                            proxy_main_weak_ptr_));
 }
 
 void ProxyImpl::OnCanDrawStateChanged(bool can_draw) {
@@ -331,7 +338,9 @@ void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
     std::unique_ptr<MutatorEvents> events) {
   TRACE_EVENT0("cc", "ProxyImpl::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(IsImplThread());
-  channel_impl_->SetAnimationEvents(std::move(events));
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::SetAnimationEvents,
+                            proxy_main_weak_ptr_, base::Passed(&events)));
 }
 
 bool ProxyImpl::IsInsideDraw() {
@@ -413,7 +422,9 @@ void ProxyImpl::DidPrepareTiles() {
 
 void ProxyImpl::DidCompletePageScaleAnimationOnImplThread() {
   DCHECK(IsImplThread());
-  channel_impl_->DidCompletePageScaleAnimation();
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::DidCompletePageScaleAnimation,
+                            proxy_main_weak_ptr_));
 }
 
 void ProxyImpl::OnDrawForCompositorFrameSink(bool resourceless_software_draw) {
@@ -446,7 +457,9 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
       layer_tree_host_impl_->ProcessScrollDeltas();
   begin_main_frame_state->evicted_ui_resources =
       layer_tree_host_impl_->EvictedUIResourcesExist();
-  channel_impl_->BeginMainFrame(std::move(begin_main_frame_state));
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
+                            base::Passed(&begin_main_frame_state)));
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
 
@@ -517,7 +530,9 @@ void ProxyImpl::ScheduledActionBeginCompositorFrameSinkCreation() {
   TRACE_EVENT0("cc",
                "ProxyImpl::ScheduledActionBeginCompositorFrameSinkCreation");
   DCHECK(IsImplThread());
-  channel_impl_->RequestNewCompositorFrameSink();
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::RequestNewCompositorFrameSink,
+                            proxy_main_weak_ptr_));
 }
 
 void ProxyImpl::ScheduledActionPrepareTiles() {
@@ -535,7 +550,9 @@ void ProxyImpl::ScheduledActionInvalidateCompositorFrameSink() {
 
 void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {
   DCHECK(IsImplThread());
-  channel_impl_->BeginMainFrameNotExpectedSoon();
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::BeginMainFrameNotExpectedSoon,
+                            proxy_main_weak_ptr_));
 }
 
 DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
@@ -591,7 +608,9 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   // Tell the main thread that the the newly-commited frame was drawn.
   if (next_frame_is_newly_committed_frame_) {
     next_frame_is_newly_committed_frame_ = false;
-    channel_impl_->DidCommitAndDrawFrame();
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ProxyMain::DidCommitAndDrawFrame, proxy_main_weak_ptr_));
   }
 
   DCHECK_NE(INVALID_RESULT, result);
@@ -609,6 +628,10 @@ bool ProxyImpl::IsMainThreadBlocked() const {
 ProxyImpl::BlockedMainCommitOnly& ProxyImpl::blocked_main_commit() {
   DCHECK(IsMainThreadBlocked() && commit_completion_event_);
   return main_thread_blocked_commit_vars_unsafe_;
+}
+
+base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
+  return task_runner_provider_->MainThreadTaskRunner();
 }
 
 }  // namespace cc

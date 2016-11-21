@@ -36,7 +36,6 @@
 #include "cc/trees/proxy_impl.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/single_thread_proxy.h"
-#include "cc/trees/threaded_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -367,8 +366,8 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
         break;
       case CompositorMode::THREADED:
         DCHECK(impl_task_runner.get());
-        proxy = ProxyMain::CreateThreaded(layer_tree_host.get(),
-                                          task_runner_provider.get());
+        proxy = base::MakeUnique<ProxyMain>(layer_tree_host.get(),
+                                            task_runner_provider.get());
         break;
       case CompositorMode::REMOTE:
         NOTREACHED();

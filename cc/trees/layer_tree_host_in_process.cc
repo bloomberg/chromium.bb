@@ -134,7 +134,7 @@ void LayerTreeHostInProcess::InitializeThreaded(
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
   std::unique_ptr<ProxyMain> proxy_main =
-      ProxyMain::CreateThreaded(this, task_runner_provider_.get());
+      base::MakeUnique<ProxyMain>(this, task_runner_provider_.get());
   InitializeProxy(std::move(proxy_main));
 }
 
