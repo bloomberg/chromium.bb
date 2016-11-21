@@ -49,15 +49,15 @@ Display* FindDisplayById(Displays* display_list, int64_t id) {
 // DisplayPlacement
 
 DisplayPlacement::DisplayPlacement()
-    : DisplayPlacement(Display::kInvalidDisplayID,
-                       Display::kInvalidDisplayID,
+    : DisplayPlacement(kInvalidDisplayId,
+                       kInvalidDisplayId,
                        DisplayPlacement::RIGHT,
                        0,
                        DisplayPlacement::TOP_LEFT) {}
 
 DisplayPlacement::DisplayPlacement(Position position, int offset)
-    : DisplayPlacement(Display::kInvalidDisplayID,
-                       Display::kInvalidDisplayID,
+    : DisplayPlacement(kInvalidDisplayId,
+                       kInvalidDisplayId,
                        position,
                        offset,
                        DisplayPlacement::TOP_LEFT) {}
@@ -65,8 +65,8 @@ DisplayPlacement::DisplayPlacement(Position position, int offset)
 DisplayPlacement::DisplayPlacement(Position position,
                                    int offset,
                                    OffsetReference offset_reference)
-    : DisplayPlacement(Display::kInvalidDisplayID,
-                       Display::kInvalidDisplayID,
+    : DisplayPlacement(kInvalidDisplayId,
+                       kInvalidDisplayId,
                        position,
                        offset,
                        offset_reference) {}
@@ -120,9 +120,9 @@ DisplayPlacement& DisplayPlacement::Swap() {
 
 std::string DisplayPlacement::ToString() const {
   std::stringstream s;
-  if (display_id != Display::kInvalidDisplayID)
+  if (display_id != kInvalidDisplayId)
     s << "id=" << display_id << ", ";
-  if (parent_display_id != Display::kInvalidDisplayID)
+  if (parent_display_id != kInvalidDisplayId)
     s << "parent=" << parent_display_id << ", ";
   s << PositionToString(position) << ", ";
   s << offset;
@@ -176,9 +176,7 @@ bool DisplayPlacement::StringToPosition(const base::StringPiece& string,
 // DisplayLayout
 
 DisplayLayout::DisplayLayout()
-    : mirrored(false),
-      default_unified(true),
-      primary_id(Display::kInvalidDisplayID) {}
+    : mirrored(false), default_unified(true), primary_id(kInvalidDisplayId) {}
 
 DisplayLayout::~DisplayLayout() {}
 
@@ -225,11 +223,11 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
       LOG(ERROR) << "PlacementList must be sorted by display_id";
       return false;
     }
-    if (placement.display_id == Display::kInvalidDisplayID) {
+    if (placement.display_id == kInvalidDisplayId) {
       LOG(ERROR) << "display_id is not initialized";
       return false;
     }
-    if (placement.parent_display_id == Display::kInvalidDisplayID) {
+    if (placement.parent_display_id == kInvalidDisplayId) {
       LOG(ERROR) << "display_parent_id is not initialized";
       return false;
     }

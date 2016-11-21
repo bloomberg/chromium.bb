@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/display/display.h"
 #include "ui/display/display_export.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/point.h"
@@ -77,7 +77,7 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public ui::DisplaySnapshot {
     const ui::DisplayMode* AddOrFindDisplayMode(
         std::unique_ptr<ui::DisplayMode> mode);
 
-    int64_t id_ = Display::kInvalidDisplayID;
+    int64_t id_ = kInvalidDisplayId;
     gfx::Point origin_;
     float dpi_ = 96.0;
     ui::DisplayConnectionType type_ = ui::DISPLAY_CONNECTION_TYPE_UNKNOWN;

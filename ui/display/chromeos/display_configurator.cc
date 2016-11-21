@@ -1156,7 +1156,7 @@ void DisplayConfigurator::NotifyPowerStateObservers() {
 int64_t DisplayConfigurator::AddVirtualDisplay(const gfx::Size& display_size) {
   if (last_virtual_display_id_ == 0xff) {
     LOG(WARNING) << "Exceeded virtual display id limit";
-    return display::Display::kInvalidDisplayID;
+    return display::kInvalidDisplayId;
   }
 
   DisplaySnapshotVirtual* virtual_snapshot = new DisplaySnapshotVirtual(

@@ -7,7 +7,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/point3_f.h"
 
@@ -34,7 +34,7 @@ DeviceDataManager::TouchscreenInfo::TouchscreenInfo() {
 
 void DeviceDataManager::TouchscreenInfo::Reset() {
   radius_scale = 1.0;
-  target_display = display::Display::kInvalidDisplayID;
+  target_display = display::kInvalidDisplayId;
   device_transform = gfx::Transform();
 }
 
@@ -159,7 +159,7 @@ int64_t DeviceDataManager::GetTargetDisplayForTouchDevice(
     int touch_device_id) const {
   if (IsTouchDeviceIdValid(touch_device_id))
     return touch_map_[touch_device_id].target_display;
-  return display::Display::kInvalidDisplayID;
+  return display::kInvalidDisplayId;
 }
 
 void DeviceDataManager::OnTouchscreenDevicesUpdated(

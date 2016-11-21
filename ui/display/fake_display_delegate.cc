@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/display/util/display_util.h"
 
@@ -41,7 +42,7 @@ int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
 
   if (next_display_id_ == 0xFF) {
     LOG(ERROR) << "Exceeded display id limit";
-    return Display::kInvalidDisplayID;
+    return kInvalidDisplayId;
   }
 
   int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
@@ -51,7 +52,7 @@ int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
   builder.SetId(id).SetNativeMode(display_size);
   builder.SetName(base::StringPrintf("Fake Display %" PRId64, id));
 
-  return AddDisplay(builder.Build()) ? id : Display::kInvalidDisplayID;
+  return AddDisplay(builder.Build()) ? id : kInvalidDisplayId;
 }
 
 bool FakeDisplayDelegate::AddDisplay(

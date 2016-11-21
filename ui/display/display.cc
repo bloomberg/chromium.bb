@@ -76,7 +76,7 @@ void Display::ResetForceDeviceScaleFactorForTesting() {
 constexpr int DEFAULT_BITS_PER_PIXEL = 24;
 constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
 
-Display::Display() : Display(kInvalidDisplayID) {}
+Display::Display() : Display(kInvalidDisplayId) {}
 
 Display::Display(int64_t id) : Display(id, gfx::Rect()) {}
 
@@ -187,7 +187,7 @@ bool Display::IsInternal() const {
 
 // static
 int64_t Display::InternalDisplayId() {
-  DCHECK_NE(kInvalidDisplayID, internal_display_id_);
+  DCHECK_NE(kInvalidDisplayId, internal_display_id_);
   return internal_display_id_;
 }
 
@@ -198,13 +198,13 @@ void Display::SetInternalDisplayId(int64_t internal_display_id) {
 
 // static
 bool Display::IsInternalDisplayId(int64_t display_id) {
-  DCHECK_NE(kInvalidDisplayID, display_id);
+  DCHECK_NE(kInvalidDisplayId, display_id);
   return HasInternalDisplay() && internal_display_id_ == display_id;
 }
 
 // static
 bool Display::HasInternalDisplay() {
-  return internal_display_id_ != kInvalidDisplayID;
+  return internal_display_id_ != kInvalidDisplayId;
 }
 
 }  // namespace display

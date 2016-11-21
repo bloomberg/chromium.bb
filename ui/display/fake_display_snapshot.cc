@@ -183,7 +183,7 @@ Builder::Builder() {}
 Builder::~Builder() {}
 
 std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
-  if (modes_.empty() || id_ == Display::kInvalidDisplayID) {
+  if (modes_.empty() || id_ == kInvalidDisplayId) {
     NOTREACHED() << "Display modes or display ID missing";
     return nullptr;
   }

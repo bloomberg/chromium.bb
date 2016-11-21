@@ -14,7 +14,7 @@ namespace message_center {
 
 DesktopPopupAlignmentDelegate::DesktopPopupAlignmentDelegate()
     : alignment_(POPUP_ALIGNMENT_BOTTOM | POPUP_ALIGNMENT_RIGHT),
-      primary_display_id_(display::Display::kInvalidDisplayID),
+      primary_display_id_(display::kInvalidDisplayId),
       screen_(NULL) {}
 
 DesktopPopupAlignmentDelegate::~DesktopPopupAlignmentDelegate() {
@@ -119,9 +119,9 @@ void DesktopPopupAlignmentDelegate::OnDisplayRemoved(
 void DesktopPopupAlignmentDelegate::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
-  // Set to kInvalidDisplayID so the alignment is updated regardless of whether
+  // Set to kInvalidDisplayId so the alignment is updated regardless of whether
   // the primary display actually changed.
-  primary_display_id_ = display::Display::kInvalidDisplayID;
+  primary_display_id_ = display::kInvalidDisplayId;
   UpdatePrimaryDisplay();
 }
 

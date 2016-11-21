@@ -13,6 +13,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
+#include "ui/display/types/display_constants.h"
 
 namespace display {
 
@@ -62,8 +63,7 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
   // Old data may not have the display_id/parent_display_id.
   // Guess these values based on the saved primary_id.
   if (layout->placement_list.size() >= 1 &&
-      layout->placement_list[0].display_id ==
-          display::Display::kInvalidDisplayID) {
+      layout->placement_list[0].display_id == display::kInvalidDisplayId) {
     if (layout->primary_id == list[1]) {
       layout->placement_list[0].display_id = list[0];
       layout->placement_list[0].parent_display_id = list[1];
@@ -86,7 +86,7 @@ const display::DisplayLayout& DisplayLayoutStore::GetRegisteredDisplayLayout(
                                              ? iter->second.get()
                                              : CreateDefaultDisplayLayout(list);
   DCHECK(display::DisplayLayout::Validate(list, *layout)) << layout->ToString();
-  DCHECK_NE(layout->primary_id, display::Display::kInvalidDisplayID);
+  DCHECK_NE(layout->primary_id, display::kInvalidDisplayId);
   return *layout;
 }
 

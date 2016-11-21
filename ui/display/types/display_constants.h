@@ -5,6 +5,16 @@
 #ifndef UI_DISPLAY_TYPES_DISPLAY_CONSTANTS_H_
 #define UI_DISPLAY_TYPES_DISPLAY_CONSTANTS_H_
 
+#include <stdint.h>
+
+namespace display {
+
+// Display ID that represents an invalid display. Often used as a default value
+// before display IDs are known.
+constexpr int64_t kInvalidDisplayId = -1;
+
+}  // namespace display
+
 namespace ui {
 
 // Used to describe the state of a multi-display configuration.

@@ -79,7 +79,7 @@ gfx::RectF ClampBoundingBox(const gfx::RectF& bounds,
 // GestureProvider:::Config
 
 GestureProvider::Config::Config()
-    : display(display::Display::kInvalidDisplayID, gfx::Rect(1, 1)),
+    : display(display::kInvalidDisplayId, gfx::Rect(1, 1)),
       double_tap_support_for_platform_enabled(true),
       gesture_begin_end_types_enabled(false),
       min_gesture_bounds_length(0),

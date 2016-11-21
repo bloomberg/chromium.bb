@@ -478,7 +478,7 @@ DisplayManager::GetSelectedModeForDisplayId(int64_t id) const {
 }
 
 bool DisplayManager::IsDisplayUIScalingEnabled() const {
-  return GetDisplayIdForUIScaling() != display::Display::kInvalidDisplayID;
+  return GetDisplayIdForUIScaling() != kInvalidDisplayId;
 }
 
 gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
@@ -551,7 +551,7 @@ void DisplayManager::OnNativeDisplaysChanged(
 
   bool internal_display_connected = false;
   num_connected_displays_ = updated_displays.size();
-  mirroring_display_id_ = display::Display::kInvalidDisplayID;
+  mirroring_display_id_ = kInvalidDisplayId;
   software_mirroring_display_list_.clear();
   DisplayInfoList new_display_info_list;
   for (DisplayInfoList::const_iterator iter = updated_displays.begin();
@@ -873,7 +873,7 @@ bool DisplayManager::IsActiveDisplayId(int64_t display_id) const {
 }
 
 bool DisplayManager::IsInMirrorMode() const {
-  return mirroring_display_id_ != display::Display::kInvalidDisplayID;
+  return mirroring_display_id_ != kInvalidDisplayId;
 }
 
 void DisplayManager::SetUnifiedDesktopEnabled(bool enable) {
@@ -892,7 +892,7 @@ bool DisplayManager::IsInUnifiedMode() const {
 
 const display::ManagedDisplayInfo& DisplayManager::GetDisplayInfo(
     int64_t display_id) const {
-  DCHECK_NE(display::Display::kInvalidDisplayID, display_id);
+  DCHECK_NE(kInvalidDisplayId, display_id);
 
   std::map<int64_t, display::ManagedDisplayInfo>::const_iterator iter =
       display_info_.find(display_id);
@@ -912,7 +912,7 @@ const display::Display DisplayManager::GetMirroringDisplayById(
 }
 
 std::string DisplayManager::GetDisplayNameForId(int64_t id) {
-  if (id == display::Display::kInvalidDisplayID)
+  if (id == kInvalidDisplayId)
     return delegate_->GetInternalDisplayNameString();
 
   std::map<int64_t, display::ManagedDisplayInfo>::const_iterator iter =
@@ -927,7 +927,7 @@ int64_t DisplayManager::GetDisplayIdForUIScaling() const {
   // UI Scaling is effective on internal display.
   return display::Display::HasInternalDisplay()
              ? display::Display::InternalDisplayId()
-             : display::Display::kInvalidDisplayID;
+             : kInvalidDisplayId;
 }
 
 void DisplayManager::SetMirrorMode(bool mirror) {
@@ -968,7 +968,7 @@ void DisplayManager::AddRemoveDisplay() {
             host_bounds.bottom() + kVerticalOffsetPx, host_bounds.height())));
   }
   num_connected_displays_ = new_display_info_list.size();
-  mirroring_display_id_ = display::Display::kInvalidDisplayID;
+  mirroring_display_id_ = kInvalidDisplayId;
   software_mirroring_display_list_.clear();
   UpdateDisplaysWith(new_display_info_list);
 }
@@ -1009,7 +1009,7 @@ void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
 
 void DisplayManager::SetMultiDisplayMode(MultiDisplayMode mode) {
   multi_display_mode_ = mode;
-  mirroring_display_id_ = display::Display::kInvalidDisplayID;
+  mirroring_display_id_ = kInvalidDisplayId;
   software_mirroring_display_list_.clear();
 }
 
@@ -1022,7 +1022,7 @@ void DisplayManager::ReconfigureDisplays() {
   }
   for (const display::Display& display : software_mirroring_display_list_)
     display_info_list.push_back(GetDisplayInfo(display.id()));
-  mirroring_display_id_ = display::Display::kInvalidDisplayID;
+  mirroring_display_id_ = kInvalidDisplayId;
   software_mirroring_display_list_.clear();
   UpdateDisplaysWith(display_info_list);
 }
@@ -1352,7 +1352,7 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.
-  if (layout.primary_id == display::Display::kInvalidDisplayID)
+  if (layout.primary_id == kInvalidDisplayId)
     return;
 
   // display_list does not have translation set, so ApplyDisplayLayout cannot

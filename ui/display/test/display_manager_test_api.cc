@@ -34,8 +34,7 @@ DisplayInfoList CreateDisplayInfoListFromString(
 
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
-    int64_t id = (index < list.size()) ? list[index].id()
-                                       : display::Display::kInvalidDisplayID;
+    int64_t id = (index < list.size()) ? list[index].id() : kInvalidDisplayId;
     display_info_list.push_back(
         display::ManagedDisplayInfo::CreateFromSpecWithID(*iter, id));
   }
@@ -156,7 +155,7 @@ ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(
 }
 
 ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
-  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
+  display::Display::SetInternalDisplayId(kInvalidDisplayId);
 }
 
 bool SetDisplayResolution(DisplayManager* display_manager,

@@ -139,7 +139,7 @@ bool ManagedDisplayMode::IsEquivalent(
 
 // static
 ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpec(const std::string& spec) {
-  return CreateFromSpecWithID(spec, display::Display::kInvalidDisplayID);
+  return CreateFromSpecWithID(spec, kInvalidDisplayId);
 }
 
 // static
@@ -246,7 +246,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
         dm->ui_scale(), dm->device_scale_factor());
   }
 
-  if (id == display::Display::kInvalidDisplayID)
+  if (id == kInvalidDisplayId)
     id = synthesized_display_id++;
   display::ManagedDisplayInfo display_info(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
@@ -275,7 +275,7 @@ void ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(bool enable) {
 }
 
 ManagedDisplayInfo::ManagedDisplayInfo()
-    : id_(display::Display::kInvalidDisplayID),
+    : id_(kInvalidDisplayId),
       has_overscan_(false),
       active_rotation_source_(display::Display::ROTATION_SOURCE_UNKNOWN),
       touch_support_(display::Display::TOUCH_SUPPORT_UNKNOWN),

@@ -23,6 +23,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/types/display_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
@@ -425,7 +426,7 @@ class DISPLAY_EXPORT DisplayManager
 
   std::unique_ptr<DisplayLayoutStore> layout_store_;
 
-  int64_t first_display_id_ = Display::kInvalidDisplayID;
+  int64_t first_display_id_ = kInvalidDisplayId;
 
   // List of current active displays.
   Displays active_display_list_;
@@ -459,7 +460,7 @@ class DISPLAY_EXPORT DisplayManager
   MultiDisplayMode multi_display_mode_ = EXTENDED;
   MultiDisplayMode current_default_multi_display_mode_ = EXTENDED;
 
-  int64_t mirroring_display_id_ = Display::kInvalidDisplayID;
+  int64_t mirroring_display_id_ = kInvalidDisplayId;
   Displays software_mirroring_display_list_;
 
   // User preference for rotation lock of the internal display.

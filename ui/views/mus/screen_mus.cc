@@ -114,7 +114,7 @@ void ScreenMus::OnDisplays(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
   DCHECK(display_list().GetPrimaryDisplayIterator() !=
          display_list().displays().end());
 
-  if (internal_display_id != display::Display::kInvalidDisplayID)
+  if (internal_display_id != display::kInvalidDisplayId)
     display::Display::SetInternalDisplayId(internal_display_id);
 
   DCHECK(!display_list().displays().empty());
@@ -145,7 +145,7 @@ void ScreenMus::OnDisplayRemoved(int64_t display_id) {
 void ScreenMus::OnPrimaryDisplayChanged(int64_t primary_display_id) {
   // TODO(kylechar): DisplayList would need to change to handle having no
   // primary display.
-  if (primary_display_id == display::Display::kInvalidDisplayID)
+  if (primary_display_id == display::kInvalidDisplayId)
     return;
 
   ProcessDisplayChanged(*display_list().FindDisplayById(primary_display_id),
