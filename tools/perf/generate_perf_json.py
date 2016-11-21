@@ -364,7 +364,21 @@ def get_waterfall_config():
     ])
 
   waterfall = add_tester(
-    waterfall, 'Linux Perf', 'linux-release', 'linux', num_host_shards=5)
+    waterfall, 'Linux Perf', 'linux-release', 'linux',
+    swarming=[
+      {
+       'gpu': '102b:0534',
+       'os': 'linux',
+       'device_ids': [
+           'build148-m1', 'build149-m1',
+           'build150-m1', 'build151-m1', 'build152-m1'
+          ],
+       'perf_tests': [
+         ('cc_perftests', 2),
+         ('load_library_perf_tests', 2),
+         ('tracing_perftests', 2)]
+      }
+    ])
 
   return waterfall
 
