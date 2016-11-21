@@ -331,12 +331,8 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
 
       if (idx == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
         ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
-#if CONFIG_SIMP_MV_PRED
-        ref_mv_stack[idx].pred_mv[0] = prev_frame_mvs->mv[ref];
-#else
         ref_mv_stack[idx].pred_diff[0] =
             av1_get_pred_diff_ctx(prev_frame_mvs->pred_mv[ref], this_refmv);
-#endif
         ref_mv_stack[idx].weight = 2;
         ++(*refmv_count);
       }
@@ -503,7 +499,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              void *const data, int16_t *mode_context) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
   int i, refmv_count = 0;
-#if !CONFIG_SIMP_MV_PRED
+#if !CONFIG_REF_MV
   const POSITION *const mv_ref_search = mv_ref_blocks[mi->mbmi.sb_type];
 #endif
   int different_ref_found = 0;
@@ -515,7 +511,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type] << 3;
   const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type] << 3;
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
   POSITION mv_ref_search[MVREF_NEIGHBOURS];
   const int num_8x8_blocks_wide = bw >> 3;
   const int num_8x8_blocks_high = bh >> 3;
@@ -569,7 +565,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (is_inside(tile, mi_col, mi_row, mv_ref)) {
       const MB_MODE_INFO *const candidate =
           &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
       if (candidate == NULL) continue;
       if ((mi_row % 8) + mv_ref->row >= 8 || (mi_col % 8) + mv_ref->col >= 8)
         continue;
@@ -620,7 +616,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       if (is_inside(tile, mi_col, mi_row, mv_ref)) {
         const MB_MODE_INFO *const candidate =
             &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
         if (candidate == NULL) continue;
         if ((mi_row % 8) + mv_ref->row >= 8 || (mi_col % 8) + mv_ref->col >= 8)
           continue;
@@ -672,14 +668,14 @@ void av1_update_mv_context(const MACROBLOCKD *xd, MODE_INFO *mi,
                            int block, int mi_row, int mi_col,
                            int16_t *mode_context) {
   int i, refmv_count = 0;
-#if !CONFIG_SIMP_MV_PRED
+#if !CONFIG_REF_MV
   const POSITION *const mv_ref_search = mv_ref_blocks[mi->mbmi.sb_type];
 #endif
   int context_counter = 0;
   const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type] << 3;
   const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type] << 3;
   const TileInfo *const tile = &xd->tile;
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
   POSITION mv_ref_search[MVREF_NEIGHBOURS];
   const int num_8x8_blocks_wide = bw >> 3;
   const int num_8x8_blocks_high = bh >> 3;

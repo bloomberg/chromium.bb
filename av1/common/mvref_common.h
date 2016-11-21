@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
 #define MVREF_NEIGHBOURS 9
 #else
 #define MVREF_NEIGHBOURS 8
@@ -100,7 +100,7 @@ static const int counter_to_context[19] = {
   BOTH_INTRA             // 18
 };
 
-#if !CONFIG_SIMP_MV_PRED
+#if !CONFIG_REF_MV
 static const POSITION mv_ref_blocks[BLOCK_SIZES][MVREF_NEIGHBOURS] = {
   // 4X4
   { { -1, 0 },
@@ -274,7 +274,9 @@ static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
 // on whether the block_size < 8x8 and we have check_sub_blocks set.
 static INLINE int_mv get_sub_block_mv(const MODE_INFO *candidate, int which_mv,
                                       int search_col, int block_idx) {
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
+  (void)search_col;
+  (void)block_idx;  
   return candidate->mbmi.mv[which_mv];
 #else
   return block_idx >= 0 && candidate->mbmi.sb_type < BLOCK_8X8
