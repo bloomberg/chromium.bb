@@ -360,7 +360,6 @@ contents
 -webkit-inline-flex
 //
 // cursor
-// The order here must match the order of the ECursor enum in ComputedStyleConstants.h.
 //
 auto
 crosshair

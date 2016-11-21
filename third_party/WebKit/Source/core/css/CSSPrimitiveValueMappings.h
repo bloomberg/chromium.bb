@@ -1116,16 +1116,83 @@ inline CSSIdentifierValue::CSSIdentifierValue(ECursor e)
 template <>
 inline ECursor CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
+    case CSSValueAuto:
+      return ECursor::Auto;
+    case CSSValueCrosshair:
+      return ECursor::Cross;
+    case CSSValueDefault:
+      return ECursor::Default;
+    case CSSValuePointer:
+      return ECursor::Pointer;
+    case CSSValueMove:
+      return ECursor::Move;
+    case CSSValueCell:
+      return ECursor::Cell;
+    case CSSValueVerticalText:
+      return ECursor::VerticalText;
+    case CSSValueContextMenu:
+      return ECursor::ContextMenu;
+    case CSSValueAlias:
+      return ECursor::Alias;
     case CSSValueCopy:
       return ECursor::Copy;
-    case CSSValueWebkitZoomIn:
-      return ECursor::ZoomIn;
-    case CSSValueWebkitZoomOut:
-      return ECursor::ZoomOut;
     case CSSValueNone:
       return ECursor::None;
+    case CSSValueProgress:
+      return ECursor::Progress;
+    case CSSValueNoDrop:
+      return ECursor::NoDrop;
+    case CSSValueNotAllowed:
+      return ECursor::NotAllowed;
+    case CSSValueZoomIn:
+    case CSSValueWebkitZoomIn:
+      return ECursor::ZoomIn;
+    case CSSValueZoomOut:
+    case CSSValueWebkitZoomOut:
+      return ECursor::ZoomOut;
+    case CSSValueEResize:
+      return ECursor::EResize;
+    case CSSValueNeResize:
+      return ECursor::NeResize;
+    case CSSValueNwResize:
+      return ECursor::NwResize;
+    case CSSValueNResize:
+      return ECursor::NResize;
+    case CSSValueSeResize:
+      return ECursor::SeResize;
+    case CSSValueSwResize:
+      return ECursor::SwResize;
+    case CSSValueSResize:
+      return ECursor::SResize;
+    case CSSValueWResize:
+      return ECursor::WResize;
+    case CSSValueEwResize:
+      return ECursor::EwResize;
+    case CSSValueNsResize:
+      return ECursor::NsResize;
+    case CSSValueNeswResize:
+      return ECursor::NeswResize;
+    case CSSValueNwseResize:
+      return ECursor::NwseResize;
+    case CSSValueColResize:
+      return ECursor::ColResize;
+    case CSSValueRowResize:
+      return ECursor::RowResize;
+    case CSSValueText:
+      return ECursor::Text;
+    case CSSValueWait:
+      return ECursor::Wait;
+    case CSSValueHelp:
+      return ECursor::Help;
+    case CSSValueAllScroll:
+      return ECursor::AllScroll;
+    case CSSValueWebkitGrab:
+      return ECursor::WebkitGrab;
+    case CSSValueWebkitGrabbing:
+      return ECursor::WebkitGrabbing;
     default:
-      return static_cast<ECursor>(m_valueID - CSSValueAuto);
+      NOTREACHED();
+      return ECursor::Auto;
   }
 }
 

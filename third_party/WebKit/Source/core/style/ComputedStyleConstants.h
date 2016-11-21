@@ -435,7 +435,6 @@ enum EBreak {
 enum class EListStylePosition : unsigned { Outside, Inside };
 
 enum class ECursor : unsigned {
-  // The following must match the order in CSSValueKeywords.in.
   Auto,
   Cross,
   Default,
@@ -470,8 +469,6 @@ enum class ECursor : unsigned {
   AllScroll,
   WebkitGrab,
   WebkitGrabbing,
-
-  // The following are handled as exceptions so don't need to match.
   Copy,
   None
 };
