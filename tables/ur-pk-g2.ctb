@@ -20,7 +20,7 @@
 #  Prepared by Jake Kyle, Compass Braille, UK in consultation with Buta Masih
 #  Contact: jake@compassbraille.org
 #  www.compassbraille.org
-#  Last updated 9th November 2016
+#  Last updated 21st November 2016
 
 include ur-pk-g1.utb
 
@@ -239,6 +239,7 @@ always \x0686\x06BE\x0648\x0691 5-16                                       C8W] 
 always \x062B\x0648\x0627\x0628 5-1456                                     ?WAB                "?          
 word \x06CC\x0648\x06BA 5-34                                               IW;                 "/          
 
+
 #Dot 45 Signs
 always \x0622\x06C1\x0650\x0633\x062A\x06C1 45-345                         >HESTH              ^>          
 always \x067E\x064F\x06C1\x0646\x0686 45-1234                              PUHNC               ^P          
@@ -261,6 +262,7 @@ always \x0627\x064F\x067E\x0631 45-136                                     AUPR 
 #New Ones
 always \x062B\x0628\x0648\x062A 45-1456                                    ?BWT                ^?          
 word \x0634\x0627\x0645\x0644 45-146                                       %AML                ^%          
+
 
 #Dot 456 Signs
 always \x067E\x06C1\x0644 456-1234                                         PHL                 _P          
@@ -290,6 +292,7 @@ always \x0628\x0627\x0644\x06A9\x0644 456-12                               BALKL
 begword \x0645\x064F\x0633\x062A 456-134                                   MUST                _M          
 begword \x0645\x0633\x062A 456-134                                         MST                 _M          
 
+
 #Dot 3456 Signs
 always \x062A\x0645\x0627\x0645 3456-2345                                  TMAM                #T          
 always \x062E\x0627\x0635 3456-1346                                        XA&                 #X          
@@ -300,6 +303,7 @@ always \x0648\x0627\x067E\x0633 3456-2456                                  WAPS 
 #New Ones
 always \x0622\x0648\x0627\x0632 3456-345                                   >WAZ                #>          
 always \x067E\x0632\x0646\x062F 3456-1234                                  PZND                #P          
+
 
 #Dot 56 Signs
 always \x0645\x0646\x062F 56-145                                           MND                 ;D
@@ -317,6 +321,7 @@ endword \x0641\x0631\x0648\x0634 56-146                                    FRW% 
 endword \x0646\x0634\x06CC\x0646 56-1345                                   N%IN                ;N          
 endword \x062E\x0627\x0646\x0627 56-125                                    XANA                ;H          
 
+
 #Dot 6 Signs
 word \x0628\x0644\x06A9\x06C1 6-12                                          BLKH               ,B          
 word \x0628\x0627\x0648\x062C\x064F\x0648\x062F\x06CC\x06A9\x06C1 6-12-2456 BAWJUWDIKH         ,BW          
@@ -330,6 +335,7 @@ word \x06A9\x06CC\x064F\x0648\x0646\x06A9\x06C1 6-13                        KIUW
 word \x06A9\x06CC\x0648\x0646\x06A9\x06C1 6-13                              KIWNKH             ,K          
 word \x063A\x0631\x0636\x06CC\x06A9\x06C1 6-126                             <R$IKH             ,<          
 
+
 #Dot 46 Signs - all "New Ones"
 always \x067E\x0631\x0633\x062A 46-2345                                     PRST               .T          
 endword \x0628\x0627\x062F 46-145                                           BAD                .D          
@@ -338,6 +344,7 @@ endword \x0627\x0646\x06AF\x06CC\x0632 46-1356                              ANGI
 endword \x0627\x0646\x062F\x06CC\x0634 46-146                               ANDI%              .%          
 endword \x062A\x0631\x06CC\x0646 46-1345                                    TRIN               .N          
 endword \x06AF\x0627\x06C1 46-125                                           GAH                .H          
+
 
 #Shortforms
 always \x0627\x0670\x06CC 1-23                                              A2I                 A2          

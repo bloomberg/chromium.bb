@@ -20,9 +20,11 @@
 #  Prepared by Jake Kyle, Compass Braille, UK in consultation with Buta Masih
 #  Contact: jake@compassbraille.org
 #  www.compassbraille.org
-#  Last updated 9th November 2016
+#  Last updated 21st November 2016
 
 # NB. If including an English table the letter sign must be disabled.
+
+include braille-patterns.cti
 
 replace \x200E               # left to right mark
 replace \x200F               # right to left mark
@@ -40,7 +42,7 @@ punctuation \x061F 236          Arabic question mark     8
 letter \x0621 3                 Hamza                    '
 letter \x0622 345               Alef with Madda above    >
 letter \x0623 34                Alef with Hamza above    /
-letter \x0624 1256              Waw with Hamza above     \
+letter \x0624 1256              Waw with Hamza above     (backslash)
 letter \x0626 3                 Yeh with Hamza above     '               Different from arabic table
 letter \x0627 1                 Alef                     A
 letter \x0628 12                Beh                      B
