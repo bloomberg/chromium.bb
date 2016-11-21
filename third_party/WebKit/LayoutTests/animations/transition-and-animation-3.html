@@ -12,16 +12,16 @@
         }
 
         .box.animating {
-            -webkit-animation: move 0.1s linear;
+            animation: move 0.1s linear;
             left: 100px;
-            -webkit-transition: left 10s linear;
+            transition: left 10s linear;
         }
 
         .box.animating.moved {
             left: 200px;
         }
         
-        @-webkit-keyframes move {
+        @keyframes move {
             from {
                 left: 500px;
             }

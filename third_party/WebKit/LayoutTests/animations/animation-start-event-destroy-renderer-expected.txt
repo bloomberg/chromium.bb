@@ -1,3 +1,3 @@
-Tests element removal and hiding within the webkitAnimationStart event handler. Should not crash.
+Tests element removal and hiding within the animationstart event handler. Should not crash.
 
 Did not crash, so PASSED

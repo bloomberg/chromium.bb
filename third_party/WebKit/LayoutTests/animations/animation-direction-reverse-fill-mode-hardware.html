@@ -10,26 +10,26 @@
       height: 100px;
       width: 100px;
       transform: translate3d(100px, 0, 0);
-      -webkit-animation-delay: 0.1s;
-      -webkit-animation-duration: 0.1s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: anim;
+      animation-delay: 0.1s;
+      animation-duration: 0.1s;
+      animation-timing-function: linear;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: translate3d(200px, 0, 0); }
         to   { transform: translate3d(300px, 0, 0); }
     }
     #a {
       background-color: #f99;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-direction: reverse;
+      animation-fill-mode: both;
+      animation-iteration-count: 2;
+      animation-direction: reverse;
     }
     #b {
       background-color: #999;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-direction: alternate-reverse;
+      animation-fill-mode: both;
+      animation-iteration-count: 2;
+      animation-direction: alternate-reverse;
     }
   </style>
   <script src="resources/animation-test-helpers.js"></script>
@@ -82,7 +82,7 @@
               result += "FAIL";
           result += " - start of animation - id: " + expectedValues[i].id + " expected: " + expectedValue + " actual: " + realValue + "<br>";
       }
-      document.addEventListener("webkitAnimationEnd", animationEnded, false);
+      document.addEventListener("animationend", animationEnded, false);
     };
 
   </script>

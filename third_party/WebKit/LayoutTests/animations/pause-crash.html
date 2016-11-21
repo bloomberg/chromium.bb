@@ -7,12 +7,12 @@
       width: 100px;
       margin: 10px;
       background-color: blue;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-direction: alternate;
-      -webkit-animation-iteration-count: infinite;
+      animation-duration: 2s;
+      animation-direction: alternate;
+      animation-iteration-count: infinite;
     }
     
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: matrix3d(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1); }
         to   { transform: matrix3d(1,0,0,0, 0,1,0,0, 0,0,1,0, 400,0,0,1); }
     }
@@ -26,9 +26,9 @@
     function animationStarted()
     {
         setTimeout(function() {
-            document.getElementById('box1').style.webkitAnimationPlayState = "paused";
+            document.getElementById('box1').style.animationPlayState = "paused";
             setTimeout(function() {
-                document.getElementById('box1').style.webkitAnimationPlayState = "running";
+                document.getElementById('box1').style.animationPlayState = "running";
                 setTimeout(function() {
                     document.getElementById('results').innerHTML = 'Did not crash, so PASSED';
                     if (window.testRunner)
@@ -40,8 +40,8 @@
     
     function startTest()
     {
-        document.getElementById('box1').addEventListener('webkitAnimationStart', animationStarted);
-        document.getElementById('box1').style.webkitAnimationName = "anim";
+        document.getElementById('box1').addEventListener('animationstart', animationStarted);
+        document.getElementById('box1').style.animationName = "anim";
     }
 
     window.addEventListener('load', startTest, false);

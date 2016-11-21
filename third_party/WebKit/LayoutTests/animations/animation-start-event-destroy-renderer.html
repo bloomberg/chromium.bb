@@ -7,10 +7,10 @@
       width: 100px;
       margin: 10px;
       background-color: blue;
-      -webkit-animation-duration: 0.2s;
+      animation-duration: 0.2s;
     }
     
-    @-webkit-keyframes move {
+    @keyframes move {
       from { transform: translate(0px, 0px); }
       to { transform: translate(100px, 0px); }
     }
@@ -39,18 +39,18 @@
     function startTest()
     {
       var box1 = document.getElementById('box1');
-      box1.addEventListener('webkitAnimationStart', function() {
+      box1.addEventListener('animationstart', function() {
         box1.parentNode.removeChild(box1);
         animationStarted();
       }, false);
-      box1.style.webkitAnimationName = 'move';
+      box1.style.animationName = 'move';
 
       var box2 = document.getElementById('box2');
-      box2.addEventListener('webkitAnimationStart', function() {
+      box2.addEventListener('animationstart', function() {
         box2.style.display = 'none';
         animationStarted();
       }, false);
-      box2.style.webkitAnimationName = 'move';
+      box2.style.animationName = 'move';
     }
     
     window.addEventListener('load', startTest, false);
@@ -58,7 +58,7 @@
 </head>
 <body>
 
-<p>Tests element removal and hiding within the webkitAnimationStart event handler. Should not crash.</p>
+<p>Tests element removal and hiding within the animationstart event handler. Should not crash.</p>
 
 <div id="container">
   <div id="box1" class="box"></div>

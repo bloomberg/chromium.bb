@@ -2,14 +2,14 @@
 <head id="b">
   <style id="a" type="text/css" media="screen">
     #box {
-      -webkit-animation-duration: 2s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: anim;
+      animation-duration: 2s;
+      animation-timing-function: linear;
+      animation-name: anim;
       background-color: blue;
       width: 100px;
       height: 100px;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: rotate(0) scale(1,1); }
         to   { transform: rotate(360deg) scale(2,4); }
     }

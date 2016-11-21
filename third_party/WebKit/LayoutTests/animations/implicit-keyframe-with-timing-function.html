@@ -5,7 +5,7 @@
 <script>
 var target = document.getElementById('target');
 var test1 = async_test('Timing function should apply even when keyframes are not specified');
-target.addEventListener('webkitAnimationStart', function() {
+target.addEventListener('animationstart', function() {
   test1.step(function() {
     assert_equals(getComputedStyle(target).left, '1000px');
   });
@@ -15,10 +15,10 @@ target.addEventListener('webkitAnimationStart', function() {
 </script>
 <style>
 #target {
-  -webkit-animation: anim 1s -0.25s step-start paused;
+  animation: anim 1s -0.25s step-start paused;
   left: 0px;
 }
-@-webkit-keyframes anim {
+@keyframes anim {
   50% { left: 1000px; }
 }
 </style>
