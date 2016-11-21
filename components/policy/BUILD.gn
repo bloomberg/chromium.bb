@@ -111,7 +111,8 @@ if (enable_configuration_policy) {
   }
 
   policy_templates_grd_file = "resources/policy_templates.grd"
-  grit("policy_templates") {
+
+  grit("grit_policy_templates") {
     source = policy_templates_grd_file
     use_qualified_include = true
     output_dir = "$root_gen_dir/chrome"
@@ -140,6 +141,46 @@ if (enable_configuration_policy) {
     if (gen_policy_templates_win) {
       outputs += policy_templates_windows_outputs
       defines += [ "gen_policy_templates_win" ]
+    }
+  }
+
+  if (gen_policy_templates_win && is_chrome_branded) {
+    # Creates google.admx and google.adml files that define a common 'Google'
+    # category used for Chrome, Chrome OS and possibly external tools, see
+    # crbug.com/665400.
+    action("create_google_admx") {
+      script = "tools/create_google_admx.py"
+      inputs = [
+                 policy_templates_grd_file,
+                 grit_info_script,
+               ] + policy_templates_windows_outputs
+      outputs = policy_templates_windows_google_outputs
+      deps = [
+        ":grit_policy_templates",
+      ]
+
+      # Don't pass in outputs directly, it would exceed a limit on Windows!
+      args = [
+               "--basedir",
+               rebase_path(policy_templates_base_dir, root_build_dir),
+               "--grd_strip_path_prefix",
+               "app/policy/",
+               "--grd_input",
+               rebase_path(policy_templates_grd_file, root_build_dir),
+               "--grit_info",
+               rebase_path(grit_info_script, root_build_dir),
+               "-D",
+               "gen_policy_templates_win",
+             ] + grit_defines
+    }
+  }
+
+  group("policy_templates") {
+    public_deps = [
+      ":grit_policy_templates",
+    ]
+    if (gen_policy_templates_win && is_chrome_branded) {
+      public_deps += [ ":create_google_admx" ]
     }
   }
 
@@ -226,7 +267,7 @@ if (enable_configuration_policy) {
           [ "$_generated_resources_dir/xml-v21/app_restrictions.xml" ]
       deps = [
         ":app_restrictions_resources_copy",
-        ":policy_templates_grit",
+        ":grit_policy_templates",
       ]
     }
   } else if (gen_policy_templates_mac && is_mac) {
@@ -341,6 +382,9 @@ if (enable_configuration_policy) {
                "-D",
                "gen_policy_templates_win",
              ] + grit_defines
+      if (is_chrome_branded) {
+        args += [ "--include_google_admx" ]
+      }
       deps = [
         ":add_version",
         ":policy_templates",

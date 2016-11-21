@@ -8,6 +8,7 @@ extracted from a grd file with grit. This is to keep the length of input
 arguments below the limit on Windows.
 """
 
+import grd_helper
 import optparse
 import os
 import sys
@@ -29,19 +30,6 @@ def add_files_to_zip(zip_file, base_dir, file_list):
   return 0
 
 
-def get_grd_outputs(grit_cmd, grit_defines, grd_file, grd_strip_path_prefix):
-  grit_path = os.path.join(os.getcwd(), os.path.dirname(grit_cmd))
-  sys.path.append(grit_path)
-  import grit_info
-  outputs = grit_info.Outputs(grd_file, grit_defines,
-                              'GRIT_DIR/../gritsettings/resource_ids')
-  result = []
-  for item in outputs:
-    assert item.startswith(grd_strip_path_prefix)
-    result.append(item[len(grd_strip_path_prefix):])
-  return result
-
-
 def main(argv):
   """Pack a list of files into a zip archive.
 
@@ -54,24 +42,30 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option("--output", dest="output")
   parser.add_option("--basedir", dest="basedir")
-  parser.add_option("--grit_info", dest="grit_info")
-  parser.add_option("--grd_input", dest="grd_input")
-  parser.add_option("--grd_strip_path_prefix", dest="grd_strip_path_prefix")
+  parser.add_option("--include_google_admx", action="store_true",
+                    dest="include_google_admx", default=False)
   parser.add_option("--extra_input", action="append", dest="extra_input",
                     default=[])
-  parser.add_option("-D", action="append", dest="grit_defines", default=[])
-  parser.add_option("-E", action="append", dest="grit_build_env", default=[])
+  grd_helper.add_options(parser)
   options, args = parser.parse_args(argv[1:])
 
   if (options.basedir[-1] != '/'):
     options.basedir += '/'
-  grit_defines = {}
-  for define in options.grit_defines:
-    grit_defines[define] = 1
 
   file_list = options.extra_input
-  file_list += get_grd_outputs(options.grit_info, grit_defines,
-                               options.grd_input, options.grd_strip_path_prefix)
+  file_list += grd_helper.get_grd_outputs(options)
+
+  # Pick up google.admx/adml files.
+  if (options.include_google_admx):
+    google_file_list = []
+    for path in file_list:
+      directory, filename = os.path.split(path)
+      filename, extension = os.path.splitext(filename)
+      if extension == ".admx" or extension == ".adml":
+        google_file_list.append(\
+            os.path.join(options.basedir, directory, "google" + extension))
+    file_list.extend(google_file_list)
+
   zip_file = zipfile.ZipFile(options.output, 'w', zipfile.ZIP_DEFLATED)
   try:
     return add_files_to_zip(zip_file, options.basedir, file_list)
