@@ -146,7 +146,8 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
   // interval to the result vector. The intervals are sorted by
   // increasing low endpoint.
   template <class AdapterType>
-  void searchForOverlapsFrom(IntervalNode* node, AdapterType& adapter) const {
+  DISABLE_CFI_PERF void searchForOverlapsFrom(IntervalNode* node,
+                                              AdapterType& adapter) const {
     if (!node)
       return;
 
