@@ -44,14 +44,13 @@ public class NetworkChangeNotifierTest extends CronetTestBase {
         // Bind a listening socket to a local port. The socket won't be used to accept any
         // connections, but rather to get connection stuck waiting to connect.
         FileDescriptor s = Os.socket(AF_INET, SOCK_STREAM, 0);
-        // Bind to all addresses (indicated by special 0.0.0.0 value) and a random port (indicated
-        // by special 0 value).
-        Os.bind(s, InetAddress.getByAddress(null, new byte[] {0, 0, 0, 0}), 0);
+        // Bind to 127.0.0.1 and a random port (indicated by special 0 value).
+        Os.bind(s, InetAddress.getByAddress(null, new byte[] {127, 0, 0, 1}), 0);
         // Set backlog to 0 so connections end up stuck waiting to connect().
         Os.listen(s, 0);
 
         // Make URL pointing at this local port, where requests will get stuck connecting.
-        String url = "http://localhost:" + ((InetSocketAddress) Os.getsockname(s)).getPort();
+        String url = "http://127.0.0.1:" + ((InetSocketAddress) Os.getsockname(s)).getPort();
 
         // Launch a few requests at this local port.  Four seems to be the magic number where
         // that request and any further request get stuck connecting.
