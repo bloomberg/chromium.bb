@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("webui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "about_ui.cc",
     "about_ui.h",
