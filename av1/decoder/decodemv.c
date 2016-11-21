@@ -1034,12 +1034,12 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 }
 
-static INLINE InterpFilter read_interp_filter(AV1_COMMON *const cm,
-                                              MACROBLOCKD *const xd,
+static INLINE InterpFilter read_mb_interp_filter(AV1_COMMON *const cm,
+                                                 MACROBLOCKD *const xd,
 #if CONFIG_DUAL_FILTER
-                                              int dir,
+                                                 int dir,
 #endif
-                                              aom_reader *r) {
+                                                 aom_reader *r) {
 #if CONFIG_EXT_INTERP
   if (!av1_is_interp_needed(xd)) return EIGHTTAP_REGULAR;
 #endif
@@ -1563,7 +1563,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif
 
 #if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
-  mbmi->interp_filter = read_interp_filter(cm, xd, r);
+  mbmi->interp_filter = read_mb_interp_filter(cm, xd, r);
 #endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
 
   if (bsize < BLOCK_8X8) {
@@ -1787,7 +1787,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (has_subpel_mv_component(xd->mi[0], xd, ref) ||
         (mbmi->ref_frame[1] > INTRA_FRAME &&
          has_subpel_mv_component(xd->mi[0], xd, ref + 2)))
-      mbmi->interp_filter[ref] = read_interp_filter(cm, xd, ref, r);
+      mbmi->interp_filter[ref] = read_mb_interp_filter(cm, xd, ref, r);
   }
   // The index system worsk as:
   // (0, 1) -> (vertical, horizontal) filter types for the first ref frame.
@@ -1796,7 +1796,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->interp_filter[3] = mbmi->interp_filter[1];
 #else
 #if CONFIG_EXT_INTERP
-  mbmi->interp_filter = read_interp_filter(cm, xd, r);
+  mbmi->interp_filter = read_mb_interp_filter(cm, xd, r);
 #endif  // CONFIG_EXT_INTERP
 #endif  // CONFIG_DUAL_FILTER
 }

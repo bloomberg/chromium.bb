@@ -53,20 +53,21 @@
 #include "av1/encoder/pvq_encoder.h"
 #endif
 #if CONFIG_DUAL_FILTER
+#define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 #if CONFIG_EXT_INTERP
-static const int filter_sets[25][2] = {
+static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
   { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 1, 0 }, { 1, 1 },
   { 1, 2 }, { 1, 3 }, { 1, 4 }, { 2, 0 }, { 2, 1 }, { 2, 2 }, { 2, 3 },
   { 2, 4 }, { 3, 0 }, { 3, 1 }, { 3, 2 }, { 3, 3 }, { 3, 4 }, { 4, 0 },
   { 4, 1 }, { 4, 2 }, { 4, 3 }, { 4, 4 },
 };
-#else
-static const int filter_sets[9][2] = {
+#else   // CONFIG_EXT_INTERP
+static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
   { 0, 0 }, { 0, 1 }, { 0, 2 }, { 1, 0 }, { 1, 1 },
   { 1, 2 }, { 2, 0 }, { 2, 1 }, { 2, 2 },
 };
-#endif
-#endif
+#endif  // CONFIG_EXT_INTERP
+#endif  // CONFIG_DUAL_FILTER
 
 #if CONFIG_EXT_REFS
 
@@ -7296,6 +7297,11 @@ static int64_t handle_inter_mode(
     if (assign_filter == SWITCHABLE) {
       // do interp_filter search
       if (av1_is_interp_needed(xd)) {
+#if CONFIG_DUAL_FILTER
+        const int filter_set_size = DUAL_FILTER_SET_SIZE;
+#else
+        const int filter_set_size = SWITCHABLE_FILTERS;
+#endif
         int best_in_temp = 0;
 #if CONFIG_DUAL_FILTER
         InterpFilter best_filter[4];
@@ -7304,14 +7310,8 @@ static int64_t handle_inter_mode(
         InterpFilter best_filter = mbmi->interp_filter;
 #endif
         restore_dst_buf(xd, tmp_dst, tmp_dst_stride);
-#if CONFIG_DUAL_FILTER
         // EIGHTTAP_REGULAR mode is calculated beforehand
-        for (i = 1; i < SWITCHABLE_FILTERS * SWITCHABLE_FILTERS; ++i)
-#else
-        // EIGHTTAP_REGULAR mode is calculated beforehand
-        for (i = 1; i < SWITCHABLE_FILTERS; ++i)
-#endif
-        {
+        for (i = 1; i < filter_set_size; ++i) {
           int tmp_skip_sb = 0;
           int64_t tmp_skip_sse = INT64_MAX;
           int tmp_rs;
@@ -10485,11 +10485,7 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
       b_mode_info tmp_best_bmodes[16];  // Should this be 4 ?
       MB_MODE_INFO tmp_best_mbmode;
 #if CONFIG_DUAL_FILTER
-#if CONFIG_EXT_INTERP
-      BEST_SEG_INFO bsi[25];
-#else
-      BEST_SEG_INFO bsi[9];
-#endif
+      BEST_SEG_INFO bsi[DUAL_FILTER_SET_SIZE];
 #else
       BEST_SEG_INFO bsi[SWITCHABLE_FILTERS];
 #endif
@@ -10559,18 +10555,13 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
 #endif
         } else {
 #if CONFIG_DUAL_FILTER
-          for (switchable_filter_index = 0;
-#if CONFIG_EXT_INTERP
-               switchable_filter_index < 25;
+          const int filter_set_size = DUAL_FILTER_SET_SIZE;
 #else
-               switchable_filter_index < 9;
+          const int filter_set_size = SWITCHABLE_FILTERS;
 #endif
-               ++switchable_filter_index) {
-#else
           for (switchable_filter_index = 0;
-               switchable_filter_index < SWITCHABLE_FILTERS;
+               switchable_filter_index < filter_set_size;
                ++switchable_filter_index) {
-#endif
             int newbest, rs;
             int64_t rs_rd;
             MB_MODE_INFO_EXT *mbmi_ext = x->mbmi_ext;

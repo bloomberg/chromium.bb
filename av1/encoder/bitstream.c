@@ -1030,8 +1030,8 @@ static void write_intra_angle_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 #endif  // CONFIG_EXT_INTRA
 
-static void write_switchable_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
-                                           aom_writer *w) {
+static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
+                                   aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_DUAL_FILTER
@@ -1395,7 +1395,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     }
 
 #if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER
-    write_switchable_interp_filter(cpi, xd, w);
+    write_mb_interp_filter(cpi, xd, w);
 #endif  // !CONFIG_EXT_INTERP
 
     if (bsize < BLOCK_8X8) {
@@ -1615,7 +1615,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
-    write_switchable_interp_filter(cpi, xd, w);
+    write_mb_interp_filter(cpi, xd, w);
 #endif  // CONFIG_EXT_INTERP
   }
 
@@ -3280,8 +3280,8 @@ static void update_txfm_probs(AV1_COMMON *cm, aom_writer *w,
   }
 }
 
-static void write_interp_filter(InterpFilter filter,
-                                struct aom_write_bit_buffer *wb) {
+static void write_frame_interp_filter(InterpFilter filter,
+                                      struct aom_write_bit_buffer *wb) {
   aom_wb_write_bit(wb, filter == SWITCHABLE);
   if (filter != SWITCHABLE)
     aom_wb_write_literal(wb, filter, LOG_SWITCHABLE_FILTERS);
@@ -3983,7 +3983,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
       aom_wb_write_bit(wb, cm->allow_high_precision_mv);
 
       fix_interp_filter(cm, cpi->td.counts);
-      write_interp_filter(cm->interp_filter, wb);
+      write_frame_interp_filter(cm->interp_filter, wb);
     }
   }
 

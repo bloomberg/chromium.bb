@@ -2643,7 +2643,7 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
   }
 }
 
-static InterpFilter read_interp_filter(struct aom_read_bit_buffer *rb) {
+static InterpFilter read_frame_interp_filter(struct aom_read_bit_buffer *rb) {
   return aom_rb_read_bit(rb) ? SWITCHABLE
                              : aom_rb_read_literal(rb, LOG_SWITCHABLE_FILTERS);
 }
@@ -3938,7 +3938,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
-      cm->interp_filter = read_interp_filter(rb);
+      cm->interp_filter = read_frame_interp_filter(rb);
 
       for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
