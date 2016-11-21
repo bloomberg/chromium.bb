@@ -270,6 +270,33 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   EXPECT_EQ(trials[0]->group_name(), trials[1]->group_name());
 }
 
+TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedSHA1) {
+  // Ensures that two trials with different names but the same custom seed used
+  // for one time randomization produce the same group assignments.
+  base::FieldTrialList field_trial_list(
+      base::MakeUnique<SHA1EntropyProvider>("client_id"));
+  const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
+  const uint32_t kCustomSeed = 9001;
+  scoped_refptr<base::FieldTrial> trials[] = {
+      base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
+          "one", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL, NULL),
+      base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
+          "two", 100, "default", kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, NULL, NULL),
+  };
+
+  for (size_t i = 0; i < arraysize(trials); ++i) {
+    for (int j = 0; j < 100; ++j)
+      trials[i]->AppendGroup(std::string(), 1);
+  }
+
+  // Normally, these trials should produce different groups, but if the same
+  // custom seed is used, they should produce the same group assignment.
+  EXPECT_EQ(trials[0]->group(), trials[1]->group());
+  EXPECT_EQ(trials[0]->group_name(), trials[1]->group_name());
+}
+
 TEST(EntropyProviderTest, SHA1Entropy) {
   const double results[] = { GenerateSHA1Entropy("hi", "1"),
                              GenerateSHA1Entropy("there", "1") };

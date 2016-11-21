@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "components/variations/metrics_util.h"
 
@@ -87,7 +88,10 @@ double SHA1EntropyProvider::GetEntropyForTrial(
   // it has been observed that this method does not result in a uniform
   // distribution given the same |trial_name|. When using such a low entropy
   // source, PermutedEntropyProvider should be used instead.
-  std::string input(entropy_source_ + trial_name);
+  std::string input(entropy_source_);
+  input.append(randomization_seed == 0 ? trial_name : base::UintToString(
+                                                          randomization_seed));
+
   unsigned char sha1_hash[base::kSHA1Length];
   base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(input.c_str()),
                       input.size(),

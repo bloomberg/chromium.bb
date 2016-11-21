@@ -41,10 +41,10 @@ void PermuteMappingUsingRandomizationSeed(uint32_t randomization_seed,
 
 }  // namespace internal
 
-// SHA1EntropyProvider is an entropy provider suitable for high entropy
-// sources. It works by taking the first 64 bits of the SHA1 hash of the
-// entropy source concatenated with the trial name and using that for the
-// final entropy value.
+// SHA1EntropyProvider is an entropy provider suitable for high entropy sources.
+// It works by taking the first 64 bits of the SHA1 hash of the entropy source
+// concatenated with the trial name, or randomization seed and using that for
+// the final entropy value.
 class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
   // Creates a SHA1EntropyProvider with the given |entropy_source|, which
@@ -64,10 +64,10 @@ class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
 };
 
 // PermutedEntropyProvider is an entropy provider suitable for low entropy
-// sources (below 16 bits). It uses the field trial name to generate a
-// permutation of a mapping array from an initial entropy value to a new value.
-// Note: This provider's performance is O(2^n), where n is the number of bits
-// in the entropy source.
+// sources (below 16 bits). It uses the field trial name or randomization seed
+// to generate a permutation of a mapping array from an initial entropy value to
+// a new value.  Note: This provider's performance is O(2^n), where n is the
+// number of bits in the entropy source.
 class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
   // Creates a PermutedEntropyProvider with the given |low_entropy_source|,
