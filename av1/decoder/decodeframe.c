@@ -4423,7 +4423,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt header length");
 
-#if CONFIG_SIMP_MV_PRED
+#if CONFIG_REF_MV
   cm->setup_mi(cm);
 #endif
 

@@ -405,8 +405,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
   }
 
-// Scan the second outer area.
-#if CONFIG_SIMP_MV_PRED
+  // Scan the second outer area.
   scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1, -1, ref_mv_stack,
                 refmv_count);
   for (idx = 2; idx <= 3; ++idx) {
@@ -417,14 +416,6 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
   scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, -4, ref_mv_stack,
                 refmv_count);
-#else
-  for (idx = 2; idx <= 4; ++idx) {
-    scan_row_mbmi(cm, xd, mi_row, mi_col, block, rf, -idx, ref_mv_stack,
-                  refmv_count);
-    scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, -idx, ref_mv_stack,
-                  refmv_count);
-  }
-#endif
 
   switch (nearest_refmv_count) {
     case 0:
