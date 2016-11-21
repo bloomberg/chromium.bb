@@ -32,8 +32,10 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                                    public ContextMenuController,
                                    public MenuDelegate {
  public:
-  BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb);
+  explicit BaseScrollBar(bool horizontal);
   ~BaseScrollBar() override;
+
+  void SetThumb(BaseScrollBarThumb* thumb);
 
   // Get the bounds of the "track" area that the thumb is free to slide within.
   virtual gfx::Rect GetTrackBounds() const = 0;

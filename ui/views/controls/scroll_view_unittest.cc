@@ -532,15 +532,13 @@ TEST_F(ScrollViewTest, HeaderScrollsWithContent) {
 
   // Scroll the horizontal scrollbar.
   ASSERT_TRUE(scroll_view_.horizontal_scroll_bar());
-  scroll_view_.ScrollToPosition(
-      const_cast<ScrollBar*>(scroll_view_.horizontal_scroll_bar()), 1);
+  scroll_view_.ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL), 1);
   EXPECT_EQ("-1,0", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("-1,0", header->bounds().origin().ToString());
 
   // Scrolling the vertical scrollbar shouldn't effect the header.
   ASSERT_TRUE(scroll_view_.vertical_scroll_bar());
-  scroll_view_.ScrollToPosition(
-      const_cast<ScrollBar*>(scroll_view_.vertical_scroll_bar()), 1);
+  scroll_view_.ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), 1);
   EXPECT_EQ("-1,-1", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("-1,0", header->bounds().origin().ToString());
 }
@@ -883,8 +881,7 @@ TEST_F(ScrollViewTest, ContentScrollNotResetOnLayout) {
   EXPECT_EQ(gfx::Size(300, 150), scroll_view_.size());
 
   // Scroll down.
-  scroll_view_.ScrollToPosition(
-      const_cast<ScrollBar*>(scroll_view_.vertical_scroll_bar()), 25);
+  scroll_view_.ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), 25);
   EXPECT_EQ(25, test_api.CurrentOffset().y());
   // Call Layout; no change to scroll position.
   scroll_view_.Layout();

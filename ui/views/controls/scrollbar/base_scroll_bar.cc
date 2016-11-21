@@ -32,9 +32,9 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, public:
 
-BaseScrollBar::BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb)
+BaseScrollBar::BaseScrollBar(bool horizontal)
     : ScrollBar(horizontal),
-      thumb_(thumb),
+      thumb_(nullptr),
       contents_size_(0),
       contents_scroll_offset_(0),
       viewport_size_(0),
@@ -42,10 +42,16 @@ BaseScrollBar::BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb)
       repeater_(base::Bind(&BaseScrollBar::TrackClicked,
                            base::Unretained(this))),
       context_menu_mouse_position_(0) {
-  AddChildView(thumb_);
-
   set_context_menu_controller(this);
-  thumb_->set_context_menu_controller(this);
+}
+
+BaseScrollBar::~BaseScrollBar() {}
+
+void BaseScrollBar::SetThumb(BaseScrollBarThumb* thumb) {
+  DCHECK(!thumb_);
+  thumb_ = thumb;
+  AddChildView(thumb);
+  thumb->set_context_menu_controller(this);
 }
 
 void BaseScrollBar::ScrollByAmount(ScrollAmount amount) {
@@ -78,9 +84,6 @@ void BaseScrollBar::ScrollByAmount(ScrollAmount amount) {
   }
   contents_scroll_offset_ = offset;
   ScrollContentsToOffset();
-}
-
-BaseScrollBar::~BaseScrollBar() {
 }
 
 void BaseScrollBar::ScrollToThumbPosition(int thumb_position,

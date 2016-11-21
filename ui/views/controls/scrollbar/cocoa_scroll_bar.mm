@@ -161,7 +161,7 @@ void CocoaScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
 // CocoaScrollBar class
 
 CocoaScrollBar::CocoaScrollBar(bool horizontal)
-    : BaseScrollBar(horizontal, new CocoaScrollBarThumb(this)),
+    : BaseScrollBar(horizontal),
       hide_scrollbar_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kScrollbarHideTimeoutMs),
@@ -171,6 +171,7 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
       last_contents_scroll_offset_(0),
       is_expanded_(false),
       did_start_dragging_(false) {
+  SetThumb(new CocoaScrollBarThumb(this));
   bridge_.reset([[ViewsScrollbarBridge alloc] initWithDelegate:this]);
   scroller_style_ = [ViewsScrollbarBridge getPreferredScrollerStyle];
 

@@ -36,6 +36,8 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
     explicit Thumb(OverlayScrollBar* scroll_bar);
     ~Thumb() override;
 
+    void Init();
+
    protected:
     // BaseScrollBarThumb:
     gfx::Size GetPreferredSize() const override;

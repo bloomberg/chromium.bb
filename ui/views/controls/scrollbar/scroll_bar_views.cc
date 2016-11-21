@@ -202,7 +202,8 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 const char ScrollBarViews::kViewClassName[] = "ScrollBarViews";
 
 ScrollBarViews::ScrollBarViews(bool horizontal)
-    : BaseScrollBar(horizontal, new ScrollBarThumb(this)) {
+    : BaseScrollBar(horizontal) {
+  SetThumb(new ScrollBarThumb(this));
   if (horizontal) {
     prev_button_ = new ScrollBarButton(this, ScrollBarButton::LEFT);
     next_button_ = new ScrollBarButton(this, ScrollBarButton::RIGHT);
