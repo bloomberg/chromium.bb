@@ -91,7 +91,7 @@ public class NetworkChangeNotifierTest extends CronetTestBase {
         assertNotNull(callback.mError);
         assertTrue(callback.mOnErrorCalled);
         assertEquals(NetError.ERR_NETWORK_CHANGED, callback.mError.getCronetInternalErrorCode());
-        assertEquals("Exception in CronetUrlRequest: net::ERR_NETWORK_CHANGED",
+        assertContains("Exception in CronetUrlRequest: net::ERR_NETWORK_CHANGED",
                 callback.mError.getMessage());
     }
 }
