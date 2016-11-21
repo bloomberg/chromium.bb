@@ -1717,7 +1717,6 @@ static bool layerNeedsCompositedScrolling(
   // transforms are also integer.
   bool backgroundSupportsLCDText =
       RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled() &&
-      layer->layoutObject()->style()->isStackingContext() &&
       layer->canPaintBackgroundOntoScrollingContentsLayer() &&
       layer->backgroundIsKnownToBeOpaqueInRect(
           toLayoutBox(layer->layoutObject())->paddingBoxRect()) &&
