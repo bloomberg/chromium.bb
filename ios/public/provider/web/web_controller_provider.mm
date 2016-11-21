@@ -4,6 +4,10 @@
 
 #include "ios/public/provider/web/web_controller_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios {
 
 static WebControllerProviderFactory* g_web_controller_provider_factory;
