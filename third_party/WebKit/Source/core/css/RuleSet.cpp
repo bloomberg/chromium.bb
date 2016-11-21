@@ -220,6 +220,9 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component,
     case CSSSelector::PseudoFocus:
       m_focusPseudoClassRules.append(ruleData);
       return true;
+    case CSSSelector::PseudoPlaceholder:
+      m_placeholderPseudoRules.append(ruleData);
+      return true;
     default:
       break;
   }
@@ -371,6 +374,7 @@ void RuleSet::compactRules() {
   m_linkPseudoClassRules.shrinkToFit();
   m_cuePseudoRules.shrinkToFit();
   m_focusPseudoClassRules.shrinkToFit();
+  m_placeholderPseudoRules.shrinkToFit();
   m_universalRules.shrinkToFit();
   m_shadowHostRules.shrinkToFit();
   m_pageRules.shrinkToFit();
@@ -404,6 +408,7 @@ DEFINE_TRACE(RuleSet) {
   visitor->trace(m_linkPseudoClassRules);
   visitor->trace(m_cuePseudoRules);
   visitor->trace(m_focusPseudoClassRules);
+  visitor->trace(m_placeholderPseudoRules);
   visitor->trace(m_universalRules);
   visitor->trace(m_shadowHostRules);
   visitor->trace(m_features);

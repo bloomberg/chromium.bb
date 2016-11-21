@@ -179,6 +179,7 @@ class CORE_EXPORT CSSSelector {
     PseudoBackdrop,
     PseudoLang,
     PseudoNot,
+    PseudoPlaceholder,
     PseudoResizer,
     PseudoRoot,
     PseudoScope,

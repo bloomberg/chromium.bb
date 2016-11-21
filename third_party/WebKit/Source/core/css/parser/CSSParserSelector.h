@@ -98,6 +98,7 @@ class CORE_EXPORT CSSParserSelector {
     return pseudoType() == CSSSelector::PseudoWebKitCustomElement ||
            pseudoType() == CSSSelector::PseudoBlinkInternalElement ||
            pseudoType() == CSSSelector::PseudoCue ||
+           pseudoType() == CSSSelector::PseudoPlaceholder ||
            pseudoType() == CSSSelector::PseudoShadow ||
            pseudoType() == CSSSelector::PseudoSlotted;
   }

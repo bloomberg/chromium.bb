@@ -119,6 +119,7 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType) {
     DEFINE_STRING_MAPPING(PseudoBackdrop)
     DEFINE_STRING_MAPPING(PseudoLang)
     DEFINE_STRING_MAPPING(PseudoNot)
+    DEFINE_STRING_MAPPING(PseudoPlaceholder)
     DEFINE_STRING_MAPPING(PseudoResizer)
     DEFINE_STRING_MAPPING(PseudoRoot)
     DEFINE_STRING_MAPPING(PseudoScope)

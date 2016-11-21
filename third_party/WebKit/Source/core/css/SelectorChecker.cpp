@@ -1096,6 +1096,12 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
       }
       return false;
     }
+    case CSSSelector::PseudoPlaceholder:
+      if (ShadowRoot* root = element.containingShadowRoot()) {
+        return root->type() == ShadowRootType::UserAgent &&
+               element.shadowPseudoId() == "-webkit-input-placeholder";
+      }
+      return false;
     case CSSSelector::PseudoWebKitCustomElement: {
       if (ShadowRoot* root = element.containingShadowRoot())
         return root->type() == ShadowRootType::UserAgent &&

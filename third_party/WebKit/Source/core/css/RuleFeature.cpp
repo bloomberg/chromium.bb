@@ -116,6 +116,7 @@ bool supportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::PseudoBackdrop:
     case CSSSelector::PseudoLang:
     case CSSSelector::PseudoNot:
+    case CSSSelector::PseudoPlaceholder:
     case CSSSelector::PseudoResizer:
     case CSSSelector::PseudoRoot:
     case CSSSelector::PseudoScope:
