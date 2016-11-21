@@ -8,6 +8,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 NSString* const kChromeAppGroupIdentifier =
     @"group." IOS_BUNDLE_ID_PREFIX ".chrome";
@@ -65,8 +69,7 @@ NSUserDefaults* GetGroupUserDefaults() {
   NSUserDefaults* defaults = nil;
   NSString* applicationGroup = ApplicationGroup();
   if (applicationGroup) {
-    defaults = [[[NSUserDefaults alloc] initWithSuiteName:applicationGroup]
-        autorelease];
+    defaults = [[NSUserDefaults alloc] initWithSuiteName:applicationGroup];
     if (defaults)
       return defaults;
   }

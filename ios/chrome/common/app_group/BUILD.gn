@@ -5,6 +5,7 @@
 import("//build/config/ios/ios_sdk.gni")
 
 source_set("app_group") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "app_group_constants.h",
     "app_group_constants.mm",
