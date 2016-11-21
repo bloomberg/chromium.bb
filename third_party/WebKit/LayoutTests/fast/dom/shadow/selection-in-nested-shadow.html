@@ -1,52 +1,76 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../../resources/js-test.js"></script>
-</head>
-<body>
-
-<div id="container">
-    <div id="container1"><div id="host1"></div></div>
-    <div id="container2"><div id="host2"></div></div>
-</div>
-<pre id="console"></pre>
-
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../editing/assert_selection.js"></script>
 <script>
-var shadowRoot1 = host1.createShadowRoot();
-shadowRoot1.innerHTML = '<div id="target1">Element in Shadow DOM</div>';
+function selectInElement(document, element) {
+  eventSender.mouseMoveTo(document.offsetLeft + element.offsetLeft + 2,
+                          document.offsetTop + element.offsetTop +
+                              element.offsetHeight / 2);
+  eventSender.mouseDown();
+  eventSender.mouseMoveTo(document.offsetLeft + element.offsetLeft +
+                              element.offsetWidth - 2,
+                          document.offsetTop + element.offsetTop +
+                              element.offsetHeight / 2);
+  eventSender.mouseUp();
+}
 
-var shadowRoot2 = host2.createShadowRoot();
-var host3 = document.createElement('div');
-var shadowRoot3 = host3.createShadowRoot();
-shadowRoot2.appendChild(host3);
-shadowRoot3.innerHTML = '<div id="target2">Element in nested Shadow DOM</div>';
+test(() => {
+  assert_not_equals(window.eventSender, undefined,
+    'This test requires eventSender.');
 
-var target1 = shadowRoot1.getElementById('target1');
-var target2 = shadowRoot3.getElementById('target2');
+  assert_selection(
+    [
+        '<div>',
+        '  <div id="host"></div>',
+        '</div>',
+    ].join('\n'),
+    selection => {
+      const document = selection.document;
+      const host = document.getElementById('host');
+      const shadowRoot1 = host.createShadowRoot();
+      shadowRoot1.innerHTML = '<div id="target">abc</div>';
+      const target = shadowRoot1.getElementById('target');
 
-// non-nested ShadowDOM case.
-debug('Select text in non-nested ShadowDOM and remove an element containing shadow host.');
-debug('Then the anchor node of the selection should become be the parent element of the removed element (container).');
-eventSender.mouseMoveTo(target1.offsetLeft + 2, target1.offsetTop + target1.offsetHeight / 2);
-eventSender.mouseDown();
-eventSender.mouseMoveTo(target1.offsetLeft + target1.offsetWidth - 2, target1.offsetTop + target1.offsetHeight / 2);
-eventSender.mouseUp();
-container.removeChild(container1);
-shouldBe('window.getSelection().anchorNode', 'container');
-debug('');
+      selectInElement(document, target);
+      host.remove();
+    },
+    [
+        '<div>',
+        '  |',
+        '</div>',
+    ].join('\n'),
+    {dumpAs: 'flattree'});
+}, 'Remove shadow host containing selection');
 
-// nested ShadowDOM case.
-debug('Select text in nested ShadowDOM and remove an element containing shadow host.');
-debug('In this case, the anchor node of the selection should also become be the parent element of the removed element (container).');
-eventSender.mouseMoveTo(target2.offsetLeft + 2, target2.offsetTop + target2.offsetHeight / 2);
-eventSender.mouseDown();
-eventSender.mouseMoveTo(target2.offsetLeft + target2.offsetWidth - 2, target2.offsetTop + target2.offsetHeight / 2);
-eventSender.mouseUp();
-container.removeChild(container2);
-shouldBe('window.getSelection().anchorNode', 'container');
-debug('');
+test(() => {
+  assert_not_equals(window.eventSender, undefined,
+    'This test requires eventSender.');
+
+  assert_selection(
+    [
+        '<div>',
+        '  <div id="host"></div>',
+        '</div>',
+    ].join('\n'),
+    selection => {
+      const document = selection.document;
+      const host = document.getElementById('host');
+      const shadowRoot1 = host.createShadowRoot();
+      shadowRoot1.innerHTML = '<div id="host2"></div>';
+      const host2 = shadowRoot1.getElementById('host2');
+      const shadowRoot2 = host2.createShadowRoot();
+      shadowRoot2.innerHTML = '<div id="target">abc</div>';
+      const target = shadowRoot2.getElementById('target');
+
+      selectInElement(document, target);
+      host.remove();
+    },
+    [
+        '<div>',
+        '  |',
+        '</div>',
+    ].join('\n'),
+    {dumpAs: 'flattree'});
+}, 'Remove shadow host containing selection in nested shadow tree');
 </script>
-
-</body>
-
-</html>
