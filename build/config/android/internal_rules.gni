@@ -2092,6 +2092,7 @@ if (enable_java_templates) {
       emma_instr(_emma_instr_target_name) {
         forward_variables_from(invoker,
                                [
+                                 "deps",
                                  "java_files",
                                  "java_sources_file",
                                ])
@@ -2099,9 +2100,10 @@ if (enable_java_templates) {
         input_jar_path = _process_prebuilt_jar_path
         output_jar_path = _final_jar_path
 
-        deps = [
-          ":$_process_prebuilt_target_name",
-        ]
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += [ ":$_process_prebuilt_target_name" ]
       }
     }
 
