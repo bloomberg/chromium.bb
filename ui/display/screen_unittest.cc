@@ -6,19 +6,57 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
+#include "ui/display/test/test_screen.h"
 
 namespace display {
 
-TEST(ScreenTest, GetPrimaryDisplaySize) {
-  // We aren't actually testing that it's correct, just that it's sane.
+namespace {
+
+const int DEFAULT_DISPLAY_ID = 0x1337;
+const int DEFAULT_DISPLAY_WIDTH = 2560;
+const int DEFAULT_DISPLAY_HEIGHT = 1440;
+
+}  // namespace
+
+class ScreenTest : public testing::Test {
+ protected:
+  ScreenTest() {
+    const display::Display test_display = test_screen_.GetPrimaryDisplay();
+    display::Display display(test_display);
+    display.set_id(DEFAULT_DISPLAY_ID);
+    display.set_bounds(
+        gfx::Rect(0, 0, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT));
+    test_screen_.display_list().RemoveDisplay(test_display.id());
+    test_screen_.display_list().AddDisplay(display,
+                                           display::DisplayList::Type::PRIMARY);
+    Screen::SetScreenInstance(&test_screen_);
+  }
+
+  ~ScreenTest() override { Screen::SetScreenInstance(nullptr); }
+
+ private:
+  display::test::TestScreen test_screen_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenTest);
+};
+
+TEST_F(ScreenTest, GetPrimaryDisplaySize) {
   const gfx::Size size = Screen::GetScreen()->GetPrimaryDisplay().size();
-  EXPECT_GE(size.width(), 1);
-  EXPECT_GE(size.height(), 1);
+  EXPECT_EQ(DEFAULT_DISPLAY_WIDTH, size.width());
+  EXPECT_EQ(DEFAULT_DISPLAY_HEIGHT, size.height());
 }
 
-TEST(ScreenTest, GetNumDisplays) {
-  // We aren't actually testing that it's correct, just that it's sane.
-  EXPECT_GE(Screen::GetScreen()->GetNumDisplays(), 1);
+TEST_F(ScreenTest, GetNumDisplays) {
+  EXPECT_EQ(Screen::GetScreen()->GetNumDisplays(), 1);
+}
+
+TEST_F(ScreenTest, GetDisplayWithDisplayId) {
+  Display display;
+  EXPECT_TRUE(Screen::GetScreen()->GetDisplayWithDisplayId(DEFAULT_DISPLAY_ID,
+                                                           &display));
+  EXPECT_EQ(DEFAULT_DISPLAY_ID, display.id());
+  EXPECT_EQ(DEFAULT_DISPLAY_WIDTH, display.size().width());
+  EXPECT_EQ(DEFAULT_DISPLAY_HEIGHT, display.size().height());
 }
 
 }  // namespace

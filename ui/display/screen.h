@@ -88,6 +88,12 @@ class DISPLAY_EXPORT Screen {
   virtual gfx::Rect DIPToScreenRectInWindow(gfx::NativeView view,
                                             const gfx::Rect& dip_rect) const;
 
+  // Returns true if the display with |display_id| is found and returns that
+  // display in |display|. Otherwise returns false and |display| remains
+  // untouched.
+  bool GetDisplayWithDisplayId(int64_t display_id,
+                               display::Display* display) const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Screen);
 };
