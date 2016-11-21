@@ -38,7 +38,7 @@ class ArcWallpaperService
   // mojom::WallpaperHost overrides.
   // TODO(muyuanli): change callback prototype when use_new_wrapper_types is
   // updated and merge them with the functions below.
-  void SetWallpaper(const std::vector<uint8_t>& png_data) override;
+  void SetWallpaper(const std::vector<uint8_t>& data) override;
   void GetWallpaper(const GetWallpaperCallback& callback) override;
 
   // ImageDecoder::ImageRequest implementation.

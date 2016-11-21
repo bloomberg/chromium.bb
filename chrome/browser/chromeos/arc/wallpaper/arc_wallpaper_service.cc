@@ -107,11 +107,10 @@ void ArcWallpaperService::OnInstanceClosed() {
     wc->RemoveObserver(this);
 }
 
-void ArcWallpaperService::SetWallpaper(const std::vector<uint8_t>& png_data) {
+void ArcWallpaperService::SetWallpaper(const std::vector<uint8_t>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ImageDecoder::Cancel(this);
-  ImageDecoder::StartWithOptions(this, png_data, ImageDecoder::ROBUST_PNG_CODEC,
-                                 true);
+  ImageDecoder::StartWithOptions(this, data, ImageDecoder::DEFAULT_CODEC, true);
 }
 
 void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {

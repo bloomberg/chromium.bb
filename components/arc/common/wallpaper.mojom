@@ -13,8 +13,8 @@ interface WallpaperHost {
   GetWallpaper@0() => (array<uint8> wallpaper);
 
   // Sets an image from ARC as the wallpaper.
-  // |png_data| is a PNG encoded wallpaper image.
-  SetWallpaper@1(array<uint8> png_data);
+  // |data| is a byte array of the wallpaper image.
+  SetWallpaper@1(array<uint8> data);
 };
 
 // Connects with container side to publish wallpaper related intents.
