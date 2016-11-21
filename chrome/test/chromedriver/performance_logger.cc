@@ -245,15 +245,15 @@ Status PerformanceLogger::CollectTraceEvents() {
                   "was not started");
   }
 
-  // As of r307466, DevTools no longer returns a response to Tracing.end
-  // commands, so we need to ignore it here to avoid a timeout. See
-  // https://code.google.com/p/chromedriver/issues/detail?id=997 for details.
-  // TODO(samuong): find other commands where we don't need the response.
-  bool wait_for_response = false;
+  // Prior to commit position 433389, DevTools did not return a response to
+  // Tracing.end commands, so we need to ignore it here to avoid a timeout. See
+  // https://bugs.chromium.org/p/chromedriver/issues/detail?id=1607 for details.
+  // TODO(samuong): remove this after we stop supporting Chrome 56.
+  bool wait_for_response = true;
   if (session_->chrome) {
     const BrowserInfo* browser_info = session_->chrome->GetBrowserInfo();
-    if (browser_info->browser_name == "chrome" && browser_info->build_no < 2245)
-      wait_for_response = true;
+    if (browser_info->browser_name == "chrome" && browser_info->build_no < 2925)
+      wait_for_response = false;
   }
   base::DictionaryValue params;
   Status status(kOk);
