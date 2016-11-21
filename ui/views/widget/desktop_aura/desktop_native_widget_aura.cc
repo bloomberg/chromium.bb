@@ -243,6 +243,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       content_window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
+      restore_focus_on_activate_(false),
       cursor_(gfx::kNullCursor),
       widget_type_(Widget::InitParams::TYPE_WINDOW),
       close_widget_factory_(this) {
@@ -359,10 +360,15 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       View* view_for_activation = focus_manager->GetFocusedView()
                                       ? focus_manager->GetFocusedView()
                                       : focus_manager->GetStoredFocusView();
-      if (!view_for_activation)
+      if (!view_for_activation) {
         view_for_activation = GetWidget()->GetRootView();
-      else if (view_for_activation == focus_manager->GetStoredFocusView())
+      } else if (view_for_activation == focus_manager->GetStoredFocusView()) {
         focus_manager->RestoreFocusedView();
+        // Set to false if desktop native widget has activated activation
+        // change, so that aura window activation change focus restore operation
+        // can be ignored.
+        restore_focus_on_activate_ = false;
+      }
       activation_client->ActivateWindow(
           view_for_activation->GetWidget()->GetNativeView());
       // Refreshes the focus info to IMF in case that IMF cached the old info
@@ -1083,7 +1089,16 @@ void DesktopNativeWidgetAura::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   DCHECK(content_window_ == gained_active || content_window_ == lost_active);
-  if (lost_active == content_window_ && GetWidget()->HasFocusManager()) {
+  if (gained_active == content_window_ && restore_focus_on_activate_) {
+    restore_focus_on_activate_ = false;
+    // For OS_LINUX, desktop native widget may not be activated when child
+    // widgets gets aura activation changes. Only when desktop native widget is
+    // active, we can rely on aura activation to restore focused view.
+    if (GetWidget()->IsActive())
+      GetWidget()->GetFocusManager()->RestoreFocusedView();
+  } else if (lost_active == content_window_ && GetWidget()->HasFocusManager()) {
+    DCHECK(!restore_focus_on_activate_);
+    restore_focus_on_activate_ = true;
     // Pass in false so that ClearNativeFocus() isn't invoked.
     GetWidget()->GetFocusManager()->StoreFocusedView(false);
   }
