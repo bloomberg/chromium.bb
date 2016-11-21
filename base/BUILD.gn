@@ -1209,14 +1209,6 @@ component("base") {
       "rand_util_nacl.cc",
       "synchronization/read_write_lock_nacl.cc",
     ]
-
-    # Add stuff that doesn't work in NaCl.
-    sources += [
-      # SpinLock uses GNU-style inline assembly, which the pnacl-clang++
-      # compiler doesn't allow.
-      "synchronization/spin_lock.cc",
-      "synchronization/spin_lock.h",
-    ]
   }
 
   # Windows.
