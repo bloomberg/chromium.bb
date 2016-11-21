@@ -1,15 +1,6 @@
 CONSOLE WARNING: line 94: 'webkitOfflineAudioContext' is deprecated. Please use 'OfflineAudioContext' instead.
 CONSOLE WARNING: line 94: 'webkitAudioContext' is deprecated. Please use 'AudioContext' instead.
 CONSOLE WARNING: line 94: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 94: 'webkitIDBTransaction' is deprecated and will be removed in M57, around March 2017. Please use 'IDBTransaction' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBRequest' is deprecated and will be removed in M57, around March 2017. Please use 'IDBRequest' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBObjectStore' is deprecated and will be removed in M57, around March 2017. Please use 'IDBObjectStore' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBKeyRange' is deprecated and will be removed in M57, around March 2017. Please use 'IDBKeyRange' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBIndex' is deprecated and will be removed in M57, around March 2017. Please use 'IDBIndex' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBFactory' is deprecated and will be removed in M57, around March 2017. Please use 'IDBFactory' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBDatabase' is deprecated and will be removed in M57, around March 2017. Please use 'IDBDatabase' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIDBCursor' is deprecated and will be removed in M57, around March 2017. Please use 'IDBCursor' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 94: 'webkitIndexedDB' is deprecated and will be removed in M57, around March 2017. Please use 'indexedDB' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
 CONSOLE WARNING: line 94: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
 
@@ -7236,119 +7227,6 @@ interface webkitAudioContext : BaseAudioContext
     method close
     method constructor
     method suspend
-interface webkitIDBCursor
-    attribute @@toStringTag
-    getter direction
-    getter key
-    getter primaryKey
-    getter source
-    method advance
-    method constructor
-    method continue
-    method delete
-    method update
-interface webkitIDBDatabase : EventTarget
-    attribute @@toStringTag
-    getter name
-    getter objectStoreNames
-    getter onabort
-    getter onclose
-    getter onerror
-    getter onversionchange
-    getter version
-    method close
-    method constructor
-    method createObjectStore
-    method deleteObjectStore
-    method transaction
-    setter onabort
-    setter onclose
-    setter onerror
-    setter onversionchange
-interface webkitIDBFactory
-    attribute @@toStringTag
-    method cmp
-    method constructor
-    method deleteDatabase
-    method open
-    method webkitGetDatabaseNames
-interface webkitIDBIndex
-    attribute @@toStringTag
-    getter keyPath
-    getter multiEntry
-    getter name
-    getter objectStore
-    getter unique
-    method constructor
-    method count
-    method get
-    method getAll
-    method getAllKeys
-    method getKey
-    method openCursor
-    method openKeyCursor
-    setter name
-interface webkitIDBKeyRange
-    static method bound
-    static method lowerBound
-    static method only
-    static method upperBound
-    attribute @@toStringTag
-    getter lower
-    getter lowerOpen
-    getter upper
-    getter upperOpen
-    method constructor
-    method includes
-interface webkitIDBObjectStore
-    attribute @@toStringTag
-    getter autoIncrement
-    getter indexNames
-    getter keyPath
-    getter name
-    getter transaction
-    method add
-    method clear
-    method constructor
-    method count
-    method createIndex
-    method delete
-    method deleteIndex
-    method get
-    method getAll
-    method getAllKeys
-    method index
-    method openCursor
-    method openKeyCursor
-    method put
-    setter name
-interface webkitIDBRequest : EventTarget
-    attribute @@toStringTag
-    getter error
-    getter onerror
-    getter onsuccess
-    getter readyState
-    getter result
-    getter source
-    getter transaction
-    method constructor
-    setter onerror
-    setter onsuccess
-interface webkitIDBTransaction : EventTarget
-    attribute @@toStringTag
-    getter db
-    getter error
-    getter mode
-    getter objectStoreNames
-    getter onabort
-    getter oncomplete
-    getter onerror
-    method abort
-    method constructor
-    method objectStore
-    setter onabort
-    setter oncomplete
-    setter onerror
 interface webkitMediaStream : EventTarget
     attribute @@toStringTag
     getter active
@@ -7668,7 +7546,6 @@ interface webkitURL
     attribute textInputController
     attribute toolbar
     attribute top
-    attribute webkitIndexedDB
     attribute webkitStorageInfo
     attribute window
     getter document

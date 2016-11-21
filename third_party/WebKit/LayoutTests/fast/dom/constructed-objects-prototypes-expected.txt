@@ -1,15 +1,6 @@
 CONSOLE WARNING: line 26: 'webkitOfflineAudioContext' is deprecated. Please use 'OfflineAudioContext' instead.
 CONSOLE WARNING: line 26: 'webkitAudioContext' is deprecated. Please use 'AudioContext' instead.
 CONSOLE WARNING: line 26: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 26: 'webkitIDBTransaction' is deprecated and will be removed in M57, around March 2017. Please use 'IDBTransaction' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBRequest' is deprecated and will be removed in M57, around March 2017. Please use 'IDBRequest' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBObjectStore' is deprecated and will be removed in M57, around March 2017. Please use 'IDBObjectStore' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBKeyRange' is deprecated and will be removed in M57, around March 2017. Please use 'IDBKeyRange' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBIndex' is deprecated and will be removed in M57, around March 2017. Please use 'IDBIndex' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBFactory' is deprecated and will be removed in M57, around March 2017. Please use 'IDBFactory' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBDatabase' is deprecated and will be removed in M57, around March 2017. Please use 'IDBDatabase' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIDBCursor' is deprecated and will be removed in M57, around March 2017. Please use 'IDBCursor' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: line 26: 'webkitIndexedDB' is deprecated and will be removed in M57, around March 2017. Please use 'indexedDB' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
 CONSOLE WARNING: line 26: 'webkitURL' is deprecated. Please use 'URL' instead.
 Make sure prototypes are set up using the window a property came from, instead of the lexical global object.
 

@@ -27,16 +27,5 @@
 [
     ImplementedAs=GlobalIndexedDB
 ] partial interface Window {
-    [ImplementedAs=indexedDB, DeprecateAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
-
     [MeasureAs=UnprefixedIndexedDB] readonly attribute IDBFactory indexedDB;
-
-    [DeprecateAs=PrefixedIDBCursorConstructor] attribute IDBCursorConstructor webkitIDBCursor;
-    [DeprecateAs=PrefixedIDBDatabaseConstructor] attribute IDBDatabaseConstructor webkitIDBDatabase;
-    [DeprecateAs=PrefixedIDBFactoryConstructor] attribute IDBFactoryConstructor webkitIDBFactory;
-    [DeprecateAs=PrefixedIDBIndexConstructor] attribute IDBIndexConstructor webkitIDBIndex;
-    [DeprecateAs=PrefixedIDBKeyRangeConstructor] attribute IDBKeyRangeConstructor webkitIDBKeyRange;
-    [DeprecateAs=PrefixedIDBObjectStoreConstructor] attribute IDBObjectStoreConstructor webkitIDBObjectStore;
-    [DeprecateAs=PrefixedIDBRequestConstructor] attribute IDBRequestConstructor webkitIDBRequest;
-    [DeprecateAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
 };

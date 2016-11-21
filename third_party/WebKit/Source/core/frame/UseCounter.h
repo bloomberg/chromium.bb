@@ -72,7 +72,6 @@ class CORE_EXPORT UseCounter {
     // Do not change assigned numbers of existing items: add new features
     // to the end of the list.
     OBSOLETE_PageDestruction = 0,
-    PrefixedIndexedDB = 3,
     WorkerStart = 4,
     SharedWorkerStart = 5,
     UnprefixedIndexedDB = 9,
@@ -288,14 +287,6 @@ class CORE_EXPORT UseCounter {
     WindowDefaultstatus = 358,
     PrefixedTransitionEventConstructor = 361,
     PrefixedMutationObserverConstructor = 362,
-    PrefixedIDBCursorConstructor = 363,
-    PrefixedIDBDatabaseConstructor = 364,
-    PrefixedIDBFactoryConstructor = 365,
-    PrefixedIDBIndexConstructor = 366,
-    PrefixedIDBKeyRangeConstructor = 367,
-    PrefixedIDBObjectStoreConstructor = 368,
-    PrefixedIDBRequestConstructor = 369,
-    PrefixedIDBTransactionConstructor = 370,
     NotificationPermission = 371,
     RangeDetach = 372,
     PrefixedFileRelativePath = 386,

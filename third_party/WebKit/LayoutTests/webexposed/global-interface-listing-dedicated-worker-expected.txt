@@ -1,11 +1,3 @@
-CONSOLE WARNING: 'webkitIDBTransaction' is deprecated and will be removed in M57, around March 2017. Please use 'IDBTransaction' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBRequest' is deprecated and will be removed in M57, around March 2017. Please use 'IDBRequest' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated and will be removed in M57, around March 2017. Please use 'IDBObjectStore' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated and will be removed in M57, around March 2017. Please use 'IDBKeyRange' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBIndex' is deprecated and will be removed in M57, around March 2017. Please use 'IDBIndex' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBFactory' is deprecated and will be removed in M57, around March 2017. Please use 'IDBFactory' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBDatabase' is deprecated and will be removed in M57, around March 2017. Please use 'IDBDatabase' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
-CONSOLE WARNING: 'webkitIDBCursor' is deprecated and will be removed in M57, around March 2017. Please use 'IDBCursor' instead. See https://www.chromestatus.com/features/5775330191081472 for more details.
 This test documents all interface attributes and methods on DedicatedWorkerGlobalScope.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -1227,7 +1219,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter onunhandledrejection
 [Worker]     getter performance
 [Worker]     getter self
-[Worker]     getter webkitIndexedDB
 [Worker]     method atob
 [Worker]     method btoa
 [Worker]     method clearInterval
@@ -1325,121 +1316,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface XMLHttpRequestUpload : XMLHttpRequestEventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface webkitIDBCursor
-[Worker]     attribute @@toStringTag
-[Worker]     getter direction
-[Worker]     getter key
-[Worker]     getter primaryKey
-[Worker]     getter source
-[Worker]     method advance
-[Worker]     method constructor
-[Worker]     method continue
-[Worker]     method continuePrimaryKey
-[Worker]     method delete
-[Worker]     method update
-[Worker] interface webkitIDBDatabase : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter name
-[Worker]     getter objectStoreNames
-[Worker]     getter onabort
-[Worker]     getter onclose
-[Worker]     getter onerror
-[Worker]     getter onversionchange
-[Worker]     getter version
-[Worker]     method close
-[Worker]     method constructor
-[Worker]     method createObjectStore
-[Worker]     method deleteObjectStore
-[Worker]     method transaction
-[Worker]     setter onabort
-[Worker]     setter onclose
-[Worker]     setter onerror
-[Worker]     setter onversionchange
-[Worker] interface webkitIDBFactory
-[Worker]     attribute @@toStringTag
-[Worker]     method cmp
-[Worker]     method constructor
-[Worker]     method deleteDatabase
-[Worker]     method open
-[Worker]     method webkitGetDatabaseNames
-[Worker] interface webkitIDBIndex
-[Worker]     attribute @@toStringTag
-[Worker]     getter keyPath
-[Worker]     getter multiEntry
-[Worker]     getter name
-[Worker]     getter objectStore
-[Worker]     getter unique
-[Worker]     method constructor
-[Worker]     method count
-[Worker]     method get
-[Worker]     method getAll
-[Worker]     method getAllKeys
-[Worker]     method getKey
-[Worker]     method openCursor
-[Worker]     method openKeyCursor
-[Worker]     setter name
-[Worker] interface webkitIDBKeyRange
-[Worker]     static method bound
-[Worker]     static method lowerBound
-[Worker]     static method only
-[Worker]     static method upperBound
-[Worker]     attribute @@toStringTag
-[Worker]     getter lower
-[Worker]     getter lowerOpen
-[Worker]     getter upper
-[Worker]     getter upperOpen
-[Worker]     method constructor
-[Worker]     method includes
-[Worker] interface webkitIDBObjectStore
-[Worker]     attribute @@toStringTag
-[Worker]     getter autoIncrement
-[Worker]     getter indexNames
-[Worker]     getter keyPath
-[Worker]     getter name
-[Worker]     getter transaction
-[Worker]     method add
-[Worker]     method clear
-[Worker]     method constructor
-[Worker]     method count
-[Worker]     method createIndex
-[Worker]     method delete
-[Worker]     method deleteIndex
-[Worker]     method get
-[Worker]     method getAll
-[Worker]     method getAllKeys
-[Worker]     method getKey
-[Worker]     method index
-[Worker]     method openCursor
-[Worker]     method openKeyCursor
-[Worker]     method put
-[Worker]     setter name
-[Worker] interface webkitIDBRequest : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter error
-[Worker]     getter onerror
-[Worker]     getter onsuccess
-[Worker]     getter readyState
-[Worker]     getter result
-[Worker]     getter source
-[Worker]     getter transaction
-[Worker]     method constructor
-[Worker]     setter onerror
-[Worker]     setter onsuccess
-[Worker] interface webkitIDBTransaction : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter db
-[Worker]     getter error
-[Worker]     getter mode
-[Worker]     getter objectStoreNames
-[Worker]     getter onabort
-[Worker]     getter oncomplete
-[Worker]     getter onerror
-[Worker]     method abort
-[Worker]     method constructor
-[Worker]     method objectStore
-[Worker]     setter onabort
-[Worker]     setter oncomplete
-[Worker]     setter onerror
 [Worker] [GLOBAL OBJECT]
 [Worker]     attribute console
 [Worker]     attribute internals
