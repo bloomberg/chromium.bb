@@ -8,6 +8,10 @@
 #include "ios/chrome/browser/share_extension/share_extension_item_receiver.h"
 #include "ios/chrome/browser/share_extension/share_extension_service.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 ShareExtensionService::ShareExtensionService(
     bookmarks::BookmarkModel* bookmark_model,
     ReadingListModel* reading_list_model)

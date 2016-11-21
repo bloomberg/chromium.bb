@@ -23,6 +23,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Enum used to send metrics on item reception.
 // If you change this enum, update histograms.xml.
@@ -132,7 +136,6 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 
 - (void)dealloc {
   NOTREACHED();
-  [super dealloc];
 }
 
 - (void)createReadingListFolder {

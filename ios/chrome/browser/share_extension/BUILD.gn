@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("share_extension") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "share_extension_item_receiver.h",
     "share_extension_item_receiver.mm",
