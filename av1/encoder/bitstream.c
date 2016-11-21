@@ -797,11 +797,10 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       aom_write_record(w, token != EOB_TOKEN, p->context_tree[0], token_stats);
 
     if (token != EOB_TOKEN) {
-      aom_write_record(w, token != ZERO_TOKEN, p->context_tree[1], token_stats);
-
-      if (token != ZERO_TOKEN) {
-        aom_write_symbol(w, token - ONE_TOKEN, *p->token_cdf,
-                         CATEGORY6_TOKEN - ONE_TOKEN + 1);
+      aom_write_symbol(w, AOMMIN(token, TWO_TOKEN), *p->head_cdf, 3);
+      if (token > ONE_TOKEN) {
+        aom_write_symbol(w, token - TWO_TOKEN, *p->tail_cdf,
+                         CATEGORY6_TOKEN + 1 - 2);
       }
     }
 #else
@@ -2740,7 +2739,7 @@ static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
   av1_coeff_probs_model *old_coef_probs = cpi->common.fc->coef_probs[tx_size];
   const aom_prob upd = DIFF_UPDATE_PROB;
 #if CONFIG_EC_ADAPT
-  const int entropy_nodes_update = UNCONSTRAINED_NODES - 1;
+  const int entropy_nodes_update = UNCONSTRAINED_NODES - 2;
 #else
   const int entropy_nodes_update = UNCONSTRAINED_NODES;
 #endif

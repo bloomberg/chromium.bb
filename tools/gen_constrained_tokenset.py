@@ -96,11 +96,13 @@ def quantize_probs(p, save_first_bin, bits):
 def get_quantized_spareto(p, beta, bits):
   parray = get_spareto(p, beta)
   parray = parray[1:] / (1 - parray[0])
-  qarray = quantize_probs(parray, True, bits)
+#if CONFIG_EC_MULTISYMBOL, truncate the array again
+  tarray = parray[1:] / (1 - parray[0])
+  qarray = quantize_probs(tarray, False, bits)
   return qarray.astype(np.int)
 
 
-def main(bits=8):
+def main(bits=15):
   beta = 8
   for q in range(1, 256):
     parray = get_quantized_spareto(q / 256., beta, bits)

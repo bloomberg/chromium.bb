@@ -362,7 +362,8 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
 
 static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
 #if CONFIG_EC_MULTISYMBOL
-                             aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS],
+                             aom_cdf_prob (*tail_cdf)[ENTROPY_TOKENS],
+                             aom_cdf_prob (*head_cdf)[ENTROPY_TOKENS],
 #endif  // CONFIG_EC_MULTISYMBOL
                              int32_t extra, uint8_t token,
                              uint8_t skip_eob_node, unsigned int *counts) {
@@ -370,7 +371,8 @@ static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
   (*t)->extra = extra;
   (*t)->context_tree = context_tree;
 #if CONFIG_EC_MULTISYMBOL
-  (*t)->token_cdf = token_cdf;
+  (*t)->tail_cdf = tail_cdf;
+  (*t)->head_cdf = head_cdf;
 #endif  // CONFIG_EC_MULTISYMBOL
   (*t)->skip_eob_node = skip_eob_node;
   (*t)++;
@@ -467,11 +469,15 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_ENTROPY
 
 #if CONFIG_EC_ADAPT  // use per-tile context
-  aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
-      xd->tile_ctx->coef_cdfs[tx_size][type][ref];
+  aom_cdf_prob(*const coef_head_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+      xd->tile_ctx->coef_head_cdfs[tx_size][type][ref];
+  aom_cdf_prob(*const coef_tail_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+      xd->tile_ctx->coef_tail_cdfs[tx_size][type][ref];
 #elif CONFIG_EC_MULTISYMBOL
-  aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
-      cpi->common.fc->coef_cdfs[tx_size][type][ref];
+  aom_cdf_prob(*const coef_head_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+      cpi->common.fc->coef_head_cdfs[tx_size][type][ref];
+  aom_cdf_prob(*const coef_tail_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+      cpi->common.fc->coef_tail_cdfs[tx_size][type][ref];
 #endif
   unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[txsize_sqr_map[tx_size]][type][ref];
@@ -495,7 +501,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
     add_token(&t, coef_probs[band[c]][pt],
 #if CONFIG_EC_MULTISYMBOL
-              &coef_cdfs[band[c]][pt],
+              &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
 #endif
               extra, (uint8_t)token, (uint8_t)skip_eob, counts[band[c]][pt]);
 
@@ -508,7 +514,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     assert(!skip_eob);  // The last token must be non-zero.
     add_token(&t, coef_probs[band[c]][pt],
 #if CONFIG_EC_MULTISYMBOL
-              NULL,
+              NULL, NULL,
 #endif
               0, EOB_TOKEN, 0, counts[band[c]][pt]);
     ++eob_branch[band[c]][pt];

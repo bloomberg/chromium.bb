@@ -2395,7 +2395,7 @@ static void read_coef_probs_common(av1_coeff_probs_model *coef_probs,
                                    aom_reader *r) {
   int i, j, k, l, m;
 #if CONFIG_EC_ADAPT
-  const int node_limit = UNCONSTRAINED_NODES - 1;
+  const int node_limit = UNCONSTRAINED_NODES - 2;
 #else
   const int node_limit = UNCONSTRAINED_NODES;
 #endif

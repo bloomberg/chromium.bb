@@ -183,6 +183,7 @@ static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
 #define PIVOT_NODE 2  // which node is pivot
 
 #define MODEL_NODES (ENTROPY_NODES - UNCONSTRAINED_NODES)
+#define TAIL_NODES (MODEL_NODES + 1)
 extern const aom_tree_index av1_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)];
 extern const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
 
@@ -200,6 +201,8 @@ typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                     [ENTROPY_TOKENS];
 extern const aom_cdf_prob av1_pareto8_token_probs[COEFF_PROB_MODELS]
                                                  [ENTROPY_TOKENS - 2];
+extern const aom_cdf_prob av1_pareto8_tail_cdfs[COEFF_PROB_MODELS]
+                                               [ENTROPY_TOKENS - 3];
 struct frame_contexts;
 void av1_coef_pareto_cdfs(struct frame_contexts *fc);
 #endif  // CONFIG_EC_MULTISYMBOL
