@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
@@ -45,8 +46,10 @@ class Range;
 class Text;
 
 class CORE_EXPORT InputMethodController final
-    : public GarbageCollected<InputMethodController> {
+    : public GarbageCollectedFinalized<InputMethodController>,
+      public SynchronousMutationObserver {
   WTF_MAKE_NONCOPYABLE(InputMethodController);
+  USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
 
  public:
   enum ConfirmCompositionBehavior {
@@ -55,6 +58,7 @@ class CORE_EXPORT InputMethodController final
   };
 
   static InputMethodController* create(LocalFrame&);
+  virtual ~InputMethodController();
   DECLARE_TRACE();
 
   // international text input composition
@@ -85,7 +89,7 @@ class CORE_EXPORT InputMethodController final
   Range* compositionRange() const;
 
   void clear();
-  void documentDetached();
+  void documentAttached(Document*);
 
   PlainTextRange getSelectionOffsets() const;
   // Returns true if setting selection to specified offsets, otherwise false.
@@ -145,6 +149,9 @@ class CORE_EXPORT InputMethodController final
                                          int selectionEnd);
   int textInputFlags() const;
   WebTextInputMode inputModeOfFocusedElement() const;
+
+  // Implements |SynchronousMutationObserver|.
+  void contextDestroyed() final;
 };
 
 }  // namespace blink

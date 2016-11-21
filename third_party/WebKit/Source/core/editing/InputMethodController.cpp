@@ -170,6 +170,8 @@ InputMethodController* InputMethodController::create(LocalFrame& frame) {
 InputMethodController::InputMethodController(LocalFrame& frame)
     : m_frame(&frame), m_isDirty(false), m_hasComposition(false) {}
 
+InputMethodController::~InputMethodController() = default;
+
 bool InputMethodController::isAvailable() const {
   return frame().document();
 }
@@ -197,9 +199,14 @@ void InputMethodController::clear() {
   m_isDirty = false;
 }
 
-void InputMethodController::documentDetached() {
+void InputMethodController::contextDestroyed() {
   clear();
   m_compositionRange = nullptr;
+}
+
+void InputMethodController::documentAttached(Document* document) {
+  DCHECK(document);
+  setContext(document);
 }
 
 void InputMethodController::selectComposition() const {
@@ -1186,6 +1193,7 @@ WebTextInputType InputMethodController::textInputType() const {
 DEFINE_TRACE(InputMethodController) {
   visitor->trace(m_frame);
   visitor->trace(m_compositionRange);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 }  // namespace blink

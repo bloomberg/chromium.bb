@@ -494,6 +494,7 @@ void LocalFrame::detachChildren() {
 void LocalFrame::documentAttached() {
   DCHECK(document());
   selection().documentAttached(document());
+  inputMethodController().documentAttached(document());
 }
 
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
