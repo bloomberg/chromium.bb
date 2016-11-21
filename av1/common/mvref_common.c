@@ -299,31 +299,6 @@ static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
   return has_tr;
 }
 
-static void handle_sec_rect_block(const MB_MODE_INFO *const candidate,
-                                  uint8_t refmv_count,
-                                  CANDIDATE_MV *ref_mv_stack,
-                                  MV_REFERENCE_FRAME ref_frame,
-                                  int16_t *mode_context) {
-  int rf, idx;
-
-  for (rf = 0; rf < 2; ++rf) {
-    if (candidate->ref_frame[rf] == ref_frame) {
-      const int list_range = AOMMIN(refmv_count, MAX_MV_REF_CANDIDATES);
-
-      const int_mv pred_mv = candidate->mv[rf];
-      for (idx = 0; idx < list_range; ++idx)
-        if (pred_mv.as_int == ref_mv_stack[idx].this_mv.as_int) break;
-
-      if (idx < list_range) {
-        if (idx == 0)
-          mode_context[ref_frame] |= (1 << SKIP_NEARESTMV_OFFSET);
-        else if (idx == 1)
-          mode_context[ref_frame] |= (1 << SKIP_NEARMV_OFFSET);
-      }
-    }
-  }
-}
-
 static int add_col_ref_mv(const AV1_COMMON *cm,
                           const MV_REF *prev_frame_mvs_base,
                           const MACROBLOCKD *xd, int mi_row, int mi_col,
@@ -510,23 +485,6 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
     }
     len = nr_len;
-  }
-
-  // TODO(jingning): Clean-up needed.
-  if (xd->is_sec_rect) {
-    if (xd->n8_w < xd->n8_h) {
-      const MODE_INFO *const candidate_mi = xd->mi[-1];
-      const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-      handle_sec_rect_block(candidate, nearest_refmv_count, ref_mv_stack,
-                            ref_frame, mode_context);
-    }
-
-    if (xd->n8_w > xd->n8_h) {
-      const MODE_INFO *const candidate_mi = xd->mi[-xd->mi_stride];
-      const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-      handle_sec_rect_block(candidate, nearest_refmv_count, ref_mv_stack,
-                            ref_frame, mode_context);
-    }
   }
 
   if (rf[1] > NONE) {
