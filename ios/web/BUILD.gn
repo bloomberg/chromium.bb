@@ -325,6 +325,8 @@ source_set("user_agent") {
     "public/user_agent.h",
     "public/user_agent.mm",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("earl_grey_test_support") {
