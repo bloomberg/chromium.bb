@@ -63,7 +63,11 @@ public class OfflinePageTabObserver
     private static OfflinePageTabObserver sInstance;
 
     static void init(Context context, SnackbarManager manager, SnackbarController controller) {
-        sInstance = new OfflinePageTabObserver(context, manager, controller);
+        if (sInstance == null) {
+            sInstance = new OfflinePageTabObserver(context, manager, controller);
+            return;
+        }
+        sInstance.reinitialize(context, manager, controller);
     }
 
     static OfflinePageTabObserver getInstance() {
@@ -93,9 +97,7 @@ public class OfflinePageTabObserver
      */
     OfflinePageTabObserver(Context context, SnackbarManager snackbarManager,
             SnackbarController snackbarController) {
-        mContext = context;
-        mSnackbarManager = snackbarManager;
-        mSnackbarController = snackbarController;
+        reinitialize(context, snackbarManager, snackbarController);
 
         // The first time observer is created snackbar has net yet been shown.
         mIsObservingNetworkChanges = false;
@@ -191,6 +193,16 @@ public class OfflinePageTabObserver
         Log.d(TAG, "Got connectivity event, connectionType: " + connectionType + ", is connected: "
                         + isConnected() + ", controller: " + mSnackbarController);
         maybeShowReloadSnackbar(mCurrentTab, true);
+
+        // Since we are loosing the connection, next time we connect, we still want to show a
+        // snackbar. This works in event that onConnectionTypeChanged happens, while Chrome is not
+        // visible. Making it visible after that would not trigger the snackbar, even though
+        // connection state changed. See http://crbug.com/651410
+        if (!isConnected()) {
+            for (TabState tabState : mObservedTabs.values()) {
+                tabState.wasSnackbarSeen = false;
+            }
+        }
     }
 
     @VisibleForTesting
@@ -250,5 +262,17 @@ public class OfflinePageTabObserver
     @VisibleForTesting
     void stopObservingNetworkChanges() {
         NetworkChangeNotifier.removeConnectionTypeObserver(this);
+    }
+
+    boolean isCurrentContext(Context context) {
+        return mContext == context;
+    }
+
+    void reinitialize(Context context, SnackbarManager manager, SnackbarController controller) {
+        // TODO(fgorski): Work out if we need to also update network changes observer with the
+        // context change.
+        mContext = context;
+        mSnackbarManager = manager;
+        mSnackbarController = controller;
     }
 }

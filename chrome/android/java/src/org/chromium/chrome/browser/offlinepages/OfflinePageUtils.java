@@ -161,7 +161,9 @@ public class OfflinePageUtils {
      * @param tab The current tab.
      */
     public static void showOfflineSnackbarIfNecessary(ChromeActivity activity, Tab tab) {
-        if (OfflinePageTabObserver.getInstance() == null) {
+        if (OfflinePageTabObserver.getInstance() == null
+                || !OfflinePageTabObserver.getInstance().isCurrentContext(
+                           activity.getBaseContext())) {
             SnackbarController snackbarController =
                     createReloadSnackbarController(activity.getTabModelSelector());
             OfflinePageTabObserver.init(
