@@ -458,6 +458,9 @@ post_process_cmdline() {
         enabled ${c} && enable_feature ${c##*_}s
     done
 
+    # Enable ref_mv by default
+    soft_enable ref_mv
+
     # Enable daala_ec by default
     ! enabled ans && soft_enable daala_ec
 
