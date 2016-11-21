@@ -465,8 +465,9 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
 
     // Add an initial fetch response, as the service tries to fetch when there
     // is nothing in the DB.
-    if (set_empty_response)
+    if (set_empty_response) {
       SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
+    }
 
     // TODO(treib): Find a better way to wait for initialization to finish.
     base::RunLoop().RunUntilIdle();

@@ -128,8 +128,9 @@ void RequestThrottler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
     keys_to_register.insert(info.interactive_count_pref);
   }
 
-  for (const std::string& key : keys_to_register)
+  for (const std::string& key : keys_to_register) {
     registry->RegisterIntegerPref(key, 0);
+  }
 }
 
 bool RequestThrottler::DemandQuotaForRequest(bool interactive_request) {

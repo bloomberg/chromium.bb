@@ -51,8 +51,9 @@ const char kUrl11[] = "http://www.fake11.com/";
 const char kTitle[] = "title is ignored";
 
 SessionWindow* GetOrCreateWindow(SyncedSession* session, int window_id) {
-  if (session->windows.find(window_id) == session->windows.end())
+  if (session->windows.find(window_id) == session->windows.end()) {
     session->windows[window_id] = base::MakeUnique<SessionWindow>();
+  }
 
   return session->windows[window_id].get();
 }

@@ -67,10 +67,12 @@ bool GetParamAsBool(const base::Feature& feature,
                     bool default_value) {
   std::string value_as_string =
       variations::GetVariationParamValueByFeature(feature, param_name);
-  if (value_as_string == "true")
+  if (value_as_string == "true") {
     return true;
-  if (value_as_string == "false")
+  }
+  if (value_as_string == "false") {
     return false;
+  }
 
   if (!value_as_string.empty()) {
     LOG(WARNING) << "Failed to parse variation param " << param_name

@@ -64,10 +64,11 @@ void RemoteSuggestionsDatabase::SetErrorCallback(
 }
 
 void RemoteSuggestionsDatabase::LoadSnippets(const SnippetsCallback& callback) {
-  if (IsInitialized())
+  if (IsInitialized()) {
     LoadSnippetsImpl(callback);
-  else
+  } else {
     pending_snippets_callbacks_.emplace_back(callback);
+  }
 }
 
 void RemoteSuggestionsDatabase::SaveSnippet(const NTPSnippet& snippet) {
@@ -109,10 +110,11 @@ void RemoteSuggestionsDatabase::DeleteSnippets(
 void RemoteSuggestionsDatabase::LoadImage(
     const std::string& snippet_id,
     const SnippetImageCallback& callback) {
-  if (IsInitialized())
+  if (IsInitialized()) {
     LoadImageImpl(snippet_id, callback);
-  else
+  } else {
     pending_image_callbacks_.emplace_back(snippet_id, callback);
+  }
 }
 
 void RemoteSuggestionsDatabase::SaveImage(const std::string& snippet_id,
@@ -162,8 +164,9 @@ void RemoteSuggestionsDatabase::OnDatabaseInited(bool success) {
     return;
   }
   database_initialized_ = true;
-  if (IsInitialized())
+  if (IsInitialized()) {
     ProcessPendingLoads();
+  }
 }
 
 void RemoteSuggestionsDatabase::OnDatabaseLoaded(
@@ -199,8 +202,9 @@ void RemoteSuggestionsDatabase::OnDatabaseLoaded(
 
   // If any of the snippet protos couldn't be converted to actual snippets,
   // clean them up now.
-  if (!keys_to_remove->empty())
+  if (!keys_to_remove->empty()) {
     DeleteSnippets(std::move(keys_to_remove));
+  }
 }
 
 void RemoteSuggestionsDatabase::OnDatabaseSaved(bool success) {
@@ -218,8 +222,9 @@ void RemoteSuggestionsDatabase::OnImageDatabaseInited(bool success) {
     return;
   }
   image_database_initialized_ = true;
-  if (IsInitialized())
+  if (IsInitialized()) {
     ProcessPendingLoads();
+  }
 }
 
 void RemoteSuggestionsDatabase::OnImageDatabaseLoaded(
@@ -251,19 +256,22 @@ void RemoteSuggestionsDatabase::OnImageDatabaseSaved(bool success) {
 void RemoteSuggestionsDatabase::OnDatabaseError() {
   database_.reset();
   image_database_.reset();
-  if (!error_callback_.is_null())
+  if (!error_callback_.is_null()) {
     error_callback_.Run();
+  }
 }
 
 void RemoteSuggestionsDatabase::ProcessPendingLoads() {
   DCHECK(IsInitialized());
 
-  for (const auto& callback : pending_snippets_callbacks_)
+  for (const auto& callback : pending_snippets_callbacks_) {
     LoadSnippetsImpl(callback);
+  }
   pending_snippets_callbacks_.clear();
 
-  for (const auto& id_callback : pending_image_callbacks_)
+  for (const auto& id_callback : pending_image_callbacks_) {
     LoadImageImpl(id_callback.first, id_callback.second);
+  }
   pending_image_callbacks_.clear();
 }
 

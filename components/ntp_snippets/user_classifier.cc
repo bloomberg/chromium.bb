@@ -153,8 +153,9 @@ double GetEstimateHoursBetweenEvents(double metric_value,
   // The computation below is well-defined only for |metric_value| > 1 (log of
   // negative value or division by zero). When |metric_value| -> 1, the estimate
   // below -> infinity, so max_hours is a natural result, here.
-  if (metric_value <= 1)
+  if (metric_value <= 1) {
     return max_hours;
+  }
 
   // This is the estimate with the assumption that last event happened right
   // now and the system is in the steady-state. Solve estimate_hours in the
@@ -200,8 +201,9 @@ UserClassifier::UserClassifier(PrefService* pref_service)
           GetParamValue(kRareUserOpensNTPAtMostOncePerHoursParam,
                         kRareUserOpensNTPAtMostOncePerHours)) {
   // The pref_service_ can be null in tests.
-  if (!pref_service_)
+  if (!pref_service_) {
     return;
+  }
 
   // TODO(jkrcal): Store the current discount rate per hour into prefs. If it
   // differs from the previous value, rescale the metric values so that the
@@ -209,8 +211,9 @@ UserClassifier::UserClassifier(PrefService* pref_service)
 
   // Initialize the prefs storing the last time: the counter has just started!
   for (const Metric metric : kMetrics) {
-    if (!HasLastTime(metric))
+    if (!HasLastTime(metric)) {
       SetLastTimeToNow(metric);
+    }
   }
 }
 
@@ -268,8 +271,9 @@ double UserClassifier::GetEstimatedAvgTime(Metric metric) const {
 
 UserClassifier::UserClass UserClassifier::GetUserClass() const {
   // The pref_service_ can be null in tests.
-  if (!pref_service_)
+  if (!pref_service_) {
     return UserClass::ACTIVE_NTP_USER;
+  }
 
   if (GetEstimatedAvgTime(Metric::NTP_OPENED) >=
       rare_user_opens_ntp_at_most_once_per_hours_) {
@@ -299,8 +303,9 @@ std::string UserClassifier::GetUserClassDescriptionForDebugging() const {
 
 void UserClassifier::ClearClassificationForDebugging() {
   // The pref_service_ can be null in tests.
-  if (!pref_service_)
+  if (!pref_service_) {
     return;
+  }
 
   for (const Metric& metric : kMetrics) {
     ClearMetricValue(metric);
@@ -310,14 +315,16 @@ void UserClassifier::ClearClassificationForDebugging() {
 
 double UserClassifier::UpdateMetricOnEvent(Metric metric) {
   // The pref_service_ can be null in tests.
-  if (!pref_service_)
+  if (!pref_service_) {
     return 0;
+  }
 
   double hours_since_last_time =
       std::min(max_hours_, GetHoursSinceLastTime(metric));
   // Ignore events within the same "browsing session".
-  if (hours_since_last_time < min_hours_)
+  if (hours_since_last_time < min_hours_) {
     return GetUpToDateMetricValue(metric);
+  }
 
   SetLastTimeToNow(metric);
 
@@ -332,8 +339,9 @@ double UserClassifier::UpdateMetricOnEvent(Metric metric) {
 
 double UserClassifier::GetUpToDateMetricValue(Metric metric) const {
   // The pref_service_ can be null in tests.
-  if (!pref_service_)
+  if (!pref_service_) {
     return 0;
+  }
 
   double hours_since_last_time =
       std::min(max_hours_, GetHoursSinceLastTime(metric));
@@ -344,8 +352,9 @@ double UserClassifier::GetUpToDateMetricValue(Metric metric) const {
 }
 
 double UserClassifier::GetHoursSinceLastTime(Metric metric) const {
-  if (!HasLastTime(metric))
+  if (!HasLastTime(metric)) {
     return 0;
+  }
 
   base::TimeDelta since_last_time =
       base::Time::Now() - base::Time::FromInternalValue(pref_service_->GetInt64(

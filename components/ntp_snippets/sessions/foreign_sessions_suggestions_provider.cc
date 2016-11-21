@@ -369,8 +369,9 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates(
                          std::unique_ptr<sessions::SessionWindow>>& key_value :
          session->windows) {
       for (const std::unique_ptr<SessionTab>& tab : key_value.second->tabs) {
-        if (tab->navigations.empty())
+        if (tab->navigations.empty()) {
           continue;
+        }
 
         const SerializedNavigationEntry& navigation = tab->navigations.back();
         const std::string id = navigation.virtual_url().spec();

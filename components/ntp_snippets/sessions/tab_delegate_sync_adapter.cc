@@ -57,8 +57,9 @@ void TabDelegateSyncAdapter::OnForeignSessionUpdated() {
 }
 
 void TabDelegateSyncAdapter::InvokeCallback() {
-  if (!change_callback_.is_null())
+  if (!change_callback_.is_null()) {
     change_callback_.Run();
+  }
 }
 
 }  // namespace ntp_snippets

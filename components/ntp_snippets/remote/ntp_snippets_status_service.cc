@@ -76,8 +76,9 @@ void NTPSnippetsStatusService::OnSnippetsEnabledChanged() {
 
 void NTPSnippetsStatusService::OnStateChanged(
     SnippetsStatus new_snippets_status) {
-  if (new_snippets_status == snippets_status_)
+  if (new_snippets_status == snippets_status_) {
     return;
+  }
 
   snippets_status_change_callback_.Run(snippets_status_, new_snippets_status);
   snippets_status_ = new_snippets_status;

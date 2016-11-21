@@ -56,8 +56,9 @@ Category CategoryFactory::FromIDValue(int id) {
 
 bool CategoryFactory::CompareCategories(const Category& left,
                                         const Category& right) const {
-  if (left == right)
+  if (left == right) {
     return false;
+  }
   return std::find(ordered_categories_.begin(), ordered_categories_.end(),
                    left) < std::find(ordered_categories_.begin(),
                                      ordered_categories_.end(), right);
@@ -78,8 +79,9 @@ void CategoryFactory::AddKnownCategory(KnownCategories known_category) {
 Category CategoryFactory::InternalFromID(int id) {
   auto it = std::find(ordered_categories_.begin(), ordered_categories_.end(),
                       Category(id));
-  if (it != ordered_categories_.end())
+  if (it != ordered_categories_.end()) {
     return *it;
+  }
 
   Category category(id);
   ordered_categories_.push_back(category);
