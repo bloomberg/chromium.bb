@@ -248,7 +248,8 @@ class WebContentsObserverProxy extends WebContentsObserver {
         }
         // All observer destroy() implementations should result in their removal
         // from the proxy.
-        assert mObservers.isEmpty();
+        // TODO(crbug.com/667437)
+        // assert mObservers.isEmpty();
         mObservers.clear();
 
         if (mNativeWebContentsObserverProxy != 0) {

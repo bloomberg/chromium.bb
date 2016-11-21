@@ -18,7 +18,7 @@ import org.chromium.webview_shell.WebViewThreadTestActivity;
  * Tests running WebView on different threads.
  */
 public class WebViewThreadTest extends ActivityInstrumentationTestCase2<WebViewThreadTestActivity> {
-    private static final long TIMEOUT = scaleTimeout(2000);
+    private static final long TIMEOUT = scaleTimeout(4000);
     private static final String DATA = "<html><body>Testing<script>"
             + "console.log(\"testing\")</script></body></html>";
     private static final String URL_DATA = "javascript:console.log(\"testing\")";

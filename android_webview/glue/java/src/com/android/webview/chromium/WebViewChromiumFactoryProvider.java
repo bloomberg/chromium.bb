@@ -443,7 +443,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     // Only on UI thread.
     AwBrowserContext getBrowserContextOnUiThread() {
-        assert mStarted;
+        // TODO(crbug.com/667337)
+        // assert mStarted;
+
         if (BuildConfig.DCHECK_IS_ON && !ThreadUtils.runningOnUiThread()) {
             throw new RuntimeException(
                     "getBrowserContextOnUiThread called on " + Thread.currentThread());
