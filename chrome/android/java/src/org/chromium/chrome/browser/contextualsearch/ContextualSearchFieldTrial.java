@@ -52,7 +52,8 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION =
             "disable_accept_languages_for_translation";
     // Enables usage of English as the target language even when it's the primary UI language.
-    private static final String ENABLE_ENGLISH_TARGET_TRANSLATION =
+    @VisibleForTesting
+    static final String ENABLE_ENGLISH_TARGET_TRANSLATION =
             "enable_english_target_translation";
     // Enables relying on the server to control whether the onebox is actually shown, rather
     // than checking if translation is needed client-side based on source/target languages.
