@@ -6,6 +6,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -415,6 +417,37 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   // lifecycle.
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_SAFE_BROWSING);
+}
+
+// Checks that prefetching a page does not add it to browsing history.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
+  // Initialize.
+  Profile* profile = current_browser()->profile();
+  ASSERT_TRUE(profile);
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
+
+  // Prefetch a page.
+  GURL prefetched_url = src_server()->GetURL(MakeAbsolute(kPrefetchPage));
+  PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForHistoryBackendToRun(profile);
+
+  // Navigate to another page.
+  GURL navigated_url = src_server()->GetURL(MakeAbsolute(kPrefetchPage2));
+  ui_test_utils::NavigateToURL(current_browser(), navigated_url);
+  WaitForHistoryBackendToRun(profile);
+
+  // Check that the URL that was explicitly navigated to is already in history.
+  ui_test_utils::HistoryEnumerator enumerator(profile);
+  std::vector<GURL>& urls = enumerator.urls();
+  EXPECT_TRUE(std::find(urls.begin(), urls.end(), navigated_url) != urls.end());
+
+  // Check that the URL that was prefetched is not in history.
+  EXPECT_TRUE(std::find(urls.begin(), urls.end(), prefetched_url) ==
+              urls.end());
+
+  // The loader URL is the remaining entry.
+  EXPECT_EQ(2U, urls.size());
 }
 
 }  // namespace prerender
