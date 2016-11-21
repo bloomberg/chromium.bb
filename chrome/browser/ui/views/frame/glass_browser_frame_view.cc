@@ -614,6 +614,13 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
                          titlebar_rect.y(), titlebar_rect.width(),
                          titlebar_rect.height());
   }
+  const gfx::ImageSkia frame_overlay_image = GetFrameOverlayImage();
+  if (!frame_overlay_image.isNull()) {
+    canvas->DrawImageInt(frame_overlay_image, 0, 0, frame_overlay_image.width(),
+                         frame_overlay_image.height(), titlebar_rect.x(),
+                         titlebar_rect.y(), frame_overlay_image.width() * scale,
+                         frame_overlay_image.height() * scale, true);
+  }
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {

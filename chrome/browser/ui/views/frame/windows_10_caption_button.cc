@@ -7,6 +7,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_utils.h"
@@ -63,12 +64,19 @@ void Windows10CaptionButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Windows10CaptionButton::PaintBackground(gfx::Canvas* canvas) {
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   const SkColor bg_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
+      theme_provider->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
   const SkAlpha theme_alpha = SkColorGetA(bg_color);
   if (theme_alpha > 0) {
     canvas->FillRect(GetContentsBounds(),
                      SkColorSetA(bg_color, ButtonBackgroundAlpha(theme_alpha)));
+  }
+  if (theme_provider->HasCustomImage(IDR_THEME_WINDOW_CONTROL_BACKGROUND)) {
+    const gfx::Rect bounds = GetContentsBounds();
+    canvas->TileImageInt(
+        *theme_provider->GetImageSkiaNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND),
+        0, 0, bounds.width(), bounds.height());
   }
 
   SkColor base_color;
