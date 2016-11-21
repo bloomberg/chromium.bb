@@ -16,8 +16,9 @@ var FilesMetadataBox = Polymer({
     // File type specific metadata below.
     imageWidth: Number,
     imageHeight: Number,
-    mediaTitle: String,
+    mediaAlbum: String,
     mediaArtist: String,
+    mediaTitle: String,
 
     // Whether the size is the middle of loading.
     isSizeLoading: Boolean,
@@ -35,6 +36,7 @@ var FilesMetadataBox = Polymer({
     this.imageHeight = 0;
     this.mediaTitle = '';
     this.mediaArtist = '';
+    this.mediaAlbum = '';
 
     this.isSizeLoading = false;
   },

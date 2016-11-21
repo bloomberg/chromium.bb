@@ -239,6 +239,16 @@ function MetadataItem() {
   /**
    * @public {string|undefined}
    */
+  this.mediaAlbum;
+
+  /**
+   * @public {Error|undefined}
+   */
+  this.mediaAlbumError;
+
+  /**
+   * @public {string|undefined}
+   */
   this.mediaTitle;
 
   /**

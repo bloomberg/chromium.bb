@@ -125,8 +125,6 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     }.bind(this));
   }
 
-  var type = FileType.getType(entry).type;
-  this.metadataBox_.type = type;
   if (['image', 'video', 'audio'].includes(type)) {
     if (item.externalFileUrl) {
       this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
@@ -139,13 +137,20 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
       this.metadataModel_
           .get(
               [entry],
-              ['imageHeight', 'imageWidth', 'mediaArtist', 'mediaTitle'])
+              [
+                'imageHeight',
+                'imageWidth',
+                'mediaAlbum',
+                'mediaArtist',
+                'mediaTitle'
+              ])
           .then(function(items) {
             var item = items[0];
-            this.metadataBox_.imageHeight = item.imageHeight;
-            this.metadataBox_.imageWidth = item.imageWidth;
-            this.metadataBox_.mediaArtist = item.mediaArtist;
-            this.metadataBox_.mediaTitle = item.mediaTitle;
+            this.metadataBox_.imageHeight = item.imageHeight || 0;
+            this.metadataBox_.imageWidth = item.imageWidth || 0;
+            this.metadataBox_.mediaAlbum = item.mediaAlbum || '';
+            this.metadataBox_.mediaArtist = item.mediaArtist || '';
+            this.metadataBox_.mediaTitle = item.mediaTitle || '';
           }.bind(this));
     }
   }

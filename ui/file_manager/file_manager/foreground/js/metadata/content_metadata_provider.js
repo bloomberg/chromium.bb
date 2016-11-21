@@ -58,6 +58,7 @@ ContentMetadataProvider.PROPERTY_NAMES = [
   'ifd',
   'imageHeight',
   'imageWidth',
+  'mediaAlbum',
   'mediaArtist',
   'mediaMimeType',
   'mediaTitle'
@@ -309,6 +310,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     item.imageWidth = metadata['width'];
     item.mediaArtist = metadata['artist'];
     item.mediaTitle = metadata['title'];
+    item.mediaAlbum = metadata['album'];
     if (metadata.attachedImages && metadata.attachedImages.length > 0) {
       var reader = new FileReader();
       reader.onload = function(e) {
