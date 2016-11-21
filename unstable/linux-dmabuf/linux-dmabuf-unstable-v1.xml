@@ -98,7 +98,8 @@
         binds to this interface. A roundtrip after binding guarantees
         that the client has received all supported formats.
 
-        For the definition of the format codes, see create request.
+        For the definition of the format codes, see the
+        zwp_linux_buffer_params_v1::create request.
 
         XXX: Can a compositor ever enumerate them?
       </description>
