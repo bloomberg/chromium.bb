@@ -1653,7 +1653,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
       if (alternative_decrypter_latch_) {
         // Switch to the alternative decrypter and latch so that we cannot
         // switch back.
-        decrypter_.reset(alternative_decrypter_.release());
+        decrypter_ = std::move(alternative_decrypter_);
         decrypter_level_ = alternative_decrypter_level_;
         alternative_decrypter_level_ = ENCRYPTION_NONE;
       } else {

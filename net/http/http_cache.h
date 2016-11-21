@@ -181,7 +181,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   // Get/Set the cache's clock. These are public only for testing.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-    clock_.reset(clock.release());
+    clock_ = std::move(clock);
   }
   base::Clock* clock() const { return clock_.get(); }
 
