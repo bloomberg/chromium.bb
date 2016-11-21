@@ -208,10 +208,8 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
 }
 
 ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState) {
-  // This CANNOT be called on OfflineAudioContext; this is only to implement
-  // the pure virtual interface from BaseAudioContext.
-  RELEASE_NOTREACHED();
-
+  LOG(FATAL) << "This CANNOT be called on OfflineAudioContext; this is only to "
+                "implement the pure virtual interface from BaseAudioContext.";
   return ScriptPromise();
 }
 

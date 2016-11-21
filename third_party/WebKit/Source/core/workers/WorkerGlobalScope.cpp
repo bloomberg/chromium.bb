@@ -240,9 +240,9 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
 v8::Local<v8::Object> WorkerGlobalScope::wrap(
     v8::Isolate*,
     v8::Local<v8::Object> creationContext) {
-  // WorkerGlobalScope must never be wrapped with wrap method.  The global
-  // object of ECMAScript environment is used as the wrapper.
-  RELEASE_NOTREACHED();
+  LOG(FATAL) << "WorkerGlobalScope must never be wrapped with wrap method.  "
+                "The global object of ECMAScript environment is used as the "
+                "wrapper.";
   return v8::Local<v8::Object>();
 }
 
@@ -250,7 +250,9 @@ v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
-  RELEASE_NOTREACHED();  // same as wrap method
+  LOG(FATAL) << "WorkerGlobalScope must never be wrapped with wrap method.  "
+                "The global object of ECMAScript environment is used as the "
+                "wrapper.";
   return v8::Local<v8::Object>();
 }
 

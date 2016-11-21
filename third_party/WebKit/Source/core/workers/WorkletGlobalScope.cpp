@@ -35,9 +35,9 @@ void WorkletGlobalScope::dispose() {
 v8::Local<v8::Object> WorkletGlobalScope::wrap(
     v8::Isolate*,
     v8::Local<v8::Object> creationContext) {
-  // WorkletGlobalScope must never be wrapped with wrap method. The global
-  // object of ECMAScript environment is used as the wrapper.
-  RELEASE_NOTREACHED();
+  LOG(FATAL) << "WorkletGlobalScope must never be wrapped with wrap method. "
+                "The global object of ECMAScript environment is used as the "
+                "wrapper.";
   return v8::Local<v8::Object>();
 }
 
@@ -45,7 +45,9 @@ v8::Local<v8::Object> WorkletGlobalScope::associateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
-  RELEASE_NOTREACHED();  // Same as wrap method.
+  LOG(FATAL) << "WorkletGlobalScope must never be wrapped with wrap method. "
+                "The global object of ECMAScript environment is used as the "
+                "wrapper.";
   return v8::Local<v8::Object>();
 }
 

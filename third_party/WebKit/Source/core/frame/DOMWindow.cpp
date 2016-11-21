@@ -40,9 +40,9 @@ DOMWindow::~DOMWindow() {}
 
 v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate*,
                                       v8::Local<v8::Object> creationContext) {
-  // DOMWindow must never be wrapped with wrap method.  The wrappers must be
-  // created at WindowProxy::createContext() and setupWindowPrototypeChain().
-  RELEASE_NOTREACHED();
+  LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
+                "wrappers must be created at WindowProxy::createContext() and "
+                "setupWindowPrototypeChain().";
   return v8::Local<v8::Object>();
 }
 
@@ -50,7 +50,9 @@ v8::Local<v8::Object> DOMWindow::associateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
-  RELEASE_NOTREACHED();  // same as wrap method
+  LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
+                "wrappers must be created at WindowProxy::createContext() and "
+                "setupWindowPrototypeChain().";
   return v8::Local<v8::Object>();
 }
 

@@ -913,9 +913,9 @@ void ThreadState::schedulePreciseGC() {
 
 namespace {
 
-#define UNEXPECTED_GCSTATE(s)                                             \
-  case ThreadState::s:                                                    \
-    RELEASE_NOTREACHED() << "Unexpected transition while in GCState " #s; \
+#define UNEXPECTED_GCSTATE(s)                                   \
+  case ThreadState::s:                                          \
+    LOG(FATAL) << "Unexpected transition while in GCState " #s; \
     return
 
 void unexpectedGCState(ThreadState::GCState gcState) {

@@ -380,7 +380,7 @@ void FetchManager::Loader::didReceiveResponse(
         tainting = FetchRequestData::CORSTainting;
         break;
       case WebURLRequest::FetchRequestModeNavigate:
-        RELEASE_NOTREACHED();
+        LOG(FATAL);
         break;
     }
   }
@@ -400,10 +400,9 @@ void FetchManager::Loader::didReceiveResponse(
       // ServiceWorker can't respond to the request from fetch() with an
       // opaque redirect response.
       case WebServiceWorkerResponseTypeError:
-        // When ServiceWorker respond to the request from fetch() with an
-        // error response, FetchManager::Loader::didFail() must be called
-        // instead.
-        RELEASE_NOTREACHED();
+        LOG(FATAL) << "When ServiceWorker respond to the request from fetch() "
+                      "with an error response, FetchManager::Loader::didFail() "
+                      "must be called instead.";
         break;
     }
   }

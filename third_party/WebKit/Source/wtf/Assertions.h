@@ -262,8 +262,6 @@ class WTF_EXPORT ScopedLogger {
 #define RELEASE_ASSERT(assertion) \
   (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
 #endif
-// TODO(tkent): Move this to base/logging.h?
-#define RELEASE_NOTREACHED() LOG(FATAL)
 
 // DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES
 // Allow equality comparisons of Objects by reference or pointer,
