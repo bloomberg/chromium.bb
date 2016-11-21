@@ -10,7 +10,7 @@ namespace display {
 namespace test {
 
 TestScreen::TestScreen() {
-  display::Display display;
+  Display display;
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 

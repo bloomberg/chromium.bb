@@ -39,7 +39,7 @@ struct DisplayUIScales {
 };
 
 DisplayUIScales GetScalesForDisplay(
-    const scoped_refptr<display::ManagedDisplayMode>& native_mode) {
+    const scoped_refptr<ManagedDisplayMode>& native_mode) {
 #define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))
 
   DisplayUIScales ret;
@@ -75,16 +75,15 @@ DisplayUIScales GetScalesForDisplay(
 struct ScaleComparator {
   explicit ScaleComparator(float s) : scale(s) {}
 
-  bool operator()(
-      const scoped_refptr<display::ManagedDisplayMode>& mode) const {
+  bool operator()(const scoped_refptr<ManagedDisplayMode>& mode) const {
     const float kEpsilon = 0.0001f;
     return std::abs(scale - mode->ui_scale()) < kEpsilon;
   }
   float scale;
 };
 
-scoped_refptr<display::ManagedDisplayMode> FindNextMode(
-    const display::ManagedDisplayInfo::ManagedDisplayModeList& modes,
+scoped_refptr<ManagedDisplayMode> FindNextMode(
+    const ManagedDisplayInfo::ManagedDisplayModeList& modes,
     size_t index,
     bool up) {
   DCHECK_LT(index, modes.size());
@@ -98,10 +97,9 @@ scoped_refptr<display::ManagedDisplayMode> FindNextMode(
 
 }  // namespace
 
-display::ManagedDisplayInfo::ManagedDisplayModeList
-CreateInternalManagedDisplayModeList(
-    const scoped_refptr<display::ManagedDisplayMode>& native_mode) {
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
+ManagedDisplayInfo::ManagedDisplayModeList CreateInternalManagedDisplayModeList(
+    const scoped_refptr<ManagedDisplayMode>& native_mode) {
+  ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
 
   float native_ui_scale = (native_mode->device_scale_factor() == 1.25f)
                               ? 1.0f
@@ -118,58 +116,55 @@ CreateInternalManagedDisplayModeList(
   return display_mode_list;
 }
 
-display::ManagedDisplayInfo::ManagedDisplayModeList
-CreateUnifiedManagedDisplayModeList(
-    const scoped_refptr<display::ManagedDisplayMode>& native_mode,
+ManagedDisplayInfo::ManagedDisplayModeList CreateUnifiedManagedDisplayModeList(
+    const scoped_refptr<ManagedDisplayMode>& native_mode,
     const std::set<std::pair<float, float>>& dsf_scale_list) {
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
+  ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
 
   for (auto& pair : dsf_scale_list) {
     gfx::SizeF scaled_size(native_mode->size());
     scaled_size.Scale(pair.second);
-    scoped_refptr<display::ManagedDisplayMode> mode(
-        new display::ManagedDisplayMode(
-            gfx::ToFlooredSize(scaled_size), native_mode->refresh_rate(),
-            native_mode->is_interlaced(), false /* native */,
-            native_mode->ui_scale(), pair.first /* device_scale_factor */));
+    scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
+        gfx::ToFlooredSize(scaled_size), native_mode->refresh_rate(),
+        native_mode->is_interlaced(), false /* native */,
+        native_mode->ui_scale(), pair.first /* device_scale_factor */));
     display_mode_list.push_back(mode);
   }
   // Sort the mode by the size in DIP.
   std::sort(display_mode_list.begin(), display_mode_list.end(),
-            [](const scoped_refptr<display::ManagedDisplayMode>& a,
-               const scoped_refptr<display::ManagedDisplayMode>& b) {
+            [](const scoped_refptr<ManagedDisplayMode>& a,
+               const scoped_refptr<ManagedDisplayMode>& b) {
               return a->GetSizeInDIP(false).GetArea() <
                      b->GetSizeInDIP(false).GetArea();
             });
   return display_mode_list;
 }
 
-scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForResolution(
-    const display::ManagedDisplayInfo& info,
+scoped_refptr<ManagedDisplayMode> GetDisplayModeForResolution(
+    const ManagedDisplayInfo& info,
     const gfx::Size& resolution) {
-  if (display::Display::IsInternalDisplayId(info.id()))
-    return scoped_refptr<display::ManagedDisplayMode>();
+  if (Display::IsInternalDisplayId(info.id()))
+    return scoped_refptr<ManagedDisplayMode>();
 
-  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+  const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
   DCHECK_NE(0u, modes.size());
-  scoped_refptr<display::ManagedDisplayMode> target_mode;
-  display::ManagedDisplayInfo::ManagedDisplayModeList::const_iterator iter =
-      std::find_if(
-          modes.begin(), modes.end(),
-          [resolution](const scoped_refptr<display::ManagedDisplayMode>& mode) {
-            return mode->size() == resolution;
-          });
+  scoped_refptr<ManagedDisplayMode> target_mode;
+  ManagedDisplayInfo::ManagedDisplayModeList::const_iterator iter =
+      std::find_if(modes.begin(), modes.end(),
+                   [resolution](const scoped_refptr<ManagedDisplayMode>& mode) {
+                     return mode->size() == resolution;
+                   });
   if (iter == modes.end()) {
     LOG(WARNING) << "Unsupported resolution was requested:"
                  << resolution.ToString();
-    return scoped_refptr<display::ManagedDisplayMode>();
+    return scoped_refptr<ManagedDisplayMode>();
   }
   return *iter;
 }
 
-scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForNextUIScale(
-    const display::ManagedDisplayInfo& info,
+scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextUIScale(
+    const ManagedDisplayInfo& info,
     bool up) {
   const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
@@ -178,36 +173,35 @@ scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForNextUIScale(
   return FindNextMode(modes, iter - modes.begin(), up);
 }
 
-scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForNextResolution(
-    const display::ManagedDisplayInfo& info,
+scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextResolution(
+    const ManagedDisplayInfo& info,
     bool up) {
-  if (display::Display::IsInternalDisplayId(info.id()))
-    return scoped_refptr<display::ManagedDisplayMode>();
+  if (Display::IsInternalDisplayId(info.id()))
+    return scoped_refptr<ManagedDisplayMode>();
 
-  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+  const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
-  scoped_refptr<display::ManagedDisplayMode> tmp =
-      new display::ManagedDisplayMode(info.size_in_pixel(), 0.0, false, false,
-                                      1.0, info.device_scale_factor());
+  scoped_refptr<ManagedDisplayMode> tmp = new ManagedDisplayMode(
+      info.size_in_pixel(), 0.0, false, false, 1.0, info.device_scale_factor());
   gfx::Size resolution = tmp->GetSizeInDIP(false);
 
-  auto iter = std::find_if(
-      modes.begin(), modes.end(),
-      [resolution](const scoped_refptr<display::ManagedDisplayMode>& mode) {
-        return mode->GetSizeInDIP(false) == resolution;
-      });
+  auto iter =
+      std::find_if(modes.begin(), modes.end(),
+                   [resolution](const scoped_refptr<ManagedDisplayMode>& mode) {
+                     return mode->GetSizeInDIP(false) == resolution;
+                   });
   return FindNextMode(modes, iter - modes.begin(), up);
 }
 
 bool HasDisplayModeForUIScale(const ManagedDisplayInfo& info, float ui_scale) {
   ScaleComparator comparator(ui_scale);
-  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+  const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
   return std::find_if(modes.begin(), modes.end(), comparator) != modes.end();
 }
 
-bool ComputeBoundary(const display::Display& a_display,
-                     const display::Display& b_display,
+bool ComputeBoundary(const Display& a_display,
+                     const Display& b_display,
                      gfx::Rect* a_edge_in_screen,
                      gfx::Rect* b_edge_in_screen) {
   const gfx::Rect& a_bounds = a_display.bounds();
@@ -219,22 +213,22 @@ bool ComputeBoundary(const display::Display& a_display,
   int rr = std::min(a_bounds.right(), b_bounds.right());
   int rb = std::min(a_bounds.bottom(), b_bounds.bottom());
 
-  display::DisplayPlacement::Position position;
+  DisplayPlacement::Position position;
   if ((rb - ry) == 0) {
     // top bottom
     if (a_bounds.bottom() == b_bounds.y()) {
-      position = display::DisplayPlacement::BOTTOM;
+      position = DisplayPlacement::BOTTOM;
     } else if (a_bounds.y() == b_bounds.bottom()) {
-      position = display::DisplayPlacement::TOP;
+      position = DisplayPlacement::TOP;
     } else {
       return false;
     }
   } else {
     // left right
     if (a_bounds.right() == b_bounds.x()) {
-      position = display::DisplayPlacement::RIGHT;
+      position = DisplayPlacement::RIGHT;
     } else if (a_bounds.x() == b_bounds.right()) {
-      position = display::DisplayPlacement::LEFT;
+      position = DisplayPlacement::LEFT;
     } else {
       DCHECK_NE(rr, rx);
       return false;
@@ -242,11 +236,11 @@ bool ComputeBoundary(const display::Display& a_display,
   }
 
   switch (position) {
-    case display::DisplayPlacement::TOP:
-    case display::DisplayPlacement::BOTTOM: {
+    case DisplayPlacement::TOP:
+    case DisplayPlacement::BOTTOM: {
       int left = std::max(a_bounds.x(), b_bounds.x());
       int right = std::min(a_bounds.right(), b_bounds.right());
-      if (position == display::DisplayPlacement::TOP) {
+      if (position == DisplayPlacement::TOP) {
         a_edge_in_screen->SetRect(left, a_bounds.y(), right - left, 1);
         b_edge_in_screen->SetRect(left, b_bounds.bottom() - 1, right - left, 1);
       } else {
@@ -255,11 +249,11 @@ bool ComputeBoundary(const display::Display& a_display,
       }
       break;
     }
-    case display::DisplayPlacement::LEFT:
-    case display::DisplayPlacement::RIGHT: {
+    case DisplayPlacement::LEFT:
+    case DisplayPlacement::RIGHT: {
       int top = std::max(a_bounds.y(), b_bounds.y());
       int bottom = std::min(a_bounds.bottom(), b_bounds.bottom());
-      if (position == display::DisplayPlacement::LEFT) {
+      if (position == DisplayPlacement::LEFT) {
         a_edge_in_screen->SetRect(a_bounds.x(), top, 1, bottom - top);
         b_edge_in_screen->SetRect(b_bounds.right() - 1, top, 1, bottom - top);
       } else {
@@ -272,28 +266,27 @@ bool ComputeBoundary(const display::Display& a_display,
   return true;
 }
 
-int FindDisplayIndexContainingPoint(
-    const std::vector<display::Display>& displays,
-    const gfx::Point& point_in_screen) {
+int FindDisplayIndexContainingPoint(const std::vector<Display>& displays,
+                                    const gfx::Point& point_in_screen) {
   auto iter = std::find_if(displays.begin(), displays.end(),
-                           [point_in_screen](const display::Display& display) {
+                           [point_in_screen](const Display& display) {
                              return display.bounds().Contains(point_in_screen);
                            });
   return iter == displays.end() ? -1 : (iter - displays.begin());
 }
 
-display::DisplayIdList CreateDisplayIdList(const display::Displays& list) {
+DisplayIdList CreateDisplayIdList(const Displays& list) {
   return GenerateDisplayIdList(
       list.begin(), list.end(),
-      [](const display::Display& display) { return display.id(); });
+      [](const Display& display) { return display.id(); });
 }
 
-void SortDisplayIdList(display::DisplayIdList* ids) {
+void SortDisplayIdList(DisplayIdList* ids) {
   std::sort(ids->begin(), ids->end(),
             [](int64_t a, int64_t b) { return CompareDisplayIds(a, b); });
 }
 
-std::string DisplayIdListToString(const display::DisplayIdList& list) {
+std::string DisplayIdListToString(const DisplayIdList& list) {
   std::stringstream s;
   const char* sep = "";
   for (int64_t id : list) {
@@ -310,8 +303,8 @@ bool CompareDisplayIds(int64_t id1, int64_t id2) {
   int index_1 = id1 & 0xFF;
   int index_2 = id2 & 0xFF;
   DCHECK_NE(index_1, index_2) << id1 << " and " << id2;
-  return display::Display::IsInternalDisplayId(id1) ||
-         (index_1 < index_2 && !display::Display::IsInternalDisplayId(id2));
+  return Display::IsInternalDisplayId(id1) ||
+         (index_1 < index_2 && !Display::IsInternalDisplayId(id2));
 }
 
 }  // namespace display

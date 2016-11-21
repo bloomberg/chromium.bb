@@ -22,36 +22,32 @@ class DISPLAY_EXPORT DisplayLayoutStore {
   DisplayLayoutStore();
   ~DisplayLayoutStore();
 
-  void SetDefaultDisplayPlacement(const display::DisplayPlacement& placement);
+  void SetDefaultDisplayPlacement(const DisplayPlacement& placement);
 
   // Registers the display layout info for the specified display(s).
-  void RegisterLayoutForDisplayIdList(
-      const display::DisplayIdList& list,
-      std::unique_ptr<display::DisplayLayout> layout);
+  void RegisterLayoutForDisplayIdList(const DisplayIdList& list,
+                                      std::unique_ptr<DisplayLayout> layout);
 
   // If no layout is registered, it creatas new layout using
   // |default_display_layout_|.
-  const display::DisplayLayout& GetRegisteredDisplayLayout(
-      const display::DisplayIdList& list);
+  const DisplayLayout& GetRegisteredDisplayLayout(const DisplayIdList& list);
 
   // Update the multi display state in the display layout for
   // |display_list|.  This creates new display layout if no layout is
   // registered for |display_list|.
-  void UpdateMultiDisplayState(const display::DisplayIdList& display_list,
+  void UpdateMultiDisplayState(const DisplayIdList& display_list,
                                bool mirrored,
                                bool default_unified);
 
  private:
   // Creates new layout for display list from |default_display_layout_|.
-  display::DisplayLayout* CreateDefaultDisplayLayout(
-      const display::DisplayIdList& display_list);
+  DisplayLayout* CreateDefaultDisplayLayout(const DisplayIdList& display_list);
 
   // The default display placement.
-  display::DisplayPlacement default_display_placement_;
+  DisplayPlacement default_display_placement_;
 
   // Display layout per list of devices.
-  std::map<display::DisplayIdList, std::unique_ptr<display::DisplayLayout>>
-      layouts_;
+  std::map<DisplayIdList, std::unique_ptr<DisplayLayout>> layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };

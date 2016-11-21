@@ -27,7 +27,7 @@ class DISPLAY_EXPORT ManagedDisplayMode
  public:
   ManagedDisplayMode();
 
-  ManagedDisplayMode(const gfx::Size& size);
+  explicit ManagedDisplayMode(const gfx::Size& size);
 
   ManagedDisplayMode(const gfx::Size& size,
                      float refresh_rate,
@@ -74,10 +74,9 @@ class DISPLAY_EXPORT ManagedDisplayMode
   DISALLOW_COPY_AND_ASSIGN(ManagedDisplayMode);
 };
 
-// ManagedDisplayInfo contains metadata for each display. This is used to
-// create |display::Display| as well as to maintain extra infomation
-// to manage displays in ash environment.
-// This class is intentionally made copiable.
+// ManagedDisplayInfo contains metadata for each display. This is used to create
+// |Display| as well as to maintain extra infomation to manage displays in ash
+// environment. This class is intentionally made copiable.
 class DISPLAY_EXPORT ManagedDisplayInfo {
  public:
   using ManagedDisplayModeList = std::vector<scoped_refptr<ManagedDisplayMode>>;
@@ -147,12 +146,10 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
   // actual overscan automatically, but used in the message.
   bool has_overscan() const { return has_overscan_; }
 
-  void set_touch_support(display::Display::TouchSupport support) {
+  void set_touch_support(Display::TouchSupport support) {
     touch_support_ = support;
   }
-  display::Display::TouchSupport touch_support() const {
-    return touch_support_;
-  }
+  Display::TouchSupport touch_support() const { return touch_support_; }
 
   // Associate the input device with identifier |id| with this display.
   void AddInputDevice(int id);
@@ -192,20 +189,18 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
 
   // Sets the rotation for the given |source|. Setting a new rotation will also
   // have it become the active rotation.
-  void SetRotation(display::Display::Rotation rotation,
-                   display::Display::RotationSource source);
+  void SetRotation(Display::Rotation rotation, Display::RotationSource source);
 
   // Returns the currently active rotation for this display.
-  display::Display::Rotation GetActiveRotation() const;
+  Display::Rotation GetActiveRotation() const;
 
   // Returns the source which set the active rotation for this display.
-  display::Display::RotationSource active_rotation_source() const {
+  Display::RotationSource active_rotation_source() const {
     return active_rotation_source_;
   }
 
   // Returns the rotation set by a given |source|.
-  display::Display::Rotation GetRotation(
-      display::Display::RotationSource source) const;
+  Display::Rotation GetRotation(Display::RotationSource source) const;
 
   // Returns the ui scale and device scale factor actually used to create
   // display that chrome sees. This can be different from one obtained
@@ -304,10 +299,9 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
   std::string name_;
   base::FilePath sys_path_;
   bool has_overscan_;
-  std::map<display::Display::RotationSource, display::Display::Rotation>
-      rotations_;
-  display::Display::RotationSource active_rotation_source_;
-  display::Display::TouchSupport touch_support_;
+  std::map<Display::RotationSource, Display::Rotation> rotations_;
+  Display::RotationSource active_rotation_source_;
+  Display::TouchSupport touch_support_;
 
   // The set of input devices associated with this display.
   std::vector<int> input_devices_;

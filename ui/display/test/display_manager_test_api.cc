@@ -27,32 +27,31 @@ DisplayInfoList CreateDisplayInfoListFromString(
       specs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   size_t index = 0;
 
-  display::Displays list =
-      display_manager->IsInUnifiedMode()
-          ? display_manager->software_mirroring_display_list()
-          : display_manager->active_display_list();
+  Displays list = display_manager->IsInUnifiedMode()
+                      ? display_manager->software_mirroring_display_list()
+                      : display_manager->active_display_list();
 
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
     int64_t id = (index < list.size()) ? list[index].id() : kInvalidDisplayId;
     display_info_list.push_back(
-        display::ManagedDisplayInfo::CreateFromSpecWithID(*iter, id));
+        ManagedDisplayInfo::CreateFromSpecWithID(*iter, id));
   }
   return display_info_list;
 }
 
-scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForUIScale(
-    const display::ManagedDisplayInfo& info,
+scoped_refptr<ManagedDisplayMode> GetDisplayModeForUIScale(
+    const ManagedDisplayInfo& info,
     float ui_scale) {
-  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+  const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
-  auto iter = std::find_if(
-      modes.begin(), modes.end(),
-      [ui_scale](const scoped_refptr<display::ManagedDisplayMode>& mode) {
-        return mode->ui_scale() == ui_scale;
-      });
+  auto iter =
+      std::find_if(modes.begin(), modes.end(),
+                   [ui_scale](const scoped_refptr<ManagedDisplayMode>& mode) {
+                     return mode->ui_scale() == ui_scale;
+                   });
   if (iter == modes.end())
-    return scoped_refptr<display::ManagedDisplayMode>();
+    return scoped_refptr<ManagedDisplayMode>();
   return *iter;
 }
 
@@ -68,7 +67,7 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
       CreateDisplayInfoListFromString(display_specs, display_manager_);
   bool is_host_origin_set = false;
   for (size_t i = 0; i < display_info_list.size(); ++i) {
-    const display::ManagedDisplayInfo& display_info = display_info_list[i];
+    const ManagedDisplayInfo& display_info = display_info_list[i];
     if (display_info.bounds_in_native().origin() != gfx::Point(0, 0)) {
       is_host_origin_set = true;
       break;
@@ -99,13 +98,13 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
 }
 
 int64_t DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
-  const display::Display& internal = display_manager_->active_display_list_[0];
+  const Display& internal = display_manager_->active_display_list_[0];
   SetInternalDisplayId(internal.id());
-  return display::Display::InternalDisplayId();
+  return Display::InternalDisplayId();
 }
 
 void DisplayManagerTestApi::SetInternalDisplayId(int64_t id) {
-  display::Display::SetInternalDisplayId(id);
+  Display::SetInternalDisplayId(id);
   display_manager_->UpdateInternalManagedDisplayModeListForTest();
 }
 
@@ -120,20 +119,19 @@ void DisplayManagerTestApi::SetAvailableColorProfiles(
       profiles);
 }
 
-const display::ManagedDisplayInfo&
-DisplayManagerTestApi::GetInternalManagedDisplayInfo(int64_t display_id) {
+const ManagedDisplayInfo& DisplayManagerTestApi::GetInternalManagedDisplayInfo(
+    int64_t display_id) {
   return display_manager_->display_info_[display_id];
 }
 
 bool DisplayManagerTestApi::SetDisplayUIScale(int64_t id, float ui_scale) {
   if (!display_manager_->IsActiveDisplayId(id) ||
-      !display::Display::IsInternalDisplayId(id)) {
+      !Display::IsInternalDisplayId(id)) {
     return false;
   }
-  const display::ManagedDisplayInfo& info =
-      display_manager_->GetDisplayInfo(id);
+  const ManagedDisplayInfo& info = display_manager_->GetDisplayInfo(id);
 
-  scoped_refptr<display::ManagedDisplayMode> mode =
+  scoped_refptr<ManagedDisplayMode> mode =
       GetDisplayModeForUIScale(info, ui_scale);
   if (!mode)
     return false;
@@ -141,11 +139,11 @@ bool DisplayManagerTestApi::SetDisplayUIScale(int64_t id, float ui_scale) {
 }
 
 ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {
-  display::ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(false);
+  ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(false);
 }
 
 ScopedDisable125DSFForUIScaling::~ScopedDisable125DSFForUIScaling() {
-  display::ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(true);
+  ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(true);
 }
 
 ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(
@@ -155,49 +153,47 @@ ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(
 }
 
 ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
-  display::Display::SetInternalDisplayId(kInvalidDisplayId);
+  Display::SetInternalDisplayId(kInvalidDisplayId);
 }
 
 bool SetDisplayResolution(DisplayManager* display_manager,
                           int64_t display_id,
                           const gfx::Size& resolution) {
-  const display::ManagedDisplayInfo& info =
-      display_manager->GetDisplayInfo(display_id);
-  scoped_refptr<display::ManagedDisplayMode> mode =
+  const ManagedDisplayInfo& info = display_manager->GetDisplayInfo(display_id);
+  scoped_refptr<ManagedDisplayMode> mode =
       GetDisplayModeForResolution(info, resolution);
   if (!mode)
     return false;
   return display_manager->SetDisplayMode(display_id, mode);
 }
 
-std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
+std::unique_ptr<DisplayLayout> CreateDisplayLayout(
     DisplayManager* display_manager,
-    display::DisplayPlacement::Position position,
+    DisplayPlacement::Position position,
     int offset) {
-  display::DisplayLayoutBuilder builder(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  DisplayLayoutBuilder builder(Screen::GetScreen()->GetPrimaryDisplay().id());
   builder.SetSecondaryPlacement(display_manager->GetSecondaryDisplay().id(),
                                 position, offset);
   return builder.Build();
 }
 
-display::DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
-  display::DisplayIdList list;
+DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
+  DisplayIdList list;
   list.push_back(id1);
   list.push_back(id2);
-  display::SortDisplayIdList(&list);
+  SortDisplayIdList(&list);
   return list;
 }
 
-display::DisplayIdList CreateDisplayIdListN(size_t count, ...) {
-  display::DisplayIdList list;
+DisplayIdList CreateDisplayIdListN(size_t count, ...) {
+  DisplayIdList list;
   va_list args;
   va_start(args, count);
   for (size_t i = 0; i < count; i++) {
     int64_t id = va_arg(args, int64_t);
     list.push_back(id);
   }
-  display::SortDisplayIdList(&list);
+  SortDisplayIdList(&list);
   return list;
 }
 

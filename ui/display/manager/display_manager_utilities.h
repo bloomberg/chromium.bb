@@ -26,13 +26,13 @@ class ManagedDisplayMode;
 // based on |native_mode|.
 DISPLAY_EXPORT ManagedDisplayInfo::ManagedDisplayModeList
 CreateInternalManagedDisplayModeList(
-    const scoped_refptr<display::ManagedDisplayMode>& native_mode);
+    const scoped_refptr<ManagedDisplayMode>& native_mode);
 
 // Creates the display mode list for unified display
 // based on |native_mode| and |scales|.
 DISPLAY_EXPORT ManagedDisplayInfo::ManagedDisplayModeList
 CreateUnifiedManagedDisplayModeList(
-    const scoped_refptr<display::ManagedDisplayMode>& native_mode,
+    const scoped_refptr<ManagedDisplayMode>& native_mode,
     const std::set<std::pair<float, float>>& dsf_scale_list);
 
 // Gets the display mode for |resolution|. Returns false if no display
@@ -53,24 +53,23 @@ DISPLAY_EXPORT scoped_refptr<ManagedDisplayMode>
 GetDisplayModeForNextResolution(const ManagedDisplayInfo& info, bool up);
 
 // Tests if the |info| has display mode that matches |ui_scale|.
-bool HasDisplayModeForUIScale(const display::ManagedDisplayInfo& info,
-                              float ui_scale);
+bool HasDisplayModeForUIScale(const ManagedDisplayInfo& info, float ui_scale);
 
 // Computes the bounds that defines the bounds between two displays.
 // Returns false if two displays do not intersect.
-DISPLAY_EXPORT bool ComputeBoundary(const display::Display& primary_display,
-                                    const display::Display& secondary_display,
+DISPLAY_EXPORT bool ComputeBoundary(const Display& primary_display,
+                                    const Display& secondary_display,
                                     gfx::Rect* primary_edge_in_screen,
                                     gfx::Rect* secondary_edge_in_screen);
 
 // Returns the index in the displays whose bounds contains |point_in_screen|.
 // Returns -1 if no such display exist.
 DISPLAY_EXPORT int FindDisplayIndexContainingPoint(
-    const std::vector<display::Display>& displays,
+    const std::vector<Display>& displays,
     const gfx::Point& point_in_screen);
 
 // Sorts id list using |CompareDisplayIds| below.
-DISPLAY_EXPORT void SortDisplayIdList(display::DisplayIdList* list);
+DISPLAY_EXPORT void SortDisplayIdList(DisplayIdList* list);
 
 // Default id generator.
 class DefaultDisplayIdGenerator {
@@ -78,13 +77,12 @@ class DefaultDisplayIdGenerator {
   int64_t operator()(int64_t id) { return id; }
 };
 
-// Generate sorted display::DisplayIdList from iterators.
+// Generate sorted DisplayIdList from iterators.
 template <class ForwardIterator, class Generator = DefaultDisplayIdGenerator>
-display::DisplayIdList GenerateDisplayIdList(
-    ForwardIterator first,
-    ForwardIterator last,
-    Generator generator = Generator()) {
-  display::DisplayIdList list;
+DisplayIdList GenerateDisplayIdList(ForwardIterator first,
+                                    ForwardIterator last,
+                                    Generator generator = Generator()) {
+  DisplayIdList list;
   while (first != last) {
     list.push_back(generator(*first));
     ++first;
@@ -93,12 +91,10 @@ display::DisplayIdList GenerateDisplayIdList(
   return list;
 }
 
-// Creates sorted display::DisplayIdList.
-DISPLAY_EXPORT display::DisplayIdList CreateDisplayIdList(
-    const display::Displays& list);
+// Creates sorted DisplayIdList.
+DISPLAY_EXPORT DisplayIdList CreateDisplayIdList(const Displays& list);
 
-DISPLAY_EXPORT std::string DisplayIdListToString(
-    const display::DisplayIdList& list);
+DISPLAY_EXPORT std::string DisplayIdListToString(const DisplayIdList& list);
 
 // Returns true if one of following conditions is met.
 // 1) id1 is internal.

@@ -61,8 +61,8 @@ struct ManagedDisplayModeSorter {
   explicit ManagedDisplayModeSorter(bool is_internal)
       : is_internal(is_internal) {}
 
-  bool operator()(const scoped_refptr<display::ManagedDisplayMode>& a,
-                  const scoped_refptr<display::ManagedDisplayMode>& b) {
+  bool operator()(const scoped_refptr<ManagedDisplayMode>& a,
+                  const scoped_refptr<ManagedDisplayMode>& b) {
     gfx::Size size_a_dip = a->GetSizeInDIP(is_internal);
     gfx::Size size_b_dip = b->GetSizeInDIP(is_internal);
     if (size_a_dip.GetArea() == size_b_dip.GetArea())
@@ -101,7 +101,7 @@ ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
       ui_scale_(1.0f),
       device_scale_factor_(1.0f) {}
 
-ManagedDisplayMode::~ManagedDisplayMode(){};
+ManagedDisplayMode::~ManagedDisplayMode() {}
 
 ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
                                        float refresh_rate,
@@ -129,7 +129,7 @@ gfx::Size ManagedDisplayMode::GetSizeInDIP(bool is_internal) const {
 }
 
 bool ManagedDisplayMode::IsEquivalent(
-    const scoped_refptr<display::ManagedDisplayMode>& other) const {
+    const scoped_refptr<ManagedDisplayMode>& other) const {
   const float kEpsilon = 0.0001f;
   return size_ == other->size_ &&
          std::abs(ui_scale_ - other->ui_scale_) < kEpsilon &&
@@ -172,7 +172,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
 
   parts = base::SplitString(main_spec, "/", base::KEEP_WHITESPACE,
                             base::SPLIT_WANT_NONEMPTY);
-  display::Display::Rotation rotation(display::Display::ROTATE_0);
+  Display::Rotation rotation(Display::ROTATE_0);
   bool has_overscan = false;
   if (!parts.empty()) {
     main_spec = parts[0];
@@ -185,13 +185,13 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
             has_overscan = true;
             break;
           case 'r':  // rotate 90 degrees to 'right'.
-            rotation = display::Display::ROTATE_90;
+            rotation = Display::ROTATE_90;
             break;
           case 'u':  // 180 degrees, 'u'pside-down.
-            rotation = display::Display::ROTATE_180;
+            rotation = Display::ROTATE_180;
             break;
           case 'l':  // rotate 90 degrees to 'left'.
-            rotation = display::Display::ROTATE_270;
+            rotation = Display::ROTATE_270;
             break;
         }
       }
@@ -201,7 +201,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   float device_scale_factor = 1.0f;
   if (!GetDisplayBounds(main_spec, &bounds_in_native, &device_scale_factor)) {
 #if defined(OS_WIN)
-    device_scale_factor = display::win::GetDPIScale();
+    device_scale_factor = win::GetDPIScale();
 #endif
   }
 
@@ -240,7 +240,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
                                    1.0, device_scale_factor)));
       }
     }
-    scoped_refptr<display::ManagedDisplayMode> dm = display_modes[native_mode];
+    scoped_refptr<ManagedDisplayMode> dm = display_modes[native_mode];
     display_modes[native_mode] = new ManagedDisplayMode(
         dm->size(), dm->refresh_rate(), dm->is_interlaced(), true,
         dm->ui_scale(), dm->device_scale_factor());
@@ -248,10 +248,10 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
 
   if (id == kInvalidDisplayId)
     id = synthesized_display_id++;
-  display::ManagedDisplayInfo display_info(
+  ManagedDisplayInfo display_info(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
   display_info.set_device_scale_factor(device_scale_factor);
-  display_info.SetRotation(rotation, display::Display::ROTATION_SOURCE_ACTIVE);
+  display_info.SetRotation(rotation, Display::ROTATION_SOURCE_ACTIVE);
   display_info.set_configured_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_native);
   display_info.SetManagedDisplayModes(display_modes);
@@ -277,8 +277,8 @@ void ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(bool enable) {
 ManagedDisplayInfo::ManagedDisplayInfo()
     : id_(kInvalidDisplayId),
       has_overscan_(false),
-      active_rotation_source_(display::Display::ROTATION_SOURCE_UNKNOWN),
-      touch_support_(display::Display::TOUCH_SUPPORT_UNKNOWN),
+      active_rotation_source_(Display::ROTATION_SOURCE_UNKNOWN),
+      touch_support_(Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -294,8 +294,8 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),
-      active_rotation_source_(display::Display::ROTATION_SOURCE_UNKNOWN),
-      touch_support_(display::Display::TOUCH_SUPPORT_UNKNOWN),
+      active_rotation_source_(Display::ROTATION_SOURCE_UNKNOWN),
+      touch_support_(Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -310,21 +310,21 @@ ManagedDisplayInfo::ManagedDisplayInfo(const ManagedDisplayInfo& other) =
 
 ManagedDisplayInfo::~ManagedDisplayInfo() {}
 
-void ManagedDisplayInfo::SetRotation(display::Display::Rotation rotation,
-                                     display::Display::RotationSource source) {
+void ManagedDisplayInfo::SetRotation(Display::Rotation rotation,
+                                     Display::RotationSource source) {
   rotations_[source] = rotation;
-  rotations_[display::Display::ROTATION_SOURCE_ACTIVE] = rotation;
+  rotations_[Display::ROTATION_SOURCE_ACTIVE] = rotation;
   active_rotation_source_ = source;
 }
 
-display::Display::Rotation ManagedDisplayInfo::GetActiveRotation() const {
-  return GetRotation(display::Display::ROTATION_SOURCE_ACTIVE);
+Display::Rotation ManagedDisplayInfo::GetActiveRotation() const {
+  return GetRotation(Display::ROTATION_SOURCE_ACTIVE);
 }
 
-display::Display::Rotation ManagedDisplayInfo::GetRotation(
-    display::Display::RotationSource source) const {
+Display::Rotation ManagedDisplayInfo::GetRotation(
+    Display::RotationSource source) const {
   if (rotations_.find(source) == rotations_.end())
-    return display::Display::ROTATE_0;
+    return Display::ROTATE_0;
   return rotations_.at(source);
 }
 
@@ -395,8 +395,8 @@ void ManagedDisplayInfo::UpdateDisplaySize() {
     overscan_insets_in_dip_.Set(0, 0, 0, 0);
   }
 
-  if (GetActiveRotation() == display::Display::ROTATE_90 ||
-      GetActiveRotation() == display::Display::ROTATE_270) {
+  if (GetActiveRotation() == Display::ROTATE_90 ||
+      GetActiveRotation() == Display::ROTATE_270) {
     size_in_pixel_.SetSize(size_in_pixel_.height(), size_in_pixel_.width());
   }
   gfx::SizeF size_f(size_in_pixel_);
@@ -415,9 +415,8 @@ gfx::Insets ManagedDisplayInfo::GetOverscanInsetsInPixel() const {
 void ManagedDisplayInfo::SetManagedDisplayModes(
     const ManagedDisplayModeList& display_modes) {
   display_modes_ = display_modes;
-  std::sort(
-      display_modes_.begin(), display_modes_.end(),
-      ManagedDisplayModeSorter(display::Display::IsInternalDisplayId(id_)));
+  std::sort(display_modes_.begin(), display_modes_.end(),
+            ManagedDisplayModeSorter(Display::IsInternalDisplayId(id_)));
 }
 
 gfx::Size ManagedDisplayInfo::GetNativeModeSize() const {
@@ -446,11 +445,10 @@ std::string ManagedDisplayInfo::ToString() const {
       size_in_pixel_.ToString().c_str(), device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(), rotation_degree,
       configured_ui_scale_,
-      touch_support_ == display::Display::TOUCH_SUPPORT_AVAILABLE
+      touch_support_ == Display::TOUCH_SUPPORT_AVAILABLE
           ? "yes"
-          : touch_support_ == display::Display::TOUCH_SUPPORT_UNAVAILABLE
-                ? "no"
-                : "unknown",
+          : touch_support_ == Display::TOUCH_SUPPORT_UNAVAILABLE ? "no"
+                                                                 : "unknown",
       devices_str.c_str());
 
   return result;
@@ -484,8 +482,7 @@ bool ManagedDisplayInfo::IsColorProfileAvailable(
 }
 
 bool ManagedDisplayInfo::Use125DSFForUIScaling() const {
-  return use_125_dsf_for_ui_scaling &&
-         display::Display::IsInternalDisplayId(id_);
+  return use_125_dsf_for_ui_scaling && Display::IsInternalDisplayId(id_);
 }
 
 void ManagedDisplayInfo::AddInputDevice(int id) {

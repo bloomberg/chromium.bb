@@ -24,11 +24,11 @@ DisplayList::~DisplayList() {
   DCHECK_EQ(0, observer_suspend_lock_count_);
 }
 
-void DisplayList::AddObserver(display::DisplayObserver* observer) {
+void DisplayList::AddObserver(DisplayObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void DisplayList::RemoveObserver(display::DisplayObserver* observer) {
+void DisplayList::RemoveObserver(DisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -52,15 +52,15 @@ std::unique_ptr<DisplayListObserverLock> DisplayList::SuspendObserverUpdates() {
   return base::WrapUnique(new DisplayListObserverLock(this));
 }
 
-void DisplayList::UpdateDisplay(const display::Display& display) {
+void DisplayList::UpdateDisplay(const Display& display) {
   UpdateDisplay(display, GetTypeByDisplayId(display.id()));
 }
 
-void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
+void DisplayList::UpdateDisplay(const Display& display, Type type) {
   auto iter = FindDisplayByIdInternal(display.id());
   DCHECK(iter != displays_.end());
 
-  display::Display* local_display = &(*iter);
+  Display* local_display = &(*iter);
   uint32_t changed_values = 0;
   if (type == Type::PRIMARY &&
       static_cast<int>(iter - displays_.begin()) !=
@@ -68,38 +68,37 @@ void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
     primary_display_index_ = static_cast<int>(iter - displays_.begin());
     // ash::DisplayManager only notifies for the Display gaining primary, not
     // the one losing it.
-    changed_values |= display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+    changed_values |= DisplayObserver::DISPLAY_METRIC_PRIMARY;
   }
   if (local_display->bounds() != display.bounds()) {
     local_display->set_bounds(display.bounds());
-    changed_values |= display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+    changed_values |= DisplayObserver::DISPLAY_METRIC_BOUNDS;
   }
   if (local_display->work_area() != display.work_area()) {
     local_display->set_work_area(display.work_area());
-    changed_values |= display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+    changed_values |= DisplayObserver::DISPLAY_METRIC_WORK_AREA;
   }
   if (local_display->rotation() != display.rotation()) {
     local_display->set_rotation(display.rotation());
-    changed_values |= display::DisplayObserver::DISPLAY_METRIC_ROTATION;
+    changed_values |= DisplayObserver::DISPLAY_METRIC_ROTATION;
   }
   if (local_display->device_scale_factor() != display.device_scale_factor()) {
     local_display->set_device_scale_factor(display.device_scale_factor());
-    changed_values |=
-        display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+    changed_values |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   }
   if (should_notify_observers()) {
-    for (display::DisplayObserver& observer : observers_)
+    for (DisplayObserver& observer : observers_)
       observer.OnDisplayMetricsChanged(*local_display, changed_values);
   }
 }
 
-void DisplayList::AddDisplay(const display::Display& display, Type type) {
+void DisplayList::AddDisplay(const Display& display, Type type) {
   DCHECK(displays_.end() == FindDisplayByIdInternal(display.id()));
   displays_.push_back(display);
   if (type == Type::PRIMARY)
     primary_display_index_ = static_cast<int>(displays_.size()) - 1;
   if (should_notify_observers()) {
-    for (display::DisplayObserver& observer : observers_)
+    for (DisplayObserver& observer : observers_)
       observer.OnDisplayAdded(display);
   }
 }
@@ -116,10 +115,10 @@ void DisplayList::RemoveDisplay(int64_t id) {
              static_cast<int>(iter - displays_.begin())) {
     primary_display_index_--;
   }
-  const display::Display display = *iter;
+  const Display display = *iter;
   displays_.erase(iter);
   if (should_notify_observers()) {
-    for (display::DisplayObserver& observer : observers_)
+    for (DisplayObserver& observer : observers_)
       observer.OnDisplayRemoved(display);
   }
 }

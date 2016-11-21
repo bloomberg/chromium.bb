@@ -19,17 +19,17 @@ class ScopedSetInternalDisplayId {
 };
 
 ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(int64_t id) {
-  display::Display::SetInternalDisplayId(id);
+  Display::SetInternalDisplayId(id);
 }
 
 ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
-  display::Display::SetInternalDisplayId(kInvalidDisplayId);
+  Display::SetInternalDisplayId(kInvalidDisplayId);
 }
 
 }  // namespace
 
 TEST(DisplayUtilitiesTest, GenerateDisplayIdList) {
-  display::DisplayIdList list;
+  DisplayIdList list;
   {
     int64_t ids[] = {10, 1};
     list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
@@ -99,15 +99,13 @@ TEST(DisplayUtilitiesTest, GenerateDisplayIdList) {
 TEST(DisplayUtilitiesTest, DisplayIdListToString) {
   {
     int64_t ids[] = {10, 1, 16};
-    display::DisplayIdList list =
-        GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    DisplayIdList list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ("1,10,16", DisplayIdListToString(list));
   }
   {
     ScopedSetInternalDisplayId set_internal(16);
     int64_t ids[] = {10, 1, 16};
-    display::DisplayIdList list =
-        GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    DisplayIdList list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ("16,1,10", DisplayIdListToString(list));
   }
 }
