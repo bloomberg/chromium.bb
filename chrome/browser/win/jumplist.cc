@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -233,10 +234,30 @@ void RunUpdateOnFileThread(
   // icon directory, and create a new directory which contains new JumpList
   // icon files.
   base::FilePath icon_dir_old(icon_dir.value() + L"Old");
-  if (base::PathExists(icon_dir_old))
-    base::DeleteFile(icon_dir_old, true);
-  base::Move(icon_dir, icon_dir_old);
-  base::CreateDirectory(icon_dir);
+
+  enum FolderOperationResult {
+    SUCCESS = 0,
+    DELETE_FAILED = 1 << 0,
+    MOVE_FAILED = 1 << 1,
+    CREATE_DIR_FAILED = 1 << 2,
+    // This value is beyond the sum of all bit fields above and
+    // should remain last (shifted by one more than the last value)
+    END = 1 << 3
+  };
+
+  // This variable records the status of three folder operations.
+  int folder_operation_status = FolderOperationResult::SUCCESS;
+
+  if (base::PathExists(icon_dir_old) && !base::DeleteFile(icon_dir_old, true))
+    folder_operation_status |= FolderOperationResult::DELETE_FAILED;
+  if (!base::Move(icon_dir, icon_dir_old))
+    folder_operation_status |= FolderOperationResult::MOVE_FAILED;
+  if (!base::CreateDirectory(icon_dir))
+    folder_operation_status |= FolderOperationResult::CREATE_DIR_FAILED;
+
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.FolderResults",
+                            folder_operation_status,
+                            FolderOperationResult::END);
 
   // Create temporary icon files for shortcuts in the "Most Visited" category.
   CreateIconFiles(icon_dir, local_most_visited_pages);
