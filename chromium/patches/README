@@ -71,8 +71,12 @@ Current patches:
     to symbols not in our builds which some toolchains don't elide, for each of
     CONFIG_SPDIF_DEMUXER and CONFIG_W64_DEMUXER.
 
-  In libavformat/utils.c, locally disable deprecation warnings related to
-    AVStream.codec access until upstream stops using deprecated fields.
+  Changes to libavformat/utils.c
+    Locally disable deprecation warnings related to AVStream.codec access until
+    upstream stops using deprecated fields.
+
+    Protect against out-of-bounds access when searching for the next
+    non-discarded packet in ff_index_search_timestamp(). TODO: push upstream
 
   Changes to libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
