@@ -2278,16 +2278,41 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)goToItemAtIndex:(int)index {
-  NSArray* entries = self.sessionController.entries;
+  CRWSessionController* sessionController = self.sessionController;
+  NSArray* entries = sessionController.entries;
   DCHECK_LT(static_cast<NSUInteger>(index), entries.count);
   DCHECK_GE(index, 0);
 
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
   CRWSessionEntry* fromEntry = self.sessionController.currentEntry;
-  [self.sessionController goToEntryAtIndex:index];
-  if (fromEntry)
-    [self finishHistoryNavigationFromEntry:fromEntry];
+
+  NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+  if ([userDefaults boolForKey:@"PendingIndexNavigationEnabled"]) {
+    [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
+
+    BOOL sameDocumentNavigation =
+        [sessionController isSameDocumentNavigationBetweenEntry:fromEntry
+                                                       andEntry:entries[index]];
+    if (sameDocumentNavigation) {
+      [self.sessionController goToEntryAtIndex:index];
+      [self updateHTML5HistoryState];
+    } else {
+      [sessionController discardNonCommittedEntries];
+      [sessionController setPendingEntryIndex:index];
+
+      web::NavigationItemImpl* pendingItem =
+          sessionController.pendingEntry.navigationItemImpl;
+      pendingItem->SetTransitionType(ui::PageTransitionFromInt(
+          pendingItem->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
+
+      [self loadCurrentURL];
+    }
+  } else {
+    [self.sessionController goToEntryAtIndex:index];
+    if (fromEntry)
+      [self finishHistoryNavigationFromEntry:fromEntry];
+  }
 }
 
 - (BOOL)isLoaded {
@@ -3547,6 +3572,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
   if (web::GetWebClient()->IsAppSpecificURL(errorURL))
     return NO;
+
+  if (self.sessionController.pendingEntryIndex != -1 &&
+      ![self isLoadRequestPendingForURL:errorURL]) {
+    // Do not cancel the load if there is a pending back forward navigation for
+    // another URL (Back forward happened in the middle of WKWebView
+    // navigation).
+    return NO;
+  }
+
   // Don't cancel NSURLErrorCancelled errors originating from navigation
   // as the WKWebView will automatically retry these loads.
   WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
