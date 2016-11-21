@@ -1705,3 +1705,5 @@ crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints
 crbug.com/666628 [ Mac Win Trusty ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
 
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
+
+crbug.com/667371 inspector/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
