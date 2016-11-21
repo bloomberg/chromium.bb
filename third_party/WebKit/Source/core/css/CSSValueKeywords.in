@@ -246,7 +246,6 @@ bottom
 -webkit-baseline-middle
 //
 // text-align
-// The order here must match the order of the ETextAlign enum in ComputedStyleConstants.h.
 //
 -webkit-auto
 left

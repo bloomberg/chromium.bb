@@ -2131,10 +2131,24 @@ inline ETextAlign CSSIdentifierValue::convertTo() const {
       return ETextAlign::Start;
     case CSSValueEnd:
       return ETextAlign::End;
+    case CSSValueCenter:
     case CSSValueInternalCenter:
       return ETextAlign::Center;
+    case CSSValueLeft:
+      return ETextAlign::Left;
+    case CSSValueRight:
+      return ETextAlign::Right;
+    case CSSValueJustify:
+      return ETextAlign::Justify;
+    case CSSValueWebkitLeft:
+      return ETextAlign::WebkitLeft;
+    case CSSValueWebkitRight:
+      return ETextAlign::WebkitRight;
+    case CSSValueWebkitCenter:
+      return ETextAlign::WebkitCenter;
     default:
-      return static_cast<ETextAlign>(m_valueID - CSSValueLeft);
+      NOTREACHED();
+      return ETextAlign::Left;
   }
 }
 
