@@ -19,12 +19,17 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for biling addresses.
  */
 public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
-    // The index at which the option to add a billing address is located in the billing address
-    // selection dropdown.
+    /*
+     * The index at which the option to add a billing address is located in the billing address
+     * selection dropdown.
+     */
     private static final int ADD_BILLING_ADDRESS = 3;
 
+    /** The index of the billing address dropdown in the card editor. */
+    private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
+
     public PaymentRequestBillingAddressTest() {
-        super("payment_request_no_shipping_test.html");
+        super("payment_request_free_shipping_test.html");
     }
 
     @Override
@@ -59,12 +64,13 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
         setTextInCardEditorAndWait(new String[] {"5454-5454-5454-5454", "Bob"}, mEditorTextUpdate);
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {11, 1, 0},
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
                 mBillingAddressChangeProcessed);
         // The billing address suggestions should include only the name, address, city, state and
         // zip code of the profile.
-        assertTrue(getSpinnerSelectionTextInCardEditor(2).equals(
-                "Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                           .equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 
     /**
@@ -81,7 +87,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // There should only be 4 suggestions, the 3 saved addresses and the option to add a new
         // address.
-        assertEquals(4, getSpinnerItemCountInCardEditor(2));
+        assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
     }
 
     /**
@@ -99,14 +105,14 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Select the "+ ADD ADDRESS" option for the billing address.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, ADD_BILLING_ADDRESS}, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
 
         // Cancel the creation of a new billing address.
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
 
         // There should still only be 4 suggestions, the 3 saved addresses and the option to add a
         // new address.
-        assertEquals(4, getSpinnerItemCountInCardEditor(2));
+        assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
     }
 
     /**
@@ -122,16 +128,17 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
         // There should be 4 suggestions, the 3 saved addresses and the option to add a new address.
-        assertEquals(4, getSpinnerItemCountInCardEditor(2));
+        assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
         // The billing address suggestions should be ordered by frecency.
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 0).equals(
-                "Rob Doe, 340 Main St, Los Angeles, CA 90291"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 1).equals(
-                "Jon Doe, 340 Main St, Los Angeles, CA 90291"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 2).equals(
-                "Tom Doe, 340 Main St, Los Angeles, CA 90291"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 3).equals("Add address"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                0).equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                1).equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                2).equals("Tom Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                3).equals("Add address"));
     }
 
     /**
@@ -149,27 +156,59 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Add a new billing address.
         setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, ADD_BILLING_ADDRESS}, mReadyToEdit);
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
                 "CA", "90291", "999-999-9999"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
 
         // There should be 5 suggestions, the 3 initial addresses, the newly added address and the
         // option to add a new address.
-        assertEquals(5, getSpinnerItemCountInCardEditor(2));
+        assertEquals(5, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
         // TODO(crbug.com/666048): New billing address label is wrong.
         // The fist suggestion should be the newly added address.
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 0).equals(
-                "Google, 340 Main St, Los Angeles, CA 90291, United States"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                0).equals("Google, 340 Main St, Los Angeles, CA 90291, United States"));
 
         // The rest of the billing address suggestions should be ordered by frecency.
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 1).equals(
-                "Rob Doe, 340 Main St, Los Angeles, CA 90291"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 2).equals(
-                "Jon Doe, 340 Main St, Los Angeles, CA 90291"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 3).equals(
-                "Tom Doe, 340 Main St, Los Angeles, CA 90291"));
-        assertTrue(getSpinnerTextAtPositionInCardEditor(2, 4).equals("Add address"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                1).equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                2).equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                3).equals("Tom Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                4).equals("Add address"));
+    }
+
+    /**
+     * Verifies that a newly created shipping address is offered as the first billing address
+     * suggestion.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testNewShippingAddressSuggestedFirst()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+
+        // Add a shipping address.
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles",
+                "CA", "90291", "999-999-9999"}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+
+        // Navigate to the card editor UI.
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+
+        // There should be 5 suggestions, the 3 initial addresses, the newly added address and the
+        // option to add a new address.
+        assertEquals(5, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+
+        // TODO(crbug.com/666048): New billing address label is wrong.
+        // The new address should be suggested first.
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                0).equals("Google, 340 Main St, Los Angeles, CA 90291, United States"));
     }
 }

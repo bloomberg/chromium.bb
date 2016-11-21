@@ -336,6 +336,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 return;
             }
         }
+
+        // No matching profile was found. Add the new profile at the top of the list.
+        mProfilesForBillingAddress.add(0, billingAddress.getProfile());
     }
 
     /**
