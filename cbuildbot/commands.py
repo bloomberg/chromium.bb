@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import base64
 import collections
+import copy
 import datetime
 import fnmatch
 import glob
@@ -319,7 +320,11 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
   if toolchain_boards:
     cmd.extend(['--toolchain_boards', ','.join(toolchain_boards)])
 
-  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+  # workaround http://crbug.com/225509
+  extra_env_local = copy.copy(extra_env)
+  extra_env_local['FEATURES'] = 'splitdebug'
+
+  RunBuildScript(buildroot, cmd, extra_env=extra_env_local, enter_chroot=True)
 
 
 def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
