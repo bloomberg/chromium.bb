@@ -21,6 +21,10 @@
 #import "ios/chrome/common/physical_web/physical_web_request.h"
 #import "ios/chrome/common/physical_web/physical_web_types.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 NSString* const kUriBeaconServiceUUID = @"FED8";
@@ -131,7 +135,6 @@ enum BeaconType {
     [updateTimer_ invalidate];
     updateTimer_.reset();
   }
-  [super dealloc];
 }
 
 - (void)start {
@@ -252,12 +255,12 @@ enum BeaconType {
   ];
   if (onLostDetectionEnabled_) {
     // Register a repeating timer to periodically check for lost URLs.
-    updateTimer_.reset(
-        [[NSTimer scheduledTimerWithTimeInterval:kUpdateIntervalSeconds
-                                          target:self
-                                        selector:@selector(onUpdateTimeElapsed:)
-                                        userInfo:nil
-                                         repeats:YES] retain]);
+    updateTimer_.reset([NSTimer
+        scheduledTimerWithTimeInterval:kUpdateIntervalSeconds
+                                target:self
+                              selector:@selector(onUpdateTimeElapsed:)
+                              userInfo:nil
+                               repeats:YES]);
   }
   [centralManager_ scanForPeripheralsWithServices:serviceUUIDs options:nil];
 }
@@ -472,7 +475,7 @@ enum BeaconType {
   [pendingRequests_ addObject:strongRequest];
   base::WeakNSObject<PhysicalWebScanner> weakSelf(self);
   [request start:^(PhysicalWebDevice* device, NSError* error) {
-    base::scoped_nsobject<PhysicalWebScanner> strongSelf([weakSelf retain]);
+    base::scoped_nsobject<PhysicalWebScanner> strongSelf(weakSelf);
     if (!strongSelf) {
       return;
     }

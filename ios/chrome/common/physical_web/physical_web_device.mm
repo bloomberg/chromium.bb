@@ -8,6 +8,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/common/physical_web/physical_web_types.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation PhysicalWebDevice {
   base::scoped_nsobject<NSURL> url_;
   base::scoped_nsobject<NSURL> requestURL_;
@@ -35,15 +39,15 @@
               scanTimestamp:(NSDate*)scanTimestamp {
   self = [super init];
   if (self) {
-    url_.reset([url retain]);
-    requestURL_.reset([requestURL retain]);
-    icon_.reset([icon retain]);
+    url_.reset(url);
+    requestURL_.reset(requestURL);
+    icon_.reset(icon);
     title_.reset([title copy]);
     description_.reset([description copy]);
     transmitPower_ = transmitPower;
     rssi_ = rssi;
     rank_ = rank > physical_web::kMaxRank ? physical_web::kMaxRank : rank;
-    scanTimestamp_.reset([scanTimestamp retain]);
+    scanTimestamp_.reset(scanTimestamp);
   }
   return self;
 }
@@ -78,7 +82,7 @@
 }
 
 - (void)setScanTimestamp:(NSDate*)value {
-  scanTimestamp_.reset([value retain]);
+  scanTimestamp_.reset(value);
 }
 
 @end

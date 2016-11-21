@@ -17,6 +17,10 @@
 #import "ios/chrome/common/physical_web/physical_web_types.h"
 #include "ios/web/public/user_agent.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 typedef void (^SessionCompletionProceduralBlock)(NSData* data,
                                                  NSURLResponse* response,
                                                  NSError* error);
@@ -63,7 +67,7 @@ std::string GetUserAgent() {
 - (instancetype)initWithDevice:(PhysicalWebDevice*)device {
   self = [super init];
   if (self) {
-    device_.reset([device retain]);
+    device_.reset(device);
   }
   return self;
 }
@@ -95,7 +99,7 @@ std::string GetUserAgent() {
       setQueryItems:@[ [NSURLQueryItem queryItemWithName:kKeyQueryItemName
                                                    value:apiKey] ]];
   NSURL* url = [components URL];
-  request_.reset([[NSMutableURLRequest requestWithURL:url] retain]);
+  request_.reset([NSMutableURLRequest requestWithURL:url]);
   [request_ setHTTPMethod:kHTTPPOSTRequestMethod];
 
   // body of the POST request.
@@ -116,7 +120,7 @@ std::string GetUserAgent() {
       [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
   [request_ setValue:acceptLanguage forHTTPHeaderField:@"Acccept-Language"];
 
-  startDate_.reset([[NSDate date] retain]);
+  startDate_.reset([NSDate date]);
   // Starts the request.
   NSURLSessionConfiguration* sessionConfiguration =
       [NSURLSessionConfiguration ephemeralSessionConfiguration];
@@ -128,7 +132,7 @@ std::string GetUserAgent() {
   base::WeakNSObject<PhysicalWebRequest> weakSelf(self);
   SessionCompletionProceduralBlock completionHandler =
       ^(NSData* data, NSURLResponse* response, NSError* error) {
-        base::scoped_nsobject<PhysicalWebRequest> strongSelf([weakSelf retain]);
+        base::scoped_nsobject<PhysicalWebRequest> strongSelf(weakSelf);
         if (!strongSelf) {
           return;
         }
@@ -139,9 +143,8 @@ std::string GetUserAgent() {
           [strongSelf sessionDidFinishLoading];
         }
       };
-  urlSessionTask_.reset([
-      [session dataTaskWithRequest:request_ completionHandler:completionHandler]
-      retain]);
+  urlSessionTask_.reset([session dataTaskWithRequest:request_
+                                   completionHandler:completionHandler]);
   [urlSessionTask_ resume];
 }
 

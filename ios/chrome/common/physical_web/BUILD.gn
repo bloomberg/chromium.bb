@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("physical_web") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "physical_web_device.h",
     "physical_web_device.mm",
