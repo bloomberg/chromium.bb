@@ -59,6 +59,10 @@
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"  // nogncheck
 #endif
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromeMainParts::IOSChromeMainParts(
     const base::CommandLine& parsed_command_line)
     : parsed_command_line_(parsed_command_line), local_state_(nullptr) {
