@@ -240,17 +240,6 @@ bool MdHistoryUI::IsEnabled(Profile* profile) {
 }
 
 // static
-void MdHistoryUI::SetEnabledForTesting(bool enabled) {
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-
-  const std::string& name = features::kMaterialDesignHistory.name;
-  feature_list->InitializeFromCommandLine(enabled ? name : "",
-                                          enabled ? "" : name);
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
-}
-
-// static
 base::RefCountedMemory* MdHistoryUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(

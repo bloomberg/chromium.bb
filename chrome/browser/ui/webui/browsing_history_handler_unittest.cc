@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/history/browsing_history_service.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/test_profile_sync_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
@@ -35,10 +37,6 @@
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/md_history_ui.h"
-#endif
 
 namespace {
 
@@ -306,7 +304,8 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
 
 #if !defined(OS_ANDROID)
 TEST_F(BrowsingHistoryHandlerTest, MdTruncatesTitles) {
-  MdHistoryUI::SetEnabledForTesting(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMaterialDesignHistory);
 
   history::URLResult long_result(
       GURL("http://looooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"

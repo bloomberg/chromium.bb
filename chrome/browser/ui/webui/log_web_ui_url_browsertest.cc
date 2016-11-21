@@ -11,10 +11,11 @@
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/md_history_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -43,10 +44,12 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     // Disable MD History to test non-MD history page.
-    MdHistoryUI::SetEnabledForTesting(false);
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMaterialDesignHistory);
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(LogWebUIUrlTest);
