@@ -125,6 +125,13 @@ class ProtoValuePtr {
   scoped_refptr<Wrapper> wrapper_;
 };
 
+template <typename T, typename Traits>
+size_t EstimateMemoryUsage(const ProtoValuePtr<T, Traits>& ptr) {
+  return &ptr.value() != &Traits::DefaultValue()
+             ? EstimateMemoryUsage(ptr.value())
+             : 0;
+}
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_PROTO_VALUE_PTR_H_

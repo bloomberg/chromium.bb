@@ -8,7 +8,9 @@
 
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/syncable/syncable_columns.h"
 #include "components/sync/syncable/syncable_enum_conversions.h"
@@ -16,7 +18,7 @@
 namespace syncer {
 namespace syncable {
 
-EntryKernel::EntryKernel() : dirty_(false) {
+EntryKernel::EntryKernel() : dirty_(false), memory_usage_(kMemoryUsageUnknown) {
   // Everything else should already be default-initialized.
   for (int i = 0; i < INT64_FIELDS_COUNT; ++i) {
     int64_fields[i] = 0;
@@ -209,6 +211,18 @@ base::DictionaryValue* EntryKernel::ToValue(
                  BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);
 
   return kernel_info;
+}
+
+size_t EntryKernel::EstimateMemoryUsage() const {
+  if (memory_usage_ == kMemoryUsageUnknown) {
+    using base::trace_event::EstimateMemoryUsage;
+    memory_usage_ = EstimateMemoryUsage(string_fields) +
+                    EstimateMemoryUsage(specifics_fields) +
+                    EstimateMemoryUsage(id_fields) +
+                    EstimateMemoryUsage(unique_position_fields) +
+                    EstimateMemoryUsage(attachment_metadata_fields);
+  }
+  return memory_usage_;
 }
 
 std::unique_ptr<base::ListValue> EntryKernelMutationMapToValue(

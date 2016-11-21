@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
 
 struct sqlite3;
@@ -28,7 +29,17 @@ class ConnectionMemoryDumpProvider
       const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
+  // Reports memory usage into provided memory dump.
+  // Called by sql::Connection when its owner asks it to report memory usage.
+  bool ReportMemoryUsage(base::trace_event::MemoryAllocatorDump* mad);
+
  private:
+  bool GetDbMemoryUsage(int* cache_size,
+                        int* schema_size,
+                        int* statement_size);
+
+  std::string FormatDumpName() const;
+
   sqlite3* db_;  // not owned.
   base::Lock lock_;
   std::string connection_name_;

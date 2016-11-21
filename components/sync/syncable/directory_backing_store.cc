@@ -1717,6 +1717,11 @@ bool DirectoryBackingStore::GetDatabasePageSize(int* page_size) {
   return true;
 }
 
+bool DirectoryBackingStore::ReportMemoryUsage(
+    base::trace_event::MemoryAllocatorDump* mad) {
+  return db_ && db_->ReportMemoryUsage(mad);
+}
+
 bool DirectoryBackingStore::UpdatePageSizeIfNecessary() {
   int page_size;
   if (!GetDatabasePageSize(&page_size))

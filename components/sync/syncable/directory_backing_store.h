@@ -20,6 +20,12 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 
+namespace base {
+namespace trace_event {
+class MemoryAllocatorDump;
+}
+}
+
 namespace sync_pb {
 class EntitySpecifics;
 }
@@ -99,6 +105,8 @@ class DirectoryBackingStore : public base::NonThreadSafe {
 
   // Returns true on success, false on error.
   bool GetDatabasePageSize(int* page_size);
+
+  bool ReportMemoryUsage(base::trace_event::MemoryAllocatorDump* mad);
 
  protected:
   // For test classes.

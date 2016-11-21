@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/system_encryptor.h"
@@ -93,6 +94,7 @@ struct DoConfigureSyncerTypes {
 
 class SyncBackendHostCore
     : public base::RefCountedThreadSafe<SyncBackendHostCore>,
+      public base::trace_event::MemoryDumpProvider,
       public SyncEncryptionHandler::Observer,
       public SyncManager::Observer,
       public TypeDebugInfoObserver {
@@ -101,6 +103,10 @@ class SyncBackendHostCore
                       const base::FilePath& sync_data_folder_path,
                       bool has_sync_setup_completed,
                       const base::WeakPtr<SyncBackendHostImpl>& backend);
+
+  // MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // SyncManager::Observer implementation.  The Core just acts like an air
   // traffic controller here, forwarding incoming messages to appropriate

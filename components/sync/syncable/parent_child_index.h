@@ -60,6 +60,9 @@ class ParentChildIndex {
   // Returns all siblings of the entry.
   const OrderedChildSet* GetSiblings(EntryKernel* e) const;
 
+  // Estimates amount of heap memory used.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class ParentChildIndexTest;
 

@@ -2044,6 +2044,12 @@ bool Connection::IntegrityCheckHelper(
   return ret;
 }
 
+bool Connection::ReportMemoryUsage(
+    base::trace_event::MemoryAllocatorDump* mad) {
+  return memory_dump_provider_ &&
+      memory_dump_provider_->ReportMemoryUsage(mad);
+}
+
 base::TimeTicks TimeSource::Now() {
   return base::TimeTicks::Now();
 }

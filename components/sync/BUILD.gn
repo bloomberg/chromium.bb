@@ -467,6 +467,8 @@ static_library("sync") {
     "model_impl/shared_model_type_processor.h",
     "protocol/proto_enum_conversions.cc",
     "protocol/proto_enum_conversions.h",
+    "protocol/proto_memory_estimations.cc",
+    "protocol/proto_memory_estimations.h",
     "protocol/proto_value_conversions.cc",
     "protocol/proto_value_conversions.h",
     "protocol/proto_visitors.h",

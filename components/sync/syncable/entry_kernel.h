@@ -225,6 +225,7 @@ struct EntryKernel {
       dirty_index->insert(ref(META_HANDLE));
     }
     dirty_ = true;
+    memory_usage_ = kMemoryUsageUnknown;
   }
 
   // Clear the dirty bit, and optionally remove this entry's metahandle from
@@ -377,9 +378,13 @@ struct EntryKernel {
   // they will be serialized as empty proto's.
   base::DictionaryValue* ToValue(Cryptographer* cryptographer) const;
 
+  size_t EstimateMemoryUsage() const;
+
  private:
   // Tracks whether this entry needs to be saved to the database.
   bool dirty_;
+  mutable size_t memory_usage_;
+  constexpr static size_t kMemoryUsageUnknown = size_t(-1);
 };
 
 template <typename T>

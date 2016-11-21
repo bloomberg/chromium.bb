@@ -264,4 +264,8 @@ void FakeSyncManager::ClearServerData(const ClearServerDataCallback& callback) {
 void FakeSyncManager::OnCookieJarChanged(bool account_mismatch,
                                          bool empty_jar) {}
 
+void FakeSyncManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace syncer

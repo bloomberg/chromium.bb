@@ -101,6 +101,9 @@ class UniquePosition {
 
   bool IsValid() const;
 
+  // Returns memory usage estimate.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class UniquePositionTest;
 

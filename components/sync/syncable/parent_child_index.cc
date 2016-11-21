@@ -167,6 +167,13 @@ const OrderedChildSet* ParentChildIndex::GetSiblings(EntryKernel* e) const {
   return siblings.get();
 }
 
+size_t ParentChildIndex::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  return EstimateMemoryUsage(parent_children_map_) +
+         EstimateMemoryUsage(model_type_root_ids_) +
+         EstimateMemoryUsage(type_root_child_sets_);
+}
+
 /* static */
 bool ParentChildIndex::ShouldUseParentId(const Id& parent_id,
                                          ModelType model_type) {

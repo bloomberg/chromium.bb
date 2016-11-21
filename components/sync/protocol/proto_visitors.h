@@ -165,6 +165,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData& proto) {
   VISIT(username_element);
   VISIT(username_value);
   VISIT(password_element);
+  VISIT(password_value);
   VISIT(preferred);
   VISIT(date_created);
   VISIT(blacklisted);
@@ -347,6 +348,15 @@ VISIT_PROTO_FIELDS(const sync_pb::GcmInvalidationsFlags& proto) {
   VISIT(enabled);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::EnhancedBookmarksFlags& proto) {
+  VISIT(enabled);
+  VISIT(extension_id);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::WalletSyncFlags& proto) {
+  VISIT(enabled);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::ExperimentsSpecifics& proto) {
   VISIT(keystore_encryption);
   VISIT(history_delete_directives);
@@ -355,6 +365,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ExperimentsSpecifics& proto) {
   VISIT(favicon_sync);
   VISIT(gcm_channel);
   VISIT(gcm_invalidations);
+  VISIT(obsolete_enhanced_bookmarks);
+  VISIT(obsolete_wallet_sync);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ExtensionSettingSpecifics& proto) {
@@ -413,6 +425,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSpecifics& proto) {
   VISIT(master_key);
   VISIT(chrome_avatar);
   VISIT(chromeos_avatar);
+  VISIT(password_signature_key);
+  VISIT(password_encryption_key);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSharedSettingSpecifics& proto) {
@@ -464,11 +478,17 @@ VISIT_PROTO_FIELDS(const sync_pb::ArticleSpecifics& proto) {
   VISIT(entry_id);
   VISIT(title);
   VISIT_REP(pages);
+  VISIT(attachments);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::ArticleAttachments& proto) {
+  VISIT(distilled_article);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecifics& proto) {
   VISIT(encrypted);
   VISIT(unencrypted_metadata);
+  VISIT(client_only_encrypted_data);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PreferenceSpecifics& proto) {
@@ -577,6 +597,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WifiCredentialSpecifics& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
+  VISIT(encrypted);
   VISIT(app);
   VISIT(app_list);
   VISIT(app_notification);
@@ -615,6 +636,12 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(wifi_credential);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::SyncEntity::BookmarkData& proto) {
+  VISIT(bookmark_folder);
+  VISIT(bookmark_url);
+  VISIT(bookmark_favicon);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(id_string);
   VISIT(parent_id_string);
@@ -636,6 +663,8 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(folder);
   VISIT(client_defined_unique_tag);
   VISIT_REP(attachment_id);
+  VISIT_BYTES(ordinal_in_parent);
+  VISIT(bookmarkdata);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ChromiumExtensionsActivity& proto) {
@@ -772,6 +801,8 @@ VISIT_PROTO_FIELDS(const sync_pb::DatatypeAssociationStats& proto) {
   VISIT(download_time_us);
   VISIT(association_wait_time_for_high_priority_us);
   VISIT(association_wait_time_for_same_priority_us);
+  VISIT_REP(high_priority_type_configured_before);
+  VISIT_REP(same_priority_type_configured_before);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DebugEventInfo& proto) {
@@ -796,6 +827,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
   VISIT(num_updates_downloaded);
   VISIT(num_reflected_updates_downloaded);
   VISIT(caller_info);
+  VISIT_REP(source_info);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
@@ -806,6 +838,15 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::AttachmentIdProto& proto) {
   VISIT(unique_id);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::AttachmentMetadataRecord& proto) {
+  VISIT(id);
+  VISIT(is_on_server);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::AttachmentMetadata& proto) {
+  VISIT_REP(record);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
@@ -819,6 +860,23 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
   VISIT(modification_time);
   VISIT(specifics_hash);
   VISIT(base_specifics_hash);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::UniquePosition& proto) {
+  VISIT_BYTES(value);
+  VISIT_BYTES(compressed_value);
+  VISIT(uncompressed_length);
+  VISIT_BYTES(custom_compressed_v1);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::TypeHint& proto) {
+  VISIT(data_type_id);
+  VISIT(has_valid_hint);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SourceInfo& proto) {
+  VISIT_ENUM(source);
+  VISIT_REP(type_hint);
 }
 
 }  // namespace syncer

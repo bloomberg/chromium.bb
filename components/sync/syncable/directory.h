@@ -30,6 +30,12 @@
 #include "components/sync/syncable/parent_child_index.h"
 #include "components/sync/syncable/syncable_delete_journal.h"
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
+
 namespace syncer {
 
 class Cryptographer;
@@ -94,6 +100,8 @@ class Directory {
 
     // Whether a valid progress marker exists for |model_type|.
     bool HasEmptyDownloadProgress(ModelType model_type);
+
+    size_t EstimateMemoryUsage() const;
 
     // Last sync timestamp fetched from the server.
     sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];
@@ -280,6 +288,9 @@ class Directory {
 
   // Gets the total number of entries in the directory.
   size_t GetEntriesCount() const;
+
+  // Adds memory statistics to |pmd| for chrome://tracing.
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
   // Gets/Increments transaction version of a model type. Must be called when
   // holding kernel mutex.

@@ -35,6 +35,12 @@
 
 class GURL;
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}  // namespace trace_event
+}  // namespace base
+
 namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
@@ -400,6 +406,9 @@ class SyncManager {
   // chrome account. See ClientConfigParams proto message for more info.
   // Note: this does not trigger a sync cycle. It just updates the sync context.
   virtual void OnCookieJarChanged(bool account_mismatch, bool empty_jar) = 0;
+
+  // Adds memory usage statistics to |pmd| for chrome://tracing.
+  virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) = 0;
 };
 
 }  // namespace syncer

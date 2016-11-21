@@ -33,32 +33,12 @@ bool ConnectionMemoryDumpProvider::OnMemoryDump(
   int cache_size = 0;
   int schema_size = 0;
   int statement_size = 0;
-  {
-    // Lock is acquired here so that db_ is not reset in ResetDatabase when
-    // collecting stats.
-    base::AutoLock lock(lock_);
-    if (!db_) {
-      return false;
-    }
-
-    // The high water mark is not tracked for the following usages.
-    int dummy_int;
-    int status = sqlite3_db_status(db_, SQLITE_DBSTATUS_CACHE_USED, &cache_size,
-                                   &dummy_int, 0 /* resetFlag */);
-    DCHECK_EQ(SQLITE_OK, status);
-    status = sqlite3_db_status(db_, SQLITE_DBSTATUS_SCHEMA_USED, &schema_size,
-                               &dummy_int, 0 /* resetFlag */);
-    DCHECK_EQ(SQLITE_OK, status);
-    status = sqlite3_db_status(db_, SQLITE_DBSTATUS_STMT_USED, &statement_size,
-                               &dummy_int, 0 /* resetFlag */);
-    DCHECK_EQ(SQLITE_OK, status);
+  if (!GetDbMemoryUsage(&cache_size, &schema_size, &statement_size)) {
+    return false;
   }
 
-  std::string name = base::StringPrintf(
-      "sqlite/%s_connection/0x%" PRIXPTR,
-      connection_name_.empty() ? "Unknown" : connection_name_.c_str(),
-      reinterpret_cast<uintptr_t>(this));
-  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(FormatDumpName());
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   cache_size + schema_size + statement_size);
@@ -72,6 +52,55 @@ bool ConnectionMemoryDumpProvider::OnMemoryDump(
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   statement_size);
   return true;
+}
+
+bool ConnectionMemoryDumpProvider::ReportMemoryUsage(
+    base::trace_event::MemoryAllocatorDump* mad) {
+  int cache_size = 0;
+  int schema_size = 0;
+  int statement_size = 0;
+  if (!GetDbMemoryUsage(&cache_size, &schema_size, &statement_size)) {
+    return false;
+  }
+
+  mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                 cache_size + schema_size + statement_size);
+  mad->process_memory_dump()->AddSuballocation(mad->guid(), FormatDumpName());
+
+  return true;
+}
+
+bool ConnectionMemoryDumpProvider::GetDbMemoryUsage(int* cache_size,
+                                                    int* schema_size,
+                                                    int* statement_size) {
+  // Lock is acquired here so that db_ is not reset in ResetDatabase when
+  // collecting stats.
+  base::AutoLock lock(lock_);
+  if (!db_) {
+    return false;
+  }
+
+  // The high water mark is not tracked for the following usages.
+  int dummy_int;
+  int status = sqlite3_db_status(db_, SQLITE_DBSTATUS_CACHE_USED, cache_size,
+                                 &dummy_int, 0 /* resetFlag */);
+  DCHECK_EQ(SQLITE_OK, status);
+  status = sqlite3_db_status(db_, SQLITE_DBSTATUS_SCHEMA_USED, schema_size,
+                             &dummy_int, 0 /* resetFlag */);
+  DCHECK_EQ(SQLITE_OK, status);
+  status = sqlite3_db_status(db_, SQLITE_DBSTATUS_STMT_USED, statement_size,
+                             &dummy_int, 0 /* resetFlag */);
+  DCHECK_EQ(SQLITE_OK, status);
+
+  return true;
+}
+
+std::string ConnectionMemoryDumpProvider::FormatDumpName() const {
+  return base::StringPrintf(
+      "sqlite/%s_connection/0x%" PRIXPTR,
+      connection_name_.empty() ? "Unknown" : connection_name_.c_str(),
+      reinterpret_cast<uintptr_t>(this));
 }
 
 }  // namespace sql

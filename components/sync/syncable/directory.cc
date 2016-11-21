@@ -4,6 +4,8 @@
 
 #include "components/sync/syncable/directory.h"
 
+#include <inttypes.h>
+
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -13,10 +15,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
@@ -64,6 +71,13 @@ bool Directory::PersistedKernelInfo::HasEmptyDownloadProgress(
   const sync_pb::DataTypeProgressMarker& progress_marker =
       download_progress[model_type];
   return progress_marker.token().empty();
+}
+
+size_t Directory::PersistedKernelInfo::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  return EstimateMemoryUsage(store_birthday) +
+         EstimateMemoryUsage(bag_of_chips) +
+         EstimateMemoryUsage(datatype_context);
 }
 
 Directory::SaveChangesSnapshot::SaveChangesSnapshot()
@@ -883,6 +897,56 @@ void Directory::GetDownloadProgressAsString(ModelType model_type,
 size_t Directory::GetEntriesCount() const {
   ScopedKernelLock lock(this);
   return kernel_->metahandles_map.size();
+}
+
+void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+  std::string dump_name_base =
+      base::StringPrintf("sync/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
+
+  size_t kernel_memory_usage;
+  {
+    using base::trace_event::EstimateMemoryUsage;
+
+    ReadTransaction trans(FROM_HERE, this);
+    ScopedKernelLock lock(this);
+    kernel_memory_usage =
+        EstimateMemoryUsage(kernel_->name) +
+        EstimateMemoryUsage(kernel_->metahandles_map) +
+        EstimateMemoryUsage(kernel_->ids_map) +
+        EstimateMemoryUsage(kernel_->server_tags_map) +
+        EstimateMemoryUsage(kernel_->client_tags_map) +
+        EstimateMemoryUsage(kernel_->parent_child_index) +
+        EstimateMemoryUsage(kernel_->index_by_attachment_id) +
+        EstimateMemoryUsage(kernel_->unapplied_update_metahandles) +
+        EstimateMemoryUsage(kernel_->unsynced_metahandles) +
+        EstimateMemoryUsage(kernel_->dirty_metahandles) +
+        EstimateMemoryUsage(kernel_->metahandles_to_purge) +
+        EstimateMemoryUsage(kernel_->persisted_info) +
+        EstimateMemoryUsage(kernel_->cache_guid);
+  }
+
+  {
+    std::string dump_name =
+        base::StringPrintf("%s/kernel", dump_name_base.c_str());
+
+    auto* dump = pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    kernel_memory_usage);
+    const char* system_allocator_name =
+        base::trace_event::MemoryDumpManager::GetInstance()
+            ->system_allocator_pool_name();
+    if (system_allocator_name) {
+      pmd->AddSuballocation(dump->guid(), system_allocator_name);
+    }
+  }
+
+  if (store_) {
+    std::string dump_name =
+        base::StringPrintf("%s/store", dump_name_base.c_str());
+    auto* dump = pmd->CreateAllocatorDump(dump_name);
+    store_->ReportMemoryUsage(dump);
+  }
 }
 
 void Directory::SetDownloadProgress(

@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "third_party/zlib/zlib.h"
 
@@ -612,6 +613,11 @@ bool UniquePosition::IsValidCompressed(const std::string& str) {
   // We don't bother looking for the existence or checking the validity of
   // any partial blocks.  There's no way they could be invalid anyway.
   return true;
+}
+
+size_t UniquePosition::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  return EstimateMemoryUsage(compressed_);
 }
 
 }  // namespace syncer

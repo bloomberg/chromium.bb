@@ -109,6 +109,7 @@ class SyncManagerImpl
   void RequestEmitDebugInfo() override;
   void ClearServerData(const ClearServerDataCallback& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(

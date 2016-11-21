@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -126,6 +127,16 @@ SyncBackendHostCore::SyncBackendHostCore(
 
 SyncBackendHostCore::~SyncBackendHostCore() {
   DCHECK(!sync_manager_.get());
+}
+
+bool SyncBackendHostCore::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  if (!sync_manager_)
+    return false;
+  sync_manager_->OnMemoryDump(pmd);
+  return true;
 }
 
 void SyncBackendHostCore::OnSyncCycleCompleted(
@@ -431,6 +442,8 @@ void SyncBackendHostCore::DoInitialize(
   args.cancelation_signal = &stop_syncing_signal_;
   args.saved_nigori_state = std::move(options->saved_nigori_state);
   sync_manager_->Init(&args);
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "SyncDirectory", sync_loop_->task_runner());
 }
 
 void SyncBackendHostCore::DoUpdateCredentials(
@@ -544,6 +557,8 @@ void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
 
 void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   if (sync_manager_) {
     DisableDirectoryTypeDebugInfoForwarding();
     save_changes_timer_.reset();

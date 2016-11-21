@@ -1020,4 +1020,8 @@ void SyncManagerImpl::OnCookieJarChanged(bool account_mismatch,
   cycle_context_->set_cookie_jar_empty(empty_jar);
 }
 
+void SyncManagerImpl::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+  directory()->OnMemoryDump(pmd);
+}
+
 }  // namespace syncer

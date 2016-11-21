@@ -112,7 +112,7 @@ class ToValueVisitor {
              const char* field_name,
              const google::protobuf::RepeatedPtrField<F>& repeated_field) {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (const auto& field: repeated_field) {
+    for (const auto& field : repeated_field) {
       list->Append(ToValue(field));
     }
     value_->Set(field_name, std::move(list));
@@ -123,7 +123,7 @@ class ToValueVisitor {
              const char* field_name,
              const google::protobuf::RepeatedField<F>& repeated_field) {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (const auto& field: repeated_field) {
+    for (const auto& field : repeated_field) {
       list->Append(ToValue(field));
     }
     value_->Set(field_name, std::move(list));
@@ -166,6 +166,30 @@ class ToValueVisitor {
     if (include_specifics_) {
       VisitImpl(parent_proto, field_name, field);
     }
+  }
+
+  // EnhancedBookmarksFlags
+  template <class P>
+  void Visit(const P& parent_proto,
+             const char* field_name,
+             const sync_pb::EnhancedBookmarksFlags& field) {
+    // Obsolete, don't visit
+  }
+
+  // WalletSyncFlags
+  template <class P>
+  void Visit(const P& parent_proto,
+             const char* field_name,
+             const sync_pb::WalletSyncFlags& field) {
+    // Obsolete, don't visit
+  }
+
+  // PasswordSpecifics
+  std::unique_ptr<base::DictionaryValue> ToValue(
+      const sync_pb::PasswordSpecifics& proto) const {
+    auto value = ToValueImpl(proto);
+    value->Remove("client_only_encrypted_data", nullptr);
+    return value;
   }
 
   // PasswordSpecificsData
@@ -245,7 +269,7 @@ class ToValueVisitor {
 
   // Needs to be here to see all ToValue() overloads above.
   template <class P, class F>
-  void VisitImpl(P& proto, const char* field_name, const F& field) {
+  void VisitImpl(P&, const char* field_name, const F& field) {
     value_->Set(field_name, ToValue(field));
   }
 

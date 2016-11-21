@@ -92,6 +92,13 @@ TEST_F(ProtoValueConversionsTest, NavigationRedirectToValue) {
   TestSpecificsToValue(NavigationRedirectToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, PasswordSpecifics) {
+  sync_pb::PasswordSpecifics specifics;
+  specifics.mutable_client_only_encrypted_data();
+  auto value = PasswordSpecificsToValue(specifics);
+  EXPECT_FALSE(value->Get("client_only_encrypted_data", nullptr));
+}
+
 TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
   sync_pb::PasswordSpecificsData specifics;
   specifics.set_password_value("secret");
