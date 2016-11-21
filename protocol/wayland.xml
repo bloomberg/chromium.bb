@@ -129,7 +129,7 @@
     <request name="bind">
       <description summary="bind an object to the display">
 	Binds a new, client-created object to the server using the
-        specified name as the identifier.
+	specified name as the identifier.
       </description>
       <arg name="name" type="uint" summary="unique numeric name of the object"/>
       <arg name="id" type="new_id" summary="bounded object"/>
@@ -139,9 +139,9 @@
       <description summary="announce global object">
 	Notify the client of global objects.
 
-        The event notifies the client that a global object with
-        the given name is now available, and it implements the
-        given version of the given interface.
+	The event notifies the client that a global object with
+	the given name is now available, and it implements the
+	given version of the given interface.
       </description>
       <arg name="name" type="uint" summary="numeric name of the global object"/>
       <arg name="interface" type="string" summary="interface implemented by the object"/>
@@ -152,10 +152,10 @@
       <description summary="announce removal of global object">
 	Notify the client of removed global objects.
 
-        This event notifies the client that the global identified
-        by name is no longer available.  If the client bound to
-        the global using the bind request, the client should now
-        destroy that object.
+	This event notifies the client that the global identified
+	by name is no longer available.  If the client bound to
+	the global using the bind request, the client should now
+	destroy that object.
 
 	The object remains valid and requests to the object will be
 	ignored until the client destroys it, to avoid races between
@@ -355,7 +355,7 @@
 
 	The pool can be used to create shared memory based buffer
 	objects.  The server will mmap size bytes of the passed file
-        descriptor, to use as backing memory for the pool.
+	descriptor, to use as backing memory for the pool.
       </description>
       <arg name="id" type="new_id" interface="wl_shm_pool" summary="pool to create"/>
       <arg name="fd" type="fd" summary="file descriptor for the pool"/>
@@ -915,14 +915,14 @@
 
     <request name="create_data_source">
       <description summary="create a new data source">
-        Create a new data source.
+	Create a new data source.
       </description>
       <arg name="id" type="new_id" interface="wl_data_source" summary="data source to create"/>
     </request>
 
     <request name="get_data_device">
       <description summary="create a new data device">
-        Create a new data device for a given seat.
+	Create a new data device for a given seat.
       </description>
       <arg name="id" type="new_id" interface="wl_data_device" summary="data device to create"/>
       <arg name="seat" type="object" interface="wl_seat" summary="seat associated with the data device"/>
@@ -1308,7 +1308,7 @@
 
     <enum name="error">
       <description summary="wl_surface error values">
-        These errors can be emitted in response to wl_surface requests.
+	These errors can be emitted in response to wl_surface requests.
       </description>
       <entry name="invalid_scale" value="0" summary="buffer scale value is invalid"/>
       <entry name="invalid_transform" value="1" summary="buffer transform value is invalid"/>
@@ -1661,8 +1661,8 @@
 
     <enum name="capability" bitfield="true">
       <description summary="seat capability bitmask">
-        This is a bitmask of capabilities this seat has; if a member is
-        set, then it is present on the seat.
+	This is a bitmask of capabilities this seat has; if a member is
+	set, then it is present on the seat.
       </description>
       <entry name="pointer" value="1" summary="the seat has pointer devices"/>
       <entry name="keyboard" value="2" summary="the seat has one or more keyboards"/>
@@ -1857,7 +1857,7 @@
 
     <enum name="button_state">
       <description summary="physical button state">
-        Describes the physical state of a button that produced the button
+	Describes the physical state of a button that produced the button
 	event.
       </description>
       <entry name="released" value="0" summary="the button is not pressed"/>
@@ -1870,8 +1870,8 @@
 
 	The location of the click is given by the last motion or
 	enter event.
-        The time argument is a timestamp with millisecond
-        granularity, with an undefined base.
+	The time argument is a timestamp with millisecond
+	granularity, with an undefined base.
 
 	The button is a button code as defined in the Linux kernel's
 	linux/input-event-codes.h header file, e.g. BTN_LEFT.
@@ -2091,7 +2091,7 @@
       <entry name="no_keymap" value="0"
 	     summary="no keymap; client must understand how to interpret the raw keycode"/>
       <entry name="xkb_v1" value="1"
-             summary="libxkbcommon compatible; to determine the xkb keycode, clients must add 8 to the key event keycode"/>
+	     summary="libxkbcommon compatible; to determine the xkb keycode, clients must add 8 to the key event keycode"/>
     </enum>
 
     <event name="keymap">
@@ -2137,8 +2137,8 @@
     <event name="key">
       <description summary="key event">
 	A key was pressed or released.
-        The time argument is a timestamp with millisecond
-        granularity, with an undefined base.
+	The time argument is a timestamp with millisecond
+	granularity, with an undefined base.
       </description>
       <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -2168,23 +2168,23 @@
 
     <event name="repeat_info" since="4">
       <description summary="repeat rate and delay">
-        Informs the client about the keyboard's repeat rate and delay.
+	Informs the client about the keyboard's repeat rate and delay.
 
-        This event is sent as soon as the wl_keyboard object has been created,
-        and is guaranteed to be received by the client before any key press
-        event.
+	This event is sent as soon as the wl_keyboard object has been created,
+	and is guaranteed to be received by the client before any key press
+	event.
 
-        Negative values for either rate or delay are illegal. A rate of zero
-        will disable any repeating (regardless of the value of delay).
+	Negative values for either rate or delay are illegal. A rate of zero
+	will disable any repeating (regardless of the value of delay).
 
-        This event can be sent later on as well with a new value if necessary,
-        so clients should continue listening for the event past the creation
-        of wl_keyboard.
+	This event can be sent later on as well with a new value if necessary,
+	so clients should continue listening for the event past the creation
+	of wl_keyboard.
       </description>
       <arg name="rate" type="int"
-           summary="the rate of repeating keys in characters per second"/>
+	   summary="the rate of repeating keys in characters per second"/>
       <arg name="delay" type="int"
-           summary="delay in milliseconds since key down until repeating starts"/>
+	   summary="delay in milliseconds since key down until repeating starts"/>
     </event>
   </interface>
 
@@ -2425,10 +2425,10 @@
 	mode that was received with the current flag set.
 
 	The size of a mode is given in physical hardware units of
-        the output device. This is not necessarily the same as
-        the output size in the global compositor space. For instance,
-        the output may be scaled, as described in wl_output.scale,
-        or transformed, as described in wl_output.transform.
+	the output device. This is not necessarily the same as
+	the output size in the global compositor space. For instance,
+	the output may be scaled, as described in wl_output.scale,
+	or transformed, as described in wl_output.transform.
       </description>
       <arg name="flags" type="uint" enum="mode" summary="bitfield of mode flags"/>
       <arg name="width" type="int" summary="width of the mode in hardware units"/>
@@ -2440,20 +2440,20 @@
 
     <event name="done" since="2">
       <description summary="sent all information about output">
-        This event is sent after all other properties have been
-        sent after binding to the output object and after any
-        other property changes done after that. This allows
-        changes to the output properties to be seen as
-        atomic, even if they happen via multiple events.
+	This event is sent after all other properties have been
+	sent after binding to the output object and after any
+	other property changes done after that. This allows
+	changes to the output properties to be seen as
+	atomic, even if they happen via multiple events.
       </description>
     </event>
 
     <event name="scale" since="2">
       <description summary="output scaling properties">
 	This event contains scaling geometry information
-        that is not in the geometry event. It may be sent after
-        binding the output object or if the output scale changes
-        later. If it is not sent, the client should assume a
+	that is not in the geometry event. It may be sent after
+	binding the output object or if the output scale changes
+	later. If it is not sent, the client should assume a
 	scale of 1.
 
 	A scale larger than 1 means that the compositor will
@@ -2550,7 +2550,7 @@
 
     <enum name="error">
       <entry name="bad_surface" value="0"
-             summary="the to-be sub-surface is invalid"/>
+	     summary="the to-be sub-surface is invalid"/>
     </enum>
 
     <request name="get_subsurface">
@@ -2564,11 +2564,11 @@
 	error is raised.
       </description>
       <arg name="id" type="new_id" interface="wl_subsurface"
-           summary="the new sub-surface object ID"/>
+	   summary="the new sub-surface object ID"/>
       <arg name="surface" type="object" interface="wl_surface"
-           summary="the surface to be turned into a sub-surface"/>
+	   summary="the surface to be turned into a sub-surface"/>
       <arg name="parent" type="object" interface="wl_surface"
-           summary="the parent surface"/>
+	   summary="the parent surface"/>
     </request>
   </interface>
 
@@ -2637,7 +2637,7 @@
 
     <enum name="error">
       <entry name="bad_surface" value="0"
-             summary="wl_surface is not a sibling or the parent"/>
+	     summary="wl_surface is not a sibling or the parent"/>
     </enum>
 
     <request name="set_position">
@@ -2682,7 +2682,7 @@
 	of its siblings and parent.
       </description>
       <arg name="sibling" type="object" interface="wl_surface"
-           summary="the reference surface"/>
+	   summary="the reference surface"/>
     </request>
 
     <request name="place_below">
@@ -2691,7 +2691,7 @@
 	See wl_subsurface.place_above.
       </description>
       <arg name="sibling" type="object" interface="wl_surface"
-           summary="the reference surface"/>
+	   summary="the reference surface"/>
     </request>
 
     <request name="set_sync">
