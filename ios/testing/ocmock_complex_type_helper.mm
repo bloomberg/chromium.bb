@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation OCMockComplexTypeHelper {
   // Same as the superclass -representedObject, but retained.
   base::scoped_nsobject<OCMockObject> _object;
@@ -18,7 +22,7 @@
 
 - (instancetype)initWithRepresentedObject:(id)object {
   if ((self = [super initWithRepresentedObject:object]))
-    _object.reset([object retain]);
+    _object.reset(object);
   return self;
 }
 
