@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("webp_transcode") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "webp_decoder.h",
     "webp_decoder.mm",

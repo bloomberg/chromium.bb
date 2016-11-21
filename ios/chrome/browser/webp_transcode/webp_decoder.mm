@@ -11,6 +11,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const uint8_t kNumIfdEntries = 15;
@@ -229,17 +233,16 @@ bool WebpDecoder::DoSendData() {
     // Compress to PNG if the image is transparent, JPEG otherwise.
     // TODO(droger): Use PNG instead of JPEG if the WebP image is lossless.
     if (has_alpha_) {
-      result_data.reset([UIImagePNGRepresentation(tiff_image) retain]);
+      result_data.reset(UIImagePNGRepresentation(tiff_image));
       format = PNG;
     } else {
-      result_data.reset(
-          [UIImageJPEGRepresentation(tiff_image, kJpegQuality) retain]);
+      result_data.reset(UIImageJPEGRepresentation(tiff_image, kJpegQuality));
       format = JPEG;
     }
     if (!result_data)
       return false;
   } else {
-    result_data.reset([output_buffer_ retain]);
+    result_data.reset(output_buffer_);
   }
   UMA_HISTOGRAM_ENUMERATION("WebP.DecodedImageFormat", format,
                             DECODED_FORMAT_COUNT);
