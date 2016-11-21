@@ -21,6 +21,7 @@ namespace content {
 
 namespace {
 const char kInvalidBlobUuid[] = "Blob UUID is invalid";
+const char kInvalidBlobFilePath[] = "Blob file path is invalid";
 }  // namespace
 
 class DatabaseImpl::IDBThreadHelper {
@@ -68,6 +69,7 @@ class DatabaseImpl::IDBThreadHelper {
            int64_t object_store_id,
            ::indexed_db::mojom::ValuePtr value,
            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles,
+           std::vector<IndexedDBBlobInfo> blob_info,
            const IndexedDBKey& key,
            blink::WebIDBPutMode mode,
            const std::vector<IndexedDBIndexKeys>& index_keys,
@@ -251,8 +253,15 @@ void DatabaseImpl::Put(
     blink::WebIDBPutMode mode,
     const std::vector<IndexedDBIndexKeys>& index_keys,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info) {
-  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
-  for (const auto& info : value->blob_or_file_info) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles(
+      value->blob_or_file_info.size());
+  std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
+  for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
+    ::indexed_db::mojom::BlobInfoPtr& info = value->blob_or_file_info[i];
+
     std::unique_ptr<storage::BlobDataHandle> handle =
         dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
             info->uuid);
@@ -260,17 +269,35 @@ void DatabaseImpl::Put(
       mojo::ReportBadMessage(kInvalidBlobUuid);
       return;
     }
-    handles.push_back(std::move(handle));
+    handles[i] = std::move(handle);
+
+    if (info->file) {
+      if (!info->file->path.empty() &&
+          !policy->CanReadFile(dispatcher_host_->ipc_process_id(),
+                               info->file->path)) {
+        mojo::ReportBadMessage(kInvalidBlobFilePath);
+        return;
+      }
+      blob_info[i] = IndexedDBBlobInfo(info->uuid, info->file->path,
+                                       info->file->name, info->mime_type);
+      if (info->size != static_cast<uint64_t>(-1)) {
+        blob_info[i].set_last_modified(info->file->last_modified);
+        blob_info[i].set_size(info->size);
+      }
+    } else {
+      blob_info[i] = IndexedDBBlobInfo(info->uuid, info->mime_type, info->size);
+    }
   }
 
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       dispatcher_host_.get(), origin_, std::move(callbacks_info)));
 
   idb_runner_->PostTask(
-      FROM_HERE, base::Bind(&IDBThreadHelper::Put, base::Unretained(helper_),
-                            transaction_id, object_store_id,
-                            base::Passed(&value), base::Passed(&handles), key,
-                            mode, index_keys, base::Passed(&callbacks)));
+      FROM_HERE,
+      base::Bind(&IDBThreadHelper::Put, base::Unretained(helper_),
+                 transaction_id, object_store_id, base::Passed(&value),
+                 base::Passed(&handles), base::Passed(&blob_info), key, mode,
+                 index_keys, base::Passed(&callbacks)));
 }
 
 void DatabaseImpl::SetIndexKeys(
@@ -547,6 +574,7 @@ void DatabaseImpl::IDBThreadHelper::Put(
     int64_t object_store_id,
     ::indexed_db::mojom::ValuePtr mojo_value,
     std::vector<std::unique_ptr<storage::BlobDataHandle>> handles,
+    std::vector<IndexedDBBlobInfo> blob_info,
     const IndexedDBKey& key,
     blink::WebIDBPutMode mode,
     const std::vector<IndexedDBIndexKeys>& index_keys,
@@ -556,33 +584,6 @@ void DatabaseImpl::IDBThreadHelper::Put(
 
   int64_t host_transaction_id =
       dispatcher_host_->HostTransactionId(transaction_id);
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  std::vector<IndexedDBBlobInfo> blob_info(
-      mojo_value->blob_or_file_info.size());
-  for (size_t i = 0; i < mojo_value->blob_or_file_info.size(); ++i) {
-    const auto& info = mojo_value->blob_or_file_info[i];
-    if (info->file) {
-      if (!info->file->path.empty()) {
-        if (!policy->CanReadFile(dispatcher_host_->ipc_process_id(),
-                                 info->file->path)) {
-          bad_message::ReceivedBadMessage(dispatcher_host_.get(),
-                                          bad_message::IDBDH_CAN_READ_FILE);
-          return;
-        }
-      }
-      blob_info[i] = IndexedDBBlobInfo(info->uuid, info->file->path,
-                                       info->file->name, info->mime_type);
-      if (info->size != static_cast<uint64_t>(-1)) {
-        blob_info[i].set_last_modified(info->file->last_modified);
-        blob_info[i].set_size(info->size);
-      }
-    } else {
-      blob_info[i] = IndexedDBBlobInfo(info->uuid, info->mime_type, info->size);
-    }
-  }
-
   uint64_t commit_size = mojo_value->bits.size();
   IndexedDBValue value;
   swap(value.bits, mojo_value->bits);
