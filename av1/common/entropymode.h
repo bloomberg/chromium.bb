@@ -346,6 +346,7 @@ extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 #define RESTORE_NONE_SGRPROJ_PROB 64
 #define RESTORE_NONE_BILATERAL_PROB 16
 #define RESTORE_NONE_WIENER_PROB 64
+#define RESTORE_NONE_DOMAINTXFMRF_PROB 64
 extern const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
 #endif  // CONFIG_LOOP_RESTORATION

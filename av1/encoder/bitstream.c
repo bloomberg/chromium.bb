@@ -2986,9 +2986,21 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       aom_wb_write_bit(wb, 0);
       aom_wb_write_bit(wb, 1);
       break;
+    /*
+  case RESTORE_SGRPROJ:
+    aom_wb_write_bit(wb, 1);
+    aom_wb_write_bit(wb, 0);
+    break;
+    */
     case RESTORE_SGRPROJ:
       aom_wb_write_bit(wb, 1);
       aom_wb_write_bit(wb, 0);
+      aom_wb_write_bit(wb, 0);
+      break;
+    case RESTORE_DOMAINTXFMRF:
+      aom_wb_write_bit(wb, 1);
+      aom_wb_write_bit(wb, 0);
+      aom_wb_write_bit(wb, 1);
       break;
     case RESTORE_BILATERAL:
       aom_wb_write_bit(wb, 1);
@@ -3027,6 +3039,11 @@ static void write_sgrproj_filter(SgrprojInfo *sgrproj_info, aom_writer *wb) {
                     SGRPROJ_PRJ_BITS);
 }
 
+static void write_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
+                                      aom_writer *wb) {
+  aom_write_literal(wb, domaintxfmrf_info->sigma_r, DOMAINTXFMRF_PARAMS_BITS);
+}
+
 static void write_bilateral_filter(const AV1_COMMON *cm,
                                    BilateralInfo *bilateral_info,
                                    aom_writer *wb) {
@@ -3061,6 +3078,8 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
           write_wiener_filter(&rsi->wiener_info[i], wb);
         } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
           write_sgrproj_filter(&rsi->sgrproj_info[i], wb);
+        } else if (rsi->restoration_type[i] == RESTORE_DOMAINTXFMRF) {
+          write_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], wb);
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_BILATERAL) {
@@ -3080,6 +3099,14 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
                   RESTORE_NONE_SGRPROJ_PROB);
         if (rsi->sgrproj_info[i].level) {
           write_sgrproj_filter(&rsi->sgrproj_info[i], wb);
+        }
+      }
+    } else if (rsi->frame_restoration_type == RESTORE_DOMAINTXFMRF) {
+      for (i = 0; i < cm->rst_internal.ntiles; ++i) {
+        aom_write(wb, rsi->domaintxfmrf_info[i].level != 0,
+                  RESTORE_NONE_DOMAINTXFMRF_PROB);
+        if (rsi->domaintxfmrf_info[i].level) {
+          write_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], wb);
         }
       }
     }

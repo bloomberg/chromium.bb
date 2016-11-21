@@ -21,12 +21,27 @@
 extern "C" {
 #endif
 
+#define CLIP(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+#define RINT(x) ((x) < 0 ? (int)((x)-0.5) : (int)((x) + 0.5))
+
 #define RESTORATION_TILESIZE_SML 128
 #define RESTORATION_TILESIZE_BIG 256
 #define RESTORATION_TILEPELS_MAX \
   (RESTORATION_TILESIZE_BIG * RESTORATION_TILESIZE_BIG * 9 / 4)
-#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 6 * 8)
 
+#define DOMAINTXFMRF_PARAMS_BITS 6
+#define DOMAINTXFMRF_PARAMS (1 << DOMAINTXFMRF_PARAMS_BITS)
+#define DOMAINTXFMRF_SIGMA_SCALEBITS 4
+#define DOMAINTXFMRF_SIGMA_SCALE (1 << DOMAINTXFMRF_SIGMA_SCALEBITS)
+#define DOMAINTXFMRF_ITERS 3
+#define DOMAINTXFMRF_VTABLE_PRECBITS 8
+#define DOMAINTXFMRF_VTABLE_PREC (1 << DOMAINTXFMRF_VTABLE_PRECBITS)
+#define DOMAINTXFMRF_MULT \
+  sqrt(((1 << (DOMAINTXFMRF_ITERS * 2)) - 1) * 2.0 / 3.0)
+#define DOMAINTXFMRF_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX)
+#define DOMAINTXFMRF_BITS (DOMAINTXFMRF_PARAMS_BITS)
+
+#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 6 * 8)
 #define SGRPROJ_PARAMS_BITS 3
 #define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)
 
@@ -100,6 +115,11 @@ typedef struct {
 } SgrprojInfo;
 
 typedef struct {
+  int level;
+  int sigma_r;
+} DomaintxfmrfInfo;
+
+typedef struct {
   RestorationType frame_restoration_type;
   RestorationType *restoration_type;
   // Bilateral filter
@@ -108,6 +128,8 @@ typedef struct {
   WienerInfo *wiener_info;
   // Selfguided proj filter
   SgrprojInfo *sgrproj_info;
+  // Domain transform filter
+  DomaintxfmrfInfo *domaintxfmrf_info;
 } RestorationInfo;
 
 typedef struct {
@@ -181,6 +203,12 @@ extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
 
 void av1_selfguided_restoration(int64_t *dgd, int width, int height, int stride,
                                 int bit_depth, int r, int eps, void *tmpbuf);
+void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
+                                  int stride, int param);
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
+                                         int stride, int param, int bit_depth);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 void decode_xq(int *xqd, int *xq);
 int av1_bilateral_level_bits(const struct AV1Common *const cm);
 void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,

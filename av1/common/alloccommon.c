@@ -91,6 +91,8 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
   cm->rst_info.wiener_info = NULL;
   aom_free(cm->rst_info.sgrproj_info);
   cm->rst_info.sgrproj_info = NULL;
+  aom_free(cm->rst_info.domaintxfmrf_info);
+  cm->rst_info.domaintxfmrf_info = NULL;
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
