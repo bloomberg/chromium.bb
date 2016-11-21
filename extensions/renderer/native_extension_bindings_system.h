@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api_bindings_system.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -22,25 +23,27 @@ class ScriptContext;
 // IPC is still abstracted out for testing purposes, but otherwise this should
 // be a plug-and-play version for use in the Extensions system.
 // Designed to be used in a single thread, but for all contexts on that thread.
-class NativeExtensionBindingsSystem {
+class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  public:
   using SendIPCMethod =
       base::Callback<void(const ExtensionHostMsg_Request_Params&)>;
 
   explicit NativeExtensionBindingsSystem(const SendIPCMethod& send_ipc);
-  ~NativeExtensionBindingsSystem();
+  ~NativeExtensionBindingsSystem() override;
 
-  // Creates the "chrome" object (if it doesn't already exist) and instantiates
-  // the individual APIs on top of it. Only exposes those APIs available to the
-  // given context.
-  void CreateAPIsInContext(ScriptContext* context);
-
-  // Handles responding to a given request. This signature matches the arguments
-  // given to the response IPC.
-  void OnResponse(int request_id,
-                  bool success,
-                  const base::ListValue& response,
-                  const std::string& error);
+  // ExtensionBindingsSystem:
+  void DidCreateScriptContext(ScriptContext* context) override;
+  void WillReleaseScriptContext(ScriptContext* context) override;
+  void UpdateBindingsForContext(ScriptContext* context) override;
+  void DispatchEventInContext(const std::string& event_name,
+                              const base::ListValue* event_args,
+                              const base::DictionaryValue* filtering_info,
+                              ScriptContext* context) override;
+  void HandleResponse(int request_id,
+                      bool success,
+                      const base::ListValue& response,
+                      const std::string& error) override;
+  RequestSender* GetRequestSender() override;
 
  private:
   // Handles sending a given |request|, forwarding it on to the send_ipc_ after

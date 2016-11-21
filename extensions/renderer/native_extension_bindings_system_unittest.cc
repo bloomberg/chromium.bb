@@ -120,7 +120,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
       context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
   script_context->set_url(extension->url());
 
-  bindings_system()->CreateAPIsInContext(script_context);
+  bindings_system()->UpdateBindingsForContext(script_context);
 
   // chrome.idle.queryState should exist.
   v8::Local<v8::Value> chrome =
@@ -177,9 +177,9 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
       last_params().arguments.Equals(ListValueFromString("[30]").get()));
 
   // Respond and validate.
-  bindings_system()->OnResponse(last_params().request_id, true,
-                                *ListValueFromString("['active']"),
-                                std::string());
+  bindings_system()->HandleResponse(last_params().request_id, true,
+                                    *ListValueFromString("['active']"),
+                                    std::string());
 
   std::unique_ptr<base::Value> result_value = GetBaseValuePropertyFromObject(
       context->Global(), context, "responseState");

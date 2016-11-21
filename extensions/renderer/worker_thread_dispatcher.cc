@@ -9,6 +9,8 @@
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/service_worker_data.h"
 
 namespace extensions {
@@ -24,10 +26,20 @@ void OnResponseOnWorkerThread(int request_id,
                               bool succeeded,
                               const std::unique_ptr<base::ListValue>& response,
                               const std::string& error) {
+  // TODO(devlin): Using the RequestSender directly here won't work with
+  // NativeExtensionBindingsSystem (since there is no associated RequestSender
+  // in that case). We should instead be going
+  // ExtensionBindingsSystem::HandleResponse().
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   WorkerThreadDispatcher::GetRequestSender()->HandleWorkerResponse(
       request_id, data->service_worker_version_id(), succeeded, *response,
       error);
+}
+
+ServiceWorkerData* GetServiceWorkerData() {
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  DCHECK(data);
+  return data;
 }
 
 }  // namespace
@@ -47,17 +59,20 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
   render_thread->AddObserver(this);
 }
 
-V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
-  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  DCHECK(data);
-  return data->v8_schema_registry();
+// static
+ExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
+  return GetServiceWorkerData()->bindings_system();
 }
 
 // static
 ServiceWorkerRequestSender* WorkerThreadDispatcher::GetRequestSender() {
-  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  DCHECK(data);
-  return data->request_sender();
+  return static_cast<ServiceWorkerRequestSender*>(
+      GetBindingsSystem()->GetRequestSender());
+}
+
+// static
+V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
+  return GetServiceWorkerData()->v8_schema_registry();
 }
 
 bool WorkerThreadDispatcher::OnControlMessageReceived(
@@ -86,11 +101,17 @@ void WorkerThreadDispatcher::OnResponseWorker(int worker_thread_id,
                  base::Passed(response.CreateDeepCopy()), error));
 }
 
-void WorkerThreadDispatcher::AddWorkerData(int64_t service_worker_version_id) {
+void WorkerThreadDispatcher::AddWorkerData(
+    int64_t service_worker_version_id,
+    ResourceBundleSourceMap* source_map) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
-    ServiceWorkerData* new_data =
-        new ServiceWorkerData(this, service_worker_version_id);
+    std::unique_ptr<ExtensionBindingsSystem> bindings_system =
+        base::MakeUnique<JsExtensionBindingsSystem>(
+            source_map, base::MakeUnique<ServiceWorkerRequestSender>(
+                            this, service_worker_version_id));
+    ServiceWorkerData* new_data = new ServiceWorkerData(
+        service_worker_version_id, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
 }

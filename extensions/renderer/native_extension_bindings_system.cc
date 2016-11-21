@@ -91,7 +91,13 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}
 
-void NativeExtensionBindingsSystem::CreateAPIsInContext(
+void NativeExtensionBindingsSystem::DidCreateScriptContext(
+    ScriptContext* context) {}
+
+void NativeExtensionBindingsSystem::WillReleaseScriptContext(
+    ScriptContext* context) {}
+
+void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     ScriptContext* context) {
   v8::Local<v8::Context> v8_context = context->v8_context();
   v8::Local<v8::Object> chrome = GetOrCreateChrome(v8_context);
@@ -136,11 +142,28 @@ void NativeExtensionBindingsSystem::CreateAPIsInContext(
   }
 }
 
-void NativeExtensionBindingsSystem::OnResponse(int request_id,
-                                               bool success,
-                                               const base::ListValue& response,
-                                               const std::string& error) {
+void NativeExtensionBindingsSystem::DispatchEventInContext(
+    const std::string& event_name,
+    const base::ListValue* event_args,
+    const base::DictionaryValue* filtering_info,
+    ScriptContext* context) {
+  v8::HandleScope handle_scope(context->isolate());
+  v8::Context::Scope context_scope(context->v8_context());
+  // TODO(devlin): Take into account |filtering_info|.
+  api_system_.FireEventInContext(event_name, context->v8_context(),
+                                 *event_args);
+}
+
+void NativeExtensionBindingsSystem::HandleResponse(
+    int request_id,
+    bool success,
+    const base::ListValue& response,
+    const std::string& error) {
   api_system_.CompleteRequest(request_id, response);
+}
+
+RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
+  return nullptr;
 }
 
 void NativeExtensionBindingsSystem::SendRequest(

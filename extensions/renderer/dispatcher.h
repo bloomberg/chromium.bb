@@ -62,6 +62,7 @@ namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
 class FilteredEventRouter;
+class JsExtensionBindingsSystem;
 class ManifestPermissionSet;
 class RequestSender;
 class ScriptContext;
@@ -83,8 +84,6 @@ class Dispatcher : public content::RenderThreadObserver,
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }
 
   ContentWatcher* content_watcher() { return content_watcher_.get(); }
-
-  RequestSender* request_sender() { return request_sender_.get(); }
 
   const std::string& webview_partition_id() { return webview_partition_id_; }
 
@@ -229,16 +228,10 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void UpdateBindingsForContext(ScriptContext* context);
 
-  void RegisterBinding(const std::string& api_name, ScriptContext* context);
-
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ScriptContext* context,
                               RequestSender* request_sender,
                               V8SchemaRegistry* v8_schema_registry);
-
-  // Determines if a ScriptContext can connect to any externally_connectable-
-  // enabled extension.
-  bool IsRuntimeAvailableToContext(ScriptContext* context);
 
   // Updates a web page context with any content capabilities granted by active
   // extensions.
@@ -249,18 +242,6 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // Returns whether the current renderer hosts a platform app.
   bool IsWithinPlatformApp();
-
-  // Gets |field| from |object| or creates it as an empty object if it doesn't
-  // exist.
-  static v8::Local<v8::Object> GetOrCreateObject(
-      const v8::Local<v8::Object>& object,
-      const std::string& field,
-      v8::Isolate* isolate);
-
-  static v8::Local<v8::Object> GetOrCreateBindObjectIfAvailable(
-      const std::string& api_name,
-      std::string* bind_name,
-      ScriptContext* context);
 
   // Requires the GuestView modules in the module system of the ScriptContext
   // |context|.
@@ -299,8 +280,8 @@ class Dispatcher : public content::RenderThreadObserver,
   // Cache for the v8 representation of extension API schemas.
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
 
-  // Sends API requests to the extension host.
-  std::unique_ptr<RequestSender> request_sender_;
+  // The bindings system associated with the main thread.
+  std::unique_ptr<JsExtensionBindingsSystem> bindings_system_;
 
   // The platforms system font family and size;
   std::string system_font_family_;

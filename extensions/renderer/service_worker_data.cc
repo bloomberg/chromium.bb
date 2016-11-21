@@ -4,18 +4,17 @@
 
 #include "extensions/renderer/service_worker_data.h"
 
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/service_worker_request_sender.h"
-#include "extensions/renderer/worker_thread_dispatcher.h"
 
 namespace extensions {
 
-ServiceWorkerData::ServiceWorkerData(WorkerThreadDispatcher* dispatcher,
-                                     int64_t service_worker_version_id)
+ServiceWorkerData::ServiceWorkerData(
+    int64_t service_worker_version_id,
+    std::unique_ptr<ExtensionBindingsSystem> bindings_system)
     : service_worker_version_id_(service_worker_version_id),
       v8_schema_registry_(new V8SchemaRegistry),
-      request_sender_(
-          new ServiceWorkerRequestSender(dispatcher,
-                                         service_worker_version_id)) {}
+      bindings_system_(std::move(bindings_system)) {}
 
 ServiceWorkerData::~ServiceWorkerData() {}
 

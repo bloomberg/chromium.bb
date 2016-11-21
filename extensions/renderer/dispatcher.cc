@@ -21,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -49,7 +48,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
-#include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -59,7 +57,6 @@
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/api_definitions_natives.h"
 #include "extensions/renderer/app_window_custom_bindings.h"
-#include "extensions/renderer/binding_generating_native_handler.h"
 #include "extensions/renderer/blob_native_handler.h"
 #include "extensions/renderer/content_watcher.h"
 #include "extensions/renderer/context_menus_custom_bindings.h"
@@ -74,6 +71,7 @@
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
 #include "extensions/renderer/id_generator_custom_bindings.h"
+#include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/module_system.h"
@@ -135,35 +133,12 @@ namespace {
 
 static const int64_t kInitialExtensionIdleHandlerDelayMs = 5 * 1000;
 static const int64_t kMaxExtensionIdleHandlerDelayMs = 5 * 60 * 1000;
-static const char kEventDispatchFunction[] = "dispatchEvent";
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
 void CrashOnException(const v8::TryCatch& trycatch) {
   NOTREACHED();
 };
-
-// Returns the global value for "chrome" from |context|. If one doesn't exist
-// creates a new object for it.
-//
-// Note that this isn't necessarily an object, since webpages can write, for
-// example, "window.chrome = true".
-v8::Local<v8::Value> GetOrCreateChrome(ScriptContext* context) {
-  v8::Local<v8::String> chrome_string(
-      v8::String::NewFromUtf8(context->isolate(), "chrome"));
-  v8::Local<v8::Object> global(context->v8_context()->Global());
-  v8::Local<v8::Value> chrome(global->Get(chrome_string));
-  if (chrome->IsUndefined()) {
-    chrome = v8::Object::New(context->isolate());
-    global->Set(chrome_string, chrome);
-  }
-  return chrome;
-}
-
-// Returns |value| cast to an object if possible, else an empty handle.
-v8::Local<v8::Object> AsObjectOrEmpty(v8::Local<v8::Value> value) {
-  return value->IsObject() ? value.As<v8::Object>() : v8::Local<v8::Object>();
-}
 
 // Calls a method |method_name| in a module |module_name| belonging to the
 // module system from |context|. Intended as a callback target from
@@ -198,40 +173,21 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   }
 
   void GetChrome(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    args.GetReturnValue().Set(GetOrCreateChrome(context()));
+    // Check for the chrome property. If one doesn't exist, create one.
+    v8::Local<v8::String> chrome_string(
+        v8::String::NewFromUtf8(context()->isolate(), "chrome"));
+    v8::Local<v8::Object> global(context()->v8_context()->Global());
+    v8::Local<v8::Value> chrome(global->Get(chrome_string));
+    if (chrome->IsUndefined()) {
+      chrome = v8::Object::New(context()->isolate());
+      global->Set(chrome_string, chrome);
+    }
+    args.GetReturnValue().Set(chrome);
   }
 };
 
 base::LazyInstance<WorkerScriptContextSet> g_worker_script_context_set =
     LAZY_INSTANCE_INITIALIZER;
-
-// Dispatches the event with the given name, arguments, and filtering info in
-// the given |context|.
-void DispatchEventInContext(const std::string& event_name,
-                            const base::ListValue* event_args,
-                            const base::DictionaryValue* filtering_info,
-                            ScriptContext* context) {
-  v8::HandleScope handle_scope(context->isolate());
-  v8::Context::Scope context_scope(context->v8_context());
-
-  std::vector<v8::Local<v8::Value>> arguments;
-  arguments.push_back(gin::StringToSymbol(context->isolate(), event_name));
-
-  {
-    std::unique_ptr<content::V8ValueConverter> converter(
-        content::V8ValueConverter::create());
-    arguments.push_back(
-        converter->ToV8Value(event_args, context->v8_context()));
-    if (!filtering_info->empty()) {
-      arguments.push_back(
-          converter->ToV8Value(filtering_info, context->v8_context()));
-    }
-  }
-
-  context->module_system()->CallModuleMethodSafe(
-      kEventBindings, kEventDispatchFunction, arguments.size(),
-      arguments.data());
-}
 
 }  // namespace
 
@@ -242,6 +198,9 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
+      bindings_system_(
+          new JsExtensionBindingsSystem(&source_map_,
+                                        base::MakeUnique<RequestSender>())),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
@@ -260,7 +219,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   script_injection_manager_.reset(
       new ScriptInjectionManager(user_script_set_manager_.get()));
   user_script_set_manager_observer_.Add(user_script_set_manager_.get());
-  request_sender_.reset(new RequestSender());
   PopulateSourceMap();
   WakeEventPage::Get()->Init(RenderThread::Get());
   // Ideally this should be done after checking
@@ -366,18 +324,11 @@ void Dispatcher::DidCreateScriptContext(
   // Enable natives in startup.
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
 
-  RegisterNativeHandlers(module_system, context, request_sender_.get(),
+  RegisterNativeHandlers(module_system, context,
+                         bindings_system_->GetRequestSender(),
                          v8_schema_registry_.get());
 
-  // chrome.Event is part of the public API (although undocumented). Make it
-  // lazily evalulate to Event from event_bindings.js. For extensions only
-  // though, not all webpages!
-  if (context->extension()) {
-    v8::Local<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
-    if (!chrome.IsEmpty())
-      module_system->SetLazyField(chrome, "Event", kEventBindings, "Event");
-  }
-
+  bindings_system_->DidCreateScriptContext(context);
   UpdateBindingsForContext(context);
 
   bool is_within_platform_app = IsWithinPlatformApp();
@@ -473,29 +424,26 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   context->set_url(url);
 
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
-    WorkerThreadDispatcher::Get()->AddWorkerData(service_worker_version_id);
-    {
-      // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
-      // safe.
-      std::unique_ptr<ModuleSystem> module_system(
-          new ModuleSystem(context, &source_map_));
-      context->set_module_system(std::move(module_system));
-    }
+    WorkerThreadDispatcher::Get()->AddWorkerData(service_worker_version_id,
+                                                 &source_map_);
+
+    // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
+    // safe.
+    context->set_module_system(
+        base::MakeUnique<ModuleSystem>(context, &source_map_));
 
     ModuleSystem* module_system = context->module_system();
     // Enable natives in startup.
     ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
-    RegisterNativeHandlers(
-        module_system, context,
-        WorkerThreadDispatcher::Get()->GetRequestSender(),
-        WorkerThreadDispatcher::Get()->GetV8SchemaRegistry());
-    // chrome.Event is part of the public API (although undocumented). Make it
-    // lazily evalulate to Event from event_bindings.js.
-    v8::Local<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
-    if (!chrome.IsEmpty())
-      module_system->SetLazyField(chrome, "Event", kEventBindings, "Event");
+    ExtensionBindingsSystem* worker_bindings_system =
+        WorkerThreadDispatcher::GetBindingsSystem();
+    RegisterNativeHandlers(module_system, context,
+                           worker_bindings_system->GetRequestSender(),
+                           WorkerThreadDispatcher::GetV8SchemaRegistry());
 
-    UpdateBindingsForContext(context);
+    worker_bindings_system->DidCreateScriptContext(context);
+    worker_bindings_system->UpdateBindingsForContext(context);
+
     // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
     // necessary for Extension SW.
     RequireGuestViewModules(context);
@@ -555,10 +503,7 @@ void Dispatcher::WillReleaseScriptContext(
   ScriptContext* context = script_context_set_->GetByV8Context(v8_context);
   if (!context)
     return;
-
-  // TODO(kalman): Make |request_sender| use |context->AddInvalidationObserver|.
-  // In fact |request_sender_| should really be owned by ScriptContext.
-  request_sender_->InvalidateSource(context);
+  bindings_system_->WillReleaseScriptContext(context);
 
   script_context_set_->Remove(context);
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
@@ -573,6 +518,10 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
       url.SchemeIs(kExtensionResourceScheme)) {
     // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
     g_worker_script_context_set.Get().Remove(v8_context, url);
+    // TODO(devlin): We're not calling
+    // ExtensionBindingsSystem::WillReleaseScriptContext() here. This should be
+    // fine, since the entire bindings system is being destroyed when we
+    // remove the worker data, but we might want to notify the system anyway.
   }
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
     WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
@@ -649,7 +598,7 @@ void Dispatcher::OnExtensionResponse(int request_id,
                                      bool success,
                                      const base::ListValue& response,
                                      const std::string& error) {
-  request_sender_->HandleResponse(request_id, success, response, error);
+  bindings_system_->HandleResponse(request_id, success, response, error);
 }
 
 void Dispatcher::DispatchEvent(
@@ -657,9 +606,11 @@ void Dispatcher::DispatchEvent(
     const std::string& event_name,
     const base::ListValue& event_args,
     const base::DictionaryValue& filtering_info) const {
-  script_context_set_->ForEach(extension_id, nullptr,
-                               base::Bind(&DispatchEventInContext, event_name,
-                                          &event_args, &filtering_info));
+  script_context_set_->ForEach(
+      extension_id, nullptr,
+      base::Bind(&ExtensionBindingsSystem::DispatchEventInContext,
+                 base::Unretained(bindings_system_.get()), event_name,
+                 &event_args, &filtering_info));
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch.
@@ -1035,8 +986,8 @@ void Dispatcher::OnDeliverMessage(int target_port_id,
                                   const Message& message) {
   std::unique_ptr<RequestSender::ScopedTabID> scoped_tab_id;
   if (source_tab_id != -1) {
-    scoped_tab_id.reset(
-        new RequestSender::ScopedTabID(request_sender(), source_tab_id));
+    scoped_tab_id.reset(new RequestSender::ScopedTabID(
+        bindings_system_->GetRequestSender(), source_tab_id));
   }
 
   MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
@@ -1208,7 +1159,7 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   std::set<ScriptContext*> removed_contexts =
       script_context_set_->OnExtensionUnloaded(id);
   for (ScriptContext* context : removed_contexts) {
-    request_sender_->InvalidateSource(context);
+    bindings_system_->WillReleaseScriptContext(context);
   }
 
   // Update the available bindings for the remaining contexts. These may have
@@ -1382,112 +1333,12 @@ void Dispatcher::UpdateBindings(const std::string& extension_id) {
                                           base::Unretained(this)));
 }
 
-// Note: this function runs on multiple threads: main renderer thread and
-// service worker threads.
 void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
-  v8::HandleScope handle_scope(context->isolate());
-  v8::Context::Scope context_scope(context->v8_context());
-
-  // TODO(kalman): Make the bindings registration have zero overhead then run
-  // the same code regardless of context type.
-  switch (context->context_type()) {
-    case Feature::UNSPECIFIED_CONTEXT:
-    case Feature::WEB_PAGE_CONTEXT:
-    case Feature::BLESSED_WEB_PAGE_CONTEXT:
-      // Hard-code registration of any APIs that are exposed to webpage-like
-      // contexts, because it's too expensive to run the full bindings code.
-      // All of the same permission checks will still apply.
-      if (context->GetAvailability("app").is_available())
-        RegisterBinding("app", context);
-      if (context->GetAvailability("webstore").is_available())
-        RegisterBinding("webstore", context);
-      if (context->GetAvailability("dashboardPrivate").is_available())
-        RegisterBinding("dashboardPrivate", context);
-      if (IsRuntimeAvailableToContext(context))
-        RegisterBinding("runtime", context);
-      UpdateContentCapabilities(context);
-      break;
-
-    case Feature::SERVICE_WORKER_CONTEXT:
-      DCHECK(ExtensionsClient::Get()
-                 ->ExtensionAPIEnabledInExtensionServiceWorkers());
-    // Intentional fallthrough.
-    case Feature::BLESSED_EXTENSION_CONTEXT:
-    case Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case Feature::CONTENT_SCRIPT_CONTEXT:
-    case Feature::WEBUI_CONTEXT: {
-      // Extension context; iterate through all the APIs and bind the available
-      // ones.
-      const FeatureProvider* api_feature_provider =
-          FeatureProvider::GetAPIFeatures();
-      for (const auto& map_entry : api_feature_provider->GetAllFeatures()) {
-        // Internal APIs are included via require(api_name) from internal code
-        // rather than chrome[api_name].
-        if (map_entry.second->IsInternal())
-          continue;
-
-        // If this API has a parent feature (and isn't marked 'noparent'),
-        // then this must be a function or event, so we should not register.
-        if (api_feature_provider->GetParent(map_entry.second.get()) != nullptr)
-          continue;
-
-        // Skip chrome.test if this isn't a test.
-        if (map_entry.first == "test" &&
-            !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                ::switches::kTestType)) {
-          continue;
-        }
-
-        if (context->IsAnyFeatureAvailableToContext(*map_entry.second)) {
-          // TODO(lazyboy): RegisterBinding() uses |source_map_|, any thread
-          // safety issue?
-          RegisterBinding(map_entry.first, context);
-        }
-      }
-      break;
-    }
-  }
-}
-
-void Dispatcher::RegisterBinding(const std::string& api_name,
-                                 ScriptContext* context) {
-  std::string bind_name;
-  v8::Local<v8::Object> bind_object =
-      GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
-
-  // Empty if the bind object failed to be created, probably because the
-  // extension overrode chrome with a non-object, e.g. window.chrome = true.
-  if (bind_object.IsEmpty())
-    return;
-
-  v8::Local<v8::String> v8_bind_name =
-      v8::String::NewFromUtf8(context->isolate(), bind_name.c_str());
-  if (bind_object->HasRealNamedProperty(v8_bind_name)) {
-    // The bind object may already have the property if the API has been
-    // registered before (or if the extension has put something there already,
-    // but, whatevs).
-    //
-    // In the former case, we need to re-register the bindings for the APIs
-    // which the extension now has permissions for (if any), but not touch any
-    // others so that we don't destroy state such as event listeners.
-    //
-    // TODO(kalman): Only register available APIs to make this all moot.
-    if (bind_object->HasRealNamedCallbackProperty(v8_bind_name))
-      return;  // lazy binding still there, nothing to do
-    if (bind_object->Get(v8_bind_name)->IsObject())
-      return;  // binding has already been fully installed
-  }
-
-  ModuleSystem* module_system = context->module_system();
-  if (!source_map_.Contains(api_name)) {
-    module_system->RegisterNativeHandler(
-        api_name,
-        std::unique_ptr<NativeHandler>(
-            new BindingGeneratingNativeHandler(context, api_name, "binding")));
-    module_system->SetNativeLazyField(
-        bind_object, bind_name, api_name, "binding");
-  } else {
-    module_system->SetLazyField(bind_object, bind_name, api_name, "binding");
+  bindings_system_->UpdateBindingsForContext(context);
+  Feature::Context context_type = context->context_type();
+  if (context_type == Feature::WEB_PAGE_CONTEXT ||
+      context_type == Feature::BLESSED_WEB_PAGE_CONTEXT) {
+    UpdateContentCapabilities(context);
   }
 }
 
@@ -1514,17 +1365,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           is_component_extension, manifest_version, send_request_disabled)));
 
   delegate_->RegisterNativeHandlers(this, module_system, context);
-}
-
-bool Dispatcher::IsRuntimeAvailableToContext(ScriptContext* context) {
-  for (const auto& extension :
-       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
-    ExternallyConnectableInfo* info = static_cast<ExternallyConnectableInfo*>(
-        extension->GetManifestData(manifest_keys::kExternallyConnectable));
-    if (info && info->matches.MatchesURL(context->url()))
-      return true;
-  }
-  return false;
 }
 
 void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
@@ -1569,80 +1409,6 @@ bool Dispatcher::IsWithinPlatformApp() {
       return true;
   }
   return false;
-}
-
-// static.
-v8::Local<v8::Object> Dispatcher::GetOrCreateObject(
-    const v8::Local<v8::Object>& object,
-    const std::string& field,
-    v8::Isolate* isolate) {
-  v8::Local<v8::String> key = v8::String::NewFromUtf8(isolate, field.c_str());
-  // If the object has a callback property, it is assumed it is an unavailable
-  // API, so it is safe to delete. This is checked before GetOrCreateObject is
-  // called.
-  if (object->HasRealNamedCallbackProperty(key)) {
-    object->Delete(key);
-  } else if (object->HasRealNamedProperty(key)) {
-    v8::Local<v8::Value> value = object->Get(key);
-    CHECK(value->IsObject());
-    return v8::Local<v8::Object>::Cast(value);
-  }
-
-  v8::Local<v8::Object> new_object = v8::Object::New(isolate);
-  object->Set(key, new_object);
-  return new_object;
-}
-
-// static.
-v8::Local<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
-    const std::string& api_name,
-    std::string* bind_name,
-    ScriptContext* context) {
-  std::vector<std::string> split = base::SplitString(
-      api_name, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  v8::Local<v8::Object> bind_object;
-
-  // Check if this API has an ancestor. If the API's ancestor is available and
-  // the API is not available, don't install the bindings for this API. If
-  // the API is available and its ancestor is not, delete the ancestor and
-  // install the bindings for the API. This is to prevent loading the ancestor
-  // API schema if it will not be needed.
-  //
-  // For example:
-  //  If app is available and app.window is not, just install app.
-  //  If app.window is available and app is not, delete app and install
-  //  app.window on a new object so app does not have to be loaded.
-  const FeatureProvider* api_feature_provider =
-      FeatureProvider::GetAPIFeatures();
-  std::string ancestor_name;
-  bool only_ancestor_available = false;
-
-  for (size_t i = 0; i < split.size() - 1; ++i) {
-    ancestor_name += (i ? "." : "") + split[i];
-    if (api_feature_provider->GetFeature(ancestor_name) &&
-        context->GetAvailability(ancestor_name).is_available() &&
-        !context->GetAvailability(api_name).is_available()) {
-      only_ancestor_available = true;
-      break;
-    }
-
-    if (bind_object.IsEmpty()) {
-      bind_object = AsObjectOrEmpty(GetOrCreateChrome(context));
-      if (bind_object.IsEmpty())
-        return v8::Local<v8::Object>();
-    }
-    bind_object = GetOrCreateObject(bind_object, split[i], context->isolate());
-  }
-
-  if (only_ancestor_available)
-    return v8::Local<v8::Object>();
-
-  if (bind_name)
-    *bind_name = split.back();
-
-  return bind_object.IsEmpty() ? AsObjectOrEmpty(GetOrCreateChrome(context))
-                               : bind_object;
 }
 
 void Dispatcher::RequireGuestViewModules(ScriptContext* context) {

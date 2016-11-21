@@ -18,6 +18,8 @@ class RenderThread;
 }
 
 namespace extensions {
+class ExtensionBindingsSystem;
+class ResourceBundleSourceMap;
 class RequestSender;
 class ServiceWorkerRequestSender;
 class V8SchemaRegistry;
@@ -35,13 +37,15 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver {
 
   // Thread safe.
   static WorkerThreadDispatcher* Get();
+  static ExtensionBindingsSystem* GetBindingsSystem();
   static ServiceWorkerRequestSender* GetRequestSender();
+  static V8SchemaRegistry* GetV8SchemaRegistry();
 
   void Init(content::RenderThread* render_thread);
   bool Send(IPC::Message* message);
-  void AddWorkerData(int64_t service_worker_version_id);
+  void AddWorkerData(int64_t service_worker_version_id,
+                     ResourceBundleSourceMap* source_map);
   void RemoveWorkerData(int64_t service_worker_version_id);
-  V8SchemaRegistry* GetV8SchemaRegistry();
 
  private:
   // content::RenderThreadObserver:
