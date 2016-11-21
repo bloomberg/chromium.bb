@@ -140,17 +140,26 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 #error "Not supported yet."
 #endif
 
+  // NOTE: In the case of named pipes, it's important that the server handle be
+  // created before the child process is launched; otherwise the server binding
+  // the pipe path can race with child's connection to the pipe.
+  ScopedPlatformHandle server_handle;
+  if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER) {
+    server_handle = channel.PassServerHandle();
+  } else if (launch_type == LaunchType::NAMED_CHILD ||
+             launch_type == LaunchType::NAMED_PEER) {
+    server_handle = CreateServerHandle(named_pipe);
+  }
+
   ScopedMessagePipeHandle pipe;
   std::string child_token = mojo::edk::GenerateRandomToken();
   if (launch_type == LaunchType::CHILD ||
       launch_type == LaunchType::NAMED_CHILD) {
     pipe = CreateParentMessagePipe(pipe_token, child_token);
-  } else if (launch_type == LaunchType::PEER) {
+  } else if (launch_type == LaunchType::PEER ||
+             launch_type == LaunchType::NAMED_PEER) {
     peer_token_ = mojo::edk::GenerateRandomToken();
-    pipe = ConnectToPeerProcess(channel.PassServerHandle(), peer_token_);
-  } else if (launch_type == LaunchType::NAMED_PEER) {
-    peer_token_ = mojo::edk::GenerateRandomToken();
-    pipe = ConnectToPeerProcess(CreateServerHandle(named_pipe), peer_token_);
+    pipe = ConnectToPeerProcess(std::move(server_handle), peer_token_);
   }
 
   test_child_ =
@@ -158,11 +167,10 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER)
     channel.ChildProcessLaunched();
 
-  if (launch_type == LaunchType::CHILD) {
-    ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle(),
-                         child_token, process_error_callback_);
-  } else if (launch_type == LaunchType::NAMED_CHILD) {
-    ChildProcessLaunched(test_child_.Handle(), CreateServerHandle(named_pipe),
+  if (launch_type == LaunchType::CHILD ||
+      launch_type == LaunchType::NAMED_CHILD) {
+    DCHECK(server_handle.is_valid());
+    ChildProcessLaunched(test_child_.Handle(), std::move(server_handle),
                          child_token, process_error_callback_);
   }
 
