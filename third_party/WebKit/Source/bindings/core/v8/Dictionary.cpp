@@ -31,36 +31,41 @@
 
 namespace blink {
 
-Dictionary& Dictionary::operator=(const Dictionary& optionsObject) {
-  m_options = optionsObject.m_options;
-  m_isolate = optionsObject.m_isolate;
-  return *this;
-}
+Dictionary::Dictionary(v8::Isolate* isolate,
+                       v8::Local<v8::Value> dictionaryObject,
+                       ExceptionState& exceptionState)
+    : m_isolate(isolate) {
+  DCHECK(isolate);
 
-bool Dictionary::isObject() const {
-  return !isUndefinedOrNull() && m_options->IsObject();
-}
+  // https://heycam.github.io/webidl/#es-dictionary
+  // Type of an ECMAScript value must be Undefined, Null or Object.
+  if (dictionaryObject.IsEmpty() || dictionaryObject->IsUndefined()) {
+    m_valueType = ValueType::Undefined;
+    return;
+  }
+  if (dictionaryObject->IsNull()) {
+    m_valueType = ValueType::Null;
+    return;
+  }
+  if (dictionaryObject->IsObject()) {
+    m_valueType = ValueType::Object;
+    m_dictionaryObject = dictionaryObject.As<v8::Object>();
+    return;
+  }
 
-bool Dictionary::isUndefinedOrNull() const {
-  if (m_options.IsEmpty())
-    return true;
-  return blink::isUndefinedOrNull(m_options);
+  exceptionState.throwTypeError(
+      "The dictionary provided is neither undefined, null nor an Object.");
 }
 
 bool Dictionary::hasProperty(const StringView& key) const {
-  v8::Local<v8::Object> object;
-  if (!toObject(object))
+  if (m_dictionaryObject.IsEmpty())
     return false;
 
-  DCHECK(m_isolate);
-  DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
-  return v8CallBoolean(object->Has(v8Context(), v8String(m_isolate, key)));
-}
-
-bool Dictionary::get(const StringView& key, v8::Local<v8::Value>& value) const {
-  if (!m_isolate)
-    return false;
-  return getInternal(v8String(m_isolate, key), value);
+  // TODO(bashi,yukishiino): Should rethrow the exception.
+  // Has() on a revoked proxy will throw an exception.
+  // http://crbug.com/666661
+  return v8CallBoolean(
+      m_dictionaryObject->Has(v8Context(), v8String(m_isolate, key)));
 }
 
 DictionaryIterator Dictionary::getIterator(
@@ -72,7 +77,7 @@ DictionaryIterator Dictionary::getIterator(
   v8::Local<v8::Value> iterator;
   if (!v8Call(V8ScriptRunner::callFunction(
                   v8::Local<v8::Function>::Cast(iteratorGetter),
-                  executionContext, m_options, 0, nullptr, m_isolate),
+                  executionContext, m_dictionaryObject, 0, nullptr, m_isolate),
               iterator))
     return nullptr;
   if (!iterator->IsObject())
@@ -88,7 +93,10 @@ bool Dictionary::get(const StringView& key, Dictionary& value) const {
   if (v8Value->IsObject()) {
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    value = Dictionary(m_isolate, v8Value);
+    // TODO(bashi,yukishiino): Should rethrow the exception.
+    // http://crbug.com/666661
+    TrackExceptionState exceptionState;
+    value = Dictionary(m_isolate, v8Value, exceptionState);
   }
 
   return true;
@@ -96,19 +104,17 @@ bool Dictionary::get(const StringView& key, Dictionary& value) const {
 
 bool Dictionary::getInternal(const v8::Local<v8::Value>& key,
                              v8::Local<v8::Value>& result) const {
-  v8::Local<v8::Object> object;
-  if (!toObject(object))
+  if (m_dictionaryObject.IsEmpty())
     return false;
 
-  DCHECK(m_isolate);
-  DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
-  if (!v8CallBoolean(object->Has(v8Context(), key)))
+  if (!v8CallBoolean(m_dictionaryObject->Has(v8Context(), key)))
     return false;
 
   // Swallow a possible exception in v8::Object::Get().
   // TODO(bashi,yukishiino): Should rethrow the exception.
+  // http://crbug.com/666661
   v8::TryCatch tryCatch(isolate());
-  return object->Get(v8Context(), key).ToLocal(&result);
+  return m_dictionaryObject->Get(v8Context(), key).ToLocal(&result);
 }
 
 static inline bool propertyKey(v8::Local<v8::Context> v8Context,
@@ -123,26 +129,27 @@ static inline bool propertyKey(v8::Local<v8::Context> v8Context,
 
 bool Dictionary::getOwnPropertiesAsStringHashMap(
     HashMap<String, String>& hashMap) const {
-  v8::Local<v8::Object> object;
-  if (!toObject(object))
+  if (m_dictionaryObject.IsEmpty())
     return false;
 
   v8::Local<v8::Array> properties;
-  if (!object->GetOwnPropertyNames(v8Context()).ToLocal(&properties))
+  if (!m_dictionaryObject->GetOwnPropertyNames(v8Context())
+           .ToLocal(&properties))
     return false;
   // Swallow a possible exception in v8::Object::Get().
   // TODO(bashi,yukishiino): Should rethrow the exception.
   // Note that propertyKey() may throw an exception.
+  // http://crbug.com/666661
   v8::TryCatch tryCatch(isolate());
   for (uint32_t i = 0; i < properties->Length(); ++i) {
     v8::Local<v8::String> key;
     if (!propertyKey(v8Context(), properties, i, key))
       continue;
-    if (!v8CallBoolean(object->Has(v8Context(), key)))
+    if (!v8CallBoolean(m_dictionaryObject->Has(v8Context(), key)))
       continue;
 
     v8::Local<v8::Value> value;
-    if (!object->Get(v8Context(), key).ToLocal(&value)) {
+    if (!m_dictionaryObject->Get(v8Context(), key).ToLocal(&value)) {
       tryCatch.Reset();
       continue;
     }
@@ -156,29 +163,23 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(
 }
 
 bool Dictionary::getPropertyNames(Vector<String>& names) const {
-  v8::Local<v8::Object> object;
-  if (!toObject(object))
+  if (m_dictionaryObject.IsEmpty())
     return false;
 
   v8::Local<v8::Array> properties;
-  if (!object->GetPropertyNames(v8Context()).ToLocal(&properties))
+  if (!m_dictionaryObject->GetPropertyNames(v8Context()).ToLocal(&properties))
     return false;
   for (uint32_t i = 0; i < properties->Length(); ++i) {
     v8::Local<v8::String> key;
     if (!propertyKey(v8Context(), properties, i, key))
       continue;
-    if (!v8CallBoolean(object->Has(v8Context(), key)))
+    if (!v8CallBoolean(m_dictionaryObject->Has(v8Context(), key)))
       continue;
     TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);
     names.append(stringKey);
   }
 
   return true;
-}
-
-bool Dictionary::toObject(v8::Local<v8::Object>& object) const {
-  return !isUndefinedOrNull() &&
-         m_options->ToObject(v8Context()).ToLocal(&object);
 }
 
 }  // namespace blink

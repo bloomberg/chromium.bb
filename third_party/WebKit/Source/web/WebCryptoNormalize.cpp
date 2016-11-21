@@ -48,7 +48,7 @@ WebCryptoAlgorithm normalizeCryptoAlgorithm(
     v8::Isolate* isolate) {
   // FIXME: Avoid using NonThrowableExceptionState.
   NonThrowableExceptionState exceptionState;
-  Dictionary algorithmDictionary(algorithmObject, isolate, exceptionState);
+  Dictionary algorithmDictionary(isolate, algorithmObject, exceptionState);
   if (!algorithmDictionary.isUndefinedOrNull() &&
       !algorithmDictionary.isObject())
     return WebCryptoAlgorithm();

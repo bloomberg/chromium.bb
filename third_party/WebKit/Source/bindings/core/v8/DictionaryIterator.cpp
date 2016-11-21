@@ -91,7 +91,7 @@ bool DictionaryIterator::valueAsDictionary(Dictionary& result,
   if (!v8Call(m_value, value) || !value->IsObject())
     return false;
 
-  result = Dictionary(value, m_isolate, exceptionState);
+  result = Dictionary(m_isolate, value, exceptionState);
   return true;
 }
 

@@ -73,7 +73,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return;
   }
-  dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+  dictionaryArg = Dictionary(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -139,7 +139,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return;
   }
-  defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
+  defaultUndefinedOptionalDictionaryArg = Dictionary(info.GetIsolate(), info[4], exceptionState);
   if (exceptionState.hadException())
     return;
 

@@ -63,7 +63,10 @@ bool ArrayValue::get(size_t index, Dictionary& value) const {
       !indexedValue->IsObject())
     return false;
 
-  value = Dictionary(m_isolate, indexedValue);
+  // TODO(bashi,yukishiino): Should rethrow the exception.
+  // http://crbug.com/666661
+  TrackExceptionState exceptionState;
+  value = Dictionary(m_isolate, indexedValue, exceptionState);
   return true;
 }
 

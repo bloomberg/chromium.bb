@@ -242,7 +242,8 @@ CryptoKey* convertCryptoResult<CryptoKey*>(const ScriptValue& value) {
 }
 template <>
 CryptoKeyPair convertCryptoResult<CryptoKeyPair>(const ScriptValue& value) {
-  Dictionary dictionary(value.isolate(), value.v8Value());
+  NonThrowableExceptionState exceptionState;
+  Dictionary dictionary(value.isolate(), value.v8Value(), exceptionState);
   v8::Local<v8::Value> privateKey, publicKey;
   EXPECT_TRUE(dictionary.get("publicKey", publicKey));
   EXPECT_TRUE(dictionary.get("privateKey", privateKey));

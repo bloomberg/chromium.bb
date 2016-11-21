@@ -106,7 +106,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (dictionaryMemberValue.IsEmpty() || dictionaryMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    Dictionary dictionaryMember = Dictionary(dictionaryMemberValue, isolate, exceptionState);
+    Dictionary dictionaryMember = Dictionary(isolate, dictionaryMemberValue, exceptionState);
     if (exceptionState.hadException())
       return;
     if (!dictionaryMember.isObject()) {

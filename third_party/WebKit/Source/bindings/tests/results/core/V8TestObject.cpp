@@ -7177,7 +7177,7 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     return;
   }
-  arg2 = Dictionary(info[1], info.GetIsolate(), exceptionState);
+  arg2 = Dictionary(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -7219,7 +7219,7 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
 
     return;
   }
-  arg1 = Dictionary(info[0], info.GetIsolate(), exceptionState);
+  arg1 = Dictionary(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -7266,7 +7266,7 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
 
     return;
   }
-  dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+  dictionaryArg = Dictionary(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 
@@ -7747,7 +7747,7 @@ static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo
 
     return;
   }
-  optionalDictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+  optionalDictionaryArg = Dictionary(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.hadException())
     return;
 

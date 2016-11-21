@@ -27,7 +27,6 @@
 #define Dictionary_h
 
 #include "bindings/core/v8/DictionaryIterator.h"
-#include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
@@ -49,24 +48,35 @@ class CORE_EXPORT Dictionary final {
 
  public:
   Dictionary() : m_isolate(nullptr) {}
-  Dictionary(v8::Isolate* isolate, const v8::Local<v8::Value>& options)
-      : m_options(options), m_isolate(isolate) {
-    DCHECK(m_isolate);
+  Dictionary(v8::Isolate*,
+             v8::Local<v8::Value> dictionaryObject,
+             ExceptionState&);
+
+  Dictionary& operator=(const Dictionary&) = default;
+
+  bool isObject() const { return !m_dictionaryObject.IsEmpty(); }
+  bool isUndefinedOrNull() const { return !isObject(); }
+
+  v8::Local<v8::Value> v8Value() const {
+    if (!m_isolate)
+      return v8::Local<v8::Value>();
+    switch (m_valueType) {
+      case ValueType::Undefined:
+        return v8::Undefined(m_isolate);
+      case ValueType::Null:
+        return v8::Null(m_isolate);
+      case ValueType::Object:
+        return m_dictionaryObject;
+      default:
+        NOTREACHED();
+        return v8::Local<v8::Value>();
+    }
   }
-  Dictionary(const v8::Local<v8::Value>& options,
-             v8::Isolate* isolate,
-             ExceptionState&)  // DEPRECATED
-      : Dictionary(isolate, options) {}
 
-  Dictionary& operator=(const Dictionary&);
-
-  bool isObject() const;
-  bool isUndefinedOrNull() const;
-
-  bool get(const StringView&, Dictionary&) const;
-  bool get(const StringView&, v8::Local<v8::Value>&) const;
-
-  v8::Local<v8::Value> v8Value() const { return m_options; }
+  bool get(const StringView& key, v8::Local<v8::Value>& value) const {
+    return m_isolate && getInternal(v8String(m_isolate, key), value);
+  }
+  bool get(const StringView& key, Dictionary&) const;
 
   bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
   bool getPropertyNames(Vector<String>&) const;
@@ -84,18 +94,23 @@ class CORE_EXPORT Dictionary final {
  private:
   bool getInternal(const v8::Local<v8::Value>& key,
                    v8::Local<v8::Value>& result) const;
-  bool toObject(v8::Local<v8::Object>&) const;
 
-  v8::Local<v8::Value> m_options;
   v8::Isolate* m_isolate;
+  // Undefined, Null, or Object is allowed as type of dictionary.
+  enum class ValueType {
+    Undefined,
+    Null,
+    Object
+  } m_valueType = ValueType::Undefined;
+  v8::Local<v8::Object> m_dictionaryObject;  // an Object or empty
 };
 
 template <>
 struct NativeValueTraits<Dictionary> {
-  static inline Dictionary nativeValue(v8::Isolate* isolate,
-                                       v8::Local<v8::Value> value,
-                                       ExceptionState&) {
-    return Dictionary(isolate, value);
+  static Dictionary nativeValue(v8::Isolate* isolate,
+                                v8::Local<v8::Value> value,
+                                ExceptionState& exceptionState) {
+    return Dictionary(isolate, value, exceptionState);
   }
 };
 
