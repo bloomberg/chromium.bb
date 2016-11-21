@@ -15,6 +15,9 @@ source_set("autocomplete") {
     "shortcuts_backend_factory.h",
     "shortcuts_backend_factory.mm",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     "//base",
     "//components/browser_sync",

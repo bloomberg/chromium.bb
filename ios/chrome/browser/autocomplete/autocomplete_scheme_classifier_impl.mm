@@ -9,6 +9,10 @@
 #include "ios/chrome/browser/chrome_url_util.h"
 #include "url/url_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 AutocompleteSchemeClassifierImpl::AutocompleteSchemeClassifierImpl() {}
 
 AutocompleteSchemeClassifierImpl::~AutocompleteSchemeClassifierImpl() {}
