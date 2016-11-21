@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://drafts.css-houdini.org/css-properties-values-api/#registering-custom-properties
 partial interface CSS {
     [RuntimeEnabled=CSSVariables2, CallWith=ExecutionContext, RaisesException]
         static void registerProperty(PropertyDescriptor descriptor);
