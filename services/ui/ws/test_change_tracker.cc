@@ -202,12 +202,11 @@ TestWindow WindowDataToTestWindow(const mojom::WindowDataPtr& data) {
   window.parent_id = data->parent_id;
   window.window_id = data->window_id;
   window.visible = data->visible;
-  window.properties =
-      data->properties.To<std::map<std::string, std::vector<uint8_t>>>();
+  window.properties = mojo::UnorderedMapToMap(data->properties);
   return window;
 }
 
-void WindowDatasToTestWindows(const Array<mojom::WindowDataPtr>& data,
+void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
                               std::vector<TestWindow>* test_windows) {
   for (size_t i = 0; i < data.size(); ++i)
     test_windows->push_back(WindowDataToTestWindow(data[i]));

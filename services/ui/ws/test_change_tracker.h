@@ -111,7 +111,7 @@ std::string SingleWindowDescription(const std::vector<TestWindow>& windows);
 std::string ChangeWindowDescription(const std::vector<Change>& changes);
 
 // Converts WindowDatas to TestWindows.
-void WindowDatasToTestWindows(const mojo::Array<mojom::WindowDataPtr>& data,
+void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
                               std::vector<TestWindow>* test_windows);
 
 // TestChangeTracker is used to record WindowTreeClient functions. It notifies

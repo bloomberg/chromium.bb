@@ -22,11 +22,9 @@
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/test_change_tracker.h"
 
-using mojo::Array;
 using service_manager::Connection;
 using mojo::InterfaceRequest;
 using service_manager::Service;
-using mojo::String;
 using ui::mojom::WindowDataPtr;
 using ui::mojom::WindowTree;
 using ui::mojom::WindowTreeClient;
@@ -48,7 +46,7 @@ Id BuildWindowId(ClientSpecificId client_id,
 
 void WindowTreeResultCallback(base::RunLoop* run_loop,
                               std::vector<TestWindow>* windows,
-                              Array<WindowDataPtr> results) {
+                              std::vector<WindowDataPtr> results) {
   WindowDatasToTestWindows(results, windows);
   run_loop->Quit();
 }
@@ -64,13 +62,13 @@ void EmbedCallbackImpl(base::RunLoop* run_loop,
 
 bool EmbedUrl(service_manager::Connector* connector,
               WindowTree* tree,
-              const String& url,
+              const std::string& url,
               Id root_id) {
   bool result = false;
   base::RunLoop run_loop;
   {
     mojom::WindowTreeClientPtr client;
-    connector->ConnectToInterface(url.get(), &client);
+    connector->ConnectToInterface(url, &client);
     const uint32_t embed_flags = 0;
     tree->Embed(root_id, std::move(client), embed_flags,
                 base::Bind(&EmbedCallbackImpl, &run_loop, &result));
@@ -220,7 +218,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // Generally you want NewWindow(), but use this if you need to test given
   // a complete window id (NewWindow() ors with the client id).
   Id NewWindowWithCompleteId(Id id) {
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+    std::unordered_map<std::string, std::vector<uint8_t>> properties;
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->NewWindow(change_id, id, std::move(properties));
     return WaitForChangeCompleted(change_id) ? id : 0;
@@ -229,11 +227,11 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   bool SetWindowProperty(Id window_id,
                          const std::string& name,
                          const std::vector<uint8_t>* data) {
-    Array<uint8_t> mojo_data(nullptr);
+    base::Optional<std::vector<uint8_t>> mojo_data;
     if (data)
-      mojo_data = Array<uint8_t>::From(*data);
+      mojo_data.emplace(*data);
     const uint32_t change_id = GetAndAdvanceChangeId();
-    tree()->SetWindowProperty(change_id, window_id, name, std::move(mojo_data));
+    tree()->SetWindowProperty(change_id, window_id, name, mojo_data);
     return WaitForChangeCompleted(change_id);
   }
 
@@ -316,7 +314,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,
-      mojo::Array<gfx::Rect> new_additional_client_areas) override {}
+      const std::vector<gfx::Rect>& new_additional_client_areas) override {}
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override {
     tracker()->OnTransientWindowAdded(window_id, transient_window_id);
@@ -328,7 +326,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowHierarchyChanged(Id window,
                                 Id old_parent,
                                 Id new_parent,
-                                Array<WindowDataPtr> windows) override {
+                                std::vector<WindowDataPtr> windows) override {
     tracker()->OnWindowHierarchyChanged(window, old_parent, new_parent,
                                         std::move(windows));
   }
@@ -364,10 +362,11 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
   void OnPointerEventObserved(std::unique_ptr<ui::Event>,
                               uint32_t window_id) override {}
-  void OnWindowSharedPropertyChanged(uint32_t window,
-                                     const String& name,
-                                     Array<uint8_t> new_data) override {
-    tracker_.OnWindowSharedPropertyChanged(window, name, std::move(new_data));
+  void OnWindowSharedPropertyChanged(
+      uint32_t window,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& new_data) override {
+    tracker_.OnWindowSharedPropertyChanged(window, name, new_data);
   }
   // TODO(sky): add testing coverage.
   void OnWindowFocused(uint32_t focused_window_id) override {}
@@ -377,7 +376,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
 
   void OnDragDropStart(
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data) override {
+      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data)
+      override {
     NOTIMPLEMENTED();
   }
 
@@ -452,16 +452,18 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                    const gfx::Rect& bounds) override {
     window_manager_client_->WmResponse(change_id, false);
   }
-  void WmSetProperty(uint32_t change_id,
-                     uint32_t window_id,
-                     const mojo::String& name,
-                     mojo::Array<uint8_t> value) override {
+  void WmSetProperty(
+      uint32_t change_id,
+      uint32_t window_id,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& value) override {
     window_manager_client_->WmResponse(change_id, false);
   }
   void WmCreateTopLevelWindow(
       uint32_t change_id,
       ClientSpecificId requesting_client_id,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override {
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      override {
     NOTIMPLEMENTED();
   }
   void WmClientJankinessChanged(ClientSpecificId client_id,

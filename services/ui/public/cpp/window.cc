@@ -609,11 +609,12 @@ void Window::SetSharedPropertyInternal(const std::string& name,
     return;
 
   if (client_) {
-    mojo::Array<uint8_t> transport_value(nullptr);
+    base::Optional<std::vector<uint8_t>> transport_value;
     if (value) {
-      transport_value.resize(value->size());
+      transport_value.emplace(value->size());
       if (value->size())
-        memcpy(&transport_value.front(), &(value->front()), value->size());
+        memcpy(&transport_value.value().front(), &(value->front()),
+               value->size());
     }
     // TODO: add test coverage of this (450303).
     client_->SetProperty(this, name, std::move(transport_value));

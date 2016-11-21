@@ -299,6 +299,32 @@ struct TypeConverter<std::map<STLKey, STLValue>, Map<MojoKey, MojoValue>> {
   }
 };
 
+// TODO(yzshen): These conversion functions should be removed and callsites
+// should be revisited and changed to use the same map type.
+template <typename Key, typename Value>
+std::unordered_map<Key, Value> MapToUnorderedMap(
+    const std::map<Key, Value>& input) {
+  return std::unordered_map<Key, Value>(input.begin(), input.end());
+}
+
+template <typename Key, typename Value>
+std::unordered_map<Key, Value> MapToUnorderedMap(std::map<Key, Value>&& input) {
+  return std::unordered_map<Key, Value>(std::make_move_iterator(input.begin()),
+                                        std::make_move_iterator(input.end()));
+}
+
+template <typename Key, typename Value>
+std::map<Key, Value> UnorderedMapToMap(
+    const std::unordered_map<Key, Value>& input) {
+  return std::map<Key, Value>(input.begin(), input.end());
+}
+
+template <typename Key, typename Value>
+std::map<Key, Value> UnorderedMapToMap(std::unordered_map<Key, Value>&& input) {
+  return std::map<Key, Value>(std::make_move_iterator(input.begin()),
+                              std::make_move_iterator(input.end()));
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_MAP_H_

@@ -200,8 +200,8 @@ void Display::SetSize(const gfx::Size& size) {
   platform_display_->SetViewportSize(size);
 }
 
-void Display::SetTitle(const mojo::String& title) {
-  platform_display_->SetTitle(title.To<base::string16>());
+void Display::SetTitle(const std::string& title) {
+  platform_display_->SetTitle(base::UTF8ToUTF16(title));
 }
 
 void Display::InitWindowManagerDisplayRoots() {

@@ -193,7 +193,7 @@ class AURA_EXPORT WindowTreeClient
   // See InFlightChange for details on how InFlightChanges are used.
   bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
 
-  void BuildWindowTree(const mojo::Array<ui::mojom::WindowDataPtr>& windows);
+  void BuildWindowTree(const std::vector<ui::mojom::WindowDataPtr>& windows);
 
   // Creates a WindowPortMus from the server side data.
   std::unique_ptr<WindowPortMus> CreateWindowPortMus(
@@ -300,7 +300,7 @@ class AURA_EXPORT WindowTreeClient
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,
-      mojo::Array<gfx::Rect> new_additional_client_areas) override;
+      const std::vector<gfx::Rect>& new_additional_client_areas) override;
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override;
   void OnTransientWindowRemoved(uint32_t window_id,
@@ -309,7 +309,7 @@ class AURA_EXPORT WindowTreeClient
       Id window_id,
       Id old_parent_id,
       Id new_parent_id,
-      mojo::Array<ui::mojom::WindowDataPtr> windows) override;
+      std::vector<ui::mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
                          ui::mojom::OrderDirection direction) override;
@@ -321,8 +321,8 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(
       Id window_id,
-      const mojo::String& name,
-      mojo::Array<uint8_t> transport_data) override;
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& transport_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
                           std::unique_ptr<ui::Event> event,
@@ -337,7 +337,8 @@ class AURA_EXPORT WindowTreeClient
                               const gfx::Size& frame_size,
                               float device_scale_factor) override;
   void OnDragDropStart(
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
+      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
+      override;
   void OnDragEnter(Id window_id,
                    uint32_t event_flags,
                    const gfx::Point& position,
@@ -373,14 +374,16 @@ class AURA_EXPORT WindowTreeClient
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    const gfx::Rect& transit_bounds) override;
-  void WmSetProperty(uint32_t change_id,
-                     Id window_id,
-                     const mojo::String& name,
-                     mojo::Array<uint8_t> transit_data) override;
-  void WmCreateTopLevelWindow(uint32_t change_id,
-                              ClientSpecificId requesting_client_id,
-                              mojo::Map<mojo::String, mojo::Array<uint8_t>>
-                                  transport_properties) override;
+  void WmSetProperty(
+      uint32_t change_id,
+      Id window_id,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& transit_data) override;
+  void WmCreateTopLevelWindow(
+      uint32_t change_id,
+      ClientSpecificId requesting_client_id,
+      const std::unordered_map<std::string, std::vector<uint8_t>>&
+          transport_properties) override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
   void WmPerformMoveLoop(uint32_t change_id,

@@ -74,8 +74,8 @@ void RegisterTestProperties(PropertyConverter* converter) {
 
 // Convert a primitive aura property value to a mus transport value.
 // Note that this implicitly casts arguments to the aura storage type, int64_t.
-mojo::Array<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
-  return mojo::Array<uint8_t>(mojo::ConvertTo<std::vector<uint8_t>>(value));
+std::vector<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
+  return mojo::ConvertTo<std::vector<uint8_t>>(value);
 }
 
 }  // namespace
@@ -106,7 +106,7 @@ TEST_F(WindowTreeClientWmTest, AddFromServerDoesntAddAgain) {
   data->window_id = child_window_id;
   data->bounds = gfx::Rect(1, 2, 3, 4);
   data->visible = false;
-  mojo::Array<ui::mojom::WindowDataPtr> data_array(1);
+  std::vector<ui::mojom::WindowDataPtr> data_array(1);
   data_array[0] = std::move(data);
   ASSERT_TRUE(root_window()->children().empty());
   window_tree_client()->OnWindowHierarchyChanged(
@@ -128,9 +128,9 @@ TEST_F(WindowTreeClientWmTest, ReparentFromServerDoesntAddAgain) {
 
   window_tree()->AckAllChanges();
   // Simulate moving |window1| to be a child of |window2| from the server.
-  window_tree_client()->OnWindowHierarchyChanged(server_id(&window1),
-                                                 server_id(root_window()),
-                                                 server_id(&window2), nullptr);
+  window_tree_client()->OnWindowHierarchyChanged(
+      server_id(&window1), server_id(root_window()), server_id(&window2),
+      std::vector<ui::mojom::WindowDataPtr>());
   ASSERT_FALSE(window_tree()->has_change());
   EXPECT_EQ(&window2, window1.parent());
   EXPECT_EQ(root_window(), window2.parent());
@@ -151,7 +151,7 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   data->window_id = child_window_id;
   data->bounds = gfx::Rect(1, 2, 3, 4);
   data->visible = false;
-  mojo::Array<ui::mojom::WindowDataPtr> data_array(1);
+  std::vector<ui::mojom::WindowDataPtr> data_array(1);
   data_array[0] = std::move(data);
   ASSERT_TRUE(root_window()->children().empty());
   window_tree_client()->OnWindowHierarchyChanged(
@@ -257,11 +257,12 @@ TEST_F(WindowTreeClientWmTest, SetPropertySucceeded) {
   ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
   root_window()->SetProperty(client::kAlwaysOnTopKey, true);
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
-  mojo::Array<uint8_t> value = window_tree()->GetLastPropertyValue();
-  ASSERT_FALSE(value.is_null());
+  base::Optional<std::vector<uint8_t>> value =
+      window_tree()->GetLastPropertyValue();
+  ASSERT_TRUE(value.has_value());
   // PropertyConverter uses int64_t values, even for smaller types, like bool.
-  ASSERT_EQ(8u, value.size());
-  EXPECT_EQ(1, mojo::ConvertTo<int64_t>(value.PassStorage()));
+  ASSERT_EQ(8u, value->size());
+  EXPECT_EQ(1, mojo::ConvertTo<int64_t>(*value));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, true));
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
@@ -273,11 +274,12 @@ TEST_F(WindowTreeClientWmTest, SetPropertyFailed) {
   ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
   root_window()->SetProperty(client::kAlwaysOnTopKey, true);
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
-  mojo::Array<uint8_t> value = window_tree()->GetLastPropertyValue();
-  ASSERT_FALSE(value.is_null());
+  base::Optional<std::vector<uint8_t>> value =
+      window_tree()->GetLastPropertyValue();
+  ASSERT_TRUE(value.has_value());
   // PropertyConverter uses int64_t values, even for smaller types, like bool.
-  ASSERT_EQ(8u, value.size());
-  EXPECT_EQ(1, mojo::ConvertTo<int64_t>(value.PassStorage()));
+  ASSERT_EQ(8u, value->size());
+  EXPECT_EQ(1, mojo::ConvertTo<int64_t>(*value));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, false));
   EXPECT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
@@ -357,9 +359,10 @@ TEST_F(WindowTreeClientWmTest, SetRectProperty) {
   ASSERT_EQ(nullptr, root_window()->GetProperty(client::kRestoreBoundsKey));
   root_window()->SetProperty(client::kRestoreBoundsKey, new gfx::Rect(example));
   EXPECT_TRUE(root_window()->GetProperty(client::kRestoreBoundsKey));
-  mojo::Array<uint8_t> value = window_tree()->GetLastPropertyValue();
-  ASSERT_FALSE(value.is_null());
-  EXPECT_EQ(example, mojo::ConvertTo<gfx::Rect>(value.PassStorage()));
+  base::Optional<std::vector<uint8_t>> value =
+      window_tree()->GetLastPropertyValue();
+  ASSERT_TRUE(value.has_value());
+  EXPECT_EQ(example, mojo::ConvertTo<gfx::Rect>(*value));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, true));
   EXPECT_EQ(example, *root_window()->GetProperty(client::kRestoreBoundsKey));
@@ -378,9 +381,10 @@ TEST_F(WindowTreeClientWmTest, SetStringProperty) {
   ASSERT_EQ(nullptr, root_window()->GetProperty(client::kAppIdKey));
   root_window()->SetProperty(client::kAppIdKey, new std::string(example));
   EXPECT_TRUE(root_window()->GetProperty(client::kAppIdKey));
-  mojo::Array<uint8_t> value = window_tree()->GetLastPropertyValue();
-  ASSERT_FALSE(value.is_null());
-  EXPECT_EQ(example, mojo::ConvertTo<std::string>(value.PassStorage()));
+  base::Optional<std::vector<uint8_t>> value =
+      window_tree()->GetLastPropertyValue();
+  ASSERT_TRUE(value.has_value());
+  EXPECT_EQ(example, mojo::ConvertTo<std::string>(*value));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, true));
   EXPECT_EQ(example, *root_window()->GetProperty(client::kAppIdKey));
@@ -858,11 +862,11 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsProperties) {
   const uint8_t explicitly_set_test_property1_value = 29;
   window.SetProperty(kTestPropertyKey1, explicitly_set_test_property1_value);
   window.Init(ui::LAYER_NOT_DRAWN);
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties =
-      window_tree()->GetLastNewWindowProperties();
-  ASSERT_FALSE(transport_properties.is_null());
+  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+      transport_properties = window_tree()->GetLastNewWindowProperties();
+  ASSERT_TRUE(transport_properties.has_value());
   std::map<std::string, std::vector<uint8_t>> properties =
-      transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
+      mojo::UnorderedMapToMap(*transport_properties);
   ASSERT_EQ(1u, properties.count(kTestPropertyServerKey1));
   // PropertyConverter uses int64_t values, even for smaller types like uint8_t.
   ASSERT_EQ(8u, properties[kTestPropertyServerKey1].size());
@@ -953,11 +957,11 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
 
   // Verify the property was sent to the server.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties =
-      window_tree()->GetLastNewWindowProperties();
-  ASSERT_FALSE(transport_properties.is_null());
+  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+      transport_properties = window_tree()->GetLastNewWindowProperties();
+  ASSERT_TRUE(transport_properties.has_value());
   std::map<std::string, std::vector<uint8_t>> properties2 =
-      transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
+      mojo::UnorderedMapToMap(*transport_properties);
   ASSERT_EQ(1u, properties2.count(kTestPropertyServerKey1));
   // PropertyConverter uses int64_t values, even for smaller types like uint8_t.
   ASSERT_EQ(8u, properties2[kTestPropertyServerKey1].size());
@@ -1210,7 +1214,7 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithExistingWindow) {
   data3->parent_id = server_window_id;
   data3->window_id = WindowMus::Get(window2)->server_id();
   data3->bounds = gfx::Rect(1, 2, 3, 4);
-  mojo::Array<ui::mojom::WindowDataPtr> data_array(3);
+  std::vector<ui::mojom::WindowDataPtr> data_array(3);
   data_array[0] = std::move(data1);
   data_array[1] = std::move(data2);
   data_array[2] = std::move(data3);

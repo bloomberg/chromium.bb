@@ -222,7 +222,7 @@ void TestWindowManager::WmDisplayRemoved(int64_t display_id) {
 void TestWindowManager::WmCreateTopLevelWindow(
     uint32_t change_id,
     ClientSpecificId requesting_client_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
+    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
   got_create_top_level_window_ = true;
   change_id_ = change_id;
 }
@@ -297,7 +297,7 @@ void TestWindowTreeClient::OnWindowBoundsChanged(uint32_t window,
 void TestWindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,
     const gfx::Insets& new_client_area,
-    mojo::Array<gfx::Rect> new_additional_client_areas) {}
+    const std::vector<gfx::Rect>& new_additional_client_areas) {}
 
 void TestWindowTreeClient::OnTransientWindowAdded(
     uint32_t window_id,
@@ -311,7 +311,7 @@ void TestWindowTreeClient::OnWindowHierarchyChanged(
     uint32_t window,
     uint32_t old_parent,
     uint32_t new_parent,
-    mojo::Array<mojom::WindowDataPtr> windows) {
+    std::vector<mojom::WindowDataPtr> windows) {
   tracker_.OnWindowHierarchyChanged(window, old_parent, new_parent,
                                     std::move(windows));
 }
@@ -344,9 +344,9 @@ void TestWindowTreeClient::OnWindowParentDrawnStateChanged(uint32_t window,
 
 void TestWindowTreeClient::OnWindowSharedPropertyChanged(
     uint32_t window,
-    const mojo::String& name,
-    mojo::Array<uint8_t> new_data) {
-  tracker_.OnWindowSharedPropertyChanged(window, name, std::move(new_data));
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& new_data) {
+  tracker_.OnWindowSharedPropertyChanged(window, name, new_data);
 }
 
 void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
@@ -379,7 +379,7 @@ void TestWindowTreeClient::OnWindowSurfaceChanged(
     float device_scale_factor) {}
 
 void TestWindowTreeClient::OnDragDropStart(
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {}
+    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {}
 
 void TestWindowTreeClient::OnDragEnter(uint32_t window,
                                        uint32_t key_state,

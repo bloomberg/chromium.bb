@@ -30,12 +30,13 @@ bool TestWindowTree::WasEventAcked(uint32_t event_id) const {
 void TestWindowTree::NewWindow(
     uint32_t change_id,
     uint32_t window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {}
+    const base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>&
+        properties) {}
 
 void TestWindowTree::NewTopLevelWindow(
     uint32_t change_id,
     uint32_t window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
+    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
   got_change_ = true;
   change_id_ = change_id;
   window_id_ = window_id;
@@ -53,7 +54,7 @@ void TestWindowTree::SetWindowBounds(uint32_t change_id,
 void TestWindowTree::SetClientArea(
     uint32_t window_id,
     const gfx::Insets& insets,
-    mojo::Array<gfx::Rect> additional_client_areas) {}
+    const base::Optional<std::vector<gfx::Rect>>& additional_client_areas) {}
 
 void TestWindowTree::SetHitTestMask(uint32_t window_id,
                                     const base::Optional<gfx::Rect>& mask) {}
@@ -68,10 +69,11 @@ void TestWindowTree::SetWindowVisibility(uint32_t change_id,
   change_id_ = change_id;
 }
 
-void TestWindowTree::SetWindowProperty(uint32_t change_id,
-                                       uint32_t window_id,
-                                       const mojo::String& name,
-                                       mojo::Array<uint8_t> value) {
+void TestWindowTree::SetWindowProperty(
+    uint32_t change_id,
+    uint32_t window_id,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& value) {
   got_change_ = true;
   change_id_ = change_id;
 }
@@ -174,7 +176,7 @@ void TestWindowTree::GetCursorLocationMemory(
 void TestWindowTree::PerformDragDrop(
     uint32_t change_id,
     uint32_t source_window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
     uint32_t drag_operation) {}
 
 void TestWindowTree::CancelDragDrop(uint32_t window_id) {}

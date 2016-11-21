@@ -632,13 +632,13 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   child_binding->client()->set_record_on_change_completed(true);
 
   // Create a new top level window.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the client id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
   static_cast<mojom::WindowTree*>(child_tree)
       ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
-                          std::move(properties));
+                          properties);
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;
@@ -1081,13 +1081,13 @@ TEST_F(WindowTreeTest, ValidMoveLoopWithWM) {
   child_binding->client()->set_record_on_change_completed(true);
 
   // Create a new top level window.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the client id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
   static_cast<mojom::WindowTree*>(child_tree)
       ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
-                          std::move(properties));
+                          properties);
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;
@@ -1126,13 +1126,13 @@ TEST_F(WindowTreeTest, MoveLoopAckOKByWM) {
   child_binding->client()->set_record_on_change_completed(true);
 
   // Create a new top level window.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the client id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
   static_cast<mojom::WindowTree*>(child_tree)
       ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
-                          std::move(properties));
+                          properties);
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;
@@ -1181,13 +1181,13 @@ TEST_F(WindowTreeTest, WindowManagerCantMoveLoop) {
   child_binding->client()->set_record_on_change_completed(true);
 
   // Create a new top level window.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the client id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
   static_cast<mojom::WindowTree*>(child_tree)
       ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
-                          std::move(properties));
+                          properties);
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;
@@ -1226,13 +1226,13 @@ TEST_F(WindowTreeTest, RevertWindowBoundsOnMoveLoopFailure) {
   child_binding->client()->set_record_on_change_completed(true);
 
   // Create a new top level window.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the client id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
   static_cast<mojom::WindowTree*>(child_tree)
       ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
-                          std::move(properties));
+                          properties);
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;

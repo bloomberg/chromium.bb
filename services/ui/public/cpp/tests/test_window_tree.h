@@ -31,31 +31,35 @@ class TestWindowTree : public mojom::WindowTree {
 
  private:
   // mojom::WindowTree:
-  void NewWindow(
-      uint32_t change_id,
-      uint32_t window_id,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+  void NewWindow(uint32_t change_id,
+                 uint32_t window_id,
+                 const base::Optional<
+                     std::unordered_map<std::string, std::vector<uint8_t>>>&
+                     properties) override;
   void NewTopLevelWindow(
       uint32_t change_id,
       uint32_t window_id,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      override;
   void DeleteWindow(uint32_t change_id, uint32_t window_id) override;
   void SetWindowBounds(uint32_t change_id,
                        uint32_t window_id,
                        const gfx::Rect& bounds) override;
   void SetClientArea(uint32_t window_id,
                      const gfx::Insets& insets,
-                     mojo::Array<gfx::Rect> additional_client_areas) override;
+                     const base::Optional<std::vector<gfx::Rect>>&
+                         additional_client_areas) override;
   void SetHitTestMask(uint32_t window_id,
                       const base::Optional<gfx::Rect>& mask) override;
   void SetCanAcceptDrops(uint32_t window_id, bool accepts_drags) override;
   void SetWindowVisibility(uint32_t change_id,
                            uint32_t window_id,
                            bool visible) override;
-  void SetWindowProperty(uint32_t change_id,
-                         uint32_t window_id,
-                         const mojo::String& name,
-                         mojo::Array<uint8_t> value) override;
+  void SetWindowProperty(
+      uint32_t change_id,
+      uint32_t window_id,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& value) override;
   void SetWindowOpacity(uint32_t change_id,
                         uint32_t window_id,
                         float opacity) override;
@@ -104,10 +108,11 @@ class TestWindowTree : public mojom::WindowTree {
       override;
   void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
       override;
-  void PerformDragDrop(uint32_t change_id,
-                       uint32_t source_window_id,
-                       mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
-                       uint32_t drag_operation) override;
+  void PerformDragDrop(
+      uint32_t change_id,
+      uint32_t source_window_id,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+      uint32_t drag_operation) override;
   void CancelDragDrop(uint32_t window_id) override;
   void PerformWindowMove(uint32_t change_id,
                          uint32_t window_id,

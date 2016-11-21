@@ -16,11 +16,11 @@ bool TestWindowTree::WasEventAcked(uint32_t event_id) const {
   return acked_events_.count(event_id);
 }
 
-mojo::Array<uint8_t> TestWindowTree::GetLastPropertyValue() {
+base::Optional<std::vector<uint8_t>> TestWindowTree::GetLastPropertyValue() {
   return std::move(last_property_value_);
 }
 
-mojo::Map<mojo::String, mojo::Array<uint8_t>>
+base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
 TestWindowTree::GetLastNewWindowProperties() {
   return std::move(last_new_window_properties_);
 }
@@ -102,16 +102,17 @@ void TestWindowTree::OnChangeReceived(uint32_t change_id,
 void TestWindowTree::NewWindow(
     uint32_t change_id,
     uint32_t window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
-  last_new_window_properties_ = std::move(properties);
+    const base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>&
+        properties) {
+  last_new_window_properties_ = properties;
   OnChangeReceived(change_id, WindowTreeChangeType::NEW_WINDOW);
 }
 
 void TestWindowTree::NewTopLevelWindow(
     uint32_t change_id,
     uint32_t window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
-  last_new_window_properties_ = std::move(properties);
+    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+  last_new_window_properties_.emplace(properties);
   window_id_ = window_id;
   OnChangeReceived(change_id, WindowTreeChangeType::NEW_TOP_LEVEL);
 }
@@ -129,7 +130,7 @@ void TestWindowTree::SetWindowBounds(uint32_t change_id,
 void TestWindowTree::SetClientArea(
     uint32_t window_id,
     const gfx::Insets& insets,
-    mojo::Array<gfx::Rect> additional_client_areas) {}
+    const base::Optional<std::vector<gfx::Rect>>& additional_client_areas) {}
 
 void TestWindowTree::SetHitTestMask(uint32_t window_id,
                                     const base::Optional<gfx::Rect>& mask) {}
@@ -143,11 +144,12 @@ void TestWindowTree::SetWindowVisibility(uint32_t change_id,
   OnChangeReceived(change_id, WindowTreeChangeType::VISIBLE);
 }
 
-void TestWindowTree::SetWindowProperty(uint32_t change_id,
-                                       uint32_t window_id,
-                                       const mojo::String& name,
-                                       mojo::Array<uint8_t> value) {
-  last_property_value_ = std::move(value);
+void TestWindowTree::SetWindowProperty(
+    uint32_t change_id,
+    uint32_t window_id,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& value) {
+  last_property_value_ = value;
   OnChangeReceived(change_id, WindowTreeChangeType::PROPERTY);
 }
 
@@ -261,7 +263,7 @@ void TestWindowTree::GetCursorLocationMemory(
 void TestWindowTree::PerformDragDrop(
     uint32_t change_id,
     uint32_t source_window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
     uint32_t drag_operation) {
   OnChangeReceived(change_id);
 }

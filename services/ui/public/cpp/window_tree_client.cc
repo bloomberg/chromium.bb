@@ -66,8 +66,7 @@ Window* AddWindowToClient(WindowTreeClient* client,
   private_window.set_server_id(window_data->window_id);
   private_window.set_visible(window_data->visible);
   private_window.set_properties(
-      window_data->properties
-          .To<std::map<std::string, std::vector<uint8_t>>>());
+      mojo::UnorderedMapToMap(window_data->properties));
   client->AddWindow(window);
   private_window.LocalSetBounds(
       gfx::Rect(),
@@ -345,19 +344,20 @@ void WindowTreeClient::SetOpacity(Window* window, float opacity) {
   tree_->SetWindowOpacity(change_id, server_id(window), opacity);
 }
 
-void WindowTreeClient::SetProperty(Window* window,
-                                       const std::string& name,
-                                       mojo::Array<uint8_t> data) {
+void WindowTreeClient::SetProperty(
+    Window* window,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& data) {
   DCHECK(tree_);
 
-  mojo::Array<uint8_t> old_value(nullptr);
+  base::Optional<std::vector<uint8_t>> old_value;
   if (window->HasSharedProperty(name))
-    old_value = mojo::Array<uint8_t>::From(window->properties_[name]);
+    old_value.emplace(window->properties_[name]);
 
-  const uint32_t change_id = ScheduleInFlightChange(
-      base::MakeUnique<InFlightPropertyChange>(window, name, old_value));
-  tree_->SetWindowProperty(change_id, server_id(window), mojo::String(name),
-                           std::move(data));
+  const uint32_t change_id =
+      ScheduleInFlightChange(base::MakeUnique<InFlightPropertyChange>(
+          window, name, std::move(old_value)));
+  tree_->SetWindowProperty(change_id, server_id(window), name, data);
 }
 
 void WindowTreeClient::SetWindowTextInputState(
@@ -505,7 +505,7 @@ bool WindowTreeClient::ApplyServerChangeToExistingInFlightChange(
 }
 
 void WindowTreeClient::BuildWindowTree(
-    const mojo::Array<mojom::WindowDataPtr>& windows,
+    const std::vector<mojom::WindowDataPtr>& windows,
     Window* initial_parent) {
   for (const auto& window_data : windows) {
     Window* parent = window_data->parent_id == 0
@@ -534,18 +534,17 @@ Window* WindowTreeClient::NewWindowImpl(
           window, type == NewWindowType::CHILD
                       ? ChangeType::NEW_WINDOW
                       : ChangeType::NEW_TOP_LEVEL_WINDOW));
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties;
-  if (properties) {
-    transport_properties =
-        mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
-  }
+  std::unordered_map<std::string, std::vector<uint8_t>> transport_properties;
+  if (properties)
+    transport_properties = mojo::MapToUnorderedMap(*properties);
+
   if (type == NewWindowType::CHILD) {
     tree_->NewWindow(change_id, server_id(window),
                      std::move(transport_properties));
   } else {
     roots_.insert(window);
     tree_->NewTopLevelWindow(change_id, server_id(window),
-                             std::move(transport_properties));
+                             transport_properties);
   }
   return window;
 }
@@ -683,11 +682,12 @@ void WindowTreeClient::PerformDragDrop(
   // TODO(erg): Pass |cursor_location| and |bitmap| in PerformDragDrop() when
   // we start showing an image representation of the drag under the cursor.
 
+  auto unordered_drag_data = mojo::MapToUnorderedMap(drag_data);
+
   if (window->drop_target()) {
     // To minimize the number of round trips, copy the drag drop data to our
     // handler here, instead of forcing mus to send this same data back.
-    OnDragDropStart(
-        mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(drag_data));
+    OnDragDropStart(unordered_drag_data);
   }
 
   uint32_t current_drag_change = ScheduleInFlightChange(
@@ -695,10 +695,8 @@ void WindowTreeClient::PerformDragDrop(
   current_drag_state_.reset(new CurrentDragState{
       current_drag_change, ui::mojom::kDropEffectNone, callback});
 
-  tree_->PerformDragDrop(
-      current_drag_change, window->server_id(),
-      mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(drag_data),
-      drag_operation);
+  tree_->PerformDragDrop(current_drag_change, window->server_id(),
+                         unordered_drag_data, drag_operation);
 }
 
 void WindowTreeClient::CancelDragDrop(Window* window) {
@@ -887,10 +885,9 @@ void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,
   // There is currently no API to bulk set properties, so we iterate over each
   // property individually.
   Window::SharedProperties properties =
-      data->properties.To<std::map<std::string, std::vector<uint8_t>>>();
+      mojo::UnorderedMapToMap(data->properties);
   for (const auto& pair : properties) {
-    InFlightPropertyChange property_change(
-        window, pair.first, mojo::Array<uint8_t>::From(pair.second));
+    InFlightPropertyChange property_change(window, pair.first, pair.second);
     InFlightChange* current_change =
         GetOldestInFlightChangeMatching(property_change);
     if (current_change)
@@ -925,7 +922,7 @@ void WindowTreeClient::OnWindowBoundsChanged(Id window_id,
 void WindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,
     const gfx::Insets& new_client_area,
-    mojo::Array<gfx::Rect> new_additional_client_areas) {
+    const std::vector<gfx::Rect>& new_additional_client_areas) {
   Window* window = GetWindowByServerId(window_id);
   if (window) {
     float device_scale_factor = ScaleFactorForDisplay(window->display_id());
@@ -966,7 +963,7 @@ void WindowTreeClient::OnWindowHierarchyChanged(
     Id window_id,
     Id old_parent_id,
     Id new_parent_id,
-    mojo::Array<mojom::WindowDataPtr> windows) {
+    std::vector<mojom::WindowDataPtr> windows) {
   Window* initial_parent =
       windows.size() ? GetWindowByServerId(windows[0]->parent_id) : NULL;
 
@@ -1043,8 +1040,8 @@ void WindowTreeClient::OnWindowParentDrawnStateChanged(Id window_id,
 
 void WindowTreeClient::OnWindowSharedPropertyChanged(
     Id window_id,
-    const mojo::String& name,
-    mojo::Array<uint8_t> new_data) {
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& new_data) {
   Window* window = GetWindowByServerId(window_id);
   if (!window)
     return;
@@ -1053,7 +1050,7 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  WindowPrivate(window).LocalSetSharedProperty(name, std::move(new_data));
+  WindowPrivate(window).LocalSetSharedProperty(name, new_data);
 }
 
 void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
@@ -1151,8 +1148,8 @@ void WindowTreeClient::OnWindowSurfaceChanged(
 }
 
 void WindowTreeClient::OnDragDropStart(
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {
-  mime_drag_data_ = std::move(mime_data);
+    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {
+  mime_drag_data_ = mojo::UnorderedMapToMap(mime_data);
 }
 
 void WindowTreeClient::OnDragEnter(Id window_id,
@@ -1167,8 +1164,7 @@ void WindowTreeClient::OnDragEnter(Id window_id,
   }
 
   if (!base::ContainsKey(drag_entered_windows_, window_id)) {
-    window->drop_target()->OnDragDropStart(
-        mime_drag_data_.To<std::map<std::string, std::vector<uint8_t>>>());
+    window->drop_target()->OnDragDropStart(mime_drag_data_);
     drag_entered_windows_.insert(window_id);
   }
 
@@ -1332,19 +1328,19 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
     window_manager_internal_client_->WmResponse(change_id, result);
 }
 
-void WindowTreeClient::WmSetProperty(uint32_t change_id,
-                                     Id window_id,
-                                     const mojo::String& name,
-                                     mojo::Array<uint8_t> transit_data) {
+void WindowTreeClient::WmSetProperty(
+    uint32_t change_id,
+    Id window_id,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& transit_data) {
   Window* window = GetWindowByServerId(window_id);
   bool result = false;
   if (window) {
     DCHECK(window_manager_delegate_);
     std::unique_ptr<std::vector<uint8_t>> data;
-    if (!transit_data.is_null()) {
-      data.reset(
-          new std::vector<uint8_t>(transit_data.To<std::vector<uint8_t>>()));
-    }
+    if (transit_data.has_value())
+      data.reset(new std::vector<uint8_t>(transit_data.value()));
+
     result = window_manager_delegate_->OnWmSetProperty(window, name, &data);
     if (result) {
       // If the resulting bounds differ return false. Returning false ensures
@@ -1359,9 +1355,10 @@ void WindowTreeClient::WmSetProperty(uint32_t change_id,
 void WindowTreeClient::WmCreateTopLevelWindow(
     uint32_t change_id,
     ClientSpecificId requesting_client_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
+    const std::unordered_map<std::string, std::vector<uint8_t>>&
+        transport_properties) {
   std::map<std::string, std::vector<uint8_t>> properties =
-      transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
+      mojo::UnorderedMapToMap(transport_properties);
   Window* window =
       window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
   embedded_windows_[requesting_client_id].insert(window);

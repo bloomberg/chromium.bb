@@ -356,14 +356,16 @@ class TestWindowManager : public mojom::WindowManager {
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    const gfx::Rect& bounds) override {}
-  void WmSetProperty(uint32_t change_id,
-                     uint32_t window_id,
-                     const mojo::String& name,
-                     mojo::Array<uint8_t> value) override {}
+  void WmSetProperty(
+      uint32_t change_id,
+      uint32_t window_id,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& value) override {}
   void WmCreateTopLevelWindow(
       uint32_t change_id,
       ClientSpecificId requesting_client_id,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
   void WmPerformMoveLoop(uint32_t change_id,
@@ -427,7 +429,7 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnClientAreaChanged(
       uint32_t window_id,
       const gfx::Insets& new_client_area,
-      mojo::Array<gfx::Rect> new_additional_client_areas) override;
+      const std::vector<gfx::Rect>& new_additional_client_areas) override;
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override;
   void OnTransientWindowRemoved(uint32_t window_id,
@@ -436,7 +438,7 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
       uint32_t window,
       uint32_t old_parent,
       uint32_t new_parent,
-      mojo::Array<mojom::WindowDataPtr> windows) override;
+      std::vector<mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(uint32_t window_id,
                          uint32_t relative_window_id,
                          mojom::OrderDirection direction) override;
@@ -446,9 +448,10 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
                               float old_opacity,
                               float new_opacity) override;
   void OnWindowParentDrawnStateChanged(uint32_t window, bool drawn) override;
-  void OnWindowSharedPropertyChanged(uint32_t window,
-                                     const mojo::String& name,
-                                     mojo::Array<uint8_t> new_data) override;
+  void OnWindowSharedPropertyChanged(
+      uint32_t window,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           uint32_t window,
                           std::unique_ptr<ui::Event> event,
@@ -463,7 +466,8 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
                               const gfx::Size& frame_size,
                               float device_scale_factor) override;
   void OnDragDropStart(
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
+      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
+      override;
   void OnDragEnter(uint32_t window,
                    uint32_t key_state,
                    const gfx::Point& position,

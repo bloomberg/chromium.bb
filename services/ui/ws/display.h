@@ -138,7 +138,7 @@ class Display : public PlatformDisplayDelegate,
 
   // mojom::WindowTreeHost:
   void SetSize(const gfx::Size& size) override;
-  void SetTitle(const mojo::String& title) override;
+  void SetTitle(const std::string& title) override;
 
   // Updates the size of display root ServerWindow and WM root ServerWindow(s).
   void OnViewportMetricsChanged(const display::ViewportMetrics& metrics);

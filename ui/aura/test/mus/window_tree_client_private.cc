@@ -25,7 +25,6 @@ void WindowTreeClientPrivate::OnEmbed(ui::mojom::WindowTree* window_tree) {
   ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
   root_data->window_id = next_window_id_++;
-  root_data->properties.SetToEmpty();
   root_data->visible = true;
   const int64_t display_id = 1;
   const Id focused_window_id = 0;
@@ -38,7 +37,6 @@ WindowTreeHost* WindowTreeClientPrivate::CallWmNewDisplayAdded(
   ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
   root_data->window_id = next_window_id_++;
-  root_data->properties.SetToEmpty();
   root_data->visible = true;
   root_data->bounds = gfx::Rect(display.bounds().size());
   const bool parent_drawn = true;

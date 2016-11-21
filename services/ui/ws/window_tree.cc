@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/stl_converters.h"
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
@@ -30,9 +31,7 @@
 #include "ui/platform_window/mojo/ime_type_converters.h"
 #include "ui/platform_window/text_input_state.h"
 
-using mojo::Array;
 using mojo::InterfaceRequest;
-using mojo::String;
 
 namespace ui {
 namespace ws {
@@ -575,12 +574,11 @@ void WindowTree::ProcessWindowPropertyChanged(
   if (!IsWindowKnown(window, &client_window_id))
     return;
 
-  Array<uint8_t> data(nullptr);
+  base::Optional<std::vector<uint8_t>> data;
   if (new_data)
-    data = Array<uint8_t>::From(*new_data);
+    data.emplace(*new_data);
 
-  client()->OnWindowSharedPropertyChanged(client_window_id.id, String(name),
-                                          std::move(data));
+  client()->OnWindowSharedPropertyChanged(client_window_id.id, name, data);
 }
 
 void WindowTree::ProcessWindowHierarchyChanged(const ServerWindow* window,
@@ -985,9 +983,9 @@ void WindowTree::RemoveRoot(ServerWindow* window, RemoveRootReason reason) {
   }
 }
 
-Array<mojom::WindowDataPtr> WindowTree::WindowsToWindowDatas(
+std::vector<mojom::WindowDataPtr> WindowTree::WindowsToWindowDatas(
     const std::vector<const ServerWindow*>& windows) {
-  Array<mojom::WindowDataPtr> array(windows.size());
+  std::vector<mojom::WindowDataPtr> array(windows.size());
   for (size_t i = 0; i < windows.size(); ++i)
     array[i] = WindowToWindowData(windows[i]);
   return array;
@@ -1007,8 +1005,7 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
   window_data->window_id =
       window ? ClientWindowIdForWindow(window).id : ClientWindowId().id;
   window_data->bounds = window->bounds();
-  window_data->properties =
-      mojo::Map<String, Array<uint8_t>>::From(window->properties());
+  window_data->properties = mojo::MapToUnorderedMap(window->properties());
   window_data->visible = window->visible();
   return window_data;
 }
@@ -1133,12 +1130,12 @@ bool WindowTree::EventMatchesPointerWatcher(const ui::Event& event) const {
 void WindowTree::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
+    const base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>&
+        transport_properties) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  if (!transport_properties.is_null()) {
-    properties =
-        transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
-  }
+  if (transport_properties.has_value())
+    properties = mojo::UnorderedMapToMap(transport_properties.value());
+
   client()->OnChangeCompleted(
       change_id, NewWindow(ClientWindowId(transport_window_id), properties));
 }
@@ -1146,7 +1143,8 @@ void WindowTree::NewWindow(
 void WindowTree::NewTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
+    const std::unordered_map<std::string, std::vector<uint8_t>>&
+        transport_properties) {
   // TODO(sky): rather than DCHECK, have this kill connection.
   DCHECK(!window_manager_internal_);  // Not valid for the windowmanager.
   DCHECK(!waiting_for_top_level_window_info_);
@@ -1181,8 +1179,8 @@ void WindowTree::NewTopLevelWindow(
 
   display_root->window_manager_state()
       ->window_tree()
-      ->window_manager_internal_->WmCreateTopLevelWindow(
-          wm_change_id, id_, std::move(transport_properties));
+      ->window_manager_internal_->WmCreateTopLevelWindow(wm_change_id, id_,
+                                                         transport_properties);
 }
 
 void WindowTree::DeleteWindow(uint32_t change_id, Id transport_window_id) {
@@ -1263,7 +1261,7 @@ void WindowTree::ReorderWindow(uint32_t change_id,
 
 void WindowTree::GetWindowTree(
     Id window_id,
-    const base::Callback<void(Array<mojom::WindowDataPtr>)>& callback) {
+    const base::Callback<void(std::vector<mojom::WindowDataPtr>)>& callback) {
   std::vector<const ServerWindow*> windows(
       GetWindowTree(ClientWindowId(window_id)));
   callback.Run(WindowsToWindowDatas(windows));
@@ -1323,10 +1321,11 @@ void WindowTree::SetWindowVisibility(uint32_t change_id,
       SetWindowVisibility(ClientWindowId(transport_window_id), visible));
 }
 
-void WindowTree::SetWindowProperty(uint32_t change_id,
-                                   Id transport_window_id,
-                                   const mojo::String& name,
-                                   mojo::Array<uint8_t> value) {
+void WindowTree::SetWindowProperty(
+    uint32_t change_id,
+    Id transport_window_id,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& value) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (window && ShouldRouteToWindowManager(window)) {
@@ -1336,18 +1335,16 @@ void WindowTree::SetWindowProperty(uint32_t change_id,
         GetWindowManagerDisplayRoot(window);
     WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
     wm_tree->window_manager_internal_->WmSetProperty(
-        wm_change_id, wm_tree->ClientWindowIdForWindow(window).id, name,
-        std::move(value));
+        wm_change_id, wm_tree->ClientWindowIdForWindow(window).id, name, value);
     return;
   }
   const bool success = window && access_policy_->CanSetWindowProperties(window);
   if (success) {
     Operation op(this, window_server_, OperationType::SET_WINDOW_PROPERTY);
-    if (value.is_null()) {
+    if (!value.has_value()) {
       window->SetProperty(name, nullptr);
     } else {
-      std::vector<uint8_t> data = value.To<std::vector<uint8_t>>();
-      window->SetProperty(name, &data);
+      window->SetProperty(name, &value.value());
     }
   }
   client()->OnChangeCompleted(change_id, success);
@@ -1437,18 +1434,17 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
   }
 }
 
-void WindowTree::SetClientArea(
-    Id transport_window_id,
-    const gfx::Insets& insets,
-    mojo::Array<gfx::Rect> transport_additional_client_areas) {
+void WindowTree::SetClientArea(Id transport_window_id,
+                               const gfx::Insets& insets,
+                               const base::Optional<std::vector<gfx::Rect>>&
+                                   transport_additional_client_areas) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (!window || !access_policy_->CanSetClientArea(window))
     return;
 
-  std::vector<gfx::Rect> additional_client_areas =
-      transport_additional_client_areas.To<std::vector<gfx::Rect>>();
-  window->SetClientArea(insets, additional_client_areas);
+  window->SetClientArea(insets, transport_additional_client_areas.value_or(
+                                    std::vector<gfx::Rect>()));
 }
 
 void WindowTree::SetHitTestMask(Id transport_window_id,
@@ -1544,7 +1540,7 @@ void WindowTree::GetCursorLocationMemory(
 void WindowTree::PerformDragDrop(
     uint32_t change_id,
     Id source_window_id,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
     uint32_t drag_operation) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(source_window_id));
   bool success = window && access_policy_->CanInitiateDragLoop(window);
@@ -1580,8 +1576,9 @@ void WindowTree::PerformDragDrop(
   // normal.
   WindowManagerState* wms = display_root->window_manager_state();
   window_server_->StartDragLoop(change_id, window, this);
-  wms->SetDragDropSourceWindow(this, window, this, std::move(drag_data),
-                               drag_operation);
+  wms->SetDragDropSourceWindow(
+      this, window, this, mojo::WrapSTLType(mojo::UnorderedMapToMap(drag_data)),
+      drag_operation);
 }
 
 void WindowTree::CancelDragDrop(Id window_id) {
@@ -1886,7 +1883,8 @@ DragTargetConnection* WindowTree::GetDragTargetForWindow(
 
 void WindowTree::PerformOnDragDropStart(
     mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {
-  client()->OnDragDropStart(std::move(mime_data));
+  client()->OnDragDropStart(
+      mojo::MapToUnorderedMap(mojo::UnwrapToSTLType(std::move(mime_data))));
 }
 
 void WindowTree::PerformOnDragEnter(

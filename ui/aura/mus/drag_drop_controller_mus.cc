@@ -146,10 +146,9 @@ int DragDropControllerMus::StartDragAndDrop(
   std::map<std::string, std::vector<uint8_t>> drag_data =
       static_cast<const aura::OSExchangeDataProviderMus&>(data.provider())
           .GetData();
-  window_tree_->PerformDragDrop(
-      change_id, source_window_mus->server_id(),
-      mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(drag_data),
-      drag_operations);
+  window_tree_->PerformDragDrop(change_id, source_window_mus->server_id(),
+                                mojo::MapToUnorderedMap(drag_data),
+                                drag_operations);
 
   base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
