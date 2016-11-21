@@ -72,19 +72,17 @@ if ! which lsb_release > /dev/null; then
 fi
 
 lsb_release=$(lsb_release --codename --short)
-ubuntu_codenames="(precise|trusty|utopic|vivid|wily|xenial|yakkety)"
+ubuntu_codenames="(precise|trusty|utopic|vivid|wily|xenial)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $lsb_release =~ $ubuntu_codenames ]]; then
-    echo "WARNING: Only supported build host distros are: " \
-      "Ubuntu 12.04 (precise), Ubuntu 14.04 (trusty), Ubuntu 14.10 (utopic), " \
-      "Ubuntu 15.04 (vivid), Ubuntu 15.10 (wily), Ubuntu 16.04 (xenial), " \
-      "Ubuntu 16.10 (yakkety) " >&2
-    exit
+    echo "ERROR: Only Ubuntu 12.04 (precise), 14.04 (trusty), " \
+      "14.10 (utopic), 15.04 (vivid), 15.10 (wily) and 16.04 (xenial) " \
+      "are currently supported" >&2
+    exit 1
   fi
 
   if ! uname -m | egrep -q "i686|x86_64"; then
-    echo "WARNING: Only supported build host architectures are: " \
-      "x86, x86-64" >&2
+    echo "Only x86 architectures are currently supported" >&2
     exit
   fi
 fi

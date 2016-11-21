@@ -537,16 +537,6 @@ hooks = [
     ],
   },
   {
-    # Ensure the host environment has the necessary packages required to build
-	# Chromium.
-	'name': 'check_build_deps',
-	'pattern': '.',
-	'action': [
-        'python',
-        'src/build/check-build-deps.py',
-    ],
-  },
-  {
     # Ensure that while generating dependencies lists in .gyp files we don't
     # accidentally reference any .pyc files whose corresponding .py files have
     # already been deleted.
