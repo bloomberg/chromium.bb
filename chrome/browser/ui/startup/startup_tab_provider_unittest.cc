@@ -10,17 +10,33 @@
 #include "url/gurl.h"
 
 TEST(StartupTabProviderTest, CheckStandardOnboardingTabPolicy) {
-  StartupTabs output =
-      StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(true);
+  // Show welcome page to new unauthenticated profile on first run.
+  StartupTabs output = StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(
+      true, false, false);
 
   ASSERT_EQ(1U, output.size());
-  EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(), output[0].url);
+  EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(false), output[0].url);
+  EXPECT_FALSE(output[0].is_pinned);
+
+  // After first run, display welcome page using variant view.
+  output = StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(
+      false, false, false);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(true), output[0].url);
   EXPECT_FALSE(output[0].is_pinned);
 }
 
-TEST(StartupTabProviderTest, CheckStandardOnboardingTabPolicy_FirstRunOnly) {
-  StartupTabs output =
-      StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(false);
+TEST(StartupTabProviderTest, CheckStandardOnboardingTabPolicy_Negative) {
+  // Do not show the welcome page to the same profile twice.
+  StartupTabs output = StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(
+      true, true, false);
+
+  EXPECT_TRUE(output.empty());
+
+  // Do not show the welcome page to authenticated users.
+  output = StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(true, false,
+                                                                    true);
 
   EXPECT_TRUE(output.empty());
 }
@@ -38,7 +54,7 @@ TEST(StartupTabProviderTest, CheckMasterPrefsTabPolicy) {
   EXPECT_FALSE(output[0].is_pinned);
   EXPECT_EQ(input[1], output[1].url);
   EXPECT_FALSE(output[1].is_pinned);
-  EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(), output[2].url);
+  EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(false), output[2].url);
   EXPECT_FALSE(output[2].is_pinned);
 }
 

@@ -22,7 +22,7 @@ class StartupTabProvider {
  public:
   // Gathers relevant system state and returns any tabs which should be
   // shown according to onboarding/first run policy.
-  virtual StartupTabs GetOnboardingTabs() const = 0;
+  virtual StartupTabs GetOnboardingTabs(Profile* profile) const = 0;
 
   // Gathers URLs from a Master Preferences file indicating first run logic
   // specific to this distribution. Transforms any such URLs per policy and
@@ -60,7 +60,10 @@ class StartupTabProviderImpl : public StartupTabProvider {
 
   // Determines which tabs which should be shown according to onboarding/first
   // run policy.
-  static StartupTabs CheckStandardOnboardingTabPolicy(bool is_first_run);
+  static StartupTabs CheckStandardOnboardingTabPolicy(
+      bool is_first_run,
+      bool has_seen_welcome_page,
+      bool is_signed_in);
 
   // Processes first run URLs specified in Master Preferences file, replacing
   // any "magic word" URL hosts with appropriate URLs.
@@ -87,15 +90,18 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // explicitly specified. Session Restore does not expect the NTP to be passed.
   static StartupTabs CheckNewTabPageTabPolicy(const SessionStartupPref& pref);
 
-  // Gets the URL for the "Welcome to Chrome" page.
-  static GURL GetWelcomePageUrl();
+  // Gets the URL for the Welcome page. If |use_later_run_variant| is true, a
+  // URL parameter will be appended so as to access the variant page used when
+  // onboarding occurs after the first Chrome execution (e.g., when creating an
+  // additional profile).
+  static GURL GetWelcomePageUrl(bool use_later_run_variant);
 
   // Gets the URL for the page which offers to reset the user's profile
   // settings.
   static GURL GetTriggeredResetSettingsUrl();
 
   // StartupTabProvider:
-  StartupTabs GetOnboardingTabs() const override;
+  StartupTabs GetOnboardingTabs(Profile* profile) const override;
   StartupTabs GetDistributionFirstRunTabs(
       StartupBrowserCreator* browser_creator) const override;
   StartupTabs GetResetTriggerTabs(Profile* profile) const override;

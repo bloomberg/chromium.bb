@@ -1307,6 +1307,11 @@ const char kWebRTCIPHandlingPolicy[] = "webrtc.ip_handling_policy";
 const char kWebRTCUDPPortRange[] = "webrtc.udp_port_range";
 #endif
 
+#if !defined(OS_ANDROID)
+// Whether or not this profile has been shown the Welcome page.
+const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
+#endif
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

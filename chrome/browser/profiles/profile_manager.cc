@@ -927,6 +927,10 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_id);
   }
+#if !defined(OS_ANDROID)
+  if (profile->IsNewProfile())
+    profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
+#endif
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,

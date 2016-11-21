@@ -449,6 +449,10 @@ extern const char kWebRTCIPHandlingPolicy[];
 extern const char kWebRTCUDPPortRange[];
 #endif
 
+#if !defined(OS_ANDROID)
+extern const char kHasSeenWelcomePage[];
+#endif
+
 extern const char kGLVendorString[];
 extern const char kGLRendererString[];
 extern const char kGLVersionString[];

@@ -103,6 +103,7 @@ class StartupBrowserCreator {
   static void ClearLaunchedProfilesForTesting();
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   friend class CloudPrintProxyPolicyTest;

@@ -6,10 +6,12 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,6 +27,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
       profile->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
     return;
   }
+
+  // Store that this profile has been shown the Welcome page.
+  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 
   web_ui->AddMessageHandler(new WelcomeHandler(web_ui));
 

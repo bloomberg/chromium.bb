@@ -8,17 +8,22 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
-StartupTabs StartupTabProviderImpl::GetOnboardingTabs() const {
+StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
 #if defined(OS_WIN)
   // Windows 10 has unique onboarding policies and content.
   if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
@@ -31,7 +36,17 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs() const {
   }
 #endif
 
-  return CheckStandardOnboardingTabPolicy(first_run::IsChromeFirstRun());
+  if (!profile)
+    return StartupTabs();
+
+  PrefService* prefs = profile->GetPrefs();
+  bool has_seen_welcome_page =
+      prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  bool is_signed_in = signin_manager && signin_manager->IsAuthenticated();
+  return CheckStandardOnboardingTabPolicy(first_run::IsChromeFirstRun(),
+                                          has_seen_welcome_page, is_signed_in);
 }
 
 StartupTabs StartupTabProviderImpl::GetDistributionFirstRunTabs(
@@ -77,10 +92,12 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
 
 // static
 StartupTabs StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(
-    bool is_first_run) {
+    bool is_first_run,
+    bool has_seen_welcome_page,
+    bool is_signed_in) {
   StartupTabs tabs;
-  if (is_first_run)
-    tabs.emplace_back(GetWelcomePageUrl(), false);
+  if (!has_seen_welcome_page && !is_signed_in)
+    tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
   return tabs;
 }
 
@@ -100,7 +117,7 @@ StartupTabs StartupTabProviderImpl::CheckMasterPrefsTabPolicy(
       if (url.host_piece() == kNewTabUrlHost)
         url = GURL(chrome::kChromeUINewTabURL);
       else if (url.host_piece() == kWelcomePageUrlHost)
-        url = GetWelcomePageUrl();
+        url = GetWelcomePageUrl(false);
       tabs.emplace_back(url, false);
     }
   }
@@ -145,8 +162,11 @@ StartupTabs StartupTabProviderImpl::CheckNewTabPageTabPolicy(
 }
 
 // static
-GURL StartupTabProviderImpl::GetWelcomePageUrl() {
-  return GURL(chrome::kChromeUIWelcomeURL);
+GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
+  GURL url(chrome::kChromeUIWelcomeURL);
+  return use_later_run_variant
+             ? net::AppendQueryParameter(url, "variant", "everywhere")
+             : url;
 }
 
 // static

@@ -484,6 +484,14 @@ void StartupBrowserCreator::RegisterLocalStatePrefs(
 }
 
 // static
+void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  // Default to true so that existing users are not shown the Welcome page.
+  // ProfileManager handles setting this to false for new profiles upon
+  // creation.
+  registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
+}
+
+// static
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,

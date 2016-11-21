@@ -25,7 +25,7 @@ class FakeStartupTabProvider : public StartupTabProvider {
   // tab and return true. For options not passed, the adder will return false.
   explicit FakeStartupTabProvider(uint32_t options) : options_(options) {}
 
-  StartupTabs GetOnboardingTabs() const override {
+  StartupTabs GetOnboardingTabs(Profile* profile) const override {
     StartupTabs tabs;
     if (options_ & kOnboardingTabs)
       tabs.emplace_back(GURL("https://onboarding"), false);

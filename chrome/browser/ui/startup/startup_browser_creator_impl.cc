@@ -695,7 +695,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
   // Policies for onboarding (e.g., first run) may show promotional and
   // introductory content depending on a number of system status factors,
   // including OS and whether or not this is First Run.
-  StartupTabs onboarding_tabs = provider.GetOnboardingTabs();
+  StartupTabs onboarding_tabs = provider.GetOnboardingTabs(profile_);
   AppendTabs(onboarding_tabs, &tabs);
 
   // If the user has set the preference indicating URLs to show on opening,

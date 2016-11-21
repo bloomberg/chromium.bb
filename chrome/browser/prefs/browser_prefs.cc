@@ -589,6 +589,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   gcm::RegisterProfilePrefs(registry);
+  StartupBrowserCreator::RegisterProfilePrefs(registry);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
