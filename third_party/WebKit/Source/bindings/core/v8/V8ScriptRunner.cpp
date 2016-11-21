@@ -472,8 +472,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(
       v8::Integer::New(isolate, scriptStartPosition.m_line.zeroBasedInt()),
       v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt()),
       v8Boolean(accessControlStatus == SharableCrossOrigin, isolate),
-      v8::Local<v8::Integer>(), v8Boolean(false, isolate),
-      v8String(isolate, sourceMapUrl),
+      v8::Local<v8::Integer>(), v8String(isolate, sourceMapUrl),
       v8Boolean(accessControlStatus == OpaqueResource, isolate));
 
   V8CompileHistogram::Cacheability cacheabilityIfNoHandler =

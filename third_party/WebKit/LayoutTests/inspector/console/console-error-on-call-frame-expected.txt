@@ -7,7 +7,6 @@ Script execution resumed.
 console.error(42)
 VM:1 42
 (anonymous) @ VM:1
-evaluate
 testFunction @ console-error-on-call-frame.html:10
 undefined
 
