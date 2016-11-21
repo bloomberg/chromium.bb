@@ -268,7 +268,7 @@
         </div>
 </if>
 
-        <template is="dom-if" if=[[profileManagesSupervisedUsers_]]>
+        <template is="dom-if" if="[[profileManagesSupervisedUsers_]]">
           <div id="manageSupervisedUsersContainer" class="settings-box two-line"
               on-tap="onManageSupervisedUsers_" actionable>
             <div class="start">
@@ -335,7 +335,7 @@
         <div inner-h-t-m-l="[[getDisconnectExplanationHtml_(syncStatus.domain)]]">
         </div>
   <if expr="(not chromeos and is_posix) or is_win or is_macosx">
-        <paper-checkbox id="deleteProfile" hidden=[[syncStatus.domain]]>
+        <paper-checkbox id="deleteProfile" hidden="[[syncStatus.domain]]">
           $i18n{syncDisconnectDeleteProfile}
         </paper-checkbox>
   </if>
@@ -345,11 +345,11 @@
           $i18n{cancel}
         </paper-button>
         <paper-button id="disconnectConfirm" class="action-button"
-            hidden=[[syncStatus.domain]] on-tap="onDisconnectConfirm_">
+            hidden="[[syncStatus.domain]]" on-tap="onDisconnectConfirm_">
           $i18n{syncDisconnect}
         </paper-button>
         <paper-button id="disconnectManagedProfileConfirm" class="action-button"
-            hidden=[[!syncStatus.domain]] on-tap="onDisconnectConfirm_">
+            hidden="[[!syncStatus.domain]]" on-tap="onDisconnectConfirm_">
           $i18n{syncDisconnectConfirm}
         </paper-button>
       </div>

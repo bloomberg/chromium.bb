@@ -76,6 +76,11 @@ class HtmlChecker(object):
         "Avoid 'for' attribute on <label>. Place the input within the <label>, "
         "or use aria-labelledby for <select>.")
 
+  def QuotePolymerBindings(self, line_number, line):
+    regex = self.input_api.re.compile(r"=(\[\[|\{\{)")
+    return regex_check.RegexCheck(self.input_api.re, line_number, line, regex,
+        'Please use quotes around Polymer bindings (i.e. attr="[[prop]]")')
+
   def RunChecks(self):
     """Check for violations of the Chromium web development style guide. See
        http://chromium.org/developers/web-development-style-guide
@@ -96,6 +101,7 @@ class HtmlChecker(object):
             self.DoNotUseInputTypeButtonCheck(line_number, line),
             self.I18nContentJavaScriptCaseCheck(line_number, line),
             self.LabelCheck(line_number, line),
+            self.QuotePolymerBindings(line_number, line),
         ]))
 
       if errors:

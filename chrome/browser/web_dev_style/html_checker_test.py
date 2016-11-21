@@ -178,7 +178,7 @@ class HtmlCheckerTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldFailCheck(line, self.checker.LabelCheck)
 
-  def testLabelCheckPass(self):
+  def testLabelCheckPasses(self):
     lines = [
       ' my-for="abc" ',
       ' myfor="abc" ',
@@ -187,6 +187,27 @@ class HtmlCheckerTest(SuperMoxTestBase):
     ]
     for line in lines:
       self.ShouldPassCheck(line, self.checker.LabelCheck)
+
+  def testQuotePolymerBindingsFails(self):
+    lines = [
+      "<a href=[[blah]]>",
+      "<div class$=[[class_]]>",
+      "<settings-checkbox prefs={{prefs}}",
+      "<paper-button actionable$=[[isActionable_(a,b)]]>",
+    ]
+    for line in lines:
+      self.ShouldFailCheck(line, self.checker.QuotePolymerBindings)
+
+  def testQuotePolymerBindingsPasses(self):
+    lines = [
+      '<a href="[[blah]]">',
+      '<span id="blah">[[text]]</span>',
+      '<setting-checkbox prefs="{{prefs}}">',
+      '<paper-input tab-index="[[tabIndex_]]">',
+      '<div style="font: [[getFont_(item)]]">',
+    ]
+    for line in lines:
+      self.ShouldPassCheck(line, self.checker.QuotePolymerBindings)
 
 
 if __name__ == '__main__':
