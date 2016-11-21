@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("ssl") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_security_state_tab_helper.h",
     "ios_security_state_tab_helper.mm",

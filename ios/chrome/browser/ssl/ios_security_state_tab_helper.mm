@@ -18,6 +18,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "net/cert/x509_certificate.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(IOSSecurityStateTabHelper);
 
 IOSSecurityStateTabHelper::IOSSecurityStateTabHelper(web::WebState* web_state)
