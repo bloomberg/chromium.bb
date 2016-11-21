@@ -225,8 +225,10 @@ imported/wpt/custom-elements/v0/registering/unresolved-element-pseudoclass [ Ski
 imported/wpt/docs [ Skip ]
 ## Owners: tkent@chromium.org
 imported/wpt/dom [ Pass ]
-imported/wpt/domparsing [ Skip ]
-imported/wpt/domxpath [ Skip ]
+## Owners: dom-dev@chromium.org
+# imported/wpt/domparsing [ Pass ]
+## Owners: dom-dev@chromium.org
+# imported/wpt/domxpath [ Pass ]
 imported/wpt/dpub-aam [ Skip ]
 imported/wpt/dpub-aria [ Skip ]
 imported/wpt/editing [ Skip ]
@@ -256,7 +258,8 @@ imported/wpt/http [ Skip ]
 # imported/wpt/images [ Pass ]
 imported/wpt/imagebitmap-renderingcontext [ Skip ]
 imported/wpt/infrastructure [ Skip ]
-imported/wpt/innerText [ Skip ]
+## Owners: dom-dev@chromium.org
+# imported/wpt/innerText [ Pass ]
 imported/wpt/js [ Skip ]
 imported/wpt/lint [ Skip ]
 imported/wpt/lint.whitelist [ Skip ]
