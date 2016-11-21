@@ -5809,7 +5809,6 @@ interface WebGL2RenderingContext
     attribute BLEND_EQUATION_RGB
     attribute BLEND_SRC_ALPHA
     attribute BLEND_SRC_RGB
-    attribute BLUE
     attribute BLUE_BITS
     attribute BOOL
     attribute BOOL_VEC2
@@ -5954,7 +5953,6 @@ interface WebGL2RenderingContext
     attribute GENERATE_MIPMAP_HINT
     attribute GEQUAL
     attribute GREATER
-    attribute GREEN
     attribute GREEN_BITS
     attribute HALF_FLOAT
     attribute HIGH_FLOAT
@@ -6046,7 +6044,6 @@ interface WebGL2RenderingContext
     attribute NONE
     attribute NOTEQUAL
     attribute NO_ERROR
-    attribute NUM_SAMPLE_COUNTS
     attribute OBJECT_TYPE
     attribute ONE
     attribute ONE_MINUS_CONSTANT_ALPHA
