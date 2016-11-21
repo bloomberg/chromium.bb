@@ -71,7 +71,8 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   data_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
                            base::UTF16ToUTF8(description));
 
-  data_.state |= (1 << ui::AX_STATE_FOCUSABLE);
+  if (view_->IsAccessibilityFocusable())
+    data_.state |= (1 << ui::AX_STATE_FOCUSABLE);
 
   if (!view_->enabled())
     data_.state |= (1 << ui::AX_STATE_DISABLED);

@@ -101,6 +101,10 @@ TEST_F(NativeViewAccessibilityTest, WritableFocus) {
   EXPECT_TRUE(button_accessibility_->SetFocused(false));
   EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());
   EXPECT_EQ(nullptr, button_accessibility_->GetFocus());
+
+  // If not focusable at all, SetFocused() should return false.
+  button_->SetEnabled(false);
+  EXPECT_FALSE(button_accessibility_->SetFocused(true));
 }
 
 // Subclass of NativeViewAccessibility that destroys itself when its
