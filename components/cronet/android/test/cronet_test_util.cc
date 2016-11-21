@@ -6,8 +6,10 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
-#include "components/cronet/android/test/native_test_server.h"
+#include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "jni/CronetTestUtil_jni.h"
 #include "net/url_request/url_request.h"
 
@@ -17,13 +19,86 @@ namespace cronet {
 
 jint GetLoadFlags(JNIEnv* env,
                   const JavaParamRef<jclass>& jcaller,
-                  const jlong urlRequest) {
-  return reinterpret_cast<CronetURLRequestAdapter*>(urlRequest)
-      ->GetURLRequestForTesting()
-      ->load_flags();
+                  const jlong jurl_request_adapter) {
+  return TestUtil::GetURLRequest(jurl_request_adapter)->load_flags();
 }
 
-bool RegisterCronetTestUtil(JNIEnv* env) {
+// static
+scoped_refptr<base::SingleThreadTaskRunner> TestUtil::GetTaskRunner(
+    jlong jcontext_adapter) {
+  CronetURLRequestContextAdapter* context_adapter =
+      reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
+  return context_adapter->network_thread_->task_runner();
+}
+
+// static
+net::URLRequestContext* TestUtil::GetURLRequestContext(jlong jcontext_adapter) {
+  CronetURLRequestContextAdapter* context_adapter =
+      reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
+  return context_adapter->context_.get();
+}
+
+// static
+void TestUtil::RunAfterContextInitOnNetworkThread(jlong jcontext_adapter,
+                                                  const base::Closure& task) {
+  CronetURLRequestContextAdapter* context_adapter =
+      reinterpret_cast<CronetURLRequestContextAdapter*>(jcontext_adapter);
+  if (context_adapter->is_context_initialized_) {
+    task.Run();
+  } else {
+    context_adapter->tasks_waiting_for_context_.push(task);
+  }
+}
+
+// static
+void TestUtil::RunAfterContextInit(jlong jcontext_adapter,
+                                   const base::Closure& task) {
+  GetTaskRunner(jcontext_adapter)
+      ->PostTask(FROM_HERE,
+                 base::Bind(&TestUtil::RunAfterContextInitOnNetworkThread,
+                            jcontext_adapter, task));
+}
+
+// static
+net::URLRequest* TestUtil::GetURLRequest(jlong jrequest_adapter) {
+  CronetURLRequestAdapter* request_adapter =
+      reinterpret_cast<CronetURLRequestAdapter*>(jrequest_adapter);
+  return request_adapter->url_request_.get();
+}
+
+static void PrepareNetworkThreadOnNetworkThread(jlong jcontext_adapter) {
+  (new base::MessageLoopForIO())
+      ->SetTaskRunner(TestUtil::GetTaskRunner(jcontext_adapter));
+}
+
+// Tests need to call into libcronet.so code on libcronet.so threads.
+// libcronet.so's threads are registered with static tables for MessageLoops
+// and SingleThreadTaskRunners in libcronet.so, so libcronet_test.so
+// functions that try and access these tables will find missing entries in
+// the corresponding static tables in libcronet_test.so.  Fix this by
+// initializing a MessageLoop and SingleThreadTaskRunner in libcronet_test.so
+// for these threads.  Called from Java CronetTestUtil class.
+void PrepareNetworkThread(JNIEnv* env,
+                          const JavaParamRef<jclass>& jcaller,
+                          jlong jcontext_adapter) {
+  TestUtil::GetTaskRunner(jcontext_adapter)
+      ->PostTask(FROM_HERE, base::Bind(&PrepareNetworkThreadOnNetworkThread,
+                                       jcontext_adapter));
+}
+
+static void CleanupNetworkThreadOnNetworkThread() {
+  delete base::MessageLoop::current();
+}
+
+// Called from Java CronetTestUtil class.
+void CleanupNetworkThread(JNIEnv* env,
+                          const JavaParamRef<jclass>& jcaller,
+                          jlong jcontext_adapter) {
+  TestUtil::GetTaskRunner(jcontext_adapter)
+      ->PostTask(FROM_HERE, base::Bind(&CleanupNetworkThreadOnNetworkThread));
+}
+
+bool TestUtil::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

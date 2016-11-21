@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/TestUploadDataStreamHandler_jni.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
@@ -24,15 +25,13 @@ static const size_t kReadBufferSize = 32768;
 TestUploadDataStreamHandler::TestUploadDataStreamHandler(
     std::unique_ptr<net::UploadDataStream> upload_data_stream,
     JNIEnv* env,
-    jobject jtest_upload_data_stream_handler)
+    jobject jtest_upload_data_stream_handler,
+    jlong jcontext_adapter)
     : init_callback_invoked_(false),
       read_callback_invoked_(false),
       bytes_read_(0),
-      network_thread_(new base::Thread("network")) {
+      network_thread_(TestUtil::GetTaskRunner(jcontext_adapter)) {
   upload_data_stream_ = std::move(upload_data_stream);
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  network_thread_->StartWithOptions(options);
   jtest_upload_data_stream_handler_.Reset(env,
                                           jtest_upload_data_stream_handler);
 }
@@ -43,17 +42,12 @@ TestUploadDataStreamHandler::~TestUploadDataStreamHandler() {
 void TestUploadDataStreamHandler::Destroy(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
-  // Stick network_thread_ in a local, so |this| may be destroyed from the
-  // network thread before the network thread is destroyed.
-  std::unique_ptr<base::Thread> network_thread = std::move(network_thread_);
-  network_thread->task_runner()->DeleteSoon(FROM_HERE, this);
-  // Deleting thread stops it after all tasks are completed.
-  network_thread.reset();
+  DCHECK(!network_thread_->BelongsToCurrentThread());
+  network_thread_->DeleteSoon(FROM_HERE, this);
 }
 
 void TestUploadDataStreamHandler::OnInitCompleted(int res) {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   init_callback_invoked_ = true;
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_TestUploadDataStreamHandler_onInitCompleted(
@@ -61,7 +55,7 @@ void TestUploadDataStreamHandler::OnInitCompleted(int res) {
 }
 
 void TestUploadDataStreamHandler::OnReadCompleted(int res) {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   read_callback_invoked_ = true;
   bytes_read_ = res;
   NotifyJavaReadCompleted();
@@ -69,24 +63,24 @@ void TestUploadDataStreamHandler::OnReadCompleted(int res) {
 
 void TestUploadDataStreamHandler::Init(JNIEnv* env,
                                        const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
-  network_thread_->task_runner()->PostTask(
+  DCHECK(!network_thread_->BelongsToCurrentThread());
+  network_thread_->PostTask(
       FROM_HERE, base::Bind(&TestUploadDataStreamHandler::InitOnNetworkThread,
                             base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::Read(JNIEnv* env,
                                        const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
-  network_thread_->task_runner()->PostTask(
+  DCHECK(!network_thread_->BelongsToCurrentThread());
+  network_thread_->PostTask(
       FROM_HERE, base::Bind(&TestUploadDataStreamHandler::ReadOnNetworkThread,
                             base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::Reset(JNIEnv* env,
                                         const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
-  network_thread_->task_runner()->PostTask(
+  DCHECK(!network_thread_->BelongsToCurrentThread());
+  network_thread_->PostTask(
       FROM_HERE, base::Bind(&TestUploadDataStreamHandler::ResetOnNetworkThread,
                             base::Unretained(this)));
 }
@@ -94,8 +88,8 @@ void TestUploadDataStreamHandler::Reset(JNIEnv* env,
 void TestUploadDataStreamHandler::CheckInitCallbackNotInvoked(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
-  network_thread_->task_runner()->PostTask(
+  DCHECK(!network_thread_->BelongsToCurrentThread());
+  network_thread_->PostTask(
       FROM_HERE, base::Bind(&TestUploadDataStreamHandler::
                                 CheckInitCallbackNotInvokedOnNetworkThread,
                             base::Unretained(this)));
@@ -104,15 +98,15 @@ void TestUploadDataStreamHandler::CheckInitCallbackNotInvoked(
 void TestUploadDataStreamHandler::CheckReadCallbackNotInvoked(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
-  network_thread_->task_runner()->PostTask(
+  DCHECK(!network_thread_->BelongsToCurrentThread());
+  network_thread_->PostTask(
       FROM_HERE, base::Bind(&TestUploadDataStreamHandler::
                                 CheckReadCallbackNotInvokedOnNetworkThread,
                             base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::InitOnNetworkThread() {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   init_callback_invoked_ = false;
   read_buffer_ = nullptr;
   bytes_read_ = 0;
@@ -131,7 +125,7 @@ void TestUploadDataStreamHandler::InitOnNetworkThread() {
 }
 
 void TestUploadDataStreamHandler::ReadOnNetworkThread() {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   read_callback_invoked_ = false;
   if (!read_buffer_.get())
     read_buffer_ = new net::IOBufferWithSize(kReadBufferSize);
@@ -147,7 +141,7 @@ void TestUploadDataStreamHandler::ReadOnNetworkThread() {
 }
 
 void TestUploadDataStreamHandler::ResetOnNetworkThread() {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   read_buffer_ = nullptr;
   bytes_read_ = 0;
   upload_data_stream_->Reset();
@@ -157,21 +151,21 @@ void TestUploadDataStreamHandler::ResetOnNetworkThread() {
 }
 
 void TestUploadDataStreamHandler::CheckInitCallbackNotInvokedOnNetworkThread() {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_TestUploadDataStreamHandler_onCheckInitCallbackNotInvoked(
       env, jtest_upload_data_stream_handler_, !init_callback_invoked_);
 }
 
 void TestUploadDataStreamHandler::CheckReadCallbackNotInvokedOnNetworkThread() {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_TestUploadDataStreamHandler_onCheckReadCallbackNotInvoked(
       env, jtest_upload_data_stream_handler_, !read_callback_invoked_);
 }
 
 void TestUploadDataStreamHandler::NotifyJavaReadCompleted() {
-  DCHECK(network_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(network_thread_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string data_read = "";
   if (read_buffer_.get() && bytes_read_ > 0)
@@ -184,11 +178,13 @@ void TestUploadDataStreamHandler::NotifyJavaReadCompleted() {
 static jlong CreateTestUploadDataStreamHandler(
     JNIEnv* env,
     const JavaParamRef<jobject>& jtest_upload_data_stream_handler,
-    jlong jupload_data_stream) {
+    jlong jupload_data_stream,
+    jlong jcontext_adapter) {
   std::unique_ptr<net::UploadDataStream> upload_data_stream(
       reinterpret_cast<net::UploadDataStream*>(jupload_data_stream));
   TestUploadDataStreamHandler* handler = new TestUploadDataStreamHandler(
-      std::move(upload_data_stream), env, jtest_upload_data_stream_handler);
+      std::move(upload_data_stream), env, jtest_upload_data_stream_handler,
+      jcontext_adapter);
   return reinterpret_cast<jlong>(handler);
 }
 

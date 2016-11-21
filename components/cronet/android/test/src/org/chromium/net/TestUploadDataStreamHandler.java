@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.content.Context;
 import android.os.ConditionVariable;
 
 import junit.framework.Assert;
@@ -11,6 +12,7 @@ import junit.framework.Assert;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.net.impl.CronetUrlRequestContext;
 
 /**
  * A wrapper class on top of the native net::UploadDataStream. This class is
@@ -18,6 +20,8 @@ import org.chromium.base.annotations.NativeClassQualifiedName;
  */
 @JNINamespace("cronet")
 public final class TestUploadDataStreamHandler {
+    private final CronetTestUtil.NetworkThreadTestConnector mNetworkThreadTestConnector;
+    private final CronetEngine mCronetEngine;
     private long mTestUploadDataStreamHandler;
     private ConditionVariable mWaitInitCalled = new ConditionVariable();
     private ConditionVariable mWaitInitComplete = new ConditionVariable();
@@ -31,15 +35,20 @@ public final class TestUploadDataStreamHandler {
     private boolean mInitCompletedSynchronously = false;
     private String mData = "";
 
-    public TestUploadDataStreamHandler(final long uploadDataStream) {
-        mTestUploadDataStreamHandler =
-                nativeCreateTestUploadDataStreamHandler(uploadDataStream);
+    public TestUploadDataStreamHandler(Context context, final long uploadDataStream) {
+        mCronetEngine = new CronetEngine.Builder(context).build();
+        mNetworkThreadTestConnector = new CronetTestUtil.NetworkThreadTestConnector(mCronetEngine);
+        CronetUrlRequestContext requestContext = (CronetUrlRequestContext) mCronetEngine;
+        mTestUploadDataStreamHandler = nativeCreateTestUploadDataStreamHandler(
+                uploadDataStream, requestContext.getUrlRequestContextAdapter());
     }
 
     public void destroyNativeObjects() {
         if (mTestUploadDataStreamHandler != 0) {
             nativeDestroy(mTestUploadDataStreamHandler);
             mTestUploadDataStreamHandler = 0;
+            mNetworkThreadTestConnector.shutdown();
+            mCronetEngine.shutdown();
         }
     }
 
@@ -168,5 +177,5 @@ public final class TestUploadDataStreamHandler {
     private native void nativeDestroy(long nativePtr);
 
     private native long nativeCreateTestUploadDataStreamHandler(
-            long uploadDataStream);
+            long uploadDataStream, long contextAdapter);
 }

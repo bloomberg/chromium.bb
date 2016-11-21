@@ -40,6 +40,7 @@ class BoundedFileNetLogObserver;
 }  // namespace net
 
 namespace cronet {
+class TestUtil;
 
 #if defined(DATA_REDUCTION_PROXY_SUPPORT)
 class CronetDataReductionProxy;
@@ -132,6 +133,8 @@ class CronetURLRequestContextAdapter
       bool should);
 
  private:
+  friend class TestUtil;
+
   // Initializes |context_| on the Network thread.
   void InitializeOnNetworkThread(
       std::unique_ptr<URLRequestContextConfig> config,

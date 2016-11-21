@@ -189,7 +189,7 @@ public class CronetPerfTestActivity extends Activity {
             }
             final ExperimentalCronetEngine.Builder cronetEngineBuilder =
                     new ExperimentalCronetEngine.Builder(CronetPerfTestActivity.this);
-            CronetTestUtil.setLibraryName(cronetEngineBuilder, "cronet_tests");
+            System.loadLibrary("cronet_tests");
             if (mProtocol == Protocol.QUIC) {
                 cronetEngineBuilder.enableQuic(true);
                 cronetEngineBuilder.addQuicHint(host, port, port);

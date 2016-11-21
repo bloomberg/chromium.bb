@@ -25,6 +25,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
     private CronetTestFramework mTestFramework;
     private File mFile;
     private StrictMode.VmPolicy mOldVmPolicy;
+    private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
 
     @Override
     protected void setUp() throws Exception {
@@ -38,7 +39,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         mTestFramework = startCronetTestFramework();
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         // Add url interceptors after native application context is initialized.
-        MockUrlRequestJobFactory.setUp();
+        mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(mTestFramework.mCronetEngine);
         mFile = new File(getContext().getCacheDir().getPath() + "/tmpfile");
         FileOutputStream fileOutputStream = new FileOutputStream(mFile);
         try {
@@ -52,6 +53,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
     @Override
     protected void tearDown() throws Exception {
         try {
+            mMockUrlRequestJobFactory.shutdown();
             NativeTestServer.shutdownNativeTestServer();
             mTestFramework.mCronetEngine.shutdown();
             assertTrue(mFile.delete());

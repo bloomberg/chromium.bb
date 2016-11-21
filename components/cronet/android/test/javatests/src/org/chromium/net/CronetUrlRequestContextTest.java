@@ -166,7 +166,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             cronetEngineBuilder.enableLegacyMode(true);
         }
         cronetEngineBuilder.setUserAgent(userAgentValue);
-        CronetTestUtil.setLibraryName(cronetEngineBuilder, "cronet_tests");
         final CronetTestFramework testFramework =
                 startCronetTestFrameworkWithUrlAndCronetEngineBuilder(mUrl, cronetEngineBuilder);
         NativeTestServer.shutdownNativeTestServer(); // startNativeTestServer returns false if it's
@@ -187,10 +186,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
         // Ensure native code is loaded before trying to start test server.
-        ExperimentalCronetEngine.Builder engineBuilder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        CronetTestUtil.setLibraryName(engineBuilder, "cronet_tests");
-        engineBuilder.build().shutdown();
+        new ExperimentalCronetEngine.Builder(getContext()).build().shutdown();
 
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         if (!NativeTestServer.isDataReductionProxySupported()) {
@@ -206,7 +202,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         cronetEngineBuilder.enableDataReductionProxy("test-key");
         cronetEngineBuilder.setDataReductionProxyOptions(serverHostPort, "unused.net:9999",
                 NativeTestServer.getFileURL("/secureproxychecksuccess.txt"));
-        CronetTestUtil.setLibraryName(cronetEngineBuilder, "cronet_tests");
         testFramework.mCronetEngine = (CronetEngineBase) cronetEngineBuilder.build();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
 
@@ -550,8 +545,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
-        CronetEngine cronetEngine = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetEngine cronetEngine =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
         // Start NetLog immediately after the request context is created to make
         // sure that the call won't crash the app even when the native request
         // context is not fully initialized. See crbug.com/470196.
@@ -581,8 +576,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
         File eventFile = new File(netLogDir, "event_file_0.json");
-        CronetUrlRequestContext cronetEngine = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetUrlRequestContext cronetEngine =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
         // Start NetLog immediately after the request context is created to make
         // sure that the call won't crash the app even when the native request
         // context is not fully initialized. See crbug.com/470196.
@@ -611,8 +606,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
-        CronetUrlRequestContext cronetEngine = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetUrlRequestContext cronetEngine =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
         cronetEngine.startNetLogToFile(file.getPath(), false);
 
         // Start a request.
@@ -642,8 +637,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
         File eventFile = new File(netLogDir, "event_file_0.json");
-        CronetUrlRequestContext cronetEngine = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetUrlRequestContext cronetEngine =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
         cronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
 
         // Start a request.
@@ -670,10 +665,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File directory = new File(PathUtils.getDataDirectory());
         File file1 = File.createTempFile("cronet1", "json", directory);
         File file2 = File.createTempFile("cronet2", "json", directory);
-        CronetEngine cronetEngine1 = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
-        CronetEngine cronetEngine2 = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetEngine cronetEngine1 =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
+        CronetEngine cronetEngine2 =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
 
         cronetEngine1.startNetLogToFile(file1.getPath(), false);
         cronetEngine2.startNetLogToFile(file2.getPath(), false);
@@ -719,10 +714,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File eventFile1 = new File(netLogDir1, "event_file_0.json");
         File eventFile2 = new File(netLogDir2, "event_file_0.json");
 
-        CronetUrlRequestContext cronetEngine1 = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
-        CronetUrlRequestContext cronetEngine2 = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetUrlRequestContext cronetEngine1 =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
+        CronetUrlRequestContext cronetEngine2 =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
 
         cronetEngine1.startNetLogToDisk(netLogDir1.getPath(), false, MAX_FILE_SIZE);
         cronetEngine2.startNetLogToDisk(netLogDir2.getPath(), false, MAX_FILE_SIZE);
@@ -1032,8 +1027,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File file = File.createTempFile("cronet", "json", directory);
-        CronetEngine cronetEngine = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetEngine cronetEngine =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
         // Start NetLog with logAll as true.
         cronetEngine.startNetLogToFile(file.getPath(), true);
         // Start a request.
@@ -1060,8 +1055,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertFalse(netLogDir.exists());
         assertTrue(netLogDir.mkdir());
         File eventFile = new File(netLogDir, "event_file_0.json");
-        CronetUrlRequestContext cronetEngine = new CronetUrlRequestContext(
-                new CronetEngineBuilderImpl(context).setLibraryName("cronet_tests"));
+        CronetUrlRequestContext cronetEngine =
+                new CronetUrlRequestContext(new CronetEngineBuilderImpl(context));
         // Start NetLog with logAll as true.
         cronetEngine.startNetLogToDisk(netLogDir.getPath(), true, MAX_FILE_SIZE);
         // Start a request.
@@ -1426,7 +1421,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     public void testSkipLibraryLoading() throws Exception {
         CronetEngineBuilderImpl builder = new CronetEngineBuilderImpl(getContext());
         TestBadLibraryLoader loader = new TestBadLibraryLoader();
-        builder.setLibraryLoader(loader).setLibraryName("cronet_tests");
+        builder.setLibraryLoader(loader);
         try {
             // ensureInitialized() calls native code to check the version right after library load
             // and will error with the message below if library loading was skipped
@@ -1448,7 +1443,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             public void run() {
                 final ExperimentalCronetEngine.Builder builder =
                         new ExperimentalCronetEngine.Builder(getContext());
-                CronetTestUtil.setLibraryName(builder, "cronet_tests");
                 new Thread() {
                     public void run() {
                         CronetEngine cronetEngine = builder.build();

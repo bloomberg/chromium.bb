@@ -4,17 +4,18 @@
 
 #include <jni.h>
 
+#include "base/android/base_jni_onload.h"
 #include "base/android/base_jni_registrar.h"
+#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/macros.h"
-#include "components/cronet/android/cronet_library_loader.h"
 #include "cronet_test_util.h"
 #include "cronet_url_request_context_config_test.h"
 #include "mock_cert_verifier.h"
 #include "mock_url_request_job_factory.h"
 #include "native_test_server.h"
-#include "network_change_notifier_util.h"
 #include "quic_test_server.h"
 #include "sdch_test_util.h"
 #include "test_upload_data_stream_handler.h"
@@ -22,17 +23,17 @@
 namespace {
 
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
+    {"ContextUtils", base::android::RegisterContextUtils},
     {"MockCertVerifier", cronet::RegisterMockCertVerifier},
     {"MockUrlRequestJobFactory", cronet::RegisterMockUrlRequestJobFactory},
     {"NativeTestServer", cronet::RegisterNativeTestServer},
-    {"NetworkChangeNotifierUtil", cronet::RegisterNetworkChangeNotifierUtil},
     {"QuicTestServer", cronet::RegisterQuicTestServer},
     {"SdchTestUtil", cronet::RegisterSdchTestUtil},
     {"TestUploadDataStreamHandlerRegisterJni",
      cronet::TestUploadDataStreamHandlerRegisterJni},
     {"CronetUrlRequestContextConfigTest",
      cronet::RegisterCronetUrlRequestContextConfigTest},
-    {"CronetTestUtil", cronet::RegisterCronetTestUtil},
+    {"CronetTestUtil", cronet::TestUtil::Register},
 };
 
 }  // namespace
@@ -45,9 +46,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
   }
 
-  jint cronet_onload = cronet::CronetOnLoad(vm, reserved);
-  if (cronet_onload == -1)
-    return cronet_onload;
+  std::vector<base::android::RegisterCallback> register_callbacks;
+  std::vector<base::android::InitCallback> init_callbacks;
+  if (!base::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
+      !base::android::OnJNIOnLoadInit(init_callbacks)) {
+    return -1;
+  }
 
   if (!base::android::RegisterNativeMethods(
           env,
@@ -55,10 +59,10 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
           arraysize(kCronetTestsRegisteredMethods))) {
     return -1;
   }
-  return cronet_onload;
+  return JNI_VERSION_1_6;
 }
 
 extern "C" void JNI_OnUnLoad(JavaVM* vm, void* reserved) {
-  cronet::CronetOnUnLoad(vm, reserved);
+  base::android::LibraryLoaderExitHook();
 }
 

@@ -34,7 +34,9 @@ public class CronetTestBase extends AndroidTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.loadLibrary("cronet_tests");
         ContextUtils.initApplicationContext(getContext().getApplicationContext());
+        ContextUtils.initApplicationContextForNative();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         CronetTestFramework.prepareTestStorage(getContext());
     }

@@ -195,8 +195,6 @@ public class CronetTestFramework {
             cronetEngineBuilder.enableSdch(true);
         }
 
-        // Setting this here so it isn't overridden on the command line
-        CronetTestUtil.setLibraryName(cronetEngineBuilder, "cronet_tests");
         return cronetEngineBuilder;
     }
 

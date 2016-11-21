@@ -480,7 +480,6 @@ generate_jni("cronet_tests_jni_headers") {
     "test/src/org/chromium/net/MockCertVerifier.java",
     "test/src/org/chromium/net/MockUrlRequestJobFactory.java",
     "test/src/org/chromium/net/NativeTestServer.java",
-    "test/src/org/chromium/net/NetworkChangeNotifierUtil.java",
     "test/src/org/chromium/net/QuicTestServer.java",
     "test/src/org/chromium/net/SdchObserver.java",
     "test/src/org/chromium/net/TestUploadDataStreamHandler.java",
@@ -491,6 +490,12 @@ generate_jni("cronet_tests_jni_headers") {
 shared_library("cronet_tests") {
   testonly = true
   sources = [
+    # While "cronet_tests" cannot depend on "cronet_static", and hence cannot
+    # call any Cronet functions, it can access fields of Cronet objects, so add
+    # Cronet header files to facilitate accessing these fields.
+    "//components/cronet/android/cronet_url_request_adapter.h",
+    "//components/cronet/android/cronet_url_request_context_adapter.h",
+    "//components/cronet/url_request_context_config.h",
     "test/cronet_test_jni.cc",
     "test/cronet_test_util.cc",
     "test/cronet_test_util.h",
@@ -502,8 +507,6 @@ shared_library("cronet_tests") {
     "test/mock_url_request_job_factory.h",
     "test/native_test_server.cc",
     "test/native_test_server.h",
-    "test/network_change_notifier_util.cc",
-    "test/network_change_notifier_util.h",
     "test/quic_test_server.cc",
     "test/quic_test_server.h",
     "test/sdch_test_util.cc",
@@ -513,12 +516,12 @@ shared_library("cronet_tests") {
   ]
 
   deps = [
-    ":cronet_static",
     ":cronet_tests_jni_headers",
     ":cronet_version_header",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//components/prefs",
     "//net",
     "//net:simple_quic_tools",
     "//net:test_support",
@@ -558,7 +561,6 @@ android_library("cronet_test_apk_java") {
     "test/src/org/chromium/net/MockCertVerifier.java",
     "test/src/org/chromium/net/MockUrlRequestJobFactory.java",
     "test/src/org/chromium/net/NativeTestServer.java",
-    "test/src/org/chromium/net/NetworkChangeNotifierUtil.java",
     "test/src/org/chromium/net/QuicTestServer.java",
     "test/src/org/chromium/net/SdchObserver.java",
     "test/src/org/chromium/net/TestFilesInstaller.java",
@@ -622,7 +624,10 @@ android_apk("cronet_test_apk") {
   testonly = true
   apk_name = "CronetTest"
   android_manifest = "test/AndroidManifest.xml"
-  shared_libraries = [ ":cronet_tests" ]
+  shared_libraries = [
+    ":cronet",
+    ":cronet_tests",
+  ]
   loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
 
   deps = [
@@ -731,7 +736,10 @@ android_apk("cronet_perf_test_apk") {
   testonly = true
   apk_name = "CronetPerfTest"
   android_manifest = "test/javaperftests/AndroidManifest.xml"
-  shared_libraries = [ ":cronet_tests" ]
+  shared_libraries = [
+    ":cronet",
+    ":cronet_tests",
+  ]
 
   deps = [
     ":cronet_perf_test_apk_java",

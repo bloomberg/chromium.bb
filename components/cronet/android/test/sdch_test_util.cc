@@ -11,7 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/SdchObserver_jni.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_observer.h"
@@ -66,8 +66,10 @@ class TestSdchObserver : public net::SdchObserver {
 void AddSdchObserverHelper(
     const GURL& target_url,
     const base::android::ScopedJavaGlobalRef<jobject>& jsdch_observer_ref,
-    net::URLRequestContext* url_request_context) {
+    jlong jadapter) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  net::URLRequestContext* url_request_context =
+      TestUtil::GetURLRequestContext(jadapter);
   // If dictionaries for |target_url| are already added, skip adding the
   // observer.
   if (url_request_context->sdch_manager()->GetDictionarySet(target_url)) {
@@ -78,14 +80,6 @@ void AddSdchObserverHelper(
   url_request_context->sdch_manager()->AddObserver(new TestSdchObserver(
       target_url, url_request_context->sdch_manager(), jsdch_observer_ref));
   Java_SdchObserver_onAddSdchObserverCompleted(env, jsdch_observer_ref);
-}
-
-void AddSdchObserverOnNetworkThread(
-    const GURL& target_url,
-    const base::android::ScopedJavaGlobalRef<jobject>& jsdch_observer_ref,
-    CronetURLRequestContextAdapter* context_adapter) {
-  AddSdchObserverHelper(target_url, jsdch_observer_ref,
-                        context_adapter->GetURLRequestContext());
 }
 
 }  // namespace
@@ -101,12 +95,9 @@ void AddSdchObserver(JNIEnv* env,
   jsdch_observer_ref.Reset(env, jsdch_observer);
 
   GURL target_url(base::android::ConvertJavaStringToUTF8(env, jtarget_url));
-  CronetURLRequestContextAdapter* context_adapter =
-      reinterpret_cast<CronetURLRequestContextAdapter*>(jadapter);
-  context_adapter->PostTaskToNetworkThread(
-      FROM_HERE,
-      base::Bind(&AddSdchObserverOnNetworkThread, target_url,
-                 jsdch_observer_ref, base::Unretained(context_adapter)));
+  TestUtil::RunAfterContextInit(jadapter,
+                                base::Bind(&AddSdchObserverHelper, target_url,
+                                           jsdch_observer_ref, jadapter));
 }
 
 bool RegisterSdchTestUtil(JNIEnv* env) {

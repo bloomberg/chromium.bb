@@ -35,7 +35,7 @@ public class CronetUploadTest extends CronetTestBase {
         mDataProvider = new TestDrivenDataProvider(executor, reads);
         mUploadDataStream = new CronetUploadDataStream(mDataProvider, executor);
         mHandler = new TestUploadDataStreamHandler(
-                mUploadDataStream.createUploadDataStreamForTesting());
+                getContext(), mUploadDataStream.createUploadDataStreamForTesting());
     }
 
     @Override

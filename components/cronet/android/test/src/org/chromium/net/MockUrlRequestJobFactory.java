@@ -7,6 +7,7 @@ package org.chromium.net;
 import static junit.framework.Assert.assertTrue;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.test.FailurePhase;
 
 /**
@@ -14,11 +15,25 @@ import org.chromium.net.test.FailurePhase;
  */
 @JNINamespace("cronet")
 public final class MockUrlRequestJobFactory {
+    private final long mInterceptorHandle;
+    private final CronetTestUtil.NetworkThreadTestConnector mNetworkThreadTestConnector;
+
     /**
      * Sets up URL interceptors.
      */
-    public static void setUp() {
-        nativeAddUrlInterceptors();
+    public MockUrlRequestJobFactory(CronetEngine cronetEngine) {
+        mNetworkThreadTestConnector = new CronetTestUtil.NetworkThreadTestConnector(cronetEngine);
+
+        mInterceptorHandle = nativeAddUrlInterceptors(
+                ((CronetUrlRequestContext) cronetEngine).getUrlRequestContextAdapter());
+    }
+
+    /**
+     * Remove URL Interceptors.
+     */
+    public void shutdown() {
+        nativeRemoveUrlInterceptorJobFactory(mInterceptorHandle);
+        mNetworkThreadTestConnector.shutdown();
     }
 
     /**
@@ -75,7 +90,9 @@ public final class MockUrlRequestJobFactory {
         return nativeGetMockUrlForHangingRead();
     }
 
-    private static native void nativeAddUrlInterceptors();
+    private static native long nativeAddUrlInterceptors(long requestContextAdapter);
+
+    private static native void nativeRemoveUrlInterceptorJobFactory(long interceptorHandle);
 
     private static native String nativeGetMockUrlWithFailure(int phase, int netError);
 

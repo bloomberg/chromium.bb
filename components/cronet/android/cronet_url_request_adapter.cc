@@ -436,8 +436,4 @@ void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) const {
       url_request_->GetTotalReceivedBytes());
 }
 
-net::URLRequest* CronetURLRequestAdapter::GetURLRequestForTesting() {
-  return url_request_.get();
-}
-
 }  // namespace cronet

@@ -40,6 +40,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
     private static final String TEST_URL = "http://127.0.0.1:8000";
 
     private CronetTestFramework mTestFramework;
+    private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
 
     @Override
     protected void setUp() throws Exception {
@@ -47,11 +48,12 @@ public class CronetUrlRequestTest extends CronetTestBase {
         mTestFramework = startCronetTestFramework();
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         // Add url interceptors after native application context is initialized.
-        MockUrlRequestJobFactory.setUp();
+        mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(mTestFramework.mCronetEngine);
     }
 
     @Override
     protected void tearDown() throws Exception {
+        mMockUrlRequestJobFactory.shutdown();
         NativeTestServer.shutdownNativeTestServer();
         mTestFramework.mCronetEngine.shutdown();
         super.tearDown();
