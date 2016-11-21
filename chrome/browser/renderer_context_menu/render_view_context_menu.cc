@@ -1509,8 +1509,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return params_.link_url.is_valid();
   }
 
-  IncognitoModePrefs::Availability incognito_avail =
-      IncognitoModePrefs::GetAvailability(prefs);
   switch (id) {
     case IDC_BACK:
       return embedder_web_contents_->GetController().CanGoBack();
@@ -1631,9 +1629,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.edit_flags & WebContextMenuData::CanSelectAll);
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      return !browser_context_->IsOffTheRecord() &&
-             params_.link_url.is_valid() &&
-             incognito_avail != IncognitoModePrefs::DISABLED;
+      return IsOpenLinkOTREnabled();
 
     case IDC_PRINT:
       return IsPrintPreviewEnabled();
@@ -2167,6 +2163,15 @@ bool RenderViewContextMenu::IsRouteMediaEnabled() const {
   const web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   return !manager || !manager->IsDialogActive();
+}
+
+bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
+  if (browser_context_->IsOffTheRecord() || !params_.link_url.is_valid())
+    return false;
+
+  IncognitoModePrefs::Availability incognito_avail =
+      IncognitoModePrefs::GetAvailability(GetPrefs(browser_context_));
+  return incognito_avail != IncognitoModePrefs::DISABLED;
 }
 
 void RenderViewContextMenu::ExecOpenLinkNewTab() {

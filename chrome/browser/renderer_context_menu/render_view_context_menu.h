@@ -170,6 +170,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   bool IsPasteAndMatchStyleEnabled() const;
   bool IsPrintPreviewEnabled() const;
   bool IsRouteMediaEnabled() const;
+  bool IsOpenLinkOTREnabled() const;
 
   // Command execution functions.
   void ExecOpenLinkNewTab();
