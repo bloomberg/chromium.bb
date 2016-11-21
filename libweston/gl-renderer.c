@@ -2847,6 +2847,7 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 	struct gl_renderer *gr = get_renderer(ec);
 	const char *extensions;
 	EGLBoolean ret;
+	unsigned i;
 
 	gr->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
 	gr->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
@@ -2878,7 +2879,7 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		weston_log("warning: EGL_EXT_buffer_age not supported. "
 			   "Performance could be affected.\n");
 
-	for (unsigned i = 0; i < ARRAY_LENGTH(swap_damage_ext_to_entrypoint); i++) {
+	for (i = 0; i < ARRAY_LENGTH(swap_damage_ext_to_entrypoint); i++) {
 		if (weston_check_egl_extension(extensions,
 				swap_damage_ext_to_entrypoint[i].extension)) {
 			gr->swap_buffers_with_damage =
