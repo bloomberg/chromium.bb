@@ -1366,6 +1366,8 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
 }
 
 DocumentLifecycle& FrameView::lifecycle() const {
+  DCHECK(m_frame);
+  DCHECK(m_frame->document());
   return m_frame->document()->lifecycle();
 }
 
@@ -4599,7 +4601,8 @@ void FrameView::maybeRecordLoadReason() {
 }
 
 bool FrameView::shouldThrottleRendering() const {
-  return canThrottleRendering() && lifecycle().throttlingAllowed();
+  return canThrottleRendering() && m_frame->document() &&
+         lifecycle().throttlingAllowed();
 }
 
 bool FrameView::canThrottleRendering() const {
