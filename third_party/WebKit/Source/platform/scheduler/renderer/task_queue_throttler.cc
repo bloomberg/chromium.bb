@@ -222,6 +222,7 @@ void TaskQueueThrottler::TimeBudgetPool::AsValueInto(
                    current_budget_level_.InSecondsF());
   state->SetDouble("last_checkpoint_seconds_ago",
                    (now - last_checkpoint_).InSecondsF());
+  state->SetBoolean("is_enabled", is_enabled_);
 
   state->BeginArray("task_queues");
   for (TaskQueue* queue : associated_task_queues_) {

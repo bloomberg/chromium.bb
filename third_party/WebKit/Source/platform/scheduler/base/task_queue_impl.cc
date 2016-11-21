@@ -4,6 +4,8 @@
 
 #include "platform/scheduler/base/task_queue_impl.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/task_queue_manager_delegate.h"
@@ -500,6 +502,10 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   base::AutoLock lock(any_thread_lock_);
   state->BeginDictionary();
   state->SetString("name", GetName());
+  state->SetString(
+      "id", base::StringPrintf(
+                "%" PRIx64,
+                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this))));
   state->SetBoolean("enabled", main_thread_only().is_enabled);
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
