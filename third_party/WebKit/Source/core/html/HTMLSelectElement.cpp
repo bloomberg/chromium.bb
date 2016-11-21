@@ -1287,6 +1287,11 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event) {
         !isSpatialNavigationEnabled(document().frame()))
       return;
 
+    int ignoreModifiers = PlatformEvent::ShiftKey | PlatformEvent::CtrlKey |
+                          PlatformEvent::AltKey | PlatformMouseEvent::MetaKey;
+    if (keyEvent->modifiers() & ignoreModifiers)
+      return;
+
     const String& key = keyEvent->key();
     bool handled = true;
     const ListItems& listItems = this->listItems();
