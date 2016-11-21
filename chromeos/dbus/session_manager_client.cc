@@ -294,12 +294,16 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerGetServerBackedStateKeys);
 
+    // Infinite timeout needed because the state keys are not generated as long
+    // as the time sync hasn't been done (which requires network).
+    // TODO(igorcov): Since this is a resource allocated that could last a long
+    // time, we will need to change the behavior to either listen to
+    // LastSyncInfo event from tlsdated or communicate through signals with
+    // session manager in this particular flow.
     session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
         base::Bind(&SessionManagerClientImpl::OnGetServerBackedStateKeys,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void CheckArcAvailability(const ArcCallback& callback) override {
