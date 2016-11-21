@@ -122,8 +122,6 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   // For widevine key system, generate warning and report to UMA if
   // |m_supportedConfigurations| contains any video capability with empty
   // robustness string.
-  // TODO(xhwang): Remove after we handle empty robustness correctly.
-  // See http://crbug.com/482277
   void checkVideoCapabilityRobustness() const;
 
   // Generate deprecation warning and log UseCounter if configuration
@@ -264,9 +262,8 @@ void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const {
     m_resolver->getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
         JSMessageSource, WarningMessageLevel,
         "It is recommended that a robustness level be specified. Not "
-        "specifying the robustness level could "
-        "result in unexpected behavior in the future, potentially including "
-        "failure to play."));
+        "specifying the robustness level could result in unexpected behavior, "
+        "potentially including failure to play."));
   }
 }
 
