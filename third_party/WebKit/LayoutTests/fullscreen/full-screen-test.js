@@ -1,4 +1,4 @@
-var console = null;
+var consoleDiv = null;
 var printFullTestDetails = true; // This is optionaly switched of by test whose tested values can differ. (see disableFullTestDetailsPrinting())
 
 logConsole();
@@ -11,7 +11,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-function runWithKeyDown(fn) 
+function runWithKeyDown(fn)
 {
     function thunk() {
         document.removeEventListener("keypress", thunk, false);
@@ -25,11 +25,11 @@ function runWithKeyDown(fn)
 
 function logConsole()
 {
-    if (!console && document.body) {
-        console = document.createElement('div');
-        document.body.appendChild(console);
+    if (!consoleDiv && document.body) {
+        consoleDiv = document.createElement('div');
+        document.body.appendChild(consoleDiv);
     }
-    return console;
+    return consoleDiv;
 }
 
 function testAndEnd(testFuncString)
@@ -41,7 +41,7 @@ function test(testFuncString, endit)
 {
     logResult(eval(testFuncString), "TEST(" + testFuncString + ")");
     if (endit)
-        endTest();  
+        endTest();
 }
 
 function testExpected(testFuncString, expected, comparison)
@@ -52,7 +52,7 @@ function testExpected(testFuncString, expected, comparison)
         consoleWrite(ex);
         return;
     }
-    
+
     if (comparison === undefined)
         comparison = '==';
 
@@ -66,7 +66,7 @@ function testExpected(testFuncString, expected, comparison)
         case '!=': success = observed != expected; break;
         case '==': success = observed == expected; break;
     }
-    
+
     reportExpected(success, testFuncString, comparison, expected, observed)
 }
 
@@ -108,9 +108,9 @@ function waitForEvent(element, eventName, func, endit, once)
 
         if (func)
             func(event);
-        
+
         if (endit)
-            endTest();    
+            endTest();
     }
 
     element.addEventListener(eventName, _eventCallback);
@@ -122,7 +122,7 @@ function waitForEventAndTest(element, eventName, testFuncString, endit)
     {
         logResult(eval(testFuncString), "EVENT(" + eventName + ") TEST(" + testFuncString + ")");
         if (endit)
-            endTest();    
+            endTest();
     }
 
     element.addEventListener(eventName, _eventCallback);
@@ -132,7 +132,7 @@ function waitForEventTestAndEnd(element, eventName, testFuncString)
 {
     waitForEventAndTest(element, eventName, testFuncString, true);
 }
-  
+
 var testEnded = false;
 
 function endTest()
@@ -140,7 +140,7 @@ function endTest()
     consoleWrite("END OF TEST");
     testEnded = true;
     if (window.testRunner)
-        testRunner.notifyDone();     
+        testRunner.notifyDone();
 }
 
 function logResult(success, text)
