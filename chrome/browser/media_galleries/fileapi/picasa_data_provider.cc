@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_album_table_reader.h"
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
@@ -51,9 +50,7 @@ PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
                  weak_factory_.GetWeakPtr()));
 }
 
-PicasaDataProvider::~PicasaDataProvider() {
-  StopFilePathWatchOnMediaTaskRunner(std::move(temp_dir_watcher_));
-}
+PicasaDataProvider::~PicasaDataProvider() {}
 
 void PicasaDataProvider::RefreshData(DataType needed_data,
                                      const ReadyCallback& ready_callback) {
@@ -129,7 +126,7 @@ void PicasaDataProvider::InvalidateData() {
 }
 
 void PicasaDataProvider::OnTempDirWatchStarted(
-    std::unique_ptr<base::FilePathWatcher> temp_dir_watcher) {
+    MediaFilePathWatcherUniquePtr temp_dir_watcher) {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   temp_dir_watcher_ = std::move(temp_dir_watcher);
 }

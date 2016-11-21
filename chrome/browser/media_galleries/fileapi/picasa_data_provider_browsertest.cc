@@ -157,7 +157,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
 
  private:
   void OnTempDirWatchStarted(
-      std::unique_ptr<base::FilePathWatcher> temp_dir_watcher) override {
+      MediaFilePathWatcherUniquePtr temp_dir_watcher) override {
     PicasaDataProvider::OnTempDirWatchStarted(std::move(temp_dir_watcher));
 
     file_watch_request_returned_ = true;

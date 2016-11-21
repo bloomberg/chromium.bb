@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "storage/browser/fileapi/native_file_util.h"
@@ -39,9 +38,7 @@ IAppsDataProvider::IAppsDataProvider(const base::FilePath& library_path)
                  weak_factory_.GetWeakPtr()));
 }
 
-IAppsDataProvider::~IAppsDataProvider() {
-  StopFilePathWatchOnMediaTaskRunner(std::move(library_watcher_));
-}
+IAppsDataProvider::~IAppsDataProvider() {}
 
 bool IAppsDataProvider::valid() const {
   return is_valid_;
@@ -68,7 +65,7 @@ const base::FilePath& IAppsDataProvider::library_path() const {
 }
 
 void IAppsDataProvider::OnLibraryWatchStarted(
-    std::unique_ptr<base::FilePathWatcher> library_watcher) {
+    MediaFilePathWatcherUniquePtr library_watcher) {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   library_watcher_ = std::move(library_watcher);
 }

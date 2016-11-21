@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 
 namespace picasa {
@@ -67,7 +68,7 @@ class PicasaDataProvider {
 
   // Called when the FilePathWatcher for Picasa's temp directory has started.
   virtual void OnTempDirWatchStarted(
-      std::unique_ptr<base::FilePathWatcher> temp_dir_watcher);
+      MediaFilePathWatcherUniquePtr temp_dir_watcher);
 
   // Called when Picasa's temp directory has changed. Virtual for testing.
   virtual void OnTempDirChanged(const base::FilePath& temp_dir_path,
@@ -109,7 +110,7 @@ class PicasaDataProvider {
 
   // We watch the temp dir, as we can't detect database file modifications on
   // Mac, but we are able to detect creation and deletion of temporary files.
-  std::unique_ptr<base::FilePathWatcher> temp_dir_watcher_;
+  MediaFilePathWatcherUniquePtr temp_dir_watcher_;
 
   base::WeakPtrFactory<PicasaDataProvider> weak_factory_;
 
