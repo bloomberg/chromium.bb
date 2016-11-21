@@ -232,6 +232,10 @@ textAlignLast
 textAnchor
 textCombineUpright
 textDecoration
+textDecorationColor
+textDecorationLine
+textDecorationSkip
+textDecorationStyle
 textIndent
 textOrientation
 textOverflow
@@ -239,6 +243,7 @@ textRendering
 textShadow
 textSizeAdjust
 textTransform
+textUnderlinePosition
 top
 touchAction
 transform

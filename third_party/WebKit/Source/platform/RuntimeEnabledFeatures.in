@@ -50,7 +50,7 @@ ContextMenu status=test
 CorsRFC1918 status=test
 CredentialManager status=stable
 CSS3Text status=experimental
-CSS3TextDecorations status=experimental
+CSS3TextDecorations status=stable
 CSSApplyAtRules status=experimental
 CSSAdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 CSSBackdropFilter status=experimental
