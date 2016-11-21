@@ -618,9 +618,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             mSyncPasswords.setChecked(passwordSyncConfigurable
                     && syncTypes.contains(ModelType.PASSWORDS));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
-            // TODO(zea): Switch this to PREFERENCE once that datatype is
-            // supported on Android.
-            mSyncSettings.setChecked(syncTypes.contains(ModelType.PRIORITY_PREFERENCES));
+            mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
             mPaymentsIntegration.setChecked(
                     syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
         }
