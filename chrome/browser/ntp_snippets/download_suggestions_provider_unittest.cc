@@ -135,8 +135,9 @@ OfflinePageItem CreateDummyOfflinePage(int id) {
 std::vector<OfflinePageItem> CreateDummyOfflinePages(
     const std::vector<int>& ids) {
   std::vector<OfflinePageItem> result;
-  for (int id : ids)
+  for (int id : ids) {
     result.push_back(CreateDummyOfflinePage(id));
+  }
 
   return result;
 }
@@ -187,8 +188,9 @@ class ObservedMockDownloadManager : public MockDownloadManager {
  public:
   ObservedMockDownloadManager() {}
   ~ObservedMockDownloadManager() override {
-    for (auto& observer : observers_)
+    for (auto& observer : observers_) {
       observer.ManagerGoingDown(this);
+    }
   }
 
   // Observer accessors.
@@ -201,8 +203,9 @@ class ObservedMockDownloadManager : public MockDownloadManager {
   }
 
   void NotifyDownloadCreated(DownloadItem* item) {
-    for (auto& observer : observers_)
+    for (auto& observer : observers_) {
       observer.OnDownloadCreated(this, item);
+    }
   }
 
   std::vector<std::unique_ptr<FakeDownloadItem>>* mutable_items() {
@@ -215,8 +218,9 @@ class ObservedMockDownloadManager : public MockDownloadManager {
 
   void GetAllDownloads(std::vector<DownloadItem*>* all_downloads) override {
     all_downloads->clear();
-    for (const auto& item : items_)
+    for (const auto& item : items_) {
       all_downloads->push_back(item.get());
+    }
   }
 
  private:
@@ -289,8 +293,9 @@ class DownloadSuggestionsProviderTest : public testing::Test {
 
   void FireDownloadsCreated(
       const std::vector<std::unique_ptr<FakeDownloadItem>>& items) {
-    for (const auto& item : items)
+    for (const auto& item : items) {
       FireDownloadCreated(item.get());
+    }
   }
 
   ContentSuggestion::ID GetDummySuggestionId(int id, bool is_offline_page) {

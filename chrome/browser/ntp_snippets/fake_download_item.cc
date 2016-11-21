@@ -26,13 +26,15 @@ void FakeDownloadItem::RemoveObserver(Observer* observer) {
 }
 
 void FakeDownloadItem::NotifyDownloadDestroyed() {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnDownloadDestroyed(this);
+  }
 }
 
 void FakeDownloadItem::NotifyDownloadRemoved() {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnDownloadRemoved(this);
+  }
 }
 
 void FakeDownloadItem::NotifyDownloadUpdated() {
@@ -40,8 +42,9 @@ void FakeDownloadItem::NotifyDownloadUpdated() {
 }
 
 void FakeDownloadItem::UpdateObservers() {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnDownloadUpdated(this);
+  }
 }
 
 void FakeDownloadItem::SetId(uint32_t id) {

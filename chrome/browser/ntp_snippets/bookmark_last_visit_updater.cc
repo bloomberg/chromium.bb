@@ -26,8 +26,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkLastVisitUpdater);
 
 BookmarkLastVisitUpdater::~BookmarkLastVisitUpdater() {
   // In unit-tests on desktop, the bookmark_model is null.
-  if (!bookmark_model_)
+  if (!bookmark_model_) {
     return;
+  }
   bookmark_model_->RemoveObserver(this);
 }
 
@@ -46,8 +47,9 @@ BookmarkLastVisitUpdater::BookmarkLastVisitUpdater(
       bookmark_model_(bookmark_model),
       web_contents_(web_contents) {
   // In unit-tests on desktop, the bookmark_model is null.
-  if (!bookmark_model_)
+  if (!bookmark_model_) {
     return;
+  }
   bookmark_model->AddObserver(this);
 }
 
