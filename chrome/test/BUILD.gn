@@ -5032,6 +5032,10 @@ if (!is_android && !is_ios && !is_chromecast) {
       sources -= [ "perf/mach_ports_performancetest.cc" ]
     }
 
+    if (is_linux || is_win) {
+      data += [ "$root_out_dir/chrome_100_percent.pak" ]
+    }
+
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
   }
