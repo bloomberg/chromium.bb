@@ -71,7 +71,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   LayoutUnit static_start;  // TODO(atotic) needs to be passed in.
 
   NGPhysicalSize container_size =
-      space.Size().ConvertToPhysical(space.WritingMode());
+      space.AvailableSize().ConvertToPhysical(space.WritingMode());
   DCHECK(container_size.width != NGSizeIndefinite);
 
   // Solving the equation:
@@ -204,7 +204,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   LayoutUnit static_start;  // TODO(atotic) needs to be passed in.
 
   NGPhysicalSize container_size =
-      space.Size().ConvertToPhysical(space.WritingMode());
+      space.AvailableSize().ConvertToPhysical(space.WritingMode());
   DCHECK(container_size.height != NGSizeIndefinite);
 
   // Solving the equation:

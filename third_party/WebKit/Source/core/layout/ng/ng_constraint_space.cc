@@ -17,7 +17,6 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      TextDirection direction,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space),
-      size_(physical_space->available_size_.ConvertToLogical(writing_mode)),
       writing_mode_(writing_mode),
       direction_(direction) {}
 
@@ -143,45 +142,6 @@ NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunities(
   return iterator;
 }
 
-void NGConstraintSpace::SetOverflowTriggersScrollbar(bool inline_triggers,
-                                                     bool block_triggers) {
-  if (writing_mode_ == HorizontalTopBottom) {
-    physical_space_->width_direction_triggers_scrollbar_ = inline_triggers;
-    physical_space_->height_direction_triggers_scrollbar_ = block_triggers;
-  } else {
-    physical_space_->width_direction_triggers_scrollbar_ = block_triggers;
-    physical_space_->height_direction_triggers_scrollbar_ = inline_triggers;
-  }
-}
-
-void NGConstraintSpace::SetFixedSize(bool inline_fixed, bool block_fixed) {
-  if (writing_mode_ == HorizontalTopBottom) {
-    physical_space_->fixed_width_ = inline_fixed;
-    physical_space_->fixed_height_ = block_fixed;
-  } else {
-    physical_space_->fixed_width_ = block_fixed;
-    physical_space_->fixed_height_ = inline_fixed;
-  }
-}
-
-void NGConstraintSpace::SetFragmentationType(NGFragmentationType type) {
-  if (writing_mode_ == HorizontalTopBottom) {
-    DCHECK_EQ(static_cast<NGFragmentationType>(
-                  physical_space_->width_direction_fragmentation_type_),
-              FragmentNone);
-    physical_space_->height_direction_fragmentation_type_ = type;
-  } else {
-    DCHECK_EQ(static_cast<NGFragmentationType>(
-                  physical_space_->height_direction_fragmentation_type_),
-              FragmentNone);
-    physical_space_->width_direction_triggers_scrollbar_ = type;
-  }
-}
-
-void NGConstraintSpace::SetIsNewFormattingContext(bool is_new_fc) {
-  physical_space_->is_new_fc_ = is_new_fc;
-}
-
 NGConstraintSpace* NGConstraintSpace::ChildSpace(
     const ComputedStyle* style) const {
   return new NGConstraintSpace(FromPlatformWritingMode(style->getWritingMode()),
@@ -192,8 +152,8 @@ String NGConstraintSpace::ToString() const {
   return String::format("%s,%s %sx%s",
                         offset_.inline_offset.toString().ascii().data(),
                         offset_.block_offset.toString().ascii().data(),
-                        size_.inline_size.toString().ascii().data(),
-                        size_.block_size.toString().ascii().data());
+                        AvailableSize().inline_size.toString().ascii().data(),
+                        AvailableSize().block_size.toString().ascii().data());
 }
 
 }  // namespace blink
