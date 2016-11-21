@@ -365,6 +365,14 @@ _COPY_PATHS_CHROME = (
          exe=True,
          cond=C.GnSetTo(_IS_COMPONENT_BUILD, True)),
     Path('locales/'),
+    Path('Packages/chrome_content_browser/manifest.json', optional=True),
+    Path('Packages/chrome_content_gpu/manifest.json', optional=True),
+    Path('Packages/chrome_content_plugin/manifest.json', optional=True),
+    Path('Packages/chrome_content_renderer/manifest.json', optional=True),
+    Path('Packages/chrome_content_utility/manifest.json', optional=True),
+    Path('Packages/chrome_mash/manifest.json', optional=True),
+    Path('Packages/chrome_mash_content_browser/manifest.json', optional=True),
+    Path('Packages/content_browser/manifest.json', optional=True),
     Path('resources/'),
     Path('resources.pak'),
     Path('xdg-settings'),
@@ -376,16 +384,10 @@ _COPY_PATHS_ENVOY = (
     Path('envoy_shell.pak'),
 ) + _COPY_PATHS_COMMON
 
-_COPY_PATHS_MASH = (
-    Path('Packages/', blacklist=(r'.*\.library$',)),
-    Path('*_manifest.json'),
-) + _COPY_PATHS_CHROME
-
 _COPY_PATHS_MAP = {
     'app_shell': _COPY_PATHS_APP_SHELL,
     'chrome': _COPY_PATHS_CHROME,
     'envoy': _COPY_PATHS_ENVOY,
-    'mash': _COPY_PATHS_MASH,
 }
 
 
@@ -401,7 +403,7 @@ def GetCopyPaths(deployment_type='chrome'):
 
   Args:
     deployment_type: String describing the deployment type. Either "app_shell",
-                     "chrome", "envoy" or "mash".
+                     "chrome", or "envoy".
 
   Returns:
     The list of paths to use as a filter for staging files.
