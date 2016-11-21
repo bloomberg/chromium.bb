@@ -63,7 +63,7 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
 
  private:
   HWND hwnd_;
-  sk_sp<SkCanvas> contents_;
+  std::unique_ptr<SkCanvas> contents_;
   bool is_hwnd_composited_;
   OutputDeviceBacking* backing_;
   bool in_paint_;

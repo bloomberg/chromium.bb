@@ -17,6 +17,8 @@
 #include <windows.h>
 #endif
 
+#include <memory>
+
 class SkCanvas;
 
 // -----------------------------------------------------------------------------
@@ -71,7 +73,7 @@ class SURFACE_EXPORT TransportDIB {
   //
   // Will return NULL on allocation failure. This could be because the image
   // is too large to map into the current process' address space.
-  SkCanvas* GetPlatformCanvas(int w, int h, bool opaque);
+  std::unique_ptr<SkCanvas> GetPlatformCanvas(int w, int h, bool opaque);
 
   // Map the DIB into the current process if it is not already. This is used to
   // map a DIB that has already been created. Returns true if the DIB is mapped.

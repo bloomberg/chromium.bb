@@ -66,7 +66,7 @@ class SoftwareOutputDeviceMac :
 
   // The SkCanvas wrapps the mapped current IOSurface. It is valid only between
   // BeginPaint and EndPaint.
-  sk_sp<SkCanvas> canvas_;
+  std::unique_ptr<SkCanvas> canvas_;
 
   gfx::VSyncProvider::UpdateVSyncCallback update_vsync_callback_;
 

@@ -207,11 +207,11 @@ SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
 
 // PlatformCanvas impl
 
-SkCanvas* CreatePlatformCanvas(int width,
-                               int height,
-                               bool is_opaque,
-                               HANDLE shared_section,
-                               OnFailureType failureType) {
+std::unique_ptr<SkCanvas> CreatePlatformCanvas(int width,
+                                               int height,
+                                               bool is_opaque,
+                                               HANDLE shared_section,
+                                               OnFailureType failureType) {
   sk_sp<SkBaseDevice> dev(
       BitmapPlatformDevice::Create(width, height, is_opaque, shared_section));
   return CreateCanvas(dev, failureType);

@@ -26,8 +26,7 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   SkPictureRecorder recorder;
   gfx::Rect clip(PaintableRegion());
-  sk_sp<SkCanvas> canvas =
-      sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(clip)));
+  SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
 
   canvas->clear(SK_ColorTRANSPARENT);
 

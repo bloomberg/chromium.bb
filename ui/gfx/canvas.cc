@@ -28,9 +28,10 @@ namespace gfx {
 Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
     : image_scale_(image_scale) {
   Size pixel_size = ScaleToCeiledSize(size, image_scale);
-  canvas_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(pixel_size.width(),
-                                                       pixel_size.height(),
-                                                       is_opaque));
+  canvas_owner_ = skia::CreatePlatformCanvas(pixel_size.width(),
+                                             pixel_size.height(), is_opaque);
+  canvas_ = canvas_owner_.get();
+
 #if !defined(USE_CAIRO)
   // skia::PlatformCanvas instances are initialized to 0 by Cairo, but
   // uninitialized on other platforms.
@@ -44,10 +45,11 @@ Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
 
 Canvas::Canvas()
     : image_scale_(1.f),
-      canvas_(sk_sp<SkCanvas>(skia::CreatePlatformCanvas(0, 0, false))) {}
+      canvas_owner_(skia::CreatePlatformCanvas(0, 0, false)),
+      canvas_(canvas_owner_.get()) {}
 
-Canvas::Canvas(sk_sp<SkCanvas> canvas, float image_scale)
-    : image_scale_(image_scale), canvas_(std::move(canvas)) {
+Canvas::Canvas(SkCanvas* canvas, float image_scale)
+    : image_scale_(image_scale), canvas_(canvas) {
   DCHECK(canvas_);
 }
 
@@ -59,9 +61,10 @@ void Canvas::RecreateBackingCanvas(const Size& size,
                                    bool is_opaque) {
   image_scale_ = image_scale;
   Size pixel_size = ScaleToFlooredSize(size, image_scale);
-  canvas_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(pixel_size.width(),
-                                                       pixel_size.height(),
-                                                       is_opaque));
+  canvas_owner_ = skia::CreatePlatformCanvas(pixel_size.width(),
+                                             pixel_size.height(), is_opaque);
+  canvas_ = canvas_owner_.get();
+
   SkScalar scale_scalar = SkFloatToScalar(image_scale);
   canvas_->scale(scale_scalar, scale_scalar);
 }

@@ -53,13 +53,13 @@ void CrushedSpriteLayer::DrawSpriteFrame(
     SkBitmap bitmap;
     bitmap.allocN32Pixels(resource->GetUnscaledSpriteSize().width(),
                           resource->GetUnscaledSpriteSize().height());
-    sk_sp<SkCanvas> canvas = sk_make_sp<SkCanvas>(bitmap);
+    SkCanvas canvas(bitmap);
 
     if (previous_frame_ == -1 ||
         sprite_frame == resource->GetFrameCount() - 1) {
       // The newly allocated pixels for the SkBitmap need to be cleared if this
       // is the first frame being drawn or the last frame. See crbug.com/549453.
-      canvas->clear(SK_ColorTRANSPARENT);
+      canvas.clear(SK_ColorTRANSPARENT);
     }
 
     // If this isn't the first or last frame, draw the previous frame(s).
@@ -70,17 +70,17 @@ void CrushedSpriteLayer::DrawSpriteFrame(
     if (sprite_frame != 0 && sprite_frame != resource->GetFrameCount() - 1) {
       // Draw the previous frame.
       if (previous_frame_ != -1) {
-        canvas->drawBitmap(previous_frame_bitmap_, 0, 0, nullptr);
+        canvas.drawBitmap(previous_frame_bitmap_, 0, 0, nullptr);
       }
 
       // Draw any skipped frames.
       for (int i = previous_frame_ + 1; i < sprite_frame; ++i) {
-        DrawRectanglesForFrame(resource, i, canvas);
+        DrawRectanglesForFrame(resource, i, &canvas);
       }
     }
 
     // Draw the current frame.
-    DrawRectanglesForFrame(resource, sprite_frame, canvas);
+    DrawRectanglesForFrame(resource, sprite_frame, &canvas);
 
     // Set the bitmap on layer_.
     bitmap.setImmutable();
@@ -103,7 +103,7 @@ void CrushedSpriteLayer::DrawSpriteFrame(
 void CrushedSpriteLayer::DrawRectanglesForFrame(
     ui::CrushedSpriteResource* resource,
     int frame,
-    sk_sp<SkCanvas> canvas) {
+    SkCanvas* canvas) {
   ui::CrushedSpriteResource::FrameSrcDstRects src_dst_rects =
        resource->GetRectanglesForFrame(frame);
   for (const auto& rect : src_dst_rects) {

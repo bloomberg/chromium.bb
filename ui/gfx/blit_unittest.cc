@@ -64,8 +64,8 @@ void VerifyCanvasValues(SkCanvas* canvas, uint8_t values[h][w]) {
 TEST(Blit, ScrollCanvas) {
   static const int kCanvasWidth = 5;
   static const int kCanvasHeight = 5;
-  sk_sp<SkCanvas> canvas(
-      skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight, true));
+  std::unique_ptr<SkCanvas> canvas =
+      skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight, true);
   uint8_t initial_values[kCanvasHeight][kCanvasWidth] = {
       {0x00, 0x01, 0x02, 0x03, 0x04},
       {0x10, 0x11, 0x12, 0x13, 0x14},
@@ -152,9 +152,9 @@ TEST(Blit, WithSharedMemory) {
   base::SharedMemory shared_mem;
   ASSERT_TRUE(shared_mem.CreateAnonymous(kCanvasWidth * kCanvasHeight));
   base::SharedMemoryHandle section = shared_mem.handle();
-  sk_sp<SkCanvas> canvas(skia::CreatePlatformCanvas(
+  std::unique_ptr<SkCanvas> canvas = skia::CreatePlatformCanvas(
       kCanvasWidth, kCanvasHeight, true, section.GetHandle(),
-      skia::RETURN_NULL_ON_FAILURE));
+      skia::RETURN_NULL_ON_FAILURE);
   ASSERT_TRUE(canvas);
   shared_mem.Close();
 

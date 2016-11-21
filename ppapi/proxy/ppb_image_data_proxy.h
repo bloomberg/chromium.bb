@@ -104,7 +104,7 @@ class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
   std::unique_ptr<TransportDIB> transport_dib_;
 
   // Null when the image isn't mapped.
-  sk_sp<SkCanvas> mapped_canvas_;
+  std::unique_ptr<SkCanvas> mapped_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformImageData);
 };

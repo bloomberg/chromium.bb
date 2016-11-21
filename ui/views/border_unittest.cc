@@ -132,7 +132,7 @@ class BorderTest : public ViewsTestBase {
     view_->SetSize(gfx::Size(100, 50));
     // The canvas should be much bigger than the view.
     sk_canvas_.reset(new MockCanvas(1000, 500));
-    canvas_.reset(new gfx::Canvas(sk_canvas_, 1.0f));
+    canvas_.reset(new gfx::Canvas(sk_canvas_.get(), 1.0f));
   }
 
   void TearDown() override {
@@ -145,7 +145,7 @@ class BorderTest : public ViewsTestBase {
 
  protected:
   std::unique_ptr<views::View> view_;
-  sk_sp<MockCanvas> sk_canvas_;
+  std::unique_ptr<MockCanvas> sk_canvas_;
   std::unique_ptr<gfx::Canvas> canvas_;
 };
 
