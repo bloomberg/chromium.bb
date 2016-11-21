@@ -33,6 +33,7 @@
 #define NavigationScheduler_h
 
 #include "core/CoreExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/Forward.h"
@@ -44,7 +45,6 @@
 
 namespace blink {
 
-class CancellableTaskFactory;
 class Document;
 class FormSubmission;
 class LocalFrame;
@@ -89,7 +89,7 @@ class CORE_EXPORT NavigationScheduler final
   static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
 
   Member<LocalFrame> m_frame;
-  std::unique_ptr<CancellableTaskFactory> m_navigateTaskFactory;
+  TaskHandle m_navigateTaskHandle;
   Member<ScheduledNavigation> m_redirect;
 
   // Exists because we can't deref m_frame in destructor.

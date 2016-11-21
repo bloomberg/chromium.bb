@@ -235,7 +235,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/SegmentedString.h"
@@ -429,9 +428,6 @@ Document::Document(const DocumentInit& initializer,
       m_paginatedForScreen(false),
       m_compatibilityMode(NoQuirksMode),
       m_compatibilityModeLocked(false),
-      m_executeScriptsWaitingForResourcesTask(CancellableTaskFactory::create(
-          this,
-          &Document::executeScriptsWaitingForResources)),
       m_hasAutofocused(false),
       m_clearFocusedElementTimer(
           TaskRunnerHelper::get(TaskType::Internal, this),
@@ -3354,9 +3350,14 @@ void Document::didRemoveAllPendingStylesheet() {
 }
 
 void Document::didLoadAllScriptBlockingResources() {
-  TaskRunnerHelper::get(TaskType::Networking, this)
-      ->postTask(BLINK_FROM_HERE,
-                 m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
+  // Use wrapWeakPersistent because the task should not keep this Document alive
+  // just for executing scripts.
+  m_executeScriptsWaitingForResourcesTaskHandle =
+      TaskRunnerHelper::get(TaskType::Networking, this)
+          ->postCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::bind(&Document::executeScriptsWaitingForResources,
+                        wrapWeakPersistent(this)));
 
   if (isHTMLDocument() && body()) {
     // For HTML if we have no more stylesheets to load and we're past the body

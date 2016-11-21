@@ -51,7 +51,6 @@
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"
@@ -343,15 +342,12 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
     : m_frame(frame),
-      m_navigateTaskFactory(
-          CancellableTaskFactory::create(this,
-                                         &NavigationScheduler::navigateTask)),
       m_frameType(m_frame->isMainFrame()
                       ? WebScheduler::NavigatingFrameType::kMainFrame
                       : WebScheduler::NavigatingFrameType::kChildFrame) {}
 
 NavigationScheduler::~NavigationScheduler() {
-  if (m_navigateTaskFactory->isPending()) {
+  if (m_navigateTaskHandle.isActive()) {
     Platform::current()->currentThread()->scheduler()->removePendingNavigation(
         m_frameType);
   }
@@ -525,28 +521,33 @@ void NavigationScheduler::startTimer() {
     return;
 
   DCHECK(m_frame->page());
-  if (m_navigateTaskFactory->isPending())
+  if (m_navigateTaskHandle.isActive())
     return;
   if (!m_redirect->shouldStartTimer(m_frame))
     return;
 
   WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
   scheduler->addPendingNavigation(m_frameType);
-  scheduler->loadingTaskRunner()->postDelayedTask(
-      BLINK_FROM_HERE, m_navigateTaskFactory->cancelAndCreate(),
-      m_redirect->delay() * 1000.0);
+
+  // wrapWeakPersistent(this) is safe because a posted task is canceled when the
+  // task handle is destroyed on the dtor of this NavigationScheduler.
+  m_navigateTaskHandle =
+      scheduler->loadingTaskRunner()->postDelayedCancellableTask(
+          BLINK_FROM_HERE, WTF::bind(&NavigationScheduler::navigateTask,
+                                     wrapWeakPersistent(this)),
+          m_redirect->delay() * 1000.0);
 
   InspectorInstrumentation::frameScheduledNavigation(m_frame,
                                                      m_redirect->delay());
 }
 
 void NavigationScheduler::cancel() {
-  if (m_navigateTaskFactory->isPending()) {
+  if (m_navigateTaskHandle.isActive()) {
     Platform::current()->currentThread()->scheduler()->removePendingNavigation(
         m_frameType);
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
   }
-  m_navigateTaskFactory->cancel();
+  m_navigateTaskHandle.cancel();
   m_redirect.clear();
 }
 

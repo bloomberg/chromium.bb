@@ -58,6 +58,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
@@ -74,7 +75,6 @@ class AXObjectCache;
 class Attr;
 class CDATASection;
 class CSSStyleSheet;
-class CancellableTaskFactory;
 class CanvasFontCache;
 class CharacterData;
 class ChromeClient;
@@ -1473,8 +1473,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // This is cheaper than making setCompatibilityMode virtual.
   bool m_compatibilityModeLocked;
 
-  std::unique_ptr<CancellableTaskFactory>
-      m_executeScriptsWaitingForResourcesTask;
+  TaskHandle m_executeScriptsWaitingForResourcesTaskHandle;
 
   bool m_hasAutofocused;
   TaskRunnerTimer<Document> m_clearFocusedElementTimer;

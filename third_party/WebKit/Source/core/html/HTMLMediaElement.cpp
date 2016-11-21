@@ -82,7 +82,6 @@
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
@@ -452,12 +451,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_audioTracks(this, AudioTrackList::create(*this)),
       m_videoTracks(this, VideoTrackList::create(*this)),
       m_textTracks(this, nullptr),
-      m_playPromiseResolveTask(CancellableTaskFactory::create(
-          this,
-          &HTMLMediaElement::resolveScheduledPlayPromises)),
-      m_playPromiseRejectTask(CancellableTaskFactory::create(
-          this,
-          &HTMLMediaElement::rejectScheduledPlayPromises)),
       m_audioSourceNode(nullptr),
       m_autoplayHelperClient(AutoplayHelperClientImpl::create(this)),
       m_autoplayHelper(
@@ -798,14 +791,14 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
   //
   // TODO(mlamouri): don't run the callback synchronously if we are not allowed
   // to run scripts. It can happen in some edge cases. https://crbug.com/660382
-  if (m_playPromiseResolveTask->isPending() &&
+  if (m_playPromiseResolveTaskHandle.isActive() &&
       !ScriptForbiddenScope::isScriptForbidden()) {
-    m_playPromiseResolveTask->cancel();
+    m_playPromiseResolveTaskHandle.cancel();
     resolveScheduledPlayPromises();
   }
-  if (m_playPromiseRejectTask->isPending() &&
+  if (m_playPromiseRejectTaskHandle.isActive() &&
       !ScriptForbiddenScope::isScriptForbidden()) {
-    m_playPromiseRejectTask->cancel();
+    m_playPromiseRejectTaskHandle.cancel();
     rejectScheduledPlayPromises();
   }
 
@@ -3978,18 +3971,22 @@ void HTMLMediaElement::scheduleResolvePlayPromises() {
   // latter approach is preferred because it might be the less observable
   // change.
   DCHECK(m_playPromiseResolveList.isEmpty() ||
-         m_playPromiseResolveTask->isPending());
+         m_playPromiseResolveTaskHandle.isActive());
   if (m_playPromiseResolvers.isEmpty())
     return;
 
   m_playPromiseResolveList.appendVector(m_playPromiseResolvers);
   m_playPromiseResolvers.clear();
 
-  if (m_playPromiseResolveTask->isPending())
+  if (m_playPromiseResolveTaskHandle.isActive())
     return;
 
-  TaskRunnerHelper::get(TaskType::MediaElementEvent, &document())
-      ->postTask(BLINK_FROM_HERE, m_playPromiseResolveTask->cancelAndCreate());
+  m_playPromiseResolveTaskHandle =
+      TaskRunnerHelper::get(TaskType::MediaElementEvent, &document())
+          ->postCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::bind(&HTMLMediaElement::resolveScheduledPlayPromises,
+                        wrapWeakPersistent(this)));
 }
 
 void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code) {
@@ -4000,21 +3997,25 @@ void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code) {
   // latter approach is preferred because it might be the less observable
   // change.
   DCHECK(m_playPromiseRejectList.isEmpty() ||
-         m_playPromiseRejectTask->isPending());
+         m_playPromiseRejectTaskHandle.isActive());
   if (m_playPromiseResolvers.isEmpty())
     return;
 
   m_playPromiseRejectList.appendVector(m_playPromiseResolvers);
   m_playPromiseResolvers.clear();
 
-  if (m_playPromiseRejectTask->isPending())
+  if (m_playPromiseRejectTaskHandle.isActive())
     return;
 
-  // TODO(mlamouri): because cancellable tasks can't take parameters, the
-  // error code needs to be saved.
+  // TODO(nhiroki): Bind this error code to a cancellable task instead of a
+  // member field.
   m_playPromiseErrorCode = code;
-  TaskRunnerHelper::get(TaskType::MediaElementEvent, &document())
-      ->postTask(BLINK_FROM_HERE, m_playPromiseRejectTask->cancelAndCreate());
+  m_playPromiseRejectTaskHandle =
+      TaskRunnerHelper::get(TaskType::MediaElementEvent, &document())
+          ->postCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::bind(&HTMLMediaElement::rejectScheduledPlayPromises,
+                        wrapWeakPersistent(this)));
 }
 
 void HTMLMediaElement::scheduleNotifyPlaying() {

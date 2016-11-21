@@ -39,6 +39,7 @@
 #include "core/html/track/TextTrack.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Supplementable.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
@@ -655,8 +656,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   Member<CueTimeline> m_cueTimeline;
 
   HeapVector<Member<ScriptPromiseResolver>> m_playPromiseResolvers;
-  std::unique_ptr<CancellableTaskFactory> m_playPromiseResolveTask;
-  std::unique_ptr<CancellableTaskFactory> m_playPromiseRejectTask;
+  TaskHandle m_playPromiseResolveTaskHandle;
+  TaskHandle m_playPromiseRejectTaskHandle;
   HeapVector<Member<ScriptPromiseResolver>> m_playPromiseResolveList;
   HeapVector<Member<ScriptPromiseResolver>> m_playPromiseRejectList;
   ExceptionCode m_playPromiseErrorCode;

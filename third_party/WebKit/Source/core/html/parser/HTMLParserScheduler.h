@@ -27,7 +27,7 @@
 #define HTMLParserScheduler_h
 
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
+#include "platform/WebTaskRunner.h"
 #include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 #include <memory>
@@ -72,11 +72,7 @@ class HTMLParserScheduler final
   }
   ~HTMLParserScheduler();
 
-  bool isScheduledForResume() const {
-    return m_isSuspendedWithActiveTimer ||
-           m_cancellableContinueParse->isPending();
-  }
-
+  bool isScheduledForResume() const;
   void scheduleForResume();
   bool yieldIfNeeded(const SpeculationsPumpSession&, bool startingScript);
 
@@ -105,7 +101,7 @@ class HTMLParserScheduler final
   Member<HTMLDocumentParser> m_parser;
   std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
 
-  std::unique_ptr<CancellableTaskFactory> m_cancellableContinueParse;
+  TaskHandle m_cancellableContinueParseTaskHandle;
   bool m_isSuspendedWithActiveTimer;
 };
 

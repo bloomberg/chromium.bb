@@ -115,7 +115,6 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/json/JSONValues.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/TextStream.h"
