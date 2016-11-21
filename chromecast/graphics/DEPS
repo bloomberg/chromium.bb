@@ -1,5 +1,4 @@
 include_rules = [
-  "+chromecast/public",
   "+ui/aura",
   "+ui/display",
   "+ui/gfx",

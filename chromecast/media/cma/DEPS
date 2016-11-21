@@ -1,4 +1,0 @@
-include_rules = [
-  "+chromecast/media/cdm/cast_cdm_context.h",
-  "+ui/gfx/geometry",
-]

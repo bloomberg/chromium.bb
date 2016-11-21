@@ -1,5 +1,4 @@
 include_rules = [
-  "+chromecast/crash",
   "+chromecast/system",
   "+components/metrics",
   "+components/prefs",
