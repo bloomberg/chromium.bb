@@ -2,15 +2,58 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_frame_mac.h"
+#import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
+
+namespace {
+
+bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
+  // |event.skip_in_browser| is true when it shouldn't be handled by the browser
+  // if it was ignored by the renderer. See http://crbug.com/25000.
+  if (event.skip_in_browser)
+    return false;
+
+  // Ignore synthesized keyboard events. See http://crbug.com/23221.
+  if (event.type == content::NativeWebKeyboardEvent::Char)
+    return false;
+
+  // If the event was not synthesized it should have an os_event.
+  DCHECK(event.os_event);
+
+  // Do not fire shortcuts on key up.
+  return [event.os_event type] == NSKeyDown;
+}
+
+// Returns true if |event| was handled.
+bool HandleExtraKeyboardShortcut(NSEvent* event,
+                                 Browser* browser,
+                                 ChromeCommandDispatcherDelegate* delegate) {
+  // Send the event to the menu before sending it to the browser/window
+  // shortcut handling, so that if a user configures cmd-left to mean
+  // "previous tab", it takes precedence over the built-in "history back"
+  // binding.
+  if ([[NSApp mainMenu] performKeyEquivalent:event])
+    return true;
+
+  // Invoke ChromeCommandDispatcherDelegate for Mac-specific shortcuts that
+  // can't be handled by accelerator_table.cc.
+  return [delegate
+      handleExtraKeyboardShortcut:event
+                           window:browser->window()->GetNativeWindow()];
+}
+
+}  // namespace
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
@@ -68,6 +111,11 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   return ns_window.autorelease();
 }
 
+int BrowserFrameMac::GetMinimizeButtonOffset() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameMac, NativeBrowserFrame implementation:
 
@@ -95,7 +143,37 @@ void BrowserFrameMac::GetWindowPlacement(
   return NativeWidgetMac::GetWindowPlacement(bounds, show_state);
 }
 
-int BrowserFrameMac::GetMinimizeButtonOffset() const {
-  NOTIMPLEMENTED();
-  return 0;
+// Mac is special because the user could override the menu shortcuts (see
+// comment in HandleExtraKeyboardShortcut), and there's a set of additional
+// accelerator tables (handled by ChromeCommandDispatcherDelegate) that couldn't
+// be ported to accelerator_table.cc: see global_keyboard_shortcuts_views_mac.mm
+bool BrowserFrameMac::PreHandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  if (!ShouldHandleKeyboardEvent(event))
+    return false;
+
+  // CommandForKeyEvent consults the [NSApp mainMenu] and Mac-specific
+  // accelerator tables internally.
+  int command_id = CommandForKeyEvent(event.os_event);
+  if (command_id == -1)
+    return false;
+
+  // Only handle a small list of reserved commands that we don't want to be
+  // handled by the renderer.
+  Browser* browser = browser_view_->browser();
+  if (!browser->command_controller()->IsReservedCommandOrKey(
+          command_id, event))
+    return false;
+
+  return HandleExtraKeyboardShortcut(event.os_event, browser,
+                                     command_dispatcher_delegate_);
+}
+
+bool BrowserFrameMac::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  if (!ShouldHandleKeyboardEvent(event))
+    return false;
+
+  return HandleExtraKeyboardShortcut(event.os_event, browser_view_->browser(),
+                                     command_dispatcher_delegate_);
 }

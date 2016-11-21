@@ -72,6 +72,16 @@ void BrowserFrameMus::GetWindowPlacement(
   *show_state = ui::SHOW_STATE_NORMAL;
 }
 
+bool BrowserFrameMus::PreHandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return false;
+}
+
+bool BrowserFrameMus::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 int BrowserFrameMus::GetMinimizeButtonOffset() const {
   return 0;
 }

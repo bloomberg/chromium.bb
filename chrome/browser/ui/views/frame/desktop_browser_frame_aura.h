@@ -50,6 +50,10 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   bool ShouldSaveWindowPlacement() const override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const override;
+  bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) override;
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.

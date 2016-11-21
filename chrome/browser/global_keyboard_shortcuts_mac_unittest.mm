@@ -18,15 +18,11 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToWindowCommand) {
       -1, CommandForWindowKeyboardShortcut(false, false, false, false, 0, 0));
 
   // Check that all known keyboard shortcuts return valid results.
-  size_t num_shortcuts = 0;
-  const KeyboardShortcutData *it =
-      GetWindowKeyboardShortcutTable(&num_shortcuts);
-  ASSERT_GT(num_shortcuts, 0U);
-  for (size_t i = 0; i < num_shortcuts; ++i, ++it) {
+  for (const auto& shortcut : GetWindowKeyboardShortcutTable()) {
     int cmd_num = CommandForWindowKeyboardShortcut(
-        it->command_key, it->shift_key, it->cntrl_key, it->opt_key,
-        it->vkey_code, it->key_char);
-    EXPECT_EQ(cmd_num, it->chrome_command);
+        shortcut.command_key, shortcut.shift_key, shortcut.cntrl_key,
+        shortcut.opt_key, shortcut.vkey_code, shortcut.key_char);
+    EXPECT_EQ(cmd_num, shortcut.chrome_command);
   }
 
   // Test that cmd-left and backspace are not window-level commands (else they
@@ -110,15 +106,11 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToDelayedWindowCommand) {
                                               0, 0));
 
   // Check that all known keyboard shortcuts return valid results.
-  size_t num_shortcuts = 0;
-  const KeyboardShortcutData *it =
-      GetDelayedWindowKeyboardShortcutTable(&num_shortcuts);
-  ASSERT_GT(num_shortcuts, 0U);
-  for (size_t i = 0; i < num_shortcuts; ++i, ++it) {
+  for (const auto& shortcut : GetDelayedWindowKeyboardShortcutTable()) {
     int cmd_num = CommandForDelayedWindowKeyboardShortcut(
-        it->command_key, it->shift_key, it->cntrl_key, it->opt_key,
-        it->vkey_code, it->key_char);
-    EXPECT_EQ(cmd_num, it->chrome_command);
+        shortcut.command_key, shortcut.shift_key, shortcut.cntrl_key,
+        shortcut.opt_key, shortcut.vkey_code, shortcut.key_char);
+    EXPECT_EQ(cmd_num, shortcut.chrome_command);
   }
 }
 
@@ -129,15 +121,11 @@ TEST(GlobalKeyboardShortcuts, ShortcutsToBrowserCommand) {
                                             0, 0));
 
   // Check that all known keyboard shortcuts return valid results.
-  size_t num_shortcuts = 0;
-  const KeyboardShortcutData *it =
-      GetBrowserKeyboardShortcutTable(&num_shortcuts);
-  ASSERT_GT(num_shortcuts, 0U);
-  for (size_t i = 0; i < num_shortcuts; ++i, ++it) {
+  for (const auto& shortcut : GetBrowserKeyboardShortcutTable()) {
     int cmd_num = CommandForBrowserKeyboardShortcut(
-        it->command_key, it->shift_key, it->cntrl_key, it->opt_key,
-        it->vkey_code, it->key_char);
-    EXPECT_EQ(cmd_num, it->chrome_command);
+        shortcut.command_key, shortcut.shift_key, shortcut.cntrl_key,
+        shortcut.opt_key, shortcut.vkey_code, shortcut.key_char);
+    EXPECT_EQ(cmd_num, shortcut.chrome_command);
   }
 }
 

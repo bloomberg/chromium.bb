@@ -1354,6 +1354,9 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   }
 #endif  // defined(OS_CHROMEOS)
 
+  if (frame_->PreHandleKeyboardEvent(event))
+    return true;
+
   chrome::BrowserCommandController* controller = browser_->command_controller();
 
   // Here we need to retrieve the command id (if any) associated to the
@@ -1391,6 +1394,9 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 }
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (frame_->HandleKeyboardEvent(event))
+    return;
+
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
 }

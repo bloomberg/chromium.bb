@@ -150,6 +150,16 @@ void BrowserFrame::GetWindowPlacement(gfx::Rect* bounds,
   return native_browser_frame_->GetWindowPlacement(bounds, show_state);
 }
 
+bool BrowserFrame::PreHandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return native_browser_frame_->PreHandleKeyboardEvent(event);
+}
+
+bool BrowserFrame::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return native_browser_frame_->HandleKeyboardEvent(event);
+}
+
 void BrowserFrame::OnBrowserViewInitViewsComplete() {
   browser_frame_view_->OnBrowserViewInitViewsComplete();
 }

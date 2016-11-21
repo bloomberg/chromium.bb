@@ -12,6 +12,10 @@
 class BrowserFrame;
 class BrowserView;
 
+namespace content {
+struct NativeWebKeyboardEvent;
+}
+
 namespace views {
 class NativeWidget;
 }
@@ -36,6 +40,14 @@ class NativeBrowserFrame {
   // Retrieves the window placement (show state and bounds) for restoring.
   virtual void GetWindowPlacement(gfx::Rect* bounds,
                                   ui::WindowShowState* show_state) const = 0;
+
+  // Returns true if the |event| was handled by the platform implementation.
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) = 0;
+
+  // Returns true if the |event| was handled by the platform implementation.
+  virtual bool HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) = 0;
 
  protected:
   friend class BrowserFrame;

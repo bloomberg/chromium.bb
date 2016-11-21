@@ -90,6 +90,9 @@ void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
   views::NativeWidgetAura::OnWindowTargetVisibilityChanged(visible);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrameAsh, NativeBrowserFrame implementation:
+
 bool BrowserFrameAsh::ShouldSaveWindowPlacement() const {
   return nullptr == GetWidget()->GetNativeWindow()->GetProperty(
                         ash::kRestoreBoundsOverrideKey);
@@ -130,8 +133,15 @@ void BrowserFrameAsh::GetWindowPlacement(
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameAsh, NativeBrowserFrame implementation:
+bool BrowserFrameAsh::PreHandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return false;
+}
+
+bool BrowserFrameAsh::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return false;
+}
 
 views::Widget::InitParams BrowserFrameAsh::GetWidgetParams() {
   views::Widget::InitParams params;
