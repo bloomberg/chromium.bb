@@ -57,7 +57,6 @@ crbug.com/663874 http/tests/fetch/window/thorough/redirect-base-https-other-http
 crbug.com/663874 http/tests/fetch/window/thorough/redirect-password-other-https.html [ Pass Failure ]
 crbug.com/663874 http/tests/fetch/window/thorough/scheme-blob.html [ Pass Failure ]
 crbug.com/663874 http/tests/fetch/window/thorough/scheme-data-other-https.html [ Pass Failure ]
-crbug.com/663875 http/tests/inspector/network/har-content.html [ Pass Failure ]
 crbug.com/663876 http/tests/loading/doc-write-sync-third-party-script-block-effectively-2g.html [ Pass Failure ]
 crbug.com/663877 http/tests/media/video-load-suspend.html [ Pass Failure ]
 crbug.com/663879 http/tests/misc/script-no-store.html [ Pass Failure ]
