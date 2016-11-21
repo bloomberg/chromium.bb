@@ -169,6 +169,7 @@ imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/multicol3 [ 
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/reftest.list [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/ruby [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4 [ Skip ]
+imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/shapes1 [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/sync-tests-filter [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/sync-tests.sh [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/text-decor-3 [ Skip ]
