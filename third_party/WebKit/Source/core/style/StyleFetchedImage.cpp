@@ -37,6 +37,9 @@ StyleFetchedImage::StyleFetchedImage(ImageResource* image,
     : m_image(image), m_document(&document), m_url(url) {
   m_isImageResource = true;
   m_image->addClient(this);
+  // ResourceFetcher is not determined from StyleFetchedImage and it is
+  // impossible to send a request for refetching.
+  m_image->setNotRefetchableDataFromDiskCache();
   ThreadState::current()->registerPreFinalizer(this);
 }
 

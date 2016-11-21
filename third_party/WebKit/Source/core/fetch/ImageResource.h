@@ -160,6 +160,10 @@ class CORE_EXPORT ImageResource final
     return m_isPlaceholder && willPaintBrokenImage();
   }
 
+  void setNotRefetchableDataFromDiskCache() {
+    m_isRefetchableDataFromDiskCache = false;
+  }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -224,6 +228,10 @@ class CORE_EXPORT ImageResource final
   Timer<ImageResource> m_flushTimer;
   double m_lastFlushTime = 0.;
   Image::SizeAvailability m_sizeAvailable = Image::SizeUnavailable;
+
+  // Indicates if this resource's encoded image data can be purged and refetched
+  // from disk cache to save memory usage. See crbug/664437.
+  bool m_isRefetchableDataFromDiskCache;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

@@ -6,6 +6,7 @@
 #define Histogram_h
 
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
 #include "platform/PlatformExport.h"
 #include "wtf/CurrentTime.h"
 #include <stdint.h>

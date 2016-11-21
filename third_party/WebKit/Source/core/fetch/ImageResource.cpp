@@ -30,6 +30,7 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoadingLog.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntSize.h"
@@ -114,7 +115,8 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest,
       m_hasDevicePixelRatioHeaderValue(false),
       m_isSchedulingReload(false),
       m_isPlaceholder(isPlaceholder),
-      m_flushTimer(this, &ImageResource::flushImageIfNeeded) {
+      m_flushTimer(this, &ImageResource::flushImageIfNeeded),
+      m_isRefetchableDataFromDiskCache(true) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(ResourceRequest) " << this;
 }
 
@@ -126,7 +128,8 @@ ImageResource::ImageResource(blink::Image* image,
       m_hasDevicePixelRatioHeaderValue(false),
       m_isSchedulingReload(false),
       m_isPlaceholder(false),
-      m_flushTimer(this, &ImageResource::flushImageIfNeeded) {
+      m_flushTimer(this, &ImageResource::flushImageIfNeeded),
+      m_isRefetchableDataFromDiskCache(true) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(Image) " << this;
   setStatus(Cached);
 }
@@ -260,6 +263,10 @@ void ImageResource::destroyDecodedDataIfPossible() {
     return;
   CHECK(!errorOccurred());
   m_image->destroyDecodedData();
+  if (!isPreloaded() && m_isRefetchableDataFromDiskCache) {
+    UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer.EstimatedDroppableEncodedSize",
+                            encodedSize() / 1024);
+  }
 }
 
 void ImageResource::doResetAnimation() {
