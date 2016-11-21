@@ -420,6 +420,16 @@ Polymer({
 
     return !emptyPassphrase && !mismatchedPassphrase;
   },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onLearnMoreTap_: function(event) {
+    // Stop the propagation of events, so that clicking on links inside
+    // checkbox labels won't change the checkbox value.
+    event.stopPropagation();
+  }
 });
 
 })();

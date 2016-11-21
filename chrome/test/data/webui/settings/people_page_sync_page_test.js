@@ -240,6 +240,24 @@ cr.define('settings_people_page_sync_page', function() {
         return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
       });
 
+      test('ClickingLinkDoesNotChangeCheckboxValue', function() {
+        var syncAllDataTypesCheckbox = syncPage.$.syncAllDataTypesCheckbox;
+
+        // Uncheck the Sync All checkbox.
+        MockInteractions.tap(syncAllDataTypesCheckbox);
+
+        // Make sure the checkbox is enabled and checked.
+        var link = syncPage.$.paymentLearnMore;
+        assertEquals('PAPER-CHECKBOX', link.parentNode.nodeName);
+        assertFalse(link.parentNode.disabled);
+        assertTrue(link.parentNode.checked);
+
+        MockInteractions.tap(link);
+
+        // The checkbox value should be unchanged after clicking on the link.
+        assertTrue(link.parentNode.checked);
+      });
+
       test('RadioBoxesEnabledWhenUnencrypted', function() {
         // Verify that the encryption radio boxes are enabled.
         assertFalse(encryptWithGoogle.disabled);
