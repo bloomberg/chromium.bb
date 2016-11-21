@@ -4,6 +4,7 @@
 
 #include "chrome/installer/mini_installer/configuration.h"
 
+#include <windows.h>
 #include <shellapi.h>  // NOLINT
 #include <stddef.h>
 
@@ -13,6 +14,19 @@
 #include "chrome/installer/mini_installer/regkey.h"
 
 namespace mini_installer {
+
+namespace {
+
+// Returns true if GoogleUpdateIsMachine=1 is present in the environment.
+bool GetGoogleUpdateIsMachineEnvVar() {
+  const DWORD kBufferSize = 2;
+  StackString<kBufferSize> value;
+  DWORD length = ::GetEnvironmentVariableW(L"GoogleUpdateIsMachine",
+                                           value.get(), kBufferSize);
+  return length == 1 && *value.get() == L'1';
+}
+
+}  // namespace
 
 Configuration::Configuration() : args_(NULL) {
   Clear();
@@ -123,6 +137,8 @@ bool Configuration::ParseCommandLine(const wchar_t* command_line) {
         operation_ = CLEANUP;
     }
 
+    if (!is_system_level_)
+      is_system_level_ = GetGoogleUpdateIsMachineEnvVar();
     SetChromeAppGuid();
     if (!is_multi_install_) {
       has_chrome_ = !has_chrome_frame_;

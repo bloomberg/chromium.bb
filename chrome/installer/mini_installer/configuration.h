@@ -53,7 +53,8 @@ class Configuration {
   // Returns true if --multi-install is on the command line.
   bool is_multi_install() const { return is_multi_install_; }
 
-  // Returns true if --system-level is on the command line.
+  // Returns true if --system-level is on the command line or if
+  // GoogleUpdateIsMachine=1 is set in the process's environment.
   bool is_system_level() const { return is_system_level_; }
 
   // Retuns true if --chrome-sxs is on the command line.
