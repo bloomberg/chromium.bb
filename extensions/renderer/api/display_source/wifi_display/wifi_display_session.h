@@ -40,15 +40,14 @@ class WiFiDisplaySession: public DisplaySourceSession,
   void Terminate(const CompletionCallback& callback) override;
 
   // WiFiDisplaySessionServiceClient overrides.
-  void OnConnected(const mojo::String& local_ip_address,
-                   const mojo::String& sink_ip_address) override;
-  void OnConnectRequestHandled(bool success,
-                               const mojo::String& error) override;
+  void OnConnected(const std::string& local_ip_address,
+                   const std::string& sink_ip_address) override;
+  void OnConnectRequestHandled(bool success, const std::string& error) override;
   void OnTerminated() override;
   void OnDisconnectRequestHandled(bool success,
-                                  const mojo::String& error) override;
-  void OnError(int32_t type, const mojo::String& description) override;
-  void OnMessage(const mojo::String& data) override;
+                                  const std::string& error) override;
+  void OnError(int32_t type, const std::string& description) override;
+  void OnMessage(const std::string& data) override;
 
   // wds::Peer::Delegate overrides.
   unsigned CreateTimer(int seconds) override;

@@ -62,7 +62,7 @@ WiFiDisplayMediaServiceImpl::WiFiDisplayMediaServiceImpl()
 WiFiDisplayMediaServiceImpl::~WiFiDisplayMediaServiceImpl() {}
 
 void WiFiDisplayMediaServiceImpl::SetDesinationPoint(
-    const mojo::String& ip_address,
+    const std::string& ip_address,
     int32_t port,
     const SetDesinationPointCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -87,11 +87,19 @@ void WiFiDisplayMediaServiceImpl::SetDesinationPoint(
   callback.Run(true);
 }
 
-void WiFiDisplayMediaServiceImpl::SendMediaPacket(mojo::Array<uint8_t> packet) {
+void WiFiDisplayMediaServiceImpl::SendMediaPacket(
+    WiFiDisplayMediaPacketPtr packet) {
   DCHECK(rtp_socket_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (packet.size() >> 15) {
+  if (!packet) {
+    DVLOG(1) << "Packet missing, skipping.";
+    return;
+  }
+
+  std::vector<uint8_t>* packet_data = &packet->data;
+
+  if (packet_data->size() >> 15) {
     DVLOG(1) << "Packet size limit is exceeded, skipping.";
     return;
   }
@@ -103,7 +111,7 @@ void WiFiDisplayMediaServiceImpl::SendMediaPacket(mojo::Array<uint8_t> packet) {
 
   // Create, queue and send a write buffer.
   scoped_refptr<PacketIOBuffer> write_buffer =
-      new PacketIOBuffer(std::move(packet));
+      new PacketIOBuffer(std::move(*packet_data));
   write_buffers_.push(std::move(write_buffer));
 
   Send();

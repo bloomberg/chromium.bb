@@ -4,6 +4,10 @@
 
 module extensions;
 
+struct WiFiDisplayMediaPacket {
+  array<uint8> data;
+};
+
 // WiFiDisplaySessionService class provides access to the network for
 // the render-hosted Wi-Fi Display session.
 interface WiFiDisplaySessionService {
@@ -51,5 +55,5 @@ interface WiFiDisplayMediaService {
   SetDesinationPoint(string ip_address, int32 port) => (bool success);
 
   // Sends media packet to the destination point.
-  SendMediaPacket(array<uint8> packet);
+  SendMediaPacket(WiFiDisplayMediaPacket packet);
 };

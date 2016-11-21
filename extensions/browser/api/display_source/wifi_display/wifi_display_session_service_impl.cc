@@ -58,7 +58,7 @@ void WiFiDisplaySessionServiceImpl::SetClient(
 
 void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
                                             int32_t auth_method,
-                                            const mojo::String& auth_data) {
+                                            const std::string& auth_data) {
   DCHECK(client_);
   // We support only one Wi-Fi Display session at a time.
   if (delegate_->connection()) {
@@ -111,7 +111,7 @@ void WiFiDisplaySessionServiceImpl::Disconnect() {
   delegate_->Disconnect(on_error);
 }
 
-void WiFiDisplaySessionServiceImpl::SendMessage(const mojo::String& message) {
+void WiFiDisplaySessionServiceImpl::SendMessage(const std::string& message) {
   if (sink_id_ == DisplaySourceConnectionDelegate::kInvalidSinkId) {
     // The connection might drop before this call has arrived.
     return;

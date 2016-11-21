@@ -21,10 +21,10 @@ class WiFiDisplayMediaServiceImpl : public WiFiDisplayMediaService {
   ~WiFiDisplayMediaServiceImpl() override;
   static void BindToRequest(WiFiDisplayMediaServiceRequest request);
 
-  void SetDesinationPoint(const mojo::String& ip_address,
+  void SetDesinationPoint(const std::string& ip_address,
                           int32_t port,
                           const SetDesinationPointCallback& callback) override;
-  void SendMediaPacket(mojo::Array<uint8_t> packet) override;
+  void SendMediaPacket(WiFiDisplayMediaPacketPtr packet) override;
 
  private:
   static void Create(WiFiDisplayMediaServiceRequest request);

@@ -32,9 +32,9 @@ class WiFiDisplaySessionServiceImpl
   void SetClient(WiFiDisplaySessionServiceClientPtr client) override;
   void Connect(int32_t sink_id,
                int32_t auth_method,
-               const mojo::String& auth_data) override;
+               const std::string& auth_data) override;
   void Disconnect() override;
-  void SendMessage(const mojo::String& message) override;
+  void SendMessage(const std::string& message) override;
 
   // DisplaySourceConnectionDelegate::Observer overrides.
   void OnSinksUpdated(const DisplaySourceSinkInfoList& sinks) override;
