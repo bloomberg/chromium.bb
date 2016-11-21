@@ -351,11 +351,6 @@
 
     'chromium.webkit': {
       'Android Builder': 'android_release_bot_minimal_symbols',
-      'WebKit Linux Precise ASAN': 'asan_lsan_release_bot',
-      'WebKit Linux Precise (dbg)': 'debug_bot',
-      'WebKit Linux Precise Leak': 'release_bot',
-      'WebKit Linux Precise MSAN': 'msan_release_bot',
-      'WebKit Linux Precise': 'release_bot',
       'WebKit Linux Trusty ASAN': 'asan_lsan_release_bot',
       'WebKit Linux Trusty (dbg)': 'debug_bot',
       'WebKit Linux Trusty Leak': 'release_bot',
@@ -445,10 +440,6 @@
       # release trybots must *not* enable dchecks, because that could
       # cause them to produce different baselines than the release
       # waterfall bots, and run-webkit-tests can't handle that (by design).
-      'linux_precise_blink_compile_dbg': 'debug_trybot',
-      'linux_precise_blink_compile_rel': 'release_bot_minimal_symbols',
-      'linux_precise_blink_dbg': 'debug_trybot',
-      'linux_precise_blink_rel': 'release_bot_minimal_symbols',
       'linux_trusty_blink_compile_dbg': 'debug_trybot',
       'linux_trusty_blink_compile_rel': 'release_bot_minimal_symbols',
       'linux_trusty_blink_dbg': 'debug_trybot',
