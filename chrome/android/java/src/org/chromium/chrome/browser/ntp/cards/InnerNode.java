@@ -19,6 +19,9 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
     protected abstract List<TreeNode> getChildren();
 
     private int getChildIndexForPosition(int position) {
+        if (position < 0) {
+            throw new IndexOutOfBoundsException(Integer.toString(position));
+        }
         List<TreeNode> children = getChildren();
         int numItems = 0;
         int numChildren = children.size();

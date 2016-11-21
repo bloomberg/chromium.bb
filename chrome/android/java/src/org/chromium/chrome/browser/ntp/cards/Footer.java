@@ -18,7 +18,14 @@ import org.chromium.ui.text.SpanApplier;
 /**
  * A footer to show some text and a link to learn more.
  */
-public class Footer extends Leaf {
+public class Footer extends OptionalLeaf {
+    /**
+     * @param parent The footer's parent node.
+     */
+    public Footer(NodeParent parent) {
+        super(parent);
+    }
+
     @Override
     @ItemViewType
     protected int getItemViewType() {

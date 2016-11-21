@@ -22,7 +22,14 @@ import java.util.Calendar;
  * Displayed when all suggested content and their sections have been dismissed. Provides a button
  * to restore the dismissed sections and load new suggestions from the server.
  */
-public class AllDismissedItem extends Leaf {
+public class AllDismissedItem extends OptionalLeaf {
+    /**
+     * @param parent The item's parent node.
+     */
+    public AllDismissedItem(NodeParent parent) {
+        super(parent);
+    }
+
     @Override
     @ItemViewType
     public int getItemViewType() {

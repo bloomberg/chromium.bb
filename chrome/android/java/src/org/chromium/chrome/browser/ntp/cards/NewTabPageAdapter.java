@@ -60,8 +60,8 @@ public class NewTabPageAdapter
     private final List<TreeNode> mChildren = new ArrayList<>();
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
     private final SignInPromo mSigninPromo;
-    private final AllDismissedItem mAllDismissed = new AllDismissedItem();
-    private final Footer mFooter = new Footer();
+    private final AllDismissedItem mAllDismissed;
+    private final Footer mFooter;
     private final SpacingItem mBottomSpacer = new SpacingItem();
     private final InnerNode mRoot;
 
@@ -171,6 +171,8 @@ public class NewTabPageAdapter
         };
 
         mSigninPromo = new SignInPromo(mRoot, this);
+        mAllDismissed = new AllDismissedItem(mRoot);
+        mFooter = new Footer(mRoot);
         DestructionObserver signInObserver = mSigninPromo.getObserver();
         if (signInObserver != null) mNewTabPageManager.addDestructionObserver(signInObserver);
 
@@ -424,8 +426,11 @@ public class NewTabPageAdapter
         mChildren.add(mAboveTheFold);
         mChildren.addAll(mSections.values());
         mChildren.add(mSigninPromo);
-        mChildren.add(hasAllBeenDismissed() ? mAllDismissed : mFooter);
+        mChildren.add(mAllDismissed);
+        mChildren.add(mFooter);
         mChildren.add(mBottomSpacer);
+
+        updateAllDismissedVisibility();
 
         // TODO(mvanouwerkerk): Notify about the subset of changed items. At least |mAboveTheFold|
         // has not changed when refreshing from the all dismissed state.
@@ -434,16 +439,8 @@ public class NewTabPageAdapter
 
     private void updateAllDismissedVisibility() {
         boolean showAllDismissed = hasAllBeenDismissed();
-        if (showAllDismissed == mChildren.contains(mAllDismissed)) return;
-
-        if (showAllDismissed) {
-            assert mChildren.contains(mFooter);
-            mChildren.set(mChildren.indexOf(mFooter), mAllDismissed);
-        } else {
-            assert mChildren.contains(mAllDismissed);
-            mChildren.set(mChildren.indexOf(mAllDismissed), mFooter);
-        }
-        notifyItemChanged(getLastContentItemPosition());
+        mAllDismissed.setVisible(showAllDismissed);
+        mFooter.setVisible(!showAllDismissed);
     }
 
     private void removeSection(SuggestionsSection section) {

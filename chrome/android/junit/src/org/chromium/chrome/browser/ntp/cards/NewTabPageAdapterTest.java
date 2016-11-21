@@ -635,7 +635,8 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testCategoryOrder() {
-        final int basicChildCount = 4; // above-the-fold, sign in promo, footer, spacer.
+        // Above-the-fold, sign in promo, all-dismissed, footer, spacer.
+        final int basicChildCount = 5;
         FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
         registerCategory(suggestionsSource, KnownCategories.ARTICLES, 0);
         registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 0);
@@ -861,12 +862,11 @@ public class NewTabPageAdapterTest {
         ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
                 .setNewTabPageSigninPromoDismissed(false);
 
-        // TODO(peconn)
         NewTabPageAdapter adapter =
                 new NewTabPageAdapter(mNewTabPageManager, null, null, mOfflinePageBridge);
-        final int signInPromoIndex = 5;
+        final int signInPromoIndex = adapter.getFirstPositionForType(ItemViewType.PROMO);
 
-        assertEquals(5, adapter.getChildren().size());
+        assertEquals(6, adapter.getChildren().size());
         TreeNode signinPromo = adapter.getChildren().get(2);
 
         // Adapter content:
@@ -878,8 +878,9 @@ public class NewTabPageAdapterTest {
         // 3   | Action             | 1
         // 4   | Progress Indicator | 1
         // 5   | Sign in promo      | 2
-        // 6   | Footer             | 3
-        // 7   | Spacer             | 4
+        // 6   | All dismissed      | 3
+        // 7   | Footer             | 4
+        // 8   | Spacer             | 5
 
         assertEquals(ItemViewType.PROMO, signinPromo.getItemViewType(0));
 
@@ -889,7 +890,7 @@ public class NewTabPageAdapterTest {
                            .getNewTabPageSigninPromoDismissed());
 
         adapter = new NewTabPageAdapter(mNewTabPageManager, null, null, mOfflinePageBridge);
-        assertEquals(5, adapter.getChildren().size());
+        assertEquals(6, adapter.getChildren().size());
         // The items below the signin promo move up, footer is now at the position of the promo.
         assertEquals(ItemViewType.FOOTER, adapter.getItemViewType(signInPromoIndex));
     }
