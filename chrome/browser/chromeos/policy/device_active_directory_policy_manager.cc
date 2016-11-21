@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_types.h"
 
@@ -16,7 +18,7 @@ namespace policy {
 
 DeviceActiveDirectoryPolicyManager::DeviceActiveDirectoryPolicyManager(
     std::unique_ptr<CloudPolicyStore> store)
-    : store_(std::move(store)) {}
+    : store_(std::move(store)), weak_ptr_factory_(this) {}
 
 DeviceActiveDirectoryPolicyManager::~DeviceActiveDirectoryPolicyManager() {}
 
@@ -24,10 +26,12 @@ void DeviceActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
   ConfigurationPolicyProvider::Init(registry);
 
   store_->AddObserver(this);
-  PublishPolicy();
   if (!store_->is_initialized()) {
     store_->Load();
   }
+
+  // Does nothing if |store_| hasn't yet initialized.
+  PublishPolicy();
 }
 
 void DeviceActiveDirectoryPolicyManager::Shutdown() {
@@ -43,7 +47,15 @@ bool DeviceActiveDirectoryPolicyManager::IsInitializationComplete(
 }
 
 void DeviceActiveDirectoryPolicyManager::RefreshPolicies() {
-  store_->Load();
+  chromeos::DBusThreadManager* thread_manager =
+      chromeos::DBusThreadManager::Get();
+  DCHECK(thread_manager);
+  chromeos::AuthPolicyClient* auth_policy_client =
+      thread_manager->GetAuthPolicyClient();
+  DCHECK(auth_policy_client);
+  auth_policy_client->RefreshDevicePolicy(
+      base::Bind(&DeviceActiveDirectoryPolicyManager::OnPolicyRefreshed,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceActiveDirectoryPolicyManager::OnStoreLoaded(
@@ -75,6 +87,15 @@ void DeviceActiveDirectoryPolicyManager::PublishPolicy() {
   // configurable, then drop PolicyMap::SetSourceForAll().
   policy_map.SetSourceForAll(POLICY_SOURCE_ACTIVE_DIRECTORY);
   UpdatePolicy(std::move(bundle));
+}
+
+void DeviceActiveDirectoryPolicyManager::OnPolicyRefreshed(bool success) {
+  if (!success) {
+    LOG(ERROR) << "Active Directory policy refresh failed.";
+  }
+  // Load independently of success or failure to keep up to date with whatever
+  // has happened on the authpolicyd / session manager side.
+  store_->Load();
 }
 
 }  // namespace policy

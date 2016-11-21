@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 
@@ -15,7 +17,6 @@ namespace policy {
 // ConfigurationPolicyProvider for policy from Active Directory.  The policy is
 // fetched from the Domain Controller by authpolicyd which stores it in session
 // manager and from where it is loaded by DeviceActiveDirectoryPolicyManager.
-// TODO(tnagel): Wire RefreshPolicies() through to authpolicyd.
 class DeviceActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
                                            public CloudPolicyStore::Observer {
  public:
@@ -39,7 +40,15 @@ class DeviceActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   // Publishes the policy that's currently cached in the store.
   void PublishPolicy();
 
+  // Callback from authpolicyd.
+  void OnPolicyRefreshed(bool success);
+
   std::unique_ptr<CloudPolicyStore> store_;
+
+  // Must be last member.
+  base::WeakPtrFactory<DeviceActiveDirectoryPolicyManager> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceActiveDirectoryPolicyManager);
 };
 
 }  // namespace policy
