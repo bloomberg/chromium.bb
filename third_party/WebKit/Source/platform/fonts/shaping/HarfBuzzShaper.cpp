@@ -33,6 +33,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SmallCapsIterator.h"
@@ -55,6 +56,7 @@
 #include <unicode/uscript.h>
 
 namespace blink {
+using FeaturesVector = Vector<hb_feature_t, 6>;
 
 template <typename T>
 class HarfBuzzScopedPtr {
@@ -153,16 +155,14 @@ static inline hb_direction_t TextDirectionToHBDirection(
                     : harfBuzzDirection;
 }
 
-}  // namespace
-
-inline bool HarfBuzzShaper::shapeRange(
-    hb_buffer_t* harfBuzzBuffer,
-    const Font* font,
-    const FeaturesVector& fontFeatures,
-    const SimpleFontData* currentFont,
-    PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
-    UScriptCode currentRunScript,
-    hb_language_t language) {
+inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,
+                       hb_feature_t* fontFeatures,
+                       unsigned fontFeaturesSize,
+                       const SimpleFontData* currentFont,
+                       PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
+                       UScriptCode currentRunScript,
+                       hb_direction_t direction,
+                       hb_language_t language) {
   const FontPlatformData* platformData = &(currentFont->platformData());
   HarfBuzzFace* face = platformData->harfBuzzFace();
   if (!face) {
@@ -172,19 +172,15 @@ inline bool HarfBuzzShaper::shapeRange(
 
   hb_buffer_set_language(harfBuzzBuffer, language);
   hb_buffer_set_script(harfBuzzBuffer, ICUScriptToHBScript(currentRunScript));
-  hb_buffer_set_direction(
-      harfBuzzBuffer,
-      TextDirectionToHBDirection(m_textRun.direction(),
-                                 font->getFontDescription().orientation(),
-                                 currentFont));
+  hb_buffer_set_direction(harfBuzzBuffer, direction);
 
   hb_font_t* hbFont = face->getScaledFont(std::move(currentFontRangeSet));
-  hb_shape(hbFont, harfBuzzBuffer,
-           fontFeatures.isEmpty() ? 0 : fontFeatures.data(),
-           fontFeatures.size());
+  hb_shape(hbFont, harfBuzzBuffer, fontFeatures, fontFeaturesSize);
 
   return true;
 }
+
+}  // namespace
 
 bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
                                          ShapeResult* shapeResult,
@@ -194,7 +190,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
                                          const Font* font,
                                          const SimpleFontData* currentFont,
                                          UScriptCode currentRunScript,
-                                         bool isLastResort) {
+                                         bool isLastResort) const {
   enum ClusterResult { Shaped, NotDef, Unknown };
   ClusterResult currentClusterResult = Unknown;
   ClusterResult previousClusterResult = Unknown;
@@ -338,7 +334,7 @@ static inline const SimpleFontData* fontDataAdjustedForOrientation(
 
 bool HarfBuzzShaper::collectFallbackHintChars(
     const Deque<HolesQueueItem>& holesQueue,
-    Vector<UChar32>& hint) {
+    Vector<UChar32>& hint) const {
   if (!holesQueue.size())
     return false;
 
@@ -398,8 +394,7 @@ hb_feature_t createFeature(uint8_t c1,
           static_cast<unsigned>(-1) /* end */};
 }
 
-void setFontFeatures(const Font* font,
-                     HarfBuzzShaper::FeaturesVector* features) {
+void setFontFeatures(const Font* font, FeaturesVector* features) {
   const FontDescription& description = font->getFontDescription();
 
   static hb_feature_t noKern = createFeature('k', 'e', 'r', 'n');
@@ -540,7 +535,7 @@ class CapsFeatureSettingsScopedOverlay final {
   STACK_ALLOCATED()
 
  public:
-  CapsFeatureSettingsScopedOverlay(HarfBuzzShaper::FeaturesVector*,
+  CapsFeatureSettingsScopedOverlay(FeaturesVector*,
                                    FontDescription::FontVariantCaps);
   CapsFeatureSettingsScopedOverlay() = delete;
   ~CapsFeatureSettingsScopedOverlay();
@@ -548,12 +543,12 @@ class CapsFeatureSettingsScopedOverlay final {
  private:
   void overlayCapsFeatures(FontDescription::FontVariantCaps);
   void prependCounting(const hb_feature_t&);
-  HarfBuzzShaper::FeaturesVector* m_features;
+  FeaturesVector* m_features;
   size_t m_countFeatures;
 };
 
 CapsFeatureSettingsScopedOverlay::CapsFeatureSettingsScopedOverlay(
-    HarfBuzzShaper::FeaturesVector* features,
+    FeaturesVector* features,
     FontDescription::FontVariantCaps variantCaps)
     : m_features(features), m_countFeatures(0) {
   overlayCapsFeatures(variantCaps);
@@ -601,7 +596,7 @@ CapsFeatureSettingsScopedOverlay::~CapsFeatureSettingsScopedOverlay() {
 
 }  // namespace
 
-PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) {
+PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) const {
   RefPtr<ShapeResult> result = ShapeResult::create(
       font, m_normalizedBufferLength, m_textRun.direction());
   HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(),
@@ -615,12 +610,13 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) {
   bool needsCapsHandling =
       fontDescription.variantCaps() != FontDescription::CapsNormal;
   OpenTypeCapsSupport capsSupport;
+  FontOrientation orientation = font->getFontDescription().orientation();
 
   RunSegmenter::RunSegmenterRange segmentRange = {
       0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationInvalid,
       FontFallbackPriority::Invalid};
   RunSegmenter runSegmenter(m_normalizedBuffer.get(), m_normalizedBufferLength,
-                            font->getFontDescription().orientation());
+                            orientation);
 
   Vector<UChar32> fallbackCharsHint;
 
@@ -657,7 +653,6 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) {
         }
 
         currentFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
-
         if (!currentFontDataForRangeSet->fontData()) {
           DCHECK(!holesQueue.size());
           break;
@@ -666,13 +661,12 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) {
         continue;
       }
 
+      const SimpleFontData* fontData = currentFontDataForRangeSet->fontData();
       SmallCapsIterator::SmallCapsBehavior smallCapsBehavior =
           SmallCapsIterator::SmallCapsSameCase;
       if (needsCapsHandling) {
         capsSupport =
-            OpenTypeCapsSupport(currentFontDataForRangeSet->fontData()
-                                    ->platformData()
-                                    .harfBuzzFace(),
+            OpenTypeCapsSupport(fontData->platformData().harfBuzzFace(),
                                 fontDescription.variantCaps(),
                                 ICUScriptToHBScript(segmentRange.script));
         if (capsSupport.needsRunCaseSplitting()) {
@@ -685,24 +679,20 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) {
 
       const SimpleFontData* smallcapsAdjustedFont =
           needsCapsHandling && capsSupport.needsSyntheticFont(smallCapsBehavior)
-              ? currentFontDataForRangeSet->fontData()
-                    ->smallCapsFontData(fontDescription)
-                    .get()
-              : currentFontDataForRangeSet->fontData();
+              ? fontData->smallCapsFontData(fontDescription).get()
+              : fontData;
 
       // Compatibility with SimpleFontData approach of keeping a flag for
       // overriding drawing direction.
       // TODO: crbug.com/506224 This should go away in favor of storing that
       // information elsewhere, for example in ShapeResult.
       const SimpleFontData* directionAndSmallCapsAdjustedFont =
-          fontDataAdjustedForOrientation(
-              smallcapsAdjustedFont, font->getFontDescription().orientation(),
-              segmentRange.renderOrientation);
+          fontDataAdjustedForOrientation(smallcapsAdjustedFont, orientation,
+                                         segmentRange.renderOrientation);
 
       CaseMapIntend caseMapIntend = CaseMapIntend::KeepSameCase;
-      if (needsCapsHandling) {
+      if (needsCapsHandling)
         caseMapIntend = capsSupport.needsCaseChange(smallCapsBehavior);
-      }
 
       CaseMappingHarfBuzzBufferFiller(
           caseMapIntend, fontDescription.localeOrDefault(),
@@ -713,10 +703,15 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) {
       CapsFeatureSettingsScopedOverlay capsOverlay(
           &fontFeatures, capsSupport.fontFeatureToUse(smallCapsBehavior));
 
-      if (!shapeRange(harfBuzzBuffer.get(), font, fontFeatures,
-                      directionAndSmallCapsAdjustedFont,
+      hb_direction_t direction =
+          TextDirectionToHBDirection(m_textRun.direction(), orientation,
+                                     directionAndSmallCapsAdjustedFont);
+
+      if (!shapeRange(harfBuzzBuffer.get(),
+                      fontFeatures.isEmpty() ? 0 : fontFeatures.data(),
+                      fontFeatures.size(), directionAndSmallCapsAdjustedFont,
                       currentFontDataForRangeSet->ranges(), segmentRange.script,
-                      language))
+                      direction, language))
         DLOG(ERROR) << "Shaping range failed.";
 
       if (!extractShapeResults(

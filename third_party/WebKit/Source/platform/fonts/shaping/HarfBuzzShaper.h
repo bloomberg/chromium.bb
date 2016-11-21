@@ -31,16 +31,11 @@
 #ifndef HarfBuzzShaper_h
 #define HarfBuzzShaper_h
 
-#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
-#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
-#include "wtf/text/CharacterNames.h"
 #include <hb.h>
 #include <memory>
 #include <unicode/uscript.h>
@@ -137,7 +132,7 @@ class UnicodeRangeSet;
 class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
   HarfBuzzShaper(const TextRun&);
-  PassRefPtr<ShapeResult> shapeResult(const Font*);
+  PassRefPtr<ShapeResult> shapeResult(const Font*) const;
   ~HarfBuzzShaper() {}
 
   enum HolesQueueItemAction { HolesQueueNextFont, HolesQueueRange };
@@ -151,16 +146,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
         : m_action(action), m_startIndex(start), m_numCharacters(num){};
   };
 
-  using FeaturesVector = Vector<hb_feature_t, 6>;
-
  private:
-  inline bool shapeRange(hb_buffer_t*,
-                         const Font*,
-                         const FeaturesVector&,
-                         const SimpleFontData*,
-                         PassRefPtr<UnicodeRangeSet>,
-                         UScriptCode,
-                         hb_language_t);
   bool extractShapeResults(hb_buffer_t*,
                            ShapeResult*,
                            bool& fontCycleQueued,
@@ -169,9 +155,9 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                            const Font*,
                            const SimpleFontData*,
                            UScriptCode,
-                           bool isLastResort);
+                           bool isLastResort) const;
   bool collectFallbackHintChars(const Deque<HolesQueueItem>&,
-                                Vector<UChar32>& hint);
+                                Vector<UChar32>& hint) const;
 
   void insertRunIntoShapeResult(
       ShapeResult*,
