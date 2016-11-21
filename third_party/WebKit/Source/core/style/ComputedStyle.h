@@ -214,8 +214,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     }
 
     inline bool compareEqualNonIndependent(const InheritedData& other) const {
-      return (m_captionSide == other.m_captionSide) &&
-             (m_listStyleType == other.m_listStyleType) &&
+      return (m_listStyleType == other.m_listStyleType) &&
              (m_listStylePosition == other.m_listStylePosition) &&
              (m_textAlign == other.m_textAlign) &&
              (m_textTransform == other.m_textTransform) &&
@@ -231,7 +230,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_writingMode == other.m_writingMode);
     }
 
-    unsigned m_captionSide : 2;        // ECaptionSide
     unsigned m_listStyleType : 7;      // EListStyleType
     unsigned m_listStylePosition : 1;  // EListStylePosition
     unsigned m_textAlign : 4;          // ETextAlign
@@ -363,7 +361,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   void setBitDefaults() {
     ComputedStyleBase::setBitDefaults();
-    m_inheritedData.m_captionSide = static_cast<unsigned>(initialCaptionSide());
     m_inheritedData.m_listStyleType =
         static_cast<unsigned>(initialListStyleType());
     m_inheritedData.m_listStylePosition =
@@ -2078,15 +2075,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static short initialVerticalBorderSpacing() { return 0; }
   short verticalBorderSpacing() const;
   void setVerticalBorderSpacing(short);
-
-  // caption-side (aka -epub-caption-side)
-  static ECaptionSide initialCaptionSide() { return ECaptionSide::Top; }
-  ECaptionSide captionSide() const {
-    return static_cast<ECaptionSide>(m_inheritedData.m_captionSide);
-  }
-  void setCaptionSide(ECaptionSide v) {
-    m_inheritedData.m_captionSide = static_cast<unsigned>(v);
-  }
 
   // cursor
   static ECursor initialCursor() { return ECursor::Auto; }
