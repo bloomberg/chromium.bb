@@ -2551,23 +2551,24 @@ LayoutRect PaintLayer::boundingBoxForCompositing(
   if (layoutObject()->isLayoutFlowThread())
     return LayoutRect();
 
-  const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
-
   // If there is a clip applied by an ancestor to this PaintLayer but below or
   // equal to |ancestorLayer|, use that clip as the bounds rather than the
   // recursive bounding boxes, since the latter may be larger than the actual
   // size. See https://bugs.webkit.org/show_bug.cgi?id=80372 for examples.
   LayoutRect result = clipper().localClipRect(ancestorLayer);
   // TODO(chrishtr): avoid converting to IntRect and back.
-  if (result == LayoutRect(LayoutRect::infiniteIntRect()))
+  if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
     result = physicalBoundingBox(LayoutPoint());
 
-  expandRectForStackingChildren(this, result, options);
+    const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-  // Only enlarge by the filter outsets if we know the filter is going to be
-  // rendered in software.  Accelerated filters will handle their own outsets.
-  if (paintsWithFilters())
-    result = mapLayoutRectForFilter(result);
+    expandRectForStackingChildren(this, result, options);
+
+    // Only enlarge by the filter outsets if we know the filter is going to be
+    // rendered in software.  Accelerated filters will handle their own outsets.
+    if (paintsWithFilters())
+      result = mapLayoutRectForFilter(result);
+  }
 
   if (transform() && (options == IncludeTransformsAndCompositedChildLayers ||
                       ((paintsWithTransform(GlobalPaintNormalPhase) &&
