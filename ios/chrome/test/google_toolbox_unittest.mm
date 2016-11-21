@@ -8,6 +8,10 @@
 #include "testing/gtest_mac.h"
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMNSDictionary+URLArguments.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // [NSDictionary gtm_dictionaryWithHttpArgumentsString] is used downstream.
 // This test ensures that we keep compiling the file.
 TEST(GoogleToolboxForMacTest, dictionaryWithHttpArgumentsString) {

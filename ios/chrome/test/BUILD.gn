@@ -51,6 +51,7 @@ source_set("run_all_unittests") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "google_toolbox_unittest.mm",
