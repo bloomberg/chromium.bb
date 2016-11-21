@@ -15,6 +15,7 @@
 #endif
 
 #include "base/logging.h"
+#include "base/numerics/saturated_arithmetic.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets.h"
@@ -67,8 +68,10 @@ void Rect::Inset(int left, int top, int right, int bottom) {
   origin_ += Vector2d(left, top);
   // left+right might overflow/underflow, but width() - (left+right) might
   // overflow as well.
-  set_width(SafeSubtract(width(), SafeAdd(left, right)));
-  set_height(SafeSubtract(height(), SafeAdd(top, bottom)));
+  set_width(base::SaturatedSubtraction(width(),
+                                       base::SaturatedAddition(left, right)));
+  set_height(base::SaturatedSubtraction(height(),
+                                        base::SaturatedAddition(top, bottom)));
 }
 
 void Rect::Offset(int horizontal, int vertical) {
@@ -154,8 +157,8 @@ void Rect::Union(const Rect& rect) {
   int rb = std::max(bottom(), rect.bottom());
 
   // Subtracting to get width/height might overflow integers, so clamp them.
-  SetRect(rx, ry, GetClampedWidthFromExtents(rx, rr),
-          GetClampedWidthFromExtents(ry, rb));
+  SetRect(rx, ry, base::SaturatedSubtraction(rr, rx),
+          base::SaturatedSubtraction(rb, ry));
 }
 
 void Rect::Subtract(const Rect& rect) {

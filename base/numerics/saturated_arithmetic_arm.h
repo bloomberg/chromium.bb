@@ -1,15 +1,15 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SaturatedArithmeticARM_h
-#define SaturatedArithmeticARM_h
+#ifndef BASE_NUMERICS_SATURATED_ARITHMETIC_ARM_H_
+#define BASE_NUMERICS_SATURATED_ARITHMETIC_ARM_H_
 
-#include "wtf/CPU.h"
 #include <limits>
-#include <stdint.h>
 
-ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b) {
+namespace base {
+
+inline int32_t SaturatedAddition(int32_t a, int32_t b) {
   int32_t result;
 
   asm("qadd %[output],%[first],%[second]"
@@ -19,7 +19,7 @@ ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b) {
   return result;
 }
 
-ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b) {
+inline int32_t SaturatedSubtraction(int32_t a, int32_t b) {
   int32_t result;
 
   asm("qsub %[output],%[first],%[second]"
@@ -29,26 +29,26 @@ ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b) {
   return result;
 }
 
-ALWAYS_INLINE int32_t saturatedNegative(int32_t a) {
-  return saturatedSubtraction(0, a);
+inline int32_t SaturatedNegative(int32_t a) {
+  return SaturatedSubtraction(0, a);
 }
 
-inline int getMaxSaturatedSetResultForTesting(int FractionalShift) {
+inline int GetMaxSaturatedSetResultForTesting(int fractional_shift) {
   // For ARM Asm version the set function maxes out to the biggest
   // possible integer part with the fractional part zero'd out.
   // e.g. 0x7fffffc0.
-  return std::numeric_limits<int>::max() & ~((1 << FractionalShift) - 1);
+  return std::numeric_limits<int>::max() & ~((1 << fractional_shift) - 1);
 }
 
-inline int getMinSaturatedSetResultForTesting(int FractionalShift) {
+inline int GetMinSaturatedSetResultForTesting(int fractional_shift) {
   return std::numeric_limits<int>::min();
 }
 
-template <int FractionalShift>
-ALWAYS_INLINE int saturatedSet(int value) {
+template <int fractional_shift>
+inline int SaturatedSet(int value) {
   // Figure out how many bits are left for storing the integer part of
   // the fixed point number, and saturate our input to that
-  enum { Saturate = 32 - FractionalShift };
+  enum { Saturate = 32 - fractional_shift };
 
   int result;
 
@@ -64,19 +64,19 @@ ALWAYS_INLINE int saturatedSet(int value) {
       "lsl  %[output],%[shift]"
       : [output] "=r"(result)
       : [value] "r"(value), [saturate] "n"(Saturate),
-        [shift] "n"(FractionalShift));
+        [shift] "n"(fractional_shift));
 
   return result;
 }
 
-template <int FractionalShift>
-ALWAYS_INLINE int saturatedSet(unsigned value) {
+template <int fractional_shift>
+inline int SaturatedSet(unsigned value) {
   // Here we are being passed an unsigned value to saturate,
   // even though the result is returned as a signed integer. The ARM
   // instruction for unsigned saturation therefore needs to be given one
   // less bit (i.e. the sign bit) for the saturation to work correctly; hence
   // the '31' below.
-  enum { Saturate = 31 - FractionalShift };
+  enum { Saturate = 31 - fractional_shift };
 
   // The following ARM code will Saturate the passed value to the number of
   // bits used for the whole part of the fixed point representation, then
@@ -92,9 +92,11 @@ ALWAYS_INLINE int saturatedSet(unsigned value) {
       "lsl  %[output],%[shift]"
       : [output] "=r"(result)
       : [value] "r"(value), [saturate] "n"(Saturate),
-        [shift] "n"(FractionalShift));
+        [shift] "n"(fractional_shift));
 
   return result;
 }
 
-#endif  // SaturatedArithmeticARM_h
+}  // namespace base
+
+#endif  // BASE_NUMERICS_SATURATED_ARITHMETIC_ARM_H_

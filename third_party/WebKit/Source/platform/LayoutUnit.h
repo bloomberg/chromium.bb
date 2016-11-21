@@ -159,7 +159,7 @@ class LayoutUnit {
     return toInt();
   }
   ALWAYS_INLINE int round() const {
-    return saturatedAddition(rawValue(), kFixedPointDenominator / 2) >>
+    return SaturatedAddition(rawValue(), kFixedPointDenominator / 2) >>
            kLayoutUnitFractionalBits;
   }
 
@@ -239,11 +239,11 @@ class LayoutUnit {
   }
 
   ALWAYS_INLINE void setValue(int value) {
-    m_value = saturatedSet<kLayoutUnitFractionalBits>(value);
+    m_value = SaturatedSet<kLayoutUnitFractionalBits>(value);
   }
 
   inline void setValue(unsigned value) {
-    m_value = saturatedSet<kLayoutUnitFractionalBits>(value);
+    m_value = SaturatedSet<kLayoutUnitFractionalBits>(value);
   }
 
   int m_value;
@@ -523,7 +523,7 @@ inline LayoutUnit operator/(unsigned long long a, const LayoutUnit& b) {
 
 ALWAYS_INLINE LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit returnVal;
-  returnVal.setRawValue(saturatedAddition(a.rawValue(), b.rawValue()));
+  returnVal.setRawValue(SaturatedAddition(a.rawValue(), b.rawValue()));
   return returnVal;
 }
 
@@ -553,7 +553,7 @@ inline double operator+(const double a, const LayoutUnit& b) {
 
 ALWAYS_INLINE LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit returnVal;
-  returnVal.setRawValue(saturatedSubtraction(a.rawValue(), b.rawValue()));
+  returnVal.setRawValue(SaturatedSubtraction(a.rawValue(), b.rawValue()));
   return returnVal;
 }
 
@@ -583,7 +583,7 @@ inline float operator-(const float a, const LayoutUnit& b) {
 
 inline LayoutUnit operator-(const LayoutUnit& a) {
   LayoutUnit returnVal;
-  returnVal.setRawValue(saturatedNegative(a.rawValue()));
+  returnVal.setRawValue(SaturatedNegative(a.rawValue()));
   return returnVal;
 }
 
@@ -615,7 +615,7 @@ inline LayoutUnit operator%(int a, const LayoutUnit& b) {
 }
 
 inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b) {
-  a.setRawValue(saturatedAddition(a.rawValue(), b.rawValue()));
+  a.setRawValue(SaturatedAddition(a.rawValue(), b.rawValue()));
   return a;
 }
 
@@ -640,7 +640,7 @@ inline LayoutUnit& operator-=(LayoutUnit& a, int b) {
 }
 
 inline LayoutUnit& operator-=(LayoutUnit& a, const LayoutUnit& b) {
-  a.setRawValue(saturatedSubtraction(a.rawValue(), b.rawValue()));
+  a.setRawValue(SaturatedSubtraction(a.rawValue(), b.rawValue()));
   return a;
 }
 
