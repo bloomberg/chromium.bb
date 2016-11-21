@@ -165,7 +165,7 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e) {
 
         // Whitespace
         if (m_platformTheme->controlRequiresPreWhiteSpace(part))
-          style.setWhiteSpace(PRE);
+          style.setWhiteSpace(EWhiteSpace::Pre);
 
         // Width / Height
         // The width and height here are affected by the zoom.

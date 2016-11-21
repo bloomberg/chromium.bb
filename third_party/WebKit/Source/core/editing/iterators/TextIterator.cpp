@@ -713,9 +713,9 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
         // This effectively translates newlines to spaces without copying the
         // text.
         if (str[runStart] == '\n') {
-          // We need to preserve new lines in case of PRE_LINE.
+          // We need to preserve new lines in case of PreLine.
           // See bug crbug.com/317365.
-          if (layoutObject->style()->whiteSpace() == PRE_LINE)
+          if (layoutObject->style()->whiteSpace() == EWhiteSpace::PreLine)
             spliceBuffer('\n', m_node, 0, runStart, runStart);
           else
             spliceBuffer(spaceCharacter, m_node, 0, runStart, runStart + 1);

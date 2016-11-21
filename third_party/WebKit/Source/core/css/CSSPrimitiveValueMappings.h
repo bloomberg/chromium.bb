@@ -2583,22 +2583,22 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EWhiteSpace e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case NORMAL:
+    case EWhiteSpace::Normal:
       m_valueID = CSSValueNormal;
       break;
-    case PRE:
+    case EWhiteSpace::Pre:
       m_valueID = CSSValuePre;
       break;
-    case PRE_WRAP:
+    case EWhiteSpace::PreWrap:
       m_valueID = CSSValuePreWrap;
       break;
-    case PRE_LINE:
+    case EWhiteSpace::PreLine:
       m_valueID = CSSValuePreLine;
       break;
-    case NOWRAP:
+    case EWhiteSpace::Nowrap:
       m_valueID = CSSValueNowrap;
       break;
-    case KHTML_NOWRAP:
+    case EWhiteSpace::KhtmlNowrap:
       m_valueID = CSSValueWebkitNowrap;
       break;
   }
@@ -2608,23 +2608,23 @@ template <>
 inline EWhiteSpace CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueWebkitNowrap:
-      return KHTML_NOWRAP;
+      return EWhiteSpace::KhtmlNowrap;
     case CSSValueNowrap:
-      return NOWRAP;
+      return EWhiteSpace::Nowrap;
     case CSSValuePre:
-      return PRE;
+      return EWhiteSpace::Pre;
     case CSSValuePreWrap:
-      return PRE_WRAP;
+      return EWhiteSpace::PreWrap;
     case CSSValuePreLine:
-      return PRE_LINE;
+      return EWhiteSpace::PreLine;
     case CSSValueNormal:
-      return NORMAL;
+      return EWhiteSpace::Normal;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return NORMAL;
+  return EWhiteSpace::Normal;
 }
 
 template <>

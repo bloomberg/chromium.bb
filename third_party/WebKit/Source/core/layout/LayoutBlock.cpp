@@ -1470,7 +1470,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
     LayoutUnit& minLogicalWidth,
     LayoutUnit& maxLogicalWidth) const {
   const ComputedStyle& styleToUse = styleRef();
-  bool nowrap = styleToUse.whiteSpace() == NOWRAP;
+  bool nowrap = styleToUse.whiteSpace() == EWhiteSpace::Nowrap;
 
   LayoutObject* child = firstChild();
   LayoutBlock* containingBlock = this->containingBlock();

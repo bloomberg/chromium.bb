@@ -138,12 +138,12 @@ void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style) {
   if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
     return;
   // Collapsing whitespace is harmful in plain-text editing.
-  if (style.whiteSpace() == NORMAL)
-    style.setWhiteSpace(PRE_WRAP);
-  else if (style.whiteSpace() == NOWRAP)
-    style.setWhiteSpace(PRE);
-  else if (style.whiteSpace() == PRE_LINE)
-    style.setWhiteSpace(PRE_WRAP);
+  if (style.whiteSpace() == EWhiteSpace::Normal)
+    style.setWhiteSpace(EWhiteSpace::PreWrap);
+  else if (style.whiteSpace() == EWhiteSpace::Nowrap)
+    style.setWhiteSpace(EWhiteSpace::Pre);
+  else if (style.whiteSpace() == EWhiteSpace::PreLine)
+    style.setWhiteSpace(EWhiteSpace::PreWrap);
 }
 
 static void adjustStyleForFirstLetter(ComputedStyle& style) {
@@ -196,14 +196,14 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
     return;
 
   if (isHTMLTableCellElement(element)) {
-    if (style.whiteSpace() == KHTML_NOWRAP) {
+    if (style.whiteSpace() == EWhiteSpace::KhtmlNowrap) {
       // Figure out if we are really nowrapping or if we should just
       // use normal instead. If the width of the cell is fixed, then
       // we don't actually use NOWRAP.
       if (style.width().isFixed())
-        style.setWhiteSpace(NORMAL);
+        style.setWhiteSpace(EWhiteSpace::Normal);
       else
-        style.setWhiteSpace(NOWRAP);
+        style.setWhiteSpace(EWhiteSpace::Nowrap);
     }
     return;
   }

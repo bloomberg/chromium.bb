@@ -73,8 +73,8 @@ class BreakingContext {
         m_lineInfo(inLineInfo),
         m_layoutTextInfo(inLayoutTextInfo),
         m_width(lineWidth),
-        m_currWS(NORMAL),
-        m_lastWS(NORMAL),
+        m_currWS(EWhiteSpace::Normal),
+        m_lastWS(EWhiteSpace::Normal),
         m_preservesNewline(false),
         m_atStart(true),
         m_ignoringSpaces(false),
@@ -146,7 +146,7 @@ class BreakingContext {
   InlineIterator handleEndOfLine();
 
   void clearLineBreakIfFitsOnLine() {
-    if (m_width.fitsOnLine() || m_lastWS == NOWRAP)
+    if (m_width.fitsOnLine() || m_lastWS == EWhiteSpace::Nowrap)
       m_lineBreak.clear();
   }
 
@@ -242,7 +242,7 @@ inline bool shouldCollapseWhiteSpace(const ComputedStyle& style,
   // set to 'pre-wrap', UAs may visually collapse them.
   return style.collapseWhiteSpace() ||
          (whitespacePosition == TrailingWhitespace &&
-          style.whiteSpace() == PRE_WRAP &&
+          style.whiteSpace() == EWhiteSpace::PreWrap &&
           (!lineInfo.isEmpty() || !lineInfo.previousLineBrokeCleanly()));
 }
 
@@ -893,9 +893,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
   // Auto-wrapping text should wrap in the middle of a word only if it could not
   // wrap before the word, which is only possible if the word is the first thing
   // on the line, that is, if |w| is zero.
-  bool breakWords =
-      m_currentStyle->breakWords() &&
-      ((m_autoWrap && !m_width.committedWidth()) || m_currWS == PRE);
+  bool breakWords = m_currentStyle->breakWords() &&
+                    ((m_autoWrap && !m_width.committedWidth()) ||
+                     m_currWS == EWhiteSpace::Pre);
   bool midWordBreak = false;
   bool breakAll =
       m_currentStyle->wordBreak() == BreakAllWordBreak && m_autoWrap;
@@ -984,7 +984,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     int nextBreakablePosition = m_current.nextBreakablePosition();
     bool betweenWords =
         c == newlineCharacter ||
-        (m_currWS != PRE && !m_atStart &&
+        (m_currWS != EWhiteSpace::Pre && !m_atStart &&
          m_layoutTextInfo.m_lineBreakIterator.isBreakable(
              m_current.offset(), nextBreakablePosition, lineBreakType) &&
          (!disableSoftHyphen ||
@@ -1402,7 +1402,7 @@ inline bool BreakingContext::canBreakAtWhitespace(
 inline void BreakingContext::commitAndUpdateLineBreakIfNeeded() {
   bool checkForBreak = m_autoWrap;
   if (m_width.committedWidth() && !m_width.fitsOnLine() &&
-      m_lineBreak.getLineLayoutItem() && m_currWS == NOWRAP) {
+      m_lineBreak.getLineLayoutItem() && m_currWS == EWhiteSpace::Nowrap) {
     if (m_width.fitsOnLine(0, ExcludeWhitespace)) {
       m_width.commit();
       m_lineBreak.moveToStartOf(m_nextObject);

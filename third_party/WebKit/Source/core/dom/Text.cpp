@@ -274,7 +274,7 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
     return false;
 
   // pre-wrap in SVG never makes layoutObject.
-  if (style.whiteSpace() == PRE_WRAP && parent.isSVG())
+  if (style.whiteSpace() == EWhiteSpace::PreWrap && parent.isSVG())
     return false;
 
   // pre/pre-wrap/pre-line always make layoutObjects.

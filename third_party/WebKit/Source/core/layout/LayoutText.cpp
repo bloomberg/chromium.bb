@@ -1340,7 +1340,7 @@ void LayoutText::computePreferredLogicalWidths(
   if (!styleToUse.autoWrap())
     m_minWidth = m_maxWidth;
 
-  if (styleToUse.whiteSpace() == PRE) {
+  if (styleToUse.whiteSpace() == EWhiteSpace::Pre) {
     if (firstLine)
       m_firstLineMinWidth = m_maxWidth;
     m_lastLineLineMinWidth = currMaxWidth;

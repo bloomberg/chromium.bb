@@ -99,7 +99,7 @@ class ExpansionOpportunities {
         RELEASE_ASSERT(opportunitiesInRun <= m_totalOpportunities);
 
         // Don't justify for white-space: pre.
-        if (r->m_lineLayoutItem.style()->whiteSpace() != PRE) {
+        if (r->m_lineLayoutItem.style()->whiteSpace() != EWhiteSpace::Pre) {
           InlineTextBox* textBox = toInlineTextBox(r->m_box);
           RELEASE_ASSERT(m_totalOpportunities);
           int expansion = ((availableLogicalWidth - totalLogicalWidth) *

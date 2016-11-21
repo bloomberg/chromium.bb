@@ -31,7 +31,7 @@ InlineIterator BreakingContext::handleEndOfLine() {
       (!m_lineBreak.getLineLayoutItem() ||
        !m_lineBreak.getLineLayoutItem().isBR())) {
     // we just add as much as possible
-    if (m_blockStyle->whiteSpace() == PRE && !m_current.offset()) {
+    if (m_blockStyle->whiteSpace() == EWhiteSpace::Pre && !m_current.offset()) {
       m_lineBreak.moveTo(m_lastObject,
                          m_lastObject.isText() ? m_lastObject.length() : 0);
     } else if (m_lineBreak.getLineLayoutItem()) {

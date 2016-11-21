@@ -373,7 +373,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
-    m_inheritedData.m_whiteSpace = initialWhiteSpace();
+    m_inheritedData.m_whiteSpace = static_cast<unsigned>(initialWhiteSpace());
     m_inheritedData.m_borderCollapse = initialBorderCollapse();
     m_inheritedData.m_rtlOrdering = initialRTLOrdering();
     m_inheritedData.m_boxDirection = initialBoxDirection();
@@ -2312,11 +2312,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // white-space inherited
-  static EWhiteSpace initialWhiteSpace() { return NORMAL; }
+  static EWhiteSpace initialWhiteSpace() { return EWhiteSpace::Normal; }
   EWhiteSpace whiteSpace() const {
     return static_cast<EWhiteSpace>(m_inheritedData.m_whiteSpace);
   }
-  void setWhiteSpace(EWhiteSpace v) { m_inheritedData.m_whiteSpace = v; }
+  void setWhiteSpace(EWhiteSpace v) {
+    m_inheritedData.m_whiteSpace = static_cast<unsigned>(v);
+  }
 
   // word-break inherited (aka -epub-word-break)
   static EWordBreak initialWordBreak() { return NormalWordBreak; }
@@ -3738,21 +3740,21 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Whitespace utility functions.
   static bool autoWrap(EWhiteSpace ws) {
     // Nowrap and pre don't automatically wrap.
-    return ws != NOWRAP && ws != PRE;
+    return ws != EWhiteSpace::Nowrap && ws != EWhiteSpace::Pre;
   }
 
   bool autoWrap() const { return autoWrap(whiteSpace()); }
 
   static bool preserveNewline(EWhiteSpace ws) {
     // Normal and nowrap do not preserve newlines.
-    return ws != NORMAL && ws != NOWRAP;
+    return ws != EWhiteSpace::Normal && ws != EWhiteSpace::Nowrap;
   }
 
   bool preserveNewline() const { return preserveNewline(whiteSpace()); }
 
   static bool collapseWhiteSpace(EWhiteSpace ws) {
     // Pre and prewrap do not collapse whitespace.
-    return ws != PRE && ws != PRE_WRAP;
+    return ws != EWhiteSpace::Pre && ws != EWhiteSpace::PreWrap;
   }
 
   bool collapseWhiteSpace() const { return collapseWhiteSpace(whiteSpace()); }
@@ -3768,14 +3770,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return false;
   }
   bool breakOnlyAfterWhiteSpace() const {
-    return whiteSpace() == PRE_WRAP ||
+    return whiteSpace() == EWhiteSpace::PreWrap ||
            getLineBreak() == LineBreakAfterWhiteSpace;
   }
 
   bool breakWords() const {
     return (wordBreak() == BreakWordBreak ||
             overflowWrap() == BreakOverflowWrap) &&
-           whiteSpace() != PRE && whiteSpace() != NOWRAP;
+           whiteSpace() != EWhiteSpace::Pre &&
+           whiteSpace() != EWhiteSpace::Nowrap;
   }
 
   // Text direction utility functions.

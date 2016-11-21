@@ -718,7 +718,7 @@ void LayoutThemeMac::adjustMenuListStyle(ComputedStyle& style,
   style.setHeight(Length(Auto));
 
   // White-space is locked to pre.
-  style.setWhiteSpace(PRE);
+  style.setWhiteSpace(EWhiteSpace::Pre);
 
   // Set the foreground color to black or gray when we have the aqua look.
   // Cast to RGB32 is to work around a compiler bug.

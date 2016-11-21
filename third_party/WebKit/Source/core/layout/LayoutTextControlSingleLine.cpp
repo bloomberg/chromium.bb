@@ -301,7 +301,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(
   textBlockStyle->inheritFrom(startStyle);
   adjustInnerEditorStyle(*textBlockStyle);
 
-  textBlockStyle->setWhiteSpace(PRE);
+  textBlockStyle->setWhiteSpace(EWhiteSpace::Pre);
   textBlockStyle->setOverflowWrap(NormalOverflowWrap);
   textBlockStyle->setTextOverflow(textShouldBeTruncated() ? TextOverflowEllipsis
                                                           : TextOverflowClip);

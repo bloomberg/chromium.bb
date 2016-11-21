@@ -67,8 +67,10 @@ void LayoutSVGInlineText::styleDidChange(StyleDifference diff,
   LayoutText::styleDidChange(diff, oldStyle);
   updateScaledFont();
 
-  bool newPreserves = style() ? style()->whiteSpace() == PRE : false;
-  bool oldPreserves = oldStyle ? oldStyle->whiteSpace() == PRE : false;
+  bool newPreserves =
+      style() ? style()->whiteSpace() == EWhiteSpace::Pre : false;
+  bool oldPreserves =
+      oldStyle ? oldStyle->whiteSpace() == EWhiteSpace::Pre : false;
   if (oldPreserves != newPreserves) {
     setText(originalText(), true);
     return;
@@ -297,7 +299,7 @@ void LayoutSVGInlineText::addMetricsFromRun(const TextRun& run,
 
   const float cachedFontHeight =
       fontData->getFontMetrics().floatHeight() / m_scalingFactor;
-  const bool preserveWhiteSpace = styleRef().whiteSpace() == PRE;
+  const bool preserveWhiteSpace = styleRef().whiteSpace() == EWhiteSpace::Pre;
   const unsigned runLength = run.length();
 
   // TODO(pdr): Character-based iteration is ambiguous and error-prone. It
