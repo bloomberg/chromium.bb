@@ -4,24 +4,6 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='scroller'",
-      "bounds": [200, 100],
-      "shouldFlattenTransform": false,
-      "drawsContent": true,
-      "backgroundColor": "#808080"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [185, 100],
-      "shouldFlattenTransform": false
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [185, 210],
-      "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
@@ -30,65 +12,23 @@
           "reason": "forced by layout"
         },
         {
+          "object": "LayoutBlockFlow DIV id='scroller'",
+          "rect": [185, 0, 15, 100],
+          "reason": "scroll"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [0, 5, 15, 15],
-          "reason": "full"
-        }
-      ]
-    },
-    {
-      "name": "Overflow Controls Host Layer",
-      "bounds": [200, 100]
-    },
-    {
-      "name": "Vertical Scrollbar Layer",
-      "position": [185, 0],
-      "bounds": [15, 100],
-      "paintInvalidations": [
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 210],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 210],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 210],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 100],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 100],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 100],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 100],
-          "reason": "full"
-        },
-        {
-          "object": "Vertical Scrollbar Layer",
-          "rect": [0, 0, 15, 100],
           "reason": "full"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
     {
       "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
       "reason": "forced by layout"

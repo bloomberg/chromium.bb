@@ -21,34 +21,6 @@ scroll me
       "position": [10, 8],
       "bounds": [400, 204],
       "drawsContent": true
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='scroller'",
-      "position": [202, 10],
-      "bounds": [200, 200],
-      "shouldFlattenTransform": false,
-      "drawsContent": true,
-      "backgroundColor": "#FFFF00"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [185, 200],
-      "shouldFlattenTransform": false
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [185, 400],
-      "contentsOpaque": true,
-      "drawsContent": true
-    },
-    {
-      "name": "Overflow Controls Host Layer",
-      "bounds": [200, 200]
-    },
-    {
-      "name": "Vertical Scrollbar Layer",
-      "position": [185, 0],
-      "bounds": [15, 200]
     }
   ]
 }

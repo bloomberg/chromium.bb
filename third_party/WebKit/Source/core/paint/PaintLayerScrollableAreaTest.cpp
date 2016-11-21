@@ -156,13 +156,14 @@ TEST_F(PaintLayerScrollableAreaTest,
   EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller16"));
 }
 
-TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromoted) {
+TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
   RuntimeEnabledFeatures::setCompositeOpaqueScrollersEnabled(true);
 
   setBodyInnerHTML(
       "<style>"
-      "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
-      "white local content-box; border: 10px solid rgba(0, 255, 0, 0.5); }"
+      "#scroller { overflow: scroll; height: 200px; width: 200px; "
+      "contain: paint; background: white local content-box; "
+      "border: 10px solid rgba(0, 255, 0, 0.5); }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
@@ -179,6 +180,36 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromoted) {
   EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
 }
 
+// Tests that we don't promote scrolling content which would not be contained.
+// Promoting the scroller would also require promoting the positioned div
+// which would lose subpixel anti-aliasing due to its transparent background.
+TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
+  RuntimeEnabledFeatures::setCompositeOpaqueScrollersEnabled(true);
+
+  setBodyInnerHTML(
+      "<style>"
+      "#scroller { overflow: scroll; height: 200px; width: 200px; "
+      "background: white local content-box; "
+      "border: 10px solid rgba(0, 255, 0, 0.5); }"
+      "#scrolled { height: 300px; }"
+      "#positioned { position: relative; }"
+      "</style>"
+      "<div id=\"scroller\">"
+      "  <div id=\"positioned\">Not contained by scroller.</div>"
+      "  <div id=\"scrolled\"></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
+  Element* scroller = document().getElementById("scroller");
+  PaintLayer* paintLayer =
+      toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+  EXPECT_FALSE(paintLayer->needsCompositedScrolling());
+  EXPECT_FALSE(paintLayer->graphicsLayerBacking());
+  EXPECT_FALSE(paintLayer->graphicsLayerBackingForScrolling());
+}
+
 TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
   RuntimeEnabledFeatures::setCompositeOpaqueScrollersEnabled(true);
 
@@ -186,7 +217,7 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
       "<style>"
       "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
       "rgba(0, 255, 0, 0.5) local content-box; border: 10px solid rgba(0, 255, "
-      "0, 0.5); }"
+      "0, 0.5); contain: paint; }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
@@ -208,7 +239,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
   setBodyInnerHTML(
       "<style>"
       "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
-      "white local content-box; }"
+      "white local content-box; contain: paint; }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
@@ -239,7 +270,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   setBodyInnerHTML(
       "<style>"
       "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
-      "rgba(255,255,255,0.5) local content-box; }"
+      "rgba(255,255,255,0.5) local content-box; contain: paint; }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
@@ -273,7 +304,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   setBodyInnerHTML(
       "<style>"
       "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
-      "white local content-box; }"
+      "white local content-box; contain: paint; }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"parent\">"
@@ -327,7 +358,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   setBodyInnerHTML(
       "<style>"
       "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
-      "white local content-box; }"
+      "white local content-box; contain: paint; }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"parent\">"
