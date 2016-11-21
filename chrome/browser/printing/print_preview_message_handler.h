@@ -18,6 +18,7 @@ struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -53,6 +54,7 @@ class PrintPreviewMessageHandler
 
   // Message handlers.
   void OnRequestPrintPreview(
+      content::RenderFrameHost* render_frame_host,
       const PrintHostMsg_RequestPrintPreview_Params& params);
   void OnDidGetDefaultPageLayout(const PageSizeMargins& page_layout_in_points,
                                  const gfx::Rect& printable_area_in_points,

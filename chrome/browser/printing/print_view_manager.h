@@ -43,7 +43,7 @@ class PrintViewManager : public PrintViewManagerBase,
 
   // Notify PrintViewManager that print preview is starting in the renderer for
   // a particular WebNode.
-  void PrintPreviewForWebNode();
+  void PrintPreviewForWebNode(content::RenderFrameHost* rfh);
 
   // Notify PrintViewManager that print preview has finished. Unfreeze the
   // renderer in the case of scripted print preview.

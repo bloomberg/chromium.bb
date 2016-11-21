@@ -92,9 +92,12 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
+    content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_RequestPrintPreview_Params& params) {
-  if (params.webnode_only)
-    PrintViewManager::FromWebContents(web_contents())->PrintPreviewForWebNode();
+  if (params.webnode_only) {
+    PrintViewManager::FromWebContents(web_contents())->PrintPreviewForWebNode(
+        render_frame_host);
+  }
   PrintPreviewDialogController::PrintPreview(web_contents());
   PrintPreviewUI::SetInitialParams(GetPrintPreviewDialog(), params);
 }
@@ -209,9 +212,16 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintPreviewMessageHandler, message,
+                                   render_frame_host)
     IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
                         OnRequestPrintPreview)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  if (handled)
+    return true;
+
+  IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
                         OnDidGetPreviewPageCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage,
