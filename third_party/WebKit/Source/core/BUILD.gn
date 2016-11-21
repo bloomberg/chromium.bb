@@ -1075,6 +1075,7 @@ source_set("unit_tests") {
     "dom/ElementTest.cpp",
     "dom/ElementVisibilityObserverTest.cpp",
     "dom/ExecutionContextTaskTest.cpp",
+    "dom/IdleDeadlineTest.cpp",
     "dom/MainThreadTaskRunnerTest.cpp",
     "dom/NodeTest.cpp",
     "dom/NthIndexCacheTest.cpp",

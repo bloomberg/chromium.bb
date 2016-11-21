@@ -58,7 +58,6 @@ namespace scheduler {
 class RendererScheduler;
 class RendererSchedulerImpl;
 }
-class TestingPlatformMockWebTaskRunner;
 class WebCompositorSupport;
 class WebThread;
 
@@ -92,8 +91,8 @@ class TestingPlatformMockScheduler : public WebScheduler {
   void runAllTasks();
 
   // WebScheduler implementation:
-  WebTaskRunner* loadingTaskRunner() override;
-  WebTaskRunner* timerTaskRunner() override;
+  WebTaskRunner* loadingTaskRunner() override { return nullptr; }
+  WebTaskRunner* timerTaskRunner() override { return nullptr; }
   void shutdown() override {}
   bool shouldYieldForHighPriorityWork() override { return false; }
   bool canExceedIdleDeadlineIfRequired() override { return false; }
@@ -113,7 +112,6 @@ class TestingPlatformMockScheduler : public WebScheduler {
 
  private:
   WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
-  std::unique_ptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
 };
 
 class TestingPlatformSupport : public Platform {

@@ -5,6 +5,8 @@
 #include "core/dom/IdleDeadline.h"
 
 #include "core/timing/PerformanceBase.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -14,8 +16,14 @@ IdleDeadline::IdleDeadline(double deadlineSeconds, CallbackType callbackType)
 
 double IdleDeadline::timeRemaining() const {
   double timeRemaining = m_deadlineSeconds - monotonicallyIncreasingTime();
-  if (timeRemaining < 0)
+  if (timeRemaining < 0) {
     timeRemaining = 0;
+  } else if (Platform::current()
+                 ->currentThread()
+                 ->scheduler()
+                 ->shouldYieldForHighPriorityWork()) {
+    timeRemaining = 0;
+  }
 
   return 1000.0 * PerformanceBase::clampTimeResolution(timeRemaining);
 }

@@ -10,8 +10,8 @@
 
 namespace blink {
 
-class IdleDeadline : public GarbageCollected<IdleDeadline>,
-                     public ScriptWrappable {
+class CORE_EXPORT IdleDeadline : public GarbageCollected<IdleDeadline>,
+                                 public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
