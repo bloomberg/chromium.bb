@@ -10,19 +10,14 @@ bool SessionStateDelegate::IsInSecondaryLoginScreen() const {
   return GetSessionState() == session_manager::SessionState::LOGIN_SECONDARY;
 }
 
-bool SessionStateDelegate::CanAddUserToMultiProfile(
-    SessionStateDelegate::AddUserError* error) const {
-  if (!IsMultiProfileAllowedByPrimaryUserPolicy()) {
-    if (error)
-      *error = ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER;
-    return false;
-  }
-  if (NumberOfLoggedInUsers() >= GetMaximumNumberOfLoggedInUsers()) {
-    if (error)
-      *error = ADD_USER_ERROR_MAXIMUM_USERS_REACHED;
-    return false;
-  }
-  return true;
+AddUserSessionPolicy SessionStateDelegate::GetAddUserSessionPolicy() const {
+  if (!IsMultiProfileAllowedByPrimaryUserPolicy())
+    return AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER;
+
+  if (NumberOfLoggedInUsers() >= GetMaximumNumberOfLoggedInUsers())
+    return AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED;
+
+  return AddUserSessionPolicy::ALLOWED;
 }
 
 }  // namespace ash

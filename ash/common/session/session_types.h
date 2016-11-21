@@ -11,6 +11,18 @@ namespace ash {
 // index 0 is the currently active user.
 using UserIndex = int;
 
+// Represents possible user adding scenarios.
+enum class AddUserSessionPolicy {
+  // Adding a user is allowed.
+  ALLOWED,
+  // Disallowed due to primary user's policy.
+  ERROR_NOT_ALLOWED_PRIMARY_USER,
+  // Disallowed due to no eligible users.
+  ERROR_NO_ELIGIBLE_USERS,
+  // Disallowed due to reaching maximum supported user.
+  ERROR_MAXIMUM_USERS_REACHED,
+};
+
 }  // namespace ash
 
 #endif  // ASH_COMMON_SESSION_SESSION_TYPES_H_

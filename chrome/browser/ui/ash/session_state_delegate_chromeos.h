@@ -29,7 +29,7 @@ class SessionStateDelegateChromeos
   // ash::SessionStateDelegate:
   int GetMaximumNumberOfLoggedInUsers() const override;
   int NumberOfLoggedInUsers() const override;
-  bool CanAddUserToMultiProfile(AddUserError* error) const override;
+  ash::AddUserSessionPolicy GetAddUserSessionPolicy() const override;
   bool IsActiveUserSessionStarted() const override;
   bool CanLockScreen() const override;
   bool IsScreenLocked() const override;
