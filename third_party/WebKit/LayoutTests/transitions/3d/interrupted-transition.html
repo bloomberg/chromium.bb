@@ -7,7 +7,7 @@
     height: 10px;
     background-color: green;
     transform: translate3d(0, 0, 0);
-    -webkit-transition: transform 200ms linear;
+    transition: transform 200ms linear;
 }
 </style>
 <script>
@@ -24,7 +24,7 @@ var box;
 function interruptTransition() {
     if (interruptionCount <= NUMBER_OF_INTERRUPTIONS) {
         interruptionCount++;
-        box.style.webkitTransform = 'translate3d(' + (interruptionCount * 5) + "px, 0, 0)";
+        box.style.transform = 'translate3d(' + (interruptionCount * 5) + "px, 0, 0)";
         // call the function again, before the transition can complete
         setTimeout(interruptTransition, 0);
     }
@@ -40,7 +40,7 @@ function finishTest() {
 
 window.addEventListener("load", function () {
     box = document.getElementById("box");
-    box.addEventListener("webkitTransitionEnd", finishTest, false);
+    box.addEventListener("transitionend", finishTest, false);
     // start the rush of interruptions
     setTimeout(interruptTransition, 10);
 }, false);

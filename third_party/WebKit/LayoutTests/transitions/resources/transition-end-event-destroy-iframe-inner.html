@@ -7,8 +7,8 @@
       width: 100px;
       margin: 10px;
       background-color: blue;
-      -webkit-transition-property: -webkit-transform;
-      -webkit-transition-duration: 0.1s;
+      transition-property: transform;
+      transition-duration: 0.1s;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
@@ -21,10 +21,10 @@
     function startTest()
     {
         var box1 = document.getElementById('box1');
-        box1.addEventListener('webkitTransitionEnd', function() {
+        box1.addEventListener('transitionend', function() {
             transitionEnded();
         }, false);
-        box1.style.webkitTransform = 'translate(100px, 0)';
+        box1.style.transform = 'translate(100px, 0)';
     }
     
     window.addEventListener('load', startTest, false);
@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<p>Tests element removal of iframe in webkitTransitionEnd event handler. Should not crash.</p>
+<p>Tests element removal of iframe in transitionend event handler. Should not crash.</p>
 
 <div id="container">
   <div id="box1" class="box"></div>

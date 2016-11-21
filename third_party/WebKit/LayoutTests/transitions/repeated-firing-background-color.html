@@ -2,7 +2,7 @@
 <head>
   <style>
     div {
-        -webkit-transition: background-color .15s linear;
+        transition: background-color .15s linear;
     }
     div.trans {
         background-color: hsla(0, 50%, 50%, 1);
@@ -33,7 +33,7 @@
     // Force a layout so that changing the classname below causes an animation.
     document.body.offsetHeight;
 
-    document.getElementById('foo').addEventListener('webkitTransitionEnd', function() {
+    document.getElementById('foo').addEventListener('transitionend', function() {
         setTimeout(checkRunning, 0);
     });
 

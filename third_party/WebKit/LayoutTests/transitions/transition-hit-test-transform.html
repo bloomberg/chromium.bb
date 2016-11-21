@@ -10,9 +10,9 @@
       width: 200px;
       background-color: red;
       transform: translateX(100px);
-      -webkit-transition-property: transform;
-      -webkit-transition-duration: 4s;
-      -webkit-transition-timing-function: linear;
+      transition-property: transform;
+      transition-duration: 4s;
+      transition-timing-function: linear;
     }
     
     .dot {
@@ -66,7 +66,7 @@
                 testRunner.waitUntilDone();
             }
       
-            document.getElementById("target").style.webkitTransform = "translateX(300px)";
+            document.getElementById("target").style.transform = "translateX(300px)";
             requestAnimationFrame(doTest);
         }
    </script>

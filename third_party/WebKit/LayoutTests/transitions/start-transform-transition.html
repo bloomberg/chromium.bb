@@ -6,8 +6,8 @@
       width: 100px;
       height: 100px;
       background-color: blue;
-      -webkit-transition-property: transform;
-      -webkit-transition-duration: 5s;
+      transition-property: transform;
+      transition-duration: 5s;
       transform: translate(0, 0);
     }
 
@@ -23,7 +23,7 @@
 
     function test()
     {
-      var t = window.getComputedStyle(document.getElementById('box')).webkitTransform;
+      var t = window.getComputedStyle(document.getElementById('box')).transform;
       // grab the x value from the matrix()
       var lastValueRE = /([\.\d]+),[^,]+\)$/;
       var xTranslate = lastValueRE.exec(t)[1];
