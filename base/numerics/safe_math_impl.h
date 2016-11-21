@@ -129,21 +129,6 @@ constexpr T BinaryComplement(T x) {
   return static_cast<T>(~x);
 }
 
-// Return if a numeric value is negative regardless of type.
-template <typename T,
-          typename std::enable_if<std::is_arithmetic<T>::value &&
-                                  std::is_signed<T>::value>::type* = nullptr>
-constexpr bool IsNegative(T x) {
-  return x < 0;
-}
-
-template <typename T,
-          typename std::enable_if<std::is_arithmetic<T>::value &&
-                                  !std::is_signed<T>::value>::type* = nullptr>
-constexpr bool IsNegative(T x) {
-  return false;
-}
-
 enum ArithmeticPromotionCategory {
   LEFT_PROMOTION,          // Use the type of the left-hand argument.
   RIGHT_PROMOTION,         // Use the type of the right-hand argument.
@@ -213,21 +198,7 @@ struct BigEnoughPromotion<Lhs, Rhs, true, false> {
   static const bool is_contained = false;
 };
 
-// These are the four supported promotion types.
-
-// Use the type of the left-hand argument.
-template <typename Lhs, typename Rhs>
-struct ArithmeticPromotion<LEFT_PROMOTION, Lhs, Rhs> {
-  using type = Lhs;
-  static const bool is_contained = true;
-};
-
-// Use the type of the right-hand argument.
-template <typename Lhs, typename Rhs>
-struct ArithmeticPromotion<RIGHT_PROMOTION, Lhs, Rhs> {
-  using type = Rhs;
-  static const bool is_contained = true;
-};
+// These are the supported promotion types.
 
 // Use the type supporting the largest exponent.
 template <typename Lhs, typename Rhs>
@@ -290,33 +261,41 @@ CheckedAddImpl(T x, T y, T* result) {
                 y);  // Unsigned is either valid or underflow.
 }
 
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedAdd(T x, U y, V* result) {
-#if USE_OVERFLOW_BUILTINS
-  return !__builtin_add_overflow(x, y, result);
-#else
-  using Promotion =
-      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
-  Promotion presult;
-  // Fail if either operand is out of range for the promoted type.
-  // TODO(jschuh): This could be made to work for a broader range of values.
-  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
-                  IsValueInRangeForNumericType<Promotion>(y);
+template <typename T, typename U, class Enable = void>
+struct CheckedAdd {};
 
-  if (IsIntegerArithmeticSafe<Promotion, U, V>::value) {
-    presult = static_cast<Promotion>(x) + static_cast<Promotion>(y);
-  } else {
-    is_valid &= CheckedAddImpl(static_cast<Promotion>(x),
-                               static_cast<Promotion>(y), &presult);
-  }
-  *result = static_cast<V>(presult);
-  return is_valid && IsValueInRangeForNumericType<V>(presult);
+template <typename T, typename U>
+struct CheckedAdd<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V>
+  static bool Op(T x, U y, V* result) {
+#if USE_OVERFLOW_BUILTINS
+    return !__builtin_add_overflow(x, y, result);
+#else
+    using Promotion =
+        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    Promotion presult;
+    // Fail if either operand is out of range for the promoted type.
+    // TODO(jschuh): This could be made to work for a broader range of values.
+    bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                    IsValueInRangeForNumericType<Promotion>(y);
+
+    if (IsIntegerArithmeticSafe<Promotion, T, U>::value) {
+      presult = static_cast<Promotion>(x) + static_cast<Promotion>(y);
+    } else {
+      is_valid &= CheckedAddImpl(static_cast<Promotion>(x),
+                                 static_cast<Promotion>(y), &presult);
+    }
+    *result = static_cast<V>(presult);
+    return is_valid && IsValueInRangeForNumericType<V>(presult);
 #endif
-}
+  }
+};
 
 template <typename T>
 typename std::enable_if<std::numeric_limits<T>::is_integer, bool>::type
@@ -336,33 +315,41 @@ CheckedSubImpl(T x, T y, T* result) {
              : (x >= y);
 }
 
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedSub(T x, U y, V* result) {
-#if USE_OVERFLOW_BUILTINS
-  return !__builtin_sub_overflow(x, y, result);
-#else
-  using Promotion =
-      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
-  Promotion presult;
-  // Fail if either operand is out of range for the promoted type.
-  // TODO(jschuh): This could be made to work for a broader range of values.
-  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
-                  IsValueInRangeForNumericType<Promotion>(y);
+template <typename T, typename U, class Enable = void>
+struct CheckedSub {};
 
-  if (IsIntegerArithmeticSafe<Promotion, U, V>::value) {
-    presult = static_cast<Promotion>(x) - static_cast<Promotion>(y);
-  } else {
-    is_valid &= CheckedSubImpl(static_cast<Promotion>(x),
-                               static_cast<Promotion>(y), &presult);
-  }
-  *result = static_cast<V>(presult);
-  return is_valid && IsValueInRangeForNumericType<V>(presult);
+template <typename T, typename U>
+struct CheckedSub<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V>
+  static bool Op(T x, U y, V* result) {
+#if USE_OVERFLOW_BUILTINS
+    return !__builtin_sub_overflow(x, y, result);
+#else
+    using Promotion =
+        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    Promotion presult;
+    // Fail if either operand is out of range for the promoted type.
+    // TODO(jschuh): This could be made to work for a broader range of values.
+    bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                    IsValueInRangeForNumericType<Promotion>(y);
+
+    if (IsIntegerArithmeticSafe<Promotion, T, U>::value) {
+      presult = static_cast<Promotion>(x) - static_cast<Promotion>(y);
+    } else {
+      is_valid &= CheckedSubImpl(static_cast<Promotion>(x),
+                                 static_cast<Promotion>(y), &presult);
+    }
+    *result = static_cast<V>(presult);
+    return is_valid && IsValueInRangeForNumericType<V>(presult);
 #endif
-}
+  }
+};
 
 // Integer multiplication is a bit complicated. In the fast case we just
 // we just promote to a twice wider type, and range check the result. In the
@@ -419,43 +406,52 @@ CheckedMulImpl(T x, T y, T* result) {
   return (y == 0 || x <= std::numeric_limits<T>::max() / y);
 }
 
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedMul(T x, U y, V* result) {
+template <typename T, typename U, class Enable = void>
+struct CheckedMul {};
+
+template <typename T, typename U>
+struct CheckedMul<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V>
+  static bool Op(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
 #if defined(__clang__)
-  // TODO(jschuh): Get the Clang runtime library issues sorted out so we can
-  // support full-width, mixed-sign multiply builtins. https://crbug.com/613003
-  static const bool kUseMaxInt =
-      sizeof(__typeof__(x * y)) < sizeof(intptr_t) ||
-      (sizeof(__typeof__(x * y)) == sizeof(intptr_t) &&
-       std::is_signed<T>::value == std::is_signed<U>::value);
+    // TODO(jschuh): Get the Clang runtime library issues sorted out so we can
+    // support full-width, mixed-sign multiply builtins.
+    // https://crbug.com/613003
+    static const bool kUseMaxInt =
+        sizeof(__typeof__(x * y)) < sizeof(intptr_t) ||
+        (sizeof(__typeof__(x * y)) == sizeof(intptr_t) &&
+         std::is_signed<T>::value == std::is_signed<U>::value);
 #else
-  static const bool kUseMaxInt = true;
+    static const bool kUseMaxInt = true;
 #endif
-  if (kUseMaxInt)
-    return !__builtin_mul_overflow(x, y, result);
+    if (kUseMaxInt)
+      return !__builtin_mul_overflow(x, y, result);
 #endif
-  using Promotion =
-      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
-  Promotion presult;
-  // Fail if either operand is out of range for the promoted type.
-  // TODO(jschuh): This could be made to work for a broader range of values.
-  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
-                  IsValueInRangeForNumericType<Promotion>(y);
+    using Promotion =
+        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    Promotion presult;
+    // Fail if either operand is out of range for the promoted type.
+    // TODO(jschuh): This could be made to work for a broader range of values.
+    bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                    IsValueInRangeForNumericType<Promotion>(y);
 
-  if (IsIntegerArithmeticSafe<Promotion, U, V>::value) {
-    presult = static_cast<Promotion>(x) * static_cast<Promotion>(y);
-  } else {
-    is_valid &= CheckedMulImpl(static_cast<Promotion>(x),
-                               static_cast<Promotion>(y), &presult);
+    if (IsIntegerArithmeticSafe<Promotion, T, U>::value) {
+      presult = static_cast<Promotion>(x) * static_cast<Promotion>(y);
+    } else {
+      is_valid &= CheckedMulImpl(static_cast<Promotion>(x),
+                                 static_cast<Promotion>(y), &presult);
+    }
+    *result = static_cast<V>(presult);
+    return is_valid && IsValueInRangeForNumericType<V>(presult);
   }
-  *result = static_cast<V>(presult);
-  return is_valid && IsValueInRangeForNumericType<V>(presult);
-}
+};
 
 // Avoid poluting the namespace once we're done with the macro.
 #undef USE_OVERFLOW_BUILTINS
@@ -473,24 +469,32 @@ CheckedDivImpl(T x, T y, T* result) {
   return false;
 }
 
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedDiv(T x, U y, V* result) {
-  using Promotion =
-      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
-  Promotion presult;
-  // Fail if either operand is out of range for the promoted type.
-  // TODO(jschuh): This could be made to work for a broader range of values.
-  bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
-                  IsValueInRangeForNumericType<Promotion>(y);
-  is_valid &= CheckedDivImpl(static_cast<Promotion>(x),
-                             static_cast<Promotion>(y), &presult);
-  *result = static_cast<V>(presult);
-  return is_valid && IsValueInRangeForNumericType<V>(presult);
-}
+template <typename T, typename U, class Enable = void>
+struct CheckedDiv {};
+
+template <typename T, typename U>
+struct CheckedDiv<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V>
+  static bool Op(T x, U y, V* result) {
+    using Promotion =
+        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    Promotion presult;
+    // Fail if either operand is out of range for the promoted type.
+    // TODO(jschuh): This could be made to work for a broader range of values.
+    bool is_valid = IsValueInRangeForNumericType<Promotion>(x) &&
+                    IsValueInRangeForNumericType<Promotion>(y);
+    is_valid &= CheckedDivImpl(static_cast<Promotion>(x),
+                               static_cast<Promotion>(y), &presult);
+    *result = static_cast<V>(presult);
+    return is_valid && IsValueInRangeForNumericType<V>(presult);
+  }
+};
 
 template <typename T>
 typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -516,62 +520,84 @@ CheckedModImpl(T x, T y, T* result) {
   return false;
 }
 
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedMod(T x, U y, V* result) {
-  using Promotion =
-      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
-  Promotion presult;
-  bool is_valid = CheckedModImpl(static_cast<Promotion>(x),
-                                 static_cast<Promotion>(y), &presult);
-  *result = static_cast<V>(presult);
-  return is_valid && IsValueInRangeForNumericType<V>(presult);
-}
+template <typename T, typename U, class Enable = void>
+struct CheckedMod {};
+
+template <typename T, typename U>
+struct CheckedMod<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V>
+  static bool Op(T x, U y, V* result) {
+    using Promotion =
+        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    Promotion presult;
+    bool is_valid = CheckedModImpl(static_cast<Promotion>(x),
+                                   static_cast<Promotion>(y), &presult);
+    *result = static_cast<V>(presult);
+    return is_valid && IsValueInRangeForNumericType<V>(presult);
+  }
+};
+
+template <typename T, typename U, class Enable = void>
+struct CheckedLeftShift {};
 
 // Left shift. Shifts less than 0 or greater than or equal to the number
 // of bits in the promoted type are undefined. Shifts of negative values
 // are undefined. Otherwise it is defined when the result fits.
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedLeftShift(T x, U shift, V* result) {
-  using ShiftType = typename UnsignedIntegerForSize<T>::type;
-  static const ShiftType kBitWidth = CHAR_BIT * sizeof(T);
-  const ShiftType real_shift = static_cast<ShiftType>(shift);
-  // Signed shift is not legal on negative values.
-  if (!IsNegative(x) && real_shift < kBitWidth) {
-    // Just use a multiplication because it's easy.
-    // TODO(jschuh): This could probably be made more efficient.
-    if (!std::is_signed<T>::value || real_shift != kBitWidth - 1)
-      return CheckedMul(x, static_cast<T>(1) << shift, result);
-    return !x;  // Special case zero for a full width signed shift.
+template <typename T, typename U>
+struct CheckedLeftShift<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type = T;
+  template <typename V>
+  static bool Op(T x, U shift, V* result) {
+    using ShiftType = typename UnsignedIntegerForSize<T>::type;
+    static const ShiftType kBitWidth = CHAR_BIT * sizeof(T);
+    const ShiftType real_shift = static_cast<ShiftType>(shift);
+    // Signed shift is not legal on negative values.
+    if (!IsValueNegative(x) && real_shift < kBitWidth) {
+      // Just use a multiplication because it's easy.
+      // TODO(jschuh): This could probably be made more efficient.
+      if (!std::is_signed<T>::value || real_shift != kBitWidth - 1)
+        return CheckedMul<T, T>::Op(x, static_cast<T>(1) << shift, result);
+      return !x;  // Special case zero for a full width signed shift.
+    }
+    return false;
   }
-  return false;
-}
+};
+
+template <typename T, typename U, class Enable = void>
+struct CheckedRightShift {};
 
 // Right shift. Shifts less than 0 or greater than or equal to the number
 // of bits in the promoted type are undefined. Otherwise, it is always defined,
 // but a right shift of a negative value is implementation-dependent.
-template <typename T, typename U, typename V>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer &&
-                            std::numeric_limits<V>::is_integer,
-                        bool>::type
-CheckedRightShift(T x, U shift, V* result) {
-  // Use the type conversion push negative values out of range.
-  using ShiftType = typename UnsignedIntegerForSize<T>::type;
-  if (static_cast<ShiftType>(shift) < (CHAR_BIT * sizeof(T))) {
-    T tmp = x >> shift;
-    *result = static_cast<V>(tmp);
-    return IsValueInRangeForNumericType<unsigned>(tmp);
+template <typename T, typename U>
+struct CheckedRightShift<
+    T,
+    U,
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            std::numeric_limits<U>::is_integer>::type> {
+  using result_type = T;
+  template <typename V = result_type>
+  static bool Op(T x, U shift, V* result) {
+    // Use the type conversion push negative values out of range.
+    using ShiftType = typename UnsignedIntegerForSize<T>::type;
+    if (static_cast<ShiftType>(shift) < (CHAR_BIT * sizeof(T))) {
+      T tmp = x >> shift;
+      *result = static_cast<V>(tmp);
+      return IsValueInRangeForNumericType<V>(tmp);
+    }
+    return false;
   }
-  return false;
-}
+};
 
 template <typename T>
 typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -640,40 +666,31 @@ SafeUnsignedAbs(T value) {
   return static_cast<T>(value);
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_iec559, T>::type CheckedNeg(
-    T value,
-    bool*) {
-  NOTREACHED();
-  return static_cast<T>(-value);
-}
+// This is just boilerplate that wraps the standard floating point arithmetic.
+// A macro isn't the nicest solution, but it beats rewriting these repeatedly.
+#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                  \
+  template <typename T, typename U>                                          \
+  struct Checked##NAME<T, U, typename std::enable_if<                        \
+                                 std::numeric_limits<T>::is_iec559 ||        \
+                                 std::numeric_limits<U>::is_iec559>::type> { \
+    using result_type =                                                      \
+        typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;    \
+    template <typename V>                                                    \
+    static bool Op(T x, U y, V* result) {                                    \
+      using Promotion =                                                      \
+          typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;  \
+      Promotion presult = x OP y;                                            \
+      *result = static_cast<V>(presult);                                     \
+      return IsValueInRangeForNumericType<V>(presult);                       \
+    }                                                                        \
+  };
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_iec559, T>::type CheckedAbs(
-    T value,
-    bool*) {
-  NOTREACHED();
-  return static_cast<T>(std::abs(value));
-}
+BASE_FLOAT_ARITHMETIC_OPS(Add, +)
+BASE_FLOAT_ARITHMETIC_OPS(Sub, -)
+BASE_FLOAT_ARITHMETIC_OPS(Mul, *)
+BASE_FLOAT_ARITHMETIC_OPS(Div, /)
 
-// These are the floating point stubs that the compiler needs to see.
-#define BASE_FLOAT_ARITHMETIC_STUBS(NAME)                          \
-  template <typename T, typename U, typename V>                    \
-  typename std::enable_if<std::numeric_limits<T>::is_iec559 ||     \
-                              std::numeric_limits<U>::is_iec559 || \
-                              std::numeric_limits<V>::is_iec559,   \
-                          bool>::type Checked##NAME(T, U, V*) {    \
-    NOTREACHED();                                                  \
-    return static_cast<T>(false);                                  \
-  }
-
-BASE_FLOAT_ARITHMETIC_STUBS(Add)
-BASE_FLOAT_ARITHMETIC_STUBS(Sub)
-BASE_FLOAT_ARITHMETIC_STUBS(Mul)
-BASE_FLOAT_ARITHMETIC_STUBS(Div)
-BASE_FLOAT_ARITHMETIC_STUBS(Mod)
-
-#undef BASE_FLOAT_ARITHMETIC_STUBS
+#undef BASE_FLOAT_ARITHMETIC_OPS
 
 template <typename T>
 typename std::enable_if<std::numeric_limits<T>::is_iec559, bool>::type

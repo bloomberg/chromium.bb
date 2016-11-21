@@ -62,20 +62,31 @@ Dst GetMaxConvertibleToFloat() {
   return static_cast<Dst>(max);
 }
 
+namespace base {
+namespace internal {
+template <typename U>
+U GetNumericValueForTest(const CheckedNumeric<U>& src) {
+  return src.state_.value();
+}
+}  // namespace internal.
+}  // namespace base.
+
+using base::internal::GetNumericValueForTest;
+
 // Helper macros to wrap displaying the conversion types and line numbers.
 #define TEST_EXPECTED_VALIDITY(expected, actual)                           \
   EXPECT_EQ(expected, CheckedNumeric<Dst>(actual).IsValid())               \
-      << "Result test: Value " << +(actual).ValueUnsafe() << " as " << dst \
-      << " on line " << line
+      << "Result test: Value " << GetNumericValueForTest(actual) << " as " \
+      << dst << " on line " << line
 
 #define TEST_EXPECTED_SUCCESS(actual) TEST_EXPECTED_VALIDITY(true, actual)
 #define TEST_EXPECTED_FAILURE(actual) TEST_EXPECTED_VALIDITY(false, actual)
 
-#define TEST_EXPECTED_VALUE(expected, actual)                                \
-  EXPECT_EQ(static_cast<Dst>(expected),                                      \
-            CheckedNumeric<Dst>(actual).ValueOrDie())                        \
-      << "Result test: Value " << +((actual).ValueUnsafe()) << " as " << dst \
-      << " on line " << line
+#define TEST_EXPECTED_VALUE(expected, actual)                              \
+  EXPECT_EQ(static_cast<Dst>(expected),                                    \
+            CheckedNumeric<Dst>(actual).ValueOrDie())                      \
+      << "Result test: Value " << GetNumericValueForTest(actual) << " as " \
+      << dst << " on line " << line
 
 // Signed integer arithmetic.
 template <typename Dst>
