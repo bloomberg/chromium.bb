@@ -540,13 +540,6 @@ void BrowsingHistoryHandler::HistoryDeleted() {
   web_ui()->CallJavascriptFunctionUnsafe("historyDeleted");
 }
 
-void BrowsingHistoryHandler::OnWebHistoryDeleted() {
-  // TODO(calamity): Only ignore web history deletions when they are actually
-  // initiated by us, rather than ignoring them whenever we are deleting.
-  if (!has_pending_delete_request_)
-    web_ui()->CallJavascriptFunctionUnsafe("historyDeleted");
-}
-
 void BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms,
     bool has_synced_results) {
