@@ -19,6 +19,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/form_field_data.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,7 +35,9 @@ Tab::Tab(std::unique_ptr<content::WebContents> web_contents,
       tab_id_(tab_id),
       render_widget_feature_(render_widget_feature),
       navigation_message_sender_(navigation_message_sender),
-      page_load_tracker_(web_contents_.get(), this) {
+      page_load_tracker_(web_contents_.get(), this),
+      current_form_request_id_(0),
+      weak_factory_(this) {
   DCHECK(render_widget_feature_);
   DCHECK(navigation_message_sender_);
 
@@ -166,6 +169,41 @@ void Tab::OnWebGestureEvent(content::RenderWidgetHost* render_widget_host,
                             std::unique_ptr<blink::WebGestureEvent> event) {
   TRACE_EVENT1("blimp", "Tab::OnWebGestureEvent", "type", event->type);
   render_widget_host->ForwardGestureEvent(*event);
+}
+
+void Tab::ShowTextInputUI() {
+  current_form_request_id_++;
+  content::FormFieldDataCallback callback =
+      base::Bind(&Tab::ProcessTextInputInfo, weak_factory_.GetWeakPtr(),
+                 current_form_request_id_);
+
+  content::RenderFrameHost* focused_frame = web_contents()->GetFocusedFrame();
+  if (focused_frame) {
+    focused_frame->RequestFocusedFormFieldData(callback);
+  }
+}
+
+void Tab::HideTextInputUI() {
+  current_form_request_id_++;
+  render_widget_feature_->SendHideImeRequest(
+      tab_id(),
+      web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost());
+}
+
+void Tab::ProcessTextInputInfo(int request_id,
+                               const content::FormFieldData& field) {
+  if (field.text_input_type == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  // Discard the results for old requests.
+  if (request_id < current_form_request_id_) {
+    return;
+  }
+
+  // TODO(shaktisahu): Remove adding RenderWidgetHost info to the proto.
+  render_widget_feature_->SendShowImeRequest(
+      tab_id(),
+      web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost(), field);
 }
 
 void Tab::OnCompositorMessageReceived(

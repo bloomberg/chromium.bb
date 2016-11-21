@@ -14,6 +14,7 @@
 #include "blimp/net/input_message_converter.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/form_field_data.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/event.h"
@@ -135,9 +136,7 @@ void EngineRenderWidgetFeature::SendCompositorMessage(
 void EngineRenderWidgetFeature::SendShowImeRequest(
     const int tab_id,
     content::RenderWidgetHost* render_widget_host,
-    const ui::TextInputClient* client) {
-  DCHECK(client);
-
+    const content::FormFieldData& field) {
   ImeMessage* ime_message;
   std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&ime_message, tab_id);
@@ -147,13 +146,9 @@ void EngineRenderWidgetFeature::SendShowImeRequest(
   ime_message->set_render_widget_id(render_widget_id);
   ime_message->set_type(ImeMessage::SHOW_IME);
   ime_message->set_text_input_type(
-      InputMessageConverter::TextInputTypeToProto(client->GetTextInputType()));
-
-  gfx::Range text_range;
-  base::string16 existing_text;
-  client->GetTextRange(&text_range);
-  client->GetTextFromRange(text_range, &existing_text);
-  ime_message->set_ime_text(base::UTF16ToUTF8(existing_text));
+      InputMessageConverter::TextInputTypeToProto(field.text_input_type));
+  ime_message->set_ime_text(field.text);
+  // TODO(shaktisahu): Add remaining fields to proto.
 
   ime_message_sender_->ProcessMessage(std::move(blimp_message),
                                       net::CompletionCallback());

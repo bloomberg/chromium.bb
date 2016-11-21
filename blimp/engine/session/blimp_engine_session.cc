@@ -421,14 +421,11 @@ void BlimpEngineSession::OnTextInputStateChanged(
   ui::TextInputType type =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 
-  // TODO(shaktisahu): Propagate the new type to the client.
   // Hide IME, when text input is out of focus, i.e. if the text input type
   // changes to ui::TEXT_INPUT_TYPE_NONE. For other text input types,
   // OnShowImeIfNeeded is used instead to send show IME request to client.
   if (type == ui::TEXT_INPUT_TYPE_NONE)
-    render_widget_feature_.SendHideImeRequest(
-        tab_->tab_id(),
-        tab_->web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost());
+    tab_->HideTextInputUI();
 }
 
 void BlimpEngineSession::OnInputMethodDestroyed(
@@ -441,10 +438,7 @@ void BlimpEngineSession::OnShowImeIfNeeded() {
       !window_tree_host_->GetInputMethod()->GetTextInputClient())
     return;
 
-  render_widget_feature_.SendShowImeRequest(
-      tab_->tab_id(),
-      tab_->web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost(),
-      window_tree_host_->GetInputMethod()->GetTextInputClient());
+  tab_->ShowTextInputUI();
 }
 
 void BlimpEngineSession::ProcessMessage(

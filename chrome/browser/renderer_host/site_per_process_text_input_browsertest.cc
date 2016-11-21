@@ -19,6 +19,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/form_field_data.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -276,6 +277,42 @@ class ViewTextSelectionObserver : public TextInputManagerObserverBase {
   DISALLOW_COPY_AND_ASSIGN(ViewTextSelectionObserver);
 };
 
+// This class is used to verify the result of form field data requests.
+class FormFieldDataVerifier {
+ public:
+  FormFieldDataVerifier(const std::string& text, const std::string& placeholder)
+      : text_(text), placeholder_(placeholder), success_(false) {}
+
+  void Verify(const content::FormFieldData& field) {
+    ASSERT_EQ(field.text, text_);
+    ASSERT_EQ(field.placeholder, placeholder_);
+    OnSuccess();
+  }
+
+  // Wait for success_ to be true.
+  void Wait() {
+    if (success_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner();
+    message_loop_runner_->Run();
+  }
+
+ private:
+  void OnSuccess() {
+    success_ = true;
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  std::string text_;
+  std::string placeholder_;
+
+  bool success_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(FormFieldDataVerifier);
+};
+
 // This class monitors all the changes in TextInputState and keeps a record of
 // the active views. There is no waiting and the recording process is
 // continuous.
@@ -348,6 +385,35 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
         type.c_str(), value.c_str(),
         append_as_first_child ? "insertBefore(input, document.body.firstChild)"
                               : "appendChild(input)");
+    EXPECT_TRUE(ExecuteScript(rfh, script));
+  }
+
+  // static
+  // Appends an <input> field with various attribues to a given frame by
+  // executing javascript code.
+  static void AppendInputFieldToFrame(content::RenderFrameHost* rfh,
+                                      const std::string& type,
+                                      const std::string& id,
+                                      const std::string& value,
+                                      const std::string& placeholder) {
+    std::string script = base::StringPrintf(
+        "var input = document.createElement('input');"
+        "input.setAttribute('type', '%s');"
+        "input.setAttribute('id', '%s');"
+        "input.setAttribute('value', '%s');"
+        "input.setAttribute('placeholder', '%s');"
+        "document.body.appendChild(input);",
+        type.c_str(), id.c_str(), value.c_str(), placeholder.c_str());
+    EXPECT_TRUE(ExecuteScript(rfh, script));
+  }
+
+  // static
+  // Focus a form field by its Id.
+  static void FocusFormField(content::RenderFrameHost* rfh,
+                             const std::string& id) {
+    std::string script = base::StringPrintf(
+        "document.getElementById('%s').focus();", id.c_str());
+
     EXPECT_TRUE(ExecuteScript(rfh, script));
   }
 
@@ -699,6 +765,39 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     // Send a sequence of |count| 'E' keys and wait until the view receives a
     // selection change update for a text of the corresponding size, |count|.
     send_keys_select_all_wait_for_selection_change(views[i], count++);
+  }
+}
+
+// This test creates a page with multiple child frames and adds two <input>
+// elements to each frame. Then, sequentially, each <input> is focused through
+// javascript. For each frame, its text and placeholder attributes are queried
+// through RenderFrameHost and verified against expected values.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       RequestFocusedFormFieldDataForMultipleIFrames) {
+  CreateIframePage("a(b, c)");
+  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
+                                                GetFrame(IndexVector{0}),
+                                                GetFrame(IndexVector{1})};
+
+  std::vector<std::string> values{"main_1",   "main_2",   "node_b_1",
+                                  "node_b_2", "node_c_1", "node_c_2"};
+  std::vector<std::string> placeholders{
+      "placeholder_main_1",   "placeholder_main_2",   "placeholder_node_b_1",
+      "placeholder_node_b_2", "placeholder_node_c_1", "placeholder_node_c_2"};
+
+  for (size_t i = 0; i < values.size(); ++i) {
+    AppendInputFieldToFrame(frames[i / 2], "text", values[i], values[i],
+                            placeholders[i]);
+  }
+
+  for (size_t i = 0; i < values.size(); ++i) {
+    content::RenderFrameHost* frame = frames[i / 2];
+    FocusFormField(frame, values[i]);
+    FormFieldDataVerifier verifier(values[i], placeholders[i]);
+    content::FormFieldDataCallback callback =
+        base::Bind(&FormFieldDataVerifier::Verify, base::Unretained(&verifier));
+    frame->RequestFocusedFormFieldData(callback);
+    verifier.Wait();
   }
 }
 
