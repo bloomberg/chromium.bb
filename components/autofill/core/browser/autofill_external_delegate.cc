@@ -277,12 +277,6 @@ void AutofillExternalDelegate::Reset() {
   manager_->client()->HideAutofillPopup();
 }
 
-void AutofillExternalDelegate::OnPingAck() {
-  // Reissue the most recent query, which will reopen the Autofill popup.
-  manager_->OnQueryFormFieldAutofill(query_id_, query_form_, query_field_,
-                                     element_bounds_);
-}
-
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

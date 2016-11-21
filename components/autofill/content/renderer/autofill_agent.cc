@@ -487,10 +487,6 @@ void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
   GetAutofillDriver()->DidPreviewAutofillFormData();
 }
 
-void AutofillAgent::OnPing() {
-  GetAutofillDriver()->PingAck();
-}
-
 void AutofillAgent::FieldTypePredictionsAvailable(
     const std::vector<FormDataPredictions>& forms) {
   for (const auto& form : forms) {

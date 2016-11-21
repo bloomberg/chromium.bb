@@ -39,9 +39,6 @@ interface AutofillDriver {
   // Instructs the browser to hide the Autofill popup if it is open.
   HidePopup();
 
-  // Sent immediately after the renderer receives a ping IPC.
-  PingAck();
-
   // Sent when the current form is no longer focused.
   FocusNoLongerOnForm();
 

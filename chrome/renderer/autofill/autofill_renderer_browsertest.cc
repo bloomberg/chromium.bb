@@ -91,8 +91,6 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void HidePopup() override {}
 
-  void PingAck() override {}
-
   void FocusNoLongerOnForm() override {}
 
   void DidFillAutofillFormData(const FormData& form,

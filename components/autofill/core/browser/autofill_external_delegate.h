@@ -81,9 +81,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // values or settings.
   void Reset();
 
-  // The renderer sent an IPC acknowledging an earlier ping IPC.
-  void OnPingAck();
-
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
 

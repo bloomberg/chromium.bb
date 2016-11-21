@@ -188,8 +188,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   void firstUserGestureObserved() override;
   void ajaxSucceeded() override;
 
-  void OnPing();
-
   // Called when a same-page navigation is detected.
   void OnSamePageNavigationCompleted();
   // Helper method which collects unowned elements (i.e., those not inside a

@@ -216,10 +216,6 @@ void ContentAutofillDriver::HidePopup() {
   autofill_manager_->OnHidePopup();
 }
 
-void ContentAutofillDriver::PingAck() {
-  autofill_external_delegate_.OnPingAck();
-}
-
 void ContentAutofillDriver::FocusNoLongerOnForm() {
   autofill_manager_->OnFocusNoLongerOnForm();
 }
