@@ -316,7 +316,7 @@ bool AutofillProfileComparator::MergeCompanyNames(
   switch (result) {
     case DIFFERENT_TOKENS:
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unexpected mismatch: '" << c1 << "' vs '" << c2 << "'";
       return false;
     case S1_CONTAINS_S2:
       best = &c1;
@@ -501,11 +501,70 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
         break;
       case DIFFERENT_TOKENS:
       default:
-        // The addresses aren't mergeable and we shouldn't be doing any of
+        // The cities aren't mergeable and we shouldn't be doing any of
         // this.
-        NOTREACHED();
+        NOTREACHED() << "Unexpected mismatch: '" << city1 << "' vs '" << city2
+                     << "'";
         return false;
     }
+  }
+
+  // One of the dependend localities is empty or one of the localities has a
+  // subset of tokens from the other. Pick the locality name with more tokens;
+  // this is usually the most explicit one.
+  const AutofillType kDependentLocality(ADDRESS_HOME_DEPENDENT_LOCALITY);
+  const base::string16& locality1 = p1.GetInfo(kDependentLocality, app_locale_);
+  const base::string16& locality2 = p2.GetInfo(kDependentLocality, app_locale_);
+  if (locality1.empty()) {
+    address->SetInfo(kDependentLocality, locality2, app_locale_);
+  } else if (locality2.empty()) {
+    address->SetInfo(kDependentLocality, locality1, app_locale_);
+  } else {
+    // Prefer the one with more tokens, making sure to apply address
+    // normalization and rewriting before doing the comparison.
+    CompareTokensResult result =
+        CompareTokens(rewriter.Rewrite(NormalizeForComparison(locality1)),
+                      rewriter.Rewrite(NormalizeForComparison(locality2)));
+    switch (result) {
+      case SAME_TOKENS:
+        // They have the same set of unique tokens. Let's pick the more recently
+        // used one.
+        address->SetInfo(
+            kDependentLocality,
+            (p2.use_date() > p1.use_date() ? locality2 : locality1),
+            app_locale_);
+        break;
+      case S1_CONTAINS_S2:
+        // locality1 has more unique tokens than locality2.
+        address->SetInfo(kDependentLocality, locality1, app_locale_);
+        break;
+      case S2_CONTAINS_S1:
+        // locality2 has more unique tokens than locality1.
+        address->SetInfo(kDependentLocality, locality2, app_locale_);
+        break;
+      case DIFFERENT_TOKENS:
+      default:
+        // The localities aren't mergeable and we shouldn't be doing any of
+        // this.
+        NOTREACHED() << "Unexpected mismatch: '" << locality1 << "' vs '"
+                     << locality2 << "'";
+        return false;
+    }
+  }
+
+  // One of the sorting codes is empty, they are the same, or one is a substring
+  // of the other. We prefer the most recently used sorting code.
+  const AutofillType kSortingCode(ADDRESS_HOME_SORTING_CODE);
+  const base::string16& sorting1 = p1.GetInfo(kSortingCode, app_locale_);
+  const base::string16& sorting2 = p2.GetInfo(kSortingCode, app_locale_);
+  if (sorting1.empty()) {
+    address->SetInfo(kSortingCode, sorting2, app_locale_);
+  } else if (sorting2.empty()) {
+    address->SetInfo(kSortingCode, sorting1, app_locale_);
+  } else {
+    address->SetInfo(kSortingCode,
+                     (p2.use_date() > p1.use_date() ? sorting2 : sorting1),
+                     app_locale_);
   }
 
   // One of the addresses is empty or one of the addresses has a subset of
@@ -548,13 +607,14 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
           break;
         case S2_CONTAINS_S1:
           // address2 has more unique tokens than address1.
-          address->SetInfo(kStreetAddress, address1, app_locale_);
+          address->SetInfo(kStreetAddress, address2, app_locale_);
           break;
         case DIFFERENT_TOKENS:
         default:
           // The addresses aren't mergeable and we shouldn't be doing any of
           // this.
-          NOTREACHED();
+          NOTREACHED() << "Unexpected mismatch: '" << address1 << "' vs '"
+                       << address2 << "'";
           return false;
       }
     }
@@ -771,17 +831,17 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
   // Parse and compare the phone numbers.
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
   switch (phone_util->IsNumberMatchWithTwoStrings(phone_1, phone_2)) {
-    case PhoneNumberUtil::INVALID_NUMBER:
-    case PhoneNumberUtil::NO_MATCH:
-      return false;
     case PhoneNumberUtil::SHORT_NSN_MATCH:
     case PhoneNumberUtil::NSN_MATCH:
     case PhoneNumberUtil::EXACT_MATCH:
       return true;
+    case PhoneNumberUtil::INVALID_NUMBER:
+    case PhoneNumberUtil::NO_MATCH:
+      return false;
+    default:
+      NOTREACHED();
+      return false;
   }
-
-  NOTREACHED();
-  return false;
 }
 
 bool AutofillProfileComparator::HaveMergeableAddresses(
@@ -796,10 +856,6 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
       !case_insensitive_compare_.StringsEqual(country1, country2)) {
     return false;
   }
-
-  // TODO(rogerm): Lookup the normalization rules for the (common) country of
-  // the address. The rules should be applied post NormalizeForComparison to
-  // the state, city, and address bag of words comparisons.
 
   // Zip
   // ----
@@ -816,6 +872,8 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
     return false;
   }
 
+  // Use the token rewrite rules for the (common) country of the address to
+  // transform equivalent substrings to a representative token for comparison.
   AddressRewriter rewriter =
       AddressRewriter::ForCountryCode(country1.empty() ? country2 : country1);
 
@@ -845,11 +903,41 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   // TODO(rogerm): If the match is between non-empty zip codes then we can infer
   // that the two city strings are intended to have the same meaning. This
   // handles the cases where we have a city vs one of its suburbs.
-  const base::string16& city1 = rewriter.Rewrite(NormalizeForComparison(
-      p1.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_)));
-  const base::string16& city2 = rewriter.Rewrite(NormalizeForComparison(
-      p2.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_)));
+  const AutofillType kCity(ADDRESS_HOME_CITY);
+  const base::string16& city1 =
+      rewriter.Rewrite(NormalizeForComparison(p1.GetInfo(kCity, app_locale_)));
+  const base::string16& city2 =
+      rewriter.Rewrite(NormalizeForComparison(p2.GetInfo(kCity, app_locale_)));
   if (CompareTokens(city1, city2) == DIFFERENT_TOKENS) {
+    return false;
+  }
+
+  // Dependent Locality
+  // -------------------
+  // Heuristic: Dependent Localities are mergeable if one is a (possibly empty)
+  // bag of words subset of the other.
+  const AutofillType kDependentLocality(ADDRESS_HOME_DEPENDENT_LOCALITY);
+  const base::string16& locality1 = rewriter.Rewrite(
+      NormalizeForComparison(p1.GetInfo(kDependentLocality, app_locale_)));
+  const base::string16& locality2 = rewriter.Rewrite(
+      NormalizeForComparison(p2.GetInfo(kDependentLocality, app_locale_)));
+  if (CompareTokens(locality1, locality2) == DIFFERENT_TOKENS) {
+    return false;
+  }
+
+  // Sorting Code
+  // -------------
+  // Heuristic: Sorting codes are mergeable if one is empty or one is a
+  // substring of the other, post normalization and whitespace removed. This
+  // is similar to postal/zip codes.
+  const AutofillType kSortingCode(ADDRESS_HOME_SORTING_CODE);
+  const base::string16& sorting1 = NormalizeForComparison(
+      p1.GetInfo(kSortingCode, app_locale_), DISCARD_WHITESPACE);
+  const base::string16& sorting2 = NormalizeForComparison(
+      p2.GetInfo(kSortingCode, app_locale_), DISCARD_WHITESPACE);
+  if (!sorting1.empty() && !sorting2.empty() &&
+      sorting1.find(sorting2) == base::string16::npos &&
+      sorting2.find(sorting1) == base::string16::npos) {
     return false;
   }
 
