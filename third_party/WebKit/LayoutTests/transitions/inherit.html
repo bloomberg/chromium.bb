@@ -10,11 +10,11 @@
       background-color: blue;
     }
     .transition {
-      -webkit-transition-property: left;
-      -webkit-transition-duration: 2s;
+      transition-property: left;
+      transition-duration: 2s;
     }
     #box4 {
-      -webkit-transition-property: inherit;
+      transition-property: inherit;
     }
   </style>
   <script>
@@ -39,7 +39,7 @@
       var boxes = document.body.getElementsByClassName('box');
       for (var i = 0; i < boxes.length; ++i) {
         var curBox = boxes[i];
-        var curProp = getComputedStyle(curBox).webkitTransitionProperty;
+        var curProp = getComputedStyle(curBox).transitionProperty;
         if (curProp == kExpecteds[i])
           result += "PASS: ";
         else

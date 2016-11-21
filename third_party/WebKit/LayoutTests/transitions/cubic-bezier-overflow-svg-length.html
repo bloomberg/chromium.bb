@@ -4,7 +4,7 @@
     <title>cubic-bezier value overflow: SVG Lengths</title>
     <style>
       .box {
-        -webkit-transition: stroke-dashoffset 1s linear;
+        transition: stroke-dashoffset 1s linear;
         stroke-dashoffset: 1;
         stroke-dasharray: 15, 15;
         stroke-width: 10;
@@ -12,16 +12,16 @@
         fill: blue;
       }
       #box1 {
-        -webkit-transition-timing-function: cubic-bezier(0.3, 1.5, 0.8, 1.5);
+        transition-timing-function: cubic-bezier(0.3, 1.5, 0.8, 1.5);
       }
       #box2 {
-        -webkit-transition-timing-function: cubic-bezier(0.4, -0.8, 0.7, 1.7);
+        transition-timing-function: cubic-bezier(0.4, -0.8, 0.7, 1.7);
       }
       #box3 {
-        -webkit-transition-timing-function: cubic-bezier(0.7, -2, 1, -1.5);
+        transition-timing-function: cubic-bezier(0.7, -2, 1, -1.5);
       }
       #box4 {
-        -webkit-transition-timing-function: cubic-bezier(0, 4, 1, -3);
+        transition-timing-function: cubic-bezier(0, 4, 1, -3);
       }
       .animating > .box {
         stroke-dashoffset: 50;

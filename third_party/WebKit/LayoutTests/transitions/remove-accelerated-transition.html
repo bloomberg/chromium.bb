@@ -5,7 +5,7 @@
         background-color: red;
         height: 100px;
         width: 100px;
-        -webkit-transition: height 0.5s linear;
+        transition: height 0.5s linear;
         overflow: hidden;
       }
 
@@ -13,7 +13,7 @@
         background-color: blue;
         height: 100px;
         width: 100px;
-        -webkit-transition: -webkit-transform 0.5s linear;
+        transition: transform 0.5s linear;
       }
     </style>
     <script>
@@ -31,11 +31,11 @@
       function startTest() {
         var a = document.getElementById("a");
         var b = document.getElementById("b");
-        a.addEventListener("webkitTransitionEnd", endTest, false);
+        a.addEventListener("transitionend", endTest, false);
         
         // Trigger transitions.
         a.style.height = "0px";
-        b.style.webkitTransform = "translateX(10px)";
+        b.style.transform = "translateX(10px)";
 
         // Force layout.
         document.body.offsetHeight;

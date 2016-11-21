@@ -8,8 +8,8 @@
       width: 100px;
       margin: 10px;
       background-color: blue;
-      -webkit-transition-property: transform;
-      -webkit-transition-duration: 0.5s;
+      transition-property: transform;
+      transition-duration: 0.5s;
       transform: translate(100px);
     }
   </style>
@@ -24,7 +24,7 @@
     function setupTest()
     {
       var box = document.getElementById('box1');
-      box.style.webkitTransform = 'translate(200px)';
+      box.style.transform = 'translate(200px)';
     }
     
     runTransitionTest(expectedEndEvents, setupTest);

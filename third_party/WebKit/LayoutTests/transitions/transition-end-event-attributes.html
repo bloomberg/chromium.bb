@@ -8,8 +8,8 @@
       width: 100px;
       margin: 10px;
       background-color: blue;
-      -webkit-transition-property: left;
-      -webkit-transition-duration: 0.5s;
+      transition-property: left;
+      transition-duration: 0.5s;
     }
   </style>
   <script src="transition-end-event-helpers.js"></script>
@@ -34,7 +34,7 @@
 <p>Initiating a 500ms transition on the left property of box1.</p>
 
 <div id="container">
-  <div id="box1" class="box" onwebkittransitionend="recordTransitionEndEvent(event);"></div>
+  <div id="box1" class="box" ontransitionend="recordTransitionEndEvent(event);"></div>
 </div>
 
 <div id="result"></div>

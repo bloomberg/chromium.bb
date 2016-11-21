@@ -6,9 +6,9 @@
     width: 100px;
     left: 0px;
     background-color: blue;
-    -webkit-transition-property: left;
-    -webkit-transition-duration: 2s;
-    -webkit-transition-timing-function: linear;
+    transition-property: left;
+    transition-duration: 2s;
+    transition-timing-function: linear;
 }
 </style>
 <body>
@@ -21,7 +21,7 @@ The box should start moving left and after 600ms snap back to 0</p>
 <script>
 function reset()
 {
-    document.getElementById('box').style.webkitTransitionDuration = "0s";
+    document.getElementById('box').style.transitionDuration = "0s";
     document.getElementById('box').style.left = "0px";
 }
 

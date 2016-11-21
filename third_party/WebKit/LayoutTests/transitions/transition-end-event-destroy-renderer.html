@@ -6,8 +6,8 @@
       width: 100px;
       margin: 10px;
       background-color: blue;
-      -webkit-transition-property: -webkit-transform;
-      -webkit-transition-duration: 0.2s;
+      transition-property: transform;
+      transition-duration: 0.2s;
     }
   </style>
   <script>
@@ -34,18 +34,18 @@
     function startTest()
     {
       var box1 = document.getElementById('box1');
-      box1.addEventListener('webkitTransitionEnd', function() {
+      box1.addEventListener('transitionend', function() {
         box1.parentNode.removeChild(box1);
         transitionEnded();
       }, false);
-      box1.style.webkitTransform = 'translate(100px, 0)';
+      box1.style.transform = 'translate(100px, 0)';
 
       var box2 = document.getElementById('box2');
-      box2.addEventListener('webkitTransitionEnd', function() {
+      box2.addEventListener('transitionend', function() {
         box2.style.display = 'none';
         transitionEnded();
       }, false);
-      box2.style.webkitTransform = 'translate(100px, 0)';
+      box2.style.transform = 'translate(100px, 0)';
     }
     
     window.addEventListener('load', startTest, false);
@@ -53,7 +53,7 @@
 </head>
 <body>
 
-<p>Tests element removal and hiding in webkitTransitionEnd event handler. Should not crash.</p>
+<p>Tests element removal and hiding in transitionend event handler. Should not crash.</p>
 
 <div id="container">
   <div id="box1" class="box"></div>

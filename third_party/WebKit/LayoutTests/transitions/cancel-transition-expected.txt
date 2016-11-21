@@ -2,4 +2,4 @@ Test removes the transition properties while the transition is running, then add
 
 left
 translate
-left: PASS, webkitTransform: PASS
+left: PASS, transform: PASS

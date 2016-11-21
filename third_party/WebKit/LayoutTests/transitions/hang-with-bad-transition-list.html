@@ -5,7 +5,7 @@
         background: blue;
         color: white;
         opacity: .666;
-        -webkit-transition: opacity, .1s, .1s ease-out;
+        transition: opacity, .1s, .1s ease-out;
     }
   </style>
   <script>
@@ -17,7 +17,7 @@
         var doomSpan = document.getElementById("doomSpan");
         doomSpan.style.opacity=1;
         if (window.testRunner)
-            doomSpan.addEventListener('webkitTransitionEnd', function() { testRunner.notifyDone(); });
+            doomSpan.addEventListener('transitionend', function() { testRunner.notifyDone(); });
     }
   </script>
 </head>

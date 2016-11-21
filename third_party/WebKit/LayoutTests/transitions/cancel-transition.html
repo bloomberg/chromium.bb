@@ -18,15 +18,15 @@
         }
         #container.run #left {
             left: 450px;
-            -webkit-transition-property: left;
-            -webkit-transition-duration: 1s;
-            -webkit-transition-timing-function: linear;
+            transition-property: left;
+            transition-duration: 1s;
+            transition-timing-function: linear;
         }
         #container.run #translate {
             transform: translate(400px, 0px);
-            -webkit-transition-property: transform;
-            -webkit-transition-duration: 1s;
-            -webkit-transition-timing-function: linear;
+            transition-property: transform;
+            transition-duration: 1s;
+            transition-timing-function: linear;
         }
     </style>
     <script>
@@ -64,9 +64,9 @@
             else
                 result += "<span style='color:green'>PASS</span>";
 
-            result += ", webkitTransform: ";
+            result += ", transform: ";
 
-            var transform = window.getComputedStyle(document.getElementById('translate')).webkitTransform;
+            var transform = window.getComputedStyle(document.getElementById('translate')).transform;
             transform = transform.split("(");
             transform = transform[1].split(",");
             if (!isEqual(transform[4], 200, 50))
