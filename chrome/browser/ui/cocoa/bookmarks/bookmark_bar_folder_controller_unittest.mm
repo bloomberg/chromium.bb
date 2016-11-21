@@ -1615,6 +1615,35 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
   EXPECT_CGFLOAT_EQ([targetButton bottom].y - yBottomOffset, pos);
 }
 
+TEST_F(BookmarkBarFolderControllerMenuTest, FolderTooltips) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* otherBookmarks = model->other_node();
+  model->AddFolder(otherBookmarks, otherBookmarks->child_count(),
+                   ASCIIToUTF16("short_name"));
+  model->AddFolder(
+      otherBookmarks, otherBookmarks->child_count(),
+      ASCIIToUTF16("reallyReallyLongBookmarkNamereallyReallyLongBookmarkNamerea"
+                   "llyReallyLongBookmarkNamereallyReallyLongBookmarkName"));
+  BookmarkButton* otherButton = [bar_ otherBookmarksButton];
+  ASSERT_TRUE(otherButton);
+
+  [[otherButton target] openBookmarkFolderFromButton:otherButton];
+  BookmarkBarFolderController* folder = [bar_ folderController];
+  EXPECT_TRUE(folder);
+
+  NSArray* buttons = [folder buttons];
+  EXPECT_EQ(2U, [buttons count]);
+
+  for (BookmarkButton* btn in buttons) {
+    if ([[btn cell] cellSize].width >
+        bookmarks::kBookmarkMenuButtonMaximumWidth) {
+      EXPECT_TRUE([btn toolTip]);
+    } else {
+      EXPECT_FALSE([btn toolTip]);
+    }
+  }
+}
+
 @interface BookmarkBarControllerNoDelete : BookmarkBarController
 - (IBAction)deleteBookmark:(id)sender;
 @end

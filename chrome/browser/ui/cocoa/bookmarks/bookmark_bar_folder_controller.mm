@@ -449,7 +449,16 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
       [button setAcceptsTrackIn:YES];
     }
     // Add a tooltip.
-    [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
+    if (node->is_folder()) {
+      NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+      if ([title length] &&
+          [[button cell] cellSize].width >
+              bookmarks::kBookmarkMenuButtonMaximumWidth) {
+        [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
+      }
+    } else {
+      [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
+    }
   } else {
     [button setEnabled:NO];
     [button setBordered:NO];
