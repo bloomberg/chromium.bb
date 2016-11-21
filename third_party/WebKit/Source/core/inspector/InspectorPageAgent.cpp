@@ -170,6 +170,9 @@ static void maybeEncodeTextContent(const String& textContent,
   } else if (buffer) {
     *result = base64Encode(buffer->data(), buffer->size());
     *base64Encoded = true;
+  } else if (textContent.isNull()) {
+    *result = "";
+    *base64Encoded = false;
   } else {
     DCHECK(!textContent.is8Bit());
     *result = base64Encode(textContent.utf8(WTF::LenientUTF8Conversion));
