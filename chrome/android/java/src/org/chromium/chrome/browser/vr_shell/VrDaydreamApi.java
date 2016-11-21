@@ -14,6 +14,11 @@ import android.content.Intent;
  */
 public interface VrDaydreamApi {
     /**
+     * @return Whether the current device is Daydream Ready.
+     */
+    boolean isDaydreamReadyDevice();
+
+    /**
      * Register the intent to launch after phone inserted into a Daydream viewer.
      */
     void registerDaydreamIntent(final PendingIntent pendingIntent);

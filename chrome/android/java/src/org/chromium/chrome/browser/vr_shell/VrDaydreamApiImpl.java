@@ -28,7 +28,19 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
+    public boolean isDaydreamReadyDevice() {
+        return DaydreamApi.isDaydreamReadyPlatform(mActivity);
+    }
+
+    private void checkDaydreamReadyDevice() {
+        if (!DaydreamApi.isDaydreamReadyPlatform(mActivity)) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Override
     public void registerDaydreamIntent(final PendingIntent pendingIntent) {
+        checkDaydreamReadyDevice();
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
         daydreamApi.registerDaydreamIntent(pendingIntent);
         daydreamApi.close();
@@ -36,6 +48,7 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public void unregisterDaydreamIntent() {
+        checkDaydreamReadyDevice();
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
         daydreamApi.unregisterDaydreamIntent();
         daydreamApi.close();
@@ -48,6 +61,7 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public void launchInVr(final PendingIntent pendingIntent) {
+        checkDaydreamReadyDevice();
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
         daydreamApi.launchInVr(pendingIntent);
         daydreamApi.close();
@@ -55,6 +69,7 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public void exitFromVr(int requestCode, final Intent intent) {
+        checkDaydreamReadyDevice();
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
         daydreamApi.exitFromVr(mActivity, requestCode, intent);
         daydreamApi.close();

@@ -66,6 +66,7 @@ public class VrShellDelegate {
     private final Intent mEnterVRIntent;
 
     private boolean mVrAvailable;
+    private boolean mDaydreamReadyDevice;
     private Boolean mVrShellEnabled;
 
     private Class<? extends VrShell> mVrShellClass;
@@ -87,7 +88,8 @@ public class VrShellDelegate {
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
-        mVrAvailable = maybeFindVrClasses() && isVrCoreCompatible() && createVrDaydreamApi();
+        mVrAvailable = maybeFindVrClasses() && isVrCoreCompatible() && createVrDaydreamApi()
+                && mVrDaydreamApi.isDaydreamReadyDevice();
         if (mVrAvailable) {
             mEnterVRIntent = mVrDaydreamApi.createVrIntent(
                     new ComponentName(mActivity, VR_ACTIVITY_ALIAS));
@@ -392,6 +394,7 @@ public class VrShellDelegate {
 
     @CalledByNative
     private void setListeningForWebVrActivate(boolean listening) {
+        if (!mVrAvailable) return;
         mListeningForWebVrActivate = listening;
         if (listening) {
             registerDaydreamIntent();
