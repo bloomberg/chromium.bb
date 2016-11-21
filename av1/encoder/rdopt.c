@@ -3265,6 +3265,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   int tmp_eob = 0;
   int zero_blk_rate;
   RD_STATS sum_rd_stats;
+  const int tx_size_ctx = txsize_sqr_map[tx_size];
 
   av1_init_rd_stats(&sum_rd_stats);
 #if CONFIG_EXT_TX
@@ -3282,8 +3283,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
-  zero_blk_rate =
-      x->token_costs[tx_size][pd->plane_type][1][0][0][coeff_ctx][EOB_TOKEN];
+  zero_blk_rate = x->token_costs[tx_size_ctx][pd->plane_type][1][0][0]
+                                [coeff_ctx][EOB_TOKEN];
 
   if (cpi->common.tx_mode == TX_MODE_SELECT || tx_size == TX_4X4) {
     inter_tx_size[0][0] = tx_size;
