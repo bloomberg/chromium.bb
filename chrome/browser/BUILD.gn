@@ -3889,6 +3889,8 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerUIUtils.java",
       "../android/java/src/org/chromium/chrome/browser/download/ChromeDownloadDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/download/DownloadController.java",
+      "../android/java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
+      "../android/java/src/org/chromium/chrome/browser/download/DownloadItem.java",
       "../android/java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
       "../android/java/src/org/chromium/chrome/browser/download/ui/ThumbnailProviderImpl.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java",

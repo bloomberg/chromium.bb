@@ -17,6 +17,8 @@
 #include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
+#include "jni/DownloadInfo_jni.h"
+#include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -42,39 +44,11 @@ void UpdateNotifier(DownloadManagerService* service,
   }
 }
 
-void RemoveDownloadsFromDownloadManager(
-    content::DownloadManager* manager,
-    const base::FilePath& path) {
-  if (!manager)
-    return;
-  content::DownloadManager::DownloadVector all_items;
-  manager->GetAllDownloads(&all_items);
-
-  for (size_t i = 0; i < all_items.size(); i++) {
-    content::DownloadItem* item = all_items[i];
-    if (item->GetState() == content::DownloadItem::COMPLETE &&
-        item->GetTargetFilePath() == path) {
-      item->Remove();
-    }
-  }
-}
-
 ScopedJavaLocalRef<jobject> CreateJavaDownloadItem(
     JNIEnv* env, content::DownloadItem* item) {
-  return Java_DownloadManagerService_createDownloadItem(
-      env,
-      ConvertUTF8ToJavaString(env, item->GetGuid()),
-      ConvertUTF8ToJavaString(env,
-                              item->GetFileNameToReportUser().value()),
-      ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
-      ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
-      ConvertUTF8ToJavaString(env, item->GetMimeType()),
-      item->GetStartTime().ToJavaTime(), item->GetTotalBytes(),
-      item->GetFileExternallyRemoved(),
-      item->GetBrowserContext()->IsOffTheRecord(),
-      item->GetState(),
-      item->PercentComplete(),
-      item->IsPaused());
+  return Java_DownloadItem_createDownloadItem(
+      env, DownloadManagerService::CreateJavaDownloadInfo(env, item),
+      item->GetStartTime().ToJavaTime(), item->GetFileExternallyRemoved());
 }
 
 }  // namespace
@@ -101,6 +75,43 @@ void DownloadManagerService::OnDownloadCanceled(
 // static
 DownloadManagerService* DownloadManagerService::GetInstance() {
   return base::Singleton<DownloadManagerService>::get();
+}
+
+// static
+ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
+    JNIEnv* env, content::DownloadItem* item) {
+  ui::PageTransition base_transition =
+      ui::PageTransitionStripQualifier(item->GetTransitionType());
+  bool user_initiated =
+      (item->GetTransitionType() & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
+      base_transition == ui::PAGE_TRANSITION_TYPED ||
+      base_transition == ui::PAGE_TRANSITION_AUTO_BOOKMARK ||
+      base_transition == ui::PAGE_TRANSITION_GENERATED ||
+      base_transition == ui::PAGE_TRANSITION_RELOAD ||
+      base_transition == ui::PAGE_TRANSITION_KEYWORD;
+  bool has_user_gesture = item->HasUserGesture() || user_initiated;
+
+  base::TimeDelta time_delta;
+  item->TimeRemaining(&time_delta);
+
+  return Java_DownloadInfo_createDownloadInfo(
+      env,
+      ConvertUTF8ToJavaString(env, item->GetGuid()),
+      ConvertUTF8ToJavaString(env,
+                              item->GetFileNameToReportUser().value()),
+      ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
+      ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
+      ConvertUTF8ToJavaString(env, item->GetMimeType()),
+      item->GetReceivedBytes(),
+      item->GetBrowserContext()->IsOffTheRecord(),
+      item->GetState(),
+      item->PercentComplete(),
+      item->IsPaused(),
+      has_user_gesture,
+      item->CanResume(),
+      ConvertUTF8ToJavaString(env, item->GetOriginalUrl().spec()),
+      ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
+      time_delta.InMilliseconds());
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
@@ -216,14 +227,6 @@ void DownloadManagerService::CheckForExternallyRemovedDownloads(
   if (!manager)
     return;
   manager->CheckForHistoryFilesRemoval();
-}
-
-void DownloadManagerService::RemoveDownloadsForPath(
-    const base::FilePath& path) {
-  content::DownloadManager* manager = GetDownloadManager(false);
-  RemoveDownloadsFromDownloadManager(manager, path);
-  manager = GetDownloadManager(true);
-  RemoveDownloadsFromDownloadManager(manager, path);
 }
 
 void DownloadManagerService::CancelDownload(

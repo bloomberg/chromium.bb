@@ -68,22 +68,8 @@ public class DownloadController {
      * download. This can be either a POST download or a GET download with authentication.
      */
     @CalledByNative
-    private void onDownloadCompleted(String url, String mimeType, String filename, String path,
-            long contentLength, String downloadGuid, String originalUrl, String refererUrl,
-            boolean hasUserGesture) {
+    private void onDownloadCompleted(DownloadInfo downloadInfo) {
         if (sDownloadNotificationService == null) return;
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setUrl(url)
-                .setMimeType(mimeType)
-                .setFileName(filename)
-                .setFilePath(path)
-                .setContentLength(contentLength)
-                .setDescription(filename)
-                .setDownloadGuid(downloadGuid)
-                .setOriginalUrl(originalUrl)
-                .setReferer(refererUrl)
-                .setHasUserGesture(hasUserGesture)
-                .build();
         sDownloadNotificationService.onDownloadCompleted(downloadInfo);
     }
 
@@ -92,35 +78,17 @@ public class DownloadController {
      * download. This can be either a POST download or a GET download with authentication.
      */
     @CalledByNative
-    private void onDownloadInterrupted(String url, String mimeType, String filename, String path,
-            long contentLength, String downloadGuid, boolean isResumable, boolean isAutoResumable,
-            boolean isOffTheRecord) {
+    private void onDownloadInterrupted(DownloadInfo downloadInfo, boolean isAutoResumable) {
         if (sDownloadNotificationService == null) return;
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setUrl(url)
-                .setMimeType(mimeType)
-                .setFileName(filename)
-                .setFilePath(path)
-                .setContentLength(contentLength)
-                .setDescription(filename)
-                .setDownloadGuid(downloadGuid)
-                .setIsResumable(isResumable)
-                .setIsOffTheRecord(isOffTheRecord)
-                .build();
         sDownloadNotificationService.onDownloadInterrupted(downloadInfo, isAutoResumable);
     }
 
     /**
      * Called when a download was cancelled.
-     * @param notificationId Notification Id of the download item.
-     * @param downloadGuid GUID of the download item.
      */
     @CalledByNative
-    private void onDownloadCancelled(String downloadGuid) {
+    private void onDownloadCancelled(DownloadInfo downloadInfo) {
         if (sDownloadNotificationService == null) return;
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setDownloadGuid(downloadGuid)
-                .build();
         sDownloadNotificationService.onDownloadCancelled(downloadInfo);
     }
 
@@ -129,24 +97,8 @@ public class DownloadController {
      * network stack use custom notification to display the progress of downloads.
      */
     @CalledByNative
-    private void onDownloadUpdated(String url, String mimeType, String filename, String path,
-            long contentLength, String downloadGuid, int percentCompleted, long timeRemainingInMs,
-            boolean hasUserGesture, boolean isPaused, boolean isOffTheRecord) {
+    private void onDownloadUpdated(DownloadInfo downloadInfo) {
         if (sDownloadNotificationService == null) return;
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setUrl(url)
-                .setMimeType(mimeType)
-                .setFileName(filename)
-                .setFilePath(path)
-                .setContentLength(contentLength)
-                .setDescription(filename)
-                .setDownloadGuid(downloadGuid)
-                .setPercentCompleted(percentCompleted)
-                .setTimeRemainingInMillis(timeRemainingInMs)
-                .setHasUserGesture(hasUserGesture)
-                .setIsPaused(isPaused)
-                .setIsOffTheRecord(isOffTheRecord)
-                .build();
         sDownloadNotificationService.onDownloadUpdated(downloadInfo);
     }
 

@@ -39,6 +39,9 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
 
   static DownloadManagerService* GetInstance();
 
+  static base::android::ScopedJavaLocalRef<jobject> CreateJavaDownloadInfo(
+      JNIEnv* env, content::DownloadItem* item);
+
   DownloadManagerService();
   ~DownloadManagerService() override;
 
@@ -90,9 +93,6 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
   void CheckForExternallyRemovedDownloads(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj,
                                           bool is_off_the_record);
-
-  // Remove download items associated with |path| from downloads history.
-  void RemoveDownloadsForPath(const base::FilePath& path);
 
   // DownloadHistory::Observer methods.
   void OnHistoryQueryComplete() override;

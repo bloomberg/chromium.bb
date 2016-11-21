@@ -606,7 +606,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             long downloadId = mDownloadManagerDelegate.addCompletedDownload(
                     downloadInfo.getFileName(), description, downloadInfo.getMimeType(),
                     downloadInfo.getFilePath(), downloadInfo.getContentLength(),
-                    downloadInfo.getOriginalUrl(), downloadInfo.getReferer(),
+                    downloadInfo.getOriginalUrl(), downloadInfo.getReferrer(),
                     downloadInfo.getDownloadGuid());
             downloadItem.setSystemDownloadId(downloadId);
             return true;
@@ -886,7 +886,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             request.setDescription(description);
             request.setTitle(info.getFileName());
             request.addRequestHeader("Cookie", info.getCookie());
-            request.addRequestHeader("Referer", info.getReferer());
+            request.addRequestHeader("Referer", info.getReferrer());
             request.addRequestHeader("User-Agent", info.getUserAgent());
 
             DownloadManager manager =
@@ -1663,33 +1663,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     @Override
     public void purgeActiveNetworkList(long[] activeNetIds) {}
-
-    @CalledByNative
-    private static DownloadItem createDownloadItem(String guid, String displayName,
-            String filepath, String url, String mimeType, long startTimestamp, long totalBytes,
-            boolean hasBeenExternallyRemoved, boolean isIncognito, int state,
-            int percentCompleted, boolean isPaused) {
-        // Remap the MIME type first.
-        File file = new File(filepath);
-        String newMimeType =
-                ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, file.getName());
-
-        DownloadInfo.Builder builder = new DownloadInfo.Builder()
-                .setDownloadGuid(guid)
-                .setFileName(displayName)
-                .setFilePath(filepath)
-                .setUrl(url)
-                .setMimeType(newMimeType)
-                .setContentLength(totalBytes)
-                .setIsOffTheRecord(isIncognito)
-                .setPercentCompleted(percentCompleted)
-                .setIsPaused(isPaused)
-                .setState(state);
-        DownloadItem downloadItem = new DownloadItem(false, builder.build());
-        downloadItem.setStartTime(startTimestamp);
-        downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);
-        return downloadItem;
-    }
 
     private static native boolean nativeIsSupportedMimeType(String mimeType);
 

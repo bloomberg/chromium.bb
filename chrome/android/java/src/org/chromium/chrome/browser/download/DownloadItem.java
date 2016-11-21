@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download;
 
+import org.chromium.base.annotations.CalledByNative;
+
 /**
  * A generic class representing a download item. The item can be either downloaded through the
  * Android DownloadManager, or through Chrome's network stack.
@@ -109,5 +111,14 @@ public class DownloadItem {
      */
     public boolean hasBeenExternallyRemoved() {
         return mHasBeenExternallyRemoved;
+    }
+
+    @CalledByNative
+    private static DownloadItem createDownloadItem(
+            DownloadInfo downloadInfo, long startTimestamp, boolean hasBeenExternallyRemoved) {
+        DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
+        downloadItem.setStartTime(startTimestamp);
+        downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);
+        return downloadItem;
     }
 }

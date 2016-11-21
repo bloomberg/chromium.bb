@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.DownloadState;
 
 /**
@@ -17,7 +18,7 @@ public final class DownloadInfo {
     private final String mFileName;
     private final String mDescription;
     private final String mFilePath;
-    private final String mReferer;
+    private final String mReferrer;
     private final String mOriginalUrl;
     private final long mContentLength;
     private final String mDownloadGuid;
@@ -40,7 +41,7 @@ public final class DownloadInfo {
         mFileName = builder.mFileName;
         mDescription = builder.mDescription;
         mFilePath = builder.mFilePath;
-        mReferer = builder.mReferer;
+        mReferrer = builder.mReferrer;
         mOriginalUrl = builder.mOriginalUrl;
         mContentLength = builder.mContentLength;
         mDownloadGuid = builder.mDownloadGuid;
@@ -84,8 +85,8 @@ public final class DownloadInfo {
         return mFilePath;
     }
 
-    public String getReferer() {
-        return mReferer;
+    public String getReferrer() {
+        return mReferrer;
     }
 
     public String getOriginalUrl() {
@@ -154,7 +155,7 @@ public final class DownloadInfo {
         private String mFileName;
         private String mDescription;
         private String mFilePath;
-        private String mReferer;
+        private String mReferrer;
         private String mOriginalUrl;
         private long mContentLength;
         private boolean mIsGETRequest;
@@ -204,8 +205,8 @@ public final class DownloadInfo {
             return this;
         }
 
-        public Builder setReferer(String referer) {
-            mReferer = referer;
+        public Builder setReferrer(String referer) {
+            mReferrer = referer;
             return this;
         }
 
@@ -293,7 +294,7 @@ public final class DownloadInfo {
                     .setFileName(downloadInfo.getFileName())
                     .setDescription(downloadInfo.getDescription())
                     .setFilePath(downloadInfo.getFilePath())
-                    .setReferer(downloadInfo.getReferer())
+                    .setReferrer(downloadInfo.getReferrer())
                     .setOriginalUrl(downloadInfo.getOriginalUrl())
                     .setContentLength(downloadInfo.getContentLength())
                     .setDownloadGuid(downloadInfo.getDownloadGuid())
@@ -309,6 +310,32 @@ public final class DownloadInfo {
                     .setState(downloadInfo.state());
             return builder;
         }
+    }
 
+    @CalledByNative
+    private static DownloadInfo createDownloadInfo(
+            String downloadGuid, String fileName, String filePath, String url, String mimeType,
+            long contentLength, boolean isIncognito, int state, int percentCompleted,
+            boolean isPaused, boolean hasUserGesture, boolean isResumable,
+            String originalUrl, String referrerUrl, long timeRemainingInMs) {
+        String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
+                mimeType, url, fileName);
+        return new DownloadInfo.Builder()
+                .setContentLength(contentLength)
+                .setDescription(fileName)
+                .setDownloadGuid(downloadGuid)
+                .setFileName(fileName)
+                .setFilePath(filePath)
+                .setHasUserGesture(hasUserGesture)
+                .setIsOffTheRecord(isIncognito)
+                .setIsPaused(isPaused)
+                .setIsResumable(isResumable)
+                .setMimeType(remappedMimeType)
+                .setOriginalUrl(originalUrl)
+                .setPercentCompleted(percentCompleted)
+                .setReferrer(referrerUrl)
+                .setState(state)
+                .setTimeRemainingInMillis(timeRemainingInMs)
+                .setUrl(url).build();
     }
 }
