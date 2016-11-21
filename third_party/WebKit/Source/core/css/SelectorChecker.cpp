@@ -448,6 +448,8 @@ SelectorChecker::Match SelectorChecker::matchForRelation(
 
     case CSSSelector::ShadowPiercingDescendant: {
       DCHECK(m_isQuerySelector);
+      UseCounter::count(context.element->document(),
+                        UseCounter::CSSShadowPiercingDescendantCombinator);
       // TODO(kochi): parentOrOpenShadowHostElement() is necessary because
       // SelectorQuery can pass V0 shadow roots. All closed shadow roots are
       // already filtered out, thus once V0 is removed this logic can use
