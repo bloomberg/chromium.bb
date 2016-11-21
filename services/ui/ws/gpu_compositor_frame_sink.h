@@ -55,6 +55,7 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       scoped_refptr<SurfacesContextProvider> context_provider,
       cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ~GpuCompositorFrameSink() override;
@@ -128,6 +129,7 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
 
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;
+  mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate> private_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };

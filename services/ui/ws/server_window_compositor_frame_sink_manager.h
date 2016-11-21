@@ -22,6 +22,7 @@ class GpuMemoryBufferManager;
 namespace ui {
 namespace ws {
 
+class GpuCompositorFrameSink;
 class ServerWindow;
 class ServerWindowCompositorFrameSink;
 class ServerWindowCompositorFrameSinkManagerTestApi;
@@ -38,6 +39,7 @@ struct CompositorFrameSinkData {
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest
       pending_compositor_frame_sink_request;
+  std::unique_ptr<GpuCompositorFrameSink> compositor_frame_sink_impl_;
 };
 
 // ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a

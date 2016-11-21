@@ -58,12 +58,10 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
 
   // TODO(fsamuel): Create the CompositorFrameSink through the DisplayCompositor
   // mojo interface.
-  mojo::MakeStrongBinding(
-      base::MakeUnique<GpuCompositorFrameSink>(
-          window_->delegate()->GetDisplayCompositor(), frame_sink_id, widget,
-          gpu_memory_buffer_manager, std::move(context_provider),
-          std::move(request), std::move(client)),
-      std::move(private_request));
+  data.compositor_frame_sink_impl_ = base::MakeUnique<GpuCompositorFrameSink>(
+      window_->delegate()->GetDisplayCompositor(), frame_sink_id, widget,
+      gpu_memory_buffer_manager, std::move(context_provider),
+      std::move(request), std::move(private_request), std::move(client));
   if (window_->parent()) {
     window_->delegate()
         ->GetRootWindow(window_)

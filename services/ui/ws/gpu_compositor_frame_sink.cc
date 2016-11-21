@@ -33,13 +33,15 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     scoped_refptr<SurfacesContextProvider> context_provider,
     cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : frame_sink_id_(frame_sink_id),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       display_compositor_(display_compositor),
       surface_factory_(frame_sink_id_, display_compositor_->manager(), this),
       client_(std::move(client)),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      private_binding_(this, std::move(private_request)) {
   display_compositor_->manager()->RegisterFrameSinkId(frame_sink_id_);
   display_compositor_->manager()->RegisterSurfaceFactoryClient(frame_sink_id_,
                                                                this);
