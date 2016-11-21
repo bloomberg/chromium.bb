@@ -297,8 +297,7 @@ class SequencedWorkerPoolTest
   // Destroys and unregisters the registered TaskScheduler, if any.
   void DeleteTaskScheduler() {
     if (TaskScheduler::GetInstance()) {
-      static_cast<internal::TaskSchedulerImpl*>(TaskScheduler::GetInstance())
-          ->JoinForTesting();
+      TaskScheduler::GetInstance()->JoinForTesting();
       TaskScheduler::SetInstance(nullptr);
     }
   }
