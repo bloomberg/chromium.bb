@@ -51,6 +51,7 @@
 #include "shared/os-compatibility.h"
 #include "shared/cairo-util.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
+#include "xdg-shell-unstable-v6-client-protocol.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 #include "windowed-output-api.h"
@@ -66,6 +67,7 @@ struct wayland_backend {
 		struct wl_registry *registry;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
+		struct zxdg_shell_v6 *xdg_shell;
 		struct zwp_fullscreen_shell_v1 *fshell;
 		struct wl_shm *shm;
 
@@ -98,7 +100,10 @@ struct wayland_output {
 		uint32_t global_id;
 
 		struct wl_shell_surface *shell_surface;
+		struct zxdg_surface_v6 *xdg_surface;
+		struct zxdg_toplevel_v6 *xdg_toplevel;
 		int configure_width, configure_height;
+		bool wait_for_configure;
 	} parent;
 
 	int keyboard_count;
@@ -623,6 +628,12 @@ wayland_output_repaint_pixman(struct weston_output *output_base,
 static void
 wayland_backend_destroy_output_surface(struct wayland_output *output)
 {
+	if (output->parent.xdg_toplevel)
+		zxdg_toplevel_v6_destroy(output->parent.xdg_toplevel);
+
+	if (output->parent.xdg_surface)
+		zxdg_surface_v6_destroy(output->parent.xdg_surface);
+
 	if (output->parent.shell_surface)
 		wl_shell_surface_destroy(output->parent.shell_surface);
 
@@ -822,6 +833,9 @@ wayland_output_set_windowed(struct wayland_output *output)
 		title = strdup(WINDOW_TITLE);
 	}
 
+	if (output->parent.xdg_toplevel)
+		zxdg_toplevel_v6_set_title(output->parent.xdg_toplevel, title);
+
 	if (!b->theme) {
 		b->theme = theme_create();
 		if (!b->theme) {
@@ -840,7 +854,8 @@ wayland_output_set_windowed(struct wayland_output *output)
 
 	wayland_output_resize_surface(output);
 
-	wl_shell_surface_set_toplevel(output->parent.shell_surface);
+	if (output->parent.shell_surface)
+		wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
 	return 0;
 }
@@ -860,7 +875,9 @@ wayland_output_set_fullscreen(struct wayland_output *output,
 
 	wayland_output_resize_surface(output);
 
-	if (output->parent.shell_surface) {
+	if (output->parent.xdg_toplevel) {
+		zxdg_toplevel_v6_set_fullscreen(output->parent.xdg_toplevel, target);
+	} else if (output->parent.shell_surface) {
 		wl_shell_surface_set_fullscreen(output->parent.shell_surface,
 						method, framerate, target);
 	} else if (b->parent.fshell) {
@@ -961,7 +978,7 @@ wayland_output_switch_mode(struct weston_output *output_base,
 
 	b = to_wayland_backend(output_base->compositor);
 
-	if (output->parent.shell_surface || !b->parent.fshell)
+	if (output->parent.xdg_surface || output->parent.shell_surface || !b->parent.fshell)
 		return -1;
 
 	mode = wayland_output_choose_mode(output, mode);
@@ -1033,6 +1050,41 @@ err_output:
 	return -1;
 }
 
+static void
+handle_xdg_surface_configure(void *data, struct zxdg_surface_v6 *surface,
+			 uint32_t serial)
+{
+	zxdg_surface_v6_ack_configure(surface, serial);
+}
+
+static const struct zxdg_surface_v6_listener xdg_surface_listener = {
+	handle_xdg_surface_configure
+};
+
+static void
+handle_xdg_toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
+			  int32_t width, int32_t height,
+			  struct wl_array *states)
+{
+	struct wayland_output *output = data;
+
+	output->parent.configure_width = width;
+	output->parent.configure_height = height;
+
+	output->parent.wait_for_configure = false;
+	/* FIXME: implement resizing */
+}
+
+static void
+handle_xdg_toplevel_close(void *data, struct zxdg_toplevel_v6 *xdg_toplevel)
+{
+}
+
+static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
+	handle_xdg_toplevel_configure,
+	handle_xdg_toplevel_close,
+};
+
 static int
 wayland_backend_create_output_surface(struct wayland_output *output)
 {
@@ -1047,7 +1099,28 @@ wayland_backend_create_output_surface(struct wayland_output *output)
 
 	output->parent.draw_initial_frame = true;
 
-	if (b->parent.shell) {
+	if (b->parent.xdg_shell) {
+		output->parent.xdg_surface =
+			zxdg_shell_v6_get_xdg_surface(b->parent.xdg_shell,
+						      output->parent.surface);
+		zxdg_surface_v6_add_listener(output->parent.xdg_surface,
+					     &xdg_surface_listener, output);
+
+		output->parent.xdg_toplevel =
+			zxdg_surface_v6_get_toplevel(output->parent.xdg_surface);
+		zxdg_toplevel_v6_add_listener(output->parent.xdg_toplevel,
+					      &xdg_toplevel_listener, output);
+
+		wl_surface_commit(output->parent.surface);
+
+		output->parent.wait_for_configure = true;
+
+		while (output->parent.wait_for_configure)
+			wl_display_dispatch(b->parent.wl_display);
+
+		weston_log("wayland-backend: Using xdg_shell_v6\n");
+	}
+	else if (b->parent.shell) {
 		output->parent.shell_surface =
 			wl_shell_get_shell_surface(b->parent.shell,
 						   output->parent.surface);
@@ -1058,6 +1131,8 @@ wayland_backend_create_output_surface(struct wayland_output *output)
 
 		wl_shell_surface_add_listener(output->parent.shell_surface,
 					      &shell_surface_listener, output);
+
+		weston_log("wayland-backend: Using wl_shell\n");
 	}
 
 	return 0;
@@ -1107,7 +1182,11 @@ wayland_output_enable(struct weston_output *base)
 					      WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
 					      output->mode.refresh, output->parent.output);
 
-		if (output->parent.shell_surface) {
+		if (output->parent.xdg_toplevel) {
+			zxdg_toplevel_v6_set_fullscreen(output->parent.xdg_toplevel,
+							output->parent.output);
+		}
+		else if (output->parent.shell_surface) {
 			wl_shell_surface_set_fullscreen(output->parent.shell_surface,
 							WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
 							output->mode.refresh, output->parent.output);
@@ -1285,9 +1364,14 @@ wayland_output_create_fullscreen(struct wayland_backend *b)
 		goto err_surface;
 
 	/* What should size be set if conditional is false? */
-	if (b->parent.shell) {
-		wl_shell_surface_set_fullscreen(output->parent.shell_surface,
-						0, 0, NULL);
+	if (b->parent.xdg_shell || b->parent.shell) {
+		if (output->parent.xdg_toplevel)
+			zxdg_toplevel_v6_set_fullscreen(output->parent.xdg_toplevel,
+							output->parent.output);
+		else if (output->parent.shell_surface)
+			wl_shell_surface_set_fullscreen(output->parent.shell_surface,
+							0, 0, NULL);
+
 		wl_display_roundtrip(b->parent.wl_display);
 
 		width = output->parent.configure_width;
@@ -1504,9 +1588,12 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 						button, state);
 
 		if (frame_status(input->output->frame) & FRAME_STATUS_MOVE) {
-
-			wl_shell_surface_move(input->output->parent.shell_surface,
+			if (input->output->parent.xdg_toplevel)
+				zxdg_toplevel_v6_move(input->output->parent.xdg_toplevel,
 					      input->parent.seat, serial);
+			else if (input->output->parent.shell_surface)
+				wl_shell_surface_move(input->output->parent.shell_surface,
+						      input->parent.seat, serial);
 			frame_status_clear(input->output->frame,
 					   FRAME_STATUS_MOVE);
 			return;
@@ -1835,8 +1922,12 @@ input_handle_touch_down(void *data, struct wl_touch *wl_touch,
 
 		if (first_touch && (frame_status(output->frame) & FRAME_STATUS_MOVE)) {
 			input->touch_points--;
-			wl_shell_surface_move(output->parent.shell_surface,
-					      input->parent.seat, serial);
+			if (output->parent.xdg_toplevel)
+				zxdg_toplevel_v6_move(output->parent.xdg_toplevel,
+						      input->parent.seat, serial);
+			else if (output->parent.shell_surface)
+				wl_shell_surface_move(output->parent.shell_surface,
+						      input->parent.seat, serial);
 			frame_status_clear(output->frame,
 					   FRAME_STATUS_MOVE);
 			return;
@@ -2164,6 +2255,16 @@ wayland_parent_output_destroy(struct wayland_parent_output *output)
 }
 
 static void
+xdg_shell_ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial)
+{
+	zxdg_shell_v6_pong(shell, serial);
+}
+
+static const struct zxdg_shell_v6_listener xdg_shell_listener = {
+	xdg_shell_ping,
+};
+
+static void
 registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 		       const char *interface, uint32_t version)
 {
@@ -2173,6 +2274,12 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 		b->parent.compositor =
 			wl_registry_bind(registry, name,
 					 &wl_compositor_interface, 1);
+	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
+		b->parent.xdg_shell =
+			wl_registry_bind(registry, name,
+					 &zxdg_shell_v6_interface, 1);
+		zxdg_shell_v6_add_listener(b->parent.xdg_shell,
+					   &xdg_shell_listener, b);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		b->parent.shell =
 			wl_registry_bind(registry, name,
@@ -2248,6 +2355,12 @@ wayland_destroy(struct weston_compositor *ec)
 
 	if (b->parent.shm)
 		wl_shm_destroy(b->parent.shm);
+
+	if (b->parent.xdg_shell)
+		zxdg_shell_v6_destroy(b->parent.xdg_shell);
+
+	if (b->parent.shell)
+		wl_shell_destroy(b->parent.shell);
 
 	if (b->parent.fshell)
 		zwp_fullscreen_shell_v1_release(b->parent.fshell);

@@ -391,9 +391,11 @@ wayland_backend_la_CFLAGS =			\
 	$(CAIRO_CFLAGS)				\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
 	$(AM_CFLAGS)
-wayland_backend_la_SOURCES = 			\
-	libweston/compositor-wayland.c		\
-	libweston/compositor-wayland.h		\
+wayland_backend_la_SOURCES = 					\
+	libweston/compositor-wayland.c				\
+	libweston/compositor-wayland.h				\
+	protocol/xdg-shell-unstable-v6-protocol.c		\
+	protocol/xdg-shell-unstable-v6-client-protocol.h	\
 	shared/helpers.h
 nodist_wayland_backend_la_SOURCES =			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
