@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
@@ -31,6 +32,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -42,6 +44,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -128,6 +131,8 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
+    private long mOffsetTick;
+    private boolean mOffsetTickComputed = false;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -681,12 +686,24 @@ public class CustomTabsConnection {
      *
      * @param session Session identifier.
      * @param metricName Name of the page load metric.
+     * @param navigationStartTick Absolute navigation start time, as TimeTicks.
      * @param offsetMs Offset in ms from navigationStart.
      */
-    boolean notifyPageLoadMetric(CustomTabsSessionToken session, String metricName, long offsetMs) {
+    boolean notifyPageLoadMetric(CustomTabsSessionToken session, String metricName,
+            long navigationStartTick, long offsetMs) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
+
+        if (!mOffsetTickComputed) {
+            // Compute offset from time ticks to uptimeMillis.
+            mOffsetTickComputed = true;
+            long nativeNowUs = TimeUtils.nativeGetTimeTicksNowUs();
+            long javaNowUs = SystemClock.uptimeMillis() * 1000;
+            mOffsetTick = nativeNowUs - javaNowUs;
+        }
+
         Bundle args = new Bundle();
+        args.putLong(PageLoadMetrics.NAVIGATION_START, (navigationStartTick - mOffsetTick) / 1000);
         args.putLong(metricName, offsetMs);
         try {
             callback.extraCallback(PAGE_LOAD_METRICS_CALLBACK, args);

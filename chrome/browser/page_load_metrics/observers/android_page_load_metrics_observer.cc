@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -18,6 +19,15 @@
 AndroidPageLoadMetricsObserver::AndroidPageLoadMetricsObserver(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+AndroidPageLoadMetricsObserver::OnStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url,
+    bool started_in_foreground) {
+  navigation_start_ = navigation_handle->NavigationStart();
+  return CONTINUE_OBSERVING;
+}
 
 void AndroidPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
@@ -29,5 +39,8 @@ void AndroidPageLoadMetricsObserver::OnFirstContentfulPaint(
       web_contents_->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onFirstContentfulPaint(
-      env, java_web_contents, static_cast<jlong>(first_contentful_paint_ms));
+      env, java_web_contents,
+      static_cast<jlong>(
+          (navigation_start_ - base::TimeTicks()).InMicroseconds()),
+      static_cast<jlong>(first_contentful_paint_ms));
 }

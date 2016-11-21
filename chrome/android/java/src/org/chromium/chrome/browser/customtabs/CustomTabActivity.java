@@ -130,11 +130,12 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         @Override
-        public void onFirstContentfulPaint(WebContents webContents, long firstContentfulPaintMs) {
+        public void onFirstContentfulPaint(
+                WebContents webContents, long navigationStartTick, long firstContentfulPaintMs) {
             if (webContents != mTab.getWebContents()) return;
 
-            mConnection.notifyPageLoadMetric(
-                    mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT, firstContentfulPaintMs);
+            mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
+                    navigationStartTick, firstContentfulPaintMs);
         }
     }
 

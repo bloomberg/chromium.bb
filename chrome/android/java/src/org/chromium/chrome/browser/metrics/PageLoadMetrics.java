@@ -17,6 +17,7 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class PageLoadMetrics {
     public static final String FIRST_CONTENTFUL_PAINT = "firstContentfulPaint";
+    public static final String NAVIGATION_START = "navigationStart";
 
     /** Observer for page load metrics. */
     public interface Observer {
@@ -24,9 +25,11 @@ public class PageLoadMetrics {
          * Called when the first contentful paint page load metric is available.
          *
          * @param webContents the WebContents this metrics is related to.
+         * @param navigationStartTick Absolute navigation start time, as TimeTicks.
          * @param firstContentfulPaintMs Time to first contentful paint from navigation start.
          */
-        public void onFirstContentfulPaint(WebContents webContents, long firstContentfulPaintMs);
+        public void onFirstContentfulPaint(
+                WebContents webContents, long navigationStartTick, long firstContentfulPaintMs);
     }
 
     private static ObserverList<Observer> sObservers;
@@ -46,11 +49,13 @@ public class PageLoadMetrics {
     }
 
     @CalledByNative
-    static void onFirstContentfulPaint(WebContents webContents, long firstContentfulPaintMs) {
+    static void onFirstContentfulPaint(
+            WebContents webContents, long navigationStartTick, long firstContentfulPaintMs) {
         ThreadUtils.assertOnUiThread();
         if (sObservers == null) return;
         for (Observer observer : sObservers) {
-            observer.onFirstContentfulPaint(webContents, firstContentfulPaintMs);
+            observer.onFirstContentfulPaint(
+                    webContents, navigationStartTick, firstContentfulPaintMs);
         }
     }
 

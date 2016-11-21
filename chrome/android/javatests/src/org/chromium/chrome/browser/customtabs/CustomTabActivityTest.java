@@ -24,6 +24,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
@@ -848,13 +849,23 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @RetryOnFailure
     public void testPageLoadMetricIsSent() {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
+        final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
+
         CustomTabsCallback cb = new CustomTabsCallback() {
             @Override
             public void extraCallback(String callbackName, Bundle args) {
                 assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
-                long value = args.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
-                assertTrue(value > 0);
-                firstContentfulPaintMs.set(value);
+
+                long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
+                long current = SystemClock.uptimeMillis();
+                assertTrue(navigationStart <= current);
+                assertTrue(navigationStart >= activityStartTimeMs.get());
+
+                long firstContentfulPaint =
+                        args.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
+                assertTrue(firstContentfulPaint > 0);
+                assertTrue(firstContentfulPaint <= (current - navigationStart));
+                firstContentfulPaintMs.set(firstContentfulPaint);
             }
         };
 
@@ -866,6 +877,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         try {
+            activityStartTimeMs.set(SystemClock.uptimeMillis());
             startCustomTabActivityWithIntent(intent);
             CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
