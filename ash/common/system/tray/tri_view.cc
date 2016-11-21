@@ -70,6 +70,10 @@ void TriView::SetMinSize(Container container, const gfx::Size& size) {
   GetLayoutManager(container)->SetMinSize(size);
 }
 
+gfx::Size TriView::GetMinSize(Container container) {
+  return GetLayoutManager(container)->min_size();
+}
+
 void TriView::SetMaxSize(Container container, const gfx::Size& size) {
   GetLayoutManager(container)->SetMaxSize(size);
 }

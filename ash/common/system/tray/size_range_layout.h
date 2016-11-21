@@ -70,6 +70,8 @@ class ASH_EXPORT SizeRangeLayout : public views::LayoutManager {
   void SetMinSize(const gfx::Size& size);
   void SetMinSize(int width, int height);
 
+  gfx::Size min_size() const { return min_size_; }
+
   // Set the minimum preferred size that GetPreferredSize() will round down to.
   // If |size| is smaller than the current |min_size_| then |min_size_| will set
   // to |size| as well.

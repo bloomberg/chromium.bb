@@ -73,6 +73,9 @@ class ASH_EXPORT TriView : public views::View {
   // Set the minimum size for the given |container|.
   void SetMinSize(Container container, const gfx::Size& size);
 
+  // Get the minimum size for the given |container|.
+  gfx::Size GetMinSize(Container container);
+
   // Set the maximum size for the given |container|.
   void SetMaxSize(Container container, const gfx::Size& size);
 

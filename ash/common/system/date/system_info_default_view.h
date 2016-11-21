@@ -15,6 +15,7 @@ namespace ash {
 class PowerStatusView;
 #endif  // defined(OS_CHROMEOS)
 class SystemTrayItem;
+class TriView;
 
 namespace tray {
 class DateView;
@@ -32,12 +33,26 @@ class ASH_EXPORT SystemInfoDefaultView : public views::View {
   tray::DateView* GetDateView();
   const tray::DateView* GetDateView() const;
 
+  // views::View:
+  void Layout() override;
+
  private:
+  friend class SystemInfoDefaultViewTest;
+
+  // Computes and returns the width for |date_view_| so that the separator to
+  // its right has the same x-position as a separator in the tiles row above.
+  // Depending on the width of the date string, we align the separator with
+  // either the second or third separator in the tiles row (|kMinNumTileWidths|
+  // and |kMaxNumTileWidths| respectively.
+  static int CalculateDateViewWidth(int preferred_width);
+
   tray::DateView* date_view_;
 
 #if defined(OS_CHROMEOS)
   PowerStatusView* power_status_view_ = nullptr;
 #endif  // defined(OS_CHROMEOS)
+
+  TriView* tri_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInfoDefaultView);
 };
