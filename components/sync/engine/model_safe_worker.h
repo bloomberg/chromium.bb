@@ -62,6 +62,9 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   // or browser is shutting down. Called on UI loop.
   virtual void RequestStop();
 
+  // Return true if the worker was stopped. Thread safe.
+  bool IsStopped();
+
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 
   // Returns true if called on the thread this worker works on.
@@ -75,9 +78,6 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   // WriteTransaction), it should be done by this method to ensure it is done
   // from a model-safe thread.
   virtual SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) = 0;
-
-  // Return true if the worker was stopped. Thread safe.
-  bool IsStopped();
 
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;

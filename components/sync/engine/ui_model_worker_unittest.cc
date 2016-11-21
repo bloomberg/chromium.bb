@@ -4,11 +4,16 @@
 
 #include "components/sync/engine/ui_model_worker.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +37,11 @@ WorkCallback ClosureToWorkCallback(base::Closure work) {
   return base::Bind(&DoWork, base::ThreadTaskRunnerHandle::Get(), work);
 }
 
+// Increments |counter|.
+void IncrementCounter(int* counter) {
+  ++*counter;
+}
+
 class SyncUIModelWorkerTest : public testing::Test {
  public:
   SyncUIModelWorkerTest() : sync_thread_("SyncThreadForTest") {
@@ -39,25 +49,72 @@ class SyncUIModelWorkerTest : public testing::Test {
     worker_ = new UIModelWorker(base::ThreadTaskRunnerHandle::Get());
   }
 
-  void PostWorkToSyncThread(WorkCallback work) {
+  void PostWorkToSyncThread(base::Closure work) {
     sync_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&UIModelWorker::DoWorkAndWaitUntilDone),
-                   worker_, work));
+                   worker_, ClosureToWorkCallback(work)));
   }
 
- private:
-  base::MessageLoop ui_loop_;
+ protected:
+  std::unique_ptr<base::MessageLoop> ui_loop_ =
+      base::MakeUnique<base::MessageLoop>();
   base::Thread sync_thread_;
   scoped_refptr<UIModelWorker> worker_;
 };
 
+}  // namespace
+
 TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   base::RunLoop run_loop;
-  PostWorkToSyncThread(ClosureToWorkCallback(run_loop.QuitClosure()));
+  PostWorkToSyncThread(run_loop.QuitClosure());
   // This won't quit until the QuitClosure is run.
   run_loop.Run();
 }
 
-}  // namespace
+TEST_F(SyncUIModelWorkerTest, MultipleDoWork) {
+  constexpr int kNumWorkCallbacks = 10;
+  int counter = 0;
+  for (int i = 0; i < kNumWorkCallbacks; ++i) {
+    PostWorkToSyncThread(
+        base::Bind(&IncrementCounter, base::Unretained(&counter)));
+  }
+
+  base::RunLoop run_loop;
+  PostWorkToSyncThread(run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_EQ(kNumWorkCallbacks, counter);
+}
+
+TEST_F(SyncUIModelWorkerTest, JoinSyncThreadAfterUIMessageLoopDestruction) {
+  PostWorkToSyncThread(base::Bind(&base::DoNothing));
+
+  // Wait to allow the sync thread to post the WorkCallback to the UI
+  // MessageLoop. This is racy. If the WorkCallback isn't posted fast enough,
+  // this test doesn't verify that UIModelWorker behaves properly when the UI
+  // MessageLoop is destroyed. However, it doesn't fail (no flakes).
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  // The sync thread shouldn't wait for the WorkCallback to run on the UI thread
+  // after the UI MessageLoop is gone.
+  ui_loop_.reset();
+  sync_thread_.Stop();
+}
+
+TEST_F(SyncUIModelWorkerTest, JoinSyncThreadAfterRequestStop) {
+  PostWorkToSyncThread(base::Bind(&base::DoNothing));
+
+  // Wait to allow the sync thread to post the WorkCallback to the UI
+  // MessageLoop. This is racy. If the WorkCallback isn't posted fast enough,
+  // this test doesn't verify that UIModelWorker behaves properly when
+  // RequestStop() is called. However, it doesn't fail (no flakes).
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  // The sync thread shouldn't wait for the WorkCallback to run on the UI thread
+  // after RequestStop() is called.
+  worker_->RequestStop();
+  sync_thread_.Stop();
+}
+
 }  // namespace syncer
