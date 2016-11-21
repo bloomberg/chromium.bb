@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -565,6 +566,12 @@ gfx::Rect TrayBackgroundView::GetFocusBounds() {
   // sure clicking on the edges brings up the popup. However, the focus border
   // should be only around the container.
   return GetContentsBounds();
+}
+
+void TrayBackgroundView::OnPaintFocus(gfx::Canvas* canvas) {
+  gfx::Rect paint_bounds(GetFocusBounds());
+  paint_bounds.Inset(2, -2, 3, -2);
+  canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor);
 }
 
 void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {

@@ -147,6 +147,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void HandlePerformActionResult(bool action_performed,
                                  const ui::Event& event) override;
   gfx::Rect GetFocusBounds() override;
+  void OnPaintFocus(gfx::Canvas* canvas) override;
 
  private:
   class TrayWidgetObserver;

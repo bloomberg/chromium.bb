@@ -43,7 +43,10 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
  protected:
   SystemTrayItem* owner() { return owner_; }
 
-  void OnPaintFocus(gfx::Canvas* canvas);
+  // Draws focus rectangle on the canvas.
+  // Default implementation draws the focus rectangle with certain inset and
+  // color. Subclasses can override to change the default settings.
+  virtual void OnPaintFocus(gfx::Canvas* canvas);
 
   // Returns the bounds to paint the focus rectangle in.
   virtual gfx::Rect GetFocusBounds();
