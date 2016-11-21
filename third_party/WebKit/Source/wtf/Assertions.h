@@ -177,12 +177,6 @@ class WTF_EXPORT ScopedLogger {
 #endif
 #endif
 
-#if COMPILER(CLANG)
-#define NO_RETURN_DUE_TO_CRASH NO_RETURN
-#else
-#define NO_RETURN_DUE_TO_CRASH
-#endif
-
 // ASSERT and ASSERT_NOT_REACHED
 //  These macros are compiled out of release builds.
 //  Expressions inside them are evaluated in debug builds only.
@@ -213,13 +207,10 @@ class WTF_EXPORT ScopedLogger {
     CRASH();                                                               \
   } while (0)
 
-#define NO_RETURN_DUE_TO_ASSERT NO_RETURN_DUE_TO_CRASH
-
 #else
 
 #define ASSERT(assertion) ((void)0)
 #define ASSERT_NOT_REACHED() ((void)0)
-#define NO_RETURN_DUE_TO_ASSERT
 
 #endif
 

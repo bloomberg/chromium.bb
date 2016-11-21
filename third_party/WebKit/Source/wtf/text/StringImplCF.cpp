@@ -38,7 +38,6 @@ static const void* retain(const void* info) {
   return info;
 }
 
-NO_RETURN_DUE_TO_ASSERT
 static void release(const void*) {
   ASSERT_NOT_REACHED();
 }

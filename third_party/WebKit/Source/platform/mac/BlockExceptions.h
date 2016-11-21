@@ -27,8 +27,7 @@
 #import "platform/PlatformExport.h"
 #import "wtf/Assertions.h"
 
-PLATFORM_EXPORT NO_RETURN_DUE_TO_ASSERT void ReportBlockedObjCException(
-    NSException*);
+PLATFORM_EXPORT void ReportBlockedObjCException(NSException*);
 
 #define BEGIN_BLOCK_OBJC_EXCEPTIONS @try {
 #define END_BLOCK_OBJC_EXCEPTIONS               \
