@@ -82,6 +82,7 @@ source_set("passwords") {
 }
 
 source_set("passwords_generation_utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "password_generation_utils.h",
     "password_generation_utils.mm",
