@@ -2378,9 +2378,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)goDelta:(int)delta {
+  if (_isBeingDestroyed)
+    return;
+
   if (delta == 0) {
     [self reload];
-  } else if ([self.sessionController canGoDelta:delta]) {
+  } else if (_webStateImpl->GetNavigationManager()->CanGoToOffset(delta)) {
     [self goToItemAtIndex:[self.sessionController indexOfEntryForDelta:delta]];
   }
 }

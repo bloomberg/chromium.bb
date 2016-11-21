@@ -251,4 +251,119 @@ TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }
 
+// Tests CanGoToOffset API for positive, negative and zero delta. Tested
+// navigation manager will have redirect entries to make sure they are
+// appropriately skipped.
+TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
+  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_LINK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/redirect")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_LINK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/2")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_LINK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/redirect")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  ASSERT_EQ(5, navigation_manager()->GetItemCount());
+  ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
+
+  // Go to entry at index 1 and test API from that state.
+  [session_controller() goToEntryAtIndex:1];
+  ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(3));
+
+  // Go to entry at index 2 and test API from that state.
+  [session_controller() goToEntryAtIndex:2];
+  ASSERT_EQ(2, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+
+  // Go to entry at index 4 and test API from that state.
+  [session_controller() goToEntryAtIndex:4];
+  ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+
+  // Test with existing transient entry.
+  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
+  ASSERT_EQ(5, navigation_manager()->GetItemCount());
+  ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-3));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+
+  // Now test with pending item index.
+  [session_controller() discardNonCommittedEntries];
+
+  // Set pending index to 1 and test API from that state.
+  [session_controller() setPendingEntryIndex:1];
+  ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(3));
+
+  // Set pending index to 2 and test API from that state.
+  [session_controller() setPendingEntryIndex:2];
+  ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(2, navigation_manager()->GetPendingItemIndex());
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+
+  // Set pending index to 4 and committed entry to 1 and test.
+  [session_controller() goToEntryAtIndex:1];
+  [session_controller() setPendingEntryIndex:4];
+  ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+
+  // Test with existing transient entry.
+  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
+  ASSERT_EQ(5, navigation_manager()->GetItemCount());
+  ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_TRUE(navigation_manager()->CanGoToOffset(-3));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+}
+
 }  // namespace web

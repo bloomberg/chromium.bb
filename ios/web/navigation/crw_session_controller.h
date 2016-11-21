@@ -109,8 +109,6 @@ struct SSLStatus;
 // this controller.
 - (void)insertStateFromSessionController:(CRWSessionController*)otherController;
 
-// Returns YES if there are entries to go with given delta.
-- (BOOL)canGoDelta:(int)delta;
 // Sets |currentNavigationIndex_| to the |index| if it's in the entries bounds.
 - (void)goToEntryAtIndex:(NSInteger)index;
 

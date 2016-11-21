@@ -295,7 +295,8 @@ bool NavigationManagerImpl::CanGoForward() const {
 }
 
 bool NavigationManagerImpl::CanGoToOffset(int offset) const {
-  return [session_controller_ canGoDelta:offset];
+  int index = GetIndexForOffset(offset);
+  return 0 <= index && index < GetItemCount();
 }
 
 void NavigationManagerImpl::GoBack() {
