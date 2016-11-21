@@ -113,7 +113,7 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                InspectorTest.addSniffer(sourceFrame, "_addBreakpointDecoration", breakpointAdded);
+                InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame).then(breakpointAdded);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
@@ -140,12 +140,8 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 testSourceFrame = sourceFrame;
-                InspectorTest.addSniffer(sourceFrame, "_addBreakpointDecoration", uiBreakpointAdded);
+                InspectorTest.waitJavaScriptSourceFrameBreakpoints(testSourceFrame).then(breakpointAdded);
                 InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
-            }
-
-            function uiBreakpointAdded() {
-                InspectorTest.addSniffer(testSourceFrame, "_addBreakpointDecoration", breakpointAdded);
             }
 
             function breakpointAdded()

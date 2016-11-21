@@ -238,7 +238,7 @@ function test()
                 InspectorTest.addResult("  Resolving provisional breakpoint.");
                 InspectorTest.addScript(mockTarget, breakpointManager, "a.js");
                 mockTarget.debuggerModel._breakpointResolved("a.js:10", new SDK.DebuggerModel.Location(mockTarget.debuggerModel, "a.js", 11, 0));
-                var breakpoints = breakpointManager.allBreakpoints();
+                var breakpoints = breakpointManager._allBreakpoints();
                 InspectorTest.assertEquals(1, breakpoints.length, "Exactly one provisional breakpoint should be registered in breakpoint manager.");
                 InspectorTest.finishBreakpointTest(breakpointManager, next);
             }

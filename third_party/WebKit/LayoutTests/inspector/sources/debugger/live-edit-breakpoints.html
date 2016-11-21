@@ -5,21 +5,9 @@
 <script src="../../../http/tests/inspector/live-edit-test.js"></script>
 <script src="resources/edit-me-breakpoints.js"></script>
 <script>
-function loadDynamicAnonymousScript()
-{
-    function testFunction()
-    {
-        debugger;
-    }
-    var scriptElement = document.createElement("script");
-    scriptElement.textContent = String(testFunction);
-    docuemnt.head.appendChild(scriptElement);
-}
 
 function test()
 {
-    var panel = UI.panels.sources;
-
     function pathToFileName(path)
     {
         return path.substring(path.lastIndexOf("/") + 1).replace(/VM[\d]+/, "VMXX");
@@ -44,7 +32,7 @@ function test()
             InspectorTest.addResult("        url: " + pathToFileName(url) + ", lineNumber: " + lineNumber + ", project type: " + project.type());
         }
 
-        breakpoints = breakpointManager.allBreakpoints();
+        breakpoints = breakpointManager._allBreakpoints();
         InspectorTest.addResult("    Dumping breakpoints");
         for (var i = 0; i < breakpoints.length; ++i) {
             var breakpoint = breakpoints[i];
@@ -54,18 +42,6 @@ function test()
             var project = uiSourceCode.project();
             InspectorTest.addResult("        url: " + pathToFileName(url) + ", lineNumber: " + lineNumber + ", project type: " + project.type());
         }
-    }
-
-    function addBreakpointSniffer(lineNumber, disabled)
-    {
-        var prefix = this.main ? "" : "Original";
-        InspectorTest.addResult("    " + prefix + "TextEditor.addBreakpoint(lineNumber = " + lineNumber + ", disabled = " + disabled + ")");
-    }
-
-    function removeBreakpointSniffer(lineNumber)
-    {
-        var prefix = this.main ? "" : "Original";
-        InspectorTest.addResult("    " + prefix + "TextEditor.removeBreakpoint(lineNumber = " + lineNumber + ")");
     }
 
     Bindings.breakpointManager._storage._breakpoints = {};
@@ -81,11 +57,7 @@ function test()
             {
                 javaScriptSourceFrame = sourceFrame;
                 uiSourceCode = sourceFrame._uiSourceCode;
-                javaScriptSourceFrame._textEditor.main = true;
-
-                InspectorTest.addSniffer(javaScriptSourceFrame._textEditor.__proto__, "addBreakpoint", addBreakpointSniffer, true);
-                InspectorTest.addSniffer(javaScriptSourceFrame._textEditor.__proto__, "removeBreakpoint", removeBreakpointSniffer, true);
-                
+               
                 InspectorTest.addResult("Setting breakpoint:");
                 InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);

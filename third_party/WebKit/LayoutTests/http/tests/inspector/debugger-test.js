@@ -425,6 +425,19 @@ InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
     sourceFrame._breakpointManager.findBreakpoints(sourceFrame._uiSourceCode, lineNumber)[0].remove();
 };
 
+InspectorTest.createNewBreakpoint = function(sourceFrame, lineNumber, condition, enabled)
+{
+    var promise = new Promise(resolve => InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointWasSetForTest", resolve));
+    sourceFrame._createNewBreakpoint(lineNumber, condition, enabled);
+    return promise;
+}
+
+InspectorTest.toggleBreakpoint = function(sourceFrame, lineNumber, disableOnly)
+{
+    if (!sourceFrame._muted)
+        sourceFrame._toggleBreakpoint(lineNumber, disableOnly);
+};
+
 InspectorTest.waitBreakpointSidebarPane = function()
 {
     return new Promise(resolve => InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "_didUpdateForTest", resolve));
@@ -614,6 +627,34 @@ InspectorTest.selectThread = function(target)
 InspectorTest.evaluateOnCurrentCallFrame = function(code)
 {
     return new Promise(succ => InspectorTest.debuggerModel.evaluateOnSelectedCallFrame(code, "console", false, true, false, false, InspectorTest.safeWrap(succ)));
+}
+
+InspectorTest.waitJavaScriptSourceFrameBreakpoints = function(sourceFrame)
+{
+    return new Promise(resolve => InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointDecorationsUpdatedForTest", resolveIfAllBreakpointsResolved.bind(null, resolve)));
+
+    function resolveIfAllBreakpointsResolved(resolve)
+    {
+        for (var breakpoint of Bindings.breakpointManager._allBreakpoints()) {
+            if (breakpoint._fakePrimaryLocation && breakpoint.enabled()) {
+                InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointDecorationsUpdatedForTest", resolveIfAllBreakpointsResolved.bind(null, resolve));
+                return;
+            }
+        }
+        resolve();
+    }
+}
+
+InspectorTest.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame)
+{
+    var textEditor = sourceFrame._textEditor;
+    for (var lineNumber = 0; lineNumber < textEditor.linesCount; ++lineNumber) {
+        if (!textEditor.hasLineClass(lineNumber, "cm-breakpoint"))
+            continue;
+        var disabled = textEditor.hasLineClass(lineNumber, "cm-breakpoint-disabled");
+        var conditional = textEditor.hasLineClass(lineNumber, "cm-breakpoint-conditional")
+        InspectorTest.addResult("breakpoint at " + lineNumber + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
+    }
 }
 
 };
