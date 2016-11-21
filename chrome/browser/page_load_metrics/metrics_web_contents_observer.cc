@@ -101,6 +101,9 @@ bool MetricsWebContentsObserver::OnMessageReceived(
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
     content::NavigationHandle* navigation_handle) {
+  // Same-page navigations should never go through WillStartNavigationRequest.
+  DCHECK(!navigation_handle->IsSamePage());
+
   if (!navigation_handle->IsInMainFrame())
     return;
 

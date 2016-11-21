@@ -151,14 +151,11 @@ class PageLoadMetricsObserver {
 
   virtual ~PageLoadMetricsObserver() {}
 
-  // The page load started, with the given navigation handle. Note that OnStart
-  // is called for same-page navigations. Implementers of OnStart that only want
-  // to process non-same-page navigations should also check to see that the page
-  // load committed via OnCommit or committed_url in
-  // PageLoadExtraInfo. currently_committed_url contains the URL of the
-  // committed page load at the time the navigation for navigation_handle was
-  // initiated, or the empty URL if there was no committed page load at the time
-  // the navigation was initiated.
+  // The page load started, with the given navigation handle.
+  // currently_committed_url contains the URL of the committed page load at the
+  // time the navigation for navigation_handle was initiated, or the empty URL
+  // if there was no committed page load at the time the navigation was
+  // initiated.
   virtual ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                                 const GURL& currently_committed_url,
                                 bool started_in_foreground);
@@ -174,7 +171,6 @@ class PageLoadMetricsObserver {
   // first data for the request. The navigation handle holds relevant data for
   // the navigation, but will be destroyed soon after this call. Don't hold a
   // reference to it.
-  // Note that this does not get called for same-page navigations.
   // Observers that return STOP_OBSERVING will not receive any additional
   // callbacks, and will be deleted after invocation of this method returns.
   virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle);
