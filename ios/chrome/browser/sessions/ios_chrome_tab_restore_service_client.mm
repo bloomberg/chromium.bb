@@ -11,6 +11,10 @@
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromeTabRestoreServiceClient::IOSChromeTabRestoreServiceClient(
     ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {}
