@@ -88,7 +88,6 @@ webGLErrorsToConsoleEnabled initial=true
 antialiased2dCanvasEnabled initial=true
 antialiasedClips2dCanvasEnabled initial=true
 accelerated2dCanvasMSAASampleCount type=int, initial=0
-forceSoftwareReadbackFrom2DCanvas initial=false
 
 hyperlinkAuditingEnabled initial=false
 allowRunningOfInsecureContent initial=true

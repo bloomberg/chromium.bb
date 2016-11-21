@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.18",
+  "version": "9.19",
   "entries": [
     {
       "id": 1,
@@ -2208,18 +2208,6 @@ LONG_STRING_CONST(
       },
       "features": [
         "remove_invariant_and_centroid_for_essl3"
-      ]
-    },
-    {
-      "id": 204,
-      "cr_bugs": [665656],
-      "description": "Hardware readback from 2D canvas to WebGL texture is flaky on Mac Intel",
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "force_software_readback_from_2d_canvas"
       ]
     }
   ]

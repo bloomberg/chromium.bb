@@ -498,10 +498,6 @@ void WebSettingsImpl::setAntialiased2dCanvasEnabled(bool enabled) {
   m_settings->setAntialiased2dCanvasEnabled(enabled);
 }
 
-void WebSettingsImpl::setForceSoftwareReadbackFrom2DCanvas(bool enabled) {
-  m_settings->setForceSoftwareReadbackFrom2DCanvas(enabled);
-}
-
 void WebSettingsImpl::setAntialiasedClips2dCanvasEnabled(bool enabled) {
   m_settings->setAntialiasedClips2dCanvasEnabled(enabled);
 }

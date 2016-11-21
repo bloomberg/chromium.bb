@@ -103,8 +103,6 @@
          force_discrete_gpu)                                 \
   GPU_OP(FORCE_INTEGRATED_GPU,                               \
          force_integrated_gpu)                               \
-  GPU_OP(FORCE_SOFTWARE_READBACK_FROM_2D_CANVAS,             \
-         force_software_readback_from_2d_canvas)             \
   GPU_OP(GET_FRAG_DATA_INFO_BUG,                             \
          get_frag_data_info_bug)                             \
   GPU_OP(GL_CLEAR_BROKEN,                                    \

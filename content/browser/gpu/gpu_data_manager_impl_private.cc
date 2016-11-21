@@ -877,8 +877,6 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
   prefs->disable_2d_canvas_copy_on_write =
       IsDriverBugWorkaroundActive(gpu::BROKEN_EGL_IMAGE_REF_COUNTING) &&
       command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
-  prefs->force_software_readback_from_2d_canvas =
-      IsDriverBugWorkaroundActive(gpu::FORCE_SOFTWARE_READBACK_FROM_2D_CANVAS);
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
