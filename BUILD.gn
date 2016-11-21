@@ -780,7 +780,6 @@ group("gn_only") {
       "//components/sessions:unit_tests",
       "//media/blink:media_blink_unittests",
       "//media/cast:udp_proxy",
-      "//native_client/src/trusted/debug_stub:gdb_rsp_unittest",
       "//storage/browser:dump_file_system",
       "//third_party/angle:libANGLE",
       "//third_party/angle:libEGL",
@@ -814,6 +813,10 @@ group("gn_only") {
       "//ui/display/types",
       "//ui/shell_dialogs:shell_dialogs_unittests",
     ]
+
+    if (enable_nacl) {
+      deps += [ "//native_client/src/trusted/debug_stub:gdb_rsp_unittest" ]
+    }
 
     if (target_cpu == "x86" || target_cpu == "x64") {
       if (!is_android) {
