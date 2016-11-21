@@ -30,7 +30,6 @@
 
 #include "platform/heap/Heap.h"
 
-#include "base/sys_info.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -106,7 +105,6 @@ void ProcessHeap::init() {
   s_totalAllocatedSpace = 0;
   s_totalAllocatedObjectSize = 0;
   s_totalMarkedObjectSize = 0;
-  s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
 
   GCInfoTable::init();
   CallbackStackMemoryPool::instance().initialize();
@@ -139,7 +137,6 @@ CrossThreadPersistentRegion& ProcessHeap::crossThreadPersistentRegion() {
 }
 
 bool ProcessHeap::s_shutdownComplete = false;
-bool ProcessHeap::s_isLowEndDevice = false;
 size_t ProcessHeap::s_totalAllocatedSpace = 0;
 size_t ProcessHeap::s_totalAllocatedObjectSize = 0;
 size_t ProcessHeap::s_totalMarkedObjectSize = 0;
