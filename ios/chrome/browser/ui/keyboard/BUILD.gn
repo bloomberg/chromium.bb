@@ -16,6 +16,7 @@ source_set("keyboard") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "UIKeyCommand+ChromeTest.mm",
