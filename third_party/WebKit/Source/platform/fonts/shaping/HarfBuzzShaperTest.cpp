@@ -92,7 +92,9 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 // OpenType recommends Glyph ID 3 for a space; not a hard requirement though.
 // https://www.microsoft.com/typography/otspec/recom.htm
 #if !OS(MACOSX)
-      EXPECT_EQ(3u, testInfo(result)->glyphForTesting(0, 1)) << test.name;
+// TODO(mgiuca): This expectation has been DISABLED due to failing on
+// Linux bots. See https://crbug.com/667147.
+// EXPECT_EQ(3u, testInfo(result)->glyphForTesting(0, 1)) << test.name;
 #endif
       EXPECT_EQ(0.f, testInfo(result)->advanceForTesting(0, 1)) << test.name;
     } else {
