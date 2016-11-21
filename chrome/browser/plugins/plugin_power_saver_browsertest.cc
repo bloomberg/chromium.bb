@@ -151,16 +151,6 @@ void VerifyPluginMarkedEssential(content::WebContents* contents,
   EXPECT_TRUE(PluginLoaded(contents, element_id));
 }
 
-std::unique_ptr<net::test_server::HttpResponse> RespondWithHTML(
-    const std::string& html,
-    const net::test_server::HttpRequest& request) {
-  std::unique_ptr<net::test_server::BasicHttpResponse> response(
-      new net::test_server::BasicHttpResponse());
-  response->set_content_type("text/html");
-  response->set_content(html);
-  return std::move(response);
-}
-
 void VerifyVisualStateUpdated(const base::Closure& done_cb,
                               bool visual_state_updated) {
   ASSERT_TRUE(visual_state_updated);
@@ -266,12 +256,12 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(embedded_test_server()->Start());
 
     embedded_test_server()->ServeFilesFromDirectory(
         ui_test_utils::GetTestFilePath(
             base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
             base::FilePath()));
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -295,7 +285,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  void LoadHTML(const std::string& html) {
+  void LoadHTML(const std::string& file) {
     if (PixelTestsEnabled()) {
       gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
       gfx::Rect screen_bounds =
@@ -305,28 +295,19 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
       browser()->window()->SetBounds(bounds);
     }
 
-    ASSERT_TRUE(embedded_test_server()->Started());
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&RespondWithHTML, html));
-    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
+    ui_test_utils::NavigateToURL(browser(),
+                                 embedded_test_server()->GetURL(file));
     EXPECT_TRUE(content::WaitForRenderFrameReady(
         GetActiveWebContents()->GetMainFrame()));
   }
 
   // Loads a peripheral plugin (small cross origin) named 'plugin'.
-  void LoadPeripheralPlugin() {
-    LoadHTML(
-        "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-        "    type='application/x-shockwave-flash' width='400' height='100'>"
-        "</object>");
-  }
+  void LoadPeripheralPlugin() { LoadHTML("/load_peripheral_plugin.html"); }
 
   // Returns the background WebContents.
-  content::WebContents* LoadHTMLInBackgroundTab(const std::string& html) {
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&RespondWithHTML, html));
+  content::WebContents* LoadHTMLInBackgroundTab(const std::string& file) {
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), embedded_test_server()->base_url(),
+        browser(), embedded_test_server()->GetURL(file),
         WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
@@ -423,20 +404,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
-  LoadHTML(
-      "<object id='small_same_origin' data='fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='100'>"
-      "</object>"
-      "<object id='small_same_origin_poster' data='fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='100' "
-      "    poster='click_me.png'>"
-      "</object>"
-      "<object id='large_cross_origin' data='http://b.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='500'>"
-      "</object>"
-      "<object id='medium_16_9_cross_origin' data='http://c.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='480' height='270'>"
-      "</object>");
+  LoadHTML("/essential_plugins.html");
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "small_same_origin");
   VerifyPluginMarkedEssential(GetActiveWebContents(),
@@ -447,15 +415,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
-  LoadHTML(
-      "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='100'>"
-      "</object>"
-      "<br>"
-      "<object id='plugin_poster' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='100' "
-      "    poster='click_me.png'>"
-      "</object>");
+  LoadHTML("/small_cross_origin.html");
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
   VerifyPluginIsPlaceholderOnly("plugin_poster");
@@ -485,15 +445,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ContentSettings) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
-  LoadHTML(
-      "<object id='plugin_16' type='application/x-shockwave-flash' "
-      "    width='16' height='16'></object>"
-      "<object id='plugin_32' type='application/x-shockwave-flash' "
-      "    width='32' height='32'></object>"
-      "<object id='plugin_16_64' type='application/x-shockwave-flash' "
-      "    width='16' height='64'></object>"
-      "<object id='plugin_64_16' type='application/x-shockwave-flash' "
-      "    width='64' height='16'></object>");
+  LoadHTML("/smaller_than_play_icon.html");
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_16");
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_32");
@@ -508,50 +460,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, PosterTests) {
   // This test simultaneously verifies the varied supported poster syntaxes,
   // as well as verifies that the poster is rendered correctly with various
   // mismatched aspect ratios and sizes, following the same rules as VIDEO.
-  LoadHTML(
-      "<object id='plugin_src' type='application/x-shockwave-flash' "
-      "    width='100' height='100' poster='click_me.png'></object>"
-      "<object id='plugin_srcset' type='application/x-shockwave-flash' "
-      "    width='100' height='100' "
-      "    poster='click_me.png 1x, click_me.png 2x'></object>"
-      "<br>"
-
-      "<object id='plugin_poster_param' type='application/x-shockwave-flash' "
-      "    width='100' height='100'>"
-      "  <param name='poster' value='click_me.png 1x, click_me.png 2x'>"
-      "</object>"
-      "<embed id='plugin_embed_src' type='application/x-shockwave-flash' "
-      "    width='100' height='100' poster='click_me.png'></embed>"
-      "<embed id='plugin_embed_srcset' type='application/x-shockwave-flash' "
-      "    width='100' height='100'"
-      "    poster='click_me.png 1x, click_me.png 2x'></embed>"
-      "<br>"
-
-      "<object id='poster_missing' type='application/x-shockwave-flash' "
-      "    width='100' height='100' poster='missing.png'></object>"
-      "<object id='poster_too_small' type='application/x-shockwave-flash' "
-      "    width='100' height='50' poster='click_me.png'></object>"
-      "<object id='poster_too_big' type='application/x-shockwave-flash' "
-      "    width='100' height='150' poster='click_me.png'></object>"
-      "<br>"
-
-      "<object id='poster_16' type='application/x-shockwave-flash' "
-      "    width='16' height='16' poster='click_me.png'></object>"
-      "<object id='poster_32' type='application/x-shockwave-flash' "
-      "    width='32' height='32' poster='click_me.png'></object>"
-      "<object id='poster_16_64' type='application/x-shockwave-flash' "
-      "    width='16' height='64' poster='click_me.png'></object>"
-      "<object id='poster_64_16' type='application/x-shockwave-flash' "
-      "    width='64' height='16' poster='click_me.png'></object>"
-      "<br>"
-
-      "<div id='container' "
-      "    style='width: 400px; height: 100px; overflow: hidden;'>"
-      "  <object id='poster_obscured' data='http://otherorigin.com/fake.swf' "
-      "      type='application/x-shockwave-flash' width='400' height='500' "
-      "      poster='click_me.png'>"
-      "  </object>"
-      "</div>");
+  LoadHTML("/poster_tests.html");
 
   VerifyPluginIsPlaceholderOnly("plugin_src");
   VerifyPluginIsPlaceholderOnly("plugin_srcset");
@@ -580,20 +489,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, PosterTests) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
   // This test verifies that small posters are throttled, large posters are not,
   // and that large posters can whitelist origins for other plugins.
-  LoadHTML(
-      "<object id='poster_small' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='50' height='50' "
-      "    poster='click_me.png'></object>"
-      "<object id='poster_whitelisted_origin' data='http://b.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='50' height='50' "
-      "    poster='click_me.png'></object>"
-      "<object id='plugin_whitelisted_origin' data='http://b.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='50' height='50'>"
-      "</object>"
-      "<br>"
-      "<object id='poster_large' data='http://b.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='300' "
-      "    poster='click_me.png'></object>");
+  LoadHTML("/large_posters_not_throttled.html");
 
   VerifyPluginIsPlaceholderOnly("poster_small");
   VerifyPluginMarkedEssential(GetActiveWebContents(),
@@ -604,16 +500,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
-  LoadHTML(
-      "<object id='plugin_small' data='http://a.com/fake1.swf' "
-      "    type='application/x-shockwave-flash' width='100' height='100'>"
-      "</object>"
-      "<object id='plugin_small_poster' data='http://a.com/fake1.swf' "
-      "    type='application/x-shockwave-flash' width='100' height='100' "
-      "    poster='click_me.png'></object>"
-      "<object id='plugin_large' data='http://a.com/fake2.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='500'>"
-      "</object>");
+  LoadHTML("/origin_whitelisting.html");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_small");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_small_poster");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_large");
@@ -622,14 +509,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
 // Flaky on almost all platforms: crbug.com/648827.
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
                        DISABLED_LargeCrossOriginObscured) {
-  LoadHTML(
-      "<div id='container' "
-      "    style='width: 100px; height: 400px; overflow: hidden;'>"
-      "  <object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "      type='application/x-shockwave-flash' width='400' height='500' "
-      "      style='float: right;'>"
-      "  </object>"
-      "</div>");
+  LoadHTML("/large_cross_origin_obscured.html");
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
   EXPECT_TRUE(VerifySnapshot(
       FILE_PATH_LITERAL("large_cross_origin_obscured_expected.png")));
@@ -652,12 +532,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
-  content::WebContents* background_contents = LoadHTMLInBackgroundTab(
-      "<object id='same_origin' data='fake.swf' "
-      "    type='application/x-shockwave-flash'></object>"
-      "<object id='small_cross_origin' data='http://otherorigin.com/fake1.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='80'>"
-      "</object>");
+  content::WebContents* background_contents =
+      LoadHTMLInBackgroundTab("/background_tab_plugins.html");
 
   EXPECT_FALSE(PluginLoaded(background_contents, "same_origin"));
   EXPECT_FALSE(PluginLoaded(background_contents, "small_cross_origin"));
@@ -671,24 +547,12 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
   zoom::ZoomController::FromWebContents(GetActiveWebContents())
       ->SetZoomLevel(4.0);
-  LoadHTML(
-      "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='200'>"
-      "</object>");
+  LoadHTML("/zoom_independent.html");
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
-  LoadHTML(
-      "<object id='tiny_same_origin' data='fake.swf' "
-      "    type='application/x-shockwave-flash' width='3' height='3'>"
-      "</object>"
-      "<object id='tiny_cross_origin_1' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='3' height='3'>"
-      "</object>"
-      "<object id='tiny_cross_origin_2' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='1' height='1'>"
-      "</object>");
+  LoadHTML("/block_tiny_plugins.html");
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_same_origin");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_1");
@@ -696,10 +560,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabTinyPlugins) {
-  content::WebContents* background_contents = LoadHTMLInBackgroundTab(
-      "<object id='tiny' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='3' height='3'>"
-      "</object>");
+  content::WebContents* background_contents =
+      LoadHTMLInBackgroundTab("/background_tab_tiny_plugins.html");
   EXPECT_FALSE(PluginLoaded(background_contents, "tiny"));
 
   ActivateTab(background_contents);
@@ -707,12 +569,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabTinyPlugins) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
-  LoadHTML(
-      "<object id='expand_to_peripheral' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='4' height='4'></object>"
-      "<object id='expand_to_essential' data='http://b.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='4' height='4'>"
-      "</object>");
+  LoadHTML("/expanding_tiny_plugins.html");
 
   VerifyPluginIsPlaceholderOnly("expand_to_peripheral");
   VerifyPluginIsPlaceholderOnly("expand_to_essential");
@@ -745,13 +602,7 @@ class PluginPowerSaverAllowTinyBrowserTest
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverAllowTinyBrowserTest,
                        EssentialTinyPlugins) {
-  LoadHTML(
-      "<object id='tiny_cross_origin_1' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='3' height='3'>"
-      "</object>"
-      "<object id='tiny_cross_origin_2' data='http://a.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='1' height='1'>"
-      "</object>");
+  LoadHTML("/essential_tiny_plugin.html");
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_1");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_2");
