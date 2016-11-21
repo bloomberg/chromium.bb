@@ -31,11 +31,11 @@ class GpuService;
 
 class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  explicit MojoGpuMemoryBufferManager(service_manager::Connector* connector);
+  explicit MojoGpuMemoryBufferManager(mojom::GpuServicePtr gpu_service);
   ~MojoGpuMemoryBufferManager() override;
 
  private:
-  void InitThread();
+  void InitThread(mojo::InterfacePtrInfo<mojom::GpuService> gpu_service_info);
   void TearDownThread();
   void AllocateGpuMemoryBufferOnThread(const gfx::Size& size,
                                        gfx::BufferFormat format,
@@ -61,7 +61,7 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   // TODO(sad): Explore the option of doing this from an existing thread.
   base::Thread thread_;
   mojom::GpuServicePtr gpu_service_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  base::WeakPtr<MojoGpuMemoryBufferManager> weak_ptr_;
   base::WeakPtrFactory<MojoGpuMemoryBufferManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferManager);

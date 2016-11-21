@@ -21,10 +21,13 @@ GpuService::GpuService(service_manager::Connector* connector,
       io_task_runner_(std::move(task_runner)),
       connector_(connector),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                      base::WaitableEvent::InitialState::NOT_SIGNALED),
-      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager(connector_)) {
+                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DCHECK(main_task_runner_);
   DCHECK(connector_);
+  mojom::GpuServicePtr gpu_service_ptr;
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_ptr);
+  gpu_memory_buffer_manager_ =
+      base::MakeUnique<MojoGpuMemoryBufferManager>(std::move(gpu_service_ptr));
   if (!io_task_runner_) {
     io_thread_.reset(new base::Thread("GPUIOThread"));
     base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
