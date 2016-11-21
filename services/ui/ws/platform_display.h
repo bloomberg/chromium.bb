@@ -28,6 +28,7 @@ struct TextInputState;
 
 namespace ws {
 
+class FrameGenerator;
 class PlatformDisplayDelegate;
 class PlatformDisplayFactory;
 struct PlatformDisplayInitParams;
@@ -65,6 +66,8 @@ class PlatformDisplay {
       const display::ViewportMetrics& metrics) = 0;
 
   virtual const display::ViewportMetrics& GetViewportMetrics() const = 0;
+
+  virtual FrameGenerator* GetFrameGenerator() = 0;
 
   // Notifies the PlatformDisplay that a connection to the gpu has been
   // established.

@@ -125,6 +125,10 @@ gfx::Rect PlatformDisplayDefault::GetBounds() const {
   return metrics_.bounds;
 }
 
+FrameGenerator* PlatformDisplayDefault::GetFrameGenerator() {
+  return frame_generator_.get();
+}
+
 void PlatformDisplayDefault::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   frame_generator_->OnGpuChannelEstablished(channel);

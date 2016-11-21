@@ -10,6 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/ipc/display_compositor.mojom.h"
+#include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/local_frame_id.h"
+#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
 
@@ -33,10 +36,12 @@ class DisplayCompositor : public cc::SurfaceObserver,
   explicit DisplayCompositor(cc::mojom::DisplayCompositorClientPtr client);
 
   // TODO(fsamuel):  These methods should be behind a mojo interface.
-  void AddSurfaceReference(const cc::SurfaceId& surface_id,
-                           const cc::SurfaceSequence& surface_sequence);
-  void ReturnSurfaceReferences(const cc::FrameSinkId& frame_sink_id,
-                               const std::vector<uint32_t>& sequences);
+  void AddRootSurfaceReference(const cc::SurfaceId& child_id);
+  void AddSurfaceReference(const cc::SurfaceId& parent_id,
+                           const cc::SurfaceId& child_id);
+  void RemoveRootSurfaceReference(const cc::SurfaceId& child_id);
+  void RemoveSurfaceReference(const cc::SurfaceId& parent_id,
+                              const cc::SurfaceId& child_id);
 
   cc::SurfaceManager* manager() { return &manager_; }
 
@@ -53,6 +58,16 @@ class DisplayCompositor : public cc::SurfaceObserver,
 
   cc::mojom::DisplayCompositorClientPtr client_;
   cc::SurfaceManager manager_;
+
+  // SurfaceIds that have temporary references from top level root so they
+  // aren't GC'd before DisplayCompositorClient can add a real reference. This
+  // is basically a collection of surface ids, for example:
+  //   cc::SurfaceId surface_id(key, value[index]);
+  // The LocalFrameIds are stored in the order the surfaces are created in.
+  std::unordered_map<cc::FrameSinkId,
+                     std::vector<cc::LocalFrameId>,
+                     cc::FrameSinkIdHash>
+      temp_references_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
 };

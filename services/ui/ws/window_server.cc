@@ -13,6 +13,7 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/gpu_service_proxy.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window.h"
@@ -773,6 +774,13 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
   // creating a CompositorFrameSinkManager.
   window->GetOrCreateCompositorFrameSinkManager()->SetLatestSurfaceInfo(
       compositor_frame_sink_type, surface_id, frame_size);
+
+  // FrameGenerator will add an appropriate reference for the new surface.
+  DCHECK(display_manager_->GetDisplayContaining(window));
+  display_manager_->GetDisplayContaining(window)
+      ->platform_display()
+      ->GetFrameGenerator()
+      ->OnSurfaceCreated(surface_id, window);
 
   // This is only used for testing to observe that a window has a
   // CompositorFrame.

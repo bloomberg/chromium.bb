@@ -65,6 +65,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   }
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> host) override {}
+  FrameGenerator* GetFrameGenerator() override { return nullptr; }
 
  private:
   const int64_t id_;

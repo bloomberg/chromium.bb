@@ -46,6 +46,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   const display::ViewportMetrics& GetViewportMetrics() const override;
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
+  FrameGenerator* GetFrameGenerator() override;
 
  private:
   // Update the root_location of located events to be relative to the origin
