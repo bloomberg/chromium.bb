@@ -1592,6 +1592,8 @@ source_set("net_fuzzer_test_support") {
 
   sources = [
     "base/fuzzer_test_support.cc",
+    "dns/fuzzed_host_resolver.cc",
+    "dns/fuzzed_host_resolver.h",
     "filter/fuzzed_source_stream.cc",
     "filter/fuzzed_source_stream.h",
     "socket/fuzzed_datagram_client_socket.cc",
@@ -1788,8 +1790,6 @@ fuzzer_test("net_dns_hosts_parse_fuzzer") {
 
 fuzzer_test("net_host_resolver_impl_fuzzer") {
   sources = [
-    "dns/fuzzed_host_resolver.cc",
-    "dns/fuzzed_host_resolver.h",
     "dns/host_resolver_impl_fuzzer.cc",
   ]
   deps = [
@@ -1980,6 +1980,20 @@ fuzzer_test("net_socks5_client_socket_fuzzer") {
     "//base",
     "//net",
   ]
+}
+
+fuzzer_test("net_url_request_ftp_fuzzer") {
+  sources = [
+    "url_request/url_request_ftp_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  dict = "data/fuzzer_dictionaries/net_url_request_ftp_fuzzer.dict"
+  seed_corpus = "data/fuzzer_data/net_url_request_ftp_fuzzer/"
 }
 
 fuzzer_test("net_url_request_fuzzer") {
