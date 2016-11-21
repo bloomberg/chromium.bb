@@ -3615,20 +3615,21 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
     TileInfo tile_info;
+#if !CONFIG_TILE_GROUPS
     const int is_last_row = (tile_row == tile_rows - 1);
-
+#endif
     av1_tile_set_row(&tile_info, cm, tile_row);
 
     for (tile_col = 0; tile_col < tile_cols; tile_col++) {
       const int tile_idx = tile_row * tile_cols + tile_col;
       TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-      const int is_last_col = (tile_col == tile_cols - 1);
 #if CONFIG_PVQ
       TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
 #endif
       const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
       const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
 #if !CONFIG_TILE_GROUPS
+      const int is_last_col = (tile_col == tile_cols - 1);
       const int is_last_tile = is_last_col && is_last_row;
       (void)tile_idx;
 #else
