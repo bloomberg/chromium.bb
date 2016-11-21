@@ -167,16 +167,29 @@ class BluetoothDefaultView : public TrayItemMore {
     if (!UseMd())
       return;
 
-    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
-
-    SetImage(gfx::CreateVectorIcon(delegate->GetBluetoothEnabled()
-                                       ? kSystemMenuBluetoothIcon
-                                       : kSystemMenuBluetoothDisabledIcon,
-                                   style->GetIconColor()));
+    SetImage(gfx::CreateVectorIcon(GetCurrentIcon(), style->GetIconColor()));
   }
 
  private:
+  const gfx::VectorIcon& GetCurrentIcon() {
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    if (!delegate->GetBluetoothEnabled())
+      return kSystemMenuBluetoothDisabledIcon;
+
+    bool has_connected_device = false;
+    BluetoothDeviceList list;
+    delegate->GetAvailableBluetoothDevices(&list);
+    for (size_t i = 0; i < list.size(); ++i) {
+      if (list[i].connected) {
+        has_connected_device = true;
+        break;
+      }
+    }
+    return has_connected_device ? kSystemMenuBluetoothConnectedIcon
+                                : kSystemMenuBluetoothIcon;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothDefaultView);
 };
 
