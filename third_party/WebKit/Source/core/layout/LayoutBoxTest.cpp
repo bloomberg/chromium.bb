@@ -182,4 +182,32 @@ TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
   EXPECT_EQ(LayoutPoint(0, 0), cell2->topLeftLocation());
 }
 
+TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
+  setBodyInnerHTML(
+      "<svg id='svg' style='writing-mode:vertical-rl' width='500' height='500'>"
+      "  <foreignObject x='44' y='77' width='100' height='80' id='foreign'>"
+      "    <div id='child' style='width: 33px; height: 55px'>"
+      "    </div>"
+      "  </foreignObject>"
+      "</svg>");
+  const LayoutBox* svgRoot = toLayoutBox(getLayoutObjectByElementId("svg"));
+  const LayoutBox* foreign = toLayoutBox(getLayoutObjectByElementId("foreign"));
+  const LayoutBox* child = toLayoutBox(getLayoutObjectByElementId("child"));
+
+  EXPECT_EQ(document().body()->layoutObject(), svgRoot->locationContainer());
+
+  // The foreign object's location is not affected by SVGRoot's writing-mode.
+  EXPECT_FALSE(foreign->locationContainer());
+  EXPECT_EQ(LayoutRect(44, 77, 100, 80), foreign->frameRect());
+  EXPECT_EQ(LayoutPoint(44, 77), foreign->topLeftLocation());
+  // The writing mode style should be still be inherited.
+  EXPECT_TRUE(foreign->hasFlippedBlocksWritingMode());
+
+  // The child of the foreign object is affected by writing-mode.
+  EXPECT_EQ(foreign, child->locationContainer());
+  EXPECT_EQ(LayoutRect(0, 0, 33, 55), child->frameRect());
+  EXPECT_EQ(LayoutPoint(67, 0), child->topLeftLocation());
+  EXPECT_TRUE(child->hasFlippedBlocksWritingMode());
+}
+
 }  // namespace blink
