@@ -127,8 +127,6 @@ class CORE_EXPORT InvalidationSet {
            !m_invalidatesSlotted;
   }
 
-  bool isAlive() const { return m_isAlive; }
-
   void toTracedValue(TracedValue*) const;
 
 #ifndef NDEBUG
@@ -164,11 +162,6 @@ class CORE_EXPORT InvalidationSet {
 
  protected:
   explicit InvalidationSet(InvalidationType);
-
-  ~InvalidationSet() {
-    RELEASE_ASSERT(m_isAlive);
-    m_isAlive = false;
-  }
 
  private:
   void destroy();
@@ -212,9 +205,6 @@ class CORE_EXPORT InvalidationSet {
 
   // If true, distributed nodes of <slot> elements need to be invalidated.
   unsigned m_invalidatesSlotted : 1;
-
-  // If true, the instance is alive and can be used.
-  unsigned m_isAlive : 1;
 };
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {

@@ -62,8 +62,7 @@ InvalidationSet::InvalidationSet(InvalidationType type)
       m_customPseudoInvalid(false),
       m_treeBoundaryCrossing(false),
       m_insertionPointCrossing(false),
-      m_invalidatesSlotted(false),
-      m_isAlive(true) {}
+      m_invalidatesSlotted(false) {}
 
 bool InvalidationSet::invalidatesElement(Element& element) const {
   if (m_allDescendantsMightBeInvalid)
@@ -109,10 +108,8 @@ bool InvalidationSet::invalidatesElement(Element& element) const {
 }
 
 void InvalidationSet::combine(const InvalidationSet& other) {
-  RELEASE_ASSERT(m_isAlive);
-  RELEASE_ASSERT(other.m_isAlive);
-  RELEASE_ASSERT(&other != this);
-  RELEASE_ASSERT(type() == other.type());
+  DCHECK(&other != this);
+  DCHECK(type() == other.type());
   if (type() == InvalidateSiblings) {
     SiblingInvalidationSet& siblings = toSiblingInvalidationSet(*this);
     const SiblingInvalidationSet& otherSiblings =
@@ -207,28 +204,28 @@ HashSet<AtomicString>& InvalidationSet::ensureAttributeSet() {
 void InvalidationSet::addClass(const AtomicString& className) {
   if (wholeSubtreeInvalid())
     return;
-  RELEASE_ASSERT(!className.isEmpty());
+  DCHECK(!className.isEmpty());
   ensureClassSet().add(className);
 }
 
 void InvalidationSet::addId(const AtomicString& id) {
   if (wholeSubtreeInvalid())
     return;
-  RELEASE_ASSERT(!id.isEmpty());
+  DCHECK(!id.isEmpty());
   ensureIdSet().add(id);
 }
 
 void InvalidationSet::addTagName(const AtomicString& tagName) {
   if (wholeSubtreeInvalid())
     return;
-  RELEASE_ASSERT(!tagName.isEmpty());
+  DCHECK(!tagName.isEmpty());
   ensureTagNameSet().add(tagName);
 }
 
 void InvalidationSet::addAttribute(const AtomicString& attribute) {
   if (wholeSubtreeInvalid())
     return;
-  RELEASE_ASSERT(!attribute.isEmpty());
+  DCHECK(!attribute.isEmpty());
   ensureAttributeSet().add(attribute);
 }
 

@@ -33,10 +33,7 @@ class CSSGlobalRuleSet {
   bool isDirty() const { return m_isDirty; }
   void update(Document&);
 
-  const RuleFeatureSet& ruleFeatureSet() const {
-    RELEASE_ASSERT(m_features.isAlive());
-    return m_features;
-  }
+  const RuleFeatureSet& ruleFeatureSet() const { return m_features; }
   RuleSet* siblingRuleSet() const { return m_siblingRuleSet; }
   RuleSet* uncommonAttributeRuleSet() const {
     return m_uncommonAttributeRuleSet;

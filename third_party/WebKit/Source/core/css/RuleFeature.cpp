@@ -247,7 +247,6 @@ InvalidationSet& ensureInvalidationSet(
 void extractInvalidationSets(InvalidationSet* invalidationSet,
                              DescendantInvalidationSet*& descendants,
                              SiblingInvalidationSet*& siblings) {
-  RELEASE_ASSERT(invalidationSet->isAlive());
   if (invalidationSet->type() == InvalidateDescendants) {
     descendants = toDescendantInvalidationSet(invalidationSet);
     siblings = nullptr;
@@ -271,33 +270,17 @@ DEFINE_TRACE(RuleFeature) {
   visitor->trace(rule);
 }
 
-RuleFeatureSet::RuleFeatureSet() : m_isAlive(true) {}
-
-RuleFeatureSet::~RuleFeatureSet() {
-  RELEASE_ASSERT(m_isAlive);
-
-  m_metadata.clear();
-  m_classInvalidationSets.clear();
-  m_attributeInvalidationSets.clear();
-  m_idInvalidationSets.clear();
-  m_pseudoInvalidationSets.clear();
-  m_universalSiblingInvalidationSet.clear();
-  m_nthInvalidationSet.clear();
-
-  m_isAlive = false;
-}
-
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(
     const AtomicString& className,
     InvalidationType type) {
-  RELEASE_ASSERT(!className.isEmpty());
+  DCHECK(!className.isEmpty());
   return ensureInvalidationSet(m_classInvalidationSets, className, type);
 }
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureAttributeInvalidationSet(
     const AtomicString& attributeName,
     InvalidationType type) {
-  RELEASE_ASSERT(!attributeName.isEmpty());
+  DCHECK(!attributeName.isEmpty());
   return ensureInvalidationSet(m_attributeInvalidationSets, attributeName,
                                type);
 }
@@ -305,14 +288,14 @@ ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureAttributeInvalidationSet(
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureIdInvalidationSet(
     const AtomicString& id,
     InvalidationType type) {
-  RELEASE_ASSERT(!id.isEmpty());
+  DCHECK(!id.isEmpty());
   return ensureInvalidationSet(m_idInvalidationSets, id, type);
 }
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensurePseudoInvalidationSet(
     CSSSelector::PseudoType pseudoType,
     InvalidationType type) {
-  RELEASE_ASSERT(pseudoType != CSSSelector::PseudoUnknown);
+  DCHECK(pseudoType != CSSSelector::PseudoUnknown);
   return ensureInvalidationSet(m_pseudoInvalidationSets, pseudoType, type);
 }
 
@@ -783,7 +766,6 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(
 
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromRuleData(
     const RuleData& ruleData) {
-  RELEASE_ASSERT(m_isAlive);
   FeatureMetadata metadata;
   if (collectFeaturesFromSelector(ruleData.selector(), metadata) ==
       SelectorNeverMatches)
@@ -899,9 +881,7 @@ void RuleFeatureSet::FeatureMetadata::clear() {
 }
 
 void RuleFeatureSet::add(const RuleFeatureSet& other) {
-  RELEASE_ASSERT(m_isAlive);
-  RELEASE_ASSERT(other.m_isAlive);
-  RELEASE_ASSERT(&other != this);
+  DCHECK(&other != this);
   for (const auto& entry : other.m_classInvalidationSets)
     ensureInvalidationSet(m_classInvalidationSets, entry.key,
                           entry.value->type())
@@ -931,7 +911,6 @@ void RuleFeatureSet::add(const RuleFeatureSet& other) {
 }
 
 void RuleFeatureSet::clear() {
-  RELEASE_ASSERT(m_isAlive);
   m_siblingRules.clear();
   m_uncommonAttributeRules.clear();
   m_metadata.clear();
