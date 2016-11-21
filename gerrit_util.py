@@ -156,6 +156,8 @@ class CookiesAuthenticator(Authenticator):
 
   @classmethod
   def get_gitcookies_path(cls):
+    if os.getenv('GIT_COOKIES_PATH'):
+      return os.getenv('GIT_COOKIES_PATH')
     return os.path.join(os.environ['HOME'], '.gitcookies')
 
   @classmethod
