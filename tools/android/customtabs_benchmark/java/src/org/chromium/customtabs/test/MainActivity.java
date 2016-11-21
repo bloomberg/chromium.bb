@@ -96,17 +96,17 @@ public class MainActivity extends Activity {
         }
 
         public void recordIntentHasBeenSent() {
-            mIntentSentMs = SystemClock.elapsedRealtime();
+            mIntentSentMs = SystemClock.uptimeMillis();
         }
 
         @Override
         public void onNavigationEvent(int navigationEvent, Bundle extras) {
             switch (navigationEvent) {
                 case CustomTabsCallback.NAVIGATION_STARTED:
-                    mPageLoadStartedMs = SystemClock.elapsedRealtime();
+                    mPageLoadStartedMs = SystemClock.uptimeMillis();
                     break;
                 case CustomTabsCallback.NAVIGATION_FINISHED:
-                    mPageLoadFinishedMs = SystemClock.elapsedRealtime();
+                    mPageLoadFinishedMs = SystemClock.uptimeMillis();
                     if (mIntentSentMs != 0 && mPageLoadStartedMs != 0) {
                         if (mFirstContentfulPaintMs != -1) {
                             logMetrics();
@@ -129,9 +129,13 @@ public class MainActivity extends Activity {
         @Override
         public void extraCallback(String callbackName, Bundle args) {
             assert "NavigationMetrics".equals(callbackName);
-            long value = args.getLong("firstContentfulPaint", -1);
+            long firstPaintMs = args.getLong("firstContentfulPaint", -1);
+            long navigationStartMs = args.getLong("navigationStart", -1);
+            if (firstPaintMs == -1 || navigationStartMs == -1) return;
             // Can be reported several times, only record the first one.
-            if (mFirstContentfulPaintMs == -1) mFirstContentfulPaintMs = value;
+            if (mFirstContentfulPaintMs == -1) {
+                mFirstContentfulPaintMs = navigationStartMs + firstPaintMs;
+            }
             if (!mAlreadyLogged && mPageLoadFinishedMs != 0) logMetrics();
         }
 
