@@ -18,6 +18,7 @@
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer_differ_wrapper.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
@@ -72,7 +73,8 @@ void DesktopCapturerProxy::Core::CreateCapturer(
   DCHECK(!capturer_);
 
 #if defined(OS_CHROMEOS)
-  capturer_.reset(new AuraDesktopCapturer());
+  capturer_ = base::MakeUnique<webrtc::DesktopCapturerDifferWrapper>(
+      base::MakeUnique<AuraDesktopCapturer>());
 #else  // !defined(OS_CHROMEOS)
   capturer_ = webrtc::DesktopCapturer::CreateScreenCapturer(options);
 #endif  // !defined(OS_CHROMEOS)
