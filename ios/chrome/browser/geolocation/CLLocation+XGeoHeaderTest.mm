@@ -7,6 +7,10 @@
 #import "ios/chrome/browser/geolocation/CLLocation+XGeoHeader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 NSString* const kEncoded550BatterySt =
@@ -19,14 +23,13 @@ TEST(CLLocationXGeoHeaderTest, TestXGeoString) {
       CLLocationCoordinate2DMake(37.796322, -122.400291);
   // Picked a fixed timestamp. This one is 2014-01-06 09:20:00 +0000.
   NSDate* timestamp = [NSDate dateWithTimeIntervalSince1970:1389000000];
-  CLLocation* location =
-      [[[CLLocation alloc] initWithCoordinate:coordinate
-                                     altitude:0
-                           horizontalAccuracy:10
-                             verticalAccuracy:100
-                                       course:0
-                                        speed:0
-                                    timestamp:timestamp] autorelease];
+  CLLocation* location = [[CLLocation alloc] initWithCoordinate:coordinate
+                                                       altitude:0
+                                             horizontalAccuracy:10
+                                               verticalAccuracy:100
+                                                         course:0
+                                                          speed:0
+                                                      timestamp:timestamp];
   NSString* xGeoString = [location cr_xGeoString];
   EXPECT_TRUE([xGeoString isEqualToString:kEncoded550BatterySt]);
 }

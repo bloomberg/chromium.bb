@@ -14,6 +14,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class LocationManagerTest : public PlatformTest {
@@ -25,7 +29,7 @@ class LocationManagerTest : public PlatformTest {
     PlatformTest::SetUp();
 
     mock_geolocation_updater_.reset(
-        [[OCMockObject mockForProtocol:@protocol(GeolocationUpdater)] retain]);
+        [OCMockObject mockForProtocol:@protocol(GeolocationUpdater)]);
 
     // Set up LocationManager with a mock GeolocationUpdater.
     location_manager_.reset([[LocationManager alloc] init]);
@@ -66,7 +70,7 @@ TEST_F(LocationManagerTest, StartUpdatingLocationStaleCurrentLocation) {
   // Set up to return a stale mock CLLocation from -[GeolocationUpdater
   // currentLocation].
   base::scoped_nsobject<id> mock_location(
-      [[OCMockObject mockForClass:[CLLocation class]] retain]);
+      [OCMockObject mockForClass:[CLLocation class]]);
   BOOL yes = YES;
   [[[mock_location expect] andReturnValue:OCMOCK_VALUE(yes)] cr_shouldRefresh];
 
@@ -92,7 +96,7 @@ TEST_F(LocationManagerTest, StartUpdatingLocationFreshCurrentLocation) {
   // Set up to return a fresh mock CLLocation from -[GeolocationUpdater
   // currentLocation].
   base::scoped_nsobject<id> mock_location(
-      [[OCMockObject mockForClass:[CLLocation class]] retain]);
+      [OCMockObject mockForClass:[CLLocation class]]);
   BOOL no = NO;
   [[[mock_location expect] andReturnValue:OCMOCK_VALUE(no)] cr_shouldRefresh];
 
