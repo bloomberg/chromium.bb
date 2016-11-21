@@ -74,8 +74,9 @@ RecentTabSuggestionsProvider::~RecentTabSuggestionsProvider() {
 
 CategoryStatus RecentTabSuggestionsProvider::GetCategoryStatus(
     Category category) {
-  if (category == provided_category_)
+  if (category == provided_category_) {
     return category_status_;
+  }
   NOTREACHED() << "Unknown category " << category.id();
   return CategoryStatus::NOT_PROVIDED;
 }
@@ -173,8 +174,9 @@ void RecentTabSuggestionsProvider::
   std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem& item : offline_pages) {
-    if (!dismissed_ids.count(base::IntToString(item.offline_id)))
+    if (!dismissed_ids.count(base::IntToString(item.offline_id))) {
       continue;
+    }
 
     suggestions.push_back(ConvertOfflinePage(item));
   }
@@ -199,17 +201,19 @@ void RecentTabSuggestionsProvider::
   std::vector<const OfflinePageItem*> recent_tab_items;
   for (const OfflinePageItem& item : offline_pages) {
     std::string offline_page_id = base::IntToString(item.offline_id);
-    if (old_dismissed_ids.count(offline_page_id))
+    if (old_dismissed_ids.count(offline_page_id)) {
       new_dismissed_ids.insert(offline_page_id);
-    else
+    } else {
       recent_tab_items.push_back(&item);
+    }
   }
 
   observer()->OnNewSuggestions(
       this, provided_category_,
       GetMostRecentlyVisited(std::move(recent_tab_items)));
-  if (new_dismissed_ids.size() != old_dismissed_ids.size())
+  if (new_dismissed_ids.size() != old_dismissed_ids.size()) {
     StoreDismissedIDsToPrefs(new_dismissed_ids);
+  }
 }
 
 void RecentTabSuggestionsProvider::OfflinePageDeleted(
@@ -218,8 +222,9 @@ void RecentTabSuggestionsProvider::OfflinePageDeleted(
   // Because we never switch to NOT_PROVIDED dynamically, there can be no open
   // UI containing an invalidated suggestion unless the status is something
   // other than NOT_PROVIDED, so only notify invalidation in that case.
-  if (category_status_ != CategoryStatus::NOT_PROVIDED)
+  if (category_status_ != CategoryStatus::NOT_PROVIDED) {
     InvalidateSuggestion(offline_id);
+  }
 }
 
 void RecentTabSuggestionsProvider::FetchRecentTabs() {
@@ -233,8 +238,9 @@ void RecentTabSuggestionsProvider::FetchRecentTabs() {
 void RecentTabSuggestionsProvider::NotifyStatusChanged(
     CategoryStatus new_status) {
   DCHECK_NE(CategoryStatus::NOT_PROVIDED, category_status_);
-  if (category_status_ == new_status)
+  if (category_status_ == new_status) {
     return;
+  }
   category_status_ = new_status;
   observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
 }
@@ -270,8 +276,9 @@ RecentTabSuggestionsProvider::GetMostRecentlyVisited(
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem* offline_page_item : offline_page_items) {
     suggestions.push_back(ConvertOfflinePage(*offline_page_item));
-    if (suggestions.size() == kMaxSuggestionsCount)
+    if (suggestions.size() == kMaxSuggestionsCount) {
       break;
+    }
   }
   return suggestions;
 }

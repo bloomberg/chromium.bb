@@ -47,7 +47,9 @@ void PhysicalWebPageSuggestionsProvider::OnDisplayableUrlsChanged(
   std::vector<ContentSuggestion> suggestions;
 
   for (const UrlInfo& url_info : urls) {
-    if (suggestions.size() >= kMaxSuggestionsCount) break;
+    if (suggestions.size() >= kMaxSuggestionsCount) {
+      break;
+    }
 
     ContentSuggestion suggestion(provided_category_, url_info.site_url.spec(),
                                  url_info.site_url);
@@ -139,7 +141,9 @@ void PhysicalWebPageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
 // Updates the |category_status_| and notifies the |observer_|, if necessary.
 void PhysicalWebPageSuggestionsProvider::NotifyStatusChanged(
     CategoryStatus new_status) {
-  if (category_status_ == new_status) return;
+  if (category_status_ == new_status) {
+    return;
+  }
   category_status_ = new_status;
   observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
 }

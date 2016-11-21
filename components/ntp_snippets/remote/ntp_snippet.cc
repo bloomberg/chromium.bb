@@ -58,32 +58,39 @@ NTPSnippet::~NTPSnippet() = default;
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     const base::DictionaryValue& dict) {
   const base::DictionaryValue* content = nullptr;
-  if (!dict.GetDictionary("contentInfo", &content))
+  if (!dict.GetDictionary("contentInfo", &content)) {
     return nullptr;
+  }
 
   // Need at least the id.
   std::string id;
-  if (!content->GetString("url", &id) || id.empty())
+  if (!content->GetString("url", &id) || id.empty()) {
     return nullptr;
+  }
 
   std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(id, kArticlesRemoteId));
 
   std::string title;
-  if (content->GetString("title", &title))
+  if (content->GetString("title", &title)) {
     snippet->set_title(title);
+  }
   std::string salient_image_url;
-  if (content->GetString("thumbnailUrl", &salient_image_url))
+  if (content->GetString("thumbnailUrl", &salient_image_url)) {
     snippet->set_salient_image_url(GURL(salient_image_url));
+  }
   std::string snippet_str;
-  if (content->GetString("snippet", &snippet_str))
+  if (content->GetString("snippet", &snippet_str)) {
     snippet->set_snippet(snippet_str);
+  }
   // The creation and expiry timestamps are uint64s which are stored as strings.
   std::string creation_timestamp_str;
-  if (content->GetString("creationTimestampSec", &creation_timestamp_str))
+  if (content->GetString("creationTimestampSec", &creation_timestamp_str)) {
     snippet->set_publish_date(TimeFromJsonString(creation_timestamp_str));
+  }
   std::string expiry_timestamp_str;
-  if (content->GetString("expiryTimestampSec", &expiry_timestamp_str))
+  if (content->GetString("expiryTimestampSec", &expiry_timestamp_str)) {
     snippet->set_expiry_date(TimeFromJsonString(expiry_timestamp_str));
+  }
 
   const base::ListValue* corpus_infos_list = nullptr;
   if (!content->GetList("sourceCorpusInfo", &corpus_infos_list)) {
@@ -101,8 +108,9 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
 
     std::string corpus_id_str;
     GURL corpus_id;
-    if (dict_value->GetString("corpusId", &corpus_id_str))
+    if (dict_value->GetString("corpusId", &corpus_id_str)) {
       corpus_id = GURL(corpus_id_str);
+    }
 
     if (!corpus_id.is_valid()) {
       // We must at least have a valid source URL.
@@ -146,8 +154,9 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
   snippet->InitBestSource();
 
   double score;
-  if (dict.GetDouble("score", &score))
+  if (dict.GetDouble("score", &score)) {
     snippet->set_score(score);
+  }
 
   return snippet;
 }
@@ -157,15 +166,21 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
     const base::DictionaryValue& dict,
     int remote_category_id) {
   const base::ListValue* ids;
-  if (!dict.GetList("ids", &ids)) return nullptr;
+  if (!dict.GetList("ids", &ids)) {
+    return nullptr;
+  }
   std::vector<std::string> parsed_ids;
   for (const auto& value : *ids) {
     std::string id;
-    if (!value->GetAsString(&id)) return nullptr;
+    if (!value->GetAsString(&id)) {
+      return nullptr;
+    }
     parsed_ids.push_back(id);
   }
 
-  if (parsed_ids.empty()) return nullptr;
+  if (parsed_ids.empty()) {
+    return nullptr;
+  }
   auto snippet =
       base::MakeUnique<NTPSnippet>(parsed_ids.front(), remote_category_id);
   parsed_ids.erase(parsed_ids.begin(), parsed_ids.begin() + 1);
@@ -188,8 +203,9 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
   // TODO(sfiera): also favicon URL.
 
   double score;
-  if (dict.GetDouble("score", &score))
+  if (dict.GetDouble("score", &score)) {
     snippet->set_score(score);
+  }
 
   return snippet;
 }
@@ -198,8 +214,9 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
     const SnippetProto& proto) {
   // Need at least the id.
-  if (proto.ids_size() == 0 || proto.ids(0).empty())
+  if (proto.ids_size() == 0 || proto.ids(0).empty()) {
     return nullptr;
+  }
 
   int remote_category_id = proto.has_remote_category_id()
                                ? proto.remote_category_id()
@@ -252,16 +269,21 @@ SnippetProto NTPSnippet::ToProto() const {
   for (const std::string& id : ids_) {
     result.add_ids(id);
   }
-  if (!title_.empty())
+  if (!title_.empty()) {
     result.set_title(title_);
-  if (!snippet_.empty())
+  }
+  if (!snippet_.empty()) {
     result.set_snippet(snippet_);
-  if (salient_image_url_.is_valid())
+  }
+  if (salient_image_url_.is_valid()) {
     result.set_salient_image_url(salient_image_url_.spec());
-  if (!publish_date_.is_null())
+  }
+  if (!publish_date_.is_null()) {
     result.set_publish_date(publish_date_.ToInternalValue());
-  if (!expiry_date_.is_null())
+  }
+  if (!expiry_date_.is_null()) {
     result.set_expiry_date(expiry_date_.ToInternalValue());
+  }
   result.set_score(score_);
   result.set_dismissed(is_dismissed_);
   result.set_remote_category_id(remote_category_id_);
@@ -269,10 +291,12 @@ SnippetProto NTPSnippet::ToProto() const {
   for (const SnippetSource& source : sources_) {
     SnippetSourceProto* source_proto = result.add_sources();
     source_proto->set_url(source.url.spec());
-    if (!source.publisher_name.empty())
+    if (!source.publisher_name.empty()) {
       source_proto->set_publisher_name(source.publisher_name);
-    if (source.amp_url.is_valid())
+    }
+    if (source.amp_url.is_valid()) {
       source_proto->set_amp_url(source.amp_url.spec());
+    }
   }
 
   return result;

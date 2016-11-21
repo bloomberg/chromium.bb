@@ -217,8 +217,9 @@ void BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
 void BookmarkSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
   DCHECK_EQ(category, provided_category_);
-  if (!bookmark_model_->loaded())
+  if (!bookmark_model_->loaded()) {
     return;
+  }
   MarkAllBookmarksUndismissed(bookmark_model_);
 }
 
@@ -348,16 +349,18 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
 }
 
 void BookmarkSuggestionsProvider::FetchBookmarks() {
-  if (bookmark_model_->loaded())
+  if (bookmark_model_->loaded()) {
     FetchBookmarksInternal();
-  else
+  } else {
     fetch_requested_ = true;
+  }
 }
 
 void BookmarkSuggestionsProvider::NotifyStatusChanged(
     CategoryStatus new_status) {
-  if (category_status_ == new_status)
+  if (category_status_ == new_status) {
     return;
+  }
   category_status_ = new_status;
   observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
 }

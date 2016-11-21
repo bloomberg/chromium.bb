@@ -138,10 +138,12 @@ bool IsBooleanParameterEnabled(const std::string& param_name,
                                bool default_value) {
   std::string param_value = variations::GetVariationParamValueByFeature(
         ntp_snippets::kArticleSuggestionsFeature, param_name);
-  if (param_value == kBooleanParameterEnabled)
+  if (param_value == kBooleanParameterEnabled) {
     return true;
-  if (param_value == kBooleanParameterDisabled)
+  }
+  if (param_value == kBooleanParameterDisabled) {
     return false;
+  }
   if (!param_value.empty()) {
     LOG(WARNING) << "Invalid value \"" << param_value
                  << "\" for variation parameter " << param_name;
@@ -158,8 +160,9 @@ bool IsSendingUserClassEnabled() {
 }
 
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
-  if (endpoint == kChromeReaderServer)
+  if (endpoint == kChromeReaderServer) {
     return false;
+  }
 
   if (endpoint != kContentSuggestionsServer &&
       endpoint != kContentSuggestionsStagingServer &&
@@ -357,8 +360,9 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
 }
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {
-  if (waiting_for_refresh_token_)
+  if (waiting_for_refresh_token_) {
     token_service_->RemoveObserver(this);
+  }
 }
 
 void NTPSnippetsFetcher::FetchSnippets(const Params& params,
@@ -478,22 +482,27 @@ std::string NTPSnippetsFetcher::RequestBuilder::BuildRequest() {
       auto excluded = base::MakeUnique<base::ListValue>();
       for (const auto& id : params.excluded_ids) {
         excluded->AppendString(id);
-        if (excluded->GetSize() >= kMaxExcludedIds)
+        if (excluded->GetSize() >= kMaxExcludedIds) {
           break;
+        }
       }
       request->Set("excludedSuggestionIds", std::move(excluded));
 
-      if (!user_class.empty())
+      if (!user_class.empty()) {
         request->SetString("userActivenessClass", user_class);
+      }
 
-      if (ui_language.frequency == 0 && other_top_language.frequency == 0)
+      if (ui_language.frequency == 0 && other_top_language.frequency == 0) {
         break;
+      }
 
       auto language_list = base::MakeUnique<base::ListValue>();
-      if (ui_language.frequency > 0)
+      if (ui_language.frequency > 0) {
         AppendLanguageInfoToList(language_list.get(), ui_language);
-      if (other_top_language.frequency > 0)
+      }
+      if (other_top_language.frequency > 0) {
         AppendLanguageInfoToList(language_list.get(), other_top_language);
+      }
       request->Set("topLanguages", std::move(language_list));
 
       // TODO(sfiera): Support only_return_personalized_results.
@@ -522,8 +531,9 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
       url_fetcher_.get(), data_use_measurement::DataUseUserData::NTP_SNIPPETS);
 
   HttpRequestHeaders headers;
-  if (!auth_header.empty())
+  if (!auth_header.empty()) {
     headers.SetHeader("Authorization", auth_header);
+  }
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   // Add X-Client-Data header with experiment IDs from field trials.
   variations::AppendVariationHeaders(url,
@@ -554,14 +564,16 @@ NTPSnippetsFetcher::RequestBuilder NTPSnippetsFetcher::MakeRequestBuilder()
   result.params = params_;
   result.fetch_api = fetch_api_;
 
-  if (IsSendingUserClassEnabled())
+  if (IsSendingUserClassEnabled()) {
     result.user_class = GetUserClassString(user_classifier_->GetUserClass());
+  }
 
   // TODO(jkrcal): Add language model factory for iOS and add fakes to tests so
   // that |language_model_| is never nullptr. Remove this check and add a DCHECK
   // into the constructor.
-  if (!language_model_ || !IsSendingTopLanguagesEnabled())
+  if (!language_model_ || !IsSendingTopLanguagesEnabled()) {
     return result;
+  }
 
   // TODO(jkrcal): Is this back-and-forth converting necessary?
   result.ui_language.language_code = ISO639FromPosixLocale(
@@ -661,8 +673,9 @@ void NTPSnippetsFetcher::OnGetTokenFailure(
 void NTPSnippetsFetcher::OnRefreshTokenAvailable(
     const std::string& account_id) {
   // Only react on tokens for the account the user has signed in with.
-  if (account_id != signin_manager_->GetAuthenticatedAccountId())
+  if (account_id != signin_manager_->GetAuthenticatedAccountId()) {
     return;
+  }
 
   token_service_->RemoveObserver(this);
   waiting_for_refresh_token_ = false;
@@ -808,8 +821,9 @@ void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
 // categories. If only fetches for a single category were requested, this
 // function filters them out.
 void NTPSnippetsFetcher::FilterCategories(FetchedCategoriesVector* categories) {
-  if (!params_.exclusive_category.has_value())
+  if (!params_.exclusive_category.has_value()) {
     return;
+  }
   Category exclusive = params_.exclusive_category.value();
   auto category_it =
       std::find_if(categories->begin(), categories->end(),
@@ -835,8 +849,9 @@ void NTPSnippetsFetcher::FetchFinished(
   // Filter out unwanted categories if necessary.
   // TODO(fhorschig): As soon as the server supports filtering by
   // that instead of over-fetching and filtering here.
-  if (fetched_categories.has_value())
+  if (fetched_categories.has_value()) {
     FilterCategories(&fetched_categories.value());
+  }
 
   // Don't record FetchTimes if the result indicates that a precondition
   // failed and we never actually sent a network request
@@ -849,8 +864,9 @@ void NTPSnippetsFetcher::FetchFinished(
                             static_cast<int>(FetchResult::RESULT_MAX));
 
   DVLOG(1) << "Fetch finished: " << last_status_;
-  if (!snippets_available_callback_.is_null())
+  if (!snippets_available_callback_.is_null()) {
     std::move(snippets_available_callback_).Run(std::move(fetched_categories));
+  }
 }
 
 bool NTPSnippetsFetcher::DemandQuotaForRequest(bool interactive_request) {

@@ -46,12 +46,14 @@ bool ExtractLastVisitDate(const BookmarkNode& node,
                  const std::string& meta_info_key,
                  base::Time* out) {
   std::string last_visit_date_string;
-  if (!node.GetMetaInfo(meta_info_key, &last_visit_date_string))
+  if (!node.GetMetaInfo(meta_info_key, &last_visit_date_string)) {
     return false;
+  }
 
   int64_t date = 0;
-  if (!base::StringToInt64(last_visit_date_string, &date) || date < 0)
+  if (!base::StringToInt64(last_visit_date_string, &date) || date < 0) {
     return false;
+  }
 
   *out = base::Time::FromInternalValue(date);
   return true;
@@ -59,8 +61,9 @@ bool ExtractLastVisitDate(const BookmarkNode& node,
 
 bool IsBlacklisted(const GURL& url) {
   for (const char* blacklisted : kBookmarksURLBlacklist) {
-    if (url.spec() == blacklisted)
+    if (url.spec() == blacklisted) {
       return true;
+    }
   }
   return false;
 }
@@ -92,14 +95,16 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
                                            const GURL& url,
                                            bool is_mobile_platform) {
   // Skip URLs that are blacklisted.
-  if (IsBlacklisted(url))
+  if (IsBlacklisted(url)) {
     return;
+  }
 
   // Skip URLs that are not bookmarked.
   std::vector<const BookmarkNode*> bookmarks_for_url;
   bookmark_model->GetNodesByURL(url, &bookmarks_for_url);
-  if (bookmarks_for_url.empty())
+  if (bookmarks_for_url.empty()) {
     return;
+  }
 
   // If there are bookmarks for |url|, set their last visit date to now.
   std::string now = FormatLastVisitDate(base::Time::Now());
@@ -150,13 +155,15 @@ bool GetLastVisitDateForNTPBookmark(const BookmarkNode* node,
 void MarkBookmarksDismissed(BookmarkModel* bookmark_model, const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   bookmark_model->GetNodesByURL(url, &nodes);
-  for (const BookmarkNode* node : nodes)
+  for (const BookmarkNode* node : nodes) {
     bookmark_model->SetNodeMetaInfo(node, kBookmarkDismissedFromNTP, "1");
+  }
 }
 
 bool IsDismissedFromNTPForBookmark(const BookmarkNode* node) {
-  if (!node)
+  if (!node) {
     return false;
+  }
 
   std::string dismissed_from_ntp;
   bool result =
@@ -174,8 +181,9 @@ void MarkAllBookmarksUndismissed(BookmarkModel* bookmark_model) {
   for (const BookmarkModel::URLAndTitle& bookmark : bookmarks) {
     std::vector<const BookmarkNode*> nodes;
     bookmark_model->GetNodesByURL(bookmark.url, &nodes);
-    for (const BookmarkNode* node : nodes)
+    for (const BookmarkNode* node : nodes) {
       bookmark_model->DeleteNodeMetaInfo(node, kBookmarkDismissedFromNTP);
+    }
   }
 }
 
@@ -271,8 +279,9 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     }
 
     result.push_back(bookmark.node);
-    if (result.size() >= static_cast<size_t>(max_count))
+    if (result.size() >= static_cast<size_t>(max_count)) {
       break;
+    }
   }
   return result;
 }
@@ -293,8 +302,9 @@ std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
             DCHECK(!bookmarks_for_url.empty());
 
             for (const BookmarkNode* node : bookmarks_for_url) {
-              if (!IsDismissedFromNTPForBookmark(node))
+              if (!IsDismissedFromNTPForBookmark(node)) {
                 return true;
+              }
             }
             return false;
           }),

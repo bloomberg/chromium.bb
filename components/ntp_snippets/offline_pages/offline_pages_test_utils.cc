@@ -31,8 +31,9 @@ void FakeOfflinePageModel::GetPagesMatchingQuery(
     const MultipleOfflinePageItemCallback& callback) {
   MultipleOfflinePageItemResult filtered_result;
   for (auto& item : items_) {
-    if (query->Matches(item))
+    if (query->Matches(item)) {
       filtered_result.emplace_back(item);
+    }
   }
   callback.Run(filtered_result);
 }

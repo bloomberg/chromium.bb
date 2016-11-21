@@ -174,10 +174,11 @@ void ParseJson(
     const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
-  if (value)
+  if (value) {
     success_callback.Run(std::move(value));
-  else
+  } else {
     error_callback.Run(json_reader.GetErrorMessage());
+  }
 }
 
 void ParseJsonDelayed(
@@ -247,8 +248,9 @@ class NTPSnippetsFetcherTest : public testing::Test {
   }
 
   void InitFakeURLFetcherFactory() {
-    if (fake_url_fetcher_factory_)
+    if (fake_url_fetcher_factory_) {
       return;
+    }
     // Instantiation of factory automatically sets itself as URLFetcher's
     // factory.
     fake_url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(
@@ -411,8 +413,9 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
   NTPSnippetsFetcher::RequestBuilder builder;
   builder.params = test_params();
   builder.params.interactive_request = false;
-  for (int i = 0; i < 200; ++i)
+  for (int i = 0; i < 200; ++i) {
     builder.params.excluded_ids.insert(base::StringPrintf("%03d", i));
+  }
   builder.only_return_personalized_results = false;
   builder.user_class = "ACTIVE_NTP_USER";
 
