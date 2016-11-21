@@ -3779,6 +3779,12 @@
             "url": "/IndexedDB/cursor-overloads.htm"
           }
         ],
+        "IndexedDB/historical.html": [
+          {
+            "path": "IndexedDB/historical.html",
+            "url": "/IndexedDB/historical.html"
+          }
+        ],
         "IndexedDB/idb_binary_key_conversion.htm": [
           {
             "path": "IndexedDB/idb_binary_key_conversion.htm",
@@ -5465,16 +5471,6 @@
           {
             "path": "WebIDL/ecmascript-binding/interface-object.html",
             "url": "/WebIDL/ecmascript-binding/interface-object.html"
-          }
-        ],
-        "console/console-is-a-namespace.any.js": [
-          {
-            "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.html"
-          },
-          {
-            "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.worker.html"
           }
         ],
         "custom-elements/CustomElementRegistry.html": [
@@ -11328,6 +11324,12 @@
             "url": "/html/semantics/forms/historical.html"
           }
         ],
+        "html/semantics/forms/resetting-a-form/reset-event.html": [
+          {
+            "path": "html/semantics/forms/resetting-a-form/reset-event.html",
+            "url": "/html/semantics/forms/resetting-a-form/reset-event.html"
+          }
+        ],
         "html/semantics/forms/resetting-a-form/reset-form.html": [
           {
             "path": "html/semantics/forms/resetting-a-form/reset-form.html",
@@ -13464,10 +13466,22 @@
             "url": "/html/webappapis/atob/base64.html"
           }
         ],
+        "html/webappapis/idle-callbacks/basic.html": [
+          {
+            "path": "html/webappapis/idle-callbacks/basic.html",
+            "url": "/html/webappapis/idle-callbacks/basic.html"
+          }
+        ],
         "html/webappapis/idle-callbacks/callback-exception.html": [
           {
             "path": "html/webappapis/idle-callbacks/callback-exception.html",
             "url": "/html/webappapis/idle-callbacks/callback-exception.html"
+          }
+        ],
+        "html/webappapis/idle-callbacks/callback-idle-periods.html": [
+          {
+            "path": "html/webappapis/idle-callbacks/callback-idle-periods.html",
+            "url": "/html/webappapis/idle-callbacks/callback-idle-periods.html"
           }
         ],
         "html/webappapis/idle-callbacks/callback-iframe.html": [
@@ -13486,6 +13500,12 @@
           {
             "path": "html/webappapis/idle-callbacks/callback-multiple-calls.html",
             "url": "/html/webappapis/idle-callbacks/callback-multiple-calls.html"
+          }
+        ],
+        "html/webappapis/idle-callbacks/callback-timeout-with-raf.html": [
+          {
+            "path": "html/webappapis/idle-callbacks/callback-timeout-with-raf.html",
+            "url": "/html/webappapis/idle-callbacks/callback-timeout-with-raf.html"
           }
         ],
         "html/webappapis/idle-callbacks/callback-timeout.html": [
@@ -13896,12 +13916,6 @@
             "url": "/html/webappapis/timers/evil-spec-example.html"
           }
         ],
-        "mediacapture-record/BlobEvent-constructor.html": [
-          {
-            "path": "mediacapture-record/BlobEvent-constructor.html",
-            "url": "/mediacapture-record/BlobEvent-constructor.html"
-          }
-        ],
         "mediacapture-streams/GUM-api.https.html": [
           {
             "path": "mediacapture-streams/GUM-api.https.html",
@@ -14111,6 +14125,194 @@
           {
             "path": "quirks-mode/unitless-length.html",
             "url": "/quirks-mode/unitless-length.html"
+          }
+        ],
+        "service-workers/cache-storage/common.https.html": [
+          {
+            "path": "service-workers/cache-storage/common.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/common.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-add.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-add.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-add.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-delete.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-delete.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-delete.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-match.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-match.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-match.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-matchAll.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-matchAll.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-matchAll.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-put.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-put.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-put.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-storage-keys.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-storage-keys.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-storage-keys.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-storage-match.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-storage-match.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-storage-match.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/cache-storage.https.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/cache-storage.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/serviceworker/cache-storage.https.html"
+          }
+        ],
+        "service-workers/cache-storage/serviceworker/credentials.html": [
+          {
+            "path": "service-workers/cache-storage/serviceworker/credentials.html",
+            "url": "/service-workers/cache-storage/serviceworker/credentials.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-add.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-add.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-add.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-delete.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-delete.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-delete.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-match.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-match.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-match.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-matchAll.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-matchAll.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-matchAll.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-put.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-put.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-put.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-storage-keys.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-storage-keys.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-storage-keys.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-storage-match.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-storage-match.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-storage-match.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/cache-storage.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/cache-storage.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/cache-storage.https.html"
+          }
+        ],
+        "service-workers/cache-storage/window/sandboxed-iframes.https.html": [
+          {
+            "path": "service-workers/cache-storage/window/sandboxed-iframes.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/window/sandboxed-iframes.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-add.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-add.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-add.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-delete.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-delete.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-delete.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-match.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-match.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-match.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-matchAll.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-matchAll.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-matchAll.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-put.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-put.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-put.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-storage-keys.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-storage-keys.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-storage-keys.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-storage-match.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-storage-match.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-storage-match.https.html"
+          }
+        ],
+        "service-workers/cache-storage/worker/cache-storage.https.html": [
+          {
+            "path": "service-workers/cache-storage/worker/cache-storage.https.html",
+            "timeout": "long",
+            "url": "/service-workers/cache-storage/worker/cache-storage.https.html"
           }
         ],
         "service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html": [

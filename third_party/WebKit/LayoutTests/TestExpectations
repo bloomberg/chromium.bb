@@ -1454,7 +1454,7 @@ crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-backgroun
 crbug.com/660580 [ Precise ] fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Skip ]
 crbug.com/660580 [ Precise ] images/imagemap-case.html [ Skip ]
 crbug.com/660580 [ Precise ] virtual/gpu-rasterization/images/imagemap-case.html [ Skip ]
-crbug.com/660580 [ Precise ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Skip ] 
+crbug.com/660580 [ Precise ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
@@ -1707,3 +1707,17 @@ crbug.com/666628 [ Mac Win Trusty ] http/tests/inspector-enabled/console-stack-o
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
 crbug.com/667371 inspector/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
+
+# Fail when run in random order.
+crbug.com/666991 imported/wpt/service-workers/cache-storage/window/cache-storage.https.html [ Pass Failure ]
+crbug.com/666991 imported/wpt/service-workers/cache-storage/worker/cache-storage.https.html [ Pass Failure ]
+crbug.com/666991 imported/wpt/service-workers/cache-storage/serviceworker/cache-storage.https.html [ Pass Failure ]
+
+# Newly imported tests that time out.
+crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
+crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
+crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
+
+# These tests (erroneously?) see a platform-specific 'server' header
+crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-match.https.html [ Pass Failure ]
+crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-put.https.html [ Pass Failure ]

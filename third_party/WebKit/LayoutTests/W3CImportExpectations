@@ -309,7 +309,8 @@ imported/wpt/serve.py [ Skip ]
 imported/wpt/server-side.md [ Skip ]
 ## Owners: shimazu@chromium.org
 # imported/wpt/service-workers [ Pass ]
-imported/wpt/service-workers/cache-storage [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/wpt/service-workers/cache-storage [ Pass ]
 ## Owners: kochi@chromium.org crbug.com/505364
 # imported/wpt/shadow-dom [ Pass ]
 ## Owners: domenic@chromium.org,ricea@chromium.org,tyoshino@chromium.org
