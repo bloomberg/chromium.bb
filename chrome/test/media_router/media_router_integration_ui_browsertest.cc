@@ -59,26 +59,54 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   Wait(base::TimeDelta::FromSeconds(5));
   WaitUntilDialogClosed(web_contents);
   dialog_contents = OpenMRDialog(web_contents);
-  ChooseSink(web_contents, kTestSinkName);
 #endif
 
+  std::string route_script;
+  // Verify the route details is not undefined.
+  route_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container').shadowRoot."
+      "getElementById('route-details') != undefined)");
+  ASSERT_TRUE(ConditionalWait(
+      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
+      base::Bind(
+        &MediaRouterIntegrationBrowserTest::ExecuteScriptAndExtractBool,
+        dialog_contents, route_script)));
+  route_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container').currentView_ "
+      "== media_router.MediaRouterView.ROUTE_DETAILS)");
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(dialog_contents, route_script));
+
   // Verify the route details page.
-  std::string route_info_script = base::StringPrintf(
+  route_script = base::StringPrintf(
       "domAutomationController.send("
       "window.document.getElementById('media-router-container').shadowRoot."
       "getElementById('route-details').shadowRoot.getElementById("
       "'route-information').getElementsByTagName('span')[0].innerText)");
   std::string route_information = ExecuteScriptAndExtractString(
-      dialog_contents, route_info_script);
+      dialog_contents, route_script);
   ASSERT_EQ("Casting: Test Route", route_information);
 
-  std::string sink_name_script = base::StringPrintf(
+  std::string sink_script;
+  // Verify the container header is not undefined.
+  sink_script = base::StringPrintf(
+      "domAutomationController.send("
+      "window.document.getElementById('media-router-container').shadowRoot."
+      "getElementById('container-header') != undefined)");
+  ASSERT_TRUE(ConditionalWait(
+      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
+      base::Bind(
+        &MediaRouterIntegrationBrowserTest::ExecuteScriptAndExtractBool,
+        dialog_contents, sink_script)));
+
+  sink_script = base::StringPrintf(
       "domAutomationController.send("
       "window.document.getElementById('media-router-container').shadowRoot."
       "getElementById('container-header').shadowRoot.getElementById("
       "'header-text').innerText)");
   std::string sink_name = ExecuteScriptAndExtractString(
-      dialog_contents, sink_name_script);
+      dialog_contents, sink_script);
   ASSERT_EQ(kTestSinkName, sink_name);
 
 #if defined(OS_MACOSX)
