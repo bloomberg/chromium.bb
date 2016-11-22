@@ -40,18 +40,16 @@ class PersistentMemoryAllocatorTest : public testing::Test {
   uint32_t kAllocAlignment;
 
   struct TestObject1 {
-    static constexpr size_t kExpectedInstanceSize = 4 + 1 + 3;
-    int32_t onething;
+    int onething;
     char oranother;
   };
 
   struct TestObject2 {
-    static constexpr size_t kExpectedInstanceSize = 8 + 4 + 4 + 8 + 8;
-    int64_t thiis;
-    int32_t that;
+    int thiis;
+    long that;
     float andthe;
-    double other;
-    char thing[8];
+    char other;
+    double thing;
   };
 
   PersistentMemoryAllocatorTest() {
@@ -788,8 +786,7 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
       uint32_t type_id;
       Reference ref;
       while ((ref = iter.GetNext(&type_id)) != 0) {
-        const char* data = allocator.GetAsArray<char>(
-            ref, 0, PersistentMemoryAllocator::kSizeAny);
+        const char* data = allocator.GetAsObject<char>(ref, 0);
         uint32_t type = allocator.GetType(ref);
         size_t size = allocator.GetAllocSize(ref);
         // Ensure compiler can't optimize-out above variables.

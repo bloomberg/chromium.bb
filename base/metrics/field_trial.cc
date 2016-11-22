@@ -61,9 +61,6 @@ const size_t kFieldTrialAllocationSize = 64 << 10;  // 64 KiB
 // object that we unpickle and read from. Any changes to this structure requires
 // a bump in kFieldTrialType id defined above.
 struct FieldTrialEntry {
-  // Expected size for 32/64-bit check.
-  static constexpr size_t kExpectedInstanceSize = 8;
-
   // Whether or not this field trial is activated. This is really just a boolean
   // but marked as a uint32_t for portability reasons.
   uint32_t activated;

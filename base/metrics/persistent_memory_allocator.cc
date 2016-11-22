@@ -295,14 +295,6 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
       corrupt_(0),
       allocs_histogram_(nullptr),
       used_histogram_(nullptr) {
-  // These asserts ensure that the structures are 32/64-bit agnostic and meet
-  // all the requirements of use within the allocator. They access private
-  // definitions and so cannot be moved to the global scope.
-  static_assert(sizeof(PersistentMemoryAllocator::BlockHeader) == 16,
-                "struct is not portable across different natural word widths");
-  static_assert(sizeof(PersistentMemoryAllocator::SharedMetadata) == 56,
-                "struct is not portable across different natural word widths");
-
   static_assert(sizeof(BlockHeader) % kAllocAlignment == 0,
                 "BlockHeader is not a multiple of kAllocAlignment");
   static_assert(sizeof(SharedMetadata) % kAllocAlignment == 0,
@@ -368,7 +360,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
     if (!name.empty()) {
       const size_t name_length = name.length() + 1;
       shared_meta()->name = Allocate(name_length, 0);
-      char* name_cstr = GetAsArray<char>(shared_meta()->name, 0, name_length);
+      char* name_cstr = GetAsObject<char>(shared_meta()->name, 0);
       if (name_cstr)
         memcpy(name_cstr, name.data(), name.length());
     }
@@ -416,8 +408,7 @@ uint64_t PersistentMemoryAllocator::Id() const {
 
 const char* PersistentMemoryAllocator::Name() const {
   Reference name_ref = shared_meta()->name;
-  const char* name_cstr =
-      GetAsArray<char>(name_ref, 0, PersistentMemoryAllocator::kSizeAny);
+  const char* name_cstr = GetAsObject<char>(name_ref, 0);
   if (!name_cstr)
     return "";
 

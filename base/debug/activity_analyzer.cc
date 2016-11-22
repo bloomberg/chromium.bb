@@ -25,10 +25,9 @@ ThreadActivityAnalyzer::ThreadActivityAnalyzer(void* base, size_t size)
 ThreadActivityAnalyzer::ThreadActivityAnalyzer(
     PersistentMemoryAllocator* allocator,
     PersistentMemoryAllocator::Reference reference)
-    : ThreadActivityAnalyzer(allocator->GetAsArray<char>(
+    : ThreadActivityAnalyzer(allocator->GetAsObject<char>(
                                  reference,
-                                 GlobalActivityTracker::kTypeIdActivityTracker,
-                                 1),
+                                 GlobalActivityTracker::kTypeIdActivityTracker),
                              allocator->GetAllocSize(reference)) {}
 
 ThreadActivityAnalyzer::~ThreadActivityAnalyzer() {}
@@ -110,9 +109,8 @@ void GlobalActivityAnalyzer::PrepareAllAnalyzers() {
   for (PersistentMemoryAllocator::Reference tracker_ref : tracker_references_) {
     // Get the actual data segment for the tracker. This can fail if the
     // record has been marked "free" since the type will not match.
-    void* base = allocator_->GetAsArray<char>(
-        tracker_ref, GlobalActivityTracker::kTypeIdActivityTracker,
-        PersistentMemoryAllocator::kSizeAny);
+    void* base = allocator_->GetAsObject<char>(
+        tracker_ref, GlobalActivityTracker::kTypeIdActivityTracker);
     if (!base)
       continue;
 
