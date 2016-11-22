@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/chrome_render_thread_observer.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
@@ -218,6 +219,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     LocalizedError::GetStrings(
         error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
         error.staleCopyInCache, can_show_network_diagnostics_dialog,
+        ChromeRenderThreadObserver::is_incognito_process(),
         RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
@@ -249,6 +251,7 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
   LocalizedError::GetStrings(
       error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
       error.staleCopyInCache, can_show_network_diagnostics_dialog,
+      ChromeRenderThreadObserver::is_incognito_process(),
       RenderThread::Get()->GetLocale(),
       std::unique_ptr<ErrorPageParams>(), &error_strings);
 

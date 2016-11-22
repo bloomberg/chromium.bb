@@ -808,6 +808,7 @@ void LocalizedError::GetStrings(
     bool is_post,
     bool stale_copy_in_cache,
     bool can_show_network_diagnostics_dialog,
+    bool is_incognito,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params,
     base::DictionaryValue* error_strings) {
@@ -997,7 +998,7 @@ void LocalizedError::GetStrings(
   }
 
 #if defined(OS_ANDROID)
-  if (!show_saved_copy_visible &&
+  if (!show_saved_copy_visible && !is_incognito &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
       offline_pages::IsOfflinePagesAsyncDownloadEnabled()) {
     std::unique_ptr<base::DictionaryValue> download_button =
