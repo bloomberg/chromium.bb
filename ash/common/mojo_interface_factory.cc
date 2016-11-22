@@ -15,6 +15,10 @@
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/network/vpn_list.h"
+#endif
+
 namespace ash {
 
 namespace {
@@ -38,6 +42,12 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
   WmShell::Get()->system_tray_controller()->BindRequest(std::move(request));
 }
 
+#if defined(OS_CHROMEOS)
+void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
+  WmShell::Get()->vpn_list()->BindRequest(std::move(request));
+}
+#endif
+
 void BindWallpaperRequestOnMainThread(
     mojom::WallpaperControllerRequest request) {
   WmShell::Get()->wallpaper_controller()->BindRequest(std::move(request));
@@ -59,6 +69,10 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
                          main_thread_task_runner);
+#if defined(OS_CHROMEOS)
+  registry->AddInterface(base::Bind(&BindVpnListRequestOnMainThread),
+                         main_thread_task_runner);
+#endif
   registry->AddInterface(base::Bind(&BindWallpaperRequestOnMainThread),
                          main_thread_task_runner);
 }

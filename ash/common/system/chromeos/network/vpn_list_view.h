@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/common/system/chromeos/network/network_list_view_base.h"
-#include "ash/common/system/chromeos/network/vpn_delegate.h"
+#include "ash/common/system/chromeos/network/vpn_list.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
@@ -42,7 +42,7 @@ namespace ash {
 // configuration dialog. Clicking on a provider shows the provider's "add
 // network" dialog.
 class VPNListView : public NetworkListViewBase,
-                    public VPNDelegate::Observer,
+                    public VpnList::Observer,
                     public ViewClickListener {
  public:
   explicit VPNListView(NetworkListDelegate* delegate);
@@ -53,7 +53,7 @@ class VPNListView : public NetworkListViewBase,
   bool IsNetworkEntry(views::View* view,
                       std::string* service_path) const override;
 
-  // VPNDelegate::Observer:
+  // VpnList::Observer:
   void OnVPNProvidersChanged() override;
 
   // ViewClickListener:

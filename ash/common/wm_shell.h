@@ -93,6 +93,7 @@ class WindowState;
 
 #if defined(OS_CHROMEOS)
 class LogoutConfirmationController;
+class VpnList;
 #endif
 
 // Similar to ash::Shell. Eventually the two will be merged.
@@ -425,6 +426,8 @@ class ASH_EXPORT WmShell {
     return logout_confirmation_controller_.get();
   }
 
+  VpnList* vpn_list() { return vpn_list_.get(); }
+
   // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.
   virtual void ToggleIgnoreExternalKeyboard() = 0;
 
@@ -513,6 +516,7 @@ class ASH_EXPORT WmShell {
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
+  std::unique_ptr<VpnList> vpn_list_;
 #endif
 };
 

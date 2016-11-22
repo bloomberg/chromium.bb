@@ -94,6 +94,12 @@ void SystemTrayController::ShowNetworkCreate(const std::string& type) {
     system_tray_client_->ShowNetworkCreate(type);
 }
 
+void SystemTrayController::ShowThirdPartyVpnCreate(
+    const std::string& extension_id) {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowThirdPartyVpnCreate(extension_id);
+}
+
 void SystemTrayController::ShowNetworkSettings(const std::string& network_id) {
   if (ConnectToSystemTrayClient())
     system_tray_client_->ShowNetworkSettings(network_id);
