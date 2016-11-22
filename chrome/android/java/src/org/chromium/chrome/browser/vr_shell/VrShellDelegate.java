@@ -24,6 +24,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -225,9 +226,13 @@ public class VrShellDelegate {
 
     @CalledByNative
     private void presentRequested(boolean inWebVR) {
-        // TODO(mthiesse): There's a GVR bug where they're not calling us back with the
-        // intent we ask them to when we call DaydreamApi#launchInVr. As a temporary hack,
-        // remember locally that we want to enter webVR.
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
+            nativeSetPresentResult(mNativeVrShellDelegate, false);
+            return;
+        }
+        // TODO(mthiesse): There's a GVR bug where they're not calling us back with the intent we
+        // ask them to when we call DaydreamApi#launchInVr. As a temporary hack, remember locally
+        // that we want to enter webVR.
         mRequestedWebVR = inWebVR;
         switch (enterVRIfNecessary()) {
             case ENTER_VR_NOT_NECESSARY:
