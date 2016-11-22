@@ -1,5 +1,4 @@
 include_rules = [
-  "+cc/animation/animation_host.h",
   "+cc/layers",
   "+cc/output",
   "+cc/resources",

@@ -33,6 +33,7 @@ source_set("compositor") {
     "//blimp/client/public:public_headers",
     "//blimp/client/support/compositor",
     "//blimp/net",
+    "//cc/animation",
     "//cc/proto",
     "//cc/surfaces",
     "//gpu/command_buffer/client",

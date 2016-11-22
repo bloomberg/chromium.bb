@@ -1397,6 +1397,7 @@ component("platform") {
     ":make_platform_generated",
     "//base",
     "//cc",
+    "//cc/animation",
     "//gpu/command_buffer/client:client",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_interface",

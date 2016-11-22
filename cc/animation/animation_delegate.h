@@ -11,7 +11,7 @@
 
 namespace cc {
 
-class CC_EXPORT AnimationDelegate {
+class CC_ANIMATION_EXPORT AnimationDelegate {
  public:
   virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                                       TargetProperty::Type target_property,

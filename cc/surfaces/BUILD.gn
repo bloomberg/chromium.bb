@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("surface_id") {
+import("//cc/cc.gni")
+
+cc_source_set("surface_id") {
   sources = [
     "frame_sink_id.h",
     "local_frame_id.h",
@@ -17,7 +19,7 @@ source_set("surface_id") {
   ]
 }
 
-component("surfaces") {
+cc_component("surfaces") {
   output_name = "cc_surfaces"
   sources = [
     "direct_compositor_frame_sink.cc",
@@ -62,9 +64,4 @@ component("surfaces") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  if (is_android && !is_debug) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
 }

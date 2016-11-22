@@ -3,41 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//cc/cc.gni")
 import("//testing/test.gni")
 
-component("cc") {
+cc_component("cc") {
   sources = [
-    "animation/animation.cc",
-    "animation/animation.h",
-    "animation/animation_curve.cc",
-    "animation/animation_curve.h",
-    "animation/animation_delegate.h",
-    "animation/animation_events.cc",
-    "animation/animation_events.h",
-    "animation/animation_host.cc",
-    "animation/animation_host.h",
-    "animation/animation_id_provider.cc",
-    "animation/animation_id_provider.h",
-    "animation/animation_player.cc",
-    "animation/animation_player.h",
-    "animation/animation_timeline.cc",
-    "animation/animation_timeline.h",
-    "animation/element_animations.cc",
-    "animation/element_animations.h",
-    "animation/keyframed_animation_curve.cc",
-    "animation/keyframed_animation_curve.h",
-    "animation/scroll_offset_animation_curve.cc",
-    "animation/scroll_offset_animation_curve.h",
-    "animation/scroll_offset_animations.cc",
-    "animation/scroll_offset_animations.h",
-    "animation/scroll_offset_animations_impl.cc",
-    "animation/scroll_offset_animations_impl.h",
-    "animation/timing_function.cc",
-    "animation/timing_function.h",
-    "animation/transform_operation.cc",
-    "animation/transform_operation.h",
-    "animation/transform_operations.cc",
-    "animation/transform_operations.h",
     "blimp/client_picture_cache.h",
     "blimp/compositor_proto_state.cc",
     "blimp/compositor_proto_state.h",
@@ -570,7 +540,7 @@ component("cc") {
     ]
   }
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs = [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     "//cc/base",
@@ -595,11 +565,6 @@ component("cc") {
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]
-
-  if (!is_debug && (is_win || is_android)) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
 
   if (enable_vulkan) {
     sources += [
@@ -786,6 +751,7 @@ static_library("test_support") {
 
   public_deps = [
     ":cc",
+    "//cc/animation",
     "//gpu:test_support",
   ]
   deps = [
@@ -819,14 +785,6 @@ static_library("test_support") {
 
 test("cc_unittests") {
   sources = [
-    "animation/animation_host_unittest.cc",
-    "animation/animation_player_unittest.cc",
-    "animation/animation_timeline_unittest.cc",
-    "animation/animation_unittest.cc",
-    "animation/element_animations_unittest.cc",
-    "animation/keyframed_animation_curve_unittest.cc",
-    "animation/scroll_offset_animation_curve_unittest.cc",
-    "animation/transform_operations_unittest.cc",
     "base/contiguous_container_unittest.cc",
     "base/delayed_unique_notifier_unittest.cc",
     "base/float_quad_unittest.cc",
@@ -966,6 +924,16 @@ test("cc_unittests") {
     "trees/property_tree_unittest.cc",
     "trees/swap_promise_manager_unittest.cc",
     "trees/tree_synchronizer_unittest.cc",
+
+    # Animation test files.
+    "animation/animation_host_unittest.cc",
+    "animation/animation_player_unittest.cc",
+    "animation/animation_timeline_unittest.cc",
+    "animation/animation_unittest.cc",
+    "animation/element_animations_unittest.cc",
+    "animation/keyframed_animation_curve_unittest.cc",
+    "animation/scroll_offset_animation_curve_unittest.cc",
+    "animation/transform_operations_unittest.cc",
 
     # Surfaces test files.
     "surfaces/direct_compositor_frame_sink_unittest.cc",

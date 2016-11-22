@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("base") {
+import("//cc/cc.gni")
+
+cc_source_set("base") {
   visibility = [ "//cc" ]
 
   sources = [
@@ -56,9 +58,4 @@ source_set("base") {
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]
-
-  if (!is_debug && (is_win || is_android)) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
 }

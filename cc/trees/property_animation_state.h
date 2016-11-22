@@ -30,8 +30,8 @@ struct CC_EXPORT PropertyAnimationState {
   void Clear();
 };
 
-PropertyAnimationState operator^(const PropertyAnimationState& lhs,
-                                 const PropertyAnimationState& rhs);
+CC_EXPORT PropertyAnimationState operator^(const PropertyAnimationState& lhs,
+                                           const PropertyAnimationState& rhs);
 
 }  // namespace cc
 

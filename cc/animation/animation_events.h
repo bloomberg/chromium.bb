@@ -10,7 +10,7 @@
 
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
-#include "cc/base/cc_export.h"
+#include "cc/animation/animation_export.h"
 #include "cc/output/filter_operations.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host.h"
@@ -18,7 +18,7 @@
 
 namespace cc {
 
-struct CC_EXPORT AnimationEvent {
+struct CC_ANIMATION_EXPORT AnimationEvent {
   enum Type { STARTED, FINISHED, ABORTED, PROPERTY_UPDATE, TAKEOVER };
 
   AnimationEvent(Type type,
@@ -47,7 +47,8 @@ struct CC_EXPORT AnimationEvent {
   std::unique_ptr<AnimationCurve> curve;
 };
 
-class CC_EXPORT AnimationEvents : public NON_EXPORTED_BASE(MutatorEvents) {
+class CC_ANIMATION_EXPORT AnimationEvents
+    : public NON_EXPORTED_BASE(MutatorEvents) {
  public:
   AnimationEvents();
 

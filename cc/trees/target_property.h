@@ -7,6 +7,8 @@
 
 #include <bitset>
 
+#include "cc/base/cc_export.h"
+
 namespace cc {
 
 namespace TargetProperty {
@@ -22,7 +24,7 @@ enum Type {
   LAST_TARGET_PROPERTY = BACKGROUND_COLOR
 };
 
-const char* GetName(TargetProperty::Type property);
+CC_EXPORT const char* GetName(TargetProperty::Type property);
 
 }  // namespace TargetProperty
 

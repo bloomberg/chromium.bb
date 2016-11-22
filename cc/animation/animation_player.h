@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/animation_export.h"
 #include "cc/animation/element_animations.h"
-#include "cc/base/cc_export.h"
 #include "cc/trees/element_id.h"
 
 namespace cc {
@@ -32,7 +32,8 @@ struct PropertyAnimationState;
 // same-property animations.
 // Each AnimationPlayer has its copy on the impl thread.
 // This is a CC counterpart for blink::AnimationPlayer (in 1:1 relationship).
-class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
+class CC_ANIMATION_EXPORT AnimationPlayer
+    : public base::RefCounted<AnimationPlayer> {
  public:
   static scoped_refptr<AnimationPlayer> Create(int id);
   scoped_refptr<AnimationPlayer> CreateImplInstance() const;

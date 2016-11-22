@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/time/time.h"
-#include "cc/base/cc_export.h"
+#include "cc/animation/animation_export.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/transform.h"
 
@@ -25,7 +25,7 @@ class ScrollOffsetAnimationCurve;
 class TransformAnimationCurve;
 
 // An animation curve is a function that returns a value given a time.
-class CC_EXPORT AnimationCurve {
+class CC_ANIMATION_EXPORT AnimationCurve {
  public:
   enum CurveType { COLOR, FLOAT, TRANSFORM, FILTER, SCROLL_OFFSET };
 
@@ -44,7 +44,7 @@ class CC_EXPORT AnimationCurve {
   ScrollOffsetAnimationCurve* ToScrollOffsetAnimationCurve();
 };
 
-class CC_EXPORT ColorAnimationCurve : public AnimationCurve {
+class CC_ANIMATION_EXPORT ColorAnimationCurve : public AnimationCurve {
  public:
   ~ColorAnimationCurve() override {}
 
@@ -54,7 +54,7 @@ class CC_EXPORT ColorAnimationCurve : public AnimationCurve {
   CurveType Type() const override;
 };
 
-class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
+class CC_ANIMATION_EXPORT FloatAnimationCurve : public AnimationCurve {
  public:
   ~FloatAnimationCurve() override {}
 
@@ -64,7 +64,7 @@ class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
   CurveType Type() const override;
 };
 
-class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
+class CC_ANIMATION_EXPORT TransformAnimationCurve : public AnimationCurve {
  public:
   ~TransformAnimationCurve() override {}
 
@@ -98,7 +98,7 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   CurveType Type() const override;
 };
 
-class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
+class CC_ANIMATION_EXPORT FilterAnimationCurve : public AnimationCurve {
  public:
   ~FilterAnimationCurve() override {}
 

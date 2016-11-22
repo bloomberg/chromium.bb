@@ -10,14 +10,14 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
-#include "cc/base/cc_export.h"
+#include "cc/animation/animation_export.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
 
 class TimingFunction;
 
-class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
+class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:
   enum class DurationBehavior { DELTA_BASED, CONSTANT, INVERSE_DELTA };
   static std::unique_ptr<ScrollOffsetAnimationCurve> Create(

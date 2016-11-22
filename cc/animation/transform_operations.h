@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "cc/animation/animation_export.h"
 #include "cc/animation/transform_operation.h"
-#include "cc/base/cc_export.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -30,7 +30,7 @@ namespace cc {
 // we have two dissimilar sets of transform operations, but the effect may not
 // be what was intended. For more information, see the comments for the blend
 // function below.
-class CC_EXPORT TransformOperations {
+class CC_ANIMATION_EXPORT TransformOperations {
  public:
   TransformOperations();
   TransformOperations(const TransformOperations& other);

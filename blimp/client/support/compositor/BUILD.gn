@@ -34,6 +34,7 @@ source_set("compositor") {
 
   deps = [
     "//blimp/client/public:public_headers",
+    "//cc/animation",
     "//cc/surfaces",
     "//gpu/skia_bindings",
     "//skia",

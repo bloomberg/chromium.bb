@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "cc/animation/animation.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/gfx/geometry/rect.h"

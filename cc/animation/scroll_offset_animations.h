@@ -15,7 +15,7 @@ namespace cc {
 // A ScrollOffsetAnimationUpdate represents a change on the main thread
 // that may impact an impl-only scroll offset animation.
 // Note that this class only exists on the main thread.
-struct CC_EXPORT ScrollOffsetAnimationUpdate {
+struct CC_ANIMATION_EXPORT ScrollOffsetAnimationUpdate {
   ScrollOffsetAnimationUpdate();
   explicit ScrollOffsetAnimationUpdate(ElementId);
 
@@ -33,7 +33,7 @@ struct CC_EXPORT ScrollOffsetAnimationUpdate {
 // ScrollOffsetAnimations contains a list of ScrollOffsetAnimationUpdates.
 // PushPropertiesTo is called during commit time and the necessary update is
 // made to the impl-only animation.
-class CC_EXPORT ScrollOffsetAnimations {
+class CC_ANIMATION_EXPORT ScrollOffsetAnimations {
  public:
   explicit ScrollOffsetAnimations(AnimationHost* animation_host);
   ~ScrollOffsetAnimations();

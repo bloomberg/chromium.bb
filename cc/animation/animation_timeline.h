@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/base/cc_export.h"
+#include "cc/animation/animation_export.h"
 
 namespace cc {
 
@@ -22,7 +22,8 @@ class AnimationPlayer;
 // Each AnimationTimeline and its AnimationPlayers have their copies on
 // the impl thread. We synchronize main thread and impl thread instances
 // using integer IDs.
-class CC_EXPORT AnimationTimeline : public base::RefCounted<AnimationTimeline> {
+class CC_ANIMATION_EXPORT AnimationTimeline
+    : public base::RefCounted<AnimationTimeline> {
  public:
   static scoped_refptr<AnimationTimeline> Create(int id);
   scoped_refptr<AnimationTimeline> CreateImplInstance() const;

@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/animation/animation_export.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
 namespace cc {
 
 // See http://www.w3.org/TR/css3-transitions/.
-class CC_EXPORT TimingFunction {
+class CC_ANIMATION_EXPORT TimingFunction {
  public:
   virtual ~TimingFunction();
 
@@ -34,7 +34,7 @@ class CC_EXPORT TimingFunction {
   DISALLOW_ASSIGN(TimingFunction);
 };
 
-class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
+class CC_ANIMATION_EXPORT CubicBezierTimingFunction : public TimingFunction {
  public:
   enum class EaseType { EASE, EASE_IN, EASE_OUT, EASE_IN_OUT, CUSTOM };
 
@@ -69,7 +69,7 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
   DISALLOW_ASSIGN(CubicBezierTimingFunction);
 };
 
-class CC_EXPORT StepsTimingFunction : public TimingFunction {
+class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
  public:
   // Web Animations specification, 3.12.4. Timing in discrete steps.
   enum class StepPosition { START, MIDDLE, END };

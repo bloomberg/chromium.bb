@@ -10,13 +10,13 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/animation_export.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
-#include "cc/base/cc_export.h"
 
 namespace cc {
 
-class CC_EXPORT Keyframe {
+class CC_ANIMATION_EXPORT Keyframe {
  public:
   base::TimeDelta Time() const;
   const TimingFunction* timing_function() const {
@@ -35,7 +35,7 @@ class CC_EXPORT Keyframe {
   DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };
 
-class CC_EXPORT ColorKeyframe : public Keyframe {
+class CC_ANIMATION_EXPORT ColorKeyframe : public Keyframe {
  public:
   static std::unique_ptr<ColorKeyframe> Create(
       base::TimeDelta time,
@@ -55,7 +55,7 @@ class CC_EXPORT ColorKeyframe : public Keyframe {
   SkColor value_;
 };
 
-class CC_EXPORT FloatKeyframe : public Keyframe {
+class CC_ANIMATION_EXPORT FloatKeyframe : public Keyframe {
  public:
   static std::unique_ptr<FloatKeyframe> Create(
       base::TimeDelta time,
@@ -75,7 +75,7 @@ class CC_EXPORT FloatKeyframe : public Keyframe {
   float value_;
 };
 
-class CC_EXPORT TransformKeyframe : public Keyframe {
+class CC_ANIMATION_EXPORT TransformKeyframe : public Keyframe {
  public:
   static std::unique_ptr<TransformKeyframe> Create(
       base::TimeDelta time,
@@ -95,7 +95,7 @@ class CC_EXPORT TransformKeyframe : public Keyframe {
   TransformOperations value_;
 };
 
-class CC_EXPORT FilterKeyframe : public Keyframe {
+class CC_ANIMATION_EXPORT FilterKeyframe : public Keyframe {
  public:
   static std::unique_ptr<FilterKeyframe> Create(
       base::TimeDelta time,
@@ -115,7 +115,8 @@ class CC_EXPORT FilterKeyframe : public Keyframe {
   FilterOperations value_;
 };
 
-class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
+class CC_ANIMATION_EXPORT KeyframedColorAnimationCurve
+    : public ColorAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
   static std::unique_ptr<KeyframedColorAnimationCurve> Create();
@@ -150,7 +151,8 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
   DISALLOW_COPY_AND_ASSIGN(KeyframedColorAnimationCurve);
 };
 
-class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
+class CC_ANIMATION_EXPORT KeyframedFloatAnimationCurve
+    : public FloatAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
   static std::unique_ptr<KeyframedFloatAnimationCurve> Create();
@@ -192,7 +194,7 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   DISALLOW_COPY_AND_ASSIGN(KeyframedFloatAnimationCurve);
 };
 
-class CC_EXPORT KeyframedTransformAnimationCurve
+class CC_ANIMATION_EXPORT KeyframedTransformAnimationCurve
     : public TransformAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
@@ -236,7 +238,7 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   DISALLOW_COPY_AND_ASSIGN(KeyframedTransformAnimationCurve);
 };
 
-class CC_EXPORT KeyframedFilterAnimationCurve
+class CC_ANIMATION_EXPORT KeyframedFilterAnimationCurve
     : public FilterAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.

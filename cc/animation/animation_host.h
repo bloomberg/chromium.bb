@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
-#include "cc/base/cc_export.h"
+#include "cc/animation/animation_export.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -42,7 +42,8 @@ enum class ThreadInstance { MAIN, IMPL };
 // (PushPropertiesTo).
 // An AnimationHost talks to its correspondent LayerTreeHost via
 // MutatorHostClient interface.
-class CC_EXPORT AnimationHost : public NON_EXPORTED_BASE(MutatorHost) {
+class CC_ANIMATION_EXPORT AnimationHost
+    : public NON_EXPORTED_BASE(MutatorHost) {
  public:
   using ElementToAnimationsMap =
       std::unordered_map<ElementId,
