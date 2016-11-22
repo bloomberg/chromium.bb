@@ -560,6 +560,10 @@ interface Path2D
     method moveTo
     method quadraticCurveTo
     method rect
+interface PaymentRequestEvent : ExtendableEvent
+    getter data
+    method constructor
+    method respondWith
 interface PerformanceObserverEntryList
     method constructor
     method getEntries
@@ -1272,6 +1276,7 @@ global object
     getter onmessage
     getter onnotificationclick
     getter onnotificationclose
+    getter onpaymentrequest
     getter onpush
     getter onsync
     getter registration
@@ -1285,6 +1290,7 @@ global object
     setter onmessage
     setter onnotificationclick
     setter onnotificationclose
+    setter onpaymentrequest
     setter onpush
     setter onsync
 PASS Verify the interface of ServiceWorkerGlobalScope

@@ -1,0 +1,27 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentrequestevent
+
+[
+    RuntimeEnabled=PaymentApp,
+    Exposed=ServiceWorker
+] interface PaymentRequestEvent : ExtendableEvent {
+    readonly attribute PaymentAppRequestData data;
+    // The payment app api spec says that respondWith() should take a union
+    // type as follows:
+    //  - respondWith((Promise<PaymentResponse> or PaymentResponse));
+    //
+    // But the web-idl spec says that Promise types are not distinguishable
+    // with any other type. Also, if we pass PaymentResponse to respondWith(),
+    // then it will just be cast to a promise immediately via Promise.resolve().
+    //
+    // We found existing case here:
+    //  - https://github.com/w3c/ServiceWorker/issues/724
+    //
+    // So, we should just use Promise<PaymentResponse> instead of union type.
+    // Related spec bug:
+    //  - https://github.com/w3c/webpayments-payment-apps-api/pull/71
+    void respondWith(Promise<PaymentResponse> response);
+};
