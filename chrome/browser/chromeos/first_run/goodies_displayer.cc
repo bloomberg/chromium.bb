@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,9 +118,17 @@ void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
   // 3. Not previously shown, or otherwise marked as unavailable.
   if (local_state->GetBoolean(prefs::kCanShowOobeGoodiesPage)) {
     // 4. Device not enterprise enrolled.
-    if (!g_browser_process->platform_part()
-             ->browser_policy_connector_chromeos()
-             ->IsEnterpriseManaged())
+    const bool enterprise_managed = g_browser_process->platform_part()
+                                        ->browser_policy_connector_chromeos()
+                                        ->IsEnterpriseManaged();
+    // 5. --no-first-run not specified, as it is for tests. --force-run takes
+    // precedence over --no-first-run.
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    const bool first_run_permitted =
+        command_line->HasSwitch(switches::kForceFirstRun) ||
+        !command_line->HasSwitch(switches::kNoFirstRun);
+
+    if (!enterprise_managed && first_run_permitted)
       chrome::AddTabAt(browser, GURL(kGoodiesURL), 2, false);
 
     // Set to |false| whether enterprise enrolled or Goodies shown.

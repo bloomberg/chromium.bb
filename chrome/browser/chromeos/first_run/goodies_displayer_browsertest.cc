@@ -11,12 +11,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
-class GoodiesDisplayerBrowserTest : public InProcessBrowserTest {
+class GoodiesDisplayerBrowserTest : public InProcessBrowserTest,
+                                    public testing::WithParamInterface<bool> {
  public:
   GoodiesDisplayerBrowserTest() {}
 
@@ -61,6 +63,9 @@ class GoodiesDisplayerBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_goodies_tabs, goodies_tab_count);
   }
 
+  // Is --no-first-run specified?
+  bool NoFirstRunSpecified() const { return GetParam(); }
+
  private:
   void WaitForGoodiesSetup() {
     if (setup_info_.setup_complete)
@@ -77,8 +82,16 @@ class GoodiesDisplayerBrowserTest : public InProcessBrowserTest {
   }
 
   // InProcessBrowserTest overrides.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Don't want a browser window until GoodiesDisplayer is observing.
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
+    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
+    if (NoFirstRunSpecified()) {  // --no-first-run is present by default.
+      *command_line = default_command_line;
+      ASSERT_TRUE(command_line->HasSwitch(switches::kNoFirstRun));
+    } else {  // Remove --no-first-run.
+      test_launcher_utils::RemoveCommandLineSwitch(
+          default_command_line, switches::kNoFirstRun, command_line);
+    }
     command_line->AppendSwitch(switches::kNoStartupWindow);
   }
 
@@ -86,7 +99,10 @@ class GoodiesDisplayerBrowserTest : public InProcessBrowserTest {
 };
 
 // Tests that the Goodies page is not shown on older device.
-IN_PROC_BROWSER_TEST_F(GoodiesDisplayerBrowserTest, OldDeviceNoDisplay) {
+IN_PROC_BROWSER_TEST_P(GoodiesDisplayerBrowserTest, OldDeviceNoDisplay) {
+  if (NoFirstRunSpecified())  // --no-first-run disables Goodies page.
+    return;
+
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
       prefs::kCanShowOobeGoodiesPage));
 
@@ -101,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(GoodiesDisplayerBrowserTest, OldDeviceNoDisplay) {
 }
 
 // Tests that the Goodies page is shown, only once, on non-incognito browser
-// when device isn't too old.
-IN_PROC_BROWSER_TEST_F(GoodiesDisplayerBrowserTest, DisplayGoodies) {
+// when device isn't too old, and when --no-first-run is not specified.
+IN_PROC_BROWSER_TEST_P(GoodiesDisplayerBrowserTest, DisplayGoodies) {
   ASSERT_EQ(0u, chrome::GetTotalBrowserCount());
   Browser* browser = CreateBrowserAndDisplayer(-1);
   ASSERT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -118,9 +134,13 @@ IN_PROC_BROWSER_TEST_F(GoodiesDisplayerBrowserTest, DisplayGoodies) {
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
       prefs::kCanShowOobeGoodiesPage));
 
-  // First logged-in browser shows Goodies.
+  // First logged-in browser shows Goodies if --no-first-run is not specified.
   AddBlankTabAndShow(browser);
-  ExpectTabCounts(browser, 2, 1);
+  if (NoFirstRunSpecified())
+    ExpectTabCounts(browser, 1, 0);
+  else
+    ExpectTabCounts(browser, 2, 1);
+
   EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(
       prefs::kCanShowOobeGoodiesPage));
 
@@ -129,6 +149,10 @@ IN_PROC_BROWSER_TEST_F(GoodiesDisplayerBrowserTest, DisplayGoodies) {
   ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
   ExpectTabCounts(browser2, 1, 0);
 }
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        GoodiesDisplayerBrowserTest,
+                        testing::Values(true, false));
 
 }  // namespace chromeos
 
