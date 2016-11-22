@@ -388,7 +388,15 @@ const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
 }
 
 bool ExtensionApiTest::StartEmbeddedTestServer() {
-  if (!embedded_test_server()->Start())
+  if (!InitializeEmbeddedTestServer())
+    return false;
+
+  EmbeddedTestServerAcceptConnections();
+  return true;
+}
+
+bool ExtensionApiTest::InitializeEmbeddedTestServer() {
+  if (!embedded_test_server()->InitializeAndListen())
     return false;
 
   // Build a dictionary of values that tests can use to build URLs that
@@ -398,6 +406,10 @@ bool ExtensionApiTest::StartEmbeddedTestServer() {
                            embedded_test_server()->port());
 
   return true;
+}
+
+void ExtensionApiTest::EmbeddedTestServerAcceptConnections() {
+  embedded_test_server()->StartAcceptingConnections();
 }
 
 bool ExtensionApiTest::StartWebSocketServer(

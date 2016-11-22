@@ -120,10 +120,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupIframe) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   base::FilePath test_data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_iframe")));
 

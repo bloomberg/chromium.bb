@@ -144,8 +144,6 @@ void WebViewAPITest::LaunchApp(const std::string& app_location) {
   test_config_.SetString(kTestDataDirectory,
                          net::FilePathToFileURL(test_data_dir).spec());
 
-  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
   const Extension* extension = extension_system_->LoadApp(test_data_dir);
   ASSERT_TRUE(extension);
   extension_system_->LaunchApp(extension->id());
@@ -200,14 +198,19 @@ void WebViewAPITest::SetUpOnMainThread() {
   test_config_.SetBoolean(kIsolateExtensions, isolate_extensions);
 }
 
-void WebViewAPITest::StartTestServer() {
+void WebViewAPITest::StartTestServer(const std::string& app_location) {
   // For serving guest pages.
-  if (!embedded_test_server()->Start()) {
+  if (!embedded_test_server()->InitializeAndListen()) {
     LOG(ERROR) << "Failed to start test server.";
     return;
   }
 
   test_config_.SetInteger(kTestServerPort, embedded_test_server()->port());
+
+  base::FilePath test_data_dir;
+  PathService::Get(DIR_TEST_DATA, &test_data_dir);
+  test_data_dir = test_data_dir.AppendASCII(app_location.c_str());
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&RedirectResponseHandler,
@@ -222,6 +225,8 @@ void WebViewAPITest::StartTestServer() {
           &UserAgentResponseHandler,
           kUserAgentRedirectResponsePath,
           embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+  embedded_test_server()->StartAcceptingConnections();
 }
 
 void WebViewAPITest::StopTestServer() {
@@ -465,15 +470,17 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContentLoadEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDeclarativeWebRequestAPI) {
-  StartTestServer();
-  RunTest("testDeclarativeWebRequestAPI", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testDeclarativeWebRequestAPI", app_location);
   StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,
                        TestDeclarativeWebRequestAPISendMessage) {
-  StartTestServer();
-  RunTest("testDeclarativeWebRequestAPISendMessage", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testDeclarativeWebRequestAPISendMessage", app_location);
   StopTestServer();
 }
 
@@ -562,8 +569,9 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortEmptyResponse) {
-  StartTestServer();
-  RunTest("testLoadAbortEmptyResponse", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testLoadAbortEmptyResponse", app_location);
   StopTestServer();
 }
 
@@ -592,8 +600,9 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadProgressEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadStartLoadRedirect) {
-  StartTestServer();
-  RunTest("testLoadStartLoadRedirect", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testLoadStartLoadRedirect", app_location);
   StopTestServer();
 }
 
@@ -615,26 +624,30 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavOnSrcAttributeChange) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNewWindow) {
-  StartTestServer();
-  RunTest("testNewWindow", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testNewWindow", app_location);
   StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNewWindowNoPreventDefault) {
-  StartTestServer();
-  RunTest("testNewWindowNoPreventDefault", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testNewWindowNoPreventDefault", app_location);
   StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNewWindowNoReferrerLink) {
-  StartTestServer();
-  RunTest("testNewWindowNoReferrerLink", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testNewWindowNoReferrerLink", app_location);
   StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNewWindowTwoListeners) {
-  StartTestServer();
-  RunTest("testNewWindowTwoListeners", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testNewWindowTwoListeners", app_location);
   StopTestServer();
 }
 
@@ -656,7 +669,8 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestReassignSrcAttribute) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
-  StartTestServer();
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
 
   // Launch the app and wait until it's ready to load a test.
   LaunchApp("web_view/apitest");
@@ -710,14 +724,16 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestTerminateAfterExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPI) {
-  StartTestServer();
-  RunTest("testWebRequestAPI", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testWebRequestAPI", app_location);
   StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIWithHeaders) {
-  StartTestServer();
-  RunTest("testWebRequestAPIWithHeaders", "web_view/apitest");
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testWebRequestAPIWithHeaders", app_location);
   StopTestServer();
 }
 

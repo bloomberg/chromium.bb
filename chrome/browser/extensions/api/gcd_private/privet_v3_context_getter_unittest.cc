@@ -45,12 +45,13 @@ class PrivetV3ContextGetterTest : public testing::Test,
 
   void CreateServer(EmbeddedTestServer::Type type) {
     server_.reset(new EmbeddedTestServer(type));
-    ASSERT_TRUE(server_->Start());
 
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
     server_->ServeFilesFromDirectory(
         test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
+
+    ASSERT_TRUE(server_->Start());
   }
 
   net::URLRequestStatus::Status Run() {

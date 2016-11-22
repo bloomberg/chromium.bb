@@ -80,93 +80,122 @@ class WebViewMediaAccessAPITest : public WebViewAPITest {
         base::StringPrintf("runTest('%s');", test_name.c_str())));
     ASSERT_TRUE(test_run_listener.WaitUntilSatisfied());
   }
-
-  // content::BrowserTestBase implementation
-  void SetUpOnMainThread() override {
-    WebViewAPITest::SetUpOnMainThread();
-    StartTestServer();
-  }
-
-  void TearDownOnMainThread() override {
-    WebViewAPITest::TearDownOnMainThread();
-    StopTestServer();
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllow) {
-  LaunchApp("web_view/media_access/allow");
+  std::string app_location = "web_view/media_access/allow";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllow");
 
   mock->WaitForRequestMediaPermission();
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowAndThenDeny) {
-  LaunchApp("web_view/media_access/allow");
+  std::string app_location = "web_view/media_access/allow";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllowAndThenDeny");
 
   mock->WaitForRequestMediaPermission();
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowAsync) {
-  LaunchApp("web_view/media_access/allow");
+  std::string app_location = "web_view/media_access/allow";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllowAsync");
 
   mock->WaitForRequestMediaPermission();
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestAllowTwice) {
-  LaunchApp("web_view/media_access/allow");
+  std::string app_location = "web_view/media_access/allow";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testAllowTwice");
 
   mock->WaitForRequestMediaPermission();
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestCheck) {
-  LaunchApp("web_view/media_access/check");
+  std::string app_location = "web_view/media_access/check";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents_->SetDelegate(mock.get());
 
   RunTest("testCheck");
 
   mock->WaitForCheckMediaPermission();
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestDeny) {
-  LaunchApp("web_view/media_access/deny");
+  std::string app_location = "web_view/media_access/deny";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   RunTest("testDeny");
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestDenyThenAllowThrows) {
-  LaunchApp("web_view/media_access/deny");
+  std::string app_location = "web_view/media_access/deny";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   RunTest("testDenyThenAllowThrows");
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestDenyWithPreventDefault) {
-  LaunchApp("web_view/media_access/deny");
+  std::string app_location = "web_view/media_access/deny";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   RunTest("testDenyWithPreventDefault");
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest, TestNoListenersImplyDeny) {
-  LaunchApp("web_view/media_access/deny");
+  std::string app_location = "web_view/media_access/deny";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   RunTest("testNoListenersImplyDeny");
+  StopTestServer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewMediaAccessAPITest,
                        TestNoPreventDefaultImpliesDeny) {
-  LaunchApp("web_view/media_access/deny");
+  std::string app_location = "web_view/media_access/deny";
+  StartTestServer(app_location);
+  LaunchApp(app_location);
+
   RunTest("testNoPreventDefaultImpliesDeny");
+  StopTestServer();
 }
 
 }  // namespace extensions

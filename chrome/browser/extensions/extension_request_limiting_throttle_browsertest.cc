@@ -108,7 +108,6 @@ class ExtensionRequestLimitingThrottleBrowserTest
     // Requests to 127.0.0.1 bypass throttling, so set up a host resolver rule
     // to use a fake domain.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
     extension_ =
         LoadExtension(test_data_dir_.AppendASCII("extension_throttle"));
     ASSERT_TRUE(extension_);
@@ -141,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        ThrottleRequest) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_eventually_throttled.html",
               base::StringPrintf("http://www.example.com:%d/test_throttle",
@@ -153,6 +153,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        DoNotThrottleCachedResponse) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, true));
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
               base::StringPrintf("http://www.example.com:%d/test_throttle",
@@ -164,6 +165,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        ThrottleRequest_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
+  ASSERT_TRUE(embedded_test_server()->Start());
   // Issue a bunch of requests to a url which gets redirected to a new url that
   // generates 503.
   ASSERT_NO_FATAL_FAILURE(
@@ -185,6 +187,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        DoNotThrottleCachedResponse_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, true, true));
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
               base::StringPrintf("http://www.example.com:%d/redirect",
@@ -198,6 +201,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        ThrottleRequest_RedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, true, false));
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_eventually_throttled.html",
               base::StringPrintf("http://www.example.com:%d/redirect",
@@ -217,6 +221,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        DoNotThrottleCachedResponse_NonRedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, true));
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
               base::StringPrintf("http://www.example.com:%d/redirect",
@@ -235,6 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleCommandLineBrowserTest,
                        ThrottleRequestDisabled) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
+  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
               base::StringPrintf("http://www.example.com:%d/test_throttle",

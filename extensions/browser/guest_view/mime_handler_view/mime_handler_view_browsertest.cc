@@ -131,9 +131,9 @@ class MimeHandlerViewTest : public ExtensionApiTest,
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
-    ASSERT_TRUE(StartEmbeddedTestServer());
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_dir_.AppendASCII("mime_handler_view"));
+    ASSERT_TRUE(StartEmbeddedTestServer());
   }
 
   // TODO(ekaramad): These tests run for OOPIF guests too, except that they

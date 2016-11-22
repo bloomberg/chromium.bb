@@ -99,10 +99,10 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     ExtensionServiceTestBase::SetUp();
     test_server_.reset(new EmbeddedTestServer());
 
-    ASSERT_TRUE(test_server_->Start());
     test_server_->RegisterRequestHandler(
         base::Bind(&ExternalProviderImplTest::HandleRequest,
                    base::Unretained(this)));
+    ASSERT_TRUE(test_server_->Start());
 
     test_extension_cache_.reset(new ExtensionCacheFake());
 

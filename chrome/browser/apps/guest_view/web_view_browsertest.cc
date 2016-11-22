@@ -624,7 +624,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
                   TestServer test_server) {
     // For serving guest pages.
     if (test_server == NEEDS_TEST_SERVER) {
-      if (!StartEmbeddedTestServer()) {
+      if (!InitializeEmbeddedTestServer()) {
         LOG(ERROR) << "FAILED TO START TEST SERVER.";
         return;
       }
@@ -642,6 +642,8 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
 
       embedded_test_server()->RegisterRequestHandler(base::Bind(
           &WebViewTestBase::CacheControlResponseHandler, kCacheResponsePath));
+
+      EmbeddedTestServerAcceptConnections();
     }
 
     LoadAndLaunchPlatformApp(app_location.c_str(), "Launched");

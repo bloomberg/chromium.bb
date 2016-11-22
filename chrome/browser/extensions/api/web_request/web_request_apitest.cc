@@ -550,8 +550,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       FeatureSwitch::scripts_require_action(), true);
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an extension that registers a listener for webRequest events, and
   // wait 'til it's initialized.

@@ -138,8 +138,8 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     // Init test server.
     test_server_.reset(new net::EmbeddedTestServer);
-    ASSERT_TRUE(test_server_->Start());
     test_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
+    ASSERT_TRUE(test_server_->Start());
 
     ExtensionApiTest::SetUpOnMainThread();
   }

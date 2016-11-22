@@ -30,7 +30,7 @@ class WebViewAPITest : public AppShellTest {
   void RunTest(const std::string& test_name, const std::string& app_location);
 
   // Starts/Stops the embedded test server.
-  void StartTestServer();
+  void StartTestServer(const std::string& app_location);
   void StopTestServer();
 
   content::WebContents* GetEmbedderWebContents();
