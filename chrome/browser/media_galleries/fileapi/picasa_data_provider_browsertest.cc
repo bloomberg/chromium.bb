@@ -295,9 +295,8 @@ class PicasaDataProviderNoDatabaseGetListTest : public PicasaDataProviderTest {
   }
 };
 
-// This test is flaky. See crbug.com/667059
 IN_PROC_BROWSER_TEST_F(PicasaDataProviderNoDatabaseGetListTest,
-                       DISABLED_NoDatabaseGetList) {
+                       NoDatabaseGetList) {
   RunTest();
 }
 
