@@ -126,6 +126,11 @@ TEST_F(ShellSurfaceTest, Minimize) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
+  // Minimizing can be performed before the surface is committed.
+  shell_surface->Minimize();
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+
+  // Confirm that attaching and commiting doesn't reset the state.
   surface->Attach(buffer.get());
   surface->Commit();
   shell_surface->Minimize();

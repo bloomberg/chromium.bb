@@ -447,7 +447,7 @@ void ShellSurface::Minimize() {
   TRACE_EVENT0("exo", "ShellSurface::Minimize");
 
   if (!widget_)
-    return;
+    CreateShellSurfaceWidget(ui::SHOW_STATE_MINIMIZED);
 
   // Note: This will ask client to configure its surface even if already
   // minimized.
