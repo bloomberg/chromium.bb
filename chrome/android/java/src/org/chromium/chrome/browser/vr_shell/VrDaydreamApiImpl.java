@@ -11,6 +11,7 @@ import android.content.Intent;
 
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.DaydreamApi;
+import com.google.vr.ndk.base.GvrApi;
 
 import org.chromium.base.annotations.UsedByReflection;
 
@@ -76,5 +77,14 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     @Override
     public void setVrModeEnabled(boolean enabled) {
         AndroidCompat.setVrModeEnabled(mActivity, enabled);
+    }
+
+    @Override
+    public Boolean isDaydreamCurrentViewer() {
+        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        if (daydreamApi == null) return false;
+        int type = daydreamApi.getCurrentViewerType();
+        daydreamApi.close();
+        return type == GvrApi.ViewerType.DAYDREAM;
     }
 }

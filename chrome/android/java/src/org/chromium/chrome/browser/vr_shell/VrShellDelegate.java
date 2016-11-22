@@ -218,9 +218,16 @@ public class VrShellDelegate {
         if (tab == null || tab.getContentViewCore() == null) {
             return false;
         }
-
         // For now we don't handle native pages. crbug.com/661609
         if (tab.getNativePage() != null || tab.isShowingSadTab()) {
+            return false;
+        }
+        // crbug.com/667781
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
+            return false;
+        }
+        // crbug.com/667908
+        if (!mVrDaydreamApi.isDaydreamCurrentViewer()) {
             return false;
         }
         return true;
@@ -228,10 +235,6 @@ public class VrShellDelegate {
 
     @CalledByNative
     private void presentRequested(boolean inWebVR) {
-        if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
-            nativeSetPresentResult(mNativeVrShellDelegate, false);
-            return;
-        }
         // TODO(mthiesse): There's a GVR bug where they're not calling us back with the intent we
         // ask them to when we call DaydreamApi#launchInVr. As a temporary hack, remember locally
         // that we want to enter webVR.
