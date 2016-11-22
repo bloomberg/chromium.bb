@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.graphics.RectF;
 
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -81,21 +80,6 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
         final float density = mContext.getResources().getDisplayMetrics().density;
         final float size = mPortrait ? LAYOUT_HOST_PORTRAIT_HEIGHT : LAYOUT_HOST_PORTRAIT_WIDTH;
         return (int) (density * size);
-    }
-
-    @Override
-    public void getWindowViewport(RectF outRect) {
-        outRect.set(0, 0, getWidth(), getHeight());
-    }
-
-    @Override
-    public void getVisibleViewport(RectF outRect) {
-        outRect.set(0, getTopControlsHeightPixels(), getWidth(), getHeight());
-    }
-
-    @Override
-    public float getHeightMinusBrowserControls() {
-        return getHeight() - getTopControlsHeightPixels();
     }
 
     @Override

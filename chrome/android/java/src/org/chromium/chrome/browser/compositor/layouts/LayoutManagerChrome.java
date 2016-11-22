@@ -109,7 +109,7 @@ public class LayoutManagerChrome
                         ? mHost.getWidth() * mPxToDp : 0.f;
                 float lastTapY = 0.f;
                 if (launchType != TabLaunchType.FROM_CHROME_UI) {
-                    float heightDelta = mHost.getHeightMinusBrowserControls() * mPxToDp;
+                    float heightDelta = mHeightMinusBrowserControlsPx * mPxToDp;
                     lastTapX = mPxToDp * mLastTapX;
                     lastTapY = mPxToDp * mLastTapY - heightDelta;
                 }
