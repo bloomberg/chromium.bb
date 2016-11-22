@@ -3122,9 +3122,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int diff_stride = max_blocks_wide;
   const int16_t *diff = &p->src_diff[4 * (blk_row * diff_stride + blk_col)];
   int txb_coeff_cost;
-#if CONFIG_EXT_TX
-  assert(tx_size < TX_SIZES);
-#endif  // CONFIG_EXT_TX
+
+  assert(tx_size < TX_SIZES_ALL);
 
   if (xd->mb_to_bottom_edge < 0)
     max_blocks_high += xd->mb_to_bottom_edge >> (3 + pd->subsampling_y);
@@ -3268,9 +3267,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   const int tx_size_ctx = txsize_sqr_map[tx_size];
 
   av1_init_rd_stats(&sum_rd_stats);
-#if CONFIG_EXT_TX
-  assert(tx_size < TX_SIZES);
-#endif  // CONFIG_EXT_TX
+  assert(tx_size < TX_SIZES_ALL);
 
   if (ref_best_rd < 0) {
     *is_cost_valid = 0;
@@ -3333,9 +3330,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
     sum_rd_stats.rate =
         av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 1);
-#if CONFIG_EXT_TX
-    assert(tx_size < TX_SIZES);
-#endif  // CONFIG_EXT_TX
+
+    assert(tx_size < TX_SIZES_ALL);
+
     for (i = 0; i < 4 && this_cost_valid; ++i) {
       int offsetr = blk_row + (i >> 1) * bsl;
       int offsetc = blk_col + (i & 0x01) * bsl;
@@ -3652,9 +3649,7 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
 
-#if CONFIG_EXT_TX
-  assert(tx_size < TX_SIZES);
-#endif  // CONFIG_EXT_TX
+  assert(tx_size < TX_SIZES_ALL);
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 

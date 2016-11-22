@@ -1080,9 +1080,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
     int bsl = tx_size_wide_unit[sub_txs];
     int i;
     assert(bsl > 0);
-#if CONFIG_EXT_TX
-    assert(tx_size < TX_SIZES);
-#endif  // CONFIG_EXT_TX
+    assert(tx_size < TX_SIZES_ALL);
 
     for (i = 0; i < 4; ++i) {
       const int offsetr = blk_row + ((i >> 1) * bsl);
