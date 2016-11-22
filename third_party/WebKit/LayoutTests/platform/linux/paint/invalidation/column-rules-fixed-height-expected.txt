@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [8, 52, 625, 315],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutMultiColumnSet (anonymous)",
           "rect": [8, 52, 525, 315],
           "reason": "style change"
@@ -28,10 +23,6 @@
     {
       "object": "LayoutBlockFlow DIV id='target'",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "forced by layout"
     },
     {
       "object": "LayoutMultiColumnSet (anonymous)",

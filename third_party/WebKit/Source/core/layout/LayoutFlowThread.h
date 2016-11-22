@@ -109,7 +109,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
   bool hasColumnSets() const { return m_multiColumnSetList.size(); }
 
   void validateColumnSets();
-  void invalidateColumnSets();
+  void invalidateColumnSets() { m_columnSetsInvalidated = true; }
   bool hasValidColumnSetInfo() const {
     return !m_columnSetsInvalidated && !m_multiColumnSetList.isEmpty();
   }

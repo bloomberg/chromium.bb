@@ -78,18 +78,6 @@ void LayoutFlowThread::removeColumnSetFromThread(
   m_multiColumnSetIntervalTree.clear();
 }
 
-void LayoutFlowThread::invalidateColumnSets() {
-  if (m_columnSetsInvalidated) {
-    ASSERT(selfNeedsLayout());
-    return;
-  }
-
-  setNeedsLayoutAndFullPaintInvalidation(
-      LayoutInvalidationReason::ColumnsChanged);
-
-  m_columnSetsInvalidated = true;
-}
-
 void LayoutFlowThread::validateColumnSets() {
   m_columnSetsInvalidated = false;
   // Called to get the maximum logical width for the columnSet.
