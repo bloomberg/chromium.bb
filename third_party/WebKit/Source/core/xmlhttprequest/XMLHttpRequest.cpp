@@ -340,7 +340,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState) {
     m_parsedResponse = true;
   }
 
-  return m_responseDocument.get();
+  return m_responseDocument;
 }
 
 Blob* XMLHttpRequest::responseBlob() {
@@ -400,7 +400,7 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer() {
     }
   }
 
-  return m_responseArrayBuffer.get();
+  return m_responseArrayBuffer;
 }
 
 void XMLHttpRequest::setTimeout(unsigned timeout,
@@ -496,7 +496,7 @@ String XMLHttpRequest::responseURL() {
 XMLHttpRequestUpload* XMLHttpRequest::upload() {
   if (!m_upload)
     m_upload = XMLHttpRequestUpload::create(this);
-  return m_upload.get();
+  return m_upload;
 }
 
 void XMLHttpRequest::trackProgress(long long length) {
@@ -1091,7 +1091,8 @@ void XMLHttpRequest::abort() {
                          expectedLength);
     }
   }
-  m_state = kUnsent;
+  if (m_state == kDone)
+    m_state = kUnsent;
 }
 
 void XMLHttpRequest::clearVariablesForLoading() {
@@ -1138,7 +1139,7 @@ bool XMLHttpRequest::internalAbort() {
   // If abort() called internalAbort() and a nested open() ended up
   // clearing the error flag, but didn't send(), make sure the error
   // flag is still set.
-  bool newLoadStarted = m_loader.get();
+  bool newLoadStarted = m_loader;
   if (!newLoadStarted)
     m_error = true;
 
