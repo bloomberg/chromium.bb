@@ -6,8 +6,6 @@ static_library("search") {
   sources = [
     "search.cc",
     "search.h",
-    "search_switches.cc",
-    "search_switches.h",
   ]
 
   deps = [

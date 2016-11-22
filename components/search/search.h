@@ -8,10 +8,7 @@
 #include <stdint.h>
 
 #include <string>
-#include <utility>
-#include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 
 class GURL;

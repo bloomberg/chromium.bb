@@ -14393,14 +14393,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
       </if>
 
-      <!-- Prefetch search results experiment flags -->
-      <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME" desc="An about::flags experiment title to prefetch search results">
-        Prefetch search results
-      </message>
-      <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION" desc="Describes an about:flags experiment for prefetching search results">
-        Prefetch search results for the typed omnibox query and reuse prerendered search base page to commit any search query (not just prefetch query).
-      </message>
-
       <!-- Settings window flags -->
       <message name="IDS_FLAGS_SETTINGS_WINDOW_NAME" desc="An about::flags experiment title to show settings in a separate window">
         Show settings in a window
@@ -14418,14 +14410,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
 
       <if expr="is_android">
-        <!-- Experiment flags to enable EmbeddedSearch API in the search results page -->
-        <message name="IDS_FLAGS_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
-          EmbeddedSearch API
-        </message>
-        <message name="IDS_FLAGS_EMBEDDEDSEARCH_API_DESCRIPTION" desc="Describes an about:flags experiment for enabling EmbeddedSearch API in the search results page">
-         EmbeddedSearch API will be used to submit search queries in the search results page.
-        </message>
-
         <!-- Flag strings for seccomp-bpf sandbox flag. -->
         <message name="IDS_FLAGS_SECCOMP_FILTER_SANDBOX_ANDROID_NAME" desc="Title for the flag to enable the seccomp-bpf sandbox on Android.">
           Seccomp-bpf renderer sandbox

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "components/search/search.h"
-#include "components/search/search_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace search {
@@ -16,10 +15,6 @@ namespace {
 TEST(SearchTest, EmbeddedSearchAPIEnabled) {
   EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableEmbeddedSearchAPI);
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
 }
 
 }  // namespace

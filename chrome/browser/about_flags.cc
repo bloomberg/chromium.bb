@@ -51,7 +51,6 @@
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/proximity_auth/switches.h"
-#include "components/search/search_switches.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -1354,11 +1353,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CAST_STREAMING_HW_ENCODING_NAME,
      IDS_FLAGS_CAST_STREAMING_HW_ENCODING_DESCRIPTION, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableCastStreamingHWEncoding)},
-#if defined(OS_ANDROID)
-    {"prefetch-search-results", IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME,
-     IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kPrefetchSearchResults)},
-#endif  // OS_ANDROID
     {"disable-threaded-scrolling", IDS_FLAGS_THREADED_SCROLLING_NAME,
      IDS_FLAGS_THREADED_SCROLLING_DESCRIPTION, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableThreadedScrolling)},
@@ -1372,11 +1366,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-apps-file-associations", IDS_FLAGS_APPS_FILE_ASSOCIATIONS_NAME,
      IDS_FLAGS_APPS_FILE_ASSOCIATIONS_DESCRIPTION, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableAppsFileAssociations)},
-#if defined(OS_ANDROID)
-    {"enable-embeddedsearch-api", IDS_FLAGS_EMBEDDEDSEARCH_API_NAME,
-     IDS_FLAGS_EMBEDDEDSEARCH_API_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableEmbeddedSearchAPI)},
-#endif  // OS_ANDROID
     {"distance-field-text", IDS_FLAGS_DISTANCE_FIELD_TEXT_NAME,
      IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDistanceFieldText,
