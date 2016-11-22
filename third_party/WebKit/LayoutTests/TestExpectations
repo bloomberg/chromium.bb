@@ -114,6 +114,9 @@ crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
+crbug.com/666416 [ Android ] svg/batik/text/textAnchor3.svg [ NeedsRebaseline ]
+crbug.com/666416 [ Android ] svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ NeedsRebaseline ]
+
 # ====== Paint team owned tests to here ======
 
 
