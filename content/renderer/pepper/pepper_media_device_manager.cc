@@ -89,9 +89,9 @@ void PepperMediaDeviceManager::EnumerateDevices(
                  callback, ToMediaDeviceType(type)));
 #else
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
-                 callback, ToMediaDeviceType(type), MediaDeviceInfoArray()));
+      FROM_HERE, base::Bind(&PepperMediaDeviceManager::DevicesEnumerated,
+                            AsWeakPtr(), callback, ToMediaDeviceType(type),
+                            std::vector<MediaDeviceInfoArray>()));
 #endif
 }
 
