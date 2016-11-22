@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
