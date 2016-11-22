@@ -42,9 +42,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   void SetActiveWindow(aura::Window* window);
   ui::BaseWindow* GetAppWindow(aura::Window* window);
 
-  const std::string& app_id() const { return app_id_; }
-  const std::string& launch_id() const { return launch_id_; }
-
   // LauncherItemController overrides:
   bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
@@ -101,14 +98,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
 
   // Pointer to the most recently active app window
   ui::BaseWindow* last_active_window_ = nullptr;
-
-  // The application id associated with this set of windows.
-  const std::string app_id_;
-
-  // An id that can be passed to an app when launched in order to support
-  // multiple shelf items per app. This id is used together with the app_id to
-  // uniquely identify each shelf item that has the same app_id.
-  const std::string launch_id_;
 
   // Scoped list of observed windows (for removal on destruction)
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_;
