@@ -25,6 +25,10 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
+namespace base {
+class FieldTrialList;
+}
+
 namespace blink {
 namespace scheduler {
 class RendererScheduler;
@@ -201,6 +205,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   std::unique_ptr<RendererMainPlatformDelegate> platform_;
   std::unique_ptr<MainFunctionParams> params_;
   std::unique_ptr<base::CommandLine> command_line_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // For Mojo.
   std::unique_ptr<base::TestIOThread> test_io_thread_;

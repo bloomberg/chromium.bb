@@ -167,7 +167,7 @@ bool ParseFieldTrialsString(const std::string& trials_string,
         trials_string_piece.substr(name_end + 1, group_name_end - name_end - 1);
     next_item = group_name_end + 1;
 
-    entries->push_back(entry);
+    entries->push_back(std::move(entry));
   }
   return true;
 }
@@ -667,6 +667,39 @@ void FieldTrialList::GetActiveFieldTrialGroupsFromString(
 }
 
 // static
+void FieldTrialList::GetInitiallyActiveFieldTrials(
+    const base::CommandLine& command_line,
+    FieldTrial::ActiveGroups* active_groups) {
+  DCHECK(global_->create_trials_from_command_line_called_);
+
+  if (!global_->field_trial_allocator_) {
+    GetActiveFieldTrialGroupsFromString(
+        command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
+        active_groups);
+    return;
+  }
+
+  FieldTrialAllocator* allocator = global_->field_trial_allocator_.get();
+  FieldTrialAllocator::Iterator mem_iter(allocator);
+  FieldTrial::FieldTrialRef ref;
+  while ((ref = mem_iter.GetNextOfType(kFieldTrialType)) !=
+         SharedPersistentMemoryAllocator::kReferenceNull) {
+    const FieldTrialEntry* entry =
+        allocator->GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
+
+    StringPiece trial_name;
+    StringPiece group_name;
+    if (entry->activated &&
+        entry->GetTrialAndGroupName(&trial_name, &group_name)) {
+      FieldTrial::ActiveGroup group;
+      group.trial_name = trial_name.as_string();
+      group.group_name = group_name.as_string();
+      active_groups->push_back(group);
+    }
+  }
+}
+
+// static
 bool FieldTrialList::CreateTrialsFromString(
     const std::string& trials_string,
     const std::set<std::string>& ignored_trial_names) {
@@ -702,7 +735,7 @@ bool FieldTrialList::CreateTrialsFromString(
 void FieldTrialList::CreateTrialsFromCommandLine(
     const CommandLine& cmd_line,
     const char* field_trial_handle_switch) {
-  DCHECK(global_);
+  global_->create_trials_from_command_line_called_ = true;
 
 #if defined(OS_WIN) && !defined(OS_NACL)
   if (cmd_line.HasSwitch(field_trial_handle_switch)) {

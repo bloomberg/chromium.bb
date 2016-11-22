@@ -10,6 +10,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "components/variations/variations_util.h"
+#include "content/public/common/content_switches.h"
 
 namespace chrome_variations {
 
@@ -21,6 +22,11 @@ ChildProcessFieldTrialSyncer::~ChildProcessFieldTrialSyncer() {}
 
 void ChildProcessFieldTrialSyncer::InitFieldTrialObserving(
     const base::CommandLine& command_line) {
+  // In single-process mode, there is no need to synchronize trials to the
+  // browser process (because it's the same process), so this class is a no-op.
+  if (command_line.HasSwitch(switches::kSingleProcess))
+    return;
+
   // Set up initial set of crash dump data for field trials in this process.
   variations::SetVariationListCrashKeys();
 
@@ -31,9 +37,8 @@ void ChildProcessFieldTrialSyncer::InitFieldTrialObserving(
   // browser of these activations now. To detect these, take the set difference
   // of currently active trials with the initially active trials.
   base::FieldTrial::ActiveGroups initially_active_trials;
-  base::FieldTrialList::GetActiveFieldTrialGroupsFromString(
-      command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-      &initially_active_trials);
+  base::FieldTrialList::GetInitiallyActiveFieldTrials(command_line,
+                                                      &initially_active_trials);
   std::set<std::string> initially_active_trials_set;
   for (const auto& entry : initially_active_trials) {
     initially_active_trials_set.insert(std::move(entry.trial_name));

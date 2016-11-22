@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -269,6 +271,9 @@ void RenderViewTest::SetUp() {
   autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
 #endif
   command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+  field_trial_list_.reset(new base::FieldTrialList(nullptr));
+  base::FieldTrialList::CreateTrialsFromCommandLine(
+      *command_line_, switches::kFieldTrialHandle);
   params_.reset(new MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();

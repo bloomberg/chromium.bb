@@ -471,6 +471,14 @@ class BASE_EXPORT FieldTrialList {
       const std::string& trials_string,
       FieldTrial::ActiveGroups* active_groups);
 
+  // Returns the field trials that were active when the process was
+  // created. Either parses the field trial string or the shared memory
+  // holding field trial information.
+  // Must be called only after a call to CreateTrialsFromCommandLine().
+  static void GetInitiallyActiveFieldTrials(
+      const base::CommandLine& command_line,
+      FieldTrial::ActiveGroups* active_groups);
+
   // Use a state string (re: StatesToString()) to augment the current list of
   // field trials to include the supplied trials, and using a 100% probability
   // for each trial, force them to have the same group string. This is commonly
@@ -621,6 +629,9 @@ class BASE_EXPORT FieldTrialList {
   // AppendFieldTrialHandleIfNeeded().
   HANDLE readonly_allocator_handle_ = nullptr;
 #endif
+
+  // Tracks whether CreateTrialsFromCommandLine() has been called.
+  bool create_trials_from_command_line_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialList);
 };
