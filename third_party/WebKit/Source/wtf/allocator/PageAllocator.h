@@ -33,6 +33,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
+#include "wtf/Compiler.h"
 #include "wtf/WTFExport.h"
 #include <cstddef>
 #include <stdint.h>
@@ -95,7 +96,7 @@ WTF_EXPORT void setSystemPagesInaccessible(void* addr, size_t len);
 // change succeeded or not. You must check the result
 // (in most cases you need to RELEASE_ASSERT that it is
 // true).
-WTF_EXPORT WARN_UNUSED_RETURN bool setSystemPagesAccessible(void* addr,
+WTF_EXPORT WARN_UNUSED_RESULT bool setSystemPagesAccessible(void* addr,
                                                             size_t len);
 
 // Decommit one or more system pages. Decommitted means that the physical memory

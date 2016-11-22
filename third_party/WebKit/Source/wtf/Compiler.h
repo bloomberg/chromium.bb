@@ -69,14 +69,6 @@
 // For compatibility with callers in Blink:
 #define NEVER_INLINE NOINLINE
 
-/* WARN_UNUSED_RETURN */
-
-#if COMPILER(GCC)
-#define WARN_UNUSED_RETURN __attribute__((warn_unused_result))
-#else
-#define WARN_UNUSED_RETURN
-#endif
-
 /* OBJC_CLASS */
 
 #ifndef OBJC_CLASS

@@ -126,12 +126,12 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
-  TaskHandle postCancellableTask(const WebTraceLocation&,
-                                 std::unique_ptr<WTF::Closure>)
-      WARN_UNUSED_RETURN;
-  TaskHandle postDelayedCancellableTask(const WebTraceLocation&,
-                                        std::unique_ptr<WTF::Closure>,
-                                        long long delayMs) WARN_UNUSED_RETURN;
+  WARN_UNUSED_RESULT TaskHandle
+  postCancellableTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
+  WARN_UNUSED_RESULT TaskHandle
+  postDelayedCancellableTask(const WebTraceLocation&,
+                             std::unique_ptr<WTF::Closure>,
+                             long long delayMs);
 };
 
 }  // namespace blink

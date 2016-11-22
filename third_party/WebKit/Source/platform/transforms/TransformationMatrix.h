@@ -32,6 +32,7 @@
 #include "wtf/Alignment.h"
 #include "wtf/Allocator.h"
 #include "wtf/CPU.h"
+#include "wtf/Compiler.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 #include <string.h>  // for memcpy
@@ -362,7 +363,7 @@ class PLATFORM_EXPORT TransformationMatrix {
     double perspectiveX, perspectiveY, perspectiveZ, perspectiveW;
   } DecomposedType;
 
-  bool decompose(DecomposedType&) const WARN_UNUSED_RETURN;
+  WARN_UNUSED_RESULT bool decompose(DecomposedType&) const;
   void recompose(const DecomposedType&);
 
   void blend(const TransformationMatrix& from, double progress);

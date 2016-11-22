@@ -38,6 +38,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Compiler.h"
 #include "wtf/Forward.h"
 
 // This needs to be here because Element.cpp also depends on it.
@@ -778,10 +779,10 @@ class CORE_EXPORT Node : public EventTarget {
 
   v8::Local<v8::Object> wrap(v8::Isolate*,
                              v8::Local<v8::Object> creationContext) override;
-  v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+      v8::Local<v8::Object> wrapper) override;
 
  private:
   enum NodeFlags {

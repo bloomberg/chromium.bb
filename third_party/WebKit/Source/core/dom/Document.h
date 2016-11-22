@@ -63,6 +63,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include <memory>
@@ -1242,10 +1243,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   v8::Local<v8::Object> wrap(v8::Isolate*,
                              v8::Local<v8::Object> creationContext) override;
-  v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+      v8::Local<v8::Object> wrapper) override;
 
   HostsUsingFeatures::Value& HostsUsingFeaturesValue() {
     return m_hostsUsingFeaturesValue;

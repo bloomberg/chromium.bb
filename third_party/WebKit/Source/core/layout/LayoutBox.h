@@ -27,6 +27,7 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "wtf/Compiler.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -1141,23 +1142,23 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutPoint flipForWritingModeForChild(const LayoutBox* child,
                                          const LayoutPoint&) const;
-  LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN {
+  WARN_UNUSED_RESULT LayoutUnit flipForWritingMode(LayoutUnit position) const {
     // The offset is in the block direction (y for horizontal writing modes, x
     // for vertical writing modes).
     if (!UNLIKELY(hasFlippedBlocksWritingMode()))
       return position;
     return logicalHeight() - position;
   }
-  LayoutPoint flipForWritingMode(const LayoutPoint& position) const
-      WARN_UNUSED_RETURN {
+  WARN_UNUSED_RESULT LayoutPoint
+  flipForWritingMode(const LayoutPoint& position) const {
     if (!UNLIKELY(hasFlippedBlocksWritingMode()))
       return position;
     return isHorizontalWritingMode()
                ? LayoutPoint(position.x(), m_frameRect.height() - position.y())
                : LayoutPoint(m_frameRect.width() - position.x(), position.y());
   }
-  LayoutSize flipForWritingMode(const LayoutSize& offset) const
-      WARN_UNUSED_RETURN {
+  WARN_UNUSED_RESULT LayoutSize
+  flipForWritingMode(const LayoutSize& offset) const {
     if (!UNLIKELY(hasFlippedBlocksWritingMode()))
       return offset;
     return LayoutSize(m_frameRect.width() - offset.width(), offset.height());
@@ -1167,8 +1168,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       return;
     rect.setX(m_frameRect.width() - rect.maxX());
   }
-  FloatPoint flipForWritingMode(const FloatPoint& position) const
-      WARN_UNUSED_RETURN {
+  WARN_UNUSED_RESULT FloatPoint
+  flipForWritingMode(const FloatPoint& position) const {
     if (!UNLIKELY(hasFlippedBlocksWritingMode()))
       return position;
     return FloatPoint(m_frameRect.width() - position.x(), position.y());

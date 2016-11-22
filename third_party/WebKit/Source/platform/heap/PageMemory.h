@@ -8,6 +8,7 @@
 #include "platform/heap/HeapPage.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
+#include "wtf/Compiler.h"
 #include "wtf/allocator/PageAllocator.h"
 
 #if OS(POSIX)
@@ -37,7 +38,7 @@ class MemoryRegion {
   }
 
   void release();
-  WARN_UNUSED_RETURN bool commit();
+  WARN_UNUSED_RESULT bool commit();
   void decommit();
 
   Address base() const { return m_base; }
@@ -171,7 +172,7 @@ class PageMemory {
     m_reserved->pageDeleted(writableStart());
   }
 
-  WARN_UNUSED_RETURN bool commit() {
+  WARN_UNUSED_RESULT bool commit() {
     m_reserved->markPageUsed(writableStart());
     return m_writable.commit();
   }

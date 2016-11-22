@@ -21,6 +21,7 @@
 #ifndef RetainPtr_h
 #define RetainPtr_h
 
+#include "wtf/Compiler.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/HashTraits.h"
 #include "wtf/TypeTraits.h"
@@ -100,7 +101,7 @@ class RetainPtr {
   RetainPtr(const RetainPtr<U>&);
 
   void clear();
-  PtrType leakRef() WARN_UNUSED_RETURN;
+  WARN_UNUSED_RESULT PtrType leakRef();
 
   PtrType get() const { return m_ptr; }
   PtrType operator->() const { return m_ptr; }
@@ -279,14 +280,14 @@ inline bool operator!=(T* a, const RetainPtr<U>& b) {
 }
 
 template <typename T>
-inline RetainPtr<T> adoptCF(T CF_RELEASES_ARGUMENT) WARN_UNUSED_RETURN;
+WARN_UNUSED_RESULT inline RetainPtr<T> adoptCF(T CF_RELEASES_ARGUMENT);
 template <typename T>
 inline RetainPtr<T> adoptCF(T o) {
   return RetainPtr<T>(AdoptCF, o);
 }
 
 template <typename T>
-inline RetainPtr<T> adoptNS(T NS_RELEASES_ARGUMENT) WARN_UNUSED_RETURN;
+WARN_UNUSED_RESULT inline RetainPtr<T> adoptNS(T NS_RELEASES_ARGUMENT);
 template <typename T>
 inline RetainPtr<T> adoptNS(T o) {
   return RetainPtr<T>(AdoptNS, o);
@@ -294,7 +295,7 @@ inline RetainPtr<T> adoptNS(T o) {
 
 // Helper function for creating a RetainPtr using template argument deduction.
 template <typename T>
-inline RetainPtr<T> retainPtr(T) WARN_UNUSED_RETURN;
+WARN_UNUSED_RESULT inline RetainPtr<T> retainPtr(T);
 template <typename T>
 inline RetainPtr<T> retainPtr(T o) {
   return RetainPtr<T>(o);

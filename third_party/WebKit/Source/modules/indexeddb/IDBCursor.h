@@ -33,6 +33,7 @@
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "wtf/Compiler.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <memory>
@@ -61,10 +62,10 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   DECLARE_TRACE();
   void contextWillBeDestroyed() { m_backend.reset(); }
 
-  v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+      v8::Local<v8::Object> wrapper) override;
 
   // Implement the IDL
   const String& direction() const;

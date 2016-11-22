@@ -36,7 +36,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/Compiler.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
@@ -59,16 +59,16 @@ class V8DOMWrapper {
   // ScriptWrappable is not yet associated with any wrapper.  Returns the
   // wrapper already associated or |wrapper| if not yet associated.
   // The caller should always use the returned value rather than |wrapper|.
-  static v8::Local<v8::Object> associateObjectWithWrapper(
+  WARN_UNUSED_RESULT static v8::Local<v8::Object> associateObjectWithWrapper(
       v8::Isolate*,
       ScriptWrappable*,
       const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) WARN_UNUSED_RETURN;
-  static v8::Local<v8::Object> associateObjectWithWrapper(
+      v8::Local<v8::Object> wrapper);
+  WARN_UNUSED_RESULT static v8::Local<v8::Object> associateObjectWithWrapper(
       v8::Isolate*,
       Node*,
       const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) WARN_UNUSED_RETURN;
+      v8::Local<v8::Object> wrapper);
   static void setNativeInfo(v8::Isolate*,
                             v8::Local<v8::Object>,
                             const WrapperTypeInfo*,

@@ -36,6 +36,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Compiler.h"
 
 namespace blink {
 
@@ -75,10 +76,10 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
 
-  v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+      v8::Local<v8::Object> wrapper) override;
 
  private:
   ImageData(const IntSize&, DOMUint8ClampedArray*);
