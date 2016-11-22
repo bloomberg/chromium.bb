@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
+#include "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/sessions/test_live_tab_context_provider.h"
 #include "ios/public/provider/chrome/browser/sessions/test_synced_window_delegates_getter.h"
@@ -25,6 +26,7 @@ namespace ios {
 TestChromeBrowserProvider::TestChromeBrowserProvider()
     : app_distribution_provider_(
           base::MakeUnique<TestAppDistributionProvider>()),
+      branded_image_provider_(base::MakeUnique<TestBrandedImageProvider>()),
       live_tab_context_provider_(
           base::MakeUnique<TestLiveTabContextProvider>()),
       omaha_service_provider_(base::MakeUnique<TestOmahaServiceProvider>()),
@@ -91,6 +93,11 @@ std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
 TestChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
     ios::ChromeBrowserState* browser_state) {
   return base::MakeUnique<TestSyncedWindowDelegatesGetter>();
+}
+
+BrandedImageProvider* TestChromeBrowserProvider::GetBrandedImageProvider()
+    const {
+  return branded_image_provider_.get();
 }
 
 id<NativeAppWhitelistManager>

@@ -38,10 +38,12 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(
       ios::ChromeBrowserState* browser_state) override;
+  BrandedImageProvider* GetBrandedImageProvider() const override;
   id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const override;
 
  private:
   std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
+  std::unique_ptr<BrandedImageProvider> branded_image_provider_;
   std::unique_ptr<ChromeIdentityService> chrome_identity_service_;
   std::unique_ptr<LiveTabContextProvider> live_tab_context_provider_;
   std::unique_ptr<OmahaServiceProvider> omaha_service_provider_;
