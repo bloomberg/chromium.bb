@@ -42,7 +42,6 @@ typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
     [RuntimeEnabled=FileAPIBlobClose] readonly attribute boolean isClosed;
 
     // TODO(jsbell): start and end arguments should be [Clamp]
-    // TODO(foolip): contentType should not be nullable.
-    [RaisesException] Blob slice(optional long long start, optional long long end, optional DOMString? contentType);
+    [RaisesException] Blob slice(optional long long start, optional long long end, optional DOMString contentType);
     [RaisesException, CallWith=ExecutionContext, RuntimeEnabled=FileAPIBlobClose] void close();
 };

@@ -110,7 +110,7 @@ function runTest()
     dragAndSliceStableFile("../resources/empty.txt", 0, 0, 10);
 
     debug("Test slicing and sending a small file.");
-    dragAndSliceStableFile("../resources/file-for-drag-to-send.txt", 10, 2, 4, null);
+    dragAndSliceStableFile("../resources/file-for-drag-to-send.txt", 10, 2, 4, "");
     dragAndSliceStableFile("../resources/file-for-drag-to-send.txt", 10, 2, 20, "type/foo");
     dragAndSliceStableFile("../resources/file-for-drag-to-send.txt", 10, 15, 20, "type/bar");
 
