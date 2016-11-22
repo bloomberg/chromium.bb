@@ -578,10 +578,13 @@ DeviceManagementService::DeviceManagementService(
 void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::string server_url = GetServerUrl();
+  GURL url = job->GetURL(GetServerUrl());
+  DCHECK(url.is_valid()) << "Maybe invalid --device-management-url was passed?";
+
   net::URLFetcher* fetcher =
-      net::URLFetcher::Create(kURLFetcherID, job->GetURL(server_url),
-                              net::URLFetcher::POST, this).release();
+      net::URLFetcher::Create(kURLFetcherID, std::move(url),
+                              net::URLFetcher::POST, this)
+          .release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::POLICY);
   job->ConfigureRequest(fetcher);
