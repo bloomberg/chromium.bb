@@ -41,7 +41,7 @@ namespace content {
 class CONTENT_EXPORT RTCVideoEncoder
     : NON_EXPORTED_BASE(public webrtc::VideoEncoder) {
  public:
-  RTCVideoEncoder(media::VideoCodecProfile profile,
+  RTCVideoEncoder(webrtc::VideoCodecType type,
                   media::GpuVideoAcceleratorFactories* gpu_factories);
   ~RTCVideoEncoder() override;
 
@@ -67,7 +67,8 @@ class CONTENT_EXPORT RTCVideoEncoder
   void RecordInitEncodeUMA(int32_t init_retval,
                            media::VideoCodecProfile profile);
 
-  const media::VideoCodecProfile profile_;
+  // The video codec type, as reported to WebRTC.
+  const webrtc::VideoCodecType video_codec_type_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   media::GpuVideoAcceleratorFactories* gpu_factories_;
