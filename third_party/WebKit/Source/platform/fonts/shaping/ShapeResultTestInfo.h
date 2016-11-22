@@ -20,6 +20,7 @@ class PLATFORM_EXPORT ShapeResultTestInfo : public ShapeResult {
                          hb_script_t&) const;
   uint16_t glyphForTesting(unsigned runIndex, size_t glyphIndex) const;
   float advanceForTesting(unsigned runIndex, size_t glyphIndex) const;
+  SimpleFontData* fontDataForTesting(unsigned runIndex) const;
 };
 
 }  // namespace blink

@@ -36,4 +36,9 @@ float ShapeResultTestInfo::advanceForTesting(unsigned runIndex,
   return m_runs[runIndex]->m_glyphData[glyphIndex].advance;
 }
 
+SimpleFontData* ShapeResultTestInfo::fontDataForTesting(
+    unsigned runIndex) const {
+  return m_runs[runIndex]->m_fontData.get();
+}
+
 }  // namespace blink

@@ -93,12 +93,10 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 // If the specified VS is not in the font, it's mapped to .notdef.
 // then hb_ot_hide_default_ignorables() swaps it to a space with zero-advance.
 // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
-// OpenType recommends Glyph ID 3 for a space; not a hard requirement though.
-// https://www.microsoft.com/typography/otspec/recom.htm
 #if !OS(MACOSX)
-// TODO(mgiuca): This expectation has been DISABLED due to failing on
-// Linux bots. See https://crbug.com/667147.
-// EXPECT_EQ(3u, testInfo(result)->glyphForTesting(0, 1)) << test.name;
+      EXPECT_EQ(testInfo(result)->fontDataForTesting(0)->spaceGlyph(),
+                testInfo(result)->glyphForTesting(0, 1))
+          << test.name;
 #endif
       EXPECT_EQ(0.f, testInfo(result)->advanceForTesting(0, 1)) << test.name;
     } else {
