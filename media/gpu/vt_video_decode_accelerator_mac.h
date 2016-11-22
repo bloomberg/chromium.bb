@@ -11,6 +11,8 @@
 #include <memory>
 #include <queue>
 
+#include <VideoToolbox/VideoToolbox.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -21,7 +23,6 @@
 #include "media/filters/h264_parser.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/vt_mac.h"
 #include "media/video/h264_poc.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"

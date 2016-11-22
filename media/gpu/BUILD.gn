@@ -90,42 +90,6 @@ if (is_chromeos && use_v4lplugin) {
   }
 }
 
-if (is_mac) {
-  action("libvt_generate_stubs") {
-    extra_header = "vt_stubs_header.fragment"
-
-    script = "../../tools/generate_stubs/generate_stubs.py"
-    sources = [
-      "vt.sig",
-    ]
-    inputs = [
-      extra_header,
-    ]
-    stubs_filename_root = "vt_stubs"
-
-    outputs = [
-      "$target_gen_dir/$stubs_filename_root.cc",
-      "$target_gen_dir/$stubs_filename_root.h",
-    ]
-    args = [
-      "-i",
-      rebase_path("$target_gen_dir", root_build_dir),
-      "-o",
-      rebase_path("$target_gen_dir", root_build_dir),
-      "-t",
-      "posix_stubs",
-      "-e",
-      rebase_path(extra_header, root_build_dir),
-      "-s",
-      stubs_filename_root,
-      "-p",
-      "media/gpu",
-    ]
-
-    args += rebase_path(sources, root_build_dir)
-  }
-}
-
 config("gpu_config") {
   defines = []
   if (is_chromeos && use_v4lplugin) {
@@ -187,21 +151,19 @@ component("gpu") {
 
   if (is_mac) {
     sources += [
-                 "vt_mac.h",
-                 "vt_video_decode_accelerator_mac.cc",
-                 "vt_video_decode_accelerator_mac.h",
-                 "vt_video_encode_accelerator_mac.cc",
-                 "vt_video_encode_accelerator_mac.h",
-               ] + get_target_outputs(":libvt_generate_stubs")
-    deps += [
-      ":libvt_generate_stubs",
-      "//third_party/webrtc/system_wrappers",
+      "vt_video_decode_accelerator_mac.cc",
+      "vt_video_decode_accelerator_mac.h",
+      "vt_video_encode_accelerator_mac.cc",
+      "vt_video_encode_accelerator_mac.h",
     ]
+    deps += [ "//third_party/webrtc/system_wrappers" ]
     public_deps += [ "//third_party/webrtc/common_video" ]
     libs += [
       "CoreFoundation.framework",
+      "CoreMedia.framework",
       "Foundation.framework",
       "QuartzCore.framework",
+      "VideoToolbox.framework",
     ]
   }
 

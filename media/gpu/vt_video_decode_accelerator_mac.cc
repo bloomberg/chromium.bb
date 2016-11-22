@@ -30,11 +30,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/scoped_binders.h"
 
-using media_gpu::kModuleVt;
-using media_gpu::InitializeStubs;
-using media_gpu::IsVtInitialized;
-using media_gpu::StubPathMap;
-
 #define NOTIFY_STATUS(name, status, session_failure) \
   do {                                               \
     OSSTATUS_DLOG(ERROR, status) << name;            \
@@ -185,19 +180,6 @@ bool CreateVideoToolboxSession(const uint8_t* sps,
 // session fails, hardware decoding will be disabled (Initialize() will always
 // return false).
 bool InitializeVideoToolboxInternal() {
-  if (!IsVtInitialized()) {
-    // CoreVideo is also required, but the loader stops after the first path is
-    // loaded. Instead we rely on the transitive dependency from VideoToolbox to
-    // CoreVideo.
-    StubPathMap paths;
-    paths[kModuleVt].push_back(FILE_PATH_LITERAL(
-        "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
-    if (!InitializeStubs(paths)) {
-      DLOG(WARNING) << "Failed to initialize VideoToolbox framework";
-      return false;
-    }
-  }
-
   // Create a hardware decoding session.
   // SPS and PPS data are taken from a 480p sample (buck2.mp4).
   const uint8_t sps_normal[] = {0x67, 0x64, 0x00, 0x1e, 0xac, 0xd9, 0x80, 0xd4,
