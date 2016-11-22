@@ -157,7 +157,7 @@ class StatelessConnectionTerminator {
 class ChloValidator : public ChloExtractor::Delegate {
  public:
   ChloValidator(QuicCryptoServerStream::Helper* helper,
-                IPEndPoint self_address,
+                QuicSocketAddress self_address,
                 StatelessRejector* rejector)
       : helper_(helper),
         self_address_(self_address),
@@ -182,7 +182,7 @@ class ChloValidator : public ChloExtractor::Delegate {
 
  private:
   QuicCryptoServerStream::Helper* helper_;  // Unowned.
-  IPEndPoint self_address_;
+  QuicSocketAddress self_address_;
   StatelessRejector* rejector_;  // Unowned.
   bool can_accept_;
   string error_details_;
@@ -228,8 +228,8 @@ void QuicDispatcher::InitializeWithWriter(QuicPacketWriter* writer) {
   time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
 }
 
-void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
-                                   const IPEndPoint& client_address,
+void QuicDispatcher::ProcessPacket(const QuicSocketAddress& server_address,
+                                   const QuicSocketAddress& client_address,
                                    const QuicReceivedPacket& packet) {
   current_server_address_ = server_address;
   current_client_address_ = client_address;
@@ -823,8 +823,8 @@ class StatelessRejectorProcessDoneCallback
 
  private:
   QuicDispatcher* dispatcher_;
-  IPEndPoint current_client_address_;
-  IPEndPoint current_server_address_;
+  QuicSocketAddress current_client_address_;
+  QuicSocketAddress current_server_address_;
   std::unique_ptr<QuicReceivedPacket> current_packet_;
   QuicPacketNumber packet_number_;
   QuicVersion first_version_;
@@ -903,8 +903,8 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
 
 void QuicDispatcher::OnStatelessRejectorProcessDone(
     std::unique_ptr<StatelessRejector> rejector,
-    const IPEndPoint& current_client_address,
-    const IPEndPoint& current_server_address,
+    const QuicSocketAddress& current_client_address,
+    const QuicSocketAddress& current_server_address,
     std::unique_ptr<QuicReceivedPacket> current_packet,
     QuicPacketNumber packet_number,
     QuicVersion first_version) {

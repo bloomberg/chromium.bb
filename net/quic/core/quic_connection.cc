@@ -84,11 +84,6 @@ bool Near(QuicPacketNumber a, QuicPacketNumber b) {
   return delta <= kMaxPacketGap;
 }
 
-bool IsInitializedIPEndPoint(const IPEndPoint& address) {
-  return net::GetAddressFamily(address.address()) !=
-         net::ADDRESS_FAMILY_UNSPECIFIED;
-}
-
 // An alarm that is scheduled to send an ack if a timeout occurs.
 class AckAlarmDelegate : public QuicAlarm::Delegate {
  public:
@@ -183,7 +178,7 @@ class MtuDiscoveryAlarmDelegate : public QuicAlarm::Delegate {
   (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
 QuicConnection::QuicConnection(QuicConnectionId connection_id,
-                               IPEndPoint address,
+                               QuicSocketAddress address,
                                QuicConnectionHelperInterface* helper,
                                QuicAlarmFactory* alarm_factory,
                                QuicPacketWriter* writer,
@@ -1105,8 +1100,8 @@ void QuicConnection::SendVersionNegotiationPacket() {
       packet_generator_.SerializeVersionNegotiationPacket(
           framer_.supported_versions()));
   WriteResult result = writer_->WritePacket(
-      version_packet->data(), version_packet->length(),
-      self_address().address(), peer_address(), per_packet_options_);
+      version_packet->data(), version_packet->length(), self_address().host(),
+      peer_address(), per_packet_options_);
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
@@ -1233,8 +1228,8 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   return stats_;
 }
 
-void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
-                                      const IPEndPoint& peer_address,
+void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
+                                      const QuicSocketAddress& peer_address,
                                       const QuicReceivedPacket& packet) {
   if (!connected_) {
     return;
@@ -1247,10 +1242,10 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
 
   last_packet_destination_address_ = self_address;
   last_packet_source_address_ = peer_address;
-  if (!IsInitializedIPEndPoint(self_address_)) {
+  if (!self_address_.IsInitialized()) {
     self_address_ = last_packet_destination_address_;
   }
-  if (!IsInitializedIPEndPoint(peer_address_)) {
+  if (!peer_address_.IsInitialized()) {
     peer_address_ = last_packet_source_address_;
   }
 
@@ -1345,23 +1340,13 @@ void QuicConnection::WriteAndBundleAcksIfNotBlocked() {
 }
 
 bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
-  if (perspective_ == Perspective::IS_SERVER &&
-      IsInitializedIPEndPoint(self_address_) &&
-      IsInitializedIPEndPoint(last_packet_destination_address_) &&
-      (!(self_address_ == last_packet_destination_address_))) {
+  if (perspective_ == Perspective::IS_SERVER && self_address_.IsInitialized() &&
+      last_packet_destination_address_.IsInitialized() &&
+      self_address_ != last_packet_destination_address_) {
     // Allow change between pure IPv4 and equivalent mapped IPv4 address.
-    IPAddress self_ip = self_address_.address();
-    if (self_ip.IsIPv4MappedIPv6()) {
-      self_ip = ConvertIPv4MappedIPv6ToIPv4(self_ip);
-    }
-    IPAddress last_packet_destination_ip =
-        last_packet_destination_address_.address();
-    if (last_packet_destination_ip.IsIPv4MappedIPv6()) {
-      last_packet_destination_ip =
-          ConvertIPv4MappedIPv6ToIPv4(last_packet_destination_ip);
-    }
     if (self_address_.port() != last_packet_destination_address_.port() ||
-        self_ip != last_packet_destination_ip) {
+        self_address_.host().Normalized() !=
+            last_packet_destination_address_.host().Normalized()) {
       CloseConnection(QUIC_ERROR_MIGRATING_ADDRESS,
                       "Self address migration is not supported at the server.",
                       ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -1606,7 +1591,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   // during the WritePacket below.
   QuicTime packet_send_time = clock_->Now();
   WriteResult result = writer_->WritePacket(
-      packet->encrypted_buffer, encrypted_length, self_address().address(),
+      packet->encrypted_buffer, encrypted_length, self_address().host(),
       peer_address(), per_packet_options_);
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
@@ -1638,9 +1623,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
     DLOG(ERROR) << ENDPOINT << "failed writing " << encrypted_length
-                << " from host " << (self_address().address().empty()
-                                         ? " empty address "
-                                         : self_address().ToStringWithoutPort())
+                << " from host " << self_address().host().ToString()
                 << " to address " << peer_address().ToString()
                 << " with error code " << result.error_code;
     return false;
@@ -2331,7 +2314,7 @@ void QuicConnection::SetMtuDiscoveryTarget(QuicByteCount target) {
 
 QuicByteCount QuicConnection::GetLimitedMaxPacketSize(
     QuicByteCount suggested_max_packet_size) {
-  if (peer_address_.address().empty()) {
+  if (!peer_address_.IsInitialized()) {
     QUIC_BUG << "Attempted to use a connection without a valid peer address";
     return suggested_max_packet_size;
   }

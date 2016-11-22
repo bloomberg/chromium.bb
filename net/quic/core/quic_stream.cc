@@ -393,7 +393,7 @@ void QuicStream::StopReading() {
   sequencer_.StopReading();
 }
 
-const IPEndPoint& QuicStream::PeerAddressOfLatestPacket() const {
+const QuicSocketAddress& QuicStream::PeerAddressOfLatestPacket() const {
   return session_->connection()->last_packet_source_address();
 }
 

@@ -87,8 +87,8 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // Determines and returns change type of address change from |old_address| to
   // |new_address|.
   static PeerAddressChangeType DetermineAddressChangeType(
-      const IPEndPoint& old_address,
-      const IPEndPoint& new_address);
+      const QuicSocketAddress& old_address,
+      const QuicSocketAddress& new_address);
 
   // This converts |length| bytes of binary to a 2*|length|-character
   // hexadecimal representation.

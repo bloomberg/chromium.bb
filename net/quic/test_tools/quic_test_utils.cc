@@ -266,13 +266,13 @@ MockQuicConnection::MockQuicConnection(MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
     : MockQuicConnection(kTestConnectionId,
-                         IPEndPoint(TestPeerIPAddress(), kTestPort),
+                         QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,
                          perspective,
                          AllSupportedVersions()) {}
 
-MockQuicConnection::MockQuicConnection(IPEndPoint address,
+MockQuicConnection::MockQuicConnection(QuicSocketAddress address,
                                        MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
@@ -288,7 +288,7 @@ MockQuicConnection::MockQuicConnection(QuicConnectionId connection_id,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
     : MockQuicConnection(connection_id,
-                         IPEndPoint(TestPeerIPAddress(), kTestPort),
+                         QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,
                          perspective,
@@ -300,7 +300,7 @@ MockQuicConnection::MockQuicConnection(
     Perspective perspective,
     const QuicVersionVector& supported_versions)
     : MockQuicConnection(kTestConnectionId,
-                         IPEndPoint(TestPeerIPAddress(), kTestPort),
+                         QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,
                          perspective,
@@ -308,7 +308,7 @@ MockQuicConnection::MockQuicConnection(
 
 MockQuicConnection::MockQuicConnection(
     QuicConnectionId connection_id,
-    IPEndPoint address,
+    QuicSocketAddress address,
     MockQuicConnectionHelper* helper,
     MockAlarmFactory* alarm_factory,
     Perspective perspective,
@@ -536,8 +536,8 @@ string HexDumpWithMarks(const char* data,
 
 }  // namespace
 
-IPAddress TestPeerIPAddress() {
-  return Loopback4();
+QuicIpAddress TestPeerIPAddress() {
+  return QuicIpAddress::Loopback4();
 }
 
 QuicVersion QuicVersionMax() {

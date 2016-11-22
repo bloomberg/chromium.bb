@@ -183,23 +183,23 @@ class NET_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
   bool has_receive_values_;
 };
 
-// Stores IPEndPoint from CHLO or SHLO messages that are not negotiated.
-class NET_EXPORT_PRIVATE QuicFixedIPEndPoint : public QuicConfigValue {
+// Stores QuicSocketAddress from CHLO or SHLO messages that are not negotiated.
+class NET_EXPORT_PRIVATE QuicFixedSocketAddress : public QuicConfigValue {
  public:
-  QuicFixedIPEndPoint(QuicTag tag, QuicConfigPresence presence);
-  ~QuicFixedIPEndPoint() override;
+  QuicFixedSocketAddress(QuicTag tag, QuicConfigPresence presence);
+  ~QuicFixedSocketAddress() override;
 
   bool HasSendValue() const;
 
-  const IPEndPoint& GetSendValue() const;
+  const QuicSocketAddress& GetSendValue() const;
 
-  void SetSendValue(const IPEndPoint& value);
+  void SetSendValue(const QuicSocketAddress& value);
 
   bool HasReceivedValue() const;
 
-  const IPEndPoint& GetReceivedValue() const;
+  const QuicSocketAddress& GetReceivedValue() const;
 
-  void SetReceivedValue(const IPEndPoint& value);
+  void SetReceivedValue(const QuicSocketAddress& value);
 
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
@@ -208,9 +208,9 @@ class NET_EXPORT_PRIVATE QuicFixedIPEndPoint : public QuicConfigValue {
                                  std::string* error_details) override;
 
  private:
-  IPEndPoint send_value_;
+  QuicSocketAddress send_value_;
   bool has_send_value_;
-  IPEndPoint receive_value_;
+  QuicSocketAddress receive_value_;
   bool has_receive_value_;
 };
 
@@ -351,11 +351,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
   bool DisableConnectionMigration() const;
 
   void SetAlternateServerAddressToSend(
-      const IPEndPoint& alternate_server_address);
+      const QuicSocketAddress& alternate_server_address);
 
   bool HasReceivedAlternateServerAddress() const;
 
-  const IPEndPoint& ReceivedAlternateServerAddress() const;
+  const QuicSocketAddress& ReceivedAlternateServerAddress() const;
 
   void SetForceHolBlocking();
 
@@ -419,7 +419,7 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicFixedUint32 connection_migration_disabled_;
 
   // An alternate server address the client could connect to.
-  QuicFixedIPEndPoint alternate_server_address_;
+  QuicFixedSocketAddress alternate_server_address_;
 
   // Force HOL blocking for measurement purposes.
   QuicFixedUint32 force_hol_blocking_;

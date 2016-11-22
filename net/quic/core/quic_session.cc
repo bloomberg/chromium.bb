@@ -273,8 +273,8 @@ bool QuicSession::HasOpenDynamicStreams() const {
           locally_closed_streams_highest_offset_.size()) > 0;
 }
 
-void QuicSession::ProcessUdpPacket(const IPEndPoint& self_address,
-                                   const IPEndPoint& peer_address,
+void QuicSession::ProcessUdpPacket(const QuicSocketAddress& self_address,
+                                   const QuicSocketAddress& peer_address,
                                    const QuicReceivedPacket& packet) {
   connection_->ProcessUdpPacket(self_address, peer_address, packet);
 }

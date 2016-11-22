@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packet_writer.h"
@@ -57,13 +56,14 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter : public QuicPacketWriter {
   // QuicPacketWriter
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddress& self_address,
-                          const IPEndPoint& peer_address,
+                          const QuicIpAddress& self_address,
+                          const QuicSocketAddress& peer_address,
                           PerPacketOptions* options) override;
   bool IsWriteBlockedDataBuffered() const override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;
-  QuicByteCount GetMaxPacketSize(const IPEndPoint& peer_address) const override;
+  QuicByteCount GetMaxPacketSize(
+      const QuicSocketAddress& peer_address) const override;
 
   void OnWriteComplete(int rv);
 

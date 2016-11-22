@@ -6,6 +6,7 @@
 
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_alarm_factory.h"
@@ -74,7 +75,8 @@ class TestQuicServer : public QuicServer {
 class QuicServerEpollInTest : public ::testing::Test {
  public:
   QuicServerEpollInTest()
-      : port_(net::test::kTestPort), server_address_(Loopback4(), port_) {}
+      : port_(net::test::kTestPort),
+        server_address_(QuicIpAddress::Loopback4(), port_) {}
 
   void StartListening() {
     server_.CreateUDPSocketAndListen(server_address_);
@@ -89,7 +91,7 @@ class QuicServerEpollInTest : public ::testing::Test {
  protected:
   QuicFlagSaver saver_;
   int port_;
-  IPEndPoint server_address_;
+  QuicSocketAddress server_address_;
   TestQuicServer server_;
 };
 
@@ -122,10 +124,8 @@ TEST_F(QuicServerEpollInTest, ProcessBufferedCHLOsOnEpollin) {
 
   char buf[1024];
   memset(buf, 0, arraysize(buf));
-  sockaddr_storage storage;
+  sockaddr_storage storage = server_address_.generic_address();
   socklen_t storage_size = sizeof(storage);
-  ASSERT_TRUE(server_address_.ToSockAddr(reinterpret_cast<sockaddr*>(&storage),
-                                         &storage_size));
   int rc = sendto(fd, buf, arraysize(buf), 0,
                   reinterpret_cast<sockaddr*>(&storage), storage_size);
   if (rc < 0) {
@@ -160,7 +160,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
   }
 
   void DispatchPacket(const QuicReceivedPacket& packet) {
-    IPEndPoint client_addr, server_addr;
+    QuicSocketAddress client_addr, server_addr;
     dispatcher_.ProcessPacket(server_addr, client_addr, packet);
   }
 

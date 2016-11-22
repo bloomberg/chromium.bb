@@ -114,7 +114,9 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
-  const IPEndPoint kTestServerAddress(IPAddress(127, 0, 3, 1), 1234);
+  QuicIpAddress host;
+  host.FromString("127.0.3.1");
+  const QuicSocketAddress kTestServerAddress = QuicSocketAddress(host, 1234);
   QuicConfig server_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);

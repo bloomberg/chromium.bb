@@ -24,8 +24,8 @@ class LimitedMtuTestWriter : public QuicPacketWriterWrapper {
   // Inherited from QuicPacketWriterWrapper.
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddress& self_address,
-                          const IPEndPoint& peer_address,
+                          const QuicIpAddress& self_address,
+                          const QuicSocketAddress& peer_address,
                           PerPacketOptions* options) override;
 
  private:

@@ -199,7 +199,9 @@ void QuicSimpleServer::OnReadComplete(int result) {
 
   QuicReceivedPacket packet(read_buffer_->data(), result,
                             helper_->GetClock()->Now(), false);
-  dispatcher_->ProcessPacket(server_address_, client_address_, packet);
+  dispatcher_->ProcessPacket(
+      QuicSocketAddress(QuicSocketAddressImpl(server_address_)),
+      QuicSocketAddress(QuicSocketAddressImpl(client_address_)), packet);
 
   StartReading();
 }

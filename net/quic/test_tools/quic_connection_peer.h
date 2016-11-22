@@ -10,6 +10,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_protocol.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {
 
@@ -65,10 +66,10 @@ class QuicConnectionPeer {
                              Perspective perspective);
 
   static void SetSelfAddress(QuicConnection* connection,
-                             const IPEndPoint& self_address);
+                             const QuicSocketAddress& self_address);
 
   static void SetPeerAddress(QuicConnection* connection,
-                             const IPEndPoint& peer_address);
+                             const QuicSocketAddress& peer_address);
 
   static bool IsSilentCloseEnabled(QuicConnection* connection);
 

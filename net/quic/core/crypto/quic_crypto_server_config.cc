@@ -66,13 +66,6 @@ string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
   return hkdf.server_write_key().as_string();
 }
 
-IPAddress DualstackIPAddress(const IPAddress& ip) {
-  if (ip.IsIPv4()) {
-    return ConvertIPv4ToIPv4MappedIPv6(ip);
-  }
-  return ip;
-}
-
 }  // namespace
 
 class ValidateClientHelloHelper {
@@ -114,7 +107,7 @@ class ValidateClientHelloHelper {
 // static
 const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
-ClientHelloInfo::ClientHelloInfo(const IPAddress& in_client_ip,
+ClientHelloInfo::ClientHelloInfo(const QuicIpAddress& in_client_ip,
                                  QuicWallTime in_now)
     : client_ip(in_client_ip), now(in_now), valid_source_address_token(false) {}
 
@@ -128,7 +121,7 @@ PrimaryConfigChangedCallback::~PrimaryConfigChangedCallback() {}
 
 ValidateClientHelloResultCallback::Result::Result(
     const CryptoHandshakeMessage& in_client_hello,
-    IPAddress in_client_ip,
+    QuicIpAddress in_client_ip,
     QuicWallTime in_now)
     : client_hello(in_client_hello),
       info(in_client_ip, in_now),
@@ -428,8 +421,8 @@ void QuicCryptoServerConfig::GetConfigIds(vector<string>* scids) const {
 
 void QuicCryptoServerConfig::ValidateClientHello(
     const CryptoHandshakeMessage& client_hello,
-    const IPAddress& client_ip,
-    const IPAddress& server_ip,
+    const QuicIpAddress& client_ip,
+    const QuicIpAddress& server_ip,
     QuicVersion version,
     const QuicClock* clock,
     scoped_refptr<QuicSignedServerConfig> signed_config,
@@ -520,7 +513,7 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
           validate_chlo_result,
       bool reject_only,
       QuicConnectionId connection_id,
-      const IPEndPoint& client_address,
+      const QuicSocketAddress& client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
       bool use_stateless_rejects,
@@ -580,7 +573,7 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
       validate_chlo_result_;
   const bool reject_only_;
   const QuicConnectionId connection_id_;
-  const IPEndPoint client_address_;
+  const QuicSocketAddress client_address_;
   const QuicVersion version_;
   const QuicVersionVector supported_versions_;
   const bool use_stateless_rejects_;
@@ -602,8 +595,8 @@ void QuicCryptoServerConfig::ProcessClientHello(
         validate_chlo_result,
     bool reject_only,
     QuicConnectionId connection_id,
-    const IPAddress& server_ip,
-    const IPEndPoint& client_address,
+    const QuicIpAddress& server_ip,
+    const QuicSocketAddress& client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
     bool use_stateless_rejects,
@@ -729,7 +722,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     bool reject_only,
     QuicConnectionId connection_id,
-    const IPEndPoint& client_address,
+    const QuicSocketAddress& client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
     bool use_stateless_rejects,
@@ -996,7 +989,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   out->SetStringPiece(
       kSourceAddressTokenTag,
       NewSourceAddressToken(*requested_config.get(), info.source_address_tokens,
-                            client_address.address(), rand, info.now, nullptr));
+                            client_address.host(), rand, info.now, nullptr));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -1131,7 +1124,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
   EvaluateClientHelloCallback(
       const QuicCryptoServerConfig& config,
       bool found_error,
-      const IPAddress& server_ip,
+      const QuicIpAddress& server_ip,
       QuicVersion version,
       scoped_refptr<QuicCryptoServerConfig::Config> requested_config,
       scoped_refptr<QuicCryptoServerConfig::Config> primary_config,
@@ -1168,7 +1161,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
  private:
   const QuicCryptoServerConfig& config_;
   const bool found_error_;
-  const IPAddress& server_ip_;
+  const QuicIpAddress& server_ip_;
   const QuicVersion version_;
   const scoped_refptr<QuicCryptoServerConfig::Config> requested_config_;
   const scoped_refptr<QuicCryptoServerConfig::Config> primary_config_;
@@ -1178,7 +1171,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
 };
 
 void QuicCryptoServerConfig::EvaluateClientHello(
-    const IPAddress& server_ip,
+    const QuicIpAddress& server_ip,
     QuicVersion version,
     scoped_refptr<Config> requested_config,
     scoped_refptr<Config> primary_config,
@@ -1303,7 +1296,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
 void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     bool found_error,
-    const IPAddress& server_ip,
+    const QuicIpAddress& server_ip,
     QuicVersion version,
     scoped_refptr<Config> requested_config,
     scoped_refptr<Config> primary_config,
@@ -1347,8 +1340,8 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     QuicVersion version,
     StringPiece chlo_hash,
     const SourceAddressTokens& previous_source_address_tokens,
-    const IPAddress& server_ip,
-    const IPAddress& client_ip,
+    const QuicIpAddress& server_ip,
+    const QuicIpAddress& client_ip,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCompressedCertsCache* compressed_certs_cache,
@@ -1405,8 +1398,8 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     QuicVersion version,
     StringPiece chlo_hash,
     const SourceAddressTokens& previous_source_address_tokens,
-    const IPAddress& server_ip,
-    const IPAddress& client_ip,
+    const QuicIpAddress& server_ip,
+    const QuicIpAddress& client_ip,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCompressedCertsCache* compressed_certs_cache,
@@ -1835,13 +1828,13 @@ void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
 string QuicCryptoServerConfig::NewSourceAddressToken(
     const Config& config,
     const SourceAddressTokens& previous_tokens,
-    const IPAddress& ip,
+    const QuicIpAddress& ip,
     QuicRandom* rand,
     QuicWallTime now,
     const CachedNetworkParameters* cached_network_params) const {
   SourceAddressTokens source_address_tokens;
   SourceAddressToken* source_address_token = source_address_tokens.add_tokens();
-  source_address_token->set_ip(IPAddressToPackedString(DualstackIPAddress(ip)));
+  source_address_token->set_ip(ip.DualStacked().ToPackedString());
   source_address_token->set_timestamp(now.ToUNIXSeconds());
   if (cached_network_params != nullptr) {
     *(source_address_token->mutable_cached_network_parameters()) =
@@ -1902,7 +1895,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
 
 HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressTokens(
     const SourceAddressTokens& source_address_tokens,
-    const IPAddress& ip,
+    const QuicIpAddress& ip,
     QuicWallTime now,
     CachedNetworkParameters* cached_network_params) const {
   HandshakeFailureReason reason =
@@ -1921,10 +1914,9 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressTokens(
 
 HandshakeFailureReason QuicCryptoServerConfig::ValidateSingleSourceAddressToken(
     const SourceAddressToken& source_address_token,
-    const IPAddress& ip,
+    const QuicIpAddress& ip,
     QuicWallTime now) const {
-  if (source_address_token.ip() !=
-      IPAddressToPackedString(DualstackIPAddress(ip))) {
+  if (source_address_token.ip() != ip.DualStacked().ToPackedString()) {
     // It's for a different IP address.
     return SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE;
   }

@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "net/base/ip_address.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/quic/core/congestion_control/loss_detection_interface.h"
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
@@ -68,8 +68,12 @@ const bool kHasStopWaiting = true;
 
 const int kDefaultRetransmissionTimeMs = 500;
 
-const IPEndPoint kPeerAddress = IPEndPoint(Loopback6(), /*port=*/12345);
-const IPEndPoint kSelfAddress = IPEndPoint(Loopback6(), /*port=*/443);
+const QuicSocketAddress kPeerAddress =
+    QuicSocketAddress(QuicIpAddress::Loopback6(),
+                      /*port=*/12345);
+const QuicSocketAddress kSelfAddress =
+    QuicSocketAddress(QuicIpAddress::Loopback6(),
+                      /*port=*/443);
 
 Perspective InvertPerspective(Perspective perspective) {
   return perspective == Perspective::IS_CLIENT ? Perspective::IS_SERVER
@@ -290,8 +294,8 @@ class TestPacketWriter : public QuicPacketWriter {
   // QuicPacketWriter interface
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddress& self_address,
-                          const IPEndPoint& peer_address,
+                          const QuicIpAddress& self_address,
+                          const QuicSocketAddress& peer_address,
                           PerPacketOptions* options) override {
     QuicEncryptedPacket packet(buffer, buf_len);
     ++packets_write_attempts_;
@@ -347,7 +351,7 @@ class TestPacketWriter : public QuicPacketWriter {
   void SetShouldWriteFail() { write_should_fail_ = true; }
 
   QuicByteCount GetMaxPacketSize(
-      const IPEndPoint& /*peer_address*/) const override {
+      const QuicSocketAddress& /*peer_address*/) const override {
     return max_packet_size_;
   }
 
@@ -458,7 +462,7 @@ class TestPacketWriter : public QuicPacketWriter {
 class TestConnection : public QuicConnection {
  public:
   TestConnection(QuicConnectionId connection_id,
-                 IPEndPoint address,
+                 QuicSocketAddress address,
                  TestConnectionHelper* helper,
                  TestAlarmFactory* alarm_factory,
                  TestPacketWriter* writer,
@@ -778,8 +782,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void ProcessFramePacketWithAddresses(QuicFrame frame,
-                                       IPEndPoint self_address,
-                                       IPEndPoint peer_address) {
+                                       QuicSocketAddress self_address,
+                                       QuicSocketAddress peer_address) {
     QuicFrames frames;
     frames.push_back(QuicFrame(frame));
     QuicPacketCreatorPeer::SetSendVersionInPacket(
@@ -1097,7 +1101,9 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtClient) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   // Cause change in self_address.
-  IPEndPoint self_address(IPAddress(1, 1, 1, 1), 123);
+  QuicIpAddress host;
+  host.FromString("1.1.1.1");
+  QuicSocketAddress self_address(host, 123);
   EXPECT_CALL(visitor_, OnStreamFrame(_));
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address,
                                   kPeerAddress);
@@ -1118,7 +1124,9 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   // Cause change in self_address.
-  IPEndPoint self_address(IPAddress(1, 1, 1, 1), 123);
+  QuicIpAddress host;
+  host.FromString("1.1.1.1");
+  QuicSocketAddress self_address(host, 123);
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_ERROR_MIGRATING_ADDRESS, _, _));
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address,
                                   kPeerAddress);
@@ -1136,12 +1144,16 @@ TEST_P(QuicConnectionTest, AllowSelfAddressChangeToMappedIpv4AddressAtServer) {
 
   QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(3);
-  IPEndPoint self_address1(IPAddress(1, 1, 1, 1), 443);
+  QuicIpAddress host;
+  host.FromString("1.1.1.1");
+  QuicSocketAddress self_address1(host, 443);
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address1,
                                   kPeerAddress);
   // Cause self_address change to mapped Ipv4 address.
-  IPEndPoint self_address2(ConvertIPv4ToIPv4MappedIPv6(self_address1.address()),
-                           443);
+  QuicIpAddress host2;
+  host2.FromString(base::StringPrintf(
+      "::ffff:%s", connection_.self_address().host().ToString().c_str()));
+  QuicSocketAddress self_address2(host2, connection_.self_address().port());
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address2,
                                   kPeerAddress);
   EXPECT_TRUE(connection_.connected());
@@ -1156,13 +1168,14 @@ TEST_P(QuicConnectionTest, ClientAddressChangeAndPacketReordered) {
   set_perspective(Perspective::IS_SERVER);
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
   // Clear peer address.
-  QuicConnectionPeer::SetPeerAddress(&connection_, IPEndPoint());
+  QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
 
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 5);
   QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
-  const IPEndPoint kNewPeerAddress = IPEndPoint(Loopback6(),
-                                                /*port=*/23456);
+  const QuicSocketAddress kNewPeerAddress =
+      QuicSocketAddress(QuicIpAddress::Loopback6(),
+                        /*port=*/23456);
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
 

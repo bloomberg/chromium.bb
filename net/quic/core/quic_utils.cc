@@ -77,10 +77,6 @@ uint128 IncrementalHash(uint128 hash, const char* data, size_t len) {
 #endif
 }
 
-bool IsInitializedIPEndPoint(const IPEndPoint& address) {
-  return address.address().IsValid();
-}
-
 }  // namespace
 
 // static
@@ -283,19 +279,19 @@ char* QuicUtils::CopyBuffer(const SerializedPacket& packet) {
 
 // static
 PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
-    const IPEndPoint& old_address,
-    const IPEndPoint& new_address) {
-  if (!IsInitializedIPEndPoint(old_address) ||
-      !IsInitializedIPEndPoint(new_address) || old_address == new_address) {
+    const QuicSocketAddress& old_address,
+    const QuicSocketAddress& new_address) {
+  if (!old_address.IsInitialized() || !new_address.IsInitialized() ||
+      old_address == new_address) {
     return NO_CHANGE;
   }
 
-  if (old_address.address() == new_address.address()) {
+  if (old_address.host() == new_address.host()) {
     return PORT_CHANGE;
   }
 
-  bool old_ip_is_ipv4 = old_address.address().IsIPv4();
-  bool migrating_ip_is_ipv4 = new_address.address().IsIPv4();
+  bool old_ip_is_ipv4 = old_address.host().IsIPv4() ? true : false;
+  bool migrating_ip_is_ipv4 = new_address.host().IsIPv4() ? true : false;
   if (old_ip_is_ipv4 && !migrating_ip_is_ipv4) {
     return IPV4_TO_IPV6_CHANGE;
   }
@@ -304,8 +300,8 @@ PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
     return migrating_ip_is_ipv4 ? IPV6_TO_IPV4_CHANGE : IPV6_TO_IPV6_CHANGE;
   }
 
-  if (IPAddressMatchesPrefix(old_address.address(), new_address.address(),
-                             24)) {
+  const int kSubnetMaskLength = 24;
+  if (old_address.host().InSameSubnet(new_address.host(), kSubnetMaskLength)) {
     // Subnet part does not change (here, we use /24), which is considered to be
     // caused by NATs.
     return IPV4_SUBNET_CHANGE;

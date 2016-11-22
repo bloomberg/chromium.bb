@@ -78,7 +78,7 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
 }
 
 bool ProofSourceChromium::GetProof(
-    const IPAddress& server_ip,
+    const QuicIpAddress& server_ip,
     const string& hostname,
     const string& server_config,
     QuicVersion quic_version,
@@ -134,7 +134,7 @@ bool ProofSourceChromium::GetProof(
   return true;
 }
 
-void ProofSourceChromium::GetProof(const IPAddress& server_ip,
+void ProofSourceChromium::GetProof(const QuicIpAddress& server_ip,
                                    const std::string& hostname,
                                    const std::string& server_config,
                                    QuicVersion quic_version,

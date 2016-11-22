@@ -29,6 +29,7 @@
 #include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/core/proto/source_address_token.pb.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {
 
@@ -46,12 +47,12 @@ struct QuicSignedServerConfig;
 // ClientHelloInfo contains information about a client hello message that is
 // only kept for as long as it's being processed.
 struct ClientHelloInfo {
-  ClientHelloInfo(const IPAddress& in_client_ip, QuicWallTime in_now);
+  ClientHelloInfo(const QuicIpAddress& in_client_ip, QuicWallTime in_now);
   ClientHelloInfo(const ClientHelloInfo& other);
   ~ClientHelloInfo();
 
   // Inputs to EvaluateClientHello.
-  const IPAddress client_ip;
+  const QuicIpAddress client_ip;
   const QuicWallTime now;
 
   // Outputs from EvaluateClientHello.
@@ -89,7 +90,7 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
   // its validity.  Can be interpreted by calling ProcessClientHello.
   struct NET_EXPORT_PRIVATE Result : public base::RefCountedThreadSafe<Result> {
     Result(const CryptoHandshakeMessage& in_client_hello,
-           IPAddress in_client_ip,
+           QuicIpAddress in_client_ip,
            QuicWallTime in_now);
 
     CryptoHandshakeMessage client_hello;
@@ -275,8 +276,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     completion of an asynchronous operation.
   void ValidateClientHello(
       const CryptoHandshakeMessage& client_hello,
-      const IPAddress& client_ip,
-      const IPAddress& server_ip,
+      const QuicIpAddress& client_ip,
+      const QuicIpAddress& server_ip,
       QuicVersion version,
       const QuicClock* clock,
       scoped_refptr<QuicSignedServerConfig> crypto_proof,
@@ -316,8 +317,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
           validate_chlo_result,
       bool reject_only,
       QuicConnectionId connection_id,
-      const IPAddress& server_ip,
-      const IPEndPoint& client_address,
+      const QuicIpAddress& server_ip,
+      const QuicSocketAddress& client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
       bool use_stateless_rejects,
@@ -343,8 +344,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicVersion version,
       base::StringPiece chlo_hash,
       const SourceAddressTokens& previous_source_address_tokens,
-      const IPAddress& server_ip,
-      const IPAddress& client_ip,
+      const QuicIpAddress& server_ip,
+      const QuicIpAddress& client_ip,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCompressedCertsCache* compressed_certs_cache,
@@ -367,8 +368,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicVersion version,
       base::StringPiece chlo_hash,
       const SourceAddressTokens& previous_source_address_tokens,
-      const IPAddress& server_ip,
-      const IPAddress& client_ip,
+      const QuicIpAddress& server_ip,
+      const QuicIpAddress& client_ip,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCompressedCertsCache* compressed_certs_cache,
@@ -511,7 +512,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // whether it can be shown to be fresh (i.e. not a replay). The results are
   // written to |info|.
   void EvaluateClientHello(
-      const IPAddress& server_ip,
+      const QuicIpAddress& server_ip,
       QuicVersion version,
       scoped_refptr<Config> requested_config,
       scoped_refptr<Config> primary_config,
@@ -532,7 +533,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // set to false.
   void EvaluateClientHelloAfterGetProof(
       bool found_error,
-      const IPAddress& server_ip,
+      const QuicIpAddress& server_ip,
       QuicVersion version,
       scoped_refptr<Config> requested_config,
       scoped_refptr<Config> primary_config,
@@ -555,7 +556,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const ValidateClientHelloResultCallback::Result& validate_chlo_result,
       bool reject_only,
       QuicConnectionId connection_id,
-      const IPEndPoint& client_address,
+      const QuicSocketAddress& client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
       bool use_stateless_rejects,
@@ -611,7 +612,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   std::string NewSourceAddressToken(
       const Config& config,
       const SourceAddressTokens& previous_tokens,
-      const IPAddress& ip,
+      const QuicIpAddress& ip,
       QuicRandom* rand,
       QuicWallTime now,
       const CachedNetworkParameters* cached_network_params) const;
@@ -632,7 +633,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // token contains a CachedNetworkParameters proto.
   HandshakeFailureReason ValidateSourceAddressTokens(
       const SourceAddressTokens& tokens,
-      const IPAddress& ip,
+      const QuicIpAddress& ip,
       QuicWallTime now,
       CachedNetworkParameters* cached_network_params) const;
 
@@ -642,7 +643,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // for failure.
   HandshakeFailureReason ValidateSingleSourceAddressToken(
       const SourceAddressToken& token,
-      const IPAddress& ip,
+      const QuicIpAddress& ip,
       QuicWallTime now) const;
 
   // Returns HANDSHAKE_OK if the source address token in |token| is a timely

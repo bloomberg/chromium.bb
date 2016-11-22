@@ -624,7 +624,8 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
   DCHECK(!factory_->HasActiveSession(key_.server_id()));
   // There may well now be an active session for this IP.  If so, use the
   // existing session instead.
-  AddressList address(session_->connection()->peer_address());
+  AddressList address(
+      session_->connection()->peer_address().impl().socket_address());
   if (factory_->OnResolution(key_, address)) {
     session_->connection()->CloseConnection(
         QUIC_CONNECTION_IP_POOLED, "An active session exists for the given IP.",
@@ -1453,8 +1454,9 @@ MigrationResult QuicStreamFactory::MigrateSessionToNewNetwork(
     NetworkHandle network,
     bool close_session_on_error,
     const NetLogWithSource& net_log) {
-  return MigrateSessionInner(session, session->connection()->peer_address(),
-                             network, close_session_on_error, net_log);
+  return MigrateSessionInner(
+      session, session->connection()->peer_address().impl().socket_address(),
+      network, close_session_on_error, net_log);
 }
 
 MigrationResult QuicStreamFactory::MigrateSessionInner(
@@ -1663,8 +1665,9 @@ int QuicStreamFactory::CreateSession(
 
   QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(socket.get());
   QuicConnection* connection = new QuicConnection(
-      connection_id, addr, helper_.get(), alarm_factory_.get(), writer,
-      true /* owns_writer */, Perspective::IS_CLIENT, supported_versions_);
+      connection_id, QuicSocketAddress(QuicSocketAddressImpl(addr)),
+      helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,
+      Perspective::IS_CLIENT, supported_versions_);
   connection->set_ping_timeout(ping_timeout_);
   connection->SetMaxPacketLength(max_packet_length_);
 
@@ -1730,7 +1733,8 @@ void QuicStreamFactory::ActivateSession(const QuicSessionKey& key,
   UMA_HISTOGRAM_COUNTS("Net.QuicActiveSessions", active_sessions_.size());
   active_sessions_[server_id] = session;
   session_aliases_[session].insert(key);
-  const IPEndPoint peer_address = session->connection()->peer_address();
+  const IPEndPoint peer_address =
+      session->connection()->peer_address().impl().socket_address();
   DCHECK(!base::ContainsKey(ip_aliases_[peer_address], session));
   ip_aliases_[peer_address].insert(session);
   DCHECK(!base::ContainsKey(session_peer_ip_, session));

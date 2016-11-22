@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
@@ -95,8 +94,9 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
         stream_factory_(nullptr),
         crypto_stream_factory_(nullptr) {}
 
-  QuicServerSessionBase* CreateQuicSession(QuicConnectionId id,
-                                           const IPEndPoint& client) override {
+  QuicServerSessionBase* CreateQuicSession(
+      QuicConnectionId id,
+      const QuicSocketAddress& client) override {
     base::AutoLock lock(factory_lock_);
     if (session_factory_ == nullptr && stream_factory_ == nullptr &&
         crypto_stream_factory_ == nullptr) {

@@ -12,10 +12,9 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/base/ip_address.h"
-#include "net/base/ip_endpoint.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/quic/core/quic_protocol.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_server.h"
 
@@ -79,8 +78,6 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  auto ip = net::IPAddress::IPv6AllZeros();
-
   net::QuicConfig config;
   net::QuicServer server(
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
@@ -88,7 +85,8 @@ int main(int argc, char* argv[]) {
       config, net::QuicCryptoServerConfig::ConfigOptions(),
       net::AllSupportedVersions());
 
-  int rc = server.CreateUDPSocketAndListen(net::IPEndPoint(ip, FLAGS_port));
+  int rc = server.CreateUDPSocketAndListen(
+      net::QuicSocketAddress(net::QuicIpAddress::Any6(), FLAGS_port));
   if (rc < 0) {
     return 1;
   }

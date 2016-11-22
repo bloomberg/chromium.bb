@@ -255,45 +255,45 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
   return error;
 }
 
-QuicFixedIPEndPoint::QuicFixedIPEndPoint(QuicTag tag,
-                                         QuicConfigPresence presence)
+QuicFixedSocketAddress::QuicFixedSocketAddress(QuicTag tag,
+                                               QuicConfigPresence presence)
     : QuicConfigValue(tag, presence),
       has_send_value_(false),
       has_receive_value_(false) {}
 
-QuicFixedIPEndPoint::~QuicFixedIPEndPoint() {}
+QuicFixedSocketAddress::~QuicFixedSocketAddress() {}
 
-bool QuicFixedIPEndPoint::HasSendValue() const {
+bool QuicFixedSocketAddress::HasSendValue() const {
   return has_send_value_;
 }
 
-const IPEndPoint& QuicFixedIPEndPoint::GetSendValue() const {
+const QuicSocketAddress& QuicFixedSocketAddress::GetSendValue() const {
   QUIC_BUG_IF(!has_send_value_) << "No send value to get for tag:"
                                 << QuicTagToString(tag_);
   return send_value_;
 }
 
-void QuicFixedIPEndPoint::SetSendValue(const IPEndPoint& value) {
+void QuicFixedSocketAddress::SetSendValue(const QuicSocketAddress& value) {
   has_send_value_ = true;
   send_value_ = value;
 }
 
-bool QuicFixedIPEndPoint::HasReceivedValue() const {
+bool QuicFixedSocketAddress::HasReceivedValue() const {
   return has_receive_value_;
 }
 
-const IPEndPoint& QuicFixedIPEndPoint::GetReceivedValue() const {
+const QuicSocketAddress& QuicFixedSocketAddress::GetReceivedValue() const {
   QUIC_BUG_IF(!has_receive_value_) << "No receive value to get for tag:"
                                    << QuicTagToString(tag_);
   return receive_value_;
 }
 
-void QuicFixedIPEndPoint::SetReceivedValue(const IPEndPoint& value) {
+void QuicFixedSocketAddress::SetReceivedValue(const QuicSocketAddress& value) {
   has_receive_value_ = true;
   receive_value_ = value;
 }
 
-void QuicFixedIPEndPoint::ToHandshakeMessage(
+void QuicFixedSocketAddress::ToHandshakeMessage(
     CryptoHandshakeMessage* out) const {
   if (has_send_value_) {
     QuicSocketAddressCoder address_coder(send_value_);
@@ -301,7 +301,7 @@ void QuicFixedIPEndPoint::ToHandshakeMessage(
   }
 }
 
-QuicErrorCode QuicFixedIPEndPoint::ProcessPeerHello(
+QuicErrorCode QuicFixedSocketAddress::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
@@ -314,7 +314,8 @@ QuicErrorCode QuicFixedIPEndPoint::ProcessPeerHello(
   } else {
     QuicSocketAddressCoder address_coder;
     if (address_coder.Decode(address.data(), address.length())) {
-      SetReceivedValue(IPEndPoint(address_coder.ip(), address_coder.port()));
+      SetReceivedValue(
+          QuicSocketAddress(address_coder.ip(), address_coder.port()));
     }
   }
   return QUIC_NO_ERROR;
@@ -551,7 +552,7 @@ bool QuicConfig::DisableConnectionMigration() const {
 }
 
 void QuicConfig::SetAlternateServerAddressToSend(
-    const IPEndPoint& alternate_server_address) {
+    const QuicSocketAddress& alternate_server_address) {
   alternate_server_address_.SetSendValue(alternate_server_address);
 }
 
@@ -559,7 +560,7 @@ bool QuicConfig::HasReceivedAlternateServerAddress() const {
   return alternate_server_address_.HasReceivedValue();
 }
 
-const IPEndPoint& QuicConfig::ReceivedAlternateServerAddress() const {
+const QuicSocketAddress& QuicConfig::ReceivedAlternateServerAddress() const {
   return alternate_server_address_.GetReceivedValue();
 }
 

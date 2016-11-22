@@ -42,7 +42,9 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
 
   void DispatchPacket(const QuicReceivedPacket& packet) {
     IPEndPoint client_addr, server_addr;
-    dispatcher_.ProcessPacket(server_addr, client_addr, packet);
+    dispatcher_.ProcessPacket(
+        QuicSocketAddress(QuicSocketAddressImpl(server_addr)),
+        QuicSocketAddress(QuicSocketAddressImpl(client_addr)), packet);
   }
 
  protected:

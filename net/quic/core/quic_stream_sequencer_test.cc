@@ -49,12 +49,13 @@ class MockStream : public QuicStream {
   MOCK_METHOD0(OnCanWrite, void());
   virtual bool IsFlowControlEnabled() const { return true; }
 
-  const IPEndPoint& PeerAddressOfLatestPacket() const override {
+  const QuicSocketAddress& PeerAddressOfLatestPacket() const override {
     return peer_address_;
   }
 
  protected:
-  IPEndPoint peer_address_ = IPEndPoint(net::test::Any4(), 65535);
+  QuicSocketAddress peer_address_ =
+      QuicSocketAddress(QuicIpAddress::Any4(), 65535);
 };
 
 namespace {

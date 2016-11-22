@@ -25,7 +25,6 @@
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"
 #include "net/base/iovec.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/core/interval_set.h"
 #include "net/quic/core/quic_bandwidth.h"
@@ -35,6 +34,7 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/core/quic_versions.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {
 
@@ -107,7 +107,7 @@ struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
   // TODO(fayang): remove rejected_packet_number when deprecating
   // FLAGS_quic_remove_packet_number_from_public_reset.
   QuicPacketNumber rejected_packet_number;
-  IPEndPoint client_address;
+  QuicSocketAddress client_address;
 };
 
 typedef QuicPacketPublicHeader QuicVersionNegotiationPacket;

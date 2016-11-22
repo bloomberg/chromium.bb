@@ -15,6 +15,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
 #include "net/quic/test_tools/quic_config_peer.h"

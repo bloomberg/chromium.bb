@@ -286,7 +286,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
         if (!it->second.empty()) {
           QuicSocketAddressCoder decoder;
           if (decoder.Decode(it->second.data(), it->second.size())) {
-            ret += IPAddressToStringWithPort(decoder.ip(), decoder.port());
+            ret += QuicSocketAddress(decoder.ip(), decoder.port()).ToString();
             done = true;
           }
         }

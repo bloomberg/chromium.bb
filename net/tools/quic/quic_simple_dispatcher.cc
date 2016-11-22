@@ -26,7 +26,7 @@ QuicSimpleDispatcher::~QuicSimpleDispatcher() {}
 
 QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
-    const IPEndPoint& client_address) {
+    const QuicSocketAddress& client_address) {
   // The QuicServerSessionBase takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
       connection_id, client_address, helper(), alarm_factory(),

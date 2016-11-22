@@ -2272,8 +2272,9 @@ TEST_P(QuicFramerTest, PublicResetPacketV33) {
   EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(0u, visitor_.public_reset_packet_->rejected_packet_number);
-  EXPECT_EQ(ADDRESS_FAMILY_UNSPECIFIED,
-            visitor_.public_reset_packet_->client_address.GetFamily());
+  EXPECT_EQ(
+      IpAddressFamily::IP_UNSPEC,
+      visitor_.public_reset_packet_->client_address.host().address_family());
 
   // Now test framing boundaries.
   for (size_t i = 0; i < arraysize(packet); ++i) {
@@ -2336,8 +2337,9 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(0u, visitor_.public_reset_packet_->rejected_packet_number);
-  EXPECT_EQ(ADDRESS_FAMILY_UNSPECIFIED,
-            visitor_.public_reset_packet_->client_address.GetFamily());
+  EXPECT_EQ(
+      IpAddressFamily::IP_UNSPEC,
+      visitor_.public_reset_packet_->client_address.host().address_family());
 
   // Now test framing boundaries.
   for (size_t i = 0; i < arraysize(packet); ++i) {
@@ -2443,7 +2445,7 @@ TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(0u, visitor_.public_reset_packet_->rejected_packet_number);
   EXPECT_EQ("4.31.198.44",
-            visitor_.public_reset_packet_->client_address.address().ToString());
+            visitor_.public_reset_packet_->client_address.host().ToString());
   EXPECT_EQ(443, visitor_.public_reset_packet_->client_address.port());
 
   // Now test framing boundaries.
@@ -3693,7 +3695,8 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
   reset_packet.public_header.version_flag = false;
   reset_packet.rejected_packet_number = kPacketNumber;
   reset_packet.nonce_proof = kNonceProof;
-  reset_packet.client_address = IPEndPoint(Loopback4(), 0x1234);
+  reset_packet.client_address =
+      QuicSocketAddress(QuicIpAddress::Loopback4(), 0x1234);
 
   // clang-format off
   unsigned char packet[] = {

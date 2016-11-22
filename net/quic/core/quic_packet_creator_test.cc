@@ -16,6 +16,8 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"

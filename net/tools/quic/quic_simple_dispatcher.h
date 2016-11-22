@@ -25,7 +25,7 @@ class QuicSimpleDispatcher : public QuicDispatcher {
  protected:
   QuicServerSessionBase* CreateQuicSession(
       QuicConnectionId connection_id,
-      const IPEndPoint& client_address) override;
+      const QuicSocketAddress& client_address) override;
 };
 
 }  // namespace net

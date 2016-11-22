@@ -30,6 +30,7 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -272,7 +273,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
  protected:
   EndToEndTest()
       : initialized_(false),
-        server_address_(IPEndPoint(Loopback4(), 0)),
+        server_address_(QuicSocketAddress(QuicIpAddress::Loopback4(), 0)),
         server_hostname_("test.example.com"),
         client_writer_(nullptr),
         server_writer_(nullptr),
@@ -438,7 +439,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     }
     server_thread_->Initialize();
     server_address_ =
-        IPEndPoint(server_address_.address(), server_thread_->GetPort());
+        QuicSocketAddress(server_address_.host(), server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
@@ -557,7 +558,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   bool initialized_;
-  IPEndPoint server_address_;
+  QuicSocketAddress server_address_;
   string server_hostname_;
   std::unique_ptr<ServerThread> server_thread_;
   std::unique_ptr<QuicTestClient> client_;
@@ -598,7 +599,7 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
             QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
-TEST_P(EndToEndTest, SimpleRequestResponse) {
+TEST_P(EndToEndTest, SimpleRequestResponsev6) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -619,7 +620,7 @@ TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
 // try bots) and selectively disable this test.
 TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
   server_address_ =
-      IPEndPoint(IPAddress::IPv6Localhost(), server_address_.port());
+      QuicSocketAddress(QuicIpAddress::Loopback6(), server_address_.port());
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1568,23 +1569,21 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
 
 class WrongAddressWriter : public QuicPacketWriterWrapper {
  public:
-  WrongAddressWriter() {
-    self_address_ = IPEndPoint(IPAddress(127, 0, 0, 2), 0);
-  }
+  WrongAddressWriter() { self_address_.FromString("127.0.0.2"); }
 
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddress& /*real_self_address*/,
-                          const IPEndPoint& peer_address,
+                          const QuicIpAddress& /*real_self_address*/,
+                          const QuicSocketAddress& peer_address,
                           PerPacketOptions* options) override {
     // Use wrong address!
-    return QuicPacketWriterWrapper::WritePacket(
-        buffer, buf_len, self_address_.address(), peer_address, options);
+    return QuicPacketWriterWrapper::WritePacket(buffer, buf_len, self_address_,
+                                                peer_address, options);
   }
 
   bool IsWriteBlockedDataBuffered() const override { return false; }
 
-  IPEndPoint self_address_;
+  QuicIpAddress self_address_;
 };
 
 TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
@@ -1594,10 +1593,11 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Store the client IP address which was used to send the first request.
-  IPAddress old_host = client_->client()->GetLatestClientAddress().address();
+  QuicIpAddress old_host = client_->client()->GetLatestClientAddress().host();
 
   // Migrate socket to the new IP address.
-  IPAddress new_host(127, 0, 0, 2);
+  QuicIpAddress new_host;
+  new_host.FromString("127.0.0.2");
   EXPECT_NE(old_host, new_host);
   ASSERT_TRUE(client_->client()->MigrateSocket(new_host));
 
@@ -1616,7 +1616,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Store the client address which was used to send the first request.
-  IPEndPoint old_address = client_->client()->GetLatestClientAddress();
+  QuicSocketAddress old_address = client_->client()->GetLatestClientAddress();
   int old_fd = client_->client()->GetLatestFD();
 
   // Create a new socket before closing the old one, which will result in a new
@@ -1638,8 +1638,8 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   QuicClientPeer::SetClientPort(client_->client(), new_port);
   QuicConnectionPeer::SetSelfAddress(
       client_->client()->session()->connection(),
-      IPEndPoint(
-          client_->client()->session()->connection()->self_address().address(),
+      QuicSocketAddress(
+          client_->client()->session()->connection()->self_address().host(),
           new_port));
 
   // Register the new FD for epoll events.
@@ -1652,8 +1652,8 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   // Verify that the client's ephemeral port is different.
-  IPEndPoint new_address = client_->client()->GetLatestClientAddress();
-  EXPECT_EQ(old_address.address(), new_address.address());
+  QuicSocketAddress new_address = client_->client()->GetLatestClientAddress();
+  EXPECT_EQ(old_address.host(), new_address.host());
   EXPECT_NE(old_address.port(), new_address.port());
 }
 
@@ -1927,7 +1927,7 @@ TEST_P(EndToEndTest, ServerSendPublicReset) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(
-      packet->data(), packet->length(), server_address_.address(),
+      packet->data(), packet->length(), server_address_.host(),
       client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
@@ -1964,7 +1964,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(
-      packet->data(), packet->length(), server_address_.address(),
+      packet->data(), packet->length(), server_address_.host(),
       client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
@@ -1994,7 +1994,7 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
       framer.BuildPublicResetPacket(header));
   client_writer_->WritePacket(
       packet->data(), packet->length(),
-      client_->client()->GetLatestClientAddress().address(), server_address_,
+      client_->client()->GetLatestClientAddress().host(), server_address_,
       nullptr);
 
   // The connection should be unaffected.
@@ -2023,7 +2023,7 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(
-      packet->data(), packet->length(), server_address_.address(),
+      packet->data(), packet->length(), server_address_.host(),
       client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
@@ -2050,7 +2050,7 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
                    0x11};
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
-      client_->client()->GetLatestClientAddress().address(), server_address_,
+      client_->client()->GetLatestClientAddress().host(), server_address_,
       nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
@@ -2089,7 +2089,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
   };
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
-      client_->client()->GetLatestClientAddress().address(), server_address_,
+      client_->client()->GetLatestClientAddress().host(), server_address_,
       nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
@@ -2125,7 +2125,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   DVLOG(1) << "Sending bad packet.";
   client_writer_->WritePacket(
       damaged_packet.data(), damaged_packet.length(),
-      client_->client()->GetLatestClientAddress().address(), server_address_,
+      client_->client()->GetLatestClientAddress().host(), server_address_,
       nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
@@ -2323,7 +2323,7 @@ class ClientSessionThatDropsBody : public QuicClientSession {
 
 class MockableQuicClientThatDropsBody : public MockableQuicClient {
  public:
-  MockableQuicClientThatDropsBody(IPEndPoint server_address,
+  MockableQuicClientThatDropsBody(QuicSocketAddress server_address,
                                   const QuicServerId& server_id,
                                   const QuicConfig& config,
                                   const QuicVersionVector& supported_versions,
@@ -2347,7 +2347,7 @@ class MockableQuicClientThatDropsBody : public MockableQuicClient {
 
 class QuicTestClientThatDropsBody : public QuicTestClient {
  public:
-  QuicTestClientThatDropsBody(IPEndPoint server_address,
+  QuicTestClientThatDropsBody(QuicSocketAddress server_address,
                               const string& server_hostname,
                               const QuicConfig& config,
                               const QuicVersionVector& supported_versions)

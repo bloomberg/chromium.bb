@@ -294,7 +294,8 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSessionTestServer, PeerAddress) {
-  EXPECT_EQ(IPEndPoint(Loopback4(), kTestPort), session_.peer_address());
+  EXPECT_EQ(QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort),
+            session_.peer_address());
 }
 
 TEST_P(QuicSessionTestServer, IsCryptoHandshakeConfirmed) {

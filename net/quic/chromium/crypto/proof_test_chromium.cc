@@ -140,7 +140,7 @@ TEST_P(ProofTest, DISABLED_Verify) {
   scoped_refptr<ProofSource::Chain> first_chain;
   string error_details;
   QuicCryptoProof proof, first_proof;
-  IPAddress server_ip;
+  QuicIpAddress server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config, quic_version,
                                first_chlo_hash, QuicTagVector(), &first_chain,
@@ -185,7 +185,7 @@ TEST_P(ProofTest, VerifySourceAsync) {
   const string first_chlo_hash = "first chlo hash bytes";
   const string second_chlo_hash = "first chlo hash bytes";
   const QuicVersion quic_version = GetParam();
-  IPAddress server_ip;
+  QuicIpAddress server_ip;
 
   // Call synchronous version
   scoped_refptr<ProofSource::Chain> expected_chain;
@@ -220,7 +220,7 @@ TEST_P(ProofTest, UseAfterFree) {
   scoped_refptr<ProofSource::Chain> chain;
   string error_details;
   QuicCryptoProof proof;
-  IPAddress server_ip;
+  QuicIpAddress server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config, GetParam(),
                                chlo_hash, QuicTagVector(), &chain, &proof));

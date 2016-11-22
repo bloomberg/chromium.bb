@@ -34,7 +34,6 @@
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
 #endif
-
 namespace net {
 namespace {
 
@@ -106,35 +105,27 @@ void QuicServer::Initialize() {
 
 QuicServer::~QuicServer() {}
 
-bool QuicServer::CreateUDPSocketAndListen(const IPEndPoint& address) {
+bool QuicServer::CreateUDPSocketAndListen(const QuicSocketAddress& address) {
   fd_ = QuicSocketUtils::CreateUDPSocket(address, &overflow_supported_);
   if (fd_ < 0) {
     LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
     return false;
   }
 
-  sockaddr_storage raw_addr;
-  socklen_t raw_addr_len = sizeof(raw_addr);
-  CHECK(address.ToSockAddr(reinterpret_cast<sockaddr*>(&raw_addr),
-                           &raw_addr_len));
-  int rc =
-      bind(fd_, reinterpret_cast<const sockaddr*>(&raw_addr), sizeof(raw_addr));
+  sockaddr_storage addr = address.generic_address();
+  int rc = bind(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
   if (rc < 0) {
     LOG(ERROR) << "Bind failed: " << strerror(errno);
     return false;
   }
-
-  DVLOG(1) << "Listening on " << address.ToString();
+  LOG(INFO) << "Listening on " << address.ToString();
+  port_ = address.port();
   if (port_ == 0) {
-    SockaddrStorage storage;
-    IPEndPoint server_address;
-    if (getsockname(fd_, storage.addr, &storage.addr_len) != 0 ||
-        !server_address.FromSockAddr(storage.addr, storage.addr_len)) {
+    QuicSocketAddress address;
+    if (address.FromSocket(fd_) != 0) {
       LOG(ERROR) << "Unable to get self address.  Error: " << strerror(errno);
-      return false;
     }
-    port_ = server_address.port();
-    DVLOG(1) << "Kernel assigned port is " << port_;
+    port_ = address.port();
   }
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);

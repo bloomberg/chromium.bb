@@ -221,8 +221,8 @@ class CryptoTestUtils {
   static void GenerateFullCHLO(
       const CryptoHandshakeMessage& inchoate_chlo,
       QuicCryptoServerConfig* crypto_config,
-      IPAddress server_ip,
-      IPEndPoint client_addr,
+      QuicIpAddress server_ip,
+      QuicSocketAddress client_addr,
       QuicVersion version,
       const QuicClock* clock,
       scoped_refptr<QuicSignedServerConfig> signed_config,

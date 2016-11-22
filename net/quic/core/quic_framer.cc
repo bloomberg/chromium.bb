@@ -426,7 +426,8 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
   if (!FLAGS_quic_remove_packet_number_from_public_reset) {
     reset.SetValue(kRSEQ, packet.rejected_packet_number);
   }
-  if (!packet.client_address.address().empty()) {
+  if (packet.client_address.host().address_family() !=
+      IpAddressFamily::IP_UNSPEC) {
     // packet.client_address is non-empty.
     QuicSocketAddressCoder address_coder(packet.client_address);
     string serialized_address = address_coder.Encode();
@@ -634,7 +635,7 @@ bool QuicFramer::ProcessPublicResetPacket(
     QuicSocketAddressCoder address_coder;
     if (address_coder.Decode(address.data(), address.length())) {
       packet.client_address =
-          IPEndPoint(address_coder.ip(), address_coder.port());
+          QuicSocketAddress(address_coder.ip(), address_coder.port());
     }
   }
 

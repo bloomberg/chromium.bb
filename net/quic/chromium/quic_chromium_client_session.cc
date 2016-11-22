@@ -811,7 +811,8 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
     return;
 
   // Server has sent an alternate address to connect to.
-  IPEndPoint new_address = config()->ReceivedAlternateServerAddress();
+  IPEndPoint new_address =
+      config()->ReceivedAlternateServerAddress().impl().socket_address();
   IPEndPoint old_address;
   GetDefaultSocket()->GetPeerAddress(&old_address);
 
@@ -1339,7 +1340,9 @@ void QuicChromiumClientSession::OnReadError(
 bool QuicChromiumClientSession::OnPacket(const QuicReceivedPacket& packet,
                                          IPEndPoint local_address,
                                          IPEndPoint peer_address) {
-  ProcessUdpPacket(local_address, peer_address, packet);
+  ProcessUdpPacket(QuicSocketAddress(QuicSocketAddressImpl(local_address)),
+                   QuicSocketAddress(QuicSocketAddressImpl(peer_address)),
+                   packet);
   if (!connection()->connected()) {
     NotifyFactoryOfSessionClosedLater();
     return false;

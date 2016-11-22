@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -52,8 +51,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     TransmissionType transmission_type,
                     QuicTime sent_time) override;
   void OnPingSent() override;
-  void OnPacketReceived(const IPEndPoint& self_address,
-                        const IPEndPoint& peer_address,
+  void OnPacketReceived(const QuicSocketAddress& self_address,
+                        const QuicSocketAddress& peer_address,
                         const QuicEncryptedPacket& packet) override;
   void OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnIncorrectConnectionId(QuicConnectionId connection_id) override;
