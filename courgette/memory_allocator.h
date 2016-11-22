@@ -36,6 +36,7 @@ class CheckReturnValue {
       checked_ = other.checked_;
       other.checked_ = true;
     }
+    return *this;
   }
 
   ~CheckReturnValue() {
