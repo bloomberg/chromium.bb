@@ -9312,7 +9312,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             uint8_t drl1_ctx =
                 av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type],
                             mbmi->ref_mv_idx + idx_offset);
-            tmp_rd_stats.rate += cpi->drl_mode_cost0[drl1_ctx][0];
+            tmp_rd_stats.rate +=
+                (tmp_rd_stats.rate < INT_MAX ? cpi->drl_mode_cost0[drl1_ctx][0]
+                                             : 0);
           }
 
           if (tmp_alt_rd < INT64_MAX) {
