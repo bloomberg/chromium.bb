@@ -5,6 +5,7 @@
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 
 #include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
+#include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
@@ -19,7 +20,7 @@ static const int kVideoCaptureHeight = 288;
 static const int kVideoCaptureFrameDurationMs = 33;
 
 bool IsMockMediaStreamWithVideo(const WebMediaStream& web_stream) {
-#if ENABLE_WEBRTC
+#if BUILDFLAG(ENABLE_WEBRTC)
   if (web_stream.isNull())
     return false;
   WebVector<WebMediaStreamTrack> video_tracks;

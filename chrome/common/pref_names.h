@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 namespace prefs {
@@ -442,7 +443,7 @@ extern const char kToolbarIconSurfacingBubbleLastShowTime[];
 extern const char kToolbarMigratedComponentActionStatus[];
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 extern const char kWebRTCMultipleRoutesEnabled[];
 extern const char kWebRTCNonProxiedUdpEnabled[];
 extern const char kWebRTCIPHandlingPolicy[];

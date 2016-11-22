@@ -21,6 +21,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "extensions/features/features.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "v8/include/v8.h"
@@ -75,7 +76,7 @@ namespace blink {
 class WebSecurityOrigin;
 }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 class WebRtcLoggingMessageFilter;
 #endif
 
@@ -244,7 +245,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   std::unique_ptr<subresource_filter::RulesetDealer>
       subresource_filter_ruleset_dealer_;
   std::unique_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

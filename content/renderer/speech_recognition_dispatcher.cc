@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/renderer/render_view_impl.h"
+#include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebSpeechGrammar.h"
@@ -18,7 +19,7 @@
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/renderer/media/speech_recognition_audio_sink.h"
 #endif
 
@@ -77,7 +78,7 @@ void SpeechRecognitionDispatcher::start(
   DCHECK(!recognizer_client_ || recognizer_client_ == recognizer_client);
   recognizer_client_ = recognizer_client;
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   const blink::WebMediaStreamTrack track = params.audioTrack();
   if (!track.isNull()) {
     // Check if this type of track is allowed by implemented policy.
@@ -115,7 +116,7 @@ void SpeechRecognitionDispatcher::start(
   msg_params.origin_url = params.origin().toString().utf8();
   msg_params.render_view_id = routing_id();
   msg_params.request_id = GetOrCreateIDForHandle(handle);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Fall back to default input when the track is not allowed.
   msg_params.using_audio_track = !audio_track_.isNull();
 #else
@@ -267,7 +268,7 @@ void SpeechRecognitionDispatcher::OnAudioReceiverReady(
     const media::AudioParameters& params,
     const base::SharedMemoryHandle memory,
     const base::SyncSocket::TransitDescriptor descriptor) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(!speech_audio_sink_.get());
   if (audio_track_.isNull()) {
     ResetAudioSink();
@@ -314,7 +315,7 @@ bool SpeechRecognitionDispatcher::HandleExists(
 }
 
 void SpeechRecognitionDispatcher::ResetAudioSink() {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   speech_audio_sink_.reset();
 #endif
 }

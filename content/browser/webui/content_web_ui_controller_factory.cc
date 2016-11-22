@@ -17,8 +17,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
+#include "media/media_features.h"
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/browser/webrtc/webrtc_internals_ui.h"
 #endif
 
@@ -79,7 +80,7 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     return new TracingUI(web_ui);
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   if (url.host_piece() == kChromeUIWebRTCInternalsHost)
     return new WebRTCInternalsUI(web_ui);
 #endif

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_version.gni")

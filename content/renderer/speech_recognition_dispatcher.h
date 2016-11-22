@@ -13,6 +13,7 @@
 #include "base/sync_socket.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionHandle.h"
@@ -24,7 +25,7 @@ class AudioParameters;
 
 namespace content {
 class RenderViewImpl;
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 class SpeechRecognitionAudioSink;
 #endif
 struct SpeechRecognitionError;
@@ -79,7 +80,7 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   // The WebKit client class that we use to send events back to the JS world.
   blink::WebSpeechRecognizerClient* recognizer_client_;
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Media stream audio track that the speech recognition connects to.
   // Accessed on the render thread.
   blink::WebMediaStreamTrack audio_track_;

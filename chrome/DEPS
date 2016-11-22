@@ -24,6 +24,7 @@ include_rules = [
   "+components/variations",
   "+content/public/common",
   "+content/public/test",
+  "+media/media_features.h",
   "+mojo/common",
   "+mojo/public",
   "+ppapi/features",

@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
+#include "media/media_features.h"
 
 namespace gpu {
 
@@ -51,7 +52,7 @@ struct GPU_EXPORT GpuPreferences {
   bool disable_vaapi_accelerated_video_encode = false;
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Disables HW encode acceleration for WebRTC.
   bool disable_web_rtc_hw_encoding = false;
 #endif

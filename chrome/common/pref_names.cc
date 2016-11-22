@@ -9,6 +9,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 namespace prefs {
@@ -1288,7 +1289,7 @@ const char kToolbarMigratedComponentActionStatus[] =
     "toolbar_migrated_component_action_status";
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 // Whether WebRTC should bind to individual NICs to explore all possible routing
 // options. Default is true. This has become obsoleted and replaced by
 // kWebRTCIPHandlingPolicy. TODO(guoweis): Remove this at M50.

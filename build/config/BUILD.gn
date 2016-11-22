@@ -136,9 +136,6 @@ config("feature_flags") {
   if (use_external_popup_menu) {
     defines += [ "USE_EXTERNAL_POPUP_MENU=1" ]
   }
-  if (enable_webrtc) {
-    defines += [ "ENABLE_WEBRTC=1" ]
-  }
   if (!enable_nacl) {
     defines += [ "DISABLE_NACL" ]
   }

@@ -25,6 +25,7 @@
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -348,7 +349,7 @@ bool TestingBrowserProcess::created_local_state() const {
   return (local_state_ != nullptr);
 }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
   return nullptr;
 }

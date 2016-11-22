@@ -43,6 +43,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_logging.h"
 #include "media/audio/simple_sources.h"
+#include "media/media_features.h"
 
 namespace media {
 class AudioManager;
@@ -109,7 +110,7 @@ class CONTENT_EXPORT AudioInputRendererHost
                          AudioMirroringManager* audio_mirroring_manager,
                          media::UserInputMonitor* user_input_monitor);
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Enable and disable debug recording of input on all audio entries.
   void EnableDebugRecording(const base::FilePath& file);
   void DisableDebugRecording();
@@ -222,7 +223,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   void MaybeUnregisterKeyboardMicStream(
       const AudioInputHostMsg_CreateStream_Config& config);
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   void MaybeEnableDebugRecordingForId(int stream_id);
 
   base::FilePath GetDebugRecordingFilePathWithExtensions(

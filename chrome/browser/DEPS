@@ -36,7 +36,6 @@ include_rules = [
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/cdm/cdm_paths.h",
-  "+media/media_features.h",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
   "+services/image_decoder/public/cpp",

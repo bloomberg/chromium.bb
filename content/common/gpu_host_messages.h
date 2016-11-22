@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
+#include "media/media_features.h"
 #include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -69,7 +70,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
 #if defined(OS_CHROMEOS)
   IPC_STRUCT_TRAITS_MEMBER(disable_vaapi_accelerated_video_encode)
 #endif
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   IPC_STRUCT_TRAITS_MEMBER(disable_web_rtc_hw_encoding)
 #endif
 #if defined(OS_WIN)

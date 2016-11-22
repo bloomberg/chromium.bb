@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "printing/features/features.h"
 
 class BackgroundModeManager;
@@ -121,7 +122,7 @@ class TestingBrowserProcess : public BrowserProcess {
   MediaFileSystemRegistry* media_file_system_registry() override;
   bool created_local_state() const override;
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcLogUploader* webrtc_log_uploader() override;
 #endif
 

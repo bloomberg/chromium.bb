@@ -14,6 +14,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
+#include "media/media_features.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -80,7 +81,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kEnableDoNotTrack,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // TODO(guoweis): Remove next 2 options at M50.
   registry->RegisterBooleanPref(prefs::kWebRTCMultipleRoutesEnabled, true);
   registry->RegisterBooleanPref(prefs::kWebRTCNonProxiedUdpEnabled, true);

@@ -13,6 +13,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
+import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -125,6 +126,7 @@ static_library("test_support") {
     "//content/test:test_support",
     "//extensions/features",
     "//gpu/ipc/service",
+    "//media:media_features",
     "//net",
     "//net:test_support",
     "//ppapi/features",
@@ -1228,6 +1230,7 @@ test("browser_tests") {
     "//components/spellcheck:build_features",
     "//components/sync:test_support_model",
     "//extensions/features",
+    "//media:media_features",
     "//ppapi/features",
     "//printing/features",
     "//third_party/WebKit/public:features",
@@ -3457,6 +3460,7 @@ test("unit_tests") {
     "//courgette:courgette_lib",
     "//extensions/features",
     "//google_apis",
+    "//media:media_features",
     "//ppapi/features",
     "//skia",
     "//third_party/cacheinvalidation",

@@ -9,6 +9,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/media_features.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -43,7 +44,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.disable_vaapi_accelerated_video_encode =
       command_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode);
 #endif
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   gpu_preferences.disable_web_rtc_hw_encoding =
       command_line->HasSwitch(switches::kDisableWebRtcHWEncoding) &&
       command_line->GetSwitchValueASCII(switches::kDisableWebRtcHWEncoding)

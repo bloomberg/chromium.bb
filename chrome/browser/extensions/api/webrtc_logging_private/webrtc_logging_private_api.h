@@ -8,12 +8,14 @@
 #include <string>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#if defined(ENABLE_WEBRTC)
+#include "chrome/common/extensions/api/webrtc_logging_private.h"
+#include "media/media_features.h"
+
+#if BUILDFLAG(ENABLE_WEBRTC)
 #include "chrome/browser/media/audio_debug_recordings_handler.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_handler.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #endif
-#include "chrome/common/extensions/api/webrtc_logging_private.h"
 
 namespace content {
 
@@ -27,7 +29,7 @@ class WebrtcLoggingPrivateFunction : public ChromeAsyncExtensionFunction {
  protected:
   ~WebrtcLoggingPrivateFunction() override {}
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Returns the RenderProcessHost associated with the given |request|
   // authorized by the |security_origin|. Returns null if unauthorized or
   // the RPH does not exist.
@@ -46,7 +48,7 @@ class WebrtcLoggingPrivateFunctionWithGenericCallback
  protected:
   ~WebrtcLoggingPrivateFunctionWithGenericCallback() override {}
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Finds the appropriate logging handler for performing the task and prepares
   // a generic callback object for when the task is completed.
   // If the logging handler can't be found for the given request+origin, the
@@ -66,7 +68,7 @@ class WebrtcLoggingPrivateFunctionWithUploadCallback
  protected:
   ~WebrtcLoggingPrivateFunctionWithUploadCallback() override {}
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Must be called on UI thread.
   void FireCallback(bool success, const std::string& report_id,
                     const std::string& error_message);
@@ -78,7 +80,7 @@ class WebrtcLoggingPrivateFunctionWithRecordingDoneCallback
  protected:
   ~WebrtcLoggingPrivateFunctionWithRecordingDoneCallback() override {}
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Must be called on UI thread.
   void FireErrorCallback(const std::string& error_message);
   void FireCallback(const std::string& prefix_path,

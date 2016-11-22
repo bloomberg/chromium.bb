@@ -1443,6 +1443,7 @@ split_static_library("browser") {
     "//google_apis",
     "//gpu/config",
     "//media",
+    "//media:media_features",
     "//media/midi",
     "//mojo/common",
     "//mojo/edk/system",

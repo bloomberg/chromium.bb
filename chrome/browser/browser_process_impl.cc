@@ -118,6 +118,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
@@ -162,7 +163,7 @@
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #endif
 
@@ -353,7 +354,7 @@ void BrowserProcessImpl::StartTearDown() {
 
   platform_part()->StartTearDown();
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Cancel any uploads to release the system url request context references.
   if (webrtc_log_uploader_)
     webrtc_log_uploader_->StartShutdown();
@@ -367,7 +368,7 @@ void BrowserProcessImpl::PostDestroyThreads() {
   // With the file_thread_ flushed, we can release any icon resources.
   icon_manager_.reset();
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Must outlive the file thread.
   webrtc_log_uploader_.reset();
 #endif
@@ -745,7 +746,7 @@ bool BrowserProcessImpl::created_local_state() const {
   return created_local_state_;
 }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
   if (!webrtc_log_uploader_.get())
     webrtc_log_uploader_.reset(new WebRtcLogUploader());

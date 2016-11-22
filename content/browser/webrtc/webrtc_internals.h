@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "media/media_features.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace device {
@@ -147,7 +148,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Enables diagnostic audio recordings on all render process hosts using
   // |audio_debug_recordings_file_path_|.
   void EnableAudioDebugRecordingsOnAllRenderProcessHosts();

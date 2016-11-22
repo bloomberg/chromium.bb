@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/shell_integration.h"
+#include "media/media_features.h"
 
 class BackgroundModeManager;
 class CRLSetFetcher;
@@ -39,7 +40,7 @@ class Profile;
 class ProfileManager;
 class StatusTray;
 class WatchDogThread;
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 class WebRtcLogUploader;
 #endif
 
@@ -262,7 +263,7 @@ class BrowserProcess {
 
   virtual bool created_local_state() const = 0;
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   virtual WebRtcLogUploader* webrtc_log_uploader() = 0;
 #endif
 

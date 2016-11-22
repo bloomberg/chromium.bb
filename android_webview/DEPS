@@ -20,6 +20,8 @@ include_rules = [
   "+gpu",
   "+grit/components_strings.h",
   "+jni",
+  # Only this one header in media which doesn't depend on anything else.
+  "+media/media_features.h",
   "+net",
   "+skia",
   "+third_party/skia/include",

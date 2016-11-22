@@ -42,6 +42,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
+#include "media/media_features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
@@ -82,7 +83,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableNotifications);
 
   // WebRTC hardware decoding is not supported, internal bug 15075307
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
 #endif
 

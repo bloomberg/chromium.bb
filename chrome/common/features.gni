@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//extensions/features/features.gni")
+import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
@@ -96,6 +97,7 @@ chrome_grit_defines = [
   "enable_printing=$_enable_printing",
   "enable_service_discovery=$enable_service_discovery",
   "enable_vr_shell=$enable_vr_shell",
+  "enable_webrtc=$enable_webrtc",
   "enable_webvr=$enable_webvr",
   "safe_browsing_mode=$safe_browsing_mode",
   "use_vulcanize=$use_vulcanize",

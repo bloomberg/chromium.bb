@@ -49,8 +49,9 @@
 #include "content/common/utility_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "media/media_features.h"
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/common/p2p_messages.h"
 #endif
 

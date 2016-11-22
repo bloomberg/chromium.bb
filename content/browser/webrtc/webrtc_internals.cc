@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/media_features.h"
 
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
@@ -85,7 +86,7 @@ WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
       weak_factory_(this) {
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   audio_debug_recordings_file_path_ =
       GetContentClient()->browser()->GetDefaultDownloadDirectory();
   event_log_recordings_file_path_ = audio_debug_recordings_file_path_;
@@ -103,7 +104,7 @@ WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
     event_log_recordings_file_path_ =
         event_log_recordings_file_path_.Append(FILE_PATH_LITERAL("event_log"));
   }
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 
 WebRTCInternals::~WebRTCInternals() {
@@ -295,7 +296,7 @@ void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
 void WebRTCInternals::EnableAudioDebugRecordings(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 #if defined(OS_ANDROID)
   EnableAudioDebugRecordingsOnAllRenderProcessHosts();
 #else
@@ -317,7 +318,7 @@ void WebRTCInternals::EnableAudioDebugRecordings(
 
 void WebRTCInternals::DisableAudioDebugRecordings() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   audio_debug_recordings_ = false;
 
   // Tear down the dialog since the user has unchecked the audio debug
@@ -345,7 +346,7 @@ const base::FilePath& WebRTCInternals::GetAudioDebugRecordingsFilePath() const {
 void WebRTCInternals::EnableEventLogRecordings(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 #if defined(OS_ANDROID)
   EnableEventLogRecordingsOnAllRenderProcessHosts();
 #else
@@ -362,7 +363,7 @@ void WebRTCInternals::EnableEventLogRecordings(
 }
 
 void WebRTCInternals::DisableEventLogRecordings() {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   event_log_recordings_ = false;
   // Tear down the dialog since the user has unchecked the event log checkbox.
   select_file_dialog_ = nullptr;
@@ -410,7 +411,7 @@ void WebRTCInternals::RenderProcessHostDestroyed(RenderProcessHost* host) {
 void WebRTCInternals::FileSelected(const base::FilePath& path,
                                    int /* unused_index */,
                                    void* /*unused_params */) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (selecting_event_log_) {
     event_log_recordings_file_path_ = path;
@@ -423,7 +424,7 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
 }
 
 void WebRTCInternals::FileSelectionCanceled(void* params) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (selecting_event_log_) {
     SendUpdate("eventLogRecordingsFileSelectionCancelled", nullptr);
@@ -485,7 +486,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   }
 }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

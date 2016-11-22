@@ -9,6 +9,7 @@ source_set("test") {
   ]
 
   deps = [
+    "//content/public/common",
     "//extensions/common/api",
   ]
 }

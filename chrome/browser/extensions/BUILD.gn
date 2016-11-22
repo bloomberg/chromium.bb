@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//extensions/features/features.gni")
+import("//media/media_options.gni")
 
 assert(enable_extensions)
 
@@ -890,6 +891,7 @@ static_library("extensions") {
     "//extensions/common/api",
     "//extensions/features",
     "//extensions/strings",
+    "//media:media_features",
     "//net",
     "//ppapi/features",
     "//printing/features",

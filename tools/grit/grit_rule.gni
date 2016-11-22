@@ -246,12 +246,6 @@ if (enable_themes) {
     "enable_themes",
   ]
 }
-if (enable_webrtc) {
-  grit_defines += [
-    "-D",
-    "enable_webrtc",
-  ]
-}
 if (enable_task_manager) {
   grit_defines += [
     "-D",

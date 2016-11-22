@@ -166,6 +166,7 @@ target(link_target_type, "service_sources") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config:config_sources",
     "//gpu/ipc/common:surface_handle_type",
+    "//media:media_features",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",
     "//third_party/angle:translator",

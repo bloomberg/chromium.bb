@@ -39,6 +39,7 @@
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "media/media_features.h"
 
 namespace content {
 
@@ -125,7 +126,7 @@ Shell* Shell::CreateShell(WebContents* web_contents,
     web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
     web_contents->GetMutableRendererPrefs()->webrtc_ip_handling_policy =

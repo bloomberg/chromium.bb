@@ -11,6 +11,7 @@
 #include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
+#include "media/media_features.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -78,7 +79,7 @@ void PepperMediaDeviceManager::EnumerateDevices(
     PP_DeviceType_Dev type,
     const GURL& document_url,
     const DevicesCallback& callback) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   bool request_audio_input = type == PP_DEVICETYPE_DEV_AUDIOCAPTURE;
   bool request_video_input = type == PP_DEVICETYPE_DEV_VIDEOCAPTURE;
   CHECK(request_audio_input || request_video_input);
@@ -99,7 +100,7 @@ uint32_t PepperMediaDeviceManager::StartMonitoringDevices(
     PP_DeviceType_Dev type,
     const GURL& document_url,
     const DevicesCallback& callback) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
       MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
   return event_dispatcher->SubscribeDeviceChangeNotifications(
@@ -113,7 +114,7 @@ uint32_t PepperMediaDeviceManager::StartMonitoringDevices(
 
 void PepperMediaDeviceManager::StopMonitoringDevices(PP_DeviceType_Dev type,
                                                      uint32_t subscription_id) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
       MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
   event_dispatcher->UnsubscribeDeviceChangeNotifications(
@@ -128,7 +129,7 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
   open_callbacks_[next_id_] = callback;
   int request_id = next_id_++;
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->OpenDevice(
       request_id, AsWeakPtr(), device_id,
       PepperMediaDeviceManager::FromPepperDeviceType(type),
@@ -145,20 +146,20 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
 void PepperMediaDeviceManager::CancelOpenDevice(int request_id) {
   open_callbacks_.erase(request_id);
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->CancelOpenDevice(request_id, AsWeakPtr());
 #endif
 }
 
 void PepperMediaDeviceManager::CloseDevice(const std::string& label) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->CloseDevice(label);
 #endif
 }
 
 int PepperMediaDeviceManager::GetSessionID(PP_DeviceType_Dev type,
                                            const std::string& label) {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   switch (type) {
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
       return GetMediaStreamDispatcher()->audio_session_id(label, 0);

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
+#include "media/media_features.h"
 #include "printing/features/features.h"
 
 namespace chrome {
@@ -129,7 +130,7 @@ extern const char kChromeUIMetroFlowURL[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 extern const char kChromeUIWebRtcLogsURL[];
 #endif
 
@@ -313,7 +314,7 @@ extern const char kChromeUIMetroFlowHost[];
 extern const char kChromeUITabModalConfirmDialogHost[];
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 extern const char kChromeUIWebRtcLogsHost[];
 #endif
 

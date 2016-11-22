@@ -13,6 +13,7 @@
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/sandbox_type.h"
 #include "media/base/cdm_factory.h"
+#include "media/media_features.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -202,13 +203,13 @@ bool ContentBrowserClient::AllowWorkerIndexedDB(
   return true;
 }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 bool ContentBrowserClient::AllowWebRTCIdentityCache(const GURL& url,
                                                     const GURL& first_party_url,
                                                     ResourceContext* context) {
   return true;
 }
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 bool ContentBrowserClient::AllowKeygen(const GURL& url,
                                        content::ResourceContext* context) {

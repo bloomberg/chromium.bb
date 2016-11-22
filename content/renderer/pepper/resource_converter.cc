@@ -13,6 +13,7 @@
 #include "content/renderer/pepper/pepper_media_stream_audio_track_host.h"
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 #include "ipc/ipc_message.h"
+#include "media/media_features.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -166,7 +167,7 @@ bool DOMMediaStreamTrackToResource(
     std::unique_ptr<IPC::Message>* create_message) {
   DCHECK(!dom_media_stream_track.isNull());
   *pending_renderer_id = 0;
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   const blink::WebMediaStreamTrack track = dom_media_stream_track.component();
   const std::string id = track.source().id().utf8();
 

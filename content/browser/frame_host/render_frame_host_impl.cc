@@ -2293,7 +2293,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // BrowserMainLoop::GetInstance() may be null on unit tests.
   if (BrowserMainLoop::GetInstance()) {
     // BrowserMainLoop, which owns MediaStreamManager, is alive for the lifetime

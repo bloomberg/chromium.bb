@@ -51,6 +51,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/variations/pref_names.h"
 #include "extensions/features/features.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -411,11 +412,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kEnableMediaRouter,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(ENABLE_MEDIA_ROUTER)
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   { key::kWebRtcUdpPortRange,
     prefs::kWebRTCUDPPortRange,
     base::Value::TYPE_STRING },
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 #if !defined(OS_MACOSX)
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,

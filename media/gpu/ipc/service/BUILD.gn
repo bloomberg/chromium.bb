@@ -39,6 +39,7 @@ target(link_target_type, "service") {
   ]
   deps = [
     "//gpu/ipc/service",
+    "//media:media_features",
     "//media/gpu/ipc/common",
     "//third_party/mesa:mesa_headers",
     "//ui/gfx/ipc/color",

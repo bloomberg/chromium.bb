@@ -26,6 +26,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
 #include "media/audio/audio_manager.h"
+#include "media/media_features.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
@@ -371,14 +372,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_frames);
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Allow the embedder to control if WebRTC identities are allowed to be cached
   // and potentially reused for future requests (within the same origin).
   // This is called on the IO thread.
   virtual bool AllowWebRTCIdentityCache(const GURL& url,
                                         const GURL& first_party_url,
                                         ResourceContext* context);
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
   // Allow the embedder to control whether we can use <keygen>.
   virtual bool AllowKeygen(const GURL& url, content::ResourceContext* context);

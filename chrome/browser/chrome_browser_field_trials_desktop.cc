@@ -20,6 +20,7 @@
 #include "components/browser_watcher/features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"
+#include "media/media_features.h"
 
 #if defined(OS_WIN)
 #include "components/browser_watcher/stability_debugging_win.h"
@@ -30,7 +31,7 @@ namespace chrome {
 namespace {
 
 void SetupStunProbeTrial() {
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   std::map<std::string, std::string> params;
   if (!variations::GetVariationParams("StunProbeTrial2", &params))
     return;

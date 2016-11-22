@@ -47,6 +47,11 @@ if (enable_nacl) {
       "//content/public/common/process_type.h",
       "//content/public/common/sandbox_type.h",
     ]
+
+    # Deps required by the above headers.
+    deps = [
+      "//media:media_features",
+    ]
   }
 
   static_library("common") {

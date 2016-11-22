@@ -29,6 +29,7 @@
 #include "components/offline_pages/offline_page_model.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
@@ -455,7 +456,7 @@ class BrowsingDataRemover : public KeyedService
   // Callback on UI thread when the storage partition related data are cleared.
   void OnClearedStoragePartitionData();
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Callback on UI thread when the WebRTC logs have been deleted.
   void OnClearedWebRtcLogs();
 #endif
@@ -543,7 +544,7 @@ class BrowsingDataRemover : public KeyedService
   bool waiting_for_clear_offline_page_data_ = false;
 #endif
   bool waiting_for_clear_storage_partition_data_ = false;
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   bool waiting_for_clear_webrtc_logs_ = false;
 #endif
   bool waiting_for_clear_auto_sign_in_ = false;

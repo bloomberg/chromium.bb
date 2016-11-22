@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "media/media_features.h"
 #include "ui/gl/gl_switches.h"
 
 namespace content {
@@ -113,7 +114,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      "Accelerated video decode has been disabled, either via blacklist,"
      " about:flags or the command line.",
      true},
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
     {"video_encode", manager->IsFeatureBlacklisted(
                          gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
      command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),

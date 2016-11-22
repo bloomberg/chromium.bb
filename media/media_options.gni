@@ -44,6 +44,8 @@ declare_args() {
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
   # platform. Enable by default for Chromecast.
   enable_hevc_demuxing = proprietary_codecs && is_chromecast
+
+  enable_webrtc = !is_ios
 }
 
 # Use a second declare_args() to pick up possible overrides of |use_cras|.

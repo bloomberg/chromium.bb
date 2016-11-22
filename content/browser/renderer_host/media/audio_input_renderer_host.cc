@@ -29,12 +29,13 @@
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_switches.h"
+#include "media/media_features.h"
 
 namespace content {
 
 namespace {
 
-#ifdef ENABLE_WEBRTC
+#if BUILDFLAG(ENABLE_WEBRTC)
 const base::FilePath::CharType kDebugRecordingFileNameAddition[] =
     FILE_PATH_LITERAL("source_input");
 const base::FilePath::CharType kDebugRecordingFileNameExtension[] =
@@ -112,7 +113,7 @@ AudioInputRendererHost::~AudioInputRendererHost() {
   DCHECK(audio_entries_.empty());
 }
 
-#ifdef ENABLE_WEBRTC
+#if BUILDFLAG(ENABLE_WEBRTC)
 void AudioInputRendererHost::EnableDebugRecording(const base::FilePath& file) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::FilePath file_with_extensions =
@@ -388,7 +389,7 @@ void AudioInputRendererHost::DoCreateStream(
     return;
   }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   std::unique_ptr<media::AudioInputWriter> debug_writer(
       new AudioInputDebugWriter(audio_params));
 #else
@@ -460,7 +461,7 @@ void AudioInputRendererHost::DoCreateStream(
   MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log_.get());
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -602,7 +603,7 @@ void AudioInputRendererHost::MaybeUnregisterKeyboardMicStream(
 #endif
 }
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 void AudioInputRendererHost::MaybeEnableDebugRecordingForId(int stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
@@ -645,6 +646,6 @@ void AudioInputRendererHost::EnableDebugRecordingForId(
 
 #undef IntToStringType
 
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 }  // namespace content

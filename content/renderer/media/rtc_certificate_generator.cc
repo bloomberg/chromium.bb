@@ -14,6 +14,7 @@
 #include "content/renderer/media/rtc_certificate.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/media_features.h"
 #include "third_party/webrtc/base/rtccertificate.h"
 #include "third_party/webrtc/base/rtccertificategenerator.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
@@ -136,7 +137,7 @@ void RTCCertificateGenerator::generateCertificateWithOptionalExpiration(
     const rtc::Optional<uint64_t>& expires_ms,
     std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
   DCHECK(isSupportedKeyParams(key_params));
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread =
       base::ThreadTaskRunnerHandle::Get();
   PeerConnectionDependencyFactory* pc_dependency_factory =

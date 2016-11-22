@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//remoting/build/config/remoting_build.gni")
-import("//remoting/host/installer/win/generate_clsids.gni")
 import("//build/toolchain/win/midl.gni")
 import("//build/win/message_compiler.gni")
+import("//media/media_options.gni")
+import("//remoting/build/config/remoting_build.gni")
+import("//remoting/host/installer/win/generate_clsids.gni")
 
 group("all") {
   testonly = true

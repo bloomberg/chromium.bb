@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//extensions/features/features.gni")
+import("//media/media_options.gni")
 import("//tools/json_schema_compiler/json_features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
@@ -77,9 +78,8 @@ schema_sources = [
   "types.json",
   "web_navigation.json",
 
-  # Despite the name, this API does not rely on any
-  # WebRTC-specific bits and as such does not belong in
-  # the enable_webrtc==0 section below.
+  # Despite the name, these APIs do not rely on any WebRTC-specific bits and as
+  # such do not belong in a conditional.
   "webrtc_audio_private.idl",
   "webrtc_desktop_capture_private.idl",
   "webrtc_logging_private.idl",

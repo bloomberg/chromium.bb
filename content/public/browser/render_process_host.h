@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
+#include "media/media_features.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -229,7 +230,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // |empty_allowed| must be set to false for navigations for security reasons.
   virtual void FilterURL(bool empty_allowed, GURL* url) = 0;
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   virtual void EnableAudioDebugRecordings(const base::FilePath& file) = 0;
   virtual void DisableAudioDebugRecordings() = 0;
 

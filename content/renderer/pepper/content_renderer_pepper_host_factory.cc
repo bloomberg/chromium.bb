@@ -32,6 +32,7 @@
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "media/media_features.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -52,7 +53,7 @@ namespace content {
 
 namespace {
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
   blink::WebPluginContainer* container =
       host->GetContainerForInstance(instance);
@@ -64,7 +65,7 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
       GetContentClient()->renderer();
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
 }
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
                                   PP_Instance instance) {
@@ -183,7 +184,7 @@ ContentRendererPepperHostFactory::CreateResourceHost(
                                                       resource);
     case PpapiHostMsg_WebSocket_Create::ID:
       return base::MakeUnique<PepperWebSocketHost>(host_, instance, resource);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
     case PpapiHostMsg_MediaStreamVideoTrack_Create::ID:
       return base::MakeUnique<PepperMediaStreamVideoTrackHost>(host_, instance,
                                                                resource);
@@ -198,7 +199,7 @@ ContentRendererPepperHostFactory::CreateResourceHost(
       if (CanUseMediaStreamAPI(host_, instance))
         return base::MakeUnique<PepperVideoSourceHost>(host_, instance,
                                                        resource);
-#endif  // defined(ENABLE_WEBRTC)
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
   }
 
   // Dev interfaces.

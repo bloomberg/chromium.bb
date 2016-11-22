@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//chrome/common/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
+import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//tools/grit/grit_rule.gni")
 

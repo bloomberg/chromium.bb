@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
+#include "media/media_features.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -37,7 +38,7 @@
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
 namespace {
 
 // Parses a string |range| with a port range in the form "<min>-<max>".
@@ -89,7 +90,7 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
   prefs->webrtc_ip_handling_policy = std::string();
   // Handling the backward compatibility of previous boolean verions of policy
   // controls.

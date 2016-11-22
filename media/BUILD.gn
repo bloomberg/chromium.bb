@@ -22,6 +22,7 @@ buildflag_header("media_features") {
     "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
+    "ENABLE_WEBRTC=$enable_webrtc",
   ]
 }
 
