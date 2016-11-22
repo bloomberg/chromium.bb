@@ -356,12 +356,12 @@ public class NewTabPage
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
-            if (article.mIsDownloadedAsset) {
+            if (article.mIsAssetDownload) {
                 assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
                         || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
                         || windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB;
                 DownloadUtils.openFile(
-                        article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
+                        article.getAssetDownloadFile(), article.getAssetDownloadMimeType(), false);
                 return;
             }
 

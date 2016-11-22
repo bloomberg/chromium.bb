@@ -60,17 +60,14 @@ public class SnippetArticle {
     /** To be run when the offline status of the article or AMP article changes. */
     private Runnable mOfflineStatusChangeRunnable;
 
-    /** Whether the linked article represents a downloaded asset. */
-    public boolean mIsDownloadedAsset;
+    /** Whether the linked article represents an asset download. */
+    public boolean mIsAssetDownload;
 
-    /** The path to the downloaded asset (only for download asset articles). */
-    private String mDownloadAssetPath;
+    /** The path to the asset download (only for asset download articles). */
+    private File mAssetDownloadFile;
 
-    /** The downloaded asset (only for download asset articles). */
-    private File mFile;
-
-    /** The mime type of the downloaded asset (only for download asset articles). */
-    private String mDownloadAssetMimeType;
+    /** The mime type of the asset download (only for asset download articles). */
+    private String mAssetDownloadMimeType;
 
     /** The tab id of the corresponding tab (only for recent tab articles). */
     private String mRecentTabId;
@@ -144,42 +141,41 @@ public class SnippetArticle {
     }
 
     /**
-     * @return the downloaded asset. May only be called if mIsDownloadedAsset is {@code true} and
-     * this snippet belongs to DOWNLOADS category.
-     */
-    public File getDownloadAssetFile() {
-        assert isDownload();
-        if (mFile == null) mFile = new File(mDownloadAssetPath);
-        return mFile;
-    }
-
-    /**
-     * @return the mime type of the download asset. May only be called if mIsDownloadAsset is
+     * @return the asset download path. May only be called if {@link mIsAssetDownload} is
      * {@code true} and this snippet belongs to DOWNLOADS category.
      */
-    public String getDownloadAssetMimeType() {
+    public File getAssetDownloadFile() {
         assert isDownload();
-        return mDownloadAssetMimeType;
+        return mAssetDownloadFile;
     }
 
     /**
-     * Marks the article suggestion as a download asset with the given path and mime type. May only
+     * @return the mime type of the asset download. May only be called if {@link mIsAssetDownload}
+     * is {@code true} and this snippet belongs to DOWNLOADS category.
+     */
+    public String getAssetDownloadMimeType() {
+        assert isDownload();
+        return mAssetDownloadMimeType;
+    }
+
+    /**
+     * Marks the article suggestion as an asset download with the given path and mime type. May only
      * be called if this snippet belongs to DOWNLOADS category.
      */
-    public void setDownloadAssetData(String filePath, String mimeType) {
+    public void setAssetDownloadData(String filePath, String mimeType) {
         assert isDownload();
-        mIsDownloadedAsset = true;
-        mDownloadAssetPath = filePath;
-        mDownloadAssetMimeType = mimeType;
+        mIsAssetDownload = true;
+        mAssetDownloadFile = new File(filePath);
+        mAssetDownloadMimeType = mimeType;
     }
 
     /**
-     * Marks the article suggestion as a download offline page with the given id. May only be called
-     * if this snippet belongs to DOWNLOADS category.
+     * Marks the article suggestion as an offline page download with the given id. May only
+     * be called if this snippet belongs to DOWNLOADS category.
      */
-    public void setDownloadOfflinePageData(long offlinePageId) {
+    public void setOfflinePageDownloadData(long offlinePageId) {
         assert isDownload();
-        mIsDownloadedAsset = false;
+        mIsAssetDownload = false;
         setOfflinePageOfflineId(offlinePageId);
     }
 

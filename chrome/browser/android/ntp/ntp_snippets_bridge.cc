@@ -61,37 +61,38 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
   ScopedJavaLocalRef<jobject> result =
       Java_SnippetsBridge_createSuggestionList(env);
   for (const ContentSuggestion& suggestion : suggestions) {
-    Java_SnippetsBridge_addSuggestion(
-        env, result, category.id(),
-        ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
-        ConvertUTF16ToJavaString(env, suggestion.title()),
-        ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
-        ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
-        ConvertUTF8ToJavaString(env, suggestion.url().spec()),
-        ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
-        suggestion.publish_date().ToJavaTime(), suggestion.score(),
-        static_cast<int>(info.card_layout()));
+    ScopedJavaLocalRef<jobject> java_suggestion =
+        Java_SnippetsBridge_addSuggestion(
+            env, result, category.id(),
+            ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
+            ConvertUTF16ToJavaString(env, suggestion.title()),
+            ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
+            ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
+            ConvertUTF8ToJavaString(env, suggestion.url().spec()),
+            ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
+            suggestion.publish_date().ToJavaTime(), suggestion.score(),
+            static_cast<int>(info.card_layout()));
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::DOWNLOADS) &&
         suggestion.download_suggestion_extra() != nullptr) {
       if (suggestion.download_suggestion_extra()->is_download_asset) {
-        Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
-            env, result,
+        Java_SnippetsBridge_setAssetDownloadDataForSuggestion(
+            env, java_suggestion,
             ConvertUTF8ToJavaString(env, suggestion.download_suggestion_extra()
                                              ->target_file_path.value()),
             ConvertUTF8ToJavaString(
                 env, suggestion.download_suggestion_extra()->mime_type));
       } else {
-        Java_SnippetsBridge_setDownloadOfflinePageDataForLastSuggestion(
-            env, result,
+        Java_SnippetsBridge_setOfflinePageDownloadDataForSuggestion(
+            env, java_suggestion,
             suggestion.download_suggestion_extra()->offline_page_id);
       }
     }
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::RECENT_TABS) &&
         suggestion.recent_tab_suggestion_extra() != nullptr) {
-      Java_SnippetsBridge_setRecentTabDataForLastSuggestion(
-          env, result,
+      Java_SnippetsBridge_setRecentTabDataForSuggestion(
+          env, java_suggestion,
           ConvertUTF8ToJavaString(
               env, suggestion.recent_tab_suggestion_extra()->tab_id),
           suggestion.recent_tab_suggestion_extra()->offline_page_id);

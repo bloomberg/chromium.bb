@@ -204,35 +204,31 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private static void addSuggestion(List<SnippetArticle> suggestions, int category, String id,
-            String title, String publisher, String previewText, String url, String ampUrl,
-            long timestamp, float score, int cardLayout) {
+    private static SnippetArticle addSuggestion(List<SnippetArticle> suggestions, int category,
+            String id, String title, String publisher, String previewText, String url,
+            String ampUrl, long timestamp, float score, int cardLayout) {
         int position = suggestions.size();
         suggestions.add(new SnippetArticle(category, id, title, publisher, previewText, url, ampUrl,
                 timestamp, score, position, cardLayout));
-    }
-
-    // TODO(vitaliii): Remove all |.*ForLastSuggestion| methods and instead make |addSuggestion|
-    // return the suggestion and set the values there.
-    @CalledByNative
-    private static void setDownloadAssetDataForLastSuggestion(
-            List<SnippetArticle> suggestions, String filePath, String mimeType) {
-        assert suggestions.size() > 0;
-        suggestions.get(suggestions.size() - 1).setDownloadAssetData(filePath, mimeType);
+        return suggestions.get(position);
     }
 
     @CalledByNative
-    private static void setDownloadOfflinePageDataForLastSuggestion(
-            List<SnippetArticle> suggestions, long offlinePageId) {
-        assert suggestions.size() > 0;
-        suggestions.get(suggestions.size() - 1).setDownloadOfflinePageData(offlinePageId);
+    private static void setAssetDownloadDataForSuggestion(
+            SnippetArticle suggestion, String filePath, String mimeType) {
+        suggestion.setAssetDownloadData(filePath, mimeType);
     }
 
     @CalledByNative
-    private static void setRecentTabDataForLastSuggestion(
-            List<SnippetArticle> suggestions, String tabId, long offlinePageId) {
-        assert suggestions.size() > 0;
-        suggestions.get(suggestions.size() - 1).setRecentTabData(tabId, offlinePageId);
+    private static void setOfflinePageDownloadDataForSuggestion(
+            SnippetArticle suggestion, long offlinePageId) {
+        suggestion.setOfflinePageDownloadData(offlinePageId);
+    }
+
+    @CalledByNative
+    private static void setRecentTabDataForSuggestion(
+            SnippetArticle suggestion, String tabId, long offlinePageId) {
+        suggestion.setRecentTabData(tabId, offlinePageId);
     }
 
     @CalledByNative
