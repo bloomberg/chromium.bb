@@ -589,11 +589,6 @@ public class CompositorViewHolder extends CoordinatorLayout
     }
 
     @Override
-    public int getLayoutTabsDrawnCount() {
-        return mCompositorView.getLastLayerCount();
-    }
-
-    @Override
     public void pushDebugRect(Rect rect, int color) {
         if (mDebugOverlay == null) {
             mDebugOverlay = new DebugOverlay(getContext());
@@ -665,7 +660,9 @@ public class CompositorViewHolder extends CoordinatorLayout
                 && mFullscreenManager.areBrowserControlsPermanentlyHidden();
     }
 
-    @Override
+    /**
+     * @return The height of the top browser controls in pixels.
+     */
     public int getTopControlsHeightPixels() {
         return mFullscreenManager != null ? mFullscreenManager.getTopControlsHeight() : 0;
     }
