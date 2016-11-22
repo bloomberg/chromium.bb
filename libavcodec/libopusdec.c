@@ -50,6 +50,10 @@ static av_cold int libopus_decode_init(AVCodecContext *avc)
     avc->sample_rate    = 48000;
     avc->sample_fmt     = avc->request_sample_fmt == AV_SAMPLE_FMT_FLT ?
                           AV_SAMPLE_FMT_FLT : AV_SAMPLE_FMT_S16;
+    if (avc->channels <= 0) {
+        av_log(avc, AV_LOG_ERROR, "Invalid number of channels\n");
+        return AVERROR(EINVAL);
+    }
     avc->channel_layout = avc->channels > 8 ? 0 :
                           ff_vorbis_channel_layouts[avc->channels - 1];
 

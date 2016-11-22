@@ -33,6 +33,9 @@ Current patches:
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
 
+  In libavcodec/libopusdec.c libopus_decode_init(), protect against OOB access
+    of ff_vorbis_channel_layouts[] with index < 0. TODO: push upstream.
+
   Changes to libavcodec/utils.c
     Disable deprecation warnings related to FF_API_AVPACKET_OLD_API.
     We cannot just disable FF_API_AVPACKET_OLD_API because upstream does not yet
