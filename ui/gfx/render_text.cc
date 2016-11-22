@@ -1505,7 +1505,6 @@ base::string16 RenderText::Elide(const base::string16& text,
     render_text->colors_ = colors_;
     base::string16 new_text =
         slicer.CutString(guess, insert_ellipsis && behavior != ELIDE_TAIL);
-    render_text->SetText(new_text);
 
     // This has to be an additional step so that the ellipsis is rendered with
     // same style as trailing part of the text.
@@ -1524,8 +1523,8 @@ base::string16 RenderText::Elide(const base::string16& text,
         else
           new_text += base::i18n::kRightToLeftMark;
       }
-      render_text->SetText(new_text);
     }
+    render_text->SetText(new_text);
 
     // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
