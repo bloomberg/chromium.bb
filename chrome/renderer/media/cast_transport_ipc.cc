@@ -21,14 +21,16 @@ CastTransportIPC::CastTransportIPC(
     const media::cast::PacketReceiverCallback& packet_callback,
     const media::cast::CastTransportStatusCallback& status_cb,
     const media::cast::BulkRawEventsCallback& raw_events_cb)
-    : packet_callback_(packet_callback),
+    : channel_id_(-1),
+      packet_callback_(packet_callback),
       status_callback_(status_cb),
       raw_events_callback_(raw_events_cb) {
   if (CastIPCDispatcher::Get()) {
+    // TODO(miu): CastIPCDispatcher should be provided as a ctor argument.
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);
+    Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point,
+                             *options));
   }
-  Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point,
-                           *options));
 }
 
 CastTransportIPC::~CastTransportIPC() {
@@ -176,7 +178,7 @@ void CastTransportIPC::OnReceivedPacket(const media::cast::Packet& packet) {
 }
 
 void CastTransportIPC::Send(IPC::Message* message) {
-  if (CastIPCDispatcher::Get()) {
+  if (CastIPCDispatcher::Get() && channel_id_ != -1) {
     CastIPCDispatcher::Get()->Send(message);
   } else {
     delete message;
