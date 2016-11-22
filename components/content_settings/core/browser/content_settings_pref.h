@@ -78,10 +78,6 @@ class ContentSettingsPref {
   bool TryLockForTesting() const;
 
  private:
-  // TODO(msramek): Currently only needed in the unittest to get the
-  // corresponding pref name. Remove once pref names are in WebsiteSettingsInfo.
-  friend class DeadlockCheckerObserver;
-
   // Reads all content settings exceptions from the preference and loads them
   // into the |value_map_|. The |value_map_| is cleared first.
   void ReadContentSettingsFromPref();

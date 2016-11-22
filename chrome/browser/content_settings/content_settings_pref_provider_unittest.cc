@@ -69,10 +69,11 @@ class DeadlockCheckerObserver {
       : provider_(provider),
       notification_received_(false) {
     pref_change_registrar_.Init(prefs);
+    WebsiteSettingsRegistry* registry = WebsiteSettingsRegistry::GetInstance();
     for (const auto& pair : provider_->content_settings_prefs_) {
       const ContentSettingsPref* pref = pair.second.get();
       pref_change_registrar_.Add(
-          pref->pref_name_,
+          registry->Get(pair.first)->pref_name(),
           base::Bind(
               &DeadlockCheckerObserver::OnContentSettingsPatternPairsChanged,
               base::Unretained(this), base::Unretained(pref)));
