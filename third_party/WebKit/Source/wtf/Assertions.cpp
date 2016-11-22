@@ -74,7 +74,7 @@
 void WTFGetBacktrace(void** stack, int* size);
 void WTFPrintBacktrace(void** stack, int size);
 
-WTF_ATTRIBUTE_PRINTF(1, 0)
+PRINTF_FORMAT(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args) {
 #if OS(MACOSX) && USE(APPLE_SYSTEM_LOG)
   va_list copyOfArgs;
@@ -132,7 +132,7 @@ static void vprintf_stderr_with_trailing_newline(const char* format,
 #pragma GCC diagnostic pop
 #endif
 
-WTF_ATTRIBUTE_PRINTF(1, 2)
+PRINTF_FORMAT(1, 2)
 static void printf_stderr_common(const char* format, ...) {
   va_list args;
   va_start(args, format);

@@ -33,6 +33,7 @@
 #include "core/xml/parser/XMLErrors.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/SegmentedString.h"
+#include "wtf/Compiler.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/CString.h"
@@ -139,8 +140,8 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
 
  public:
   // Callbacks from parser SAX
-  void error(XMLErrors::ErrorType, const char* message, va_list args)
-      WTF_ATTRIBUTE_PRINTF(3, 0);
+  PRINTF_FORMAT(3, 0)
+  void error(XMLErrors::ErrorType, const char* message, va_list args);
   void startElementNs(const AtomicString& localName,
                       const AtomicString& prefix,
                       const AtomicString& uri,

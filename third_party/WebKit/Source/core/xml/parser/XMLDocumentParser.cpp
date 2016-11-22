@@ -1346,7 +1346,7 @@ static void commentHandler(void* closure, const xmlChar* text) {
   getParser(closure)->comment(toString(text));
 }
 
-WTF_ATTRIBUTE_PRINTF(2, 3)
+PRINTF_FORMAT(2, 3)
 static void warningHandler(void* closure, const char* message, ...) {
   va_list args;
   va_start(args, message);
@@ -1354,7 +1354,7 @@ static void warningHandler(void* closure, const char* message, ...) {
   va_end(args);
 }
 
-WTF_ATTRIBUTE_PRINTF(2, 3)
+PRINTF_FORMAT(2, 3)
 static void normalErrorHandler(void* closure, const char* message, ...) {
   va_list args;
   va_start(args, message);

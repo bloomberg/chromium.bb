@@ -27,6 +27,7 @@
 // on systems without case-sensitive file systems.
 
 #include "wtf/Allocator.h"
+#include "wtf/Compiler.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/ASCIIFastPath.h"
@@ -313,7 +314,7 @@ class WTF_EXPORT String {
   // Return the string with case folded for case insensitive comparison.
   String foldCase() const;
 
-  static String format(const char*, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
+  PRINTF_FORMAT(1, 2) static String format(const char*, ...);
 
   // Returns an uninitialized string. The characters needs to be written
   // into the buffer returned in data before the returned string is used.

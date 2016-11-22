@@ -26,6 +26,7 @@
 #ifndef FilePrintStream_h
 #define FilePrintStream_h
 
+#include "wtf/Compiler.h"
 #include "wtf/PrintStream.h"
 #include <memory>
 #include <stdio.h>
@@ -44,7 +45,7 @@ class WTF_EXPORT FilePrintStream final : public PrintStream {
 
   FILE* file() { return m_file; }
 
-  void vprintf(const char* format, va_list) override WTF_ATTRIBUTE_PRINTF(2, 0);
+  PRINTF_FORMAT(2, 0) void vprintf(const char* format, va_list) override;
   void flush() override;
 
  private:

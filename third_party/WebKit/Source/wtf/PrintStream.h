@@ -27,6 +27,7 @@
 #define PrintStream_h
 
 #include "wtf/Allocator.h"
+#include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTFExport.h"
@@ -45,9 +46,8 @@ class WTF_EXPORT PrintStream {
   PrintStream();
   virtual ~PrintStream();
 
-  void printf(const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
-  virtual void vprintf(const char* format, va_list)
-      WTF_ATTRIBUTE_PRINTF(2, 0) = 0;
+  PRINTF_FORMAT(2, 3) void printf(const char* format, ...);
+  PRINTF_FORMAT(2, 0) virtual void vprintf(const char* format, va_list) = 0;
 
   // Typically a no-op for many subclasses of PrintStream, this is a hint that
   // the implementation should flush its buffers if it had not done so already.
