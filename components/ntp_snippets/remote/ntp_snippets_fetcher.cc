@@ -271,7 +271,9 @@ CategoryInfo BuildArticleCategoryInfo(
                         : l10n_util::GetStringUTF16(
                               IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::FULL_CARD,
-      base::FeatureList::IsEnabled(kFetchMoreFeature),
+      // TODO(dgn): merge has_more_action and has_reload_action when we remove
+      // the kFetchMoreFeature flag. See https://crbug.com/667752
+      /*has_more_action=*/base::FeatureList::IsEnabled(kFetchMoreFeature),
       /*has_reload_action=*/true,
       /*has_view_all_action=*/false,
       /*show_if_empty=*/true,
@@ -282,8 +284,11 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
                                      bool allow_fetching_more_results) {
   return CategoryInfo(
       title, ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_more_action=*/allow_fetching_more_results,
-      /*has_reload_action=*/false,
+      // TODO(dgn): merge has_more_action and has_reload_action when we remove
+      // the kFetchMoreFeature flag. See https://crbug.com/667752
+      /*has_more_action=*/allow_fetching_more_results &&
+          base::FeatureList::IsEnabled(kFetchMoreFeature),
+      /*has_reload_action=*/allow_fetching_more_results,
       /*has_view_all_action=*/false,
       /*show_if_empty=*/false,
       // TODO(tschumann): The message for no-articles is likely wrong

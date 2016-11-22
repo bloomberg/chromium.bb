@@ -692,7 +692,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
       EXPECT_THAT(articles[0]->best_source().url.spec(),
                   Eq("http://localhost/foo2"));
       EXPECT_THAT(category.info.has_more_action(), Eq(true));
-      EXPECT_THAT(category.info.has_reload_action(), Eq(false));
+      EXPECT_THAT(category.info.has_reload_action(), Eq(true));
       EXPECT_THAT(category.info.has_view_all_action(), Eq(false));
       EXPECT_THAT(category.info.show_if_empty(), Eq(false));
     } else {
