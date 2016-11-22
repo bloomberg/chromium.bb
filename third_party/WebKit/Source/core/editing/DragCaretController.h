@@ -59,8 +59,8 @@ class DragCaretController final
   DragCaretController();
 
   // Implementations of |SynchronousMutationObserver|
-  void nodeChildrenWillBeRemoved(ContainerNode&);
-  void nodeWillBeRemoved(Node&);
+  void nodeChildrenWillBeRemoved(ContainerNode&) final;
+  void nodeWillBeRemoved(Node&) final;
 
   PositionWithAffinity m_position;
   const Member<CaretBase> m_caretBase;
