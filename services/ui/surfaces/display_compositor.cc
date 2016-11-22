@@ -4,14 +4,48 @@
 
 #include "services/ui/surfaces/display_compositor.h"
 
+#include "cc/output/in_process_context_provider.h"
 #include "cc/surfaces/surface.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/ui/surfaces/gpu_compositor_frame_sink.h"
 
 namespace ui {
 
 DisplayCompositor::DisplayCompositor(
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
+    std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager,
+    gpu::ImageFactory* image_factory,
     cc::mojom::DisplayCompositorClientPtr client)
-    : client_(std::move(client)) {
+    : gpu_service_(std::move(gpu_service)),
+      gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
+      image_factory_(image_factory),
+      client_(std::move(client)) {
   manager_.AddObserver(this);
+}
+
+void DisplayCompositor::CreateCompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id,
+    gpu::SurfaceHandle surface_handle,
+    cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+  // We cannot create more than one CompositorFrameSink with a given
+  // |frame_sink_id|.
+  DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
+  scoped_refptr<cc::InProcessContextProvider> context_provider;
+  if (surface_handle != gpu::kNullSurfaceHandle) {
+    context_provider = new cc::InProcessContextProvider(
+        gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
+        image_factory_, gpu::SharedMemoryLimits(),
+        nullptr /* shared_context */);
+  }
+  compositor_frame_sinks_[frame_sink_id] =
+      base::MakeUnique<GpuCompositorFrameSink>(
+          this, frame_sink_id, surface_handle, gpu_memory_buffer_manager_.get(),
+          std::move(context_provider), std::move(request),
+          std::move(private_request), std::move(client));
 }
 
 void DisplayCompositor::AddRootSurfaceReference(const cc::SurfaceId& child_id) {
@@ -91,6 +125,23 @@ DisplayCompositor::~DisplayCompositor() {
     }
   }
   manager_.RemoveObserver(this);
+}
+
+void DisplayCompositor::OnCompositorFrameSinkClientConnectionLost(
+    const cc::FrameSinkId& frame_sink_id,
+    bool destroy_compositor_frame_sink) {
+  if (destroy_compositor_frame_sink)
+    compositor_frame_sinks_.erase(frame_sink_id);
+  // TODO(fsamuel): Tell the display compositor host that the client connection
+  // has been lost so that it can drop its private connection and allow a new
+  // client instance to create a new CompositorFrameSink.
+}
+
+void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
+    const cc::FrameSinkId& frame_sink_id,
+    bool destroy_compositor_frame_sink) {
+  if (destroy_compositor_frame_sink)
+    compositor_frame_sinks_.erase(frame_sink_id);
 }
 
 void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceId& surface_id,

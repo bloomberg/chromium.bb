@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/surfaces/surfaces_context_provider.h"
 #include "services/ui/ws/ids.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -70,8 +69,6 @@ class ServerWindow {
   void CreateCompositorFrameSink(
       mojom::CompositorFrameSinkType compositor_frame_sink_type,
       gfx::AcceleratedWidget widget,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      scoped_refptr<SurfacesContextProvider> context_provider,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

@@ -9,9 +9,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
 #include "components/display_compositor/gl_helper.h"
-#include "services/ui/surfaces/surfaces_context_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -39,7 +39,7 @@ namespace ui {
 class DirectOutputSurfaceOzone : public cc::OutputSurface {
  public:
   DirectOutputSurfaceOzone(
-      scoped_refptr<SurfacesContextProvider> context_provider,
+      scoped_refptr<cc::InProcessContextProvider> context_provider,
       gfx::AcceleratedWidget widget,
       cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -73,8 +73,11 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   void OnUpdateVSyncParametersFromGpu(base::TimeTicks timebase,
                                       base::TimeDelta interval);
 
-  // Called when a swap completion is sent from the GPU process.
-  void OnGpuSwapBuffersCompleted(gfx::SwapResult result);
+  // Called when a swap completion is signaled from ImageTransportSurface.
+  void OnGpuSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
 
   cc::OutputSurfaceClient* client_ = nullptr;
 

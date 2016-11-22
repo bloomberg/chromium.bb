@@ -75,6 +75,7 @@ mojom("internal_interfaces") {
 
   public_deps = [
     ":interfaces",
+    "//gpu/ipc/common:interfaces",
     "//ui/gfx/geometry/mojo",
   ]
 }

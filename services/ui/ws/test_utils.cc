@@ -63,8 +63,6 @@ class TestPlatformDisplay : public PlatformDisplay {
   const display::ViewportMetrics& GetViewportMetrics() const override {
     return display_metrics_;
   }
-  void OnGpuChannelEstablished(
-      scoped_refptr<gpu::GpuChannelHost> host) override {}
   FrameGenerator* GetFrameGenerator() override { return nullptr; }
 
  private:

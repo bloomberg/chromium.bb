@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
@@ -18,7 +19,9 @@
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -97,6 +100,14 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const gpu::SyncToken& sync_token) override;
+  void CreateDisplayCompositor(
+      cc::mojom::DisplayCompositorRequest request,
+      cc::mojom::DisplayCompositorClientPtr client) override;
+
+  void CreateDisplayCompositorOnCompositorThread(
+      mojom::GpuServiceInternalPtrInfo gpu_service_info,
+      cc::mojom::DisplayCompositorRequest request,
+      cc::mojom::DisplayCompositorClientPtrInfo client_info);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
@@ -112,10 +123,13 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
+  base::Thread compositor_thread_;
+
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
-  mojo::Binding<mojom::GpuServiceInternal> binding_;
+  mojo::BindingSet<mojom::GpuServiceInternal> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
 };

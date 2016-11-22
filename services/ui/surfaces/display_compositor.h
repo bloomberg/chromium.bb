@@ -8,13 +8,20 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/local_frame_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
+#include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/in_process_command_buffer.h"
+#include "ipc/ipc_channel_handle.h"
+#include "services/ui/surfaces/mus_gpu_memory_buffer_manager.h"
+
+namespace gpu {
+class ImageFactory;
+}
 
 namespace cc {
 class SurfaceHittest;
@@ -24,6 +31,8 @@ class SurfaceManager;
 namespace ui {
 
 class DisplayCompositorClient;
+class GpuCompositorFrameSink;
+class MusGpuMemoryBufferManager;
 
 // The DisplayCompositor object is an object global to the Window Server app
 // that holds the SurfaceServer and allocates new Surfaces namespaces.
@@ -31,23 +40,42 @@ class DisplayCompositorClient;
 // TODO(rjkroege, fsamuel): This object will need to change to support multiple
 // displays.
 class DisplayCompositor : public cc::SurfaceObserver,
-                          public base::RefCounted<DisplayCompositor> {
+                          public cc::mojom::DisplayCompositor {
  public:
-  explicit DisplayCompositor(cc::mojom::DisplayCompositorClientPtr client);
+  DisplayCompositor(
+      scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
+      std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager,
+      gpu::ImageFactory* image_factory,
+      cc::mojom::DisplayCompositorClientPtr client);
+  ~DisplayCompositor() override;
 
-  // TODO(fsamuel):  These methods should be behind a mojo interface.
-  void AddRootSurfaceReference(const cc::SurfaceId& child_id);
+  // cc::mojom::DisplayCompositor implementation:
+  void CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
+      gpu::SurfaceHandle surface_handle,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
+  void AddRootSurfaceReference(const cc::SurfaceId& child_id) override;
   void AddSurfaceReference(const cc::SurfaceId& parent_id,
-                           const cc::SurfaceId& child_id);
-  void RemoveRootSurfaceReference(const cc::SurfaceId& child_id);
+                           const cc::SurfaceId& child_id) override;
+  void RemoveRootSurfaceReference(const cc::SurfaceId& child_id) override;
   void RemoveSurfaceReference(const cc::SurfaceId& parent_id,
-                              const cc::SurfaceId& child_id);
+                              const cc::SurfaceId& child_id) override;
 
   cc::SurfaceManager* manager() { return &manager_; }
 
+  // We must avoid destroying a GpuCompositorFrameSink until both the display
+  // compositor host and the client drop their connection to avoid getting into
+  // a state where surfaces references are inconsistent.
+  void OnCompositorFrameSinkClientConnectionLost(
+      const cc::FrameSinkId& frame_sink_id,
+      bool destroy_compositor_frame_sink);
+  void OnCompositorFrameSinkPrivateConnectionLost(
+      const cc::FrameSinkId& frame_sink_id,
+      bool destroy_compositor_frame_sink);
+
  private:
-  friend class base::RefCounted<DisplayCompositor>;
-  virtual ~DisplayCompositor();
 
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
@@ -56,6 +84,13 @@ class DisplayCompositor : public cc::SurfaceObserver,
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                         bool* changed) override;
 
+  std::unordered_map<cc::FrameSinkId,
+                     std::unique_ptr<GpuCompositorFrameSink>,
+                     cc::FrameSinkIdHash>
+      compositor_frame_sinks_;
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
+  std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  gpu::ImageFactory* image_factory_;
   cc::mojom::DisplayCompositorClientPtr client_;
   cc::SurfaceManager manager_;
 

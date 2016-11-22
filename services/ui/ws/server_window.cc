@@ -86,13 +86,11 @@ bool ServerWindow::HasObserver(ServerWindowObserver* observer) {
 void ServerWindow::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkType compositor_frame_sink_type,
     gfx::AcceleratedWidget widget,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    scoped_refptr<SurfacesContextProvider> context_provider,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   GetOrCreateCompositorFrameSinkManager()->CreateCompositorFrameSink(
-      compositor_frame_sink_type, widget, gpu_memory_buffer_manager,
-      std::move(context_provider), std::move(request), std::move(client));
+      compositor_frame_sink_type, widget, std::move(request),
+      std::move(client));
 }
 
 void ServerWindow::Add(ServerWindow* child) {

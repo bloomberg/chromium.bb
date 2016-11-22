@@ -10,9 +10,10 @@ source_set("surfaces") {
     "direct_output_surface.h",
     "display_compositor.cc",
     "display_compositor.h",
-    "surfaces_context_provider.cc",
-    "surfaces_context_provider.h",
-    "surfaces_context_provider_delegate.h",
+    "gpu_compositor_frame_sink.cc",
+    "gpu_compositor_frame_sink.h",
+    "mus_gpu_memory_buffer_manager.cc",
+    "mus_gpu_memory_buffer_manager.h",
   ]
 
   deps = [
@@ -26,10 +27,13 @@ source_set("surfaces") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/ipc:command_buffer",
     "//gpu/ipc/client",
+    "//gpu/ipc/common",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
+    "//services/ui/gpu/interfaces",
     "//services/ui/public/interfaces",
     "//ui/display/types",
     "//ui/gfx",

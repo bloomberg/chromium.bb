@@ -56,11 +56,10 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       next_wm_change_id_(0),
       gpu_proxy_(new GpuServiceProxy(this)),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
-      display_compositor_client_binding_(this),
-      display_compositor_(new DisplayCompositor(
-          display_compositor_client_binding_.CreateInterfacePtrAndBind())) {
+      display_compositor_client_binding_(this) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
+  display_compositor_request_ = mojo::GetProxy(&display_compositor_);
 }
 
 WindowServer::~WindowServer() {
@@ -496,8 +495,6 @@ WindowTree* WindowServer::GetCurrentDragLoopInitiator() {
 }
 
 void WindowServer::OnDisplayReady(Display* display, bool is_first) {
-  if (gpu_channel_)
-    display->platform_display()->OnGpuChannelEstablished(gpu_channel_);
   if (is_first)
     delegate_->OnFirstDisplayReady();
 }
@@ -512,7 +509,7 @@ WindowManagerState* WindowServer::GetWindowManagerStateForUser(
       user_id);
 }
 
-ui::DisplayCompositor* WindowServer::GetDisplayCompositor() {
+cc::mojom::DisplayCompositor* WindowServer::GetDisplayCompositor() {
   return display_compositor_.get();
 }
 
@@ -745,12 +742,22 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
   }
 }
 
-void WindowServer::OnGpuChannelEstablished(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
-  gpu_channel_ = std::move(gpu_channel);
-  const std::set<Display*>& displays = display_manager()->displays();
-  for (auto* display : displays)
-    display->platform_display()->OnGpuChannelEstablished(gpu_channel_);
+void WindowServer::OnGpuServiceInitialized() {
+  // TODO(fsamuel): Currently we: 1. create the gpu service, 2. we initialize
+  // GL and then 3. we request a display compositor interface after
+  // initialization. A display compositor interface can be created at any time,
+  // even prior to completing initialization. If initialization crashes the GPU
+  // process, then we will still get a connection error on the
+  // |display_compositor_client_binding_| binding. We should investigate doing
+  // this in parallel with initialization in the future.
+  // The display compositor gets its own thread in mus-gpu. The gpu service,
+  // where GL commands are processed resides on its own thread. Various
+  // components of the display compositor such as Display, ResourceProvider,
+  // and GLRenderer block on sync tokens from other command buffers. Thus,
+  // the gpu service must live on a separate thread.
+  gpu_proxy_->CreateDisplayCompositor(
+      std::move(display_compositor_request_),
+      display_compositor_client_binding_.CreateInterfacePtrAndBind());
   // TODO(kylechar): When gpu channel is removed, this can instead happen
   // earlier, after GpuServiceProxy::OnInitialized().
   delegate_->StartDisplayInit();

@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "cc/ipc/display_compositor.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
@@ -32,4 +33,9 @@ interface GpuServiceInternal {
   DestroyGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                          int32 client_id,
                          gpu.mojom.SyncToken sync_token);
+
+  // Tells the GPU process to create a display compositor.
+  CreateDisplayCompositor(
+    cc.mojom.DisplayCompositor& display_compositor,
+    cc.mojom.DisplayCompositorClient display_compositor_client);
 };

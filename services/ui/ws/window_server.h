@@ -228,7 +228,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
   // ServerWindowDelegate:
-  ui::DisplayCompositor* GetDisplayCompositor() override;
+  cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -325,8 +325,7 @@ class WindowServer : public ServerWindowDelegate,
                                 ServerWindow* transient_child) override;
 
   // GpuServiceProxyDelegate:
-  void OnGpuChannelEstablished(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
+  void OnGpuServiceInitialized() override;
 
   // cc::mojom::DisplayCompositorClient:
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
@@ -369,8 +368,6 @@ class WindowServer : public ServerWindowDelegate,
   uint32_t next_wm_change_id_;
 
   std::unique_ptr<GpuServiceProxy> gpu_proxy_;
-  // TODO(fsamuel): The window server should not have a GPU channel.
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   UserActivityMonitorMap activity_monitor_map_;
@@ -380,7 +377,8 @@ class WindowServer : public ServerWindowDelegate,
   mojo::Binding<cc::mojom::DisplayCompositorClient>
       display_compositor_client_binding_;
   // State for rendering into a Surface.
-  scoped_refptr<ui::DisplayCompositor> display_compositor_;
+  cc::mojom::DisplayCompositorPtr display_compositor_;
+  cc::mojom::DisplayCompositorRequest display_compositor_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

@@ -7,9 +7,8 @@
 
 #include <memory>
 
+#include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
-#include "services/ui/surfaces/surfaces_context_provider.h"
-#include "services/ui/surfaces/surfaces_context_provider_delegate.h"
 
 namespace cc {
 class CompositorFrame;
@@ -20,11 +19,10 @@ namespace ui {
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
-class DirectOutputSurface : public cc::OutputSurface,
-                            public SurfacesContextProviderDelegate {
+class DirectOutputSurface : public cc::OutputSurface {
  public:
   DirectOutputSurface(
-      scoped_refptr<SurfacesContextProvider> context_provider,
+      scoped_refptr<cc::InProcessContextProvider> context_provider,
       cc::SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~DirectOutputSurface() override;
 
@@ -46,12 +44,11 @@ class DirectOutputSurface : public cc::OutputSurface,
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
 
-  // SurfacesContextProviderDelegate implementation
-  void OnVSyncParametersUpdated(const base::TimeTicks& timebase,
-                                const base::TimeDelta& interval) override;
 
  private:
   void OnSwapBuffersComplete();
+  void OnVSyncParametersUpdated(const base::TimeTicks& timebase,
+                                const base::TimeDelta& interval);
 
   cc::OutputSurfaceClient* client_ = nullptr;
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;

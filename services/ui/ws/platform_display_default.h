@@ -44,8 +44,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   gfx::Rect GetBounds() const override;
   bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
   const display::ViewportMetrics& GetViewportMetrics() const override;
-  void OnGpuChannelEstablished(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
   FrameGenerator* GetFrameGenerator() override;
 
  private:

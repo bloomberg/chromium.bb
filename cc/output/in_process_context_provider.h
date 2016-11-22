@@ -9,7 +9,9 @@
 
 #include <memory>
 
+#include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
+#include "cc/base/cc_export.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -35,7 +37,8 @@ class GrContextForGLES2Interface;
 
 namespace cc {
 
-class InProcessContextProvider : public ContextProvider {
+class CC_EXPORT InProcessContextProvider
+    : public NON_EXPORTED_BASE(ContextProvider) {
  public:
   InProcessContextProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,

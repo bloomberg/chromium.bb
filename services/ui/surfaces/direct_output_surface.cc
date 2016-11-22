@@ -18,14 +18,13 @@
 namespace ui {
 
 DirectOutputSurface::DirectOutputSurface(
-    scoped_refptr<SurfacesContextProvider> context_provider,
+    scoped_refptr<cc::InProcessContextProvider> context_provider,
     cc::SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : cc::OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
-  context_provider->SetDelegate(this);
 }
 
 DirectOutputSurface::~DirectOutputSurface() {}
@@ -77,7 +76,8 @@ void DirectOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
 
 uint32_t DirectOutputSurface::GetFramebufferCopyTextureFormat() {
   // TODO(danakj): What attributes are used for the default framebuffer here?
-  // Can it have alpha? SurfacesContextProvider doesn't take any attributes.
+  // Can it have alpha? cc::InProcessContextProvider doesn't take any
+  // attributes.
   return GL_RGB;
 }
 

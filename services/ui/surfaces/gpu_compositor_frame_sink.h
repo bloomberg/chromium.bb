@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_GPU_COMPOSITOR_FRAME_SINK_H_
-#define SERVICES_UI_WS_GPU_COMPOSITOR_FRAME_SINK_H_
+#ifndef SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_
+#define SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_
 
 #include <memory>
 #include <set>
@@ -13,6 +13,7 @@
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/in_process_context_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
@@ -22,7 +23,6 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/surfaces/surfaces_context_provider.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -36,8 +36,6 @@ namespace ui {
 
 class DisplayCompositor;
 
-namespace ws {
-
 // Server side representation of a WindowSurface.
 class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
                                public cc::DisplayClient,
@@ -45,15 +43,12 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
                                public cc::SurfaceFactoryClient,
                                public cc::BeginFrameObserver {
  public:
-  // TODO(fsamuel): DisplayCompositor should own
-  // GpuCompositorFrameSink. GpuCompositorFrameSink should not
-  // refer to GpuCompositorFrameSinkManager.
   GpuCompositorFrameSink(
-      scoped_refptr<DisplayCompositor> display_compositor,
+      DisplayCompositor* display_compositor,
       const cc::FrameSinkId& frame_sink_id,
-      gfx::AcceleratedWidget widget,
+      gpu::SurfaceHandle widget,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      scoped_refptr<SurfacesContextProvider> context_provider,
+      scoped_refptr<cc::InProcessContextProvider> context_provider,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
@@ -70,9 +65,10 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
       const cc::FrameSinkId& child_frame_sink_id) override;
 
  private:
-  void InitDisplay(gfx::AcceleratedWidget widget,
-                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                   scoped_refptr<SurfacesContextProvider> context_provider);
+  void InitDisplay(
+      gpu::SurfaceHandle widget,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      scoped_refptr<cc::InProcessContextProvider> context_provider);
 
   void DidReceiveCompositorFrameAck();
 
@@ -93,18 +89,18 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
 
   void UpdateNeedsBeginFramesInternal();
 
+  void OnClientConnectionLost();
+  void OnPrivateConnectionLost();
+
   const cc::FrameSinkId frame_sink_id_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // TODO(fsamuel): We hold a reference to DisplayCompositor so we can talk to
-  // SurfaceManager in the destructor. In the future, DisplayCompositor will own
-  // GpuCompositorFrameSink.
-  scoped_refptr<DisplayCompositor> display_compositor_;
+  DisplayCompositor* display_compositor_;  // owns this.
 
   gfx::Size last_submitted_frame_size_;
   // GpuCompositorFrameSink holds a cc::Display if it created with
-  // non-null gfx::AcceleratedWidget. In the window server, the display root
-  // window's CompositorFrameSink will have a valid gfx::AcceleratedWidget.
+  // non-null gpu::SurfaceHandle. In the window server, the display root
+  // window's CompositorFrameSink will have a valid gpu::SurfaceHandle.
   std::unique_ptr<cc::Display> display_;
 
   cc::LocalFrameId local_frame_id_;
@@ -114,6 +110,9 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
   // yet received an ACK.
   int ack_pending_count_ = 0;
   cc::ReturnedResourceArray surface_returned_resources_;
+
+  bool client_connection_lost_ = false;
+  bool private_connection_lost_ = false;
 
   // The begin frame source being observered. Null if none.
   cc::BeginFrameSource* begin_frame_source_ = nullptr;
@@ -134,8 +133,6 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };
 
-}  // namespace ws
-
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_GPU_COMPOSITOR_FRAME_SINK_H_
+#endif  // SERVICES_UI_SURFACES_GPU_COMPOSITOR_FRAME_SINK_H_

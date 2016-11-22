@@ -10,10 +10,12 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/ids.h"
+#include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_tracker.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -48,8 +50,6 @@ class FrameGenerator : public ServerWindowTracker,
  public:
   FrameGenerator(FrameGeneratorDelegate* delegate, ServerWindow* root_window);
   ~FrameGenerator() override;
-
-  void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   // Schedules a redraw for the provided region.
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
@@ -112,17 +112,15 @@ class FrameGenerator : public ServerWindowTracker,
   // Removes all retained references to surfaces.
   void RemoveAllSurfaceReferences();
 
-  ui::DisplayCompositor* GetDisplayCompositor();
+  cc::mojom::DisplayCompositor* GetDisplayCompositor();
 
   // ServerWindowObserver implementation.
   void OnWindowDestroying(ServerWindow* window) override;
 
   FrameGeneratorDelegate* delegate_;
   ServerWindow* const root_window_;
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
-  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
   // Represents the top level root surface id that should reference the display
   // root surface. We don't know the actual value, because it's generated in

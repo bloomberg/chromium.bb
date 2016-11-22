@@ -18,8 +18,7 @@ class GpuServiceProxyDelegate {
  public:
   virtual ~GpuServiceProxyDelegate() {}
 
-  virtual void OnGpuChannelEstablished(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel) = 0;
+  virtual void OnGpuServiceInitialized() = 0;
 };
 
 }  // namespace ws

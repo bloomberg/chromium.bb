@@ -4,9 +4,11 @@
 
 #include "services/ui/gpu/gpu_service_internal.h"
 
+#include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/output/in_process_context_provider.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -14,6 +16,8 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
@@ -22,6 +26,9 @@
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/surfaces/mus_gpu_memory_buffer_manager.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -41,10 +48,12 @@ GpuServiceInternal::GpuServiceInternal(
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_info_(gpu_info),
-      binding_(this) {}
+      compositor_thread_("DisplayCompositorThread") {
+  compositor_thread_.Start();
+}
 
 GpuServiceInternal::~GpuServiceInternal() {
-  binding_.Close();
+  bindings_.CloseAllBindings();
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -57,8 +66,7 @@ GpuServiceInternal::~GpuServiceInternal() {
 }
 
 void GpuServiceInternal::Add(mojom::GpuServiceInternalRequest request) {
-  binding_.Close();
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void GpuServiceInternal::CreateGpuMemoryBuffer(
@@ -83,6 +91,49 @@ void GpuServiceInternal::DestroyGpuMemoryBuffer(
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
+void GpuServiceInternal::CreateDisplayCompositor(
+    cc::mojom::DisplayCompositorRequest request,
+    cc::mojom::DisplayCompositorClientPtr client) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!gpu_command_service_);
+  gpu_command_service_ = new gpu::GpuInProcessThreadService(
+      base::ThreadTaskRunnerHandle::Get(), owned_sync_point_manager_.get(),
+      gpu_channel_manager_->mailbox_manager(),
+      gpu_channel_manager_->share_group());
+  mojom::GpuServiceInternalPtr gpu_service_ptr;
+  Add(mojo::GetProxy(&gpu_service_ptr));
+  compositor_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuServiceInternal::CreateDisplayCompositorOnCompositorThread,
+                 base::Unretained(this),
+                 base::Passed(gpu_service_ptr.PassInterface()),
+                 base::Passed(&request), base::Passed(client.PassInterface())));
+}
+
+void GpuServiceInternal::CreateDisplayCompositorOnCompositorThread(
+    mojom::GpuServiceInternalPtrInfo gpu_service_info,
+    cc::mojom::DisplayCompositorRequest request,
+    cc::mojom::DisplayCompositorClientPtrInfo client_info) {
+  DCHECK(compositor_thread_.task_runner()->BelongsToCurrentThread());
+  mojom::GpuServiceInternalPtr gpu_service_ptr;
+  gpu_service_ptr.Bind(std::move(gpu_service_info));
+
+  cc::mojom::DisplayCompositorClientPtr client_ptr;
+  client_ptr.Bind(std::move(client_info));
+
+  std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager =
+      base::MakeUnique<MusGpuMemoryBufferManager>(std::move(gpu_service_ptr),
+                                                  1 /* client_id */);
+  // |gpu_memory_buffer_factory_| is null in tests.
+  gpu::ImageFactory* image_factory =
+      gpu_memory_buffer_factory_ ? gpu_memory_buffer_factory_->AsImageFactory()
+                                 : nullptr;
+  mojo::MakeStrongBinding(
+      base::MakeUnique<DisplayCompositor>(gpu_command_service_,
+                                          std::move(gpu_memory_buffer_manager),
+                                          image_factory, std::move(client_ptr)),
+      std::move(request));
+}
 void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {
   NOTIMPLEMENTED();
 }
@@ -145,6 +196,7 @@ void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
+
   callback.Run(gpu_info_);
 }
 

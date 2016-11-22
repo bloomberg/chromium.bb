@@ -15,7 +15,6 @@
 #include "components/display_compositor/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/surfaces/surfaces_context_provider.h"
 #include "ui/display/types/display_snapshot.h"
 
 using display_compositor::BufferQueue;
@@ -23,7 +22,7 @@ using display_compositor::BufferQueue;
 namespace ui {
 
 DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
-    scoped_refptr<SurfacesContextProvider> context_provider,
+    scoped_refptr<cc::InProcessContextProvider> context_provider,
     gfx::AcceleratedWidget widget,
     cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -149,7 +148,9 @@ void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
 }
 
 void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
-    gfx::SwapResult result) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
   bool force_swap = false;
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend

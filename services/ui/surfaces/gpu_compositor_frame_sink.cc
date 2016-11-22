@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/gpu_compositor_frame_sink.h"
+#include "services/ui/surfaces/gpu_compositor_frame_sink.h"
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
@@ -24,14 +24,13 @@
 #endif
 
 namespace ui {
-namespace ws {
 
 GpuCompositorFrameSink::GpuCompositorFrameSink(
-    scoped_refptr<DisplayCompositor> display_compositor,
+    DisplayCompositor* display_compositor,
     const cc::FrameSinkId& frame_sink_id,
-    gfx::AcceleratedWidget widget,
+    gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    scoped_refptr<SurfacesContextProvider> context_provider,
+    scoped_refptr<cc::InProcessContextProvider> context_provider,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
@@ -46,8 +45,17 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
   display_compositor_->manager()->RegisterSurfaceFactoryClient(frame_sink_id_,
                                                                this);
 
-  if (widget != gfx::kNullAcceleratedWidget)
-    InitDisplay(widget, gpu_memory_buffer_manager, std::move(context_provider));
+  if (surface_handle != gpu::kNullSurfaceHandle) {
+    InitDisplay(surface_handle, gpu_memory_buffer_manager,
+                std::move(context_provider));
+  }
+
+  binding_.set_connection_error_handler(base::Bind(
+      &GpuCompositorFrameSink::OnClientConnectionLost, base::Unretained(this)));
+
+  private_binding_.set_connection_error_handler(
+      base::Bind(&GpuCompositorFrameSink::OnPrivateConnectionLost,
+                 base::Unretained(this)));
 }
 
 GpuCompositorFrameSink::~GpuCompositorFrameSink() {
@@ -116,9 +124,9 @@ void GpuCompositorFrameSink::RemoveChildFrameSink(
 }
 
 void GpuCompositorFrameSink::InitDisplay(
-    gfx::AcceleratedWidget widget,
+    gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    scoped_refptr<SurfacesContextProvider> context_provider) {
+    scoped_refptr<cc::InProcessContextProvider> context_provider) {
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(context_provider->BindToCurrentThread());
 
@@ -130,14 +138,15 @@ void GpuCompositorFrameSink::InitDisplay(
   if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
     display_output_surface = base::MakeUnique<DirectOutputSurfaceOzone>(
-        context_provider, widget, synthetic_begin_frame_source.get(),
-        gpu_memory_buffer_manager, GL_TEXTURE_2D, GL_RGB);
+        std::move(context_provider), surface_handle,
+        synthetic_begin_frame_source.get(), gpu_memory_buffer_manager,
+        GL_TEXTURE_2D, GL_RGB);
 #else
     NOTREACHED();
 #endif
   } else {
     display_output_surface = base::MakeUnique<DirectOutputSurface>(
-        context_provider, synthetic_begin_frame_source.get());
+        std::move(context_provider), synthetic_begin_frame_source.get());
   }
 
   int max_frames_pending =
@@ -219,5 +228,18 @@ void GpuCompositorFrameSink::UpdateNeedsBeginFramesInternal() {
     begin_frame_source_->RemoveObserver(this);
 }
 
-}  // namespace ws
+void GpuCompositorFrameSink::OnClientConnectionLost() {
+  client_connection_lost_ = true;
+  // Request destruction of |this| only if both connections are lost.
+  display_compositor_->OnCompositorFrameSinkClientConnectionLost(
+      frame_sink_id_, private_connection_lost_);
+}
+
+void GpuCompositorFrameSink::OnPrivateConnectionLost() {
+  private_connection_lost_ = true;
+  // Request destruction of |this| only if both connections are lost.
+  display_compositor_->OnCompositorFrameSinkPrivateConnectionLost(
+      frame_sink_id_, client_connection_lost_);
+}
+
 }  // namespace ui

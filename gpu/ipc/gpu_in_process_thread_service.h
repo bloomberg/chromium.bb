@@ -5,15 +5,18 @@
 #ifndef GPU_IPC_GPU_IN_PROCESS_THREAD_SERVICE_H_
 #define GPU_IPC_GPU_IN_PROCESS_THREAD_SERVICE_H_
 
+#include "base/compiler_specific.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/gpu_export.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gl/gl_share_group.h"
 
 namespace gpu {
 
-// Default Service class when a null service is used.
-class GpuInProcessThreadService
-    : public gpu::InProcessCommandBuffer::Service,
+// Default Service class when no service is specified. GpuInProcessThreadService
+// is used by Mus and unit tests.
+class GPU_EXPORT GpuInProcessThreadService
+    : public NON_EXPORTED_BASE(gpu::InProcessCommandBuffer::Service),
       public base::RefCountedThreadSafe<GpuInProcessThreadService> {
  public:
   GpuInProcessThreadService(

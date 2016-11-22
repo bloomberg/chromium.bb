@@ -656,7 +656,6 @@ class WindowEventTargetingHelper {
   TestDisplayBinding* display_binding_ = nullptr;
   // Owned by WindowServer's DisplayManager.
   Display* display_ = nullptr;
-  scoped_refptr<DisplayCompositor> display_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
 };

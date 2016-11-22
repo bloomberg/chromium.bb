@@ -4,8 +4,41 @@
 
 module cc.mojom;
 
+import "cc/ipc/frame_sink_id.mojom";
+import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
+import "cc/ipc/surface_sequence.mojom";
+import "gpu/ipc/common/surface_handle.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// The DisplayCompositor interface is a privileged interface that allows
+// the display compositor host (browser or window server) to create
+// CompositorFrameSinks. Clients acquire a CompositorFrameSink connection
+// through the display compositor host. Clients request a
+// MojoCompositorFrameSink interface, and implement a
+// MojoCompositorFrameSinkClient interface. The display compositor host
+// holds one or more root CompositorFrameSinks that are tied to a valid
+// |surface_handle|. All other CompositorFrameSinks are offscreen. FrameSinkIds
+// are fixed for a given client and are determined ahead of time. Thus, a client
+// will typically simply request a CompositorFrameSink from the display
+// compositor host which will forward the request to the display compositor.
+interface DisplayCompositor {
+  CreateCompositorFrameSink(
+      cc.mojom.FrameSinkId frame_sink_id,
+      gpu.mojom.SurfaceHandle widget,
+      cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
+      cc.mojom.MojoCompositorFrameSinkPrivate& compositor_frame_sink_private,
+      cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client);
+
+  // TODO(fsamuel): This surface reference API is temporary. Surface references
+  // should be bundled with CompositorFrames.
+  AddRootSurfaceReference(cc.mojom.SurfaceId child_id);
+  AddSurfaceReference(cc.mojom.SurfaceId parent_id,
+                      cc.mojom.SurfaceId child_id);
+  RemoveRootSurfaceReference(cc.mojom.SurfaceId child_id);
+  RemoveSurfaceReference(cc.mojom.SurfaceId parent_id,
+                         cc.mojom.SurfaceId child_id);
+};
 
 // The DisplayCompositorClient interface is implemented by the Display
 // Compositor Host, a stable, and privileged peer service to the display

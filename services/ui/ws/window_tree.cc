@@ -1393,8 +1393,8 @@ void WindowTree::AttachCompositorFrameSink(
     DVLOG(1) << "request to AttachCompositorFrameSink failed";
     return;
   }
-  window->CreateCompositorFrameSink(type, gfx::kNullAcceleratedWidget, nullptr,
-                                    nullptr, std::move(compositor_frame_sink),
+  window->CreateCompositorFrameSink(type, gfx::kNullAcceleratedWidget,
+                                    std::move(compositor_frame_sink),
                                     std::move(client));
 }
 

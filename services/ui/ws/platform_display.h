@@ -69,11 +69,6 @@ class PlatformDisplay {
 
   virtual FrameGenerator* GetFrameGenerator() = 0;
 
-  // Notifies the PlatformDisplay that a connection to the gpu has been
-  // established.
-  virtual void OnGpuChannelEstablished(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel) = 0;
-
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(PlatformDisplayFactory* factory) {

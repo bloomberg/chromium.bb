@@ -10,9 +10,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/surfaces/surfaces_context_provider.h"
+#include "cc/surfaces/surface_id.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
@@ -43,46 +41,19 @@ FrameGenerator::~FrameGenerator() {
   compositor_frame_sink_.reset();
 }
 
-void FrameGenerator::OnGpuChannelEstablished(
-    scoped_refptr<gpu::GpuChannelHost> channel) {
-  if (widget_ != gfx::kNullAcceleratedWidget) {
-    cc::mojom::MojoCompositorFrameSinkRequest request =
-        mojo::GetProxy(&compositor_frame_sink_);
-    // TODO(fsamuel): FrameGenerator should not know about
-    // SurfacesContextProvider. In fact, FrameGenerator should not know
-    // about GpuChannelHost.
-    root_window_->CreateCompositorFrameSink(
-        mojom::CompositorFrameSinkType::DEFAULT, widget_,
-        channel->gpu_memory_buffer_manager(),
-        new SurfacesContextProvider(widget_, channel), std::move(request),
-        binding_.CreateInterfacePtrAndBind());
-    // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
-    // even when we don't need it. Once surface ID propagation work is done,
-    // this will not be necessary because FrameGenerator will only need a
-    // BeginFrame if the window manager changes.
-    compositor_frame_sink_->SetNeedsBeginFrame(true);
-  } else {
-    gpu_channel_ = std::move(channel);
-  }
-}
-
 void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
-  widget_ = widget;
-  if (gpu_channel_ && widget != gfx::kNullAcceleratedWidget) {
-    cc::mojom::MojoCompositorFrameSinkRequest request =
-        mojo::GetProxy(&compositor_frame_sink_);
-    root_window_->CreateCompositorFrameSink(
-        mojom::CompositorFrameSinkType::DEFAULT, widget_,
-        gpu_channel_->gpu_memory_buffer_manager(),
-        new SurfacesContextProvider(widget_, gpu_channel_),
-        std::move(request), binding_.CreateInterfacePtrAndBind());
-    // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
-    // even when we don't need it. Once surface ID propagation work is done,
-    // this will not be necessary because FrameGenerator will only need a
-    // BeginFrame if the window manager changes.
-    compositor_frame_sink_->SetNeedsBeginFrame(true);
-  }
+  DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
+  cc::mojom::MojoCompositorFrameSinkRequest request =
+      mojo::GetProxy(&compositor_frame_sink_);
+  root_window_->CreateCompositorFrameSink(
+      mojom::CompositorFrameSinkType::DEFAULT, widget, std::move(request),
+      binding_.CreateInterfacePtrAndBind());
+  // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
+  // even when we don't need it. Once surface ID propagation work is done,
+  // this will not be necessary because FrameGenerator will only need a
+  // BeginFrame if the window manager changes.
+  compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
 void FrameGenerator::OnSurfaceCreated(const cc::SurfaceId& surface_id,
@@ -309,7 +280,7 @@ void FrameGenerator::AddNewParentReferences(
     const cc::SurfaceId& new_surface_id) {
   DCHECK(old_surface_id.frame_sink_id() == new_surface_id.frame_sink_id());
 
-  DisplayCompositor* display_compositor = GetDisplayCompositor();
+  cc::mojom::DisplayCompositor* display_compositor = GetDisplayCompositor();
   for (auto& map_entry : active_references_) {
     SurfaceReference& ref = map_entry.second;
     if (ref.parent_id == old_surface_id) {
@@ -323,7 +294,7 @@ void FrameGenerator::RemoveDeadSurfaceReferences() {
   if (dead_references_.empty())
     return;
 
-  DisplayCompositor* display_compositor = GetDisplayCompositor();
+  cc::mojom::DisplayCompositor* display_compositor = GetDisplayCompositor();
   for (auto& ref : dead_references_) {
     if (ref.parent_id == top_level_root_surface_id_)
       display_compositor->RemoveRootSurfaceReference(ref.child_id);
@@ -344,7 +315,7 @@ void FrameGenerator::RemoveFrameSinkReference(
 
 void FrameGenerator::RemoveAllSurfaceReferences() {
   // TODO(kylechar): Remove multiple surfaces with one IPC call.
-  DisplayCompositor* display_compositor = GetDisplayCompositor();
+  cc::mojom::DisplayCompositor* display_compositor = GetDisplayCompositor();
   for (auto& map_entry : active_references_) {
     const SurfaceReference& ref = map_entry.second;
     display_compositor->RemoveSurfaceReference(ref.parent_id, ref.child_id);
@@ -352,7 +323,7 @@ void FrameGenerator::RemoveAllSurfaceReferences() {
   active_references_.clear();
 }
 
-ui::DisplayCompositor* FrameGenerator::GetDisplayCompositor() {
+cc::mojom::DisplayCompositor* FrameGenerator::GetDisplayCompositor() {
   return root_window_->delegate()->GetDisplayCompositor();
 }
 

@@ -12,11 +12,12 @@ namespace ws {
 
 TestServerWindowDelegate::TestServerWindowDelegate()
     : root_window_(nullptr),
-      display_compositor_(new DisplayCompositor(nullptr)) {}
+      display_compositor_(
+          new DisplayCompositor(nullptr, nullptr, nullptr, nullptr)) {}
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
-ui::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
+cc::mojom::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
   return display_compositor_.get();
 }
 

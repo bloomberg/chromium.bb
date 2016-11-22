@@ -129,11 +129,6 @@ FrameGenerator* PlatformDisplayDefault::GetFrameGenerator() {
   return frame_generator_.get();
 }
 
-void PlatformDisplayDefault::OnGpuChannelEstablished(
-    scoped_refptr<gpu::GpuChannelHost> channel) {
-  frame_generator_->OnGpuChannelEstablished(channel);
-}
-
 bool PlatformDisplayDefault::UpdateViewportMetrics(
     const display::ViewportMetrics& metrics) {
   if (metrics_ == metrics)

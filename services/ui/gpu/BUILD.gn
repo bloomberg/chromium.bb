@@ -19,6 +19,8 @@ source_set("gpu") {
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]
 
   deps = [
+    "//cc",
+    "//gpu/ipc:command_buffer",
     "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//ipc",
@@ -28,6 +30,7 @@ source_set("gpu") {
     "//services/ui/common:mus_common",
     "//services/ui/gpu/interfaces",
     "//services/ui/public/interfaces",
+    "//services/ui/surfaces",
     "//ui/gfx:memory_buffer",
     "//ui/gl/init",
   ]

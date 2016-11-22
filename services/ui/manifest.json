@@ -8,6 +8,7 @@
         // Additional interfaces may be requested a-la-carte.
         "app": [
           "ui::mojom::Clipboard",
+          "ui::mojom::DisplayCompositor",
           "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
           "ui::mojom::GpuService",
