@@ -736,7 +736,7 @@ static bool DecodeBlobData(const std::string& data,
     } else {
       if (!DecodeVarInt(&slice, &size) || size < 0)
         return false;
-      ret.push_back(IndexedDBBlobInfo(type, static_cast<uint64_t>(size), key));
+      ret.push_back(IndexedDBBlobInfo(type, size, key));
     }
   }
   output->swap(ret);

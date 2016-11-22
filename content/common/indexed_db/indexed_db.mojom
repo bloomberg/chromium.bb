@@ -74,7 +74,7 @@ struct FileInfo {
 struct BlobInfo {
   string uuid;
   mojo.common.mojom.String16 mime_type;
-  uint64 size;
+  int64 size;
   FileInfo? file;
 };
 

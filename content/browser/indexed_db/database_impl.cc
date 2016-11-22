@@ -280,7 +280,7 @@ void DatabaseImpl::Put(
       }
       blob_info[i] = IndexedDBBlobInfo(info->uuid, info->file->path,
                                        info->file->name, info->mime_type);
-      if (info->size != static_cast<uint64_t>(-1)) {
+      if (info->size != -1) {
         blob_info[i].set_last_modified(info->file->last_modified);
         blob_info[i].set_size(info->size);
       }
