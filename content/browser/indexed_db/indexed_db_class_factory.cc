@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
@@ -30,8 +31,8 @@ IndexedDBClassFactory* IndexedDBClassFactory::Get() {
 
 scoped_refptr<IndexedDBDatabase> IndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
-    IndexedDBBackingStore* backing_store,
-    IndexedDBFactory* factory,
+    scoped_refptr<IndexedDBBackingStore> backing_store,
+    scoped_refptr<IndexedDBFactory> factory,
     const IndexedDBDatabase::Identifier& unique_identifier) {
   return new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
 }

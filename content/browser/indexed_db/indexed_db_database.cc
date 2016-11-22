@@ -358,8 +358,8 @@ class IndexedDBDatabase::DeleteRequest
 
 std::tuple<scoped_refptr<IndexedDBDatabase>, leveldb::Status>
 IndexedDBDatabase::Create(const base::string16& name,
-                          IndexedDBBackingStore* backing_store,
-                          IndexedDBFactory* factory,
+                          scoped_refptr<IndexedDBBackingStore> backing_store,
+                          scoped_refptr<IndexedDBFactory> factory,
                           const Identifier& unique_identifier) {
   scoped_refptr<IndexedDBDatabase> database =
       IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
@@ -370,10 +370,11 @@ IndexedDBDatabase::Create(const base::string16& name,
   return std::tie(database, s);
 }
 
-IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
-                                     IndexedDBBackingStore* backing_store,
-                                     IndexedDBFactory* factory,
-                                     const Identifier& unique_identifier)
+IndexedDBDatabase::IndexedDBDatabase(
+    const base::string16& name,
+    scoped_refptr<IndexedDBBackingStore> backing_store,
+    scoped_refptr<IndexedDBFactory> factory,
+    const Identifier& unique_identifier)
     : backing_store_(backing_store),
       metadata_(name,
                 kInvalidId,

@@ -56,8 +56,8 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   static std::tuple<scoped_refptr<IndexedDBDatabase>, leveldb::Status> Create(
       const base::string16& name,
-      IndexedDBBackingStore* backing_store,
-      IndexedDBFactory* factory,
+      scoped_refptr<IndexedDBBackingStore> backing_store,
+      scoped_refptr<IndexedDBFactory> factory,
       const Identifier& unique_identifier);
 
   const Identifier& identifier() const { return identifier_; }
@@ -276,8 +276,8 @@ class CONTENT_EXPORT IndexedDBDatabase
 
  protected:
   IndexedDBDatabase(const base::string16& name,
-                    IndexedDBBackingStore* backing_store,
-                    IndexedDBFactory* factory,
+                    scoped_refptr<IndexedDBBackingStore> backing_store,
+                    scoped_refptr<IndexedDBFactory> factory,
                     const Identifier& unique_identifier);
   virtual ~IndexedDBDatabase();
 

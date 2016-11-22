@@ -43,8 +43,8 @@ class CONTENT_EXPORT IndexedDBClassFactory {
 
   virtual scoped_refptr<IndexedDBDatabase> CreateIndexedDBDatabase(
       const base::string16& name,
-      IndexedDBBackingStore* backing_store,
-      IndexedDBFactory* factory,
+      scoped_refptr<IndexedDBBackingStore> backing_store,
+      scoped_refptr<IndexedDBFactory> factory,
       const IndexedDBDatabase::Identifier& unique_identifier);
 
   virtual IndexedDBTransaction* CreateIndexedDBTransaction(
