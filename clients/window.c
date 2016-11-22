@@ -3108,6 +3108,8 @@ static xkb_keysym_t
 process_key_press(xkb_keysym_t sym, struct input *input)
 {
 #ifdef HAVE_XKBCOMMON_COMPOSE
+	if (!input->xkb.compose_state)
+		return sym;
 	if (sym == XKB_KEY_NoSymbol)
 		return sym;
 	if (xkb_compose_state_feed(input->xkb.compose_state,
