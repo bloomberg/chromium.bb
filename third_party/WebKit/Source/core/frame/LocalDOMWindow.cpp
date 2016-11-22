@@ -76,6 +76,8 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/Suborigin.h"
@@ -1402,6 +1404,12 @@ void LocalDOMWindow::dispatchLoadEvent() {
                                          BLINK_FROM_HERE);
   } else {
     dispatchEvent(loadEvent, document());
+  }
+
+  if (frame()) {
+    Performance* performance = DOMWindowPerformance::performance(*this);
+    DCHECK(performance);
+    performance->addNavigationTiming(frame());
   }
 
   // For load events, send a separate load event to the enclosing frame only.

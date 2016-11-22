@@ -21,6 +21,8 @@ blink_core_sources("timing") {
     "PerformanceMeasure.h",
     "PerformanceNavigation.cpp",
     "PerformanceNavigation.h",
+    "PerformanceNavigationTiming.cpp",
+    "PerformanceNavigationTiming.h",
     "PerformanceObserver.cpp",
     "PerformanceObserver.h",
     "PerformanceObserverEntryList.cpp",

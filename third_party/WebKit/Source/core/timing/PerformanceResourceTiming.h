@@ -41,10 +41,11 @@ namespace blink {
 class ResourceLoadTiming;
 class ResourceTimingInfo;
 
-class PerformanceResourceTiming final : public PerformanceEntry {
+class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  ~PerformanceResourceTiming() override;
   static PerformanceResourceTiming* create(const ResourceTimingInfo& info,
                                            double timeOrigin,
                                            double startTime,
@@ -67,9 +68,9 @@ class PerformanceResourceTiming final : public PerformanceEntry {
   AtomicString initiatorType() const;
 
   double workerStart() const;
-  double redirectStart() const;
-  double redirectEnd() const;
-  double fetchStart() const;
+  virtual double redirectStart() const;
+  virtual double redirectEnd() const;
+  virtual double fetchStart() const;
   double domainLookupStart() const;
   double domainLookupEnd() const;
   double connectStart() const;
@@ -77,13 +78,28 @@ class PerformanceResourceTiming final : public PerformanceEntry {
   double secureConnectionStart() const;
   double requestStart() const;
   double responseStart() const;
-  double responseEnd() const;
+  virtual double responseEnd() const;
   unsigned long long transferSize() const;
   unsigned long long encodedBodySize() const;
   unsigned long long decodedBodySize() const;
 
  protected:
   void buildJSONValue(V8ObjectBuilder&) const override;
+
+  PerformanceResourceTiming(const AtomicString& initiatorType,
+                            double timeOrigin,
+                            ResourceLoadTiming*,
+                            double lastRedirectEndTime,
+                            double finishTime,
+                            unsigned long long transferSize,
+                            unsigned long long encodedBodyLength,
+                            unsigned long long decodedBodyLength,
+                            bool didReuseConnection,
+                            bool allowTimingDetails,
+                            bool allowRedirectDetails,
+                            const String& name,
+                            const String& entryType,
+                            double startTime);
 
  private:
   PerformanceResourceTiming(const ResourceTimingInfo&,
@@ -92,7 +108,6 @@ class PerformanceResourceTiming final : public PerformanceEntry {
                             double lastRedirectEndTime,
                             bool m_allowTimingDetails,
                             bool m_allowRedirectDetails);
-  ~PerformanceResourceTiming() override;
 
   double workerReady() const;
 

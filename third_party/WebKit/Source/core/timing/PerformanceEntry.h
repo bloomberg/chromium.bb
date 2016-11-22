@@ -56,6 +56,7 @@ class CORE_EXPORT PerformanceEntry
 
   enum EntryType {
     Invalid = 0,
+    Navigation = 1 << 0,
     Composite = 1 << 1,
     Mark = 1 << 2,
     Measure = 1 << 3,

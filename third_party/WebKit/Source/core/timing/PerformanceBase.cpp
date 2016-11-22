@@ -32,12 +32,18 @@
 #include "core/timing/PerformanceBase.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentTiming.h"
 #include "core/events/Event.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
+#include "core/timing/PerformanceNavigationTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -74,6 +80,8 @@ PerformanceEntryVector PerformanceBase::getEntries() const {
   PerformanceEntryVector entries;
 
   entries.appendVector(m_resourceTimingBuffer);
+  if (m_navigationTiming)
+    entries.append(m_navigationTiming);
   entries.appendVector(m_frameTimingBuffer);
 
   if (m_userTiming) {
@@ -102,6 +110,10 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
     case PerformanceEntry::Resource:
       for (const auto& resource : m_resourceTimingBuffer)
         entries.append(resource);
+      break;
+    case PerformanceEntry::Navigation:
+      if (m_navigationTiming)
+        entries.append(m_navigationTiming);
       break;
     case PerformanceEntry::Composite:
     case PerformanceEntry::Render:
@@ -141,6 +153,11 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
       if (resource->name() == name)
         entries.append(resource);
     }
+  }
+
+  if (entryType.isNull() || type == PerformanceEntry::Navigation) {
+    if (m_navigationTiming && m_navigationTiming->name() == name)
+      entries.append(m_navigationTiming);
   }
 
   if (entryType.isNull() || type == PerformanceEntry::Composite ||
@@ -290,6 +307,52 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info) {
   notifyObserversOfEntry(*entry);
   if (!isResourceTimingBufferFull())
     addResourceTimingBuffer(*entry);
+}
+
+void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
+  if (!RuntimeEnabledFeatures::performanceNavigationTiming2Enabled())
+    return;
+  DCHECK(frame);
+  const DocumentLoader* documentLoader = frame->loader().documentLoader();
+  DCHECK(documentLoader);
+  const DocumentLoadTiming& documentLoadTiming = documentLoader->timing();
+
+  const DocumentTiming* documentTiming =
+      frame->document() ? &(frame->document()->timing()) : nullptr;
+
+  const ResourceResponse& finalResponse = documentLoader->response();
+
+  ResourceLoadTiming* resourceLoadTiming = finalResponse.resourceLoadTiming();
+  // Don't create a navigation timing instance when
+  // resourceLoadTiming is null, which could happen when visiting non-http sites
+  // such as about:blank or in some error cases.
+  if (!resourceLoadTiming)
+    return;
+  double lastRedirectEndTime = documentLoadTiming.redirectEnd();
+  double finishTime = documentLoadTiming.loadEventEnd();
+
+  // TODO(sunjian) Implement transfer size. crbug/663187
+  unsigned long long transferSize = 0;
+  unsigned long long encodedBodyLength = finalResponse.encodedBodyLength();
+  unsigned long long decodedBodyLength = finalResponse.decodedBodyLength();
+  bool didReuseConnection = finalResponse.connectionReused();
+
+  m_navigationTiming = new PerformanceNavigationTiming(
+      timeOrigin(), documentLoadTiming.unloadEventStart(),
+      documentLoadTiming.unloadEventEnd(), documentLoadTiming.loadEventStart(),
+      documentLoadTiming.loadEventEnd(), documentLoadTiming.redirectCount(),
+      documentTiming ? documentTiming->domInteractive() : 0,
+      documentTiming ? documentTiming->domContentLoadedEventStart() : 0,
+      documentTiming ? documentTiming->domContentLoadedEventEnd() : 0,
+      documentTiming ? documentTiming->domComplete() : 0,
+      documentLoader->getNavigationType(), documentLoadTiming.redirectStart(),
+      documentLoadTiming.redirectEnd(), documentLoadTiming.fetchStart(),
+      documentLoadTiming.responseEnd(),
+      documentLoadTiming.hasCrossOriginRedirect(),
+      documentLoadTiming.hasSameOriginAsPreviousDocument(), resourceLoadTiming,
+      lastRedirectEndTime, finishTime, transferSize, encodedBodyLength,
+      decodedBodyLength, didReuseConnection);
+  notifyObserversOfEntry(*m_navigationTiming);
 }
 
 void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry) {
@@ -464,6 +527,7 @@ DOMHighResTimeStamp PerformanceBase::now() const {
 DEFINE_TRACE(PerformanceBase) {
   visitor->trace(m_frameTimingBuffer);
   visitor->trace(m_resourceTimingBuffer);
+  visitor->trace(m_navigationTiming);
   visitor->trace(m_userTiming);
   visitor->trace(m_observers);
   visitor->trace(m_activeObservers);

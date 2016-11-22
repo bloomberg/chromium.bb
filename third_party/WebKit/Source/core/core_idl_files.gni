@@ -398,6 +398,7 @@ core_idl_files = get_path_info([
                                  "timing/PerformanceMark.idl",
                                  "timing/PerformanceMeasure.idl",
                                  "timing/PerformanceNavigation.idl",
+                                 "timing/PerformanceNavigationTiming.idl",
                                  "timing/PerformanceObserver.idl",
                                  "timing/PerformanceObserverEntryList.idl",
                                  "timing/PerformanceResourceTiming.idl",

@@ -77,6 +77,8 @@ PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(
     return Render;
   if (entryType == "resource")
     return Resource;
+  if (entryType == "navigation")
+    return Navigation;
   return Invalid;
 }
 

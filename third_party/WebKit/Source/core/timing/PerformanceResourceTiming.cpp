@@ -49,29 +49,58 @@ static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin,
 }
 
 PerformanceResourceTiming::PerformanceResourceTiming(
+    const AtomicString& initiatorType,
+    double timeOrigin,
+    ResourceLoadTiming* timing,
+    double lastRedirectEndTime,
+    double finishTime,
+    unsigned long long transferSize,
+    unsigned long long encodedBodyLength,
+    unsigned long long decodedBodyLength,
+    bool didReuseConnection,
+    bool allowTimingDetails,
+    bool allowRedirectDetails,
+    const String& name,
+    const String& entryType,
+    double startTime)
+    : PerformanceEntry(
+          name,
+          entryType,
+          monotonicTimeToDOMHighResTimeStamp(timeOrigin, startTime),
+          monotonicTimeToDOMHighResTimeStamp(timeOrigin, finishTime)),
+      m_initiatorType(initiatorType),
+      m_timeOrigin(timeOrigin),
+      m_timing(timing),
+      m_lastRedirectEndTime(lastRedirectEndTime),
+      m_finishTime(finishTime),
+      m_transferSize(transferSize),
+      m_encodedBodySize(encodedBodyLength),
+      m_decodedBodySize(decodedBodyLength),
+      m_didReuseConnection(didReuseConnection),
+      m_allowTimingDetails(allowTimingDetails),
+      m_allowRedirectDetails(allowRedirectDetails) {}
+
+PerformanceResourceTiming::PerformanceResourceTiming(
     const ResourceTimingInfo& info,
     double timeOrigin,
     double startTime,
     double lastRedirectEndTime,
     bool allowTimingDetails,
     bool allowRedirectDetails)
-    : PerformanceEntry(
-          info.initialURL().getString(),
-          "resource",
-          monotonicTimeToDOMHighResTimeStamp(timeOrigin, startTime),
-          monotonicTimeToDOMHighResTimeStamp(timeOrigin,
-                                             info.loadFinishTime())),
-      m_initiatorType(info.initiatorType()),
-      m_timeOrigin(timeOrigin),
-      m_timing(info.finalResponse().resourceLoadTiming()),
-      m_lastRedirectEndTime(lastRedirectEndTime),
-      m_finishTime(info.loadFinishTime()),
-      m_transferSize(info.transferSize()),
-      m_encodedBodySize(info.finalResponse().encodedBodyLength()),
-      m_decodedBodySize(info.finalResponse().decodedBodyLength()),
-      m_didReuseConnection(info.finalResponse().connectionReused()),
-      m_allowTimingDetails(allowTimingDetails),
-      m_allowRedirectDetails(allowRedirectDetails) {}
+    : PerformanceResourceTiming(info.initiatorType(),
+                                timeOrigin,
+                                info.finalResponse().resourceLoadTiming(),
+                                lastRedirectEndTime,
+                                info.loadFinishTime(),
+                                info.transferSize(),
+                                info.finalResponse().encodedBodyLength(),
+                                info.finalResponse().decodedBodyLength(),
+                                info.finalResponse().connectionReused(),
+                                allowTimingDetails,
+                                allowRedirectDetails,
+                                info.initialURL().getString(),
+                                "resource",
+                                startTime) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() {}
 

@@ -47,6 +47,7 @@ namespace blink {
 
 class DOMWindow;
 class ExceptionState;
+class LocalFrame;
 class PerformanceObserver;
 class PerformanceTiming;
 class ResourceTimingInfo;
@@ -99,6 +100,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   void addResourceTiming(const ResourceTimingInfo&);
 
+  void addNavigationTiming(LocalFrame*);
+
   void mark(const String& markName, ExceptionState&);
   void clearMarks(const String& markName);
 
@@ -134,6 +137,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   unsigned m_frameTimingBufferSize;
   PerformanceEntryVector m_resourceTimingBuffer;
   unsigned m_resourceTimingBufferSize;
+  Member<PerformanceEntry> m_navigationTiming;
   Member<UserTiming> m_userTiming;
 
   double m_timeOrigin;

@@ -4598,6 +4598,20 @@ interface PerformanceNavigation
     getter type
     method constructor
     method toJSON
+interface PerformanceNavigationTiming : PerformanceResourceTiming
+    attribute @@toStringTag
+    getter domComplete
+    getter domContentLoadedEventEnd
+    getter domContentLoadedEventStart
+    getter domInteractive
+    getter loadEventEnd
+    getter loadEventStart
+    getter redirectCount
+    getter type
+    getter unloadEventEnd
+    getter unloadEventStart
+    method constructor
+    method toJSON
 interface PerformanceObserver
     attribute @@toStringTag
     method constructor
