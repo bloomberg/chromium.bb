@@ -2702,12 +2702,6 @@
         },
         "test": "views_unittests"
       }
-    ],
-    "scripts": [
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
-      }
     ]
   },
   "Chromium Mac 10.11": {
@@ -3010,12 +3004,6 @@
           "can_use_on_swarming_builders": true
         }
       }
-    ],
-    "scripts": [
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
-      }
     ]
   },
   "Chromium Mac 10.11 Force Mac Toolchain": {
@@ -3277,12 +3265,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "views_unittests"
-      }
-    ],
-    "scripts": [
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
       }
     ]
   },
