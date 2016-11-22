@@ -28,16 +28,33 @@ class TestReadingListStorage : public ReadingListModelStorage {
         observer_(observer) {}
 
   void AddSampleEntries() {
+    // Adds timer and interlace read/unread entry creation to avoid having two
+    // entries with the same creation timestamp.
+    ReadingListEntry unread_a(GURL("http://unread_a.com"), "unread_a");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
     ReadingListEntry read_a(GURL("http://read_a.com"), "read_a");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
+    ReadingListEntry unread_b(GURL("http://unread_b.com"), "unread_b");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
     ReadingListEntry read_b(GURL("http://read_b.com"), "read_b");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
+    ReadingListEntry unread_c(GURL("http://unread_c.com"), "unread_c");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
     ReadingListEntry read_c(GURL("http://read_c.com"), "read_c");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
+    ReadingListEntry unread_d(GURL("http://unread_d.com"), "unread_d");
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromMilliseconds(5));
     read_->push_back(std::move(read_c));
     read_->push_back(std::move(read_a));
     read_->push_back(std::move(read_b));
-    ReadingListEntry unread_a(GURL("http://unread_a.com"), "unread_a");
-    ReadingListEntry unread_b(GURL("http://unread_b.com"), "unread_b");
-    ReadingListEntry unread_c(GURL("http://unread_c.com"), "unread_c");
-    ReadingListEntry unread_d(GURL("http://unread_d.com"), "unread_d");
+
     unread_->push_back(std::move(unread_a));
     unread_->push_back(std::move(unread_d));
     unread_->push_back(std::move(unread_c));
