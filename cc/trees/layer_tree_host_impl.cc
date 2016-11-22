@@ -692,23 +692,6 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
   }
 }
 
-static void AppendQuadsForRenderSurfaceLayer(
-    RenderPass* target_render_pass,
-    LayerImpl* layer,
-    const RenderPass* contributing_render_pass,
-    AppendQuadsData* append_quads_data) {
-  RenderSurfaceImpl* surface = layer->render_surface();
-  const gfx::Transform& draw_transform = surface->draw_transform();
-  const Occlusion& occlusion = surface->occlusion_in_content_space();
-  SkColor debug_border_color = surface->GetDebugBorderColor();
-  float debug_border_width = surface->GetDebugBorderWidth();
-  LayerImpl* mask_layer = surface->MaskLayer();
-
-  surface->AppendQuads(target_render_pass, draw_transform, occlusion,
-                       debug_border_color, debug_border_width, mask_layer,
-                       append_quads_data, contributing_render_pass->id);
-}
-
 static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
                                     RenderPass* target_render_pass,
                                     RenderSurfaceImpl* root_render_surface,
@@ -873,13 +856,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       }
     } else if (it.represents_contributing_render_surface() &&
                it->render_surface()->contributes_to_drawn_surface()) {
-      RenderPassId contributing_render_pass_id =
-          it->render_surface()->GetRenderPassId();
-      RenderPass* contributing_render_pass =
-          FindRenderPassById(frame->render_passes, contributing_render_pass_id);
-      AppendQuadsForRenderSurfaceLayer(target_render_pass, *it,
-                                       contributing_render_pass,
-                                       &append_quads_data);
+      it->render_surface()->AppendQuads(target_render_pass, &append_quads_data);
     } else if (it.represents_itself() && !it->visible_layer_rect().IsEmpty()) {
       bool occluded =
           it->draw_properties().occlusion_in_content_space.IsOccluded(

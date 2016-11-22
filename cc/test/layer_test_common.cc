@@ -201,11 +201,10 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
   render_pass_->quad_list.clear();
   render_pass_->shared_quad_state_list.clear();
 
-  surface_impl->AppendQuads(
-      render_pass_.get(), gfx::Transform(),
+  surface_impl->set_occlusion_in_content_space(
       Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
-                SimpleEnclosedRegion()),
-      SK_ColorBLACK, 1.f, nullptr, &data, RenderPassId(1, 1));
+                SimpleEnclosedRegion()));
+  surface_impl->AppendQuads(render_pass_.get(), &data);
 }
 
 void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}

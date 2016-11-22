@@ -349,15 +349,9 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
 }
 
 void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
-                                    const gfx::Transform& draw_transform,
-                                    const Occlusion& occlusion_in_content_space,
-                                    SkColor debug_border_color,
-                                    float debug_border_width,
-                                    LayerImpl* mask_layer,
-                                    AppendQuadsData* append_quads_data,
-                                    RenderPassId render_pass_id) {
+                                    AppendQuadsData* append_quads_data) {
   gfx::Rect visible_layer_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(content_rect());
+      occlusion_in_content_space().GetUnoccludedContentRect(content_rect());
   if (visible_layer_rect.IsEmpty())
     return;
 
@@ -369,7 +363,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
-      draw_transform, content_rect().size(), content_rect(),
+      draw_transform(), content_rect().size(), content_rect(),
       draw_properties_.clip_rect, draw_properties_.is_clipped,
       draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
@@ -377,14 +371,15 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
     DebugBorderDrawQuad* debug_border_quad =
         render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
     debug_border_quad->SetNew(shared_quad_state, content_rect(),
-                              visible_layer_rect, debug_border_color,
-                              debug_border_width);
+                              visible_layer_rect, GetDebugBorderColor(),
+                              GetDebugBorderWidth());
   }
 
   ResourceId mask_resource_id = 0;
   gfx::Size mask_texture_size;
   gfx::Vector2dF mask_uv_scale;
   gfx::Transform owning_layer_draw_transform = owning_layer_->DrawTransform();
+  LayerImpl* mask_layer = MaskLayer();
   if (mask_layer && mask_layer->DrawsContent() &&
       !mask_layer->bounds().IsEmpty()) {
     mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
@@ -405,7 +400,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
-               render_pass_id, mask_resource_id, mask_uv_scale,
+               GetRenderPassId(), mask_resource_id, mask_uv_scale,
                mask_texture_size, Filters(), owning_layer_to_target_scale,
                FiltersOrigin(), BackgroundFilters());
 }

@@ -118,13 +118,12 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   render_surface->SetContentRectForTesting(content_rect);
   render_surface->SetClipRect(clip_rect);
   render_surface->SetDrawOpacity(1.f);
+  render_surface->SetDrawTransform(origin);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;
 
-  render_surface->AppendQuads(render_pass.get(), origin, Occlusion(),
-                              SK_ColorBLACK, 1.f, nullptr, &append_quads_data,
-                              RenderPassId(2, 0));
+  render_surface->AppendQuads(render_pass.get(), &append_quads_data);
 
   ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
   SharedQuadState* shared_quad_state =

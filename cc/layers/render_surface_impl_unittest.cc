@@ -107,10 +107,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   RenderSurfaceImpl* render_surface_impl = surface_raw->render_surface();
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;
-  render_surface_impl->AppendQuads(
-      render_pass.get(), render_surface_impl->draw_transform(), Occlusion(),
-      SK_ColorBLACK, 1.f, render_surface_impl->MaskLayer(), &append_quads_data,
-      RenderPassId(1, 1));
+  render_surface_impl->AppendQuads(render_pass.get(), &append_quads_data);
 
   const RenderPassDrawQuad* quad =
       RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
