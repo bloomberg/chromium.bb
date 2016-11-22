@@ -47,7 +47,21 @@ SmoothScrollInterruptionTest.prototype.startNextTestCase = function() {
     var scrollStartPoint = this.scrollStartPoint;
 
     scrollElement.scrollTop = scrollStartPoint;
-    window.requestAnimationFrame(this.performSmoothScroll.bind(this));
+    window.requestAnimationFrame(this.waitForSyncScroll.bind(this));
+}
+
+SmoothScrollInterruptionTest.prototype.waitForSyncScroll = function() {
+  // Wait until cc has received the commit from main with the scrollStartPoint.
+  if (this.scrollElement.scrollTop != this.scrollStartPoint) {
+    // TODO(flackr): There seems to be a bug in that we shouldn't have to
+    // reapply the scroll position when cancelling a smooth scroll.
+    // https://crbug.com/667477
+    this.scrollElement.scrollTop = this.scrollStartPoint;
+    window.requestAnimationFrame(this.waitForSyncScroll.bind(this));
+    return;
+  }
+
+  this.performSmoothScroll();
 }
 
 SmoothScrollInterruptionTest.prototype.performSmoothScroll = function() {

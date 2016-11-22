@@ -464,8 +464,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         // Make sure we can't hit these values simply as a result of scrolling.
         assert (maxScrollXPix % dragStepSize) != 0;
         assert (maxScrollYPix % dragStepSize) != 0;
-        final int maxScrollXCss = (int) Math.floor(maxScrollXPix / deviceDIPScale);
-        final int maxScrollYCss = (int) Math.floor(maxScrollYPix / deviceDIPScale);
+        final int maxScrollXCss = (int) Math.round(maxScrollXPix / deviceDIPScale);
+        final int maxScrollYCss = (int) Math.round(maxScrollYPix / deviceDIPScale);
 
         setMaxScrollOnMainSync(testContainerView, maxScrollXPix, maxScrollYPix);
 

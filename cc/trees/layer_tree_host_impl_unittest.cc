@@ -61,6 +61,7 @@
 #include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -2272,6 +2273,53 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->id(),
                                    gfx::Vector2d(10, 10)));
   }
+}
+
+TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollDelta) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
+  DCHECK(scroll_layer);
+
+  float min_page_scale = 1.f;
+  float max_page_scale = 4.f;
+
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
+                                                         max_page_scale);
+  SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
+  scroll_layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.CollectScrollDeltasForTesting();
+  scroll_layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->id(),
+                                                     gfx::ScrollOffset(0, 20));
+
+  float page_scale_delta = 1.f;
+  host_impl_->ScrollBegin(BeginState(gfx::Point(10, 10)).get(),
+                          InputHandler::TOUCHSCREEN);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(10, 10));
+  host_impl_->ScrollBy(
+      UpdateState(gfx::Point(10, 10), gfx::Vector2dF(0, -1.001f)).get());
+  host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(10, 9));
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd(EndState().get());
+
+  std::unique_ptr<ScrollAndScaleSet> scroll_info =
+      host_impl_->ProcessScrollDeltas();
+  EXPECT_EQ(scroll_info->page_scale_delta, page_scale_delta);
+  EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->id(),
+                                 gfx::Vector2d(0, -1)));
+
+  // Verify this scroll delta is consistent with the snapped position of the
+  // scroll layer.
+  draw_property_utils::ComputeTransforms(
+      &scroll_layer->layer_tree_impl()->property_trees()->transform_tree);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, -19.f),
+                   scroll_layer->ScreenSpaceTransform().To2dTranslation());
 }
 
 TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
@@ -5681,12 +5729,12 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
   gfx::Vector2d expected_scroll_deltas[4];
   // Perspective affects the vertical delta by a different
   // amount depending on the vertical position of the |viewport_point|.
-  expected_scroll_deltas[0] = gfx::Vector2d(2, 8);
+  expected_scroll_deltas[0] = gfx::Vector2d(2, 9);
   expected_scroll_deltas[1] = gfx::Vector2d(1, 4);
   // Deltas which start with the same vertical position of the
   // |viewport_point| are subject to identical perspective effects.
-  expected_scroll_deltas[2] = gfx::Vector2d(4, 0);
-  expected_scroll_deltas[3] = gfx::Vector2d(4, 0);
+  expected_scroll_deltas[2] = gfx::Vector2d(5, 0);
+  expected_scroll_deltas[3] = gfx::Vector2d(5, 0);
 
   gfx::Point viewport_point(1, 1);
 
