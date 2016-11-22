@@ -80,8 +80,9 @@ bool isFeatureEnabledInFrame(const FeaturePolicy::Feature& feature,
   if (!RuntimeEnabledFeatures::featurePolicyEnabled() || !frame)
     return enabledByDefault;
   FeaturePolicy* featurePolicy = frame->securityContext()->getFeaturePolicy();
-  if (!featurePolicy)
-    return enabledByDefault;
+  // The policy should always be initialized before checking it to ensure we
+  // properly inherit the parent policy.
+  DCHECK(featurePolicy);
 
   // Otherwise, check policy.
   return featurePolicy->isFeatureEnabled(feature);
