@@ -22,6 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
@@ -795,9 +796,15 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   base::ThreadChecker thread_checker_;
 
-  // The thread used by the history service to run complicated operations.
-  // |thread_| is null once Cleanup() is called.
-  base::Thread* thread_;
+  // The thread used by the history service to run HistoryBackend operations.
+  // Intentionally not a BrowserThread because the sync integration unit tests
+  // need to create multiple HistoryServices which each have their own thread.
+  // Nullptr if TaskScheduler is used for HistoryBackend operations.
+  std::unique_ptr<base::Thread> thread_;
+
+  // The TaskRunner to which HistoryBackend tasks are posted. Nullptr once
+  // Cleanup() is called.
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // This class has most of the implementation and runs on the 'thread_'.
   // You MUST communicate with this class ONLY through the thread_'s
