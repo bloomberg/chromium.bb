@@ -40,6 +40,7 @@ class WMState;
 
 namespace views {
 
+class PointerWatcherEventRouter2;
 class ScreenMus;
 
 namespace internal {
@@ -74,6 +75,10 @@ class VIEWS_MUS_EXPORT MusClient
 
   aura::WindowTreeClient* window_tree_client() {
     return window_tree_client_.get();
+  }
+
+  PointerWatcherEventRouter2* pointer_watcher_event_router() {
+    return pointer_watcher_event_router_.get();
   }
 
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
@@ -123,6 +128,8 @@ class VIEWS_MUS_EXPORT MusClient
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
   std::unique_ptr<ui::GpuService> gpu_service_;
+
+  std::unique_ptr<PointerWatcherEventRouter2> pointer_watcher_event_router_;
 
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 

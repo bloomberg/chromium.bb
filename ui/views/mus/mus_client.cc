@@ -21,6 +21,7 @@
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
+#include "ui/views/mus/pointer_watcher_event_router2.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -99,7 +100,8 @@ MusClient::MusClient(service_manager::Connector* connector,
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
   window_tree_client_->ConnectViaWindowTreeFactory(connector_);
 
-  // TODO: wire up PointerWatcherEventRouter. http://crbug.com/663526.
+  pointer_watcher_event_router_ =
+      base::MakeUnique<PointerWatcherEventRouter2>(window_tree_client_.get());
 
   screen_ = base::MakeUnique<ScreenMus>(this);
   screen_->Init(connector);
@@ -129,8 +131,7 @@ void MusClient::OnEmbedRootDestroyed(aura::Window* root) {
 
 void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
                                        aura::Window* target) {
-  // TODO: wire up PointerWatcherEventRouter. http://crbug.com/663526.
-  NOTIMPLEMENTED();
+  pointer_watcher_event_router_->OnPointerEventObserved(event, target);
 }
 
 void MusClient::OnWindowManagerFrameValuesChanged() {

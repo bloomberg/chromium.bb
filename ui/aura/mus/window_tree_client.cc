@@ -211,6 +211,10 @@ void WindowTreeClient::ConnectAsWindowManager(
   SetWindowTree(std::move(window_tree));
 }
 
+client::CaptureClient* WindowTreeClient::GetCaptureClient() {
+  return delegate_->GetCaptureClient();
+}
+
 void WindowTreeClient::SetClientArea(
     Window* window,
     const gfx::Insets& client_area,
@@ -431,8 +435,8 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   tree_ = window_tree;
 
   drag_drop_controller_ = base::MakeUnique<DragDropControllerMus>(this, tree_);
-  capture_synchronizer_ = base::MakeUnique<CaptureSynchronizer>(
-      this, tree_, delegate_->GetCaptureClient());
+  capture_synchronizer_ =
+      base::MakeUnique<CaptureSynchronizer>(this, tree_, GetCaptureClient());
   focus_synchronizer_ = base::MakeUnique<FocusSynchronizer>(this, tree_);
 }
 

@@ -32,6 +32,8 @@ component("mus") {
     "native_widget_mus.h",
     "pointer_watcher_event_router.cc",
     "pointer_watcher_event_router.h",
+    "pointer_watcher_event_router2.cc",
+    "pointer_watcher_event_router2.h",
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
@@ -272,6 +274,7 @@ test("views_aura_mus_unittests") {
   testonly = true
 
   sources = [
+    "pointer_watcher_event_router2_unittest.cc",
     "run_all_unittests_aura_mus.cc",
     "screen_mus_unittest.cc",
   ]
