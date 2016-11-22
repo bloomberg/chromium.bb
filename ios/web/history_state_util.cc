@@ -10,27 +10,26 @@
 namespace web {
 namespace history_state_util {
 
-bool IsHistoryStateChangeValid(const GURL& currentUrl,
-                               const GURL& toUrl) {
+bool IsHistoryStateChangeValid(const GURL& current_url, const GURL& to_url) {
   // These two checks are very important to the security of the page. We cannot
   // allow the page to change the state to an invalid URL.
-  CHECK(currentUrl.is_valid());
-  CHECK(toUrl.is_valid());
+  CHECK(current_url.is_valid());
+  CHECK(to_url.is_valid());
 
-  return toUrl.GetOrigin() == currentUrl.GetOrigin();
+  return to_url.GetOrigin() == current_url.GetOrigin();
 }
 
-GURL GetHistoryStateChangeUrl(const GURL& currentUrl,
-                              const GURL& baseUrl,
+GURL GetHistoryStateChangeUrl(const GURL& current_url,
+                              const GURL& base_url,
                               const std::string& destination) {
-  if (!baseUrl.is_valid())
+  if (!base_url.is_valid())
     return GURL();
-  GURL toUrl = baseUrl.Resolve(destination);
+  GURL to_url = base_url.Resolve(destination);
 
-  if (!toUrl.is_valid() || !IsHistoryStateChangeValid(currentUrl, toUrl))
+  if (!to_url.is_valid() || !IsHistoryStateChangeValid(current_url, to_url))
     return GURL();
 
-  return toUrl;
+  return to_url;
 }
 
 }  // namespace history_state_util

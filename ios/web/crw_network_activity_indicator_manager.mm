@@ -10,6 +10,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/threading/thread_checker.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWNetworkActivityIndicatorManager () {
   base::scoped_nsobject<NSMutableDictionary> _groupCounts;
   NSUInteger _totalCount;

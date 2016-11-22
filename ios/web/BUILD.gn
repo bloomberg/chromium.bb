@@ -303,6 +303,7 @@ source_set("web") {
 }
 
 source_set("core") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     "//base",
     "//url",
@@ -311,8 +312,8 @@ source_set("core") {
   sources = [
     "crw_network_activity_indicator_manager.h",
     "crw_network_activity_indicator_manager.mm",
+    "history_state_util.cc",
     "history_state_util.h",
-    "history_state_util.mm",
   ]
 }
 
