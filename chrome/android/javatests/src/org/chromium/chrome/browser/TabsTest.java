@@ -641,7 +641,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         // Check counts.
         LayoutManagerChromePhone layoutManager =
                 (LayoutManagerChromePhone) getActivity().getLayoutManager();
-        int drawnCount = layoutManager.getOverviewLayout().getLayoutTabsToRender().length;
+        int drawnCount = layoutManager.getOverviewLayout().getLayoutTabsDrawnCount();
         int drawnExpected = Math.min(tabCount, maxTabsDrawn);
         assertEquals("The number of drawn tab is wrong", drawnExpected, drawnCount);
     }

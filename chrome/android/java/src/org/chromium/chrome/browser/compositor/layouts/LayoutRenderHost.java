@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.layouts;
 
 import android.graphics.Rect;
 
+import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -39,6 +40,11 @@ public interface LayoutRenderHost {
     void onPhysicalBackingSizeChanged(int width, int height);
 
     /**
+     * @return The number of actually drawn {@link LayoutTab}.
+     */
+    int getLayoutTabsDrawnCount();
+
+    /**
      * Pushes a debug rectangle that will be drawn.
      *
      * @param rect  The rect to be drawn.
@@ -65,6 +71,11 @@ public interface LayoutRenderHost {
      * @return Whether or not the toolbar is currently being faked.
      */
     boolean areBrowserControlsPermanentlyHidden();
+
+    /**
+     * @return The height of the top controls in pixels.
+     */
+    int getTopControlsHeightPixels();
 
     /**
      * @return The {@link ResourceManager}.
