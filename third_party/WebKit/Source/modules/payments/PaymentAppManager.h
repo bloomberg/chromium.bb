@@ -42,6 +42,9 @@ class MODULES_EXPORT PaymentAppManager final
 
   void onSetManifest(ScriptPromiseResolver*,
                      payments::mojom::blink::PaymentAppManifestError);
+  void onGetManifest(ScriptPromiseResolver*,
+                     payments::mojom::blink::PaymentAppManifestPtr,
+                     payments::mojom::blink::PaymentAppManifestError);
   void onServiceConnectionError();
 
   Member<ServiceWorkerRegistration> m_registration;

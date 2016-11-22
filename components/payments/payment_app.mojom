@@ -8,7 +8,7 @@ enum PaymentAppManifestError {
   NONE,
   NOT_IMPLEMENTED,
   NO_ACTIVE_WORKER,
-  STORE_MANIFEST_FAILED,
+  MANIFEST_STORAGE_OPERATION_FAILED,
 };
 
 struct PaymentAppOption {
@@ -27,4 +27,6 @@ struct PaymentAppManifest {
 interface PaymentAppManager {
   SetManifest(string service_worker_scope, PaymentAppManifest payment_app_manifest)
       => (PaymentAppManifestError error);
+  GetManifest(string service_worker_scope)
+      => (PaymentAppManifest payment_app_manifest, PaymentAppManifestError error);
 };

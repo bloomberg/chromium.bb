@@ -30,10 +30,15 @@ class CONTENT_EXPORT PaymentAppManager
 
  private:
   friend class PaymentAppManagerTest;
+
   // payments::mojom::PaymentAppManager methods:
   void SetManifest(const std::string& scope,
                    payments::mojom::PaymentAppManifestPtr manifest,
                    const SetManifestCallback& callback) override;
+  void GetManifest(const std::string& scope,
+                   const GetManifestCallback& callback) override;
+
+  // SetManifest callbacks
   void DidFindRegistrationToSetManifest(
       payments::mojom::PaymentAppManifestPtr manifest,
       const SetManifestCallback& callback,
@@ -42,10 +47,19 @@ class CONTENT_EXPORT PaymentAppManager
   void DidSetManifest(const SetManifestCallback& callback,
                       ServiceWorkerStatusCode status);
 
+  // GetManifest callbacks
+  void DidFindRegistrationToGetManifest(
+      const GetManifestCallback& callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidGetManifest(const GetManifestCallback& callback,
+                      const std::vector<std::string>& data,
+                      ServiceWorkerStatusCode status);
+
   // Called when an error is detected on binding_.
   void OnConnectionError();
 
-  // payment_app_context_ owns this.
+  // PaymentAppContext owns PaymentAppManager
   PaymentAppContext* payment_app_context_;
 
   mojo::Binding<payments::mojom::PaymentAppManager> binding_;

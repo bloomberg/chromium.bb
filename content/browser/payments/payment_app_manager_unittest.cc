@@ -26,7 +26,6 @@ namespace {
 
 const char kServiceWorkerPattern[] = "https://example.com/a";
 const char kServiceWorkerScript[] = "https://example.com/a/script.js";
-const char kPaymentAppManifestDataKey[] = "PaymentAppManifestData";
 
 void RegisterServiceWorkerCallback(bool* called,
                                    int64_t* store_registration_id,
@@ -43,10 +42,12 @@ void SetManifestCallback(payments::mojom::PaymentAppManifestError* out_error,
   *out_error = error;
 }
 
-void ReadManifestDataCallback(std::vector<std::string>* out_data,
-                              const std::vector<std::string>& data,
-                              ServiceWorkerStatusCode status) {
-  *out_data = data;
+void GetManifestCallback(payments::mojom::PaymentAppManifestPtr* out_manifest,
+                         payments::mojom::PaymentAppManifestError* out_error,
+                         payments::mojom::PaymentAppManifestPtr manifest,
+                         payments::mojom::PaymentAppManifestError error) {
+  *out_manifest = std::move(manifest);
+  *out_error = error;
 }
 
 }  // namespace
@@ -97,10 +98,9 @@ class PaymentAppManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ReadManifestData(std::vector<std::string>* out_data) {
-    embedded_worker_helper_->context_wrapper()->GetRegistrationUserData(
-        sw_registration_id_, {{kPaymentAppManifestDataKey}},
-        base::Bind(&ReadManifestDataCallback, out_data));
+  void GetManifest(const std::string& scope,
+                   const PaymentAppManager::GetManifestCallback& callback) {
+    manager_->GetManifest(scope, callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -118,7 +118,7 @@ class PaymentAppManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PaymentAppManagerTest);
 };
 
-TEST_F(PaymentAppManagerTest, SetManifest) {
+TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
   payments::mojom::PaymentAppOptionPtr option =
       payments::mojom::PaymentAppOption::New();
   option->label = "Visa ****";
@@ -138,13 +138,30 @@ TEST_F(PaymentAppManagerTest, SetManifest) {
 
   ASSERT_EQ(error, payments::mojom::PaymentAppManifestError::NONE);
 
-  std::vector<std::string> data;
-  ReadManifestData(&data);
-  ASSERT_EQ(data.size(), 1UL);
-  EXPECT_EQ(
-      "\n\vPayment App\x12\x10payment-app-icon\x1A"
-      "3\n\tVisa ****\x12\x10payment-app-icon\x1A\xEpayment-app-id\"\x4visa",
-      data[0]);
+  payments::mojom::PaymentAppManifestPtr read_manifest;
+  payments::mojom::PaymentAppManifestError read_error;
+  GetManifest(kServiceWorkerPattern,
+              base::Bind(&GetManifestCallback, &read_manifest, &read_error));
+
+  ASSERT_EQ(read_error, payments::mojom::PaymentAppManifestError::NONE);
+  EXPECT_EQ(read_manifest->icon, std::string("payment-app-icon"));
+  EXPECT_EQ(read_manifest->label, "Payment App");
+  ASSERT_EQ(read_manifest->options.size(), 1U);
+  EXPECT_EQ(read_manifest->options[0]->icon, std::string("payment-app-icon"));
+  EXPECT_EQ(read_manifest->options[0]->label, "Visa ****");
+  EXPECT_EQ(read_manifest->options[0]->id, "payment-app-id");
+  ASSERT_EQ(read_manifest->options[0]->enabled_methods.size(), 1U);
+  EXPECT_EQ(read_manifest->options[0]->enabled_methods[0], "visa");
+}
+
+TEST_F(PaymentAppManagerTest, GetManifestWithoutAssociatedServiceWorker) {
+  payments::mojom::PaymentAppManifestPtr read_manifest;
+  payments::mojom::PaymentAppManifestError read_error;
+  GetManifest(kServiceWorkerPattern,
+              base::Bind(&GetManifestCallback, &read_manifest, &read_error));
+
+  EXPECT_EQ(read_error, payments::mojom::PaymentAppManifestError::
+                            MANIFEST_STORAGE_OPERATION_FAILED);
 }
 
 }  // namespace content
