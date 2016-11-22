@@ -96,8 +96,8 @@ config("compiler") {
     assert(!is_win_fastlink)
     ldflags = [ "/PROFILE" ]
   } else {
-    if (!is_debug && !is_component_build && !is_clang) {
-      if (is_win_fastlink) {
+    if (!is_debug && !is_component_build) {
+      if (is_win_fastlink || is_clang) {
         # /PROFILE implies the following linker flags. Therefore if we are
         # skipping /PROFILE because it is incompatible with /DEBUG:FASTLINK
         # we should explicitly add these flags in order to avoid unintended
