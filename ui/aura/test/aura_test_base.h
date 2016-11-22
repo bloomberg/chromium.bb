@@ -100,6 +100,7 @@ class AuraTestBase : public testing::Test,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
   Window* OnWmCreateTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override;

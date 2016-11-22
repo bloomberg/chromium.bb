@@ -163,6 +163,9 @@ ui::wm::WindowType GetWmWindowType(const ui::Window* window) {
 
     case ui::mojom::WindowType::TOOLTIP:
       return ui::wm::WINDOW_TYPE_TOOLTIP;
+
+    case ui::mojom::WindowType::UNKNOWN:
+      return ui::wm::WINDOW_TYPE_UNKNOWN;
   }
 
   return ui::wm::WINDOW_TYPE_UNKNOWN;

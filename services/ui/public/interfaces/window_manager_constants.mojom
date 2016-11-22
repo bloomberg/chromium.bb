@@ -64,4 +64,5 @@ enum WindowType {
   TOOLTIP,
   BUBBLE,
   DRAG,
+  UNKNOWN,
 };

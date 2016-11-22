@@ -94,8 +94,11 @@ class AURA_EXPORT WindowManagerDelegate {
   // supplied properties from the client requesting the new window. The
   // delegate may modify |properties| before calling NewWindow(), but the
   // delegate does *not* own |properties|, they are valid only for the life
-  // of OnWmCreateTopLevelWindow().
+  // of OnWmCreateTopLevelWindow(). |window_type| is the type of window
+  // requested by the client. Use SetWindowType() with |window_type| (in
+  // property_utils.h) to configure the type on the newly created window.
   virtual Window* OnWmCreateTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
   // Called when a Mus client's jankiness changes. |windows| is the set of

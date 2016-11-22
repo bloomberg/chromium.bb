@@ -15,6 +15,9 @@
 
 namespace ui {
 class InputMethod;
+namespace mojom {
+enum class WindowType;
+}
 }
 
 namespace aura {
@@ -100,6 +103,9 @@ AURA_EXPORT extern const aura::WindowProperty<SkColor>* const kTopViewColor;
 
 // A property key to store the window icon, typically 16x16 for title bars.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
+
+AURA_EXPORT extern const aura::WindowProperty<ui::mojom::WindowType>* const
+    kWindowTypeKey;
 
 // Alphabetical sort.
 

@@ -25,9 +25,9 @@ namespace views {
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura,
-    const Widget::InitParams& init_params)
+    const std::map<std::string, std::vector<uint8_t>>* mus_properties)
     : aura::WindowTreeHostMus(MusClient::Get()->window_tree_client(),
-                              &init_params.mus_properties),
+                              mus_properties),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       fullscreen_restore_state_(ui::SHOW_STATE_DEFAULT),

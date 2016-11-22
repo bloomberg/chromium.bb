@@ -5,6 +5,7 @@
 #include "ui/aura/test/aura_test_base.h"
 
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -165,8 +166,11 @@ bool AuraTestBase::OnWmSetProperty(
 }
 
 Window* AuraTestBase::OnWmCreateTopLevelWindow(
+    ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  return new Window(nullptr);
+  Window* window = new Window(nullptr);
+  SetWindowType(window, window_type);
+  return window;
 }
 
 void AuraTestBase::OnWmClientJankinessChanged(

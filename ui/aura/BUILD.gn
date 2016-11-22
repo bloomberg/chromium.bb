@@ -90,6 +90,8 @@ component("aura") {
     "mus/os_exchange_data_provider_mus.h",
     "mus/property_converter.cc",
     "mus/property_converter.h",
+    "mus/property_utils.cc",
+    "mus/property_utils.h",
     "mus/surface_id_handler.h",
     "mus/text_input_client_impl.cc",
     "mus/text_input_client_impl.h",

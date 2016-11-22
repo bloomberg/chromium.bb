@@ -9,7 +9,9 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/gpu_service.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
@@ -27,6 +29,25 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/wm_state.h"
+
+// Widget::InitParams::Type must match that of ui::mojom::WindowType.
+#define WINDOW_TYPES_MATCH(NAME)                                      \
+  static_assert(                                                      \
+      static_cast<int32_t>(views::Widget::InitParams::TYPE_##NAME) == \
+          static_cast<int32_t>(ui::mojom::WindowType::NAME),          \
+      "Window type constants must match")
+
+WINDOW_TYPES_MATCH(WINDOW);
+WINDOW_TYPES_MATCH(PANEL);
+WINDOW_TYPES_MATCH(WINDOW_FRAMELESS);
+WINDOW_TYPES_MATCH(CONTROL);
+WINDOW_TYPES_MATCH(POPUP);
+WINDOW_TYPES_MATCH(MENU);
+WINDOW_TYPES_MATCH(TOOLTIP);
+WINDOW_TYPES_MATCH(BUBBLE);
+WINDOW_TYPES_MATCH(DRAG);
+// ui::mojom::WindowType::UNKNOWN does not correspond to a value in
+// Widget::InitParams::Type.
 
 namespace views {
 
@@ -58,6 +79,19 @@ bool MusClient::ShouldCreateDesktopNativeWidgetAura(
          !init_params.child;
 }
 
+// static
+std::map<std::string, std::vector<uint8_t>>
+MusClient::ConfigurePropertiesFromParams(
+    const Widget::InitParams& init_params) {
+  std::map<std::string, std::vector<uint8_t>> mus_properties =
+      init_params.mus_properties;
+  // Widget::InitParams::Type matches ui::mojom::WindowType.
+  mus_properties[ui::mojom::WindowManager::kWindowType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(init_params.type));
+  return mus_properties;
+}
+
 NativeWidget* MusClient::CreateNativeWidget(
     const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
@@ -72,9 +106,11 @@ NativeWidget* MusClient::CreateNativeWidget(
     native_widget->SetDesktopWindowTreeHost(
         base::WrapUnique(init_params.desktop_window_tree_host));
   } else {
+    std::map<std::string, std::vector<uint8_t>> mus_properties =
+        ConfigurePropertiesFromParams(init_params);
     native_widget->SetDesktopWindowTreeHost(
         base::MakeUnique<DesktopWindowTreeHostMus>(delegate, native_widget,
-                                                   init_params));
+                                                   &mus_properties));
   }
   return native_widget;
 }

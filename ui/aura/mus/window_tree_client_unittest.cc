@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/common_type_converters.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -147,6 +148,9 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   const uint8_t server_test_property1_value = 91;
   data->properties[kTestPropertyServerKey1] =
       ConvertToPropertyTransportValue(server_test_property1_value);
+  data->properties[ui::mojom::WindowManager::kWindowType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(ui::mojom::WindowType::BUBBLE));
   data->parent_id = server_id(root_window());
   data->window_id = child_window_id;
   data->bounds = gfx::Rect(1, 2, 3, 4);
@@ -161,6 +165,9 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   Window* child = root_window()->children()[0];
   EXPECT_FALSE(child->TargetVisibility());
   EXPECT_EQ(server_test_property1_value, child->GetProperty(kTestPropertyKey1));
+  EXPECT_EQ(child->type(), ui::wm::WINDOW_TYPE_POPUP);
+  EXPECT_EQ(ui::mojom::WindowType::BUBBLE,
+            child->GetProperty(client::kWindowTypeKey));
 }
 
 // Verifies a move from the server doesn't attempt signal the server.
@@ -1005,7 +1012,7 @@ TEST_F(WindowTreeClientClientTest,
   EXPECT_EQ(0u, window_tree()->number_of_changes());
 
   // Try stacking |w2| above |w3|. This should be disallowed as that would
-  // result in placing |w2| above its transient parent.
+  // result in placing |w2| above its transient child.
   root_window()->StackChildAbove(w2, w3);
   EXPECT_EQ(w1, root_window()->children()[0]);
   EXPECT_EQ(w2, root_window()->children()[1]);

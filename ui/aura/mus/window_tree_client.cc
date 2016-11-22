@@ -14,7 +14,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -25,6 +27,7 @@
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/surface_id_handler.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_mus.h"
@@ -117,6 +120,20 @@ WindowTreeHostMus* GetWindowTreeHostMus(WindowMus* window) {
 
 bool IsInternalProperty(const void* key) {
   return key == client::kModalKey;
+}
+
+void SetWindowTypeFromProperties(
+    Window* window,
+    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+  auto type_iter =
+      properties.find(ui::mojom::WindowManager::kWindowType_Property);
+  if (type_iter == properties.end())
+    return;
+
+  // TODO: need to validate type! http://crbug.com/654924.
+  ui::mojom::WindowType window_type = static_cast<ui::mojom::WindowType>(
+      mojo::ConvertTo<int32_t>(type_iter->second));
+  SetWindowType(window, window_type);
 }
 
 // Helper function to get the device_scale_factor() of the display::Display
@@ -404,6 +421,7 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   WindowPortMus* window_port_mus_ptr = window_port_mus.get();
   Window* window = new Window(nullptr, std::move(window_port_mus));
   WindowMus* window_mus = window_port_mus_ptr;
+  SetWindowTypeFromProperties(window, window_data->properties);
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
   window_mus->SetBoundsFromServer(window_data->bounds);
@@ -741,9 +759,6 @@ void WindowTreeClient::OnWmMoveLoopCompleted(uint32_t change_id,
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WindowTreeClient, WindowTreeClient implementation:
-
 std::set<Window*> WindowTreeClient::GetRoots() {
   std::set<Window*> roots;
   for (WindowMus* window : roots_)
@@ -794,9 +809,6 @@ void WindowTreeClient::PerformWindowMove(
 void WindowTreeClient::CancelWindowMove(Window* window) {
   tree_->CancelWindowMove(WindowMus::Get(window)->server_id());
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowTreeClient, WindowTreeClient implementation:
 
 void WindowTreeClient::AddObserver(WindowTreeClientObserver* observer) {
   observers_.AddObserver(observer);
@@ -1361,8 +1373,16 @@ void WindowTreeClient::WmCreateTopLevelWindow(
         transport_properties) {
   std::map<std::string, std::vector<uint8_t>> properties =
       mojo::UnorderedMapToMap(transport_properties);
-  Window* window =
-      window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
+  ui::mojom::WindowType window_type = ui::mojom::WindowType::UNKNOWN;
+  auto type_iter =
+      properties.find(ui::mojom::WindowManager::kWindowType_Property);
+  if (type_iter != properties.end()) {
+    // TODO: validation! http://crbug.com/654924.
+    window_type = static_cast<ui::mojom::WindowType>(
+        mojo::ConvertTo<int32_t>(type_iter->second));
+  }
+  Window* window = window_manager_delegate_->OnWmCreateTopLevelWindow(
+      window_type, &properties);
   embedded_windows_[requesting_client_id].insert(window);
   if (window_manager_internal_client_) {
     window_manager_internal_client_->OnWmCreatedTopLevelWindow(

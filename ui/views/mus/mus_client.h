@@ -5,7 +5,11 @@
 #ifndef UI_VIEWS_MUS_MUS_CLIENT_H_
 #define UI_VIEWS_MUS_MUS_CLIENT_H_
 
+#include <stdint.h>
+
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -70,6 +74,10 @@ class VIEWS_MUS_EXPORT MusClient
   // created.
   static bool ShouldCreateDesktopNativeWidgetAura(
       const Widget::InitParams& init_params);
+
+  // Returns the properties to supply to mus when creating a window.
+  static std::map<std::string, std::vector<uint8_t>>
+  ConfigurePropertiesFromParams(const Widget::InitParams& init_params);
 
   service_manager::Connector* connector() { return connector_; }
 

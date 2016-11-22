@@ -25,7 +25,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   DesktopWindowTreeHostMus(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura,
-      const Widget::InitParams& init_params);
+      const std::map<std::string, std::vector<uint8_t>>* mus_properties);
   ~DesktopWindowTreeHostMus() override;
 
  private:
