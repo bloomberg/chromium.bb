@@ -84,6 +84,9 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
  public:
   typedef int Probability;  // Probability type for being selected in a trial.
 
+  // TODO(665129): Make private again after crash has been resolved.
+  typedef SharedPersistentMemoryAllocator::Reference FieldTrialRef;
+
   // Specifies the persistence of the field trial group choice.
   enum RandomizationType {
     // One time randomized trials will persist the group choice between
@@ -218,8 +221,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, SetForcedChangeDefault_NonDefault);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, FloatBoundariesGiveEqualGroupSizes);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, DoesNotSurpassTotalProbability);
-
-  typedef SharedPersistentMemoryAllocator::Reference FieldTrialRef;
 
   friend class base::FieldTrialList;
 
