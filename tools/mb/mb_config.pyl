@@ -1695,7 +1695,7 @@
     },
 
     'no_pch': {
-      'gn_args': 'disable_precompiled_headers=true',
+      'gn_args': 'enable_precompiled_headers=false',
     },
 
     'no_symbols': {

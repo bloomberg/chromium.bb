@@ -56,6 +56,7 @@ source_set("heap") {
   defines = [ "BLINK_PLATFORM_IMPLEMENTATION=1" ]
 
   configs += [
+    "//third_party/WebKit/Source:blink_pch",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
     "//third_party/WebKit/Source:inside_blink",

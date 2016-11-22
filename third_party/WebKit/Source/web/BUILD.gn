@@ -30,6 +30,7 @@ component("web") {
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source:non_test_config",
+    "//third_party/WebKit/Source/core:blink_core_pch",
   ]
 
   defines = [ "BLINK_WEB_IMPLEMENTATION=1" ]
@@ -295,7 +296,10 @@ static_library("test_support") {
     "WebTestingSupport.cpp",
   ]
 
-  configs += [ "//third_party/WebKit/Source:config" ]
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source/core:blink_core_pch",
+  ]
 
   include_dirs = [ "$root_gen_dir/blink" ]
 }
@@ -427,6 +431,7 @@ test("webkit_unit_tests") {
   configs += [
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source/core:blink_core_pch",
   ]
 
   if (is_android) {

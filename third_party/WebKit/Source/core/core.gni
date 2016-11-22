@@ -122,4 +122,8 @@ set_defaults("blink_core_sources") {
   # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
   configs = default_compiler_configs - core_config_remove + core_config_add
+
+  # Compile each of the core sources targets with (core) precompiled header
+  # support, for lower Windows build times.
+  configs += [ "//third_party/WebKit/Source/core:blink_core_pch" ]
 }

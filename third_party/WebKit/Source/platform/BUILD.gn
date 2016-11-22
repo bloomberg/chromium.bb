@@ -200,6 +200,40 @@ group("make_platform_generated") {
   ]
 }
 
+import("//build/config/pch.gni")
+
+config("blink_platform_pch") {
+  if (enable_precompiled_headers) {
+    if (is_win) {
+      # This is a string rather than a file GN knows about. It has to match
+      # exactly what's in the /FI flag below, and what might appear in the
+      # source code in quotes for an #include directive.
+      precompiled_header =
+          rebase_path("win/Precompile-platform.h", root_build_dir)
+
+      # This is a file that GN will compile with the above header. It will be
+      # implicitly added to the sources (potentially multiple times, with one
+      # variant for each language used in the target).
+      precompiled_source =
+          "//third_party/WebKit/Source/platform/win/Precompile-platform.cpp"
+
+      # Force include the header.
+      cflags = [ "/FI$precompiled_header" ]
+
+      # Disable warning for "this file was empty after preprocessing". This
+      # error is generated only in C mode for ANSI compatibility. It conflicts
+      # with precompiled headers since the source file that's "compiled" for
+      # making the precompiled header is empty.
+      #
+      # This error doesn't happen every time. In VS2013, it seems if the .pch
+      # file doesn't exist, no error will be generated (probably MS tested this
+      # case but forgot the other one?). To reproduce this error, do a build,
+      # then delete the precompile.c.obj file, then build again.
+      cflags_c = [ "/wd4206" ]
+    }
+  }
+}
+
 component("platform") {
   visibility = []  # Allow re-assignment of list.
   visibility = [
@@ -1379,6 +1413,7 @@ component("platform") {
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+    ":blink_platform_pch",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
   ]
@@ -1591,6 +1626,7 @@ static_library("test_support") {
   ]
 
   configs += [
+    ":blink_platform_pch",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source:non_test_config",
@@ -1795,6 +1831,7 @@ test("blink_platform_unittests") {
   sources += [ "testing/RunAllTests.cpp" ]
 
   configs += [
+    ":blink_platform_pch",
     "//third_party/WebKit/Source/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
@@ -2023,6 +2060,7 @@ source_set("unit_tests") {
   ]
 
   configs += [
+    ":blink_platform_pch",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
   ]

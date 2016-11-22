@@ -41,6 +41,44 @@ config("inside_blink") {
   ]
 }
 
+# blink_pch --------------------------------------------------------------------
+
+# Precompiled headers can save a lot of time compiling since Blink has
+# a lot of source in header files.
+
+import("//build/config/pch.gni")
+
+config("blink_pch") {
+  if (enable_precompiled_headers) {
+    if (is_win) {
+      # This is a string rather than a file GN knows about. It has to match
+      # exactly what's in the /FI flag below, and what might appear in the
+      # source code in quotes for an #include directive.
+      precompiled_header = rebase_path("build/win/Precompile.h", root_build_dir)
+
+      # This is a file that GN will compile with the above header. It will be
+      # implicitly added to the sources (potentially multiple times, with one
+      # variant for each language used in the target).
+      precompiled_source =
+          "//third_party/WebKit/Source/build/win/Precompile.cpp"
+
+      # Force include the header.
+      cflags = [ "/FI$precompiled_header" ]
+
+      # Disable warning for "this file was empty after preprocessing". This
+      # error is generated only in C mode for ANSI compatibility. It conflicts
+      # with precompiled headers since the source file that's "compiled" for
+      # making the precompiled header is empty.
+      #
+      # This error doesn't happen every time. In VS2013, it seems if the .pch
+      # file doesn't exist, no error will be generated (probably MS tested this
+      # case but forgot the other one?). To reproduce this error, do a build,
+      # then delete the precompile.c.obj file, then build again.
+      cflags_c = [ "/wd4206" ]
+    }
+  }
+}
+
 # config -----------------------------------------------------------------------
 
 config("config") {

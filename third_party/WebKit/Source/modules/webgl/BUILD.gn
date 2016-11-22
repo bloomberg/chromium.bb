@@ -123,4 +123,9 @@ blink_modules_sources("webgl") {
     "WebGLVertexArrayObjectOES.cpp",
     "WebGLVertexArrayObjectOES.h",
   ]
+
+  # The modules/webgl/ directly is a larger module, and
+  # the implementation depends on a fair chunk of core/ --
+  # include the core pch for faster Windows compilation times.
+  configs += [ "//third_party/WebKit/Source/core:blink_core_pch" ]
 }

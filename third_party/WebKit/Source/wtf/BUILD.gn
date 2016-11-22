@@ -247,6 +247,7 @@ component("wtf") {
   configs += [
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
+    "//third_party/WebKit/Source:blink_pch",
   ]
 
   defines = [ "WTF_IMPLEMENTATION=1" ]
@@ -351,7 +352,10 @@ test("wtf_unittests") {
     cflags = [ "/wd4068" ]  # Unknown pragma.
   }
 
-  configs += [ "//third_party/WebKit/Source:config" ]
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:blink_pch",
+  ]
 
   deps = [
     ":wtf",
