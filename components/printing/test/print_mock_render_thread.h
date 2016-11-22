@@ -64,13 +64,6 @@ class PrintMockRenderThread : public content::MockRenderThread {
   bool OnMessageReceived(const IPC::Message& msg) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  void OnAllocateTempFileForPrinting(int render_view_id,
-                                     base::FileDescriptor* renderer_fd,
-                                     int* browser_fd);
-  void OnTempFileForPrintingWritten(int render_view_id, int browser_fd);
-#endif
-
   // PrintWebViewHelper expects default print settings.
   void OnGetDefaultPrintSettings(PrintMsg_Print_Params* setting);
 
