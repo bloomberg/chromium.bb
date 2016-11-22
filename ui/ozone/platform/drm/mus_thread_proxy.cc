@@ -74,16 +74,24 @@ void MusThreadProxy::DispatchObserversFromDrmThread() {
 
 void MusThreadProxy::RunObservers() {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
-  for (GpuThreadObserver& observer : gpu_thread_observers_)
+  for (GpuThreadObserver& observer : gpu_thread_observers_) {
+    // TODO(rjkroege): This needs to be different when gpu process split
+    // happens.
+    observer.OnGpuProcessLaunched();
     observer.OnGpuThreadReady();
+  }
 }
 
 void MusThreadProxy::AddGpuThreadObserver(GpuThreadObserver* observer) {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
 
   gpu_thread_observers_.AddObserver(observer);
-  if (IsConnected())
+  if (IsConnected()) {
+    // TODO(rjkroege): This needs to be different when gpu process split
+    // happens.
+    observer->OnGpuProcessLaunched();
     observer->OnGpuThreadReady();
+  }
 }
 
 void MusThreadProxy::RemoveGpuThreadObserver(GpuThreadObserver* observer) {
