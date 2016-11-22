@@ -224,6 +224,7 @@ class PanelWindowResizerTransientTest
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTransientTest);
 };
 
+#if !defined(OS_WIN)
 // Verifies a window can be dragged from the panel and detached and then
 // reattached.
 TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
@@ -270,6 +271,7 @@ TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
   EXPECT_FALSE(state->IsMinimized());
   EXPECT_EQ(expected_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
+#endif  // !defined(OS_WIN)
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
   if (!SupportsMultipleDisplays())

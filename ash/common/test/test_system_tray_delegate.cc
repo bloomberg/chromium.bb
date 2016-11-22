@@ -26,11 +26,6 @@ TestSystemTrayDelegate::TestSystemTrayDelegate()
 
 TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
 
-// static
-void TestSystemTrayDelegate::SetSystemUpdateRequired(bool required) {
-  g_system_update_required = required;
-}
-
 void TestSystemTrayDelegate::SetLoginStatus(LoginStatus login_status) {
   login_status_ = login_status;
   WmShell::Get()->UpdateAfterLoginStatusChange(login_status);

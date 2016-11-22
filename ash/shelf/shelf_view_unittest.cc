@@ -1908,21 +1908,17 @@ TEST_F(ShelfViewTest,
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
                                    public testing::WithParamInterface<bool> {
  public:
-  ShelfViewVisibleBoundsTest() : text_direction_change_(GetParam()) {
-    // TODO(jamescook): This test fails unless the system update icon is
-    // showing, which used to be the default. However, it only fails on the
-    // trybots, and only in the case where the overflow button is showing.
-    // See http://crbug.com/619344
-    TestSystemTrayDelegate::SetSystemUpdateRequired(true);
-  }
+  ShelfViewVisibleBoundsTest() : text_direction_change_(GetParam()) {}
 
   void CheckAllItemsAreInBounds() {
     gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
     gfx::Rect shelf_bounds = shelf_view_->GetBoundsInScreen();
     EXPECT_TRUE(shelf_bounds.Contains(visible_bounds));
     for (int i = 0; i < test_api_->GetButtonCount(); ++i)
-      if (ShelfButton* button = test_api_->GetButton(i))
-        EXPECT_TRUE(visible_bounds.Contains(button->GetBoundsInScreen()));
+      if (ShelfButton* button = test_api_->GetButton(i)) {
+        if (button->visible())
+          EXPECT_TRUE(visible_bounds.Contains(button->GetBoundsInScreen()));
+      }
     CheckAppListButtonIsInBounds();
   }
 
@@ -1956,14 +1952,7 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
 }
 
 INSTANTIATE_TEST_CASE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
-
-// This test seems to be flaky with material design shelf (see
-// https://crbug.com/625671) and even in non-material mode (see
-// https://crbug.com/619344 which is fixed using a hack). Disabling for now.
-// TODO(mohsen): Hopefully, the fix for https://crbug.com/634128 that fixes
-// issues with shelf spacing, will fix this flake, too. Re-enable when that
-// issue is fixed.
-INSTANTIATE_TEST_CASE_P(DISABLED_VisibleBounds,
+INSTANTIATE_TEST_CASE_P(VisibleBounds,
                         ShelfViewVisibleBoundsTest,
                         testing::Bool());
 

@@ -187,8 +187,6 @@ void AshTestHelper::TearDown() {
 
   ui::TerminateContextFactoryForTests();
 
-  TestSystemTrayDelegate::SetSystemUpdateRequired(false);
-
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 

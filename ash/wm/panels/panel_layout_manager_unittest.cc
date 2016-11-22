@@ -855,6 +855,7 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   EXPECT_TRUE(w3->IsVisible());
 }
 
+#if !defined(OS_WIN)
 // Verifies that touches along the attached edge of a panel do not
 // target the panel itself.
 TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
@@ -909,6 +910,7 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   target = targeter->FindTargetForEvent(root, &touch);
   EXPECT_NE(w.get(), target);
 }
+#endif  // !defined(OS_WIN)
 
 INSTANTIATE_TEST_CASE_P(LtrRtl,
                         PanelLayoutManagerTextDirectionTest,
