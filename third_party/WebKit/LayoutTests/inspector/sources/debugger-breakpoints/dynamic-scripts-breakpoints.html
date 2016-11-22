@@ -35,7 +35,7 @@ function test()
         var breakpoints = breakpointManager._storage._setting.get();
         InspectorTest.addResult("    Dumping breakpoint storage");
         for (var i = 0; i < breakpoints.length; ++i)
-            InspectorTest.addResult("        " + pathToFileName(breakpoints[i].sourceFileId) + ":" + breakpoints[i].lineNumber);
+            InspectorTest.addResult("        " + pathToFileName(breakpoints[i].url) + ":" + breakpoints[i].lineNumber);
     }
 
     function didShowScriptSource(sourceFrame)

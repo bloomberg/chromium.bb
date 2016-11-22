@@ -17,9 +17,9 @@ function test()
         InspectorTest.testNetworkProject._reset();
     }
 
-    function createBreakpoint(uiSourceCodeId, lineNumber, condition, enabled)
+    function createBreakpoint(url, lineNumber, condition, enabled)
     {
-        return { sourceFileId: uiSourceCodeId, lineNumber: lineNumber, condition: condition, enabled: enabled };
+        return { url: url, lineNumber: lineNumber, condition: condition, enabled: enabled };
     }
 
     var serializedBreakpoints = [];

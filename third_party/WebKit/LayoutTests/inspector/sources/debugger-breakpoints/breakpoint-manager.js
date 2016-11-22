@@ -299,7 +299,7 @@ InspectorTest.dumpBreakpointStorage = function(breakpointManager)
     var breakpoints = breakpointManager._storage._setting.get();
     InspectorTest.addResult("  Dumping Storage");
     for (var i = 0; i < breakpoints.length; ++i)
-        InspectorTest.addResult("    " + breakpoints[i].sourceFileId + ":" + breakpoints[i].lineNumber  + " enabled:" + breakpoints[i].enabled + " condition:" + breakpoints[i].condition);
+        InspectorTest.addResult("    " + breakpoints[i].url + ":" + breakpoints[i].lineNumber  + " enabled:" + breakpoints[i].enabled + " condition:" + breakpoints[i].condition);
 }
 
 InspectorTest.dumpBreakpointLocations = function(breakpointManager)
