@@ -36,23 +36,51 @@ enum DeviceType {
   BROWSER = 4;
 }
 
-// Device information provided to external clients that need to sync device
-// state.
+// A seed used to feed an EID BLE advertisement for some time period. This
+// key is specific to the device being targeted by the advertisement.
+// Next ID: 4
+message BeaconSeed {
+  // The actual key bytes.
+  optional bytes data = 1;
+
+  // The time at which this key becomes active.
+  optional int64 start_time_millis = 2;
+
+  // The time at which this key becomes inactive.
+  optional int64 end_time_millis = 3;
+}
+
+// Device information provided to external clients that need to sync
+// device state.
 message ExternalDeviceInfo {
   // A cryptographic public key associated with the device.
+  // The format of this key is a serialized SecureMessage.GenericPublicKey
+  // for all GCM_V1 devices.
   optional bytes public_key = 1;
 
   // A user friendly (human readable) name for this device.
   optional string friendly_device_name = 2;
 
-  // If available, the device's bluetooth MAC address.
+  // If available, the device's bluetooth MAC address
   optional string bluetooth_address = 3;
 
-  // Whether or not this device can be used as an unlock key.
-  optional bool unlock_key = 4;
+  // Whether or not this device can be used as an unlock key
+  optional bool unlock_key = 4 [ default = false ];
 
-  // Whether or not this device can be unlocked.
-  optional bool unlockable = 5;
+  // Whether or not this device can be unlocked
+  optional bool unlockable = 5 [ default = false ];
+
+  // The last time this device updated its info with the server.
+  optional int64 last_update_time_millis = 6;
+
+  // Whether or not this device hardware supports providing a mobile hotspot.
+  optional bool mobile_hotspot_supported = 7 [ default = false ];
+
+  // The type of the device (e.g. Android vs iOS).
+  optional DeviceType device_type = 8 [ default = UNKNOWN ];
+
+  // A list of seeds for EID BLE advertisements targeting this device.
+  repeated BeaconSeed beacon_seeds = 9;
 }
 
 // Determine if the calling device is allowed to promote the SmartLock
