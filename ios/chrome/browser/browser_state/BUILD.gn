@@ -45,6 +45,9 @@ source_set("browser_state_impl") {
     "off_the_record_chrome_browser_state_io_data.h",
     "off_the_record_chrome_browser_state_io_data.mm",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     ":browser_state",
     "//base",
