@@ -112,19 +112,25 @@ void SigninEmailConfirmationDialog::OnDialogClosed(
   Action action = CLOSE;
   std::unique_ptr<base::DictionaryValue> ret_value(
       base::DictionaryValue::From(base::JSONReader::Read(json_retval)));
-  std::string action_string;
-  if (ret_value->GetString(kActionKey, &action_string)) {
-    if (action_string == kActionCancel) {
-      action = CLOSE;
-    } else if (action_string == kActionCreateNewUser) {
-      action = CREATE_NEW_USER;
-    } else if (action_string == kActionStartSync) {
-      action = START_SYNC;
+  if (ret_value) {
+    std::string action_string;
+    if (ret_value->GetString(kActionKey, &action_string)) {
+      if (action_string == kActionCancel) {
+        action = CLOSE;
+      } else if (action_string == kActionCreateNewUser) {
+        action = CREATE_NEW_USER;
+      } else if (action_string == kActionStartSync) {
+        action = START_SYNC;
+      } else {
+        NOTREACHED() << "Unexpected action value [" << action_string << "]";
+      }
     } else {
-      NOTREACHED() << "Unexpected action value [" << action_string << "]";
+      NOTREACHED() << "No action in the dialog close return arguments";
     }
   } else {
-    NOTREACHED() << "No action in the dialog close return arguments";
+    // If the dialog is dismissed without any return value, then simply close
+    // the dialog. (see http://crbug.com/667690)
+    action = CLOSE;
   }
 
   if (!callback_.is_null()) {
