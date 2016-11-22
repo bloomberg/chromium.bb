@@ -131,8 +131,10 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
-    private long mOffsetTick;
-    private boolean mOffsetTickComputed = false;
+
+    // Conversion between native TimeTicks and SystemClock.uptimeMillis().
+    private long mNativeTickOffsetUs;
+    private boolean mNativeTickOffsetUsComputed;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -686,7 +688,8 @@ public class CustomTabsConnection {
      *
      * @param session Session identifier.
      * @param metricName Name of the page load metric.
-     * @param navigationStartTick Absolute navigation start time, as TimeTicks.
+     * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
+     *
      * @param offsetMs Offset in ms from navigationStart.
      */
     boolean notifyPageLoadMetric(CustomTabsSessionToken session, String metricName,
@@ -694,16 +697,17 @@ public class CustomTabsConnection {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
 
-        if (!mOffsetTickComputed) {
+        if (!mNativeTickOffsetUsComputed) {
             // Compute offset from time ticks to uptimeMillis.
-            mOffsetTickComputed = true;
+            mNativeTickOffsetUsComputed = true;
             long nativeNowUs = TimeUtils.nativeGetTimeTicksNowUs();
             long javaNowUs = SystemClock.uptimeMillis() * 1000;
-            mOffsetTick = nativeNowUs - javaNowUs;
+            mNativeTickOffsetUs = nativeNowUs - javaNowUs;
         }
 
         Bundle args = new Bundle();
-        args.putLong(PageLoadMetrics.NAVIGATION_START, (navigationStartTick - mOffsetTick) / 1000);
+        args.putLong(PageLoadMetrics.NAVIGATION_START,
+                (navigationStartTick - mNativeTickOffsetUs) / 1000);
         args.putLong(metricName, offsetMs);
         try {
             callback.extraCallback(PAGE_LOAD_METRICS_CALLBACK, args);
