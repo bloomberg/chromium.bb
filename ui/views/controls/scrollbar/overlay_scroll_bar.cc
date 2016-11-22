@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"

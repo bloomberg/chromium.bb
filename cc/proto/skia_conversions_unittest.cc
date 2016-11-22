@@ -10,9 +10,9 @@
 #include "cc/proto/skrrect.pb.h"
 #include "cc/proto/skxfermode.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 
 namespace cc {
 namespace {
@@ -25,8 +25,8 @@ TEST(SkiaProtoConversionsTest, SerializeDeserializeSkRegionOp) {
 }
 
 TEST(SkiaProtoConversionsTest, SerializeDeserializeSkXfermodeMode) {
-  for (size_t i = 0; i < SkXfermode::Mode::kLastMode; i++) {
-    SkXfermode::Mode mode = static_cast<SkXfermode::Mode>(i);
+  for (size_t i = 0; i < static_cast<size_t>(SkBlendMode::kLastMode); i++) {
+    SkBlendMode mode = static_cast<SkBlendMode>(i);
     EXPECT_EQ(mode, SkXfermodeModeFromProto(SkXfermodeModeToProto(mode)));
   }
 }

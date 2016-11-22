@@ -283,7 +283,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     shared_quad_state->SetAll(
         child_transform, child_size, gfx::Rect(child_size),
         gfx::Rect() /* clip_rect */, false /* is_clipped */, 1.f /* opacity */,
-        SkXfermode::kSrcOver_Mode, 0 /* sorting_context_id */);
+        SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(shared_quad_state, gfx::Rect(child_size),
                          gfx::Rect(child_size),
                          cc::SurfaceId(kFrameSinkId, child_local_frame_id_));

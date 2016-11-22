@@ -164,7 +164,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     cc::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();
     shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
-                         output_rect, false, 1.f, SkXfermode::kSrcOver_Mode, 0);
+                         output_rect, false, 1.f, SkBlendMode::kSrcOver, 0);
     auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
     cc::FilterOperations filters;
     filters.Append(cc::FilterOperation::CreateInvertFilter(1.f));
@@ -221,12 +221,11 @@ void FrameGenerator::DrawWindowTree(
     const gfx::Rect bounds_at_origin(window->bounds().size());
     // TODO(fsamuel): These clipping and visible rects are incorrect. They need
     // to be populated from CompositorFrame structs.
-    sqs->SetAll(quad_to_target_transform,
-                bounds_at_origin.size() /* layer_bounds */,
-                bounds_at_origin /* visible_layer_bounds */,
-                bounds_at_origin /* clip_rect */, false /* is_clipped */,
-                combined_opacity, SkXfermode::kSrcOver_Mode,
-                0 /* sorting-context_id */);
+    sqs->SetAll(
+        quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
+        bounds_at_origin /* visible_layer_bounds */,
+        bounds_at_origin /* clip_rect */, false /* is_clipped */,
+        combined_opacity, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
@@ -243,12 +242,11 @@ void FrameGenerator::DrawWindowTree(
     const gfx::Rect bounds_at_origin(
         window->compositor_frame_sink_manager()->GetLatestFrameSize(
             mojom::CompositorFrameSinkType::UNDERLAY));
-    sqs->SetAll(quad_to_target_transform,
-                bounds_at_origin.size() /* layer_bounds */,
-                bounds_at_origin /* visible_layer_bounds */,
-                bounds_at_origin /* clip_rect */, false /* is_clipped */,
-                combined_opacity, SkXfermode::kSrcOver_Mode,
-                0 /* sorting-context_id */);
+    sqs->SetAll(
+        quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
+        bounds_at_origin /* visible_layer_bounds */,
+        bounds_at_origin /* clip_rect */, false /* is_clipped */,
+        combined_opacity, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
 
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,

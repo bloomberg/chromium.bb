@@ -11,6 +11,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/quads/draw_quad.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {

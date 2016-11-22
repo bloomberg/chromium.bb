@@ -237,10 +237,9 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
   }
 
   if (quad->ShouldDrawWithBlending() ||
-      quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode) {
+      quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver) {
     current_paint_.setAlpha(quad->shared_quad_state->opacity * 255);
-    current_paint_.setBlendMode(
-        static_cast<SkBlendMode>(quad->shared_quad_state->blend_mode));
+    current_paint_.setBlendMode(quad->shared_quad_state->blend_mode);
   } else {
     current_paint_.setBlendMode(SkBlendMode::kSrc);
   }

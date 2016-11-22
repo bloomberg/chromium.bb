@@ -70,7 +70,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
       safe_opaque_background_color_(0),
-      draw_blend_mode_(SkXfermode::kSrcOver_Mode),
+      draw_blend_mode_(SkBlendMode::kSrcOver),
       transform_tree_index_(TransformTree::kInvalidNodeId),
       effect_tree_index_(EffectTree::kInvalidNodeId),
       clip_tree_index_(ClipTree::kInvalidNodeId),

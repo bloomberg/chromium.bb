@@ -53,7 +53,7 @@ class CC_EXPORT RenderSurfaceImpl {
   }
   float draw_opacity() const { return draw_properties_.draw_opacity; }
 
-  SkXfermode::Mode BlendMode() const;
+  SkBlendMode BlendMode() const;
   bool UsesDefaultBlendMode() const;
 
   void SetNearestOcclusionImmuneAncestor(const RenderSurfaceImpl* surface) {

@@ -110,7 +110,7 @@ void WebDisplayItemListImpl::appendEndTransformItem() {
 
 void WebDisplayItemListImpl::appendCompositingItem(
     float opacity,
-    SkXfermode::Mode xfermode,
+    SkBlendMode xfermode,
     SkRect* bounds,
     SkColorFilter* color_filter) {
   DCHECK_GE(opacity, 0.f);

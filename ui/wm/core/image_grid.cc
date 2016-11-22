@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"

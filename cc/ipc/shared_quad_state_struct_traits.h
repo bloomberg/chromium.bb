@@ -47,7 +47,7 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, OptSharedQuadState> {
   }
 
   static uint32_t blend_mode(const OptSharedQuadState& input) {
-    return input.sqs->blend_mode;
+    return static_cast<uint32_t>(input.sqs->blend_mode);
   }
 
   static int32_t sorting_context_id(const OptSharedQuadState& input) {
@@ -82,7 +82,7 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
   static float opacity(const cc::SharedQuadState& sqs) { return sqs.opacity; }
 
   static uint32_t blend_mode(const cc::SharedQuadState& sqs) {
-    return sqs.blend_mode;
+    return static_cast<uint32_t>(sqs.blend_mode);
   }
 
   static int32_t sorting_context_id(const cc::SharedQuadState& sqs) {
@@ -100,9 +100,9 @@ struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
 
     out->is_clipped = data.is_clipped();
     out->opacity = data.opacity();
-    if (data.blend_mode() > SkXfermode::kLastMode)
+    if (data.blend_mode() > static_cast<int>(SkBlendMode::kLastMode))
       return false;
-    out->blend_mode = static_cast<SkXfermode::Mode>(data.blend_mode());
+    out->blend_mode = static_cast<SkBlendMode>(data.blend_mode());
     out->sorting_context_id = data.sorting_context_id();
     return true;
   }

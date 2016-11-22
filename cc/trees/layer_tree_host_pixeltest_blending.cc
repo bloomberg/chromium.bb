@@ -16,15 +16,15 @@
 namespace cc {
 namespace {
 
-SkXfermode::Mode const kBlendModes[] = {
-    SkXfermode::kSrcOver_Mode,   SkXfermode::kScreen_Mode,
-    SkXfermode::kOverlay_Mode,   SkXfermode::kDarken_Mode,
-    SkXfermode::kLighten_Mode,   SkXfermode::kColorDodge_Mode,
-    SkXfermode::kColorBurn_Mode, SkXfermode::kHardLight_Mode,
-    SkXfermode::kSoftLight_Mode, SkXfermode::kDifference_Mode,
-    SkXfermode::kExclusion_Mode, SkXfermode::kMultiply_Mode,
-    SkXfermode::kHue_Mode,       SkXfermode::kSaturation_Mode,
-    SkXfermode::kColor_Mode,     SkXfermode::kLuminosity_Mode};
+SkBlendMode const kBlendModes[] = {
+    SkBlendMode::kSrcOver,   SkBlendMode::kScreen,
+    SkBlendMode::kOverlay,   SkBlendMode::kDarken,
+    SkBlendMode::kLighten,   SkBlendMode::kColorDodge,
+    SkBlendMode::kColorBurn, SkBlendMode::kHardLight,
+    SkBlendMode::kSoftLight, SkBlendMode::kDifference,
+    SkBlendMode::kExclusion, SkBlendMode::kMultiply,
+    SkBlendMode::kHue,       SkBlendMode::kSaturation,
+    SkBlendMode::kColor,     SkBlendMode::kLuminosity};
 
 SkColor kCSSTestColors[] = {
     0xffff0000,  // red
@@ -183,12 +183,12 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     const int kLanesCount = kBlendModesCount + 4;
     const SkColor kMiscOpaqueColor = 0xffc86464;
     const SkColor kMiscTransparentColor = 0x80c86464;
-    const SkXfermode::Mode kCoeffBlendMode = SkXfermode::kScreen_Mode;
-    const SkXfermode::Mode kShaderBlendMode = SkXfermode::kColorBurn_Mode;
+    const SkBlendMode kCoeffBlendMode = SkBlendMode::kScreen;
+    const SkBlendMode kShaderBlendMode = SkBlendMode::kColorBurn;
     // add vertical lanes with each of the blend modes
     for (int i = 0; i < kLanesCount; ++i) {
       gfx::Rect child_rect(i * lane_width, 0, lane_width, lane_height);
-      SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+      SkBlendMode blend_mode = SkBlendMode::kSrcOver;
       float opacity = 1.f;
       SkColor color = kMiscOpaqueColor;
 

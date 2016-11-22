@@ -150,7 +150,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const gfx::Rect sqs_clip_rect(123, 456, 789, 101112);
   const bool sqs_is_clipped = true;
   const float sqs_opacity = 0.9f;
-  const SkXfermode::Mode sqs_blend_mode = SkXfermode::kSrcOver_Mode;
+  const SkBlendMode sqs_blend_mode = SkBlendMode::kSrcOver;
   const int sqs_sorting_context_id = 1337;
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(sqs_quad_to_target_transform, sqs_layer_bounds,
@@ -579,16 +579,14 @@ TEST_F(StructTraitsTest, RenderPass) {
       gfx::Transform(16.1f, 15.3f, 14.3f, 13.7f, 12.2f, 11.4f, 10.4f, 9.8f,
                      8.1f, 7.3f, 6.3f, 5.7f, 4.8f, 3.4f, 2.4f, 1.2f),
       gfx::Size(1, 2), gfx::Rect(1337, 5679, 9101112, 131415),
-      gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkXfermode::kSrcOver_Mode,
-      1);
+      gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkBlendMode::kSrcOver, 1);
 
   SharedQuadState* shared_state_2 = input->CreateAndAppendSharedQuadState();
   shared_state_2->SetAll(
       gfx::Transform(1.1f, 2.3f, 3.3f, 4.7f, 5.2f, 6.4f, 7.4f, 8.8f, 9.1f,
                      10.3f, 11.3f, 12.7f, 13.8f, 14.4f, 15.4f, 16.2f),
       gfx::Size(1337, 1234), gfx::Rect(1234, 5678, 9101112, 13141516),
-      gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkXfermode::kSrcOver_Mode,
-      1);
+      gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkBlendMode::kSrcOver, 1);
 
   // This quad uses the first shared quad state. The next two quads use the
   // second shared quad state.
@@ -795,7 +793,7 @@ TEST_F(StructTraitsTest, SharedQuadState) {
   const gfx::Rect clip_rect(123, 456, 789, 101112);
   const bool is_clipped = true;
   const float opacity = 0.9f;
-  const SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+  const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   const int sorting_context_id = 1337;
   SharedQuadState input_sqs;
   input_sqs.SetAll(quad_to_target_transform, layer_bounds, visible_layer_rect,

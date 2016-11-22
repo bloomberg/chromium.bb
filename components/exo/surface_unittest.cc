@@ -203,7 +203,7 @@ TEST_F(SurfaceTest, SetBlendMode) {
   std::unique_ptr<Surface> surface(new Surface);
 
   surface->Attach(buffer.get());
-  surface->SetBlendMode(SkXfermode::kSrc_Mode);
+  surface->SetBlendMode(SkBlendMode::kSrc);
   surface->Commit();
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());

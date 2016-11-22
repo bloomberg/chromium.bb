@@ -35,7 +35,6 @@
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -195,10 +194,10 @@ class CC_EXPORT LayerImpl {
   void SetMutableProperties(uint32_t properties);
   uint32_t mutable_properties() const { return mutable_properties_; }
 
-  void set_draw_blend_mode(SkXfermode::Mode blend_mode) {
+  void set_draw_blend_mode(SkBlendMode blend_mode) {
     draw_blend_mode_ = blend_mode;
   }
-  SkXfermode::Mode draw_blend_mode() const { return draw_blend_mode_; }
+  SkBlendMode draw_blend_mode() const { return draw_blend_mode_; }
 
   void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
@@ -525,7 +524,7 @@ class CC_EXPORT LayerImpl {
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
 
-  SkXfermode::Mode draw_blend_mode_;
+  SkBlendMode draw_blend_mode_;
   gfx::PointF position_;
 
   gfx::Rect clip_rect_in_target_space_;

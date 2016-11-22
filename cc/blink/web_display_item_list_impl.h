@@ -11,8 +11,8 @@
 #include "cc/playback/display_item_list.h"
 #include "third_party/WebKit/public/platform/WebDisplayItemList.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/point_f.h"
 
 class SkColorFilter;
@@ -56,7 +56,7 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   void appendTransformItem(const SkMatrix44& matrix) override;
   void appendEndTransformItem() override;
   void appendCompositingItem(float opacity,
-                             SkXfermode::Mode,
+                             SkBlendMode,
                              SkRect* bounds,
                              SkColorFilter*) override;
   void appendEndCompositingItem() override;

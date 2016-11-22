@@ -152,12 +152,12 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
-  static bool IsDefaultBlendMode(SkXfermode::Mode blend_mode) {
-    return blend_mode == SkXfermode::kSrcOver_Mode;
+  static bool IsDefaultBlendMode(SkBlendMode blend_mode) {
+    return blend_mode == SkBlendMode::kSrcOver;
   }
-  bool CanApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode);
-  void ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode);
-  void RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode);
+  bool CanApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode);
+  void ApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode);
+  void RestoreBlendFuncToDefault(SkBlendMode blend_mode);
 
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       DrawingFrame* frame,

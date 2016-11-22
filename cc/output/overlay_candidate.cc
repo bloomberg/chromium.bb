@@ -187,7 +187,7 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
                                     OverlayCandidate* candidate) {
   if (quad->ShouldDrawWithBlending() ||
       quad->shared_quad_state->opacity != 1.f ||
-      quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
+      quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
     return false;
 
   auto& transform = quad->shared_quad_state->quad_to_target_transform;

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "cc/base/cc_export.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -37,7 +37,7 @@ class CC_EXPORT SharedQuadState {
               const gfx::Rect& clip_rect,
               bool is_clipped,
               float opacity,
-              SkXfermode::Mode blend_mode,
+              SkBlendMode blend_mode,
               int sorting_context_id);
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
@@ -52,7 +52,7 @@ class CC_EXPORT SharedQuadState {
   gfx::Rect clip_rect;
   bool is_clipped;
   float opacity;
-  SkXfermode::Mode blend_mode;
+  SkBlendMode blend_mode;
   int sorting_context_id;
 };
 

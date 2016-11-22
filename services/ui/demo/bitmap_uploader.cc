@@ -90,7 +90,7 @@ void BitmapUploader::Upload() {
   // shared_quad_state_list.
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds,
-              false /* is_clipped */, 1.f /* opacity */, SkXfermode::kSrc_Mode,
+              false /* is_clipped */, 1.f /* opacity */, SkBlendMode::kSrc,
               0 /* sorting_context_id */);
 
   if (bitmap_.get()) {

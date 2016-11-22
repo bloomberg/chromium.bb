@@ -124,7 +124,7 @@ void ColorTestWindowDelegate::OnWindowDestroyed(Window* window) {
 
 void ColorTestWindowDelegate::OnPaint(const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, window_size_);
-  recorder.canvas()->DrawColor(color_, SkXfermode::kSrc_Mode);
+  recorder.canvas()->DrawColor(color_, SkBlendMode::kSrc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

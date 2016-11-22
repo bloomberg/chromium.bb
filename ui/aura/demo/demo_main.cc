@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface_manager.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -72,14 +72,14 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {
     ui::PaintRecorder recorder(context, window_bounds_.size());
-    recorder.canvas()->DrawColor(color_, SkXfermode::kSrc_Mode);
+    recorder.canvas()->DrawColor(color_, SkBlendMode::kSrc);
     gfx::Rect r;
     recorder.canvas()->GetClipBounds(&r);
     // Fill with a non-solid color so that the compositor will exercise its
     // texture upload path.
     while (!r.IsEmpty()) {
       r.Inset(2, 2);
-      recorder.canvas()->FillRect(r, color_, SkXfermode::kXor_Mode);
+      recorder.canvas()->FillRect(r, color_, SkBlendMode::kXor);
     }
   }
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}

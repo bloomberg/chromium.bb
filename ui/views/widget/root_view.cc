@@ -642,7 +642,7 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
 
 void RootView::OnPaint(gfx::Canvas* canvas) {
   if (!layer() || !layer()->fills_bounds_opaquely())
-    canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+    canvas->DrawColor(SK_ColorBLACK, SkBlendMode::kClear);
 
   View::OnPaint(canvas);
 }

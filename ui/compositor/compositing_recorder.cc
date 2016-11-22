@@ -20,7 +20,7 @@ CompositingRecorder::CompositingRecorder(const PaintContext& context,
     return;
 
   context_.list_->CreateAndAppendPairedBeginItem<cc::CompositingDisplayItem>(
-      alpha, SkXfermode::kSrcOver_Mode, nullptr /* no bounds */,
+      alpha, SkBlendMode::kSrcOver, nullptr /* no bounds */,
       nullptr /* no color filter */, lcd_text_requires_opaque_layer);
 }
 

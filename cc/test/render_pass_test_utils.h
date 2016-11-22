@@ -54,7 +54,7 @@ void AddRenderPassQuad(RenderPass* to_pass,
                        ResourceId mask_resource_id,
                        const FilterOperations& filters,
                        gfx::Transform transform,
-                       SkXfermode::Mode blend_mode);
+                       SkBlendMode blend_mode);
 
 void AddOneOfEveryQuadType(RenderPass* to_pass,
                            ResourceProvider* resource_provider,

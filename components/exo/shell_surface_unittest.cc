@@ -427,7 +427,7 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 
   // Making the surface opaque shouldn't make it modal either.
-  child->SetBlendMode(SkXfermode::kSrc_Mode);
+  child->SetBlendMode(SkBlendMode::kSrc);
   child->Commit();
   surface->Commit();
   EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());

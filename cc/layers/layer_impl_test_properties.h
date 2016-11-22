@@ -13,7 +13,7 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/output/filter_operations.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/transform.h"
 
@@ -43,7 +43,7 @@ struct CC_EXPORT LayerImplTestProperties {
   FilterOperations filters;
   FilterOperations background_filters;
   gfx::PointF filters_origin;
-  SkXfermode::Mode blend_mode;
+  SkBlendMode blend_mode;
   LayerPositionConstraint position_constraint;
   LayerStickyPositionConstraint sticky_position_constraint;
   gfx::Point3F transform_origin;

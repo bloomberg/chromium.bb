@@ -134,8 +134,7 @@ void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
   gfx::Rect inner_bounds = full_bounds;
   inner_bounds.Inset(insets_);
   recorder.canvas()->FillRect(full_bounds, SK_ColorBLACK);
-  recorder.canvas()->FillRect(inner_bounds, kTransparent,
-                              SkXfermode::kClear_Mode);
+  recorder.canvas()->FillRect(inner_bounds, kTransparent, SkBlendMode::kClear);
 
   gfx::Point center = inner_bounds.CenterPoint();
   int vertical_offset = inner_bounds.height() / 2 - kArrowGapWidth;

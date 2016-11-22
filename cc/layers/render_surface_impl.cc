@@ -104,12 +104,12 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   return drawable_content_rect;
 }
 
-SkXfermode::Mode RenderSurfaceImpl::BlendMode() const {
+SkBlendMode RenderSurfaceImpl::BlendMode() const {
   return OwningEffectNode()->blend_mode;
 }
 
 bool RenderSurfaceImpl::UsesDefaultBlendMode() const {
-  return BlendMode() == SkXfermode::kSrcOver_Mode;
+  return BlendMode() == SkBlendMode::kSrcOver;
 }
 
 SkColor RenderSurfaceImpl::GetDebugBorderColor() const {

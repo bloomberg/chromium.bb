@@ -256,9 +256,9 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   int arbitrary_context_id3 = -503;
   int arbitrary_int = 13;
   SkColor arbitrary_color = SkColorSetARGB(25, 36, 47, 58);
-  SkXfermode::Mode arbitrary_blend_mode1 = SkXfermode::kScreen_Mode;
-  SkXfermode::Mode arbitrary_blend_mode2 = SkXfermode::kLighten_Mode;
-  SkXfermode::Mode arbitrary_blend_mode3 = SkXfermode::kOverlay_Mode;
+  SkBlendMode arbitrary_blend_mode1 = SkBlendMode::kScreen;
+  SkBlendMode arbitrary_blend_mode2 = SkBlendMode::kLighten;
+  SkBlendMode arbitrary_blend_mode3 = SkBlendMode::kOverlay;
   ResourceId arbitrary_resourceid1 = 55;
   ResourceId arbitrary_resourceid2 = 47;
   ResourceId arbitrary_resourceid3 = 23;
@@ -483,8 +483,7 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state1_in->SetAll(gfx::Transform(), gfx::Size(1, 1), gfx::Rect(),
-                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
-                           0);
+                           gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   SolidColorDrawQuad* quad1 =
       pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -494,19 +493,16 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   // The second and third SharedQuadStates are not used.
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state2_in->SetAll(gfx::Transform(), gfx::Size(2, 2), gfx::Rect(),
-                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
-                           0);
+                           gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   SharedQuadState* shared_state3_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state3_in->SetAll(gfx::Transform(), gfx::Size(3, 3), gfx::Rect(),
-                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
-                           0);
+                           gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   // The fourth SharedQuadState is used.
   SharedQuadState* shared_state4_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state4_in->SetAll(gfx::Transform(), gfx::Size(4, 4), gfx::Rect(),
-                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
-                           0);
+                           gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   SolidColorDrawQuad* quad2 =
       pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -516,8 +512,7 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   // The fifth is not used again.
   SharedQuadState* shared_state5_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state5_in->SetAll(gfx::Transform(), gfx::Size(5, 5), gfx::Rect(),
-                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
-                           0);
+                           gfx::Rect(), false, 1.f, SkBlendMode::kSrcOver, 0);
 
   // 5 SharedQuadStates go in.
   ASSERT_EQ(5u, pass_in->shared_quad_state_list.size());

@@ -299,7 +299,7 @@ TEST_F(LayerTreeHostSerializationTest, LayerDataSerialization) {
   layer->SetNonFastScrollableRegion(Region(gfx::Rect(3, 14, 1, 5)));
   layer->SetContentsOpaque(!layer->contents_opaque());
   layer->SetOpacity(0.4f);
-  layer->SetBlendMode(SkXfermode::kOverlay_Mode);
+  layer->SetBlendMode(SkBlendMode::kOverlay);
   layer->SetIsRootForIsolatedGroup(!layer->is_root_for_isolated_group());
   layer->SetPosition(gfx::PointF(3.14f, 6.28f));
   layer->SetIsContainerForFixedPositionLayers(

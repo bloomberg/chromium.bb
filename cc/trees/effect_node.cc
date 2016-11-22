@@ -15,7 +15,7 @@ EffectNode::EffectNode()
       owner_id(-1),
       opacity(1.f),
       screen_space_opacity(1.f),
-      blend_mode(SkXfermode::kSrcOver_Mode),
+      blend_mode(SkBlendMode::kSrcOver),
       has_render_surface(false),
       render_surface(nullptr),
       surface_is_clipped(false),

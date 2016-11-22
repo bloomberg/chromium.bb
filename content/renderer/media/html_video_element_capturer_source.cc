@@ -21,7 +21,6 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 
 namespace {
 const float kMinFramesPerSecond = 1.0;

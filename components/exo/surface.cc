@@ -420,8 +420,9 @@ void Surface::SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output) {
   pending_state_.only_visible_on_secure_output = only_visible_on_secure_output;
 }
 
-void Surface::SetBlendMode(SkXfermode::Mode blend_mode) {
-  TRACE_EVENT1("exo", "Surface::SetBlendMode", "blend_mode", blend_mode);
+void Surface::SetBlendMode(SkBlendMode blend_mode) {
+  TRACE_EVENT1("exo", "Surface::SetBlendMode", "blend_mode",
+               static_cast<int>(blend_mode));
 
   pending_state_.blend_mode = blend_mode;
 }
@@ -502,7 +503,7 @@ void Surface::CommitSurfaceHierarchy() {
         base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
         content_size_, contents_surface_to_layer_scale, content_size_);
     window_->layer()->SetFillsBoundsOpaquely(
-        state_.blend_mode == SkXfermode::kSrc_Mode ||
+        state_.blend_mode == SkBlendMode::kSrc ||
         state_.opaque_region.contains(
             gfx::RectToSkIRect(gfx::Rect(content_size_))));
   }
@@ -819,7 +820,7 @@ void Surface::UpdateSurface(bool full_damage) {
           render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
       gfx::Rect opaque_rect;
-      if (state_.blend_mode == SkXfermode::kSrc_Mode ||
+      if (state_.blend_mode == SkBlendMode::kSrc ||
           state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect))) {
         opaque_rect = quad_rect;
       } else if (state_.opaque_region.isRect()) {

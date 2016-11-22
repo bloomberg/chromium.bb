@@ -221,24 +221,22 @@ void Canvas::Scale(int x_scale, int y_scale) {
 }
 
 void Canvas::DrawColor(SkColor color) {
-  DrawColor(color, SkXfermode::kSrcOver_Mode);
+  DrawColor(color, SkBlendMode::kSrcOver);
 }
 
-void Canvas::DrawColor(SkColor color, SkXfermode::Mode mode) {
-  canvas_->drawColor(color, static_cast<SkBlendMode>(mode));
+void Canvas::DrawColor(SkColor color, SkBlendMode mode) {
+  canvas_->drawColor(color, mode);
 }
 
 void Canvas::FillRect(const Rect& rect, SkColor color) {
-  FillRect(rect, color, SkXfermode::kSrcOver_Mode);
+  FillRect(rect, color, SkBlendMode::kSrcOver);
 }
 
-void Canvas::FillRect(const Rect& rect,
-                      SkColor color,
-                      SkXfermode::Mode mode) {
+void Canvas::FillRect(const Rect& rect, SkColor color, SkBlendMode mode) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setBlendMode(static_cast<SkBlendMode>(mode));
+  paint.setBlendMode(mode);
   DrawRect(rect, paint);
 }
 
@@ -247,18 +245,14 @@ void Canvas::DrawRect(const Rect& rect, SkColor color) {
 }
 
 void Canvas::DrawRect(const RectF& rect, SkColor color) {
-  DrawRect(rect, color, SkXfermode::kSrcOver_Mode);
+  DrawRect(rect, color, SkBlendMode::kSrcOver);
 }
 
-void Canvas::DrawRect(const Rect& rect,
-                      SkColor color,
-                      SkXfermode::Mode mode) {
+void Canvas::DrawRect(const Rect& rect, SkColor color, SkBlendMode mode) {
   DrawRect(RectF(rect), color, mode);
 }
 
-void Canvas::DrawRect(const RectF& rect,
-                      SkColor color,
-                      SkXfermode::Mode mode) {
+void Canvas::DrawRect(const RectF& rect, SkColor color, SkBlendMode mode) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kStroke_Style);
@@ -266,7 +260,7 @@ void Canvas::DrawRect(const RectF& rect,
   // we set a stroke width of 1, for example, this will internally create a
   // path and fill it, which causes problems near the edge of the canvas.
   paint.setStrokeWidth(SkIntToScalar(0));
-  paint.setBlendMode(static_cast<SkBlendMode>(mode));
+  paint.setBlendMode(mode);
 
   DrawRect(rect, paint);
 }

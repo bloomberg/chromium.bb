@@ -328,7 +328,7 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
 
   // The only currently supported draw_blend_mode is SrcOver mode, so
   // draw_blend_mode does not affect occlusion.
-  DCHECK_EQ(layer->draw_blend_mode(), SkXfermode::kSrcOver_Mode);
+  DCHECK_EQ(layer->draw_blend_mode(), SkBlendMode::kSrcOver);
 
   if (layer->Is3dSorted())
     return;

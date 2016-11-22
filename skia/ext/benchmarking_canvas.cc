@@ -119,7 +119,7 @@ std::unique_ptr<base::Value> AsValue(SkColor color) {
 
 std::unique_ptr<base::Value> AsValue(SkBlendMode mode) {
   std::unique_ptr<base::StringValue> val(
-      new base::StringValue(SkXfermode::ModeName(mode)));
+      new base::StringValue(SkBlendMode_Name(mode)));
 
   return std::move(val);
 }

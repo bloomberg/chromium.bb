@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -36,7 +36,7 @@ struct CC_EXPORT EffectNode {
   FilterOperations background_filters;
   gfx::PointF filters_origin;
 
-  SkXfermode::Mode blend_mode;
+  SkBlendMode blend_mode;
 
   gfx::Vector2dF surface_contents_scale;
 

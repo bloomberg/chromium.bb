@@ -27,7 +27,7 @@ void CustomFrameViewMus::OnPaint(gfx::Canvas* canvas) {
   // The client app draws the client area. Make ours totally transparent so
   // we only see the client app's client area.
   canvas->FillRect(GetBoundsForClientView(), SK_ColorBLACK,
-                   SkXfermode::kClear_Mode);
+                   SkBlendMode::kClear);
 }
 
 void CustomFrameViewMus::PaintChildren(const ui::PaintContext& context) {
@@ -36,7 +36,7 @@ void CustomFrameViewMus::PaintChildren(const ui::PaintContext& context) {
   // we only see the client apps client area.
   ui::PaintRecorder recorder(context, size(), &paint_cache_);
   recorder.canvas()->FillRect(GetBoundsForClientView(), SK_ColorBLACK,
-                              SkXfermode::kClear_Mode);
+                              SkBlendMode::kClear);
 }
 
 }  // namespace mus

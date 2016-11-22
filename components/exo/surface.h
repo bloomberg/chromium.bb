@@ -18,8 +18,8 @@
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -153,7 +153,7 @@ class Surface : public ui::ContextFactoryObserver,
   void SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output);
 
   // This sets the blend mode that will be used when drawing the surface.
-  void SetBlendMode(SkXfermode::Mode blend_mode);
+  void SetBlendMode(SkBlendMode blend_mode);
 
   // This sets the alpha value that will be applied to the whole surface.
   void SetAlpha(float alpha);
@@ -268,7 +268,7 @@ class Surface : public ui::ContextFactoryObserver,
     gfx::Size viewport;
     gfx::RectF crop;
     bool only_visible_on_secure_output = false;
-    SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+    SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     float alpha = 1.0f;
   };
   class BufferAttachment {

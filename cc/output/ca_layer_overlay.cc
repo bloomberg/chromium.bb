@@ -169,7 +169,7 @@ class CALayerOverlayProcessor {
                              CALayerOverlay* ca_layer_overlay,
                              bool* skip,
                              bool* render_pass_draw_quad) {
-    if (quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
+    if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
       return CA_LAYER_FAILED_QUAD_BLEND_MODE;
 
     // Early-out for invisible quads.

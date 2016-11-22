@@ -9,15 +9,15 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc {
 
 SharedQuadState::SharedQuadState()
     : is_clipped(false),
       opacity(0.f),
-      blend_mode(SkXfermode::kSrcOver_Mode),
-      sorting_context_id(0) {
-}
+      blend_mode(SkBlendMode::kSrcOver),
+      sorting_context_id(0) {}
 
 SharedQuadState::SharedQuadState(const SharedQuadState& other) = default;
 
@@ -33,7 +33,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
                              const gfx::Rect& clip_rect,
                              bool is_clipped,
                              float opacity,
-                             SkXfermode::Mode blend_mode,
+                             SkBlendMode blend_mode,
                              int sorting_context_id) {
   this->quad_to_target_transform = quad_to_target_transform;
   this->quad_layer_bounds = quad_layer_bounds;
@@ -56,7 +56,7 @@ void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("clip_rect", clip_rect, value);
 
   value->SetDouble("opacity", opacity);
-  value->SetString("blend_mode", SkXfermode::ModeName(blend_mode));
+  value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
       value,

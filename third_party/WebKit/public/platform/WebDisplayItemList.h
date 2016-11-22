@@ -12,9 +12,9 @@
 #include "WebSize.h"
 #include "WebVector.h"
 
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 
 class SkColorFilter;
 class SkImageFilter;
@@ -51,7 +51,7 @@ class WebDisplayItemList {
   virtual void appendTransformItem(const SkMatrix44&) {}
   virtual void appendEndTransformItem() {}
   virtual void appendCompositingItem(float opacity,
-                                     SkXfermode::Mode,
+                                     SkBlendMode,
                                      SkRect* bounds,
                                      SkColorFilter*) {}
   virtual void appendEndCompositingItem() {}

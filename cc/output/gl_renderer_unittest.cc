@@ -79,43 +79,43 @@ class GLRendererTest : public testing::Test {
     EXPECT_TRUE((program_binding)->initialized()); \
   } while (false)
 
-static inline SkXfermode::Mode BlendModeToSkXfermode(BlendMode blend_mode) {
+static inline SkBlendMode BlendModeToSkXfermode(BlendMode blend_mode) {
   switch (blend_mode) {
     case BLEND_MODE_NONE:
     case BLEND_MODE_NORMAL:
-      return SkXfermode::kSrcOver_Mode;
+      return SkBlendMode::kSrcOver;
     case BLEND_MODE_SCREEN:
-      return SkXfermode::kScreen_Mode;
+      return SkBlendMode::kScreen;
     case BLEND_MODE_OVERLAY:
-      return SkXfermode::kOverlay_Mode;
+      return SkBlendMode::kOverlay;
     case BLEND_MODE_DARKEN:
-      return SkXfermode::kDarken_Mode;
+      return SkBlendMode::kDarken;
     case BLEND_MODE_LIGHTEN:
-      return SkXfermode::kLighten_Mode;
+      return SkBlendMode::kLighten;
     case BLEND_MODE_COLOR_DODGE:
-      return SkXfermode::kColorDodge_Mode;
+      return SkBlendMode::kColorDodge;
     case BLEND_MODE_COLOR_BURN:
-      return SkXfermode::kColorBurn_Mode;
+      return SkBlendMode::kColorBurn;
     case BLEND_MODE_HARD_LIGHT:
-      return SkXfermode::kHardLight_Mode;
+      return SkBlendMode::kHardLight;
     case BLEND_MODE_SOFT_LIGHT:
-      return SkXfermode::kSoftLight_Mode;
+      return SkBlendMode::kSoftLight;
     case BLEND_MODE_DIFFERENCE:
-      return SkXfermode::kDifference_Mode;
+      return SkBlendMode::kDifference;
     case BLEND_MODE_EXCLUSION:
-      return SkXfermode::kExclusion_Mode;
+      return SkBlendMode::kExclusion;
     case BLEND_MODE_MULTIPLY:
-      return SkXfermode::kMultiply_Mode;
+      return SkBlendMode::kMultiply;
     case BLEND_MODE_HUE:
-      return SkXfermode::kHue_Mode;
+      return SkBlendMode::kHue;
     case BLEND_MODE_SATURATION:
-      return SkXfermode::kSaturation_Mode;
+      return SkBlendMode::kSaturation;
     case BLEND_MODE_COLOR:
-      return SkXfermode::kColor_Mode;
+      return SkBlendMode::kColor;
     case BLEND_MODE_LUMINOSITY:
-      return SkXfermode::kLuminosity_Mode;
+      return SkBlendMode::kLuminosity;
   }
-  return SkXfermode::kSrcOver_Mode;
+  return SkBlendMode::kSrcOver;
 }
 
 // Explicitly named to be a friend in GLRenderer for shader access.
@@ -1221,7 +1221,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   for (int i = 0; i <= LAST_BLEND_MODE; ++i) {
     BlendMode blend_mode = static_cast<BlendMode>(i);
-    SkXfermode::Mode xfer_mode = BlendModeToSkXfermode(blend_mode);
+    SkBlendMode xfer_mode = BlendModeToSkXfermode(blend_mode);
     settings_.force_blending_with_shaders = (blend_mode != BLEND_MODE_NONE);
     // RenderPassProgram
     render_passes_in_draw_order_.clear();
@@ -1427,12 +1427,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                             gfx::Rect(viewport_size), gfx::Transform());
 
-  AddRenderPassQuad(root_pass,
-                    child_pass,
-                    0,
-                    FilterOperations(),
-                    transform_preventing_aa,
-                    SkXfermode::kSrcOver_Mode);
+  AddRenderPassQuad(root_pass, child_pass, 0, FilterOperations(),
+                    transform_preventing_aa, SkBlendMode::kSrcOver);
 
   renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
   DrawFrame(renderer_.get(), viewport_size);
@@ -1836,7 +1832,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), viewport_size,
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
-                       false, 1, SkXfermode::kSrcOver_Mode, 0);
+                       false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
                        resource_id, premultiplied_alpha, uv_top_left,

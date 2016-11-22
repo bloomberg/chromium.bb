@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 class SkCanvas;
@@ -26,7 +25,7 @@ namespace cc {
 class CC_EXPORT CompositingDisplayItem : public DisplayItem {
  public:
   CompositingDisplayItem(uint8_t alpha,
-                         SkXfermode::Mode xfermode,
+                         SkBlendMode xfermode,
                          SkRect* bounds,
                          sk_sp<SkColorFilter> color_filter,
                          bool lcd_text_requires_opaque_layer);
@@ -44,13 +43,13 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
 
  private:
   void SetNew(uint8_t alpha,
-              SkXfermode::Mode xfermode,
+              SkBlendMode xfermode,
               SkRect* bounds,
               sk_sp<SkColorFilter> color_filter,
               bool lcd_text_requires_opaque_layer);
 
   uint8_t alpha_;
-  SkXfermode::Mode xfermode_;
+  SkBlendMode xfermode_;
   bool has_bounds_;
   SkRect bounds_;
   sk_sp<SkColorFilter> color_filter_;

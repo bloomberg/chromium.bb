@@ -17,7 +17,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc {
 namespace test {
@@ -31,7 +31,7 @@ void AddSurfaceQuad(RenderPass* pass,
   gfx::Rect visible_layer_rect = gfx::Rect(surface_size);
   gfx::Rect clip_rect = gfx::Rect(surface_size);
   bool is_clipped = false;
-  SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+  SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   SharedQuadState* shared_quad_state = pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(layer_to_target_transform, layer_bounds,
@@ -48,7 +48,7 @@ void AddRenderPassQuad(RenderPass* pass, RenderPassId render_pass_id) {
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
-                       output_rect, false, 1, SkXfermode::kSrcOver_Mode, 0);
+                       output_rect, false, 1, SkBlendMode::kSrcOver, 0);
   RenderPassDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,

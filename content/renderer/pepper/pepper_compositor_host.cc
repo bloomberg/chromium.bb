@@ -233,7 +233,7 @@ void PepperCompositorHost::UpdateLayer(
   clip_rect.Scale(dip_to_viewport_scale);
 
   layer->SetIsDrawable(true);
-  layer->SetBlendMode(SkXfermode::kSrcOver_Mode);
+  layer->SetBlendMode(SkBlendMode::kSrcOver);
   layer->SetOpacity(new_layer->common.opacity);
 
   layer->SetBounds(gfx::ToRoundedSize(size));

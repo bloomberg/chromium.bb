@@ -32,7 +32,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
@@ -225,7 +225,7 @@ TEST(DisplayItemListTest, SerializeCompositingItem) {
 
   // Build the CompositingDisplayItem.
   list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
-      150, SkXfermode::Mode::kDst_Mode, nullptr,
+      150, SkBlendMode::kDst, nullptr,
       SkColorMatrixFilter::MakeLightingFilter(SK_ColorRED, SK_ColorGREEN),
       false);
 

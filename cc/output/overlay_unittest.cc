@@ -691,7 +691,7 @@ TEST_F(SingleOverlayOnTopTest, RejectBlendMode) {
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
                                 pass.get());
-  pass->shared_quad_state_list.back()->blend_mode = SkXfermode::kScreen_Mode;
+  pass->shared_quad_state_list.back()->blend_mode = SkBlendMode::kScreen;
 
   OverlayCandidateList candidate_list;
   overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),

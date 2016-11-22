@@ -831,7 +831,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
 
 void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
                                     RenderPass* pass,
-                                    const SkXfermode::Mode blend_mode) {
+                                    const SkBlendMode blend_mode) {
   const gfx::Transform layer_to_target_transform;
   const gfx::Size layer_bounds(size);
   const gfx::Rect visible_layer_rect(size);
@@ -880,13 +880,14 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
 //  quad_child_two_0  - blend_mode kSrcIn_Mode
 //  quad_root_2       - blend_mode kDstIn_Mode
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
-  const SkXfermode::Mode blend_modes[] = {SkXfermode::kClear_Mode,    // 0
-                                          SkXfermode::kSrc_Mode,      // 1
-                                          SkXfermode::kDst_Mode,      // 2
-                                          SkXfermode::kSrcOver_Mode,  // 3
-                                          SkXfermode::kDstOver_Mode,  // 4
-                                          SkXfermode::kSrcIn_Mode,    // 5
-                                          SkXfermode::kDstIn_Mode,    // 6
+  const SkBlendMode blend_modes[] = {
+      SkBlendMode::kClear,    // 0
+      SkBlendMode::kSrc,      // 1
+      SkBlendMode::kDst,      // 2
+      SkBlendMode::kSrcOver,  // 3
+      SkBlendMode::kDstOver,  // 4
+      SkBlendMode::kSrcIn,    // 5
+      SkBlendMode::kDstIn,    // 6
   };
 
   RenderPassId pass_id(1, 1);

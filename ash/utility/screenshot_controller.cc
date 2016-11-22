@@ -137,8 +137,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     DrawPseudoCursor(recorder.canvas());
 
     if (!region_.IsEmpty())
-      recorder.canvas()->FillRect(region_, SK_ColorBLACK,
-                                  SkXfermode::kClear_Mode);
+      recorder.canvas()->FillRect(region_, SK_ColorBLACK, SkBlendMode::kClear);
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}

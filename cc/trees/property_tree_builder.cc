@@ -805,11 +805,11 @@ static inline float Opacity(LayerImpl* layer) {
   return layer->test_properties()->opacity;
 }
 
-static inline SkXfermode::Mode BlendMode(Layer* layer) {
+static inline SkBlendMode BlendMode(Layer* layer) {
   return layer->blend_mode();
 }
 
-static inline SkXfermode::Mode BlendMode(LayerImpl* layer) {
+static inline SkBlendMode BlendMode(LayerImpl* layer) {
   return layer->test_properties()->blend_mode;
 }
 
@@ -912,7 +912,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   // TODO(rosca): this is temporary, until blending is implemented for other
   // types of quads than RenderPassDrawQuad. Layers having descendants that draw
   // content will still create a separate rendering surface.
-  if (BlendMode(layer) != SkXfermode::kSrcOver_Mode) {
+  if (BlendMode(layer) != SkBlendMode::kSrcOver) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface blending",
         TRACE_EVENT_SCOPE_THREAD);
@@ -1244,7 +1244,7 @@ void BuildPropertyTreesInternal(
 
   if (created_render_surface) {
     data_for_children.render_target = data_for_children.effect_tree_parent;
-    layer->set_draw_blend_mode(SkXfermode::kSrcOver_Mode);
+    layer->set_draw_blend_mode(SkBlendMode::kSrcOver);
   } else {
     layer->set_draw_blend_mode(BlendMode(layer));
   }

@@ -312,7 +312,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   picture_horizontal->SetBounds(picture_bounds);
   picture_horizontal->SetIsDrawable(true);
   picture_horizontal->SetContentsOpaque(false);
-  picture_horizontal->SetBlendMode(SkXfermode::kMultiply_Mode);
+  picture_horizontal->SetBlendMode(SkBlendMode::kMultiply);
 
   background->AddChild(picture_vertical);
   background->AddChild(picture_horizontal);

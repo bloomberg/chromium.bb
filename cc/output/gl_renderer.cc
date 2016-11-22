@@ -105,39 +105,39 @@ SamplerType SamplerTypeFromTextureTarget(GLenum target) {
   }
 }
 
-BlendMode BlendModeFromSkXfermode(SkXfermode::Mode mode) {
+BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
   switch (mode) {
-    case SkXfermode::kSrcOver_Mode:
+    case SkBlendMode::kSrcOver:
       return BLEND_MODE_NORMAL;
-    case SkXfermode::kScreen_Mode:
+    case SkBlendMode::kScreen:
       return BLEND_MODE_SCREEN;
-    case SkXfermode::kOverlay_Mode:
+    case SkBlendMode::kOverlay:
       return BLEND_MODE_OVERLAY;
-    case SkXfermode::kDarken_Mode:
+    case SkBlendMode::kDarken:
       return BLEND_MODE_DARKEN;
-    case SkXfermode::kLighten_Mode:
+    case SkBlendMode::kLighten:
       return BLEND_MODE_LIGHTEN;
-    case SkXfermode::kColorDodge_Mode:
+    case SkBlendMode::kColorDodge:
       return BLEND_MODE_COLOR_DODGE;
-    case SkXfermode::kColorBurn_Mode:
+    case SkBlendMode::kColorBurn:
       return BLEND_MODE_COLOR_BURN;
-    case SkXfermode::kHardLight_Mode:
+    case SkBlendMode::kHardLight:
       return BLEND_MODE_HARD_LIGHT;
-    case SkXfermode::kSoftLight_Mode:
+    case SkBlendMode::kSoftLight:
       return BLEND_MODE_SOFT_LIGHT;
-    case SkXfermode::kDifference_Mode:
+    case SkBlendMode::kDifference:
       return BLEND_MODE_DIFFERENCE;
-    case SkXfermode::kExclusion_Mode:
+    case SkBlendMode::kExclusion:
       return BLEND_MODE_EXCLUSION;
-    case SkXfermode::kMultiply_Mode:
+    case SkBlendMode::kMultiply:
       return BLEND_MODE_MULTIPLY;
-    case SkXfermode::kHue_Mode:
+    case SkBlendMode::kHue:
       return BLEND_MODE_HUE;
-    case SkXfermode::kSaturation_Mode:
+    case SkBlendMode::kSaturation:
       return BLEND_MODE_SATURATION;
-    case SkXfermode::kColor_Mode:
+    case SkBlendMode::kColor:
       return BLEND_MODE_COLOR;
-    case SkXfermode::kLuminosity_Mode:
+    case SkBlendMode::kLuminosity:
       return BLEND_MODE_LUMINOSITY;
     default:
       NOTREACHED();
@@ -712,13 +712,12 @@ static sk_sp<SkImage> ApplyImageFilter(
   return image;
 }
 
-bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
-  return use_blend_equation_advanced_ ||
-         blend_mode == SkXfermode::kScreen_Mode ||
-         blend_mode == SkXfermode::kSrcOver_Mode;
+bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
+  return use_blend_equation_advanced_ || blend_mode == SkBlendMode::kScreen ||
+         blend_mode == SkBlendMode::kSrcOver;
 }
 
-void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
+void GLRenderer::ApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
   DCHECK(CanApplyBlendModeUsingBlendFunc(blend_mode));
 
   // Any modes set here must be reset in RestoreBlendFuncToDefault
@@ -726,49 +725,49 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
     GLenum equation = GL_FUNC_ADD;
 
     switch (blend_mode) {
-      case SkXfermode::kScreen_Mode:
+      case SkBlendMode::kScreen:
         equation = GL_SCREEN_KHR;
         break;
-      case SkXfermode::kOverlay_Mode:
+      case SkBlendMode::kOverlay:
         equation = GL_OVERLAY_KHR;
         break;
-      case SkXfermode::kDarken_Mode:
+      case SkBlendMode::kDarken:
         equation = GL_DARKEN_KHR;
         break;
-      case SkXfermode::kLighten_Mode:
+      case SkBlendMode::kLighten:
         equation = GL_LIGHTEN_KHR;
         break;
-      case SkXfermode::kColorDodge_Mode:
+      case SkBlendMode::kColorDodge:
         equation = GL_COLORDODGE_KHR;
         break;
-      case SkXfermode::kColorBurn_Mode:
+      case SkBlendMode::kColorBurn:
         equation = GL_COLORBURN_KHR;
         break;
-      case SkXfermode::kHardLight_Mode:
+      case SkBlendMode::kHardLight:
         equation = GL_HARDLIGHT_KHR;
         break;
-      case SkXfermode::kSoftLight_Mode:
+      case SkBlendMode::kSoftLight:
         equation = GL_SOFTLIGHT_KHR;
         break;
-      case SkXfermode::kDifference_Mode:
+      case SkBlendMode::kDifference:
         equation = GL_DIFFERENCE_KHR;
         break;
-      case SkXfermode::kExclusion_Mode:
+      case SkBlendMode::kExclusion:
         equation = GL_EXCLUSION_KHR;
         break;
-      case SkXfermode::kMultiply_Mode:
+      case SkBlendMode::kMultiply:
         equation = GL_MULTIPLY_KHR;
         break;
-      case SkXfermode::kHue_Mode:
+      case SkBlendMode::kHue:
         equation = GL_HSL_HUE_KHR;
         break;
-      case SkXfermode::kSaturation_Mode:
+      case SkBlendMode::kSaturation:
         equation = GL_HSL_SATURATION_KHR;
         break;
-      case SkXfermode::kColor_Mode:
+      case SkBlendMode::kColor:
         equation = GL_HSL_COLOR_KHR;
         break;
-      case SkXfermode::kLuminosity_Mode:
+      case SkBlendMode::kLuminosity:
         equation = GL_HSL_LUMINOSITY_KHR;
         break;
       default:
@@ -777,14 +776,14 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
 
     gl_->BlendEquation(equation);
   } else {
-    if (blend_mode == SkXfermode::kScreen_Mode) {
+    if (blend_mode == SkBlendMode::kScreen) {
       gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
     }
   }
 }
 
-void GLRenderer::RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode) {
-  if (blend_mode == SkXfermode::kSrcOver_Mode)
+void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
+  if (blend_mode == SkBlendMode::kSrcOver)
     return;
 
   if (use_blend_equation_advanced_) {
@@ -1128,7 +1127,7 @@ bool GLRenderer::InitializeRPDQParameters(
 void GLRenderer::UpdateRPDQShadersForBlending(
     DrawRenderPassDrawQuadParams* params) {
   const RenderPassDrawQuad* quad = params->quad;
-  SkXfermode::Mode blend_mode = quad->shared_quad_state->blend_mode;
+  SkBlendMode blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
       ShouldApplyBackgroundFilters(quad) ||
@@ -1280,7 +1279,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
 }
 
 void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
-  SkXfermode::Mode blend_mode = params->quad->shared_quad_state->blend_mode;
+  SkBlendMode blend_mode = params->quad->shared_quad_state->blend_mode;
   SetBlendEnabled(!params->use_shaders_for_blending &&
                   (params->quad->ShouldDrawWithBlending() ||
                    !IsDefaultBlendMode(blend_mode)));

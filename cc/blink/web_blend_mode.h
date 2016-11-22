@@ -6,97 +6,97 @@
 #define CC_BLINK_WEB_BLEND_MODE_H_
 
 #include "third_party/WebKit/public/platform/WebBlendMode.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc_blink {
 
-inline SkXfermode::Mode BlendModeToSkia(blink::WebBlendMode blend_mode) {
+inline SkBlendMode BlendModeToSkia(blink::WebBlendMode blend_mode) {
   switch (blend_mode) {
     case blink::WebBlendModeNormal:
-      return SkXfermode::kSrcOver_Mode;
+      return SkBlendMode::kSrcOver;
     case blink::WebBlendModeMultiply:
-      return SkXfermode::kMultiply_Mode;
+      return SkBlendMode::kMultiply;
     case blink::WebBlendModeScreen:
-      return SkXfermode::kScreen_Mode;
+      return SkBlendMode::kScreen;
     case blink::WebBlendModeOverlay:
-      return SkXfermode::kOverlay_Mode;
+      return SkBlendMode::kOverlay;
     case blink::WebBlendModeDarken:
-      return SkXfermode::kDarken_Mode;
+      return SkBlendMode::kDarken;
     case blink::WebBlendModeLighten:
-      return SkXfermode::kLighten_Mode;
+      return SkBlendMode::kLighten;
     case blink::WebBlendModeColorDodge:
-      return SkXfermode::kColorDodge_Mode;
+      return SkBlendMode::kColorDodge;
     case blink::WebBlendModeColorBurn:
-      return SkXfermode::kColorBurn_Mode;
+      return SkBlendMode::kColorBurn;
     case blink::WebBlendModeHardLight:
-      return SkXfermode::kHardLight_Mode;
+      return SkBlendMode::kHardLight;
     case blink::WebBlendModeSoftLight:
-      return SkXfermode::kSoftLight_Mode;
+      return SkBlendMode::kSoftLight;
     case blink::WebBlendModeDifference:
-      return SkXfermode::kDifference_Mode;
+      return SkBlendMode::kDifference;
     case blink::WebBlendModeExclusion:
-      return SkXfermode::kExclusion_Mode;
+      return SkBlendMode::kExclusion;
     case blink::WebBlendModeHue:
-      return SkXfermode::kHue_Mode;
+      return SkBlendMode::kHue;
     case blink::WebBlendModeSaturation:
-      return SkXfermode::kSaturation_Mode;
+      return SkBlendMode::kSaturation;
     case blink::WebBlendModeColor:
-      return SkXfermode::kColor_Mode;
+      return SkBlendMode::kColor;
     case blink::WebBlendModeLuminosity:
-      return SkXfermode::kLuminosity_Mode;
+      return SkBlendMode::kLuminosity;
   }
-  return SkXfermode::kSrcOver_Mode;
+  return SkBlendMode::kSrcOver;
 }
 
-inline blink::WebBlendMode BlendModeFromSkia(SkXfermode::Mode blend_mode) {
+inline blink::WebBlendMode BlendModeFromSkia(SkBlendMode blend_mode) {
   switch (blend_mode) {
-    case SkXfermode::kSrcOver_Mode:
+    case SkBlendMode::kSrcOver:
       return blink::WebBlendModeNormal;
-    case SkXfermode::kMultiply_Mode:
+    case SkBlendMode::kMultiply:
       return blink::WebBlendModeMultiply;
-    case SkXfermode::kScreen_Mode:
+    case SkBlendMode::kScreen:
       return blink::WebBlendModeScreen;
-    case SkXfermode::kOverlay_Mode:
+    case SkBlendMode::kOverlay:
       return blink::WebBlendModeOverlay;
-    case SkXfermode::kDarken_Mode:
+    case SkBlendMode::kDarken:
       return blink::WebBlendModeDarken;
-    case SkXfermode::kLighten_Mode:
+    case SkBlendMode::kLighten:
       return blink::WebBlendModeLighten;
-    case SkXfermode::kColorDodge_Mode:
+    case SkBlendMode::kColorDodge:
       return blink::WebBlendModeColorDodge;
-    case SkXfermode::kColorBurn_Mode:
+    case SkBlendMode::kColorBurn:
       return blink::WebBlendModeColorBurn;
-    case SkXfermode::kHardLight_Mode:
+    case SkBlendMode::kHardLight:
       return blink::WebBlendModeHardLight;
-    case SkXfermode::kSoftLight_Mode:
+    case SkBlendMode::kSoftLight:
       return blink::WebBlendModeSoftLight;
-    case SkXfermode::kDifference_Mode:
+    case SkBlendMode::kDifference:
       return blink::WebBlendModeDifference;
-    case SkXfermode::kExclusion_Mode:
+    case SkBlendMode::kExclusion:
       return blink::WebBlendModeExclusion;
-    case SkXfermode::kHue_Mode:
+    case SkBlendMode::kHue:
       return blink::WebBlendModeHue;
-    case SkXfermode::kSaturation_Mode:
+    case SkBlendMode::kSaturation:
       return blink::WebBlendModeSaturation;
-    case SkXfermode::kColor_Mode:
+    case SkBlendMode::kColor:
       return blink::WebBlendModeColor;
-    case SkXfermode::kLuminosity_Mode:
+    case SkBlendMode::kLuminosity:
       return blink::WebBlendModeLuminosity;
 
-    // these value are SkXfermodes, but no blend modes.
-    case SkXfermode::kClear_Mode:
-    case SkXfermode::kSrc_Mode:
-    case SkXfermode::kDst_Mode:
-    case SkXfermode::kDstOver_Mode:
-    case SkXfermode::kSrcIn_Mode:
-    case SkXfermode::kDstIn_Mode:
-    case SkXfermode::kSrcOut_Mode:
-    case SkXfermode::kDstOut_Mode:
-    case SkXfermode::kSrcATop_Mode:
-    case SkXfermode::kDstATop_Mode:
-    case SkXfermode::kXor_Mode:
-    case SkXfermode::kPlus_Mode:
-    case SkXfermode::kModulate_Mode:
+    // these value are SkBlendModes, but no blend modes.
+    case SkBlendMode::kClear:
+    case SkBlendMode::kSrc:
+    case SkBlendMode::kDst:
+    case SkBlendMode::kDstOver:
+    case SkBlendMode::kSrcIn:
+    case SkBlendMode::kDstIn:
+    case SkBlendMode::kSrcOut:
+    case SkBlendMode::kDstOut:
+    case SkBlendMode::kSrcATop:
+    case SkBlendMode::kDstATop:
+    case SkBlendMode::kXor:
+    case SkBlendMode::kPlus:
+    case SkBlendMode::kModulate:
       NOTREACHED();
   }
   return blink::WebBlendModeNormal;

@@ -731,7 +731,7 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
       target_render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(), root_target_rect.size(),
                             root_target_rect, root_target_rect, false, opacity,
-                            SkXfermode::kSrcOver_Mode, sorting_context_id);
+                            SkBlendMode::kSrcOver, sorting_context_id);
 
   for (Region::Iterator fill_rects(fill_region); fill_rects.has_rect();
        fill_rects.next()) {

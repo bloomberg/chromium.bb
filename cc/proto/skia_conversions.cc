@@ -61,129 +61,129 @@ proto::SkRegion::Op SkRegionOpToProto(SkRegion::Op op) {
   return proto::SkRegion::DIFFERENCE_;
 }
 
-SkXfermode::Mode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode) {
+SkBlendMode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode) {
   switch (mode) {
     case proto::SkXfermode::CLEAR_:
-      return SkXfermode::Mode::kClear_Mode;
+      return SkBlendMode::kClear;
     case proto::SkXfermode::SRC:
-      return SkXfermode::Mode::kSrc_Mode;
+      return SkBlendMode::kSrc;
     case proto::SkXfermode::DST:
-      return SkXfermode::Mode::kDst_Mode;
+      return SkBlendMode::kDst;
     case proto::SkXfermode::SRC_OVER:
-      return SkXfermode::Mode::kSrcOver_Mode;
+      return SkBlendMode::kSrcOver;
     case proto::SkXfermode::DST_OVER:
-      return SkXfermode::Mode::kDstOver_Mode;
+      return SkBlendMode::kDstOver;
     case proto::SkXfermode::SRC_IN:
-      return SkXfermode::Mode::kSrcIn_Mode;
+      return SkBlendMode::kSrcIn;
     case proto::SkXfermode::DST_IN:
-      return SkXfermode::Mode::kDstIn_Mode;
+      return SkBlendMode::kDstIn;
     case proto::SkXfermode::SRC_OUT:
-      return SkXfermode::Mode::kSrcOut_Mode;
+      return SkBlendMode::kSrcOut;
     case proto::SkXfermode::DST_OUT:
-      return SkXfermode::Mode::kDstOut_Mode;
+      return SkBlendMode::kDstOut;
     case proto::SkXfermode::SRC_A_TOP:
-      return SkXfermode::Mode::kSrcATop_Mode;
+      return SkBlendMode::kSrcATop;
     case proto::SkXfermode::DST_A_TOP:
-      return SkXfermode::Mode::kDstATop_Mode;
+      return SkBlendMode::kDstATop;
     case proto::SkXfermode::XOR:
-      return SkXfermode::Mode::kXor_Mode;
+      return SkBlendMode::kXor;
     case proto::SkXfermode::PLUS:
-      return SkXfermode::Mode::kPlus_Mode;
+      return SkBlendMode::kPlus;
     case proto::SkXfermode::MODULATE:
-      return SkXfermode::Mode::kModulate_Mode;
+      return SkBlendMode::kModulate;
     case proto::SkXfermode::SCREEN:
-      return SkXfermode::Mode::kScreen_Mode;
+      return SkBlendMode::kScreen;
     case proto::SkXfermode::OVERLAY:
-      return SkXfermode::Mode::kOverlay_Mode;
+      return SkBlendMode::kOverlay;
     case proto::SkXfermode::DARKEN:
-      return SkXfermode::Mode::kDarken_Mode;
+      return SkBlendMode::kDarken;
     case proto::SkXfermode::LIGHTEN:
-      return SkXfermode::Mode::kLighten_Mode;
+      return SkBlendMode::kLighten;
     case proto::SkXfermode::COLOR_DODGE:
-      return SkXfermode::Mode::kColorDodge_Mode;
+      return SkBlendMode::kColorDodge;
     case proto::SkXfermode::COLOR_BURN:
-      return SkXfermode::Mode::kColorBurn_Mode;
+      return SkBlendMode::kColorBurn;
     case proto::SkXfermode::HARD_LIGHT:
-      return SkXfermode::Mode::kHardLight_Mode;
+      return SkBlendMode::kHardLight;
     case proto::SkXfermode::SOFT_LIGHT:
-      return SkXfermode::Mode::kSoftLight_Mode;
+      return SkBlendMode::kSoftLight;
     case proto::SkXfermode::DIFFERENCE_:
-      return SkXfermode::Mode::kDifference_Mode;
+      return SkBlendMode::kDifference;
     case proto::SkXfermode::EXCLUSION:
-      return SkXfermode::Mode::kExclusion_Mode;
+      return SkBlendMode::kExclusion;
     case proto::SkXfermode::MULTIPLY:
-      return SkXfermode::Mode::kMultiply_Mode;
+      return SkBlendMode::kMultiply;
     case proto::SkXfermode::HUE:
-      return SkXfermode::Mode::kHue_Mode;
+      return SkBlendMode::kHue;
     case proto::SkXfermode::SATURATION:
-      return SkXfermode::Mode::kSaturation_Mode;
+      return SkBlendMode::kSaturation;
     case proto::SkXfermode::COLOR:
-      return SkXfermode::Mode::kColor_Mode;
+      return SkBlendMode::kColor;
     case proto::SkXfermode::LUMINOSITY:
-      return SkXfermode::Mode::kLuminosity_Mode;
+      return SkBlendMode::kLuminosity;
   }
-  return SkXfermode::Mode::kClear_Mode;
+  return SkBlendMode::kClear;
 }
 
-proto::SkXfermode::Mode SkXfermodeModeToProto(SkXfermode::Mode mode) {
+proto::SkXfermode::Mode SkXfermodeModeToProto(SkBlendMode mode) {
   switch (mode) {
-    case SkXfermode::Mode::kClear_Mode:
+    case SkBlendMode::kClear:
       return proto::SkXfermode::CLEAR_;
-    case SkXfermode::Mode::kSrc_Mode:
+    case SkBlendMode::kSrc:
       return proto::SkXfermode::SRC;
-    case SkXfermode::Mode::kDst_Mode:
+    case SkBlendMode::kDst:
       return proto::SkXfermode::DST;
-    case SkXfermode::Mode::kSrcOver_Mode:
+    case SkBlendMode::kSrcOver:
       return proto::SkXfermode::SRC_OVER;
-    case SkXfermode::Mode::kDstOver_Mode:
+    case SkBlendMode::kDstOver:
       return proto::SkXfermode::DST_OVER;
-    case SkXfermode::Mode::kSrcIn_Mode:
+    case SkBlendMode::kSrcIn:
       return proto::SkXfermode::SRC_IN;
-    case SkXfermode::Mode::kDstIn_Mode:
+    case SkBlendMode::kDstIn:
       return proto::SkXfermode::DST_IN;
-    case SkXfermode::Mode::kSrcOut_Mode:
+    case SkBlendMode::kSrcOut:
       return proto::SkXfermode::SRC_OUT;
-    case SkXfermode::Mode::kDstOut_Mode:
+    case SkBlendMode::kDstOut:
       return proto::SkXfermode::DST_OUT;
-    case SkXfermode::Mode::kSrcATop_Mode:
+    case SkBlendMode::kSrcATop:
       return proto::SkXfermode::SRC_A_TOP;
-    case SkXfermode::Mode::kDstATop_Mode:
+    case SkBlendMode::kDstATop:
       return proto::SkXfermode::DST_A_TOP;
-    case SkXfermode::Mode::kXor_Mode:
+    case SkBlendMode::kXor:
       return proto::SkXfermode::XOR;
-    case SkXfermode::Mode::kPlus_Mode:
+    case SkBlendMode::kPlus:
       return proto::SkXfermode::PLUS;
-    case SkXfermode::Mode::kModulate_Mode:
+    case SkBlendMode::kModulate:
       return proto::SkXfermode::MODULATE;
-    case SkXfermode::Mode::kScreen_Mode:
+    case SkBlendMode::kScreen:
       return proto::SkXfermode::SCREEN;
-    case SkXfermode::Mode::kOverlay_Mode:
+    case SkBlendMode::kOverlay:
       return proto::SkXfermode::OVERLAY;
-    case SkXfermode::Mode::kDarken_Mode:
+    case SkBlendMode::kDarken:
       return proto::SkXfermode::DARKEN;
-    case SkXfermode::Mode::kLighten_Mode:
+    case SkBlendMode::kLighten:
       return proto::SkXfermode::LIGHTEN;
-    case SkXfermode::Mode::kColorDodge_Mode:
+    case SkBlendMode::kColorDodge:
       return proto::SkXfermode::COLOR_DODGE;
-    case SkXfermode::Mode::kColorBurn_Mode:
+    case SkBlendMode::kColorBurn:
       return proto::SkXfermode::COLOR_BURN;
-    case SkXfermode::Mode::kHardLight_Mode:
+    case SkBlendMode::kHardLight:
       return proto::SkXfermode::HARD_LIGHT;
-    case SkXfermode::Mode::kSoftLight_Mode:
+    case SkBlendMode::kSoftLight:
       return proto::SkXfermode::SOFT_LIGHT;
-    case SkXfermode::Mode::kDifference_Mode:
+    case SkBlendMode::kDifference:
       return proto::SkXfermode::DIFFERENCE_;
-    case SkXfermode::Mode::kExclusion_Mode:
+    case SkBlendMode::kExclusion:
       return proto::SkXfermode::EXCLUSION;
-    case SkXfermode::Mode::kMultiply_Mode:
+    case SkBlendMode::kMultiply:
       return proto::SkXfermode::MULTIPLY;
-    case SkXfermode::Mode::kHue_Mode:
+    case SkBlendMode::kHue:
       return proto::SkXfermode::HUE;
-    case SkXfermode::Mode::kSaturation_Mode:
+    case SkBlendMode::kSaturation:
       return proto::SkXfermode::SATURATION;
-    case SkXfermode::Mode::kColor_Mode:
+    case SkBlendMode::kColor:
       return proto::SkXfermode::COLOR;
-    case SkXfermode::Mode::kLuminosity_Mode:
+    case SkBlendMode::kLuminosity:
       return proto::SkXfermode::LUMINOSITY;
   }
   return proto::SkXfermode::CLEAR_;

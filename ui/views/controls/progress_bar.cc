@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/linear_animation.h"

@@ -38,7 +38,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
 IPC_ENUM_TRAITS_MAX_VALUE(cc::ResourceFormat, cc::RESOURCE_FORMAT_MAX)
 
 // TODO(fsamuel): This trait belongs with skia code.
-IPC_ENUM_TRAITS_MAX_VALUE(SkXfermode::Mode, SkXfermode::kLastMode)
+IPC_ENUM_TRAITS_MAX_VALUE(SkBlendMode, SkBlendMode::kLastMode)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
                           cc::YUVVideoDrawQuad::COLOR_SPACE_LAST)
 

@@ -41,7 +41,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = true;
   float opacity = 0.25f;
-  SkXfermode::Mode blend_mode = SkXfermode::kMultiply_Mode;
+  SkBlendMode blend_mode = SkBlendMode::kMultiply;
   int sorting_context_id = 65536;
 
   std::unique_ptr<SharedQuadState> state(new SharedQuadState);
@@ -65,7 +65,7 @@ SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   bool is_clipped = false;
   float opacity = 1.f;
   int sorting_context_id = 65536;
-  SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+  SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
   state->SetAll(quad_transform, layer_bounds, visible_layer_rect, clip_rect,

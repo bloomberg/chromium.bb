@@ -255,7 +255,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   child->SetForceRenderSurfaceForTesting(true);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   child2->SetScrollParent(grand_child.get());
-  SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
+  SkBlendMode arbitrary_blend_mode = SkBlendMode::kMultiply;
   std::unique_ptr<LayerImpl> root_impl =
       LayerImpl::Create(host_impl_.active_tree(), root->id());
   std::unique_ptr<LayerImpl> child_impl =
@@ -912,7 +912,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBackgroundColor(SK_ColorLTGRAY));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetMasksToBounds(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendMode(SkXfermode::kHue_Mode));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendMode(SkBlendMode::kHue));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsRootForIsolatedGroup(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetContentsOpaque(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPosition(gfx::PointF(4.f, 9.f)));

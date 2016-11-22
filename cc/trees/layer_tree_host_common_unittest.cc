@@ -1567,7 +1567,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   root->SetBounds(gfx::Size(10, 10));
   child->SetBounds(gfx::Size(10, 10));
   child->SetDrawsContent(true);
-  child->test_properties()->blend_mode = SkXfermode::kMultiply_Mode;
+  child->test_properties()->blend_mode = SkBlendMode::kMultiply;
   child->test_properties()->opacity = 0.5f;
   child->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
@@ -1579,7 +1579,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   ASSERT_TRUE(child->render_surface());
   EXPECT_EQ(1.0f, child->draw_opacity());
   EXPECT_EQ(0.5f, child->render_surface()->draw_opacity());
-  EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_blend_mode());
+  EXPECT_EQ(SkBlendMode::kSrcOver, child->draw_blend_mode());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {

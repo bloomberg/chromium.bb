@@ -101,7 +101,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
 }
 
 TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
-  const SkXfermode::Mode blend_mode = SkXfermode::kMultiply_Mode;
+  const SkBlendMode blend_mode = SkBlendMode::kMultiply;
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 

@@ -2698,13 +2698,13 @@ class Blending : public SurfaceObserver {
   ~Blending() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
-      surface_->SetBlendMode(SkXfermode::kSrcOver_Mode);
+      surface_->SetBlendMode(SkBlendMode::kSrcOver);
       surface_->SetAlpha(1.0f);
       surface_->SetProperty(kSurfaceHasBlendingKey, false);
     }
   }
 
-  void SetBlendMode(SkXfermode::Mode blend_mode) {
+  void SetBlendMode(SkBlendMode blend_mode) {
     if (surface_)
       surface_->SetBlendMode(blend_mode);
   }
@@ -2735,11 +2735,10 @@ void blending_set_blending(wl_client* client,
                            uint32_t equation) {
   switch (equation) {
     case ZCR_BLENDING_V1_BLENDING_EQUATION_NONE:
-      GetUserDataAs<Blending>(resource)->SetBlendMode(SkXfermode::kSrc_Mode);
+      GetUserDataAs<Blending>(resource)->SetBlendMode(SkBlendMode::kSrc);
       break;
     case ZCR_BLENDING_V1_BLENDING_EQUATION_PREMULT:
-      GetUserDataAs<Blending>(resource)->SetBlendMode(
-          SkXfermode::kSrcOver_Mode);
+      GetUserDataAs<Blending>(resource)->SetBlendMode(SkBlendMode::kSrcOver);
       break;
     case ZCR_BLENDING_V1_BLENDING_EQUATION_COVERAGE:
       NOTIMPLEMENTED();

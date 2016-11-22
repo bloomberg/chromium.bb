@@ -8,8 +8,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/proto/skregion.pb.h"
 #include "cc/proto/skxfermode.pb.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkXfermode.h"
 
 class SkRegion;
 class SkRRect;
@@ -25,9 +25,8 @@ class SkRRect;
 CC_EXPORT SkRegion::Op SkRegionOpFromProto(proto::SkRegion::Op op);
 CC_EXPORT proto::SkRegion::Op SkRegionOpToProto(SkRegion::Op op);
 
-CC_EXPORT SkXfermode::Mode SkXfermodeModeFromProto(
-    proto::SkXfermode::Mode mode);
-CC_EXPORT proto::SkXfermode::Mode SkXfermodeModeToProto(SkXfermode::Mode mode);
+CC_EXPORT SkBlendMode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode);
+CC_EXPORT proto::SkXfermode::Mode SkXfermodeModeToProto(SkBlendMode mode);
 
 CC_EXPORT void SkRRectToProto(const SkRRect& rect, proto::SkRRect* proto);
 CC_EXPORT SkRRect ProtoToSkRRect(const proto::SkRRect& proto);
