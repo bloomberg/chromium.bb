@@ -289,7 +289,7 @@ class WebURLResponse {
 
   // Original size of the response before decompression.
   BLINK_PLATFORM_EXPORT long long encodedDataLengthForTesting() const;
-  BLINK_PLATFORM_EXPORT void addToEncodedDataLength(long long);
+  BLINK_PLATFORM_EXPORT void setEncodedDataLength(long long);
 
   // Original size of the response body before decompression.
   BLINK_PLATFORM_EXPORT long long encodedBodyLengthForTesting() const;

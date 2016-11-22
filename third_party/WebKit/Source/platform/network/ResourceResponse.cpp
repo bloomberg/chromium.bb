@@ -599,8 +599,8 @@ void ResourceResponse::setResourceLoadInfo(
   m_resourceLoadInfo = loadInfo;
 }
 
-void ResourceResponse::addToEncodedDataLength(long long value) {
-  m_encodedDataLength += value;
+void ResourceResponse::setEncodedDataLength(long long value) {
+  m_encodedDataLength = value;
 }
 
 void ResourceResponse::addToEncodedBodyLength(long long value) {

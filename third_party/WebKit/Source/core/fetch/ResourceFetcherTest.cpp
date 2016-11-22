@@ -355,7 +355,7 @@ class ScopedMockRedirectRequester {
     redirectResponse.setURL(redirectURL);
     redirectResponse.setHTTPStatusCode(301);
     redirectResponse.setHTTPHeaderField(HTTPNames::Location, toURL);
-    redirectResponse.addToEncodedDataLength(kRedirectResponseOverheadBytes);
+    redirectResponse.setEncodedDataLength(kRedirectResponseOverheadBytes);
     Platform::current()->getURLLoaderMockFactory()->registerURL(
         redirectURL, redirectResponse, "");
   }

@@ -328,7 +328,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   void setRemotePort(unsigned short value) { m_remotePort = value; }
 
   long long encodedDataLength() const { return m_encodedDataLength; }
-  void addToEncodedDataLength(long long value);
+  void setEncodedDataLength(long long value);
 
   long long encodedBodyLength() const { return m_encodedBodyLength; }
   void addToEncodedBodyLength(long long value);

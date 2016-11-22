@@ -429,8 +429,8 @@ long long WebURLResponse::encodedDataLengthForTesting() const {
   return m_resourceResponse->encodedDataLength();
 }
 
-void WebURLResponse::addToEncodedDataLength(long long length) {
-  m_resourceResponse->addToEncodedDataLength(length);
+void WebURLResponse::setEncodedDataLength(long long length) {
+  m_resourceResponse->setEncodedDataLength(length);
 }
 
 long long WebURLResponse::encodedBodyLengthForTesting() const {
