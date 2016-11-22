@@ -3549,7 +3549,7 @@ insertEmphasesAt(const int at)
 					EMPHASIS_END << (min * 4), EMPHASIS_WORD << (min * 4));
 		else
 			insertEmphasisEnd(
-				transNoteBuffer, at, emph6Rule + min,
+				transNoteBuffer, at, emph1Rule + min,
 					TRANSNOTE_END << (min * 4), TRANSNOTE_WORD << (min * 4));
 	}
 
@@ -3575,7 +3575,7 @@ insertEmphasesAt(const int at)
 		type_counts[max] = 0;
 		if (max >= 5)
 			insertEmphasisBegin(
-				transNoteBuffer, at, emph6Rule + max,
+				transNoteBuffer, at, emph1Rule + max,
 					TRANSNOTE_BEGIN << (max * 4), TRANSNOTE_END << (max * 4), TRANSNOTE_WORD << (max * 4));
 		else
 			insertEmphasisBegin(
