@@ -1099,7 +1099,7 @@ bool CreateJsonManifest(PP_Instance instance,
       PP_ToBool(NaClDebugEnabledForURL(manifest_url.c_str()))));
   JsonManifest::ErrorInfo error_info;
   if (j->Init(manifest_data.c_str(), &error_info)) {
-    GetNaClPluginInstance(instance)->json_manifest.reset(j.release());
+    GetNaClPluginInstance(instance)->json_manifest = std::move(j);
     return true;
   }
   load_manager->ReportLoadError(error_info.error, error_info.string);

@@ -100,7 +100,7 @@ void UpdateEngine::Update(
       (*update_context->update_checker_factory)(config_, metadata_.get()),
       config_->GetBrowserVersion(), config_->ExtraRequestParams()));
 
-  update_context->current_action.reset(update_check_action.release());
+  update_context->current_action = std::move(update_check_action);
   update_contexts_.insert(update_context.get());
 
   update_context->current_action->Run(

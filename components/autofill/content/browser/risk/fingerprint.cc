@@ -326,7 +326,7 @@ void FingerprintDataLoader::OnGpuInfoUpdate() {
 
 void FingerprintDataLoader::OnGotFonts(std::unique_ptr<base::ListValue> fonts) {
   DCHECK(!fonts_);
-  fonts_.reset(fonts.release());
+  fonts_ = std::move(fonts);
   MaybeFillFingerprint();
 }
 

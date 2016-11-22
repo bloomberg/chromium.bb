@@ -94,12 +94,12 @@ void MetricsLogManager::DiscardCurrentLog() {
 
 void MetricsLogManager::PauseCurrentLog() {
   DCHECK(!paused_log_.get());
-  paused_log_.reset(current_log_.release());
+  paused_log_ = std::move(current_log_);
 }
 
 void MetricsLogManager::ResumePausedLog() {
   DCHECK(!current_log_.get());
-  current_log_.reset(paused_log_.release());
+  current_log_ = std::move(paused_log_);
 }
 
 void MetricsLogManager::StoreLog(const std::string& log_data,

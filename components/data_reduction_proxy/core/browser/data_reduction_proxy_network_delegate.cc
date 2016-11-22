@@ -482,7 +482,7 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
 
 void DataReductionProxyNetworkDelegate::SetDataUseGroupProvider(
     std::unique_ptr<DataUseGroupProvider> data_use_group_provider) {
-  data_use_group_provider_.reset(data_use_group_provider.release());
+  data_use_group_provider_ = std::move(data_use_group_provider);
 }
 
 }  // namespace data_reduction_proxy

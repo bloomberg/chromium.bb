@@ -287,8 +287,8 @@ SyncMergeResult DomDistillerStore::MergeDataAndStartSyncing(
   DCHECK_EQ(syncer::ARTICLES, type);
   DCHECK(!sync_processor_);
   DCHECK(!error_factory_);
-  sync_processor_.reset(sync_processor.release());
-  error_factory_.reset(error_handler.release());
+  sync_processor_ = std::move(sync_processor);
+  error_factory_ = std::move(error_handler);
 
   SyncChangeList database_changes;
   SyncChangeList sync_changes;

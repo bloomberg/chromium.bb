@@ -320,7 +320,7 @@ void StorageMonitorMac::EjectDevice(
   EjectDiskOptions* options = new EjectDiskOptions;
   options->bsd_name = bsd_name;
   options->callback = callback;
-  options->disk.reset(disk.release());
+  options->disk = std::move(disk);
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::Bind(EjectDisk, options));
 }

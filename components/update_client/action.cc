@@ -145,7 +145,7 @@ void ActionImpl::UpdateCrx() {
       FROM_HERE, base::Bind(&Action::Run, base::Unretained(update_action.get()),
                             update_context_, callback_));
 
-  update_context_->current_action.reset(update_action.release());
+  update_context_->current_action = std::move(update_action);
 }
 
 void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
@@ -177,7 +177,7 @@ void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
         FROM_HERE, base::Bind(&Action::Run, base::Unretained(action_wait.get()),
                               update_context_, callback_));
 
-    update_context_->current_action.reset(action_wait.release());
+    update_context_->current_action = std::move(action_wait);
   }
 }
 

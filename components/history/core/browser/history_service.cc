@@ -968,7 +968,7 @@ void HistoryService::SetInMemoryBackend(
     std::unique_ptr<InMemoryHistoryBackend> mem_backend) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!in_memory_backend_) << "Setting mem DB twice";
-  in_memory_backend_.reset(mem_backend.release());
+  in_memory_backend_ = std::move(mem_backend);
 
   // The database requires additional initialization once we own it.
   in_memory_backend_->AttachToHistoryService(this);

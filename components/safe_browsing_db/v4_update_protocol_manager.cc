@@ -290,7 +290,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
 
-  request_.reset(fetcher.release());
+  request_ = std::move(fetcher);
 
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());

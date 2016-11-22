@@ -264,7 +264,7 @@ void ProtoDatabaseImpl<T>::InitWithDatabase(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!db_);
   DCHECK(database);
-  db_.reset(database.release());
+  db_ = std::move(database);
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(InitFromTaskRunner, base::Unretained(db_.get()),
