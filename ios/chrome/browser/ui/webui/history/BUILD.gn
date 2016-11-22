@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("history") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "browsing_history_handler.cc",
     "browsing_history_handler.h",
