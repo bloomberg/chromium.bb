@@ -667,8 +667,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
-// Flaky on Windows (http://crbug.com/665296).
-#if defined(OS_WIN)
+// Flaky on Windows and Mac (http://crbug.com/665296).
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_FocusOnNavigate DISABLED_FocusOnNavigate
 #else
 #define MAYBE_FocusOnNavigate FocusOnNavigate
