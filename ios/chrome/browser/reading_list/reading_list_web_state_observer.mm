@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -34,8 +35,11 @@ class ReadingListWebStateObserverUserDataWrapper
         static_cast<ReadingListWebStateObserverUserDataWrapper*>(
             web_state->GetUserData(kObserverKey));
     if (!wrapper) {
-      wrapper = new ReadingListWebStateObserverUserDataWrapper(
-          web_state, reading_list_model);
+      auto newDataWrapper =
+          base::MakeUnique<ReadingListWebStateObserverUserDataWrapper>(
+              web_state, reading_list_model);
+      wrapper = newDataWrapper.get();
+      web_state->SetUserData(kObserverKey, newDataWrapper.release());
     }
     return wrapper;
   }
@@ -45,7 +49,6 @@ class ReadingListWebStateObserverUserDataWrapper
       ReadingListModel* reading_list_model)
       : observer_(web_state, reading_list_model) {
     DCHECK(web_state);
-    web_state->SetUserData(kObserverKey, this);
   }
 
   ReadingListWebStateObserver* observer() { return &observer_; }
