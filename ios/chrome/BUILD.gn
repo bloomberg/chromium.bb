@@ -27,6 +27,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/geolocation:unit_tests",
     "//ios/chrome/browser/itunes_links:unit_tests",
     "//ios/chrome/browser/metrics:unit_tests",
+    "//ios/chrome/browser/native_app_launcher:unit_tests",
     "//ios/chrome/browser/net:unit_tests",
     "//ios/chrome/browser/passwords:unit_tests",
     "//ios/chrome/browser/reading_list:unit_tests",

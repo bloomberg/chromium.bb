@@ -263,6 +263,25 @@ brand. [Length: 70em]">
         Enables redirection of some task posting APIs to the task scheduler.
       </message>
 
+      <!-- Native App Launcher -->
+      <message name="IDS_IOS_APP_LAUNCHER_OPEN_ONCE_BUTTON" desc="Label of a button to choose to launch an application once, as opposed to always. [Length: 12em] [iOS only]">
+          Just once
+      </message>
+      <message name="IDS_IOS_APP_LAUNCHER_OPEN_ALWAYS_BUTTON" desc="Label of a button to choose to launch an application always, as opposed to once. [Length: 12em] [iOS only]">
+        Always
+      </message>
+      <message name="IDS_IOS_APP_LAUNCHER_OPEN_IN_LABEL" desc="Label in the infobar to launch an application. [Length: 20em] [iOS only]">
+        Open in <ph name="APP_NAME">$1<ex>Google Maps</ex></ph>
+      </message>
+      <message name="IDS_IOS_APP_LAUNCHER_OPEN_IN_APP_QUESTION_MESSAGE" desc="Message in the infobar asking the user if they want to open the current page in an external app. [Length: 40em] [iOS only]">
+        Open this page in the <ph name="APP_NAME">$1<ex>Google Maps</ex></ph> app?
+      </message>
+      <message name="IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL" desc="Label of a button to open an application. [Length: 10em] [iOS only]">
+        Open
+      </message>
+      <message name="IDS_IOS_APP_LAUNCHER_INSTALL_APP_BUTTON_LABEL" desc="Label of a button to install an application. [Length: 10em] [iOS only]">
+        Install
+      </message>      
     </messages>
   </release>
 </grit>
