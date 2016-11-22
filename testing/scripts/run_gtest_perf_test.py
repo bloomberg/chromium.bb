@@ -86,12 +86,15 @@ def main():
     rc = 0
     try:
       executable = rest_args[0]
+      extra_flags = []
+      if len(rest_args) > 1:
+        extra_flags = rest_args[1:]
       if IsWindows():
         executable = '.\%s.exe' % executable
       else:
         executable = './%s' % executable
       with common.temporary_file() as tempfile_path:
-        valid = (common.run_command_with_output([executable],
+        valid = (common.run_command_with_output([executable] + extra_flags,
             env=env, stdoutfile=tempfile_path) == 0)
 
         # Now get the correct json format from the stdout to write to the
