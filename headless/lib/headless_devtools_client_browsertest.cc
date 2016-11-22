@@ -11,6 +11,7 @@
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/emulation.h"
+#include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
@@ -661,18 +662,26 @@ class HeadlessDevToolsNavigationControlTest
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsNavigationControlTest);
 
-class HeadlessCrashObserverTest : public HeadlessAsyncDevTooledBrowserTest {
+class HeadlessCrashObserverTest : public HeadlessAsyncDevTooledBrowserTest,
+                                  inspector::ExperimentalObserver {
  public:
   void RunDevTooledTest() override {
+    devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetInspector()->GetExperimental()->Enable(
+        headless::inspector::EnableParams::Builder().Build());
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(content::kChromeUICrashURL);
   }
 
+  void OnTargetCrashed(const inspector::TargetCrashedParams& params) override {
+    FinishAsynchronousTest();
+    render_process_exited_ = true;
+  }
+
+  // Make sure we don't fail because the renderer crashed!
   void RenderProcessExited(base::TerminationStatus status,
                            int exit_code) override {
     EXPECT_EQ(base::TERMINATION_STATUS_ABNORMAL_TERMINATION, status);
-    FinishAsynchronousTest();
-    render_process_exited_ = true;
   }
 };
 

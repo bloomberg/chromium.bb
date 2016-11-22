@@ -133,15 +133,10 @@ bool HeadlessDevToolsClientImpl::DispatchEvent(
   std::string method;
   if (!message_dict.GetString("method", &method))
     return false;
+  if (method == "Inspector.targetCrashed")
+    renderer_crashed_ = true;
   EventHandlerMap::const_iterator it = event_handlers_.find(method);
   if (it == event_handlers_.end()) {
-    // Silently swallow errors related to the target crashing. This can be
-    // observed via HeadlessWebContents::Observer::RenderProcessExited.
-    if (method == "Inspector.targetCrashed") {
-      renderer_crashed_ = true;
-      return true;
-    }
-
     NOTREACHED() << "Unknown event: " << method;
     return false;
   }

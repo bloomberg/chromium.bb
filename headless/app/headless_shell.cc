@@ -19,6 +19,7 @@
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/public/devtools/domains/emulation.h"
+#include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -55,6 +56,7 @@ bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
 // An application which implements a simple headless browser.
 class HeadlessShell : public HeadlessWebContents::Observer,
                       emulation::ExperimentalObserver,
+                      inspector::ExperimentalObserver,
                       page::Observer {
  public:
   HeadlessShell()
@@ -118,6 +120,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       return;
     if (!RemoteDebuggingEnabled()) {
       devtools_client_->GetEmulation()->GetExperimental()->RemoveObserver(this);
+      devtools_client_->GetInspector()->GetExperimental()->RemoveObserver(this);
       devtools_client_->GetPage()->RemoveObserver(this);
       if (web_contents_->GetDevToolsTarget()) {
         web_contents_->GetDevToolsTarget()->DetachClient(
@@ -135,6 +138,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     if (RemoteDebuggingEnabled())
       return;
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     // Check if the document had already finished loading by the time we
@@ -162,12 +166,9 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     // TODO(skyostil): Implement more features to demonstrate the devtools API.
   }
 
-  void RenderProcessExited(base::TerminationStatus status,
-                           int exit_code) override {
-    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION)
-      return;
-
+  void OnTargetCrashed(const inspector::TargetCrashedParams& params) override {
     LOG(ERROR) << "Abnormal renderer termination.";
+    // NB this never gets called if remote debugging is enabled.
     Shutdown();
   }
 
