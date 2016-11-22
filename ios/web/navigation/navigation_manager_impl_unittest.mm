@@ -48,6 +48,17 @@ class NavigationManagerTest : public PlatformTest {
   base::scoped_nsobject<CRWSessionController> controller_;
 };
 
+// Tests state of an empty navigation manager.
+TEST_F(NavigationManagerTest, EmptyManager) {
+  EXPECT_EQ(0, navigation_manager()->GetItemCount());
+  EXPECT_EQ(-1, navigation_manager()->GetCurrentItemIndex());
+  EXPECT_FALSE(navigation_manager()->GetPreviousItem());
+  EXPECT_EQ(-1, navigation_manager()->GetCurrentItemIndex());
+  EXPECT_FALSE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(0));
+}
+
 // Tests that GetPendingItemIndex() returns -1 if there is no pending entry.
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
   [session_controller() addPendingEntry:GURL("http://www.url.com")
@@ -288,28 +299,41 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(-2, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(2));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(3));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(3));
 
   // Go to entry at index 2 and test API from that state.
   [session_controller() goToEntryAtIndex:2];
   ASSERT_EQ(2, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(1, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(2));
 
   // Go to entry at index 4 and test API from that state.
   [session_controller() goToEntryAtIndex:4];
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(1, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
 
   // Test with existing transient entry.
   [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
@@ -317,10 +341,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-3));
+  EXPECT_EQ(1, navigation_manager()->GetIndexForOffset(-3));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
 
   // Now test with pending item index.
   [session_controller() discardNonCommittedEntries];
@@ -330,19 +359,28 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(-2, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(2));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(3));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(3));
 
   // Set pending index to 2 and test API from that state.
   [session_controller() setPendingEntryIndex:2];
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(2, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(1, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(2));
 
   // Set pending index to 4 and committed entry to 1 and test.
   [session_controller() goToEntryAtIndex:1];
@@ -350,9 +388,13 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(1, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
 
   // Test with existing transient entry.
   [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
@@ -360,10 +402,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
+  EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(-2));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-3));
+  EXPECT_EQ(1, navigation_manager()->GetIndexForOffset(-3));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
+  EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
+  EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
 }
 
 }  // namespace web

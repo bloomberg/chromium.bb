@@ -141,11 +141,6 @@ struct SSLStatus;
 // entry, otherwise set |useDesktopUserAgent| in the pending entry.
 - (void)useDesktopUserAgentForNextPendingEntry;
 
-// Returns the navigation index that differs from the current entry (or pending
-// entry if it exists) by the specified |delta|, skipping redirect navigation
-// items. The index returned is not guaranteed to be valid.
-- (NSInteger)indexOfEntryForDelta:(int)delta;
-
 @end
 
 #endif  // IOS_WEB_NAVIGATION_CRW_SESSION_CONTROLLER_H_

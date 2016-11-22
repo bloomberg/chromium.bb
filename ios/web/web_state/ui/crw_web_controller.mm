@@ -2408,8 +2408,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   if (delta == 0) {
     [self reload];
-  } else if (_webStateImpl->GetNavigationManager()->CanGoToOffset(delta)) {
-    [self goToItemAtIndex:[self.sessionController indexOfEntryForDelta:delta]];
+    return;
+  }
+
+  web::NavigationManagerImpl& navigationManager =
+      _webStateImpl->GetNavigationManagerImpl();
+  if (navigationManager.CanGoToOffset(delta)) {
+    [self goToItemAtIndex:navigationManager.GetIndexForOffset(delta)];
   }
 }
 

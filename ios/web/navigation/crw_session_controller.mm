@@ -731,55 +731,6 @@ NSString* const kWindowNameKey = @"windowName";
     _useDesktopUserAgentForNextPendingEntry = YES;
 }
 
-- (NSInteger)indexOfEntryForDelta:(int)delta {
-  NSInteger result =
-      _pendingEntryIndex == -1 ? _currentNavigationIndex : _pendingEntryIndex;
-
-  if (delta < 0) {
-    if (_transientEntry) {
-      // Going back from transient entry is a matter of discarding it and there
-      // is no need to move navigation index back.
-      delta++;
-    }
-
-    while (delta < 0) {
-      // To stop the user getting 'stuck' on redirecting pages they weren't
-      // even aware existed, it is necessary to pass over pages that would
-      // immediately result in a redirect (the entry *before* the redirected
-      // page).
-      while (result > 0 && [self isRedirectTransitionForEntryAtIndex:result]) {
-        --result;
-      }
-      --result;
-      ++delta;
-    }
-  } else if (delta > 0) {
-    NSInteger count = static_cast<NSInteger>([_entries count]);
-    if (_pendingEntry && _pendingEntryIndex == -1) {
-      // Chrome for iOS does not allow forward navigation if there is another
-      // pending navigation in progress. Returning invalid index indicates that
-      // forward navigation will not be allowed (and |NSNotFound| works for
-      // that). This is different from other platforms which allow forward
-      // navigation if pending entry exist.
-      // TODO(crbug.com/661858): Remove this once back-forward navigation uses
-      // pending index.
-      return NSNotFound;
-    }
-
-    while (delta > 0) {
-      ++result;
-      --delta;
-      // As with going back, skip over redirects.
-      while (result + 1 < count &&
-             [self isRedirectTransitionForEntryAtIndex:result + 1]) {
-        ++result;
-      }
-    }
-  }
-
-  return result;
-}
-
 #pragma mark -
 #pragma mark Private methods
 
