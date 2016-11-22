@@ -38,7 +38,7 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
 
   // Creates new query.
   scoped_refptr<PrinterQuery> CreatePrinterQuery(int render_process_id,
-                                                 int render_view_id);
+                                                 int render_frame_id);
 
   void Shutdown();
 

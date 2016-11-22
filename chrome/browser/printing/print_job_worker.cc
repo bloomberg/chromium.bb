@@ -24,7 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
@@ -43,14 +43,14 @@ namespace printing {
 namespace {
 
 // Helper function to ensure |owner| is valid until at least |callback| returns.
-void HoldRefCallback(const scoped_refptr<printing::PrintJobWorkerOwner>& owner,
+void HoldRefCallback(const scoped_refptr<PrintJobWorkerOwner>& owner,
                      const base::Closure& callback) {
   callback.Run();
 }
 
 class PrintingContextDelegate : public PrintingContext::Delegate {
  public:
-  PrintingContextDelegate(int render_process_id, int render_view_id);
+  PrintingContextDelegate(int render_process_id, int render_frame_id);
   ~PrintingContextDelegate() override;
 
   gfx::NativeView GetParentView() override;
@@ -60,15 +60,14 @@ class PrintingContextDelegate : public PrintingContext::Delegate {
   content::WebContents* GetWebContents();
 
  private:
-  int render_process_id_;
-  int render_view_id_;
+  const int render_process_id_;
+  const int render_frame_id_;
 };
 
 PrintingContextDelegate::PrintingContextDelegate(int render_process_id,
-                                                 int render_view_id)
+                                                 int render_frame_id)
     : render_process_id_(render_process_id),
-      render_view_id_(render_view_id) {
-}
+      render_frame_id_(render_frame_id) {}
 
 PrintingContextDelegate::~PrintingContextDelegate() {
 }
@@ -80,9 +79,9 @@ gfx::NativeView PrintingContextDelegate::GetParentView() {
 
 content::WebContents* PrintingContextDelegate::GetWebContents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderViewHost* view =
-      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
-  return view ? content::WebContents::FromRenderViewHost(view) : nullptr;
+  auto* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  return rfh ? content::WebContents::FromRenderFrameHost(rfh) : nullptr;
 }
 
 std::string PrintingContextDelegate::GetAppLocale() {
@@ -111,14 +110,14 @@ void PostOnOwnerThread(const scoped_refptr<PrintJobWorkerOwner>& owner,
 }  // namespace
 
 PrintJobWorker::PrintJobWorker(int render_process_id,
-                               int render_view_id,
+                               int render_frame_id,
                                PrintJobWorkerOwner* owner)
     : owner_(owner), thread_("Printing_Worker"), weak_factory_(this) {
   // The object is created in the IO thread.
   DCHECK(owner_->RunsTasksOnCurrentThread());
 
   printing_context_delegate_ = base::MakeUnique<PrintingContextDelegate>(
-      render_process_id, render_view_id);
+      render_process_id, render_frame_id);
   printing_context_ = PrintingContext::Create(printing_context_delegate_.get());
 }
 

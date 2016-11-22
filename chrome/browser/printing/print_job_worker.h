@@ -36,7 +36,7 @@ class PrintedPage;
 class PrintJobWorker {
  public:
   PrintJobWorker(int render_process_id,
-                 int render_view_id,
+                 int render_frame_id,
                  PrintJobWorkerOwner* owner);
   virtual ~PrintJobWorker();
 

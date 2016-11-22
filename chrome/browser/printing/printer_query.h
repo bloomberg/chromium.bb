@@ -31,7 +31,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
     ASK_USER,
   };
 
-  PrinterQuery(int render_process_id, int render_view_id);
+  PrinterQuery(int render_process_id, int render_frame_id);
 
   // PrintJobWorkerOwner implementation.
   void GetSettingsDone(const PrintSettings& new_settings,

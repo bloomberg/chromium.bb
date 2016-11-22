@@ -16,8 +16,8 @@
 
 namespace printing {
 
-PrinterQuery::PrinterQuery(int render_process_id, int render_view_id)
-    : worker_(new PrintJobWorker(render_process_id, render_view_id, this)),
+PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
+    : worker_(new PrintJobWorker(render_process_id, render_frame_id, this)),
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
