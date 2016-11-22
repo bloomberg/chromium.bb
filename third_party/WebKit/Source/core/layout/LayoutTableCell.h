@@ -227,7 +227,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void setOverrideLogicalContentHeightFromRowHeight(LayoutUnit);
 
   void scrollbarsChanged(bool horizontalScrollbarChanged,
-                         bool verticalScrollbarChanged) override;
+                         bool verticalScrollbarChanged,
+                         ScrollbarChangeContext = Layout) override;
 
   bool cellWidthChanged() const { return m_cellWidthChanged; }
   void setCellWidthChanged(bool b = true) { m_cellWidthChanged = b; }

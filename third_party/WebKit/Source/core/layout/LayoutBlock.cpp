@@ -1369,7 +1369,8 @@ int LayoutBlock::columnGap() const {
 }
 
 void LayoutBlock::scrollbarsChanged(bool horizontalScrollbarChanged,
-                                    bool verticalScrollbarChanged) {
+                                    bool verticalScrollbarChanged,
+                                    ScrollbarChangeContext context) {
   m_widthAvailableToChildrenChanged |= verticalScrollbarChanged;
   m_heightAvailableToChildrenChanged |= horizontalScrollbarChanged;
 }

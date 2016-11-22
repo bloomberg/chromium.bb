@@ -926,8 +926,17 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
   if (!hasScrollbar() && !needsHorizontalScrollbar && !needsVerticalScrollbar)
     return;
 
-  setHasHorizontalScrollbar(needsHorizontalScrollbar);
-  setHasVerticalScrollbar(needsVerticalScrollbar);
+  bool horizontalScrollbarChanged =
+      setHasHorizontalScrollbar(needsHorizontalScrollbar);
+  bool verticalScrollbarChanged =
+      setHasVerticalScrollbar(needsVerticalScrollbar);
+
+  if (box().isLayoutBlock() &&
+      (horizontalScrollbarChanged || verticalScrollbarChanged)) {
+    toLayoutBlock(box()).scrollbarsChanged(
+        horizontalScrollbarChanged, verticalScrollbarChanged,
+        LayoutBlock::ScrollbarChangeContext::StyleChange);
+  }
 
   // With overflow: scroll, scrollbars are always visible but may be disabled.
   // When switching to another value, we need to re-enable them (see bug 11985).
@@ -1174,12 +1183,12 @@ void PaintLayerScrollableArea::computeScrollbarExistence(
   }
 }
 
-void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar) {
+bool PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar) {
   if (FreezeScrollbarsScope::scrollbarsAreFrozen())
-    return;
+    return false;
 
   if (hasScrollbar == hasHorizontalScrollbar())
-    return;
+    return false;
 
   setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
@@ -1199,14 +1208,15 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar) {
   // Force an update since we know the scrollbars have changed things.
   if (box().document().hasAnnotatedRegions())
     box().document().setAnnotatedRegionsDirty(true);
+  return true;
 }
 
-void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar) {
+bool PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar) {
   if (FreezeScrollbarsScope::scrollbarsAreFrozen())
-    return;
+    return false;
 
   if (hasScrollbar == hasVerticalScrollbar())
-    return;
+    return false;
 
   setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
@@ -1226,6 +1236,7 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar) {
   // Force an update since we know the scrollbars have changed things.
   if (box().document().hasAnnotatedRegions())
     box().document().setAnnotatedRegionsDirty(true);
+  return true;
 }
 
 int PaintLayerScrollableArea::verticalScrollbarWidth(

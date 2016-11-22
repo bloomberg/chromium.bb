@@ -1380,9 +1380,13 @@ void LayoutTableCell::paintMask(const PaintInfo& paintInfo,
 }
 
 void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged,
-                                        bool verticalScrollbarChanged) {
+                                        bool verticalScrollbarChanged,
+                                        ScrollbarChangeContext context) {
   LayoutBlock::scrollbarsChanged(horizontalScrollbarChanged,
                                  verticalScrollbarChanged);
+  if (context != Layout)
+    return;
+
   int scrollbarHeight = scrollbarLogicalHeight();
   // Not sure if we should be doing something when a scrollbar goes away or not.
   if (!scrollbarHeight)

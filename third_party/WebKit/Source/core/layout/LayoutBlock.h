@@ -281,8 +281,10 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit collapsedMarginBeforeForChild(const LayoutBox& child) const;
   LayoutUnit collapsedMarginAfterForChild(const LayoutBox& child) const;
 
-  virtual void scrollbarsChanged(bool /*horizontalScrollbarChanged*/,
-                                 bool /*verticalScrollbarChanged*/);
+  enum ScrollbarChangeContext { StyleChange, Layout };
+  virtual void scrollbarsChanged(bool horizontalScrollbarChanged,
+                                 bool verticalScrollbarChanged,
+                                 ScrollbarChangeContext = Layout);
 
   LayoutUnit availableLogicalWidthForContent() const {
     return (logicalRightOffsetForContent() - logicalLeftOffsetForContent())

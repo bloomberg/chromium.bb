@@ -506,8 +506,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
       bool& needsVerticalScrollbar,
       ComputeScrollbarExistenceOption = Default) const;
 
-  void setHasHorizontalScrollbar(bool hasScrollbar);
-  void setHasVerticalScrollbar(bool hasScrollbar);
+  // Returns true iff scrollbar existence changed.
+  bool setHasHorizontalScrollbar(bool hasScrollbar);
+  bool setHasVerticalScrollbar(bool hasScrollbar);
 
   void updateScrollCornerStyle();
 
