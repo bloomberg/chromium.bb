@@ -80,6 +80,7 @@ drm_intel_gem_bo_unmap_gtt
 drm_intel_gem_bo_wait
 drm_intel_gem_context_create
 drm_intel_gem_context_destroy
+drm_intel_gem_context_get_id
 drm_intel_get_aperture_sizes
 drm_intel_get_eu_total
 drm_intel_get_min_eu_in_pool
