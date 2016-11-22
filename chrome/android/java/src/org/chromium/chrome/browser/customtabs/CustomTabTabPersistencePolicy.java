@@ -205,6 +205,22 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     /**
+     * Triggers an async deletion of the tab state metadata file.
+     */
+    public void deleteMetadataStateFileAsync() {
+        AsyncTask.SERIAL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                File stateDir = getOrCreateStateDirectory();
+                File metadataFile = new File(stateDir, getStateFileName());
+                if (metadataFile.exists() && !metadataFile.delete()) {
+                    Log.e(TAG, "Failed to delete file: " + metadataFile);
+                }
+            }
+        });
+    }
+
+    /**
      * Given a list of metadata files, determine which are applicable for deletion based on the
      * deletion strategy of Custom Tabs.
      *

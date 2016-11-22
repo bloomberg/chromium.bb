@@ -64,7 +64,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -98,6 +97,7 @@ public class CustomTabActivity extends ChromeActivity {
     private CustomTabContentHandler mCustomTabContentHandler;
     private Tab mMainTab;
     private CustomTabBottomBarDelegate mBottomBarDelegate;
+    private CustomTabTabPersistencePolicy mTabPersistencePolicy;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -341,10 +341,10 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     protected TabModelSelector createTabModelSelector() {
-        TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
+        mTabPersistencePolicy = new CustomTabTabPersistencePolicy(
                 getTaskId(), getSavedInstanceState() != null);
 
-        return new TabModelSelectorImpl(this, this, persistencePolicy, false, false);
+        return new TabModelSelectorImpl(this, this, mTabPersistencePolicy, false, false);
     }
 
     @Override
@@ -600,7 +600,12 @@ public class CustomTabActivity extends ChromeActivity {
     public void onStopWithNative() {
         super.onStopWithNative();
         setActiveContentHandler(null);
-        if (!mIsClosing) getTabModelSelector().saveState();
+        if (mIsClosing) {
+            getTabModelSelector().closeAllTabs(true);
+            mTabPersistencePolicy.deleteMetadataStateFileAsync();
+        } else {
+            getTabModelSelector().saveState();
+        }
     }
 
     /**
@@ -859,6 +864,14 @@ public class CustomTabActivity extends ChromeActivity {
     @VisibleForTesting
     CustomTabIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
+    }
+
+    /**
+     * @return The tab persistence policy for this activity.
+     */
+    @VisibleForTesting
+    CustomTabTabPersistencePolicy getTabPersistencePolicyForTest() {
+        return mTabPersistencePolicy;
     }
 
     /**
