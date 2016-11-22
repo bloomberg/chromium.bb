@@ -54,8 +54,7 @@ public class WebApkMetaDataUtils {
         return WebApkInfo.create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url,
                 metaData.scope, encodedIcon, metaData.name, metaData.shortName,
                 metaData.displayMode, metaData.orientation, source, metaData.themeColor,
-                metaData.backgroundColor, metaData.iconUrlAndIconMurmur2HashMap.isEmpty(),
-                webApkPackageName);
+                metaData.backgroundColor, webApkPackageName);
     }
 
     /**

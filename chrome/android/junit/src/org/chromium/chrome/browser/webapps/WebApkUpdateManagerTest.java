@@ -176,7 +176,7 @@ public class WebApkUpdateManagerTest {
         WebApkInfo info = WebApkInfo.create(WEBAPK_ID, WEBAPK_START_URL, null, null, null, null,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         updateManager.updateIfNeeded(null, info);
     }
