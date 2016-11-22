@@ -33,6 +33,7 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -220,9 +221,14 @@ public class CustomTabsConnection {
     }
 
     public boolean warmup(long flags) {
-        boolean success = warmupInternal(true);
-        logCall("warmup()", success);
-        return success;
+        try {
+            TraceEvent.begin("CustomTabsConnection.warmup");
+            boolean success = warmupInternal(true);
+            logCall("warmup()", success);
+            return success;
+        } finally {
+            TraceEvent.end("CustomTabsConnection.warmup");
+        }
     }
 
     /**
@@ -248,17 +254,38 @@ public class CustomTabsConnection {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (!initialized) initializeBrowser(mApplication);
-                if (mayCreateSpareWebContents && mSpeculation == null
-                        && !SysUtils.isLowEndDevice()) {
-                    WarmupManager.getInstance().createSpareWebContents();
-                    // The throttling database uses shared preferences, that can cause a StrictMode
-                    // violation on the first access. Make sure that this access is not in
-                    // mayLauchUrl.
-                    RequestThrottler.getForUid(mApplication, uid);
+                try {
+                    TraceEvent.begin("CustomTabsConnection.warmupInternal");
+                    // Ordering of actions here:
+                    // 1. Initializing the browser needs to be done once, and first.
+                    // 2. Creating a spare renderer takes time, in other threads and processes, so
+                    //    start it sooner rather than later. Can be done several times.
+                    // 3. Initializing the ResourcePrefetchPredictor is done once, and triggers
+                    //    work on other threads, start it early.
+                    // 4. RequestThrottler first access has to be done only once.
 
-                    Profile profile = Profile.getLastUsedProfile();
-                    new ResourcePrefetchPredictor(profile).startInitialization();
+                    // (1)
+                    if (!initialized) initializeBrowser(mApplication);
+
+                    // (2)
+                    if (mayCreateSpareWebContents && mSpeculation == null
+                            && !SysUtils.isLowEndDevice()) {
+                        WarmupManager.getInstance().createSpareWebContents();
+                    }
+
+                    if (!initialized) {
+                        // (3)
+                        Profile profile = Profile.getLastUsedProfile();
+                        new ResourcePrefetchPredictor(profile).startInitialization();
+
+                        // (4)
+                        // The throttling database uses shared preferences, that can cause a
+                        // StrictMode violation on the first access. Make sure that this access is
+                        // not in mayLauchUrl.
+                        RequestThrottler.getForUid(mApplication, uid);
+                    }
+                } finally {
+                    TraceEvent.end("CustomTabsConnection.warmupInternal");
                 }
                 mWarmupHasBeenFinished.set(true);
             }
@@ -349,9 +376,14 @@ public class CustomTabsConnection {
 
     public boolean mayLaunchUrl(CustomTabsSessionToken session, Uri url, Bundle extras,
             List<Bundle> otherLikelyBundles) {
-        boolean success = mayLaunchUrlInternal(session, url, extras, otherLikelyBundles);
-        logCall("mayLaunchUrl()", success);
-        return success;
+        try {
+            TraceEvent.begin("CustomTabsConnection.mayLaunchUrl");
+            boolean success = mayLaunchUrlInternal(session, url, extras, otherLikelyBundles);
+            logCall("mayLaunchUrl()", success);
+            return success;
+        } finally {
+            TraceEvent.end("CustomTabsConnection.mayLaunchUrl");
+        }
     }
 
     private boolean mayLaunchUrlInternal(final CustomTabsSessionToken session, Uri url,
@@ -377,10 +409,16 @@ public class CustomTabsConnection {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (lowConfidence) {
-                    lowConfidenceMayLaunchUrl(otherLikelyBundles);
-                } else {
-                    highConfidenceMayLaunchUrl(session, uid, urlString, extras, otherLikelyBundles);
+                try {
+                    TraceEvent.begin("CustomTabsConnection.mayLaunchUrlInternal");
+                    if (lowConfidence) {
+                        lowConfidenceMayLaunchUrl(otherLikelyBundles);
+                    } else {
+                        highConfidenceMayLaunchUrl(
+                                session, uid, urlString, extras, otherLikelyBundles);
+                    }
+                } finally {
+                    TraceEvent.end("CustomTabsConnection.mayLaunchUrlInternal");
                 }
             }
         });

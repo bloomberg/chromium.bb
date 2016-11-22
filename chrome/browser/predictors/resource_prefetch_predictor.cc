@@ -393,8 +393,10 @@ ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {}
 
 void ResourcePrefetchPredictor::StartInitialization() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::StartInitialization");
 
-  DCHECK_EQ(NOT_INITIALIZED, initialization_state_);
+  if (initialization_state_ != NOT_INITIALIZED)
+    return;
   initialization_state_ = INITIALIZING;
 
   // Create local caches using the database as loaded.
