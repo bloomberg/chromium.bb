@@ -3,5 +3,5 @@ To manual test, open resources/5000x5000.png in a viewport-capable browser (e.g.
 Passes if the image shinks to fit the width.
 
 viewport meta: <meta name="viewport" content="width=device-width, minimum-scale=0.1">
-image style: -webkit-user-select: none;background-position: 0px 0px, 10px 10px;background-size: 20px 20px;background-color: white;background-image:linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%);
+image style: -webkit-user-select: none;background-position: 0px 0px, 10px 10px;background-size: 20px 20px;background-image:linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
 image actual width: 100

@@ -1414,12 +1414,12 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # https://codereview.chromium.org/2523513002/
-crbug.com/650455 images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/650455 images/huge-image-viewport-scale.html [ NeedsRebaseline ]
-crbug.com/650455 mhtml/image_document.mht [ NeedsRebaseline ]
-crbug.com/650455 mhtml/invalid-bad-boundary2.mht [ NeedsRebaseline ]
-crbug.com/650455 virtual/gpu-rasterization/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/650455 virtual/gpu-rasterization/images/huge-image-viewport-scale.html [ NeedsRebaseline ]
+crbug.com/650455 [ Precise ] images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
+crbug.com/650455 [ Precise ] images/huge-image-viewport-scale.html [ NeedsRebaseline ]
+crbug.com/650455 [ Precise ] mhtml/image_document.mht [ NeedsRebaseline ]
+crbug.com/650455 [ Precise ] mhtml/invalid-bad-boundary2.mht [ NeedsRebaseline ]
+crbug.com/650455 [ Precise ] virtual/gpu-rasterization/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
+crbug.com/650455 [ Precise ] virtual/gpu-rasterization/images/huge-image-viewport-scale.html [ NeedsRebaseline ]
 
 # These tests have different baselines on Linux Precise than Linux Trusty;
 # Linux Precise is being phased out, so until it's phased out, any tests

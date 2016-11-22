@@ -4,4 +4,4 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x600 [bgcolor=#0E0E0E]
       LayoutFlexibleBox {DIV} at (0,0) size 800x600
-        LayoutImage {IMG} at (385,285) size 30x30 [bgcolor=#FFFFFF]
+        LayoutImage {IMG} at (385,285) size 30x30
