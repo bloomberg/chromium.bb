@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/pref_util.h"
 #include "components/offline_pages/client_policy_controller.h"
@@ -32,7 +33,15 @@ namespace ntp_snippets {
 
 namespace {
 
-const int kMaxSuggestionsCount = 5;
+const int kDefaultMaxSuggestionsCount = 5;
+
+const char* kMaxSuggestionsCountParamName = "recent_tabs_max_count";
+
+int GetMaxSuggestionsCount() {
+  return GetParamAsInt(kRecentOfflineTabSuggestionsFeature,
+                       kMaxSuggestionsCountParamName,
+                       kDefaultMaxSuggestionsCount);
+}
 
 struct OrderOfflinePagesByMostRecentlyVisitedFirst {
   bool operator()(const OfflinePageItem* left,
@@ -279,7 +288,7 @@ RecentTabSuggestionsProvider::GetMostRecentlyVisited(
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem* offline_page_item : offline_page_items) {
     suggestions.push_back(ConvertOfflinePage(*offline_page_item));
-    if (suggestions.size() == kMaxSuggestionsCount) {
+    if (static_cast<int>(suggestions.size()) == GetMaxSuggestionsCount()) {
       break;
     }
   }
