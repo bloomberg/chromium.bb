@@ -14,6 +14,7 @@ namespace blink {
 class CharacterData;
 class ContainerNode;
 class Document;
+class Text;
 
 // This class is a base class for classes which observe DOM tree mutation
 // synchronously. If you want to observe DOM tree mutation asynchronously see
@@ -38,7 +39,10 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didInsertText(Node*, unsigned offset, unsigned length);
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
   //  - didMergeTextNodes(Text& oldNode, unsigned offset);
-  //  - didSplitTextNode(Text& oldNode);
+
+  // Called when |Text| node is split, next sibling |oldNode| contains
+  // characters after split point.
+  virtual void didSplitTextNode(Text& oldNode);
 
   // Called when |CharacterData| is updated at |offset|, |oldLength| is a
   // number of deleted character and |newLength| is a number of added

@@ -16,13 +16,14 @@ class ContainerNode;
 class Document;
 class Node;
 class SynchronousMutationObserver;
+class Text;
 
 class CORE_EXPORT SynchronousMutationNotifier
     : public LifecycleNotifier<Document, SynchronousMutationObserver> {
  public:
   // TODO(yosin): We will have |notifyXXX()| functions defined in
   // |SynchronousMutationObserver|.
-
+  void notifySplitTextNode(Text&);
   void notifyUpdateCharacterData(CharacterData*,
                                  unsigned offset,
                                  unsigned oldLength,

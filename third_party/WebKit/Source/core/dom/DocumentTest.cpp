@@ -112,6 +112,10 @@ class TestSynchronousMutationObserver
     return m_removedNodes;
   }
 
+  const HeapVector<Member<Text>>& splitTextNodes() const {
+    return m_splitTextNodes;
+  }
+
   const HeapVector<Member<UpdateCharacterDataRecord>>&
   updatedCharacterDataRecords() const {
     return m_updatedCharacterDataRecords;
@@ -122,6 +126,7 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
+  void didSplitTextNode(Text&) final;
   void didUpdateCharacterData(CharacterData*,
                               unsigned offset,
                               unsigned oldLength,
@@ -132,6 +137,7 @@ class TestSynchronousMutationObserver
   int m_contextDestroyedCalledCounter = 0;
   HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
   HeapVector<Member<Node>> m_removedNodes;
+  HeapVector<Member<Text>> m_splitTextNodes;
   HeapVector<Member<UpdateCharacterDataRecord>> m_updatedCharacterDataRecords;
 
   DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
@@ -144,6 +150,10 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
 
 void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
+}
+
+void TestSynchronousMutationObserver::didSplitTextNode(Text& node) {
+  m_splitTextNodes.append(&node);
 }
 
 void TestSynchronousMutationObserver::didUpdateCharacterData(
@@ -167,6 +177,7 @@ void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
 DEFINE_TRACE(TestSynchronousMutationObserver) {
   visitor->trace(m_removedChildrenNodes);
   visitor->trace(m_removedNodes);
+  visitor->trace(m_splitTextNodes);
   visitor->trace(m_updatedCharacterDataRecords);
   SynchronousMutationObserver::trace(visitor);
 }
@@ -433,6 +444,17 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   document().shutdown();
   EXPECT_EQ(observer.lifecycleContext(), nullptr);
   EXPECT_EQ(observer.countContextDestroyedCalled(), 1);
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+
+  Text* splitSample = document().createTextNode("0123456789");
+  document().body()->appendChild(splitSample);
+
+  splitSample->splitText(4, ASSERT_NO_EXCEPTION);
+  ASSERT_EQ(observer.splitTextNodes().size(), 1u);
+  EXPECT_EQ(observer.splitTextNodes()[0], splitSample);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
