@@ -238,10 +238,13 @@ void DownloadSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     const ntp_snippets::DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(provided_category_, category);
 
-  // TODO(vitaliii): Query all pages instead by using an empty query.
   if (offline_page_model_) {
+    // Offline pages which are not related to downloads are also queried here,
+    // so that they can be returned if they happen to be dismissed (e.g. due to
+    // a bug).
+    OfflinePageModelQueryBuilder query_builder;
     offline_page_model_->GetPagesMatchingQuery(
-        BuildOfflinePageDownloadsQuery(offline_page_model_),
+        query_builder.Build(offline_page_model_->GetPolicyController()),
         base::Bind(&DownloadSuggestionsProvider::
                        GetPagesMatchingQueryCallbackForGetDismissedSuggestions,
                    weak_ptr_factory_.GetWeakPtr(), callback));

@@ -771,17 +771,18 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldPruneOfflinePagesDismissedIDs) {
       GetDummySuggestionId(3, /*is_offline_page=*/true));
   EXPECT_THAT(GetDismissedSuggestions(), SizeIs(3));
 
-  // Prune on getting all offline pages. Note that the first suggestion is not
-  // removed from |offline_pages_model| storage, because otherwise
-  // |GetDismissedSuggestions| cannot return it.
+  // Prune on getting all offline pages.
   EXPECT_CALL(*observer(),
               OnNewSuggestions(_, downloads_category(), IsEmpty()));
 
-  // TODO(vitaliii): Add the first suggestion back, so that
-  // GetDismissedSuggestions can return it.
   *(offline_pages_model()->mutable_items()) =
       CreateDummyOfflinePages({2, 3});
   FireOfflinePageModelChanged();
+
+  // The first suggestion is added back to the |offline_pages_model| storage,
+  // because otherwise |GetDismissedSuggestions| cannot return it.
+  *(offline_pages_model()->mutable_items()) =
+      CreateDummyOfflinePages({1, 2, 3});
   EXPECT_THAT(GetDismissedSuggestions(), SizeIs(2));
 
   // Prune when offline page is deleted.

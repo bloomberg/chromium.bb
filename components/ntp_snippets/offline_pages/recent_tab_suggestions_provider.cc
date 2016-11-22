@@ -143,9 +143,12 @@ void RecentTabSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     const DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(provided_category_, category);
 
-  // TODO(vitaliii): Query all pages instead by using an empty query.
+  // Offline pages which are not related to recent tabs are also queried here,
+  // so that they can be returned if they happen to be dismissed (e.g. due to a
+  // bug).
+  OfflinePageModelQueryBuilder query_builder;
   offline_page_model_->GetPagesMatchingQuery(
-      BuildRecentTabsQuery(offline_page_model_),
+      query_builder.Build(offline_page_model_->GetPolicyController()),
       base::Bind(&RecentTabSuggestionsProvider::
                      GetPagesMatchingQueryCallbackForGetDismissedSuggestions,
                  weak_ptr_factory_.GetWeakPtr(), callback));
