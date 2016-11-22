@@ -235,6 +235,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     RegisterManagementPolicyProviders();
   }
 
+  // Extension API calls require QuotaService, so create it before loading any
+  // extensions.
+  quota_service_.reset(new QuotaService);
+
   bool skip_session_extensions = false;
 #if defined(OS_CHROMEOS)
   // Skip loading session extensions if we are not in a user session.
@@ -277,8 +281,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   // Make the chrome://extension-icon/ resource available.
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
-
-  quota_service_.reset(new QuotaService);
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
