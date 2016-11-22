@@ -332,30 +332,23 @@ void splitUntilNextCaseChange(
   smallCapsIterator.consume(&numCharactersUntilCaseChange, &smallCapsBehavior);
   if (numCharactersUntilCaseChange > 0 &&
       numCharactersUntilCaseChange < currentQueueItem.m_numCharacters) {
-    unsigned startIndex =
-        currentQueueItem.m_startIndex + numCharactersUntilCaseChange;
-    unsigned numCharacters =
-        currentQueueItem.m_numCharacters - numCharactersUntilCaseChange;
-    queue->prepend(HolesQueueItem(HolesQueueItemAction::HolesQueueRange,
-                                  startIndex, numCharacters));
+    queue->prepend(HolesQueueItem(
+        HolesQueueItemAction::HolesQueueRange,
+        currentQueueItem.m_startIndex + numCharactersUntilCaseChange,
+        currentQueueItem.m_numCharacters - numCharactersUntilCaseChange));
     currentQueueItem.m_numCharacters = numCharactersUntilCaseChange;
   }
 }
 
-hb_feature_t createFeature(uint8_t c1,
-                           uint8_t c2,
-                           uint8_t c3,
-                           uint8_t c4,
-                           uint32_t value = 0) {
-  return {HB_TAG(c1, c2, c3, c4), value, 0 /* start */,
-          static_cast<unsigned>(-1) /* end */};
+hb_feature_t createFeature(hb_tag_t tag, uint32_t value = 0) {
+  return {tag, value, 0 /* start */, static_cast<unsigned>(-1) /* end */};
 }
 
 void setFontFeatures(const Font* font, FeaturesVector* features) {
   const FontDescription& description = font->getFontDescription();
 
-  static hb_feature_t noKern = createFeature('k', 'e', 'r', 'n');
-  static hb_feature_t noVkrn = createFeature('v', 'k', 'r', 'n');
+  static hb_feature_t noKern = createFeature(HB_TAG('k', 'e', 'r', 'n'));
+  static hb_feature_t noVkrn = createFeature(HB_TAG('v', 'k', 'r', 'n'));
   switch (description.getKerning()) {
     case FontDescription::NormalKerning:
       // kern/vkrn are enabled by default
@@ -367,8 +360,8 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
       break;
   }
 
-  static hb_feature_t noClig = createFeature('c', 'l', 'i', 'g');
-  static hb_feature_t noLiga = createFeature('l', 'i', 'g', 'a');
+  static hb_feature_t noClig = createFeature(HB_TAG('c', 'l', 'i', 'g'));
+  static hb_feature_t noLiga = createFeature(HB_TAG('l', 'i', 'g', 'a'));
   switch (description.commonLigaturesState()) {
     case FontDescription::DisabledLigaturesState:
       features->append(noLiga);
@@ -380,7 +373,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
     case FontDescription::NormalLigaturesState:
       break;
   }
-  static hb_feature_t dlig = createFeature('d', 'l', 'i', 'g', 1);
+  static hb_feature_t dlig = createFeature(HB_TAG('d', 'l', 'i', 'g'), 1);
   switch (description.discretionaryLigaturesState()) {
     case FontDescription::DisabledLigaturesState:
       // dlig is off by default
@@ -391,7 +384,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
     case FontDescription::NormalLigaturesState:
       break;
   }
-  static hb_feature_t hlig = createFeature('h', 'l', 'i', 'g', 1);
+  static hb_feature_t hlig = createFeature(HB_TAG('h', 'l', 'i', 'g'), 1);
   switch (description.historicalLigaturesState()) {
     case FontDescription::DisabledLigaturesState:
       // hlig is off by default
@@ -402,7 +395,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
     case FontDescription::NormalLigaturesState:
       break;
   }
-  static hb_feature_t noCalt = createFeature('c', 'a', 'l', 't');
+  static hb_feature_t noCalt = createFeature(HB_TAG('c', 'a', 'l', 't'));
   switch (description.contextualLigaturesState()) {
     case FontDescription::DisabledLigaturesState:
       features->append(noCalt);
@@ -414,9 +407,9 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
       break;
   }
 
-  static hb_feature_t hwid = createFeature('h', 'w', 'i', 'd', 1);
-  static hb_feature_t twid = createFeature('t', 'w', 'i', 'd', 1);
-  static hb_feature_t qwid = createFeature('q', 'w', 'i', 'd', 1);
+  static hb_feature_t hwid = createFeature(HB_TAG('h', 'w', 'i', 'd'), 1);
+  static hb_feature_t twid = createFeature(HB_TAG('t', 'w', 'i', 'd'), 1);
+  static hb_feature_t qwid = createFeature(HB_TAG('q', 'w', 'i', 'd'), 1);
   switch (description.widthVariant()) {
     case HalfWidth:
       features->append(hwid);
@@ -432,40 +425,40 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
   }
 
   // font-variant-numeric:
-  static hb_feature_t lnum = createFeature('l', 'n', 'u', 'm', 1);
+  static hb_feature_t lnum = createFeature(HB_TAG('l', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericFigureValue() ==
       FontVariantNumeric::LiningNums)
     features->append(lnum);
 
-  static hb_feature_t onum = createFeature('o', 'n', 'u', 'm', 1);
+  static hb_feature_t onum = createFeature(HB_TAG('o', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericFigureValue() ==
       FontVariantNumeric::OldstyleNums)
     features->append(onum);
 
-  static hb_feature_t pnum = createFeature('p', 'n', 'u', 'm', 1);
+  static hb_feature_t pnum = createFeature(HB_TAG('p', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericSpacingValue() ==
       FontVariantNumeric::ProportionalNums)
     features->append(pnum);
-  static hb_feature_t tnum = createFeature('t', 'n', 'u', 'm', 1);
+  static hb_feature_t tnum = createFeature(HB_TAG('t', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericSpacingValue() ==
       FontVariantNumeric::TabularNums)
     features->append(tnum);
 
-  static hb_feature_t afrc = createFeature('a', 'f', 'r', 'c', 1);
+  static hb_feature_t afrc = createFeature(HB_TAG('a', 'f', 'r', 'c'), 1);
   if (description.variantNumeric().numericFractionValue() ==
       FontVariantNumeric::StackedFractions)
     features->append(afrc);
-  static hb_feature_t frac = createFeature('f', 'r', 'a', 'c', 1);
+  static hb_feature_t frac = createFeature(HB_TAG('f', 'r', 'a', 'c'), 1);
   if (description.variantNumeric().numericFractionValue() ==
       FontVariantNumeric::DiagonalFractions)
     features->append(frac);
 
-  static hb_feature_t ordn = createFeature('o', 'r', 'd', 'n', 1);
+  static hb_feature_t ordn = createFeature(HB_TAG('o', 'r', 'd', 'n'), 1);
   if (description.variantNumeric().ordinalValue() ==
       FontVariantNumeric::OrdinalOn)
     features->append(ordn);
 
-  static hb_feature_t zero = createFeature('z', 'e', 'r', 'o', 1);
+  static hb_feature_t zero = createFeature(HB_TAG('z', 'e', 'r', 'o'), 1);
   if (description.variantNumeric().slashedZeroValue() ==
       FontVariantNumeric::SlashedZeroOn)
     features->append(zero);
@@ -513,12 +506,12 @@ CapsFeatureSettingsScopedOverlay::CapsFeatureSettingsScopedOverlay(
 
 void CapsFeatureSettingsScopedOverlay::overlayCapsFeatures(
     FontDescription::FontVariantCaps variantCaps) {
-  static hb_feature_t smcp = createFeature('s', 'm', 'c', 'p', 1);
-  static hb_feature_t pcap = createFeature('p', 'c', 'a', 'p', 1);
-  static hb_feature_t c2sc = createFeature('c', '2', 's', 'c', 1);
-  static hb_feature_t c2pc = createFeature('c', '2', 'p', 'c', 1);
-  static hb_feature_t unic = createFeature('u', 'n', 'i', 'c', 1);
-  static hb_feature_t titl = createFeature('t', 'i', 't', 'l', 1);
+  static hb_feature_t smcp = createFeature(HB_TAG('s', 'm', 'c', 'p'), 1);
+  static hb_feature_t pcap = createFeature(HB_TAG('p', 'c', 'a', 'p'), 1);
+  static hb_feature_t c2sc = createFeature(HB_TAG('c', '2', 's', 'c'), 1);
+  static hb_feature_t c2pc = createFeature(HB_TAG('c', '2', 'p', 'c'), 1);
+  static hb_feature_t unic = createFeature(HB_TAG('u', 'n', 'i', 'c'), 1);
+  static hb_feature_t titl = createFeature(HB_TAG('t', 'i', 't', 'l'), 1);
   if (variantCaps == FontDescription::SmallCaps ||
       variantCaps == FontDescription::AllSmallCaps) {
     prependCounting(smcp);
