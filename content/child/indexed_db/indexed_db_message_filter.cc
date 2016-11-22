@@ -24,8 +24,7 @@ bool IndexedDBMessageFilter::ShouldHandleMessage(
 
 void IndexedDBMessageFilter::OnFilteredMessageReceived(
     const IPC::Message& msg) {
-  IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender())
-      ->OnMessageReceived(msg);
+  IndexedDBDispatcher::ThreadSpecificInstance()->OnMessageReceived(msg);
 }
 
 bool IndexedDBMessageFilter::GetWorkerThreadIdForMessage(

@@ -677,6 +677,8 @@ source_set("browser") {
     "host_zoom_map_impl.h",
     "host_zoom_map_observer.cc",
     "host_zoom_map_observer.h",
+    "indexed_db/cursor_impl.cc",
+    "indexed_db/cursor_impl.h",
     "indexed_db/database_impl.cc",
     "indexed_db/database_impl.h",
     "indexed_db/indexed_db.h",

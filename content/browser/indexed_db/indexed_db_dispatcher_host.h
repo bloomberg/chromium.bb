@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -37,9 +36,7 @@ class IndexedDBBlobInfo;
 class IndexedDBCallbacks;
 class IndexedDBConnection;
 class IndexedDBContextImpl;
-class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBKey;
 class IndexedDBObservation;
 class IndexedDBObserverChanges;
 
@@ -63,8 +60,6 @@ class IndexedDBDispatcherHost
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
   void OnDestruct() const override;
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void FinishTransaction(int64_t host_transaction_id, bool committed);
@@ -76,17 +71,11 @@ class IndexedDBDispatcherHost
   }
   int ipc_process_id() const { return ipc_process_id_; }
 
-  // IndexedDBCallbacks call these methods to add the results into the
-  // applicable map.  See below for more details.
-  int32_t Add(IndexedDBCursor* cursor);
-
   bool RegisterTransactionId(int64_t host_transaction_id,
                              const url::Origin& origin);
   bool GetTransactionSize(int64_t host_transaction_id,
                           int64_t* transaction_size);
   void AddToTransaction(int64_t host_transaction_id, int64_t value_length);
-
-  IndexedDBCursor* GetCursorFromId(int32_t ipc_cursor_id);
 
   // These are called to map a 32-bit front-end (renderer-specific) transaction
   // id to and from a back-end ("host") transaction id that encodes the process
@@ -112,83 +101,10 @@ class IndexedDBDispatcherHost
   friend class base::DeleteHelper<IndexedDBDispatcherHost>;
 
   // Used in nested classes.
-  typedef std::map<int64_t, int64_t> TransactionIDToDatabaseIDMap;
   typedef std::map<int64_t, int64_t> TransactionIDToSizeMap;
   typedef std::map<int64_t, url::Origin> TransactionIDToOriginMap;
 
-  // IDMap for RefCounted types
-  template <typename RefCountedType>
-  class RefIDMap {
-   public:
-    typedef int32_t KeyType;
-
-    RefIDMap() {}
-    ~RefIDMap() {}
-
-    KeyType Add(RefCountedType* data) {
-      return map_.Add(new scoped_refptr<RefCountedType>(data));
-    }
-
-    RefCountedType* Lookup(KeyType id) {
-      scoped_refptr<RefCountedType>* ptr = map_.Lookup(id);
-      if (ptr == NULL)
-        return NULL;
-      return ptr->get();
-    }
-
-    void Remove(KeyType id) { map_.Remove(id); }
-
-    void set_check_on_null_data(bool value) {
-      map_.set_check_on_null_data(value);
-    }
-
-   private:
-    IDMap<scoped_refptr<RefCountedType>, IDMapOwnPointer> map_;
-
-    DISALLOW_COPY_AND_ASSIGN(RefIDMap);
-  };
-
-  class CursorDispatcherHost {
-   public:
-    explicit CursorDispatcherHost(IndexedDBDispatcherHost* parent);
-    ~CursorDispatcherHost();
-
-    bool OnMessageReceived(const IPC::Message& message);
-
-    void OnAdvance(int32_t ipc_object_store_id,
-                   int32_t ipc_thread_id,
-                   int32_t ipc_callbacks_id,
-                   uint32_t count);
-    void OnContinue(int32_t ipc_object_store_id,
-                    int32_t ipc_thread_id,
-                    int32_t ipc_callbacks_id,
-                    const IndexedDBKey& key,
-                    const IndexedDBKey& primary_key);
-    void OnPrefetch(int32_t ipc_cursor_id,
-                    int32_t ipc_thread_id,
-                    int32_t ipc_callbacks_id,
-                    int n);
-    void OnPrefetchReset(int32_t ipc_cursor_id,
-                         int used_prefetches,
-                         int unused_prefetches);
-    void OnDestroyed(int32_t ipc_cursor_id);
-
-    IndexedDBDispatcherHost* parent_;
-    RefIDMap<IndexedDBCursor> map_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(CursorDispatcherHost);
-  };
-
   ~IndexedDBDispatcherHost() override;
-
-  // Helper templates.
-  template <class ReturnType>
-  ReturnType* GetOrTerminateProcess(RefIDMap<ReturnType>* map,
-                                    int32_t ipc_return_object_id);
-
-  template <typename MapType>
-  void DestroyObject(MapType* map, int32_t ipc_object_id);
 
   // indexed_db::mojom::Factory implementation:
   void GetDatabaseNames(
@@ -220,10 +136,6 @@ class IndexedDBDispatcherHost
                                  const url::Origin& origin,
                                  const base::string16& name);
 
-  // Message processing. Most of the work is delegated to the dispatcher hosts
-  // below.
-  void OnAckReceivedBlobs(const std::vector<std::string>& uuids);
-
   void ResetDispatcherHosts();
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -241,7 +153,6 @@ class IndexedDBDispatcherHost
   bool is_open_ = true;
   TransactionIDToSizeMap transaction_size_map_;
   TransactionIDToOriginMap transaction_origin_map_;
-  std::unique_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
 
   // Used to set file permissions for blob storage.
   int ipc_process_id_;

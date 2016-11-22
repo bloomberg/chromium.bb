@@ -8,7 +8,6 @@
 #include "content/child/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "content/child/storage_util.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/public/child/worker_thread.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
@@ -59,10 +58,8 @@ class WebIDBFactoryImpl::IOThreadHelper {
 
 WebIDBFactoryImpl::WebIDBFactoryImpl(
     scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
-    scoped_refptr<ThreadSafeSender> thread_safe_sender,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner)
     : io_helper_(new IOThreadHelper(std::move(sync_message_filter))),
-      thread_safe_sender_(std::move(thread_safe_sender)),
       io_runner_(std::move(io_runner)) {}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() {
@@ -73,7 +70,7 @@ void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
                                          const WebSecurityOrigin& origin) {
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      io_runner_, thread_safe_sender_);
+      nullptr, io_runner_);
   io_runner_->PostTask(FROM_HERE, base::Bind(&IOThreadHelper::GetDatabaseNames,
                                              base::Unretained(io_helper_),
                                              base::Passed(&callbacks_impl),
@@ -87,11 +84,10 @@ void WebIDBFactoryImpl::open(const WebString& name,
                              WebIDBDatabaseCallbacks* database_callbacks,
                              const WebSecurityOrigin& origin) {
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   auto database_callbacks_impl =
       base::MakeUnique<IndexedDBDatabaseCallbacksImpl>(
-          base::WrapUnique(database_callbacks), thread_safe_sender_);
+          base::WrapUnique(database_callbacks));
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::Open, base::Unretained(io_helper_),
@@ -105,7 +101,7 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
                                        const WebSecurityOrigin& origin) {
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
-      io_runner_, thread_safe_sender_);
+      nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::DeleteDatabase, base::Unretained(io_helper_),

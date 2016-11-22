@@ -13,7 +13,6 @@
 #include "content/child/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
@@ -164,11 +163,8 @@ class WebIDBDatabaseImpl::IOThreadHelper {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
     DatabaseAssociatedPtrInfo database_info,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    scoped_refptr<ThreadSafeSender> thread_safe_sender)
-    : helper_(new IOThreadHelper()),
-      io_runner_(std::move(io_runner)),
-      thread_safe_sender_(std::move(thread_safe_sender)) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
+    : helper_(new IOThreadHelper()), io_runner_(std::move(io_runner)) {
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Bind, base::Unretained(helper_),
                             base::Passed(&database_info)));
@@ -219,11 +215,10 @@ void WebIDBDatabaseImpl::createTransaction(
 }
 
 void WebIDBDatabaseImpl::close() {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   std::vector<int32_t> remove_observer_ids(observer_ids_.begin(),
                                            observer_ids_.end());
-  dispatcher->RemoveObservers(remove_observer_ids);
+  IndexedDBDispatcher::ThreadSpecificInstance()->RemoveObservers(
+      remove_observer_ids);
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Close, base::Unretained(helper_)));
 }
@@ -237,10 +232,10 @@ void WebIDBDatabaseImpl::versionChangeIgnored() {
 int32_t WebIDBDatabaseImpl::addObserver(
     std::unique_ptr<WebIDBObserver> observer,
     long long transaction_id) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   WebIDBObserver* observer_ptr = observer.get();
-  int32_t observer_id = dispatcher->RegisterObserver(std::move(observer));
+  int32_t observer_id =
+      IndexedDBDispatcher::ThreadSpecificInstance()->RegisterObserver(
+          std::move(observer));
   observer_ids_.insert(observer_id);
   static_assert(blink::WebIDBOperationTypeCount < sizeof(uint16_t) * CHAR_BIT,
                 "WebIDBOperationType Count exceeds size of uint16_t");
@@ -261,9 +256,8 @@ void WebIDBDatabaseImpl::removeObservers(
   for (int32_t id : observer_ids_to_remove)
     observer_ids_.erase(id);
 
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RemoveObservers(remove_observer_ids);
+  IndexedDBDispatcher::ThreadSpecificInstance()->RemoveObservers(
+      remove_observer_ids);
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::RemoveObservers,
                             base::Unretained(helper_), remove_observer_ids));
@@ -275,14 +269,11 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                              const WebIDBKeyRange& key_range,
                              bool key_only,
                              WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Get, base::Unretained(helper_),
                             transaction_id, object_store_id, index_id,
@@ -297,14 +288,11 @@ void WebIDBDatabaseImpl::getAll(long long transaction_id,
                                 long long max_count,
                                 bool key_only,
                                 WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::GetAll, base::Unretained(helper_),
@@ -334,10 +322,8 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
     return;
   }
 
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto mojo_value = indexed_db::mojom::Value::New();
   mojo_value->bits.assign(value.data(), value.data() + value.size());
@@ -360,8 +346,7 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
   }
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::Put, base::Unretained(helper_),
@@ -404,14 +389,11 @@ void WebIDBDatabaseImpl::openCursor(long long transaction_id,
                                     bool key_only,
                                     blink::WebIDBTaskType task_type,
                                     WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::OpenCursor, base::Unretained(helper_),
@@ -425,14 +407,11 @@ void WebIDBDatabaseImpl::count(long long transaction_id,
                                long long index_id,
                                const WebIDBKeyRange& key_range,
                                WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Count, base::Unretained(helper_),
                             transaction_id, object_store_id, index_id,
@@ -444,14 +423,11 @@ void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
                                      long long object_store_id,
                                      const WebIDBKeyRange& key_range,
                                      WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::DeleteRange, base::Unretained(helper_),
@@ -463,14 +439,11 @@ void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
 void WebIDBDatabaseImpl::clear(long long transaction_id,
                                long long object_store_id,
                                WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->ResetCursorPrefetchCaches(transaction_id,
-                                        IndexedDBDispatcher::kAllCursors);
+  IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
+      transaction_id, nullptr);
 
   auto callbacks_impl = base::MakeUnique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, io_runner_,
-      thread_safe_sender_);
+      base::WrapUnique(callbacks), transaction_id, nullptr, io_runner_);
   io_runner_->PostTask(
       FROM_HERE, base::Bind(&IOThreadHelper::Clear, base::Unretained(helper_),
                             transaction_id, object_store_id,

@@ -23,31 +23,20 @@
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/public/child/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObserver.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "url/origin.h"
 
-struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
-struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
-struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
-struct IndexedDBMsg_CallbacksSuccessArray_Params;
-struct IndexedDBMsg_CallbacksSuccessValue_Params;
 struct IndexedDBMsg_Observation;
 struct IndexedDBMsg_ObserverChanges;
 
 namespace blink {
-class WebData;
 struct WebIDBObservation;
 }
 
 namespace content {
-class IndexedDBKey;
-class IndexedDBKeyRange;
 class WebIDBCursorImpl;
-class WebIDBDatabaseImpl;
-class ThreadSafeSender;
 
 // Handle the indexed db related communication for this context thread - the
 // main thread and each worker thread have their own copies.
@@ -57,13 +46,10 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   // failing a NOTREACHED in ThreadSpecificInstance in tests that instantiate
   // two copies of RenderThreadImpl on the same thread.  Everyone else probably
   // wants to use ThreadSpecificInstance().
-  explicit IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender);
+  IndexedDBDispatcher();
   ~IndexedDBDispatcher() override;
 
-  // |thread_safe_sender| needs to be passed in because if the call leads to
-  // construction it will be needed.
-  static IndexedDBDispatcher* ThreadSpecificInstance(
-      ThreadSafeSender* thread_safe_sender);
+  static IndexedDBDispatcher* ThreadSpecificInstance();
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
@@ -73,46 +59,18 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   void OnMessageReceived(const IPC::Message& msg);
 
-  // This method is virtual so it can be overridden in unit tests.
-  virtual bool Send(IPC::Message* msg);
-
   int32_t RegisterObserver(std::unique_ptr<blink::WebIDBObserver> observer);
 
   // Removes observers from our local map observers_.
   void RemoveObservers(const std::vector<int32_t>& observer_ids_to_remove);
 
-  // This method is virtual so it can be overridden in unit tests.
-  virtual void RequestIDBCursorAdvance(unsigned long count,
-                                       blink::WebIDBCallbacks* callbacks_ptr,
-                                       int32_t ipc_cursor_id,
-                                       int64_t transaction_id);
-
-  // This method is virtual so it can be overridden in unit tests.
-  virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
-                                        const IndexedDBKey& primary_key,
-                                        blink::WebIDBCallbacks* callbacks_ptr,
-                                        int32_t ipc_cursor_id,
-                                        int64_t transaction_id);
-
-  // This method is virtual so it can be overridden in unit tests.
-  virtual void RequestIDBCursorPrefetch(int n,
-                                        blink::WebIDBCallbacks* callbacks_ptr,
-                                        int32_t ipc_cursor_id);
-
-  // This method is virtual so it can be overridden in unit tests.
-  virtual void RequestIDBCursorPrefetchReset(int used_prefetches,
-                                             int unused_prefetches,
-                                             int32_t ipc_cursor_id);
-
-  void RegisterCursor(int32_t ipc_cursor_id, WebIDBCursorImpl* cursor);
-
-  virtual void CursorDestroyed(int32_t ipc_cursor_id);
-
   enum { kAllCursors = -1 };
 
-  // Reset cursor prefetch caches for all cursors except exception_cursor_id.
+  void RegisterCursor(WebIDBCursorImpl* cursor);
+  void UnregisterCursor(WebIDBCursorImpl* cursor);
+  // Reset cursor prefetch caches for all cursors except exception_cursor.
   void ResetCursorPrefetchCaches(int64_t transaction_id,
-                                 int32_t ipc_exception_cursor_id);
+                                 WebIDBCursorImpl* exception_cursor);
 
   void RegisterMojoOwnedCallbacks(
       IndexedDBCallbacksImpl::InternalState* callback_state);
@@ -129,35 +87,12 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
-  template <typename T>
-  void init_params(T* params, blink::WebIDBCallbacks* callbacks_ptr) {
-    std::unique_ptr<blink::WebIDBCallbacks> callbacks(callbacks_ptr);
-    params->ipc_thread_id = CurrentWorkerId();
-    params->ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
-  }
-
   // IDBCallback message handlers.
-  void OnSuccessCursorContinue(
-      const IndexedDBMsg_CallbacksSuccessCursorContinue_Params& p);
-  void OnSuccessCursorPrefetch(
-      const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
-  void OnSuccessValue(const IndexedDBMsg_CallbacksSuccessValue_Params& p);
-  void OnSuccessInteger(int32_t ipc_thread_id,
-                        int32_t ipc_callbacks_id,
-                        int64_t value);
-  void OnError(int32_t ipc_thread_id,
-               int32_t ipc_callbacks_id,
-               int code,
-               const base::string16& message);
   void OnDatabaseChanges(int32_t ipc_thread_id,
                          const IndexedDBMsg_ObserverChanges&);
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-
-  // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
-  // destroyed and used on the same thread it was created on.
-  IDMap<blink::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
   IDMap<blink::WebIDBObserver, IDMapOwnPointer> observers_;
+  std::unordered_set<WebIDBCursorImpl*> cursors_;
 
   // Holds pointers to the worker-thread owned state of IndexedDBCallbacksImpl
   // and IndexedDBDatabaseCallbacksImpl objects to makes sure that it is
@@ -168,14 +103,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
       mojo_owned_callback_state_;
   std::unordered_set<blink::WebIDBDatabaseCallbacks*>
       mojo_owned_database_callback_state_;
-
-  // Maps the ipc_callback_id from an open cursor request to the request's
-  // transaction_id. Used to assign the transaction_id to the WebIDBCursorImpl
-  // when it is created.
-  std::map<int32_t, int64_t> cursor_transaction_ids_;
-
-  // Map from cursor id to WebIDBCursorImpl.
-  std::map<int32_t, WebIDBCursorImpl*> cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };

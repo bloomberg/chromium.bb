@@ -58,8 +58,8 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   StrictMock<MockWebIDBCallbacks> callbacks;
   EXPECT_CALL(callbacks, onError(_)).Times(1);
 
-  WebIDBDatabaseImpl database_impl(nullptr, base::ThreadTaskRunnerHandle::Get(),
-                                   nullptr);
+  WebIDBDatabaseImpl database_impl(nullptr,
+                                   base::ThreadTaskRunnerHandle::Get());
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.put(transaction_id, object_store_id, value, web_blob_info,
                     WebIDBKey::createNumber(0), blink::WebIDBPutModeAddOrUpdate,
@@ -85,8 +85,8 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   StrictMock<MockWebIDBCallbacks> callbacks;
   EXPECT_CALL(callbacks, onError(_)).Times(1);
 
-  WebIDBDatabaseImpl database_impl(nullptr, base::ThreadTaskRunnerHandle::Get(),
-                                   nullptr);
+  WebIDBDatabaseImpl database_impl(nullptr,
+                                   base::ThreadTaskRunnerHandle::Get());
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.put(transaction_id, object_store_id, value, web_blob_info, key,
                     blink::WebIDBPutModeAddOrUpdate, &callbacks,

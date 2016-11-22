@@ -8,7 +8,6 @@
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/indexed_db/webidbcursor_impl.h"
 #include "content/child/indexed_db/webidbdatabase_impl.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
@@ -100,12 +99,12 @@ void ConvertReturnValue(const indexed_db::mojom::ReturnValuePtr& value,
 IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
     std::unique_ptr<WebIDBCallbacks> callbacks,
     int64_t transaction_id,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    scoped_refptr<ThreadSafeSender> thread_safe_sender)
+    const base::WeakPtr<WebIDBCursorImpl>& cursor,
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
     : internal_state_(new InternalState(std::move(callbacks),
                                         transaction_id,
-                                        std::move(io_runner),
-                                        std::move(thread_safe_sender))),
+                                        cursor,
+                                        std::move(io_runner))),
       callback_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 IndexedDBCallbacksImpl::~IndexedDBCallbacksImpl() {
@@ -155,14 +154,16 @@ void IndexedDBCallbacksImpl::SuccessDatabase(
                                         base::Passed(&database), metadata));
 }
 
-void IndexedDBCallbacksImpl::SuccessCursor(int32_t cursor_id,
-                                           const IndexedDBKey& key,
-                                           const IndexedDBKey& primary_key,
-                                           indexed_db::mojom::ValuePtr value) {
+void IndexedDBCallbacksImpl::SuccessCursor(
+    indexed_db::mojom::CursorAssociatedPtrInfo cursor,
+    const IndexedDBKey& key,
+    const IndexedDBKey& primary_key,
+    indexed_db::mojom::ValuePtr value) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&InternalState::SuccessCursor,
-                            base::Unretained(internal_state_), cursor_id, key,
-                            primary_key, base::Passed(&value)));
+      FROM_HERE,
+      base::Bind(&InternalState::SuccessCursor,
+                 base::Unretained(internal_state_), base::Passed(&cursor), key,
+                 primary_key, base::Passed(&value)));
 }
 
 void IndexedDBCallbacksImpl::SuccessValue(
@@ -171,6 +172,26 @@ void IndexedDBCallbacksImpl::SuccessValue(
       FROM_HERE,
       base::Bind(&InternalState::SuccessValue,
                  base::Unretained(internal_state_), base::Passed(&value)));
+}
+
+void IndexedDBCallbacksImpl::SuccessCursorContinue(
+    const IndexedDBKey& key,
+    const IndexedDBKey& primary_key,
+    indexed_db::mojom::ValuePtr value) {
+  callback_runner_->PostTask(
+      FROM_HERE, base::Bind(&InternalState::SuccessCursorContinue,
+                            base::Unretained(internal_state_), key, primary_key,
+                            base::Passed(&value)));
+}
+
+void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
+    const std::vector<IndexedDBKey>& keys,
+    const std::vector<IndexedDBKey>& primary_keys,
+    std::vector<indexed_db::mojom::ValuePtr> values) {
+  callback_runner_->PostTask(FROM_HERE,
+                             base::Bind(&InternalState::SuccessCursorPrefetch,
+                                        base::Unretained(internal_state_), keys,
+                                        primary_keys, base::Passed(&values)));
 }
 
 void IndexedDBCallbacksImpl::SuccessArray(
@@ -202,21 +223,19 @@ void IndexedDBCallbacksImpl::Success() {
 IndexedDBCallbacksImpl::InternalState::InternalState(
     std::unique_ptr<blink::WebIDBCallbacks> callbacks,
     int64_t transaction_id,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    scoped_refptr<ThreadSafeSender> thread_safe_sender)
+    const base::WeakPtr<WebIDBCursorImpl>& cursor,
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
     : callbacks_(std::move(callbacks)),
       transaction_id_(transaction_id),
-      io_runner_(std::move(io_runner)),
-      thread_safe_sender_(std::move(thread_safe_sender)) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RegisterMojoOwnedCallbacks(this);
+      cursor_(cursor),
+      io_runner_(std::move(io_runner)) {
+  IndexedDBDispatcher::ThreadSpecificInstance()->RegisterMojoOwnedCallbacks(
+      this);
 }
 
 IndexedDBCallbacksImpl::InternalState::~InternalState() {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->UnregisterMojoOwnedCallbacks(this);
+  IndexedDBDispatcher::ThreadSpecificInstance()->UnregisterMojoOwnedCallbacks(
+      this);
 }
 
 void IndexedDBCallbacksImpl::InternalState::Error(
@@ -243,8 +262,8 @@ void IndexedDBCallbacksImpl::InternalState::UpgradeNeeded(
     blink::WebIDBDataLoss data_loss,
     const std::string& data_loss_message,
     const content::IndexedDBDatabaseMetadata& metadata) {
-  WebIDBDatabase* database = new WebIDBDatabaseImpl(
-      std::move(database_info), io_runner_, thread_safe_sender_);
+  WebIDBDatabase* database =
+      new WebIDBDatabaseImpl(std::move(database_info), io_runner_);
   WebIDBMetadata web_metadata;
   ConvertDatabaseMetadata(metadata, &web_metadata);
   callbacks_->onUpgradeNeeded(old_version, database, web_metadata, data_loss,
@@ -256,10 +275,9 @@ void IndexedDBCallbacksImpl::InternalState::SuccessDatabase(
     DatabaseAssociatedPtrInfo database_info,
     const content::IndexedDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = nullptr;
-  if (database_info.is_valid()) {
-    database = new WebIDBDatabaseImpl(std::move(database_info), io_runner_,
-                                      thread_safe_sender_);
-  }
+  if (database_info.is_valid())
+    database = new WebIDBDatabaseImpl(std::move(database_info), io_runner_);
+
   WebIDBMetadata web_metadata;
   ConvertDatabaseMetadata(metadata, &web_metadata);
   callbacks_->onSuccess(database, web_metadata);
@@ -267,7 +285,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessDatabase(
 }
 
 void IndexedDBCallbacksImpl::InternalState::SuccessCursor(
-    int32_t cursor_id,
+    indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     indexed_db::mojom::ValuePtr value) {
@@ -275,11 +293,8 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursor(
   if (value)
     ConvertValue(value, &web_value);
 
-  WebIDBCursorImpl* cursor = new WebIDBCursorImpl(cursor_id, transaction_id_,
-                                                  thread_safe_sender_.get());
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RegisterCursor(cursor_id, cursor);
+  WebIDBCursorImpl* cursor =
+      new WebIDBCursorImpl(std::move(cursor_info), transaction_id_, io_runner_);
   callbacks_->onSuccess(cursor, WebIDBKeyBuilder::Build(key),
                         WebIDBKeyBuilder::Build(primary_key), web_value);
   callbacks_.reset();
@@ -297,6 +312,33 @@ void IndexedDBCallbacksImpl::InternalState::SuccessValue(
   if (value)
     ConvertReturnValue(value, &web_value);
   callbacks_->onSuccess(web_value);
+  callbacks_.reset();
+}
+
+void IndexedDBCallbacksImpl::InternalState::SuccessCursorContinue(
+    const IndexedDBKey& key,
+    const IndexedDBKey& primary_key,
+    indexed_db::mojom::ValuePtr value) {
+  WebIDBValue web_value;
+  if (value)
+    ConvertValue(value, &web_value);
+  callbacks_->onSuccess(WebIDBKeyBuilder::Build(key),
+                        WebIDBKeyBuilder::Build(primary_key), web_value);
+  callbacks_.reset();
+}
+
+void IndexedDBCallbacksImpl::InternalState::SuccessCursorPrefetch(
+    const std::vector<IndexedDBKey>& keys,
+    const std::vector<IndexedDBKey>& primary_keys,
+    std::vector<indexed_db::mojom::ValuePtr> values) {
+  std::vector<WebIDBValue> web_values(values.size());
+  for (size_t i = 0; i < values.size(); ++i)
+    ConvertValue(values[i], &web_values[i]);
+
+  if (cursor_) {
+    cursor_->SetPrefetchData(keys, primary_keys, web_values);
+    cursor_->CachedContinue(callbacks_.get());
+  }
   callbacks_.reset();
 }
 

@@ -5,7 +5,6 @@
 #include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
 
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
-#include "content/child/thread_safe_sender.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 
@@ -15,11 +14,9 @@ namespace content {
 
 namespace {
 
-void DeleteDatabaseCallbacks(WebIDBDatabaseCallbacks* callbacks,
-                             ThreadSafeSender* thread_safe_sender) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender);
-  dispatcher->UnregisterMojoOwnedDatabaseCallbacks(callbacks);
+void DeleteDatabaseCallbacks(WebIDBDatabaseCallbacks* callbacks) {
+  IndexedDBDispatcher::ThreadSpecificInstance()
+      ->UnregisterMojoOwnedDatabaseCallbacks(callbacks);
   delete callbacks;
 }
 
@@ -33,20 +30,16 @@ void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
 }  // namespace
 
 IndexedDBDatabaseCallbacksImpl::IndexedDBDatabaseCallbacksImpl(
-    std::unique_ptr<WebIDBDatabaseCallbacks> callbacks,
-    scoped_refptr<ThreadSafeSender> thread_safe_sender)
+    std::unique_ptr<WebIDBDatabaseCallbacks> callbacks)
     : callback_runner_(base::ThreadTaskRunnerHandle::Get()),
-      thread_safe_sender_(thread_safe_sender),
       callbacks_(callbacks.release()) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RegisterMojoOwnedDatabaseCallbacks(callbacks_);
+  IndexedDBDispatcher::ThreadSpecificInstance()
+      ->RegisterMojoOwnedDatabaseCallbacks(callbacks_);
 }
 
 IndexedDBDatabaseCallbacksImpl::~IndexedDBDatabaseCallbacksImpl() {
-  callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteDatabaseCallbacks, callbacks_,
-                            base::RetainedRef(thread_safe_sender_)));
+  callback_runner_->PostTask(FROM_HERE,
+                             base::Bind(&DeleteDatabaseCallbacks, callbacks_));
 }
 
 void IndexedDBDatabaseCallbacksImpl::ForcedClose() {

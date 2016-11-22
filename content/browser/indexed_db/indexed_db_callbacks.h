@@ -36,18 +36,6 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
-  // Simple payload responses
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32_t ipc_thread_id,
-                     int32_t ipc_callbacks_id);
-
-  // IndexedDBCursor responses
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32_t ipc_thread_id,
-                     int32_t ipc_callbacks_id,
-                     int32_t ipc_cursor_id);
-
-  // Mojo-based responses
   IndexedDBCallbacks(
       IndexedDBDispatcherHost* dispatcher_host,
       const url::Origin& origin,
@@ -128,11 +116,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   // Originally from IndexedDBCallbacks:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int32_t ipc_callbacks_id_;
-  int32_t ipc_thread_id_;
-
-  // IndexedDBCursor callbacks ------------------------
-  int32_t ipc_cursor_id_;
 
   // IndexedDBDatabase callbacks ------------------------
   int64_t host_transaction_id_;

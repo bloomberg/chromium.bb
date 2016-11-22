@@ -111,10 +111,21 @@ interface Callbacks {
   SuccessDatabase(associated Database? database, DatabaseMetadata metadata);
 
   // Database::OpenCursor
-  SuccessCursor(int32 cursor_id, Key key, Key primary_key, Value? value);
+  SuccessCursor(associated Cursor cursor,
+                Key key,
+                Key primary_key,
+                Value? value);
 
   // Database::Get / Cursor::Advance
   SuccessValue(ReturnValue? value);
+
+  // Cursor::Continue / Advance
+  SuccessCursorContinue(Key key, Key primary_key, Value? value);
+
+  // Cursor::Prefetch
+  SuccessCursorPrefetch(array<Key> keys,
+                        array<Key> primary_keys,
+                        array<Value> values);
 
   // Database::GetAll
   SuccessArray(array<ReturnValue> values);
@@ -139,6 +150,14 @@ interface DatabaseCallbacks {
   Abort(int64 transaction_id, int32 code,
         mojo.common.mojom.String16 message);
   Complete(int64 transaction_id);
+};
+
+interface Cursor {
+  Advance(uint32 count, associated Callbacks callbacks);
+  Continue(Key key, Key primary_key, associated Callbacks callbacks);
+  Prefetch(int32 count, associated Callbacks callbacks);
+  PrefetchReset(int32 used_prefetches, int32 unused_prefetches,
+                array<string> unused_blob_uuids);
 };
 
 interface Database {

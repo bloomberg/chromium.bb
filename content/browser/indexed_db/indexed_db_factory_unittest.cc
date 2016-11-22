@@ -227,7 +227,8 @@ class DiskFullFactory : public IndexedDBFactoryImpl {
 class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
  public:
   LookingForQuotaErrorMockCallbacks()
-      : IndexedDBCallbacks(nullptr, 0, 0), error_called_(false) {}
+      : IndexedDBCallbacks(nullptr, url::Origin(), nullptr),
+        error_called_(false) {}
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
     EXPECT_EQ(blink::WebIDBDatabaseExceptionQuotaError, error.code());

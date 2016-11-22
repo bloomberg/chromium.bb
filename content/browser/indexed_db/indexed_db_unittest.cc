@@ -128,7 +128,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
  public:
   ForceCloseDBCallbacks(scoped_refptr<IndexedDBContextImpl> idb_context,
                         const Origin& origin)
-      : IndexedDBCallbacks(nullptr, 0, 0),
+      : IndexedDBCallbacks(nullptr, origin, nullptr),
         idb_context_(idb_context),
         origin_(origin) {}
 

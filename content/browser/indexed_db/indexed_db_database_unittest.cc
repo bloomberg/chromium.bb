@@ -152,7 +152,7 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
 
 class MockCallbacks : public IndexedDBCallbacks {
  public:
-  MockCallbacks() : IndexedDBCallbacks(NULL, 0, 0) {}
+  MockCallbacks() : IndexedDBCallbacks(nullptr, url::Origin(), nullptr) {}
 
   void OnBlocked(int64_t existing_version) override { blocked_called_ = true; }
   void OnSuccess(int64_t result) override { success_called_ = true; }

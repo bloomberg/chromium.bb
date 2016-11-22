@@ -226,6 +226,35 @@ AssociatedInterfaceRequest<Interface> GetProxy(
   return request;
 }
 
+// Creates an associated interface proxy in its own AssociatedGroup.
+template <typename Interface>
+AssociatedInterfaceRequest<Interface> GetProxyForTesting(
+    AssociatedInterfacePtr<Interface>* ptr,
+    scoped_refptr<base::SingleThreadTaskRunner> runner =
+        base::ThreadTaskRunnerHandle::Get()) {
+  MessagePipe pipe;
+  using internal::MultiplexRouter;
+  scoped_refptr<MultiplexRouter> router0 = new MultiplexRouter(
+      std::move(pipe.handle0), MultiplexRouter::MULTI_INTERFACE, true, runner);
+  scoped_refptr<MultiplexRouter> router1 = new MultiplexRouter(
+      std::move(pipe.handle1), MultiplexRouter::MULTI_INTERFACE, false, runner);
+
+  AssociatedInterfacePtrInfo<Interface> ptr_info;
+  AssociatedInterfaceRequest<Interface> request;
+  router1->CreateAssociatedGroup()->CreateAssociatedInterface(
+      AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+
+  // Emulate passing |ptr_info| across a pipe.
+  ScopedInterfaceEndpointHandle handle = ptr_info.PassHandle();
+  DCHECK(!handle.is_local());
+  ptr->Bind(AssociatedInterfacePtrInfo<Interface>(
+                router0->CreateLocalEndpointHandle(handle.release()),
+                ptr_info.version()),
+            std::move(runner));
+
+  return request;
+}
+
 // Creates an associated interface proxy which casts its messages into the void.
 template <typename Interface>
 void GetDummyProxyForTesting(AssociatedInterfacePtr<Interface>* proxy) {

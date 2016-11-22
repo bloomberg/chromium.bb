@@ -18,7 +18,6 @@
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_observation.h"
 #include "content/browser/indexed_db/indexed_db_observer_changes.h"
@@ -63,7 +62,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       request_context_getter_(request_context_getter),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
-      cursor_dispatcher_host_(base::MakeUnique<CursorDispatcherHost>(this)),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }
@@ -101,47 +99,10 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
 
   // Prevent any pending connections from being processed.
   is_open_ = false;
-
-  cursor_dispatcher_host_.reset();
-}
-
-base::TaskRunner* IndexedDBDispatcherHost::OverrideTaskRunnerForMessage(
-    const IPC::Message& message) {
-  if (IPC_MESSAGE_CLASS(message) != IndexedDBMsgStart)
-    return NULL;
-
-  switch (message.type()) {
-    case IndexedDBHostMsg_AckReceivedBlobs::ID:
-      return NULL;
-    default:
-      return indexed_db_context_->TaskRunner();
-  }
 }
 
 bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
-  if (IPC_MESSAGE_CLASS(message) != IndexedDBMsgStart)
-    return false;
-
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread() ||
-         message.type() == IndexedDBHostMsg_AckReceivedBlobs::ID);
-
-  bool handled = cursor_dispatcher_host_->OnMessageReceived(message);
-
-  if (!handled) {
-    handled = true;
-    IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcherHost, message)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_AckReceivedBlobs, OnAckReceivedBlobs)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-  }
-  return handled;
-}
-
-int32_t IndexedDBDispatcherHost::Add(IndexedDBCursor* cursor) {
-  if (!cursor_dispatcher_host_) {
-    return 0;
-  }
-  return cursor_dispatcher_host_->map_.Add(cursor);
+  return false;
 }
 
 bool IndexedDBDispatcherHost::RegisterTransactionId(int64_t host_transaction_id,
@@ -244,12 +205,6 @@ void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
 bool IndexedDBDispatcherHost::IsOpen() const {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   return is_open_;
-}
-
-IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
-    int32_t ipc_cursor_id) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  return cursor_dispatcher_host_->map_.Lookup(ipc_cursor_id);
 }
 
 IndexedDBMsg_ObserverChanges IndexedDBDispatcherHost::ConvertObserverChanges(
@@ -385,13 +340,6 @@ void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
       name, request_context_getter_, callbacks, origin, indexed_db_path);
 }
 
-void IndexedDBDispatcherHost::OnAckReceivedBlobs(
-    const std::vector<std::string>& uuids) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const auto& uuid : uuids)
-    DropBlobData(uuid);
-}
-
 void IndexedDBDispatcherHost::FinishTransaction(int64_t host_transaction_id,
                                                 bool committed) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
@@ -401,139 +349,6 @@ void IndexedDBDispatcherHost::FinishTransaction(int64_t host_transaction_id,
   }
   transaction_origin_map_.erase(host_transaction_id);
   transaction_size_map_.erase(host_transaction_id);
-}
-
-//////////////////////////////////////////////////////////////////////
-// Helper templates.
-//
-
-template <typename ObjectType>
-ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
-    RefIDMap<ObjectType>* map,
-    int32_t ipc_return_object_id) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  ObjectType* return_object = map->Lookup(ipc_return_object_id);
-  if (!return_object) {
-    NOTREACHED() << "Uh oh, couldn't find object with id "
-                 << ipc_return_object_id;
-    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_GET_OR_TERMINATE);
-  }
-  return return_object;
-}
-
-template <typename MapType>
-void IndexedDBDispatcherHost::DestroyObject(MapType* map,
-                                            int32_t ipc_object_id) {
-  GetOrTerminateProcess(map, ipc_object_id);
-  map->Remove(ipc_object_id);
-}
-
-//////////////////////////////////////////////////////////////////////
-// IndexedDBDispatcherHost::CursorDispatcherHost
-//
-
-IndexedDBDispatcherHost::CursorDispatcherHost::CursorDispatcherHost(
-    IndexedDBDispatcherHost* parent)
-    : parent_(parent) {
-}
-
-IndexedDBDispatcherHost::CursorDispatcherHost::~CursorDispatcherHost() {}
-
-bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(
-      IndexedDBDispatcherHost::CursorDispatcherHost, message)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorAdvance, OnAdvance)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetchReset, OnPrefetchReset)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDestroyed, OnDestroyed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  DCHECK(!handled ||
-         parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-
-  return handled;
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
-    int32_t ipc_cursor_id,
-    int32_t ipc_thread_id,
-    int32_t ipc_callbacks_id,
-    uint32_t count) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBCursor* idb_cursor =
-      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
-  if (!idb_cursor)
-    return;
-
-  idb_cursor->Advance(
-      count,
-      new IndexedDBCallbacks(
-          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
-    int32_t ipc_cursor_id,
-    int32_t ipc_thread_id,
-    int32_t ipc_callbacks_id,
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBCursor* idb_cursor =
-      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
-  if (!idb_cursor)
-    return;
-
-  idb_cursor->Continue(key.IsValid() ? base::MakeUnique<IndexedDBKey>(key)
-                                     : std::unique_ptr<IndexedDBKey>(),
-                       primary_key.IsValid()
-                           ? base::MakeUnique<IndexedDBKey>(primary_key)
-                           : std::unique_ptr<IndexedDBKey>(),
-                       new IndexedDBCallbacks(parent_, ipc_thread_id,
-                                              ipc_callbacks_id, ipc_cursor_id));
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
-    int32_t ipc_cursor_id,
-    int32_t ipc_thread_id,
-    int32_t ipc_callbacks_id,
-    int n) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBCursor* idb_cursor =
-      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
-  if (!idb_cursor)
-    return;
-
-  idb_cursor->PrefetchContinue(
-      n,
-      new IndexedDBCallbacks(
-          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
-    int32_t ipc_cursor_id,
-    int used_prefetches,
-    int unused_prefetches) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  IndexedDBCursor* idb_cursor =
-      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
-  if (!idb_cursor)
-    return;
-
-  leveldb::Status s =
-      idb_cursor->PrefetchReset(used_prefetches, unused_prefetches);
-  // TODO(cmumford): Handle this error (crbug.com/363397)
-  if (!s.ok())
-    DLOG(ERROR) << "Unable to reset prefetch";
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(
-    int32_t ipc_object_id) {
-  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
-  parent_->DestroyObject(&map_, ipc_object_id);
 }
 
 }  // namespace content

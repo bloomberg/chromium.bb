@@ -14,21 +14,25 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
-class ThreadSafeSender;
 
 class CONTENT_EXPORT WebIDBCursorImpl
     : NON_EXPORTED_BASE(public blink::WebIDBCursor) {
  public:
-  WebIDBCursorImpl(int32_t ipc_cursor_id,
+  WebIDBCursorImpl(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
                    int64_t transaction_id,
-                   ThreadSafeSender* thread_safe_sender);
+                   scoped_refptr<base::SingleThreadTaskRunner> io_runner);
   ~WebIDBCursorImpl() override;
 
   void advance(unsigned long count, blink::WebIDBCallbacks* callback) override;
@@ -58,13 +62,17 @@ class CONTENT_EXPORT WebIDBCursorImpl
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchReset);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
 
+  class IOThreadHelper;
+
   enum { kInvalidCursorId = -1 };
   enum { kPrefetchContinueThreshold = 2 };
   enum { kMinPrefetchAmount = 5 };
   enum { kMaxPrefetchAmount = 100 };
 
-  int32_t ipc_cursor_id_;
   int64_t transaction_id_;
+
+  IOThreadHelper* helper_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
   // Prefetch cache.
   std::deque<IndexedDBKey> prefetch_keys_;
@@ -83,7 +91,9 @@ class CONTENT_EXPORT WebIDBCursorImpl
   // Number of items to request in next prefetch.
   int prefetch_amount_;
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  base::WeakPtrFactory<WebIDBCursorImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImpl);
 };
 
 }  // namespace content

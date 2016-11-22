@@ -14,7 +14,7 @@ class WebIDBCallbacks;
 
 namespace content {
 
-class ThreadSafeSender;
+class WebIDBCursorImpl;
 
 // Implements the child-process end of the pipe used to deliver callbacks. It
 // is owned by the IO thread. |callback_runner_| is used to post tasks back to
@@ -29,8 +29,8 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
    public:
     InternalState(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
                   int64_t transaction_id,
-                  scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-                  scoped_refptr<ThreadSafeSender> thread_safe_sender);
+                  const base::WeakPtr<WebIDBCursorImpl>& cursor,
+                  scoped_refptr<base::SingleThreadTaskRunner> io_runner);
     ~InternalState();
 
     void Error(int32_t code, const base::string16& message);
@@ -43,11 +43,17 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
                        const content::IndexedDBDatabaseMetadata& metadata);
     void SuccessDatabase(indexed_db::mojom::DatabaseAssociatedPtrInfo database,
                          const content::IndexedDBDatabaseMetadata& metadata);
-    void SuccessCursor(int32_t cursor_id,
+    void SuccessCursor(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
                        const IndexedDBKey& key,
                        const IndexedDBKey& primary_key,
                        indexed_db::mojom::ValuePtr value);
     void SuccessValue(indexed_db::mojom::ReturnValuePtr value);
+    void SuccessCursorContinue(const IndexedDBKey& key,
+                               const IndexedDBKey& primary_key,
+                               indexed_db::mojom::ValuePtr value);
+    void SuccessCursorPrefetch(const std::vector<IndexedDBKey>& keys,
+                               const std::vector<IndexedDBKey>& primary_keys,
+                               std::vector<indexed_db::mojom::ValuePtr> values);
     void SuccessArray(std::vector<indexed_db::mojom::ReturnValuePtr> values);
     void SuccessKey(const IndexedDBKey& key);
     void SuccessInteger(int64_t value);
@@ -56,16 +62,16 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
    private:
     std::unique_ptr<blink::WebIDBCallbacks> callbacks_;
     int64_t transaction_id_;
+    base::WeakPtr<WebIDBCursorImpl> cursor_;
     scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
-    scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
 
   IndexedDBCallbacksImpl(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
                          int64_t transaction_id,
-                         scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-                         scoped_refptr<ThreadSafeSender> thread_safe_sender);
+                         const base::WeakPtr<WebIDBCursorImpl>& cursor,
+                         scoped_refptr<base::SingleThreadTaskRunner> io_runner);
   ~IndexedDBCallbacksImpl() override;
 
   // indexed_db::mojom::Callbacks implementation:
@@ -81,11 +87,18 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
   void SuccessDatabase(
       indexed_db::mojom::DatabaseAssociatedPtrInfo database_info,
       const content::IndexedDBDatabaseMetadata& metadata) override;
-  void SuccessCursor(int32_t cursor_id,
+  void SuccessCursor(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
                      const IndexedDBKey& key,
                      const IndexedDBKey& primary_key,
                      indexed_db::mojom::ValuePtr value) override;
   void SuccessValue(indexed_db::mojom::ReturnValuePtr value) override;
+  void SuccessCursorContinue(const IndexedDBKey& key,
+                             const IndexedDBKey& primary_key,
+                             indexed_db::mojom::ValuePtr value) override;
+  void SuccessCursorPrefetch(
+      const std::vector<IndexedDBKey>& keys,
+      const std::vector<IndexedDBKey>& primary_keys,
+      std::vector<indexed_db::mojom::ValuePtr> values) override;
   void SuccessArray(
       std::vector<indexed_db::mojom::ReturnValuePtr> values) override;
   void SuccessKey(const IndexedDBKey& key) override;
