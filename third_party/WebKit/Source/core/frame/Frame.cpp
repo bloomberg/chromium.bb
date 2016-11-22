@@ -207,35 +207,44 @@ bool Frame::canNavigate(const Frame& targetFrame) {
 
 bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
                                            String& reason) {
+  if (&targetFrame == this)
+    return true;
+
   if (securityContext()->isSandboxed(SandboxNavigation)) {
-    // Sandboxed frames can navigate their own children.
-    if (targetFrame.tree().isDescendantOf(this))
-      return true;
-
-    // They can also navigate popups, if the 'allow-sandbox-escape-via-popup'
-    // flag is specified.
-    if (targetFrame == targetFrame.tree().top() &&
-        targetFrame.tree().top() != tree().top() &&
-        !securityContext()->isSandboxed(
-            SandboxPropagatesToAuxiliaryBrowsingContexts))
-      return true;
-
-    // Top navigation can be opted-in.
-    if (!securityContext()->isSandboxed(SandboxTopNavigation) &&
-        targetFrame == tree().top())
-      return true;
-
-    // Otherwise, block the navigation.
-    if (securityContext()->isSandboxed(SandboxTopNavigation) &&
-        targetFrame == tree().top())
-      reason =
-          "The frame attempting navigation of the top-level window is "
-          "sandboxed, but the 'allow-top-navigation' flag is not set.";
-    else
+    if (!targetFrame.tree().isDescendantOf(this) &&
+        !targetFrame.isMainFrame()) {
       reason =
           "The frame attempting navigation is sandboxed, and is therefore "
           "disallowed from navigating its ancestors.";
-    return false;
+      return false;
+    }
+
+    // Sandboxed frames can also navigate popups, if the
+    // 'allow-sandbox-escape-via-popup' flag is specified, or if
+    // 'allow-popups' flag is specified, or if the
+    if (targetFrame.isMainFrame() && targetFrame != tree().top() &&
+        securityContext()->isSandboxed(
+            SandboxPropagatesToAuxiliaryBrowsingContexts) &&
+        (securityContext()->isSandboxed(SandboxPopups) ||
+         targetFrame.client()->opener() != this)) {
+      reason =
+          "The frame attempting navigation is sandboxed and is trying "
+          "to navigate a popup, but is not the popup's opener and is not "
+          "set to propagate sandboxing to popups.";
+      return false;
+    }
+
+    // Top navigation is forbidden unless opted-in. allow-top-navigation
+    // will also skips origin checks.
+    if (targetFrame == tree().top()) {
+      if (securityContext()->isSandboxed(SandboxTopNavigation)) {
+        reason =
+            "The frame attempting navigation of the top-level window is "
+            "sandboxed, but the 'allow-top-navigation' flag is not set.";
+        return false;
+      }
+      return true;
+    }
   }
 
   ASSERT(securityContext()->getSecurityOrigin());
