@@ -276,26 +276,26 @@ void PerformanceMonitor::didCallFunction(v8::Local<v8::Function> function) {
 }
 
 void PerformanceMonitor::willUpdateLayout() {
-  if (m_scriptDepth && !m_layoutDepth)
+  if (m_thresholds[kLongLayout] && m_scriptDepth && !m_layoutDepth)
     m_layoutStartTime = WTF::monotonicallyIncreasingTime();
   ++m_layoutDepth;
 }
 
 void PerformanceMonitor::didUpdateLayout() {
   --m_layoutDepth;
-  if (m_scriptDepth && !m_layoutDepth) {
+  if (m_thresholds[kLongLayout] && m_scriptDepth && !m_layoutDepth) {
     m_perTaskStyleAndLayoutTime +=
         WTF::monotonicallyIncreasingTime() - m_layoutStartTime;
   }
 }
 
 void PerformanceMonitor::willRecalculateStyle() {
-  if (m_scriptDepth)
+  if (m_thresholds[kLongLayout] && m_scriptDepth)
     m_styleStartTime = WTF::monotonicallyIncreasingTime();
 }
 
 void PerformanceMonitor::didRecalculateStyle() {
-  if (m_scriptDepth) {
+  if (m_thresholds[kLongLayout] && m_scriptDepth) {
     m_perTaskStyleAndLayoutTime +=
         WTF::monotonicallyIncreasingTime() - m_styleStartTime;
   }
