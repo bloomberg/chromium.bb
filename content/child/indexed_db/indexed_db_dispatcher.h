@@ -127,16 +127,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorTransactionId);
 
-  // Looking up move-only entries in an std::unordered_set and removing them
-  // with out freeing them seems to be impossible so use a map instead so that
-  // the key type can remain a raw pointer.
-  using CallbackStateSet = std::unordered_map<
-      IndexedDBCallbacksImpl::InternalState*,
-      std::unique_ptr<IndexedDBCallbacksImpl::InternalState>>;
-  using DatabaseCallbackStateSet =
-      std::unordered_map<blink::WebIDBDatabaseCallbacks*,
-                         std::unique_ptr<blink::WebIDBDatabaseCallbacks>>;
-
   static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
   template <typename T>
@@ -174,8 +164,10 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   // destroyed on thread exit if the Mojo pipe is not yet closed. Otherwise the
   // object will leak because the thread's task runner is no longer executing
   // tasks.
-  CallbackStateSet mojo_owned_callback_state_;
-  DatabaseCallbackStateSet mojo_owned_database_callback_state_;
+  std::unordered_set<IndexedDBCallbacksImpl::InternalState*>
+      mojo_owned_callback_state_;
+  std::unordered_set<blink::WebIDBDatabaseCallbacks*>
+      mojo_owned_database_callback_state_;
 
   // Maps the ipc_callback_id from an open cursor request to the request's
   // transaction_id. Used to assign the transaction_id to the WebIDBCursorImpl
