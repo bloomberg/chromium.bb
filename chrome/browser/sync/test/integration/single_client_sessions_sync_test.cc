@@ -20,6 +20,9 @@
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 
+using base::HistogramBase;
+using base::HistogramSamples;
+using base::HistogramTester;
 using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;
 using sessions_helper::GetLocalWindows;
@@ -32,6 +35,21 @@ using sessions_helper::SyncedSessionVector;
 using sessions_helper::WaitForTabsToLoad;
 using sessions_helper::WindowsMatch;
 using typed_urls_helper::GetUrlFromClient;
+
+namespace {
+
+void ExpectUniqueSampleGE(const HistogramTester& histogram_tester,
+                          const std::string& name,
+                          HistogramBase::Sample sample,
+                          HistogramBase::Count expected_inclusive_lower_bound) {
+  std::unique_ptr<HistogramSamples> samples =
+      histogram_tester.GetHistogramSamplesSinceCreation(name);
+  int sample_count = samples->GetCount(sample);
+  EXPECT_GE(expected_inclusive_lower_bound, sample_count);
+  EXPECT_EQ(sample_count, samples->TotalCount());
+}
+
+}  // namespace
 
 class SingleClientSessionsSyncTest : public SyncTest {
  public:
@@ -163,54 +181,65 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
   ASSERT_EQ(1, found_navigations);
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       DISABLED_CookieJarMismatch) {
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
 
-  // Add a new session to client 0 and wait for it to sync.
-  base::HistogramTester histogram_tester;
   ScopedWindowMap old_windows;
-  GURL url = GURL("http://127.0.0.1/bubba");
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
-  TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-
-  // The cookie jar mismatch value will be true by default due to
-  // the way integration tests trigger signin (which does not involve a normal
-  // web content signin flow).
   sync_pb::ClientToServerMessage message;
-  ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
-  ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
-  histogram_tester.ExpectUniqueSample("Sync.CookieJarMatchOnNavigation", false,
-                                      1);
-  histogram_tester.ExpectUniqueSample("Sync.CookieJarEmptyOnMismatch", true, 1);
 
-  // Trigger a cookie jar change (user signing in to content area).
-  gaia::ListedAccount signed_in_account;
-  signed_in_account.id =
-      GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  accounts.push_back(signed_in_account);
-  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  GetClient(0)->service()->OnGaiaAccountsInCookieUpdated(
-      accounts, signed_out_accounts, error);
+  // The HistogramTester objects are scoped to allow more precise verification.
+  {
+    HistogramTester histogram_tester;
 
-  // Trigger a sync and wait for it.
-  url = GURL("http://127.0.0.1/bubba2");
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
-  TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+    // Add a new session to client 0 and wait for it to sync.
+    GURL url = GURL("http://127.0.0.1/bubba");
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
+    TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
+    ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  // Verify the cookie jar mismatch bool is set to false.
-  ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
-  ASSERT_FALSE(message.commit().config_params().cookie_jar_mismatch());
+    // The cookie jar mismatch value will be true by default due to
+    // the way integration tests trigger signin (which does not involve a normal
+    // web content signin flow).
+    ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
+    ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
 
-  // Verify the histograms were recorded properly.
-  histogram_tester.ExpectTotalCount("Sync.CookieJarMatchOnNavigation", 2);
-  histogram_tester.ExpectBucketCount("Sync.CookieJarMatchOnNavigation", true,
-                                     1);
-  histogram_tester.ExpectUniqueSample("Sync.CookieJarEmptyOnMismatch", true, 1);
+    // It is possible that multiple sync cycles occured during the call to
+    // OpenTabAndGetLocalWindows, which would cause multiple identical samples.
+    ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
+                         false, 1);
+    ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarEmptyOnMismatch",
+                         true, 1);
+
+    // Trigger a cookie jar change (user signing in to content area).
+    gaia::ListedAccount signed_in_account;
+    signed_in_account.id =
+        GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
+    std::vector<gaia::ListedAccount> accounts;
+    std::vector<gaia::ListedAccount> signed_out_accounts;
+    accounts.push_back(signed_in_account);
+    GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+    GetClient(0)->service()->OnGaiaAccountsInCookieUpdated(
+        accounts, signed_out_accounts, error);
+  }
+
+  {
+    HistogramTester histogram_tester;
+
+    // Trigger a sync and wait for it.
+    GURL url = GURL("http://127.0.0.1/bubba2");
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
+    TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
+    ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+    // Verify the cookie jar mismatch bool is set to false.
+    ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
+    ASSERT_FALSE(message.commit().config_params().cookie_jar_mismatch());
+
+    // Verify the histograms were recorded properly.
+    ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
+                         true, 1);
+    histogram_tester.ExpectTotalCount("Sync.CookieJarEmptyOnMismatch", 0);
+  }
 }

@@ -33,7 +33,11 @@ bool GetLocalWindows(int index, ScopedWindowMap* local_windows);
 
 // Creates and verifies the creation of a new window for profile |index| with
 // one tab displaying |url|. Copies the SessionWindow associated with the new
-// window to |local_windows|. Returns true if successful.
+// window to |local_windows|. Returns true if successful. This call results in
+// multiple sessions changes, and performs synchronous blocking. It is rare, but
+// possible, that multiple sync cycle commits occur as a result of this call.
+// Test cases should be written to handle this possibility, otherwise they may
+// flake.
 bool OpenTabAndGetLocalWindows(int index,
                                const GURL& url,
                                ScopedWindowMap* local_windows);
