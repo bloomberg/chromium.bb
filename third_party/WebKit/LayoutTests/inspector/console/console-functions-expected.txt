@@ -1,51 +1,149 @@
-CONSOLE MESSAGE: line 13: function simple() {}
-CONSOLE MESSAGE: line 14: function simple() {}
-CONSOLE MESSAGE: line 15: async function asyncSimple() {}
-CONSOLE MESSAGE: line 16: async function asyncSimple() {}
-CONSOLE MESSAGE: line 17: function* genSimple() {}
-CONSOLE MESSAGE: line 18: function* genSimple() {}
-CONSOLE MESSAGE: line 21: [object Object]
-CONSOLE MESSAGE: line 22: [object Object]
+CONSOLE MESSAGE: line 24: function simple() {}
+CONSOLE MESSAGE: line 25: function simple() {}
+CONSOLE MESSAGE: line 24: async function asyncSimple() {}
+CONSOLE MESSAGE: line 25: async function asyncSimple() {}
+CONSOLE MESSAGE: line 24: function* genSimple() {}
+CONSOLE MESSAGE: line 25: function* genSimple() {}
+CONSOLE MESSAGE: line 24: function (){}
+CONSOLE MESSAGE: line 25: function (){}
+CONSOLE MESSAGE: line 24: function (x, y){}
+CONSOLE MESSAGE: line 25: function (x, y){}
+CONSOLE MESSAGE: line 24: function namedArgs(x) {}
+CONSOLE MESSAGE: line 25: function namedArgs(x) {}
+CONSOLE MESSAGE: line 24: function namedArgs2(x, y) {}
+CONSOLE MESSAGE: line 25: function namedArgs2(x, y) {}
+CONSOLE MESSAGE: line 24: function ({}) {}
+CONSOLE MESSAGE: line 25: function ({}) {}
+CONSOLE MESSAGE: line 24: function* whitespace(  x  )    {   }
+CONSOLE MESSAGE: line 25: function* whitespace(  x  )    {   }
+CONSOLE MESSAGE: line 24: async function whitespace2(  x  ,  y  ,  z  )    {   }
+CONSOLE MESSAGE: line 25: async function whitespace2(  x  ,  y  ,  z  )    {   }
+CONSOLE MESSAGE: line 28: [object Object]
+CONSOLE MESSAGE: line 29: [object Object]
 Tests that console logging different types of functions correctly.
 
-console-functions.html:13 function simple() {}
-console-functions.html:14 function simple()
+console-functions.html:24 function simple() {}
+console-functions.html:25 function simple()
     arguments: null
     caller: null
     length: 0
     name: "simple"
     prototype: Object
-    __proto__: ()
-    [[FunctionLocation]]: console-functions.html:9
+    __proto__: function ()
+    [[FunctionLocation]]: console-functions.html:10
     [[Scopes]]: Scopes[1]
-console-functions.html:15 async function asyncSimple() {}
-console-functions.html:16 async function asyncSimple()
+console-functions.html:24 async function asyncSimple() {}
+console-functions.html:25 async function asyncSimple()
     arguments: (...)
     caller: (...)
     length: 0
     name: "asyncSimple"
     __proto__: AsyncFunction
-    [[FunctionLocation]]: console-functions.html:10
+    [[FunctionLocation]]: console-functions.html:11
     [[Scopes]]: Scopes[1]
-console-functions.html:17 function* genSimple() {}
-console-functions.html:18 function* genSimple()
+console-functions.html:24 function* genSimple() {}
+console-functions.html:25 function* genSimple()
     arguments: (...)
     caller: (...)
     length: 0
     name: "genSimple"
     prototype: Generator
     __proto__: GeneratorFunction
-    [[FunctionLocation]]: console-functions.html:11
+    [[FunctionLocation]]: console-functions.html:12
     [[IsGenerator]]: true
     [[Scopes]]: Scopes[1]
-console-functions.html:21 Object
-    func1: simple()
-    func2: asyncSimple()
-    func3: genSimple()
+console-functions.html:24 function (){}
+console-functions.html:25 function anonymous()
+    arguments: null
+    caller: null
+    length: 0
+    name: ""
+    prototype: Object
+    __proto__: function ()
+    [[FunctionLocation]]: console-functions.html:13
+    [[Scopes]]: Scopes[1]
+console-functions.html:24 function (x, y){}
+console-functions.html:25 function anonymous(x, y)
+    arguments: null
+    caller: null
+    length: 2
+    name: ""
+    prototype: Object
+    __proto__: function ()
+    [[FunctionLocation]]: console-functions.html:14
+    [[Scopes]]: Scopes[1]
+console-functions.html:24 function namedArgs(x) {}
+console-functions.html:25 function namedArgs(x)
+    arguments: null
+    caller: null
+    length: 1
+    name: "namedArgs"
+    prototype: Object
+    __proto__: function ()
+    [[FunctionLocation]]: console-functions.html:15
+    [[Scopes]]: Scopes[1]
+console-functions.html:24 function namedArgs2(x, y) {}
+console-functions.html:25 function namedArgs2(x, y)
+    arguments: null
+    caller: null
+    length: 2
+    name: "namedArgs2"
+    prototype: Object
+    __proto__: function ()
+    [[FunctionLocation]]: console-functions.html:16
+    [[Scopes]]: Scopes[1]
+console-functions.html:24 function ({}) {}
+console-functions.html:25 function anonymous({})
+    arguments: null
+    caller: null
+    length: 1
+    name: ""
+    prototype: Object
+    __proto__: function ()
+    [[FunctionLocation]]: console-functions.html:17
+    [[Scopes]]: Scopes[1]
+console-functions.html:24 function* whitespace(  x  )    {   }
+console-functions.html:25 function* whitespace(  x  )
+    arguments: (...)
+    caller: (...)
+    length: 1
+    name: "whitespace"
+    prototype: Generator
+    __proto__: GeneratorFunction
+    [[FunctionLocation]]: console-functions.html:18
+    [[IsGenerator]]: true
+    [[Scopes]]: Scopes[1]
+console-functions.html:24 async function whitespace2(  x  ,  y  ,  z  )    {   }
+console-functions.html:25 async function whitespace2(  x  ,  y  ,  z  )
+    arguments: (...)
+    caller: (...)
+    length: 3
+    name: "whitespace2"
+    __proto__: AsyncFunction
+    [[FunctionLocation]]: console-functions.html:19
+    [[Scopes]]: Scopes[1]
+console-functions.html:28 Object
+    func0: function simple()
+    func1: async function asyncSimple()
+    func2: function* genSimple()
+    func3: function ()
+    func4: function (x, y)
+    func5: function namedArgs(x)
+    func6: function namedArgs2(x, y)
+    func7: function ({})
+    func8: function* whitespace(  x  )
+    func9: async function whitespace2(  x  ,  y  ,  z  )
     __proto__: Object
-console-functions.html:22 Object
-    func1: simple()
-    func2: asyncSimple()
-    func3: genSimple()
+console-functions.html:29 Object
+    func0: function simple()
+    func1: async function asyncSimple()
+    func2: function* genSimple()
+    func3: function ()
+    func4: function (x, y)
+    func5: function namedArgs(x)
+    func6: function namedArgs2(x, y)
+    func7: function ({})
+    func8: function* whitespace(  x  )
+    func9: async function whitespace2(  x  ,  y  ,  z  )
     __proto__: Object
 

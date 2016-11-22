@@ -47,7 +47,50 @@ function onload()
         console.dir(c.entries());
     });
 
-    console.dir({ a: () => { /* function Incorrect() */ } });
+    class FooClass {
+        jump(x) { return 1 }
+        badArrow(x = a => 2) { return "looooooooooooooooooooooooooooooooooooooooooooooooooooong" }
+    }
+    var fooInstance = new FooClass();
+
+    var fns = [
+        class{method(){ return 1 }},
+        class        classWithWhitespace     {       method(){ return 1 }     },
+        FooClass,
+        fooInstance.jump,
+        class BarClass extends FooClass{},
+        class BarClass2 extends class base{} {},
+        class BarClass3 extends function base2(a, b) {} {},
+        _ => { return 1 },
+        (x) => { return 1 },
+        (x, y, z) => { return 1 },
+        ({}) => { return 1 },
+        ([]) => { return 1 },
+        () => { return "short" },
+        () => { return "looooooooooooooooooooooooooooooooooooooooooooooooooooong" },
+        (...x) => { return 1 },
+        (x, y, ...z) => { return 1 },
+        function (...x) { return 1 },
+        function (x, y, ...z) { return 1 },
+        function({a}){ return 1 },
+        function([a]){ return 1 },
+        function({a, b}){ return 1 },
+        function(...{a}){ return 1 },
+        function(a = (1), b){ return 1 },
+        function(a = {x: (1)}, b){ return 1 },
+        function(a = (x) => { return 1 }, b){ return 2 },
+        function({a: b}){ return 1 },
+        function(c = ")", {a: b}){ return 1 }
+    ];
+    console.dir(fns);
+
+    var badFns = [
+        fooInstance.badArrow,
+        function(a = ") {", b){ return 1 },
+        function(a = function(){ return 1 }, b){ return 2 },
+        function(a = class{ constructor(){} }){ return 2 }
+    ];
+    console.dir(badFns);
 
     runTest();
 }

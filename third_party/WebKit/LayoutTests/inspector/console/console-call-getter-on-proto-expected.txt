@@ -5,7 +5,7 @@ console-call-getter-on-proto.html:21 B
     foo: 239
     value: 239
     __proto__: A
-        constructor: ()
+        constructor: function ()
         foo: 239
         __proto__: Object
 

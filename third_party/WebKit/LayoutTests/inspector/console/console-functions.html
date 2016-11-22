@@ -6,18 +6,25 @@
 
 function onload()
 {
-    function simple() {}
-    async function asyncSimple() {}
-    function* genSimple() {}
+    var functions = [
+        function simple() {},
+        async function asyncSimple() {},
+        function* genSimple() {},
+        function(){},
+        function(x, y){},
+        function namedArgs(x) {},
+        function namedArgs2(x, y) {},
+        function ({}) {},
+        function   *    whitespace   (  x  )    {   },
+        async    function    whitespace2   (  x  ,  y  ,  z  )    {   },
+    ];
 
-    console.log(simple);
-    console.dir(simple);
-    console.log(asyncSimple);
-    console.dir(asyncSimple);
-    console.log(genSimple);
-    console.dir(genSimple);
-
-    var obj = { func1: simple, func2: asyncSimple, func3: genSimple };
+    var obj = {};
+    for (var i = 0; i < functions.length; ++i) {
+        console.log(functions[i]);
+        console.dir(functions[i]);
+        obj["func" + i] = functions[i];
+    }
     console.log(obj);
     console.dir(obj);
 

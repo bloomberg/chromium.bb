@@ -110,7 +110,7 @@ console-format-es6.html:11 Object
     a: Symbol()
     getter: (...)
     Symbol(a): 2
-    get getter: getter()
+    get getter: function getter()
     __proto__: Object
 console-format-es6.html:12 Array[1]
     0: Object
@@ -121,7 +121,7 @@ Object
     a: Symbol()
     getter: (...)
     Symbol(a): 2
-    get getter: getter()
+    get getter: function getter()
     __proto__: Object
 console-format-es6.html:11 Map
     size: (...)

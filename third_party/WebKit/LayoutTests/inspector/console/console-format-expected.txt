@@ -370,7 +370,7 @@ globals[7]
     <p id="p">Tests that console logging dumps proper messages.</p>
 console-format.html:7 function () { return 1; }
 console-format.html:8 Array[1]
-    0: ()
+    0: function ()
     length: 1
     __proto__: Array[0]
 globals[8]
@@ -379,7 +379,7 @@ console-format.html:7 function () {
         return 2;
     }
 console-format.html:8 Array[1]
-    0: ()
+    0: function ()
     length: 1
     __proto__: Array[0]
 globals[9]
@@ -440,7 +440,7 @@ globals[16]
     id="x"
 console-format.html:7 Object
     length: (...)
-    get length: length()
+    get length: function length()
     __proto__: Object
 console-format.html:8 Array[1]
     0: Object
@@ -449,7 +449,7 @@ console-format.html:8 Array[1]
 globals[17]
 Object
     length: (...)
-    get length: length()
+    get length: function length()
     __proto__: Object
 console-format.html:7 NaN
 console-format.html:8 Array[1]
@@ -501,7 +501,7 @@ globals[22]
 Object
     __proto__: Object
 console-format.html:7 Array[1]
-    0: ()
+    0: function ()
     length: 1
     __proto__: Array[0]
 console-format.html:8 Array[1]
@@ -510,7 +510,7 @@ console-format.html:8 Array[1]
     __proto__: Array[0]
 globals[23]
 Array[1]
-    0: ()
+    0: function ()
     length: 1
     __proto__: Array[0]
 console-format.html:7 Object
@@ -534,9 +534,9 @@ globals[25]
     <svg id="svg-node"></svg>
 console-format.html:7 Object
     bar: (...)
-    getFoo: ()
-    get bar: ()
-    set bar: (x)
+    getFoo: function ()
+    get bar: function ()
+    set bar: function (x)
     __proto__: Object
 console-format.html:8 Array[1]
     0: Object
@@ -545,9 +545,9 @@ console-format.html:8 Array[1]
 globals[26]
 Object
     bar: (...)
-    getFoo: ()
-    get bar: ()
-    set bar: (x)
+    getFoo: function ()
+    get bar: function ()
+    set bar: function (x)
     __proto__: Object
 console-format.html:7 -0
 console-format.html:8 Array[1]
@@ -567,48 +567,48 @@ Object
     No Properties
 console-format.html:7 function Object() { [native code] }
 console-format.html:8 Array[1]
-    0: Object()
+    0: function Object()
     length: 1
     __proto__: Array[0]
 globals[29]
 function Object() { [native code] }
 console-format.html:7 Object
-    __defineGetter__: __defineGetter__()
-    __defineSetter__: __defineSetter__()
-    __lookupGetter__: __lookupGetter__()
-    __lookupSetter__: __lookupSetter__()
-    constructor: Object()
-    hasOwnProperty: hasOwnProperty()
-    isPrototypeOf: isPrototypeOf()
-    propertyIsEnumerable: propertyIsEnumerable()
-    toLocaleString: toLocaleString()
-    toString: toString()
-    valueOf: valueOf()
-    get __proto__: __proto__()
-    set __proto__: __proto__()
+    __defineGetter__: function __defineGetter__()
+    __defineSetter__: function __defineSetter__()
+    __lookupGetter__: function __lookupGetter__()
+    __lookupSetter__: function __lookupSetter__()
+    constructor: function Object()
+    hasOwnProperty: function hasOwnProperty()
+    isPrototypeOf: function isPrototypeOf()
+    propertyIsEnumerable: function propertyIsEnumerable()
+    toLocaleString: function toLocaleString()
+    toString: function toString()
+    valueOf: function valueOf()
+    get __proto__: function __proto__()
+    set __proto__: function __proto__()
 console-format.html:8 Array[1]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[30]
 Object
-    __defineGetter__: __defineGetter__()
-    __defineSetter__: __defineSetter__()
-    __lookupGetter__: __lookupGetter__()
-    __lookupSetter__: __lookupSetter__()
-    constructor: Object()
-    hasOwnProperty: hasOwnProperty()
-    isPrototypeOf: isPrototypeOf()
-    propertyIsEnumerable: propertyIsEnumerable()
-    toLocaleString: toLocaleString()
-    toString: toString()
-    valueOf: valueOf()
-    get __proto__: __proto__()
-    set __proto__: __proto__()
+    __defineGetter__: function __defineGetter__()
+    __defineSetter__: function __defineSetter__()
+    __lookupGetter__: function __lookupGetter__()
+    __lookupSetter__: function __lookupSetter__()
+    constructor: function Object()
+    hasOwnProperty: function hasOwnProperty()
+    isPrototypeOf: function isPrototypeOf()
+    propertyIsEnumerable: function propertyIsEnumerable()
+    toLocaleString: function toLocaleString()
+    toString: function toString()
+    valueOf: function valueOf()
+    get __proto__: function __proto__()
+    set __proto__: function __proto__()
 console-format.html:7 function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 Array[1]
-    0: ( /**/ foo/**/, /*/**/bar,     /**/baz)
+    0: function ( /**/ foo/**/, /*/**/bar,     /**/baz)
     length: 1
     __proto__: Array[0]
 globals[31]
