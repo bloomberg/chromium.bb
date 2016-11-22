@@ -16,7 +16,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
   }
 
-  static_library("nccopy") {
+  source_set("nccopy") {
     sources = [
       "nccopycode.c",
     ]

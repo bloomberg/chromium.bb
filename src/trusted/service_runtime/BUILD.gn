@@ -16,7 +16,7 @@ source_set("sel_main") {
   ]
 }
 
-static_library("sel_main_chrome") {
+source_set("sel_main_chrome") {
   sources = [
     "sel_main_chrome.c",
   ]
@@ -88,7 +88,7 @@ if (current_toolchain == nacl_asm_toolchain) {
   }
 }
 
-static_library("sel") {
+source_set("sel") {
   sources = [
     "dyn_array.c",
     "elf_util.c",
