@@ -418,12 +418,15 @@ void ImageDocument::updateImageStyle() {
       imageStyle.append(AtomicString::number(tileSize));
       imageStyle.append("px;");
 
+      // Generating the checkerboard pattern this way is not exactly cheap.
+      // If rasterization performance becomes an issue, we could look at using
+      // a cheaper shader (e.g. pre-generate a scaled tile + base64-encode +
+      // inline dataURI => single bitmap shader).
       imageStyle.append(
-          "background-color: white;"
           "background-image:"
           "linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, "
           "#eee 75%, #eee 100%),"
-          "linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, "
+          "linear-gradient(45deg, #eee 25%, white 25%, white 75%, "
           "#eee 75%, #eee 100%);");
     }
   }
