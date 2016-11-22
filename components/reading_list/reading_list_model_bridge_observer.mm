@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/reading_list/reading_list_model_bridge_observer.h"
+#import "components/reading_list/reading_list_model_bridge_observer.h"
 
-#import "ios/chrome/browser/reading_list/reading_list_entry.h"
-#import "ios/chrome/browser/reading_list/reading_list_model.h"
+#import "components/reading_list/reading_list_entry.h"
+#import "components/reading_list/reading_list_model.h"
 
 ReadingListModelBridge::ReadingListModelBridge(
     id<ReadingListModelBridgeObserver> observer,

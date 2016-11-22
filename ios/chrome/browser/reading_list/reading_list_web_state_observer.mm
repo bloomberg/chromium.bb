@@ -7,8 +7,9 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/ptr_util.h"
+#include "components/reading_list/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/reading_list/reading_list_model.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -118,7 +119,9 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
     if (!entry)
       return;
     // TODO(crbug.com/664124) Actually load offline pages.
-    web::NavigationManager::WebLoadParams params(entry->DistilledURL());
+    GURL distilled_url =
+        reading_list::DistilledURLForPath(entry->DistilledPath());
+    web::NavigationManager::WebLoadParams params(distilled_url);
     params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     navigation_manager->LoadURLWithParams(params);
   }

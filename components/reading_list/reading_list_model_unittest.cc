@@ -5,8 +5,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
+#include "components/reading_list/reading_list_model_impl.h"
+#include "components/reading_list/reading_list_model_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -311,7 +311,7 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
       base::MakeUnique<ReadingListEntry>(GURL("http://example.com"), "sample");
   ASSERT_GT(sync_entry->UpdateTime(), local_update_time);
   int64_t sync_update_time = sync_entry->UpdateTime();
-  EXPECT_FALSE(sync_entry->DistilledURL().is_valid());
+  EXPECT_TRUE(sync_entry->DistilledPath().empty());
 
   EXPECT_EQ(model_->unread_size(), 1u);
   EXPECT_EQ(model_->read_size(), 0u);
@@ -552,7 +552,7 @@ TEST_F(ReadingListModelTest, UpdateReadDistilledPath) {
   model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
-  EXPECT_EQ(GURL("chrome://offline/distilled/page.html"), entry.DistilledURL());
+  EXPECT_EQ(base::FilePath("distilled/page.html"), entry.DistilledPath());
 }
 
 // Tests that the callback is called when the entry is unread.

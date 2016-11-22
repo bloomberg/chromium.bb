@@ -31,6 +31,7 @@ source_set("sync") {
     "//components/password_manager/core/browser",
     "//components/password_manager/sync/browser",
     "//components/prefs",
+    "//components/reading_list",
     "//components/search_engines",
     "//components/sessions",
     "//components/signin/core/browser",

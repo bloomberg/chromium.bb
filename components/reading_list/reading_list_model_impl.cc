@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
+#include "components/reading_list/reading_list_model_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
-#include "ios/chrome/browser/reading_list/reading_list_pref_names.h"
+#include "components/reading_list/reading_list_model_storage.h"
+#include "components/reading_list/reading_list_pref_names.h"
 #include "url/gurl.h"
 
 ReadingListModelImpl::ReadingListModelImpl()

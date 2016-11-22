@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
+#include "components/reading_list/reading_list_model_observer.h"
 #include "ios/chrome/browser/reading_list/url_downloader.h"
 #include "net/base/network_change_notifier.h"
 

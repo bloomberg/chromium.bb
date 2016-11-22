@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_entry.h"
+#include "components/reading_list/reading_list_entry.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "components/reading_list/proto/reading_list.pb.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
-#include "ios/chrome/browser/reading_list/proto/reading_list.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -52,7 +52,6 @@ TEST(ReadingListEntry, DistilledPathAndURL) {
   const base::FilePath distilled_path("distilled/page.html");
   e.SetDistilledPath(distilled_path);
   EXPECT_EQ(distilled_path, e.DistilledPath());
-  EXPECT_EQ(GURL("chrome://offline/distilled/page.html"), e.DistilledURL());
 }
 
 TEST(ReadingListEntry, DistilledState) {

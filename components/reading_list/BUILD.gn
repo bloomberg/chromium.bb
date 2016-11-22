@@ -6,25 +6,23 @@ source_set("reading_list") {
   sources = [
     "offline_url_utils.cc",
     "offline_url_utils.h",
-    "reading_list_download_service.cc",
-    "reading_list_download_service.h",
-    "reading_list_download_service_factory.cc",
-    "reading_list_download_service_factory.h",
+    "reading_list_entry.cc",
     "reading_list_entry.h",
+    "reading_list_model.cc",
     "reading_list_model.h",
     "reading_list_model_bridge_observer.h",
-    "reading_list_model_factory.cc",
-    "reading_list_model_factory.h",
+    "reading_list_model_bridge_observer.mm",
+    "reading_list_model_impl.cc",
     "reading_list_model_impl.h",
     "reading_list_model_observer.h",
     "reading_list_model_storage.h",
+    "reading_list_pref_names.cc",
     "reading_list_pref_names.h",
+    "reading_list_store.cc",
     "reading_list_store.h",
     "reading_list_store_delegate.h",
-    "reading_list_web_state_observer.h",
-    "reading_list_web_state_observer.mm",
-    "url_downloader.cc",
-    "url_downloader.h",
+    "reading_list_switches.cc",
+    "reading_list_switches.h",
   ]
   deps = [
     "//base",
@@ -32,15 +30,14 @@ source_set("reading_list") {
     "//components/keyed_service/ios",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/reading_list",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
+    "//components/sync",
+    "//components/sync/protocol",
     "//ios/web",
     "//net",
     "//url",
   ]
   public_deps = [
-    "//ios/chrome/browser/dom_distiller",
+    "//components/reading_list/proto",
   ]
 }
 
@@ -48,15 +45,16 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "offline_url_utils_unittest.cc",
-    "url_downloader_unittest.cc",
+    "reading_list_entry_unittest.cc",
+    "reading_list_model_unittest.cc",
+    "reading_list_store_unittest.cc",
   ]
   deps = [
     ":reading_list",
     "//base",
     "//base/test:test_support",
-    "//components/reading_list",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/dom_distiller",
+    "//components/sync:test_support_model",
+    "//components/sync/protocol",
     "//ios/web:test_support",
     "//testing/gtest",
     "//url",

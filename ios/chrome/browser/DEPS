@@ -52,6 +52,7 @@ include_rules = [
   "+components/profile_metrics",
   "+components/proxy_config",
   "+components/rappor",
+  "+components/reading_list",
   "+components/rlz",
   "+components/search",
   "+components/search_engines",

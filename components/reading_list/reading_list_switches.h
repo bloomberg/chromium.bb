@@ -1,0 +1,18 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_READING_LIST_READING_LIST_SWITCHED_H_
+#define COMPONENTS_READING_LIST_READING_LIST_SWITCHED_H_
+
+namespace reading_list {
+namespace switches {
+extern const char kEnableReadingList[];
+extern const char kDisableReadingList[];
+
+// Whether Reading List is enabled on this device.
+bool IsReadingListEnabled();
+}  // namespace switches
+}  // namespace reading_list
+
+#endif  // COMPONENTS_READING_LIST_READING_LIST_SWITCHED_H_

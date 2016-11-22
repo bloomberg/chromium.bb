@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_entry.h"
+#include "components/reading_list/reading_list_entry.h"
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
+#include "components/reading_list/offline_url_utils.h"
+#include "components/reading_list/proto/reading_list.pb.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
-#include "ios/chrome/browser/reading_list/proto/reading_list.pb.h"
 #include "net/base/backoff_entry_serializer.h"
 
 // The backoff time is the following: 10min, 10min, 1h, 2h, 2h..., starting
@@ -110,10 +110,6 @@ ReadingListEntry::DistillationState ReadingListEntry::DistilledState() const {
 
 const base::FilePath& ReadingListEntry::DistilledPath() const {
   return distilled_path_;
-}
-
-const GURL ReadingListEntry::DistilledURL() const {
-  return reading_list::DistilledURLForPath(distilled_path_);
 }
 
 base::TimeDelta ReadingListEntry::TimeUntilNextTry() const {

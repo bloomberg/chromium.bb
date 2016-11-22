@@ -26,6 +26,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/reading_list/reading_list_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -235,9 +236,9 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 
   // Populate command line flags from Reading List.
   if ([defaults boolForKey:@"EnableReadingList"]) {
-    command_line->AppendSwitch(switches::kEnableReadingList);
+    command_line->AppendSwitch(reading_list::switches::kEnableReadingList);
   } else {
-    command_line->AppendSwitch(switches::kDisableReadingList);
+    command_line->AppendSwitch(reading_list::switches::kDisableReadingList);
   }
 
   // Populate command line flag for Spotlight Actions.

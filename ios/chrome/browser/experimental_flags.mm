@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/reading_list/reading_list_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/web/public/web_view_creation_util.h"
@@ -102,12 +103,7 @@ bool IsTabSwitcherEnabled() {
 }
 
 bool IsReadingListEnabled() {
-  // Check if the experimental flag is forced on or off.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableReadingList)) {
-    return true;
-  }
-  return false;
+  return reading_list::switches::IsReadingListEnabled();
 }
 
 bool IsAllBookmarksEnabled() {

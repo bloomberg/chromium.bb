@@ -7,7 +7,7 @@
 
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
+#include "components/reading_list/reading_list_model_observer.h"
 
 namespace bookmarks {
 class BookmarkModel;

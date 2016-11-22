@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/reading_list/reading_list_store.h"
+#include "components/reading_list/reading_list_store.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "components/reading_list/proto/reading_list.pb.h"
+#include "components/reading_list/reading_list_model_impl.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -14,9 +16,6 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/accumulating_metadata_change_list.h"
 #include "components/sync/protocol/model_type_state.pb.h"
-#include "ios/chrome/browser/reading_list/proto/reading_list.pb.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
-#include "ios/web/public/web_thread.h"
 
 ReadingListStore::ReadingListStore(
     StoreFactoryFunction create_store_callback,
