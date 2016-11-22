@@ -4129,18 +4129,19 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
     // With ref-mv, clearing unused global motion models here is
     // unsafe, and we need to rely on the recode loop to do it
     // instead. See av1_find_mv_refs for details.
-    if (!cpi->global_motion_used[frame]) {
+    if (!cpi->global_motion_used[frame][0]) {
       set_default_gmparams(&cm->global_motion[frame]);
     }
 #endif
     write_global_motion_params(&cm->global_motion[frame],
                                cm->fc->global_motion_types_prob, w);
     /*
-    printf("Frame %d/%d: Enc Ref %d (used %d): %d %d %d %d\n",
+    printf("Frame %d/%d: Enc Ref %d (used %d/%d): %d %d %d %d\n",
            cm->current_video_frame, cm->show_frame, frame,
-           cpi->global_motion_used[frame], cm->global_motion[frame].wmmat[0],
-           cm->global_motion[frame].wmmat[1], cm->global_motion[frame].wmmat[2],
-           cm->global_motion[frame].wmmat[3]);
+           cpi->global_motion_used[frame][0], cpi->global_motion_used[frame][1],
+           cm->global_motion[frame].wmmat[0], cm->global_motion[frame].wmmat[1],
+           cm->global_motion[frame].wmmat[2],
+    cm->global_motion[frame].wmmat[3]);
            */
   }
 }

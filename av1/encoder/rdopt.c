@@ -4404,7 +4404,7 @@ static int GLOBAL_MOTION_RATE(const AV1_COMP *const cpi, int ref) {
   };
   const WarpedMotionParams *gm = &cpi->common.global_motion[(ref)];
   assert(gm->wmtype < GLOBAL_TRANS_TYPES);
-  if (cpi->global_motion_used[ref] >= gm_amortization_blks[gm->wmtype]) {
+  if (cpi->global_motion_used[ref][0] >= gm_amortization_blks[gm->wmtype]) {
     return 0;
   } else {
     const int cost = (gm_params_cost[gm->wmtype] << AV1_PROB_COST_SHIFT) +
