@@ -26,9 +26,6 @@ class ChromePluginPlaceholder final
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  // Check if Chrome participates in small content experiment.
-  static bool IsSmallContentFilterEnabled();
-
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,

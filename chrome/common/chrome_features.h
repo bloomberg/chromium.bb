@@ -44,8 +44,6 @@ extern const base::Feature kBackspaceGoesBackFeature;
 
 extern const base::Feature kBlockPromptsIfDismissedOften;
 
-extern const base::Feature kBlockSmallContent;
-
 extern const base::Feature kBrowserHangFixesExperiment;
 
 #if defined(OS_ANDROID)

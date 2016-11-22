@@ -87,11 +87,6 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
 }
 
 // static
-bool ChromePluginPlaceholder::IsSmallContentFilterEnabled() {
-  return base::FeatureList::IsEnabled(features::kBlockSmallContent);
-}
-
-// static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
     content::RenderFrame* render_frame,
     blink::WebLocalFrame* frame,

@@ -277,11 +277,8 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    // Although BlockSmallContent is redundant with the Field Trial testing
-    // configuration, the official builders don't use those, so enable it here.
     // Disable HTML5 By Default feature to test Plugin Power Saver specifically.
-    feature_list.InitWithFeatures({features::kBlockSmallContent},
-                                  {features::kPreferHtmlOverPlugins});
+    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
   }
 
  protected:
@@ -585,38 +582,14 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
 }
 
-// Separate test case that allows tiny plugins. This requires a separate test
-// case, because we need to initialize the renderer with a different feature
-// setting.
-class PluginPowerSaverAllowTinyBrowserTest
-    : public PluginPowerSaverBrowserTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    feature_list.InitWithFeatures(
-        {}, {features::kPreferHtmlOverPlugins, features::kBlockSmallContent});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list;
-};
-
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverAllowTinyBrowserTest,
-                       EssentialTinyPlugins) {
-  LoadHTML("/essential_tiny_plugin.html");
-
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_1");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_2");
-}
-
 // Separate test case with HTML By Default feature flag on.
 class PluginPowerSaverPreferHtmlBrowserTest
     : public PluginPowerSaverBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
-    // Although these are redundant with the Field Trial testing configuration,
-    // the official builders don't use those, so enable them here.
-    feature_list.InitWithFeatures(
-        {features::kBlockSmallContent, features::kPreferHtmlOverPlugins}, {});
+    // Although this is redundant with the Field Trial testing configuration,
+    // the official builders don't read that.
+    feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
   }
 
  private:

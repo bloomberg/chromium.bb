@@ -758,15 +758,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         PowerSaverInfo power_saver_info =
             PowerSaverInfo::Get(render_frame, power_saver_setting_on, params,
                                 info, frame->document().url());
-        // Prevent small plugins from loading by using a placeholder until
-        // we can determine the unobscured size of the object.
-        bool blocked_for_tinyness =
-            ChromePluginPlaceholder::IsSmallContentFilterEnabled() &&
-            power_saver_info.power_saver_enabled;
-
         if (power_saver_info.blocked_for_background_tab || is_prerendering ||
             !power_saver_info.poster_attribute.empty() ||
-            blocked_for_tinyness) {
+            power_saver_info.power_saver_enabled) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
               render_frame, frame, params, info, identifier, group_name,
               power_saver_info.poster_attribute.empty()
@@ -775,24 +769,18 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
               power_saver_info);
           placeholder->set_blocked_for_prerendering(is_prerendering);
-          placeholder->set_blocked_for_tinyness(blocked_for_tinyness);
+
+          // Because we can't determine the size of a plugin until it loads,
+          // all plugins are treated as tiny until proven otherwise.
+          placeholder->set_blocked_for_tinyness(
+              power_saver_info.power_saver_enabled);
+
           placeholder->AllowLoading();
           break;
         }
 
-        std::unique_ptr<content::PluginInstanceThrottler> throttler;
-        if (power_saver_info.power_saver_enabled) {
-          throttler =
-              PluginInstanceThrottler::Create(RenderFrame::RECORD_DECISION);
-          // PluginPreroller manages its own lifetime.
-          new PluginPreroller(
-              render_frame, frame, params, info, identifier, group_name,
-              l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
-              throttler.get());
-        }
-
-        return render_frame->CreatePlugin(frame, info, params,
-                                          std::move(throttler));
+        // Same-origin and whitelisted-origin plugins skip the placeholder.
+        return render_frame->CreatePlugin(frame, info, params, nullptr);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
