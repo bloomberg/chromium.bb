@@ -65,7 +65,7 @@ WTF_EXPORT ThreadIdentifier currentThread();
 WTF_EXPORT void lockAtomicallyInitializedStaticMutex();
 WTF_EXPORT void unlockAtomicallyInitializedStaticMutex();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 WTF_EXPORT bool isAtomicallyInitializedStaticMutexLockHeld();
 WTF_EXPORT bool isBeforeThreadCreated();
 WTF_EXPORT void willCreateThread();

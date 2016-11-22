@@ -128,7 +128,7 @@ typedef struct tagTHREADNAME_INFO {
 static Mutex* atomicallyInitializedStaticMutex;
 
 void lockAtomicallyInitializedStaticMutex() {
-  ASSERT(atomicallyInitializedStaticMutex);
+  DCHECK(atomicallyInitializedStaticMutex);
   atomicallyInitializedStaticMutex->lock();
 }
 
@@ -138,7 +138,7 @@ void unlockAtomicallyInitializedStaticMutex() {
 
 void initializeThreading() {
   // This should only be called once.
-  ASSERT(!atomicallyInitializedStaticMutex);
+  DCHECK(!atomicallyInitializedStaticMutex);
 
   // StringImpl::empty() does not construct its static string in a threadsafe
   // fashion, so ensure it has been initialized from here.
@@ -171,7 +171,7 @@ void MutexBase::lock() {
 }
 
 void MutexBase::unlock() {
-  ASSERT(m_mutex.m_recursionCount);
+  DCHECK(m_mutex.m_recursionCount);
   --m_mutex.m_recursionCount;
   LeaveCriticalSection(&m_mutex.m_internalMutex);
 }
@@ -389,7 +389,7 @@ DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime) {
   return static_cast<DWORD>((absoluteTime - currentTime) * 1000.0);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool s_threadCreated = false;
 
 bool isAtomicallyInitializedStaticMutexLockHeld() {
