@@ -9,7 +9,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.Build;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -52,7 +51,6 @@ public class CompositorView
     private static final long NANOSECONDS_PER_MILLISECOND = 1000000;
 
     // Cache objects that should not be created every frame
-    private final RectF mCacheViewport = new RectF();
     private final Rect mCacheAppRect = new Rect();
     private final int[] mCacheViewPosition = new int[2];
 
@@ -344,13 +342,11 @@ public class CompositorView
         // If you do, you could inadvertently trigger follow up renders.  For further information
         // see dtrainor@, tedchoc@, or klobag@.
 
-        provider.getViewportPixel(mCacheViewport);
-
         nativeSetLayoutBounds(mNativeCompositorView);
 
         SceneLayer sceneLayer =
-                provider.getUpdatedActiveSceneLayer(mCacheViewport, mLayerTitleCache,
-                        mTabContentManager, mResourceManager, provider.getFullscreenManager());
+                provider.getUpdatedActiveSceneLayer(mLayerTitleCache, mTabContentManager,
+                mResourceManager, provider.getFullscreenManager());
 
         nativeSetSceneLayer(mNativeCompositorView, sceneLayer);
 

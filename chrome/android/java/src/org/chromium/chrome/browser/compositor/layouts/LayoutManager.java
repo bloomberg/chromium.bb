@@ -85,6 +85,7 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     // Used to store the visible viewport and not create a new Rect object every frame.
     private final RectF mCachedVisibleViewport = new RectF();
+    private final RectF mCachedWindowViewport = new RectF();
 
     protected float mHeightMinusBrowserControlsPx;
 
@@ -264,7 +265,7 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     @Override
-    public SceneLayer getUpdatedActiveSceneLayer(RectF viewport, LayerTitleCache layerTitleCache,
+    public SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager) {
         getViewportPixel(mCachedVisibleViewport);
@@ -273,8 +274,10 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // Furthermore, the below adjustments should not be necessary.
         mCachedVisibleViewport.right = mCachedVisibleViewport.left + mHost.getWidth();
         mCachedVisibleViewport.bottom = mCachedVisibleViewport.top + mHost.getHeight();
-        return mActiveLayout.getUpdatedSceneLayer(viewport, mCachedVisibleViewport, layerTitleCache,
-                tabContentManager, resourceManager, fullscreenManager);
+
+        getViewportPixel(mCachedWindowViewport);
+        return mActiveLayout.getUpdatedSceneLayer(mCachedWindowViewport, mCachedVisibleViewport,
+                layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
     }
 
     /**

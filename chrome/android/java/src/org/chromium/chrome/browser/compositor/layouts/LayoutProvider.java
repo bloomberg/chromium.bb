@@ -39,7 +39,6 @@ public interface LayoutProvider {
      * Build a {@link SceneLayer} for the active layout if it hasn't already been built, and update
      * it and return it.
      *
-     * @param viewport          A viewport in which to display content.
      * @param layerTitleCache   A layer title cache.
      * @param tabContentManager A tab content manager.
      * @param resourceManager   A resource manager.
@@ -47,7 +46,7 @@ public interface LayoutProvider {
      * @return                  A {@link SceneLayer} that represents the content for this
      *                          {@link Layout}.
      */
-    SceneLayer getUpdatedActiveSceneLayer(RectF viewport, LayerTitleCache layerTitleCache,
+    SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager);
 }
