@@ -90,6 +90,15 @@ class AudioRendererAlgorithmTest : public testing::Test {
                   SampleFormat sample_format,
                   int samples_per_second,
                   int frames_per_buffer) {
+    Initialize(channel_layout, sample_format, samples_per_second,
+               frames_per_buffer, std::vector<bool>());
+  }
+
+  void Initialize(ChannelLayout channel_layout,
+                  SampleFormat sample_format,
+                  int samples_per_second,
+                  int frames_per_buffer,
+                  std::vector<bool> channel_mask) {
     channels_ = ChannelLayoutToChannelCount(channel_layout);
     samples_per_second_ = samples_per_second;
     channel_layout_ = channel_layout;
@@ -98,7 +107,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
                            channel_layout, samples_per_second,
                            bytes_per_sample_ * 8, frames_per_buffer);
-    algorithm_.Initialize(params);
+    algorithm_.Initialize(params, channel_mask);
     FillAlgorithmQueue();
   }
 
@@ -240,7 +249,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     channels_ = ChannelLayoutToChannelCount(kChannelLayout);
     AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                            kSampleRateHz, kBytesPerSample * 8, kNumFrames);
-    algorithm_.Initialize(params);
+    algorithm_.Initialize(params, std::vector<bool>());
 
     // A pulse is 6 milliseconds (even number of samples).
     const int kPulseWidthSamples = 6 * kSampleRateHz / 1000;
@@ -684,6 +693,29 @@ TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
     ASSERT_FALSE(VerifyAudioData(bus.get(), 0, kHalfSize, 0));
     ASSERT_TRUE(VerifyAudioData(bus.get(), kHalfSize, kHalfSize, 0));
     FillAlgorithmQueue();
+  }
+}
+
+TEST_F(AudioRendererAlgorithmTest, FillBuffer_ChannelMask) {
+  // Setup a quad channel layout where even channels are always muted.
+  Initialize(CHANNEL_LAYOUT_QUAD, kSampleFormatS16, 44100, 441,
+             {true, false, true, false});
+
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
+  const int frames_filled =
+      algorithm_.FillBuffer(bus.get(), 0, kFrameSize, 2.0);
+  ASSERT_GT(frames_filled, 0);
+
+  // Verify the channels are muted appropriately; even though the created buffer
+  // actually has audio data in it.
+  for (int ch = 0; ch < bus->channels(); ++ch) {
+    double sum = 0;
+    for (int i = 0; i < bus->frames(); ++i)
+      sum += bus->channel(ch)[i];
+    if (ch % 2 == 1)
+      ASSERT_EQ(sum, 0);
+    else
+      ASSERT_NE(sum, 0);
   }
 }
 

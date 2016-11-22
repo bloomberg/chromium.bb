@@ -128,6 +128,22 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         .WillRepeatedly(Return(false));
   }
 
+  // Reconfigures a renderer with config change support using given params.
+  void ConfigureConfigChangeRenderer(const AudioParameters& params,
+                                     const AudioParameters& hardware_params) {
+    hardware_params_ = hardware_params;
+    sink_ = new FakeAudioRendererSink(hardware_params_);
+    decoder_ = new MockAudioDecoder();
+    ScopedVector<AudioDecoder> decoders;
+    decoders.push_back(decoder_);
+    renderer_.reset(new AudioRendererImpl(message_loop_.task_runner(),
+                                          sink_.get(), std::move(decoders),
+                                          new MediaLog()));
+    testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
+    EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
+        .WillRepeatedly(Return(true));
+  }
+
   void ExpectUnsupportedAudioDecoder() {
     EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(false)));
@@ -373,6 +389,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     return renderer_->CurrentMediaTime();
   }
 
+  std::vector<bool> channel_mask() const { return renderer_->channel_mask_; }
+
   bool ended() const { return ended_; }
 
   // Fixture members.
@@ -576,6 +594,32 @@ TEST_F(AudioRendererImplTest, CapacityAppropriateForHardware) {
 
   Initialize();
   EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
+}
+
+// Verify that the proper reduced search space is configured for playback rate
+// changes when upmixing is applied to the input.
+TEST_F(AudioRendererImplTest, ChannelMask) {
+  Initialize();
+  AudioParameters hw_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                            CHANNEL_LAYOUT_7_1, kOutputSamplesPerSecond,
+                            SampleFormatToBytesPerChannel(kSampleFormat) * 8,
+                            1024);
+  ConfigureConfigChangeRenderer(
+      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                      CHANNEL_LAYOUT_STEREO, kOutputSamplesPerSecond,
+                      SampleFormatToBytesPerChannel(kSampleFormat) * 8, 1024),
+      hw_params);
+  std::vector<bool> mask = channel_mask();
+  EXPECT_TRUE(mask.empty());
+  Initialize();
+  mask = channel_mask();
+  EXPECT_FALSE(mask.empty());
+  for (int ch = 0; ch < hw_params.channels(); ++ch) {
+    if (ch > 1)
+      ASSERT_FALSE(mask[ch]);
+    else
+      ASSERT_TRUE(mask[ch]);
+  }
 }
 
 TEST_F(AudioRendererImplTest, Underflow_Flush) {

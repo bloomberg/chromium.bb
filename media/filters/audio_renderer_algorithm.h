@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -40,8 +41,16 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   AudioRendererAlgorithm();
   ~AudioRendererAlgorithm();
 
-  // Initializes this object with information about the audio stream.
-  void Initialize(const AudioParameters& params);
+  // Initializes this object with information about the audio stream. If a
+  // channel mask is specified, only these channels will be considered by the
+  // algorithm when adapting for playback rate, other channels will be muted.
+  // Useful to avoid performance overhead of the adapatation algorithm.
+  //
+  // E.g., If |channel_mask| is [true, false] only the first channel will be
+  // used to construct the playback rate adapated signal. This is useful if
+  // channel upmixing has been performed prior to this point.
+  void Initialize(const AudioParameters& params,
+                  std::vector<bool> channel_mask);
 
   // Tries to fill |requested_frames| frames into |dest| with possibly scaled
   // data from our |audio_buffer_|. Data is scaled based on |playback_rate|,
@@ -206,6 +215,13 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // searched for a block (|optimal_block_|) that is most similar to
   // |target_block_|.
   std::unique_ptr<AudioBus> target_block_;
+
+  // Active channels to consider while searching. Used to speed up WSOLA
+  // processing by ignoring always muted channels. Wrappers are always
+  // constructed during Initialize() and have <= |channels_|.
+  std::vector<bool> channel_mask_;
+  std::unique_ptr<AudioBus> search_block_wrapper_;
+  std::unique_ptr<AudioBus> target_block_wrapper_;
 
   // The initial and maximum capacity calculated by Initialize().
   int initial_capacity_;

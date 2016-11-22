@@ -22,6 +22,7 @@
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_latency.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/channel_mixing_matrix.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -426,6 +427,23 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                             sample_rate, hw_params.bits_per_sample(),
                             media::AudioLatency::GetHighLatencyBufferSize(
                                 sample_rate, preferred_buffer_size));
+
+    // Figure out if there are muted channels that we should ignore when
+    // playback rate adapatation is requested (it's expensive).
+    if (stream_channel_count < audio_parameters_.channels()) {
+      std::vector<std::vector<float>> matrix;
+      ChannelMixingMatrix(
+          stream->audio_decoder_config().channel_layout(), stream_channel_count,
+          audio_parameters_.channel_layout(), audio_parameters_.channels())
+          .CreateTransformationMatrix(&matrix);
+
+      // All channels with a zero mix are muted and can be ignored.
+      channel_mask_ = std::vector<bool>(audio_parameters_.channels(), false);
+      for (size_t ch = 0; ch < matrix.size(); ++ch) {
+        channel_mask_[ch] = std::any_of(matrix[ch].begin(), matrix[ch].end(),
+                                        [](float mix) { return !!mix; });
+      }
+    }
   }
 
   audio_clock_.reset(
@@ -466,7 +484,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
   algorithm_.reset(new AudioRendererAlgorithm());
-  algorithm_->Initialize(audio_parameters_);
+  algorithm_->Initialize(audio_parameters_, channel_mask_);
 
   ChangeState_Locked(kFlushed);
 

@@ -234,6 +234,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // sample rate changes due to implicit AAC configuration change.
   int last_decoded_sample_rate_;
 
+  // Indicates which channels are muted and can be ignored by the algorithm.
+  std::vector<bool> channel_mask_;
+
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
   base::Lock lock_;
