@@ -110,11 +110,6 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public void loadPersitentTextureDataIfNeeded() { }
 
     @Override
-    public int getLayoutTabsDrawnCount() {
-        return 0;
-    }
-
-    @Override
     public void setContentOverlayVisibility(boolean visible) { }
 
     @Override
@@ -125,11 +120,6 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     @Override
     public ChromeFullscreenManager getFullscreenManager() {
         return null;
-    }
-
-    @Override
-    public int getTopControlsHeightPixels() {
-        return 0;
     }
 
     @Override

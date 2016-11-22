@@ -21,14 +21,12 @@ import android.view.WindowManager;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
-import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.resources.StaticResourcePreloads;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
@@ -58,8 +56,6 @@ public class CompositorView
     private final LayoutRenderHost mRenderHost;
     private boolean mEnableTabletTabStack;
     private int mPreviousWindowTop = -1;
-
-    private int mLastLayerCount;
 
     // A conservative estimate of when a frame is guaranteed to be presented after being submitted.
     private long mFramePresentationDelay;
@@ -350,20 +346,9 @@ public class CompositorView
 
         nativeSetSceneLayer(mNativeCompositorView, sceneLayer);
 
-        final LayoutTab[] tabs = layout.getLayoutTabsToRender();
-        final int tabsCount = tabs != null ? tabs.length : 0;
-        mLastLayerCount = tabsCount;
         TabModelImpl.flushActualTabSwitchLatencyMetric();
         nativeFinalizeLayers(mNativeCompositorView);
         TraceEvent.end("CompositorView:finalizeLayers");
-    }
-
-    /**
-     * @return The number of layer put the last frame.
-     */
-    @VisibleForTesting
-    public int getLastLayerCount() {
-        return mLastLayerCount;
     }
 
     // Implemented in native

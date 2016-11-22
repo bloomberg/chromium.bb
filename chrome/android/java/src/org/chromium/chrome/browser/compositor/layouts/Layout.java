@@ -1085,14 +1085,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @return The number of drawn tabs. This does not count the one culled out.
-     */
-    @VisibleForTesting
-    public int getLayoutTabsDrawnCount() {
-        return mRenderHost.getLayoutTabsDrawnCount();
-    }
-
-    /**
      * Setting this will only take effect the next time this layout is shown.  If it is currently
      * showing the original filter will still be used.
      * @param filter
