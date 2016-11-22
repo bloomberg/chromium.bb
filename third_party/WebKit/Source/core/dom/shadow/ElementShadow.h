@@ -38,14 +38,12 @@ namespace blink {
 
 class ElementShadowV0;
 
-class CORE_EXPORT ElementShadow final
-    : public GarbageCollectedFinalized<ElementShadow>,
-      public TraceWrapperBase {
+class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
+                                        public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(ElementShadow);
 
  public:
   static ElementShadow* create();
-  ~ElementShadow();
 
   Element& host() const {
     DCHECK(m_shadowRoot);

@@ -45,8 +45,6 @@ ElementShadow::ElementShadow()
       m_shadowRoot(this, nullptr),
       m_needsDistributionRecalc(false) {}
 
-ElementShadow::~ElementShadow() {}
-
 ShadowRoot& ElementShadow::youngestShadowRoot() const {
   ShadowRoot* current = m_shadowRoot;
   DCHECK(current);
