@@ -21,6 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -65,11 +67,19 @@ const int kTreeViewHeight = 125;
 // The color of the border around the cookies tree view.
 const SkColor kCookiesBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 
-// Spacing constants used with the new dialog style.
+// Spacing constants used with non-Harmony dialogs.
 const int kTabbedPaneTopPadding = 14;
-const int kLabelBottomPadding = 17;
 const int kCookieInfoBottomPadding = 4;
-const int kVPanelPadding = 15;
+
+LayoutDelegate::LayoutDistanceType GetTreeviewToButtonsDistanceType() {
+  // Hack: in the Harmony specs, the buttons under the treeview are "unrelated"
+  // to it (which looks better), but in the existing dialog they were related.
+  return LayoutDelegate::Get()->IsHarmonyMode()
+             ? LayoutDelegate::LayoutDistanceType::
+                   UNRELATED_CONTROL_VERTICAL_SPACING
+             : LayoutDelegate::LayoutDistanceType::
+                   RELATED_CONTROL_VERTICAL_SPACING;
+}
 
 }  // namespace
 
@@ -270,6 +280,13 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
   return gfx::Size(0, View::GetMinimumSize().height());
 }
 
+gfx::Size CollectedCookiesViews::GetPreferredSize() const {
+  int preferred = LayoutDelegate::Get()->GetDialogPreferredWidth(
+      LayoutDelegate::DialogWidthType::MEDIUM);
+  return gfx::Size(preferred ? preferred : View::GetPreferredSize().width(),
+                   View::GetPreferredSize().height());
+}
+
 void CollectedCookiesViews::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);
@@ -288,7 +305,9 @@ CollectedCookiesViews::~CollectedCookiesViews() {
 void CollectedCookiesViews::Init() {
   using views::GridLayout;
 
-  GridLayout* layout = GridLayout::CreatePanel(this);
+  GridLayout* layout = new GridLayout(this);
+  if (LayoutDelegate::Get()->UseExtraDialogPadding())
+    layout->SetInsets(gfx::Insets(kTabbedPaneTopPadding, 0, 0, 0));
   SetLayoutManager(layout);
 
   const int single_column_layout_id = 0;
@@ -298,7 +317,6 @@ void CollectedCookiesViews::Init() {
 
   layout->StartRow(0, single_column_layout_id);
   views::TabbedPane* tabbed_pane = new views::TabbedPane();
-  layout->SetInsets(gfx::Insets(kTabbedPaneTopPadding, 0, 0, 0));
 
   layout->AddView(tabbed_pane);
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
@@ -310,12 +328,17 @@ void CollectedCookiesViews::Init() {
   tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
   tabbed_pane->SelectTabAt(0);
   tabbed_pane->set_listener(this);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  if (LayoutDelegate::Get()->UseExtraDialogPadding()) {
+    layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
+                                 LayoutDelegate::LayoutDistanceType::
+                                     RELATED_CONTROL_VERTICAL_SPACING));
+  }
 
   layout->StartRow(0, single_column_layout_id);
   cookie_info_view_ = new CookieInfoView();
   layout->AddView(cookie_info_view_);
-  layout->AddPaddingRow(0, kCookieInfoBottomPadding);
+  if (LayoutDelegate::Get()->UseExtraDialogPadding())
+    layout->AddPaddingRow(0, kCookieInfoBottomPadding);
 
   layout->StartRow(0, single_column_layout_id);
   infobar_ = new InfobarView();
@@ -354,10 +377,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout = GridLayout::CreatePanel(pane);
-  layout->SetInsets(kVPanelPadding, views::kButtonHEdgeMarginNew,
-                    kVPanelPadding, views::kButtonHEdgeMarginNew);
-  pane->SetLayoutManager(layout);
+  GridLayout* layout = layout_utils::CreatePanelLayout(pane);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -368,19 +388,24 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   column_set = layout->AddColumnSet(three_columns_layout_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
+                                      LayoutDelegate::LayoutDistanceType::
+                                          RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(allowed_label_);
-  layout->AddPaddingRow(0, kLabelBottomPadding);
+  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
+                               LayoutDelegate::LayoutDistanceType::
+                                   UNRELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(CreateScrollView(allowed_cookies_tree_), 1, 1,
                   GridLayout::FILL, GridLayout::FILL, kTreeViewWidth,
                   kTreeViewHeight);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
+                               GetTreeviewToButtonsDistanceType()));
 
   layout->StartRow(0, three_columns_layout_id);
   layout->AddView(block_allowed_button_);
@@ -426,10 +451,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout = GridLayout::CreatePanel(pane);
-  layout->SetInsets(kVPanelPadding, views::kButtonHEdgeMarginNew,
-                    kVPanelPadding, views::kButtonHEdgeMarginNew);
-  pane->SetLayoutManager(layout);
+  GridLayout* layout = layout_utils::CreatePanelLayout(pane);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -440,19 +462,24 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   column_set = layout->AddColumnSet(three_columns_layout_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
+                                      LayoutDelegate::LayoutDistanceType::
+                                          RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, kLabelBottomPadding);
+  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
+                               LayoutDelegate::LayoutDistanceType::
+                                   UNRELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(
       CreateScrollView(blocked_cookies_tree_), 1, 1,
       GridLayout::FILL, GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
+                               GetTreeviewToButtonsDistanceType()));
 
   layout->StartRow(0, three_columns_layout_id);
   layout->AddView(allow_blocked_button_);

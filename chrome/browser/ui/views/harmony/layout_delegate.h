@@ -20,6 +20,12 @@ class LayoutDelegate {
     BUTTON_VEDGE_MARGIN_NEW,
   };
 
+  enum class DialogWidthType {
+    SMALL,
+    MEDIUM,
+    LARGE,
+  };
+
   LayoutDelegate() {}
   virtual ~LayoutDelegate() {}
 
@@ -45,6 +51,15 @@ class LayoutDelegate {
   // Returns whether to use extra padding on dialogs. If this is false, content
   // Views for dialogs should not insert extra padding at their own edges.
   virtual bool UseExtraDialogPadding() const;
+
+  // Returns whether Harmony mode is enabled. This method is deprecated and
+  // should only be used in dire circumstances, such as when Harmony specifies a
+  // different distance type than was previously used.
+  virtual bool IsHarmonyMode() const;
+
+  // Returns the preferred width for a dialog of the specified width type. If
+  // there is no preferred width for |type|, returns 0.
+  virtual int GetDialogPreferredWidth(DialogWidthType type) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutDelegate);

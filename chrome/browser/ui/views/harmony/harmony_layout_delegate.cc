@@ -42,3 +42,20 @@ int HarmonyLayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
 bool HarmonyLayoutDelegate::UseExtraDialogPadding() const {
   return false;
 }
+
+bool HarmonyLayoutDelegate::IsHarmonyMode() const {
+  return true;
+}
+
+int HarmonyLayoutDelegate::GetDialogPreferredWidth(DialogWidthType type) const {
+  switch (type) {
+    case DialogWidthType::SMALL:
+      return 320;
+    case DialogWidthType::MEDIUM:
+      return 448;
+    case DialogWidthType::LARGE:
+      return 512;
+  }
+  NOTREACHED();
+  return 0;
+}

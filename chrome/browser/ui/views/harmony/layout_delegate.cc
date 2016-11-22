@@ -51,3 +51,11 @@ views::GridLayout::Alignment LayoutDelegate::GetControlLabelGridAlignment()
 bool LayoutDelegate::UseExtraDialogPadding() const {
   return true;
 }
+
+bool LayoutDelegate::IsHarmonyMode() const {
+  return false;
+}
+
+int LayoutDelegate::GetDialogPreferredWidth(DialogWidthType type) const {
+  return 0;
+}

@@ -18,6 +18,8 @@ class HarmonyLayoutDelegate : public LayoutDelegate {
   // views::LayoutDelegate:
   int GetLayoutDistance(LayoutDistanceType type) const override;
   bool UseExtraDialogPadding() const override;
+  bool IsHarmonyMode() const override;
+  int GetDialogPreferredWidth(DialogWidthType type) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HarmonyLayoutDelegate);
