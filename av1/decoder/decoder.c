@@ -553,10 +553,10 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
       const uint8_t *x = &data[data_sz - index_sz + 1];
 
       // Frames has a maximum of 8 and mag has a maximum of 4.
-      uint8_t clear_buffer[32];
-      assert(sizeof(clear_buffer) >= frames * mag);
+      uint8_t clear_buffer[28];
+      assert(sizeof(clear_buffer) >= (frames - 1) * mag);
       if (decrypt_cb) {
-        decrypt_cb(decrypt_state, x, clear_buffer, frames * mag);
+        decrypt_cb(decrypt_state, x, clear_buffer, (frames - 1) * mag);
         x = clear_buffer;
       }
 
