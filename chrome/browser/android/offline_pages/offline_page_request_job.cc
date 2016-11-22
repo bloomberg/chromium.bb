@@ -58,10 +58,21 @@ enum class NetworkState {
 // This enum is used to tell all possible outcomes of handling network requests
 // that might serve offline contents.
 enum class RequestResult {
+  // Offline page was shown for current URL.
   OFFLINE_PAGE_SERVED,
+  // Redirected from original URL to final URL in preparation to show the
+  // offline page under final URL. OFFLINE_PAGE_SERVED is most likely to be
+  // reported next if no other error is encountered.
+  REDIRECTED,
+  // Tab was gone.
   NO_TAB_ID,
+  // Web contents was gone.
   NO_WEB_CONTENTS,
+  // The offline page found was not fresh enough, i.e. not created in the past
+  // day. This only applies in prohibitively slow network.
   PAGE_NOT_FRESH,
+  // Offline page was not found, by searching with either final URL or original
+  // URL.
   OFFLINE_PAGE_NOT_FOUND
 };
 
@@ -168,6 +179,25 @@ RequestResultToAggregatedRequestResult(
       case NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK:
         return OfflinePageRequestJob::AggregatedRequestResult::
             PAGE_NOT_FOUND_ON_CONNECTED_NETWORK;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  if (request_result == RequestResult::REDIRECTED) {
+    switch (network_state) {
+      case NetworkState::DISCONNECTED_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            REDIRECTED_ON_DISCONNECTED_NETWORK;
+      case NetworkState::PROHIBITIVELY_SLOW_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK;
+      case NetworkState::FLAKY_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            REDIRECTED_ON_FLAKY_NETWORK;
+      case NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            REDIRECTED_ON_CONNECTED_NETWORK;
       default:
         NOTREACHED();
     }
@@ -324,6 +354,7 @@ void SucceededToFindOfflinePage(
 
   // If the match is for original URL, trigger the redirect.
   if (offline_page && url == offline_page->original_url) {
+    ReportRequestResult(RequestResult::REDIRECTED, network_state);
     NotifyOfflineRedirectOnUI(job, offline_page->url);
     return;
   }
