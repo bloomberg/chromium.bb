@@ -88,7 +88,8 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
   for (const auto& elements : stored_passwords_) {
     if (elements.first == form.signon_realm ||
         (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
-         password_manager::IsFederatedMatch(elements.first, form.origin))) {
+         password_manager::IsFederatedMatch(elements.first, form.origin)) ||
+        IsPublicSuffixDomainMatch(elements.first, form.signon_realm)) {
       for (const auto& stored_form : elements.second)
         matched_forms.push_back(
             base::MakeUnique<autofill::PasswordForm>(stored_form));

@@ -118,46 +118,19 @@ void CredentialManagerImpl::RequireUserMediation(
     CredentialManagerLogger(client_->GetLogManager())
         .LogRequireUserMediation(web_contents()->GetLastCommittedURL());
   }
-  PasswordStore* store = GetPasswordStore();
-  if (!store || !client_->IsSavingAndFillingEnabledForCurrentPage() ||
-      !client_->OnCredentialManagerUsed()) {
-    callback.Run();
-    return;
-  }
-
-  if (store->affiliated_match_helper()) {
-    store->affiliated_match_helper()->GetAffiliatedAndroidRealms(
-        GetSynthesizedFormForOrigin(),
-        base::Bind(&CredentialManagerImpl::ScheduleRequireMediationTask,
-                   weak_factory_.GetWeakPtr(), callback));
-  } else {
-    std::vector<std::string> no_affiliated_realms;
-    ScheduleRequireMediationTask(callback, no_affiliated_realms);
-  }
-}
-
-void CredentialManagerImpl::ScheduleRequireMediationTask(
-    const RequireUserMediationCallback& callback,
-    const std::vector<std::string>& android_realms) {
-  DCHECK(GetPasswordStore());
-  if (!pending_require_user_mediation_) {
-    pending_require_user_mediation_.reset(
-        new CredentialManagerPendingRequireUserMediationTask(
-            this, web_contents()->GetLastCommittedURL().GetOrigin(),
-            android_realms));
-
-    // This will result in a callback to
-    // CredentialManagerPendingRequireUserMediationTask::
-    // OnGetPasswordStoreResults().
-    GetPasswordStore()->GetAutofillableLogins(
-        pending_require_user_mediation_.get());
-  } else {
-    pending_require_user_mediation_->AddOrigin(
-        web_contents()->GetLastCommittedURL().GetOrigin());
-  }
-
   // Send acknowledge response back.
   callback.Run();
+
+  PasswordStore* store = GetPasswordStore();
+  if (!store || !client_->IsSavingAndFillingEnabledForCurrentPage() ||
+      !client_->OnCredentialManagerUsed())
+    return;
+
+  if (!pending_require_user_mediation_) {
+    pending_require_user_mediation_.reset(
+        new CredentialManagerPendingRequireUserMediationTask(this));
+  }
+  pending_require_user_mediation_->AddOrigin(GetSynthesizedFormForOrigin());
 }
 
 void CredentialManagerImpl::Get(bool zero_click_only,

@@ -228,20 +228,14 @@ void CredentialManager::SignedOut(int request_id, const GURL& source_url) {
   // information to the PasswordStore via an asynchronous task.
   password_manager::PasswordStore* store = GetPasswordStore();
   if (store) {
-    // Bundle the origins that are sent to the PasswordStore if the task hasn't
-    // yet resolved. This task lives across page-loads to enable this bundling.
-    if (pending_require_user_mediation_) {
-      pending_require_user_mediation_->AddOrigin(page_url);
-    } else {
+    if (!pending_require_user_mediation_) {
       pending_require_user_mediation_.reset(
           new password_manager::
-              CredentialManagerPendingRequireUserMediationTask(
-                  this, page_url, std::vector<std::string>()));
-
-      // This will result in a callback to
-      // CredentialManagerPendingSignedOutTask::OnGetPasswordStoreResults().
-      store->GetAutofillableLogins(pending_require_user_mediation_.get());
+              CredentialManagerPendingRequireUserMediationTask(this));
     }
+    password_manager::PasswordStore::FormDigest form = {
+        autofill::PasswordForm::SCHEME_HTML, source_url.spec(), source_url};
+    pending_require_user_mediation_->AddOrigin(form);
   }
 
   // Acknowledge the page's signOut notification without waiting for the

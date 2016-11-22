@@ -90,13 +90,6 @@ class CredentialManagerImpl
                            const std::vector<GURL>& federations,
                            const std::vector<std::string>& android_realms);
 
-  // Schedules a CredentialManagerPendingRequireUserMediationTask after the
-  // AffiliationMatchHelper grabs a list of realms related to the current
-  // web origin.
-  void ScheduleRequireMediationTask(
-      const RequireUserMediationCallback& callback,
-      const std::vector<std::string>& android_realms);
-
   PasswordManagerClient* client_;
   std::unique_ptr<CredentialManagerPasswordFormManager> form_manager_;
 

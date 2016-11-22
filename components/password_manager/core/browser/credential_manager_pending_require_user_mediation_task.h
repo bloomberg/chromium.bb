@@ -5,26 +5,17 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUIRE_USER_MEDIATION_TASK_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUIRE_USER_MEDIATION_TASK_H_
 
-#include <set>
-#include <string>
-
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
-class GURL;
-
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
-
 namespace password_manager {
-
-class PasswordStore;
 
 // Handles mediation completion and retrieves embedder-dependent services.
 class CredentialManagerPendingRequireUserMediationTaskDelegate {
  public:
+  virtual ~CredentialManagerPendingRequireUserMediationTaskDelegate() {}
+
   // Retrieves the PasswordStore.
   virtual PasswordStore* GetPasswordStore() = 0;
 
@@ -36,24 +27,23 @@ class CredentialManagerPendingRequireUserMediationTaskDelegate {
 class CredentialManagerPendingRequireUserMediationTask
     : public PasswordStoreConsumer {
  public:
-  CredentialManagerPendingRequireUserMediationTask(
-      CredentialManagerPendingRequireUserMediationTaskDelegate* delegate,
-      const GURL& origin,
-      const std::vector<std::string>& affiliated_realms);
+  explicit CredentialManagerPendingRequireUserMediationTask(
+      CredentialManagerPendingRequireUserMediationTaskDelegate* delegate);
   ~CredentialManagerPendingRequireUserMediationTask() override;
 
   // Adds an origin to require user mediation.
-  void AddOrigin(const GURL& origin);
+  void AddOrigin(const PasswordStore::FormDigest& form_digest);
 
+ private:
   // PasswordStoreConsumer implementation.
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
- private:
   CredentialManagerPendingRequireUserMediationTaskDelegate* const
       delegate_;  // Weak.
-  std::set<std::string> registrable_domains_;
-  std::set<std::string> affiliated_realms_;
+
+  // Number of password store requests to be resolved.
+  int pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequireUserMediationTask);
 };
