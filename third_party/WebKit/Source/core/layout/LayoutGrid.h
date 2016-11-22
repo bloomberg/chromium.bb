@@ -75,7 +75,7 @@ class LayoutGrid final : public LayoutBlock {
   typedef Vector<LayoutBox*, 1> GridCell;
   const GridCell& gridCell(int row, int column) const {
     SECURITY_DCHECK(!m_gridIsDirty);
-    return m_grid[row][column];
+    return m_grid.cell(row, column);
   }
 
   const Vector<LayoutBox*>& itemsOverflowingGridArea() const {
@@ -138,9 +138,6 @@ class LayoutGrid final : public LayoutBlock {
                                            LayoutUnit maxBreadth) const;
   void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection,
                                                GridSizingData&) const;
-
-  void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
-  void insertItemIntoGrid(LayoutBox&, const GridArea&);
 
   size_t computeAutoRepeatTracksCount(GridTrackSizingDirection,
                                       SizingOperation) const;
@@ -346,8 +343,32 @@ class LayoutGrid final : public LayoutBlock {
 
   size_t numTracks(GridTrackSizingDirection) const;
 
-  typedef Vector<Vector<GridCell>> GridRepresentation;
-  GridRepresentation m_grid;
+  // TODO(svillar): move into this class once GridIterator is added.
+  typedef Vector<Vector<GridCell>> GridAsMatrix;
+  class Grid final {
+   public:
+    Grid() {}
+
+    size_t numColumns() const { return m_grid.size() ? m_grid[0].size() : 0; }
+    size_t numRows() const { return m_grid.size(); }
+
+    void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
+    void insert(LayoutBox&, const GridArea&);
+
+    const GridCell& cell(size_t row, size_t column) const {
+      return m_grid[row][column];
+    }
+
+    void shrinkToFit() { m_grid.shrinkToFit(); }
+
+    void clear();
+
+   private:
+    friend class GridIterator;
+    GridAsMatrix m_grid;
+  };
+  Grid m_grid;
+
   bool m_gridIsDirty;
   Vector<LayoutUnit> m_rowPositions;
   Vector<LayoutUnit> m_columnPositions;

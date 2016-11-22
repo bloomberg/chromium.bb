@@ -42,6 +42,36 @@ static const int infinity = -1;
 
 class GridItemWithSpan;
 
+void LayoutGrid::Grid::ensureGridSize(size_t maximumRowSize,
+                                      size_t maximumColumnSize) {
+  const size_t oldRowSize = numRows();
+  if (maximumRowSize > oldRowSize) {
+    m_grid.grow(maximumRowSize);
+    for (size_t row = oldRowSize; row < numRows(); ++row)
+      m_grid[row].grow(numColumns());
+  }
+
+  if (maximumColumnSize > numColumns()) {
+    for (size_t row = 0; row < numRows(); ++row)
+      m_grid[row].grow(maximumColumnSize);
+  }
+}
+
+void LayoutGrid::Grid::insert(LayoutBox& child, const GridArea& area) {
+  DCHECK(area.rows.isTranslatedDefinite() &&
+         area.columns.isTranslatedDefinite());
+  ensureGridSize(area.rows.endLine(), area.columns.endLine());
+
+  for (const auto& row : area.rows) {
+    for (const auto& column : area.columns)
+      m_grid[row][column].append(&child);
+  }
+}
+
+void LayoutGrid::Grid::clear() {
+  m_grid.resize(0);
+}
+
 class GridTrack {
  public:
   GridTrack() : m_infinitelyGrowable(false) {}
@@ -152,11 +182,11 @@ class LayoutGrid::GridIterator {
   // |direction| is the direction that is fixed to |fixedTrackIndex| so e.g
   // GridIterator(m_grid, ForColumns, 1) will walk over the rows of the 2nd
   // column.
-  GridIterator(const GridRepresentation& grid,
+  GridIterator(const Grid& grid,
                GridTrackSizingDirection direction,
                size_t fixedTrackIndex,
                size_t varyingTrackIndex = 0)
-      : m_grid(grid),
+      : m_grid(grid.m_grid),
         m_direction(direction),
         m_rowIndex((direction == ForColumns) ? varyingTrackIndex
                                              : fixedTrackIndex),
@@ -240,7 +270,7 @@ class LayoutGrid::GridIterator {
   }
 
  private:
-  const GridRepresentation& m_grid;
+  const GridAsMatrix& m_grid;
   GridTrackSizingDirection m_direction;
   size_t m_rowIndex;
   size_t m_columnIndex;
@@ -400,12 +430,12 @@ bool LayoutGrid::namedGridLinesDefinitionDidChange(
 
 size_t LayoutGrid::gridColumnCount() const {
   DCHECK(!m_gridIsDirty);
-  return m_grid.size() ? m_grid[0].size() : 0;
+  return m_grid.numColumns();
 }
 
 size_t LayoutGrid::gridRowCount() const {
   DCHECK(!m_gridIsDirty);
-  return m_grid.size();
+  return m_grid.numRows();
 }
 
 LayoutUnit LayoutGrid::computeTrackBasedLogicalHeight(
@@ -1797,32 +1827,6 @@ bool LayoutGrid::tracksAreWiderThanMinTrackBreadth(
 }
 #endif
 
-void LayoutGrid::ensureGridSize(size_t maximumRowSize,
-                                size_t maximumColumnSize) {
-  const size_t oldRowSize = gridRowCount();
-  if (maximumRowSize > oldRowSize) {
-    m_grid.grow(maximumRowSize);
-    for (size_t row = oldRowSize; row < gridRowCount(); ++row)
-      m_grid[row].grow(gridColumnCount());
-  }
-
-  if (maximumColumnSize > gridColumnCount()) {
-    for (size_t row = 0; row < gridRowCount(); ++row)
-      m_grid[row].grow(maximumColumnSize);
-  }
-}
-
-void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridArea& area) {
-  RELEASE_ASSERT(area.rows.isTranslatedDefinite() &&
-                 area.columns.isTranslatedDefinite());
-  ensureGridSize(area.rows.endLine(), area.columns.endLine());
-
-  for (const auto& row : area.rows) {
-    for (const auto& column : area.columns)
-      m_grid[row][column].append(&child);
-  }
-}
-
 size_t LayoutGrid::computeAutoRepeatTracksCount(
     GridTrackSizingDirection direction,
     SizingOperation sizingOperation) const {
@@ -2014,7 +2018,7 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
         specifiedMajorAxisAutoGridItems.append(child);
       continue;
     }
-    insertItemIntoGrid(*child, area);
+    m_grid.insert(*child, area);
   }
 
 #if ENABLE(ASSERT)
@@ -2100,9 +2104,8 @@ void LayoutGrid::populateExplicitGridAndOrderIterator() {
     }
   }
 
-  m_grid.grow(maximumRowIndex + abs(m_smallestRowStart));
-  for (auto& column : m_grid)
-    column.grow(maximumColumnIndex + abs(m_smallestColumnStart));
+  m_grid.ensureGridSize(maximumRowIndex + abs(m_smallestRowStart),
+                        maximumColumnIndex + abs(m_smallestColumnStart));
 }
 
 std::unique_ptr<GridArea>
@@ -2161,7 +2164,7 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
           *autoGridItem, autoPlacementMajorAxisDirection(), majorAxisPositions);
 
     m_gridItemArea.set(autoGridItem, *emptyGridArea);
-    insertItemIntoGrid(*autoGridItem, *emptyGridArea);
+    m_grid.insert(*autoGridItem, *emptyGridArea);
 
     if (!isGridAutoFlowDense)
       minorAxisCursors.set(majorAxisInitialPosition,
@@ -2269,7 +2272,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
   }
 
   m_gridItemArea.set(&gridItem, *emptyGridArea);
-  insertItemIntoGrid(gridItem, *emptyGridArea);
+  m_grid.insert(gridItem, *emptyGridArea);
   // Move auto-placement cursor to the new position.
   autoPlacementCursor.first = emptyGridArea->rows.startLine();
   autoPlacementCursor.second = emptyGridArea->columns.startLine();
@@ -2287,7 +2290,7 @@ void LayoutGrid::dirtyGrid() {
   if (m_gridIsDirty)
     return;
 
-  m_grid.resize(0);
+  m_grid.clear();
   m_gridItemArea.clear();
   m_gridItemsOverflowingGridArea.resize(0);
   m_gridItemsIndexesMap.clear();
@@ -3000,16 +3003,16 @@ bool LayoutGrid::isInlineBaselineAlignedChild(const LayoutBox* child) const {
 }
 
 int LayoutGrid::firstLineBoxBaseline() const {
-  if (isWritingModeRoot() || m_grid.isEmpty())
+  if (isWritingModeRoot() || m_gridItemArea.isEmpty())
     return -1;
   const LayoutBox* baselineChild = nullptr;
   const LayoutBox* firstChild = nullptr;
   bool isBaselineAligned = false;
   // Finding the first grid item in grid order.
-  for (size_t column = 0; !isBaselineAligned && column < m_grid[0].size();
+  for (size_t column = 0; !isBaselineAligned && column < m_grid.numColumns();
        column++) {
-    for (size_t index = 0; index < m_grid[0][column].size(); index++) {
-      const LayoutBox* child = m_grid[0][column][index];
+    for (size_t index = 0; index < m_grid.cell(0, column).size(); index++) {
+      const LayoutBox* child = m_grid.cell(0, column)[index];
       DCHECK(!child->isOutOfFlowPositioned());
       // If an item participates in baseline alignmen, we select such item.
       if (isInlineBaselineAlignedChild(child)) {
@@ -3502,11 +3505,11 @@ size_t LayoutGrid::numTracks(GridTrackSizingDirection direction) const {
   // rows implies that there are no "normal" children (out-of-flow children are
   // not stored in m_grid).
   if (direction == ForRows)
-    return m_grid.size();
+    return m_grid.numRows();
 
-  return m_grid.size() ? m_grid[0].size()
-                       : GridPositionsResolver::explicitGridColumnCount(
-                             styleRef(), m_autoRepeatColumns);
+  return m_grid.numRows() ? m_grid.numColumns()
+                          : GridPositionsResolver::explicitGridColumnCount(
+                                styleRef(), m_autoRepeatColumns);
 }
 
 }  // namespace blink
