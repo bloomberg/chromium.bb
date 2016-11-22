@@ -4,9 +4,12 @@
 
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 
-#include "content/common/screen_orientation_messages.h"
+#include "content/public/common/associated_interface_provider.h"
+#include "content/public/renderer/render_frame.h"
 
 namespace content {
+
+using ::blink::mojom::ScreenOrientationLockResult;
 
 ScreenOrientationDispatcher::ScreenOrientationDispatcher(
     RenderFrame* render_frame)
@@ -16,41 +19,39 @@ ScreenOrientationDispatcher::ScreenOrientationDispatcher(
 ScreenOrientationDispatcher::~ScreenOrientationDispatcher() {
 }
 
-bool ScreenOrientationDispatcher::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP(ScreenOrientationDispatcher, message)
-    IPC_MESSAGE_HANDLER(ScreenOrientationMsg_LockSuccess,
-                        OnLockSuccess)
-    IPC_MESSAGE_HANDLER(ScreenOrientationMsg_LockError,
-                        OnLockError)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
 void ScreenOrientationDispatcher::OnDestruct() {
   delete this;
 }
 
-void ScreenOrientationDispatcher::OnLockSuccess(int request_id) {
+void ScreenOrientationDispatcher::OnLockOrientationResult(
+    int request_id,
+    ScreenOrientationLockResult result) {
   blink::WebLockOrientationCallback* callback =
       pending_callbacks_.Lookup(request_id);
   if (!callback)
     return;
-  callback->onSuccess();
-  pending_callbacks_.Remove(request_id);
-}
 
-void ScreenOrientationDispatcher::OnLockError(
-    int request_id, blink::WebLockOrientationError error) {
-  blink::WebLockOrientationCallback* callback =
-      pending_callbacks_.Lookup(request_id);
-  if (!callback)
-    return;
-  callback->onError(error);
+  switch (result) {
+    case ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS:
+      callback->onSuccess();
+      break;
+    case ScreenOrientationLockResult::
+        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE:
+      callback->onError(blink::WebLockOrientationErrorNotAvailable);
+      break;
+    case ScreenOrientationLockResult::
+        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_FULLSCREEN_REQUIRED:
+      callback->onError(blink::WebLockOrientationErrorFullscreenRequired);
+      break;
+    case ScreenOrientationLockResult::
+        SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED:
+      callback->onError(blink::WebLockOrientationErrorCanceled);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
   pending_callbacks_.Remove(request_id);
 }
 
@@ -68,13 +69,32 @@ void ScreenOrientationDispatcher::lockOrientation(
   CancelPendingLocks();
 
   int request_id = pending_callbacks_.Add(callback);
-  Send(new ScreenOrientationHostMsg_LockRequest(
-      routing_id(), orientation, request_id));
+  EnsureScreenOrientationService();
+  screen_orientation_->LockOrientation(
+      orientation,
+      base::Bind(&ScreenOrientationDispatcher::OnLockOrientationResult,
+                 base::Unretained(this), request_id));
 }
 
 void ScreenOrientationDispatcher::unlockOrientation() {
   CancelPendingLocks();
-  Send(new ScreenOrientationHostMsg_Unlock(routing_id()));
+  EnsureScreenOrientationService();
+  screen_orientation_->UnlockOrientation();
+}
+
+void ScreenOrientationDispatcher::EnsureScreenOrientationService() {
+  if (!screen_orientation_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &screen_orientation_);
+  }
+}
+
+int ScreenOrientationDispatcher::GetRequestIdForTests() {
+  if (pending_callbacks_.IsEmpty())
+    return -1;
+  CallbackMap::Iterator<blink::WebLockOrientationCallback> iterator(
+      &pending_callbacks_);
+  return iterator.GetCurrentKey();
 }
 
 }  // namespace content

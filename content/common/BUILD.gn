@@ -571,6 +571,7 @@ mojom("mojo_bindings") {
     "render_message_filter.mojom",
     "render_widget_window_tree_client_factory.mojom",
     "renderer.mojom",
+    "screen_orientation.mojom",
     "service_worker/embedded_worker.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "service_worker/fetch_event_dispatcher.mojom",

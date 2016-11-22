@@ -4,41 +4,39 @@
 
 #include "content/public/browser/screen_orientation_provider.h"
 
+#include "base/callback_helpers.h"
+#include "base/optional.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/screen_orientation_delegate.h"
-#include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h"
 
 namespace content {
 
+using ::blink::mojom::ScreenOrientationLockResult;
+
 ScreenOrientationDelegate* ScreenOrientationProvider::delegate_ = nullptr;
 
-ScreenOrientationProvider::LockInformation::LockInformation(int request_id,
-    blink::WebScreenOrientationLockType lock)
-    : request_id(request_id),
-      lock(lock) {
-}
-
-ScreenOrientationProvider::ScreenOrientationProvider(
-    ScreenOrientationDispatcherHost* dispatcher_host,
-    WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      dispatcher_(dispatcher_host),
-      lock_applied_(false) {
-}
+ScreenOrientationProvider::ScreenOrientationProvider(WebContents* web_contents)
+    : WebContentsObserver(web_contents), lock_applied_(false) {}
 
 ScreenOrientationProvider::~ScreenOrientationProvider() {
 }
 
-void ScreenOrientationProvider::LockOrientation(int request_id,
-    blink::WebScreenOrientationLockType lock_orientation) {
+void ScreenOrientationProvider::LockOrientation(
+    blink::WebScreenOrientationLockType orientation,
+    const LockOrientationCallback& callback) {
+  // ScreenOrientation should have cancelled all pending request at thie point.
+  DCHECK(on_result_callback_.is_null());
+  DCHECK(pending_lock_orientation_.has_value());
+  DCHECK(pending_lock_orientation_.value() >= 0);
+  on_result_callback_ = callback;
 
   if (!delegate_ || !delegate_->ScreenOrientationProviderSupported()) {
-    dispatcher_->NotifyLockError(request_id,
-                                 blink::WebLockOrientationErrorNotAvailable);
+    NotifyLockResult(ScreenOrientationLockResult::
+                         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE);
     return;
   }
 
@@ -46,44 +44,41 @@ void ScreenOrientationProvider::LockOrientation(int request_id,
     RenderViewHostImpl* rvhi =
         static_cast<RenderViewHostImpl*>(web_contents()->GetRenderViewHost());
     if (!rvhi) {
-      dispatcher_->NotifyLockError(request_id,
-                                   blink::WebLockOrientationErrorCanceled);
+      NotifyLockResult(ScreenOrientationLockResult::
+                           SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED);
       return;
     }
     if (!static_cast<WebContentsImpl*>(web_contents())
              ->IsFullscreenForCurrentTab()) {
-      dispatcher_->NotifyLockError(request_id,
-          blink::WebLockOrientationErrorFullscreenRequired);
+      NotifyLockResult(
+          ScreenOrientationLockResult::
+              SCREEN_ORIENTATION_LOCK_RESULT_ERROR_FULLSCREEN_REQUIRED);
       return;
     }
   }
 
-  if (lock_orientation == blink::WebScreenOrientationLockNatural) {
-    lock_orientation = GetNaturalLockType();
-    if (lock_orientation == blink::WebScreenOrientationLockDefault) {
+  if (orientation == blink::WebScreenOrientationLockNatural) {
+    orientation = GetNaturalLockType();
+    if (orientation == blink::WebScreenOrientationLockDefault) {
       // We are in a broken state, let's pretend we got canceled.
-      dispatcher_->NotifyLockError(request_id,
-                                   blink::WebLockOrientationErrorCanceled);
+      NotifyLockResult(ScreenOrientationLockResult::
+                           SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED);
       return;
     }
   }
 
   lock_applied_ = true;
-  delegate_->Lock(web_contents(), lock_orientation);
-
-  // If two calls happen close to each other some platforms will ignore the
-  // first. A successful lock will be once orientation matches the latest
-  // request.
-  pending_lock_.reset();
+  delegate_->Lock(web_contents(), orientation);
 
   // If the orientation we are locking to matches the current orientation, we
   // should succeed immediately.
-  if (LockMatchesCurrentOrientation(lock_orientation)) {
-    dispatcher_->NotifyLockSuccess(request_id);
+  if (LockMatchesCurrentOrientation(orientation)) {
+    NotifyLockResult(
+        ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS);
     return;
   }
 
-  pending_lock_.reset(new LockInformation(request_id, lock_orientation));
+  pending_lock_orientation_ = orientation;
 }
 
 void ScreenOrientationProvider::UnlockOrientation() {
@@ -93,17 +88,28 @@ void ScreenOrientationProvider::UnlockOrientation() {
   delegate_->Unlock(web_contents());
 
   lock_applied_ = false;
-  pending_lock_.reset();
+  pending_lock_orientation_.reset();
 }
 
 void ScreenOrientationProvider::OnOrientationChange() {
-  if (!pending_lock_.get())
+  if (!pending_lock_orientation_.has_value())
     return;
 
-  if (LockMatchesCurrentOrientation(pending_lock_->lock)) {
-    dispatcher_->NotifyLockSuccess(pending_lock_->request_id);
-    pending_lock_.reset();
+  if (LockMatchesCurrentOrientation(pending_lock_orientation_.value())) {
+    DCHECK(!on_result_callback_.is_null());
+    NotifyLockResult(
+        ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS);
   }
+}
+
+void ScreenOrientationProvider::NotifyLockResult(
+    ScreenOrientationLockResult result) {
+  if (on_result_callback_.is_null()) {
+    pending_lock_orientation_.reset();
+    return;
+  }
+  base::ResetAndReturn(&on_result_callback_).Run(result);
+  pending_lock_orientation_.reset();
 }
 
 void ScreenOrientationProvider::SetDelegate(

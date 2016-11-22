@@ -219,7 +219,6 @@ source_set("browser_sources") {
     "resource_throttle.h",
     "save_page_type.h",
     "screen_orientation_delegate.h",
-    "screen_orientation_dispatcher_host.h",
     "screen_orientation_provider.cc",
     "screen_orientation_provider.h",
     "security_style_explanation.h",

@@ -73,7 +73,8 @@ class RenderViewHostDelegateView;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class SavePackage;
-class ScreenOrientationDispatcherHost;
+class ScreenOrientation;
+class ScreenOrientationProvider;
 class SiteInstance;
 class TestWebContents;
 class TextInputManager;
@@ -209,10 +210,6 @@ class CONTENT_EXPORT WebContentsImpl
   void NotifyWebContentsFocused();
 
   WebContentsView* GetView() const;
-
-  ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host() {
-    return screen_orientation_dispatcher_host_.get();
-  }
 
   bool should_normally_be_visible() { return should_normally_be_visible_; }
 
@@ -485,6 +482,7 @@ class CONTENT_EXPORT WebContentsImpl
       int browser_plugin_instance_id) override;
   device::GeolocationServiceContext* GetGeolocationServiceContext() override;
   device::WakeLockServiceContext* GetWakeLockServiceContext() override;
+  ScreenOrientationProvider* GetScreenOrientationProvider() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
@@ -1416,8 +1414,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   std::unique_ptr<device::WakeLockServiceContext> wake_lock_service_context_;
 
-  std::unique_ptr<ScreenOrientationDispatcherHost>
-      screen_orientation_dispatcher_host_;
+  std::unique_ptr<ScreenOrientation> screen_orientation_;
 
   std::unique_ptr<ManifestManagerHost> manifest_manager_host_;
 

@@ -44,6 +44,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h",
+  "+third_party/WebKit/public/platform/modules/screen_orientation/screen_orientation_lock_types.mojom.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h",

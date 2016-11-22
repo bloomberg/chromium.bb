@@ -650,6 +650,7 @@ mojom("mojo_bindings") {
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
+    "platform/modules/screen_orientation/screen_orientation_lock_types.mojom",
     "platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
   ]

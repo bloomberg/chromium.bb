@@ -5,9 +5,9 @@
 #ifndef WebFrameOwnerProperties_h
 #define WebFrameOwnerProperties_h
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/permissions/WebPermissionType.h"
+#include "../platform/WebString.h"
+#include "../platform/WebVector.h"
+#include "../platform/modules/permissions/WebPermissionType.h"
 #include <algorithm>
 
 namespace blink {

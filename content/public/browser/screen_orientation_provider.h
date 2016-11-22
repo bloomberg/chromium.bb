@@ -7,28 +7,33 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/screen_orientation_lock_types.mojom.h"
 
 namespace content {
 
 class ScreenOrientationDelegate;
-class ScreenOrientationDispatcherHost;
 class WebContents;
+
+using LockOrientationCallback =
+    base::Callback<void(::blink::mojom::ScreenOrientationLockResult)>;
 
 // Handles screen orientation lock/unlock. Platforms which wish to provide
 // custom implementations can provide a factory for ScreenOrientationDelegate.
 class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
  public:
-  ScreenOrientationProvider(ScreenOrientationDispatcherHost* dispatcher_host,
-                            WebContents* web_contents);
+  ScreenOrientationProvider(WebContents* web_contents);
+
   ~ScreenOrientationProvider() override;
 
-  // Lock the screen orientation to |orientations|.
-  void LockOrientation(int request_id,
-                       blink::WebScreenOrientationLockType lock_orientation);
+  // Lock the screen orientation to |orientation|, |callback| is the callback
+  // that should be invoked when this request receives a result.
+  void LockOrientation(blink::WebScreenOrientationLockType orientation,
+                       const LockOrientationCallback& callback);
 
   // Unlock the screen orientation.
   void UnlockOrientation();
@@ -46,11 +51,9 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
                                      bool will_cause_resize) override;
 
  private:
-  struct LockInformation {
-    LockInformation(int request_id, blink::WebScreenOrientationLockType lock);
-    int request_id;
-    blink::WebScreenOrientationLockType lock;
-  };
+  // Calls on |on_result_callback_| with |result|, followed by resetting
+  // |on_result_callback_| and |pending_lock_orientation_|.
+  void NotifyLockResult(::blink::mojom::ScreenOrientationLockResult result);
 
   // Returns the lock type that should be associated with 'natural' lock.
   // Returns WebScreenOrientationLockDefault if the natural lock type can't be
@@ -64,15 +67,15 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
   // Not owned, responsible for platform implementations.
   static ScreenOrientationDelegate* delegate_;
 
-  // ScreenOrientationDispatcherHost owns ScreenOrientationProvider.
-  ScreenOrientationDispatcherHost* dispatcher_;
-
   // Whether the ScreenOrientationProvider currently has a lock applied.
   bool lock_applied_;
 
   // Locks that require orientation changes are not completed until
   // OnOrientationChange.
-  std::unique_ptr<LockInformation> pending_lock_;
+
+  base::Optional<blink::WebScreenOrientationLockType> pending_lock_orientation_;
+
+  LockOrientationCallback on_result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProvider);
 };

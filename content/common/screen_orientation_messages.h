@@ -15,41 +15,10 @@
 
 #define IPC_MESSAGE_START ScreenOrientationMsgStart
 
+// Only used by content/common/manifest_manager_messages.h.
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
                               blink::WebScreenOrientationLockDefault,
                               blink::WebScreenOrientationLockNatural)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(
-      blink::WebLockOrientationError,
-      blink::WebLockOrientationErrorNotAvailable,
-      blink::WebLockOrientationErrorCanceled)
-
-// The browser process' response to a ScreenOrientationHostMsg_LockRequest when
-// the lock actually succeeded. The |request_id| passed when receiving the
-// request is passed back so the renderer process can associate the response to
-// the right request.
-IPC_MESSAGE_ROUTED1(ScreenOrientationMsg_LockSuccess,
-                    int /* request_id */)
-
-// The browser process' response to a ScreenOrientationHostMsg_LockRequest when
-// the lock actually failed. The message includes the |error| type. The
-// |request_id| passed when receiving the request is passed back so the renderer
-// process can associate the response to the right request.
-IPC_MESSAGE_ROUTED2(ScreenOrientationMsg_LockError,
-                    int, /* request_id */
-                    blink::WebLockOrientationError /* error */)
-
-// The renderer process requests the browser process to lock the screen
-// orientation to the specified |orientations|. The request contains a
-// |request_id| that will have to be passed back to the renderer process when
-// notifying about a success or error (see ScreenOrientationMsg_LockError and
-// ScreenOrientationMsg_LockSuccess).
-IPC_MESSAGE_ROUTED2(ScreenOrientationHostMsg_LockRequest,
-                    blink::WebScreenOrientationLockType, /* orientation */
-                    int /* request_id */)
-
-// The renderer process requests the browser process to unlock the screen
-// orientation.
-IPC_MESSAGE_ROUTED0(ScreenOrientationHostMsg_Unlock)
 
 // The renderer process is now using the Screen Orientation API and informs the
 // browser process that it should start accurately listening to the screen

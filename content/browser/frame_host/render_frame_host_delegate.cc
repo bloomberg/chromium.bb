@@ -77,6 +77,11 @@ RenderFrameHostDelegate::GetWakeLockServiceContext() {
   return nullptr;
 }
 
+ScreenOrientationProvider*
+RenderFrameHostDelegate::GetScreenOrientationProvider() {
+  return nullptr;
+}
+
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
     RenderFrameHost* target_rfh,
     SiteInstance* source_site_instance) const {
