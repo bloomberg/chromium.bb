@@ -2,14 +2,14 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (0,0) size 181x277
-      LayoutSVGRect {rect} at (0,45) size 51x82 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=46.00] [width=50.00] [height=80.00]
-      LayoutSVGRect {rect} at (129,0) size 52x81 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=130.00] [y=0.00] [width=50.00] [height=80.00]
-      LayoutSVGRect {rect} at (249,45) size 2x82 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=250.00] [y=46.00] [width=0.00] [height=80.00]
-      LayoutSVGRect {rect} at (349,45) size 52x2 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=350.00] [y=46.00] [width=50.00] [height=0.00]
-      LayoutSVGRect {rect} at (29,195) size 52x82 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=30.00] [y=196.00] [width=50.00] [height=80.00]
-      LayoutSVGRect {rect} at (129,195) size 52x82 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=130.00] [y=196.00] [width=50.00] [height=80.00]
-    LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x45
+    LayoutSVGContainer {g} at (0,0) size 180x276
+      LayoutSVGRect {rect} at (0,46) size 50x80 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=46.00] [width=50.00] [height=80.00]
+      LayoutSVGRect {rect} at (130,0) size 50x80 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=130.00] [y=0.00] [width=50.00] [height=80.00]
+      LayoutSVGRect {rect} at (250,46) size 0x80 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=250.00] [y=46.00] [width=0.00] [height=80.00]
+      LayoutSVGRect {rect} at (350,46) size 50x0 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=350.00] [y=46.00] [width=50.00] [height=0.00]
+      LayoutSVGRect {rect} at (30,196) size 50x80 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=30.00] [y=196.00] [width=50.00] [height=80.00]
+      LayoutSVGRect {rect} at (130,196) size 50x80 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=130.00] [y=196.00] [width=50.00] [height=80.00]
+    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.4 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

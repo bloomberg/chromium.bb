@@ -38,4 +38,4 @@ layer at (8,242) size 220x220
       LayoutView at (0,0) size 210x210
     layer at (0,0) size 210x210
       LayoutSVGRoot {svg} at (0,0) size 210x210
-        LayoutSVGEllipse {circle} at (0,0) size 210x210 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]
+        LayoutSVGEllipse {circle} at (0,0) size 220x220 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]

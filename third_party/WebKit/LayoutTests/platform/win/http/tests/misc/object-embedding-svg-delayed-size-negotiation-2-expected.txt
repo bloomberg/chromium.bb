@@ -31,37 +31,37 @@ layer at (14,131) size 117x43
       LayoutView at (0,0) size 99x25
     layer at (0,0) size 99x25
       LayoutSVGRoot {svg} at (0,0) size 99x25
-        LayoutSVGRect {rect} at (0,0) size 99x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
-        LayoutSVGPath {path} at (14,4) size 71x16 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
+        LayoutSVGRect {rect} at (0,0) size 1000x250 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
+        LayoutSVGPath {path} at (150,50) size 700x150 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (14,194) size 117x43
   LayoutEmbeddedObject {OBJECT} at (9,0) size 117x42.75 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 99x25
       LayoutView at (0,0) size 99x25
     layer at (0,0) size 99x25
       LayoutSVGRoot {svg} at (0,0) size 99x25
-        LayoutSVGRect {rect} at (0,0) size 99x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
-        LayoutSVGPath {path} at (14,4) size 71x16 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
+        LayoutSVGRect {rect} at (0,0) size 1000x250 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
+        LayoutSVGPath {path} at (150,50) size 700x150 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (14,257) size 117x43
   LayoutEmbeddedObject {OBJECT} at (9,0) size 117x42.75 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 99x25
       LayoutView at (0,0) size 99x25
     layer at (0,0) size 99x25
       LayoutSVGRoot {svg} at (0,0) size 99x25
-        LayoutSVGRect {rect} at (0,0) size 99x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
-        LayoutSVGPath {path} at (14,4) size 71x16 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
+        LayoutSVGRect {rect} at (0,0) size 1000x250 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
+        LayoutSVGPath {path} at (150,50) size 700x150 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (14,355) size 117x43
   LayoutEmbeddedObject {OBJECT} at (9,0) size 117x42.75 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 99x25
       LayoutView at (0,0) size 99x25
     layer at (0,0) size 99x25
       LayoutSVGRoot {svg} at (0,0) size 99x25
-        LayoutSVGRect {rect} at (0,0) size 99x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
-        LayoutSVGPath {path} at (14,4) size 71x16 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
+        LayoutSVGRect {rect} at (0,0) size 1000x250 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
+        LayoutSVGPath {path} at (150,50) size 700x150 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (14,453) size 117x43
   LayoutEmbeddedObject {OBJECT} at (9,0) size 117x42.75 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 99x25
       LayoutView at (0,0) size 99x25
     layer at (0,0) size 99x25
       LayoutSVGRoot {svg} at (0,0) size 99x25
-        LayoutSVGRect {rect} at (0,0) size 99x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
-        LayoutSVGPath {path} at (14,4) size 71x16 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
+        LayoutSVGRect {rect} at (0,0) size 1000x250 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
+        LayoutSVGPath {path} at (150,50) size 700x150 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]

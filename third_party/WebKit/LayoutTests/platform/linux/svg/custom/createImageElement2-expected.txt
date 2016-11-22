@@ -12,7 +12,7 @@ layer at (0,0) size 800x105
     LayoutText {#text} at (0,0) size 0x0
     LayoutInline {body} at (0,0) size 600x19
       LayoutText {#text} at (0,0) size 0x0
-      LayoutSVGRoot {svg} at (86,10) size 100x60
-        LayoutSVGImage {image} at (86,10) size 100x60
+      LayoutSVGRoot {svg} at (76,0) size 600x100
+        LayoutSVGImage {image} at (10,10) size 100x60
       LayoutText {#text} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0

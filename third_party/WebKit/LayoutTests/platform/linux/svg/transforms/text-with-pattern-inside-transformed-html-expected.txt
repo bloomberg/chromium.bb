@@ -9,43 +9,43 @@ layer at (0,0) size 800x536
           text run at (299,0) width 222: "objectBoundingBox patterns on text."
 layer at (58,86) size 400x400
   LayoutBlockFlow {div} at (50,70) size 400x400
-    LayoutSVGRoot {svg} at (75,33) size 496x496
+    LayoutSVGRoot {svg} at (0,0) size 400x300
       LayoutSVGResourcePattern {pattern} [id="pat1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
-        LayoutSVGRect {rect} at (281,38) size 14x14 [fill={[type=SOLID] [color=#FF0000]}] [x=5.00] [y=5.00] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (281,44) size 14x14 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]
-      LayoutSVGRect {rect} at (260,52) size 292x292 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pat1"]}] [x=25.00] [y=10.00] [width=430.00] [height=60.00]
-      LayoutSVGText {text} at (25,73) size 418x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 418x16
+        LayoutSVGRect {rect} at (5,5) size 10x10 [fill={[type=SOLID] [color=#FF0000]}] [x=5.00] [y=5.00] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (10,10) size 10x10 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]
+      LayoutSVGRect {rect} at (25,10) size 430x60 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pat1"]}] [x=25.00] [y=10.00] [width=430.00] [height=60.00]
+      LayoutSVGText {text} at (25,73) size 417.59x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (25,73) size 417.59x15.59
           chunk 1 text run 1 at (25.00,85.00) startOffset 0 endOffset 75 width 417.60: "Pattern created using red and green rectangles applied to fill of rectangle"
       LayoutSVGResourcePattern {pattern} [id="pat2"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
-        LayoutSVGRect {rect} at (281,33) size 14x13 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (287,38) size 13x14 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=0.00] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (275,38) size 14x14 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=10.00] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (281,44) size 14x14 [fill={[type=SOLID] [color=#FFFF00]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]
-      LayoutSVGRect {rect} at (207,105) size 291x292 [stroke={[type=PATTERN] [id="pat2"] [stroke width=20.00]}] [x=35.00] [y=110.00] [width=410.00] [height=40.00]
-      LayoutSVGText {text} at (25,163) size 322x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 322x16
+        LayoutSVGRect {rect} at (0,0) size 10x10 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (10,0) size 10x10 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=0.00] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (0,10) size 10x10 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=10.00] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (10,10) size 10x10 [fill={[type=SOLID] [color=#FFFF00]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]
+      LayoutSVGRect {rect} at (35,110) size 410x40 [stroke={[type=PATTERN] [id="pat2"] [stroke width=20.00]}] [x=35.00] [y=110.00] [width=410.00] [height=40.00]
+      LayoutSVGText {text} at (25,163) size 321.59x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (25,163) size 321.59x15.59
           chunk 1 text run 1 at (25.00,175.00) startOffset 0 endOffset 59 width 321.60: "Pattern of 4 rectangles applied to a stroke of a rectangle."
       LayoutSVGResourcePattern {pattern} [id="pat3"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
-        LayoutSVGRect {rect} at (281,33) size 14x13 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (275,38) size 14x14 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=10.00] [width=10.00] [height=10.00]
-      LayoutSVGText {text} at (25,174) size 298x57 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 298x57
+        LayoutSVGRect {rect} at (0,0) size 10x10 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (0,10) size 10x10 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=10.00] [width=10.00] [height=10.00]
+      LayoutSVGText {text} at (25,174.41) size 297.59x56.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (25,174.41) size 297.59x56.39
           chunk 1 text run 1 at (25.00,220.00) startOffset 0 endOffset 15 width 297.60: "Pattern on fill"
-      LayoutSVGText {text} at (25,223) size 213x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 213x16
+      LayoutSVGText {text} at (25,223) size 212.39x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (25,223) size 212.39x15.59
           chunk 1 text run 1 at (25.00,235.00) startOffset 0 endOffset 38 width 212.40: "Pattern consists of red and green rows"
       LayoutSVGResourcePattern {pattern} [id="pat4"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
-        LayoutSVGRect {rect} at (281,33) size 14x13 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
-        LayoutSVGRect {rect} at (287,38) size 13x14 [fill={[type=SOLID] [color=#0000FF]}] [x=10.00] [y=0.00] [width=10.00] [height=10.00]
-      LayoutSVGText {text} at (25,237) size 292x47 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 292x46
+        LayoutSVGRect {rect} at (0,0) size 10x10 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=10.00]
+        LayoutSVGRect {rect} at (10,0) size 10x10 [fill={[type=SOLID] [color=#0000FF]}] [x=10.00] [y=0.00] [width=10.00] [height=10.00]
+      LayoutSVGText {text} at (25,237.81) size 291.59x45.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (25,237.81) size 291.59x45.59
           chunk 1 text run 1 at (25.00,275.00) startOffset 0 endOffset 17 width 291.60: "Pattern on stroke"
-      LayoutSVGText {text} at (25,278) size 230x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 230x16
+      LayoutSVGText {text} at (25,278) size 229.19x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (25,278) size 229.19x15.59
           chunk 1 text run 1 at (25.00,290.00) startOffset 0 endOffset 40 width 229.20: "Pattern consists of red and blue columns"
-      LayoutSVGText {text} at (10,305) size 258x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 258x45
+      LayoutSVGText {text} at (10,305.20) size 258x44.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,305.20) size 258x44.39
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 258.00: "$Revision: 1.6 $"
-      LayoutSVGRect {rect} at (75,33) size 496x496 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+      LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
     LayoutText {#text} at (0,0) size 0x0

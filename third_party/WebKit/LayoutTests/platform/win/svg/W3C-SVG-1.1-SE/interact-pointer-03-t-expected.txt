@@ -3,18 +3,18 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,28) size 297x125
-      LayoutSVGText {text} at (10,28) size 297x15 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 297x15
+    LayoutSVGContainer {g} at (10,28) size 296.66x125
+      LayoutSVGText {text} at (10,28) size 296.66x15 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,28) size 296.66x15
           chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 56 width 296.67: "Test pointer-events=\"painted\" with paint server fallback"
       LayoutSVGRect {rect} at (10,80) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=10.00] [y=80.00] [width=50.00] [height=50.00]
       LayoutSVGRect {rect} at (10,80) size 50x50 [x=10.00] [y=80.00] [width=50.00] [height=50.00]
       LayoutSVGContainer {g} at (10,137) size 251x16
         LayoutSVGText {text} at (10,137) size 251x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 251x16
+          LayoutSVGInlineText {#text} at (10,137) size 251x16
             chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 44 width 251.00: "Move the pointing device over the rectangle."
-    LayoutSVGContainer {g} at (10,311) size 230x36
-      LayoutSVGText {text} at (10,311) size 230x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 230x36
+    LayoutSVGContainer {g} at (10,311) size 229.47x36
+      LayoutSVGText {text} at (10,311) size 229.47x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 229.47x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.4 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

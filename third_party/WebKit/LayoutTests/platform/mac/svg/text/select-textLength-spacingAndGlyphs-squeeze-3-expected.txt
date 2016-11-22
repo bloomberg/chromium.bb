@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,5) size 300x88
-    LayoutSVGContainer {g} at (0,5) size 300x88
-      LayoutSVGPath {svg:line} at (159,5) size 6x56 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=32.48] [y1=1.00] [x2=32.48] [y2=12.20]
-      LayoutSVGPath {svg:line} at (221,5) size 6x56 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=44.88] [y1=1.00] [x2=44.88] [y2=12.20]
-      LayoutSVGRect {svg:rect} at (162,5) size 63x56 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=32.48] [y=1.00] [width=12.41] [height=11.20]
-      LayoutSVGText {svg:text} at (0,27) size 120x10 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 120x10
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (0,1) size 59.98x17.50
+      LayoutSVGPath {svg:line} at (32.48,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=32.48] [y1=1.00] [x2=32.48] [y2=12.20]
+      LayoutSVGPath {svg:line} at (44.88,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=44.88] [y1=1.00] [x2=44.88] [y2=12.20]
+      LayoutSVGRect {svg:rect} at (32.48,1) size 12.41x11.20 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=32.48] [y=1.00] [width=12.41] [height=11.20]
+      LayoutSVGText {svg:text} at (0,27.81) size 119.95x9.19 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,27.81) size 119.95x9.19
           chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 40 width 119.96: "Expected 'Squ' to be selected, got: 'o '"
-    LayoutSVGText {text} at (10,1) size 50x12 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 50x12
+    LayoutSVGText {text} at (10,1) size 50x11.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,1) size 50x11.19
         chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 15 width 71.71: "Text to Squeeze"
 selection start: position 6 of child 0 {#text} of child 5 {text} of child 0 {svg} of document
 selection end:   position 8 of child 0 {#text} of child 5 {text} of child 0 {svg} of document

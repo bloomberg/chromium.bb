@@ -3,18 +3,18 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x249
   LayoutBlockFlow {HTML} at (0,0) size 800x249.16
     LayoutBlockFlow {BODY} at (16.58,16.58) size 766.84x216
-      LayoutSVGRoot {svg} at (16,16) size 1x1
+      LayoutSVGRoot {svg} at (0,0) size 207.36x207.36
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceClipper {clipPath} [id="clip1"] [clipPathUnits=userSpaceOnUse]
-            LayoutSVGRect {rect} at (16,16) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
+            LayoutSVGRect {rect} at (0,0) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           LayoutSVGResourceClipper {clipPath} [id="clip2"] [clipPathUnits=userSpaceOnUse]
-            LayoutSVGRect {rect} at (16,16) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
-            LayoutSVGRect {rect} at (119,119) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=50.00] [width=50.00] [height=50.00]
+            LayoutSVGRect {rect} at (0,0) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
+            LayoutSVGRect {rect} at (50,50) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=50.00] [width=50.00] [height=50.00]
           LayoutSVGResourceClipper {clipPath} [id="clip3"] [clipPathUnits=objectBoundingBox]
-            LayoutSVGRect {rect} at (16,16) size 3x3 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
+            LayoutSVGRect {rect} at (0,0) size 0.50x0.50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
           LayoutSVGResourceClipper {clipPath} [id="clip4"] [clipPathUnits=objectBoundingBox]
-            LayoutSVGRect {rect} at (16,16) size 3x3 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
-            LayoutSVGRect {rect} at (17,17) size 3x3 [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=0.50] [height=0.50]
+            LayoutSVGRect {rect} at (0,0) size 0.50x0.50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
+            LayoutSVGRect {rect} at (0.50,0.50) size 0.50x0.50 [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=0.50] [height=0.50]
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0

@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
-  LayoutSVGRoot {svg} at (0,0) size 448x498
+  LayoutSVGRoot {svg} at (0,0) size 450x500
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourcePattern {pattern} [id="svgPattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
         LayoutSVGContainer {g} at (0,0) size 10x10
@@ -10,96 +10,96 @@ layer at (0,0) size 450x500
         LayoutSVGContainer {g} at (0,0) size 10x10
           LayoutSVGRect {rect} at (0,5) size 5x5 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=5.00] [width=5.00] [height=5.00]
           LayoutSVGRect {rect} at (5,0) size 5x5 [fill={[type=SOLID] [color=#000000]}] [x=5.00] [y=0.00] [width=5.00] [height=5.00]
-    LayoutSVGContainer {g} at (49,26) size 327x438
-      LayoutSVGText {text} at (155,26) size 140x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 139x17
+    LayoutSVGContainer {g} at (49,26) size 326.52x438
+      LayoutSVGText {text} at (155.63,26) size 138.73x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (155.63,26) size 138.73x17
           chunk 1 (middle anchor) text run 1 at (155.63,40.00) startOffset 0 endOffset 20 width 138.74: "Text decoration test"
-      LayoutSVGContainer {g} at (49,82) size 327x382
-        LayoutSVGContainer {g} at (50,82) size 326x22
-          LayoutSVGText {text} at (50,82) size 80x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 80x22
+      LayoutSVGContainer {g} at (49,82) size 326.52x382
+        LayoutSVGContainer {g} at (50,82) size 325.52x22
+          LayoutSVGText {text} at (50,82) size 79.97x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (50,82) size 79.97x22
               chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 9 width 79.97: "Underline"
-          LayoutSVGText {text} at (170,82) size 70x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 70x22
+          LayoutSVGText {text} at (170,82) size 69.97x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (170,82) size 69.97x22
               chunk 1 text run 1 at (170.00,100.00) startOffset 0 endOffset 8 width 69.97: "Overline"
-          LayoutSVGText {text} at (270,82) size 106x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 106x22
+          LayoutSVGText {text} at (270,82) size 105.52x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (270,82) size 105.52x22
               chunk 1 text run 1 at (270.00,100.00) startOffset 0 endOffset 12 width 105.53: "Line-through"
-        LayoutSVGContainer {g} at (49,121) size 327x24
-          LayoutSVGText {text} at (50,122) size 80x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 80x22
+        LayoutSVGContainer {g} at (50,122) size 325.52x22
+          LayoutSVGText {text} at (50,122) size 79.97x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (50,122) size 79.97x22
               chunk 1 text run 1 at (50.00,140.00) startOffset 0 endOffset 9 width 79.97: "Underline"
-          LayoutSVGText {text} at (170,122) size 70x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 70x22
+          LayoutSVGText {text} at (170,122) size 69.97x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (170,122) size 69.97x22
               chunk 1 text run 1 at (170.00,140.00) startOffset 0 endOffset 8 width 69.97: "Overline"
-          LayoutSVGText {text} at (270,122) size 106x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 106x22
+          LayoutSVGText {text} at (270,122) size 105.52x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (270,122) size 105.52x22
               chunk 1 text run 1 at (270.00,140.00) startOffset 0 endOffset 12 width 105.53: "Line-through"
-        LayoutSVGContainer {g} at (50,162) size 326x22
-          LayoutSVGText {text} at (50,162) size 80x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 80x22
+        LayoutSVGContainer {g} at (50,162) size 325.52x22
+          LayoutSVGText {text} at (50,162) size 79.97x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (50,162) size 79.97x22
               chunk 1 text run 1 at (50.00,180.00) startOffset 0 endOffset 9 width 79.97: "Underline"
-          LayoutSVGText {text} at (170,162) size 70x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 70x22
+          LayoutSVGText {text} at (170,162) size 69.97x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (170,162) size 69.97x22
               chunk 1 text run 1 at (170.00,180.00) startOffset 0 endOffset 8 width 69.97: "Overline"
-          LayoutSVGText {text} at (270,162) size 106x22 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 106x22
+          LayoutSVGText {text} at (270,162) size 105.52x22 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (270,162) size 105.52x22
               chunk 1 text run 1 at (270.00,180.00) startOffset 0 endOffset 12 width 105.53: "Line-through"
-        LayoutSVGText {text} at (50,202) size 185x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 185x22
+        LayoutSVGText {text} at (50,202) size 184.38x22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,202) size 184.38x22
             chunk 1 text run 1 at (50.00,220.00) startOffset 0 endOffset 22 width 184.38: "Underline and overline"
-        LayoutSVGText {text} at (50,242) size 294x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 294x22
+        LayoutSVGText {text} at (50,242) size 293.23x22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,242) size 293.23x22
             chunk 1 text run 1 at (50.00,260.00) startOffset 0 endOffset 36 width 293.24: "Underline, overline and line-through"
-        LayoutSVGText {text} at (50,272) size 185x32 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,10) size 102x22
+        LayoutSVGText {text} at (50,272) size 184.39x32 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,282) size 101.63x22
             chunk 1 text run 1 at (50.00,300.00) startOffset 0 endOffset 12 width 101.63: "Decorations "
           LayoutSVGTSpan {tspan} at (0,0) size 37x22
-            LayoutSVGInlineText {#text} at (101,0) size 36x22
+            LayoutSVGInlineText {#text} at (151.63,272) size 35.55x22
               chunk 1 text run 1 at (151.63,290.00) startOffset 0 endOffset 4 width 35.56: "with"
           LayoutSVGTSpan {tspan} at (0,0) size 48x22
-            LayoutSVGInlineText {#text} at (137,10) size 48x22
+            LayoutSVGInlineText {#text} at (187.19,282) size 47.20x22
               chunk 1 text run 1 at (187.19,300.00) startOffset 0 endOffset 6 width 47.22: " tspan"
-        LayoutSVGText {text} at (50,322) size 218x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 135x22
+        LayoutSVGText {text} at (50,322) size 217.55x22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,322) size 134.78x22
             chunk 1 text run 1 at (50.00,340.00) startOffset 0 endOffset 17 width 134.79: "Transparent text "
           LayoutSVGTSpan {tspan} at (0,0) size 37x22
-            LayoutSVGInlineText {#text} at (134,0) size 36x22
+            LayoutSVGInlineText {#text} at (184.78,322) size 35.55x22
               chunk 1 text run 1 at (184.79,340.00) startOffset 0 endOffset 4 width 35.56: "with"
-          LayoutSVGInlineText {#text} at (170,0) size 48x22
+          LayoutSVGInlineText {#text} at (220.34,322) size 47.20x22
             chunk 1 text run 1 at (220.35,340.00) startOffset 0 endOffset 6 width 47.22: " tspan"
-        LayoutSVGText {text} at (50,362) size 217x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 53x22
+        LayoutSVGText {text} at (50,362) size 216.86x22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,362) size 52.47x22
             chunk 1 text run 1 at (50.00,380.00) startOffset 0 endOffset 6 width 52.48: "Tspan "
           LayoutSVGTSpan {tspan} at (0,0) size 76x22
-            LayoutSVGInlineText {#text} at (52,0) size 75x22
+            LayoutSVGInlineText {#text} at (102.47,362) size 75x22
               chunk 1 text run 1 at (102.48,380.00) startOffset 0 endOffset 8 width 75.00: "with own"
-          LayoutSVGInlineText {#text} at (127,0) size 90x22
+          LayoutSVGInlineText {#text} at (177.47,362) size 89.39x22
             chunk 1 text run 1 at (177.48,380.00) startOffset 0 endOffset 11 width 89.40: " decoration"
-        LayoutSVGText {text} at (50,402) size 203x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 53x22
+        LayoutSVGText {text} at (50,402) size 202.42x22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,402) size 52.47x22
             chunk 1 text run 1 at (50.00,420.00) startOffset 0 endOffset 6 width 52.48: "Tspan "
           LayoutSVGTSpan {tspan} at (0,0) size 62x22
-            LayoutSVGInlineText {#text} at (52,0) size 61x22
+            LayoutSVGInlineText {#text} at (102.47,402) size 60.55x22
               chunk 1 text run 1 at (102.48,420.00) startOffset 0 endOffset 7 width 60.56: "with no"
-          LayoutSVGInlineText {#text} at (113,0) size 90x22
+          LayoutSVGInlineText {#text} at (163.03,402) size 89.39x22
             chunk 1 text run 1 at (163.04,420.00) startOffset 0 endOffset 11 width 89.40: " decoration"
-        LayoutSVGText {text} at (49,442) size 201x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 62x22
+        LayoutSVGText {text} at (49,442) size 200.92x22 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (49,442) size 61.53x22
             chunk 1 text run 1 at (50.00,460.00) startOffset 0 endOffset 7 width 60.54: "Nested "
           LayoutSVGTSpan {tspan} at (0,0) size 140x22
-            LayoutSVGInlineText {#text} at (61,0) size 48x22
+            LayoutSVGInlineText {#text} at (110.53,442) size 47.20x22
               chunk 1 text run 1 at (110.54,460.00) startOffset 0 endOffset 6 width 47.22: "tspan "
             LayoutSVGTSpan {tspan} at (0,0) size 46x22
-              LayoutSVGInlineText {#text} at (108,0) size 45x22
+              LayoutSVGInlineText {#text} at (157.75,442) size 44.75x22
                 chunk 1 text run 1 at (157.75,460.00) startOffset 0 endOffset 5 width 44.41: "decor"
-            LayoutSVGInlineText {#text} at (153,0) size 48x22
+            LayoutSVGInlineText {#text} at (202.16,442) size 47.77x22
               chunk 1 text run 1 at (202.17,460.00) startOffset 0 endOffset 6 width 47.77: "ations"
-    LayoutSVGContainer {use} at (0,0) size 448x498
-      LayoutSVGContainer {g} at (0,0) size 448x498
-        LayoutSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
-        LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
-          LayoutSVGViewportContainer {svg} at (418,466) size 28x30
-            LayoutSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 c -8 27 22 48 44 33 C 14 306 -1 332 0 356 c 0 14 13 42 44 27 c 8 -4 35 -25 52 -41 c 14 -1 24 -11 42 -28 c 17 14 36 10 52 -7 c 22 2 82 -78 44 -108 c -3 -24 -30 -37 -53 -18 c -6 -2 -13 -1 -18 1 c 22 -35 43 -82 49 -105 C 219 47 188 36 172 44 Z"]
-            LayoutSVGPath {path} at (432,466) size 14x17 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 c -18 3 -49 31 -49 31 c -29 23 -43 58 -28 95 c -13 14 -29 44 -29 67 c 0 28 20 52 50 29 c 7 8 21 16 37 5 c -5 29 3 48 26 49 c 1 10 13 31 36 17 c 16 -10 58 -39 79 -56 c 25 -23 25 -94 -18 -89 c 33 -59 -3 -96 -27 -84 c -10 4 -46 25 -52 30 c -1 -7 -5 -12 -11 -14 C 436 45 436 -5 401 0 Z"]
-            LayoutSVGPath {path} at (425,484) size 16x12 [fill={[type=SOLID] [color=#33CC33]}] [data="M 275 353 c -46 12 -88 43 -114 91 c -9 16 6 37 25 33 c -14 24 -40 67 -15 81 c 28 16 52 -8 60 -15 c 18 21 50 10 81 -17 c 41 14 68 -2 103 -53 c 8 -12 30 -43 30 -65 c 0 -16 -15 -30 -35 -21 c -1 -12 -9 -38 -53 -19 c -10 -6 -31 -5 -54 17 C 308 375 300 347 275 353 Z"]
+    LayoutSVGContainer {use} at (1,1) size 446x496
+      LayoutSVGContainer {g} at (1,1) size 446x496
+        LayoutSVGRect {rect} at (1,1) size 446x496 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
+        LayoutSVGContainer {g} at (0.19,-0.25) size 26.92x28.44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
+          LayoutSVGViewportContainer {svg} at (-1,-5) size 548x579
+            LayoutSVGPath {path} at (-1,36) size 273x362 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 c -8 27 22 48 44 33 C 14 306 -1 332 0 356 c 0 14 13 42 44 27 c 8 -4 35 -25 52 -41 c 14 -1 24 -11 42 -28 c 17 14 36 10 52 -7 c 22 2 82 -78 44 -108 c -3 -24 -30 -37 -53 -18 c -6 -2 -13 -1 -18 1 c 22 -35 43 -82 49 -105 C 219 47 188 36 172 44 Z"]
+            LayoutSVGPath {path} at (294,-5) size 253x312 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 c -18 3 -49 31 -49 31 c -29 23 -43 58 -28 95 c -13 14 -29 44 -29 67 c 0 28 20 52 50 29 c 7 8 21 16 37 5 c -5 29 3 48 26 49 c 1 10 13 31 36 17 c 16 -10 58 -39 79 -56 c 25 -23 25 -94 -18 -89 c 33 -59 -3 -96 -27 -84 c -10 4 -46 25 -52 30 c -1 -7 -5 -12 -11 -14 C 436 45 436 -5 401 0 Z"]
+            LayoutSVGPath {path} at (146,347) size 299x227 [fill={[type=SOLID] [color=#33CC33]}] [data="M 275 353 c -46 12 -88 43 -114 91 c -9 16 6 37 25 33 c -14 24 -40 67 -15 81 c 28 16 52 -8 60 -15 c 18 21 50 10 81 -17 c 41 14 68 -2 103 -53 c 8 -12 30 -43 30 -65 c 0 -16 -15 -30 -35 -21 c -1 -12 -9 -38 -53 -19 c -10 -6 -31 -5 -54 17 C 308 375 300 347 275 353 Z"]

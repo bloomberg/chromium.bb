@@ -9,11 +9,11 @@ layer at (0,0) size 800x105
           text run at (0,85) width 53: "Test 123"
       LayoutText {#text} at (52,85) size 5x19
         text run at (52,85) width 5: " "
-      LayoutSVGRoot {svg} at (56,0) size 101x100
-        LayoutSVGText {text} at (0,-15) size 185x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 185x19
+      LayoutSVGRoot {svg} at (56.88,0) size 100x100
+        LayoutSVGText {text} at (0,-15) size 184.39x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,-15) size 184.39x19
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 29 width 184.40: "You should see an error above"
-        LayoutSVGRect {rect} at (56,0) size 101x100 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+        LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
       LayoutText {#text} at (156,85) size 5x19
         text run at (156,85) width 5: " "
       LayoutInline {h1} at (0,0) size 62x19

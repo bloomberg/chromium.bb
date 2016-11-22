@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (54,54) size 746x546
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGForeignObject {foreignObject} at (10,10) size 580x380
       LayoutBlockFlow {xhtml:div} at (0,0) size 580x18
         LayoutText {#text} at (0,0) size 245x18

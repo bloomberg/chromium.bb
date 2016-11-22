@@ -2,20 +2,20 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (114,11) size 252x280
-      LayoutSVGText {text} at (145,11) size 190x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 189x17
+    LayoutSVGContainer {g} at (115,11) size 250x279
+      LayoutSVGText {text} at (145.77,11) size 188.44x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (145.77,11) size 188.44x17
           chunk 1 (middle anchor) text run 1 at (145.78,25.00) startOffset 0 endOffset 35 width 188.44: "feTile filter test: a tiled pattern"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="feTileFilter"] [filterUnits=userSpaceOnUse] [primitiveUnits=userSpaceOnUse]
           [feTile]
             [feOffset dx="6.00" dy="6.00"]
               [feFlood flood-color="#FF0000" flood-opacity="1.00"]
-      LayoutSVGContainer {g} at (115,40) size 250x250
+      LayoutSVGContainer {g} at (0,0) size 0x0
         [filter="feTileFilter"] LayoutSVGResourceFilter {filter} at (115,40) size 250x250
-      LayoutSVGRect {rect} at (114,39) size 252x252 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [x=115.00] [y=40.00] [width=250.00] [height=250.00]
-      LayoutSVGRect {rect} at (214,114) size 52x27 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=215.00] [y=115.00] [width=50.00] [height=25.00]
-    LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x45
+      LayoutSVGRect {rect} at (115,40) size 250x250 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [x=115.00] [y=40.00] [width=250.00] [height=250.00]
+      LayoutSVGRect {rect} at (215,115) size 50x25 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=215.00] [y=115.00] [width=50.00] [height=25.00]
+    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.9 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

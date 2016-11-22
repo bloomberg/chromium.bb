@@ -8,8 +8,8 @@ layer at (0,0) size 800x401
           text run at (0,0) width 710: "Zoom in and out. The following two squares should always be the same size."
       LayoutBlockFlow {div} at (0,49.03) size 144x144 [bgcolor=#000080]
       LayoutBlockFlow (anonymous) at (0,216.06) size 776.97x150
-        LayoutSVGRoot {svg} at (11,239) size 145x145
-          LayoutSVGRect {rect} at (11,239) size 145x145 [fill={[type=SOLID] [color=#000080]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+        LayoutSVGRoot {svg} at (0,0) size 144x144
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#000080]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

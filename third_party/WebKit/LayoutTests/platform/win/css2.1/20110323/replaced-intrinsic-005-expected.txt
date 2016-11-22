@@ -12,6 +12,6 @@ layer at (8,50) size 100x190
     layer at (0,0) size 60x150
       LayoutView at (0,0) size 60x150
     layer at (0,0) size 60x150
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 60x150
 layer at (8,50) size 100x190
   LayoutBlockFlow (positioned) {DIV} at (8,50) size 100x190 [border: (20px solid #008000)]

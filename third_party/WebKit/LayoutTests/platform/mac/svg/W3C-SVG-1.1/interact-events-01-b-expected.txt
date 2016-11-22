@@ -2,46 +2,46 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (30,4) size 412x302
+    LayoutSVGContainer {g} at (30,4) size 411.11x302
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (30,4) size 412x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 412x44
+      LayoutSVGText {text} at (30,4) size 411.11x44 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (30,4) size 411.11x44
           chunk 1 text run 1 at (30.00,40.00) startOffset 0 endOffset 25 width 411.11: "'onload' event attribute."
-      LayoutSVGContainer {g} at (47,45) size 361x261
-        LayoutSVGContainer {g} at (47,45) size 111x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(77.50,45.00)}]
-          LayoutSVGRect {rect} at (77,45) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
-          LayoutSVGText {text} at (-30,84) size 96x44 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 96x44
+      LayoutSVGContainer {g} at (47.50,45) size 360x261
+        LayoutSVGContainer {g} at (-30,0) size 110x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(77.50,45.00)}]
+          LayoutSVGRect {rect} at (0,0) size 80x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
+          LayoutSVGText {text} at (-30,84) size 95.59x44 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-30,84) size 95.59x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 5 width 95.61: "1: No"
-        LayoutSVGContainer {g} at (172,45) size 111x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(202.50,45.00)}]
-          LayoutSVGRect {rect} at (202,45) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
-          LayoutSVGText {text} at (-30,84) size 110x44 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 110x44
+        LayoutSVGContainer {g} at (-30,0) size 110x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(202.50,45.00)}]
+          LayoutSVGRect {rect} at (0,0) size 80x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
+          LayoutSVGText {text} at (-30,84) size 109.72x44 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-30,84) size 109.72x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 6 width 109.73: "2: Yes"
-        LayoutSVGContainer {g} at (297,45) size 111x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(327.50,45.00)}]
-          LayoutSVGContainer {g} at (327,45) size 81x80
-            LayoutSVGRect {rect} at (327,45) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
-          LayoutSVGText {text} at (-30,84) size 110x44 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 110x44
+        LayoutSVGContainer {g} at (-30,0) size 110x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(327.50,45.00)}]
+          LayoutSVGContainer {g} at (0,0) size 80x80
+            LayoutSVGRect {rect} at (0,0) size 80x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
+          LayoutSVGText {text} at (-30,84) size 109.72x44 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-30,84) size 109.72x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 6 width 109.73: "3: Yes"
-        LayoutSVGContainer {g} at (47,178) size 111x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(77.50,178.00)}]
-          LayoutSVGViewportContainer {svg} at (77,178) size 81x80
-            LayoutSVGRect {rect} at (77,178) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
-          LayoutSVGText {text} at (-30,84) size 110x44 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 110x44
+        LayoutSVGContainer {g} at (-30,0) size 110x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(77.50,178.00)}]
+          LayoutSVGViewportContainer {svg} at (0,0) size 80x80
+            LayoutSVGRect {rect} at (0,0) size 80x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
+          LayoutSVGText {text} at (-30,84) size 109.72x44 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-30,84) size 109.72x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 6 width 109.73: "4: Yes"
-        LayoutSVGContainer {g} at (172,178) size 111x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(202.50,178.00)}]
-          LayoutSVGContainer {g} at (202,178) size 81x80
-            LayoutSVGRect {rect} at (202,178) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
-          LayoutSVGText {text} at (-30,84) size 96x44 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 96x44
+        LayoutSVGContainer {g} at (-30,0) size 110x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(202.50,178.00)}]
+          LayoutSVGContainer {g} at (0,0) size 80x80
+            LayoutSVGRect {rect} at (0,0) size 80x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
+          LayoutSVGText {text} at (-30,84) size 95.59x44 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-30,84) size 95.59x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 5 width 95.61: "5: No"
-        LayoutSVGContainer {g} at (297,178) size 111x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(327.50,178.00)}]
-          LayoutSVGRect {rect} at (327,178) size 81x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
-          LayoutSVGText {text} at (-30,84) size 110x44 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 110x44
+        LayoutSVGContainer {g} at (-30,0) size 110x128 [transform={m=((1.00,0.00)(0.00,1.00)) t=(327.50,178.00)}]
+          LayoutSVGRect {rect} at (0,0) size 80x80 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=80.00] [height=80.00]
+          LayoutSVGText {text} at (-30,84) size 109.72x44 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-30,84) size 109.72x44
               chunk 1 text run 1 at (-30.00,120.00) startOffset 0 endOffset 6 width 109.73: "6: Yes"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x46
+    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.2 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

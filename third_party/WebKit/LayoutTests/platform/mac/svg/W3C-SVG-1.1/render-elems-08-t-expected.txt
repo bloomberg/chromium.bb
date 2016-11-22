@@ -3,18 +3,18 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (0,0) size 480x360
-      LayoutSVGText {text} at (120,12) size 226x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 226x36
+    LayoutSVGContainer {g} at (1,1) size 478x358
+      LayoutSVGText {text} at (120,12) size 225.36x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (120,12) size 225.36x36
           chunk 1 text run 1 at (120.00,40.00) startOffset 0 endOffset 20 width 225.37: "Text fill and stroke"
-      LayoutSVGContainer {g} at (48,0) size 425x360
-        LayoutSVGText {text} at (60,10) size 217x345 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 217x345
+      LayoutSVGContainer {g} at (60,10) size 400.09x345
+        LayoutSVGText {text} at (60,10) size 216.64x345 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (60,10) size 216.64x345
             chunk 1 text run 1 at (60.00,280.00) startOffset 0 endOffset 1 width 216.65: "A"
-        LayoutSVGText {text} at (260,10) size 201x345 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 201x345
+        LayoutSVGText {text} at (260,10) size 200.09x345 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (260,10) size 200.09x345
             chunk 1 text run 1 at (260.00,280.00) startOffset 0 endOffset 1 width 200.10: "B"
-      LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 264x46
+      LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,304) size 263.33x46
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.4 $"
-      LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+      LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

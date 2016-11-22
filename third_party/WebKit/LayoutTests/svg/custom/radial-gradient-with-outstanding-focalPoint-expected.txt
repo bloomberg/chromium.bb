@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,0) size 220x220
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceRadialGradient {radialGradient} [id="rad11"] [gradientUnits=userSpaceOnUse] [center=(50,50)] [focal=(100,100)] [radius=30.00] [focalRadius=0.00]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]

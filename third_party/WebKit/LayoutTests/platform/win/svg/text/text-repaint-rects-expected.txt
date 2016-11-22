@@ -6,46 +6,46 @@ layer at (0,0) size 800x155
       LayoutBlockFlow {p} at (0,0) size 784x123
         LayoutText {#text} at (0,33) size 226x17
           text run at (0,33) width 226: "The alphabet A through M is here: "
-        LayoutSVGRoot {svg} at (233,18) size 501x45
-          LayoutSVGContainer {g} at (233,18) size 501x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,47.00)}]
-            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 37x56
+        LayoutSVGRoot {svg} at (225.27,0) size 500x47
+          LayoutSVGContainer {g} at (0,-45) size 524.45x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,47.00)}]
+            LayoutSVGText {text} at (0,-45) size 36.09x56 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 36.09x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "A"
-            LayoutSVGText {text} at (0,-45) size 34x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 34x56
+            LayoutSVGText {text} at (0,-45) size 33.34x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 33.34x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 33.35: "B"
-            LayoutSVGText {text} at (0,-45) size 34x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 34x56
+            LayoutSVGText {text} at (0,-45) size 33.34x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 33.34x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 33.35: "C"
-            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 37x56
+            LayoutSVGText {text} at (0,-45) size 36.09x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 36.09x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "D"
-            LayoutSVGText {text} at (0,-45) size 31x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 31x56
+            LayoutSVGText {text} at (0,-45) size 30.53x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 30.53x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 30.54: "E"
-            LayoutSVGText {text} at (0,-45) size 28x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 28x56
+            LayoutSVGText {text} at (0,-45) size 27.80x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 27.80x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 27.81: "F"
-            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 37x56
+            LayoutSVGText {text} at (0,-45) size 37x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 37x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "G"
-            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 37x56
+            LayoutSVGText {text} at (0,-45) size 36.09x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(280.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 36.09x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "H"
-            LayoutSVGText {text} at (0,-45) size 17x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 17x56
+            LayoutSVGText {text} at (0,-45) size 16.64x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(320.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 16.64x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 16.65: "I"
-            LayoutSVGText {text} at (0,-45) size 20x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 20x56
+            LayoutSVGText {text} at (0,-45) size 19.45x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(360.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 19.45x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 19.46: "J"
-            LayoutSVGText {text} at (0,-45) size 37x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 37x56
+            LayoutSVGText {text} at (0,-45) size 36.09x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(400.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 36.09x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 36.11: "K"
-            LayoutSVGText {text} at (0,-45) size 31x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 31x56
+            LayoutSVGText {text} at (0,-45) size 30.53x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(440.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 30.53x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 30.54: "L"
-            LayoutSVGText {text} at (0,-45) size 45x56 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 45x56
+            LayoutSVGText {text} at (0,-45) size 44.45x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(480.00,0.00)}] contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,-45) size 44.45x56
                 chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 44.46: "M"
         LayoutText {#text} at (725,33) size 779x89
           text run at (725,33) width 5: " "

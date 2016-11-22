@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (50,5) size 722x56
-    LayoutSVGContainer {g} at (296,5) size 76x56
-      LayoutSVGPath {svg:line} at (296,5) size 6x56 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=59.81] [y1=1.00] [x2=59.81] [y2=12.20]
-      LayoutSVGPath {svg:line} at (366,5) size 6x56 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=73.89] [y1=1.00] [x2=73.89] [y2=12.20]
-      LayoutSVGRect {svg:rect} at (299,5) size 71x56 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=59.81] [y=1.00] [width=14.08] [height=11.20]
-    LayoutSVGText {text} at (10,1) size 145x12 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 145x12
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (59.81,1) size 14.08x11.20
+      LayoutSVGPath {svg:line} at (59.81,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=59.81] [y1=1.00] [x2=59.81] [y2=12.20]
+      LayoutSVGPath {svg:line} at (73.89,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=73.89] [y1=1.00] [x2=73.89] [y2=12.20]
+      LayoutSVGRect {svg:rect} at (59.81,1) size 14.08x11.20 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=59.81] [y=1.00] [width=14.08] [height=11.20]
+    LayoutSVGText {text} at (10,1) size 144.23x11.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,1) size 144.23x11.19
         chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 1 width 6.11: "T"
         chunk 1 text run 2 at (20.74,10.00) startOffset 1 endOffset 2 width 5.56: "e"
         chunk 1 text run 3 at (32.04,10.00) startOffset 2 endOffset 3 width 5.00: "x"

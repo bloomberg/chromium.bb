@@ -13,4 +13,4 @@ layer at (8,16) size 200x200
     layer at (0,0) size 100x200
       LayoutView at (0,0) size 100x200
     layer at (0,0) size 100x200
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 100x200

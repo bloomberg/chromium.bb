@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,0) size 250x250
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="f1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feColorMatrix type="SATURATE" values="-100.00"]
@@ -22,11 +22,11 @@ layer at (0,0) size 800x600
         LayoutSVGGradientStop {stop} [offset=0.60] [color=#FFFF00]
         LayoutSVGGradientStop {stop} [offset=0.80] [color=#FFA500]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#008000]
-    LayoutSVGRect {rect} at (0,0) size 120x120 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=10.00] [y=10.00] [width=100.00] [height=100.00]
+    LayoutSVGRect {rect} at (10,10) size 100x100 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=10.00] [y=10.00] [width=100.00] [height=100.00]
       [filter="f1"] LayoutSVGResourceFilter {filter} at (0,0) size 120x120
-    LayoutSVGRect {rect} at (130,0) size 120x120 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=140.00] [y=10.00] [width=100.00] [height=100.00]
+    LayoutSVGRect {rect} at (140,10) size 100x100 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=140.00] [y=10.00] [width=100.00] [height=100.00]
       [filter="f2"] LayoutSVGResourceFilter {filter} at (130,0) size 120x120
-    LayoutSVGRect {rect} at (0,130) size 120x120 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=10.00] [y=140.00] [width=100.00] [height=100.00]
+    LayoutSVGRect {rect} at (10,140) size 100x100 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=10.00] [y=140.00] [width=100.00] [height=100.00]
       [filter="f3"] LayoutSVGResourceFilter {filter} at (0,130) size 120x120
-    LayoutSVGRect {rect} at (130,130) size 120x120 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=140.00] [y=140.00] [width=100.00] [height=100.00]
+    LayoutSVGRect {rect} at (140,140) size 100x100 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=140.00] [y=140.00] [width=100.00] [height=100.00]
       [filter="f4"] LayoutSVGResourceFilter {filter} at (130,130) size 120x120

@@ -2,19 +2,19 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (10,7) size 470x281
-      LayoutSVGText {text} at (10,7) size 475x41 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 475x41
+    LayoutSVGContainer {g} at (10,7) size 474.22x281
+      LayoutSVGText {text} at (10,7) size 474.22x41 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,7) size 474.22x41
           chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 31 width 474.22: "Basic paint: stroke properties."
-      LayoutSVGPath {path} at (143,53) size 219x74 [stroke={[type=SOLID] [color=#FF0000] [stroke width=30.00] [line cap=ROUND]}] [data="M 160 70 l 200 20 l -200 20"]
-      LayoutSVGPath {path} at (158,175) size 204x70 [stroke={[type=SOLID] [color=#FF0000] [stroke width=30.00] [miter limit=1.00]}] [data="M 160 190 l 200 20 l -200 20"]
-      LayoutSVGText {text} at (60,124) size 404x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 404x44
+      LayoutSVGPath {path} at (160,70) size 200x40 [stroke={[type=SOLID] [color=#FF0000] [stroke width=30.00] [line cap=ROUND]}] [data="M 160 70 l 200 20 l -200 20"]
+      LayoutSVGPath {path} at (160,190) size 200x40 [stroke={[type=SOLID] [color=#FF0000] [stroke width=30.00] [miter limit=1.00]}] [data="M 160 190 l 200 20 l -200 20"]
+      LayoutSVGText {text} at (60,124) size 403.06x44 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (60,124) size 403.06x44
           chunk 1 text run 1 at (60.00,160.00) startOffset 0 endOffset 22 width 403.07: "stroke-linecap=\"round\""
-      LayoutSVGText {text} at (130,244) size 286x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 286x44
+      LayoutSVGText {text} at (130,244) size 285.13x44 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (130,244) size 285.13x44
           chunk 1 text run 1 at (130.00,280.00) startOffset 0 endOffset 16 width 285.14: "stroke-miter=\"1\""
-    LayoutSVGText {text} at (10,304) size 284x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 284x45
+    LayoutSVGText {text} at (10,304) size 283.33x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 283.33x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 283.34: "$Revision: 1.10 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (12,0) size 287x488
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGHiddenContainer {defs} at (0,0) size 400x50
       LayoutSVGResourceLinearGradient {linearGradient} [id="grad1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,1)]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
@@ -15,14 +15,14 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (0,10) size 10x10 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=10.00] [width=10.00] [height=10.00]
         LayoutSVGRect {rect} at (10,10) size 10x10 [fill={[type=SOLID] [color=#FFFF00]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]
       LayoutSVGRect {rect} at (0,0) size 400x50 [x=0.00] [y=0.00] [width=400.00] [height=50.00]
-    LayoutSVGContainer {g} at (12,12) size 116x66 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,20.00)}]
-      LayoutSVGRect {rect} at (12,12) size 116x66 [transform={m=((0.25,0.00)(0.00,1.00)) t=(0.00,0.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad1"] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
-    LayoutSVGRect {rect} at (12,92) size 116x66 [transform={m=((0.25,0.00)(0.00,1.00)) t=(20.00,100.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad2"] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
-    LayoutSVGContainer {use} at (12,172) size 116x66 [transform={m=((0.25,0.00)(0.00,1.00)) t=(20.00,180.00)}]
-      LayoutSVGRect {rect} at (12,172) size 116x66 [stroke={[type=PATTERN] [id="pattern"] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
-    LayoutSVGContainer {use} at (12,252) size 116x66 [transform={m=((0.25,0.00)(0.00,1.00)) t=(20.00,260.00)}]
-      LayoutSVGRect {rect} at (12,252) size 116x66 [stroke={[type=SOLID] [color=#008000] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
-    LayoutSVGContainer {use} at (134,12) size 165x66 [transform={m=((0.25,0.00)(0.25,1.00)) t=(160.00,20.00)}]
-      LayoutSVGRect {rect} at (134,12) size 165x66 [stroke={[type=SOLID] [color=#008000] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
-    LayoutSVGContainer {use} at (152,0) size 116x488 [transform={m=((0.25,0.36)(0.00,1.00)) t=(160.00,100.00)}]
-      LayoutSVGRect {rect} at (152,0) size 116x488 [stroke={[type=SOLID] [color=#008000] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
+    LayoutSVGContainer {g} at (0,0) size 100x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,20.00)}]
+      LayoutSVGRect {rect} at (0,0) size 400x50 [transform={m=((0.25,0.00)(0.00,1.00)) t=(0.00,0.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad1"] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
+    LayoutSVGRect {rect} at (0,0) size 400x50 [transform={m=((0.25,0.00)(0.00,1.00)) t=(20.00,100.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad2"] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
+    LayoutSVGContainer {use} at (0,0) size 400x50 [transform={m=((0.25,0.00)(0.00,1.00)) t=(20.00,180.00)}]
+      LayoutSVGRect {rect} at (0,0) size 400x50 [stroke={[type=PATTERN] [id="pattern"] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
+    LayoutSVGContainer {use} at (0,0) size 400x50 [transform={m=((0.25,0.00)(0.00,1.00)) t=(20.00,260.00)}]
+      LayoutSVGRect {rect} at (0,0) size 400x50 [stroke={[type=SOLID] [color=#008000] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
+    LayoutSVGContainer {use} at (0,0) size 400x50 [transform={m=((0.25,0.00)(0.25,1.00)) t=(160.00,20.00)}]
+      LayoutSVGRect {rect} at (0,0) size 400x50 [stroke={[type=SOLID] [color=#008000] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]
+    LayoutSVGContainer {use} at (0,0) size 400x50 [transform={m=((0.25,0.36)(0.00,1.00)) t=(160.00,100.00)}]
+      LayoutSVGRect {rect} at (0,0) size 400x50 [stroke={[type=SOLID] [color=#008000] [stroke width=15.00]}] [x=0.00] [y=0.00] [width=400.00] [height=50.00]

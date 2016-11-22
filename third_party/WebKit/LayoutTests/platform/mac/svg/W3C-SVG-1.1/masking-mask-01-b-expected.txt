@@ -2,10 +2,10 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (10,7) size 387x293
+    LayoutSVGContainer {g} at (10,7) size 386.77x301
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (10,7) size 134x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 134x16
+      LayoutSVGText {text} at (10,7) size 133.81x16 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,7) size 133.81x16
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 133.83: "Test for mask support"
       LayoutSVGRect {rect} at (10,30) size 100x260 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
@@ -16,40 +16,40 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (60,50) size 100x60 [fill={[type=LINEAR-GRADIENT] [id="Grad1"]}] [x=60.00] [y=50.00] [width=100.00] [height=60.00]
       LayoutSVGRect {rect} at (60,50) size 100x60 [fill={[type=SOLID] [color=#00FF00]}] [x=60.00] [y=50.00] [width=100.00] [height=60.00]
         [masker="mask1"] LayoutSVGResourceMasker {mask} at (60,50) size 100x60
-      LayoutSVGText {text} at (200,54) size 161x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 161x14
+      LayoutSVGText {text} at (200,54) size 160.05x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (200,54) size 160.05x14
           chunk 1 text run 1 at (200.00,65.00) startOffset 0 endOffset 30 width 160.06: "Mask with linear gradient from"
-      LayoutSVGText {text} at (200,69) size 134x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 134x14
+      LayoutSVGText {text} at (200,69) size 133.42x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (200,69) size 133.42x14
           chunk 1 text run 1 at (200.00,80.00) startOffset 0 endOffset 25 width 133.42: "opacity=1 to opactity=0.5"
       LayoutSVGResourceMasker {mask} [id="mask2"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (60,120) size 100x30 [fill={[type=SOLID] [color=#FFFFFF] [opacity=0.50]}] [x=60.00] [y=120.00] [width=100.00] [height=30.00]
       LayoutSVGRect {rect} at (60,120) size 100x30 [fill={[type=SOLID] [color=#00FF00]}] [x=60.00] [y=120.00] [width=100.00] [height=30.00]
         [masker="mask2"] LayoutSVGResourceMasker {mask} at (60,120) size 100x30
-      LayoutSVGText {text} at (200,124) size 172x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 172x14
+      LayoutSVGText {text} at (200,124) size 171.39x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (200,124) size 171.39x14
           chunk 1 text run 1 at (200.00,135.00) startOffset 0 endOffset 32 width 171.40: "Mask with uniform opacity of 0.5"
       LayoutSVGRect {rect} at (60,160) size 100x30 [fill={[type=SOLID] [color=#00FF00] [opacity=0.50]}] [x=60.00] [y=160.00] [width=100.00] [height=30.00]
-      LayoutSVGText {text} at (200,164) size 197x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 197x14
+      LayoutSVGText {text} at (200,164) size 196.77x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (200,164) size 196.77x14
           chunk 1 text run 1 at (200.00,175.00) startOffset 0 endOffset 37 width 196.77: "Rectangle with uniform opacity of 0.5"
       LayoutSVGResourceMasker {mask} [id="mask3"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (60,200) size 200x25 [fill={[type=SOLID] [color=#FFFFFF] [opacity=0.50]}] [x=60.00] [y=200.00] [width=200.00] [height=25.00]
         LayoutSVGRect {rect} at (60,225) size 200x25 [fill={[type=SOLID] [color=#FFFFFF] [opacity=0.20]}] [x=60.00] [y=225.00] [width=200.00] [height=25.00]
         LayoutSVGRect {rect} at (60,250) size 200x25 [fill={[type=SOLID] [color=#FFFFFF]}] [x=60.00] [y=250.00] [width=200.00] [height=25.00]
         LayoutSVGRect {rect} at (60,275) size 200x25 [fill={[type=SOLID] [color=#FFFFFF] [opacity=0.70]}] [x=60.00] [y=275.00] [width=200.00] [height=25.00]
-      LayoutSVGText {text} at (60,180) size 221x128 contains 1 chunk(s)
+      LayoutSVGText {text} at (60,180) size 220.05x128 contains 1 chunk(s)
         [masker="mask3"] LayoutSVGResourceMasker {mask} at (60,200) size 200x100
-        LayoutSVGInlineText {#text} at (0,0) size 221x128
+        LayoutSVGInlineText {#text} at (60,180) size 220.05x128
           [masker="mask3"] LayoutSVGResourceMasker {mask} at (60,200) size 200x100
           chunk 1 text run 1 at (60.00,280.00) startOffset 0 endOffset 3 width 220.05: "SVG"
-      LayoutSVGText {text} at (200,214) size 196x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 196x14
+      LayoutSVGText {text} at (200,214) size 195.42x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (200,214) size 195.42x14
           chunk 1 text run 1 at (200.00,225.00) startOffset 0 endOffset 36 width 195.43: "Text with mask containing rectangles"
-      LayoutSVGText {text} at (200,229) size 103x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 103x14
+      LayoutSVGText {text} at (200,229) size 102.72x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (200,229) size 102.72x14
           chunk 1 text run 1 at (200.00,240.00) startOffset 0 endOffset 20 width 102.72: "of various opacities"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x46
+    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

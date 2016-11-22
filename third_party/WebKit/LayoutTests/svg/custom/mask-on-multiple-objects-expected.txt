@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (20,20) size 220x100
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceMasker {mask} [id="mask"] [maskUnits=objectBoundingBox] [maskContentUnits=objectBoundingBox]
         LayoutSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FFFFFF]}] [cx=0.50] [cy=0.50] [r=0.50]

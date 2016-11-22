@@ -3,7 +3,7 @@ layer at (0,0) size 1600x1200
 layer at (0,0) size 1600x1200
   LayoutBlockFlow {HTML} at (0,0) size 1600x1200
     LayoutBlockFlow {BODY} at (16,16) size 1568x1168
-      LayoutSVGRoot {svg} at (16,16) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 0x0
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="displacement"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feDisplacementMap scale="10.00" xChannelSelector="RED" yChannelSelector="GREEN"]

@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (20,10) size 440x70
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGResourceLinearGradient {linearGradient} [id="grad1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
       LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
       LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]

@@ -1,54 +1,54 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 600x250
-  LayoutSVGRoot {svg} at (0,0) size 580x235
-    LayoutSVGContainer {g} at (0,0) size 580x235
-      LayoutSVGContainer {use} at (0,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
+  LayoutSVGRoot {svg} at (0,0) size 600x250
+    LayoutSVGContainer {g} at (10,10) size 560x215
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
         [filter="in"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (10,10) size 100x100
-          LayoutSVGRect {rect} at (10,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (20,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (115,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,10.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,10.00)}]
         [filter="out"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (125,10) size 100x100
-          LayoutSVGRect {rect} at (125,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (135,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (230,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,10.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,10.00)}]
         [filter="atop"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (240,10) size 100x100
-          LayoutSVGRect {rect} at (240,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (250,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (345,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,10.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,10.00)}]
         [filter="over"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (355,10) size 100x100
-          LayoutSVGRect {rect} at (355,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (365,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (460,0) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(470.00,10.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(470.00,10.00)}]
         [filter="xor"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (470,10) size 100x100
-          LayoutSVGRect {rect} at (470,10) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (480,20) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (0,115) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,125.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,125.00)}]
         [filter="arithmetic_k1"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (10,125) size 100x100
-          LayoutSVGRect {rect} at (10,125) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (20,135) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (115,115) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,125.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,125.00)}]
         [filter="arithmetic_k2"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (125,125) size 100x100
-          LayoutSVGRect {rect} at (125,125) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (135,135) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (230,115) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,125.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,125.00)}]
         [filter="arithmetic_k3"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (240,125) size 100x100
-          LayoutSVGRect {rect} at (240,125) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (250,135) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-      LayoutSVGContainer {use} at (345,115) size 120x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,125.00)}]
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+      LayoutSVGContainer {use} at (0,0) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,125.00)}]
         [filter="arithmetic_k4"] LayoutSVGResourceFilter {filter} at (-10,-10) size 120x120
-        LayoutSVGContainer {g} at (355,125) size 100x100
-          LayoutSVGRect {rect} at (355,125) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-          LayoutSVGRect {rect} at (365,135) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGContainer {g} at (0,0) size 100x100
+          LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
+          LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]
+    LayoutSVGHiddenContainer {defs} at (0,0) size 100x100
       LayoutSVGContainer {g} at (0,0) size 100x100
         LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
         LayoutSVGRect {rect} at (10,10) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=10.00] [width=60.00] [height=60.00]

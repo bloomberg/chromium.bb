@@ -1,67 +1,67 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
-  LayoutSVGRoot {svg} at (0,0) size 448x498
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+  LayoutSVGRoot {svg} at (0,0) size 450x500
+    LayoutSVGHiddenContainer {defs} at (0,-15) size 42x19
       LayoutSVGText {text} at (0,-15) size 42x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 42x19
+        LayoutSVGInlineText {#text} at (0,-15) size 42x19
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 42.00: "sample"
-    LayoutSVGContainer {g} at (90,36) size 250x437
-      LayoutSVGText {text} at (141,36) size 168x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 167x17
+    LayoutSVGContainer {g} at (90,36) size 250x436.22
+      LayoutSVGText {text} at (141.83,36) size 166.33x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (141.83,36) size 166.33x17
           chunk 1 (middle anchor) text run 1 at (141.83,50.00) startOffset 0 endOffset 26 width 166.34: "Text Layout Properties (2)"
-      LayoutSVGText {text} at (186,65) size 78x12 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 77x12
+      LayoutSVGText {text} at (186.50,65) size 77x12 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (186.50,65) size 77x12
           chunk 1 (middle anchor) text run 1 at (186.50,75.00) startOffset 0 endOffset 19 width 77.00: "Baseline Properties"
-      LayoutSVGContainer {g} at (154,88) size 143x49
-        LayoutSVGText {text} at (165,88) size 120x35 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (154.50,88.50) size 142x48.50
+        LayoutSVGText {text} at (165.50,88.50) size 119x34 contains 1 chunk(s)
           LayoutSVGTSpan {tspan} at (0,0) size 32x17
-            LayoutSVGInlineText {#text} at (0,0) size 32x17
+            LayoutSVGInlineText {#text} at (165.50,88.50) size 32x17
               chunk 1 (middle anchor) text run 1 at (165.50,101.50) startOffset 0 endOffset 5 width 32.00: "super"
-          LayoutSVGInlineText {#text} at (32,8) size 29x17
+          LayoutSVGInlineText {#text} at (197.50,97) size 29x17
             chunk 1 (middle anchor) text run 1 at (197.50,110.00) startOffset 0 endOffset 5 width 29.00: " and "
           LayoutSVGTSpan {tspan} at (0,0) size 20x17
-            LayoutSVGInlineText {#text} at (61,17) size 20x17
+            LayoutSVGInlineText {#text} at (226.50,105.50) size 20x17
               chunk 1 (middle anchor) text run 1 at (226.50,118.50) startOffset 0 endOffset 3 width 20.00: "sub"
-          LayoutSVGInlineText {#text} at (81,8) size 38x17
+          LayoutSVGInlineText {#text} at (246.50,97) size 38x17
             chunk 1 (middle anchor) text run 1 at (246.50,110.00) startOffset 0 endOffset 7 width 38.00: "scripts"
-        LayoutSVGText {text} at (154,127) size 143x10 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 142x10
+        LayoutSVGText {text} at (154.50,127) size 142x10 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (154.50,127) size 142x10
             chunk 1 (middle anchor) text run 1 at (154.50,135.00) startOffset 0 endOffset 43 width 141.00: "baseline-shift=\"super\"/baseline-shift=\"sub\""
-      LayoutSVGContainer {g} at (123,149) size 204x33
-        LayoutSVGText {text} at (123,149) size 204x23 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (123.50,149) size 203x33
+        LayoutSVGText {text} at (123.50,149) size 203x23 contains 1 chunk(s)
           LayoutSVGTSpan {tspan} at (0,0) size 44x17
-            LayoutSVGInlineText {#text} at (0,0) size 44x17
+            LayoutSVGInlineText {#text} at (123.50,149) size 44x17
               chunk 1 (middle anchor) text run 1 at (123.50,162.00) startOffset 0 endOffset 8 width 44.00: "positive"
-          LayoutSVGInlineText {#text} at (44,3) size 29x17
+          LayoutSVGInlineText {#text} at (167.50,152) size 29x17
             chunk 1 (middle anchor) text run 1 at (167.50,165.00) startOffset 0 endOffset 5 width 29.00: " and "
           LayoutSVGTSpan {tspan} at (0,0) size 53x17
-            LayoutSVGInlineText {#text} at (73,6) size 53x17
+            LayoutSVGInlineText {#text} at (196.50,155) size 53x17
               chunk 1 (middle anchor) text run 1 at (196.50,168.00) startOffset 0 endOffset 9 width 53.00: "negative "
-          LayoutSVGInlineText {#text} at (126,3) size 77x17
+          LayoutSVGInlineText {#text} at (249.50,152) size 77x17
             chunk 1 (middle anchor) text run 1 at (249.50,165.00) startOffset 0 endOffset 14 width 77.00: "baseline-shift"
         LayoutSVGText {text} at (185,172) size 81x10 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 81x10
+          LayoutSVGInlineText {#text} at (185,172) size 81x10
             chunk 1 (middle anchor) text run 1 at (185.00,180.00) startOffset 0 endOffset 23 width 80.00: "baseline-shift=\"+/-20%\""
-      LayoutSVGText {text} at (173,200) size 104x12 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 103x12
+      LayoutSVGText {text} at (173.84,200) size 102.30x12 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (173.84,200) size 102.30x12
           chunk 1 (middle anchor) text run 1 at (173.85,210.00) startOffset 0 endOffset 25 width 102.30: "Multi-line Text Selection"
-      LayoutSVGText {text} at (159,218) size 132x9 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 131x9
+      LayoutSVGText {text} at (159.84,218) size 130.30x9 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (159.84,218) size 130.30x9
           chunk 1 (middle anchor) text run 1 at (159.85,225.00) startOffset 0 endOffset 42 width 130.31: "(Try selecting the following text regions)"
-      LayoutSVGText {text} at (120,237) size 196x32 contains 1 chunk(s)
+      LayoutSVGText {text} at (120,237) size 195.94x32 contains 1 chunk(s)
         LayoutSVGTSpan {tspan} at (0,0) size 192x17
-          LayoutSVGInlineText {#text} at (0,0) size 192x17
+          LayoutSVGInlineText {#text} at (120,237) size 191.94x17
             chunk 1 text run 1 at (120.00,250.00) startOffset 0 endOffset 33 width 191.95: "Text selections can span multiple"
-        LayoutSVGInlineText {#text} at (191,0) size 4x17
+        LayoutSVGInlineText {#text} at (311.94,237) size 4x17
           chunk 1 text run 1 at (311.95,250.00) startOffset 0 endOffset 1 width 4.00: " "
         LayoutSVGTSpan {tspan} at (0,0) size 158x17
-          LayoutSVGInlineText {#text} at (0,15) size 158x17
+          LayoutSVGInlineText {#text} at (120,252) size 158x17
             chunk 1 text run 1 at (120.00,265.00) startOffset 0 endOffset 27 width 158.00: "lines via <tspan> elements."
         LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGText {text} at (0,-67) size 106x122 contains 1 chunk(s)
+      LayoutSVGText {text} at (0,-67) size 106x122 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,360.00)}] contains 1 chunk(s)
         LayoutSVGTSpan {tspan} at (0,0) size 106x122
-          LayoutSVGInlineText {#text} at (0,50) size 106x122
+          LayoutSVGInlineText {#text} at (0,-67) size 106x122
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 12.00: "T"
             chunk 1 text run 1 at (10.00,-25.00) startOffset 0 endOffset 1 width 9.00: "e"
             chunk 1 text run 1 at (25.00,-40.00) startOffset 0 endOffset 1 width 9.00: "x"
@@ -75,8 +75,8 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (25.00,40.00) startOffset 0 endOffset 1 width 9.00: "e"
             chunk 1 text run 1 at (10.00,25.00) startOffset 0 endOffset 1 width 5.00: "."
         LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGText {text} at (0,-17) size 90x102 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 90x102
+      LayoutSVGText {text} at (0,-17) size 90x102 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,320.00)}] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,-17) size 90x102
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 12.00: "T"
           chunk 1 text run 1 at (20.00,0.00) startOffset 0 endOffset 1 width 9.00: "e"
           chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 9.00: "x"
@@ -93,11 +93,11 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 1 width 9.00: "a"
           chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 1 width 7.00: "r"
           chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 1 width 9.00: "e"
-      LayoutSVGText {text} at (154,435) size 142x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,1) size 59x17
+      LayoutSVGText {text} at (154.52,435.97) size 140.95x19.17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (154.52,437) size 58.94x17
           chunk 1 (middle anchor) text run 1 at (154.52,450.00) startOffset 0 endOffset 10 width 58.95: "Text with "
         LayoutSVGTSpan {tspan} at (0,0) size 45x20
-          LayoutSVGInlineText {#text} at (58,0) size 44x20
+          LayoutSVGInlineText {#text} at (212.78,435.97) size 43.84x19.17
             chunk 1 (middle anchor) text run 1 at (213.48,450.00) startOffset 0 endOffset 1 width 5.00: "r"
             chunk 1 (middle anchor) text run 2 at (218.48,450.00) startOffset 1 endOffset 2 width 7.00: "o"
             chunk 1 (middle anchor) text run 3 at (225.48,450.00) startOffset 2 endOffset 3 width 4.00: "t"
@@ -105,10 +105,10 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 5 at (236.48,450.00) startOffset 4 endOffset 5 width 4.00: "t"
             chunk 1 (middle anchor) text run 6 at (240.48,450.00) startOffset 5 endOffset 6 width 7.00: "e"
             chunk 1 (middle anchor) text run 7 at (247.48,450.00) startOffset 6 endOffset 7 width 7.00: "d"
-        LayoutSVGInlineText {#text} at (99,1) size 41x17
+        LayoutSVGInlineText {#text} at (254.47,437) size 41x17
           chunk 1 (middle anchor) text run 1 at (254.48,450.00) startOffset 0 endOffset 7 width 41.00: " glyphs"
-      LayoutSVGText {text} at (164,452) size 124x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 123x21
+      LayoutSVGText {text} at (164.95,452.17) size 122.19x20.05 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (164.95,452.17) size 122.19x20.05
           chunk 1 (middle anchor) text run 1 at (166.00,465.00) startOffset 0 endOffset 1 width 13.00: "M"
           chunk 1 (middle anchor) text run 2 at (179.00,465.00) startOffset 1 endOffset 2 width 7.00: "o"
           chunk 1 (middle anchor) text run 3 at (186.00,465.00) startOffset 2 endOffset 3 width 5.00: "r"
@@ -128,11 +128,11 @@ layer at (0,0) size 450x500
           chunk 1 (middle anchor) text run 17 at (264.00,465.00) startOffset 16 endOffset 17 width 7.00: "p"
           chunk 1 (middle anchor) text run 18 at (271.00,465.00) startOffset 17 endOffset 18 width 7.00: "h"
           chunk 1 (middle anchor) text run 19 at (278.00,465.00) startOffset 18 endOffset 19 width 6.00: "s"
-    LayoutSVGContainer {use} at (0,0) size 448x498
-      LayoutSVGContainer {g} at (0,0) size 448x498
-        LayoutSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
-        LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
-          LayoutSVGViewportContainer {svg} at (418,466) size 28x30
-            LayoutSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 c -8 27 22 48 44 33 C 14 306 -1 332 0 356 c 0 14 13 42 44 27 c 8 -4 35 -25 52 -41 c 14 -1 24 -11 42 -28 c 17 14 36 10 52 -7 c 22 2 82 -78 44 -108 c -3 -24 -30 -37 -53 -18 c -6 -2 -13 -1 -18 1 c 22 -35 43 -82 49 -105 C 219 47 188 36 172 44 Z"]
-            LayoutSVGPath {path} at (432,466) size 14x17 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 c -18 3 -49 31 -49 31 c -29 23 -43 58 -28 95 c -13 14 -29 44 -29 67 c 0 28 20 52 50 29 c 7 8 21 16 37 5 c -5 29 3 48 26 49 c 1 10 13 31 36 17 c 16 -10 58 -39 79 -56 c 25 -23 25 -94 -18 -89 c 33 -59 -3 -96 -27 -84 c -10 4 -46 25 -52 30 c -1 -7 -5 -12 -11 -14 C 436 45 436 -5 401 0 Z"]
-            LayoutSVGPath {path} at (425,484) size 16x12 [fill={[type=SOLID] [color=#33CC33]}] [data="M 275 353 c -46 12 -88 43 -114 91 c -9 16 6 37 25 33 c -14 24 -40 67 -15 81 c 28 16 52 -8 60 -15 c 18 21 50 10 81 -17 c 41 14 68 -2 103 -53 c 8 -12 30 -43 30 -65 c 0 -16 -15 -30 -35 -21 c -1 -12 -9 -38 -53 -19 c -10 -6 -31 -5 -54 17 C 308 375 300 347 275 353 Z"]
+    LayoutSVGContainer {use} at (1,1) size 446x496
+      LayoutSVGContainer {g} at (1,1) size 446x496
+        LayoutSVGRect {rect} at (1,1) size 446x496 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
+        LayoutSVGContainer {g} at (0.19,-0.25) size 26.92x28.44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
+          LayoutSVGViewportContainer {svg} at (-1,-5) size 548x579
+            LayoutSVGPath {path} at (-1,36) size 273x362 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 c -8 27 22 48 44 33 C 14 306 -1 332 0 356 c 0 14 13 42 44 27 c 8 -4 35 -25 52 -41 c 14 -1 24 -11 42 -28 c 17 14 36 10 52 -7 c 22 2 82 -78 44 -108 c -3 -24 -30 -37 -53 -18 c -6 -2 -13 -1 -18 1 c 22 -35 43 -82 49 -105 C 219 47 188 36 172 44 Z"]
+            LayoutSVGPath {path} at (294,-5) size 253x312 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 c -18 3 -49 31 -49 31 c -29 23 -43 58 -28 95 c -13 14 -29 44 -29 67 c 0 28 20 52 50 29 c 7 8 21 16 37 5 c -5 29 3 48 26 49 c 1 10 13 31 36 17 c 16 -10 58 -39 79 -56 c 25 -23 25 -94 -18 -89 c 33 -59 -3 -96 -27 -84 c -10 4 -46 25 -52 30 c -1 -7 -5 -12 -11 -14 C 436 45 436 -5 401 0 Z"]
+            LayoutSVGPath {path} at (146,347) size 299x227 [fill={[type=SOLID] [color=#33CC33]}] [data="M 275 353 c -46 12 -88 43 -114 91 c -9 16 6 37 25 33 c -14 24 -40 67 -15 81 c 28 16 52 -8 60 -15 c 18 21 50 10 81 -17 c 41 14 68 -2 103 -53 c 8 -12 30 -43 30 -65 c 0 -16 -15 -30 -35 -21 c -1 -12 -9 -38 -53 -19 c -10 -6 -31 -5 -54 17 C 308 375 300 347 275 353 Z"]

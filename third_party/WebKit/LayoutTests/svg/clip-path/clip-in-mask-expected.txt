@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,0) size 200x200
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=objectBoundingBox]
-        LayoutSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=0.50]
-        LayoutSVGEllipse {circle} at (0,0) size 1x2 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=1.00] [r=0.50]
-        LayoutSVGEllipse {circle} at (0,0) size 2x1 [fill={[type=SOLID] [color=#000000]}] [cx=1.00] [cy=0.00] [r=0.50]
-        LayoutSVGEllipse {circle} at (0,0) size 2x2 [fill={[type=SOLID] [color=#000000]}] [cx=1.00] [cy=1.00] [r=0.50]
+        LayoutSVGEllipse {circle} at (-0.50,-0.50) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=0.50]
+        LayoutSVGEllipse {circle} at (-0.50,0.50) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=1.00] [r=0.50]
+        LayoutSVGEllipse {circle} at (0.50,-0.50) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=1.00] [cy=0.00] [r=0.50]
+        LayoutSVGEllipse {circle} at (0.50,0.50) size 1x1 [fill={[type=SOLID] [color=#000000]}] [cx=1.00] [cy=1.00] [r=0.50]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=objectBoundingBox] [maskContentUnits=objectBoundingBox]
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=1.00] [height=1.00]
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=1.00] [height=1.00]

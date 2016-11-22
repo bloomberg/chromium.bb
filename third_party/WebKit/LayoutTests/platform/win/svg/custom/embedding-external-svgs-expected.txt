@@ -19,20 +19,20 @@ layer at (0,0) size 800x328
       LayoutBlockFlow {p} at (50,262) size 750x34
         LayoutText {#text} at (0,16) size 42x17
           text run at (0,16) width 42: "Inline "
-        LayoutSVGRoot {svg:svg} at (91,278) size 31x30
-          LayoutSVGContainer {svg:g} at (91,278) size 31x30
-            LayoutSVGPath {svg:polygon} at (104,278) size 5x8 [fill={[type=SOLID] [color=#000000] [opacity=0.04]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (108,279) size 9x9 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (111,283) size 10x8 [transform={m=((0.50,0.87)(-0.87,0.50)) t=(34.15,-9.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (113,291) size 9x4 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(50.00,0.00)}] [fill={[type=SOLID] [color=#000000] [opacity=0.16]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (111,295) size 10x8 [transform={m=((-0.50,0.87)(-0.87,-0.50)) t=(59.15,15.85)}] [fill={[type=SOLID] [color=#000000] [opacity=0.20]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (108,298) size 9x9 [transform={m=((-0.87,0.50)(-0.50,-0.87)) t=(59.15,34.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.24]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (104,300) size 5x8 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(50.00,50.00)}] [fill={[type=SOLID] [color=#000000] [opacity=0.29]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (96,298) size 9x9 [transform={m=((-0.87,-0.50)(0.50,-0.87)) t=(34.15,59.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.33]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (92,295) size 10x8 [transform={m=((-0.50,-0.87)(0.87,-0.50)) t=(15.85,59.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.37]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (91,291) size 9x4 [transform={m=((-0.00,-1.00)(1.00,-0.00)) t=(0.00,50.00)}] [fill={[type=SOLID] [color=#000000] [opacity=0.41]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (92,283) size 10x8 [transform={m=((0.50,-0.87)(0.87,0.50)) t=(-9.15,34.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.45]}] [points="22 0 28 0 27 12 23 12"]
-            LayoutSVGPath {svg:polygon} at (96,279) size 9x9 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}] [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 27 12 23 12"]
+        LayoutSVGRoot {svg:svg} at (41.31,0) size 30x30
+          LayoutSVGContainer {svg:g} at (0,0) size 50x50
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [fill={[type=SOLID] [color=#000000] [opacity=0.04]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((0.50,0.87)(-0.87,0.50)) t=(34.15,-9.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(50.00,0.00)}] [fill={[type=SOLID] [color=#000000] [opacity=0.16]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((-0.50,0.87)(-0.87,-0.50)) t=(59.15,15.85)}] [fill={[type=SOLID] [color=#000000] [opacity=0.20]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((-0.87,0.50)(-0.50,-0.87)) t=(59.15,34.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.24]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(50.00,50.00)}] [fill={[type=SOLID] [color=#000000] [opacity=0.29]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((-0.87,-0.50)(0.50,-0.87)) t=(34.15,59.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.33]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((-0.50,-0.87)(0.87,-0.50)) t=(15.85,59.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.37]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((-0.00,-1.00)(1.00,-0.00)) t=(0.00,50.00)}] [fill={[type=SOLID] [color=#000000] [opacity=0.41]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((0.50,-0.87)(0.87,0.50)) t=(-9.15,34.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.45]}] [points="22 0 28 0 27 12 23 12"]
+            LayoutSVGPath {svg:polygon} at (22,0) size 6x12 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}] [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 27 12 23 12"]
         LayoutText {#text} at (0,0) size 0x0
 layer at (290,16) size 40x40
   LayoutEmbeddedObject {embed} at (239.69,0) size 40x40
@@ -40,89 +40,89 @@ layer at (290,16) size 40x40
       LayoutView at (0,0) size 40x40
     layer at (0,0) size 40x40
       LayoutSVGRoot {svg} at (0,0) size 40x40
-        LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
-          LayoutSVGPath {polygon} at (17,0) size 6x12 [fill={[type=SOLID] [color=#000000]}] [points="22 0 28 0 23 15 23 15"]
-        LayoutSVGContainer {g} at (0,0) size 40x40
-          LayoutSVGContainer {use} at (17,0) size 6x12
-            LayoutSVGViewportContainer {svg} at (17,0) size 6x12
-              LayoutSVGPath {polygon} at (17,0) size 6x12 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (21,1) size 12x14 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}]
-            LayoutSVGViewportContainer {svg} at (21,1) size 12x14
-              LayoutSVGPath {polygon} at (21,1) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (25,7) size 14x12 [transform={m=((0.50,0.87)(-0.87,0.50)) t=(34.15,-9.15)}]
-            LayoutSVGViewportContainer {svg} at (25,7) size 14x12
-              LayoutSVGPath {polygon} at (25,7) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (28,17) size 12x6 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(50.00,0.00)}]
-            LayoutSVGViewportContainer {svg} at (28,17) size 12x6
-              LayoutSVGPath {polygon} at (28,17) size 12x6 [fill={[type=SOLID] [color=#000000] [opacity=0.16]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (25,21) size 14x12 [transform={m=((-0.50,0.87)(-0.87,-0.50)) t=(59.15,15.85)}]
-            LayoutSVGViewportContainer {svg} at (25,21) size 14x12
-              LayoutSVGPath {polygon} at (25,21) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.20]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (21,25) size 12x14 [transform={m=((-0.87,0.50)(-0.50,-0.87)) t=(59.15,34.15)}]
-            LayoutSVGViewportContainer {svg} at (21,25) size 12x14
-              LayoutSVGPath {polygon} at (21,25) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.24]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (17,28) size 6x12 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(50.00,50.00)}]
-            LayoutSVGViewportContainer {svg} at (17,28) size 6x12
-              LayoutSVGPath {polygon} at (17,28) size 6x12 [fill={[type=SOLID] [color=#000000] [opacity=0.29]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (7,25) size 12x14 [transform={m=((-0.87,-0.50)(0.50,-0.87)) t=(34.15,59.15)}]
-            LayoutSVGViewportContainer {svg} at (7,25) size 12x14
-              LayoutSVGPath {polygon} at (7,25) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.33]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (1,21) size 14x12 [transform={m=((-0.50,-0.87)(0.87,-0.50)) t=(15.85,59.15)}]
-            LayoutSVGViewportContainer {svg} at (1,21) size 14x12
-              LayoutSVGPath {polygon} at (1,21) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.37]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (0,17) size 12x6 [transform={m=((-0.00,-1.00)(1.00,-0.00)) t=(0.00,50.00)}]
-            LayoutSVGViewportContainer {svg} at (0,17) size 12x6
-              LayoutSVGPath {polygon} at (0,17) size 12x6 [fill={[type=SOLID] [color=#000000] [opacity=0.41]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (1,7) size 14x12 [transform={m=((0.50,-0.87)(0.87,0.50)) t=(-9.15,34.15)}]
-            LayoutSVGViewportContainer {svg} at (1,7) size 14x12
-              LayoutSVGPath {polygon} at (1,7) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.45]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (7,1) size 12x14 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}]
-            LayoutSVGViewportContainer {svg} at (7,1) size 12x14
-              LayoutSVGPath {polygon} at (7,1) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
+        LayoutSVGHiddenContainer {symbol} at (22,0) size 6x15
+          LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000]}] [points="22 0 28 0 23 15 23 15"]
+        LayoutSVGContainer {g} at (0,0) size 50x50
+          LayoutSVGContainer {use} at (22,0) size 6x15
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.50,0.87)(-0.87,0.50)) t=(34.15,-9.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(50.00,0.00)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.16]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.50,0.87)(-0.87,-0.50)) t=(59.15,15.85)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.20]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.87,0.50)(-0.50,-0.87)) t=(59.15,34.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.24]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(50.00,50.00)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.29]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.87,-0.50)(0.50,-0.87)) t=(34.15,59.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.33]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.50,-0.87)(0.87,-0.50)) t=(15.85,59.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.37]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.00,-1.00)(1.00,-0.00)) t=(0.00,50.00)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.41]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.50,-0.87)(0.87,0.50)) t=(-9.15,34.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.45]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
 layer at (252,218) size 40x40
   LayoutIFrame {iframe} at (201.89,0) size 40x40
     layer at (0,0) size 40x40
       LayoutView at (0,0) size 40x40
     layer at (0,0) size 40x40
       LayoutSVGRoot {svg} at (0,0) size 40x40
-        LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
-          LayoutSVGPath {polygon} at (17,0) size 6x12 [fill={[type=SOLID] [color=#000000]}] [points="22 0 28 0 23 15 23 15"]
-        LayoutSVGContainer {g} at (0,0) size 40x40
-          LayoutSVGContainer {use} at (17,0) size 6x12
-            LayoutSVGViewportContainer {svg} at (17,0) size 6x12
-              LayoutSVGPath {polygon} at (17,0) size 6x12 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (21,1) size 12x14 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}]
-            LayoutSVGViewportContainer {svg} at (21,1) size 12x14
-              LayoutSVGPath {polygon} at (21,1) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (25,7) size 14x12 [transform={m=((0.50,0.87)(-0.87,0.50)) t=(34.15,-9.15)}]
-            LayoutSVGViewportContainer {svg} at (25,7) size 14x12
-              LayoutSVGPath {polygon} at (25,7) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (28,17) size 12x6 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(50.00,0.00)}]
-            LayoutSVGViewportContainer {svg} at (28,17) size 12x6
-              LayoutSVGPath {polygon} at (28,17) size 12x6 [fill={[type=SOLID] [color=#000000] [opacity=0.16]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (25,21) size 14x12 [transform={m=((-0.50,0.87)(-0.87,-0.50)) t=(59.15,15.85)}]
-            LayoutSVGViewportContainer {svg} at (25,21) size 14x12
-              LayoutSVGPath {polygon} at (25,21) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.20]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (21,25) size 12x14 [transform={m=((-0.87,0.50)(-0.50,-0.87)) t=(59.15,34.15)}]
-            LayoutSVGViewportContainer {svg} at (21,25) size 12x14
-              LayoutSVGPath {polygon} at (21,25) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.24]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (17,28) size 6x12 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(50.00,50.00)}]
-            LayoutSVGViewportContainer {svg} at (17,28) size 6x12
-              LayoutSVGPath {polygon} at (17,28) size 6x12 [fill={[type=SOLID] [color=#000000] [opacity=0.29]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (7,25) size 12x14 [transform={m=((-0.87,-0.50)(0.50,-0.87)) t=(34.15,59.15)}]
-            LayoutSVGViewportContainer {svg} at (7,25) size 12x14
-              LayoutSVGPath {polygon} at (7,25) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.33]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (1,21) size 14x12 [transform={m=((-0.50,-0.87)(0.87,-0.50)) t=(15.85,59.15)}]
-            LayoutSVGViewportContainer {svg} at (1,21) size 14x12
-              LayoutSVGPath {polygon} at (1,21) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.37]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (0,17) size 12x6 [transform={m=((-0.00,-1.00)(1.00,-0.00)) t=(0.00,50.00)}]
-            LayoutSVGViewportContainer {svg} at (0,17) size 12x6
-              LayoutSVGPath {polygon} at (0,17) size 12x6 [fill={[type=SOLID] [color=#000000] [opacity=0.41]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (1,7) size 14x12 [transform={m=((0.50,-0.87)(0.87,0.50)) t=(-9.15,34.15)}]
-            LayoutSVGViewportContainer {svg} at (1,7) size 14x12
-              LayoutSVGPath {polygon} at (1,7) size 14x12 [fill={[type=SOLID] [color=#000000] [opacity=0.45]}] [points="22 0 28 0 23 15 23 15"]
-          LayoutSVGContainer {use} at (7,1) size 12x14 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}]
-            LayoutSVGViewportContainer {svg} at (7,1) size 12x14
-              LayoutSVGPath {polygon} at (7,1) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
+        LayoutSVGHiddenContainer {symbol} at (22,0) size 6x15
+          LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000]}] [points="22 0 28 0 23 15 23 15"]
+        LayoutSVGContainer {g} at (0,0) size 50x50
+          LayoutSVGContainer {use} at (22,0) size 6x15
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.50,0.87)(-0.87,0.50)) t=(34.15,-9.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(50.00,0.00)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.16]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.50,0.87)(-0.87,-0.50)) t=(59.15,15.85)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.20]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.87,0.50)(-0.50,-0.87)) t=(59.15,34.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.24]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(50.00,50.00)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.29]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.87,-0.50)(0.50,-0.87)) t=(34.15,59.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.33]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.50,-0.87)(0.87,-0.50)) t=(15.85,59.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.37]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((-0.00,-1.00)(1.00,-0.00)) t=(0.00,50.00)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.41]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.50,-0.87)(0.87,0.50)) t=(-9.15,34.15)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.45]}] [points="22 0 28 0 23 15 23 15"]
+          LayoutSVGContainer {use} at (22,0) size 6x15 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}]
+            LayoutSVGViewportContainer {svg} at (22,0) size 6x15
+              LayoutSVGPath {polygon} at (22,0) size 6x15 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
 layer at (250,112) size 42x42
   LayoutBlockFlow (relative positioned) {div} at (0,144) size 42x42 [border: (1px solid #AAAAAA)]

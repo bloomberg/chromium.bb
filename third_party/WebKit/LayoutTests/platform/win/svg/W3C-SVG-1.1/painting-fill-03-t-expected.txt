@@ -2,19 +2,19 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (10,9) size 470x279
-      LayoutSVGText {text} at (30,9) size 411x41 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 411x41
+    LayoutSVGContainer {g} at (10,9) size 485.56x279
+      LayoutSVGText {text} at (30,9) size 410.17x41 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (30,9) size 410.17x41
           chunk 1 text run 1 at (30.00,42.00) startOffset 0 endOffset 29 width 410.19: "Basic paint: fill properties."
       LayoutSVGPath {path} at (30,75) size 160x160 [fill={[type=SOLID] [color=#FF0000] [fill rule=EVEN-ODD]}] [data="M 110 75 l 50 160 l -130 -100 l 160 0 l -130 100 Z"]
       LayoutSVGPath {path} at (285,75) size 160x160 [fill={[type=SOLID] [color=#FF0000]}] [data="M 365 75 l 50 160 l -130 -100 l 160 0 l -130 100 Z"]
-      LayoutSVGText {text} at (10,255) size 243x33 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 243x33
+      LayoutSVGText {text} at (10,255) size 242.27x33 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,255) size 242.27x33
           chunk 1 text run 1 at (10.00,282.00) startOffset 0 endOffset 19 width 242.27: "fill-rule=\"evenodd\""
-      LayoutSVGText {text} at (260,255) size 236x33 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 236x33
+      LayoutSVGText {text} at (260,255) size 235.56x33 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (260,255) size 235.56x33
           chunk 1 text run 1 at (260.00,282.00) startOffset 0 endOffset 19 width 235.58: "fill-rule=\"nonzero\""
-    LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x45
+    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.6 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

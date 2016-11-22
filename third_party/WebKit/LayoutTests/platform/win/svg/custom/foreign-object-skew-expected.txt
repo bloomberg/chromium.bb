@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (9,9) size 791x591
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGForeignObject {foreignObject} at (10,10) size 580x380
       LayoutBlockFlow {xhtml:div} at (0,0) size 580x18
         LayoutText {#text} at (0,0) size 81x17
@@ -13,4 +13,4 @@ layer at (0,0) size 800x600
         LayoutBR {xhtml:br} at (67,0) size 1x17
         LayoutButton {xhtml:input} at (0,18) size 16x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
         LayoutText {#text} at (0,0) size 0x0
-    LayoutSVGRect {rect} at (9,9) size 582x382 [stroke={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=580.00] [height=380.00]
+    LayoutSVGRect {rect} at (10,10) size 580x380 [stroke={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=580.00] [height=380.00]

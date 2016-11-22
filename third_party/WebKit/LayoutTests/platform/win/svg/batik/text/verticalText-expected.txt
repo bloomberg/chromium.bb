@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
-  LayoutSVGRoot {svg} at (0,0) size 448x498
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGPath {path} at (14,0) size 317x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
+  LayoutSVGRoot {svg} at (0,0) size 450x500
+    LayoutSVGHiddenContainer {defs} at (15,0) size 315x45
+      LayoutSVGPath {path} at (100,0) size 2100x300 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
     LayoutSVGContainer {g} at (20,26) size 410x469
-      LayoutSVGText {text} at (164,26) size 122x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 121x17
+      LayoutSVGText {text} at (164.97,26) size 120.05x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (164.97,26) size 120.05x17
           chunk 1 (middle anchor) text run 1 at (164.98,40.00) startOffset 0 endOffset 18 width 120.05: "Vertical Text Test"
-      LayoutSVGPath {line} at (20,74) size 410x2 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=20.00] [y1=75.00] [x2=430.00] [y2=75.00]
+      LayoutSVGPath {line} at (20,75) size 410x0 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=20.00] [y1=75.00] [x2=430.00] [y2=75.00]
       LayoutSVGContainer {g} at (48,73) size 354x377 [opacity=0.50]
         LayoutSVGEllipse {circle} at (48,73) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [cx=50.00] [cy=75.00] [r=2.00]
         LayoutSVGEllipse {circle} at (98,73) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [cx=100.00] [cy=75.00] [r=2.00]
@@ -18,16 +18,16 @@ layer at (0,0) size 450x500
         LayoutSVGEllipse {circle} at (298,73) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [cx=300.00] [cy=75.00] [r=2.00]
         LayoutSVGEllipse {circle} at (348,73) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [cx=350.00] [cy=75.00] [r=2.00]
         LayoutSVGEllipse {circle} at (398,73) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [cx=400.00] [cy=75.00] [r=2.00]
-        LayoutSVGPath {line} at (49,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=75.00] [x2=50.00] [y2=450.00]
-        LayoutSVGPath {line} at (99,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=75.00] [x2=100.00] [y2=450.00]
-        LayoutSVGPath {line} at (149,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=150.00] [y1=75.00] [x2=150.00] [y2=450.00]
-        LayoutSVGPath {line} at (199,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=200.00] [y1=75.00] [x2=200.00] [y2=450.00]
-        LayoutSVGPath {line} at (249,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=250.00] [y1=75.00] [x2=250.00] [y2=450.00]
-        LayoutSVGPath {line} at (299,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=300.00] [y1=75.00] [x2=300.00] [y2=450.00]
-        LayoutSVGPath {line} at (349,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=350.00] [y1=75.00] [x2=350.00] [y2=450.00]
-        LayoutSVGPath {line} at (399,75) size 2x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=400.00] [y1=75.00] [x2=400.00] [y2=450.00]
-      LayoutSVGText {text} at (41,75) size 18x156 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x156
+        LayoutSVGPath {line} at (50,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=75.00] [x2=50.00] [y2=450.00]
+        LayoutSVGPath {line} at (100,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=75.00] [x2=100.00] [y2=450.00]
+        LayoutSVGPath {line} at (150,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=150.00] [y1=75.00] [x2=150.00] [y2=450.00]
+        LayoutSVGPath {line} at (200,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=200.00] [y1=75.00] [x2=200.00] [y2=450.00]
+        LayoutSVGPath {line} at (250,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=250.00] [y1=75.00] [x2=250.00] [y2=450.00]
+        LayoutSVGPath {line} at (300,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=300.00] [y1=75.00] [x2=300.00] [y2=450.00]
+        LayoutSVGPath {line} at (350,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=350.00] [y1=75.00] [x2=350.00] [y2=450.00]
+        LayoutSVGPath {line} at (400,75) size 0x375 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=400.00] [y1=75.00] [x2=400.00] [y2=450.00]
+      LayoutSVGText {text} at (41.50,75) size 17x155.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (41.50,75) size 17x155.39
           chunk 1 (vertical) text run 1 at (45.50,75.00) startOffset 0 endOffset 1 height 17.00: "W"
           chunk 1 (vertical) text run 2 at (45.50,88.40) startOffset 1 endOffset 2 height 17.00: "r"
           chunk 1 (vertical) text run 3 at (45.50,93.40) startOffset 2 endOffset 3 height 17.00: "i"
@@ -51,8 +51,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 21 at (45.50,187.40) startOffset 20 endOffset 21 height 17.00: "m"
           chunk 1 (vertical) text run 22 at (45.50,198.40) startOffset 21 endOffset 22 height 17.00: "\x{753B}"
           chunk 1 (vertical) text run 23 at (45.50,215.40) startOffset 22 endOffset 23 height 17.00: "\x{50CF}"
-      LayoutSVGText {text} at (91,75) size 18x163 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x163
+      LayoutSVGText {text} at (91.50,75) size 17x163 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (91.50,75) size 17x163
           chunk 1 (vertical) text run 1 at (95.50,75.00) startOffset 0 endOffset 1 height 17.00: "G"
           chunk 1 (vertical) text run 2 at (95.50,85.00) startOffset 1 endOffset 2 height 17.00: "l"
           chunk 1 (vertical) text run 3 at (95.50,88.00) startOffset 2 endOffset 3 height 17.00: "y"
@@ -77,8 +77,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 22 at (95.50,199.00) startOffset 21 endOffset 22 height 17.00: "o"
           chunk 1 (vertical) text run 23 at (95.50,206.00) startOffset 22 endOffset 23 height 17.00: "\x{753B}"
           chunk 1 (vertical) text run 24 at (95.50,223.00) startOffset 23 endOffset 24 height 17.00: "\x{50CF}"
-      LayoutSVGText {text} at (141,75) size 18x355 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x355
+      LayoutSVGText {text} at (141.50,75) size 17x355 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (141.50,75) size 17x355
           chunk 1 (vertical) text run 1 at (145.50,75.00) startOffset 0 endOffset 1 height 17.00: "G"
           chunk 1 (vertical) text run 2 at (145.50,92.00) startOffset 1 endOffset 2 height 17.00: "l"
           chunk 1 (vertical) text run 3 at (145.50,109.00) startOffset 2 endOffset 3 height 17.00: "y"
@@ -100,8 +100,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 19 at (145.50,381.00) startOffset 18 endOffset 19 height 17.00: "0"
           chunk 1 (vertical) text run 20 at (145.50,398.00) startOffset 19 endOffset 20 height 17.00: "\x{753B}"
           chunk 1 (vertical) text run 21 at (145.50,415.00) startOffset 20 endOffset 21 height 17.00: "\x{50CF}"
-      LayoutSVGText {text} at (191,75) size 18x150 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x150
+      LayoutSVGText {text} at (191.50,75) size 17x150 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (191.50,75) size 17x150
           chunk 1 (vertical) text run 1 at (195.50,75.00) startOffset 0 endOffset 1 height 17.00: "G"
           chunk 1 (vertical) text run 2 at (195.50,85.00) startOffset 1 endOffset 2 height 17.00: "l"
           chunk 1 (vertical) text run 3 at (195.50,88.00) startOffset 2 endOffset 3 height 17.00: "y"
@@ -124,8 +124,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 20 at (195.50,188.00) startOffset 19 endOffset 20 height 17.00: "0"
           chunk 1 (vertical) text run 21 at (195.50,195.00) startOffset 20 endOffset 21 height 17.00: "\x{753B}"
           chunk 1 (vertical) text run 22 at (195.50,210.00) startOffset 21 endOffset 22 height 17.00: "\x{50CF}"
-      LayoutSVGText {text} at (241,75) size 18x159 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x159
+      LayoutSVGText {text} at (241.50,75) size 17x159 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (241.50,75) size 17x159
           chunk 1 (vertical) text run 1 at (245.50,75.00) startOffset 0 endOffset 1 height 17.00: "G"
           chunk 1 (vertical) text run 2 at (245.50,85.00) startOffset 1 endOffset 2 height 17.00: "l"
           chunk 1 (vertical) text run 3 at (245.50,88.00) startOffset 2 endOffset 3 height 17.00: "y"
@@ -149,8 +149,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 21 at (245.50,195.00) startOffset 20 endOffset 21 height 17.00: "0"
           chunk 1 (vertical) text run 22 at (245.50,202.00) startOffset 21 endOffset 22 height 17.00: "\x{753B}"
           chunk 1 (vertical) text run 23 at (245.50,219.00) startOffset 22 endOffset 23 height 17.00: "\x{50CF}"
-      LayoutSVGText {text} at (291,75) size 18x159 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x159
+      LayoutSVGText {text} at (291.50,75) size 17x159 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (291.50,75) size 17x159
           chunk 1 (vertical) text run 1 at (295.50,75.00) startOffset 0 endOffset 1 height 17.00: "G"
           chunk 1 (vertical) text run 2 at (295.50,85.00) startOffset 1 endOffset 2 height 17.00: "l"
           chunk 1 (vertical) text run 3 at (295.50,88.00) startOffset 2 endOffset 3 height 17.00: "y"
@@ -174,8 +174,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 21 at (295.50,195.00) startOffset 20 endOffset 21 height 17.00: "0"
           chunk 1 (vertical) text run 22 at (295.50,202.00) startOffset 21 endOffset 22 height 17.00: "\x{753B}"
           chunk 1 (vertical) text run 23 at (295.50,219.00) startOffset 22 endOffset 23 height 17.00: "\x{50CF}"
-      LayoutSVGText {text} at (341,75) size 18x163 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x66
+      LayoutSVGText {text} at (341.50,75) size 17x163 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (341.50,75) size 17x66
           chunk 1 (vertical) text run 1 at (345.50,75.00) startOffset 0 endOffset 1 height 17.00: "E"
           chunk 1 (vertical) text run 2 at (345.50,84.00) startOffset 1 endOffset 2 height 17.00: "m"
           chunk 1 (vertical) text run 3 at (345.50,95.00) startOffset 2 endOffset 3 height 17.00: "b"
@@ -186,7 +186,7 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 8 at (345.50,130.00) startOffset 7 endOffset 8 height 17.00: "d"
           chunk 1 (vertical) text run 9 at (345.50,137.00) startOffset 8 endOffset 9 height 17.00: " "
         LayoutSVGTSpan {tspan} at (0,0) size 47x17
-          LayoutSVGInlineText {#text} at (0,66) size 17x47
+          LayoutSVGInlineText {#text} at (341.50,141) size 17x47
             chunk 1 (vertical) text run 1 at (345.50,141.00) startOffset 0 endOffset 1 height 17.00: "<"
             chunk 1 (vertical) text run 2 at (345.50,149.00) startOffset 1 endOffset 2 height 17.00: "t"
             chunk 1 (vertical) text run 3 at (345.50,153.00) startOffset 2 endOffset 3 height 17.00: "s"
@@ -194,7 +194,7 @@ layer at (0,0) size 450x500
             chunk 1 (vertical) text run 5 at (345.50,166.00) startOffset 4 endOffset 5 height 17.00: "a"
             chunk 1 (vertical) text run 6 at (345.50,173.00) startOffset 5 endOffset 6 height 17.00: "n"
             chunk 1 (vertical) text run 7 at (345.50,180.00) startOffset 6 endOffset 7 height 17.00: ">"
-        LayoutSVGInlineText {#text} at (0,113) size 17x50
+        LayoutSVGInlineText {#text} at (341.50,188) size 17x50
           chunk 1 (vertical) text run 1 at (345.50,188.00) startOffset 0 endOffset 1 height 17.00: " "
           chunk 1 (vertical) text run 2 at (345.50,192.00) startOffset 1 endOffset 2 height 17.00: "e"
           chunk 1 (vertical) text run 3 at (345.50,199.00) startOffset 2 endOffset 3 height 17.00: "l"
@@ -203,8 +203,8 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 6 at (345.50,220.00) startOffset 5 endOffset 6 height 17.00: "e"
           chunk 1 (vertical) text run 7 at (345.50,227.00) startOffset 6 endOffset 7 height 17.00: "n"
           chunk 1 (vertical) text run 8 at (345.50,234.00) startOffset 7 endOffset 8 height 17.00: "t"
-      LayoutSVGText {text} at (391,75) size 18x286 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 17x66
+      LayoutSVGText {text} at (391.50,75) size 17x286 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (391.50,75) size 17x66
           chunk 1 (vertical) text run 1 at (395.50,75.00) startOffset 0 endOffset 1 height 17.00: "E"
           chunk 1 (vertical) text run 2 at (395.50,84.00) startOffset 1 endOffset 2 height 17.00: "m"
           chunk 1 (vertical) text run 3 at (395.50,95.00) startOffset 2 endOffset 3 height 17.00: "b"
@@ -215,7 +215,7 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 8 at (395.50,130.00) startOffset 7 endOffset 8 height 17.00: "d"
           chunk 1 (vertical) text run 9 at (395.50,137.00) startOffset 8 endOffset 9 height 17.00: " "
         LayoutSVGTSpan {tspan} at (0,0) size 170x17
-          LayoutSVGInlineText {#text} at (0,66) size 17x170
+          LayoutSVGInlineText {#text} at (391.50,141) size 17x170
             chunk 1 (vertical) text run 1 at (395.50,141.00) startOffset 0 endOffset 1 height 17.00: "o"
             chunk 1 (vertical) text run 2 at (395.50,158.00) startOffset 1 endOffset 2 height 17.00: "r"
             chunk 1 (vertical) text run 3 at (395.50,175.00) startOffset 2 endOffset 3 height 17.00: "i"
@@ -226,7 +226,7 @@ layer at (0,0) size 450x500
             chunk 1 (vertical) text run 8 at (395.50,260.00) startOffset 7 endOffset 8 height 17.00: "t"
             chunk 1 (vertical) text run 9 at (395.50,277.00) startOffset 8 endOffset 9 height 17.00: "e"
             chunk 1 (vertical) text run 10 at (395.50,294.00) startOffset 9 endOffset 10 height 17.00: "d"
-        LayoutSVGInlineText {#text} at (0,236) size 17x50
+        LayoutSVGInlineText {#text} at (391.50,311) size 17x50
           chunk 1 (vertical) text run 1 at (395.50,311.00) startOffset 0 endOffset 1 height 17.00: " "
           chunk 1 (vertical) text run 2 at (395.50,315.00) startOffset 1 endOffset 2 height 17.00: "e"
           chunk 1 (vertical) text run 3 at (395.50,322.00) startOffset 2 endOffset 3 height 17.00: "l"
@@ -235,12 +235,12 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 6 at (395.50,343.00) startOffset 5 endOffset 6 height 17.00: "e"
           chunk 1 (vertical) text run 7 at (395.50,350.00) startOffset 6 endOffset 7 height 17.00: "n"
           chunk 1 (vertical) text run 8 at (395.50,357.00) startOffset 7 endOffset 8 height 17.00: "t"
-      LayoutSVGContainer {g} at (49,450) size 322x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,450.00)}]
-        LayoutSVGContainer {use} at (54,450) size 317x45
-          LayoutSVGPath {path} at (54,450) size 317x45 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
-        LayoutSVGText {text} at (9,0) size 319x45 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (9.80,0) size 320.20x45 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,450.00)}]
+        LayoutSVGContainer {use} at (15,0) size 315x45
+          LayoutSVGPath {path} at (100,0) size 2100x300 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
+        LayoutSVGText {text} at (9.80,0.09) size 317.75x44.78 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 45x318
-            LayoutSVGInlineText {#text} at (0,0) size 318x45
+            LayoutSVGInlineText {#text} at (9.80,0.09) size 317.75x44.78
               chunk 1 (vertical) text run 1 at (20.41,24.64) startOffset 0 endOffset 1 height 15.00: "V"
               chunk 1 (vertical) text run 2 at (31.65,14.87) startOffset 1 endOffset 2 height 15.00: "e"
               chunk 1 (vertical) text run 3 at (45.24,8.86) startOffset 2 endOffset 3 height 15.00: "r"
@@ -267,11 +267,11 @@ layer at (0,0) size 450x500
               chunk 1 (vertical) text run 24 at (306.78,11.62) startOffset 23 endOffset 24 height 15.00: "\x{753B}"
               chunk 1 (vertical) text run 25 at (321.16,9.40) startOffset 24 endOffset 25 height 15.00: "\x{50CF}"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-    LayoutSVGContainer {use} at (0,0) size 448x498
-      LayoutSVGContainer {g} at (0,0) size 448x498
-        LayoutSVGRect {rect} at (0,0) size 448x498 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
-        LayoutSVGContainer {g} at (418,466) size 28x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
-          LayoutSVGViewportContainer {svg} at (418,466) size 28x30
-            LayoutSVGPath {path} at (418,468) size 14x19 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 c -8 27 22 48 44 33 C 14 306 -1 332 0 356 c 0 14 13 42 44 27 c 8 -4 35 -25 52 -41 c 14 -1 24 -11 42 -28 c 17 14 36 10 52 -7 c 22 2 82 -78 44 -108 c -3 -24 -30 -37 -53 -18 c -6 -2 -13 -1 -18 1 c 22 -35 43 -82 49 -105 C 219 47 188 36 172 44 Z"]
-            LayoutSVGPath {path} at (432,466) size 14x17 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 c -18 3 -49 31 -49 31 c -29 23 -43 58 -28 95 c -13 14 -29 44 -29 67 c 0 28 20 52 50 29 c 7 8 21 16 37 5 c -5 29 3 48 26 49 c 1 10 13 31 36 17 c 16 -10 58 -39 79 -56 c 25 -23 25 -94 -18 -89 c 33 -59 -3 -96 -27 -84 c -10 4 -46 25 -52 30 c -1 -7 -5 -12 -11 -14 C 436 45 436 -5 401 0 Z"]
-            LayoutSVGPath {path} at (425,484) size 16x12 [fill={[type=SOLID] [color=#33CC33]}] [data="M 275 353 c -46 12 -88 43 -114 91 c -9 16 6 37 25 33 c -14 24 -40 67 -15 81 c 28 16 52 -8 60 -15 c 18 21 50 10 81 -17 c 41 14 68 -2 103 -53 c 8 -12 30 -43 30 -65 c 0 -16 -15 -30 -35 -21 c -1 -12 -9 -38 -53 -19 c -10 -6 -31 -5 -54 17 C 308 375 300 347 275 353 Z"]
+    LayoutSVGContainer {use} at (1,1) size 446x496
+      LayoutSVGContainer {g} at (1,1) size 446x496
+        LayoutSVGRect {rect} at (1,1) size 446x496 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=446.00] [height=496.00]
+        LayoutSVGContainer {g} at (0.19,-0.25) size 26.92x28.44 [transform={m=((1.00,0.00)(0.00,1.00)) t=(418.00,467.00)}]
+          LayoutSVGViewportContainer {svg} at (-1,-5) size 548x579
+            LayoutSVGPath {path} at (-1,36) size 273x362 [fill={[type=SOLID] [color=#6666FF]}] [data="M 172 44 C 137 60 31 135 11 199 c -8 27 22 48 44 33 C 14 306 -1 332 0 356 c 0 14 13 42 44 27 c 8 -4 35 -25 52 -41 c 14 -1 24 -11 42 -28 c 17 14 36 10 52 -7 c 22 2 82 -78 44 -108 c -3 -24 -30 -37 -53 -18 c -6 -2 -13 -1 -18 1 c 22 -35 43 -82 49 -105 C 219 47 188 36 172 44 Z"]
+            LayoutSVGPath {path} at (294,-5) size 253x312 [fill={[type=SOLID] [color=#FF0000]}] [data="M 400 0 c -18 3 -49 31 -49 31 c -29 23 -43 58 -28 95 c -13 14 -29 44 -29 67 c 0 28 20 52 50 29 c 7 8 21 16 37 5 c -5 29 3 48 26 49 c 1 10 13 31 36 17 c 16 -10 58 -39 79 -56 c 25 -23 25 -94 -18 -89 c 33 -59 -3 -96 -27 -84 c -10 4 -46 25 -52 30 c -1 -7 -5 -12 -11 -14 C 436 45 436 -5 401 0 Z"]
+            LayoutSVGPath {path} at (146,347) size 299x227 [fill={[type=SOLID] [color=#33CC33]}] [data="M 275 353 c -46 12 -88 43 -114 91 c -9 16 6 37 25 33 c -14 24 -40 67 -15 81 c 28 16 52 -8 60 -15 c 18 21 50 10 81 -17 c 41 14 68 -2 103 -53 c 8 -12 30 -43 30 -65 c 0 -16 -15 -30 -35 -21 c -1 -12 -9 -38 -53 -19 c -10 -6 -31 -5 -54 17 C 308 375 300 347 275 353 Z"]

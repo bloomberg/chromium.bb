@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (42,42) size 196x196
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGHiddenContainer {defs} at (20,20) size 110x110
       LayoutSVGResourceFilter {filter} [id="filter1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feOffset dx="0.00" dy="0.00"]
           [SourceGraphic]
@@ -16,15 +16,15 @@ layer at (0,0) size 800x600
         [feOffset dx="0.00" dy="0.00"]
           [SourceGraphic]
       LayoutSVGImage {image} at (20,20) size 110x110
-    LayoutSVGContainer {use} at (42,42) size 88x88
+    LayoutSVGContainer {use} at (20,20) size 110x110
       [filter="filter1"] LayoutSVGResourceFilter {filter} at (42,42) size 88x88
       LayoutSVGImage {image} at (20,20) size 110x110
-    LayoutSVGContainer {use} at (128,42) size 110x88 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,0.00)}]
+    LayoutSVGContainer {use} at (20,20) size 110x110 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,0.00)}]
       [filter="filter2"] LayoutSVGResourceFilter {filter} at (-2,42) size 110x88
-      LayoutSVGImage {image} at (150,20) size 110x110
-    LayoutSVGContainer {use} at (42,128) size 88x110 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,130.00)}]
+      LayoutSVGImage {image} at (20,20) size 110x110
+    LayoutSVGContainer {use} at (20,20) size 110x110 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,130.00)}]
       [filter="filter3"] LayoutSVGResourceFilter {filter} at (42,-2) size 88x110
-      LayoutSVGImage {image} at (20,150) size 110x110
-    LayoutSVGContainer {use} at (128,128) size 110x110 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,130.00)}]
+      LayoutSVGImage {image} at (20,20) size 110x110
+    LayoutSVGContainer {use} at (20,20) size 110x110 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,130.00)}]
       [filter="filter4"] LayoutSVGResourceFilter {filter} at (-2,-2) size 110x110
-      LayoutSVGImage {image} at (150,150) size 110x110
+      LayoutSVGImage {image} at (20,20) size 110x110

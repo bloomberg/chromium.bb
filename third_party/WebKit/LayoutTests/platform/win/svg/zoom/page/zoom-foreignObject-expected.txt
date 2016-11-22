@@ -14,20 +14,20 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {xhtml:div} at (0,36) size 250x18
         LayoutText {#text} at (0,0) size 56x17
           text run at (0,0) width 56: "[HTML]"
-    LayoutSVGRect {rect} at (0,0) size 361x289 [stroke={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=250.00] [height=200.00]
+    LayoutSVGRect {rect} at (0,0) size 250x200 [stroke={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=250.00] [height=200.00]
     LayoutSVGForeignObject {foreignObject} at (260,0) size 250x200
-      LayoutSVGRoot {svg} at (374,7) size 361x281
-        LayoutSVGContainer {g} at (374,7) size 361x281 [transform={m=((3.00,0.26)(0.26,3.02)) t=(0.00,0.00)}]
-          LayoutSVGText {text} at (0,1) size 83x19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 83x18
+      LayoutSVGRoot {svg} at (0,0) size 250x200
+        LayoutSVGContainer {g} at (0,1.78) size 82.19x57.53 [transform={m=((3.00,0.26)(0.26,3.02)) t=(0.00,0.00)}]
+          LayoutSVGText {text} at (0,1.78) size 82.19x17.53 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,1.78) size 82.19x17.53
               chunk 1 text run 1 at (0.00,16.00) startOffset 0 endOffset 14 width 82.20: "This is a text"
-          LayoutSVGContainer {a} at (381,89) size 299x104
-            LayoutSVGText {text} at (0,20) size 68x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 68x18
+          LayoutSVGContainer {a} at (0,20.78) size 67.08x17.53
+            LayoutSVGText {text} at (0,20.78) size 67.08x17.53 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,20.78) size 67.08x17.53
                 chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 11 width 67.08: "and a link."
-          LayoutSVGText {text} at (0,41) size 43x19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 43x18
+          LayoutSVGText {text} at (0,41.78) size 42.66x17.53 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,41.78) size 42.66x17.53
               chunk 1 text run 1 at (0.00,56.00) startOffset 0 endOffset 5 width 42.66: "[SVG]"
       LayoutText {#text} at (0,0) size 0x0
-    LayoutSVGRect {rect} at (373,0) size 363x289 [stroke={[type=SOLID] [color=#008000]}] [x=260.00] [y=0.00] [width=250.00] [height=200.00]
+    LayoutSVGRect {rect} at (260,0) size 250x200 [stroke={[type=SOLID] [color=#008000]}] [x=260.00] [y=0.00] [width=250.00] [height=200.00]
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0

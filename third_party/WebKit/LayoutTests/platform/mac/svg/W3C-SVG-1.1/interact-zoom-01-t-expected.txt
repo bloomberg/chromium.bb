@@ -1,22 +1,22 @@
 layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (3,3) size 477x357
-    LayoutSVGContainer {g} at (30,9) size 393x246
-      LayoutSVGContainer {g} at (30,9) size 393x246
-        LayoutSVGText {text} at (5,1) size 54x8 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 54x7
+  LayoutSVGRoot {svg} at (0,0) size 480x360
+    LayoutSVGContainer {g} at (5,1.50) size 65x40.50
+      LayoutSVGContainer {g} at (5,1.50) size 65x40.50
+        LayoutSVGText {text} at (5,1.50) size 53.56x6.83 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,1.50) size 53.56x6.83
             chunk 1 text run 1 at (5.00,7.00) startOffset 0 endOffset 21 width 53.37: "Test default value of"
-        LayoutSVGText {text} at (5,8) size 62x8 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 62x7
+        LayoutSVGText {text} at (5,8.50) size 61.03x6.83 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,8.50) size 61.03x6.83
             chunk 1 text run 1 at (5.00,14.00) startOffset 0 endOffset 21 width 61.04: "zoomAndPan attribute."
-        LayoutSVGContainer {g} at (57,129) size 366x126
-          LayoutSVGEllipse {circle} at (57,129) size 126x126 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=20.00] [cy=32.00] [r=10.00]
-          LayoutSVGEllipse {circle} at (117,129) size 126x126 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=30.00] [cy=32.00] [r=10.00]
-          LayoutSVGEllipse {circle} at (297,129) size 126x126 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=60.00] [cy=32.00] [r=10.00]
-          LayoutSVGEllipse {circle} at (237,129) size 126x126 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=50.00] [cy=32.00] [r=10.00]
-          LayoutSVGEllipse {circle} at (177,129) size 126x126 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=40.00] [cy=32.00] [r=10.00]
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x46
+        LayoutSVGContainer {g} at (10,22) size 60x20
+          LayoutSVGEllipse {circle} at (10,22) size 20x20 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=20.00] [cy=32.00] [r=10.00]
+          LayoutSVGEllipse {circle} at (20,22) size 20x20 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=30.00] [cy=32.00] [r=10.00]
+          LayoutSVGEllipse {circle} at (50,22) size 20x20 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=60.00] [cy=32.00] [r=10.00]
+          LayoutSVGEllipse {circle} at (40,22) size 20x20 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=50.00] [cy=32.00] [r=10.00]
+          LayoutSVGEllipse {circle} at (30,22) size 20x20 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=40.00] [cy=32.00] [r=10.00]
+    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.6 $"
-    LayoutSVGRect {rect} at (3,3) size 477x357 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

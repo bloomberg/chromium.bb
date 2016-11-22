@@ -17,28 +17,28 @@ layer at (0,50) size 50x50
     layer at (0,0) size 50x50
       LayoutView at (0,0) size 50x50
     layer at (0,0) size 50x50
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 50x50
 layer at (54,50) size 50x50
   LayoutEmbeddedObject {EMBED} at (54,50) size 50x50
     layer at (0,0) size 50x50
       LayoutView at (0,0) size 50x50
     layer at (0,0) size 50x50
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 50x50
 layer at (108,0) size 100x100
   LayoutIFrame {IFRAME} at (108,0) size 100x100
     layer at (0,0) size 100x100
       LayoutView at (0,0) size 100x100
     layer at (0,0) size 50x50
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 50x50
 layer at (212,50) size 50x50
   LayoutEmbeddedObject {OBJECT} at (212,50) size 50x50
     layer at (0,0) size 50x50
       LayoutView at (0,0) size 50x50
     layer at (0,0) size 50x50
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 50x50
 layer at (266,50) size 50x50
   LayoutEmbeddedObject {OBJECT} at (266,50) size 50x50
     layer at (0,0) size 50x50
       LayoutView at (0,0) size 50x50
     layer at (0,0) size 50x50
-      LayoutSVGRoot {svg} at (0,0) size 0x0
+      LayoutSVGRoot {svg} at (0,0) size 50x50

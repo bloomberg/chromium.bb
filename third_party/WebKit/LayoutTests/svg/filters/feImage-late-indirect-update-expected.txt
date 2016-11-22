@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+    LayoutSVGHiddenContainer {defs} at (200,150) size 400x300
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,1)]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#008000]
       LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]

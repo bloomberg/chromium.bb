@@ -221,7 +221,6 @@ crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Sl
 crbug.com/9798 [ Win ] http/tests/cookies/multiple-cookies.html [ Slow ]
 crbug.com/9798 http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html [ Slow ]
 crbug.com/24182 http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Slow ]
-crbug.com/231721 svg/custom/invisible-text-after-scrolling.xhtml [ Slow ]
 crbug.com/237270 [ Win7 ] fast/css/custom-font-xheight.html [ Slow ]
 crbug.com/241576 [ Win ] http/tests/appcache/404-manifest.html [ Slow ]
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]

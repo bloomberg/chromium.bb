@@ -3,34 +3,34 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,7) size 365x276
-      LayoutSVGContainer {g} at (10,7) size 365x276
-        LayoutSVGContainer {g} at (16,7) size 359x157 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
-          LayoutSVGText {text} at (30,130) size 342x25 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 342x25
+    LayoutSVGContainer {g} at (10,7.88) size 365x275.12
+      LayoutSVGContainer {g} at (10,7.88) size 365x275.12
+        LayoutSVGContainer {g} at (-53.03,67.88) size 358.03x155.32 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
+          LayoutSVGText {text} at (30,130) size 341.11x24.98 [transform={m=((0.42,0.42)(-0.42,0.42)) t=(0.00,0.00)}] contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (30,130) size 341.11x24.98
               chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 341.12: "Rotated Text for testing SVGLocatable"
-          LayoutSVGText {text} at (100,111) size 301x24 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 301x23
+          LayoutSVGText {text} at (100,111.44) size 300.63x22.84 [transform={m=((0.70,0.00)(0.00,0.70)) t=(0.00,0.00)}] contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (100,111.44) size 300.63x22.84
               chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 300.64: "Some other text with id 'otherText'"
-          LayoutSVGViewportContainer {svg} at (275,45) size 100x100
-            LayoutSVGEllipse {circle} at (275,45) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.00] [cy=0.00] [r=50.00]
+          LayoutSVGViewportContainer {svg} at (-50,-50) size 100x100
+            LayoutSVGEllipse {circle} at (-50,-50) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.00] [cy=0.00] [r=50.00]
         LayoutSVGText {text} at (10,188) size 279x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 279x15
+          LayoutSVGInlineText {#text} at (10,188) size 279x15
             chunk 1 text run 1 at (10.00,200.00) startOffset 0 endOffset 50 width 279.00: ".getScreenCTM(): 0.42,0.42,-0.42,0.42,70.00,-60.00"
         LayoutSVGText {text} at (10,208) size 240x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 240x15
+          LayoutSVGInlineText {#text} at (10,208) size 240x15
             chunk 1 text run 1 at (10.00,220.00) startOffset 0 endOffset 44 width 240.00: ".getCTM(): 0.42,0.42,-0.42,0.42,70.00,-60.00"
         LayoutSVGText {text} at (10,228) size 342x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 342x15
+          LayoutSVGInlineText {#text} at (10,228) size 342x15
             chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 65 width 342.00: ".getBBox() for 'blueCircle': .x=-50,.y=-50,.width=100,.height=100"
-        LayoutSVGText {text} at (10,248) size 260x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 260x15
+        LayoutSVGText {text} at (10,248) size 259.78x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,248) size 259.78x15
             chunk 1 text run 1 at (10.00,260.00) startOffset 0 endOffset 47 width 259.78: ".farthestViewportElement of blueCircle=svg-root"
-        LayoutSVGText {text} at (10,268) size 279x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 279x15
+        LayoutSVGText {text} at (10,268) size 278.78x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,268) size 278.78x15
             chunk 1 text run 1 at (10.00,280.00) startOffset 0 endOffset 47 width 278.78: ".nearestViewportElement of blueCircle=nestedSVG"
-    LayoutSVGContainer {g} at (10,311) size 230x36
-      LayoutSVGText {text} at (10,311) size 230x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 230x36
+    LayoutSVGContainer {g} at (10,311) size 229.47x36
+      LayoutSVGText {text} at (10,311) size 229.47x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 229.47x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.6 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

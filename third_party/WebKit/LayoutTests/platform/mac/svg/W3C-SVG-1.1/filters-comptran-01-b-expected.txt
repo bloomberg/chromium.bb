@@ -2,8 +2,8 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (15,5) size 450x300
-      LayoutSVGViewportContainer {svg} at (15,5) size 450x300
+    LayoutSVGContainer {g} at (15.71,5.71) size 448.57x298.57
+      LayoutSVGViewportContainer {svg} at (1,1) size 628x418
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="MyGradient"] [gradientUnits=userSpaceOnUse] [start=(10,0)] [end=(590,0)]
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
@@ -38,30 +38,30 @@ layer at (0,0) size 480x360
                 {blue: type="GAMMA" slope="1.00" intercept="0.00" amplitude="2.00" exponent="1.00" offset="0.00"}
                 {alpha: type="UNKNOWN" slope="0.00" intercept="0.00" amplitude="0.00" exponent="0.00" offset="0.00"}]
               [SourceGraphic]
-        LayoutSVGRect {rect} at (15,5) size 450x300 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
-        LayoutSVGContainer {g} at (15,5) size 450x300
-          LayoutSVGRect {rect} at (15,5) size 450x300 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
-          LayoutSVGRect {rect} at (22,12) size 415x29 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=10.00] [width=580.00] [height=40.00]
+        LayoutSVGRect {rect} at (1,1) size 628x418 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
+        LayoutSVGContainer {g} at (1,1) size 628x418
+          LayoutSVGRect {rect} at (1,1) size 628x418 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
+          LayoutSVGRect {rect} at (10,10) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=10.00] [width=580.00] [height=40.00]
             [filter="Identity"] LayoutSVGResourceFilter {filter} at (10,10) size 580x40
-          LayoutSVGText {text} at (10,49) size 204x38 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 204x37
+          LayoutSVGText {text} at (10,49.20) size 203.63x36.83 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,49.20) size 203.63x36.83
               chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 14 width 203.63: "type: identity"
-          LayoutSVGRect {rect} at (22,83) size 415x30 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=110.00] [width=580.00] [height=40.00]
+          LayoutSVGRect {rect} at (10,110) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=110.00] [width=580.00] [height=40.00]
             [filter="Table"] LayoutSVGResourceFilter {filter} at (10,110) size 580x40
-          LayoutSVGText {text} at (10,149) size 165x38 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 165x37
+          LayoutSVGText {text} at (10,149.20) size 164.88x36.83 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,149.20) size 164.88x36.83
               chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 11 width 164.88: "type: table"
-          LayoutSVGRect {rect} at (22,155) size 415x29 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=210.00] [width=580.00] [height=40.00]
+          LayoutSVGRect {rect} at (10,210) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=210.00] [width=580.00] [height=40.00]
             [filter="Linear"] LayoutSVGResourceFilter {filter} at (10,210) size 580x40
-          LayoutSVGText {text} at (10,249) size 596x38 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 596x37
+          LayoutSVGText {text} at (10,249.20) size 595.33x36.83 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,249.20) size 595.33x36.83
               chunk 1 text run 1 at (10.00,280.00) startOffset 0 endOffset 40 width 595.34: "type:linear slope:.5 intercepts:.25/0/.5"
-          LayoutSVGRect {rect} at (22,226) size 415x29 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=310.00] [width=580.00] [height=40.00]
+          LayoutSVGRect {rect} at (10,310) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=310.00] [width=580.00] [height=40.00]
             [filter="Gamma"] LayoutSVGResourceFilter {filter} at (10,310) size 580x40
-          LayoutSVGText {text} at (10,349) size 585x38 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 585x37
+          LayoutSVGText {text} at (10,349.20) size 584.97x36.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,349.20) size 584.97x36.98
               chunk 1 text run 1 at (10.00,380.00) startOffset 0 endOffset 34 width 584.97: "type: gamma ampl:2 exponents:5/3/1"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x46
+    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.6 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

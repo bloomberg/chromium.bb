@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutSVGRoot {svg} at (8,118) size 0x0
+      LayoutSVGRoot {svg} at (0,110) size 0x0
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="blurX"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feGaussianBlur stdDeviation="5.00, 0.00"]

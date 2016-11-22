@@ -1,14 +1,14 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (3,151) size 546x298
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGResourceLinearGradient {linearGradient} [id="my_gradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(0,1)]
       LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
       LayoutSVGGradientStop {stop} [offset=0.50] [color=#008000]
       LayoutSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
-    LayoutSVGRect {rect} at (251,151) size 298x298 [transform={m=((0.21,0.21)(-0.21,0.21)) t=(189.39,75.75)}] [fill={[type=LINEAR-GRADIENT] [id="my_gradient"]}] [x=0.00] [y=0.00] [width=400.00] [height=300.00]
+    LayoutSVGRect {rect} at (0,0) size 400x300 [transform={m=((0.21,0.21)(-0.21,0.21)) t=(189.39,75.75)}] [fill={[type=LINEAR-GRADIENT] [id="my_gradient"]}] [x=0.00] [y=0.00] [width=400.00] [height=300.00]
     LayoutSVGResourceRadialGradient {radialGradient} [id="my_gradient2"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=1.00] [focalRadius=0.00]
       LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
       LayoutSVGGradientStop {stop} [offset=0.50] [color=#008000]
       LayoutSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
-    LayoutSVGRect {rect} at (3,210) size 290x180 [transform={m=((0.30,0.00)(0.08,0.30)) t=(1.94,105.00)}] [fill={[type=RADIAL-GRADIENT] [id="my_gradient2"]}] [x=0.00] [y=0.00] [width=400.00] [height=300.00]
+    LayoutSVGRect {rect} at (0,0) size 400x300 [transform={m=((0.30,0.00)(0.08,0.30)) t=(1.94,105.00)}] [fill={[type=RADIAL-GRADIENT] [id="my_gradient2"]}] [x=0.00] [y=0.00] [width=400.00] [height=300.00]

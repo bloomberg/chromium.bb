@@ -2,20 +2,20 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (17,0) size 463x255
-      LayoutSVGText {text} at (19,-4) size 396x77 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 396x77
+    LayoutSVGContainer {g} at (19,-4) size 464.78x257
+      LayoutSVGText {text} at (19,-4) size 395.44x77 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,-4) size 395.44x77
           chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 395.44: "Normal Text"
-      LayoutSVGText {text} at (19,56) size 344x77 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 344x77
+      LayoutSVGText {text} at (19,56) size 343.13x77 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,56) size 343.13x77
           chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 343.13: "Fill opacity"
-      LayoutSVGText {text} at (19,116) size 465x77 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 465x77
+      LayoutSVGText {text} at (19,116) size 464.78x77 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,116) size 464.78x77
           chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 464.78: "Stroke opacity"
-      LayoutSVGText {text} at (19,176) size 243x77 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 243x77
+      LayoutSVGText {text} at (19,176) size 242.69x77 [opacity=0.50] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,176) size 242.69x77 [opacity=0.50]
           chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 242.69: "Opacity"
-    LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x45
+    LayoutSVGText {text} at (10,304) size 263.33x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x45
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.3 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

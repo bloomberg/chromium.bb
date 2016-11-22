@@ -7,6 +7,6 @@ layer at (0,30) size 100x100
   LayoutBlockFlow (positioned) {div} at (0,30) size 100x100 [bgcolor=#FF0000]
 layer at (0,30) size 200x200
   LayoutBlockFlow (positioned) {div} at (0,30) size 200x200
-    LayoutSVGRoot {svg} at (0,30) size 100x100
-      LayoutSVGRect {rect} at (0,30) size 100x100 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
+    LayoutSVGRoot {svg} at (0,0) size 200x200
+      LayoutSVGRect {rect} at (0,0) size 50x50 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
     LayoutText {#text} at (0,0) size 0x0

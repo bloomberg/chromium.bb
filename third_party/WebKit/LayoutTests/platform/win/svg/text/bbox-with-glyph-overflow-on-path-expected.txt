@@ -6,15 +6,15 @@ layer at (0,0) size 800x538
       LayoutText {#text} at (0,0) size 272x17
         text run at (0,0) width 272: "No glyphs should extend outside the rects."
       LayoutBR {BR} at (271,0) size 1x17
-      LayoutSVGRoot {svg} at (45,80) size 373x412
-        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-          LayoutSVGPath {path} at (8,26) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 50 100 L 400 100"]
-          LayoutSVGPath {path} at (8,26) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 400 150 L 50 150"]
-          LayoutSVGPath {path} at (58,276) size 350x100 [fill={[type=SOLID] [color=#000000]}] [data="M 50 250 L 400 350"]
-          LayoutSVGPath {path} at (8,26) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M 50 450 L 400 450"]
-        LayoutSVGText {text} at (41,55) size 352x56 contains 1 chunk(s)
+      LayoutSVGRoot {svg} at (0,18) size 700x500
+        LayoutSVGHiddenContainer {defs} at (50,100) size 350x350
+          LayoutSVGPath {path} at (50,100) size 350x0 [fill={[type=SOLID] [color=#000000]}] [data="M 50 100 L 400 100"]
+          LayoutSVGPath {path} at (50,150) size 350x0 [fill={[type=SOLID] [color=#000000]}] [data="M 400 150 L 50 150"]
+          LayoutSVGPath {path} at (50,250) size 350x100 [fill={[type=SOLID] [color=#000000]}] [data="M 50 250 L 400 350"]
+          LayoutSVGPath {path} at (50,450) size 350x0 [fill={[type=SOLID] [color=#000000]}] [data="M 50 450 L 400 450"]
+        LayoutSVGText {text} at (41,55) size 351.50x56 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 352x56
-            LayoutSVGInlineText {#text} at (0,0) size 352x56
+            LayoutSVGInlineText {#text} at (41,55) size 351.50x56
               chunk 1 text run 1 at (56.95,100.00) startOffset 0 endOffset 1 width 13.89: "f"
               chunk 1 text run 2 at (70.84,100.00) startOffset 1 endOffset 2 width 13.89: "f"
               chunk 1 text run 3 at (84.73,100.00) startOffset 2 endOffset 3 width 13.89: "f"
@@ -40,9 +40,9 @@ layer at (0,0) size 800x538
               chunk 1 text run 23 at (362.56,100.00) startOffset 22 endOffset 23 width 13.89: "f"
               chunk 1 text run 24 at (376.45,100.00) startOffset 23 endOffset 24 width 13.89: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGText {text} at (57,139) size 352x56 contains 1 chunk(s)
+        LayoutSVGText {text} at (57.48,139) size 351.52x56 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 352x56
-            LayoutSVGInlineText {#text} at (0,0) size 352x56
+            LayoutSVGInlineText {#text} at (57.48,139) size 351.52x56
               chunk 1 text run 1 at (393.05,150.00) startOffset 0 endOffset 1 width 13.89: "f"
               chunk 1 text run 2 at (379.16,150.00) startOffset 1 endOffset 2 width 13.89: "f"
               chunk 1 text run 3 at (365.27,150.00) startOffset 2 endOffset 3 width 13.89: "f"
@@ -68,9 +68,9 @@ layer at (0,0) size 800x538
               chunk 1 text run 23 at (87.44,150.00) startOffset 22 endOffset 23 width 13.89: "f"
               chunk 1 text run 24 at (73.55,150.00) startOffset 23 endOffset 24 width 13.89: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGText {text} at (38,204) size 354x151 contains 1 chunk(s)
+        LayoutSVGText {text} at (38.31,204.25) size 353.36x150.41 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 354x151
-            LayoutSVGInlineText {#text} at (0,0) size 354x151
+            LayoutSVGInlineText {#text} at (38.31,204.25) size 353.36x150.41
               chunk 1 text run 1 at (56.68,251.91) startOffset 0 endOffset 1 width 13.89: "f"
               chunk 1 text run 2 at (70.04,255.72) startOffset 1 endOffset 2 width 13.89: "f"
               chunk 1 text run 3 at (83.39,259.54) startOffset 2 endOffset 3 width 13.89: "f"
@@ -96,18 +96,18 @@ layer at (0,0) size 800x538
               chunk 1 text run 23 at (350.53,335.87) startOffset 22 endOffset 23 width 13.89: "f"
               chunk 1 text run 24 at (363.89,339.68) startOffset 23 endOffset 24 width 13.89: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGText {text} at (50,395) size 134x70 contains 1 chunk(s)
+        LayoutSVGText {text} at (50,395) size 133.63x70 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (0,0) size 134x70
-            LayoutSVGInlineText {#text} at (0,0) size 134x70
+            LayoutSVGInlineText {#text} at (50,395) size 133.63x70
               chunk 1 text run 1 at (59.70,450.00) startOffset 0 endOffset 1 width 19.41: "'"
               chunk 1 text run 2 at (82.12,450.00) startOffset 1 endOffset 2 width 25.42: "f"
               chunk 1 text run 3 at (107.62,450.00) startOffset 2 endOffset 3 width 25.59: "a"
               chunk 1 text run 4 at (142.32,450.00) startOffset 3 endOffset 4 width 43.82: "Q"
               chunk 1 text run 5 at (173.94,450.00) startOffset 4 endOffset 5 width 19.41: "'"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGRect {rect} at (48,80) size 353x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=41.00] [y=55.00] [width=351.50] [height=56.00]
-        LayoutSVGRect {rect} at (64,164) size 354x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=57.48] [y=139.00] [width=351.52] [height=56.00]
-        LayoutSVGRect {rect} at (45,229) size 356x153 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=38.31] [y=204.25] [width=353.36] [height=150.41]
-        LayoutSVGRect {rect} at (57,420) size 136x72 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=50.00] [y=395.00] [width=133.63] [height=70.00]
+        LayoutSVGRect {rect} at (41,55) size 351.50x56 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=41.00] [y=55.00] [width=351.50] [height=56.00]
+        LayoutSVGRect {rect} at (57.48,139) size 351.52x56 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=57.48] [y=139.00] [width=351.52] [height=56.00]
+        LayoutSVGRect {rect} at (38.31,204.25) size 353.36x150.41 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=38.31] [y=204.25] [width=353.36] [height=150.41]
+        LayoutSVGRect {rect} at (50,395) size 133.63x70 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=50.00] [y=395.00] [width=133.63] [height=70.00]
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0

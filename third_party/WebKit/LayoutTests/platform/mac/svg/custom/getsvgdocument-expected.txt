@@ -18,8 +18,8 @@ layer at (8,60) size 85x20
     layer at (0,0) size 85x20
       LayoutSVGRoot {svg} at (0,0) size 85x20
         LayoutSVGRect {rect} at (0,0) size 85x20 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=85.00] [height=20.00]
-        LayoutSVGText {text} at (5,2) size 70x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 70x18
+        LayoutSVGText {text} at (5,2) size 69.36x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,2) size 69.36x18
             chunk 1 text run 1 at (5.00,16.00) startOffset 0 endOffset 7 width 69.37: "SUCCESS"
 layer at (8,98) size 85x20
   LayoutEmbeddedObject {OBJECT} at (0,38) size 85x20
@@ -28,6 +28,6 @@ layer at (8,98) size 85x20
     layer at (0,0) size 85x20
       LayoutSVGRoot {svg} at (0,0) size 85x20
         LayoutSVGRect {rect} at (0,0) size 85x20 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=85.00] [height=20.00]
-        LayoutSVGText {text} at (5,2) size 70x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 70x18
+        LayoutSVGText {text} at (5,2) size 69.36x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,2) size 69.36x18
             chunk 1 text run 1 at (5.00,16.00) startOffset 0 endOffset 7 width 69.37: "SUCCESS"

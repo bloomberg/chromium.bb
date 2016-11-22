@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 100x100
-  LayoutSVGRoot {svg} at (0,0) size 70x70
+  LayoutSVGRoot {svg} at (0,0) size 100x100
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="DropShadow"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feComposite operation="OVER"]
@@ -9,5 +9,5 @@ layer at (0,0) size 100x100
             [SourceGraphic]
           [feOffset dx="10.00" dy="10.00"]
             [SourceGraphic]
-    LayoutSVGRect {rect} at (0,0) size 70x70 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=40.00] [height=40.00]
+    LayoutSVGRect {rect} at (10,10) size 40x40 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=40.00] [height=40.00]
       [filter="DropShadow"] LayoutSVGResourceFilter {filter} at (-10,-10) size 80x80

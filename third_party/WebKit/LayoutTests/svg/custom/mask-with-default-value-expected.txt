@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,0) size 120x120
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceMasker {mask} [id="m1"] [maskUnits=objectBoundingBox] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (0,0) size 800x600 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=800.00] [height=600.00]

@@ -27,42 +27,42 @@ layer at (0,0) size 480x360
       LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadDefault"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-    LayoutSVGText {text} at (113,12) size 254x23 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 253x23
+    LayoutSVGText {text} at (113.66,12) size 252.67x23 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (113.66,12) size 252.67x23
         chunk 1 (middle anchor) text run 1 at (113.66,30.00) startOffset 0 endOffset 30 width 252.69: "Gradient 'spreadMethod' values"
     LayoutSVGRect {rect} at (10,60) size 225x40 [fill={[type=LINEAR-GRADIENT] [id="lgSpreadPad"]}] [x=10.00] [y=60.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (10,41) size 137x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 137x18
+    LayoutSVGText {text} at (10,41) size 136.72x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,41) size 136.72x18
         chunk 1 text run 1 at (10.00,55.00) startOffset 0 endOffset 18 width 136.72: "spreadMethod=\"pad\""
     LayoutSVGRect {rect} at (10,130) size 225x40 [fill={[type=LINEAR-GRADIENT] [id="lgSpreadReflect"]}] [x=10.00] [y=130.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (10,111) size 154x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 154x18
+    LayoutSVGText {text} at (10,111) size 153.59x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,111) size 153.59x18
         chunk 1 text run 1 at (10.00,125.00) startOffset 0 endOffset 22 width 153.59: "spreadMethod=\"reflect\""
     LayoutSVGRect {rect} at (10,200) size 225x40 [fill={[type=LINEAR-GRADIENT] [id="lgSpreadRepeat"]}] [x=10.00] [y=200.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (10,181) size 153x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 153x18
+    LayoutSVGText {text} at (10,181) size 152.69x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,181) size 152.69x18
         chunk 1 text run 1 at (10.00,195.00) startOffset 0 endOffset 21 width 152.70: "spreadMethod=\"repeat\""
     LayoutSVGRect {rect} at (10,270) size 225x40 [fill={[type=LINEAR-GRADIENT] [id="lgSpreadDefault"]}] [x=10.00] [y=270.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (10,251) size 159x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 159x18
+    LayoutSVGText {text} at (10,251) size 158.03x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,251) size 158.03x18
         chunk 1 text run 1 at (10.00,265.00) startOffset 0 endOffset 22 width 158.04: "spreadMethod=\"default\""
     LayoutSVGRect {rect} at (245,60) size 225x40 [fill={[type=RADIAL-GRADIENT] [id="rgSpreadPad"]}] [x=245.00] [y=60.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (245,41) size 137x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 137x18
+    LayoutSVGText {text} at (245,41) size 136.72x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (245,41) size 136.72x18
         chunk 1 text run 1 at (245.00,55.00) startOffset 0 endOffset 18 width 136.72: "spreadMethod=\"pad\""
     LayoutSVGRect {rect} at (245,130) size 225x40 [fill={[type=RADIAL-GRADIENT] [id="rgSpreadReflect"]}] [x=245.00] [y=130.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (245,111) size 154x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 154x18
+    LayoutSVGText {text} at (245,111) size 153.59x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (245,111) size 153.59x18
         chunk 1 text run 1 at (245.00,125.00) startOffset 0 endOffset 22 width 153.59: "spreadMethod=\"reflect\""
     LayoutSVGRect {rect} at (245,200) size 225x40 [fill={[type=RADIAL-GRADIENT] [id="rgSpreadRepeat"]}] [x=245.00] [y=200.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (245,181) size 153x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 153x18
+    LayoutSVGText {text} at (245,181) size 152.69x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (245,181) size 152.69x18
         chunk 1 text run 1 at (245.00,195.00) startOffset 0 endOffset 21 width 152.70: "spreadMethod=\"repeat\""
     LayoutSVGRect {rect} at (245,270) size 225x40 [fill={[type=RADIAL-GRADIENT] [id="rgSpreadDefault"]}] [x=245.00] [y=270.00] [width=225.00] [height=40.00]
-    LayoutSVGText {text} at (245,251) size 159x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 159x18
+    LayoutSVGText {text} at (245,251) size 158.03x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (245,251) size 158.03x18
         chunk 1 text run 1 at (245.00,265.00) startOffset 0 endOffset 22 width 158.04: "spreadMethod=\"default\""
-    LayoutSVGText {text} at (10,322) size 198x36 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 198x36
+    LayoutSVGText {text} at (10,322) size 197.50x36 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,322) size 197.50x36
         chunk 1 text run 1 at (10.00,350.00) startOffset 0 endOffset 16 width 197.50: "$Revision: 1.7 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

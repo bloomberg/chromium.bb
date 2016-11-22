@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {html} at (0,0) size 800x600
-    LayoutSVGRoot {svg} at (0,0) size 100x100
+    LayoutSVGRoot {svg} at (0,0) size 800x600
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceLinearGradient {linearGradient} [id="orange_red"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]

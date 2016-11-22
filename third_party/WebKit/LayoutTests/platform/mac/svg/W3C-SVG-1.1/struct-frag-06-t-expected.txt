@@ -2,37 +2,37 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (30,16) size 250x256
-      LayoutSVGText {text} at (30,16) size 250x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 250x18
+    LayoutSVGContainer {g} at (30,16) size 249.73x255
+      LayoutSVGText {text} at (30,16) size 249.73x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (30,16) size 249.73x18
           chunk 1 text run 1 at (30.00,30.00) startOffset 0 endOffset 42 width 249.73: "Default entities: amp, lt, gt, apos, quot:"
-      LayoutSVGText {text} at (90,46) size 72x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 72x18
+      LayoutSVGText {text} at (90,46) size 71.91x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (90,46) size 71.91x18
           chunk 1 text run 1 at (90.00,60.00) startOffset 0 endOffset 13 width 71.91: "&, <, >, ', \""
-      LayoutSVGText {text} at (30,86) size 137x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 137x18
+      LayoutSVGText {text} at (30,86) size 136.34x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (30,86) size 136.34x18
           chunk 1 text run 1 at (30.00,100.00) startOffset 0 endOffset 21 width 136.34: "Character references:"
-      LayoutSVGText {text} at (90,116) size 181x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 181x18
+      LayoutSVGText {text} at (90,116) size 180.08x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (90,116) size 180.08x18
           chunk 1 text run 1 at (90.00,130.00) startOffset 0 endOffset 24 width 180.08: "A hexadecimal (&#x41)= A"
-      LayoutSVGText {text} at (90,146) size 142x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 142x18
+      LayoutSVGText {text} at (90,146) size 141.86x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (90,146) size 141.86x18
           chunk 1 text run 1 at (90.00,160.00) startOffset 0 endOffset 10 width 70.20: "A decimal "
           chunk 1 text run 1 at (160.20,160.00) startOffset 0 endOffset 9 width 71.68: "(&#65)= A"
-      LayoutSVGText {text} at (30,186) size 114x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 114x18
+      LayoutSVGText {text} at (30,186) size 113.27x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (30,186) size 113.27x18
           chunk 1 text run 1 at (30.00,200.00) startOffset 0 endOffset 18 width 113.27: "Entity references:"
-      LayoutSVGText {text} at (90,214) size 30x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 29x18
+      LayoutSVGText {text} at (90.78,214) size 28.42x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (90.78,214) size 28.42x18
           chunk 1 (middle anchor) text run 1 at (90.79,228.00) startOffset 0 endOffset 4 width 28.43: "gray"
-      LayoutSVGContainer {g} at (90,235) size 36x36 [transform={m=((0.20,0.00)(0.00,0.20)) t=(90.00,235.00)}]
-        LayoutSVGPath {path} at (90,235) size 36x36 [fill={[type=SOLID] [color=#808080]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
-      LayoutSVGText {text} at (178,214) size 54x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 53x18
+      LayoutSVGContainer {g} at (0,0) size 180x180 [transform={m=((0.20,0.00)(0.00,0.20)) t=(90.00,235.00)}]
+        LayoutSVGPath {path} at (0,0) size 180x180 [fill={[type=SOLID] [color=#808080]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
+      LayoutSVGText {text} at (178.78,214) size 52.44x18 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (178.78,214) size 52.44x18
           chunk 1 (middle anchor) text run 1 at (178.78,228.00) startOffset 0 endOffset 8 width 52.44: "outlined"
-      LayoutSVGContainer {g} at (189,234) size 38x38 [transform={m=((0.20,0.00)(0.00,0.20)) t=(190.00,235.00)}]
-        LayoutSVGPath {path} at (189,234) size 38x38 [stroke={[type=SOLID] [color=#808080] [stroke width=5.00]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x46
+      LayoutSVGContainer {g} at (0,0) size 180x180 [transform={m=((0.20,0.00)(0.00,0.20)) t=(190.00,235.00)}]
+        LayoutSVGPath {path} at (0,0) size 180x180 [stroke={[type=SOLID] [color=#808080] [stroke width=5.00]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
+    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.9 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

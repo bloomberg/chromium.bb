@@ -51,8 +51,8 @@ layer at (48,175) size 176x62
         LayoutSVGRect {rect} at (2,2) size 174x60 [fill={[type=SOLID] [color=#333333]}] [x=2.00] [y=2.00] [width=174.00] [height=60.00]
         LayoutSVGRect {rect} at (2,2) size 172x58 [fill={[type=SOLID] [color=#FFFFFF]}] [x=2.00] [y=2.00] [width=172.00] [height=58.00]
         LayoutSVGRect {rect} at (86,2) size 88x58 [fill={[type=SOLID] [color=#FFCC33]}] [x=86.00] [y=2.00] [width=88.00] [height=58.00]
-        LayoutSVGText {text} at (45,10) size 81x46 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 81x46
+        LayoutSVGText {text} at (45.98,10) size 80.02x46 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (45.98,10) size 80.02x46
             chunk 1 (middle anchor) text run 1 at (45.99,46.00) startOffset 0 endOffset 3 width 80.02: "SVG"
 layer at (48,357) size 176x62
   LayoutEmbeddedObject {object} at (0,0) size 176x62
@@ -64,6 +64,6 @@ layer at (48,357) size 176x62
         LayoutSVGRect {rect} at (2,2) size 174x60 [fill={[type=SOLID] [color=#333333]}] [x=2.00] [y=2.00] [width=174.00] [height=60.00]
         LayoutSVGRect {rect} at (2,2) size 172x58 [fill={[type=SOLID] [color=#FFFFFF]}] [x=2.00] [y=2.00] [width=172.00] [height=58.00]
         LayoutSVGRect {rect} at (86,2) size 88x58 [fill={[type=SOLID] [color=#FFCC33]}] [x=86.00] [y=2.00] [width=88.00] [height=58.00]
-        LayoutSVGText {text} at (45,10) size 81x46 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 81x46
+        LayoutSVGText {text} at (45.98,10) size 80.02x46 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (45.98,10) size 80.02x46
             chunk 1 (middle anchor) text run 1 at (45.99,46.00) startOffset 0 endOffset 3 width 80.02: "SVG"

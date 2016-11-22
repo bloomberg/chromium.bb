@@ -13,5 +13,5 @@ layer at (10,50) size 406x306
   LayoutSVGRoot (positioned) {svg} at (10,50) size 406x306
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourcePattern {pattern} [id="pattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
-        LayoutSVGImage {image} at (13,53) size 400x300
-    LayoutSVGRect {rect} at (13,53) size 400x300 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=0.00] [width=400.00] [height=300.00]
+        LayoutSVGImage {image} at (0,0) size 800x600
+    LayoutSVGRect {rect} at (0,0) size 400x300 [fill={[type=PATTERN] [id="pattern"]}] [x=0.00] [y=0.00] [width=400.00] [height=300.00]

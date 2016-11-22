@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x600
-      LayoutSVGRoot {svg} at (0,0) size 200x100
+      LayoutSVGRoot {svg} at (0,0) size 300x150
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 1.00 1.00 0.00 0.00 0.00 1.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00"]

@@ -9,6 +9,6 @@ layer at (0,0) size 800x600
       LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feOffset dx="0.00" dy="0.00"]
           [SourceGraphic]
-    LayoutSVGContainer {g} at (0,0) size 800x600
-      LayoutSVGRect {rect} at (0,0) size 800x600 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=0.00] [y=0.00] [width=20000.00] [height=20000.00]
+    LayoutSVGContainer {g} at (0,0) size 20000x20000
+      LayoutSVGRect {rect} at (0,0) size 20000x20000 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=0.00] [y=0.00] [width=20000.00] [height=20000.00]
         [filter="filter"] LayoutSVGResourceFilter {filter} at (-2000,-2000) size 24000x24000

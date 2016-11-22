@@ -3,64 +3,64 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (19,34) size 180x260
+    LayoutSVGContainer {g} at (20,34) size 178.09x260
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGContainer {g} at (19,34) size 180x260 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,-10.00)}]
-        LayoutSVGContainer {g} at (19,34) size 180x260 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
-          LayoutSVGRect {rect} at (19,34) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=5.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,4) size 140x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 140x20
+      LayoutSVGContainer {g} at (0,44) size 178.09x260 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,-10.00)}]
+        LayoutSVGContainer {g} at (0,4) size 178.09x260 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
+          LayoutSVGRect {rect} at (0,5) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=5.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,4) size 139.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,4) size 139.09x20
               chunk 1 text run 1 at (20.00,20.00) startOffset 0 endOffset 17 width 139.10: "Scripting enabled"
-          LayoutSVGRect {rect} at (19,54) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=25.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,24) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,25) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=25.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,24) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,24) size 148.09x20
               chunk 1 text run 1 at (20.00,40.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #1"
-          LayoutSVGRect {rect} at (19,74) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=45.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,44) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,45) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=45.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,44) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,44) size 148.09x20
               chunk 1 text run 1 at (20.00,60.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #2"
-          LayoutSVGRect {rect} at (19,94) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=65.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,64) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,65) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=65.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,64) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,64) size 148.09x20
               chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #3"
-          LayoutSVGRect {rect} at (19,114) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=85.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,84) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,85) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=85.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,84) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,84) size 148.09x20
               chunk 1 text run 1 at (20.00,100.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #4"
-          LayoutSVGRect {rect} at (19,134) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=105.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,104) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,105) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=105.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,104) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,104) size 148.09x20
               chunk 1 text run 1 at (20.00,120.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #5"
-          LayoutSVGRect {rect} at (19,154) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=125.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,124) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,125) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=125.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,124) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,124) size 148.09x20
               chunk 1 text run 1 at (20.00,140.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #6"
-          LayoutSVGRect {rect} at (19,174) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=145.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,144) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,145) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=145.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,144) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,144) size 148.09x20
               chunk 1 text run 1 at (20.00,160.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #7"
-          LayoutSVGRect {rect} at (19,194) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=165.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,164) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,165) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=165.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,164) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,164) size 148.09x20
               chunk 1 text run 1 at (20.00,180.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #8"
-          LayoutSVGRect {rect} at (19,214) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=185.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,184) size 149x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 149x20
+          LayoutSVGRect {rect} at (0,185) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=185.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,184) size 148.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,184) size 148.09x20
               chunk 1 text run 1 at (20.00,200.00) startOffset 0 endOffset 17 width 148.10: "Passed subtest #9"
-          LayoutSVGRect {rect} at (19,234) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=205.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,204) size 159x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 159x20
+          LayoutSVGRect {rect} at (0,205) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=205.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,204) size 158.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,204) size 158.09x20
               chunk 1 text run 1 at (20.00,220.00) startOffset 0 endOffset 18 width 158.11: "Passed subtest #10"
-          LayoutSVGRect {rect} at (19,254) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=225.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,224) size 157x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 157x20
+          LayoutSVGRect {rect} at (0,225) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=225.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,224) size 156.77x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,224) size 156.77x20
               chunk 1 text run 1 at (20.00,240.00) startOffset 0 endOffset 18 width 156.77: "Passed subtest #11"
-          LayoutSVGRect {rect} at (19,274) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=245.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,244) size 159x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 159x20
+          LayoutSVGRect {rect} at (0,245) size 15x15 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=245.00] [width=15.00] [height=15.00]
+          LayoutSVGText {text} at (20,244) size 158.09x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,244) size 158.09x20
               chunk 1 text run 1 at (20.00,260.00) startOffset 0 endOffset 18 width 158.11: "Passed subtest #12"
-    LayoutSVGContainer {g} at (10,311) size 230x36
-      LayoutSVGText {text} at (10,311) size 230x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 230x36
+    LayoutSVGContainer {g} at (10,311) size 229.47x36
+      LayoutSVGText {text} at (10,311) size 229.47x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311) size 229.47x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.5 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

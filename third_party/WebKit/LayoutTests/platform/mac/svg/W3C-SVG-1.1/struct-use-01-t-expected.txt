@@ -2,90 +2,90 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (41,22) size 309x269
-      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-        LayoutSVGContainer {g} at (0,0) size 32x22
-          LayoutSVGRect {rect} at (0,0) size 22x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
-          LayoutSVGEllipse {circle} at (0,0) size 22x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [r=10.00]
-          LayoutSVGEllipse {ellipse} at (0,0) size 22x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [rx=10.00] [ry=10.00]
-          LayoutSVGPath {line} at (0,8) size 20x4 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x1=0.00] [y1=10.00] [x2=20.00] [y2=10.00]
-          LayoutSVGPath {path} at (0,0) size 22x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [data="M 0 0 L 20 0 L 20 20 L 0 20 Z"]
-          LayoutSVGPath {polygon} at (0,0) size 22x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [points="0 0 20 0 20 20 0 20 0 0"]
-          LayoutSVGPath {polyline} at (0,0) size 22x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [points="0 0 20 0 20 20"]
-          LayoutSVGContainer {g} at (0,0) size 22x22
-            LayoutSVGRect {rect} at (0,0) size 12x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=20.00]
-            LayoutSVGRect {rect} at (8,0) size 14x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=0.00] [width=10.00] [height=20.00]
-          LayoutSVGContainer {use} at (0,0) size 22x22
-            LayoutSVGRect {rect} at (0,0) size 22x22 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
+    LayoutSVGContainer {g} at (41.89,22) size 308.11x269
+      LayoutSVGHiddenContainer {defs} at (0,-14) size 28.22x34
+        LayoutSVGContainer {g} at (0,-14) size 28.22x34
+          LayoutSVGRect {rect} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
+          LayoutSVGEllipse {circle} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [r=10.00]
+          LayoutSVGEllipse {ellipse} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=10.00] [cy=10.00] [rx=10.00] [ry=10.00]
+          LayoutSVGPath {line} at (0,10) size 20x0 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x1=0.00] [y1=10.00] [x2=20.00] [y2=10.00]
+          LayoutSVGPath {path} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [data="M 0 0 L 20 0 L 20 20 L 0 20 Z"]
+          LayoutSVGPath {polygon} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [points="0 0 20 0 20 20 0 20 0 0"]
+          LayoutSVGPath {polyline} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [points="0 0 20 0 20 20"]
+          LayoutSVGContainer {g} at (0,0) size 20x20
+            LayoutSVGRect {rect} at (0,0) size 10x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=10.00] [height=20.00]
+            LayoutSVGRect {rect} at (10,0) size 10x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=0.00] [width=10.00] [height=20.00]
+          LayoutSVGContainer {use} at (0,0) size 20x20
+            LayoutSVGRect {rect} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#FFFF00] [stroke width=3.00]}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
           LayoutSVGImage {image} at (0,0) size 20x20
-          LayoutSVGText {text} at (0,-14) size 29x18 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 29x18
+          LayoutSVGText {text} at (0,-14) size 28.22x18 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,-14) size 28.22x18
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 4 width 28.20: "Text"
-      LayoutSVGContainer {g} at (41,22) size 269x263
-        LayoutSVGContainer {g} at (41,22) size 89x263 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,40.00)}]
-          LayoutSVGText {text} at (-53,-18) size 53x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 53x23
+      LayoutSVGContainer {g} at (41.89,22) size 268.11x263
+        LayoutSVGContainer {g} at (-88.11,-18) size 88.11x263 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,40.00)}]
+          LayoutSVGText {text} at (-52.52,-18) size 52.52x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-52.52,-18) size 52.52x23
               chunk 1 (end anchor) text run 1 at (-52.53,0.00) startOffset 0 endOffset 6 width 52.53: "<rect>"
-          LayoutSVGText {text} at (-67,12) size 67x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 67x23
+          LayoutSVGText {text} at (-66.95,12) size 66.95x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-66.95,12) size 66.95x23
               chunk 1 (end anchor) text run 1 at (-66.96,30.00) startOffset 0 endOffset 8 width 66.96: "<circle>"
-          LayoutSVGText {text} at (-75,42) size 75x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 75x23
+          LayoutSVGText {text} at (-74.77,42) size 74.77x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-74.77,42) size 74.77x23
               chunk 1 (end anchor) text run 1 at (-74.77,60.00) startOffset 0 endOffset 9 width 74.77: "<ellipse>"
-          LayoutSVGText {text} at (-53,72) size 53x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 53x23
+          LayoutSVGText {text} at (-52.55,72) size 52.55x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-52.55,72) size 52.55x23
               chunk 1 (end anchor) text run 1 at (-52.55,90.00) startOffset 0 endOffset 6 width 52.55: "<line>"
-          LayoutSVGText {text} at (-89,102) size 89x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 89x23
+          LayoutSVGText {text} at (-88.09,102) size 88.09x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-88.09,102) size 88.09x23
               chunk 1 (end anchor) text run 1 at (-88.11,120.00) startOffset 0 endOffset 10 width 88.11: "<polyline>"
-          LayoutSVGText {text} at (-89,132) size 89x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 89x23
+          LayoutSVGText {text} at (-88.11,132) size 88.11x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-88.11,132) size 88.11x23
               chunk 1 (end anchor) text run 1 at (-88.12,150.00) startOffset 0 endOffset 9 width 88.12: "<polygon>"
-          LayoutSVGText {text} at (-57,162) size 57x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 57x23
+          LayoutSVGText {text} at (-56.98,162) size 56.98x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-56.98,162) size 56.98x23
               chunk 1 (end anchor) text run 1 at (-56.99,180.00) startOffset 0 endOffset 6 width 56.99: "<path>"
-          LayoutSVGText {text} at (-72,192) size 72x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 72x23
+          LayoutSVGText {text} at (-71.42,192) size 71.42x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-71.42,192) size 71.42x23
               chunk 1 (end anchor) text run 1 at (-71.43,210.00) startOffset 0 endOffset 7 width 71.43: "<image>"
-          LayoutSVGText {text} at (-53,222) size 53x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 53x23
+          LayoutSVGText {text} at (-52.55,222) size 52.55x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-52.55,222) size 52.55x23
               chunk 1 (end anchor) text run 1 at (-52.55,240.00) startOffset 0 endOffset 6 width 52.55: "<text>"
-        LayoutSVGContainer {g} at (260,22) size 50x53 [transform={m=((1.00,0.00)(0.00,1.00)) t=(310.00,40.00)}]
-          LayoutSVGText {text} at (-33,-18) size 33x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 33x23
+        LayoutSVGContainer {g} at (-49.22,-18) size 49.22x53 [transform={m=((1.00,0.00)(0.00,1.00)) t=(310.00,40.00)}]
+          LayoutSVGText {text} at (-32.55,-18) size 32.55x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-32.55,-18) size 32.55x23
               chunk 1 (end anchor) text run 1 at (-32.56,0.00) startOffset 0 endOffset 3 width 32.56: "<g>"
-          LayoutSVGText {text} at (-50,12) size 50x23 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 50x23
+          LayoutSVGText {text} at (-49.22,12) size 49.22x23 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-49.22,12) size 49.22x23
               chunk 1 (end anchor) text run 1 at (-49.22,30.00) startOffset 0 endOffset 5 width 49.22: "<use>"
-      LayoutSVGContainer {g} at (150,25) size 200x266 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,25.00)}]
-        LayoutSVGContainer {use} at (150,25) size 20x20
-          LayoutSVGRect {rect} at (150,25) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
-        LayoutSVGContainer {use} at (150,55) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
-          LayoutSVGEllipse {circle} at (150,55) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [cx=10.00] [cy=10.00] [r=10.00]
-        LayoutSVGContainer {use} at (150,85) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
-          LayoutSVGEllipse {ellipse} at (150,85) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [cx=10.00] [cy=10.00] [rx=10.00] [ry=10.00]
-        LayoutSVGContainer {use} at (150,124) size 20x2 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,90.00)}]
-          LayoutSVGPath {line} at (150,124) size 20x2 [stroke={[type=SOLID] [color=#00FF00] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=10.00] [x2=20.00] [y2=10.00]
-        LayoutSVGContainer {use} at (150,144) size 21x21 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
-          LayoutSVGPath {polyline} at (150,144) size 21x21 [stroke={[type=SOLID] [color=#00FF00] [stroke width=2.00]}] [points="0 0 20 0 20 20"]
-        LayoutSVGContainer {use} at (150,175) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,150.00)}]
-          LayoutSVGPath {polygon} at (150,175) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [points="0 0 20 0 20 20 0 20 0 0"]
-        LayoutSVGContainer {use} at (150,205) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,180.00)}]
-          LayoutSVGPath {path} at (150,205) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [data="M 0 0 L 20 0 L 20 20 L 0 20 Z"]
-        LayoutSVGContainer {use} at (150,235) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
-          LayoutSVGImage {image} at (150,235) size 20x20
-        LayoutSVGContainer {use} at (150,262) size 45x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,260.00)}]
-          LayoutSVGText {text} at (0,-23) size 45x29 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 45x29
+      LayoutSVGContainer {g} at (0,0) size 200x266 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,25.00)}]
+        LayoutSVGContainer {use} at (0,0) size 20x20
+          LayoutSVGRect {rect} at (0,0) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
+          LayoutSVGEllipse {circle} at (0,0) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [cx=10.00] [cy=10.00] [r=10.00]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
+          LayoutSVGEllipse {ellipse} at (0,0) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [cx=10.00] [cy=10.00] [rx=10.00] [ry=10.00]
+        LayoutSVGContainer {use} at (0,10) size 20x0 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,90.00)}]
+          LayoutSVGPath {line} at (0,10) size 20x0 [stroke={[type=SOLID] [color=#00FF00] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=10.00] [x2=20.00] [y2=10.00]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
+          LayoutSVGPath {polyline} at (0,0) size 20x20 [stroke={[type=SOLID] [color=#00FF00] [stroke width=2.00]}] [points="0 0 20 0 20 20"]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,150.00)}]
+          LayoutSVGPath {polygon} at (0,0) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [points="0 0 20 0 20 20 0 20 0 0"]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,180.00)}]
+          LayoutSVGPath {path} at (0,0) size 20x20 [fill={[type=SOLID] [color=#00FF00]}] [data="M 0 0 L 20 0 L 20 20 L 0 20 Z"]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
+          LayoutSVGImage {image} at (0,0) size 20x20
+        LayoutSVGContainer {use} at (0,-23) size 44.25x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,260.00)}]
+          LayoutSVGText {text} at (0,-23) size 44.25x29 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,-23) size 44.25x29
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 4 width 43.52: "Text"
-        LayoutSVGContainer {use} at (330,25) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,0.00)}]
-          LayoutSVGContainer {g} at (330,25) size 20x20
-            LayoutSVGRect {rect} at (330,25) size 10x20 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=10.00] [height=20.00]
-            LayoutSVGRect {rect} at (340,25) size 10x20 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=0.00] [width=10.00] [height=20.00]
-        LayoutSVGContainer {use} at (330,55) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,30.00)}]
-          LayoutSVGContainer {g} at (330,55) size 20x20
-            LayoutSVGRect {rect} at (330,55) size 20x20 [fill={[type=SOLID] [color=#00CC00]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
-    LayoutSVGText {text} at (10,304) size 284x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 284x46
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,0.00)}]
+          LayoutSVGContainer {g} at (0,0) size 20x20
+            LayoutSVGRect {rect} at (0,0) size 10x20 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=10.00] [height=20.00]
+            LayoutSVGRect {rect} at (10,0) size 10x20 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=0.00] [width=10.00] [height=20.00]
+        LayoutSVGContainer {use} at (0,0) size 20x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,30.00)}]
+          LayoutSVGContainer {g} at (0,0) size 20x20
+            LayoutSVGRect {rect} at (0,0) size 20x20 [fill={[type=SOLID] [color=#00CC00]}] [x=0.00] [y=0.00] [width=20.00] [height=20.00]
+    LayoutSVGText {text} at (10,304) size 283.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 283.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 283.34: "$Revision: 1.14 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

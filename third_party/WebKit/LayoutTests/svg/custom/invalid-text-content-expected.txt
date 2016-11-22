@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,0) size 100x100
-    LayoutSVGText {text}
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGText {text} at (0,0) size 0x0
       LayoutSVGTSpan {tspan} at (0,0) size 0x0
         LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGInlineText {#text} at (0,0) size 0x0

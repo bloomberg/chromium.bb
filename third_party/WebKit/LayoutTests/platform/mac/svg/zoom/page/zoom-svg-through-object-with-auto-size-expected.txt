@@ -16,11 +16,11 @@ layer at (6,6) size 159x159
       LayoutView at (0,0) size 153x153
     layer at (0,0) size 153x153
       LayoutSVGRoot {svg} at (0,0) size 153x153
-        LayoutSVGEllipse {circle} at (0,0) size 153x153 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]
+        LayoutSVGEllipse {circle} at (0,0) size 220x220 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]
 layer at (167,6) size 159x159
   LayoutEmbeddedObject {OBJECT} at (161.69,0) size 158.92x158.92 [border: (1px dashed #800000)]
     layer at (0,0) size 153x153
       LayoutView at (0,0) size 153x153
     layer at (0,0) size 153x153
       LayoutSVGRoot {svg} at (0,0) size 153x153
-        LayoutSVGEllipse {circle} at (0,0) size 153x153 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]
+        LayoutSVGEllipse {circle} at (0,0) size 220x220 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#D9BB7A] [fill rule=EVEN-ODD]}] [cx=110.00] [cy=110.00] [r=110.00]

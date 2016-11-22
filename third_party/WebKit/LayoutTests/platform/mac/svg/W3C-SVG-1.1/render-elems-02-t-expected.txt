@@ -2,16 +2,16 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (28,25) size 387x240
-      LayoutSVGContainer {g} at (28,25) size 387x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,80.00)}]
-        LayoutSVGContainer {g} at (28,78) size 184x184
-          LayoutSVGPath {path} at (28,78) size 184x184 [stroke={[type=SOLID] [color=#FF0000] [stroke width=3.00]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
-        LayoutSVGContainer {g} at (225,75) size 190x190 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}]
-          LayoutSVGPath {path} at (225,75) size 190x190 [stroke={[type=SOLID] [color=#000000] [stroke width=9.00]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
-        LayoutSVGText {text} at (110,-55) size 144x32 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 144x32
+    LayoutSVGContainer {g} at (30,25) size 380x235
+      LayoutSVGContainer {g} at (0,-55) size 380x235 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,80.00)}]
+        LayoutSVGContainer {g} at (0,0) size 180x180
+          LayoutSVGPath {path} at (0,0) size 180x180 [stroke={[type=SOLID] [color=#FF0000] [stroke width=3.00]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
+        LayoutSVGContainer {g} at (0,0) size 180x180 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}]
+          LayoutSVGPath {path} at (0,0) size 180x180 [stroke={[type=SOLID] [color=#000000] [stroke width=9.00]}] [data="M 60 0 l 60 0 l 60 60 l 0 60 l -60 60 l -60 0 l -60 -60 l 0 -60 Z"]
+        LayoutSVGText {text} at (110,-55) size 143.84x32 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (110,-55) size 143.84x32
             chunk 1 text run 1 at (110.00,-30.00) startOffset 0 endOffset 12 width 143.86: "Shape stroke"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 264x46
+    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"
-    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
+    LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
