@@ -16,8 +16,6 @@
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
-#include "chrome/browser/browser_process.h"
-#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
