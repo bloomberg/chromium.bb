@@ -269,7 +269,11 @@ public class DownloadNotificationService extends Service {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download, fileName, contentText);
         boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
-        builder.setOngoing(true).setProgress(100, percentage, indeterminate);
+        builder.setOngoing(true);
+        // Avoid moving animations while download is not downloading.
+        if (!isDownloadPending) {
+            builder.setProgress(100, percentage, indeterminate);
+        }
         builder.setPriority(Notification.PRIORITY_HIGH);
         if (!indeterminate && !isOfflinePage) {
             String duration = formatRemainingTime(mContext, timeRemainingInMillis);
