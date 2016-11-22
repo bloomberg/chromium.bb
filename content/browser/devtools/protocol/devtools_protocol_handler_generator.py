@@ -643,9 +643,8 @@ fields = []
 includes = []
 fields_init = []
 
-browser_domains_list = ["Inspector", "Memory", "Page", "Emulation", "Security",
-    "Target", "ServiceWorker", "Input", "Storage",
-    "SystemInfo", "Tethering", "Schema"]
+browser_domains_list = ["Inspector", "Page", "Emulation", "Security",
+    "Target", "ServiceWorker", "Input", "Storage", "Schema"]
 browser_commands_list = [
     "DOM.setFileInputFiles",
     "Network.enable",
@@ -666,10 +665,7 @@ async_commands_list = [
     "Network.setCookie",
     "Input.synthesizePinchGesture",
     "Input.synthesizeScrollGesture",
-    "Input.synthesizeTapGesture",
-    "SystemInfo.getInfo",
-    "Tethering.bind",
-    "Tethering.unbind"]
+    "Input.synthesizeTapGesture"]
 
 for json_domain in all_domains:
   domain_map = {}

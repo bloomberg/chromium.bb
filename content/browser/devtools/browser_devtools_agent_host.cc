@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
-#include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
@@ -29,16 +28,8 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
     scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
     const CreateServerSocketCallback& socket_callback)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
-      memory_handler_(new devtools::memory::MemoryHandler()),
-      system_info_handler_(new devtools::system_info::SystemInfoHandler()),
-      tethering_handler_(
-          new devtools::tethering::TetheringHandler(socket_callback,
-                                                    tethering_task_runner)),
-      protocol_handler_(new DevToolsProtocolHandler(this)) {
-  DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
-  dispatcher->SetMemoryHandler(memory_handler_.get());
-  dispatcher->SetSystemInfoHandler(system_info_handler_.get());
-  dispatcher->SetTetheringHandler(tethering_handler_.get());
+      tethering_task_runner_(tethering_task_runner),
+      socket_callback_(socket_callback) {
   NotifyCreated();
 }
 
@@ -46,9 +37,18 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 }
 
 void BrowserDevToolsAgentHost::Attach() {
-  session()->dispatcher()->setFallThroughForNotFound(true);
   io_handler_.reset(new protocol::IOHandler(GetIOContext()));
   io_handler_->Wire(session()->dispatcher());
+
+  memory_handler_.reset(new protocol::MemoryHandler());
+  memory_handler_->Wire(session()->dispatcher());
+
+  system_info_handler_.reset(new protocol::SystemInfoHandler());
+  system_info_handler_->Wire(session()->dispatcher());
+
+  tethering_handler_.reset(new protocol::TetheringHandler(
+      socket_callback_, tethering_task_runner_));
+  tethering_handler_->Wire(session()->dispatcher());
 
   tracing_handler_.reset(new protocol::TracingHandler(
       protocol::TracingHandler::Browser,
@@ -59,6 +59,9 @@ void BrowserDevToolsAgentHost::Attach() {
 
 void BrowserDevToolsAgentHost::Detach() {
   io_handler_.reset();
+  memory_handler_.reset();
+  system_info_handler_.reset();
+  tethering_handler_.reset();
   tracing_handler_.reset();
 }
 
@@ -87,13 +90,7 @@ void BrowserDevToolsAgentHost::Reload() {
 
 bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-  std::unique_ptr<protocol::Value> protocolValue =
-      protocol::toProtocolValue(value.get(), 1000);
-  if (session()->dispatcher()->dispatch(std::move(protocolValue)) ==
-      protocol::Response::kFallThrough) {
-    protocol_handler_->HandleMessage(session()->session_id(), std::move(value));
-  }
+  session()->dispatcher()->dispatch(protocol::StringUtil::parseJSON(message));
   return true;
 }
 

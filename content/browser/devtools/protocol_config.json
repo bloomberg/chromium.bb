@@ -14,12 +14,20 @@
                 "async": ["read"]
             },
             {
-                "domain": "Tracing",
-                "async": ["start", "end", "getCategories", "requestMemoryDump"]
+                "domain": "Memory",
+                "include": ["setPressureNotificationsSuppressed", "simulatePressureNotification"]
             },
             {
-                "domain": "IO",
-                "async": ["read"]
+                "domain": "SystemInfo",
+                "async": ["getInfo"]
+            },
+            {
+                "domain": "Tethering",
+                "async": ["bind", "unbind"]
+            },
+            {
+                "domain": "Tracing",
+                "async": ["start", "end", "getCategories", "requestMemoryDump"]
             }
         ]
     },

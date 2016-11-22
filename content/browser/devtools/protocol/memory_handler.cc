@@ -10,17 +10,24 @@
 #include "content/public/common/content_features.h"
 
 namespace content {
-namespace devtools {
-namespace memory {
+namespace protocol {
 
 MemoryHandler::MemoryHandler() {}
 
 MemoryHandler::~MemoryHandler() {}
 
-MemoryHandler::Response MemoryHandler::SetPressureNotificationsSuppressed(
+void MemoryHandler::Wire(UberDispatcher* dispatcher) {
+  Memory::Dispatcher::wire(dispatcher, this);
+}
+
+Response MemoryHandler::Disable() {
+  return Response::OK();
+}
+
+Response MemoryHandler::SetPressureNotificationsSuppressed(
     bool suppressed) {
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    return Response::InvalidParams(
+    return Response::Error(
         "Cannot enable/disable notifications when memory coordinator is "
         "enabled");
   }
@@ -29,15 +36,15 @@ MemoryHandler::Response MemoryHandler::SetPressureNotificationsSuppressed(
   return Response::OK();
 }
 
-MemoryHandler::Response MemoryHandler::SimulatePressureNotification(
+Response MemoryHandler::SimulatePressureNotification(
     const std::string& level) {
   base::MemoryPressureListener::MemoryPressureLevel parsed_level;
-  if (level == kPressureLevelModerate) {
+  if (level == protocol::Memory::PressureLevelEnum::Moderate) {
     parsed_level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
-  } else if (level == kPressureLevelCritical) {
+  } else if (level == protocol::Memory::PressureLevelEnum::Critical) {
     parsed_level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
   } else {
-    return Response::InternalError(base::StringPrintf(
+    return Response::InvalidParams(base::StringPrintf(
         "Invalid memory pressure level '%s'", level.c_str()));
   }
 
@@ -46,13 +53,5 @@ MemoryHandler::Response MemoryHandler::SimulatePressureNotification(
   return Response::OK();
 }
 
-MemoryHandler::Response MemoryHandler::GetDOMCounters(
-    int* documents,
-    int* nodes,
-    int* event_listeners) {
-  return Response::FallThrough();
-}
-
-}  // namespace memory
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
