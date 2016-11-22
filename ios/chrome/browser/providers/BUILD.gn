@@ -15,6 +15,7 @@ source_set("providers") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/providers/images",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:provider_flags",
   ]

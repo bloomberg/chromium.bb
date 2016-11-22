@@ -13,6 +13,9 @@ source_set("browser") {
     "distribution/app_distribution_provider.mm",
     "geolocation_updater_provider.h",
     "geolocation_updater_provider.mm",
+    "images/branded_image_provider.h",
+    "images/branded_image_provider.mm",
+    "images/whats_new_icon.h",
     "native_app_launcher/native_app_metadata.h",
     "native_app_launcher/native_app_types.h",
     "native_app_launcher/native_app_whitelist_manager.h",
@@ -71,6 +74,7 @@ source_set("browser") {
   libs = [
     "CoreGraphics.framework",
     "CoreLocation.framework",
+    "Foundation.framework",
   ]
 }
 
@@ -85,6 +89,8 @@ source_set("test_support") {
   sources = [
     "distribution/test_app_distribution_provider.h",
     "distribution/test_app_distribution_provider.mm",
+    "images/test_branded_image_provider.h",
+    "images/test_branded_image_provider.mm",
     "omaha/test_omaha_service_provider.h",
     "omaha/test_omaha_service_provider.mm",
     "sessions/test_live_tab_context_provider.cc",
@@ -116,6 +122,7 @@ source_set("test_support") {
     "//base",
     "//components/signin/ios/browser:test_support",
     "//components/sync_sessions",
+    "//ios/chrome/app/theme",
     "//testing/gtest",
   ]
   public_deps = [

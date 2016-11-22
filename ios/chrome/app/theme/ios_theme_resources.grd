@@ -32,6 +32,7 @@
            TOOLBAR_IDR_THREE_STATE(BACK), to add its variations to the array.
            The easiest way to find the use of a given resource ID:
            'git grep TOOLBAR_IDR_.*BACK' -->
+      <structure type="chrome_scaled_image" name="IDR_IOS_CONTEXTUAL_SEARCH_HEADER" file="contextual_search_header.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SAVE_PASSWORD" file="infobar_save_password.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />
@@ -47,6 +48,8 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH_INCOGNITO" file="omnibox_search_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR" file="omnibox_star.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR_INCOGNITO" file="omnibox_star_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PROMO_INFO" file="promo_info.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_SETTINGS_INFO_24" file="settings_info_24.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_DARK_BACK" file="toolbar_dark_back.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_DARK_BACK_DISABLED" file="toolbar_dark_back_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_DARK_BACK_PRESSED" file="toolbar_dark_back_pressed.png" />

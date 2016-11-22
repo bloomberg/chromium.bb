@@ -19,6 +19,7 @@
 
 class AppDistributionProvider;
 class AutocompleteProvider;
+class BrandedImageProvider;
 class GURL;
 class InfoBarViewDelegate;
 class OmahaServiceProvider;
@@ -174,6 +175,9 @@ class ChromeBrowserProvider {
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
+
+  // Returns an instance of the branded image provider.
+  virtual BrandedImageProvider* GetBrandedImageProvider() const;
 
   // Returns the NativeAppWhitelistManager implementation.
   virtual id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const;

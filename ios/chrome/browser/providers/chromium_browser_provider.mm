@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/providers/chromium_logo_controller.h"
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
+#import "ios/chrome/browser/providers/images/chromium_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/provider_flags.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
@@ -25,7 +26,8 @@ std::unique_ptr<ChromeBrowserProvider> CreateChromeBrowserProvider() {
 #endif
 
 ChromiumBrowserProvider::ChromiumBrowserProvider()
-    : signin_error_provider_(base::MakeUnique<ios::SigninErrorProvider>()),
+    : branded_image_provider_(base::MakeUnique<ChromiumBrandedImageProvider>()),
+      signin_error_provider_(base::MakeUnique<ios::SigninErrorProvider>()),
       signin_resources_provider_(
           base::MakeUnique<ios::SigninResourcesProvider>()),
       voice_search_provider_(base::MakeUnique<ChromiumVoiceSearchProvider>()) {}
@@ -67,4 +69,8 @@ id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
     ios::ChromeBrowserState* browser_state,
     id<UrlLoader> loader) const {
   return [[ChromiumLogoController alloc] init];
+}
+
+BrandedImageProvider* ChromiumBrowserProvider::GetBrandedImageProvider() const {
+  return branded_image_provider_.get();
 }

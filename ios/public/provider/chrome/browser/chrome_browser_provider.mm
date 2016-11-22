@@ -139,7 +139,11 @@ id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
 }
 
 OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
-  return nil;
+  return nullptr;
+}
+
+BrandedImageProvider* ChromeBrowserProvider::GetBrandedImageProvider() const {
+  return nullptr;
 }
 
 id<NativeAppWhitelistManager>
