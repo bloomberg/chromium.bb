@@ -1,0 +1,74 @@
+<html>
+<head>
+<script src='../inspector-test.js'></script>
+<script src='../debugger-test.js'></script>
+<script src='../workspace-test.js'></script>
+<script src='../isolated-filesystem-test.js'></script>
+<script src='./persistence-test.js'></script>
+<script>
+
+function addFooJS() {
+    var script = document.createElement('script');
+    script.src = './resources/foo.js';
+    document.body.appendChild(script);
+}
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem('file:///var/www');
+    fs.addFileMapping('http://127.0.0.1:8000', '/');
+    InspectorTest.addFooJSFile(fs);
+
+    InspectorTest.runTestSuite([
+        function addFileSystem(next)
+        {
+            fs.reportCreated(next);
+        },
+
+        function addNetworkFooJS(next)
+        {
+            InspectorTest.evaluateInPage('addFooJS()');
+            InspectorTest.waitForBinding('foo.js').then(next);
+        },
+
+        function setBreakpointInNetworkUISourceCode(next)
+        {
+            InspectorTest.waitForUISourceCode('foo.js', Workspace.projectTypes.Network)
+                .then(sourceCode => InspectorTest.showUISourceCodePromise(sourceCode))
+                .then(onSourceFrame);
+
+            function onSourceFrame(sourceFrame)
+            {
+                InspectorTest.setBreakpoint(sourceFrame, 0, '', true);
+                InspectorTest.waitBreakpointSidebarPane().then(dumpBreakpointSidebarPane).then(next);
+            }
+        },
+
+        function reloadPageAndDumpBreakpoints(next)
+        {
+            Promise.all([
+                InspectorTest.waitBreakpointSidebarPane(),
+                InspectorTest.reloadPagePromise()
+            ]).then(dumpBreakpointSidebarPane).then(next);
+        },
+    ]);
+
+    function dumpBreakpointSidebarPane()
+    {
+        var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
+        var empty = paneElement.querySelector('.gray-info-message');
+        if (empty)
+            return InspectorTest.textContentWithLineBreaks(empty);
+        var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+        for (var entry of entries) {
+            var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
+            InspectorTest.addResult("    " + uiLocation.uiSourceCode.url() +":" + uiLocation.lineNumber);
+        }
+    }
+};
+</script>
+</head>
+<body onload='runTest()'>
+<p>Verify that breakpoints are moved appropriately in case of page reload.</p>
+</body>
+</html>

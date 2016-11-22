@@ -423,6 +423,14 @@ InspectorTest.reloadPage = function(callback, scriptToEvaluateOnLoad, scriptPrep
     InspectorTest._innerReloadPage(false, callback, scriptToEvaluateOnLoad, scriptPreprocessor);
 }
 
+InspectorTest.reloadPagePromise = function(scriptToEvaluateOnLoad, scriptPreprocessor)
+{
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    InspectorTest.reloadPage(fulfill, scriptToEvaluateOnLoad, scriptPreprocessor);
+    return promise;
+}
+
 InspectorTest._innerReloadPage = function(hardReload, callback, scriptToEvaluateOnLoad, scriptPreprocessor)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
