@@ -5496,13 +5496,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     av1_encode_sb((AV1_COMMON *)cm, x, AOMMAX(bsize, BLOCK_8X8));
 #if CONFIG_VAR_TX
     if (mbmi->skip) mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-    if (is_rect_tx(mbmi->tx_size))
-      av1_tokenize_sb(cpi, td, t, dry_run, AOMMAX(bsize, BLOCK_8X8), rate);
-    else
-#endif
-      av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col,
-                            AOMMAX(bsize, BLOCK_8X8), rate);
+    av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col,
+                          AOMMAX(bsize, BLOCK_8X8), rate);
 #else
     av1_tokenize_sb(cpi, td, t, dry_run, AOMMAX(bsize, BLOCK_8X8), rate);
 #endif
@@ -5526,23 +5521,13 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 #if CONFIG_VAR_TX
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      if (is_rect_tx_allowed(xd, mbmi)) {
-        td->counts->rect_tx[tx_size_cat][is_rect_tx(tx_size)]++;
+      if (is_inter) {
+        tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
+      } else {
+        ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
+        if (tx_size != max_txsize_lookup[bsize]) ++x->txb_split_count;
       }
-      if (!is_rect_tx_allowed(xd, mbmi) || !is_rect_tx(tx_size)) {
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
-        if (is_inter) {
-          tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
-        } else {
-          ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
-          if (tx_size != max_txsize_lookup[bsize]) ++x->txb_split_count;
-        }
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      }
-#endif
-#endif
-#if !CONFIG_VAR_TX
+#else
       ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
 #endif
     } else {
@@ -5608,37 +5593,18 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8 && is_inter &&
       !(mbmi->skip || seg_skip)) {
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-    if (is_rect_tx(mbmi->tx_size)) {
-      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip),
-                    xd);
-    } else {
-      if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
-    }
-#else
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
   } else {
     TX_SIZE tx_size = mbmi->tx_size;
     // The new intra coding scheme requires no change of transform size
     if (is_inter)
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-    {
-      tx_size = AOMMIN(tx_mode_to_biggest_tx_size[cm->tx_mode],
-                       max_txsize_lookup[bsize]);
-      if (txsize_sqr_map[max_txsize_rect_lookup[bsize]] <= tx_size)
-        tx_size = max_txsize_rect_lookup[bsize];
-      if (xd->lossless[mbmi->segment_id]) tx_size = TX_4X4;
-    }
-#else
       tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, is_inter);
-#endif
     else
       tx_size = (bsize >= BLOCK_8X8) ? tx_size : TX_4X4;
     mbmi->tx_size = tx_size;
     set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip), xd);
   }
-#endif
+#endif  // CONFIG_VAR_TX
 }
 
 #if CONFIG_SUPERTX

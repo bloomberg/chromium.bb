@@ -3259,7 +3259,6 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   int ctx =
       txfm_partition_context(tx_above + (blk_col >> 1),
                              tx_left + (blk_row >> 1), mbmi->sb_type, tx_size);
-
   int64_t sum_rd = INT64_MAX;
   int tmp_eob = 0;
   int zero_blk_rate;
@@ -3267,6 +3266,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   const int tx_size_ctx = txsize_sqr_map[tx_size];
 
   av1_init_rd_stats(&sum_rd_stats);
+
   assert(tx_size < TX_SIZES_ALL);
 
   if (ref_best_rd < 0) {
@@ -3455,57 +3455,6 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
   mbmi->tx_type = tx_type;
   mbmi->min_tx_size = TX_SIZES_ALL;
   inter_block_yrd(cpi, x, rd_stats, bsize, ref_best_rd, rd_stats_stack);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (is_rect_tx_allowed(xd, mbmi)) {
-    RD_STATS rect_rd_stats;
-    int64_t rd_rect_tx;
-    int tx_size_cat = inter_tx_size_cat_lookup[bsize];
-    TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
-    TX_SIZE var_tx_size = mbmi->tx_size;
-
-    txfm_rd_in_plane(x, cpi, &rect_rd_stats, ref_best_rd, 0, bsize, tx_size,
-                     cpi->sf.use_fast_coef_costing);
-
-    if (rd_stats->rate != INT_MAX) {
-      rd_stats->rate += av1_cost_bit(cm->fc->rect_tx_prob[tx_size_cat], 0);
-      if (rd_stats->skip) {
-        rd = RDCOST(x->rdmult, x->rddiv, s1, rd_stats->sse);
-      } else {
-        rd = RDCOST(x->rdmult, x->rddiv, rd_stats->rate + s0, rd_stats->dist);
-        if (is_inter && !xd->lossless[xd->mi[0]->mbmi.segment_id] &&
-            !rd_stats->skip)
-          rd = AOMMIN(rd, RDCOST(x->rdmult, x->rddiv, s1, rd_stats->sse));
-      }
-    } else {
-      rd = INT64_MAX;
-    }
-
-    if (rect_rd_stats.rate != INT_MAX) {
-      rect_rd_stats.rate += av1_cost_bit(cm->fc->rect_tx_prob[tx_size_cat], 1);
-      if (rect_rd_stats.skip) {
-        rd_rect_tx = RDCOST(x->rdmult, x->rddiv, s1, rect_rd_stats.sse);
-      } else {
-        rd_rect_tx = RDCOST(x->rdmult, x->rddiv, rect_rd_stats.rate + s0,
-                            rect_rd_stats.dist);
-        if (is_inter && !xd->lossless[xd->mi[0]->mbmi.segment_id] &&
-            !(rect_rd_stats.skip))
-          rd_rect_tx = AOMMIN(
-              rd_rect_tx, RDCOST(x->rdmult, x->rddiv, s1, rect_rd_stats.sse));
-      }
-    } else {
-      rd_rect_tx = INT64_MAX;
-    }
-
-    if (rd_rect_tx < rd) {
-      *rd_stats = rect_rd_stats;
-      if (!xd->lossless[mbmi->segment_id]) x->blk_skip[0][0] = rd_stats->skip;
-      mbmi->tx_size = tx_size;
-      mbmi->inter_tx_size[0][0] = mbmi->tx_size;
-    } else {
-      mbmi->tx_size = var_tx_size;
-    }
-  }
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
 
@@ -10899,9 +10848,9 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
 
   // macroblock modes
   *mbmi = best_mbmode;
-#if CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_VAR_TX
   mbmi->inter_tx_size[0][0] = mbmi->tx_size;
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif
 
   x->skip |= best_skip2;
   if (!is_inter_block(&best_mbmode)) {

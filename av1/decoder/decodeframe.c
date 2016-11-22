@@ -552,7 +552,8 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif  // CONFIG_VAR_TX
 
-#if !CONFIG_VAR_TX || CONFIG_SUPERTX || (CONFIG_EXT_TX && CONFIG_RECT_TX)
+#if !CONFIG_VAR_TX || CONFIG_SUPERTX || \
+    (!CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX)
 static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if CONFIG_ANS
                                    struct AnsDecoder *const r,
@@ -1612,37 +1613,13 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
         const int bw_var_tx = tx_size_wide_unit[max_tx_size];
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-        if (is_rect_tx(mbmi->tx_size)) {
-          const TX_SIZE tx_size =
-              plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
-          const int stepr = tx_size_high_unit[tx_size];
-          const int stepc = tx_size_wide_unit[tx_size];
-          int max_blocks_wide =
-              block_width +
-              (xd->mb_to_right_edge >= 0 ? 0 : xd->mb_to_right_edge >>
-                                                   (3 + pd->subsampling_x));
-          int max_blocks_high =
-              block_height +
-              (xd->mb_to_bottom_edge >= 0 ? 0 : xd->mb_to_bottom_edge >>
-                                                    (3 + pd->subsampling_y));
-          max_blocks_wide >>= tx_size_wide_log2[0];
-          max_blocks_high >>= tx_size_wide_log2[0];
-          for (row = 0; row < max_blocks_high; row += stepr)
-            for (col = 0; col < max_blocks_wide; col += stepc)
-              eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,
-                                                  plane, row, col, tx_size);
-        } else {
-#endif
-          block_width >>= tx_size_wide_log2[0];
-          block_height >>= tx_size_wide_log2[0];
-          for (row = 0; row < block_height; row += bh_var_tx)
-            for (col = 0; col < block_width; col += bw_var_tx)
-              decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize, row,
-                                    col, max_tx_size, &eobtotal);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-        }
-#endif
+
+        block_width >>= tx_size_wide_log2[0];
+        block_height >>= tx_size_wide_log2[0];
+        for (row = 0; row < block_height; row += bh_var_tx)
+          for (col = 0; col < block_width; col += bw_var_tx)
+            decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize, row, col,
+                                  max_tx_size, &eobtotal);
 #else
         const TX_SIZE tx_size =
             plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
@@ -4243,12 +4220,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_VAR_TX
   for (k = 0; k < TXFM_PARTITION_CONTEXTS; ++k)
     av1_diff_update_prob(&r, &fc->txfm_partition_prob[k], ACCT_STR);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (cm->tx_mode == TX_MODE_SELECT) {
-    for (i = 1; i < MAX_TX_DEPTH; ++i)
-      av1_diff_update_prob(&r, &fc->rect_tx_prob[i], ACCT_STR);
-  }
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 #endif  // CONFIG_VAR_TX
 #endif  // !CONFIG_PVQ
   for (k = 0; k < SKIP_CONTEXTS; ++k)

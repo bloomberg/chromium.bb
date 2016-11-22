@@ -980,12 +980,6 @@ static const aom_prob default_switchable_restore_prob[RESTORE_SWITCHABLE_TYPES -
                                                       1] = { 32, 85, 128 };
 #endif  // CONFIG_LOOP_RESTORATION
 
-#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_VAR_TX
-// the probability of (0) using recursive square tx partition vs.
-// (1) biggest rect tx for 4X8-8X4/8X16-16X8/16X32-32X16 blocks
-static const aom_prob default_rect_tx_prob[TX_SIZES - 1] = { 192, 192, 192 };
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_VAR_TX
-
 #if CONFIG_PALETTE
 int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
                                   int c, int n, uint8_t *color_order,
@@ -1470,9 +1464,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->tx_size_probs, default_tx_size_prob);
 #if CONFIG_VAR_TX
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  av1_copy(fc->rect_tx_prob, default_rect_tx_prob);
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 #endif
   av1_copy(fc->skip_probs, default_skip_probs);
 #if CONFIG_REF_MV
@@ -1704,15 +1695,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           counts->compound_interinter[i], fc->compound_type_prob[i]);
   }
 #endif  // CONFIG_EXT_INTER
-
-#if CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (cm->tx_mode == TX_MODE_SELECT) {
-    for (i = 0; i < MAX_TX_DEPTH; ++i) {
-      fc->rect_tx_prob[i] =
-          av1_mode_mv_merge_probs(pre_fc->rect_tx_prob[i], counts->rect_tx[i]);
-    }
-  }
-#endif  // CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->y_mode_prob[i],

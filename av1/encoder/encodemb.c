@@ -1209,22 +1209,13 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
     arg.tl = ctx.tl[plane];
 
 #if CONFIG_VAR_TX
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-    if (is_rect_tx(mbmi->tx_size)) {
-      av1_foreach_transformed_block_in_plane(xd, bsize, plane, encode_block,
-                                             &arg);
-    } else {
-#endif
-      for (idy = 0; idy < mi_height; idy += bh) {
-        for (idx = 0; idx < mi_width; idx += bw) {
-          encode_block_inter(plane, block, idy, idx, plane_bsize, max_tx_size,
-                             &arg);
-          block += step;
-        }
+    for (idy = 0; idy < mi_height; idy += bh) {
+      for (idx = 0; idx < mi_width; idx += bw) {
+        encode_block_inter(plane, block, idy, idx, plane_bsize, max_tx_size,
+                           &arg);
+        block += step;
       }
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
     }
-#endif
 #else
     av1_foreach_transformed_block_in_plane(xd, bsize, plane, encode_block,
                                            &arg);

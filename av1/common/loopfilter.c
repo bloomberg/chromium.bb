@@ -1268,13 +1268,7 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
       const int skip_this_r = skip_this && !block_edge_above;
 
 #if CONFIG_VAR_TX
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      TX_SIZE mb_tx_size = is_rect_tx(mbmi->tx_size)
-                               ? mbmi->tx_size
-                               : mbmi->inter_tx_size[blk_row][blk_col];
-#else
       const TX_SIZE mb_tx_size = mbmi->inter_tx_size[blk_row][blk_col];
-#endif
 #endif
 
       TX_SIZE tx_size = (plane->plane_type == PLANE_TYPE_UV)
@@ -1310,24 +1304,13 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
         tx_size_mask = 0;
 
 #if CONFIG_VAR_TX
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      tx_size_r =
-          AOMMIN(txsize_horz_map[tx_size], cm->above_txfm_context[mi_col + c]);
-      tx_size_c = AOMMIN(txsize_vert_map[tx_size],
-                         cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
-
-      cm->above_txfm_context[mi_col + c] = txsize_horz_map[tx_size];
-      cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] =
-          txsize_vert_map[tx_size];
-#else
       tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
       tx_size_c =
           AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
 
       cm->above_txfm_context[mi_col + c] = tx_size;
       cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
-#endif
-#endif
+#endif  // CONFIG_VAR_TX
 
       // Build masks based on the transform size of each block
       // handle vertical mask
@@ -1462,13 +1445,7 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
                             ? get_uv_tx_size(mbmi, plane)
                             : mbmi->tx_size;
 #if CONFIG_VAR_TX
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      TX_SIZE mb_tx_size = is_rect_tx(mbmi->tx_size)
-                               ? mbmi->tx_size
-                               : mbmi->inter_tx_size[blk_row][blk_col];
-#else
       TX_SIZE mb_tx_size = mbmi->inter_tx_size[blk_row][blk_col];
-#endif
 #endif
       const int skip_border_4x4_c = ss_x && mi_col + c == cm->mi_cols - 1;
       const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
@@ -1500,23 +1477,12 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
         tx_size_mask = 0;
 
 #if CONFIG_VAR_TX
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      tx_size_r =
-          AOMMIN(txsize_horz_map[tx_size], cm->above_txfm_context[mi_col + c]);
-      tx_size_c = AOMMIN(txsize_vert_map[tx_size],
-                         cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
-
-      cm->above_txfm_context[mi_col + c] = txsize_horz_map[tx_size];
-      cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] =
-          txsize_vert_map[tx_size];
-#else
       tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
       tx_size_c =
           AOMMIN(tx_size, cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK]);
 
       cm->above_txfm_context[mi_col + c] = tx_size;
       cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
-#endif
 #endif
 
       // Build masks based on the transform size of each block

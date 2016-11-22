@@ -1287,26 +1287,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       const int width = num_4x4_blocks_wide_lookup[bsize];
       const int height = num_4x4_blocks_high_lookup[bsize];
       int idx, idy;
-
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      if (is_rect_tx_allowed(xd, mbmi)) {
-        int tx_size_cat = inter_tx_size_cat_lookup[bsize];
-
-        aom_write(w, is_rect_tx(mbmi->tx_size),
-                  cm->fc->rect_tx_prob[tx_size_cat]);
-      }
-
-      if (is_rect_tx(mbmi->tx_size)) {
-        set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
-      } else {
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
-        for (idy = 0; idy < height; idy += bh)
-          for (idx = 0; idx < width; idx += bw)
-            write_tx_size_vartx(cm, xd, mbmi, max_tx_size, height != width, idy,
-                                idx, w);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      }
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+      for (idy = 0; idy < height; idy += bh)
+        for (idx = 0; idx < width; idx += bw)
+          write_tx_size_vartx(cm, xd, mbmi, max_tx_size, height != width, idy,
+                              idx, w);
     } else {
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
       write_selected_tx_size(cm, xd, w);
@@ -1976,21 +1960,10 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       const int num_4x4_h =
           block_size_high[plane_bsize] >> tx_size_wide_log2[0];
       int row, col;
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      TX_SIZE tx_size =
-          plane ? get_uv_tx_size(mbmi, &xd->plane[plane]) : mbmi->tx_size;
-#endif
-
       TOKEN_STATS token_stats;
       init_token_stats(&token_stats);
 
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-
-      if (is_inter_block(mbmi) && !is_rect_tx(tx_size))
-#else
-      if (is_inter_block(mbmi))
-#endif
-      {
+      if (is_inter_block(mbmi)) {
         const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
         int block = 0;
         const int step =
@@ -2011,7 +1984,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
           dump_mode_info(m);
           assert(0);
         }
-#endif
+#endif  // CONFIG_RD_DEBUG
       } else {
         TX_SIZE tx = plane ? get_uv_tx_size(&m->mbmi, &xd->plane[plane])
                            : m->mbmi.tx_size;
@@ -2036,7 +2009,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       }
 #else
       (void)mbmi;
-#endif
+#endif  // CONFIG_RD_DEBUG
 #endif  // CONFIG_VAR_TX
 
       assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
@@ -4155,13 +4128,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
 #if CONFIG_VAR_TX
   update_txfm_partition_probs(cm, header_bc, counts, probwt);
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (cm->tx_mode == TX_MODE_SELECT) {
-    for (i = 1; i < TX_SIZES - 1; ++i)
-      av1_cond_prob_diff_update(header_bc, &fc->rect_tx_prob[i],
-                                counts->rect_tx[i], probwt);
-  }
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 #endif
 
   update_skip_probs(cm, header_bc, counts);

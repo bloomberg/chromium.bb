@@ -128,10 +128,6 @@ typedef struct frame_contexts {
   aom_prob tx_size_probs[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH];
 #if CONFIG_VAR_TX
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  // TODO(yuec) make this flag harmonize with the original syntax
-  aom_prob rect_tx_prob[TX_SIZES - 1];
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 #endif
   aom_prob skip_probs[SKIP_CONTEXTS];
 #if CONFIG_REF_MV
@@ -242,9 +238,6 @@ typedef struct FRAME_COUNTS {
   unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][TX_SIZES];
 #if CONFIG_VAR_TX
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  unsigned int rect_tx[TX_SIZES - 1][2];
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 #endif
   unsigned int skip[SKIP_CONTEXTS][2];
 #if CONFIG_REF_MV
