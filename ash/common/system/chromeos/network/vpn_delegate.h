@@ -12,47 +12,36 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace chromeos {
-class NetworkState;
-}
-
 namespace ash {
 
 // Describes a VPN provider.
 struct ASH_EXPORT VPNProvider {
-  struct Key {
-    // Constructs a key for the built-in VPN provider.
-    Key();
+  // Constructs the built-in VPN provider.
+  VPNProvider();
 
-    // Constructs a key for a third-party VPN provider.
-    explicit Key(const std::string& extension_id);
+  // Constructs a third-party VPN provider.
+  VPNProvider(const std::string& extension_id,
+              const std::string& third_party_provider_name);
 
-    bool operator==(const Key& other) const;
+  bool operator==(const VPNProvider& other) const;
 
-    // Indicates whether |network| belongs to this VPN provider.
-    bool MatchesNetwork(const chromeos::NetworkState& network) const;
+  // Whether this key represents a built-in or third-party VPN provider.
+  bool third_party;
 
-    // Whether this key represents a built-in or third-party VPN provider.
-    bool third_party;
+  // ID of the extension that implements this provider. Used for third-party
+  // VPN providers only.
+  std::string extension_id;
 
-    // ID of the extension that implements this provider. Used for third-party
-    // VPN providers only.
-    std::string extension_id;
-  };
-
-  VPNProvider(const Key& key, const std::string& name);
-
-  // Key that uniquely identifies this VPN provider.
-  Key key;
-
-  // Human-readable name.
-  std::string name;
+  // Human-readable name if |third_party| is true, otherwise empty.
+  std::string third_party_provider_name;
 };
 
-// This delegate provides UI code in ash, e.g. |VPNList|, with access to the
+// This delegate provides UI code in ash, e.g. |VPNListView|, with access to the
 // list of VPN providers enabled in the primary user's profile. The delegate
 // furthermore allows the UI code to request that a VPN provider show its "add
 // network" dialog.
+// TODO(jamescook): Rename this to VpnList as part of mojo conversion because it
+// won't be a delegate anymore.
 class ASH_EXPORT VPNDelegate {
  public:
   // An observer that is notified whenever the list of VPN providers enabled in
@@ -71,26 +60,38 @@ class ASH_EXPORT VPNDelegate {
   VPNDelegate();
   virtual ~VPNDelegate();
 
+  const std::vector<VPNProvider>& vpn_providers() { return vpn_providers_; }
+
   // Returns |true| if at least one third-party VPN provider is enabled in the
   // primary user's profile, in addition to the built-in OpenVPN/L2TP provider.
-  virtual bool HaveThirdPartyVPNProviders() const = 0;
+  bool HaveThirdPartyVPNProviders() const;
 
-  // Returns the list of VPN providers enabled in the primary user's profile.
-  virtual const std::vector<VPNProvider>& GetVPNProviders() const = 0;
-
-  // Requests that the VPN provider identified by |key| show its "add network"
-  // dialog.
-  virtual void ShowAddPage(const VPNProvider::Key& key) = 0;
+  // Requests that the third-party VPN provider identified by |extension_id|
+  // show its "add network" dialog. If |extension_id| is empty then the built-in
+  // VPN provider's dialog is shown.
+  virtual void ShowAddPage(const std::string& extension_id) = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
- protected:
+  // Sets the list of extension-backed VPN providers. The list may be empty.
+  // Notifies observers. Public for testing.
+  // TODO(jamescook): Convert to mojo interface.
+  void SetThirdPartyVpnProviders(
+      const std::vector<VPNProvider>& third_party_providers);
+
+ private:
   // Notify observers that the list of VPN providers enabled in the primary
   // user's profile has changed.
   void NotifyObservers();
 
- private:
+  // Adds the built-in OpenVPN/L2TP provider to |vpn_providers_|.
+  void AddBuiltInProvider();
+
+  // Cache of VPN providers, including the built-in OpenVPN/L2TP provider and
+  // other providers added by extensions in the primary user's profile.
+  std::vector<VPNProvider> vpn_providers_;
+
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VPNDelegate);

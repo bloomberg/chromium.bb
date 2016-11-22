@@ -28,9 +28,7 @@ class VPNDelegateChromeOS : public ash::VPNDelegate,
   ~VPNDelegateChromeOS() override;
 
   // ash::VPNDelegate:
-  bool HaveThirdPartyVPNProviders() const override;
-  const std::vector<ash::VPNProvider>& GetVPNProviders() const override;
-  void ShowAddPage(const ash::VPNProvider::Key& key) override;
+  void ShowAddPage(const std::string& extension_id) override;
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -60,9 +58,6 @@ class VPNDelegateChromeOS : public ash::VPNDelegate,
 
   // The primary user's extension registry, if a user is logged in.
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
-
-  // A cache of the VPN providers enabled in the primary user's profile.
-  std::vector<ash::VPNProvider> vpn_providers_;
 
   content::NotificationRegistrar registrar_;
 

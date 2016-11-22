@@ -63,11 +63,10 @@ class VPNListView : public NetworkListViewBase,
   // Adds a network to the list.
   void AddNetwork(const chromeos::NetworkState* network);
 
-  // Adds the VPN provider identified by |key| to the list, along with any
-  // networks that belong to this provider.
+  // Adds the VPN provider identified by |vpn_provider| to the list, along with
+  // any networks that belong to this provider.
   void AddProviderAndNetworks(
-      const VPNProvider::Key& key,
-      const std::string& name,
+      const VPNProvider& vpn_provider,
       const chromeos::NetworkStateHandler::NetworkStateList& networks);
 
   // Adds all available VPN providers and networks to the list.
@@ -76,8 +75,8 @@ class VPNListView : public NetworkListViewBase,
 
   NetworkListDelegate* const delegate_;
 
-  // A mapping from each VPN provider's list entry to the provider's key.
-  std::map<const views::View* const, VPNProvider::Key> provider_view_key_map_;
+  // A mapping from each VPN provider's list entry to the provider.
+  std::map<const views::View* const, VPNProvider> provider_view_map_;
 
   // A mapping from each network's list entry to the network's service path.
   std::map<const views::View* const, std::string>

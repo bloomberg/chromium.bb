@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -63,21 +62,8 @@ VPNDelegateChromeOS::~VPNDelegateChromeOS() {
     extension_registry_->RemoveObserver(this);
 }
 
-bool VPNDelegateChromeOS::HaveThirdPartyVPNProviders() const {
-  for (const ash::VPNProvider& provider : vpn_providers_) {
-    if (provider.key.third_party)
-      return true;
-  }
-  return false;
-}
-
-const std::vector<ash::VPNProvider>& VPNDelegateChromeOS::GetVPNProviders()
-    const {
-  return vpn_providers_;
-}
-
-void VPNDelegateChromeOS::ShowAddPage(const ash::VPNProvider::Key& key) {
-  if (!key.third_party) {
+void VPNDelegateChromeOS::ShowAddPage(const std::string& extension_id) {
+  if (extension_id.empty()) {
     // Show the "add network" dialog for the built-in OpenVPN/L2TP provider.
     SystemTrayClient::Get()->ShowNetworkCreate(shill::kTypeVPN);
     return;
@@ -90,7 +76,7 @@ void VPNDelegateChromeOS::ShowAddPage(const ash::VPNProvider::Key& key) {
   // Request that the third-party VPN provider identified by |key.extension_id|
   // show its "add network" dialog.
   chromeos::VpnServiceFactory::GetForBrowserContext(profile)
-      ->SendShowAddDialogToExtension(key.extension_id);
+      ->SendShowAddDialogToExtension(extension_id);
 }
 
 void VPNDelegateChromeOS::OnExtensionLoaded(
@@ -140,21 +126,16 @@ void VPNDelegateChromeOS::Observe(int type,
 void VPNDelegateChromeOS::UpdateVPNProviders() {
   DCHECK(extension_registry_);
 
-  vpn_providers_.clear();
+  std::vector<ash::VPNProvider> third_party_providers;
   for (const auto& extension : extension_registry_->enabled_extensions()) {
     if (IsVPNProvider(extension.get())) {
-      vpn_providers_.push_back(ash::VPNProvider(
-          ash::VPNProvider::Key(extension->id()), extension->name()));
+      third_party_providers.push_back(
+          ash::VPNProvider(extension->id(), extension->name()));
     }
   }
-  // Add the built-in OpenVPN/L2TP provider. The ash::VPNProvider::Key()
-  // constructor generates a key that identifies that built-in provider and has
-  // no extension ID.
-  vpn_providers_.push_back(ash::VPNProvider(
-      ash::VPNProvider::Key(),
-      l10n_util::GetStringUTF8(IDS_NETWORK_VPN_BUILT_IN_PROVIDER)));
 
-  NotifyObservers();
+  // Ash adds the built-in OpenVPN/L2TP provider.
+  SetThirdPartyVpnProviders(third_party_providers);
 }
 
 void VPNDelegateChromeOS::AttachToPrimaryUserExtensionRegistry() {

@@ -10,17 +10,7 @@ VPNDelegateMus::VPNDelegateMus() {}
 
 VPNDelegateMus::~VPNDelegateMus() {}
 
-bool VPNDelegateMus::HaveThirdPartyVPNProviders() const {
-  // TODO(mash): http://crbug.com/651148
-  return false;
-}
-
-const std::vector<VPNProvider>& VPNDelegateMus::GetVPNProviders() const {
-  // TODO(mash): http://crbug.com/651148
-  return providers_;
-}
-
-void VPNDelegateMus::ShowAddPage(const VPNProvider::Key& key) {
+void VPNDelegateMus::ShowAddPage(const std::string& extension_id) {
   // TODO(mash): http://crbug.com/651148
 }
 

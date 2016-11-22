@@ -18,12 +18,7 @@ class VPNDelegateMus : public VPNDelegate {
 
  private:
   // VPNDelegate:
-  bool HaveThirdPartyVPNProviders() const override;
-  const std::vector<VPNProvider>& GetVPNProviders() const override;
-  void ShowAddPage(const VPNProvider::Key& key) override;
-
-  // GetVPNProviders returns a reference to this list.
-  std::vector<VPNProvider> providers_;
+  void ShowAddPage(const std::string& extension_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(VPNDelegateMus);
 };

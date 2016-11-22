@@ -4,40 +4,42 @@
 
 #include "ash/common/system/chromeos/network/vpn_delegate.h"
 
-#include "chromeos/network/network_state.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "base/logging.h"
 
 namespace ash {
 
-VPNProvider::Key::Key() : third_party(false) {}
+VPNProvider::VPNProvider() : third_party(false) {}
 
-VPNProvider::Key::Key(const std::string& extension_id)
-    : third_party(true), extension_id(extension_id) {}
-
-bool VPNProvider::Key::operator==(const Key& other) const {
-  return other.third_party == third_party && other.extension_id == extension_id;
+VPNProvider::VPNProvider(const std::string& extension_id,
+                         const std::string& third_party_provider_name)
+    : third_party(true),
+      extension_id(extension_id),
+      third_party_provider_name(third_party_provider_name) {
+  DCHECK(!extension_id.empty());
+  DCHECK(!third_party_provider_name.empty());
 }
 
-bool VPNProvider::Key::MatchesNetwork(
-    const chromeos::NetworkState& network) const {
-  if (network.type() != shill::kTypeVPN)
-    return false;
-  const bool network_uses_third_party_provider =
-      network.vpn_provider_type() == shill::kProviderThirdPartyVpn;
-  if (!third_party)
-    return !network_uses_third_party_provider;
-  return network_uses_third_party_provider &&
-         network.third_party_vpn_provider_extension_id() == extension_id;
+bool VPNProvider::operator==(const VPNProvider& other) const {
+  return third_party == other.third_party &&
+         extension_id == other.extension_id &&
+         third_party_provider_name == other.third_party_provider_name;
 }
-
-VPNProvider::VPNProvider(const Key& key, const std::string& name)
-    : key(key), name(name) {}
 
 VPNDelegate::Observer::~Observer() {}
 
-VPNDelegate::VPNDelegate() {}
+VPNDelegate::VPNDelegate() {
+  AddBuiltInProvider();
+}
 
 VPNDelegate::~VPNDelegate() {}
+
+bool VPNDelegate::HaveThirdPartyVPNProviders() const {
+  for (const VPNProvider& provider : vpn_providers_) {
+    if (provider.third_party)
+      return true;
+  }
+  return false;
+}
 
 void VPNDelegate::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
@@ -47,9 +49,26 @@ void VPNDelegate::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void VPNDelegate::SetThirdPartyVpnProviders(
+    const std::vector<VPNProvider>& third_party_providers) {
+  vpn_providers_.clear();
+  vpn_providers_.reserve(third_party_providers.size() + 1);
+  AddBuiltInProvider();
+  // Append the extension-backed providers.
+  vpn_providers_.insert(vpn_providers_.end(), third_party_providers.begin(),
+                        third_party_providers.end());
+  NotifyObservers();
+}
+
 void VPNDelegate::NotifyObservers() {
   for (auto& observer : observer_list_)
     observer.OnVPNProvidersChanged();
+}
+
+void VPNDelegate::AddBuiltInProvider() {
+  // The VPNProvider() constructor generates the built-in provider and has no
+  // extension ID.
+  vpn_providers_.push_back(VPNProvider());
 }
 
 }  // namespace ash
