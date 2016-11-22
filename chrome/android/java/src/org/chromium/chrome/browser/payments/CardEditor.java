@@ -338,6 +338,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         }
 
         // No matching profile was found. Add the new profile at the top of the list.
+        billingAddress.setBillingAddressLabel();
         mProfilesForBillingAddress.add(0, billingAddress.getProfile());
     }
 
@@ -554,6 +555,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                             // User has cancelled the address editor.
                             mBillingAddressField.setValue(null);
                         } else {
+                            // Set the billing address label.
+                            billingAddress.setBillingAddressLabel();
+
                             // User has added a new complete address. Add it to the top of the
                             // dropdown.
                             mProfilesForBillingAddress.add(billingAddress.getProfile());

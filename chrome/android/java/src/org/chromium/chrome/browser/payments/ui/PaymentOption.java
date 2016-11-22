@@ -125,6 +125,15 @@ public class PaymentOption implements Completable {
         mIcon = icon;
     }
 
+    /**
+     * Updates the sublabel of this option.
+     *
+     * @param sublabel The new sublabel to use.
+     */
+    protected void updateSublabel(String sublabel) {
+        mLabels[1] = sublabel;
+    }
+
     /** @return The drawable icon for this payment option. */
     public Drawable getDrawableIcon() {
         return mIcon;

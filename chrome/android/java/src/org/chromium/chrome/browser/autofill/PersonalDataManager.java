@@ -686,8 +686,12 @@ public class PersonalDataManager {
         nativeClearUnmaskedCache(mPersonalDataManagerAndroid, guid);
     }
 
-    public String getAddressLabelForPaymentRequest(AutofillProfile profile) {
-        return nativeGetAddressLabelForPaymentRequest(mPersonalDataManagerAndroid, profile);
+    public String getShippingAddressLabelForPaymentRequest(AutofillProfile profile) {
+        return nativeGetShippingAddressLabelForPaymentRequest(mPersonalDataManagerAndroid, profile);
+    }
+
+    public String getBillingAddressLabelForPaymentRequest(AutofillProfile profile) {
+        return nativeGetBillingAddressLabelForPaymentRequest(mPersonalDataManagerAndroid, profile);
     }
 
     public void getFullCard(WebContents webContents, CreditCard card,
@@ -861,7 +865,9 @@ public class PersonalDataManager {
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
     private native String nativeSetProfileToLocal(
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
-    private native String nativeGetAddressLabelForPaymentRequest(
+    private native String nativeGetShippingAddressLabelForPaymentRequest(
+            long nativePersonalDataManagerAndroid, AutofillProfile profile);
+    private native String nativeGetBillingAddressLabelForPaymentRequest(
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
     private native String[] nativeGetCreditCardGUIDsForSettings(
             long nativePersonalDataManagerAndroid);

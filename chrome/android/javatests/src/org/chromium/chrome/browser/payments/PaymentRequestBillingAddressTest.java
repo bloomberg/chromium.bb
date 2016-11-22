@@ -165,10 +165,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         // option to add a new address.
         assertEquals(5, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
-        // TODO(crbug.com/666048): New billing address label is wrong.
         // The fist suggestion should be the newly added address.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                0).equals("Google, 340 Main St, Los Angeles, CA 90291, United States"));
+                0).equals("Seb Doe, 340 Main St, Los Angeles, CA 90291"));
 
         // The rest of the billing address suggestions should be ordered by frecency.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
@@ -206,9 +205,8 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         // option to add a new address.
         assertEquals(5, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
-        // TODO(crbug.com/666048): New billing address label is wrong.
         // The new address should be suggested first.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                0).equals("Google, 340 Main St, Los Angeles, CA 90291, United States"));
+                0).equals("Seb Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 }

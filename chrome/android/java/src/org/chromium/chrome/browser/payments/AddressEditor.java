@@ -217,14 +217,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
             }
         }
 
-        // Calculate the label for this profile. The label's format depends on the country and
-        // language code for the profile.
-        PersonalDataManager pdm = PersonalDataManager.getInstance();
-        // TODO(crbug.com/666048): New billing address label is wrong.
-        profile.setLabel(pdm.getAddressLabelForPaymentRequest(profile));
-
         // Save the edited autofill profile locally.
-        profile.setGUID(pdm.setProfileToLocal(profile));
+        profile.setGUID(PersonalDataManager.getInstance().setProfileToLocal(profile));
         profile.setIsLocal(true);
     }
 

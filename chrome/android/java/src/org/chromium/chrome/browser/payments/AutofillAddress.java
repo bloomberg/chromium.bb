@@ -10,6 +10,7 @@ import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge;
@@ -90,6 +91,31 @@ public class AutofillAddress extends PaymentOption {
                 mProfile.getPhoneNumber());
         checkAndUpdateAddressCompleteness();
         assert mIsComplete;
+    }
+
+    /*
+     * Gets the shipping address label for the profile associated with this address and sets it as
+     * sublabel for this PaymentOption.
+     */
+    public void setShippingAddressLabel() {
+        assert mProfile != null;
+
+        mProfile.setLabel(
+                PersonalDataManager.getInstance().getShippingAddressLabelForPaymentRequest(
+                        mProfile));
+        updateSublabel(mProfile.getLabel());
+    }
+
+    /*
+     * Gets the billing address label for the profile associated with this address and sets it as
+     * sublabel for this PaymentOption.
+     */
+    public void setBillingAddressLabel() {
+        assert mProfile != null;
+
+        mProfile.setLabel(PersonalDataManager.getInstance().getBillingAddressLabelForPaymentRequest(
+                mProfile));
+        updateSublabel(mProfile.getLabel());
     }
 
     /**

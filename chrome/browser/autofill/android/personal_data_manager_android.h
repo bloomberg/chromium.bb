@@ -96,10 +96,20 @@ class PersonalDataManagerAndroid
       jboolean include_organization_in_label,
       jboolean include_country_in_label);
 
-  // Returns the label of the given profile for PaymentRequest. This label does
-  // not contain the full name or the email address. All other fields are
-  // included in the label.
-  base::android::ScopedJavaLocalRef<jstring> GetAddressLabelForPaymentRequest(
+  // Returns the shipping label of the given profile for PaymentRequest. This
+  // label does not contain the full name or the email address. All other fields
+  // are included in the label.
+  base::android::ScopedJavaLocalRef<jstring>
+  GetShippingAddressLabelForPaymentRequest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jprofile);
+
+  // Returns the billing label of the given profile for PaymentRequest. This
+  // label does not contain the company name, the phone number, the country or
+  // the email address. All other fields are included in the label.
+  base::android::ScopedJavaLocalRef<jstring>
+  GetBillingAddressLabelForPaymentRequest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jprofile);

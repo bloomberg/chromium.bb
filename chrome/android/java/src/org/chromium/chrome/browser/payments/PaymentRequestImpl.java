@@ -851,6 +851,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     mShippingAddressesSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
                     providePaymentInformation();
                 } else {
+                    // Set the shipping address label.
+                    completeAddress.setShippingAddressLabel();
+
                     if (toEdit == null) mShippingAddressesSection.addAndSelectItem(completeAddress);
                     mCardEditor.updateBillingAddressIfComplete(completeAddress);
                     mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
