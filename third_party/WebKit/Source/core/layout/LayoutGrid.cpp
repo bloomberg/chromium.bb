@@ -400,15 +400,7 @@ bool LayoutGrid::namedGridLinesDefinitionDidChange(
 
 size_t LayoutGrid::gridColumnCount() const {
   DCHECK(!m_gridIsDirty);
-  // Due to limitations in our internal representation, we cannot know the
-  // number of columns from m_grid *if* there is no row (because m_grid would be
-  // empty). That's why in that case we need to get it from the style. Note that
-  // we know for sure that there are't any implicit tracks, because not having
-  // rows implies that there are no "normal" children (out-of-flow children are
-  // not stored in m_grid).
-  return m_grid.size() ? m_grid[0].size()
-                       : GridPositionsResolver::explicitGridColumnCount(
-                             styleRef(), m_autoRepeatColumns);
+  return m_grid.size() ? m_grid[0].size() : 0;
 }
 
 size_t LayoutGrid::gridRowCount() const {
@@ -519,7 +511,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
       dirtyGrid();
     placeItemsOnGrid(TrackSizing);
 
-    GridSizingData sizingData(gridColumnCount(), gridRowCount());
+    GridSizingData sizingData(numTracks(ForColumns), numTracks(ForRows));
 
     // 1- First, the track sizing algorithm is used to resolve the sizes of the
     // grid columns.
@@ -695,7 +687,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(
     LayoutUnit& maxLogicalWidth) const {
   const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
 
-  GridSizingData sizingData(gridColumnCount(), gridRowCount());
+  GridSizingData sizingData(numTracks(ForColumns), numTracks(ForRows));
   computeTrackSizesForIndefiniteSize(ForColumns, sizingData, minLogicalWidth,
                                      maxLogicalWidth);
 
@@ -2025,10 +2017,14 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
     insertItemIntoGrid(*child, area);
   }
 
-  DCHECK_GE(gridRowCount(), GridPositionsResolver::explicitGridRowCount(
-                                *style(), m_autoRepeatRows));
-  DCHECK_GE(gridColumnCount(), GridPositionsResolver::explicitGridColumnCount(
-                                   *style(), m_autoRepeatColumns));
+#if ENABLE(ASSERT)
+  if (!m_gridItemArea.isEmpty()) {
+    DCHECK_GE(gridRowCount(), GridPositionsResolver::explicitGridRowCount(
+                                  *style(), m_autoRepeatRows));
+    DCHECK_GE(gridColumnCount(), GridPositionsResolver::explicitGridColumnCount(
+                                     *style(), m_autoRepeatColumns));
+  }
+#endif
 
   placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
   placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
@@ -2542,7 +2538,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(
                                             : child.style()->gridRowStart();
   GridPosition endPosition = isForColumns ? child.style()->gridColumnEnd()
                                           : child.style()->gridRowEnd();
-  int lastLine = isForColumns ? gridColumnCount() : gridRowCount();
+  int lastLine = numTracks(direction);
 
   bool startIsAuto =
       startPosition.isAuto() ||
@@ -3496,6 +3492,21 @@ void LayoutGrid::paintChildren(const PaintInfo& paintInfo,
 bool LayoutGrid::cachedHasDefiniteLogicalHeight() const {
   SECURITY_DCHECK(m_hasDefiniteLogicalHeight);
   return m_hasDefiniteLogicalHeight.value();
+}
+
+size_t LayoutGrid::numTracks(GridTrackSizingDirection direction) const {
+  // Due to limitations in our internal representation, we cannot know the
+  // number of columns from m_grid *if* there is no row (because m_grid would be
+  // empty). That's why in that case we need to get it from the style. Note that
+  // we know for sure that there are't any implicit tracks, because not having
+  // rows implies that there are no "normal" children (out-of-flow children are
+  // not stored in m_grid).
+  if (direction == ForRows)
+    return m_grid.size();
+
+  return m_grid.size() ? m_grid[0].size()
+                       : GridPositionsResolver::explicitGridColumnCount(
+                             styleRef(), m_autoRepeatColumns);
 }
 
 }  // namespace blink

@@ -344,6 +344,8 @@ class LayoutGrid final : public LayoutBlock {
 
   bool cachedHasDefiniteLogicalHeight() const;
 
+  size_t numTracks(GridTrackSizingDirection) const;
+
   typedef Vector<Vector<GridCell>> GridRepresentation;
   GridRepresentation m_grid;
   bool m_gridIsDirty;
