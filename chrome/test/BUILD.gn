@@ -1705,6 +1705,8 @@ test("browser_tests") {
       "../browser/ssl/ssl_client_certificate_selector_test.h",
       "../browser/storage/durable_storage_browsertest.cc",
       "../browser/subresource_filter/subresource_filter_browsertest.cc",
+      "../browser/subresource_filter/test_ruleset_publisher.cc",
+      "../browser/subresource_filter/test_ruleset_publisher.h",
       "../browser/sync_file_system/mock_local_change_processor.cc",
       "../browser/sync_file_system/mock_local_change_processor.h",
       "../browser/sync_file_system/mock_remote_file_sync_service.cc",

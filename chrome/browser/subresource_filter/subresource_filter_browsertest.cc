@@ -8,18 +8,15 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
-#include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
-#include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -29,37 +26,8 @@
 
 namespace subresource_filter {
 
-namespace {
-
-class RulesetDistributionListener {
- public:
-  RulesetDistributionListener()
-      : delegate_(static_cast<ContentRulesetServiceDelegate*>(
-            g_browser_process->subresource_filter_ruleset_service()
-                ->delegate())) {
-    delegate_->SetRulesetPublishedCallbackForTesting(run_loop_.QuitClosure());
-  }
-
-  ~RulesetDistributionListener() {
-    delegate_->SetRulesetPublishedCallbackForTesting(base::Closure());
-  }
-
-  void AwaitDistribution() { run_loop_.Run(); }
-
- private:
-  ContentRulesetServiceDelegate* delegate_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(RulesetDistributionListener);
-};
-
-void CloseFile(base::File) {}
-
-}  // namespace
-
 using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
-using subresource_filter::testing::TestRulesetCreator;
-using subresource_filter::testing::TestRulesetPair;
+using subresource_filter::testing::TestRulesetPublisher;
 
 // SubresourceFilterDisabledBrowserTest ---------------------------------------
 
@@ -129,25 +97,13 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   }
 
   void SetRulesetToDisallowURLsWithPathSuffix(const std::string& suffix) {
-    // For simplicity, use the |suffix| itself as the uniquely identifying
-    // version tag.
-    const std::string& test_ruleset_content_version(suffix);
-    TestRulesetPair test_ruleset_pair;
     ASSERT_NO_FATAL_FAILURE(
-        ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
-            suffix, &test_ruleset_pair));
-    subresource_filter::UnindexedRulesetInfo unindexed_ruleset_info;
-    unindexed_ruleset_info.content_version = test_ruleset_content_version;
-    unindexed_ruleset_info.ruleset_path = test_ruleset_pair.unindexed.path;
-    RulesetDistributionListener distribution_listener;
-    g_browser_process->subresource_filter_ruleset_service()
-        ->IndexAndStoreAndPublishRulesetIfNeeded(unindexed_ruleset_info);
-    distribution_listener.AwaitDistribution();
+        test_ruleset_publisher_.SetRulesetToDisallowURLsWithPathSuffix(suffix));
   }
 
  private:
   std::unique_ptr<ScopedSubresourceFilterFeatureToggle> scoped_feature_toggle_;
-  TestRulesetCreator ruleset_creator_;
+  TestRulesetPublisher test_ruleset_publisher_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
 };
