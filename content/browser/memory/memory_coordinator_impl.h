@@ -97,6 +97,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   base::MemoryState current_state_ = MemoryState::NORMAL;
   base::TimeTicks last_state_change_;
 
+  // Sets up parameters for the heuristic.
+  void InitializeParameters();
+
   // Validates parameters defined below.
   bool ValidateParameters();
 

@@ -6,8 +6,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/browser/memory/memory_monitor.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -109,6 +111,33 @@ void RecordMetricsOnStateChange(base::MemoryState prev_state,
 #undef RECORD_METRICS
 }
 
+void SetIntVariationParameter(const std::map<std::string, std::string> params,
+                              const char* name,
+                              int* target) {
+  const auto& iter = params.find(name);
+  if (iter == params.end())
+    return;
+  int value;
+  if (!iter->second.empty() && base::StringToInt(iter->second, &value)) {
+    DCHECK(value > 0);
+    *target = value;
+  }
+}
+
+void SetSecondsVariationParameter(
+    const std::map<std::string, std::string> params,
+    const char* name,
+    base::TimeDelta* target) {
+  const auto& iter = params.find(name);
+  if (iter == params.end())
+    return;
+  int value;
+  if (!iter->second.empty() && base::StringToInt(iter->second, &value)) {
+    DCHECK(value > 0);
+    *target = base::TimeDelta::FromSeconds(value);
+  }
+}
+
 }  // namespace
 
 // SingletonTraits for MemoryCoordinator. Returns MemoryCoordinatorImpl
@@ -138,17 +167,7 @@ MemoryCoordinatorImpl::MemoryCoordinatorImpl(
   DCHECK(memory_monitor_.get());
   update_state_callback_ = base::Bind(&MemoryCoordinatorImpl::UpdateState,
                                       weak_ptr_factory_.GetWeakPtr());
-
-  // Set initial parameters for calculating the global state.
-  expected_renderer_size_ = kDefaultExpectedRendererSizeMB;
-  new_renderers_until_throttled_ = kDefaultNewRenderersUntilThrottled;
-  new_renderers_until_suspended_ = kDefaultNewRenderersUntilSuspended;
-  new_renderers_back_to_normal_ = kDefaultNewRenderersBackToNormal;
-  new_renderers_back_to_throttled_ = kDefaultNewRenderersBackToThrottled;
-  minimum_transition_period_ =
-      base::TimeDelta::FromSeconds(kDefaultMinimumTransitionPeriodSeconds);
-  monitoring_interval_ =
-      base::TimeDelta::FromSeconds(kDefaultMonitoringIntervalSeconds);
+  InitializeParameters();
 }
 
 MemoryCoordinatorImpl::~MemoryCoordinatorImpl() {}
@@ -318,6 +337,37 @@ void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
 
 void MemoryCoordinatorImpl::ScheduleUpdateState(base::TimeDelta delta) {
   task_runner_->PostDelayedTask(FROM_HERE, update_state_callback_, delta);
+}
+
+void MemoryCoordinatorImpl::InitializeParameters() {
+  expected_renderer_size_ = kDefaultExpectedRendererSizeMB;
+  new_renderers_until_throttled_ = kDefaultNewRenderersUntilThrottled;
+  new_renderers_until_suspended_ = kDefaultNewRenderersUntilSuspended;
+  new_renderers_back_to_normal_ = kDefaultNewRenderersBackToNormal;
+  new_renderers_back_to_throttled_ = kDefaultNewRenderersBackToThrottled;
+  minimum_transition_period_ =
+      base::TimeDelta::FromSeconds(kDefaultMinimumTransitionPeriodSeconds);
+  monitoring_interval_ =
+      base::TimeDelta::FromSeconds(kDefaultMonitoringIntervalSeconds);
+
+  // Override default parameters with variations.
+  static constexpr char kMemoryCoordinatorV0Trial[] = "MemoryCoordinatorV0";
+  std::map<std::string, std::string> params;
+  variations::GetVariationParams(kMemoryCoordinatorV0Trial, &params);
+  SetIntVariationParameter(params, "expected_renderer_size",
+                           &expected_renderer_size_);
+  SetIntVariationParameter(params, "new_renderers_until_throttled",
+                           &new_renderers_until_throttled_);
+  SetIntVariationParameter(params, "new_renderers_until_suspended",
+                           &new_renderers_until_suspended_);
+  SetIntVariationParameter(params, "new_renderers_back_to_normal",
+                           &new_renderers_back_to_normal_);
+  SetIntVariationParameter(params, "new_renderers_back_to_throttled",
+                           &new_renderers_back_to_throttled_);
+  SetSecondsVariationParameter(params, "minimum_transition_period",
+                               &minimum_transition_period_);
+  SetSecondsVariationParameter(params, "monitoring_interval",
+                               &monitoring_interval_);
 }
 
 bool MemoryCoordinatorImpl::ValidateParameters() {
