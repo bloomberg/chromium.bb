@@ -366,7 +366,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_listStylePosition =
         static_cast<unsigned>(initialListStylePosition());
     m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
-    m_inheritedData.m_textTransform = initialTextTransform();
+    m_inheritedData.m_textTransform =
+        static_cast<unsigned>(initialTextTransform());
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
@@ -2292,12 +2293,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // text-transform (aka -epub-text-transform)
-  static ETextTransform initialTextTransform() { return TTNONE; }
+  static ETextTransform initialTextTransform() { return ETextTransform::None; }
   ETextTransform textTransform() const {
     return static_cast<ETextTransform>(m_inheritedData.m_textTransform);
   }
   void setTextTransform(ETextTransform v) {
-    m_inheritedData.m_textTransform = v;
+    m_inheritedData.m_textTransform = static_cast<unsigned>(v);
   }
 
   // white-space inherited

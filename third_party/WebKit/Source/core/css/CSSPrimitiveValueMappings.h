@@ -2374,16 +2374,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETextTransform e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case CAPITALIZE:
+    case ETextTransform::Capitalize:
       m_valueID = CSSValueCapitalize;
       break;
-    case UPPERCASE:
+    case ETextTransform::Uppercase:
       m_valueID = CSSValueUppercase;
       break;
-    case LOWERCASE:
+    case ETextTransform::Lowercase:
       m_valueID = CSSValueLowercase;
       break;
-    case TTNONE:
+    case ETextTransform::None:
       m_valueID = CSSValueNone;
       break;
   }
@@ -2393,19 +2393,19 @@ template <>
 inline ETextTransform CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueCapitalize:
-      return CAPITALIZE;
+      return ETextTransform::Capitalize;
     case CSSValueUppercase:
-      return UPPERCASE;
+      return ETextTransform::Uppercase;
     case CSSValueLowercase:
-      return LOWERCASE;
+      return ETextTransform::Lowercase;
     case CSSValueNone:
-      return TTNONE;
+      return ETextTransform::None;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return TTNONE;
+  return ETextTransform::None;
 }
 
 template <>

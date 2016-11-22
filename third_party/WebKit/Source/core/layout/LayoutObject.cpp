@@ -322,7 +322,8 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
     children->insertChildNode(this, newChild, beforeChild);
   }
 
-  if (newChild->isText() && newChild->style()->textTransform() == CAPITALIZE)
+  if (newChild->isText() &&
+      newChild->style()->textTransform() == ETextTransform::Capitalize)
     toLayoutText(newChild)->transformText();
 
   // SVG creates layoutObjects for <g display="none">, as SVG requires children

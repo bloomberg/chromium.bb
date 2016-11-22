@@ -200,7 +200,8 @@ void LayoutText::styleDidChange(StyleDifference diff,
   }
 
   const ComputedStyle& newStyle = styleRef();
-  ETextTransform oldTransform = oldStyle ? oldStyle->textTransform() : TTNONE;
+  ETextTransform oldTransform =
+      oldStyle ? oldStyle->textTransform() : ETextTransform::None;
   ETextSecurity oldSecurity = oldStyle ? oldStyle->textSecurity() : TSNONE;
   if (oldTransform != newStyle.textTransform() ||
       oldSecurity != newStyle.textSecurity())
@@ -1582,15 +1583,15 @@ void applyTextTransform(const ComputedStyle* style,
     return;
 
   switch (style->textTransform()) {
-    case TTNONE:
+    case ETextTransform::None:
       break;
-    case CAPITALIZE:
+    case ETextTransform::Capitalize:
       makeCapitalized(&text, previousCharacter);
       break;
-    case UPPERCASE:
+    case ETextTransform::Uppercase:
       text = text.upper(style->locale());
       break;
-    case LOWERCASE:
+    case ETextTransform::Lowercase:
       text = text.lower(style->locale());
       break;
   }
