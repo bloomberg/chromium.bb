@@ -70,10 +70,10 @@ class AV1Trans8x16HT : public libaom_test::TransformTestBase,
 };
 
 TEST_P(AV1Trans8x16HT, MemCheck) { RunMemCheck(); }
-TEST_P(AV1Trans8x16HT, AccuracyCheck) { RunAccuracyCheck(1); }
+TEST_P(AV1Trans8x16HT, AccuracyCheck) { RunAccuracyCheck(0); }
 TEST_P(AV1Trans8x16HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans8x16HT, InvCoeffCheck) { RunInvCoeffCheck(); }
-TEST_P(AV1Trans8x16HT, InvAccuracyCheck) { RunInvAccuracyCheck(1); }
+TEST_P(AV1Trans8x16HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 
 using std::tr1::make_tuple;
 
