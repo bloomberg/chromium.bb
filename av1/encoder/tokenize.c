@@ -493,17 +493,16 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   nb = scan_order->neighbors;
   c = 0;
 
+#if CONFIG_EC_MULTISYMBOL
   while (c < eob) {
     const int v = qcoeff[scan[c]];
     eob_branch[band[c]][pt] += !skip_eob;
 
     av1_get_token_extra(v, &token, &extra);
 
-    add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_EC_MULTISYMBOL
-              &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
-#endif
-              extra, (uint8_t)token, (uint8_t)skip_eob, counts[band[c]][pt]);
+    add_token(&t, coef_probs[band[c]][pt], &coef_tail_cdfs[band[c]][pt],
+              &coef_head_cdfs[band[c]][pt], extra, (uint8_t)token,
+              (uint8_t)skip_eob, counts[band[c]][pt]);
 
     token_cache[scan[c]] = av1_pt_energy_class[token];
     ++c;
@@ -512,13 +511,31 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   }
   if (c < seg_eob) {
     assert(!skip_eob);  // The last token must be non-zero.
-    add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_EC_MULTISYMBOL
-              NULL, NULL,
-#endif
-              0, EOB_TOKEN, 0, counts[band[c]][pt]);
+    add_token(&t, coef_probs[band[c]][pt], NULL, NULL, 0, EOB_TOKEN, 0,
+              counts[band[c]][pt]);
     ++eob_branch[band[c]][pt];
   }
+#else
+  while (c < eob) {
+    const int v = qcoeff[scan[c]];
+    eob_branch[band[c]][pt] += !skip_eob;
+
+    av1_get_token_extra(v, &token, &extra);
+
+    add_token(&t, coef_probs[band[c]][pt], extra, (uint8_t)token,
+              (uint8_t)skip_eob, counts[band[c]][pt]);
+
+    token_cache[scan[c]] = av1_pt_energy_class[token];
+    ++c;
+    pt = get_coef_context(nb, token_cache, c);
+    skip_eob = (token == ZERO_TOKEN);
+  }
+  if (c < seg_eob) {
+    add_token(&t, coef_probs[band[c]][pt], 0, EOB_TOKEN, 0,
+              counts[band[c]][pt]);
+    ++eob_branch[band[c]][pt];
+  }
+#endif
 
 #if CONFIG_COEF_INTERLEAVE
   t->token = EOSB_TOKEN;
