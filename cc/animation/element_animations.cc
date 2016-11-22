@@ -138,7 +138,7 @@ void ElementAnimations::SetNeedsPushProperties() {
 }
 
 void ElementAnimations::PushPropertiesTo(
-    scoped_refptr<ElementAnimations> element_animations_impl) {
+    scoped_refptr<ElementAnimations> element_animations_impl) const {
   DCHECK_NE(this, element_animations_impl);
 
   if (!needs_push_properties_)
@@ -155,7 +155,6 @@ void ElementAnimations::PushPropertiesTo(
   needs_update_impl_client_state_ = false;
 
   element_animations_impl->UpdateActivation(ActivationType::NORMAL);
-  UpdateActivation(ActivationType::NORMAL);
 }
 
 void ElementAnimations::Animate(base::TimeTicks monotonic_time) {

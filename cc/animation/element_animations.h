@@ -66,7 +66,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
   // thread are kept in sync. This function does not take ownership of the impl
   // thread ElementAnimations.
   void PushPropertiesTo(
-      scoped_refptr<ElementAnimations> element_animations_impl);
+      scoped_refptr<ElementAnimations> element_animations_impl) const;
 
   void Animate(base::TimeTicks monotonic_time);
 
@@ -211,14 +211,14 @@ class CC_ANIMATION_EXPORT ElementAnimations
   bool has_element_in_active_list_;
   bool has_element_in_pending_list_;
 
-  bool scroll_offset_animation_was_interrupted_;
+  mutable bool scroll_offset_animation_was_interrupted_;
 
-  bool needs_push_properties_;
+  mutable bool needs_push_properties_;
 
   PropertyAnimationState active_state_;
   PropertyAnimationState pending_state_;
 
-  bool needs_update_impl_client_state_;
+  mutable bool needs_update_impl_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };
