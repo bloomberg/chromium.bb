@@ -372,10 +372,13 @@ config("compiler") {
     # Additionally, on cast Android x86, --icf=all causes issues.
     if (is_android && current_cpu == "x86") {
       ldflags += [ "-Wl,--icf=none" ]
-    } else if (is_clang || is_chromeos ||
+    } else if ((is_clang && !is_android) || is_chromeos ||
                (current_cpu != "x86" && current_cpu != "x64")) {
+      # TODO(thakis): Remove `!is_android` above once our gold has been rolled
+      # with the fix for https://sourceware.org/bugzilla/show_bug.cgi?id=17704
+      # merged.  See also https://crbug.com/663886
       ldflags += [ "-Wl,--icf=all" ]
-    } else if (!is_android) {
+    } else if (!is_android || is_clang) {
       ldflags += [ "-Wl,--icf=safe" ]
     }
   }
