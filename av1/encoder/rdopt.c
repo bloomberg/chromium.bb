@@ -3515,7 +3515,13 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int n4 = 1 << (num_pels_log2_lookup[bsize] - 4);
   int idx, idy;
   int prune = 0;
+  const int count32 = 1 << (2 * (cpi->common.mib_size_log2 -
+                                 mi_width_log2_lookup[BLOCK_32X32]));
+#if CONFIG_EXT_PARTITION
+  RD_STATS rd_stats_stack[16];
+#else
   RD_STATS rd_stats_stack[4];
+#endif
 #if CONFIG_EXT_TX
   int ext_tx_set = get_ext_tx_set(max_tx_size, bsize, is_inter);
 #endif  // CONFIG_EXT_TX
@@ -3529,7 +3535,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_invalid_rd_stats(rd_stats);
 
-  for (idx = 0; idx < 4; ++idx) av1_invalid_rd_stats(&rd_stats_stack[idx]);
+  for (idx = 0; idx < count32; ++idx)
+    av1_invalid_rd_stats(&rd_stats_stack[idx]);
 
   for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
     RD_STATS this_rd_stats;
