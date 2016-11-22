@@ -32,6 +32,7 @@ enum ExitCode {
   UNABLE_TO_EXTRACT_SETUP_EXE = 115,
   UNABLE_TO_EXTRACT_SETUP = 116,
   UNABLE_TO_SET_DIRECTORY_ACL = 117,
+  INVALID_OPTION = 118,
 };
 
 }  // namespace mini_installer

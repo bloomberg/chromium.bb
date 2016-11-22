@@ -186,14 +186,6 @@ ProcessExitResult GetPreviousSetupExePath(const Configuration& configuration,
         path, size);
   }
 
-  // Failing that, look in Chrome Frame's client state key if --chrome-frame was
-  // specified.
-  if (!exit_code.IsSuccess() && configuration.has_chrome_frame()) {
-    exit_code = GetSetupExePathForAppGuid(
-        system_level, google_update::kChromeFrameAppGuid, previous_version,
-        path, size);
-  }
-
   // Make a last-ditch effort to look in the Chrome client state key.
   if (!exit_code.IsSuccess()) {
     exit_code = GetSetupExePathForAppGuid(
@@ -405,9 +397,7 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
     }
 
     // Get any command line option specified for mini_installer and pass them
-    // on to setup.exe.  This is important since switches such as
-    // --multi-install and --chrome-frame affect where setup.exe will write
-    // installer results for consumption by Google Update.
+    // on to setup.exe.
     AppendCommandLineFlags(configuration, &cmd_line);
 
     if (exit_code.IsSuccess())
@@ -838,7 +828,12 @@ ProcessExitResult WMain(HMODULE module) {
   // Parse configuration from the command line and resources.
   Configuration configuration;
   if (!configuration.Initialize(module))
-    return ProcessExitResult(GENERIC_INITIALIZATION_FAILURE);
+    return ProcessExitResult(GENERIC_INITIALIZATION_FAILURE, ::GetLastError());
+
+  // Exit early if an invalid switch (e.g., "--chrome-frame") was found on the
+  // command line.
+  if (configuration.has_invalid_switch())
+    return ProcessExitResult(INVALID_OPTION);
 
   // If the --cleanup switch was specified on the command line, then that means
   // we should only do the cleanup and then exit.
