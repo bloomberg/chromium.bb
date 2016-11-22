@@ -153,11 +153,8 @@ class PlatformInfo(object):
             return 'mac10.%d' % minor_release
         return 'future'
 
-    def _determine_linux_version(self, platform_module):
-        # Default to trusty if version is not recognized, this supports third party integrations.
-        version = platform_module.linux_distribution()[2]
-        officially_supported_versions = ['precise', 'trusty']
-        return 'trusty' if version not in officially_supported_versions else version
+    def _determine_linux_version(self, _):
+        return 'trusty'
 
     def _determine_win_version(self, win_version_tuple):
         if win_version_tuple[:2] == (10, 0):

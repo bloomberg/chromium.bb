@@ -955,6 +955,23 @@ crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
+
+# TODO(qyearsley): Remove these and get new correct baselines for linux after
+# after https://codereview.chromium.org/2514253002 lands.
+crbug.com/660580 [ Linux ] fast/canvas/canvas-composite-video-shadow.html [ Skip ]
+crbug.com/660580 [ Linux ] fast/text/complex-text-opacity.html [ Skip ]
+crbug.com/660580 [ Linux ] fast/text/font-fallback.html [ Skip ]
+crbug.com/660580 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Skip ]
+crbug.com/660580 [ Linux ] fast/text/international/complex-joining-using-gpos.html [ Skip ]
+crbug.com/660580 [ Linux ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Skip ]
+crbug.com/660580 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ Skip ]
+crbug.com/660580 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Skip ]
+crbug.com/660580 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Skip ]
+crbug.com/660580 [ Linux ] transforms/2d/hindi-rotated.html [ Skip ]
+crbug.com/660580 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Skip ]
+crbug.com/660580 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Skip ]
+crbug.com/660580 [ Linux ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
+
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
 # TODO(yangguo): these tests need to be rebaselined after V8 change lands.
@@ -1160,8 +1177,6 @@ crbug.com/321237 [ Mac Win ] fast/text-autosizing/inherited-multiplier.html [ Fa
 crbug.com/321237 [ Mac ] virtual/stable/fast/css3-text/css3-text-decoration/stable/first-letter-text-decoration.html [ Failure ]
 crbug.com/321237 [ Win ] fast/multicol/span/pseudo-before-after-in-content.html [ Failure ]
 crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
-
-crbug.com/649700 [ Precise ] fast/css3-text/css3-text-decoration/text-decoration-skip.html [ NeedsRebaseline ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
@@ -1395,8 +1410,6 @@ crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failu
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
-crbug.com/642866 [ Precise ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
-
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
 crbug.com/635909 [ Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
@@ -1412,59 +1425,6 @@ crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ 
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
-
-# https://codereview.chromium.org/2523513002/
-crbug.com/650455 [ Precise ] images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/650455 [ Precise ] images/huge-image-viewport-scale.html [ NeedsRebaseline ]
-crbug.com/650455 [ Precise ] mhtml/image_document.mht [ NeedsRebaseline ]
-crbug.com/650455 [ Precise ] mhtml/invalid-bad-boundary2.mht [ NeedsRebaseline ]
-crbug.com/650455 [ Precise ] virtual/gpu-rasterization/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/650455 [ Precise ] virtual/gpu-rasterization/images/huge-image-viewport-scale.html [ NeedsRebaseline ]
-
-# These tests have different baselines on Linux Precise than Linux Trusty;
-# Linux Precise is being phased out, so until it's phased out, any tests
-# that have baselines that behave differently can be disabled.
-crbug.com/518929 [ Precise ] http/tests/appcache/obsolete-error-events.html [ Skip ]
-crbug.com/660580 [ Precise ] compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/borders/border-antialiasing.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/canvas/canvas-composite-video-shadow.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/text/complex-text-opacity.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/text/font-fallback.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/text/international/complex-character-based-fallback.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/text/international/complex-joining-using-gpos.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/text/international/thai-line-breaks.html [ Skip ]
-crbug.com/660580 [ Precise ] imported/wpt/dom/nodes/Document-getElementsByTagName-xhtml.xhtml [ Skip ]
-crbug.com/660580 [ Precise ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Skip ]
-crbug.com/660580 [ Precise ] svg/custom/control-points-for-S-and-T.svg [ Skip ]
-crbug.com/660580 [ Precise ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Skip ]
-crbug.com/660580 [ Precise ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Skip ]
-crbug.com/660580 [ Precise ] transforms/2d/hindi-rotated.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/scalefactor150/fast/hidpi/static/drag-image.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/scalefactor200/fast/hidpi/static/drag-image.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/drag-image.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col-span.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-col-span-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-colgroup.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-colgroup-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-composited-row.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-composited-row-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section-composited-row.html [ Skip ]
-crbug.com/660580 [ Precise ] paint/invalidation/table/composited-table-background-section-composited-row-initial-empty.html [ Skip ]
-crbug.com/660580 [ Precise ] fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Skip ]
-crbug.com/660580 [ Precise ] images/imagemap-case.html [ Skip ]
-crbug.com/660580 [ Precise ] virtual/gpu-rasterization/images/imagemap-case.html [ Skip ]
-crbug.com/660580 [ Precise ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
@@ -1709,7 +1669,7 @@ crbug.com/595993 imported/wpt/service-workers/service-worker/request-end-to-end.
 crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Failure ]
 
 # TODO(mgiuca): This was previously marked as [ NeedsRebaseline ] for [ Precise ] only.
-crbug.com/666628 [ Mac Win Trusty ] http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
+crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
 
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 

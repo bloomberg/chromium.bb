@@ -146,8 +146,6 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.12.0')).os_version, 'future')
 
         self.assertEqual(self.make_info(fake_sys('linux2')).os_version, 'trusty')
-        info = self.make_info(fake_sys('linux2'), fake_platform(linux_version='precise'))
-        self.assertEqual(info.os_version, 'precise')
         info = self.make_info(fake_sys('linux2'), fake_platform(linux_version='utopic'))
         self.assertEqual(info.os_version, 'trusty')
 

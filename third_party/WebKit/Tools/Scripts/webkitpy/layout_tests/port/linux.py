@@ -39,11 +39,10 @@ _log = logging.getLogger(__name__)
 class LinuxPort(base.Port):
     port_name = 'linux'
 
-    SUPPORTED_VERSIONS = ('precise', 'trusty')
+    SUPPORTED_VERSIONS = ('trusty',)
 
     FALLBACK_PATHS = {}
     FALLBACK_PATHS['trusty'] = ['linux'] + win.WinPort.latest_platform_fallback_path()
-    FALLBACK_PATHS['precise'] = ['linux-precise'] + FALLBACK_PATHS['trusty']
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
 

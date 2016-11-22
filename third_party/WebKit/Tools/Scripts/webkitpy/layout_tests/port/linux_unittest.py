@@ -53,13 +53,10 @@ class LinuxPortTest(port_testcase.PortTestCase):
         self.assertEqual(port.version(), expected_version)
 
     def test_versions(self):
-        self.assertTrue(self.make_port().name() in ('linux-precise', 'linux-trusty'))
+        self.assertTrue(self.make_port().name() in ('linux-trusty',))
 
         self.assert_version_properties('linux', 'trusty', 'linux-trusty', 'trusty')
-        self.assert_version_properties('linux', 'precise', 'linux-precise', 'precise')
-
         self.assert_version_properties('linux-trusty', None, 'linux-trusty', 'trusty')
-        self.assert_version_properties('linux-precise', None, 'linux-precise', 'precise')
         self.assertRaises(AssertionError, self.assert_version_properties,
                           'linux-utopic', None, 'ignored', 'ignored', 'ignored')
 
@@ -74,10 +71,7 @@ class LinuxPortTest(port_testcase.PortTestCase):
 
     def test_baseline_paths(self):
         self.assert_baseline_paths('linux', 'trusty', 'linux', '/win')
-        self.assert_baseline_paths('linux', 'precise', 'linux-precise', '/linux', '/win')
-
         self.assert_baseline_paths('linux-trusty', None, 'linux', '/win')
-        self.assert_baseline_paths('linux-precise', None, 'linux-precise', '/linux', '/win')
 
     def test_check_illegal_port_names(self):
         # FIXME: Check that, for now, these are illegal port names.
