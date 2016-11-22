@@ -72,6 +72,8 @@ void ModulesInitializer::initialize() {
       makeUnique<OffscreenCanvasRenderingContext2D::Factory>());
   OffscreenCanvas::registerRenderingContextFactory(
       makeUnique<WebGLRenderingContext::Factory>());
+  OffscreenCanvas::registerRenderingContextFactory(
+      makeUnique<WebGL2RenderingContext::Factory>());
 
   ASSERT(isInitialized());
 }

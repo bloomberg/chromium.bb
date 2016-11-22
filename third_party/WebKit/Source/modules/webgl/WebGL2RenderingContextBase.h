@@ -755,6 +755,10 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
       HTMLCanvasElement*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
       const CanvasContextCreationAttributes& requestedAttributes);
+  WebGL2RenderingContextBase(
+      OffscreenCanvas*,
+      std::unique_ptr<WebGraphicsContext3DProvider>,
+      const CanvasContextCreationAttributes& requestedAttributes);
 
   // DrawingBuffer::Client implementation.
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;

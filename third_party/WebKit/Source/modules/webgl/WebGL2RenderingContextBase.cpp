@@ -247,6 +247,31 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
           WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
 }
 
+WebGL2RenderingContextBase::WebGL2RenderingContextBase(
+    OffscreenCanvas* passedOffscreenCanvas,
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    const CanvasContextCreationAttributes& requestedAttributes)
+    : WebGLRenderingContextBase(passedOffscreenCanvas,
+                                std::move(contextProvider),
+                                requestedAttributes,
+                                2),
+      m_readFramebufferBinding(this, nullptr),
+      m_transformFeedbackBinding(this, nullptr),
+      m_boundCopyReadBuffer(this, nullptr),
+      m_boundCopyWriteBuffer(this, nullptr),
+      m_boundPixelPackBuffer(this, nullptr),
+      m_boundPixelUnpackBuffer(this, nullptr),
+      m_boundTransformFeedbackBuffer(this, nullptr),
+      m_boundUniformBuffer(this, nullptr),
+      m_currentBooleanOcclusionQuery(this, nullptr),
+      m_currentTransformFeedbackPrimitivesWrittenQuery(this, nullptr),
+      m_currentElapsedQuery(this, nullptr) {
+  m_supportedInternalFormatsStorage.insert(
+      kSupportedInternalFormatsStorage,
+      kSupportedInternalFormatsStorage +
+          WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
+}
+
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase() {
   m_readFramebufferBinding = nullptr;
 
