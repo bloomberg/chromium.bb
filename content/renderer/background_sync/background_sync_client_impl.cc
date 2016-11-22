@@ -28,7 +28,7 @@ BackgroundSyncClientImpl::~BackgroundSyncClientImpl() {}
 BackgroundSyncClientImpl::BackgroundSyncClientImpl() {}
 
 void BackgroundSyncClientImpl::Sync(
-    const mojo::String& tag,
+    const std::string& tag,
     blink::mojom::BackgroundSyncEventLastChance last_chance,
     const SyncCallback& callback) {
   DCHECK(!blink::Platform::current()->mainThread()->isCurrentThread());

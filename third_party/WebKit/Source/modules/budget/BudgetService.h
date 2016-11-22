@@ -40,7 +40,7 @@ class BudgetService final : public GarbageCollectedFinalized<BudgetService>,
   void gotBudget(
       ScriptPromiseResolver*,
       mojom::blink::BudgetServiceErrorType,
-      const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const;
+      const WTF::Vector<mojom::blink::BudgetStatePtr> expectations) const;
   void gotReservation(ScriptPromiseResolver*,
                       mojom::blink::BudgetServiceErrorType,
                       bool success) const;

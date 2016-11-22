@@ -17,7 +17,7 @@ TypeConverter<PlatformNotificationData, blink::mojom::NotificationPtr>::Convert(
     const blink::mojom::NotificationPtr& notification) {
   PlatformNotificationData notification_data;
 
-  notification_data.title = base::UTF8ToUTF16(notification->title.get());
+  notification_data.title = base::UTF8ToUTF16(notification->title);
 
   switch (notification->direction) {
     case NotificationDirection::LEFT_TO_RIGHT:
@@ -33,11 +33,11 @@ TypeConverter<PlatformNotificationData, blink::mojom::NotificationPtr>::Convert(
       break;
   }
 
-  notification_data.lang = notification->lang;
-  notification_data.body = base::UTF8ToUTF16(notification->body.get());
+  notification_data.lang = notification->lang.value_or(std::string());
+  notification_data.body = base::UTF8ToUTF16(notification->body);
   notification_data.tag = notification->tag;
-  notification_data.icon = GURL(notification->icon.get());
-  notification_data.badge = GURL(notification->badge.get());
+  notification_data.icon = GURL(notification->icon);
+  notification_data.badge = GURL(notification->badge);
 
   for (uint32_t vibration : notification->vibration_pattern)
     notification_data.vibration_pattern.push_back(static_cast<int>(vibration));
@@ -62,11 +62,11 @@ TypeConverter<PlatformNotificationData, blink::mojom::NotificationPtr>::Convert(
     }
 
     data_action.action = action->action;
-    data_action.title = base::UTF8ToUTF16(action->title.get());
-    data_action.icon = GURL(action->icon.get());
-    if (!action->placeholder.is_null()) {
+    data_action.title = base::UTF8ToUTF16(action->title);
+    data_action.icon = GURL(action->icon);
+    if (action->placeholder.has_value()) {
       data_action.placeholder = base::NullableString16(
-          base::UTF8ToUTF16(action->placeholder.get()), false /* is_null */);
+          base::UTF8ToUTF16(action->placeholder.value()), false /* is_null */);
     }
 
     notification_data.actions.push_back(data_action);
@@ -95,7 +95,7 @@ TypeConverter<blink::mojom::NotificationPtr, PlatformNotificationData>::Convert(
       break;
   }
 
-  notification->lang = notification_data.lang;
+  notification->lang.emplace(notification_data.lang);
   notification->body = base::UTF16ToUTF8(notification_data.body);
   notification->tag = notification_data.tag;
   notification->icon = notification_data.icon.spec();
@@ -128,7 +128,8 @@ TypeConverter<blink::mojom::NotificationPtr, PlatformNotificationData>::Convert(
     action->title = base::UTF16ToUTF8(data_action.title);
     action->icon = data_action.icon.spec();
     if (!data_action.placeholder.is_null())
-      action->placeholder = base::UTF16ToUTF8(data_action.placeholder.string());
+      action->placeholder.emplace(
+          base::UTF16ToUTF8(data_action.placeholder.string()));
 
     notification->actions.push_back(std::move(action));
   }

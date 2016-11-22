@@ -60,9 +60,9 @@ class BudgetDatabaseTest : public ::testing::Test {
   void GetBudgetDetailsComplete(
       base::Closure run_loop_closure,
       blink::mojom::BudgetServiceErrorType error,
-      mojo::Array<blink::mojom::BudgetStatePtr> predictions) {
+      std::vector<blink::mojom::BudgetStatePtr> predictions) {
     success_ = (error == blink::mojom::BudgetServiceErrorType::NONE);
-    prediction_.Swap(&predictions);
+    prediction_.swap(predictions);
     run_loop_closure.Run();
   }
 
@@ -93,7 +93,7 @@ class BudgetDatabaseTest : public ::testing::Test {
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   bool success_;
-  mojo::Array<blink::mojom::BudgetStatePtr> prediction_;
+  std::vector<blink::mojom::BudgetStatePtr> prediction_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

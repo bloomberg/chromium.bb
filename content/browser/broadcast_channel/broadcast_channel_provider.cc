@@ -19,14 +19,14 @@ class BroadcastChannelProvider::Connection
     : public blink::mojom::BroadcastChannelClient {
  public:
   Connection(const url::Origin& origin,
-             const mojo::String& name,
+             const std::string& name,
              blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
              blink::mojom::BroadcastChannelClientAssociatedRequest connection,
              BroadcastChannelProvider* service);
 
-  void OnMessage(mojo::Array<uint8_t> message) override;
-  void MessageToClient(mojo::Array<uint8_t> message) const {
-    client_->OnMessage(std::move(message));
+  void OnMessage(const std::vector<uint8_t>& message) override;
+  void MessageToClient(const std::vector<uint8_t>& message) const {
+    client_->OnMessage(message);
   }
   const url::Origin& origin() const { return origin_; }
   const std::string& name() const { return name_; }
@@ -47,7 +47,7 @@ class BroadcastChannelProvider::Connection
 
 BroadcastChannelProvider::Connection::Connection(
     const url::Origin& origin,
-    const mojo::String& name,
+    const std::string& name,
     blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
     blink::mojom::BroadcastChannelClientAssociatedRequest connection,
     BroadcastChannelProvider* service)
@@ -59,8 +59,8 @@ BroadcastChannelProvider::Connection::Connection(
 }
 
 void BroadcastChannelProvider::Connection::OnMessage(
-    mojo::Array<uint8_t> message) {
-  service_->ReceivedMessageOnConnection(this, std::move(message));
+    const std::vector<uint8_t>& message) {
+  service_->ReceivedMessageOnConnection(this, message);
 }
 
 BroadcastChannelProvider::BroadcastChannelProvider() {}
@@ -72,7 +72,7 @@ void BroadcastChannelProvider::Connect(
 
 void BroadcastChannelProvider::ConnectToChannel(
     const url::Origin& origin,
-    const mojo::String& name,
+    const std::string& name,
     blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
     blink::mojom::BroadcastChannelClientAssociatedRequest connection) {
   std::unique_ptr<Connection> c(new Connection(origin, name, std::move(client),
@@ -102,13 +102,13 @@ void BroadcastChannelProvider::UnregisterConnection(Connection* c) {
 
 void BroadcastChannelProvider::ReceivedMessageOnConnection(
     Connection* c,
-    mojo::Array<uint8_t> message) {
+    const std::vector<uint8_t>& message) {
   auto& connections = connections_[c->origin()];
   for (auto it = connections.lower_bound(c->name()),
             end = connections.upper_bound(c->name());
        it != end; ++it) {
     if (it->second.get() != c)
-      it->second->MessageToClient(message.Clone());
+      it->second->MessageToClient(message);
   }
 }
 

@@ -24,12 +24,12 @@ void MimeRegistryImpl::Create(blink::mojom::MimeRegistryRequest request) {
 }
 
 void MimeRegistryImpl::GetMimeTypeFromExtension(
-    const mojo::String& extension,
+    const std::string& extension,
     const GetMimeTypeFromExtensionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::string mime_type;
-  net::GetMimeTypeFromExtension(extension.To<base::FilePath::StringType>(),
-                                &mime_type);
+  net::GetMimeTypeFromExtension(
+      mojo::String(extension).To<base::FilePath::StringType>(), &mime_type);
   callback.Run(mime_type);
 }
 

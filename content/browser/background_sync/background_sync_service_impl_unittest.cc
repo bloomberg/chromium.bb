@@ -74,7 +74,7 @@ void ErrorAndRegistrationListCallback(
     blink::mojom::BackgroundSyncError* out_error,
     unsigned long* out_array_size,
     blink::mojom::BackgroundSyncError error,
-    mojo::Array<blink::mojom::SyncRegistrationPtr> registrations) {
+    std::vector<blink::mojom::SyncRegistrationPtr> registrations) {
   *called = true;
   *out_error = error;
   if (error == blink::mojom::BackgroundSyncError::NONE)

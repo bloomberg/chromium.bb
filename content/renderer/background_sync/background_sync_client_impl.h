@@ -27,7 +27,7 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
   BackgroundSyncClientImpl();
 
   // BackgroundSyncServiceClient methods:
-  void Sync(const mojo::String& tag,
+  void Sync(const std::string& tag,
             blink::mojom::BackgroundSyncEventLastChance last_chance,
             const SyncCallback& callback) override;
 

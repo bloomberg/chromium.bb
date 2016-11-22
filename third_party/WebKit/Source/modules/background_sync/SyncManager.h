@@ -49,7 +49,7 @@ class SyncManager final : public GarbageCollectedFinalized<SyncManager>,
   static void getRegistrationsCallback(
       ScriptPromiseResolver*,
       mojom::blink::BackgroundSyncError,
-      mojo::WTFArray<mojom::blink::SyncRegistrationPtr> registrations);
+      WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations);
 
   Member<ServiceWorkerRegistration> m_registration;
   mojom::blink::BackgroundSyncServicePtr m_backgroundSyncService;

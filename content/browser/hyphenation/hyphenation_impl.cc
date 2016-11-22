@@ -65,7 +65,7 @@ void HyphenationImpl::Create(blink::mojom::HyphenationRequest request) {
                           std::move(request));
 }
 
-void HyphenationImpl::OpenDictionary(const mojo::String& locale,
+void HyphenationImpl::OpenDictionary(const std::string& locale,
                                      const OpenDictionaryCallback& callback) {
   mojo::ScopedHandle handle;
   if (IsValidLocale(locale)) {

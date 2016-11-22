@@ -641,17 +641,7 @@ grit("image_resources") {
 
 mojom("mojo_bindings") {
   sources = [
-    "platform/mime_registry.mojom",
-    "platform/modules/background_sync/background_sync.mojom",
     "platform/modules/bluetooth/web_bluetooth.mojom",
-    "platform/modules/broadcastchannel/broadcast_channel.mojom",
-    "platform/modules/budget_service/budget_service.mojom",
-    "platform/modules/hyphenation/hyphenation.mojom",
-    "platform/modules/notifications/notification.mojom",
-    "platform/modules/notifications/notification_service.mojom",
-    "platform/modules/screen_orientation/screen_orientation_lock_types.mojom",
-    "platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom",
-    "platform/modules/serviceworker/service_worker_event_status.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",
@@ -679,11 +669,21 @@ mojom("mojo_bindings") {
 
 mojom("new_wrapper_types_mojo_bindings") {
   sources = [
+    "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
+    "platform/modules/background_sync/background_sync.mojom",
+    "platform/modules/broadcastchannel/broadcast_channel.mojom",
+    "platform/modules/budget_service/budget_service.mojom",
+    "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/mediasession/media_session.mojom",
+    "platform/modules/notifications/notification.mojom",
+    "platform/modules/notifications/notification_service.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
+    "platform/modules/screen_orientation/screen_orientation_lock_types.mojom",
+    "platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom",
+    "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/shapedetection/shapedetection.mojom",
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
@@ -714,8 +714,6 @@ mojom("android_mojo_bindings") {
     "//components/payments:payment_request",
     "//url/mojo:url_mojom_gurl",
   ]
-
-  use_new_wrapper_types = false
 
   # See comment above.
   export_class_attribute = "CONTENT_EXPORT"

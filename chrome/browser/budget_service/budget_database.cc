@@ -130,7 +130,7 @@ void BudgetDatabase::AddToCache(
 void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
                                         const GetBudgetCallback& callback,
                                         bool success) {
-  mojo::Array<blink::mojom::BudgetStatePtr> predictions;
+  std::vector<blink::mojom::BudgetStatePtr> predictions;
 
   // If the database wasn't able to read the information, return the
   // failure and an empty predictions array.

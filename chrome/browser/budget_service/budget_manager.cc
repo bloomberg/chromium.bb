@@ -71,7 +71,7 @@ void BudgetManager::GetBudget(const url::Origin& origin,
                               const GetBudgetCallback& callback) {
   if (origin.unique() || !content::IsOriginSecure(origin.GetURL())) {
     callback.Run(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED,
-                 mojo::Array<blink::mojom::BudgetStatePtr>());
+                 std::vector<blink::mojom::BudgetStatePtr>());
     return;
   }
   db_.GetBudgetDetails(origin, callback);

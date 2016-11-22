@@ -104,10 +104,12 @@ DEFINE_TRACE(BroadcastChannel) {
   EventTargetWithInlineData::trace(visitor);
 }
 
-void BroadcastChannel::OnMessage(mojo::WTFArray<uint8_t> message) {
+void BroadcastChannel::OnMessage(const WTF::Vector<uint8_t>& message) {
   // Queue a task to dispatch the event.
   RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(
-      reinterpret_cast<const char*>(&message.front()), message.size());
+      message.isEmpty() ? nullptr
+                        : reinterpret_cast<const char*>(&message.first()),
+      message.size());
   MessageEvent* event = MessageEvent::create(
       nullptr, value.release(),
       getExecutionContext()->getSecurityOrigin()->toString());

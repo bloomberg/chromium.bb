@@ -19,7 +19,7 @@ class HyphenationImpl : public blink::mojom::Hyphenation {
   static void Create(blink::mojom::HyphenationRequest);
 
   // Hyphenation:
-  void OpenDictionary(const mojo::String& locale,
+  void OpenDictionary(const std::string& locale,
                       const OpenDictionaryCallback& callback) override;
 
  private:

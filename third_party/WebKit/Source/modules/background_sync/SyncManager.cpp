@@ -116,12 +116,12 @@ void SyncManager::registerCallback(ScriptPromiseResolver* resolver,
 void SyncManager::getRegistrationsCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundSyncError error,
-    mojo::WTFArray<mojom::blink::SyncRegistrationPtr> registrations) {
+    WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE: {
       Vector<String> tags;
-      for (const auto& r : registrations.storage()) {
+      for (const auto& r : registrations) {
         tags.append(r->tag);
       }
       resolver->resolve(tags);

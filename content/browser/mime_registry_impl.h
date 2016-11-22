@@ -18,7 +18,7 @@ class MimeRegistryImpl : public blink::mojom::MimeRegistry {
 
  private:
   void GetMimeTypeFromExtension(
-      const mojo::String& extension,
+      const std::string& extension,
       const GetMimeTypeFromExtensionCallback& callback) override;
 };
 

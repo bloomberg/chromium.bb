@@ -151,7 +151,7 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(result_registrations);
 
-  mojo::Array<blink::mojom::SyncRegistrationPtr> mojo_registrations;
+  std::vector<blink::mojom::SyncRegistrationPtr> mojo_registrations;
   for (const BackgroundSyncRegistration* registration : *result_registrations)
     mojo_registrations.push_back(ToMojoRegistration(*registration));
 

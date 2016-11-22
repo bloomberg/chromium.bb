@@ -47,7 +47,7 @@ BlinkNotificationServiceImpl::~BlinkNotificationServiceImpl() {
 }
 
 void BlinkNotificationServiceImpl::GetPermissionStatus(
-    const mojo::String& origin,
+    const std::string& origin,
     const GetPermissionStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -57,8 +57,8 @@ void BlinkNotificationServiceImpl::GetPermissionStatus(
   }
 
   blink::mojom::PermissionStatus permission_status =
-      Service()->CheckPermissionOnIOThread(
-          resource_context_, GURL(origin.get()), render_process_id_);
+      Service()->CheckPermissionOnIOThread(resource_context_, GURL(origin),
+                                           render_process_id_);
 
   callback.Run(permission_status);
 }

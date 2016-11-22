@@ -109,7 +109,7 @@ ScriptPromise BudgetService::getBudget(ScriptState* scriptState) {
 void BudgetService::gotBudget(
     ScriptPromiseResolver* resolver,
     mojom::blink::BudgetServiceErrorType error,
-    const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const {
+    const WTF::Vector<mojom::blink::BudgetStatePtr> expectations) const {
   if (error != mojom::blink::BudgetServiceErrorType::NONE) {
     resolver->reject(errorTypeToException(error));
     return;
