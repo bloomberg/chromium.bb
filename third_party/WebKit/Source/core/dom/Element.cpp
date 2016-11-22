@@ -2162,8 +2162,6 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* scriptState,
 ShadowRoot* Element::attachShadow(const ScriptState* scriptState,
                                   const ShadowRootInit& shadowRootInitDict,
                                   ExceptionState& exceptionState) {
-  DCHECK(RuntimeEnabledFeatures::shadowDOMV1Enabled());
-
   HostsUsingFeatures::countMainWorldOnly(
       scriptState, document(),
       HostsUsingFeatures::Feature::ElementAttachShadow);

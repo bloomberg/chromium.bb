@@ -114,7 +114,7 @@ samp interfaceName=HTMLElement
 script constructorNeedsCreatedByParser
 section interfaceName=HTMLElement
 select constructorNeedsFormElement
-slot interfaceName=HTMLSlotElement, runtimeEnabled=shadowDOMV1
+slot interfaceName=HTMLSlotElement
 small interfaceName=HTMLElement
 source
 span

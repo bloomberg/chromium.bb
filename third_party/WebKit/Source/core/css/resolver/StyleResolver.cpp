@@ -465,7 +465,6 @@ void StyleResolver::matchAuthorRules(const Element& element,
     return;
   }
 
-  DCHECK(RuntimeEnabledFeatures::shadowDOMV1Enabled());
   matchHostRules(element, collector);
   matchScopedRules(element, collector);
 }

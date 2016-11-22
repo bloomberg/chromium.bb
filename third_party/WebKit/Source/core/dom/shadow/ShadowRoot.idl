@@ -27,11 +27,11 @@
 // https://w3c.github.io/webcomponents/spec/shadow/#the-shadowroot-interface
 
 interface ShadowRoot : DocumentFragment {
-    [RuntimeEnabled=ShadowDOMV1]readonly attribute ShadowRootMode mode;
+    readonly attribute ShadowRootMode mode;
     readonly attribute Element host;
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot? olderShadowRoot;
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
-    [RuntimeEnabled=ShadowDOMV1] readonly attribute boolean delegatesFocus;
+    readonly attribute boolean delegatesFocus;
 
     // TODO(foolip): The spec does not override cloneNode() on the ShadowRoot
     // interface. Here, it's used to implement "Invoking the cloneNode() method

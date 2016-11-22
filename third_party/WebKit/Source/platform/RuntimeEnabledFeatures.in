@@ -210,7 +210,6 @@ ScrollTopLeftInterop status=experimental
 Sensor status=experimental
 ServiceWorkerNavigationPreload
 SetRootScroller status=experimental
-ShadowDOMV1 status=stable
 ShadowPiercingDescendantCombinator status=test
 ShapeDetection status=experimental
 SharedArrayBuffer
@@ -269,4 +268,3 @@ LazyParseCSS status=experimental
 ParseHTMLOnMainThread status=test
 SendBeaconThrowForBlobWithNonSimpleType status=experimental
 PerformanceNavigationTiming2 status=test
-

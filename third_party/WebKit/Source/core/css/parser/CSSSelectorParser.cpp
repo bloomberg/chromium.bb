@@ -557,8 +557,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumePseudo(
       std::unique_ptr<CSSParserSelector> innerSelector =
           consumeCompoundSelector(block);
       block.consumeWhitespace();
-      if (!innerSelector || !block.atEnd() ||
-          !RuntimeEnabledFeatures::shadowDOMV1Enabled())
+      if (!innerSelector || !block.atEnd())
         return nullptr;
       Vector<std::unique_ptr<CSSParserSelector>> selectorVector;
       selectorVector.append(std::move(innerSelector));
