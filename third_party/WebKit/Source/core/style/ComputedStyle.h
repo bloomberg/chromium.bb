@@ -374,7 +374,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_whiteSpace = static_cast<unsigned>(initialWhiteSpace());
     m_inheritedData.m_borderCollapse = initialBorderCollapse();
     m_inheritedData.m_rtlOrdering = initialRTLOrdering();
-    m_inheritedData.m_boxDirection = initialBoxDirection();
+    m_inheritedData.m_boxDirection =
+        static_cast<unsigned>(initialBoxDirection());
     m_inheritedData.m_printColorAdjust =
         static_cast<unsigned>(initialPrintColorAdjust());
     m_inheritedData.m_pointerEvents = initialPointerEvents();
@@ -2386,11 +2387,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-box-direction
-  static EBoxDirection initialBoxDirection() { return BNORMAL; }
+  static EBoxDirection initialBoxDirection() { return EBoxDirection::Normal; }
   EBoxDirection boxDirection() const {
     return static_cast<EBoxDirection>(m_inheritedData.m_boxDirection);
   }
-  void setBoxDirection(EBoxDirection d) { m_inheritedData.m_boxDirection = d; }
+  void setBoxDirection(EBoxDirection d) {
+    m_inheritedData.m_boxDirection = static_cast<unsigned>(d);
+  }
 
   // -webkit-highlight
   static const AtomicString& initialHighlight() { return nullAtom; }

@@ -840,10 +840,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxDirection e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case BNORMAL:
+    case EBoxDirection::Normal:
       m_valueID = CSSValueNormal;
       break;
-    case BREVERSE:
+    case EBoxDirection::Reverse:
       m_valueID = CSSValueReverse;
       break;
   }
@@ -853,15 +853,15 @@ template <>
 inline EBoxDirection CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueNormal:
-      return BNORMAL;
+      return EBoxDirection::Normal;
     case CSSValueReverse:
-      return BREVERSE;
+      return EBoxDirection::Reverse;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return BNORMAL;
+  return EBoxDirection::Normal;
 }
 
 template <>

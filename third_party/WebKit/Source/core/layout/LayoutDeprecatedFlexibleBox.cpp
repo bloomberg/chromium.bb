@@ -43,9 +43,9 @@ class FlexBoxIterator {
       : m_box(parent), m_largestOrdinal(1) {
     if (m_box->style()->boxOrient() == HORIZONTAL &&
         !m_box->style()->isLeftToRightDirection())
-      m_forward = m_box->style()->boxDirection() != BNORMAL;
+      m_forward = m_box->style()->boxDirection() != EBoxDirection::Normal;
     else
-      m_forward = m_box->style()->boxDirection() == BNORMAL;
+      m_forward = m_box->style()->boxDirection() == EBoxDirection::Normal;
     if (!m_forward) {
       // No choice, since we're going backwards, we have to find out the highest
       // ordinal up front.
