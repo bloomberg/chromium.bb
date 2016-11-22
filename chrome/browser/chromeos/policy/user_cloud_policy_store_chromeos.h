@@ -101,9 +101,14 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   const AccountId account_id_;
   base::FilePath user_policy_key_dir_;
 
-  bool policy_key_loaded_;
-  base::FilePath policy_key_path_;
-  std::string policy_key_;
+  // The current key used to verify signatures of policy. This value is loaded
+  // from the key cache file (which is owned and kept up to date by the Chrome
+  // OS session manager). This is, generally, different from
+  // |policy_signature_public_key_|, which always corresponds to the currently
+  // effective policy.
+  std::string cached_policy_key_;
+  bool cached_policy_key_loaded_ = false;
+  base::FilePath cached_policy_key_path_;
 
   base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
 

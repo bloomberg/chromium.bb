@@ -73,7 +73,10 @@ void DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob(
 }
 
 void DeviceLocalAccountPolicyStore::UpdatePolicy(
+    const std::string& signature_validation_public_key,
     UserCloudPolicyValidator* validator) {
+  DCHECK(!signature_validation_public_key.empty());
+
   validation_status_ = validator->status();
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
@@ -82,12 +85,14 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
   }
 
   InstallPolicy(std::move(validator->policy_data()),
-                std::move(validator->payload()));
+                std::move(validator->payload()),
+                signature_validation_public_key);
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
 
 void DeviceLocalAccountPolicyStore::StoreValidatedPolicy(
+    const std::string& signature_validation_public_key_unused,
     UserCloudPolicyValidator* validator) {
   if (!validator->success()) {
     status_ = CloudPolicyStore::STATUS_VALIDATION_ERROR;
@@ -122,7 +127,7 @@ void DeviceLocalAccountPolicyStore::HandleStoreResult(bool success) {
 void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
     bool valid_timestamp_required,
     std::unique_ptr<em::PolicyFetchResponse> policy,
-    const UserCloudPolicyValidator::CompletionCallback& callback) {
+    const ValidateCompletionCallback& callback) {
   device_settings_service_->GetOwnershipStatusAsync(
       base::Bind(&DeviceLocalAccountPolicyStore::Validate,
                  weak_factory_.GetWeakPtr(),
@@ -134,12 +139,15 @@ void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
 void DeviceLocalAccountPolicyStore::Validate(
     bool valid_timestamp_required,
     std::unique_ptr<em::PolicyFetchResponse> policy_response,
-    const UserCloudPolicyValidator::CompletionCallback& callback,
+    const ValidateCompletionCallback& callback,
     chromeos::DeviceSettingsService::OwnershipStatus ownership_status) {
   DCHECK_NE(chromeos::DeviceSettingsService::OWNERSHIP_UNKNOWN,
             ownership_status);
   const em::PolicyData* device_policy_data =
       device_settings_service_->policy_data();
+  // Note that the key is obtained through the device settings service instead
+  // of using |policy_signature_public_key_| member, as the latter one is
+  // updated only after the successful installation of the policy.
   scoped_refptr<ownership::PublicKey> key =
       device_settings_service_->GetPublicKey();
   if (!key.get() || !key->is_loaded() || !device_policy_data) {
@@ -174,7 +182,7 @@ void DeviceLocalAccountPolicyStore::Validate(
 
   validator->ValidatePayload();
   validator->ValidateSignature(key->as_string());
-  validator.release()->StartValidation(callback);
+  validator.release()->StartValidation(base::Bind(callback, key->as_string()));
 }
 
 }  // namespace policy

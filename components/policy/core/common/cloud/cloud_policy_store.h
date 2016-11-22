@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -83,6 +84,9 @@ class POLICY_EXPORT CloudPolicyStore {
   CloudPolicyValidatorBase::Status validation_status() const {
     return validation_status_;
   }
+  const std::string& policy_signature_public_key() const {
+    return policy_signature_public_key_;
+  }
 
   // Store a new policy blob. Pending load/store operations will be canceled.
   // The store operation may proceed asynchronously and observers are notified
@@ -149,6 +153,13 @@ class POLICY_EXPORT CloudPolicyStore {
 
   // The invalidation version of the last policy stored.
   int64_t invalidation_version_;
+
+  // The public part of signing key that is used by the currently effective
+  // policy. The subclasses should keep its value up to date to correspond to
+  // the currently effective policy. The member should be empty if no policy is
+  // currently effective, or if signature verification was not possible for the
+  // policy.
+  std::string policy_signature_public_key_;
 
  private:
   // Whether the store has completed asynchronous initialization, which is

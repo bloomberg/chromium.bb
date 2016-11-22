@@ -36,10 +36,12 @@ class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       CloudPolicyValidatorBase::ValidateTimestampOption option);
 
-  // Sets |policy_data| and |payload| as the active policy.
+  // Sets |policy_data| and |payload| as the active policy, and sets
+  // |policy_signature_public_key| as the active public key.
   void InstallPolicy(
       std::unique_ptr<enterprise_management::PolicyData> policy_data,
-      std::unique_ptr<enterprise_management::CloudPolicySettings> payload);
+      std::unique_ptr<enterprise_management::CloudPolicySettings> payload,
+      const std::string& policy_signature_public_key);
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner() const {
     return background_task_runner_;

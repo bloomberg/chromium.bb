@@ -164,6 +164,10 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
     }
     policy_map_.Swap(&new_policy_map);
 
+    scoped_refptr<ownership::PublicKey> key =
+        device_settings_service_->GetPublicKey();
+    policy_signature_public_key_ = key ? key->as_string() : std::string();
+
     NotifyStoreLoaded();
     return;
   }

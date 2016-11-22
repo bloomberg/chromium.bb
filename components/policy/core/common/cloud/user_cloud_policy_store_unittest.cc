@@ -62,6 +62,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     external_data_manager_.reset(new MockCloudExternalDataManager);
     external_data_manager_->SetPolicyStore(store_.get());
     store_->SetSigninUsername(PolicyBuilder::kFakeUsername);
+    EXPECT_EQ(PolicyBuilder::kFakeUsername, store_->signin_username());
     store_->AddObserver(&observer_);
 
     // Install an initial public key, so that by default the validation of
@@ -229,7 +230,8 @@ TEST_F(UserCloudPolicyStoreTest, ShouldFailToLoadUnsignedPolicy) {
   // Now mimic a new policy coming down - this should result in a new key
   // being installed.
   StorePolicyAndEnsureLoaded(policy_.policy());
-  EXPECT_EQ(policy_.policy().new_public_key(), store_->policy_key());
+  EXPECT_EQ(policy_.policy().new_public_key(),
+            store_->policy_signature_public_key());
   EXPECT_TRUE(store_->policy()->has_public_key_version());
   EXPECT_TRUE(base::PathExists(key_file()));
 }
@@ -285,7 +287,7 @@ TEST_F(UserCloudPolicyStoreTest, StoreRotatedKey) {
   StorePolicyAndEnsureLoaded(policy_.policy());
   EXPECT_FALSE(policy_.policy().has_new_public_key_signature());
   std::string original_policy_key = policy_.policy().new_public_key();
-  EXPECT_EQ(original_policy_key, store_->policy_key());
+  EXPECT_EQ(original_policy_key, store_->policy_signature_public_key());
 
   // Now do key rotation.
   policy_.SetDefaultSigningKey();
@@ -294,7 +296,8 @@ TEST_F(UserCloudPolicyStoreTest, StoreRotatedKey) {
   EXPECT_TRUE(policy_.policy().has_new_public_key_signature());
   EXPECT_NE(original_policy_key, policy_.policy().new_public_key());
   StorePolicyAndEnsureLoaded(policy_.policy());
-  EXPECT_EQ(policy_.policy().new_public_key(), store_->policy_key());
+  EXPECT_EQ(policy_.policy().new_public_key(),
+            store_->policy_signature_public_key());
 }
 
 TEST_F(UserCloudPolicyStoreTest, ProvisionKeyTwice) {
@@ -348,7 +351,7 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   // Store a simple policy and make sure it can be read back in.
   // policy.
   StorePolicyAndEnsureLoaded(policy_.policy());
-  EXPECT_FALSE(store_->policy_key().empty());
+  EXPECT_FALSE(store_->policy_signature_public_key().empty());
 
   // Now, make sure the policy can be read back in from a second store.
   std::unique_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
@@ -367,7 +370,8 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store2->status());
   store2->RemoveObserver(&observer_);
   // Make sure that we properly resurrected the keys.
-  EXPECT_EQ(store2->policy_key(), store_->policy_key());
+  EXPECT_EQ(store2->policy_signature_public_key(),
+            store_->policy_signature_public_key());
 }
 
 TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {

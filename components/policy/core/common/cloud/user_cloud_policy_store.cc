@@ -217,7 +217,8 @@ void UserCloudPolicyStore::Clear() {
       base::Bind(base::IgnoreResult(&base::DeleteFile), key_path_, false));
   policy_.reset();
   policy_map_.Clear();
-  policy_key_.clear();
+  policy_signature_public_key_.clear();
+  persisted_policy_key_.clear();
   NotifyStoreLoaded();
 }
 
@@ -312,14 +313,14 @@ void UserCloudPolicyStore::InstallLoadedPolicyAfterValidation(
   // policy fetch will force regeneration of the keys.
   if (doing_key_rotation) {
     validator->policy_data()->clear_public_key_version();
-    policy_key_.clear();
+    persisted_policy_key_.clear();
   } else {
     // Policy validation succeeded, so we know the signing key is good.
-    policy_key_ = signing_key;
+    persisted_policy_key_ = signing_key;
   }
 
   InstallPolicy(std::move(validator->policy_data()),
-                std::move(validator->payload()));
+                std::move(validator->payload()), persisted_policy_key_);
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
@@ -385,7 +386,8 @@ void UserCloudPolicyStore::Validate(
     // validation using the cached key.
 
     // Loading from cache should not change the cached keys.
-    DCHECK(policy_key_.empty() || policy_key_ == cached_key->signing_key());
+    DCHECK(persisted_policy_key_.empty() ||
+           persisted_policy_key_ == cached_key->signing_key());
     DLOG_IF(WARNING, !cached_key->has_signing_key()) <<
         "Unsigned policy blob detected";
 
@@ -398,7 +400,7 @@ void UserCloudPolicyStore::Validate(
   } else {
     // No passed cached_key - this is not validating the initial policy load
     // from cache, but rather an update from the server.
-    if (policy_key_.empty()) {
+    if (persisted_policy_key_.empty()) {
       // Case #3 - no valid existing policy key (either this is the initial
       // policy fetch, or we're doing a key rotation), so this new policy fetch
       // should include an initial key provision.
@@ -406,10 +408,10 @@ void UserCloudPolicyStore::Validate(
     } else {
       // Case #4 - verify new policy with existing key. We always allow key
       // rotation - the verification key will prevent invalid policy from being
-      // injected. |policy_key_| is already known to be valid, so no need to
-      // verify via ValidateCachedKey().
+      // injected. |persisted_policy_key_| is already known to be valid, so no
+      // need to verify via ValidateCachedKey().
       validator->ValidateSignatureAllowingRotation(
-          policy_key_, verification_key, owning_domain);
+          persisted_policy_key_, verification_key, owning_domain);
     }
   }
 
@@ -445,12 +447,13 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
       base::Bind(&StorePolicyToDiskOnBackgroundThread,
                  policy_path_, key_path_, verification_key_,
                  *validator->policy()));
-  InstallPolicy(std::move(validator->policy_data()),
-                std::move(validator->payload()));
 
   // If the key was rotated, update our local cache of the key.
   if (validator->policy()->has_new_public_key())
-    policy_key_ = validator->policy()->new_public_key();
+    persisted_policy_key_ = validator->policy()->new_public_key();
+
+  InstallPolicy(std::move(validator->policy_data()),
+                std::move(validator->payload()), persisted_policy_key_);
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }

@@ -24,6 +24,12 @@ namespace policy {
 // Implements a cloud policy store that is stored in a simple file in the user's
 // profile directory. This is used on (non-chromeos) platforms that do not have
 // a secure storage implementation.
+//
+// The public key, which is used to verify signatures of policy, is also
+// persisted in a file. During the load operation, the key is loaded from the
+// file and is itself verified against the verification public key before using
+// it to verify the policy signature. During the store operation, the key cache
+// file is updated whenever the key rotation happens.
 class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
  public:
   // Creates a policy store associated with a signed-in (or in the progress of
@@ -42,6 +48,9 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
       const std::string& verification_key,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
+  // The username from signin for validation of the policy.
+  std::string signin_username() const { return signin_username_; }
+
   // Sets the username from signin for validation of the policy.
   void SetSigninUsername(const std::string& username);
 
@@ -55,13 +64,6 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // CloudPolicyStore implementation.
   void Load() override;
   void Store(const enterprise_management::PolicyFetchResponse& policy) override;
-
-  // The key used to sign the current policy (empty if there either is no
-  // loaded policy yet, or if the policy is unsigned).
-  const std::string& policy_key() { return policy_key_; }
-
- protected:
-  std::string signin_username_;
 
  private:
   // Callback invoked when a new policy has been loaded from disk. If
@@ -90,8 +92,11 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // Callback invoked to store the policy after validation has finished.
   void StorePolicyAfterValidation(UserCloudPolicyValidator* validator);
 
-  // The key used to verify signatures of cached policy.
-  std::string policy_key_;
+  // The current key used to verify signatures of policy. This value is
+  // eventually consistent with the one persisted in the key cache file. This
+  // is, generally, different from |policy_signature_public_key_|, which always
+  // corresponds to the currently effective policy.
+  std::string persisted_policy_key_;
 
   // Path to file where we store persisted policy.
   base::FilePath policy_path_;
@@ -101,6 +106,9 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
 
   // The hard-coded key used to verify new signing keys.
   const std::string verification_key_;
+
+  // The username from signin for validation of the policy.
+  std::string signin_username_;
 
   // WeakPtrFactory used to create callbacks for validating and storing policy.
   base::WeakPtrFactory<UserCloudPolicyStore> weak_factory_;
