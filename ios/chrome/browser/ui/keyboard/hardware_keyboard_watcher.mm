@@ -10,6 +10,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Whether firstRect has a non null rect intersection with secondRect, yet does
@@ -37,7 +41,7 @@ bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
   DCHECK(accessoryView);
   self = [super init];
   if (self) {
-    _accessoryView.reset([accessoryView retain]);
+    _accessoryView.reset(accessoryView);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(keyboardWillChangeFrame:)
@@ -49,7 +53,6 @@ bool IntersectsButDoesNotInclude(CGRect firstRect, CGRect secondRect) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (void)keyboardWillChangeFrame:(NSNotification*)notification {
