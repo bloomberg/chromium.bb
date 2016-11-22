@@ -677,10 +677,17 @@ error::Error DoTexStorage2DEXT(GLenum target,
                                GLsizei height);
 error::Error DoGenQueriesEXT(GLsizei n, volatile GLuint* queries);
 error::Error DoDeleteQueriesEXT(GLsizei n, const volatile GLuint* queries);
-error::Error DoQueryCounterEXT(GLuint id, GLenum target);
-error::Error DoBeginQueryEXT(GLenum target, GLuint id);
+error::Error DoQueryCounterEXT(GLuint id,
+                               GLenum target,
+                               int32_t sync_shm_id,
+                               uint32_t sync_shm_offset,
+                               uint32_t submit_count);
+error::Error DoBeginQueryEXT(GLenum target,
+                             GLuint id,
+                             int32_t sync_shm_id,
+                             uint32_t sync_shm_offset);
 error::Error DoBeginTransformFeedback(GLenum primitivemode);
-error::Error DoEndQueryEXT(GLenum target);
+error::Error DoEndQueryEXT(GLenum target, uint32_t submit_count);
 error::Error DoEndTransformFeedback();
 error::Error DoSetDisjointValueSyncCHROMIUM(DisjointValueSync* sync);
 error::Error DoInsertEventMarkerEXT(GLsizei length, const char* marker);

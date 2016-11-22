@@ -280,6 +280,13 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void BuildExtensionsString();
 
+  void InsertError(GLenum error, const std::string& message);
+  GLenum PopError();
+  bool FlushErrors();
+
+  bool IsEmulatedQueryTarget(GLenum target) const;
+  error::Error ProcessQueries(bool did_finish);
+
   int commands_to_process_;
 
   DebugMarkerManager debug_marker_manager_;
@@ -341,6 +348,33 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;
   std::vector<GLuint> bound_textures_;
+
+  // Track the service-id to type of all queries for validation
+  struct QueryInfo {
+    GLenum type = GL_NONE;
+  };
+  std::unordered_map<GLuint, QueryInfo> query_info_map_;
+
+  // All queries that are waiting for their results to be ready
+  struct PendingQuery {
+    GLenum target = GL_NONE;
+    GLuint service_id = 0;
+
+    int32_t shm_id = 0;
+    uint32_t shm_offset = 0;
+    base::subtle::Atomic32 submit_count = 0;
+  };
+  std::deque<PendingQuery> pending_queries_;
+
+  // Currently active queries
+  struct ActiveQuery {
+    GLuint service_id = 0;
+    int32_t shm_id = 0;
+    uint32_t shm_offset = 0;
+  };
+  std::unordered_map<GLenum, ActiveQuery> active_queries_;
+
+  std::set<GLenum> errors_;
 
   std::vector<std::string> emulated_extensions_;
   std::string extension_string_;

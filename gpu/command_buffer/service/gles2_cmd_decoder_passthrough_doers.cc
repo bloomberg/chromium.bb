@@ -696,12 +696,12 @@ error::Error GLES2DecoderPassthroughImpl::DoFenceSync(GLenum condition,
 
 error::Error GLES2DecoderPassthroughImpl::DoFinish() {
   glFinish();
-  return error::kNoError;
+  return ProcessQueries(true);
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoFlush() {
   glFlush();
-  return error::kNoError;
+  return ProcessQueries(false);
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoFlushMappedBufferRange(
@@ -906,7 +906,8 @@ error::Error GLES2DecoderPassthroughImpl::DoGetBufferParameteriv(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetError(uint32_t* result) {
-  *result = glGetError();
+  FlushErrors();
+  *result = PopError();
   return error::kNoError;
 }
 
@@ -2166,21 +2167,118 @@ error::Error GLES2DecoderPassthroughImpl::DoGenQueriesEXT(
 error::Error GLES2DecoderPassthroughImpl::DoDeleteQueriesEXT(
     GLsizei n,
     const volatile GLuint* queries) {
+  std::vector<GLuint> queries_copy(queries, queries + n);
+  // If any of these queries are pending or active, remove them from the lists
+  for (GLuint query_client_id : queries_copy) {
+    GLuint query_service_id = 0;
+    if (!query_id_map_.GetServiceID(query_client_id, &query_service_id) ||
+        query_service_id == 0) {
+      continue;
+    }
+
+    QueryInfo query_info = query_info_map_[query_service_id];
+    query_info_map_.erase(query_service_id);
+
+    if (query_info.type == GL_NONE) {
+      // Query was never started
+      continue;
+    }
+
+    auto active_queries_iter = active_queries_.find(query_info.type);
+    if (active_queries_iter != active_queries_.end()) {
+      active_queries_.erase(active_queries_iter);
+    }
+
+    auto pending_iter =
+        std::find_if(pending_queries_.begin(), pending_queries_.end(),
+                     [query_service_id](const PendingQuery& pending_query) {
+                       return pending_query.service_id == query_service_id;
+                     });
+    if (pending_iter != pending_queries_.end()) {
+      pending_queries_.erase(pending_iter);
+    }
+  }
   return DeleteHelper(
-      n, queries, &query_id_map_,
+      queries_copy.size(), queries_copy.data(), &query_id_map_,
       [](GLsizei n, GLuint* queries) { glDeleteQueries(n, queries); });
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(GLuint id,
-                                                            GLenum target) {
-  glQueryCounter(GetQueryServiceID(id, &query_id_map_), target);
-  return error::kNoError;
+error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
+    GLuint id,
+    GLenum target,
+    int32_t sync_shm_id,
+    uint32_t sync_shm_offset,
+    uint32_t submit_count) {
+  GLuint service_id = GetQueryServiceID(id, &query_id_map_);
+
+  // Flush all previous errors
+  FlushErrors();
+
+  glQueryCounter(service_id, target);
+
+  // Check if a new error was generated
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  QueryInfo* query_info = &query_info_map_[service_id];
+  query_info->type = target;
+
+  PendingQuery pending_query;
+  pending_query.target = target;
+  pending_query.service_id = service_id;
+  pending_query.shm_id = sync_shm_id;
+  pending_query.shm_offset = sync_shm_offset;
+  pending_query.submit_count = submit_count;
+  pending_queries_.push_back(pending_query);
+
+  return ProcessQueries(false);
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(GLenum target,
-                                                          GLuint id) {
-  // TODO(geofflang): Track active queries
-  glBeginQuery(target, GetQueryServiceID(id, &query_id_map_));
+error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
+    GLenum target,
+    GLuint id,
+    int32_t sync_shm_id,
+    uint32_t sync_shm_offset) {
+  GLuint service_id = GetQueryServiceID(id, &query_id_map_);
+  QueryInfo* query_info = &query_info_map_[service_id];
+
+  if (IsEmulatedQueryTarget(target)) {
+    if (active_queries_.find(target) != active_queries_.end()) {
+      InsertError(GL_INVALID_OPERATION, "Query already active on target.");
+      return error::kNoError;
+    }
+
+    if (id == 0) {
+      InsertError(GL_INVALID_OPERATION, "Query id is 0.");
+      return error::kNoError;
+    }
+
+    if (query_info->type != GL_NONE && query_info->type != target) {
+      InsertError(GL_INVALID_OPERATION,
+                  "Query type does not match the target.");
+      return error::kNoError;
+    }
+  } else {
+    // Flush all previous errors
+    FlushErrors();
+
+    glBeginQuery(target, service_id);
+
+    // Check if a new error was generated
+    if (FlushErrors()) {
+      return error::kNoError;
+    }
+  }
+
+  query_info->type = target;
+
+  ActiveQuery query;
+  query.service_id = service_id;
+  query.shm_id = sync_shm_id;
+  query.shm_offset = sync_shm_offset;
+  active_queries_[target] = query;
+
   return error::kNoError;
 }
 
@@ -2190,10 +2288,38 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginTransformFeedback(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target) {
-  // TODO(geofflang): Track active queries
-  glEndQuery(target);
-  return error::kNoError;
+error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
+                                                        uint32_t submit_count) {
+  if (IsEmulatedQueryTarget(target)) {
+    if (active_queries_.find(target) == active_queries_.end()) {
+      InsertError(GL_INVALID_OPERATION, "No active query on target.");
+      return error::kNoError;
+    }
+  } else {
+    // Flush all previous errors
+    FlushErrors();
+
+    glEndQuery(target);
+
+    // Check if a new error was generated
+    if (FlushErrors()) {
+      return error::kNoError;
+    }
+  }
+
+  DCHECK(active_queries_.find(target) != active_queries_.end());
+  ActiveQuery active_query = active_queries_[target];
+  active_queries_.erase(target);
+
+  PendingQuery pending_query;
+  pending_query.target = target;
+  pending_query.service_id = active_query.service_id;
+  pending_query.shm_id = active_query.shm_id;
+  pending_query.shm_offset = active_query.shm_offset;
+  pending_query.submit_count = submit_count;
+  pending_queries_.push_back(pending_query);
+
+  return ProcessQueries(false);
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoEndTransformFeedback() {

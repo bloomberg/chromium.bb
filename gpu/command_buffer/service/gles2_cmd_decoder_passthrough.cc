@@ -198,6 +198,10 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     InitializeGLDebugLogging();
   }
 
+  emulated_extensions_.push_back("GL_CHROMIUM_async_pixel_transfers");
+  emulated_extensions_.push_back("GL_CHROMIUM_command_buffer_query");
+  emulated_extensions_.push_back("GL_CHROMIUM_command_buffer_latency_query");
+  emulated_extensions_.push_back("GL_CHROMIUM_get_error_query");
   emulated_extensions_.push_back("GL_CHROMIUM_lose_context");
   emulated_extensions_.push_back("GL_CHROMIUM_pixel_transfer_buffer_object");
   emulated_extensions_.push_back("GL_CHROMIUM_resource_safe");
@@ -439,10 +443,13 @@ gpu::gles2::ImageManager* GLES2DecoderPassthroughImpl::GetImageManager() {
 }
 
 bool GLES2DecoderPassthroughImpl::HasPendingQueries() const {
-  return false;
+  return !pending_queries_.empty();
 }
 
-void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {}
+void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {
+  // TODO(geofflang): If this returned an error, store it somewhere.
+  ProcessQueries(did_finish);
+}
 
 bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
   return false;
@@ -707,6 +714,111 @@ void GLES2DecoderPassthroughImpl::BuildExtensionsString() {
   std::copy(emulated_extensions_.begin(), emulated_extensions_.end(),
             std::ostream_iterator<std::string>(combined_string_stream, " "));
   extension_string_ = combined_string_stream.str();
+}
+
+void GLES2DecoderPassthroughImpl::InsertError(GLenum error,
+                                              const std::string&) {
+  // Message ignored for now
+  errors_.insert(error);
+}
+
+GLenum GLES2DecoderPassthroughImpl::PopError() {
+  GLenum error = GL_NO_ERROR;
+  if (!errors_.empty()) {
+    error = *errors_.begin();
+    errors_.erase(errors_.begin());
+  }
+  return error;
+}
+
+bool GLES2DecoderPassthroughImpl::FlushErrors() {
+  bool had_error = false;
+  GLenum error = glGetError();
+  while (error != GL_NO_ERROR) {
+    errors_.insert(error);
+    had_error = true;
+    error = glGetError();
+  }
+  return had_error;
+}
+
+bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
+  // GL_COMMANDS_COMPLETED_CHROMIUM is implemented in ANGLE
+  switch (target) {
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+    case GL_LATENCY_QUERY_CHROMIUM:
+    case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
+    case GL_GET_ERROR_QUERY_CHROMIUM:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
+  while (!pending_queries_.empty()) {
+    const PendingQuery& query = pending_queries_.front();
+    GLint result_available = GL_FALSE;
+    GLuint64 result = 0;
+    switch (query.target) {
+      case GL_COMMANDS_ISSUED_CHROMIUM:
+        result_available = GL_TRUE;
+        result = GL_TRUE;
+        break;
+
+      case GL_LATENCY_QUERY_CHROMIUM:
+        result_available = GL_TRUE;
+        // TODO: time from when the query is ended?
+        result = (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds();
+        break;
+
+      case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
+        // TODO: Use a fence and do a real async readback
+        result_available = GL_TRUE;
+        result = GL_TRUE;
+        break;
+
+      case GL_GET_ERROR_QUERY_CHROMIUM:
+        result_available = GL_TRUE;
+        FlushErrors();
+        result = PopError();
+        break;
+
+      default:
+        DCHECK(!IsEmulatedQueryTarget(query.target));
+        if (did_finish) {
+          result_available = GL_TRUE;
+        } else {
+          glGetQueryObjectiv(query.service_id, GL_QUERY_RESULT_AVAILABLE,
+                             &result_available);
+        }
+        if (result_available == GL_TRUE) {
+          glGetQueryObjectui64v(query.service_id, GL_QUERY_RESULT, &result);
+        }
+        break;
+    }
+
+    if (!result_available) {
+      break;
+    }
+
+    QuerySync* sync = GetSharedMemoryAs<QuerySync*>(
+        query.shm_id, query.shm_offset, sizeof(QuerySync));
+    if (sync == nullptr) {
+      pending_queries_.pop_front();
+      return error::kOutOfBounds;
+    }
+
+    // Mark the query as complete
+    sync->result = result;
+    base::subtle::Release_Store(&sync->process_count, query.submit_count);
+    pending_queries_.pop_front();
+  }
+
+  // If glFinish() has been called, all of our queries should be completed.
+  DCHECK(!did_finish || pending_queries_.empty());
+  return error::kNoError;
 }
 
 #define GLES2_CMD_OP(name)                                               \

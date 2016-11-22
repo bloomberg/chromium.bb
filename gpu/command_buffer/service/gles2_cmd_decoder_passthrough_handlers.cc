@@ -1133,8 +1133,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleQueryCounterEXT(
       *static_cast<const volatile gles2::cmds::QueryCounterEXT*>(cmd_data);
   GLuint id = static_cast<GLuint>(c.id);
   GLenum target = static_cast<GLenum>(c.target);
+  int32_t sync_shm_id = static_cast<int32_t>(c.sync_data_shm_id);
+  uint32_t sync_shm_offset = static_cast<uint32_t>(c.sync_data_shm_offset);
+  uint32_t submit_count = static_cast<GLuint>(c.submit_count);
 
-  error::Error error = DoQueryCounterEXT(id, target);
+  error::Error error =
+      DoQueryCounterEXT(id, target, sync_shm_id, sync_shm_offset, submit_count);
   if (error != error::kNoError) {
     return error;
   }
@@ -1149,8 +1153,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleBeginQueryEXT(
       *static_cast<const volatile gles2::cmds::BeginQueryEXT*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLuint id = static_cast<GLuint>(c.id);
+  int32_t sync_shm_id = static_cast<int32_t>(c.sync_data_shm_id);
+  uint32_t sync_shm_offset = static_cast<uint32_t>(c.sync_data_shm_offset);
 
-  error::Error error = DoBeginQueryEXT(target, id);
+  error::Error error =
+      DoBeginQueryEXT(target, id, sync_shm_id, sync_shm_offset);
   if (error != error::kNoError) {
     return error;
   }
@@ -1164,8 +1171,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleEndQueryEXT(
   const volatile gles2::cmds::EndQueryEXT& c =
       *static_cast<const volatile gles2::cmds::EndQueryEXT*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
+  uint32_t submit_count = static_cast<GLuint>(c.submit_count);
 
-  error::Error error = DoEndQueryEXT(target);
+  error::Error error = DoEndQueryEXT(target, submit_count);
   if (error != error::kNoError) {
     return error;
   }
