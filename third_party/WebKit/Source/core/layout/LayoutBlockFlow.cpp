@@ -576,57 +576,63 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
     return false;
   }
 
-  // Calculate our new height.
-  LayoutUnit oldHeight = logicalHeight();
-  LayoutUnit oldClientAfterEdge = clientLogicalBottom();
+  // Remember the automatic logical height we got from laying out the children.
+  LayoutUnit unconstrainedHeight = logicalHeight();
+  LayoutUnit unconstrainedClientAfterEdge = clientLogicalBottom();
 
+  // Adjust logical height to satisfy whatever computed style requires.
   updateLogicalHeight();
-  LayoutUnit newHeight = logicalHeight();
-  if (!childrenInline()) {
-    LayoutBlockFlow* lowestBlock = nullptr;
-    bool addedOverhangingFloats = false;
-    // One of our children's floats may have become an overhanging float for us.
-    for (LayoutObject* child = lastChild(); child;
-         child = child->previousSibling()) {
-      // TODO(robhogan): We should exclude blocks that create formatting
-      // contexts, not just out of flow or floating blocks.
-      if (child->isLayoutBlockFlow() &&
-          !child->isFloatingOrOutOfFlowPositioned()) {
-        LayoutBlockFlow* block = toLayoutBlockFlow(child);
-        if (!block->containsFloats())
-          continue;
-        lowestBlock = block;
-        if (oldHeight <= newHeight ||
-            block->lowestFloatLogicalBottom() + block->logicalTop() <=
-                newHeight)
-          break;
-        addOverhangingFloats(block, false);
-        addedOverhangingFloats = true;
-      }
-    }
-    // If we have no overhanging floats we still pass a record of the lowest
-    // non-overhanging float up the tree so we can enclose it if we are a
-    // formatting context and allow siblings to avoid it if they have negative
-    // margin and find themselves in its vicinity.
-    if (!addedOverhangingFloats)
-      addLowestFloatFromChildren(lowestBlock);
-  }
 
-  bool heightChanged = (previousHeight != newHeight);
-  if (heightChanged)
+  if (!childrenInline())
+    addOverhangingFloatsFromChildren(unconstrainedHeight);
+
+  if (previousHeight != logicalHeight() || isDocumentElement())
     relayoutChildren = true;
 
-  layoutPositionedObjects(relayoutChildren || isDocumentElement(),
-                          oldLeft != logicalLeft()
-                              ? ForcedLayoutAfterContainingBlockMoved
-                              : DefaultLayout);
+  PositionedLayoutBehavior behavior = DefaultLayout;
+  if (oldLeft != logicalLeft())
+    behavior = ForcedLayoutAfterContainingBlockMoved;
+  layoutPositionedObjects(relayoutChildren, behavior);
 
   // Add overflow from children (unless we're multi-column, since in that case
   // all our child overflow is clipped anyway).
-  computeOverflow(oldClientAfterEdge);
+  computeOverflow(unconstrainedClientAfterEdge);
 
   m_descendantsWithFloatsMarkedForLayout = false;
   return true;
+}
+
+void LayoutBlockFlow::addOverhangingFloatsFromChildren(
+    LayoutUnit unconstrainedHeight) {
+  LayoutBlockFlow* lowestBlock = nullptr;
+  bool addedOverhangingFloats = false;
+  // One of our children's floats may have become an overhanging float for us.
+  for (LayoutObject* child = lastChild(); child;
+       child = child->previousSibling()) {
+    // TODO(robhogan): We should exclude blocks that create formatting
+    // contexts, not just out of flow or floating blocks.
+    if (child->isLayoutBlockFlow() &&
+        !child->isFloatingOrOutOfFlowPositioned()) {
+      LayoutBlockFlow* block = toLayoutBlockFlow(child);
+      if (!block->containsFloats())
+        continue;
+      lowestBlock = block;
+      if (unconstrainedHeight <= logicalHeight())
+        break;
+      LayoutUnit logicalBottom =
+          block->logicalTop() + block->lowestFloatLogicalBottom();
+      if (logicalBottom <= logicalHeight())
+        break;
+      addOverhangingFloats(block, false);
+      addedOverhangingFloats = true;
+    }
+  }
+  // If we have no overhanging floats we still pass a record of the lowest
+  // non-overhanging float up the tree so we can enclose it if we are a
+  // formatting context and allow siblings to avoid it if they have negative
+  // margin and find themselves in its vicinity.
+  if (!addedOverhangingFloats)
+    addLowestFloatFromChildren(lowestBlock);
 }
 
 void LayoutBlockFlow::addLowestFloatFromChildren(LayoutBlockFlow* block) {
