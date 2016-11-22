@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -379,7 +380,8 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 
   if ([attributeName isEqualToString:NSAccessibilityValueAttribute] ||
       [attributeName isEqualToString:NSAccessibilitySelectedTextAttribute])
-    return node_->GetDelegate()->CanSetStringValue();
+    return !ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                      ui::AX_STATE_READ_ONLY);
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
     return ui::AXNodeData::IsFlagSet(node_->GetData().state,
@@ -392,20 +394,24 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
+  ui::AXActionData data;
   if ([value isKindOfClass:[NSString class]]) {
+    data.value = base::SysNSStringToUTF16(value);
     if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
-      node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value),
-                                           true);
+      data.action = ui::AX_ACTION_SET_VALUE;
     } else if ([attribute
                    isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-      node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value),
-                                           false);
+      data.action = ui::AX_ACTION_REPLACE_SELECTED_TEXT;
     }
   } else if ([value isKindOfClass:[NSNumber class]]) {
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-      node_->GetDelegate()->SetFocused([value boolValue]);
+      data.action =
+          [value boolValue] ? ui::AX_ACTION_FOCUS : ui::AX_ACTION_BLUR;
     }
   }
+
+  if (data.action != ui::AX_ACTION_NONE)
+    node_->GetDelegate()->AccessibilityPerformAction(data);
 
   // TODO(patricialor): Plumb through all the other writable attributes as
   // specified in accessibilityIsAttributeSettable.

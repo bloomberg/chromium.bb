@@ -232,11 +232,15 @@
 
   // An action to be taken on an accessibility node.
   enum AXAction {
+    blur,
+
     // Decrement a slider or range control by one step value.
     decrement,
 
     // Do the default action for an object, typically this means "click".
     do_default,
+
+    focus,
 
     // Given a point, find the object it corresponds to and fire a
     // HOVER event on it in response.
@@ -259,7 +263,6 @@
     scroll_to_point,
 
     set_accessibility_focus,
-    set_focus,
     set_scroll_offset,
     set_selection,
 

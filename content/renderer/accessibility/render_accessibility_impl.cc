@@ -450,6 +450,9 @@ void RenderAccessibilityImpl::OnPerformAction(
   WebAXObject focus = document.accessibilityObjectFromID(data.focus_node_id);
 
   switch (data.action) {
+    case ui::AX_ACTION_BLUR:
+      target.setFocused(false);
+      break;
     case ui::AX_ACTION_DECREMENT:
       target.decrement();
       break;
@@ -474,7 +477,7 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS:
       OnSetAccessibilityFocus(target);
       break;
-    case ui::AX_ACTION_SET_FOCUS:
+    case ui::AX_ACTION_FOCUS:
       // By convention, calling SetFocus on the root of the tree should
       // clear the current focus. Otherwise set the focus to the new node.
       if (data.target_node_id == root.axID())

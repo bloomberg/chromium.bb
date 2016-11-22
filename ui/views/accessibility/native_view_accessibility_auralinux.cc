@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -106,17 +107,11 @@ class AuraLinuxApplication
     return gfx::kNullAcceleratedWidget;
   }
 
-  void DoDefaultAction() override {
-  }
-
-  bool SetStringValue(const base::string16& new_value,
-                      bool clear_first) override {
+  bool AccessibilityPerformAction(const ui::AXActionData& data) override {
     return false;
   }
 
-  bool CanSetStringValue() override { return false; }
-
-  bool SetFocused(bool focused) override { return false; }
+  void DoDefaultAction() override {}
 
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;

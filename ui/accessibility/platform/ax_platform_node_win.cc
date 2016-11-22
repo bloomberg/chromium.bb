@@ -13,6 +13,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -453,8 +454,11 @@ STDMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
 
 STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
                                              BSTR new_value) {
+  AXActionData data;
+  data.action = ui::AX_ACTION_SET_VALUE;
+  data.value = new_value;
   COM_OBJECT_VALIDATE_VAR_ID(var_id);
-  if (delegate_->SetStringValue(new_value, true))
+  if (delegate_->AccessibilityPerformAction(data))
     return S_OK;
   return E_FAIL;
 }

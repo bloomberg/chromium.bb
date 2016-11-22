@@ -5,9 +5,6 @@
 #include "ui/views/accessibility/native_view_accessibility.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
-#include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -48,6 +45,17 @@ void NativeViewAccessibility::Destroy() {
 void NativeViewAccessibility::NotifyAccessibilityEvent(ui::AXEvent event_type) {
   if (ax_node_)
     ax_node_->NotifyAccessibilityEvent(event_type);
+}
+
+bool NativeViewAccessibility::SetFocused(bool focused) {
+  if (!ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_FOCUSABLE))
+    return false;
+
+  if (focused)
+    view_->RequestFocus();
+  else if (view_->HasFocus())
+    view_->GetFocusManager()->ClearFocus();
+  return true;
 }
 
 // ui::AXPlatformNodeDelegate
@@ -185,6 +193,30 @@ NativeViewAccessibility::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
+bool NativeViewAccessibility::AccessibilityPerformAction(
+    const ui::AXActionData& data) {
+  switch (data.action) {
+    // Handle accessible actions that apply to all Views here.
+    case ui::AX_ACTION_DO_DEFAULT:
+      DoDefaultAction();
+      return true;
+    case ui::AX_ACTION_FOCUS:
+      return SetFocused(true);
+    case ui::AX_ACTION_BLUR:
+      return SetFocused(false);
+
+    case ui::AX_ACTION_NONE:
+      NOTREACHED();
+      break;
+
+    // All other actions can potentially be dealt with by the View itself.
+    default:
+      return view_->HandleAccessibleAction(data);
+      break;
+  }
+  return false;
+}
+
 void NativeViewAccessibility::DoDefaultAction() {
   gfx::Point center = view_->GetLocalBounds().CenterPoint();
   view_->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
@@ -199,34 +231,6 @@ void NativeViewAccessibility::DoDefaultAction() {
                                         ui::EventTimeForNow(),
                                         ui::EF_LEFT_MOUSE_BUTTON,
                                         ui::EF_LEFT_MOUSE_BUTTON));
-}
-
-bool NativeViewAccessibility::SetStringValue(const base::string16& new_value,
-                                             bool clear_first) {
-  // Return an error if the view can't set the value.
-  if (!CanSetStringValue())
-    return false;
-
-  ui::AXActionData action_data;
-  action_data.value = new_value;
-  action_data.action = clear_first ? ui::AX_ACTION_SET_VALUE
-      : ui::AX_ACTION_REPLACE_SELECTED_TEXT;
-  return view_->HandleAccessibleAction(action_data);
-}
-
-bool NativeViewAccessibility::CanSetStringValue() {
-  return !ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_READ_ONLY);
-}
-
-bool NativeViewAccessibility::SetFocused(bool focused) {
-  if (!ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_FOCUSABLE))
-    return false;
-
-  if (focused)
-    view_->RequestFocus();
-  else if (view_->HasFocus())
-    view_->GetFocusManager()->ClearFocus();
-  return true;
 }
 
 void NativeViewAccessibility::OnWidgetDestroying(Widget* widget) {

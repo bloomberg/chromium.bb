@@ -357,7 +357,7 @@ AutomationInternalPerformActionFunction::RouteActionToAdapter(
       adapter->PerformAction(action);
       break;
     case api::automation_internal::ACTION_TYPE_FOCUS:
-      action.action = ui::AX_ACTION_SET_FOCUS;
+      action.action = ui::AX_ACTION_FOCUS;
       adapter->PerformAction(action);
       break;
     case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:

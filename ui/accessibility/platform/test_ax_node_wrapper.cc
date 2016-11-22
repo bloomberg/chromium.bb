@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/containers/hash_tables.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 namespace ui {
@@ -116,21 +117,12 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
-void TestAXNodeWrapper::DoDefaultAction() {
-}
-
-bool TestAXNodeWrapper::SetStringValue(const base::string16& new_value,
-                                       bool clear_first) {
+bool TestAXNodeWrapper::AccessibilityPerformAction(
+    const ui::AXActionData& data) {
   return false;
 }
 
-bool TestAXNodeWrapper::CanSetStringValue() {
-  return false;
-}
-
-bool TestAXNodeWrapper::SetFocused(bool focused) {
-  return false;
-}
+void TestAXNodeWrapper::DoDefaultAction() {}
 
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),

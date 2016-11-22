@@ -38,11 +38,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   void DoDefaultAction() override;
-  bool SetStringValue(const base::string16& new_value,
-                      bool clear_first) override;
-  bool CanSetStringValue() override;
-  bool SetFocused(bool focused) override;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);

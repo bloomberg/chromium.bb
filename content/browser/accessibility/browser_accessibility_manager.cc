@@ -564,7 +564,7 @@ void BrowserAccessibilityManager::SetFocus(const BrowserAccessibility& node) {
     return;
 
   ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_SET_FOCUS;
+  action_data.action = ui::AX_ACTION_FOCUS;
   action_data.target_node_id = node.GetId();
   delegate_->AccessibilityPerformAction(action_data);
 }

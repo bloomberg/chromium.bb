@@ -12,6 +12,7 @@
 
 namespace ui {
 
+struct AXActionData;
 struct AXNodeData;
 class AXPlatformNode;
 
@@ -80,23 +81,13 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Actions.
   //
 
+  // Calls one of the methods below to perform an accessibility action,
+  // switching on the ui::AXAction provided in |data|.
+  virtual bool AccessibilityPerformAction(const ui::AXActionData& data) = 0;
+
   // Perform the default action, e.g. click a button, follow a link, or
   // toggle a checkbox.
   virtual void DoDefaultAction() = 0;
-
-  // Change the value of a control, such as the text content of a text field.
-  // If |clear_first| is true, this replaces all text with the |new_value|.
-  // Otherwise this inserts |new_value| at the cursor position, replacing any
-  // selected text. The cursor is placed at the end of |new_value|.
-  virtual bool SetStringValue(const base::string16& new_value,
-                              bool clear_first) = 0;
-
-  // Whether SetStringValue() is callable, i.e. if the string value is not read
-  // only and if the callback exists.
-  virtual bool CanSetStringValue() = 0;
-
-  // Focus or unfocus a View, checking if the View is focusable first.
-  virtual bool SetFocused(bool focused) = 0;
 };
 
 }  // namespace ui
