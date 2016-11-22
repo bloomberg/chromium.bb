@@ -36,7 +36,6 @@ class WebFrame;
 class WebLocalFrame;
 class WebString;
 class WebView;
-class WebWidget;
 }
 
 namespace gin {
@@ -107,8 +106,6 @@ class TestRunner : public WebTestRunner {
   // Methods used by WebViewTestClient and WebFrameTestClient.
   void OnNavigationBegin(blink::WebFrame* frame);
   void OnNavigationEnd() { will_navigate_ = false; }
-  void OnAnimationScheduled(blink::WebWidget* widget);
-  void OnAnimationBegun(blink::WebWidget* widget);
   std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
@@ -328,10 +325,6 @@ class TestRunner : public WebTestRunner {
 
   // Enable or disable plugins.
   void SetPluginsEnabled(bool enabled);
-
-  // Returns |true| if an animation has been scheduled in one or more WebViews
-  // participating in the layout test.
-  bool GetAnimationScheduled() const;
 
   ///////////////////////////////////////////////////////////////////////////
   // Methods that modify the state of TestRunner
@@ -657,8 +650,6 @@ class TestRunner : public WebTestRunner {
   // Note - this can be a dangling pointer to an already destroyed WebView (this
   // is ok, because this is taken care of in WebTestDelegate::SetFocus).
   blink::WebView* previously_focused_view_;
-
-  std::set<blink::WebWidget*> widgets_with_scheduled_animations_;
 
   // True if we run a test in LayoutTests/imported/{csswg-test,wpt}/.
   bool is_web_platform_tests_mode_;

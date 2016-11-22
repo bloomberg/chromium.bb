@@ -68,7 +68,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
                         int baseOffset,
                         Node* extentNode,
                         int extentOffset,
-                        ExceptionState&);
+                        ExceptionState& = ASSERT_NO_EXCEPTION);
   void modify(const String& alter,
               const String& direction,
               const String& granularity);

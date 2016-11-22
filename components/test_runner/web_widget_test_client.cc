@@ -38,9 +38,6 @@ void WebWidgetTestClient::scheduleAnimation() {
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    test_runner()->OnAnimationScheduled(
-        web_widget_test_proxy_base_->web_widget());
-
     delegate()->PostDelayedTask(base::Bind(&WebWidgetTestClient::AnimateNow,
                                            weak_factory_.GetWeakPtr()),
                                 1);
@@ -51,8 +48,6 @@ void WebWidgetTestClient::AnimateNow() {
   if (animation_scheduled_) {
     blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
     animation_scheduled_ = false;
-    test_runner()->OnAnimationBegun(web_widget);
-
     base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
     web_widget->beginFrame(animate_time.InSecondsF());
     web_widget->updateAllLifecyclePhases();

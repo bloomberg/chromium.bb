@@ -266,7 +266,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                         const std::string& avatar,
                                         const std::string& password);
   void ClearMockCredentialManagerResponse();
-  bool AnimationScheduled();
   bool CallShouldCloseOnWebView();
   bool DisableAutoResizeMode(int new_width, int new_height);
   bool EnableAutoResizeMode(int min_width,
@@ -351,7 +350,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addOriginAccessWhitelistEntry",
                  &TestRunnerBindings::AddOriginAccessWhitelistEntry)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
-      .SetMethod("animationScheduled", &TestRunnerBindings::AnimationScheduled)
       .SetMethod("callShouldCloseOnWebView",
                  &TestRunnerBindings::CallShouldCloseOnWebView)
       .SetMethod("capturePixelsAsyncThen",
@@ -1057,13 +1055,6 @@ void TestRunnerBindings::SetPluginsEnabled(bool enabled) {
     runner_->SetPluginsEnabled(enabled);
 }
 
-bool TestRunnerBindings::AnimationScheduled() {
-  if (runner_)
-    return runner_->GetAnimationScheduled();
-  else
-    return false;
-}
-
 void TestRunnerBindings::DumpEditingCallbacks() {
   if (runner_)
     runner_->DumpEditingCallbacks();
@@ -1644,7 +1635,6 @@ void TestRunner::Reset() {
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
-  widgets_with_scheduled_animations_.clear();
 
   WebSecurityPolicy::resetOriginAccessWhitelists();
 #if defined(__linux__) || defined(ANDROID)
@@ -2405,19 +2395,6 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 void TestRunner::SetPluginsEnabled(bool enabled) {
   delegate_->Preferences()->plugins_enabled = enabled;
   delegate_->ApplyPreferences();
-}
-
-bool TestRunner::GetAnimationScheduled() const {
-  bool is_animation_scheduled = !widgets_with_scheduled_animations_.empty();
-  return is_animation_scheduled;
-}
-
-void TestRunner::OnAnimationScheduled(blink::WebWidget* widget) {
-  widgets_with_scheduled_animations_.insert(widget);
-}
-
-void TestRunner::OnAnimationBegun(blink::WebWidget* widget) {
-  widgets_with_scheduled_animations_.erase(widget);
 }
 
 void TestRunner::DumpEditingCallbacks() {
