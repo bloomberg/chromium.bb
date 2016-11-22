@@ -77,10 +77,6 @@
 #define WARN_UNUSED_RETURN
 #endif
 
-/* ALLOW_UNUSED_LOCAL */
-
-#define ALLOW_UNUSED_LOCAL(x) false ? (void)x : (void)0
-
 /* OBJC_CLASS */
 
 #ifndef OBJC_CLASS
