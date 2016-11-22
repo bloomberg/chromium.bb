@@ -185,7 +185,7 @@ public class LayoutManagerDocument extends LayoutManager
     }
 
     @Override
-    protected void onViewportChanged() {
+    public void onViewportChanged() {
         super.onViewportChanged();
         for (int i = 0; i < mTabCache.size(); i++) {
             // This assumes that the content width/height is always the size of the host.

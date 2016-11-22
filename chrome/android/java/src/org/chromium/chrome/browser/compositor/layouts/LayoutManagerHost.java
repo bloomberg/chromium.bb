@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
+import android.graphics.RectF;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.TitleCache;
@@ -43,6 +44,24 @@ public interface LayoutManagerHost {
      * @return The height of the host view.
      */
     int getHeight();
+
+    /**
+     * Get the window's viewport.
+     * @param outRect The RectF object to write the result to.
+     */
+    void getWindowViewport(RectF outRect);
+
+    /**
+     * Get the visible viewport. This viewport accounts for the height of the browser controls.
+     * @param outRect The RectF object to write the result to.
+     */
+    void getVisibleViewport(RectF outRect);
+
+    /**
+     * @return The height of the screen minus the height of the top and bottom browser controls
+     *         when not hidden.
+     */
+    float getHeightMinusBrowserControls();
 
     /**
      * @return The associated {@link LayoutRenderHost} to be used from the GL Thread.
