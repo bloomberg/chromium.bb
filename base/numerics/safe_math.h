@@ -73,11 +73,11 @@ class CheckedNumeric {
  public:
   typedef T type;
 
-  CheckedNumeric() {}
+  constexpr CheckedNumeric() {}
 
   // Copy constructor.
   template <typename Src>
-  CheckedNumeric(const CheckedNumeric<Src>& rhs)
+  constexpr CheckedNumeric(const CheckedNumeric<Src>& rhs)
       : state_(rhs.state_.value(), rhs.IsValid()) {}
 
   template <typename Src>
@@ -86,7 +86,7 @@ class CheckedNumeric {
   // This is not an explicit constructor because we implicitly upgrade regular
   // numerics to CheckedNumerics to make them easier to use.
   template <typename Src>
-  CheckedNumeric(Src value)  // NOLINT(runtime/explicit)
+  constexpr CheckedNumeric(Src value)  // NOLINT(runtime/explicit)
       : state_(value) {
     static_assert(std::numeric_limits<Src>::is_specialized,
                   "Argument must be numeric.");
@@ -95,31 +95,30 @@ class CheckedNumeric {
   // This is not an explicit constructor because we want a seamless conversion
   // from StrictNumeric types.
   template <typename Src>
-  CheckedNumeric(StrictNumeric<Src> value)  // NOLINT(runtime/explicit)
-      : state_(static_cast<Src>(value)) {
-  }
+  constexpr CheckedNumeric(
+      StrictNumeric<Src> value)  // NOLINT(runtime/explicit)
+      : state_(static_cast<Src>(value)) {}
 
   // IsValid() is the public API to test if a CheckedNumeric is currently valid.
-  bool IsValid() const { return state_.is_valid(); }
+  constexpr bool IsValid() const { return state_.is_valid(); }
 
   // ValueOrDie() The primary accessor for the underlying value. If the current
   // state is not valid it will CHECK and crash.
-  T ValueOrDie() const {
-    CHECK(IsValid());
-    return state_.value();
+  constexpr T ValueOrDie() const {
+    return IsValid() ? state_.value() : CheckOnFailure::HandleFailure<T>();
   }
 
   // ValueOrDefault(T default_value) A convenience method that returns the
   // current value if the state is valid, and the supplied default_value for
   // any other state.
-  T ValueOrDefault(T default_value) const {
+  constexpr T ValueOrDefault(T default_value) const {
     return IsValid() ? state_.value() : default_value;
   }
 
   // ValueFloating() - Since floating point values include their validity state,
   // we provide an easy method for extracting them directly, without a risk of
   // crashing on a CHECK.
-  T ValueFloating() const {
+  constexpr T ValueFloating() const {
     static_assert(std::numeric_limits<T>::is_iec559, "Argument must be float.");
     return state_.value();
   }
@@ -165,7 +164,8 @@ class CheckedNumeric {
   // This function is available only for integral types. It returns an unsigned
   // integer of the same width as the source type, containing the absolute value
   // of the source, and properly handling signed min.
-  CheckedNumeric<typename UnsignedOrFloatForSize<T>::type> UnsignedAbs() const {
+  constexpr CheckedNumeric<typename UnsignedOrFloatForSize<T>::type>
+  UnsignedAbs() const {
     return CheckedNumeric<typename UnsignedOrFloatForSize<T>::type>(
         SafeUnsignedAbs(state_.value()), state_.is_valid());
   }
@@ -222,20 +222,25 @@ class CheckedNumeric {
   CheckedNumericState<T> state_;
 
   template <typename Src>
-  CheckedNumeric(Src value, bool is_valid) : state_(value, is_valid) {}
+  constexpr CheckedNumeric(Src value, bool is_valid)
+      : state_(value, is_valid) {}
 
   // These wrappers allow us to handle state the same way for both
   // CheckedNumeric and POD arithmetic types.
   template <typename Src>
   struct Wrapper {
-    static bool is_valid(Src) { return true; }
-    static Src value(Src value) { return value; }
+    static constexpr bool is_valid(Src) { return true; }
+    static constexpr Src value(Src value) { return value; }
   };
 
   template <typename Src>
   struct Wrapper<CheckedNumeric<Src>> {
-    static bool is_valid(const CheckedNumeric<Src>& v) { return v.IsValid(); }
-    static Src value(const CheckedNumeric<Src>& v) { return v.state_.value(); }
+    static constexpr bool is_valid(const CheckedNumeric<Src>& v) {
+      return v.IsValid();
+    }
+    static constexpr Src value(const CheckedNumeric<Src>& v) {
+      return v.state_.value();
+    }
   };
 };
 

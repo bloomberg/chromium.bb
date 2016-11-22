@@ -647,10 +647,11 @@ CheckedAbs(T value, T* result) {
 }
 
 template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<T>::is_signed,
-                        typename UnsignedIntegerForSize<T>::type>::type
-SafeUnsignedAbs(T value) {
+constexpr
+    typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                                std::numeric_limits<T>::is_signed,
+                            typename UnsignedIntegerForSize<T>::type>::type
+    SafeUnsignedAbs(T value) {
   typedef typename UnsignedIntegerForSize<T>::type UnsignedT;
   return value == std::numeric_limits<T>::min()
              ? static_cast<UnsignedT>(std::numeric_limits<T>::max()) + 1
@@ -658,9 +659,9 @@ SafeUnsignedAbs(T value) {
 }
 
 template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            !std::numeric_limits<T>::is_signed,
-                        T>::type
+constexpr typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                                      !std::numeric_limits<T>::is_signed,
+                                  T>::type
 SafeUnsignedAbs(T value) {
   // T is unsigned, so |value| must already be positive.
   return static_cast<T>(value);
@@ -739,32 +740,31 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
   template <typename Src, NumericRepresentation type>
   friend class CheckedNumericState;
 
-  CheckedNumericState() : value_(0), is_valid_(true) {}
+  constexpr CheckedNumericState() : value_(0), is_valid_(true) {}
 
   template <typename Src>
-  CheckedNumericState(Src value, bool is_valid)
+  constexpr CheckedNumericState(Src value, bool is_valid)
       : value_(static_cast<T>(value)),
-        is_valid_(is_valid &&
-                  (DstRangeRelationToSrcRange<T>(value) == RANGE_VALID)) {
+        is_valid_(is_valid && IsValueInRangeForNumericType<T>(value)) {
     static_assert(std::numeric_limits<Src>::is_specialized,
                   "Argument must be numeric.");
   }
 
   // Copy constructor.
   template <typename Src>
-  CheckedNumericState(const CheckedNumericState<Src>& rhs)
+  constexpr CheckedNumericState(const CheckedNumericState<Src>& rhs)
       : value_(static_cast<T>(rhs.value())), is_valid_(rhs.IsValid()) {}
 
   template <typename Src>
-  explicit CheckedNumericState(
+  constexpr explicit CheckedNumericState(
       Src value,
       typename std::enable_if<std::numeric_limits<Src>::is_specialized,
                               int>::type = 0)
       : value_(static_cast<T>(value)),
-        is_valid_(DstRangeRelationToSrcRange<T>(value) == RANGE_VALID) {}
+        is_valid_(IsValueInRangeForNumericType<T>(value)) {}
 
-  bool is_valid() const { return is_valid_; }
-  T value() const { return value_; }
+  constexpr bool is_valid() const { return is_valid_; }
+  constexpr T value() const { return value_; }
 };
 
 // Floating points maintain their own validity, but need translation wrappers.
@@ -777,21 +777,20 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
   template <typename Src, NumericRepresentation type>
   friend class CheckedNumericState;
 
-  CheckedNumericState() : value_(0.0) {}
+  constexpr CheckedNumericState() : value_(0.0) {}
 
   template <typename Src>
-  CheckedNumericState(
+  constexpr CheckedNumericState(
       Src value,
       bool is_valid,
       typename std::enable_if<std::numeric_limits<Src>::is_integer, int>::type =
-          0) {
-    value_ = (is_valid && (DstRangeRelationToSrcRange<T>(value) == RANGE_VALID))
-                 ? static_cast<T>(value)
-                 : std::numeric_limits<T>::quiet_NaN();
-  }
+          0)
+      : value_((is_valid && IsValueInRangeForNumericType<T>(value))
+                   ? static_cast<T>(value)
+                   : std::numeric_limits<T>::quiet_NaN()) {}
 
   template <typename Src>
-  explicit CheckedNumericState(
+  constexpr explicit CheckedNumericState(
       Src value,
       typename std::enable_if<std::numeric_limits<Src>::is_specialized,
                               int>::type = 0)
@@ -799,11 +798,11 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
 
   // Copy constructor.
   template <typename Src>
-  CheckedNumericState(const CheckedNumericState<Src>& rhs)
+  constexpr CheckedNumericState(const CheckedNumericState<Src>& rhs)
       : value_(static_cast<T>(rhs.value())) {}
 
-  bool is_valid() const { return std::isfinite(value_); }
-  T value() const { return value_; }
+  constexpr bool is_valid() const { return std::isfinite(value_); }
+  constexpr T value() const { return value_; }
 };
 
 }  // namespace internal
