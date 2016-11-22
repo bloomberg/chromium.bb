@@ -351,8 +351,7 @@ class RemoteSuggestionsProvider final
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
 
-  NTPSnippetsFetcher::Params BuildFetchParams(
-      bool exclude_archived_suggestions) const;
+  NTPSnippetsFetcher::Params BuildFetchParams() const;
 
   void MarkEmptyCategoriesAsLoading();
 

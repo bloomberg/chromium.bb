@@ -330,8 +330,7 @@ void RemoteSuggestionsProvider::FetchSnippetsFromHosts(
   }
   MarkEmptyCategoriesAsLoading();
 
-  NTPSnippetsFetcher::Params params =
-      BuildFetchParams(/*exclude_archived_suggestions=*/true);
+  NTPSnippetsFetcher::Params params = BuildFetchParams();
   params.hosts = hosts;
   params.interactive_request = interactive_request;
   snippets_fetcher_->FetchSnippets(
@@ -349,8 +348,7 @@ void RemoteSuggestionsProvider::Fetch(
                                 "RemoteSuggestionsProvider is not ready!"));
     return;
   }
-  NTPSnippetsFetcher::Params params =
-      BuildFetchParams(/*exclude_archived_suggestions=*/false);
+  NTPSnippetsFetcher::Params params = BuildFetchParams();
   params.excluded_ids.insert(known_suggestion_ids.begin(),
                              known_suggestion_ids.end());
   params.interactive_request = true;
@@ -365,8 +363,7 @@ void RemoteSuggestionsProvider::Fetch(
 }
 
 // Builds default fetcher params.
-NTPSnippetsFetcher::Params RemoteSuggestionsProvider::BuildFetchParams(
-    bool exclude_archived_suggestions) const {
+NTPSnippetsFetcher::Params RemoteSuggestionsProvider::BuildFetchParams() const {
   NTPSnippetsFetcher::Params result;
   result.language_code = application_language_code_;
   result.count_to_fetch = kMaxSnippetCount;
@@ -374,11 +371,6 @@ NTPSnippetsFetcher::Params RemoteSuggestionsProvider::BuildFetchParams(
     const CategoryContent& content = map_entry.second;
     for (const auto& dismissed_snippet : content.dismissed) {
       result.excluded_ids.insert(dismissed_snippet->id());
-    }
-    if (exclude_archived_suggestions) {
-      for (const auto& archived_snippet : content.archived) {
-        result.excluded_ids.insert(archived_snippet->id());
-      }
     }
   }
   return result;
