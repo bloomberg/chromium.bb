@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_job_worker.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -259,10 +260,9 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
     return;
   }
 
-  base::string16 document_name =
-      printing::SimplifyDocumentTitle(document_->name());
+  base::string16 document_name = SimplifyDocumentTitle(document_->name());
   if (document_name.empty()) {
-    document_name = printing::SimplifyDocumentTitle(
+    document_name = SimplifyDocumentTitle(
         l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
   }
   PrintingContext::Result result =
