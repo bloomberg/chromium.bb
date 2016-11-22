@@ -74,6 +74,7 @@ class FocusTraversable;
 class LayoutManager;
 class NativeViewAccessibility;
 class ScrollView;
+class ViewObserver;
 class Widget;
 class WordLookupClient;
 
@@ -1000,6 +1001,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual int GetLineScrollIncrement(ScrollView* scroll_view,
                                      bool is_horizontal, bool is_positive);
 
+  void AddObserver(ViewObserver* observer);
+  void RemoveObserver(ViewObserver* observer);
+  bool HasObserver(const ViewObserver* observer) const;
+
  protected:
   // Used to track a drag. RootView passes this into
   // ProcessMousePressed/Dragged.
@@ -1574,6 +1579,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Belongs to this view, but it's reference-counted on some platforms
   // so we can't use a scoped_ptr. It's dereferenced in the destructor.
   NativeViewAccessibility* native_view_accessibility_;
+
+  // Observers -------------------------------------------------------------
+
+  base::ObserverList<ViewObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

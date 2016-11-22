@@ -324,6 +324,7 @@ component("views") {
     "view_model.h",
     "view_model_utils.cc",
     "view_model_utils.h",
+    "view_observer.h",
     "view_targeter.cc",
     "view_targeter.h",
     "view_targeter_delegate.cc",

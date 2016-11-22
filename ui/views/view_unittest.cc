@@ -41,6 +41,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -4575,6 +4576,164 @@ TEST_F(ViewTest, CrashOnAddFromFromOnNativeThemeChanged) {
       new ViewThatAddsViewInOnNativeThemeChanged;
   widget.GetRootView()->AddChildView(v);
   EXPECT_TRUE(v->on_native_theme_changed_called());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Observer tests.
+////////////////////////////////////////////////////////////////////////////////
+
+class ViewObserverTest : public ViewTest, public ViewObserver {
+ public:
+  ViewObserverTest()
+      : child_view_added_times_(0),
+        child_view_removed_times_(0),
+        child_view_added_(nullptr),
+        child_view_removed_(nullptr),
+        child_view_removed_parent_(nullptr),
+        view_visibility_changed_(nullptr),
+        view_enabled_changed_(nullptr),
+        view_bounds_changed_(nullptr),
+        view_reordered_(nullptr) {}
+
+  ~ViewObserverTest() override {}
+
+  // ViewObserver:
+  void OnChildViewAdded(View* child) override {
+    child_view_added_times_++;
+    child_view_added_ = child;
+  }
+  void OnChildViewRemoved(View* child, View* parent) override {
+    child_view_removed_times_++;
+    child_view_removed_ = child;
+    child_view_removed_parent_ = parent;
+  }
+
+  void OnViewVisibilityChanged(View* view) override {
+    view_visibility_changed_ = view;
+  }
+
+  void OnViewEnabledChanged(View* view) override {
+    view_enabled_changed_ = view;
+  }
+
+  void OnViewBoundsChanged(View* view) override { view_bounds_changed_ = view; }
+
+  void OnChildViewReordered(View* view) override { view_reordered_ = view; }
+
+  void reset() {
+    child_view_added_times_ = 0;
+    child_view_removed_times_ = 0;
+    child_view_added_ = nullptr;
+    child_view_removed_ = nullptr;
+    child_view_removed_parent_ = nullptr;
+    view_visibility_changed_ = nullptr;
+    view_enabled_changed_ = nullptr;
+    view_bounds_changed_ = nullptr;
+    view_reordered_ = nullptr;
+  }
+
+  std::unique_ptr<View> NewView() {
+    auto view = base::MakeUnique<View>();
+    view->AddObserver(this);
+    return view;
+  }
+
+  int child_view_added_times() { return child_view_added_times_; }
+  int child_view_removed_times() { return child_view_removed_times_; }
+  const View* child_view_added() const { return child_view_added_; }
+  const View* child_view_removed() const { return child_view_removed_; }
+  const View* child_view_removed_parent() const {
+    return child_view_removed_parent_;
+  }
+  const View* view_visibility_changed() const {
+    return view_visibility_changed_;
+  }
+  const View* view_enabled_changed() const { return view_enabled_changed_; }
+  const View* view_bounds_changed() const { return view_bounds_changed_; }
+  const View* view_reordered() const { return view_reordered_; }
+
+ private:
+  int child_view_added_times_;
+  int child_view_removed_times_;
+
+  View* child_view_added_;
+  View* child_view_removed_;
+  View* child_view_removed_parent_;
+  View* view_visibility_changed_;
+  View* view_enabled_changed_;
+  View* view_bounds_changed_;
+  View* view_reordered_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewObserverTest);
+};
+
+TEST_F(ViewObserverTest, ViewParentChanged) {
+  std::unique_ptr<View> parent1 = NewView();
+  std::unique_ptr<View> parent2 = NewView();
+  std::unique_ptr<View> child_view = NewView();
+
+  parent1->AddChildView(child_view.get());
+  EXPECT_EQ(0, child_view_removed_times());
+  EXPECT_EQ(1, child_view_added_times());
+  EXPECT_EQ(child_view.get(), child_view_added());
+  EXPECT_EQ(child_view.get()->parent(), parent1.get());
+  reset();
+
+  // Removed from parent1, added to parent2
+  parent2->AddChildView(child_view.get());
+  EXPECT_EQ(1, child_view_removed_times());
+  EXPECT_EQ(1, child_view_added_times());
+  EXPECT_EQ(child_view.get(), child_view_removed());
+  EXPECT_EQ(parent1.get(), child_view_removed_parent());
+  EXPECT_EQ(child_view.get(), child_view_added());
+  EXPECT_EQ(child_view.get()->parent(), parent2.get());
+
+  reset();
+
+  parent2->RemoveChildView(child_view.get());
+  EXPECT_EQ(1, child_view_removed_times());
+  EXPECT_EQ(0, child_view_added_times());
+  EXPECT_EQ(child_view.get(), child_view_removed());
+  EXPECT_EQ(parent2.get(), child_view_removed_parent());
+}
+
+TEST_F(ViewObserverTest, ViewVisibilityChanged) {
+  std::unique_ptr<View> view = NewView();
+  view->SetVisible(false);
+  EXPECT_EQ(view.get(), view_visibility_changed());
+  EXPECT_EQ(false, view->visible());
+}
+
+TEST_F(ViewObserverTest, ViewEnabledChanged) {
+  std::unique_ptr<View> view = NewView();
+  view->SetEnabled(false);
+  EXPECT_EQ(view.get(), view_enabled_changed());
+  EXPECT_EQ(false, view->enabled());
+}
+
+TEST_F(ViewObserverTest, ViewBoundsChanged) {
+  std::unique_ptr<View> view = NewView();
+  gfx::Rect bounds(2, 2, 2, 2);
+  view->SetBoundsRect(bounds);
+  EXPECT_EQ(view.get(), view_bounds_changed());
+  EXPECT_EQ(bounds, view->bounds());
+
+  reset();
+
+  gfx::Rect new_bounds(1, 1, 1, 1);
+  view->SetBoundsRect(new_bounds);
+  EXPECT_EQ(view.get(), view_bounds_changed());
+  EXPECT_EQ(new_bounds, view->bounds());
+}
+
+TEST_F(ViewObserverTest, ChildViewReordered) {
+  std::unique_ptr<View> view = NewView();
+  std::unique_ptr<View> child_view = NewView();
+  std::unique_ptr<View> child_view2 = NewView();
+  view->AddChildView(child_view.get());
+  view->AddChildView(child_view2.get());
+  view->ReorderChildView(child_view2.get(), 0);
+  EXPECT_EQ(child_view2.get(), view_reordered());
 }
 
 }  // namespace views
