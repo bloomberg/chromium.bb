@@ -43,9 +43,9 @@ WiFiDisplayMediaServiceImpl::PacketIOBuffer::~PacketIOBuffer() {
 void WiFiDisplayMediaServiceImpl::Create(
     WiFiDisplayMediaServiceRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  mojo::MakeStrongBinding(std::unique_ptr<WiFiDisplayMediaServiceImpl>(
-                              new WiFiDisplayMediaServiceImpl),
-                          std::move(request));
+  auto* impl = new WiFiDisplayMediaServiceImpl();
+  impl->binding_ =
+      mojo::MakeStrongBinding(base::WrapUnique(impl), std::move(request));
 }
 
 // static
@@ -131,7 +131,7 @@ void WiFiDisplayMediaServiceImpl::OnSent(int code) {
   last_send_code_ = code;
   if (code < 0) {
     VLOG(1) << "Unrepairable UDP socket error.";
-    delete this;
+    binding_.Close();
     return;
   }
   DCHECK(!write_buffers_.empty());

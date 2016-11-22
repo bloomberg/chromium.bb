@@ -41,9 +41,9 @@ void WiFiDisplaySessionServiceImpl::BindToRequest(
       DisplaySourceConnectionDelegateFactory::GetForBrowserContext(
           browser_context);
   CHECK(delegate);
-  mojo::MakeStrongBinding(std::unique_ptr<WiFiDisplaySessionServiceImpl>(
-                              new WiFiDisplaySessionServiceImpl(delegate)),
-                          std::move(request));
+  auto* impl = new WiFiDisplaySessionServiceImpl(delegate);
+  impl->binding_ =
+      mojo::MakeStrongBinding(base::WrapUnique(impl), std::move(request));
 }
 
 void WiFiDisplaySessionServiceImpl::SetClient(
@@ -200,7 +200,7 @@ void WiFiDisplaySessionServiceImpl::OnDisconnectFailed(
 
 void WiFiDisplaySessionServiceImpl::OnClientConnectionError() {
   DLOG(ERROR) << "IPC connection error";
-  delete this;
+  binding_.Close();
 }
 
 }  // namespace extensions

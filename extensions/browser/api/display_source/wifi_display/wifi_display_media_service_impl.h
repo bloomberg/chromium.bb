@@ -10,6 +10,7 @@
 
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/udp_socket.h"
@@ -35,6 +36,7 @@ class WiFiDisplayMediaServiceImpl : public WiFiDisplayMediaService {
   class PacketIOBuffer;
   std::queue<scoped_refptr<PacketIOBuffer>> write_buffers_;
   int last_send_code_;
+  mojo::StrongBindingPtr<WiFiDisplayMediaService> binding_;
   base::WeakPtrFactory<WiFiDisplayMediaServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplayMediaServiceImpl);

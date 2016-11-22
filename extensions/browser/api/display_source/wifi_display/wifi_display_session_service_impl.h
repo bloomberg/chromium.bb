@@ -9,6 +9,7 @@
 #include "extensions/browser/api/display_source/display_source_connection_delegate.h"
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 class BrowserContext;
@@ -62,6 +63,7 @@ class WiFiDisplaySessionServiceImpl
   // Id of the sink of the session this object is associated with.
   int sink_id_;
 
+  mojo::StrongBindingPtr<WiFiDisplaySessionService> binding_;
   base::WeakPtrFactory<WiFiDisplaySessionServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplaySessionServiceImpl);
