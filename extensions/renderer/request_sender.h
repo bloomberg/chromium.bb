@@ -47,20 +47,6 @@ class RequestSender {
                                     const std::string& error) = 0;
   };
 
-  // Helper class to (re)set the |source_tab_id_| below.
-  class ScopedTabID {
-   public:
-    ScopedTabID(RequestSender* request_sender, int tab_id);
-    ~ScopedTabID();
-
-   private:
-    RequestSender* const request_sender_;
-    const int tab_id_;
-    const int previous_tab_id_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedTabID);
-  };
-
   RequestSender();
   virtual ~RequestSender();
 
@@ -107,8 +93,6 @@ class RequestSender {
   std::unique_ptr<PendingRequest> RemoveRequest(int request_id);
 
   PendingRequestMap pending_requests_;
-
-  int source_tab_id_;  // Id of the tab sending the request, or -1 if no tab.
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };

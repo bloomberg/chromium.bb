@@ -1002,12 +1002,6 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 void Dispatcher::OnDeliverMessage(int target_port_id,
                                   int source_tab_id,
                                   const Message& message) {
-  std::unique_ptr<RequestSender::ScopedTabID> scoped_tab_id;
-  if (source_tab_id != -1) {
-    scoped_tab_id.reset(new RequestSender::ScopedTabID(
-        bindings_system_->GetRequestSender(), source_tab_id));
-  }
-
   MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
                                     message,
                                     NULL);  // All render frames.

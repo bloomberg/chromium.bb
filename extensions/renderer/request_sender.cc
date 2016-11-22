@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -32,20 +33,8 @@ struct PendingRequest {
   blink::WebUserGestureToken token;
 };
 
-RequestSender::ScopedTabID::ScopedTabID(RequestSender* request_sender,
-                                        int tab_id)
-    : request_sender_(request_sender),
-      tab_id_(tab_id),
-      previous_tab_id_(request_sender->source_tab_id_) {
-  request_sender_->source_tab_id_ = tab_id;
-}
 
-RequestSender::ScopedTabID::~ScopedTabID() {
-  DCHECK_EQ(tab_id_, request_sender_->source_tab_id_);
-  request_sender_->source_tab_id_ = previous_tab_id_;
-}
-
-RequestSender::RequestSender() : source_tab_id_(-1) {}
+RequestSender::RequestSender() {}
 
 RequestSender::~RequestSender() {}
 
@@ -106,12 +95,20 @@ bool RequestSender::StartRequest(Source* source,
                     name, source,
                     blink::WebUserGestureIndicator::currentUserGestureToken()));
 
+  int tab_id = -1;
+  if (render_frame) {
+    ExtensionFrameHelper* frame_helper =
+        ExtensionFrameHelper::Get(render_frame);
+    DCHECK(frame_helper);
+    tab_id = frame_helper->tab_id();
+  }
+
   ExtensionHostMsg_Request_Params params;
   params.name = name;
   params.arguments.Swap(value_args);
   params.extension_id = context->GetExtensionID();
   params.source_url = source_url;
-  params.source_tab_id = source_tab_id_;
+  params.source_tab_id = tab_id;
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =
