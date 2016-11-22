@@ -48,10 +48,9 @@ struct SecurityInfo;
   // user should treat it.
   NSTextField* securityDetailsField_;
 
-  // The link button for opening security details for the page. This is the
-  // DevTools Security panel for most users, but may be the certificate viewer
-  // for enterprise users with DevTools disabled.
-  NSButton* securityDetailsButton_;
+  // The link button for opening a Chrome Help Center page explaining connection
+  // security.
+  NSButton* connectionHelpButton_;
 
   // URL of the page for which the bubble is shown.
   GURL url_;
@@ -65,9 +64,6 @@ struct SecurityInfo;
   // The link button for revoking certificate decisions.
   // This link only shows when there is an acrive certificate exception.
   NSButton* resetDecisionsButton_;
-
-  // Whether DevTools is disabled for the relevant profile.
-  BOOL isDevToolsDisabled_;
 
   // The server certificate from the identity info. This should always be
   // non-null on a cryptographic connection, and null otherwise.
@@ -106,8 +102,7 @@ struct SecurityInfo;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
     websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
                 webContents:(content::WebContents*)webContents
-                        url:(const GURL&)url
-         isDevToolsDisabled:(BOOL)isDevToolsDisabled;
+                        url:(const GURL&)url;
 
 // Return the default width of the window. It may be wider to fit the content.
 // This may be overriden by a subclass for testing purposes.

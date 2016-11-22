@@ -19,7 +19,7 @@
 @interface WebsiteSettingsBubbleController (ExposedForTesting)
 - (NSView*)permissionsView;
 - (NSButton*)resetDecisionsButton;
-- (NSButton*)securityDetailsButton;
+- (NSButton*)connectionHelpButton;
 @end
 
 @implementation WebsiteSettingsBubbleController (ExposedForTesting)
@@ -29,8 +29,9 @@
 - (NSButton*)resetDecisionsButton {
   return resetDecisionsButton_;
 }
-- (NSButton*)securityDetailsButton {
-  return securityDetailsButton_;
+- (NSButton*)connectionHelpButton {
+
+  return connectionHelpButton_;
 }
 @end
 
@@ -127,8 +128,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
               websiteSettingsUIBridge:bridge_
                           webContents:web_contents_factory_.CreateWebContents(
                                           &profile_)
-                                  url:GURL("https://www.google.com")
-                   isDevToolsDisabled:NO];
+                                  url:GURL("https://www.google.com")];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
@@ -206,7 +206,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
   NSWindow* window_;  // Weak, owned by controller.
 };
 
-TEST_F(WebsiteSettingsBubbleControllerTest, SecurityDetailsButton) {
+TEST_F(WebsiteSettingsBubbleControllerTest, ConnectionHelpButton) {
   WebsiteSettingsUI::IdentityInfo info;
   info.site_identity = std::string("example.com");
   info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN;
@@ -215,8 +215,8 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SecurityDetailsButton) {
 
   bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
 
-  EXPECT_EQ([[controller_ securityDetailsButton] action],
-            @selector(showSecurityDetails:));
+  EXPECT_EQ([[controller_ connectionHelpButton] action],
+            @selector(openConnectionHelp:));
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, ResetDecisionsButton) {
