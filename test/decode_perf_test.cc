@@ -38,27 +38,8 @@ const char kNewEncodeOutputFile[] = "new_encode.ivf";
  */
 typedef std::tr1::tuple<const char *, unsigned> DecodePerfParam;
 
-const DecodePerfParam kAV1DecodePerfVectors[] = {
-  make_tuple("av10-2-bbb_426x240_tile_1x1_180kbps.webm", 1),
-  make_tuple("av10-2-bbb_640x360_tile_1x2_337kbps.webm", 2),
-  make_tuple("av10-2-bbb_854x480_tile_1x2_651kbps.webm", 2),
-  make_tuple("av10-2-bbb_1280x720_tile_1x4_1310kbps.webm", 4),
-  make_tuple("av10-2-bbb_1920x1080_tile_1x1_2581kbps.webm", 1),
-  make_tuple("av10-2-bbb_1920x1080_tile_1x4_2586kbps.webm", 4),
-  make_tuple("av10-2-bbb_1920x1080_tile_1x4_fpm_2304kbps.webm", 4),
-  make_tuple("av10-2-sintel_426x182_tile_1x1_171kbps.webm", 1),
-  make_tuple("av10-2-sintel_640x272_tile_1x2_318kbps.webm", 2),
-  make_tuple("av10-2-sintel_854x364_tile_1x2_621kbps.webm", 2),
-  make_tuple("av10-2-sintel_1280x546_tile_1x4_1257kbps.webm", 4),
-  make_tuple("av10-2-sintel_1920x818_tile_1x4_fpm_2279kbps.webm", 4),
-  make_tuple("av10-2-tos_426x178_tile_1x1_181kbps.webm", 1),
-  make_tuple("av10-2-tos_640x266_tile_1x2_336kbps.webm", 2),
-  make_tuple("av10-2-tos_854x356_tile_1x2_656kbps.webm", 2),
-  make_tuple("av10-2-tos_854x356_tile_1x2_fpm_546kbps.webm", 2),
-  make_tuple("av10-2-tos_1280x534_tile_1x4_1306kbps.webm", 4),
-  make_tuple("av10-2-tos_1280x534_tile_1x4_fpm_952kbps.webm", 4),
-  make_tuple("av10-2-tos_1920x800_tile_1x4_fpm_2335kbps.webm", 4),
-};
+// TODO(jimbankoski): Add actual test vectors here when available.
+// const DecodePerfParam kAV1DecodePerfVectors[] = {};
 
 /*
  In order to reflect real world performance as much as possible, Perf tests
@@ -107,8 +88,9 @@ TEST_P(DecodePerfTest, PerfTest) {
   printf("}\n");
 }
 
-INSTANTIATE_TEST_CASE_P(AV1, DecodePerfTest,
-                        ::testing::ValuesIn(kAV1DecodePerfVectors));
+// TODO(jimbankoski): Enabled when we have actual AV1 Decode vectors.
+// INSTANTIATE_TEST_CASE_P(AV1, DecodePerfTest,
+//                        ::testing::ValuesIn(kAV1DecodePerfVectors));
 
 class AV1NewEncodeDecodePerfTest
     : public ::libaom_test::EncoderTest,
