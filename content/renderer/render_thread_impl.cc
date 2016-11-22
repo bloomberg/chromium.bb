@@ -2287,6 +2287,7 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
+      OnTrimMemoryImmediately();
       ReleaseFreeMemory();
       ClearMemory();
       break;
