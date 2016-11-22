@@ -36,8 +36,6 @@ from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.constants import host_paths
 from pylib.linker import setup as linker_setup
-from pylib.junit import setup as junit_setup
-from pylib.junit import test_dispatcher as junit_dispatcher
 from pylib.results import json_results
 from pylib.results import report_results
 
@@ -579,22 +577,6 @@ def _RunLinkerTests(args, devices):
   return exit_code
 
 
-def _RunJUnitTests(args):
-  """Subcommand of RunTestsCommand which runs junit tests."""
-  runner_factory, tests = junit_setup.Setup(args)
-  results, exit_code = junit_dispatcher.RunTests(tests, runner_factory)
-
-  report_results.LogFull(
-      results=results,
-      test_type='JUnit',
-      test_package=args.test_suite)
-
-  if args.json_results_file:
-    json_results.GenerateJsonResultsFile([results], args.json_results_file)
-
-  return exit_code
-
-
 def _RunPythonTests(args):
   """Subcommand of RunTestsCommand which runs python unit tests."""
   suite_vars = constants.PYTHON_UNIT_TEST_SUITES[args.suite_name]
@@ -644,7 +626,8 @@ def _GetAttachedDevices(blacklist_file, test_device, enable_cache, num_retries):
     return sorted(attached_devices)
 
 
-_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation', 'monkey', 'perf']
+_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation', 'junit',
+                                'monkey', 'perf']
 
 
 def RunTestsCommand(args): # pylint: disable=too-many-return-statements
@@ -682,8 +665,6 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
 
   if command == 'linker':
     return _RunLinkerTests(args, get_devices())
-  elif command == 'junit':
-    return _RunJUnitTests(args)
   elif command == 'python':
     return _RunPythonTests(args)
   else:
