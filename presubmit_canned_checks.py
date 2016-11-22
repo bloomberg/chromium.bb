@@ -420,53 +420,6 @@ def CheckLicense(input_api, output_api, license_re, source_file_filter=None,
   return []
 
 
-def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter=None):
-  """Checks that the source files have svn:eol-style=LF."""
-  return CheckSvnProperty(input_api, output_api,
-                          'svn:eol-style', 'LF',
-                          input_api.AffectedSourceFiles(source_file_filter))
-
-
-def CheckSvnForCommonMimeTypes(input_api, output_api):
-  """Checks that common binary file types have the correct svn:mime-type."""
-  output = []
-  files = input_api.AffectedFiles(include_deletes=False)
-  def IsExts(x, exts):
-    path = x.LocalPath()
-    for extension in exts:
-      if path.endswith(extension):
-        return True
-    return False
-  def FilterFiles(extension):
-    return filter(lambda x: IsExts(x, extension), files)
-  def RunCheck(mime_type, files):
-    output.extend(CheckSvnProperty(input_api, output_api, 'svn:mime-type',
-                                   mime_type, files))
-  RunCheck('application/pdf', FilterFiles(['.pdf']))
-  RunCheck('image/bmp', FilterFiles(['.bmp']))
-  RunCheck('image/gif', FilterFiles(['.gif']))
-  RunCheck('image/png', FilterFiles(['.png']))
-  RunCheck('image/jpeg', FilterFiles(['.jpg', '.jpeg', '.jpe']))
-  RunCheck('image/vnd.microsoft.icon', FilterFiles(['.ico']))
-  return output
-
-
-def CheckSvnProperty(input_api, output_api, prop, expected, affected_files):
-  """Checks that affected_files files have prop=expected."""
-  if input_api.change.scm != 'svn':
-    return []
-
-  bad = filter(lambda f: f.Property(prop) != expected, affected_files)
-  if bad:
-    if input_api.is_committing:
-      res_type = output_api.PresubmitError
-    else:
-      res_type = output_api.PresubmitNotifyResult
-    message = 'Run the command: svn pset %s %s \\' % (prop, expected)
-    return [res_type(message, items=bad)]
-  return []
-
-
 ### Other checks
 
 def CheckDoNotSubmit(input_api, output_api):
@@ -1124,17 +1077,11 @@ def PanProjectChecks(input_api, output_api,
   snapshot("checking nsobjects")
   results.extend(_CheckConstNSObject(
       input_api, output_api, source_file_filter=sources))
-  snapshot("checking eol style")
-  results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
-      input_api, output_api, source_file_filter=text_files))
   snapshot("checking license")
   results.extend(input_api.canned_checks.CheckLicense(
       input_api, output_api, license_header, source_file_filter=sources))
 
   if input_api.is_committing:
-    snapshot("checking svn mime types")
-    results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
-        input_api, output_api))
     snapshot("checking was uploaded")
     results.extend(input_api.canned_checks.CheckChangeWasUploaded(
         input_api, output_api))
