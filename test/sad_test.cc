@@ -944,6 +944,11 @@ const SadMxNParam avx2_tests[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, SADTest, ::testing::ValuesIn(avx2_tests));
 
 const SadMxNAvgParam avg_avx2_tests[] = {
+#if CONFIG_EXT_PARTITION
+  make_tuple(64, 128, &aom_sad64x128_avg_avx2, -1),
+  make_tuple(128, 64, &aom_sad128x64_avg_avx2, -1),
+  make_tuple(128, 128, &aom_sad128x128_avg_avx2, -1),
+#endif
   make_tuple(64, 64, &aom_sad64x64_avg_avx2, -1),
   make_tuple(64, 32, &aom_sad64x32_avg_avx2, -1),
   make_tuple(32, 64, &aom_sad32x64_avg_avx2, -1),
@@ -953,7 +958,14 @@ const SadMxNAvgParam avg_avx2_tests[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, SADavgTest, ::testing::ValuesIn(avg_avx2_tests));
 
 const SadMxNx4Param x4d_avx2_tests[] = {
+#if CONFIG_EXT_PARTITION
+  make_tuple(64, 128, &aom_sad64x128x4d_avx2, -1),
+  make_tuple(128, 64, &aom_sad128x64x4d_avx2, -1),
+  make_tuple(128, 128, &aom_sad128x128x4d_avx2, -1),
+#endif
   make_tuple(64, 64, &aom_sad64x64x4d_avx2, -1),
+  make_tuple(32, 64, &aom_sad32x64x4d_avx2, -1),
+  make_tuple(64, 32, &aom_sad64x32x4d_avx2, -1),
   make_tuple(32, 32, &aom_sad32x32x4d_avx2, -1),
 };
 INSTANTIATE_TEST_CASE_P(AVX2, SADx4Test, ::testing::ValuesIn(x4d_avx2_tests));

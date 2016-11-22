@@ -165,3 +165,52 @@ void aom_sad64x64x4d_avx2(const uint8_t *src, int src_stride,
   }
   _mm256_zeroupper();
 }
+
+void aom_sad32x64x4d_avx2(const uint8_t *src, int src_stride,
+                          const uint8_t *const ref[4], int ref_stride,
+                          uint32_t res[4]) {
+  const uint8_t *rf[4];
+  uint32_t sum0[4];
+  uint32_t sum1[4];
+
+  rf[0] = ref[0];
+  rf[1] = ref[1];
+  rf[2] = ref[2];
+  rf[3] = ref[3];
+  aom_sad32x32x4d_avx2(src, src_stride, rf, ref_stride, sum0);
+  src += src_stride << 5;
+  rf[0] += ref_stride << 5;
+  rf[1] += ref_stride << 5;
+  rf[2] += ref_stride << 5;
+  rf[3] += ref_stride << 5;
+  aom_sad32x32x4d_avx2(src, src_stride, rf, ref_stride, sum1);
+  res[0] = sum0[0] + sum1[0];
+  res[1] = sum0[1] + sum1[1];
+  res[2] = sum0[2] + sum1[2];
+  res[3] = sum0[3] + sum1[3];
+}
+
+void aom_sad64x32x4d_avx2(const uint8_t *src, int src_stride,
+                          const uint8_t *const ref[4], int ref_stride,
+                          uint32_t res[4]) {
+  const uint8_t *rf[4];
+  uint32_t sum0[4];
+  uint32_t sum1[4];
+  unsigned int half_width = 32;
+
+  rf[0] = ref[0];
+  rf[1] = ref[1];
+  rf[2] = ref[2];
+  rf[3] = ref[3];
+  aom_sad32x32x4d_avx2(src, src_stride, rf, ref_stride, sum0);
+  src += half_width;
+  rf[0] += half_width;
+  rf[1] += half_width;
+  rf[2] += half_width;
+  rf[3] += half_width;
+  aom_sad32x32x4d_avx2(src, src_stride, rf, ref_stride, sum1);
+  res[0] = sum0[0] + sum1[0];
+  res[1] = sum0[1] + sum1[1];
+  res[2] = sum0[2] + sum1[2];
+  res[3] = sum0[3] + sum1[3];
+}

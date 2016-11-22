@@ -1309,9 +1309,9 @@ specialize qw/aom_sad8x4                        msa sse2/;
 specialize qw/aom_sad4x8                        msa sse2/;
 specialize qw/aom_sad4x4                   neon msa sse2/;
 
-specialize qw/aom_sad128x128_avg          sse2/;
-specialize qw/aom_sad128x64_avg           sse2/;
-specialize qw/aom_sad64x128_avg           sse2/;
+specialize qw/aom_sad128x128_avg avx2     sse2/;
+specialize qw/aom_sad128x64_avg  avx2     sse2/;
+specialize qw/aom_sad64x128_avg  avx2     sse2/;
 specialize qw/aom_sad64x64_avg   avx2 msa sse2/;
 specialize qw/aom_sad64x32_avg   avx2 msa sse2/;
 specialize qw/aom_sad32x64_avg   avx2 msa sse2/;
@@ -1438,22 +1438,22 @@ foreach (@block_sizes) {
   add_proto qw/void/, "aom_sad${w}x${h}x4d", "const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array";
 }
 
-specialize qw/aom_sad128x128x4d              sse2/;
-specialize qw/aom_sad128x64x4d               sse2/;
-specialize qw/aom_sad64x128x4d               sse2/;
-specialize qw/aom_sad64x64x4d  avx2 neon msa sse2/;
-specialize qw/aom_sad64x32x4d            msa sse2/;
-specialize qw/aom_sad32x64x4d            msa sse2/;
-specialize qw/aom_sad32x32x4d  avx2 neon msa sse2/;
-specialize qw/aom_sad32x16x4d            msa sse2/;
-specialize qw/aom_sad16x32x4d            msa sse2/;
-specialize qw/aom_sad16x16x4d       neon msa sse2/;
-specialize qw/aom_sad16x8x4d             msa sse2/;
-specialize qw/aom_sad8x16x4d             msa sse2/;
-specialize qw/aom_sad8x8x4d              msa sse2/;
-specialize qw/aom_sad8x4x4d              msa sse2/;
-specialize qw/aom_sad4x8x4d              msa sse2/;
-specialize qw/aom_sad4x4x4d              msa sse2/;
+specialize qw/aom_sad128x128x4d avx2          sse2/;
+specialize qw/aom_sad128x64x4d  avx2          sse2/;
+specialize qw/aom_sad64x128x4d  avx2          sse2/;
+specialize qw/aom_sad64x64x4d   avx2 neon msa sse2/;
+specialize qw/aom_sad64x32x4d   avx2      msa sse2/;
+specialize qw/aom_sad32x64x4d   avx2      msa sse2/;
+specialize qw/aom_sad32x32x4d   avx2 neon msa sse2/;
+specialize qw/aom_sad32x16x4d             msa sse2/;
+specialize qw/aom_sad16x32x4d             msa sse2/;
+specialize qw/aom_sad16x16x4d        neon msa sse2/;
+specialize qw/aom_sad16x8x4d              msa sse2/;
+specialize qw/aom_sad8x16x4d              msa sse2/;
+specialize qw/aom_sad8x8x4d               msa sse2/;
+specialize qw/aom_sad8x4x4d               msa sse2/;
+specialize qw/aom_sad4x8x4d               msa sse2/;
+specialize qw/aom_sad4x4x4d               msa sse2/;
 
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   #
