@@ -623,6 +623,8 @@ Status ExecuteSetNetworkConnection(Session* session,
     web_view->OverrideNetworkConditions(
       *session->overridden_network_conditions);
   }
+
+  value->reset(new base::FundamentalValue(connection_type));
   return Status(kOk);
 }
 

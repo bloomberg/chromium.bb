@@ -1961,7 +1961,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
         network_connection=True)
     # Test 4G connection.
     connection_type = 0x8
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
     network = driver.GetNetworkConnection()
     self.assertEquals(network, connection_type)
 
@@ -1972,7 +1973,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     # Connection with 4G, 3G, and 2G bits on.
     # Tests that 4G takes precedence.
     connection_type = 0x38
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
     network = driver.GetNetworkConnection()
     self.assertEquals(network, connection_type)
 
@@ -1983,7 +1985,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     # Connection with both Wifi and Airplane Mode on.
     # Tests that Wifi takes precedence over Airplane Mode.
     connection_type = 0x3
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
     network = driver.GetNetworkConnection()
     self.assertEquals(network, connection_type)
 
@@ -2003,7 +2006,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
     # Set network to online
     connection_type = 0x10
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
 
     # Open a window with two divs counting successful + unsuccessful
     # attempts to complete XML task
@@ -2023,7 +2027,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     # run in the background, indicating that the conditions are only applied
     # to the current WebView
     connection_type = 0x1
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
 
     driver.SwitchToWindow(window1_handle)
     connection_type = 0x1
@@ -2038,7 +2043,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
     # Test connection is offline.
     connection_type = 0x1;
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
     network = driver.GetNetworkConnection()
     self.assertEquals(network, connection_type)
 
@@ -2053,7 +2059,8 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
     # Set connection to 3G in second window.
     connection_type = 0x10;
-    driver.SetNetworkConnection(connection_type)
+    returned_type = driver.SetNetworkConnection(connection_type)
+    self.assertEquals(connection_type, returned_type)
 
     driver.SwitchToWindow(window1_handle)
     self.assertEquals(window1_handle, driver.GetCurrentWindowHandle())

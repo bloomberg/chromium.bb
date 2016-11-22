@@ -478,7 +478,7 @@ class ChromeDriver(object):
 
   def SetNetworkConnection(self, connection_type):
     params = {'parameters': {'type': connection_type}}
-    self.ExecuteCommand(Command.SET_NETWORK_CONNECTION, params)
+    return self.ExecuteCommand(Command.SET_NETWORK_CONNECTION, params)
 
   def GetScreenOrientation(self):
     screen_orientation = self.ExecuteCommand(Command.GET_SCREEN_ORIENTATION)
