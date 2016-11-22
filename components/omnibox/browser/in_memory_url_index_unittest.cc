@@ -1212,7 +1212,7 @@ TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
   ExpectPrivateDataEqual(*old_data.get(), new_data);
 }
 
-TEST_F(InMemoryURLIndexTest, AddHistoryMatch) {
+TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
   const struct {
     const char* search_string;
     size_t cursor_position;
@@ -1276,18 +1276,17 @@ TEST_F(InMemoryURLIndexTest, AddHistoryMatch) {
     String16Vector lower_terms;
     StringToTerms(test_cases[i].search_string, test_cases[i].cursor_position,
                   &lower_string, &lower_terms);
-    URLIndexPrivateData::AddHistoryMatch match(nullptr, nullptr,
-                                               *GetPrivateData(),
-                                               lower_string, lower_terms,
-                                               base::Time::Now());
+    WordStarts lower_terms_to_word_starts_offsets;
+    URLIndexPrivateData::CalculateWordStartsOffsets(
+        lower_terms, &lower_terms_to_word_starts_offsets);
 
     // Verify against expectations.
     EXPECT_EQ(test_cases[i].expected_word_starts_offsets_size,
-              match.lower_terms_to_word_starts_offsets_.size());
+              lower_terms_to_word_starts_offsets.size());
     for (size_t j = 0; j < test_cases[i].expected_word_starts_offsets_size;
          ++j) {
       EXPECT_EQ(test_cases[i].expected_word_starts_offsets[j],
-                match.lower_terms_to_word_starts_offsets_[j]);
+                lower_terms_to_word_starts_offsets[j]);
     }
   }
 }

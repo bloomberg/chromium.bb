@@ -145,10 +145,9 @@ class URLIndexPrivateData
   friend class base::RefCountedThreadSafe<URLIndexPrivateData>;
   ~URLIndexPrivateData();
 
-  friend class AddHistoryMatch;
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, AddHistoryMatch);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CalculateWordStartsOffsets);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ReadVisitsFromHistory);
@@ -191,36 +190,6 @@ class URLIndexPrivateData
   };
   typedef std::map<base::string16, SearchTermCacheItem> SearchTermCacheMap;
 
-  // A helper class which performs the final filter on each candidate
-  // history URL match, inserting accepted matches into |scored_matches_|.
-  class AddHistoryMatch {
-   public:
-    AddHistoryMatch(bookmarks::BookmarkModel* bookmark_model,
-                    TemplateURLService* template_url_service,
-                    const URLIndexPrivateData& private_data,
-                    const base::string16& lower_string,
-                    const String16Vector& lower_terms,
-                    const base::Time now);
-    AddHistoryMatch(const AddHistoryMatch& other);
-    ~AddHistoryMatch();
-
-    void operator()(const HistoryID history_id);
-
-    ScoredHistoryMatches ScoredMatches() const { return scored_matches_; }
-
-   private:
-    friend class InMemoryURLIndexTest;
-    FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, AddHistoryMatch);
-    bookmarks::BookmarkModel* bookmark_model_;
-    TemplateURLService* template_url_service_;
-    const URLIndexPrivateData& private_data_;
-    ScoredHistoryMatches scored_matches_;
-    const base::string16& lower_string_;
-    const String16Vector& lower_terms_;
-    WordStarts lower_terms_to_word_starts_offsets_;
-    const base::Time now_;
-  };
-
   // A helper predicate class used to filter excess history items when the
   // candidate results set is too large.
   class HistoryItemFactorGreater {
@@ -246,6 +215,21 @@ class URLIndexPrivateData
 
   // Given a set of Char16s, finds words containing those characters.
   WordIDSet WordIDSetForTermChars(const Char16Set& term_chars);
+
+  // Helper function for HistoryItemsForTerms().  Fills in |scored_items| from
+  // the matches listed in |history_id_set|.
+  void HistoryIdSetToScoredMatches(
+      HistoryIDSet history_id_set,
+      const base::string16& lower_raw_string,
+      const TemplateURLService* template_url_service,
+      bookmarks::BookmarkModel* bookmark_model,
+      ScoredHistoryMatches* scored_items) const;
+
+  // Fills in |terms_to_word_starts_offsets| according to where the word starts
+  // in each term.  For example, in the term "-foo" the word starts at offset 1.
+  static void CalculateWordStartsOffsets(
+      const String16Vector& terms,
+      WordStarts* terms_to_word_starts_offsets);
 
   // Indexes one URL history item as described by |row|. Returns true if the
   // row was actually indexed. |scheme_whitelist| is used to filter
@@ -330,6 +314,12 @@ class URLIndexPrivateData
   // Determines if |gurl| has a whitelisted scheme and returns true if so.
   static bool URLSchemeIsWhitelisted(const GURL& gurl,
                                      const std::set<std::string>& whitelist);
+
+  // Returns true if the URL associated with |history_id| is missing, malformed,
+  // or otherwise should not be displayed.  (Results from the default search
+  // provider fall into this category.)
+  bool ShouldFilter(const HistoryID history_id,
+                    const TemplateURLService* template_url_service) const;
 
   // Cache of search terms.
   SearchTermCacheMap search_term_cache_;
