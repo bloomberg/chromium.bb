@@ -42,34 +42,68 @@ SYNC_TEST_F('CvoxTtsBackgroundTest', 'Preprocess', function() {
   assertEquals('return', preprocess('\r'));
 });
 
-SYNC_TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {
+TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {
   var tts = new cvox.TtsBackground(false);
   var voices = [
     {lang: 'zh-CN', voiceName: 'Chinese'},
     {lang: 'zh-TW', voiceName: 'Chinese (Taiwan)'},
+    {lang: 'es', voiceName: 'Spanish'},
     {lang: 'en-US', voiceName: 'U.S. English'}
   ];
 
   chrome.tts.getVoices = function(callback) {
     callback(voices);
   };
-  
+
+  // Asks this test to process the next task immediately.
+  var flushNextTask = function() {
+    var task = tasks.shift();
+    if (!task) return;
+
+    if (task.setup)
+      task.setup();
+    tts.updateVoice_(task.testVoice, this.newCallback(function(actualVoice) {
+      assertEquals(task.expectedVoice, actualVoice);
+      flushNextTask();
+    }));
+  }.bind(this);
+
   assertTrue(!tts.currentVoice);
-  
-  tts.updateVoice_('');
-  assertEquals('U.S. English', tts.currentVoice);
 
-  voices[2].lang = 'en';
-  tts.updateVoice_('');
-  assertEquals('U.S. English', tts.currentVoice);
+  var tasks = [
+    {testVoice: '', expectedVoice: 'U.S. English'},
 
-  voices[2].lang = 'fr-FR';
-  voices[2].voiceName = 'French';
-  tts.updateVoice_('');
-  assertEquals('Chinese', tts.currentVoice);
+    {setup: function() {
+      voices[3].lang = 'en';
+    },
+     testVoice: '', expectedVoice: 'U.S. English'},
 
-  tts.updateVoice_('French');
-  assertEquals('French', tts.currentVoice);
+    {setup: function() {
+      voices[3].lang = 'fr-FR';
+      voices[3].voiceName = 'French';
+    },
+     testVoice: '', expectedVoice: 'Chinese'},
+
+    {testVoice: 'French', expectedVoice: 'French'},
+
+    {setup: function() {
+      chrome.i18n.getUILanguage = function() { return 'es-ES'; };
+      chrome.i18n.getAcceptLanguages = function(callback) {
+        callback([]);
+      };
+    },
+     testVoice: '', expectedVoice: 'Spanish'},
+
+    {setup: function() {
+      chrome.i18n.getUILanguage = function() { return ''; };
+      chrome.i18n.getAcceptLanguages = function(callback) {
+        callback(['zh-TW']);
+      };
+    },
+     testVoice: '', expectedVoice: 'Chinese (Taiwan)'}
+  ];
+
+  flushNextTask();
 });
 
 // This test only works if Google tts is installed. Run it locally.
