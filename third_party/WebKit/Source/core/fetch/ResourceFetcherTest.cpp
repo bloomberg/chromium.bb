@@ -105,6 +105,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   Resource* resource = ImageResource::fetch(fetchRequest, fetcher);
   ASSERT_TRUE(resource);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_TRUE(resource->isLoaded());
   EXPECT_TRUE(memoryCache()->contains(resource));
 
