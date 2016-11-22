@@ -100,12 +100,6 @@ void DoProcessNotificationResponse(NotificationCommon::Operation operation,
 
 }  // namespace
 
-// static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationPlatformBridgeMac(
-      [NSUserNotificationCenter defaultUserNotificationCenter]);
-}
-
 // A Cocoa class that represents the delegate of NSUserNotificationCenter and
 // can forward commands to C++.
 @interface NotificationCenterDelegate
@@ -114,7 +108,7 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 @end
 
 // Interface to communicate with the Alert XPC service.
-@interface NotificationRemoteDispatcher : NSObject
+@interface AlertDispatcherImpl : NSObject<AlertDispatcher>
 
 // Deliver a notification to the XPC service to be displayed as an alert.
 - (void)dispatchNotification:(NSDictionary*)data;
@@ -129,18 +123,12 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 @end
 
 // /////////////////////////////////////////////////////////////////////////////
-
 NotificationPlatformBridgeMac::NotificationPlatformBridgeMac(
-    NSUserNotificationCenter* notification_center)
+    NSUserNotificationCenter* notification_center,
+    id<AlertDispatcher> alert_dispatcher)
     : delegate_([NotificationCenterDelegate alloc]),
-      notification_center_(notification_center),
-#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
-      notification_remote_dispatcher_(
-          [[NotificationRemoteDispatcher alloc] init])
-#else
-      notification_remote_dispatcher_(nullptr)
-#endif  // ENABLE_XPC_NOTIFICATIONS
-{
+      notification_center_([notification_center retain]),
+      alert_dispatcher_([alert_dispatcher retain]) {
   [notification_center_ setDelegate:delegate_.get()];
 }
 
@@ -150,8 +138,22 @@ NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
   // TODO(miguelg) do not remove banners if possible.
   [notification_center_ removeAllDeliveredNotifications];
 #if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
-  [notification_remote_dispatcher_ closeAllNotifications];
+  [alert_dispatcher_ closeAllNotifications];
 #endif  // BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
+}
+
+// static
+NotificationPlatformBridge* NotificationPlatformBridge::Create() {
+#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
+  base::scoped_nsobject<AlertDispatcherImpl> alert_dispatcher(
+      [[AlertDispatcherImpl alloc] init]);
+  return new NotificationPlatformBridgeMac(
+      [NSUserNotificationCenter defaultUserNotificationCenter],
+      alert_dispatcher.get());
+#else
+  return new NotificationPlatformBridgeMac(
+      [NSUserNotificationCenter defaultUserNotificationCenter], nil);
+#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 void NotificationPlatformBridgeMac::Display(
@@ -229,7 +231,7 @@ void NotificationPlatformBridgeMac::Display(
   // banners.
   if (notification.never_timeout()) {
     NSDictionary* dict = [builder buildDictionary];
-    [notification_remote_dispatcher_ dispatchNotification:dict];
+    [alert_dispatcher_ dispatchNotification:dict];
   } else {
     NSUserNotification* toast = [builder buildUserNotification];
     [notification_center_ deliverNotification:toast];
@@ -265,9 +267,8 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
   // If no banner existed with that ID try to see if there is an alert
   // in the xpc server.
   if (!notification_removed) {
-    [notification_remote_dispatcher_
-        closeNotificationWithId:candidate_id
-                  withProfileId:current_profile_id];
+    [alert_dispatcher_ closeNotificationWithId:candidate_id
+                                 withProfileId:current_profile_id];
   }
 #endif  // ENABLE_XPC_NOTIFICATIONS
 }
@@ -424,7 +425,7 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 
 @end
 
-@implementation NotificationRemoteDispatcher {
+@implementation AlertDispatcherImpl {
   // The connection to the XPC server in charge of delivering alerts.
   base::scoped_nsobject<NSXPCConnection> xpcConnection_;
 }

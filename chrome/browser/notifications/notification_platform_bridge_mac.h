@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "chrome/browser/notifications/alert_dispatcher_mac.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 class Notification;
 @class NotificationCenterDelegate;
-@class NotificationRemoteDispatcher;
 @class NSDictionary;
 @class NSUserNotificationCenter;
 @class NSXPCConnection;
@@ -26,8 +26,9 @@ class PrefService;
 // send platform notifications to the the MacOSX notification center.
 class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
  public:
-  explicit NotificationPlatformBridgeMac(
-      NSUserNotificationCenter* notification_center);
+  NotificationPlatformBridgeMac(NSUserNotificationCenter* notification_center,
+                                id<AlertDispatcher> alert_dispatcher);
+
   ~NotificationPlatformBridgeMac() override;
 
   // NotificationPlatformBridge implementation.
@@ -36,6 +37,7 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
                const std::string& profile_id,
                bool incognito,
                const Notification& notification) override;
+
   void Close(const std::string& profile_id,
              const std::string& notification_id) override;
   bool GetDisplayed(const std::string& profile_id,
@@ -56,11 +58,10 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
 
   // The notification center to use for local banner notifications,
   // this can be overriden in tests.
-  NSUserNotificationCenter* notification_center_;
+  base::scoped_nsobject<NSUserNotificationCenter> notification_center_;
 
   // The object in charge of dispatching remote notifications.
-  base::scoped_nsobject<NotificationRemoteDispatcher>
-      notification_remote_dispatcher_;
+  base::scoped_nsprotocol<id<AlertDispatcher>> alert_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeMac);
 };

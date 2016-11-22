@@ -2288,6 +2288,7 @@ split_static_library("browser") {
   }
   if (enable_notifications) {
     sources += [
+      "notifications/alert_dispatcher_mac.h",
       "notifications/desktop_notification_profile_util.cc",
       "notifications/desktop_notification_profile_util.h",
       "notifications/login_state_notification_blocker_chromeos.cc",
