@@ -81,6 +81,9 @@ static const struct av1_token tx_size_encodings[MAX_TX_DEPTH][TX_SIZES] = {
   { { 0, 1 }, { 1, 1 } },                      // Max tx_size is 8X8
   { { 0, 1 }, { 2, 2 }, { 3, 2 } },            // Max tx_size is 16X16
   { { 0, 1 }, { 2, 2 }, { 6, 3 }, { 7, 3 } },  // Max tx_size is 32X32
+#if CONFIG_TX64X64
+  { { 0, 1 }, { 2, 2 }, { 6, 3 }, { 14, 4 }, { 15, 4 } },  // Max tx_size 64X64
+#endif                                                     // CONFIG_TX64X64
 };
 
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE

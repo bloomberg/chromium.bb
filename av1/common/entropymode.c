@@ -928,19 +928,21 @@ static const int palette_color_context_lookup[PALETTE_COLOR_CONTEXTS] = {
 const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)] = {
   {
       // Max tx_size is 8X8
-      -0, -1,
+      -TX_4X4, -TX_8X8,
   },
   {
       // Max tx_size is 16X16
-      -0, 2, -1, -2,
+      -TX_4X4, 2, -TX_8X8, -TX_16X16,
   },
   {
       // Max tx_size is 32X32
-      -0, 2, -1, 4, -2, -3,
+      -TX_4X4, 2, -TX_8X8, 4, -TX_16X16, -TX_32X32,
   },
 #if CONFIG_TX64X64
-  { // Max tx_size is 64X64
-    -0, 2, -1, 4, -2, 6, -3, -4 },
+  {
+      // Max tx_size is 64X64
+      -TX_4X4, 2, -TX_8X8, 4, -TX_16X16, 6, -TX_32X32, -TX_64X64,
+  },
 #endif  // CONFIG_TX64X64
 };
 
