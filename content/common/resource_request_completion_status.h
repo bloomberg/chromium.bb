@@ -33,6 +33,9 @@ struct CONTENT_EXPORT ResourceRequestCompletionStatus {
 
   // Total amount of data received from the network.
   int64_t encoded_data_length = 0;
+
+  // The length of the response body before removing any content encodings.
+  int64_t encoded_body_length = 0;
 };
 
 }  // namespace content

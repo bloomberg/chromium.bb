@@ -337,6 +337,7 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
   request_complete_data.completion_time = base::TimeTicks::Now();
   request_complete_data.encoded_data_length =
       request()->GetTotalReceivedBytes();
+  request_complete_data.encoded_body_length = request()->GetRawBodyBytes();
 
   url_loader_client_->OnComplete(request_complete_data);
 }

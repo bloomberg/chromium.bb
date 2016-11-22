@@ -203,6 +203,10 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   base::ReadFileToString(
       root.Append(base::FilePath(FILE_PATH_LITERAL("hello.html"))), &expected);
   EXPECT_EQ(expected, contents);
+  EXPECT_EQ(static_cast<int64_t>(expected.size()),
+            client.completion_status().encoded_data_length);
+  EXPECT_EQ(static_cast<int64_t>(expected.size()),
+            client.completion_status().encoded_body_length);
 }
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
@@ -223,6 +227,32 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   ASSERT_FALSE(client.response_body().is_valid());
 
   EXPECT_EQ(net::ERR_TIMED_OUT, client.completion_status().error_code);
+  EXPECT_EQ(0, client.completion_status().encoded_data_length);
+  EXPECT_EQ(0, client.completion_status().encoded_body_length);
+}
+
+// In this case, the loading fails after receiving a response.
+TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
+  mojom::URLLoaderAssociatedPtr loader;
+  ResourceRequest request;
+  TestURLLoaderClient client;
+  net::URLRequestFailedJob::AddUrlHandler();
+  request.url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
+      net::URLRequestFailedJob::READ_ASYNC, net::ERR_TIMED_OUT);
+  request.method = "GET";
+  request.is_main_frame = true;
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
+
+  client.RunUntilComplete();
+  ASSERT_FALSE(client.has_received_response());
+  ASSERT_TRUE(client.response_body().is_valid());
+
+  EXPECT_EQ(net::ERR_TIMED_OUT, client.completion_status().error_code);
+  EXPECT_GT(client.completion_status().encoded_data_length, 0);
+  EXPECT_EQ(0, client.completion_status().encoded_body_length);
 }
 
 // This test tests a case where resource loading is cancelled before started.
@@ -328,6 +358,10 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   base::ReadFileToString(
       root.Append(base::FilePath(FILE_PATH_LITERAL("hello.html"))), &expected);
   EXPECT_EQ(expected, contents);
+  EXPECT_EQ(static_cast<int64_t>(expected.size()),
+            client.completion_status().encoded_data_length);
+  EXPECT_EQ(static_cast<int64_t>(expected.size()),
+            client.completion_status().encoded_body_length);
 }
 
 TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
