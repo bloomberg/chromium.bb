@@ -347,6 +347,11 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
   DestroyAccessibilityTree(id);
 });
 
+automationInternal.onAccessibilityTreeSerializationError.addListener(
+    function(id) {
+  automationInternal.enableFrame(id);
+});
+
 var binding = automation.generate();
 // Add additional accessibility bindings not specified in the automation IDL.
 // Accessibility and automation share some APIs (see

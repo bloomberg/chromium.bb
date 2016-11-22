@@ -114,5 +114,7 @@ namespace automationInternal {
     static void onChildTreeID(long treeID, long nodeID);
 
     static void onNodesRemoved(long treeID, long[] nodeIDs);
+
+    static void onAccessibilityTreeSerializationError(long treeID);
   };
 };

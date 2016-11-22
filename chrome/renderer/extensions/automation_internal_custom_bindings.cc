@@ -1157,8 +1157,15 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   // Update the internal state whether it's the active profile or not.
   cache->location_offset = params.location_offset;
   deleted_node_ids_.clear();
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 1U));
   if (!cache->tree.Unserialize(params.update)) {
     LOG(ERROR) << cache->tree.error();
+    args->Set(0U, v8::Number::New(isolate, tree_id));
+    context()->DispatchEvent(
+        "automationInternal.onAccessibilityTreeSerializationError", args);
     return;
   }
 
@@ -1169,10 +1176,6 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   SendNodesRemovedEvent(&cache->tree, deleted_node_ids_);
   deleted_node_ids_.clear();
 
-  v8::Isolate* isolate = GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 1U));
   v8::Local<v8::Object> event_params(v8::Object::New(GetIsolate()));
   event_params->Set(CreateV8String(isolate, "treeID"),
                     v8::Integer::New(GetIsolate(), params.tree_id));
