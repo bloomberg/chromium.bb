@@ -221,11 +221,6 @@ class WebLocalFrame : public WebFrame {
       bool userGesture,
       WebScriptExecutionCallback*) = 0;
 
-  // Run the task when the context of the current page is not suspended
-  // otherwise run it on context resumed.
-  // Method takes ownership of the passed task.
-  virtual void requestRunTask(WebSuspendableTask*) const = 0;
-
   // Associates an isolated world with human-readable name which is useful for
   // extension debugging.
   virtual void setIsolatedWorldHumanReadableName(int worldID,

@@ -68,7 +68,6 @@ class WebPerformance;
 class WebPlugin;
 class WebPluginContainerImpl;
 class WebScriptExecutionCallback;
-class WebSuspendableTask;
 class WebView;
 class WebViewImpl;
 enum class WebFrameLoadType;
@@ -272,7 +271,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   void sendOrientationChangeEvent() override;
   WebSandboxFlags effectiveSandboxFlags() const override;
   void forceSandboxFlags(WebSandboxFlags) override;
-  void requestRunTask(WebSuspendableTask*) const override;
   void didCallAddSearchProvider() override;
   void didCallIsSearchProviderInstalled() override;
   void replaceSelection(const WebString&) override;

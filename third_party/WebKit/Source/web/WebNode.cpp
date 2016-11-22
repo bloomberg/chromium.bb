@@ -48,7 +48,6 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/Widget.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebSuspendableTask.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"

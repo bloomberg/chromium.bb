@@ -188,7 +188,6 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSize.h"
-#include "public/platform/WebSuspendableTask.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
@@ -490,26 +489,6 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader) {
   return loader ? WebDataSourceImpl::fromDocumentLoader(loader) : 0;
 }
-
-// WebSuspendableTaskWrapper --------------------------------------------------
-
-class WebSuspendableTaskWrapper : public SuspendableTask {
- public:
-  static std::unique_ptr<WebSuspendableTaskWrapper> create(
-      std::unique_ptr<WebSuspendableTask> task) {
-    return wrapUnique(new WebSuspendableTaskWrapper(std::move(task)));
-  }
-
-  void run() override { m_task->run(); }
-
-  void contextDestroyed() override { m_task->contextDestroyed(); }
-
- private:
-  explicit WebSuspendableTaskWrapper(std::unique_ptr<WebSuspendableTask> task)
-      : m_task(std::move(task)) {}
-
-  std::unique_ptr<WebSuspendableTask> m_task;
-};
 
 // WebFrame -------------------------------------------------------------------
 
@@ -2094,13 +2073,6 @@ void WebLocalFrameImpl::sendOrientationChangeEvent() {
   // Legacy window.orientation API
   if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
     frame()->localDOMWindow()->sendOrientationChangeEvent();
-}
-
-void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const {
-  DCHECK(frame());
-  DCHECK(frame()->document());
-  frame()->document()->postSuspendableTask(
-      WebSuspendableTaskWrapper::create(wrapUnique(task)));
 }
 
 void WebLocalFrameImpl::didCallAddSearchProvider() {
