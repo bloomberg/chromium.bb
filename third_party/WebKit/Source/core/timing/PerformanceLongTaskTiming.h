@@ -21,12 +21,17 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
   static PerformanceLongTaskTiming* create(double startTime,
                                            double endTime,
                                            String name,
-                                           DOMWindow* culpritWindow) {
+                                           String culpritFrameSrc,
+                                           String culpritFrameId,
+                                           String culpritFrameName) {
     return new PerformanceLongTaskTiming(startTime, endTime, name,
-                                         culpritWindow);
+                                         culpritFrameSrc, culpritFrameId,
+                                         culpritFrameName);
   }
 
-  DOMWindow* culpritWindow() const;
+  String culpritFrameSrc() const;
+  String culpritFrameId() const;
+  String culpritFrameName() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -34,10 +39,14 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
   PerformanceLongTaskTiming(double startTime,
                             double endTime,
                             String name,
-                            DOMWindow* culpritWindow);
+                            String culpritFrameSrc,
+                            String culpritFrameId,
+                            String culpritFrameName);
   ~PerformanceLongTaskTiming() override;
 
-  Member<DOMWindow> m_culpritWindow;
+  String m_culpritFrameSrc;
+  String m_culpritFrameId;
+  String m_culpritFrameName;
 };
 
 }  // namespace blink

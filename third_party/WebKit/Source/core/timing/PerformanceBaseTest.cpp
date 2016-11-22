@@ -92,7 +92,8 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   initialize(scope.getScriptState());
 
   // Add a long task entry, but no observer registered.
-  m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar", nullptr);
+  m_base->addLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
+                            "");
   EXPECT_FALSE(m_base->hasPerformanceObserverFor(PerformanceEntry::LongTask));
   EXPECT_EQ(0, numPerformanceEntriesInObserver());  // has no effect
 
@@ -106,7 +107,8 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
 
   EXPECT_TRUE(m_base->hasPerformanceObserverFor(PerformanceEntry::LongTask));
   // Add a long task entry
-  m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar", nullptr);
+  m_base->addLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
+                            "");
   EXPECT_EQ(1, numPerformanceEntriesInObserver());  // added an entry
 }
 }  // namespace blink

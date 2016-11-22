@@ -6,5 +6,7 @@
 [
     OriginTrialEnabled=LongTaskObserver,
 ] interface PerformanceLongTaskTiming : PerformanceEntry {
-    readonly attribute Window? culpritWindow;
+    readonly attribute DOMString culpritFrameSrc;
+    readonly attribute DOMString culpritFrameId;
+    readonly attribute DOMString culpritFrameName;
 };

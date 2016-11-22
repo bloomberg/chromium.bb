@@ -34,8 +34,11 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
+#include "core/dom/QualifiedName.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/timing/PerformanceTiming.h"
@@ -50,6 +53,22 @@ static const char kDescendantAttribution[] = "cross-origin-descendant";
 static const char kCrossOriginAttribution[] = "cross-origin-unreachable";
 
 namespace blink {
+
+namespace {
+
+String getFrameAttribute(HTMLFrameOwnerElement* frameOwner,
+                         const QualifiedName& attrName,
+                         bool truncate) {
+  String attrValue;
+  if (frameOwner->hasAttribute(attrName)) {
+    attrValue = frameOwner->getAttribute(attrName);
+    if (truncate && attrValue.length() > 100)
+      attrValue = attrValue.substring(0, 100);  // Truncate to 100 chars
+  }
+  return attrValue;
+}
+
+}  // namespace
 
 static double toTimeOrigin(LocalFrame* frame) {
   if (!frame)
@@ -195,7 +214,18 @@ void Performance::reportLongTask(
     const HeapHashSet<Member<Frame>>& contextFrames) {
   std::pair<String, DOMWindow*> attribution =
       Performance::sanitizedAttribution(contextFrames, frame());
-  addLongTaskTiming(startTime, endTime, attribution.first, attribution.second);
+  DOMWindow* culpritDomWindow = attribution.second;
+  if (!culpritDomWindow || !culpritDomWindow->document() ||
+      !culpritDomWindow->document()->localOwner()) {
+    addLongTaskTiming(startTime, endTime, attribution.first, "", "", "");
+  } else {
+    HTMLFrameOwnerElement* frameOwner =
+        culpritDomWindow->document()->localOwner();
+    addLongTaskTiming(startTime, endTime, attribution.first,
+                      getFrameAttribute(frameOwner, HTMLNames::srcAttr, false),
+                      getFrameAttribute(frameOwner, HTMLNames::idAttr, false),
+                      getFrameAttribute(frameOwner, HTMLNames::nameAttr, true));
+  }
 }
 
 }  // namespace blink

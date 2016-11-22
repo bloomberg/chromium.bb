@@ -11,18 +11,29 @@ namespace blink {
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
                                                      double endTime,
                                                      String name,
-                                                     DOMWindow* culpritWindow)
+                                                     String culpritFrameSrc,
+                                                     String culpritFrameId,
+                                                     String culpritFrameName)
     : PerformanceEntry(name, "longtask", startTime, endTime),
-      m_culpritWindow(*culpritWindow) {}
+      m_culpritFrameSrc(culpritFrameSrc),
+      m_culpritFrameId(culpritFrameId),
+      m_culpritFrameName(culpritFrameName) {}
 
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}
 
-DOMWindow* PerformanceLongTaskTiming::culpritWindow() const {
-  return m_culpritWindow.get();
+String PerformanceLongTaskTiming::culpritFrameSrc() const {
+  return m_culpritFrameSrc;
+}
+
+String PerformanceLongTaskTiming::culpritFrameId() const {
+  return m_culpritFrameId;
+}
+
+String PerformanceLongTaskTiming::culpritFrameName() const {
+  return m_culpritFrameName;
 }
 
 DEFINE_TRACE(PerformanceLongTaskTiming) {
-  visitor->trace(m_culpritWindow);
   PerformanceEntry::trace(visitor);
 }
 

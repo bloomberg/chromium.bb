@@ -96,7 +96,12 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
 
-  void addLongTaskTiming(double, double, const String&, DOMWindow*);
+  void addLongTaskTiming(double startTime,
+                         double endTime,
+                         const String& name,
+                         const String& culpritFrameSrc,
+                         const String& culpritFrameId,
+                         const String& culpritFrameName);
 
   void addResourceTiming(const ResourceTimingInfo&);
 
