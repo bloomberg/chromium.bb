@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "services/video_capture/fake_device_descriptor_test.h"
-#include "services/video_capture/mock_receiver.h"
+#include "services/video_capture/test/fake_device_descriptor_test.h"
+#include "services/video_capture/test/mock_receiver.h"
 
 using testing::_;
 using testing::InvokeWithoutArgs;

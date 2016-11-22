@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_FACTORY_H_
-#define SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_FACTORY_H_
+#ifndef SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_FACTORY_H_
+#define SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_FACTORY_H_
 
 #include <map>
 
@@ -11,18 +11,17 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/interfaces/device_descriptor.mojom.h"
-#include "services/video_capture/public/interfaces/mock_device.mojom.h"
 
 namespace video_capture {
 
 // Implementation of media::VideoCaptureDeviceFactory that allows clients to
-// add mock devices of type mojom::VideoCaptureDeviceDescriptorPtr.
+// add mock devices.
 class MockDeviceFactory : public media::VideoCaptureDeviceFactory {
  public:
   MockDeviceFactory();
   ~MockDeviceFactory() override;
 
-  void AddMockDevice(mojom::MockMediaDevicePtr device,
+  void AddMockDevice(media::VideoCaptureDevice* device,
                      const media::VideoCaptureDeviceDescriptor& descriptor);
 
   // media::VideoCaptureDeviceFactory:
@@ -35,10 +34,10 @@ class MockDeviceFactory : public media::VideoCaptureDeviceFactory {
       media::VideoCaptureFormats* supported_formats) override;
 
  private:
-  std::map<media::VideoCaptureDeviceDescriptor, mojom::MockMediaDevicePtr>
+  std::map<media::VideoCaptureDeviceDescriptor, media::VideoCaptureDevice*>
       devices_;
 };
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_FACTORY_H_
+#endif  // SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_FACTORY_H_

@@ -11,7 +11,6 @@
 #include "media/capture/video/fake_video_capture_device.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
-#include "services/video_capture/device_mojo_mock_to_media_adapter.h"
 #include "services/video_capture/public/cpp/capture_settings.h"
 
 namespace video_capture {

@@ -6,11 +6,11 @@
 #include "base/run_loop.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
-#include "services/video_capture/fake_device_test.h"
-#include "services/video_capture/mock_receiver.h"
 #include "services/video_capture/public/cpp/capture_settings.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
-#include "services/video_capture/service_test.h"
+#include "services/video_capture/test/fake_device_test.h"
+#include "services/video_capture/test/mock_receiver.h"
+#include "services/video_capture/test/service_test.h"
 
 using testing::_;
 using testing::Invoke;
@@ -26,7 +26,7 @@ struct FrameInfo {
   base::TimeDelta timestamp;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
 namespace video_capture {
 
@@ -45,8 +45,7 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
             }
           }));
 
-  fake_device_proxy_->Start(requestable_settings_,
-                            std::move(receiver_proxy));
+  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
   wait_loop.Run();
 }
 
@@ -60,10 +59,9 @@ TEST_F(FakeDeviceTest, ReceiveFramesFromFakeCaptureDevice) {
   int received_frame_count = 0;
   MockReceiver receiver(mojo::GetProxy(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
-      .WillRepeatedly(
-          Invoke([&received_frame_infos, &received_frame_count,
-                  &num_frames_to_receive, &wait_loop](
-              const media::mojom::VideoFramePtr* frame) {
+      .WillRepeatedly(Invoke(
+          [&received_frame_infos, &received_frame_count, &num_frames_to_receive,
+           &wait_loop](const media::mojom::VideoFramePtr* frame) {
             if (received_frame_count >= num_frames_to_receive)
               return;
             auto video_frame = frame->To<scoped_refptr<media::VideoFrame>>();
@@ -78,8 +76,7 @@ TEST_F(FakeDeviceTest, ReceiveFramesFromFakeCaptureDevice) {
               wait_loop.Quit();
           }));
 
-  fake_device_proxy_->Start(
-      requestable_settings_, std::move(receiver_proxy));
+  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
 
   wait_loop.Run();
 
@@ -92,8 +89,7 @@ TEST_F(FakeDeviceTest, ReceiveFramesFromFakeCaptureDevice) {
     EXPECT_EQ(media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER,
               frame_info.storage_type);
     EXPECT_TRUE(frame_info.is_mappable);
-    EXPECT_EQ(requestable_settings_.format.frame_size,
-              frame_info.size);
+    EXPECT_EQ(requestable_settings_.format.frame_size, frame_info.size);
     // Timestamps are expected to increase
     if (i > 0)
       EXPECT_GT(frame_info.timestamp, previous_timestamp);

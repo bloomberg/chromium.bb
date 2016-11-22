@@ -5,7 +5,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
-#include "services/video_capture/service_test.h"
+#include "services/video_capture/test/service_test.h"
 
 using testing::Exactly;
 using testing::_;

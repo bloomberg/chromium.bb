@@ -21,8 +21,7 @@ DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
       device_running_(false) {}
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
-  if (device_running_)
-    device_->StopAndDeAllocate();
+  Stop();
 }
 
 void DeviceMediaToMojoAdapter::Start(const CaptureSettings& requested_settings,
@@ -51,15 +50,14 @@ void DeviceMediaToMojoAdapter::Start(const CaptureSettings& requested_settings,
 }
 
 void DeviceMediaToMojoAdapter::Stop() {
+  if (device_running_ == false)
+    return;
   device_->StopAndDeAllocate();
   device_running_ = false;
 }
 
 void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
-  if (device_running_) {
-    device_->StopAndDeAllocate();
-    device_running_ = false;
-  }
+  Stop();
 }
 
 }  // namespace video_capture

@@ -10,7 +10,6 @@ mojom("interfaces") {
     "device.mojom",
     "device_descriptor.mojom",
     "device_factory.mojom",
-    "mock_device.mojom",
     "receiver.mojom",
     "service.mojom",
   ]

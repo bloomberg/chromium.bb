@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/fake_device_test.h"
+#include "services/video_capture/test/fake_device_test.h"
 
 #include "base/run_loop.h"
 
@@ -35,7 +35,7 @@ void FakeDeviceTest::SetUp() {
   factory_->GetSupportedFormats(
       fake_device_descriptor_.device_id,
       base::Bind(&MockSupportedFormatsReceiver::OnGetSupportedFormatsCallback,
-      base::Unretained(&supported_formats_receiver_)));
+                 base::Unretained(&supported_formats_receiver_)));
   wait_loop.Run();
 
   requestable_settings_.format = fake_device_first_supported_format_;

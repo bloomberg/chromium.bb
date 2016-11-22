@@ -2,22 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/mock_device_factory.h"
-
-#include <sstream>
-
-#include "base/logging.h"
-#include "base/strings/stringprintf.h"
-#include "media/capture/video/fake_video_capture_device.h"
-#include "services/video_capture/device_mojo_mock_to_media_adapter.h"
+#include "services/video_capture/test/mock_device_factory.h"
 
 namespace {
+
 // Report a single hard-coded supported format to clients.
 media::VideoCaptureFormat kSupportedFormat(gfx::Size(),
                                            25.0f,
                                            media::PIXEL_FORMAT_I420,
                                            media::PIXEL_STORAGE_CPU);
-}
+
+class RawPointerVideoCaptureDevice : public media::VideoCaptureDevice {
+ public:
+  explicit RawPointerVideoCaptureDevice(media::VideoCaptureDevice* device)
+      : device_(device) {}
+
+  // media::VideoCaptureDevice:
+  void AllocateAndStart(const media::VideoCaptureParams& params,
+                        std::unique_ptr<Client> client) override {
+    device_->AllocateAndStart(params, std::move(client));
+  }
+  void RequestRefreshFrame() override { device_->RequestRefreshFrame(); }
+  void StopAndDeAllocate() override { device_->StopAndDeAllocate(); }
+  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override {
+    device_->GetPhotoCapabilities(std::move(callback));
+  }
+  void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
+                       SetPhotoOptionsCallback callback) override {
+    device_->SetPhotoOptions(std::move(settings), std::move(callback));
+  }
+  void TakePhoto(TakePhotoCallback callback) override {
+    device_->TakePhoto(std::move(callback));
+  }
+
+ private:
+  media::VideoCaptureDevice* device_;
+};
+
+}  // anonymous namespace
 
 namespace video_capture {
 
@@ -26,18 +48,17 @@ MockDeviceFactory::MockDeviceFactory() = default;
 MockDeviceFactory::~MockDeviceFactory() = default;
 
 void MockDeviceFactory::AddMockDevice(
-    mojom::MockMediaDevicePtr device,
+    media::VideoCaptureDevice* device,
     const media::VideoCaptureDeviceDescriptor& descriptor) {
   devices_[descriptor] = std::move(device);
 }
 
 std::unique_ptr<media::VideoCaptureDevice> MockDeviceFactory::CreateDevice(
     const media::VideoCaptureDeviceDescriptor& device_descriptor) {
-  mojom::MockMediaDevicePtr* device = &(devices_[device_descriptor]);
-  if (device == nullptr) {
+  if (devices_.find(device_descriptor) == devices_.end())
     return nullptr;
-  }
-  return base::MakeUnique<DeviceMojoMockToMediaAdapter>(device);
+  return base::MakeUnique<RawPointerVideoCaptureDevice>(
+      devices_[device_descriptor]);
 }
 
 void MockDeviceFactory::GetDeviceDescriptors(

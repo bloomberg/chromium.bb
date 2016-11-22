@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/mock_device_descriptor_receiver.h"
+#include "services/video_capture/test/mock_device_descriptor_receiver.h"
 
 namespace video_capture {
 

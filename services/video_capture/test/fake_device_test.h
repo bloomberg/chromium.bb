@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_FAKE_DEVICE_TEST_H_
-#define SERVICES_VIDEO_CAPTURE_FAKE_DEVICE_TEST_H_
+#ifndef SERVICES_VIDEO_CAPTURE_TEST_FAKE_DEVICE_TEST_H_
+#define SERVICES_VIDEO_CAPTURE_TEST_FAKE_DEVICE_TEST_H_
 
-#include "services/video_capture/fake_device_descriptor_test.h"
 #include "services/video_capture/public/cpp/capture_settings.h"
+#include "services/video_capture/test/fake_device_descriptor_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
@@ -41,4 +41,4 @@ class FakeDeviceTest : public FakeDeviceDescriptorTest {
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_FAKE_DEVICE_TEST_H_
+#endif  // SERVICES_VIDEO_CAPTURE_TEST_FAKE_DEVICE_TEST_H_
