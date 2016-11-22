@@ -145,7 +145,7 @@ class SharedOptionsTest : public LoginManagerTest {
       bool disabled = !is_owner && kPrefTests[i].owner_only;
       if (strcmp(kPrefTests[i].pref_name, kSystemTimezone) == 0) {
         disabled = ProfileHelper::Get()
-                       ->GetProfileByUserUnsafe(user)
+                       ->GetProfileByUser(user)
                        ->GetPrefs()
                        ->GetBoolean(prefs::kResolveTimezoneByGeolocation);
       }
@@ -161,7 +161,7 @@ class SharedOptionsTest : public LoginManagerTest {
 
   // Creates a browser and navigates to the Settings page.
   Browser* CreateBrowserForUser(const user_manager::User* user) {
-    Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+    Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     SigninManagerFactory::GetForProfile(profile)->SetAuthenticatedAccountInfo(
         GetGaiaIDForUserID(user->GetAccountId().GetUserEmail()),
         user->GetAccountId().GetUserEmail());
@@ -344,9 +344,9 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
       manager->FindUser(test_non_owner_account_id_);
 
   PrefService* prefs1 =
-      ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
   PrefService* prefs2 =
-      ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
 
   // Set both users' preference to false, then change the secondary user's to
   // true. We'll do the opposite in the next test. Doesn't provide 100% coverage
@@ -416,9 +416,9 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
       manager->FindUser(test_non_owner_account_id_);
 
   PrefService* prefs1 =
-      ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
   PrefService* prefs2 =
-      ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
 
   // Set both users' preference to true, then change the secondary user's to
   // false.
