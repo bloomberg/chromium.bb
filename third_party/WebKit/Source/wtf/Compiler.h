@@ -107,13 +107,4 @@
 #define NO_SANITIZE_UNRELATED_CAST
 #endif
 
-/* WTF_NON_EXPORTED_BASE; similar NON_EXPORTED_BASE in base/compiler_specific.h
- */
-
-#if COMPILER(MSVC)
-#define WTF_NON_EXPORTED_BASE(code) __pragma(warning(suppress : 4275)) code
-#else
-#define WTF_NON_EXPORTED_BASE(code) code
-#endif
-
 #endif /* WTF_Compiler_h */

@@ -12,13 +12,14 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "wtf/Compiler.h"
 #include <memory>
 
 namespace blink {
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
     : public OffscreenCanvasFrameDispatcher,
-      WTF_NON_EXPORTED_BASE(
+      NON_EXPORTED_BASE(
           public cc::mojom::blink::MojoCompositorFrameSinkClient) {
  public:
   OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,

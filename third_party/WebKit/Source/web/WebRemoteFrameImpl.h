@@ -26,7 +26,7 @@ struct WebAssociatedURLLoaderOptions;
 
 class WEB_EXPORT WebRemoteFrameImpl final
     : public WebFrameImplBase,
-      WTF_NON_EXPORTED_BASE(public WebRemoteFrame) {
+      NON_EXPORTED_BASE(public WebRemoteFrame) {
  public:
   static WebRemoteFrameImpl* create(WebTreeScopeType,
                                     WebRemoteFrameClient*,

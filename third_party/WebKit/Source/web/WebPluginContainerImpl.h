@@ -63,7 +63,7 @@ struct WebPrintPresetOptions;
 
 class WEB_EXPORT WebPluginContainerImpl final
     : public PluginView,
-      WTF_NON_EXPORTED_BASE(public WebPluginContainer),
+      NON_EXPORTED_BASE(public WebPluginContainer),
       public DOMWindowProperty {
   USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
   USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);

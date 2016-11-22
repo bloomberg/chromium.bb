@@ -81,7 +81,7 @@ class WebVector;
 // Implementation of WebFrame, note that this is a reference counted object.
 class WEB_EXPORT WebLocalFrameImpl final
     : public WebFrameImplBase,
-      WTF_NON_EXPORTED_BASE(public WebLocalFrame) {
+      NON_EXPORTED_BASE(public WebLocalFrame) {
  public:
   // WebFrame methods:
   void close() override;

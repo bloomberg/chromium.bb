@@ -29,7 +29,7 @@ class ScriptState;
 class MODULES_EXPORT RemotePlayback final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable,
-      WTF_NON_EXPORTED_BASE(public WebRemotePlaybackClient) {
+      NON_EXPORTED_BASE(public WebRemotePlaybackClient) {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 

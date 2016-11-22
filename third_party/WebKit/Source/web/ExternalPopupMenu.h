@@ -51,9 +51,8 @@ struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class WEB_EXPORT ExternalPopupMenu final
-    : WTF_NON_EXPORTED_BASE(public PopupMenu),
-      public WebExternalPopupMenuClient {
+class WEB_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
+                                           public WebExternalPopupMenuClient {
  public:
   ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebViewImpl&);
   ~ExternalPopupMenu() override;
