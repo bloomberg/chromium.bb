@@ -176,7 +176,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
   ExtensionService* service = system->extension_service();
   Mode mode = ShouldBeVerified(*extension);
   if (mode >= ContentVerifierDelegate::ENFORCE) {
-    if (!system->management_policy()->UserMayModifySettings(extension, NULL)) {
+    if (system->management_policy()->MustRemainEnabled(extension, NULL)) {
       PendingExtensionManager* pending_manager =
           service->pending_extension_manager();
       if (pending_manager->IsPolicyReinstallForCorruptionExpected(extension_id))

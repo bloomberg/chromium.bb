@@ -4,11 +4,18 @@
 
 #include "chrome/browser/extensions/browsertest_util.h"
 
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/updater/local_extension_cache.h"
+#include "chromeos/chromeos_paths.h"
+#endif
 
 namespace extensions {
 namespace browsertest_util {
@@ -45,6 +52,17 @@ bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
     return false;
   }
   return content::ExecuteScript(host->host_contents(), script);
+}
+
+void CreateAndInitializeLocalCache() {
+#if defined(OS_CHROMEOS)
+  base::FilePath extension_cache_dir;
+  CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+                         &extension_cache_dir));
+  base::FilePath cache_init_file = extension_cache_dir.Append(
+      extensions::LocalExtensionCache::kCacheReadyFlagFileName);
+  EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
+#endif
 }
 
 }  // namespace browsertest_util

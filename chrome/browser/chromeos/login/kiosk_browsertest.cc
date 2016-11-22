@@ -10,7 +10,6 @@
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -42,8 +41,8 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -52,7 +51,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -526,7 +524,7 @@ class KioskTest : public OobeBaseTest {
         ProfileManager::GetPrimaryUserProfile());
 
     // Set up local cache for app update check.
-    CreateAndInitializeLocalCache();
+    extensions::browsertest_util::CreateAndInitializeLocalCache();
   }
 
   void TearDownOnMainThread() override {
@@ -539,19 +537,6 @@ class KioskTest : public OobeBaseTest {
     // Clean up while main thread still runs.
     // See http://crbug.com/176659.
     KioskAppManager::Get()->CleanUp();
-  }
-
-  // The local cache is supposed to be initialized on chromeos device, and a
-  // ready flag file will be pre-created to mark the ready state, before chrome
-  // starts. In order for the tests to run without being on real chromeos
-  // device, we need to manually create this file.
-  void CreateAndInitializeLocalCache() {
-    base::FilePath extension_cache_dir;
-    CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
-                           &extension_cache_dir));
-    base::FilePath cache_init_file = extension_cache_dir.Append(
-        extensions::LocalExtensionCache::kCacheReadyFlagFileName);
-    EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2374,6 +2359,7 @@ class KioskHiddenWebUITest : public KioskTest,
   bool wallpaper_loaded_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
 };
 

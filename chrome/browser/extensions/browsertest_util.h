@@ -28,6 +28,12 @@ bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
                                          const std::string& extension_id,
                                          const std::string& script);
 
+// On chromeos, the extension cache directory must be initialized before
+// extensions can be installed in some situations (e.g. policy force installs
+// via update urls). The chromeos device setup scripts take care of this in
+// actual production devices, but some tests need to do it manually.
+void CreateAndInitializeLocalCache();
+
 }  // namespace browsertest_util
 }  // namespace extensions
 

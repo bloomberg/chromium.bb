@@ -17,12 +17,12 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -42,15 +42,6 @@ namespace chromeos {
 namespace {
 
 const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
-
-void CreateAndInitializeLocalCache() {
-  base::FilePath extension_cache_dir;
-  CHECK(PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
-                         &extension_cache_dir));
-  base::FilePath cache_init_file = extension_cache_dir.Append(
-      extensions::LocalExtensionCache::kCacheReadyFlagFileName);
-  EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
-}
 
 }  // namespace
 
@@ -92,7 +83,7 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    CreateAndInitializeLocalCache();
+    extensions::browsertest_util::CreateAndInitializeLocalCache();
 
     embedded_test_server()->StartAcceptingConnections();
   }

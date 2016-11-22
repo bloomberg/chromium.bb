@@ -13,9 +13,13 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verify_job.h"
@@ -421,6 +425,10 @@ class ForceInstallProvider : public ManagementPolicy::Provider {
                              base::string16* error) const override {
     return extension->id() != id_;
   }
+  bool MustRemainEnabled(const Extension* extension,
+                         base::string16* error) const override {
+    return extension->id() == id_;
+  }
 
  private:
   // The extension id we want to disallow uninstall/disable for.
@@ -660,6 +668,83 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
     }
   }
   EXPECT_TRUE(found);
+}
+
+class ContentVerifierPolicyTest : public ContentVerifierTest {
+ public:
+  // We need to do this work here because the force-install policy values are
+  // checked pretty early on in the startup of the ExtensionService, which
+  // happens between SetUpInProcessBrowserTestFixture and SetUpOnMainThread.
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentVerifierTest::SetUpInProcessBrowserTestFixture();
+
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+    ExtensionManagementPolicyUpdater management_policy(&policy_provider_);
+    management_policy.SetIndividualExtensionAutoInstalled(
+        id_, extension_urls::kChromeWebstoreUpdateURL, true /* forced */);
+
+    ExtensionDownloader::set_test_delegate(&downloader_);
+    base::FilePath crx_path =
+        test_data_dir_.AppendASCII("content_verifier/v1.crx");
+    std::string version = "2";
+    downloader_.AddResponse(id_, version, crx_path);
+  }
+
+  void SetUpOnMainThread() override {
+    extensions::browsertest_util::CreateAndInitializeLocalCache();
+  }
+
+ protected:
+  // The id of the extension we want to have force-installed.
+  std::string id_ = "npnbmohejbjohgpjnmjagbafnjhkmgko";
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+  DownloaderTestDelegate downloader_;
+};
+
+// We want to test what happens at startup with a corroption-disabled policy
+// force installed extension. So we set that up in the PRE test here.
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
+                       PRE_PolicyCorruptedOnStartup) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  RegistryObserver registry_observer(registry);
+
+  // Wait for the extension to be installed by policy we set up in
+  // SetUpInProcessBrowserTestFixture.
+  if (!registry->GetInstalledExtension(id_)) {
+    EXPECT_TRUE(registry_observer.WaitForInstall(id_));
+  }
+
+  // Simulate corruption of the extension so that we can test what happens
+  // at startup in the non-PRE test.
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ContentVerifier* verifier = system->content_verifier();
+  verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+  EXPECT_TRUE(registry_observer.WaitForUnload(id_));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int reasons = prefs->GetDisableReasons(id_);
+  EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
+}
+
+// Now actually test what happens on the next startup after the PRE test above.
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
+  // Expect that the extension is still disabled for corruption.
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int reasons = prefs->GetDisableReasons(id_);
+  EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
+
+  // Now expect that it gets reinstalled (because a job should have been kicked
+  // off by the installed extension loading code).
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  RegistryObserver registry_observer(registry);
+  EXPECT_TRUE(registry_observer.WaitForInstall(id_));
+  reasons = prefs->GetDisableReasons(id_);
+  EXPECT_FALSE(reasons & Extension::DISABLE_CORRUPTED);
 }
 
 }  // namespace extensions
