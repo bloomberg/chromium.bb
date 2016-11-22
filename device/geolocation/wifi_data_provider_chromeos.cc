@@ -139,18 +139,21 @@ void WifiDataProviderChromeOs::ScheduleStart() {
 
 bool WifiDataProviderChromeOs::GetAccessPointData(
     WifiData::AccessPointDataSet* result) {
+  // If in startup or shutdown, chromeos::NetworkHandler is uninitialized.
+  if (!chromeos::NetworkHandler::IsInitialized())
+    return false;  // Data not ready.
+
   // If wifi isn't enabled, we've effectively completed the task.
-  // Return true to indicate an empty access point list.
-  if (!chromeos::NetworkHandler::Get()->geolocation_handler()->wifi_enabled())
-    return true;
+  chromeos::GeolocationHandler* const geolocation_handler =
+      chromeos::NetworkHandler::Get()->geolocation_handler();
+  if (!geolocation_handler || !geolocation_handler->wifi_enabled())
+    return true;  // Access point list is empty, no more data.
 
   chromeos::WifiAccessPointVector access_points;
   int64_t age_ms = 0;
-  if (!chromeos::NetworkHandler::Get()
-           ->geolocation_handler()
-           ->GetWifiAccessPoints(&access_points, &age_ms)) {
+  if (!geolocation_handler->GetWifiAccessPoints(&access_points, &age_ms))
     return false;
-  }
+
   for (const auto& access_point : access_points) {
     AccessPointData ap_data;
     ap_data.mac_address = base::ASCIIToUTF16(access_point.mac_address);
