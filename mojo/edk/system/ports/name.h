@@ -40,14 +40,14 @@ struct PortName : Name {
   PortName(uint64_t v1, uint64_t v2) : Name(v1, v2) {}
 };
 
-const PortName kInvalidPortName = {0, 0};
+extern const PortName kInvalidPortName;
 
 struct NodeName : Name {
   NodeName() : Name(0, 0) {}
   NodeName(uint64_t v1, uint64_t v2) : Name(v1, v2) {}
 };
 
-const NodeName kInvalidNodeName = {0, 0};
+extern const NodeName kInvalidNodeName;
 
 }  // namespace ports
 }  // namespace edk
