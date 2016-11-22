@@ -100,25 +100,19 @@ Range* Range::create(Document& ownerDocument,
                    end.computeOffsetInContainerNode());
 }
 
+// TODO(yosin): We should move |Range::createAdjustedToTreeScope()| to
+// "Document.cpp" since it is use only one place in "Document.cpp".
 Range* Range::createAdjustedToTreeScope(const TreeScope& treeScope,
                                         const Position& position) {
-  Range* range = create(treeScope.document(), position, position);
-
-  // Make sure the range is in this scope.
-  Node* firstNode = range->firstNode();
-  DCHECK(firstNode);
-  Node* shadowHostInThisScopeOrFirstNode =
-      treeScope.ancestorInThisScope(firstNode);
-  DCHECK(shadowHostInThisScopeOrFirstNode);
-  if (shadowHostInThisScopeOrFirstNode == firstNode)
-    return range;
-
-  // If not, create a range for the shadow host in this scope.
-  ContainerNode* container = shadowHostInThisScopeOrFirstNode->parentNode();
-  DCHECK(container);
-  unsigned offset = shadowHostInThisScopeOrFirstNode->nodeIndex();
-  return Range::create(treeScope.document(), container, offset, container,
-                       offset);
+  DCHECK(position.isNotNull());
+  // Note: Since |Position::computeContanerNode()| returns |nullptr| if
+  // |position| is |BeforeAnchor| or |AfterAnchor|.
+  Node* const anchorNode = position.anchorNode();
+  if (anchorNode->treeScope() == treeScope)
+    return create(treeScope.document(), position, position);
+  Node* const shadowHost = treeScope.ancestorInThisScope(anchorNode);
+  return Range::create(treeScope.document(), Position::beforeNode(shadowHost),
+                       Position::beforeNode(shadowHost));
 }
 
 void Range::dispose() {

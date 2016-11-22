@@ -41,6 +41,18 @@ HTMLDocument& RangeTest::document() const {
   return *m_document;
 }
 
+TEST_F(RangeTest, createAdjustedToTreeScopeWithPositionInShadowTree) {
+  document().body()->setInnerHTML("<div><select><option>012</option></div>");
+  Element* const selectElement = document().querySelector("select");
+  const Position& position =
+      Position::afterNode(selectElement->userAgentShadowRoot());
+  Range* const range = Range::createAdjustedToTreeScope(document(), position);
+  EXPECT_EQ(range->startContainer(), selectElement->parentNode());
+  EXPECT_EQ(static_cast<unsigned>(range->startOffset()),
+            selectElement->nodeIndex());
+  EXPECT_TRUE(range->collapsed());
+}
+
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   document().body()->setInnerHTML("1234");
   Text* oldText = toText(document().body()->firstChild());
