@@ -1625,7 +1625,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
       ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
       ((['git', 'config', 'gerrit.host'],), 'true'),
-      ((['DieWithError', 'issue 123456 at ' + url + ' does not exist '
+      ((['DieWithError', 'change 123456 at ' + url + ' does not exist '
                          'or you have no access to it'],), SystemExitMock()),
     ]
     with self.assertRaises(SystemExitMock):

@@ -1081,14 +1081,14 @@ def ParseIssueNumberArgument(arg):
   return fail_result
 
 
-class GerritIssueNotExists(Exception):
+class GerritChangeNotExists(Exception):
   def __init__(self, issue, url):
     self.issue = issue
     self.url = url
-    super(GerritIssueNotExists, self).__init__()
+    super(GerritChangeNotExists, self).__init__()
 
   def __str__(self):
-    return 'issue %s at %s does not exist or you have no access to it' % (
+    return 'change %s at %s does not exist or you have no access to it' % (
         self.issue, self.url)
 
 
@@ -2417,7 +2417,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       data = self._GetChangeDetail(['DETAILED_LABELS', 'CURRENT_REVISION'])
-    except (httplib.HTTPException, GerritIssueNotExists):
+    except (httplib.HTTPException, GerritChangeNotExists):
       return 'error'
 
     if data['status'] in ('ABANDONED', 'MERGED'):
@@ -2505,7 +2505,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                                          options, ignore_404=False)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
-        raise GerritIssueNotExists(issue, self.GetCodereviewServer())
+        raise GerritChangeNotExists(issue, self.GetCodereviewServer())
       raise
     return data
 
@@ -2514,7 +2514,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     assert issue, 'issue is required to query Gerrit'
     data = gerrit_util.GetChangeCommit(self._GetGerritHost(), str(issue))
     if not data:
-      raise GerritIssueNotExists(issue, self.GetCodereviewServer())
+      raise GerritChangeNotExists(issue, self.GetCodereviewServer())
     return data
 
   def CMDLand(self, force, bypass_hooks, verbose):
@@ -2578,7 +2578,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       detail = self._GetChangeDetail(['ALL_REVISIONS'])
-    except GerritIssueNotExists as e:
+    except GerritChangeNotExists as e:
       DieWithError(str(e))
 
     if not parsed_issue_arg.patchset:
@@ -2591,7 +2591,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         if int(revision_info['_number']) == parsed_issue_arg.patchset:
           break
       else:
-        DieWithError('Couldn\'t find patchset %i in issue %i' %
+        DieWithError('Couldn\'t find patchset %i in change %i' %
                      (parsed_issue_arg.patchset, self.GetIssue()))
 
     fetch_info = revision_info['fetch']['http']
@@ -2599,7 +2599,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     RunGit(['cherry-pick', 'FETCH_HEAD'])
     self.SetIssue(self.GetIssue())
     self.SetPatchset(patchset)
-    print('Committed patch for issue %i pathset %i locally' %
+    print('Committed patch for change %i patchset %i locally' %
           (self.GetIssue(), self.GetPatchset()))
     return 0
 
@@ -2670,7 +2670,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         message = self.GetDescription()
         if not message:
           DieWithError(
-              'failed to fetch description from current Gerrit issue %d\n'
+              'failed to fetch description from current Gerrit change %d\n'
               '%s' % (self.GetIssue(), self.GetIssueURL()))
         change_id = self._GetChangeDetail()['change_id']
         while True:
@@ -2679,7 +2679,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             break
           if not footer_change_ids:
             message = git_footers.add_footer_change_id(message, change_id)
-            print('WARNING: appended missing Change-Id to issue description')
+            print('WARNING: appended missing Change-Id to change description')
             continue
           # There is already a valid footer but with different or several ids.
           # Doing this automatically is non-trivial as we don't want to lose
@@ -2688,9 +2688,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           # new description.
           message = '%s\n\nChange-Id: %s' % (message, change_id)
           print(
-              'WARNING: issue %s has Change-Id footer(s):\n'
+              'WARNING: change %s has Change-Id footer(s):\n'
               '  %s\n'
-              'but issue has Change-Id %s, according to Gerrit.\n'
+              'but change has Change-Id %s, according to Gerrit.\n'
               'Please, check the proposed correction to the description, '
               'and edit it if necessary but keep the "Change-Id: %s" footer\n'
               % (self.GetIssue(), '\n  '.join(footer_change_ids), change_id,
@@ -2882,8 +2882,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def CannotTriggerTryJobReason(self):
     try:
       data = self._GetChangeDetail()
-    except GerritIssueNotExists:
-      return 'Gerrit doesn\'t know about your issue %s' % self.GetIssue()
+    except GerritChangeNotExists:
+      return 'Gerrit doesn\'t know about your change %s' % self.GetIssue()
 
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'CL %s is closed' % self.GetIssue()
@@ -2898,7 +2898,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if int(revision_data['_number']) == patchset:
         break
     else:
-      raise Exception('Patchset %d is not known in Gerrit issue %d' %
+      raise Exception('Patchset %d is not known in Gerrit change %d' %
                       (patchset, self.GetIssue()))
     return {
       'patch_issue': self.GetIssue(),
@@ -4266,7 +4266,7 @@ def SendUpstream(parser, args, cmd):
           'commit for review, contact your repository admin and request'
           '"Forge-Author" permission.')
     if not cl.GetIssue():
-      DieWithError('You must upload the issue first to Gerrit.\n'
+      DieWithError('You must upload the change first to Gerrit.\n'
                    '  If you would rather have `git cl land` upload '
                    'automatically for you, see http://crbug.com/642759')
     return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
