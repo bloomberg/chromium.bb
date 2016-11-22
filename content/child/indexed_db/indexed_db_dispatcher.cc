@@ -196,24 +196,28 @@ void IndexedDBDispatcher::CursorDestroyed(int32_t ipc_cursor_id) {
 
 void IndexedDBDispatcher::RegisterMojoOwnedCallbacks(
     IndexedDBCallbacksImpl::InternalState* callbacks) {
-  mojo_owned_callback_state_.insert(callbacks);
+  mojo_owned_callback_state_[callbacks] = base::WrapUnique(callbacks);
 }
 
 void IndexedDBDispatcher::UnregisterMojoOwnedCallbacks(
     IndexedDBCallbacksImpl::InternalState* callbacks) {
-  DCHECK(base::ContainsValue(mojo_owned_callback_state_, callbacks));
-  mojo_owned_callback_state_.erase(callbacks);
+  auto it = mojo_owned_callback_state_.find(callbacks);
+  DCHECK(it != mojo_owned_callback_state_.end());
+  it->second.release();
+  mojo_owned_callback_state_.erase(it);
 }
 
 void IndexedDBDispatcher::RegisterMojoOwnedDatabaseCallbacks(
     blink::WebIDBDatabaseCallbacks* callbacks) {
-  mojo_owned_database_callback_state_.insert(callbacks);
+  mojo_owned_database_callback_state_[callbacks] = base::WrapUnique(callbacks);
 }
 
 void IndexedDBDispatcher::UnregisterMojoOwnedDatabaseCallbacks(
     blink::WebIDBDatabaseCallbacks* callbacks) {
-  DCHECK(base::ContainsValue(mojo_owned_database_callback_state_, callbacks));
-  mojo_owned_database_callback_state_.erase(callbacks);
+  auto it = mojo_owned_database_callback_state_.find(callbacks);
+  DCHECK(it != mojo_owned_database_callback_state_.end());
+  it->second.release();
+  mojo_owned_database_callback_state_.erase(it);
 }
 
 // Populate some WebIDBValue members (data & blob info) from the supplied
