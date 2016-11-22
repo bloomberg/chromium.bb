@@ -262,8 +262,9 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     return;
   }
 
-  scoped_refptr<IndexedDBDatabase> database = IndexedDBDatabase::Create(
-      name, backing_store.get(), this, unique_identifier, &s);
+  scoped_refptr<IndexedDBDatabase> database;
+  std::tie(database, s) = IndexedDBDatabase::Create(name, backing_store.get(),
+                                                    this, unique_identifier);
   if (!database.get()) {
     IndexedDBDatabaseError error(
         blink::WebIDBDatabaseExceptionUnknownError,
@@ -436,8 +437,8 @@ void IndexedDBFactoryImpl::Open(
       return;
     }
 
-    database = IndexedDBDatabase::Create(
-        name, backing_store.get(), this, unique_identifier, &s);
+    std::tie(database, s) = IndexedDBDatabase::Create(name, backing_store.get(),
+                                                      this, unique_identifier);
     if (!database.get()) {
       DLOG(ERROR) << "Unable to create the database";
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,

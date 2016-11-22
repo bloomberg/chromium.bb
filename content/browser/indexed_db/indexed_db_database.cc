@@ -356,20 +356,18 @@ class IndexedDBDatabase::DeleteRequest
   DISALLOW_COPY_AND_ASSIGN(DeleteRequest);
 };
 
-scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
-    const base::string16& name,
-    IndexedDBBackingStore* backing_store,
-    IndexedDBFactory* factory,
-    const Identifier& unique_identifier,
-    leveldb::Status* s) {
+std::tuple<scoped_refptr<IndexedDBDatabase>, leveldb::Status>
+IndexedDBDatabase::Create(const base::string16& name,
+                          IndexedDBBackingStore* backing_store,
+                          IndexedDBFactory* factory,
+                          const Identifier& unique_identifier) {
   scoped_refptr<IndexedDBDatabase> database =
       IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
           name, backing_store, factory, unique_identifier);
-  *s = database->OpenInternal();
-  if (s->ok())
-    return database;
-  else
-    return NULL;
+  leveldb::Status s = database->OpenInternal();
+  if (!s.ok())
+    database = nullptr;
+  return std::tie(database, s);
 }
 
 IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,

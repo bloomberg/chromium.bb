@@ -13,6 +13,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -53,12 +54,11 @@ class CONTENT_EXPORT IndexedDBDatabase
   static const int64_t kInvalidId = 0;
   static const int64_t kMinimumIndexId = 30;
 
-  static scoped_refptr<IndexedDBDatabase> Create(
+  static std::tuple<scoped_refptr<IndexedDBDatabase>, leveldb::Status> Create(
       const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
-      const Identifier& unique_identifier,
-      leveldb::Status* s);
+      const Identifier& unique_identifier);
 
   const Identifier& identifier() const { return identifier_; }
   IndexedDBBackingStore* backing_store() { return backing_store_.get(); }

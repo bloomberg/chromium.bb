@@ -48,11 +48,9 @@ class IndexedDBTransactionTest : public testing::Test {
     // "peculiarity of C++". More info at
     // https://github.com/google/googletest/blob/master/googletest/docs/FAQ.md#my-compiler-complains-that-a-constructor-or-destructor-cannot-return-a-value-whats-going-on
     leveldb::Status s;
-    db_ = IndexedDBDatabase::Create(base::ASCIIToUTF16("db"),
-                                    backing_store_.get(),
-                                    factory_.get(),
-                                    IndexedDBDatabase::Identifier(),
-                                    &s);
+    std::tie(db_, s) = IndexedDBDatabase::Create(
+        base::ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
+        IndexedDBDatabase::Identifier());
     ASSERT_TRUE(s.ok());
   }
 
