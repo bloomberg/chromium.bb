@@ -293,6 +293,12 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionErrorPageCodeSectionTest',
   mocha.grep(assert(extension_error_page_tests.TestNames.CodeSection)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionErrorPageErrorSelectionTest',
+       function() {
+  extension_error_page_tests.registerTests();
+  mocha.grep(assert(extension_error_page_tests.TestNames.ErrorSelection)).run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Code Section Tests
 

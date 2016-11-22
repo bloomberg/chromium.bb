@@ -39,10 +39,14 @@ cr.define('extensions', function() {
 
       /** @type {!extensions.ErrorPageDelegate|undefined} */
       delegate: Object,
+
+      /** @private {?(ManifestError|RuntimeError)} */
+      selectedError_: Object,
     },
 
     observers: [
       'observeDataChanges_(data)',
+      'onSelectedErrorChanged_(selectedError_)',
     ],
 
     ready: function() {
@@ -62,7 +66,7 @@ cr.define('extensions', function() {
       assert(this.data);
       var e = this.data.manifestErrors[0] || this.data.runtimeErrors[0];
       if (e)
-        this.fetchCodeSource_(e);
+        this.selectedError_ = e;
     },
 
     /**
@@ -111,10 +115,11 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Fetches the source for the given |error| and populates the code section.
-     * @param {!ManifestError|!RuntimeError} error
+     * Fetches the source for the selected error and populates the code section.
+     * @private
      */
-    fetchCodeSource_: function(error) {
+    onSelectedErrorChanged_: function() {
+      var error = this.selectedError_;
       var args = {
         extensionId: error.extensionId,
         message: error.message,
@@ -135,6 +140,45 @@ cr.define('extensions', function() {
       this.delegate.requestFileSource(args).then(function(code) {
         this.$['code-section'].code = code;
       }.bind(this));
+    },
+
+    /**
+     * Computes the class name for the error item depending on whether its
+     * the currently selected error.
+     * @param {!RuntimeError|!ManifestError} selectedError
+     * @param {!RuntimeError|!ManifestError} error
+     * @return {string}
+     * @private
+     */
+    computeErrorClass_: function(selectedError, error) {
+      return selectedError == error ?
+          'error-item selected' : 'error-item';
+    },
+
+    /**
+     * Causes the given error to become the currently-selected error.
+     * @param {!RuntimeError|!ManifestError} error
+     * @private
+     */
+    selectError_: function(error) {
+      this.selectedError_ = error;
+    },
+
+    /**
+     * @param {!{model: !{item: (!RuntimeError|!ManifestError)}}} e
+     * @private
+     */
+    onErrorItemTap_: function(e) {
+      this.selectError_(e.model.item);
+    },
+
+    /**
+     * @param {!{model: !{item: (!RuntimeError|!ManifestError)}}} e
+     * @private
+     */
+    onErrorItemKeydown_: function(e) {
+      if (e.key == ' ' || e.key == 'Enter')
+        this.selectError_(e.model.item);
     },
   });
 

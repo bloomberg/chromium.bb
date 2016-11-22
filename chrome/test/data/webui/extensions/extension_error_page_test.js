@@ -8,6 +8,7 @@ cr.define('extension_error_page_tests', function() {
   var TestNames = {
     Layout: 'layout',
     CodeSection: 'code section',
+    ErrorSelection: 'error selection',
   };
 
   /**
@@ -145,6 +146,40 @@ cr.define('extension_error_page_tests', function() {
           expectEquals(code, errorPage.$$('extensions-code-section').code);
           done();
         });
+      });
+
+      test(assert(TestNames.ErrorSelection), function() {
+        var nextRuntimeError = Object.assign({
+          source: 'chrome-extension://' + extensionId + '/other_source.html',
+          message: 'Other error',
+          id: 2,
+          severity: chrome.developerPrivate.ErrorLevel.ERROR,
+        }, runtimeErrorBase);
+        // Add a new runtime error to the end.
+        errorPage.push('data.runtimeErrors', nextRuntimeError);
+        Polymer.dom.flush();
+
+        var errorElems = errorPage.querySelectorAll('* /deep/ .error-item');
+        expectEquals(2, errorElems.length);
+
+        // The first error should be focused by default, and we should have
+        // requested the source for it.
+        expectEquals(extensionData.runtimeErrors[0], errorPage.selectedError_);
+        expectTrue(!!mockDelegate.requestFileSourceArgs);
+        var args = mockDelegate.requestFileSourceArgs;
+        expectEquals('source.html', args.pathSuffix);
+        mockDelegate.requestFileSourceResolver.resolve(null);
+
+        mockDelegate.requestFileSourceResolver = new PromiseResolver();
+        mockDelegate.requestFileSourceArgs = undefined;
+
+        // Tap the second error. It should now be selected and we should request
+        // the source for it.
+        MockInteractions.tap(errorElems[1]);
+        expectEquals(nextRuntimeError, errorPage.selectedError_);
+        expectTrue(!!mockDelegate.requestFileSourceArgs);
+        args = mockDelegate.requestFileSourceArgs
+        expectEquals('other_source.html', args.pathSuffix);
       });
     });
   }

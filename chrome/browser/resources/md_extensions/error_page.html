@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -28,6 +29,7 @@
       }
 
       #errors-list {
+        min-height: 100px;
         padding: 0 10px;
       }
 
@@ -36,6 +38,10 @@
         color: var(--paper-grey-800);
         display: flex;
         margin: 5px 0;
+      }
+
+      .error-item.selected {
+        background-color: #ccc;
       }
 
       .error-message {
@@ -62,17 +68,20 @@
             on-tap="onCloseButtonTap_"></paper-icon-button>
         <span>$i18n{errorsPageHeading}</span>
       </div>
-      <div id="errors-list">
-        <template is="dom-repeat" items="[[calculateShownItems_(data.*)]]">
-          <div class="error-item">
+      <iron-list id="errors-list" items="[[calculateShownItems_(data.*)]]">
+        <template>
+          <div class$="[[computeErrorClass_(selectedError_, item)]]"
+              error="[[item]]"
+              tabindex$="[[tabIndex]]"
+              on-tap="onErrorItemTap_" on-keydown="onErrorItemKeydown_">
             <img class$="[[computeErrorIconClass_(item)]]">
             <div class="error-message">[[item.message]]</div>
             <paper-icon-button class="delete-button"
                 on-tap="onDeleteErrorTap_"
-                icon="delete"></paper-icon-button>
+                icon="delete" tabindex$="[[tabIndex]]"></paper-icon-button>
           </div>
         </template>
-      </div>
+      </iron-list>
       <div id="content-view">
         <extensions-code-section id="code-section"
             no-code-error="$i18n{noErrorsToShow}">
