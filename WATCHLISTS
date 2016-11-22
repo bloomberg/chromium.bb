@@ -134,7 +134,8 @@
                   '|tools/auto_bisect/'
     },
     'autofill': {
-      'filepath': 'chrome/browser/autofill/|'\
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill/|'\
+                  'chrome/browser/autofill/|'\
                   'chrome/browser/resources/options/autofill_|'\
                   'chrome/browser/ui/android/autofill/|'\
                   'chrome/browser/ui/autofill/|'\
