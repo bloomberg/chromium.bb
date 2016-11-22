@@ -40,6 +40,10 @@ public class SelectPopupDialog implements SelectPopup {
         mContentViewCore = contentViewCore;
 
         final ListView listView = new ListView(windowContext);
+        // setCacheColorHint(0) is required to prevent a black background in WebView on Lollipop:
+        // crbug.com/653026
+        listView.setCacheColorHint(0);
+
         AlertDialog.Builder b = new AlertDialog.Builder(windowContext)
                 .setView(listView)
                 .setCancelable(true);
