@@ -1056,9 +1056,13 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
   if (!currentStyle.getTextSizeAdjust().isAuto()) {
     // The accessibility font scale factor is applied by the autosizer so we
     // need to apply that scale factor on top of the text-size-adjust
-    // multiplier.
-    multiplier = currentStyle.getTextSizeAdjust().multiplier() *
-                 m_pageInfo.m_accessibilityFontScaleFactor;
+    // multiplier. Only apply the accessibility factor if the autosizer has
+    // determined a multiplier should be applied so that text-size-adjust:none
+    // does not cause a multiplier to be applied when it wouldn't be otherwise.
+    bool shouldApplyAccessibilityFontScaleFactor = multiplier > 1;
+    multiplier = currentStyle.getTextSizeAdjust().multiplier();
+    if (shouldApplyAccessibilityFontScaleFactor)
+      multiplier *= m_pageInfo.m_accessibilityFontScaleFactor;
   } else if (multiplier < 1) {
     // Unlike text-size-adjust, the text autosizer should only inflate fonts.
     multiplier = 1;
