@@ -4,7 +4,7 @@
 
 package org.chromium.net;
 
-import static android.system.OsConstants.AF_INET;
+import static android.system.OsConstants.AF_INET6;
 import static android.system.OsConstants.SOCK_STREAM;
 
 import android.annotation.TargetApi;
@@ -43,7 +43,7 @@ public class NetworkChangeNotifierTest extends CronetTestBase {
 
         // Bind a listening socket to a local port. The socket won't be used to accept any
         // connections, but rather to get connection stuck waiting to connect.
-        FileDescriptor s = Os.socket(AF_INET, SOCK_STREAM, 0);
+        FileDescriptor s = Os.socket(AF_INET6, SOCK_STREAM, 0);
         // Bind to 127.0.0.1 and a random port (indicated by special 0 value).
         Os.bind(s, InetAddress.getByAddress(null, new byte[] {127, 0, 0, 1}), 0);
         // Set backlog to 0 so connections end up stuck waiting to connect().
