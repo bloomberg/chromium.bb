@@ -1360,7 +1360,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     if (bsize >= BLOCK_8X8) write_filter_intra_mode_info(cm, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
   } else {
-    int16_t mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+    int16_t mode_ctx;
     write_ref_frames(cm, xd, w);
 
 #if CONFIG_REF_MV
@@ -1371,7 +1371,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif  // CONFIG_EXT_INTER
       mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
                                            mbmi->ref_frame, bsize, -1);
-#endif
+#else  // CONFIG_REF_MV
+    mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+#endif  // CONFIG_REF_MV
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {

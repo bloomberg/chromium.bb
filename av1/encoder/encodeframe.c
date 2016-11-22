@@ -1984,7 +1984,10 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
     if (inter_block &&
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      int16_t mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+      int16_t mode_ctx;
+#if !CONFIG_REF_MV
+      mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+#endif
       if (bsize >= BLOCK_8X8) {
         const PREDICTION_MODE mode = mbmi->mode;
 #if CONFIG_REF_MV

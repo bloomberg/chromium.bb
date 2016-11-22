@@ -4394,7 +4394,7 @@ static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int num_4x4_blocks_wide = num_4x4_blocks_wide_lookup[mbmi->sb_type];
   const int num_4x4_blocks_high = num_4x4_blocks_high_lookup[mbmi->sb_type];
   const int is_compound = has_second_ref(mbmi);
-  int mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+  int mode_ctx;
 
   switch (mode) {
     case NEWMV:
@@ -4534,7 +4534,9 @@ static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTER
     mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
                                          mbmi->ref_frame, mbmi->sb_type, i);
-#endif
+#else  // CONFIG_REF_MV
+  mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+#endif  // CONFIG_REF_MV
 #if CONFIG_REF_MV && CONFIG_EXT_INTER
   return cost_mv_ref(cpi, mode, is_compound, mode_ctx) + thismvcost;
 #else
@@ -6979,7 +6981,7 @@ static int64_t handle_inter_mode(
 
   int skip_txfm_sb = 0;
   int64_t skip_sse_sb = INT64_MAX;
-  int16_t mode_ctx = mbmi_ext->mode_context[refs[0]];
+  int16_t mode_ctx;
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_invalid_rd_stats(&best_rd_stats);
 #endif
@@ -7004,7 +7006,9 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_EXT_INTER
     mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
                                          mbmi->ref_frame, bsize, -1);
-#endif
+#else   // CONFIG_REF_MV
+  mode_ctx = mbmi_ext->mode_context[refs[0]];
+#endif  // CONFIG_REF_MV
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
