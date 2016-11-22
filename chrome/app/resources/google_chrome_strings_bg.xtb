@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
-<translation id="1013290471399003443">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът предостави валидна информация за прозрачност на сертификата.</translation>
 <translation id="103396972844768118">Важна информация относно данните ви в Chrome</translation>
 <translation id="1035334672863811645">Влезте в Chrome</translation>
 <translation id="1061441684050139317">Chrome се нуждае от достъп до микрофона, за да го сподели с този сайт.</translation>
@@ -22,6 +21,7 @@
 <translation id="1480489203462860648">Изпробвайте браузъра – вече е инсталиран</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
+<translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
@@ -40,6 +40,7 @@
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
 <translation id="2077129598763517140">Да се използва хардуерно ускорение, когато е налице</translation>
 <translation id="2084710999043359739">Добавяне</translation>
+<translation id="2147651015520127414">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF файлове липсва.</translation>
 <translation id="2252923619938421629">Помогнете за подобряването на Google Chrome, като подадете сигнал за текущите настройки</translation>
 <translation id="225614027745146050">Добре дошли</translation>
@@ -72,7 +73,6 @@
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2900322993655997287">Google Chrome не може да определи или зададе браузъра по подразбиране.</translation>
-<translation id="2997147809295888909">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът не предостави информация за прозрачност на сертификата.</translation>
 <translation id="3037838751736561277">Google Chrome работи на заден план.</translation>
 <translation id="3047079729301751317">Прекратяването на връзката с/ъс <ph name="USERNAME" /> ще изчисти историята, отметките, настройките и другите данни в Chrome, съхранени на това устройство. Данните в профила ви в Google няма да бъдат изчистени и могат да се управляват в <ph name="GOOGLE_DASHBOARD_LINK" />Google Табло за управление<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Раздел в Chrome</translation>
@@ -103,7 +103,6 @@
 <translation id="3847841918622877581">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3881912906674381083">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът предостави информация за прозрачност на сертификата, но Chrome не разпозна нито един от регистрационните файлове за прозрачност на сертификата.</translation>
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="4028693306634653894">Стартирайте Chrome по-бързо</translation>
 <translation id="4042449298237264661">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече не се поддържат.</translation>
@@ -137,7 +136,6 @@
 <translation id="4891791193823137474">Google Chrome да се изпълнява на заден план</translation>
 <translation id="4901390485477164536">Google Chrome е браузърът ви по подразбиране. Браво.</translation>
 <translation id="4921569541910214635">Споделяте компютър? Вече можете да настроите Chrome точно по свой вкус.</translation>
-<translation id="4925019873400497719">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът предостави информация за прозрачност на сертификата, но тя бе невалидна.</translation>
 <translation id="4953650215774548573">Задаване на Google Chrome като браузър по подразбиране</translation>
 <translation id="495931528404527476">В Chrome</translation>
 <translation id="4987308747895123092">Моля, затворете всички прозорци на Google Chrome (включително тези в режим за Windows 8) и опитайте отново.</translation>
@@ -164,6 +162,7 @@
 <translation id="5563479599352954471">Търсене с едно докосване</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
 <translation id="5620765574781326016">Научете за темите в уебсайтовете, без да излизате от страницата.</translation>
+<translation id="565744775970812598">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
 <translation id="568643307450491754">Намерете отметките си в менюто на Chrome или в лентата на отметките.</translation>
 <translation id="573759479754913123">Всичко за Chrome OS</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
@@ -185,9 +184,11 @@
 <translation id="6236285698028833233">Google Chrome спря да се актуализира и вече не поддържа тази версия на операционната ви система.</translation>
 <translation id="6291549208091401781">Google Chrome вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="629218512217695915">Използвайте парола, генерирана от Chrome</translation>
+<translation id="6338556085225130112">Google Chrome се актуализира</translation>
 <translation id="6368805772029492593">За повишаване на сигурността Google Chrome ще шифрова данните ви.</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече няма да се поддържат.</translation>
+<translation id="6410540444482791104">Можете да ни помогнете да направим браузъра Chrome по-надежден и по-лесен за използване, като автоматично изпращате до Google системна информация и част от съдържанието на страниците, за да ни съдействате при откриването на опасни приложения и сайтове.</translation>
 <translation id="6470176598693778404">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече не се поддържат.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{В момента се изтегля файл. Искате ли да анулирате изтеглянето и да излезете от Google Chrome?}other{В момента се изтеглят # файла. Искате ли да анулирате изтеглянията и да излезете от Google Chrome?}}</translation>
 <translation id="6566149418543181476">Google Chrome се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -242,6 +243,7 @@
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="7888186132678118370">Закачване на Chrome към лентата на задачите</translation>
 <translation id="7890208801193284374">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chrome точно така, както искат.</translation>
+<translation id="7896673875602241923">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
 <translation id="7908168227788431038">Актуализирането почти завърши! Остава само да стартирате отново Google Chrome.</translation>
 <translation id="795025003224538582">Без рестартиране</translation>
 <translation id="7964230182933713106">Chrome OS се показва на този език.</translation>
@@ -279,5 +281,6 @@
 <translation id="9067395829937117663">За Google Chrome се изисква Windows 7 или по-нова версия.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Предупреждение<ph name="END_BOLD" />: Google Chrome не може да попречи на разширенията да записват историята ви на сърфиране. За да деактивирате това разширение в режим „инкогнито“, премахнете отметката от тази опция.</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
+<translation id="919706545465235479">Актуализирайте Chrome, за да стартира синхронизирането</translation>
 <translation id="924447568950697217">Задаване на Chrome като браузър по подразбиране</translation>
 </translationbundle>

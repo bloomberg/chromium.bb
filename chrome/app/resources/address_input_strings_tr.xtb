@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">Şehir</translation>
 <translation id="6403469950615936250">Bu posta kodu biçimi tanınmadı. Geçerli bir posta kodu örneği: <ph name="EXAMPLE" />. Posta kodunuzu bilmiyor musunuz? <ph name="BEGIN_LINK" />Buradan<ph name="END_LINK" /> bulabilirsiniz.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" />, bu alan için kabul edilen bir değer olarak tanınmıyor.</translation>
+<translation id="6768780634682399515">Eircode</translation>
 <translation id="6777217372746654521">Bu adres satırının bir posta kutusu içerdiği anlaşılıyor. Lütfen sokak veya bina adresi kullanın.</translation>
 <translation id="6839929833149231406">Bölge</translation>
+<translation id="684852933191805996">Semt</translation>
 <translation id="6970216967273061347">Bölge</translation>
 <translation id="7087282848513945231">İlçe</translation>
 <translation id="7139724024395191329">Emirlik</translation>

@@ -28,7 +28,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="1704090719919187045">Chromoting ホスト設定</translation>
 <translation id="1730409684442507495">• デスクトップ画像の品質、処理速度、バッテリー消費量が改善されました。
-• クリックしてドラッグするときの反応性が高まりました。
+• クリックしてドラッグするときの応答性が高まりました。
 • いくつかの UI アニメーション効果がスムーズになりました。</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="1742469581923031760">接続しています...</translation>
@@ -223,6 +223,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6640610550128933069">前回のインターネット接続日: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN を更新しました。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
+<translation id="6705482892455291412">クライアントがコードを入力すると、接続を許可してセッションの共有を開始するかどうかを確認するメッセージが表示されます。</translation>
 <translation id="6746493157771801606">履歴をクリア</translation>
 <translation id="6748108480210050150">From</translation>
 <translation id="677755392401385740">次のユーザーのホストを開始しました: <ph name="HOST_USERNAME" />。</translation>
@@ -299,6 +300,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="9188433529406846933">承認</translation>
 <translation id="9213184081240281106">ホストの設定が無効です。</translation>
 <translation id="951991426597076286">同意しない</translation>
+<translation id="962733587145768554">処理を完了するには、接続ダイアログ ボックスで「<ph name="SHARE" />」を選択してください。</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> の Chrome リモート デスクトップは最新ではないため、更新する必要があります。</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" />（前回のオンライン接続: <ph name="DATE_OR_TIME" />）</translation>

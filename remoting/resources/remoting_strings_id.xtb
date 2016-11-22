@@ -223,6 +223,7 @@ Desktop Jarak Jauh</translation>
 <translation id="6640610550128933069">online terakhir tanggal <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN Anda telah diperbarui.</translation>
 <translation id="6681800064886881394">Hak cipta 2013 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
+<translation id="6705482892455291412">Setelah kode dimasukkan, Anda akan diminta untuk menerima sambungan dan memulai sesi berbagi.</translation>
 <translation id="6746493157771801606">Hapus riwayat</translation>
 <translation id="6748108480210050150">Dari</translation>
 <translation id="677755392401385740">Host dimulai untuk pengguna: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Desktop Jarak Jauh</translation>
 <translation id="9188433529406846933">Beri Otorisasi</translation>
 <translation id="9213184081240281106">Konfigurasi host tidak valid.</translation>
 <translation id="951991426597076286">Tolak</translation>
+<translation id="962733587145768554">Pilih '<ph name="SHARE" />' di kotak dialog untuk menyelesaikan proses.</translation>
 <translation id="979100198331752041">Chrome Desktop Jarak Jauh di <ph name="HOSTNAME" /> telah kedaluwarsa dan perlu diperbarui.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (terakhir kali online <ph name="DATE_OR_TIME" />)</translation>

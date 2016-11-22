@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">By</translation>
 <translation id="6403469950615936250">Postnummerformatet ble ikke gjenkjent. Eksempel på et gyldig postnummer: <ph name="EXAMPLE" />. Vet du ikke hva postnummeret ditt er? Du kan finne det ut <ph name="BEGIN_LINK" />her<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" /> gjenkjennes ikke som en kjent verdi for dette feltet.</translation>
+<translation id="6768780634682399515">Eircode</translation>
 <translation id="6777217372746654521">Dette adressefeltet inneholder en postboksadresse. Bruk en gate- eller bygningsadresse.</translation>
 <translation id="6839929833149231406">Område</translation>
+<translation id="684852933191805996">Poststed</translation>
 <translation id="6970216967273061347">Område</translation>
 <translation id="7087282848513945231">Fylke</translation>
 <translation id="7139724024395191329">Emirat</translation>

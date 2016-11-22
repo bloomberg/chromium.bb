@@ -33,7 +33,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device. To retrieve your data later, sign in to Chromium as $2.}other{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}}</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
-<translation id="2117181891440368863">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but it was invalid.</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS open source licences</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
@@ -112,6 +111,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4423735387467980091">Customise and control Chromium</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4469812139324097969">Chromium is out of date because it hasn't been relaunched for a while. An update is available and will be applied as soon as you relaunch.</translation>
+<translation id="4488554488975128561">You can help make Chromium safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.</translation>
 <translation id="4549794359424059447">Future versions of Chromium will no longer support Windows XP or Windows Vista.</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="457845228957001925">Important information regarding your Chromium data</translation>
@@ -119,6 +119,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4621240073146040695">Nearly up to date! Relaunch Chromium to finish updating.</translation>
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="469338717132742108">Get help with Chromium OS</translation>
+<translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
 <translation id="4714956846925717402">Get to Chromium faster</translation>
 <translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
@@ -157,11 +158,14 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5942225298871134766">Chromium will store this with <ph name="SAVED_PASSWORD_LINK" /> and remember it the next time that you need it.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> has been added to Chromium.</translation>
 <translation id="59625444380784159">Details from your contacts can help you fill out forms more quickly in Chromium.</translation>
+<translation id="5987687638152509985">Update Chromium to start sync</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="6077017812234345835">This will permanently delete at least <ph name="TOTAL_COUNT" /> items from this device. To retrieve your data later, sign in to Chromium as $2.</translation>
 <translation id="608189560609172163">Chromium could not sync your data due to an error signing in.</translation>
+<translation id="6129621093834146363"><ph name="FILE_NAME" /> is dangerous, so Chromium has blocked it.</translation>
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="6248213926982192922">Make Chromium the default browser</translation>
+<translation id="6295779123002464101"><ph name="FILE_NAME" /> may be dangerous, so Chromium has blocked it.</translation>
 <translation id="6309712487085796862">Chromium is using your camera.</translation>
 <translation id="6333502561965082103">Another operation on Chromium is in progress. Please try again later.</translation>
 <translation id="6334986366598267305">Now it's easier to use Chromium with your Google Account and on shared computers.</translation>
@@ -184,7 +188,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6734291798041940871">Chromium is already installed for all users on your computer.</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="6810143991807788455">Help make Chromium better by reporting the current settings</translation>
-<translation id="6838494703713445896">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied valid Certificate Transparency information.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
@@ -200,13 +203,13 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="7114836556269756734">{NUM_ITEMS,plural, =1{This will permanently delete $1 item from this device. To retrieve your data later, sign in to Chromium as $2.}other{This will permanently delete $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}}</translation>
 <translation id="7138853919861947730">Chromium may use web services to improve your browsing experience.</translation>
 <translation id="7162152143154757523">Chromium can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
-<translation id="7178626992616222740">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but Chromium did not recognise any of the Certificate Transparency logs.</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="7205698830395646142">Hide in Chromium Menu</translation>
 <translation id="7211828883345145708">Enables additional keyboard shortcuts that are useful for debugging Chromium.</translation>
 <translation id="7223968959479464213">Task Manager - Chromium</translation>
 <translation id="722928257909516027">Show Chromium menu</translation>
 <translation id="731644333568559921">Update &amp;Chromium OS</translation>
+<translation id="731795002583552498">Updating Chromium</translation>
 <translation id="7318036098707714271">Your preferences file is corrupt or invalid.
 
 Google Chrome is unable to recover your settings.</translation>
@@ -230,7 +233,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7641113255207688324">Chromium isn't your default browser.</translation>
 <translation id="7729447699958282447">Chromium could not sync your data because Sync is not available for your domain.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
-<translation id="7918535023914021398">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server did not supply any Certificate Transparency information.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="795025003224538582">Don't restart</translation>
 <translation id="7962572577636132072">Chromium updates automatically so you always have the freshest version.</translation>

@@ -40,6 +40,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, nuotolinės pagalbos prieglobos serveris bus vykdomas naudotojo kontekste ir nuotoliniai naudotojai negalės sąveikauti su pakeltais langais staliniame kompiuteryje.</translation>
 <translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
 <translation id="1103860406762205913">Įgalinamas senasis žiniatinkliu pagrįstas prisijungimas</translation>
+<translation id="1117535567637097036">Protokolų doroklės, nustatytos pagal šią politiką, nenaudojamos apdorojant „Android“ tikslus.</translation>
 <translation id="1128903365609589950">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos, kad išsaugotų talpykloje saugomus failus diske.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos pateiktą katalogą neatsižvelgiant į tai, ar naudotojas nurodė žymą „--disk-cache-dir“, ar ne. Kad neprarastumėte duomenų ir išvengtumėte kitų netikėtų klaidų, ši politika neturėtų būti nustatyta tomo šakniniame kataloge ar kitais tikslais naudojamame kataloge, nes „<ph name="PRODUCT_NAME" />“ tvarko savo turinį.
@@ -56,6 +57,25 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="1152117524387175066">Pateikti įrenginio „Dev“ perjungimo būseną paleidžiant.
 
       Jei ši politika nustatyta kaip „False“, „Dev“ perjungimo būsena nebus pateikta.</translation>
+<translation id="1156080716265314451">Konfigūruojamas spausdintuvų sąrašas.
+
+      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
+      naudotojams.
+
+      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias
+      galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ turėtų atitikti vieną iš „<ph name="PRODUCT_NAME" />“ palaikomų
+      spausdintuvų. „<ph name="PRINTER_URI" />“ turėtų būti adresas, pasiekiamas
+      iš kliento kompiuterio, įskaitant „<ph name="URI_SCHEME" />“,
+      „<ph name="URI_PORT" />“ ir „<ph name="URI_QUEUE" />“. „<ph name="PRINTER_UUID" />“ pasirenkama. Jei pateikta, tai naudojama, kad būtų
+      lengviau panaikinti „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvų pasikartojimus.
+
+      Spausdintuvo sąranka užbaigiama pirmą kartą naudojant spausdintuvą. PPD neatsisiunčiami,
+      kol spausdintuvas naudojamas. Po to dažnai naudojami
+      PPD saugomi talpykloje.
+
+      Ši politika neturi įtakos nustatant, ar naudotojai gali konfigūruoti spausdintuvus
+      atskiruose įrenginiuose. Ji taikoma kaip papildoma
+      atskirų naudotojų spausdintuvų konfigūracijos politika.</translation>
 <translation id="1160939557934457296">Neleisti tęsti veiksmų iš Saugaus naršymo įspėjimo puslapio</translation>
 <translation id="1198465924256827162">Įrenginio būsenos įkėlimo nustatymo dažnis milisekundėmis.
 
@@ -159,7 +179,6 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       negali naudoti ARC.</translation>
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
-<translation id="1606958238518590302">Kai ši politika nustatyta į „True“, naudotojai negali nieko įrašyti į išorinius saugyklos įrenginius.</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="1617384279878333801">Asmens pridėjimo profilių tvarkymo priemonėje įgalinimas</translation>
@@ -172,6 +191,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="166427968280387991">Tarpinis serveris</translation>
 <translation id="1675002386741412210">Palaikoma naudojant:</translation>
 <translation id="1679420586049708690">Vieša automatinio prisijungimo sesija</translation>
+<translation id="1680029600835707254">Ši politika valdo, kas gali pradėti „<ph name="PRODUCT_OS_NAME" />“ sesiją. Ji nedraudžia naudotojams prisijungti prie papildomų „Google“ paskyrų sistemoje „Android“. Jei norite tai uždrausti, sukonfigūruokite „Android“ skirtą politiką „<ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" />“ kaip „<ph name="ARC_POLICY" />“ dalį.</translation>
 <translation id="1689963000958717134">Leidžiama naudoti tinklo konfigūraciją, kad būtų taikoma visiems „<ph name="PRODUCT_OS_NAME" />“ įrenginio naudotojams. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip nurodyta atvirojo tinklo konfigūracijos formato, aprašyto šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Nustatykite variantų pirminės reikšmės pateikimo apribojimą</translation>
 <translation id="172374442286684480">Leisti visose svetainėse nustatyti vietinius duomenis</translation>
@@ -195,6 +215,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Šios politikos nepaisoma, nebent įdiegta
       „Chrome“ nuotolinio kompiuterio valdymo priegloba.</translation>
 <translation id="1757688868319862958">„<ph name="PRODUCT_NAME" />“ leidžiama paleisti papildinius, kuriuos naudojant reikalinga prieigos teisė. Jei įgalinsite šį nustatymą, visada bus paleidžiami nepasenę papildiniai. Jei šis nustatymas neleidžiamas arba nenustatytas, naudotojų bus prašoma suteikti leidimą paleisti papildinius, kuriuos naudojant reikalinga prieigos teisė. Šiais papildiniais gali būti pažeista sauga.</translation>
+<translation id="1781356041596378058">Ši politika taip pat valdo galimybę pasiekti „Android“ kūrėjo parinktis. Jei šią politiką nustatysite į „Tiesa“, naudotojai negalės pasiekti kūrėjo parinkčių. Jei šią politiką nustatysite į „Netiesa“ arba jos nenustatysite, naudotojai galės pasiekti kūrėjo parinktis palietę versijos numerį septynis kartus „Android“ nustatymų programoje.</translation>
 <translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
 <translation id="1827523283178827583">Naudoti fiksuotus tarpinius serverius</translation>
@@ -250,6 +271,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
       Jei ši politika nenustatyta, naudojami numatytieji nustatymai.</translation>
 <translation id="1964634611280150550">Inkognito režimas neleidžiamas</translation>
+<translation id="1964802606569741174">Ši politika neturi įtakos „Android“ skirtai „YouTube“ programai. Jei turėtų būti taikomi „YouTube“ saugos nustatymai, „Android“ skirtos „YouTube“ programos diegimas turėtų būti neleidžiamas.</translation>
 <translation id="1969212217917526199">Pakeičiama nuotolinės prieigos prieglobos derinimo versijų politika.
 
           Vertė analizuojama kaip politikos pavadinimo JSON žodynas, susiejant su politikos verte.</translation>
@@ -267,6 +289,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="2024476116966025075">Būtino nuotolinės prieigos klientų domeno pavadinimo konfigūravimas</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
+<translation id="203096360153626918">Ši politika neturi įtakos „Android“ programoms. Jas naudojant bus galima įjungti viso ekrano režimą, net jei ši politika nustatyta į „<ph name="FALSE" />“.</translation>
 <translation id="206623763829450685">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME" />“.
 
           Galimos vertės: „basic“, „digest“, „ntlm“ ir „negotiate“. Kelias vertes atskirkite kableliais.
@@ -341,6 +364,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Rašybą tikrinti vis tiek galima naudojant atsisiųstą žodyną; taikant šią politiką valdomas tik internetinės paslaugos naudojimas.
 
       Jei šis nustatymas nesukonfigūruotas, naudotojai gali pasirinkti, ar turėtų būti naudojama rašybos tikrinimo paslauga.</translation>
+<translation id="2294382669900758280">Į vaizdo įrašų leidimą „Android“ programose neatsižvelgiama, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
 <translation id="2299220924812062390">Nurodyti įgalintų papildinių sąrašą</translation>
 <translation id="2309390639296060546">Numatytasis geografinės vietovės nustatymas</translation>
 <translation id="2312134445771258233">Leidžiama konfigūruoti paleidžiant įkeliamus puslapius.
@@ -448,6 +472,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Jei šis nustatymas nenustatomas, naudotojas galės nuspręsti, ar naudoti šią funkciją, ar ne.
 
       Šis nustatymas pašalintas iš 29 ir naujesnių „<ph name="PRODUCT_NAME" />“ versijų.</translation>
+<translation id="2432116014157020512">Slaptažodį reikia įvesti kas savaitę (168 val.).</translation>
 <translation id="2436445024487698630">Leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="243972079416668391">Nurodykite veiksmą, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas, kai veikiama iš kintamosios srovės šaltinio.
 
@@ -506,6 +531,13 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
           „Google“ tiesioginių rezultatų URL galima nurodyti kaip: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
+<translation id="2569647487017692047">Jei ši politika bus nustatyta į „False“, „<ph name="PRODUCT_OS_NAME" />“ išjungs „Bluetooth“ ir naudotojas negalės jo vėl įgalinti.
+
+      Jei ši politika bus nustatyta į „True“ arba nenustatyta, naudotojas galės pasirinkti įgalinti arba išjungti „Bluetooth“.
+
+      Jei ši politika nustatyta, naudotojas negali jos pakeisti ar nepaisyti.
+
+      Kai įgalinama „Bluetooth“, naudotojas turi atsijungti ir vėl prisijungti, kad pakeitimai įsigaliotų (išjungiant „Bluetooth“, to atlikti nereikia).</translation>
 <translation id="2571066091915960923">Įgalina arba išjungia duomenų glaudinimo tarpinį serverį ir neleidžia naudotojams keisti šio nustatymo.
 
       Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės jo keisti ar nepaisyti.
@@ -627,6 +659,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>
 <translation id="2884728160143956392">Leisti tik sesijų slapukus šiose svetainėse</translation>
 <translation id="2893546967669465276">Sistemos žurnalų siuntimas valdymo serveriui</translation>
+<translation id="2899002520262095963">„Android“ programos gali naudoti šioje politikoje nustatytas tinklo konfigūracijas ir CA sertifikatus, bet negali pasiekti kai kurių konfigūravimo parinkčių.</translation>
 <translation id="2906874737073861391">„Programų paketo“ plėtinių sąrašas</translation>
 <translation id="2908277604670530363">Didžiausias jungčių prie tarpinio serverio vienu metu skaičius</translation>
 <translation id="2948087343485265211">Nurodo, ar garso įrašo veikla paveikia energijos valdymą.
@@ -694,6 +727,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
           Nenustačius šios politikos, naudotojas (-a) gali įdiegti bet kurį plėtinį „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="316778957754360075">Šis nustatymas nebenaudojamas 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose. Rekomenduojamas būdas nustatyti organizacijos valdomą plėtinių / programų rinkinius yra įtraukti svetaines priglobiančius CRX paketus į politiką „ExtensionInstallSources“ ir nuorodas įdėti tiesiogiai į tinklalapio paketus. Tam tinklalapiui skirtą paleidimo priemonę galima sukurti naudojant politiką „ExtensionInstallForcelist“.</translation>
 <translation id="3185009703220253572">nuo <ph name="SINCE_VERSION" /> versijos</translation>
+<translation id="3187220842205194486">„Android“ negali pasiekti įmonės raktų. Ši politika jiems neturi įtakos.</translation>
 <translation id="318812033927804102">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
 
           Ši politika valdo kelis nustatymus, įskaitant bet kokios esamos su plėtiniais susijusios politikos valdomus nustatymus. Ši politika pakeis bet kokią seną politiką, jei abi nustatytos.
@@ -759,6 +793,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
       Jei jis nenustatytas, naudotojo gali būti paklausta, ar importuoti, arba gali būti automatiškai pradėta importuoti.</translation>
 <translation id="3219421230122020860">Inkognito režimas pasiekiamas</translation>
+<translation id="3220624000494482595">Jei viešojo terminalo programa yra „Android“ programa, ji negalės valdyti „<ph name="PRODUCT_OS_NAME" />“ versijos, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
 <translation id="3236046242843493070">URL šablonai, kuriuos naudojant galima įdiegti plėtinį, programą ir naudotojo scenarijų iš</translation>
 <translation id="3243309373265599239">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas pritemdomas, kai naudojama kintamosios srovės energija.
 
@@ -793,6 +828,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="3322902067538988734">Jei ši politika nustatyta į „true“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta į „false“.
 
       Jei ši politika nustatyta į „false“ arba nesukonfigūruota, naudotojas galės naudoti naršyklę neprisijungęs prie „<ph name="PRODUCT_NAME" />“.</translation>
+<translation id="3347687541825006165">Nustatoma, kaip dažnai naudotojas turi įvesti slaptažodį, kad galėtų naudoti spartųjį atrakinimą.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
 <translation id="3417418267404583991">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ įgalinami svečių prisijungimai. Svečių prisijungimai – tai anoniminės naudotojų sesijos ir nereikalaujama slaptažodžio.
 
@@ -977,6 +1013,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
       Išjungus šią parinktį ar jos nenustačius naudotojai galės naudoti kūrėjo įrankius ir „JavaScript“ pultą.</translation>
 <translation id="3907986150060929099">Rekomenduojamų viešos sesijos lokalių nustatymas</translation>
+<translation id="3911737181201537215">Ši politika neturi įtakos „Android“ vykdomam registravimo procesui.</translation>
 <translation id="391531815696899618">Kai nustatyta kaip „true“, neleidžiamas „Google“ disko sinchronizavimas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“. Tokiu atveju duomenys į „Google“ diską neįkeliami.
 
           Jei nenustatyta arba nustatyta kaip „false“, naudotojai galės perkelti failus į „Google“ diską.</translation>
@@ -992,6 +1029,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="3964909636571393861">Suteikiama prieiga prie URL sąrašo</translation>
 <translation id="3965339130942650562">Skirtasis laikas, kol vykdomas neveikos būsenos naudotojo atjungimas</translation>
 <translation id="3967075520570946456">Įgalinkite darbo pradžios puslapio rodymą pirmą kartą paleidus naršyklę po OS naujovinimo.</translation>
+<translation id="3968660816994975381">Ši politika valdo, ar nauji naudotojai gali būti pridėti prie „<ph name="PRODUCT_OS_NAME" />“. Ji nedraudžia naudotojams prisijungti prie papildomų „Google“ paskyrų sistemoje „Android“. Jei norite tai uždrausti, sukonfigūruokite „Android“ skirtą politiką „<ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" />“ kaip „<ph name="ARC_POLICY" />“ dalį.</translation>
 <translation id="3973371701361892765">Niekada automatiškai neslėpti lentynos</translation>
 <translation id="3984028218719007910">Nustatoma, ar „<ph name="PRODUCT_OS_NAME" />“ paliekami vietiniai paskyros duomenys atsijungus. Jei nustatyta į „true“ (tiesa), jokios nuolatinės paskyros nelaikomos „<ph name="PRODUCT_OS_NAME" />“ ir visi duomenys iš naudotojo sesijos atmetami atsijungus. Jei ši politika nustatyta į „false“ (netiesa) arba nesukonfigūruota, įrenginyje gali būti laikomi (šifruoti) vietiniai naudotojo duomenys.</translation>
 <translation id="3994569321696536679">Įgalinama „<ph name="PRODUCT_NAME" />“
@@ -1021,6 +1059,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
       Jei ši politika negalioja, naudotojas negalės išpirkti pasiūlymų.</translation>
 <translation id="4010738624545340900">Leisti iškviesti failų pasirinkimo dialogo langus</translation>
+<translation id="4020682745012723568">Į naudotojo profilį perkeltų slapukų „Android“ programos pasiekti negali.</translation>
 <translation id="4025586928523884733">Blokuojami trečiųjų šalių slapukai.
 
       Įgalinus šį nustatymą tinklalapio elementai, kurie nėra iš domeno, nurodyto naršyklės adreso juostoje, negalės nustatyti slapukų.
@@ -1091,6 +1130,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="423797045246308574">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama naudoti rakto generavimo, sąrašą. Jei URL šablonas yra politikoje „KeygenAllowedForUrls“, šioje politikoje nepaisoma šių išimčių.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
+<translation id="4239720644496144453">Talpykla nenaudojama „Android“ programose. Jei keli naudotojai įdiegs tą pačią „Android“ programą, kiekvienam naudotojui bus atsisiųsta nauja programa.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4272136423200695428">Įgalinamas „<ph name="PRODUCT_NAME" />“ priverstinis prisijungimas.</translation>
 <translation id="427632463972968153">Nurodomi parametrai, naudojami atliekant vaizdų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {imageThumbnail} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais vaizdo miniatiūros duomenimis.
@@ -1109,6 +1149,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
+<translation id="4397469093966511008">Nustačius šią politiką į „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas į „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį Saugaus naršymo funkcijai, kad padėtų aptikti pavojingas programas ir svetaines.</translation>
 <translation id="4423597592074154136">Pačiam nurodyti tarpinio serverio nustatymus</translation>
 <translation id="4429220551923452215">Įgalinamas arba išjungiamas programų spartusis klavišas žymių juostoje.
 
@@ -1128,6 +1169,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="4449545651113180484">Sukti ekraną pagal laikrodžio rodyklę 270 laipsnių kampu</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="4474167089968829729">Įgalinti slaptažodžių saugojimą slaptažodžių tvarkytuvėje</translation>
+<translation id="4476769083125004742">Jei ši politika nustatyta į „<ph name="BLOCK_GEOLOCATION_SETTING" />“, „Android“ programos negalės pasiekti vietos informacijos. Jei šią politiką nustatysite į bet kokią kitą vertę arba jos nenustatysite, naudotojo bus paprašyta sutikti, kai „Android“ programa norės pasiekti vietovės informaciją.</translation>
 <translation id="447686899376429408">Jei ši politika galioja arba nėra nustatyta, naudotojai galės perduoti skirtukus, svetaines ar darbalaukį iš naršyklės. Jei ši politika negalioja, ši parinktis bus išjungta.</translation>
 <translation id="4480694116501920047">Priverstinai vykdyti saugią paiešką</translation>
 <translation id="4482640907922304445">Rodomas pagrindinio puslapio mygtukas „<ph name="PRODUCT_NAME" />“ įrankių juostoje.
@@ -1160,6 +1202,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="4525521128313814366">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
+<translation id="4531706050939927436">„Android“ programas galima priverstinai įdiegti iš „Google Admin Console“ naudojant „Google Play“. Jose ši politika nenaudojama.</translation>
 <translation id="4534500438517478692">„Android“ ribojimo pavadinimas:</translation>
 <translation id="4541530620466526913">Vietinės įrenginio paskyros</translation>
 <translation id="4555850956567117258">Įgalinti nuotolinį naudotojo patvirtinimą</translation>
@@ -1322,6 +1365,13 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
+<translation id="5209594095390052164">Leidžiama pasirinkti, ar įgalintas tinklo reguliavimas.
+      Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje. Nustačius
+      reguliavimas taikomas, kol politika pakeičiama, kad jis būtų išjungtas.
+
+      Nustačius į „False“, nereguliuojama.
+      Nustačius į „True“, sistema reguliuojama, kad pasiektų pateiktą įkėlimo ir atsisiuntimo spartą (kilobitais per sek.).</translation>
+<translation id="5219844027738217407">„Android“ programose ši politika turi įtakos tik mikrofonui. Kai ši politika nustatyta į „Tiesa“, mikrofonas be išimčių nutildomas visose „Android“ programose.</translation>
 <translation id="5226033722357981948">Nurodyti, ar turi būti neleidžiamas papildinių ieškiklis</translation>
 <translation id="523505283826916779">Pasiekiamumo nustatymai</translation>
 <translation id="5255162913209987122">Gali būti rekomenduojama</translation>
@@ -1397,12 +1447,18 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis slapukų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
 <translation id="5475361623548884387">Įgalinti spausdinimą</translation>
-<translation id="5496487987837463732">Nustačius šią politiką į „false“ naudotojai nebegalės pasirinkti siųsti informacijos apie saugos klaidas į „Google“ serverius. Jei šis nustatymas nustatytas į „true“ arba yra nesukonfigūruotas, naudotojai galės siųsti informaciją įvykus SSL klaidai arba rodant Saugaus naršymo įspėjimą.</translation>
 <translation id="5499375345075963939">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Kai šios politikos vertė nustatyta ir nėra 0, dabartinis prisijungęs demonstracinės versijos naudotojas (-a) automatiškai atjungiamas (-a) pasibaigus nurodytos trukmės neveiklos laikotarpiui.
 
       Politikos vertę reikia nurodyti milisekundėmis.</translation>
+<translation id="5506213378070007377">Informacija apie „Android“ būseną siunčiama atgal į
+      serverį.
+
+      Nustačius politiką į „False“, būsenos informacija nepranešama.
+      Nustačius į „True“ arba nenustačius, būsenos informacija pranešama.
+
+      Ši politika taikoma tik įgalinus „Android“ programas.</translation>
 <translation id="5511702823008968136">Įgalinti žymių juostą</translation>
 <translation id="5512418063782665071">Pagrindinio puslapio URL</translation>
 <translation id="5523812257194833591">Vieša sesija, skirta automatiškai prijungti po delsos.
@@ -1423,6 +1479,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       dažnis yra 30 sekundžių, o maksimalus – 24 valandos. Vertės
       už šio diapazono ribų bus nustatytos į šio diapazono vertę.</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
+<translation id="5559079916187891399">Ši politika neturi įtakos „Android“ programoms.</translation>
 <translation id="5560039246134246593">Pridėkite variantų pirminės reikšmės pateikimo apribojimą „<ph name="PRODUCT_NAME" />“.
 
       Jei jis nurodytas, prie pateikiant variantų pirminę reikšmę naudojamo URL bus pridėtas URL parametras „restrict“. Parametro vertė bus šioje politikoje nustatyta vertė.
@@ -1544,6 +1601,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="5893553533827140852">Jei šis nustatymas įgalintas, „Gnubby“ autentifikavimo užklausos bus perduotos įgaliotajam serveriui nuotolinės prieglobos ryšiu.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
+<translation id="5898486742390981550">Kai keli naudotojai yra prisijungę, tik pagrindinis naudotojas gali naudoti „Android“ programas.</translation>
 <translation id="5921713479449475707">Leisti automatinio naujinio atsisiuntimus naudojant HTTP</translation>
 <translation id="5921888683953999946">Nustatyti numatytąją didelio žymeklio pasiekiamumo funkciją prisijungimo ekrane.
 
@@ -1558,6 +1616,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Jei įgalinsite šį nustatymą, saugi paieška „Google“ paieškoje bus visada aktyvi.
 
       Jei šio nustatymo neleisite arba nenustatysite vertės, saugi paieška „Google“ paieškoje nebus vykdoma.</translation>
+<translation id="5937539742111853215">Ši politika valdo tik „<ph name="PRODUCT_OS_NAME" />“ kūrėjo režimą. Jei norite uždrausti galimybę pasiekti „Android“ kūrėjo parinktis, turite nustatyti politiką „<ph name="DEVELOPER_TOOLS_POLICY" />“.</translation>
 <translation id="5946082169633555022">Beta versijos kanalas</translation>
 <translation id="5950205771952201658">Jei įvyksta laikinoji klaida, atlikus internetinius panaikinimo patikrinimus sauga nėra užtikrinama efektyviai, todėl jie išjungiami pagal numatytuosius nustatymus naudojant 19 ar naujesnę „<ph name="PRODUCT_NAME" />“ versiją. Nustačius šios politikos reikšmę į „true“, atkuriama ankstesnė elgsena ir internete atliekami OCSP / CRL patikrinimai.
 
@@ -1583,13 +1642,6 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
       Jei ši politika bus nustatyta į „false“, aparatinės įrangos paspartinimas bus išjungtas.</translation>
 <translation id="6074963268421707432">Neleisti jokioje svetainėje rodyti darbalaukio pranešimų</translation>
-<translation id="6076008833763548615">Neleisti montuoti išorinės atminties.
-
-      Kai nustatytas šios politikos nustatymas „True“ (tiesa), išorinė atmintis nepasiekiama failų naršyklėje.
-
-      Ši politika turi įtakos visų tipų atminties medijai. Pvz.: USB atmintukams, išoriniams standiesiems diskams, SD ir kitoms atminties kortelėms, optinei atminčiai ir kt. Vidinė atmintis nepaveikiama, todėl atsisiuntimų aplanke išsaugotus failus vis tiek galima pasiekti. Be to, ši politika neturi įtakos „Google“ diskui.
-
-      Jei šis nustatymas neleidžiamas arba nesukonfigūruotas, naudotojai įrenginyje gali naudoti visų palaikomų tipų išorinę atmintį.</translation>
 <translation id="6076099373507468537">Apibrėžiamas USB įrenginių, kuriuos leidžiama atjungti nuo branduolio tvarkyklės, kad būtų galima naudoti naudojant chrome.usb API tiesiai žiniatinklio programoje, sąrašas. Įrašai – tai USB paslaugos teikėjo identifikatoriaus ir produkto identifikatoriaus poros, nurodančios konkrečią aparatinę įrangą.
 
       Jei ši politika nesukonfigūruota, atjungiamų USB įrenginių sąrašas yra tuščias.</translation>
@@ -1622,6 +1674,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="6145799962557135888">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
+<translation id="614662973812186053">Ši politika taip pat valdo „Android“ naudojimą ir diagnostikos duomenų rinkimą.</translation>
 <translation id="6151775819333710697">
           Įgalinus šį nustatymą, naudotojai gali nustatyti, kad „<ph name="PRODUCT_NAME" />“ įsimintų slaptažodžius
           ir pateiktų juos automatiškai kitą kartą prisijungiant prie svetainės.
@@ -1636,6 +1689,12 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="6155936611791017817">Nustatyti numatytąją didelio žymeklio prisijungimo ekrane būklę</translation>
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="6158324314836466367">Įmonės internetinės parduotuvės pavadinimas (nebenaudojama)</translation>
+<translation id="6166832345529129545">Valdoma, kuriuos sparčiojo atrakinimo režimus galima nustatyti ir naudoti.
+      Taikant šį nustatymą į baltąjį sąrašą įtraukiami leidžiami sparčiojo atrakinimo režimai, kuriuos galima nustatyti ir naudoti užrakinimo ekranui atrakinti. Vertė yra eilučių, kurių kiekviena turėtų būti viena iš nurodytų: „all“ (visi), „PIN“ (PIN kodas), sąrašas. Jei pasirenkama „all“, pasiekiami visi palaikomi spartieji režimai. Priešingu atveju režimai sąraše bus tie, kurie pasiekiami.
+
+      Jei šis nustatymas konfigūruojamas, galima nustatyti arba naudoti sparčiojo atrakinimo režimus, kurių tipas neįtrauktas į šį sąrašą.
+
+      Jei šis nustatymas nesukonfigūruotas, įgalinamas režimas „PIN“ ir išjungiami visi kiti režimai.</translation>
 <translation id="6167074305866468481">Įspėjimas: 3 versijos SSL palaikymas bus visiškai pašalintas iš „<ph name="PRODUCT_NAME" />“ išleidus 43 versijos programą (maždaug 2015 m. liepos mėn.). Tuo pačiu metu bus pašalinta ir ši politika.
 
       Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudos numatytosios minimalios versijos funkciją, kuri yra 3 versijos SSL naudojant 39 versijos „<ph name="PRODUCT_NAME" />“ ir 1.0 versijos TLS naudojant naujesnės versijos programą.
@@ -1706,6 +1765,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Jei šį nustatymą įgalinsite arba vertės nenustatysite, naudotojai ir toliau galės valdyti automatinį pildymą. Taip jie galės sukonfigūruoti automatinio pildymo profilius ir savo nuožiūra įjungti arba išjungti automatinio pildymo funkciją.</translation>
 <translation id="6394350458541421998">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_OS_NAME" />“ versijose. Vietoje jos naudokite politiką „PresentationScreenDimDelayScale“.</translation>
 <translation id="6401669939808766804">Atjungti naudotoją</translation>
+<translation id="6413263121045928260">Slaptažodį reikia įvesti kasdien (24 val.).</translation>
 <translation id="6417861582779909667">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama nustatyti slapukų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis slapukų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
@@ -1733,6 +1793,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės sumažinamos, kad neviršytų neveikos delsos laiko.</translation>
 <translation id="6536600139108165863">Automatinis paleidimas iš naujo, kai išjungiamas įrenginys</translation>
+<translation id="6539246272469751178">Ši politika neturi įtakos „Android“ programoms. „Android“ programos visada naudoja numatytąjį atsisiuntimų katalogą ir negali pasiekti „<ph name="PRODUCT_OS_NAME" />“ atsisiųstų failų į nenumatytą atsisiuntimų katalogą.</translation>
 <translation id="6544897973797372144">Jei šios politikos nustatymas yra „True“ (tiesa) ir politika „ChromeOsReleaseChannel“ („Chrome“ OS paleidimo kanalas) nenurodyta, tada užregistruoto domeno naudotojams leidžiama keisti įrenginio paleidimo kanalą. Jei šios politikos nustatymas yra „False“ (netiesa), įrenginys užrakinamas bet kuriame kanale, kuriame paskutinį kartą buvo nustatytas.
 
       Naudotojo (-os) pasirinktas kanalas bus pakeistas taikant politiką „ChromeOsReleaseChannel“ („Chrome“ OS paleidimo kanalas), bet jei politikos kanalas stabilesnis nei tas, kuris įdiegtas įrenginyje, kanalas perjungiamas, tik kai stabilesnio kanalo versija yra naujesnė nei įdiegta įrenginyje.</translation>
@@ -1924,6 +1985,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
           prie „Active Directory“ domeno.</translation>
 <translation id="7063895219334505671">Leisti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
+<translation id="7072406291414141328">Įgalinamas tinklo siuntimo spartos reguliavimas</translation>
 <translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="7091198954851103976">Visada paleidžiami papildiniai, kuriuos naudojant reikalinga prieigos teisė</translation>
 <translation id="7106631983877564505">Kai „<ph name="PRODUCT_OS_NAME" />“ įrenginiai tampa neaktyvūs ar sustabdomi, įjungiamas užraktas.
@@ -2080,6 +2142,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="7529144158022474049">Automatiškai atnaujinamas sklaidos veiksnys</translation>
+<translation id="7534199150025803530">Ši politika neturi įtakos „Android“ skirtai „Google“ disko programai. Jei norite neleisti naudoti „Google“ disko veikiant koriniam ryšiui, turėtumėte uždrausti „Android“ skirtos „Google“ disko programos diegimą.</translation>
 <translation id="7553535237300701827">Kai ši politika nustatyta, prisijungimo autentifikavimo eiga priklausys nuo nustatymo vertės:
 
       Jei vertė nustatyta į GAIA, prisijungimas bus atliekamas naudojant įprastą GAIA autentifikavimo eigą.
@@ -2098,6 +2161,8 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Jei politikos vertė nustatoma į 0, bus naudojama numatytojo dydžio talpykla, bet naudotojas negalės jos pakeisti.
 
       Jei ši politika nenustatyta, bus naudojamas numatytasis dydis, o naudotojas galės jį perrašyti naudodamas parametrą „--disk-cache-size“.</translation>
+<translation id="7604169113182304895">„Android“ programos gali pasirinkti atsižvelgti į šį sąrašą. Negalite priversti jų atsižvelgti į jį.</translation>
+<translation id="7611372873040492235">Slaptažodį reikia įvesti kas dvylika valandų.</translation>
 <translation id="7612157962821894603">Visos sistemos žymos, kurios bus taikomos paleidžiant „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="7614663184588396421">Neleidžiamų protokolų schemų sąrašas</translation>
 <translation id="7625444193696794922">Nurodomas leidimo kanalas, su kuriuo šis įrenginys turėtų būti sujungtas.</translation>
@@ -2229,6 +2294,7 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
+<translation id="7882857838942884046">Išjungus „Google“ sinchronizavimą „Android“ atsarginė kopija ir atkūrimas neveiks tinkamai.</translation>
 <translation id="7882890448959833986">Nerodyti nepalaikomos OS įspėjimo</translation>
 <translation id="7912255076272890813">Konfigūruoti leidžiamus programų / plėtinių tipus</translation>
 <translation id="7915236031252389808">Čia galite nurodyti tarpinio serverio .pac failo URL.
@@ -2269,8 +2335,10 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvy
           Jei šis nustatymas įgalintas, šis įrenginys gali rasti nuotolinės prieglobos įrenginius ir prie jų prisijungti, net jei jos atskirtos taikant užkardą.
 
            Jei šis nustatymas neleidžiamas ir išeinantys UDP ryšiai filtruojami taikant užkardą, šis įrenginys gali prisijungti tik prie prieglobos įrenginių vietiniame tinkle.</translation>
+<translation id="7986374692540430898">Negalite priversti „Android“ programų naudoti tarpinį serverį. „Android“ programos gali pasiekti dalį tarpinio serverio nustatymų, į kuriuos gali savanoriškai atsižvelgti. Jei reikia daugiau išsamios informacijos, žr. politiką „<ph name="PROXY_MODE_POLICY" />“.</translation>
 <translation id="802147957407376460">Pasukti ekraną 0 laipsnių kampu</translation>
 <translation id="8044493735196713914">Pranešti įrenginio operacinės sistemos paleidimo būseną</translation>
+<translation id="8050080920415773384">Vietinis spausdinimas</translation>
 <translation id="8059164285174960932">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą</translation>
 <translation id="8071636581296916773">Įgalinamas perdavimo serverių naudojimas, kai nuotolinės programos bando užmegzti ryšį su šiuo įrenginiu.
 
@@ -2305,6 +2373,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvy
 <translation id="8140204717286305802">Serveryje pateikti tinklo sąsajų sąrašą su jų tipais ir aparatinės įrangos adresais.
 
       Jei politika nustatyta kaip „False“, sąsajų sąrašas nebus pateiktas.</translation>
+<translation id="8141795997560411818">Ši politika nedraudžia naudotojui naudoti „Android“ skirtos „Google“ disko programos. Jei norite neleisti pasiekti „Google“ disko, taip pat turėtumėte neleisti diegti „Android“ skirtos „Google“ disko programos.</translation>
 <translation id="8146727383888924340">Leisti naudotojams pasinaudoti pasiūlymais atliekant „Chrome“ OS registraciją</translation>
 <translation id="8148785525797916822">Nerodomas įspėjimas, kuris rodomas, kai „<ph name="PRODUCT_NAME" />“ veikia kompiuteryje ar operacinėje sistemoje, kuri nebepalaikoma.</translation>
 <translation id="8148901634826284024">Įgalinti didelio kontrasto režimo pasiekiamumo funkciją.
@@ -2466,6 +2535,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvy
 <translation id="8587229956764455752">Leisti kurti naujų naudotojų paskyras</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
 <translation id="8631434304112909927">iki <ph name="UNTIL_VERSION" /> versijos</translation>
+<translation id="863319402127182273">„Android“ programose ši politika turi įtakos tik integruotam fotoaparatui. Kai ši politika nustatyta į „Tiesa“, fotoaparatas išjungiamas visose „Android“ programose be išimčių.</translation>
 <translation id="8649763579836720255">„Chrome“ OS įrenginiai gali naudoti nuotolinį patvirtinimą (patvirtinta prieiga), kad gautų „Chrome“ OS CA išduotą sertifikatą, pagal kurį nurodoma, kad įrenginys yra tinkamas paleisti apsaugotą turinį. Šis procesas apima aparatinės įrangos patvirtinimo informacijos siuntimą „Chrome“ OS CA, kuri unikaliai identifikuoja įrenginį.
 
           Jei šis nustatymas negalioja, įrenginys nenaudos nuotolinio turinio apsaugos patvirtinimo ir galbūt įrenginys negalės paleisti apsaugoto turinio.
@@ -2548,6 +2618,15 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvy
 <translation id="8833109046074170275">Autentifikavimas per numatytąją GAIA eigą</translation>
 <translation id="8838303810937202360">„<ph name="PRODUCT_OS_NAME" />“ talpykloje išsaugo programas ir plėtinius, kad juos galėtų įdiegti keli vieno įrenginio naudotojai ir kiekvienam naudotojui nereikėtų jų atsiųsti.
       Jei ši politika nesukonfigūruota arba vertė nustatyta į mažiau nei 1 MB, „<ph name="PRODUCT_OS_NAME" />“ naudos numatytojo dydžio talpyklą.</translation>
+<translation id="8858120573534680488">Negalite priversti „Android“ programų naudoti tarpinį serverį. „Android“ programos gali pasiekti dalį tarpinio serverio nustatymų, į kuriuos gali savanoriškai atsižvelgti.
+
+          Jei pasirinksite parinktį „Niekada nenaudoti tarpinio serverio“, „Android“ programos bus informuotos, kad tarpinis serveris nenustatytas.
+
+          Jei pasirinksite parinktį „Naudoti sistemos tarpinio serverio nustatymus“ arba „Fiksuotas tarpinis serveris“, „Android“ programoms bus pateiktas „http“ tarpinio serverio adresas ir prievadas.
+
+          Jei pasirinksite parinktį „Automatiškai aptikti tarpinį serverį“, scenarijaus URL (http://wpad/wpad.dat) bus pateiktas „Android“ programoms. Jokia kita tarpinio serverio automatinio aptikimo protokolo dalis nenaudojama.
+
+          Jei pasirinksite parinktį „.pac tarpinio serverio scenarijus“, scenarijaus URL bus pateiktas „Android“ programoms.</translation>
 <translation id="8858642179038618439">Priverstinis „YouTube“ saugos režimas</translation>
 <translation id="8864975621965365890">Nerodomas raginimas išjungti, kuris rodomas, kai svetainę pateikia „<ph name="PRODUCT_FRAME_NAME" />“.</translation>
 <translation id="8870318296973696995">Pagrindinis puslapis</translation>
@@ -2618,7 +2697,9 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvy
 <translation id="9088433379343318874">Įgalinti prižiūrimo naudotojo turinio teikėją</translation>
 <translation id="9088444059179765143">Automatinio laiko juostos aptikimo metodo konfigūravimas</translation>
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
+<translation id="9098186110082719131">Slaptažodį reikia įvesti kas šešias valandas.</translation>
 <translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
+<translation id="9105265795073104888">„Android“ programos gali pasiekti tik dalį tarpinio serverio konfigūravimo parinkčių. „Android“ programos gali pasirinkti naudoti tarpinį serverį. Negalite jų priversti naudoti tarpinio serverio.</translation>
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 
           Pagal politiką užregistruotos protokolo doroklės sujungiamos su naudotojo užregistruotomis doroklėmis ir jas abi galima naudoti. Naudotojas gali nepaisyti pagal politiką įdiegtų protokolo doroklių įdiegdamas naują numatytąją doroklę, bet jis negali pašalinti pagal politiką užregistruotos protokolo doroklės.</translation>
@@ -2651,5 +2732,11 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvy
 <translation id="922540222991413931">Konfigūruokite plėtinio, programos ir naudotojo scenarijaus įdiegimo šaltinius.</translation>
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="930930237275114205">Nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ naudotojo duomenų katalogą</translation>
+<translation id="944607242500063080">Konfigūruojami leidžiami sparčiojo atrakinimo režimai.</translation>
 <translation id="944817693306670849">Nustatyti disko talpyklos dydį</translation>
+<translation id="969164417253718105">Šis nustatymas valdo, kaip dažnai užrakinimo ekrane bus prašoma įvesti slaptažodį, norint toliau naudoti spartųjį atrakinimą. Kaskart įjungus užrakinimo ekraną, jei yra praėję daugiau laiko nuo paskutinio slaptažodžio įvedimo, nei nurodyta šiame nustatyme, spartusis atrakinimas nepasiekiamas įjungus užrakinimo ekraną. Jei naudotojas norės pasilikti užrakinimo ekrane praėjus šiam laikotarpiui, kitą kartą naudotojui įvedus netinkamą kodą ar pakartotinai apsilankius užrakinimo ekrane (atsižvelgiant į tai, kas įvyksta pirmiau), bus prašoma įvesti slaptažodį.
+
+      Jei šis nustatymas sukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma įvesti slaptažodžius užrakinimo ekrane, atsižvelgiant į šį nustatymą.
+
+      Jei šis nustatymas nesukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma kasdien įvesti slaptažodį užrakinimo ekrane.</translation>
 </translationbundle>

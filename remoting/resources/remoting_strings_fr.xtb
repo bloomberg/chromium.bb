@@ -223,6 +223,7 @@ Google Chrome</translation>
 <translation id="6640610550128933069">dernière connexion : <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Votre code d'accès a été mis à jour.</translation>
 <translation id="6681800064886881394">Copyright © Google Inc. 2013. Tous droits réservés.</translation>
+<translation id="6705482892455291412">Une fois le code saisi, vous serez invité à accepter la connexion et à commencer la session de partage.</translation>
 <translation id="6746493157771801606">Effacer l'historique</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">Hôte démarré pour l'utilisateur "<ph name="HOST_USERNAME" />"</translation>
@@ -299,6 +300,7 @@ Google Chrome</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="9213184081240281106">Configuration d'hôte incorrecte.</translation>
 <translation id="951991426597076286">Refuser</translation>
+<translation id="962733587145768554">Sélectionnez "<ph name="SHARE" />" dans la boîte de dialogue de connexion pour terminer la procédure.</translation>
 <translation id="979100198331752041">Le bureau à distance Chrome sur <ph name="HOSTNAME" /> est obsolète. Vous devez le mettre à jour.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (dernière connexion : <ph name="DATE_OR_TIME" />)</translation>

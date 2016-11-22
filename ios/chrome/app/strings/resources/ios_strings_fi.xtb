@@ -3,6 +3,7 @@
 <translationbundle lang="fi">
 <translation id="1047726139967079566">Aseta tämä sivu kirjanmerkiksi...</translation>
 <translation id="1172898394251786223">Seuraava kenttä</translation>
+<translation id="2241634353105152135">Vain kerran</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
 <translation id="2467815441875554965">Kontekstihaku</translation>
 <translation id="2572712655377361602">Laitekäytäntö esti pääsyn kuviisi.</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome tallentaa tämän <ph name="BEGIN_LINK" />Googlen tallennettuihin salasanoihin<ph name="END_LINK" /> ja täyttää sen automaattisesti, joten sinun ei tarvitse muistaa salasanaa itse.</translation>
 <translation id="3567664240939803299">Haluatko, että Google Smart Lock tallentaa salasanasi tälle sivustolle?</translation>
 <translation id="3692781555820666866">Kun tämä on käytössä, omniboxissa näytetään ehdotuksia lähellä olevien laitteiden lähettämistä verkkosivuista.</translation>
+<translation id="3789841737615482174">Asenna</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="4121993058175073134">Tee sähköp.tilin määritykset asetuksissa lähettääksesi nettovientitiet.</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="473775607612524610">Päivitä</translation>
+<translation id="4773461607542755386">Avataanko tämä sivu sovelluksessa <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>
+<translation id="4881695831933465202">Avaa</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="6039694632319341016">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tilin <ph name="USERNAME" /> salasanan tällä sivustolla?</translation>
 <translation id="605721222689873409">VV</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Luo salasana</translation>
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6456425917241817154">Salasanan loi Chrome</translation>
+<translation id="666731172850799929">Avaa sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Onko kontekstihaku käytössä.</translation>
 <translation id="7456847797759667638">Avaa sijainti...</translation>
 <translation id="7481312909269577407">Seuraava</translation>
+<translation id="7561196759112975576">Aina</translation>
 <translation id="7588950540487816470">Fyysinen web</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 </translationbundle>

@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">востаннє онлайн <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN-код оновлено.</translation>
 <translation id="6681800064886881394">Авторське право 2013 Google Inc. Усі права захищено.</translation>
+<translation id="6705482892455291412">Щойно код буде введено, з’явиться запит прийняти з’єднання та почати сеанс спільного доступу.</translation>
 <translation id="6746493157771801606">Очистити історію</translation>
 <translation id="6748108480210050150">З</translation>
 <translation id="677755392401385740">Запущено хост для користувача <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">Авторизація</translation>
 <translation id="9213184081240281106">Недійсна конфігурація хосту.</translation>
 <translation id="951991426597076286">Відхилити</translation>
+<translation id="962733587145768554">Натисніть "<ph name="SHARE" />" у діалоговому вікні зв’язку, щоб завершити процес.</translation>
 <translation id="979100198331752041">Версія Віддаленого керування Chrome на <ph name="HOSTNAME" /> застаріла та потребує оновлення.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (востаннє онлайн: <ph name="DATE_OR_TIME" />)</translation>

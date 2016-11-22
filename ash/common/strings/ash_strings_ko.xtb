@@ -70,6 +70,7 @@
 <translation id="2857608528410806398">QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다.</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="2942516765047364088">실행기 위치</translation>
+<translation id="2946119680249604491">연결 추가</translation>
 <translation id="2946640296642327832">블루투스 사용</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">Wi-Fi 사용 안 함</translation>
@@ -145,12 +146,14 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+스페이스바</translation>
 <translation id="5045002648206642691">Google 문서함 설정...</translation>
+<translation id="510924152490034944">연결이 모니터링될 수 있음</translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5170568018924773124">폴더 열기</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5238774010593222950">다른 계정에 로그인할 수 없습니다.</translation>
 <translation id="532063867737390965">관리자가 이 네트워크 설정을 사용 중지했습니다.</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
+<translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5507786745520522457">모바일 데이터 설정</translation>
 <translation id="5543001071567407895">SMS</translation>

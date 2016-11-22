@@ -3,6 +3,7 @@
 <translationbundle lang="vi">
 <translation id="1047726139967079566">Đánh dấu Trang Này...</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
+<translation id="2241634353105152135">Chỉ một lần</translation>
 <translation id="2320166752086256636">Ẩn bàn phím</translation>
 <translation id="2467815441875554965">Tìm kiếm theo ngữ cảnh</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="3567664240939803299">Bạn có muốn Google Smart Lock lưu mật khẩu của mình cho trang web này không?</translation>
 <translation id="3692781555820666866">Khi được bật, thanh địa chỉ sẽ bao gồm đề xuất cho những trang web mà các thiết bị ở gần bạn truyền phát.</translation>
+<translation id="3789841737615482174">Cài đặt</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="4121993058175073134">Để gửi dữ liệu đã xuất, hãy định cấu hình tài khoản email trong ứng dụng Cài đặt.</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="473775607612524610">Cập nhật</translation>
+<translation id="4773461607542755386">Mở trang này trong <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
+<translation id="4881695831933465202">Mở</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="6039694632319341016">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu cho <ph name="USERNAME" /> cho trang web này không?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Tạo mật khẩu</translation>
 <translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="6456425917241817154">Chrome đã tạo mật khẩu</translation>
+<translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Dù tính năng Tìm kiếm theo ngữ cảnh đã bật hay chưa.</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
+<translation id="7561196759112975576">Luôn luôn</translation>
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7961015016161918242">Chưa bao giờ</translation>
 </translationbundle>

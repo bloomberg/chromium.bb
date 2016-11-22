@@ -3,6 +3,7 @@
 <translationbundle lang="iw">
 <translation id="1047726139967079566">הוסף דף זה לסימניות...</translation>
 <translation id="1172898394251786223">השדה הבא</translation>
+<translation id="2241634353105152135">פעם אחת בלבד</translation>
 <translation id="2320166752086256636">הסתר מקלדת</translation>
 <translation id="2467815441875554965">חיפוש קולי לפי הקשר</translation>
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="3567664240939803299">‏האם אתה מעוניין ש-Google Smart Lock ישמור את הסיסמה לאתר זה?</translation>
 <translation id="3692781555820666866">כשאפשרות זו מופעלת, סרגל הכתובות יכלול הצעות לדפי אינטרנט המשודרים ממכשירים בסביבתך הקרובה.</translation>
+<translation id="3789841737615482174">התקן</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, הגדר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="473775607612524610">עדכן</translation>
+<translation id="4773461607542755386">האם לפתוח את הדף הזה ב-<ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
+<translation id="4881695831933465202">פתח</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="6039694632319341016">האם אתה רוצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך למשתמש <ph name="USERNAME" /> באתר זה?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">צור סיסמה</translation>
 <translation id="6344783595350022745">טקסט נקי</translation>
 <translation id="6456425917241817154">‏סיסמה שנוצרה על ידי Chrome</translation>
+<translation id="666731172850799929">פתח ב-<ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">האם מופעל חיפוש קולי לפי הקשר</translation>
 <translation id="7456847797759667638">פתח מיקום...</translation>
 <translation id="7481312909269577407">קדימה</translation>
+<translation id="7561196759112975576">תמיד</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 </translationbundle>

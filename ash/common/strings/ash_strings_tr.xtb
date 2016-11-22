@@ -70,6 +70,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2857608528410806398">QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir.</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="2942516765047364088">Raf konumu</translation>
+<translation id="2946119680249604491">Bağlantı ekle</translation>
 <translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">Kablosuz bağlantıyı devre dışı bırak</translation>
@@ -145,12 +146,14 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Üst Karakter+Boşluk</translation>
 <translation id="5045002648206642691">Google Drive ayarları...</translation>
+<translation id="510924152490034944">Bağlantı izlenebilir</translation>
 <translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
 <translation id="5170568018924773124">Klasörde göster</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5238774010593222950">Başka bir hesapta oturum açamıyorum.</translation>
 <translation id="532063867737390965">Bu ağ ayarı yönetici tarafından devre dışı bırakıldı.</translation>
 <translation id="5331975486040154427">USB-C cihaz (sol arka bağlantı noktası)</translation>
+<translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
 <translation id="5507786745520522457">Mobil verileri ayarla</translation>
 <translation id="5543001071567407895">SMS</translation>

@@ -222,6 +222,7 @@
 <translation id="6640610550128933069">ഓൺലൈനിൽ അവസാനം വന്നത് <ph name="DATE" />-നാണ്</translation>
 <translation id="6668065415969892472">നിങ്ങളുടെ PIN അപ്‌ഡേറ്റുചെയ്‌തു.</translation>
 <translation id="6681800064886881394">പകർപ്പവകാശം 2013 Google Inc. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്‌തം.</translation>
+<translation id="6705482892455291412">അവർ കോഡ് നൽകിയ ശേഷം, നിങ്ങളോട് കണക്ഷൻ സ്വീകരിക്കാനും പങ്കിടൽ സെഷൻ ആരംഭിക്കാനും ആവശ്യപ്പെടും.</translation>
 <translation id="6746493157771801606">ചരിത്രം മായ്‌ക്കുക</translation>
 <translation id="6748108480210050150">പ്രേഷിതന്‍</translation>
 <translation id="677755392401385740">ഇനിപ്പറയുന്ന ഉപയോക്താവിനായി ഹോസ്റ്റ് ആരംഭിച്ചു: <ph name="HOST_USERNAME" />.</translation>
@@ -298,6 +299,7 @@
 <translation id="9188433529406846933">അംഗീകരിക്കുക</translation>
 <translation id="9213184081240281106">ഹോസ്റ്റ് കോൺഫിഗറേഷൻ അസാധുവാണ്.</translation>
 <translation id="951991426597076286">നിരസിക്കുക</translation>
+<translation id="962733587145768554">പ്രോസസ്സ് പൂർത്തിയാക്കാൻ, കണക്ഷൻ ഡയലോഗ് ബോക്‌സിൽ '<ph name="SHARE" />' തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> എന്നതിലെ Chrome വിദൂര ഡെസ്‌ക്‌ടോപ്പ് കാലഹരണപ്പെട്ടതായതിനാൽ അപ്‌ഡേറ്റുചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="985602178874221306">Chromium രചയിതാക്കൾ</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (അവസാനം ഓൺലൈനിൽ ഉണ്ടായിരുന്നത്, <ph name="DATE_OR_TIME" />)</translation>

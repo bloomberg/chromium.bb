@@ -3,6 +3,7 @@
 <translationbundle lang="lt">
 <translation id="1047726139967079566">Įtraukti šį puslapį į žymes...</translation>
 <translation id="1172898394251786223">Kitas laukas</translation>
+<translation id="2241634353105152135">Tik vieną kartą</translation>
 <translation id="2320166752086256636">Slėpti klaviatūrą</translation>
 <translation id="2467815441875554965">Kontekstinė paieška</translation>
 <translation id="2572712655377361602">Pagal įrenginio politiką prieiga prie nuotraukų buvo užblokuota</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">„Chrome“ išsaugos šį slaptažodį <ph name="BEGIN_LINK" />„Google“ išsaugotuose slaptažodžiuose<ph name="END_LINK" /> ir jis bus automatiškai įvestas už jus, kad jums nereikėtų jo įsiminti.</translation>
 <translation id="3567664240939803299">Ar norite, kad „Google Smart Lock“ išsaugotų svetainės slaptažodį?</translation>
 <translation id="3692781555820666866">Kai įgalinta, „omnibox“ juosta apims netoli jūsų esančių įrenginių tinklalapių transliacijos pasiūlymus.</translation>
+<translation id="3789841737615482174">Įdiegti</translation>
 <translation id="385051799172605136">Grįžti</translation>
 <translation id="4121993058175073134">Jei n. siųsti tinklo eksp. duom., sukonf. el. pšt. pask. nust. progr.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Atnaujinti</translation>
+<translation id="4773461607542755386">Atidaryti šį puslapį naudojant „<ph name="APP_NAME" />“?</translation>
 <translation id="4875622588773761625">Ar norite, kad „<ph name="PASSWORD_MANAGER_BRAND" />“ atnaujintų šios svetainės slaptažodį?</translation>
+<translation id="4881695831933465202">Atidaryti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="6039694632319341016">Ar norite, kad „<ph name="PASSWORD_MANAGER_BRAND" />“ atnaujintų šios svetainės <ph name="USERNAME" /> slaptažodį?</translation>
 <translation id="605721222689873409">MM</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Generuoti slaptažodį</translation>
 <translation id="6344783595350022745">Išvalyti tekstą</translation>
 <translation id="6456425917241817154">„Chrome“ sugeneruotas slaptažodis</translation>
+<translation id="666731172850799929">Atidaryti naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="7222245588540287464">Nesvarbu, ar Kontekstinė paieška yra įgalinta.</translation>
 <translation id="7456847797759667638">Atidaryti vietą...</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
+<translation id="7561196759112975576">Visada</translation>
 <translation id="7588950540487816470">Fizinis žiniatinklis</translation>
 <translation id="7961015016161918242">Niekada</translation>
 </translationbundle>

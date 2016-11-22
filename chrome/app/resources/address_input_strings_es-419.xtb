@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">Ciudad</translation>
 <translation id="6403469950615936250">No podemos reconocer este formato de código postal. Ejemplo de un código postal válido: <ph name="EXAMPLE" />. ¿No sabes tu código postal? Averígualo <ph name="BEGIN_LINK" />aquí<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" /> no se reconoce como un valor conocido para este campo.</translation>
+<translation id="6768780634682399515">Eircode</translation>
 <translation id="6777217372746654521">Esta línea de dirección parece contener un apartado postal. Utiliza el nombre de una calle o la dirección de un edificio.</translation>
 <translation id="6839929833149231406">Área</translation>
+<translation id="684852933191805996">Barrio</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7139724024395191329">Emirato</translation>

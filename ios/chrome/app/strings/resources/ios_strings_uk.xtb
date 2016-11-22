@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
 <translation id="1172898394251786223">Наступне поле</translation>
+<translation id="2241634353105152135">Лише цього разу</translation>
 <translation id="2320166752086256636">Сховати клавіатуру</translation>
 <translation id="2467815441875554965">Контекстний пошук</translation>
 <translation id="2572712655377361602">пристрою</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome додасть пароль у розділ <ph name="BEGIN_LINK" />Збережені паролі Google<ph name="END_LINK" /> й автоматично вводитиме його, тож вам не потрібно нічого запам’ятовувати.</translation>
 <translation id="3567664240939803299">Зберегти пароль для цього сайту в Google Smart Lock?</translation>
 <translation id="3692781555820666866">Якщо ввімкнено, універсальне вікно пошуку включатиме пропозиції трансляції веб-сторінок пристроями поблизу.</translation>
+<translation id="3789841737615482174">Встановити</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">Щоб надсил. дані про чистий експорт, налашт. обл. запис у програмі Налаштування.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Оновити</translation>
+<translation id="4773461607542755386">Відкрити цю сторінку в програмі <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
+<translation id="4881695831933465202">Відкрити</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="6039694632319341016">Оновити пароль користувача <ph name="USERNAME" /> для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="605721222689873409">РР</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Згенерувати пароль</translation>
 <translation id="6344783595350022745">Очистити текст</translation>
 <translation id="6456425917241817154">Пароль, згенерований Chrome</translation>
+<translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Увімкнути чи вимкнути контекстний пошук.</translation>
 <translation id="7456847797759667638">Відкрити розташування...</translation>
 <translation id="7481312909269577407">Переслати</translation>
+<translation id="7561196759112975576">Завжди</translation>
 <translation id="7588950540487816470">Інтернет навколо нас</translation>
 <translation id="7961015016161918242">Ніколи</translation>
 </translationbundle>

@@ -3,6 +3,7 @@
 <translationbundle lang="nl">
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1172898394251786223">Volgend veld</translation>
+<translation id="2241634353105152135">Slechts één keer</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
 <translation id="2467815441875554965">Contextueel zoeken</translation>
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome slaat dit op in je <ph name="BEGIN_LINK" />door Google opgeslagen wachtwoorden<ph name="END_LINK" /> en vult dit automatisch voor je aan, zodat je je wachtwoord niet zelf hoeft te onthouden.</translation>
 <translation id="3567664240939803299">Wil je dat Google Smart Lock je wachtwoord voor deze site opslaat?</translation>
 <translation id="3692781555820666866">Indien ingeschakeld, bevat de omnibox suggesties voor webpagina's die worden uitgezonden door apparaten bij jou in de buurt.</translation>
+<translation id="3789841737615482174">Installeren</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Updaten</translation>
+<translation id="4773461607542755386">Deze pagina openen in de app <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> je wachtwoord voor deze site updatet?</translation>
+<translation id="4881695831933465202">Openen</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="6039694632319341016">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> je wachtwoord voor <ph name="USERNAME" /> updatet voor deze site?</translation>
 <translation id="605721222689873409">JJ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Wachtwoord genereren</translation>
 <translation id="6344783595350022745">Tekst wissen</translation>
 <translation id="6456425917241817154">Gegenereerd Chrome-wachtw.</translation>
+<translation id="666731172850799929">Openen in <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Of contextueel zoeken al dan niet is ingeschakeld.</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="7481312909269577407">Vooruit</translation>
+<translation id="7561196759112975576">Altijd</translation>
 <translation id="7588950540487816470">Fysieke web</translation>
 <translation id="7961015016161918242">Nooit</translation>
 </translationbundle>

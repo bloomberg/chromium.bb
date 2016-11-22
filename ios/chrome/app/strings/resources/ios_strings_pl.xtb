@@ -3,6 +3,7 @@
 <translationbundle lang="pl">
 <translation id="1047726139967079566">Dodaj stronę do zakładek...</translation>
 <translation id="1172898394251786223">Następne pole</translation>
+<translation id="2241634353105152135">Tylko raz</translation>
 <translation id="2320166752086256636">Ukryj klawiaturę</translation>
 <translation id="2467815441875554965">Wyszukiwanie kontekstowe</translation>
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome umieści to hasło w <ph name="BEGIN_LINK" />zapisanych hasłach Google<ph name="END_LINK" /> i będzie je automatycznie wstawiać, więc nie musisz go zapamiętywać.</translation>
 <translation id="3567664240939803299">Czy Google Smart Lock ma zapisać hasło do tej strony?</translation>
 <translation id="3692781555820666866">Po włączeniu tej funkcji omnibox będzie pokazywał sugestie stron internetowych transmitowanych przez urządzenia w pobliżu.</translation>
+<translation id="3789841737615482174">Zainstaluj</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="4121993058175073134">Aby wysłać dane net-export, skonfiguruj konto e-mail w aplikacji Ustawienia.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
+<translation id="4773461607542755386">Otworzyć tę stronę w aplikacji <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
+<translation id="4881695831933465202">Otwórz</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="6039694632319341016">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło użytkownika <ph name="USERNAME" /> do tej strony?</translation>
 <translation id="605721222689873409">RR</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Wygeneruj hasło</translation>
 <translation id="6344783595350022745">Wyczyść tekst</translation>
 <translation id="6456425917241817154">Hasło wygenerowane przez Chrome</translation>
+<translation id="666731172850799929">Otwórz w <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Określa, czy jest włączone Wyszukiwanie kontekstowe.</translation>
 <translation id="7456847797759667638">Otwórz lokalizację...</translation>
 <translation id="7481312909269577407">Dalej</translation>
+<translation id="7561196759112975576">Zawsze</translation>
 <translation id="7588950540487816470">Internet rzeczy</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 </translationbundle>

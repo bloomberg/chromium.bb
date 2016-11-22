@@ -34,6 +34,7 @@
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS" /> симв. (сейчас <ph name="CURRENT_LENGTH" /> симв.).</translation>
 <translation id="2247351761944213033">Неделя <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
+<translation id="2277199496770840904">Трек <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">флажок</translation>
 <translation id="2335594187091864976">окно выбора даты и времени</translation>
 <translation id="248395913932153421">День</translation>

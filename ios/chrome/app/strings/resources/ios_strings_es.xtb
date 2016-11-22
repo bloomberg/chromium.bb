@@ -3,6 +3,7 @@
 <translationbundle lang="es">
 <translation id="1047726139967079566">Añadir esta página a marcadores...</translation>
 <translation id="1172898394251786223">Siguiente campo</translation>
+<translation id="2241634353105152135">Solo una vez</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
 <translation id="2467815441875554965">Búsqueda contextual</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome almacenará esta contraseña en las <ph name="BEGIN_LINK" />contraseñas guardadas de Google<ph name="END_LINK" /> y utilizará la función Autocompletar para que no tengas que memorizarla.</translation>
 <translation id="3567664240939803299">¿Quieres que Google Smart Lock guarde tu contraseña en este sitio web?</translation>
 <translation id="3692781555820666866">Si se habilita, el omnibox incluirá sugerencias de las páginas web que envíen dispositivos cercanos.</translation>
+<translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="4121993058175073134">Configura tu correo en Ajustes para enviar datos de exportaciones netas.</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Actualizar</translation>
+<translation id="4773461607542755386">¿Abrir esta página en la aplicación <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>
+<translation id="4881695831933465202">Abrir</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="6039694632319341016">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice la contraseña de <ph name="USERNAME" /> en este sitio web?</translation>
 <translation id="605721222689873409">AA</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Generar contraseña</translation>
 <translation id="6344783595350022745">Borrar texto</translation>
 <translation id="6456425917241817154">Generada por Chrome</translation>
+<translation id="666731172850799929">Abrir en <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Determina si la búsqueda contextual está o no habilitada.</translation>
 <translation id="7456847797759667638">Abrir ubicación...</translation>
 <translation id="7481312909269577407">Adelante</translation>
+<translation id="7561196759112975576">Siempre</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7961015016161918242">Nunca</translation>
 </translationbundle>

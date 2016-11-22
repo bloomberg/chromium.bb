@@ -223,6 +223,7 @@ gazdagép</translation>
 <translation id="6640610550128933069">utoljára ekkor volt online: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">A PIN-kód frissült.</translation>
 <translation id="6681800064886881394">Copyright 2013 – Google Inc. Minden jog fenntartva.</translation>
+<translation id="6705482892455291412">Miután az illető megadta a kódot, a rendszer a kapcsolat elfogadására kéri, majd megkezdi a megosztási munkamenetet.</translation>
 <translation id="6746493157771801606">Előzmények törlése</translation>
 <translation id="6748108480210050150">Feladó</translation>
 <translation id="677755392401385740">Gazdagép elindítva a következő felhasználó számára: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ gazdagép</translation>
 <translation id="9188433529406846933">Engedélyezés</translation>
 <translation id="9213184081240281106">A gazdagép beállítása érvénytelen.</translation>
 <translation id="951991426597076286">Elutasítás</translation>
+<translation id="962733587145768554">A folyamat befejezéséhez válassza a(z) „<ph name="SHARE" />” lehetőséget a kapcsolódási párbeszédablakban.</translation>
 <translation id="979100198331752041">A(z) <ph name="HOSTNAME" /> Chrome távoliasztal-szolgáltatása elavult, frissíteni kell.</translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (utolsó online tevékenység: <ph name="DATE_OR_TIME" />)</translation>

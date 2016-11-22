@@ -223,6 +223,7 @@ Remoto do Chrome</translation>
 <translation id="6640610550128933069">online pela última vez a <ph name="DATE" /></translation>
 <translation id="6668065415969892472">O seu PIN foi atualizado.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos os Direitos Reservados.</translation>
+<translation id="6705482892455291412">Assim que o código for introduzido, é-lhe solicitado que aceite a ligação e comece a sessão de partilha.</translation>
 <translation id="6746493157771801606">Limpar histórico</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">O anfitrião começou para o utilizador: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Remoto do Chrome</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuração de anfitrião inválida.</translation>
 <translation id="951991426597076286">Recusar</translation>
+<translation id="962733587145768554">Selecione "<ph name="SHARE" />" na caixa de diálogo de ligação para concluir o processo.</translation>
 <translation id="979100198331752041">O Ambiente de Trabalho Remoto em <ph name="HOSTNAME" /> está desatualizado e necessita de atualização.</translation>
 <translation id="985602178874221306">Os Autores do Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (última vez online em <ph name="DATE_OR_TIME" />)</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="sw">
 <translation id="1047726139967079566">Alamisha Ukurasa Huu...</translation>
 <translation id="1172898394251786223">Sehemu inayofuata</translation>
+<translation id="2241634353105152135">Mara moja tu</translation>
 <translation id="2320166752086256636">Ficha kibodi</translation>
 <translation id="2467815441875554965">Kutafuta katika Muktadha</translation>
 <translation id="2572712655377361602">Sera ya kifaa imezuia idhini ya kufikia picha zako</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome itahifadhi hili katika <ph name="BEGIN_LINK" />manenosiri yako yaliyohifadhiwa na Google<ph name="END_LINK" /> na kukujazia kiotomatiki ili usihitaji kulikumbuka.</translation>
 <translation id="3567664240939803299">Je, ungependa Google Smart Lock ihifadhi nenosiri lako kwa ajili ya tovuti hii?</translation>
 <translation id="3692781555820666866">Sanduku kuu linapowashwa litajumuisha mapendekezo ya utangazaji wa kurasa za wavuti kwa vifaa vilivyo karibu nawe.</translation>
+<translation id="3789841737615482174">Sakinisha</translation>
 <translation id="385051799172605136">Nyuma</translation>
 <translation id="4121993058175073134">Ili kutuma data ya uhamishaji nje ya mtandao, tafadhali sanidi akaunti yako ya barua pepe katika programu ya Mipangilio.</translation>
 <translation id="4728558894243024398">Mfumo wa uendeshaji</translation>
 <translation id="473775607612524610">Sasisha</translation>
+<translation id="4773461607542755386">Ungependa kufungua ukurasa huu katika programu ya <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Je, unataka <ph name="PASSWORD_MANAGER_BRAND" /> isasishe nenosiri lako kwa wavuti huu?</translation>
+<translation id="4881695831933465202">Fungua</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="6039694632319341016">Je, ungependa <ph name="PASSWORD_MANAGER_BRAND" /> isasishe nenosiri lako la <ph name="USERNAME" /> kwa tovuti hii?</translation>
 <translation id="605721222689873409">MK</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Unda Nenosiri</translation>
 <translation id="6344783595350022745">Futa Matini</translation>
 <translation id="6456425917241817154">Nenosiri Lililoundwa na Chrome</translation>
+<translation id="666731172850799929">Fungua katika <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Iwapo Kutafuta katika Muktadha kumewashwa au la</translation>
 <translation id="7456847797759667638">Fungua Mahali...</translation>
 <translation id="7481312909269577407">Mbele</translation>
+<translation id="7561196759112975576">Kila wakati</translation>
 <translation id="7588950540487816470">Wavuti Kila Mahali</translation>
 <translation id="7961015016161918242">Katu</translation>
 </translationbundle>

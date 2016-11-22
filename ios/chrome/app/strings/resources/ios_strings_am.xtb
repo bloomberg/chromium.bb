@@ -3,6 +3,7 @@
 <translationbundle lang="am">
 <translation id="1047726139967079566">ለእዚህ ገጽ ዕልባት አዘጋጅ…</translation>
 <translation id="1172898394251786223">ቀጣይ መስክ</translation>
+<translation id="2241634353105152135">አንድ ጊዜ ብቻ</translation>
 <translation id="2320166752086256636">የቁልፍ ሰሌዳን ደብቅ</translation>
 <translation id="2467815441875554965">አግባቡን ያጣቀሰ ፍለጋ</translation>
 <translation id="2572712655377361602">አንድ የመሣሪያ መመሪያ የፎቶዎችዎን መዳረሻ አግዷል</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome ይህንን በእርስዎ በ<ph name="BEGIN_LINK" />Google የተቀመጡ የይለፍ ቃሎች<ph name="END_LINK" /> ያከማቸው እና እራስዎ ማስታወስ እንዳያስፈልግዎት በራስ-ሰር ይሞላልዎታል።</translation>
 <translation id="3567664240939803299">Google Smart Lock የዚህን ጣቢያ የይለፍ ቃልዎን እንዲያስቀምጥልዎ ይፈልጋሉ?</translation>
 <translation id="3692781555820666866">በሚነቃበት ጊዜ፣ ኦምኒቦክሱ ከእርስዎ አቅራቢያ ባሉ መሣሪያዎች ለተሰራጩ የድር ገጾች የጥቆማ ሐሳቦችን ያካትታል።</translation>
+<translation id="3789841737615482174">ጫን  </translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="4121993058175073134">የተጣራ-ወደ-ውጭ-የሚላክ ውሂብ ለመላክ እባክዎ የኢሜይል መለያዎን በቅንብሮች መተግበሪያው ውስጥ ያዋቅሩ።</translation>
 <translation id="4728558894243024398">የመሣሪያ ስርዓት</translation>
 <translation id="473775607612524610">አዘምን</translation>
+<translation id="4773461607542755386">ይህ ገጽ በ<ph name="APP_NAME" /> መተግበሪያ ውስጥ ይከፈት?</translation>
 <translation id="4875622588773761625">ለዚህ ድር ጣቢያ የይለፍ ቃልዎን <ph name="PASSWORD_MANAGER_BRAND" /> ማዘመን ይፈልጋሉ?</translation>
+<translation id="4881695831933465202">ክፈት</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="6039694632319341016"><ph name="PASSWORD_MANAGER_BRAND" /> የእርስዎን የዚህ ጣቢያ የ<ph name="USERNAME" /> ይለፍ ቃል እንዲያዘምን ይፈልጋሉ?</translation>
 <translation id="605721222689873409">ዓዓ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">የይለፍ ቃል አፍልቅ</translation>
 <translation id="6344783595350022745">ጽሑፍ አጽዳ</translation>
 <translation id="6456425917241817154">በChrome የፈለቀ የይለፍ ቃል</translation>
+<translation id="666731172850799929">በ<ph name="APP_NAME" /> ውስጥ ክፈት</translation>
 <translation id="7222245588540287464">አግባቡን ያጣቀሰ ፍለጋ መንቃቱ ወይም አለመንቃቱ።</translation>
 <translation id="7456847797759667638">የተቀመጠበትን ቦታ ክፈት…</translation>
 <translation id="7481312909269577407">ወደ ፊት</translation>
+<translation id="7561196759112975576">ሁልጊዜ</translation>
 <translation id="7588950540487816470">አካላዊ ድር</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
 </translationbundle>

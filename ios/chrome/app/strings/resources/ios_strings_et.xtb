@@ -3,6 +3,7 @@
 <translationbundle lang="et">
 <translation id="1047726139967079566">Lisa selle lehe järjehoidja...</translation>
 <translation id="1172898394251786223">Järgmine väli</translation>
+<translation id="2241634353105152135">Ainult ühe korra</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
 <translation id="2467815441875554965">Kontekstipõhine otsing</translation>
 <translation id="2572712655377361602">Seadme reegel blokeeris juurdepääsu teie fotodele</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome salvestab selle <ph name="BEGIN_LINK" />Google'i salvestatud paroolide<ph name="END_LINK" /> hulka ja täidab parooli automaatselt, nii et te ei pea seda meeles pidama.</translation>
 <translation id="3567664240939803299">Kas soovite, et Smart Lock salvestaks selle saidi puhul teie parooli?</translation>
 <translation id="3692781555820666866">Kui funktsioon on lubatud, soovitab omnikastike veebilehti, mida levitavad lähedal asuvad seadmed.</translation>
+<translation id="3789841737615482174">Installi</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
 <translation id="4728558894243024398">Platvorm</translation>
 <translation id="473775607612524610">Värskenda</translation>
+<translation id="4773461607542755386">Kas avada see leht rakenduses <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Kas soovite, et <ph name="PASSWORD_MANAGER_BRAND" /> värskendaks teie parooli sellel saidil?</translation>
+<translation id="4881695831933465202">Ava</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="6039694632319341016">Kas soovite lasta teenusel <ph name="PASSWORD_MANAGER_BRAND" /> värskendada selle saidi jaoks kasutaja <ph name="USERNAME" /> parooli?</translation>
 <translation id="605721222689873409">aa</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Parooli loomine</translation>
 <translation id="6344783595350022745">Lihttekst</translation>
 <translation id="6456425917241817154">Chrome'i loodud parool</translation>
+<translation id="666731172850799929">Ava rakenduses <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Olenemata sellest, kas kontekstipõhine otsing on lubatud.</translation>
 <translation id="7456847797759667638">Ava asukoht...</translation>
 <translation id="7481312909269577407">Edasta</translation>
+<translation id="7561196759112975576">Alati</translation>
 <translation id="7588950540487816470">Füüsiline veeb</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 </translationbundle>

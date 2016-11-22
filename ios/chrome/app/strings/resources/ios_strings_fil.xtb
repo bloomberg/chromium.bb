@@ -3,6 +3,7 @@
 <translationbundle lang="fil">
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1172898394251786223">Susunod na field</translation>
+<translation id="2241634353105152135">Isang beses lang</translation>
 <translation id="2320166752086256636">Itago ang keyboard</translation>
 <translation id="2467815441875554965">Paghahanap ayon sa Konteksto</translation>
 <translation id="2572712655377361602">Na-block ng isang patakaran ng device ang access sa iyong mga larawan</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Iiimbak ito ng Chrome sa iyong <ph name="BEGIN_LINK" />mga naka-save na password sa Google<ph name="END_LINK" /> at io-autofill ito para sa iyo nang sa gayon ay hindi mo na ito kailangang tandaan.</translation>
 <translation id="3567664240939803299">Gusto mo bang i-save ng Google Smart Lock ang iyong password para sa site na ito?</translation>
 <translation id="3692781555820666866">Kapag naka-enable, magkakaroon ang omnibox ng mga suhestyon para sa mga web page na bino-broadcast ng mga device na malapit sa iyo.</translation>
+<translation id="3789841737615482174">Mag-install</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="4121993058175073134">Upang makapagpadala ng net-export data, paki-configure ang iyong email account sa app ng Mga Setting.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Mag-update</translation>
+<translation id="4773461607542755386">Buksan ang pahinang ito sa <ph name="APP_NAME" /> app?</translation>
 <translation id="4875622588773761625">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang iyong password para sa site na ito?</translation>
+<translation id="4881695831933465202">Buksan</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="6039694632319341016">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang password mo para kay <ph name="USERNAME" /> sa site na ito?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Bumuo ng password</translation>
 <translation id="6344783595350022745">I-clear ang Teksto</translation>
 <translation id="6456425917241817154">Binuo ng Chrome ang Password</translation>
+<translation id="666731172850799929">Buksan sa <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Naka-enable man o hindi ang Paghahanap ayon sa Konteksto.</translation>
 <translation id="7456847797759667638">Buksan ang Lokasyon...</translation>
 <translation id="7481312909269577407">Sumulong</translation>
+<translation id="7561196759112975576">Palagi</translation>
 <translation id="7588950540487816470">Pisikal na Web</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 </translationbundle>

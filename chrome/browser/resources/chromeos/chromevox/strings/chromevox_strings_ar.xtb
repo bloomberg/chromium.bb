@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="100812568230599391">تغيير نمط العرض لتضمين النص.</translation>
 <translation id="1012173283529841972">عنصر قائمة</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">تم مد الخلية.</translation>
@@ -14,6 +15,7 @@
 <translation id="1088219014394087294">ليست هناك عناوين.</translation>
 <translation id="1106741348836243114">‏تشغيل التعليقات الصوتية (earcons) أو إيقافها.</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1124771028211010580">نمط العرض الحالي هو جنبًا إلى جنب.</translation>
 <translation id="113582498867142724">مجموعة من <ph name="TAG" /> تشتمل على <ph name="NUM" /> من العناصر</translation>
 <translation id="1155043339247954670">ليس هناك عنصر قائمة تالٍ.</translation>
 <translation id="1157782847298808853">مساعدة لوحة المفاتيح</translation>
@@ -25,10 +27,12 @@
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1206619573307042055">صورة بها نص متحرك</translation>
 <translation id="1213216066620407844">‏ChromeVox - تزويد Chrome بالصوت</translation>
+<translation id="1226487719524433143">‏يسعدنا معرفة رأيك بشأن هذه التجربة الجديدة. يمكنك إرسال التعليقات لنا مباشرةً من خلال الضغط على "Search+a"، ثم "i". ويمكنك الضغط على الزر التالي للمتابعة إلى البرنامج التعليمي وذلك للتعرّف على كل شيء تحتاجه للبدء.</translation>
 <translation id="1229276918471378188">الانتقال السابق</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">عنوان المستوى السادس التالي</translation>
 <translation id="1275718070701477396">محدد</translation>
+<translation id="1310230882256010289">‏ضمن ترقيات الخيارات المتقدّمة. لقد أدخلنا تحسينات على طريقة عمل ChromeVox كليًا. لذا فتوقع أداءً، وثباتًا، ودعمًا/امتثالاً على الويب بشكلٍ أفضل.</translation>
 <translation id="1319608975892113573">ليست هناك علامة اقتباس فقرة سابقة.</translation>
 <translation id="1321576897702511272">‏إخفاء مساعدة ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> من <ph name="TOTAL" /></translation>
@@ -37,6 +41,7 @@
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">يمين</translation>
 <translation id="136718599399906424">صف الجدول التالي</translation>
+<translation id="1377925789329510816">‏هذا هو العنوان الأخير. اضغط على "Search+H" للانتقال إلى العنوان الأول، أو "Search+Shift+H" للانتقال إلى العنوان الثاني في هذه الصفحة.</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1385214448885562192">‏اضغط على Enter للموافقة أو Esc للإلغاء، واضغط على السهم لأسفل للانتقال إلى النتيجة التالية وعلى السهم لأعلى للانتقال إلى النتيجة السابقة.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -66,6 +71,7 @@
 <translation id="1669290819662866522">أسبوع</translation>
 <translation id="1674262202423278359">‏التنقل في ChromeVox</translation>
 <translation id="16777221443363124">شريط قوائم</translation>
+<translation id="1680732992526857724"><ph name="NAME" />، في وضع التشغيل</translation>
 <translation id="1692077714702418899">خط تنظيمي</translation>
 <translation id="1700517974991662022">تم الانتقال إليه</translation>
 <translation id="1722567105086139392">رابط</translation>
@@ -105,6 +111,7 @@
 <translation id="2169714232367507776">النقر على العنصر الحالي</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{قوس مغلق واحد}zero{# close parens}two{قوسان مغلقان (#)}few{# أقواس مغلقة}many{# قوسًا مغلقًا}other{# من الأقواس المغلقة}}</translation>
 <translation id="2199994615414171367">التعبير الرياضي السابق</translation>
+<translation id="2220529011494928058">الإبلاغ عن مشكلة</translation>
 <translation id="2223693656926968778">اتخاذ إجراء للعنصر الحالي</translation>
 <translation id="225732394367814946">زيادة تقييم النطق</translation>
 <translation id="2267945578749931355">الحرف التالي</translation>
@@ -130,12 +137,12 @@
 <translation id="2582407057977008361">جانبًا</translation>
 <translation id="2606210917827248971">مع {COUNT,plural, =1{عنصر واحد (#)}zero{# عنصر}two{عنصران (#)}few{# عناصر}many{# عنصرًا}other{# عنصر}}</translation>
 <translation id="2614981083756825552">تخطيط لغة التوصيف الرياضية</translation>
+<translation id="2624431853467395961">فتح وضع التعلّم</translation>
 <translation id="2626530649491650971">قابل للنقر</translation>
 <translation id="2628764385451019380">ليس هناك مربع تحرير وسرد سابق.</translation>
 <translation id="2637227747952042642">رياضيات</translation>
 <translation id="2639750663247012216">‏مفتاح تعديل ChromeVox</translation>
 <translation id="2644542693584024604">misspelled</translation>
-<translation id="2667291555398229137">انقر فوق العنصر أسفل مفتاح التوجيه</translation>
 <translation id="267442004702508783">تحديث</translation>
 <translation id="2684412629217766642">‏إغلاق برنامج ChromeVox التعليمي</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -159,7 +166,6 @@
 <translation id="2843837985843789981">المجموعة السابقة</translation>
 <translation id="2844995807198708617">قائمة السياق</translation>
 <translation id="2849332794118375855">ليس هناك مربع اختيار تالٍ.</translation>
-<translation id="2858017024918511904">‏لاستكشاف جميع أوامر ChromeVox واختصاراته، اضغط على بحث + نقطة، ثم استخدم مفاتيح الأسهم للتنقل خلال القوائم، ومفتاح Enter لتنشيط أحد الأوامر.</translation>
 <translation id="2864481629947106776">الرابط السابق</translation>
 <translation id="2873259058405069099">الانتقال إلى بداية الجدول</translation>
 <translation id="288178314850623291">‏استخدم أوامر الانتقال السريع للتخطي إلى أنواع محددة من العناصر. للانتقال السريع للأمام بين العناوين، اضغط على بحث + H، أو للانتقال السريع للخلف، اضغط على بحث + Shift + H.</translation>
@@ -171,6 +177,7 @@
 <translation id="296951647852255825">{COUNT,plural, =1{علامة جدولة واحدة}zero{# tabs}two{علامتا جدولة}few{# علامات جدولة}many{# علامة جدولة}other{# من علامات الجدولة}}</translation>
 <translation id="2972078295414139404">ليس هناك رابط سابق تم الانتقال إليه.</translation>
 <translation id="2972205263822847197">تلميح</translation>
+<translation id="2978549349327282388">الأعمدة:</translation>
 <translation id="2998131015536248178">الحرف السابق</translation>
 <translation id="2999559350546931576">خفض درجة الصوت</translation>
 <translation id="2999945368667127852">ليس هناك أداة للوسائط التالية.</translation>
@@ -210,7 +217,6 @@
 <translation id="3241052487511142956">الرابط السابق الذي تمّ الانتقال إليه</translation>
 <translation id="3286390186030710347">شريط تمرير</translation>
 <translation id="3299925995433437805">ليس هناك رابط تالٍ تم الانتقال إليه.</translation>
-<translation id="3303384412438961941">‏اضغط على أي مفتاح للتعرف على اسمه. يؤدي الضغط على Ctrl+W إلى إغلاق مستكشف لوحة المفاتيح.</translation>
 <translation id="3307886118343381874">الانتقال إلى نهاية الجدول</translation>
 <translation id="3311969765485641742">‏اضغط على Alt+Shift+A لمراجعة التنبيهات</translation>
 <translation id="3312997241656799641">الرابط التالي الذي تم الانتقال إليه</translation>
@@ -269,9 +275,9 @@
 <translation id="3390225400784126843">العنصر المختلف التالي.</translation>
 <translation id="3392045790598181549">عنصر القائمة <ph name="NAME" /></translation>
 <translation id="3406283310380167331">عرض قائمة النماذج</translation>
-<translation id="3422338090358345848">فتح مستكشف لوحة المفاتيح</translation>
 <translation id="3423495725743882470">صف $1 عمود $2</translation>
 <translation id="3457000393508828486">مضغوط جزئيًا</translation>
+<translation id="3458865416877308321"><ph name="NAME" />، في وضع إيقاف التشغيل</translation>
 <translation id="3462439746547587373">الزر <ph name="NAME" /></translation>
 <translation id="3473644018603298796">تم تحديد <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> إلى <ph name="V2" /></translation>
@@ -368,6 +374,7 @@
 <translation id="4591507479202817876">، محدد</translation>
 <translation id="4597532268155981612">نموذج</translation>
 <translation id="4597896406374528575">نيسان (أبريل)</translation>
+<translation id="460018603901637538">تغيير نمط العرض إلى جنبًا إلى جنب.</translation>
 <translation id="4615592953348396470">تجاهل الضغط على المفتاح التالي</translation>
 <translation id="461613135510474570">جملة</translation>
 <translation id="4647836961514597010">علبة الألوان</translation>
@@ -380,15 +387,16 @@
 <translation id="4736221692378411923">آب (أغسطس)</translation>
 <translation id="4740661827607246557">أوامر المساعدة</translation>
 <translation id="4755857887974653209">‏تعطيل ChromeVox</translation>
-<translation id="4759716709594980008">‏مستكشف لوحة مفاتيح ChromeOS</translation>
 <translation id="4763296182459741068">التفاف إلى أسفل</translation>
 <translation id="4763480195061959176">فيديو</translation>
+<translation id="4764692524839457597">افتراضي</translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="481165870889056555">الإعلان عن عنوان الصفحة الحالية</translation>
 <translation id="4826415162591436065">التنقل للأمام</translation>
 <translation id="4826604887384865800">الانتقال التالي</translation>
 <translation id="4827410568042294688">تم إلغاء التحديد</translation>
 <translation id="4842108708071771135">ليست هناك علامة اقتباس فقرة تالية.</translation>
+<translation id="4844625982113518938">‏اضغط على أي مفتاح للتعرُّف على اسمه. يؤدي الضغط على Ctrl+W إلى إغلاق وضع التعلم.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">العنصر المماثل السابق.</translation>
 <translation id="485011152882364255">‏في ChromeVox Next، يكون مفتاح البحث هو مفتاح التعديل. ومعظم اختصارات ChromeVox تبدأ بمفتاح البحث. ستستخدم أيضًا مفاتيح الأسهم للتنقل.</translation>
@@ -455,8 +463,10 @@
 <translation id="5402367795255837559">لغة برايل</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{فاصلة منقوطة واحدة}zero{# semicolons}two{فاصلتان منقوطتان (#)}few{# فواصل منقوطة}many{# فاصلة منقوطة}other{# من الفواصل المنقوطة}}</translation>
 <translation id="5411891038905756502">ليست هناك نقطة انتقال سابقة.</translation>
+<translation id="5417034931411865818">النقر على العنصر أسفل مفتاح التوجيه $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{علامة أقل من واحدة}zero{# less than signs}two{علامتا أقل من (#)}few{# علامات أقل من}many{# علامة أقل من}other{# من علامات أقل من}}</translation>
 <translation id="5444587279251314700">(نشط)</translation>
+<translation id="5451268436205074266">النقاط <ph name="DOT" /></translation>
 <translation id="5455441614648621694">تكميلي</translation>
 <translation id="5458780372341732962">‏استخدام ChromeVox Next (الإصدار التجريبي)</translation>
 <translation id="5485036206801896268">ليس هناك رسم سابق.</translation>
@@ -467,11 +477,13 @@
 <translation id="5507663321906818013">معيار تصحيح الأخطاء</translation>
 <translation id="5518443085409638729">‏ضع المؤشر بين الحروف عند تعديل النص (مثل Mac OS X).</translation>
 <translation id="552195134157544755">زر الاختيار</translation>
+<translation id="5531530875187439488">رموز صوتية جديدة. لقد أجرينا تحديثًا لمجموعة الرموز الصوتية التي تسمعها لجعل عملية التصفح أكثر استجابةً.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">ليس هناك عنوان سابق من المستوى الخامس.</translation>
 <translation id="556042886152191864">زر</translation>
 <translation id="5561345396546889625">القائمة التالية</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
+<translation id="5574412348552378458">‏وضع التعلّم في ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">تعديل النص، إدخال البريد الإلكتروني</translation>
 <translation id="5597170376237141345">مربع الاختيار التالي</translation>
@@ -507,6 +519,7 @@
 <translation id="5712338278108304766">عمود الجدول التالي</translation>
 <translation id="571866080859340309">جارٍ استكشاف المجموعات</translation>
 <translation id="5728409797179002635">لم يتم العثور على جداول.</translation>
+<translation id="5732189279857692565">‏هذا هو العنوان الثاني. واصل الانتقال؛ إما بالضغط على "Search+H" أو "Search+Shift+H"</translation>
 <translation id="5748623122140342504">عنوان المستوى الخامس السابق</translation>
 <translation id="5750633686117194034">لم يتم الضغط على أي مفتاح تعديل؛ الرجاء الضغط مع الاستمرار على مفتاح تعديل أو أكثر؛ وارفع أصابعك بعد الانتهاء من الضغط وستسمع صوت تعيين المفاتيح. انقر للخروج.</translation>
 <translation id="5788275253279308023">نافذة تصفح متخفٍ بعلامة التبويب <ph name="TITLE" /></translation>
@@ -525,6 +538,7 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{علامة تساوي واحدة}zero{# equal signs}two{علامتا تساوي (#)}few{# علامات تساوي}many{# علامة تساوي}other{# من علامات التساوي}}</translation>
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="5948123859135882163">تبديل تفسير مصطلحات الرياضيات بين البنيوية والدلالية</translation>
+<translation id="5948485979596965684">‏لقد أجريت تحديثًا إلى إصدار أساسي جديد من ChromeVox!</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">مربع حوار</translation>
 <translation id="5963413905009737549">قسم</translation>
@@ -540,6 +554,7 @@
 <translation id="6119955456199054975">نهاية الخلية.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">مسافة</translation>
+<translation id="6138576064440631958">$1 متآلفة</translation>
 <translation id="6142308968191113180">العنوان الرابع</translation>
 <translation id="6169420925157477918">الصورة بها وصف مطول</translation>
 <translation id="6186305613600865047">انتقال إلى أسفل الصفحة</translation>
@@ -595,6 +610,7 @@
 <translation id="6786800275320335305">مقالة</translation>
 <translation id="6787839852456839824">اختصارات لوحة المفاتيح</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6818172019016005152">‏لقد بذلنا قصارى جهدنا لإصدار تجربة جديدة ومحسنة من ChromeVox؛ إليك آخر المستجدات</translation>
 <translation id="6833103209700200188">تذييل</translation>
 <translation id="6871161210040114857">تجاهل حالة الأحرف.</translation>
 <translation id="6877435256196695200">ليس هناك رسم تالٍ.</translation>
@@ -612,12 +628,14 @@
 <translation id="7037042857287298941">القائمة السابقة</translation>
 <translation id="7041173719775863268">إنهاء التحديد</translation>
 <translation id="7086377898680121060">سطوع مرتفع</translation>
+<translation id="7094527465295945904">‏روابط جديدة للمفاتيح. لقد ابتكرنا بحث مفتاح التعديل في ChromeVox وأجرينا تبسيطًا لمجموعات المفاتيح بشكلٍ فعال.</translation>
 <translation id="7095834689119144465">تعديل النص الرقمي فقط</translation>
 <translation id="7096001299300236431">الوسائط السابقة</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">صدى الكلمة</translation>
 <translation id="713824876195128146">الاقتباس الطويل التالي</translation>
 <translation id="7161771961008409533">زر بقائمة منبثقة</translation>
+<translation id="7165714724802225287">نمط العرض الحالي هو تضمين النص.</translation>
 <translation id="7167657087543110">صدى الحرف</translation>
 <translation id="7170733337935166589">التقدم للأمام أثناء القراءة المتواصلة</translation>
 <translation id="7181697990050180700">يمكنك تخصيص اختصارات لوحة مفاتيح للأوامر شائعة الاستخدام من خلال كتابتها في الحقول المقابلة أدناه.</translation>
@@ -660,6 +678,7 @@
 <translation id="7532613204005497612">حزيران (يونيو)</translation>
 <translation id="7540083713905917247">شريط التمرير <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7552432549459840808">‏اختصارات Chrome المفيدة</translation>
+<translation id="7579911500627256166">نقطة <ph name="DOT" /></translation>
 <translation id="7596919493010894443">تم مسح التحديد</translation>
 <translation id="7604026522577407655">الانتقال إلى بداية العمود الحالي</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -686,6 +705,7 @@
 <translation id="7839679365527550018">الكلمة السابقة</translation>
 <translation id="7851816175263618915">بعض علامات الترقيم</translation>
 <translation id="7870596830398826354">شجرة لغة التوصيف الرياضية</translation>
+<translation id="7871691770940645922">عرض برايل الافتراضي</translation>
 <translation id="78826985582142166">sldr</translation>
 <translation id="7894517696028036636">‏تبديل ChromeVox الكلاسيكي.</translation>
 <translation id="7895896691902835279">رابط غير معروف</translation>
@@ -715,6 +735,7 @@
 <translation id="820417203470636242">خلية فارغة.</translation>
 <translation id="8215202828671303819">تحديد متعدد</translation>
 <translation id="8224171046658870249">‏تم التبديل إلى ChromeVox Next</translation>
+<translation id="8259358278692921574">الصفوف:</translation>
 <translation id="8276439074553447000">الانتقال إلى العنصر السابق القابل للتركيز</translation>
 <translation id="8278417001922463147">لا تتوفر مقالة سابقة.</translation>
 <translation id="8283603667300770666">حقل النموذج التالي</translation>
@@ -732,11 +753,13 @@
 <translation id="8446884382197647889">مزيد من المعلومات</translation>
 <translation id="8455868257606149352">الحد الأقصى <ph name="X" /></translation>
 <translation id="84575901236241018">لديه مفتاح دخول، <ph name="KEY" /></translation>
+<translation id="847154984256717791">مشغول</translation>
 <translation id="8476508772960940536">نظرة عامة للنافذة</translation>
 <translation id="8503360654911991865">خفض دقة التنقل</translation>
 <translation id="8520472399088452386">زر الدوران</translation>
 <translation id="8538744478902126321">إجراء تخمين في عنوان الصف للخلية الحالية</translation>
 <translation id="8540054775867439484">التفاف إلى أعلى</translation>
+<translation id="8542271685829952264">‏لاستكشاف جميع أوامر ChromeVox واختصاراته، اضغط على "Search + Period"، ثم استخدم مفاتيح الأسهم للتنقل خلال القوائم، ومفتاح Enter لتنشيط أحد الأوامر. ويمكنك العودة هنا من خلال الضغط على "Search+o" ثم "t".</translation>
 <translation id="8548973727659841685">حرف</translation>
 <translation id="8561322612995434619">له نافذة منبثقة</translation>
 <translation id="8571096049907249734">multsel</translation>

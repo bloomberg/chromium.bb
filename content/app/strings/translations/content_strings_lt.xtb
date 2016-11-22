@@ -34,6 +34,7 @@
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2226276347425096477">Sutrumpinkite šį tekstą iki <ph name="MAX_CHARACTERS" /> simb. ar mažiau (šiuo metu naudojate <ph name="CURRENT_LENGTH" /> simb.).</translation>
 <translation id="2247351761944213033"><ph name="YEAR" /> m. <ph name="WEEKNUMBER" /> sav.</translation>
+<translation id="2277199496770840904"><ph name="NUMBER" /> takelis</translation>
 <translation id="2291999235780842123">žymimasis laukelis</translation>
 <translation id="2335594187091864976">datos ir laiko rinkiklis</translation>
 <translation id="248395913932153421">Diena</translation>
@@ -126,7 +127,7 @@
 <translation id="6015796118275082299">Metai</translation>
 <translation id="6023896073578205740">sąrašo laukelis</translation>
 <translation id="6101327004457443354">įjungti garso įrašo takelio garsą</translation>
-<translation id="6119846243427417423">aktyvinti</translation>
+<translation id="6119846243427417423">suaktyvinti</translation>
 <translation id="6164829606128959761">matuoklis</translation>
 <translation id="6270583010843788609">filmo laiko juostos miniatiūra</translation>
 <translation id="6359256949422175976">filmo laiko valdiklio miniatiūra</translation>

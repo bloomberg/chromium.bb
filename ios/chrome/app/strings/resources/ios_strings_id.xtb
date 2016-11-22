@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="1047726139967079566">Bookmark Laman Ini...</translation>
 <translation id="1172898394251786223">Bidang berikutnya</translation>
+<translation id="2241634353105152135">Hanya sekali</translation>
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
 <translation id="2467815441875554965">Penelusuran Kontekstual</translation>
 <translation id="2572712655377361602">Kebijakan perangkat memblokir akses ke foto Anda</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome akan menyimpan sandi ini pada <ph name="BEGIN_LINK" />sandi tersimpan Google<ph name="END_LINK" /> dan melengkapinya secara otomatis sehingga Anda tidak perlu mengingatnya.</translation>
 <translation id="3567664240939803299">Ingin Google Smart Lock menyimpan sandi untuk situs ini?</translation>
 <translation id="3692781555820666866">Jika diaktifkan, omnibox akan menyertakan saran untuk laman web yang disiarkan oleh perangkat di sekitar Anda.</translation>
+<translation id="3789841737615482174">Pasang</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="4121993058175073134">Konfigurasi akun email Anda di aplikasi Setelan untuk mengirim data net-ekspor.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
+<translation id="4773461607542755386">Buka laman ini di aplikasi <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Apakah Anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi untuk situs ini?</translation>
+<translation id="4881695831933465202">Buka</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="6039694632319341016">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi <ph name="USERNAME" /> untuk situs ini?</translation>
 <translation id="605721222689873409">TT</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Buat Sandi</translation>
 <translation id="6344783595350022745">Hapus Teks</translation>
 <translation id="6456425917241817154">Sandi Dibuat oleh Chrome</translation>
+<translation id="666731172850799929">Buka di <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Baik Penelusuran Kontekstual diaktifkan atau tidak.</translation>
 <translation id="7456847797759667638">Buka Lokasi...</translation>
 <translation id="7481312909269577407">Maju</translation>
+<translation id="7561196759112975576">Selalu</translation>
 <translation id="7588950540487816470">Web Fisik</translation>
 <translation id="7961015016161918242">Tidak pernah</translation>
 </translationbundle>

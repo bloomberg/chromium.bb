@@ -223,6 +223,7 @@ namizje za Chrome</translation>
 <translation id="6640610550128933069">nazadnje povezan v splet: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Vse pravice pridržane.</translation>
+<translation id="6705482892455291412">Ko uporabnik vnese kodo, boste pozvani, da sprejmete povezavo in začnete sejo skupne rabe.</translation>
 <translation id="6746493157771801606">Počisti zgodovino</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Gostitelj zagnan za uporabnika: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ namizje za Chrome</translation>
 <translation id="9188433529406846933">Pooblasti</translation>
 <translation id="9213184081240281106">Neveljavna konfiguracija gostitelja.</translation>
 <translation id="951991426597076286">Zavrni</translation>
+<translation id="962733587145768554">V pogovornem polju povezave izberite »<ph name="SHARE" />«, če želite dokončati postopek.</translation>
 <translation id="979100198331752041">Oddaljeno namizje za Chrome pri gostitelju <ph name="HOSTNAME" /> je zastarelo in ga je treba posodobiti.</translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (nazadnje s povezavo: <ph name="DATE_OR_TIME" />)</translation>

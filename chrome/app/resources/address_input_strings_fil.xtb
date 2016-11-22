@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">Lungsod</translation>
 <translation id="6403469950615936250">Hindi nakikilala ang format na ito ng postal code. Halimbawa ng wastong postal code: <ph name="EXAMPLE" />. Hindi alam ang iyong postal code? Alamin iyon <ph name="BEGIN_LINK" />dito<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268">Hindi natukoy ang <ph name="FIELD_VALUE" /> bilang kilalang halaga para sa field na ito.</translation>
+<translation id="6768780634682399515">Eircode</translation>
 <translation id="6777217372746654521">Mukhang naglalaman ng post office box ang linya ng address na ito. Mangyaring gumamit ng address ng kalye o gusali.</translation>
 <translation id="6839929833149231406">Lugar</translation>
+<translation id="684852933191805996">Townland</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7139724024395191329">Emirate</translation>

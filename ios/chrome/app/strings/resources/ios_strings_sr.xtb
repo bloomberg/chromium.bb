@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="1047726139967079566">Обележи ову страницу...</translation>
 <translation id="1172898394251786223">Следеће поље</translation>
+<translation id="2241634353105152135">Само једном</translation>
 <translation id="2320166752086256636">Сакриј тастатуру</translation>
 <translation id="2467815441875554965">Контекстуална претрага</translation>
 <translation id="2572712655377361602">Смернице за уређај су блокирале приступ сликама</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3567664240939803299">Желите ли да Google Smart Lock сачува лозинку за овај сајт?</translation>
 <translation id="3692781555820666866">Када га омогућите, омнибокс обухвата предлоге за веб-странице које емитују уређаји у близини.</translation>
+<translation id="3789841737615482174">Инсталирај</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">За слање података нето извоза подесите налог е-поште у апликацији Подешавања.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Ажурирај</translation>
+<translation id="4773461607542755386">Отворити ову страницу у апликацији <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Желите ли да <ph name="PASSWORD_MANAGER_BRAND" /> ажурира лозинку за овај сајт?</translation>
+<translation id="4881695831933465202">Отвори</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="6039694632319341016">Да ли желите да <ph name="PASSWORD_MANAGER_BRAND" /> ажурира лозинку за <ph name="USERNAME" /> за овај сајт?</translation>
 <translation id="605721222689873409">ГГ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Генериши лозинку</translation>
 <translation id="6344783595350022745">Обриши текст</translation>
 <translation id="6456425917241817154">Лозинку генерише Chrome</translation>
+<translation id="666731172850799929">Отвори у <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Да ли је Контекстуална претрага омогућена или није.</translation>
 <translation id="7456847797759667638">Отвори локацију...</translation>
 <translation id="7481312909269577407">Проследи</translation>
+<translation id="7561196759112975576">Увек</translation>
 <translation id="7588950540487816470">Интернет око нас</translation>
 <translation id="7961015016161918242">Никад</translation>
 </translationbundle>

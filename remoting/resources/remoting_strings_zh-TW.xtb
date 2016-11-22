@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">上次上線時間：<ph name="DATE" /></translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. 保留所有權利。</translation>
+<translation id="6705482892455291412">對方輸入存取碼後，系統會提示你接受連線，展開共用工作階段。</translation>
 <translation id="6746493157771801606">清除紀錄</translation>
 <translation id="6748108480210050150">寄件者</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME" />。</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">授權</translation>
 <translation id="9213184081240281106">主機設定無效。</translation>
 <translation id="951991426597076286">拒絕</translation>
+<translation id="962733587145768554">如要完成程序，請在連線對話方塊中選取 [<ph name="SHARE" />]。</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> 上的 Chrome 遠端桌面版本過舊，必須更新。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (上次上線時間：<ph name="DATE_OR_TIME" />)</translation>

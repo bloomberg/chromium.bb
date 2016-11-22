@@ -224,6 +224,7 @@ plochy Chrome</translation>
 <translation id="6640610550128933069">naposledy online <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všechna práva vyhrazena.</translation>
+<translation id="6705482892455291412">Po zadání kódu budete vyzváni k přijetí připojení a zahájení relace sdílení.</translation>
 <translation id="6746493157771801606">Vymazat historii</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Pro následujícího uživatele bylo zahájeno hostování: <ph name="HOST_USERNAME" />.</translation>
@@ -300,6 +301,7 @@ plochy Chrome</translation>
 <translation id="9188433529406846933">Autorizovat</translation>
 <translation id="9213184081240281106">Neplatná konfigurace hostitele.</translation>
 <translation id="951991426597076286">Odmítnout</translation>
+<translation id="962733587145768554">Proces dokončíte tím, že v dialogovém okně připojení vyberete možnost <ph name="SHARE" />.</translation>
 <translation id="979100198331752041">Vzdálená plocha Chrome v počítači <ph name="HOSTNAME" /> je zastaralá a potřebuje aktualizovat.</translation>
 <translation id="985602178874221306">Autoři prohlížeče Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (naposledy online: <ph name="DATE_OR_TIME" />)</translation>

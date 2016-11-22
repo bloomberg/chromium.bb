@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">கடைசியாக ஆன்லைனில்: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">உங்கள் PIN புதுப்பிக்கப்பட்டது.</translation>
 <translation id="6681800064886881394">பதிப்புரிமை 2013 Google Inc. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
+<translation id="6705482892455291412">குறியீட்டை உள்ளிட்ட பின், இணைப்பை ஏற்றுக்கொண்டு, பகிர்தல் அமர்வைத் தொடங்கும்படி கேட்கப்படுவீர்கள்.</translation>
 <translation id="6746493157771801606">வரலாற்றை அழி</translation>
 <translation id="6748108480210050150">அனுப்புநர்</translation>
 <translation id="677755392401385740">பயனருக்கான புரவன் தொடங்கியது: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">அங்கீகரி</translation>
 <translation id="9213184081240281106">தவறான ஹோஸ்ட் உள்ளமைவு.</translation>
 <translation id="951991426597076286">நிராகரி</translation>
+<translation id="962733587145768554">செயல்முறையை முடிக்க, இணைப்பு உரையாடல் பெட்டியில் '<ph name="SHARE" />' என்பதைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> இல் உள்ள Chrome தொலைநிலை டெஸ்க்டாப் காலாவதியானது, அதைப் புதுப்பிக்க வேண்டும்.</translation>
 <translation id="985602178874221306">Chromium அங்கீகரிப்பாளர்கள்</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (கடைசியாக ஆன்லைனில் இருந்தது: <ph name="DATE_OR_TIME" />)</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="ro">
 <translation id="1047726139967079566">Marcați această pagină...</translation>
 <translation id="1172898394251786223">Următorul câmp</translation>
+<translation id="2241634353105152135">Numai o singură dată</translation>
 <translation id="2320166752086256636">Ascunde tastatura</translation>
 <translation id="2467815441875554965">Căutare contextuală</translation>
 <translation id="2572712655377361602">O politică a dispozitivului a blocat accesul la fotografii</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome o va stoca în <ph name="BEGIN_LINK" />parolele Google salvate<ph name="END_LINK" /> și o va completa automat ca să nu mai fie nevoie să o ții minte.</translation>
 <translation id="3567664240939803299">Dorești ca Google Smart Lock să îți salveze parola pentru acest site?</translation>
 <translation id="3692781555820666866">Când este activat, caseta polivalentă va include sugestii pentru pagini web difuzate de dispozitivele din apropiere.</translation>
+<translation id="3789841737615482174">Instalează</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="4121993058175073134">Pentru trimitere date de export în rețea, configurați e-mailul în Setări.</translation>
 <translation id="4728558894243024398">Platformă</translation>
 <translation id="473775607612524610">Actualizează</translation>
+<translation id="4773461607542755386">Deschide această pagină în aplicația <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Dorești ca <ph name="PASSWORD_MANAGER_BRAND" /> să îți actualizeze parola pentru acest site?</translation>
+<translation id="4881695831933465202">Deschide</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="6039694632319341016">Dorești ca <ph name="PASSWORD_MANAGER_BRAND" /> să actualizeze parola pentru <ph name="USERNAME" /> pe acest site?</translation>
 <translation id="605721222689873409">AA</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Generează o parolă</translation>
 <translation id="6344783595350022745">Ștergeți textul</translation>
 <translation id="6456425917241817154">Parolă generată de Chrome</translation>
+<translation id="666731172850799929">Deschide în <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Dacă se activează sau nu Căutarea contextuală.</translation>
 <translation id="7456847797759667638">Deschide o locație...</translation>
 <translation id="7481312909269577407">Înainte</translation>
+<translation id="7561196759112975576">Întotdeauna</translation>
 <translation id="7588950540487816470">Web material</translation>
 <translation id="7961015016161918242">Niciodată</translation>
 </translationbundle>

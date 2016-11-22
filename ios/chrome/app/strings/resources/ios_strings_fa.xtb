@@ -3,6 +3,7 @@
 <translationbundle lang="fa">
 <translation id="1047726139967079566">نشانک گذاری این صفحه...</translation>
 <translation id="1172898394251786223">فیلد بعدی</translation>
+<translation id="2241634353105152135">فقط یک بار</translation>
 <translation id="2320166752086256636">پنهان کردن صفحه‌کلید</translation>
 <translation id="2467815441875554965">جستجوی زمینه‌ای</translation>
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">‏Chrome این گذرواژه را در <ph name="BEGIN_LINK" />گذرواژه‌های ذخیره‌شده Google<ph name="END_LINK" /> شما ذخیره می‌کند و به صورت خودکار آن را برایتان وارد می‌کند، بنابراین نیازی نیست آن را به خاطر بسپارید.</translation>
 <translation id="3567664240939803299">‏آیا می‌خواهید  Google Smart Lock گذرواژه شما را برای این سایت ذخیره کند؟</translation>
 <translation id="3692781555820666866">‏omnibox، درصورت فعال بودن، پیشنهاداتی برای پخش صفحه‌های وب توسط دستگاه‌های نزدیک شما ارائه می‌دهد.</translation>
+<translation id="3789841737615482174">نصب</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="4121993058175073134">برای ارسال داده‌های صادراتی شبکه، لطفاً حساب ایمیل‌تان را در برنامه تنظیمات پیکربندی کنید.</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
+<translation id="4773461607542755386">این صفحه در برنامه <ph name="APP_NAME" /> باز شود؟</translation>
 <translation id="4875622588773761625">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت به‌روزرسانی کند؟</translation>
+<translation id="4881695831933465202">باز کردن</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="6039694632319341016">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای <ph name="USERNAME" /> در این وب‌سایت به‌روزرسانی کند؟</translation>
 <translation id="605721222689873409">سال</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">تولید گذرواژه</translation>
 <translation id="6344783595350022745">پاک‌کردن نوشتار</translation>
 <translation id="6456425917241817154">‏گذرواژه ایجادشده توسط Chrome</translation>
+<translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">آیا جستجوی متنی فعال است یا نه.</translation>
 <translation id="7456847797759667638">باز کردن مکان...</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
+<translation id="7561196759112975576">همیشه</translation>
 <translation id="7588950540487816470">وب فیزیکی</translation>
 <translation id="7961015016161918242">هرگز</translation>
 </translationbundle>

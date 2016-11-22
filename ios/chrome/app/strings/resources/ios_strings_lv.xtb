@@ -3,6 +3,7 @@
 <translationbundle lang="lv">
 <translation id="1047726139967079566">Saglabāt šo lapu kā grāmatzīmi...</translation>
 <translation id="1172898394251786223">Nākamais lauks</translation>
+<translation id="2241634353105152135">Tikai vienreiz</translation>
 <translation id="2320166752086256636">Paslēpt tastatūru</translation>
 <translation id="2467815441875554965">Kontekstuālā meklēšana</translation>
 <translation id="2572712655377361602">Ierīces politikas dēļ tika bloķēta piekļuve jūsu fotoattēliem.</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Šo informāciju Chrome saglabās <ph name="BEGIN_LINK" />Google saglabātajās parolēs<ph name="END_LINK" /> un izmantos automātiskajai aizpildei, lai jums tā nav jāatceras.</translation>
 <translation id="3567664240939803299">Vai vēlaties, lai Google Smart Lock saglabātu šīs vietnes paroli?</translation>
 <translation id="3692781555820666866">Ja šī opcija ir iespējota, universālajā lodziņā tiek rādīti tīmekļa lapu ieteikumi, ko apraida tuvumā esošas ierīces.</translation>
+<translation id="3789841737615482174">Instalēt</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="4121993058175073134">Neto eksporta datu sūtīšanai konfigurējiet e-pasta kontu iestatījumos.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
+<translation id="4773461607542755386">Vai atvērt šo lapu lietotnē <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu jūsu paroli šai vietnei?</translation>
+<translation id="4881695831933465202">Atvērt</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="6039694632319341016">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu lietotāja <ph name="USERNAME" /> paroli šai vietnei?</translation>
 <translation id="605721222689873409">GG</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Ģenerēt paroli</translation>
 <translation id="6344783595350022745">Notīrīt tekstu</translation>
 <translation id="6456425917241817154">Chrome ģenerēta parole</translation>
+<translation id="666731172850799929">Atvērt lietotnē <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Nosaka, vai ir iespējota kontekstuālā meklēšana.</translation>
 <translation id="7456847797759667638">Atvērt atrašanās vietu...</translation>
 <translation id="7481312909269577407">Pārsūtīt</translation>
+<translation id="7561196759112975576">Vienmēr</translation>
 <translation id="7588950540487816470">Fiziskais tīmeklis</translation>
 <translation id="7961015016161918242">Nekad</translation>
 </translationbundle>

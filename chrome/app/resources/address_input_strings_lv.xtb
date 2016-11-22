@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">Pilsēta</translation>
 <translation id="6403469950615936250">Šis pasta indeksa formāts nav atpazīts. Derīga pasta indeksa piemērs: <ph name="EXAMPLE" />. Vai nezināt savu pasta indeksu? Uzziniet to <ph name="BEGIN_LINK" />šeit<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268">Vērtība “<ph name="FIELD_VALUE" />” nav atpazīta kā atbilstoša šim laukam.</translation>
+<translation id="6768780634682399515">Eircode</translation>
 <translation id="6777217372746654521">Šķiet, ka šajā adreses rindā ir norādīta abonenta kastīte. Lūdzu, ievadiet ielas vai ēkas adresi.</translation>
 <translation id="6839929833149231406">Apgabals</translation>
+<translation id="684852933191805996">Pagasts</translation>
 <translation id="6970216967273061347">Rajons</translation>
 <translation id="7087282848513945231">Grāfiste</translation>
 <translation id="7139724024395191329">Emirāts</translation>

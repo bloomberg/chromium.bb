@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="100812568230599391">Thay đổi kiểu hiển thị thành đan xen.</translation>
 <translation id="1012173283529841972">Mục danh sách</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">Được mở rộng.</translation>
@@ -14,6 +15,7 @@
 <translation id="1088219014394087294">Không có tiêu đề nào.</translation>
 <translation id="1106741348836243114">Bật hoặc tắt phản hồi bằng âm thanh (kết nối tai nghe).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1124771028211010580">Kiểu hiển thị hiện tại là song song.</translation>
 <translation id="113582498867142724">Bộ sưu tập <ph name="TAG" /> có <ph name="NUM" /> mục</translation>
 <translation id="1155043339247954670">Không có mục danh sách tiếp theo nào.</translation>
 <translation id="1157782847298808853">Trợ giúp bàn phím</translation>
@@ -25,10 +27,12 @@
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1206619573307042055">bảng chữ chạy</translation>
 <translation id="1213216066620407844">ChromeVox - Mang tính năng Thoại lên Chrome</translation>
+<translation id="1226487719524433143">Chúng tôi rất mong nhận được ý kiến của bạn về trải nghiệm mới này. Hãy trực tiếp gửi phản hồi cho chúng tôi bằng cách nhấn Search+a, sau đó nhấn i. Nhấn nút tiếp theo để tiếp tục chuyển đến hướng dẫn nhằm tìm hiểu mọi thứ bạn cần để bắt đầu.</translation>
 <translation id="1229276918471378188">Bước nhảy trước</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Tiêu đề cấp 6 tiếp theo</translation>
 <translation id="1275718070701477396">Đã chọn</translation>
+<translation id="1310230882256010289">Nâng cấp từ bên trong. Chúng tôi đã cải tiến cách ChromeVox hoạt động từ những điều cơ bản nhất. Mong đợi hiệu suất, tính ổn định cũng như khả năng hỗ trợ/tuân thủ web tốt hơn.</translation>
 <translation id="1319608975892113573">Không có khung trích dẫn trước nào.</translation>
 <translation id="1321576897702511272">Ẩn trợ giúp của ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
@@ -37,6 +41,7 @@
 <translation id="1342835525016946179">bài viết</translation>
 <translation id="1346748346194534595">Phải</translation>
 <translation id="136718599399906424">Hàng tiếp theo của bảng</translation>
+<translation id="1377925789329510816">Đây là tiêu đề cuối cùng. Nhấn Search+H để bao gồm tiêu đề đầu tiên hoặc Search+Shift+H để chuyển tới tiêu đề thứ hai trên trang này.</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1385214448885562192">Nhấn enter để chấp nhận hoặc escape để hủy, mũi tên xuống để chuyển sang kết quả tiếp theo và mũi tên lên để chuyển sang kết quả trước.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -66,6 +71,7 @@
 <translation id="1669290819662866522">tuần</translation>
 <translation id="1674262202423278359">Điều hướng ChromeVox</translation>
 <translation id="16777221443363124">Thanh menu</translation>
+<translation id="1680732992526857724">Nút gạt, <ph name="NAME" />, được bật</translation>
 <translation id="1692077714702418899">dòng cấu trúc</translation>
 <translation id="1700517974991662022">Đã truy cập</translation>
 <translation id="1722567105086139392">Liên kết</translation>
@@ -105,6 +111,7 @@
 <translation id="2169714232367507776">Nhấp vào mục hiện tại</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{dấu đóng ngoặc}other{# dấu đóng ngoặc}}</translation>
 <translation id="2199994615414171367">Biểu thức toán trước</translation>
+<translation id="2220529011494928058">Báo cáo sự cố</translation>
 <translation id="2223693656926968778">Thực hiện tác vụ trên mục hiện tại</translation>
 <translation id="225732394367814946">Tăng tốc độ nói</translation>
 <translation id="2267945578749931355">Ký tự tiếp theo</translation>
@@ -130,12 +137,12 @@
 <translation id="2582407057977008361">Loại trừ</translation>
 <translation id="2606210917827248971">với {COUNT,plural, =1{# mục}other{# mục}}</translation>
 <translation id="2614981083756825552">Bố cục toán học ML</translation>
+<translation id="2624431853467395961">Mở chế độ học</translation>
 <translation id="2626530649491650971">có thể nhấp được</translation>
 <translation id="2628764385451019380">Không có hộp kết hợp trước nào.</translation>
 <translation id="2637227747952042642">Toán học</translation>
 <translation id="2639750663247012216">Phím bổ trợ ChromeVox</translation>
 <translation id="2644542693584024604">sai chính tả</translation>
-<translation id="2667291555398229137">Nhấp vào mục dưới phím định tuyến</translation>
 <translation id="267442004702508783">làm mới</translation>
 <translation id="2684412629217766642">Đóng hướng dẫn ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -159,7 +166,6 @@
 <translation id="2843837985843789981">Nhóm trước</translation>
 <translation id="2844995807198708617">Menu ngữ cảnh</translation>
 <translation id="2849332794118375855">Không có hộp kiểm nào tiếp theo.</translation>
-<translation id="2858017024918511904">Để khám phá tất cả phím tắt và lệnh của ChromeVox, nhấn phím Tìm kiếm + Dấu chấm, sau đó sử dụng các phím Mũi tên để điều hướng trong menu và phím Enter để kích hoạt lệnh.</translation>
 <translation id="2864481629947106776">Liên kết trước</translation>
 <translation id="2873259058405069099">Đi tới đầu bảng</translation>
 <translation id="288178314850623291">Sử dụng các lệnh chuyển để bỏ qua các loại thành phần cụ thể. Để chuyển tiếp giữa các tiêu đề, nhấn phím Tìm kiếm + H hoặc để quay lại, nhấn phím Tìm kiếm + Shift + H.</translation>
@@ -171,6 +177,7 @@
 <translation id="296951647852255825">{COUNT,plural, =1{dấu tab}other{# dấu tab}}</translation>
 <translation id="2972078295414139404">Không có liên kết đã truy cập trước nào.</translation>
 <translation id="2972205263822847197">Mẹo sử dụng công cụ</translation>
+<translation id="2978549349327282388">Cột:</translation>
 <translation id="2998131015536248178">Ký tự trước</translation>
 <translation id="2999559350546931576">Giảm độ cao</translation>
 <translation id="2999945368667127852">Không có tiện ích phương tiện tiếp theo nào.</translation>
@@ -210,7 +217,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3241052487511142956">Liên kết đã truy cập trước đó</translation>
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3299925995433437805">Không có liên kết đã truy cập tiếp theo nào.</translation>
-<translation id="3303384412438961941">Nhấn phím bất kỳ để biết tên của phím. Nhấn Ctrl+W sẽ đóng trình khám phá bàn phím.</translation>
 <translation id="3307886118343381874">Đi tới cuối bảng</translation>
 <translation id="3311969765485641742">Nhấn Alt+Shift+A để xem lại thông báo</translation>
 <translation id="3312997241656799641">Liên kết đã truy cập tiếp theo</translation>
@@ -269,9 +275,9 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3390225400784126843">Phần tử khác tiếp theo.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, mục menu</translation>
 <translation id="3406283310380167331">Hiển thị danh sách biểu mẫu</translation>
-<translation id="3422338090358345848">Mở trình khám phá bàn phím</translation>
 <translation id="3423495725743882470">hàng $1 cột $2</translation>
 <translation id="3457000393508828486">Được nhấn một phần</translation>
+<translation id="3458865416877308321">Nút gạt, <ph name="NAME" />, bị tắt</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, nút</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> tới <ph name="V2" /></translation>
@@ -368,6 +374,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4591507479202817876">, đã được chọn</translation>
 <translation id="4597532268155981612">biểu mẫu</translation>
 <translation id="4597896406374528575">Tháng 4</translation>
+<translation id="460018603901637538">Thay đổi kiểu hiển thị thành song song.</translation>
 <translation id="4615592953348396470">Bỏ qua nhấn phím tiếp theo</translation>
 <translation id="461613135510474570">Câu</translation>
 <translation id="4647836961514597010">Công cụ chọn màu</translation>
@@ -380,15 +387,16 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4736221692378411923">Tháng 8</translation>
 <translation id="4740661827607246557">Lệnh trợ giúp</translation>
 <translation id="4755857887974653209">Tắt ChromeVox</translation>
-<translation id="4759716709594980008">Trình khám phá bàn phím ChromeOS</translation>
 <translation id="4763296182459741068">Đã bao gồm cả cuối trang</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="4764692524839457597">mặc định</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Thông báo tiêu đề của trang hiện tại</translation>
 <translation id="4826415162591436065">Điều hướng tiến lên</translation>
 <translation id="4826604887384865800">Bước nhảy tiếp theo</translation>
 <translation id="4827410568042294688">đã bỏ chọn</translation>
 <translation id="4842108708071771135">Không có khung trích dẫn tiếp theo nào.</translation>
+<translation id="4844625982113518938">Nhấn phím bất kỳ để biết tên của phím. Nhấn Ctrl+W sẽ đóng chế độ học.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Phần tử tương tự trước.</translation>
 <translation id="485011152882364255">Trong ChromeVox Next, phím Tìm kiếm là phím bổ trợ. Hầu hết các phím tắt của ChromeVox đều bắt đầu bằng phím Tìm kiếm. Bạn cũng sẽ sử dụng các phím mũi tên để điều hướng.</translation>
@@ -455,8 +463,10 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5402367795255837559">Chữ nổi</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{dấu chấm phẩy}other{# dấu chấm phẩy}}</translation>
 <translation id="5411891038905756502">Không có điểm nhảy trước nào.</translation>
+<translation id="5417034931411865818">Nhấp vào mục bên dưới phím định tuyến $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{dấu nhỏ hơn}other{# dấu nhỏ hơn}}</translation>
 <translation id="5444587279251314700">(hiện hoạt)</translation>
+<translation id="5451268436205074266">chấm <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Bổ sung</translation>
 <translation id="5458780372341732962">Sử dụng ChromeVox Next (bản beta)</translation>
 <translation id="5485036206801896268">Không có hình trước nào.</translation>
@@ -467,11 +477,13 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5507663321906818013">Dấu gỡ lỗi</translation>
 <translation id="5518443085409638729">Đặt con trỏ giữa các ký tự khi chỉnh sửa văn bản (như Mac OS X).</translation>
 <translation id="552195134157544755">Nút radio</translation>
+<translation id="5531530875187439488">Âm báo mới. Chúng tôi đã làm mới một nhóm biểu tượng âm thanh bạn nghe để duyệt web nhanh nhạy hơn.</translation>
 <translation id="5534303576632885660">tiêu đề</translation>
 <translation id="5546092960038624944">Không có tiêu đề cấp 5 trước nào.</translation>
 <translation id="556042886152191864">Nút</translation>
 <translation id="5561345396546889625">Danh sách tiếp theo</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
+<translation id="5574412348552378458">Chế độ học ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Chỉnh sửa văn bản, mục nhập email</translation>
 <translation id="5597170376237141345">Hộp kiểm tiếp theo</translation>
@@ -507,6 +519,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5712338278108304766">Cột tiếp theo của bảng</translation>
 <translation id="571866080859340309">Thăm dò nhóm</translation>
 <translation id="5728409797179002635">Không tìm thấy bảng nào.</translation>
+<translation id="5732189279857692565">Đây là tiêu đề thứ hai. Tiếp tục; nhấn Search+H hoặc Search+Shift+H</translation>
 <translation id="5748623122140342504">Tiêu đề cấp 5 trước</translation>
 <translation id="5750633686117194034">Không có phím bổ trợ nào được nhấn; vui lòng nhấn và giữ một hoặc nhiều phím bổ trợ; nhấc ngón tay khi hoàn tất và bạn sẽ nghe thấy phím được đặt. Nhấn tab để thoát.</translation>
 <translation id="5788275253279308023">tab <ph name="TITLE" /> trong cửa sổ ẩn danh</translation>
@@ -525,6 +538,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5937336320314038555">{COUNT,plural, =1{dấu bằng}other{# dấu bằng}}</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5948123859135882163">Chuyển đổi diễn giải biểu thức toán học giữa cấu trúc và ngữ nghĩa</translation>
+<translation id="5948485979596965684">Bạn đã cập nhật bản phát hành chính mới của ChromeVox!</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Hộp thoại</translation>
 <translation id="5963413905009737549">Phần</translation>
@@ -540,6 +554,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6119955456199054975">Cuối ô.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Dấu cách</translation>
+<translation id="6138576064440631958">$1 dây cung</translation>
 <translation id="6142308968191113180">Tiêu đề 4</translation>
 <translation id="6169420925157477918">Hình ảnh có mô tả dài</translation>
 <translation id="6186305613600865047">Chuyển đến cuối trang</translation>
@@ -595,6 +610,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6786800275320335305">Bài viết</translation>
 <translation id="6787839852456839824">Phím tắt</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6818172019016005152">Chúng tôi đã nỗ lực nhằm mang lại trải nghiệm ChromeVox mới và được cải thiện; dưới đây là các tính năng mới</translation>
 <translation id="6833103209700200188">Chân trang</translation>
 <translation id="6871161210040114857">Không phân biệt chữ hoa / chữ thường.</translation>
 <translation id="6877435256196695200">Không có hình nào tiếp theo.</translation>
@@ -612,12 +628,14 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7037042857287298941">Danh sách trước</translation>
 <translation id="7041173719775863268">Kết thúc chọn</translation>
 <translation id="7086377898680121060">Tăng độ sáng</translation>
+<translation id="7094527465295945904">Tổ hợp phím mới. Chúng tôi đã tạo ra phím bổ trợ Tìm kiếm ChromeVox và đơn giản hóa đáng kể các tổ hợp phím.</translation>
 <translation id="7095834689119144465">Chỉnh sửa văn bản chỉ dành cho số</translation>
 <translation id="7096001299300236431">Phương tiện trước</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">nói từ</translation>
 <translation id="713824876195128146">Khối trích dẫn tiếp theo</translation>
 <translation id="7161771961008409533">Nút cửa sổ bật lên</translation>
+<translation id="7165714724802225287">Kiểu hiển thị hiện tại là đan xen.</translation>
 <translation id="7167657087543110">âm ký tự</translation>
 <translation id="7170733337935166589">Chuyển đến đoạn tiếp theo trong khi tiếp tục đọc</translation>
 <translation id="7181697990050180700">Tùy chỉnh phím tắt cho các lệnh được sử dụng thường xuyên bằng cách nhập chúng vào trường tương ứng bên dưới.</translation>
@@ -660,6 +678,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7532613204005497612">Tháng 6</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, thanh trượt</translation>
 <translation id="7552432549459840808">Phím tắt hữu ích của Chrome</translation>
+<translation id="7579911500627256166">chấm <ph name="DOT" /></translation>
 <translation id="7596919493010894443">đã xóa lựa chọn</translation>
 <translation id="7604026522577407655">Đi tới đầu cột hiện tại</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -686,6 +705,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7839679365527550018">Từ trước</translation>
 <translation id="7851816175263618915">Một số dấu câu</translation>
 <translation id="7870596830398826354">Cây toán học ML</translation>
+<translation id="7871691770940645922">Màn hình chữ nổi Braille ảo</translation>
 <translation id="78826985582142166">sldr</translation>
 <translation id="7894517696028036636">Chuyển đổi sang ChromeVox cổ điển.</translation>
 <translation id="7895896691902835279">Liên kết không xác định</translation>
@@ -715,6 +735,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="820417203470636242">Ô trống.</translation>
 <translation id="8215202828671303819">Đa chọn</translation>
 <translation id="8224171046658870249">Đã chuyển sang ChromeVox Next</translation>
+<translation id="8259358278692921574">Hàng:</translation>
 <translation id="8276439074553447000">Nhảy tới mục có thể đặt tiêu điểm trước</translation>
 <translation id="8278417001922463147">Không có bài viết trước nào.</translation>
 <translation id="8283603667300770666">Trường biểu mẫu tiếp theo</translation>
@@ -732,11 +753,13 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8446884382197647889">Tìm hiểu thêm</translation>
 <translation id="8455868257606149352">Tối đa <ph name="X" /></translation>
 <translation id="84575901236241018">có khóa truy cập, <ph name="KEY" /></translation>
+<translation id="847154984256717791">bận rộn</translation>
 <translation id="8476508772960940536">tổng quan về cửa sổ</translation>
 <translation id="8503360654911991865">Giảm mức độ chi tiết của điều hướng</translation>
 <translation id="8520472399088452386">Nút quay tròn</translation>
 <translation id="8538744478902126321">Đoán tại tiêu đề hàng của ô hiện tại</translation>
 <translation id="8540054775867439484">Đã bao gồm cả đầu trang</translation>
+<translation id="8542271685829952264">Để khám phá tất cả phím tắt và lệnh của ChromeVox, hãy nhấn Search + Dấu chấm, sau đó sử dụng các phím Mũi tên để điều hướng trong menu và phím Enter để kích hoạt lệnh. Quay lại đây bằng cách nhấn Search+o rồi nhấn t.</translation>
 <translation id="8548973727659841685">Ký tự</translation>
 <translation id="8561322612995434619">có cửa sổ bật lên</translation>
 <translation id="8571096049907249734">đa chọn</translation>

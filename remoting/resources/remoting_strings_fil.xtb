@@ -223,6 +223,7 @@ Desktop ng Chrome</translation>
 <translation id="6640610550128933069">huling naka-online noong <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Na-update na ang iyong PIN.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Nakalaan ang Lahat ng Karapatan.</translation>
+<translation id="6705482892455291412">Kapag inilagay na nila ang code, ipo-prompt kang tanggapin ang koneksyon at simulan ang session ng pagbabahagi.</translation>
 <translation id="6746493157771801606">I-clear ang kasaysayan</translation>
 <translation id="6748108480210050150">Mula</translation>
 <translation id="677755392401385740">Sinimulan ang host para sa user: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Desktop ng Chrome</translation>
 <translation id="9188433529406846933">Pahintulutan</translation>
 <translation id="9213184081240281106">Di-wastong configuration ng host.</translation>
 <translation id="951991426597076286">Tanggihan</translation>
+<translation id="962733587145768554">Pakipili ang '<ph name="SHARE" />' sa dialog box ng koneksyon upang makumpleto ang proseso.</translation>
 <translation id="979100198331752041">Ang Remote na Desktop ng Chrome sa <ph name="HOSTNAME" /> ay luma na at kinakailangang ma-update.</translation>
 <translation id="985602178874221306">Ang Mga May-akda ng Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (huling online <ph name="DATE_OR_TIME" />)</translation>

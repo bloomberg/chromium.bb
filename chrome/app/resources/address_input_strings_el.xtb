@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">Πόλη</translation>
 <translation id="6403469950615936250">Αυτή η μορφή ταχυδρομικού κώδικα δεν αναγνωρίζεται. Παράδειγμα έγκυρου ταχυδρομικού κώδικα: <ph name="EXAMPLE" />. Δεν γνωρίζετε τον ταχυδρομικό σας κώδικα; Βρείτε τον<ph name="BEGIN_LINK" />εδώ<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268">Η τιμή <ph name="FIELD_VALUE" /> δεν αναγνωρίζεται ως γνωστή τιμή για αυτό το πεδίο.</translation>
+<translation id="6768780634682399515">Κωδικός Eircode</translation>
 <translation id="6777217372746654521">Αυτή η διεύθυνση φαίνεται να περιέχει μια ταχυδρομική θυρίδα. Χρησιμοποιήστε οδό ή διεύθυνση κτιρίου.</translation>
 <translation id="6839929833149231406">Περιοχή</translation>
+<translation id="684852933191805996">Διοικητική περιοχή Ιρλανδίας (Townland)</translation>
 <translation id="6970216967273061347">Περιοχή</translation>
 <translation id="7087282848513945231">Περιφέρεια</translation>
 <translation id="7139724024395191329">Εμιράτο</translation>

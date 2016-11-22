@@ -70,6 +70,7 @@
 <translation id="2857608528410806398">เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
+<translation id="2946119680249604491">เพิ่มการเชื่อมต่อ</translation>
 <translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">ปิดใช้งาน WiFi</translation>
@@ -145,12 +146,14 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">การตั้งค่า Google ไดรฟ์...</translation>
+<translation id="510924152490034944">อาจมีการตรวจสอบการเชื่อมต่อ</translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5238774010593222950">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
 <translation id="532063867737390965">การตั้งค่าเครือข่ายนี้ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
+<translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
 <translation id="5507786745520522457">ตั้งค่าข้อมูลมือถือ</translation>
 <translation id="5543001071567407895">SMS</translation>

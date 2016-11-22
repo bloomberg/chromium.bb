@@ -3,6 +3,7 @@
 <translationbundle lang="bg">
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1172898394251786223">Следващото поле</translation>
+<translation id="2241634353105152135">Само веднъж</translation>
 <translation id="2320166752086256636">Скриване на клавиатурата</translation>
 <translation id="2467815441875554965">Контекстно търсене</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="3567664240939803299">Искате ли Google Smart Lock да запази паролата ви за този сайт?</translation>
 <translation id="3692781555820666866">Когато флагът е активиран, полето за всичко ще включва предложения за уеб страници, излъчвани от устройства близо до вас.</translation>
+<translation id="3789841737615482174">Инсталиране</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">За изпращане на експ. данни от мрежата конфиг. имейла си в Настройки.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Актуализиране</translation>
+<translation id="4773461607542755386">Да се отвори ли стр. в приложението <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
+<translation id="4881695831933465202">Отваряне</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="6039694632319341016">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за <ph name="USERNAME" /> за този сайт?</translation>
 <translation id="605721222689873409">ГГ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Генериране на парола</translation>
 <translation id="6344783595350022745">Изчистване на текста</translation>
 <translation id="6456425917241817154">Парола, генерирана от Chrome</translation>
+<translation id="666731172850799929">Отваряне в <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Дали контекстното търсене да е активирано или не.</translation>
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7481312909269577407">Препращане</translation>
+<translation id="7561196759112975576">Винаги</translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
 <translation id="7961015016161918242">Никога</translation>
 </translationbundle>

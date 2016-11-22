@@ -223,6 +223,7 @@ Remote Desktop</translation>
 <translation id="6640610550128933069">trực tuyến lần cuối <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Mã PIN của bạn đã được cập nhật.</translation>
 <translation id="6681800064886881394">Bản quyền 2013 Google Inc. Mọi quyền được bảo lưu.</translation>
+<translation id="6705482892455291412">Khi họ nhập mã, bạn sẽ được nhắc chấp nhận kết nối và bắt đầu phiên chia sẻ.</translation>
 <translation id="6746493157771801606">Xóa lịch sử</translation>
 <translation id="6748108480210050150">Từ</translation>
 <translation id="677755392401385740">Máy chủ đã khởi động cho người dùng: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Remote Desktop</translation>
 <translation id="9188433529406846933">Cho phép</translation>
 <translation id="9213184081240281106">Cấu hình máy chủ không hợp lệ.</translation>
 <translation id="951991426597076286">Từ chối</translation>
+<translation id="962733587145768554">Vui lòng chọn '<ph name="SHARE" />' trong hộp thoại kết nối để hoàn tất quá trình.</translation>
 <translation id="979100198331752041">Kết nối từ xa trên Chrome trên <ph name="HOSTNAME" /> đã lỗi thời và cần được cập nhật.</translation>
 <translation id="985602178874221306">Tác giả Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (trực tuyến lần cuối <ph name="DATE_OR_TIME" />)</translation>

@@ -27,8 +27,8 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="1704090719919187045">Preferințe gazdă Chromoting</translation>
-<translation id="1730409684442507495">• S-au îmbunătățit calitatea imaginii pe desktop, viteza de răspuns și autonomia bateriei
-• S-a îmbunătățit viteza de răspuns a operațiilor de tipul „dă clic-trage”;
+<translation id="1730409684442507495">• S-au îmbunătățit calitatea imaginii pe desktop, viteza de răspuns și consumul bateriei.
+• S-a îmbunătățit viteza de răspuns a operațiilor de tipul „dă clic-trage”.
 • S-au îmbunătățit mai multe efecte de animație pentru interfața de utilizare.</translation>
 <translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Se conectează…</translation>
@@ -223,6 +223,7 @@ la distanță Chrome</translation>
 <translation id="6640610550128933069">ultima conectare online <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Codul PIN a fost actualizat.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Toate drepturile rezervate.</translation>
+<translation id="6705482892455291412">După ce codul este introdus, ți se va solicita să accepți conexiunea și să începi sesiunea de permitere a accesului.</translation>
 <translation id="6746493157771801606">Goliți istoricul</translation>
 <translation id="6748108480210050150">De la</translation>
 <translation id="677755392401385740">Gazda a fost inițiată pentru utilizatorul: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ la distanță Chrome</translation>
 <translation id="9188433529406846933">Autorizați</translation>
 <translation id="9213184081240281106">Configurație nevalidă a gazdei.</translation>
 <translation id="951991426597076286">Refuză</translation>
+<translation id="962733587145768554">Selectează „<ph name="SHARE" />” în caseta de dialog a conexiunii pentru a finaliza procesul.</translation>
 <translation id="979100198331752041">Desktop la distanță Chrome de pe <ph name="HOSTNAME" /> este învechit și trebuie actualizat.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (online ultima dată la <ph name="DATE_OR_TIME" />)</translation>

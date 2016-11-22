@@ -29,7 +29,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1704090719919187045">Alternativer for Chromoting-vert</translation>
 <translation id="1730409684442507495">• Forbedret kvalitet på skrivebordsbilder, respons og batteriforbruk.
 • Forbedret respons for klikk-og-dra-handlinger.
-• Forbedringer i mange animerte UI-effekter.</translation>
+• Forbedringer i flere animerte effekter i brukergrensesnittet.</translation>
 <translation id="174018511426417793">Du har ikke registrert noen datamaskiner. For å aktivere ekstern tilkobling til en datamaskin må du installere Chrome Eksternt skrivebord på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
 <translation id="1770394049404108959">Jeg kan ikke åpne appen.</translation>
@@ -223,6 +223,7 @@ skrivebord-vert</translation>
 <translation id="6640610550128933069">sist på nettet <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN-koden din er oppdatert.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Med enerett.</translation>
+<translation id="6705482892455291412">Når de skriver inn koden, blir du bedt om å godta tilkoblingen og begynne delingsøkten.</translation>
 <translation id="6746493157771801606">Tøm logg</translation>
 <translation id="6748108480210050150">Fra</translation>
 <translation id="677755392401385740">Vert startet for brukeren: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ skrivebord-vert</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="9213184081240281106">Ugyldig vertskonfigurasjon.</translation>
 <translation id="951991426597076286">Avvis</translation>
+<translation id="962733587145768554">Velg «<ph name="SHARE" />» i dialogboksen for tilkoblingen for å fullføre prosessen.</translation>
 <translation id="979100198331752041">Chrome Eksternt skrivebord på <ph name="HOSTNAME" /> er utdatert og må oppdateres.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (sist på nettet <ph name="DATE_OR_TIME" />)</translation>

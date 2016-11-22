@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">城市</translation>
 <translation id="6403469950615936250">我們無法辨識這個郵遞區號格式。有效的郵遞區號範例如下：<ph name="EXAMPLE" />。不知道您的郵遞區號嗎？請在<ph name="BEGIN_LINK" />這裡<ph name="END_LINK" />查詢。</translation>
 <translation id="6735419622867539268">系統無法將 <ph name="FIELD_VALUE" /> 視為此欄位的已知值。</translation>
+<translation id="6768780634682399515">愛爾蘭郵政編碼</translation>
 <translation id="6777217372746654521">此地址似乎包含郵政信箱。請使用街道或建築物的地址。</translation>
 <translation id="6839929833149231406">區</translation>
+<translation id="684852933191805996">鎮區</translation>
 <translation id="6970216967273061347">區</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="7139724024395191329">大公國</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="da">
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1172898394251786223">Næste felt</translation>
+<translation id="2241634353105152135">Kun én gang</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2467815441875554965">Kontekstuel søgning</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="3567664240939803299">Skal Google Smart Lock gemme din adgangskode til dette website?</translation>
 <translation id="3692781555820666866">Når Fysisk web er aktiveret, medtager omnifeltet websideforslag, som enheder i nærheden af dig udsender.</translation>
+<translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Opdater</translation>
+<translation id="4773461607542755386">Skal denne side åbnes i appen <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode til dette website?</translation>
+<translation id="4881695831933465202">Åbn</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="6039694632319341016">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode for <ph name="USERNAME" /> for dette website?</translation>
 <translation id="605721222689873409">ÅÅ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Generér adgangskode</translation>
 <translation id="6344783595350022745">Ryd tekst</translation>
 <translation id="6456425917241817154">Adgangskode genereret af Chrome</translation>
+<translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Uanset om Kontekstuel søgning er aktiveret.</translation>
 <translation id="7456847797759667638">Åbn placering...</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7561196759112975576">Altid</translation>
 <translation id="7588950540487816470">Fysisk web</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 </translationbundle>

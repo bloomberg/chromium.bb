@@ -223,6 +223,7 @@ US-ಇಂಗ್ಲಿಷ್ ಅಲ್ಲದ ಕೀಬೋರ್ಡ್‌ಗಳನ
 <translation id="6640610550128933069"><ph name="DATE" /> ರಂದು ಕೊನೆಯ ಬಾರಿ ಆನ್‌ಲೈನ್</translation>
 <translation id="6668065415969892472">ನಿಮ್ಮ PIN ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="6681800064886881394">ಹಕ್ಕುಸ್ವಾಮ್ಯ 2013 Google Inc. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
+<translation id="6705482892455291412">ಒಮ್ಮೆ ಅವರು ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿದಾಗ, ಸಂಪರ್ಕವನ್ನು ಸ್ವೀಕರಿಸಲು ಮತ್ತು ಹಂಚಿಕೆ ಸೆಶನ್ ಅನ್ನು ಆರಂಭಿಸಲು ನಿಮಗೆ ಸೂಚಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="6746493157771801606">ಇತಿಹಾಸ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6748108480210050150">ಇವರಿಂದ</translation>
 <translation id="677755392401385740">ಈ ಬಳಕೆದಾರರಿಗಾಗಿ ಹೋಸ್ಟ್ ಪ್ರಾರಂಭಿಸಲಾಗಿದೆ: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ US-ಇಂಗ್ಲಿಷ್ ಅಲ್ಲದ ಕೀಬೋರ್ಡ್‌ಗಳನ
 <translation id="9188433529406846933">ದೃಢೀಕರಿಸಿ</translation>
 <translation id="9213184081240281106">ಅಮಾನ್ಯ ಹೋಸ್ಟ್ ಕಾನ್ಫಿಗರೇಶನ್.</translation>
 <translation id="951991426597076286">ನಿರಾಕರಿಸು</translation>
+<translation id="962733587145768554">ದಯವಿಟ್ಟು ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಸಂಪರ್ಕ ಸಂವಾದ ಪೆಟ್ಟಿಗೆಯಲ್ಲಿ '<ph name="SHARE" />' ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> ನಲ್ಲಿ Chrome ರಿಮೋಟ್ ಡೆಸ್ಕ್‌ಟಾಪ್ ದಿನಾಂಕ ಮುಕ್ತಾಯಗೊಂಡಿದೆ ಮತ್ತು ನವೀಕರಿಸಬೇಕಾಗಿದೆ.</translation>
 <translation id="985602178874221306">Chromium ಲೇಖಕರು</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (ಕೊನೆಯ ಬಾರಿಯ ಆನ್‌‌ಲೈನ್ <ph name="DATE_OR_TIME" />)</translation>

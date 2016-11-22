@@ -34,6 +34,7 @@
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2226276347425096477">Veuillez réduire ce texte à <ph name="MAX_CHARACTERS" /> caractères maximum (il compte actuellement <ph name="CURRENT_LENGTH" /> caractères).</translation>
 <translation id="2247351761944213033">Semaine <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
+<translation id="2277199496770840904">Piste <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">case à cocher</translation>
 <translation id="2335594187091864976">outil de sélection de la date et de l'heure</translation>
 <translation id="248395913932153421">Jour</translation>

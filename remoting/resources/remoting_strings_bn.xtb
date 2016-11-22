@@ -223,6 +223,7 @@ Host</translation>
 <translation id="6640610550128933069"><ph name="DATE" /> এ শেষ অনলাইন</translation>
 <translation id="6668065415969892472">আপনার পিন আপডেট হয়েছে৷</translation>
 <translation id="6681800064886881394">কপিরাইট 2013 Google Inc. সর্বস্বত্ব সংরক্ষিত৷</translation>
+<translation id="6705482892455291412">কোডটি লেখা হলে, সংযোগটি গ্রহণের জন্য আপনাকে জিজ্ঞেস করা হবে এবং সেশনটি শেয়ার করা শুরু করবে।</translation>
 <translation id="6746493157771801606">ইতিহাস সাফ করুন</translation>
 <translation id="6748108480210050150">থেকে</translation>
 <translation id="677755392401385740">এই ব্যবহারকারীর জন্য হোস্ট শুরু হয়েছে: <ph name="HOST_USERNAME" />৷</translation>
@@ -299,6 +300,7 @@ Host</translation>
 <translation id="9188433529406846933">অনুমতি দিন</translation>
 <translation id="9213184081240281106">অবৈধ হোস্ট কনফিগারেশন।</translation>
 <translation id="951991426597076286">প্রত্যাখ্যান</translation>
+<translation id="962733587145768554">প্রক্রিয়াটি সম্পূর্ণ করার জন্য দয়া করে সংযোগ ডায়ালগ বাক্সে '<ph name="SHARE" />' নির্বাচন করুন।</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" />এ Chrome দূরবর্তী ডেস্কটপ পুরানো এবং আপডেটের প্রয়োজন৷</translation>
 <translation id="985602178874221306">Chromium রচয়িতা</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (শেষ অনলাইনে ছিলেন <ph name="DATE_OR_TIME" />)</translation>

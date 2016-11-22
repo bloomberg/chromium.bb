@@ -3,6 +3,7 @@
 <translationbundle lang="cs">
 <translation id="1047726139967079566">Přidat stránku do záložek...</translation>
 <translation id="1172898394251786223">Další pole</translation>
+<translation id="2241634353105152135">Pouze jednou</translation>
 <translation id="2320166752086256636">Skrýt klávesnici</translation>
 <translation id="2467815441875554965">Kontextové vyhledávání</translation>
 <translation id="2572712655377361602">Přístup k vašim fotkám blokují zásady zařízení.</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome toto heslo uloží ve vašich <ph name="BEGIN_LINK" />uložených heslech Google<ph name="END_LINK" /> a automaticky vám jej vyplní, abyste si jej nemuseli pamatovat.</translation>
 <translation id="3567664240939803299">Má funkce Google Smart Lock uložit vaše heslo pro tyto stránky?</translation>
 <translation id="3692781555820666866">Pokud je tento příznak aktivován, bude omnibox zahrnovat návrhy webových stránek, které jsou vysílány zařízeními v okolí.</translation>
+<translation id="3789841737615482174">Instalovat</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="4121993058175073134">Chcete-li odesílat data nástroje net-export, nakonfigurujte e-mailový účet v aplikaci Nastavení.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
+<translation id="4773461607542755386">Otevřít tuto stránku v aplikaci <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala vaše heslo pro tento web?</translation>
+<translation id="4881695831933465202">Otevřít</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="6039694632319341016">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo uživatele <ph name="USERNAME" /> pro tento web?</translation>
 <translation id="605721222689873409">RR</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Vygenerovat heslo</translation>
 <translation id="6344783595350022745">Smazat text</translation>
 <translation id="6456425917241817154">Heslo vygenerované Chromem</translation>
+<translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Určuje, zda je aktivní kontextové vyhledávání, nebo nikoliv.</translation>
 <translation id="7456847797759667638">Otevřít umístění...</translation>
 <translation id="7481312909269577407">Vpřed</translation>
+<translation id="7561196759112975576">Vždy</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 </translationbundle>

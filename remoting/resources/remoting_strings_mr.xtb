@@ -27,7 +27,7 @@
 <translation id="1654128982815600832">या संगणकासाठी दूरस्थ कनेक्‍शन सक्षम करीत आहे...</translation>
 <translation id="170207782578677537">या संगणकावर नोंदणी करण्‍यात अयशस्वी.</translation>
 <translation id="1704090719919187045">Chromoting होस्ट प्राधान्ये</translation>
-<translation id="1730409684442507495">• सुधारित डेस्कटॉप प्रतिमा दर्जा, प्रतिसादपणा, आणि बॅटरी वापर.
+<translation id="1730409684442507495">• सुधारित डेस्कटॉप प्रतिमा गुणवत्ता, प्रतिसादपणा, आणि बॅटरी वापर.
 • क्लिक-ड्रॅग ऑपरेशनचा सुधारित प्रतिसाद.
 • अनेक सुधारलेले UI अॅनिमेशन प्रभाव.</translation>
 <translation id="174018511426417793">आपल्याकडे नोंदणी केलेले कोणतेही संगणक नाहीत. संगणकावर दूरस्थ कनेक्शन सक्षम करण्यासाठी, Chrome दूरस्थ डेस्कटॉप तेथे स्थापित करा आणि “<ph name="BUTTON_NAME" />” क्लिक करा.</translation>
@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">अंतिम ऑनलाइन <ph name="DATE" /></translation>
 <translation id="6668065415969892472">आपला PIN अद्यतनित केला गेला.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. सर्व हक्क राखीव.</translation>
+<translation id="6705482892455291412">त्यांनी कोड प्रविष्ट केल्यावर, आपल्याला कनेक्शन स्वीकारण्यास सूचित केले जाईल आणि सामायिकरण सत्र सुरू होईल.</translation>
 <translation id="6746493157771801606">इतिहास साफ करा</translation>
 <translation id="6748108480210050150">प्रेषक</translation>
 <translation id="677755392401385740">वापरकर्त्यासाठी प्रारंभ केलेला होस्ट: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">अधिकृत करा</translation>
 <translation id="9213184081240281106">अवैध होस्ट कॉन्फिगरेशन.</translation>
 <translation id="951991426597076286">नकार द्या</translation>
+<translation id="962733587145768554">कृपया प्रक्रिया पूर्ण करण्यासाठी कनेक्शन संवाद बॉक्सवर '<ph name="SHARE" />' निवडा.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> वरील Chrome दूरस्थ डेस्कटॉप कालबाह्य झाला आहे आणि अद्यतनित करण्याची आवश्यकता आहे.</translation>
 <translation id="985602178874221306">Chromium लेखक</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (अखरेचे ऑनलाइन <ph name="DATE_OR_TIME" />)</translation>

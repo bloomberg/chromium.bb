@@ -27,7 +27,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
 <translation id="1704090719919187045">Chromoting Host-Einstellungen</translation>
-<translation id="1730409684442507495">• Verbesserte Bildqualität, Reaktionsfähigkeit und verbesserter Stromverbrauch bei Desktop-Geräten.
+<translation id="1730409684442507495">• Verbesserungen bei Bildqualität auf Desktop-Geräten, Reaktionsfähigkeit und Stromverbrauch.
 • Verbesserte Reaktionsfähigkeit bei Drag-and-drop-Vorgängen.
 • Verbesserte Animationseffekte bei verschiedenen UI.</translation>
 <translation id="174018511426417793">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie Chrome Remote Desktop auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
@@ -223,6 +223,7 @@ Desktop Host</translation>
 <translation id="6640610550128933069">zuletzt online am <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Ihre PIN wurde aktualisiert.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Alle Rechte vorbehalten</translation>
+<translation id="6705482892455291412">Sobald der Code eingegeben wurde, werden Sie aufgefordert, der Verbindung zuzustimmen und die Freigabesitzung zu starten.</translation>
 <translation id="6746493157771801606">Verlauf löschen</translation>
 <translation id="6748108480210050150">Von</translation>
 <translation id="677755392401385740">Host für folgenden Nutzer gestartet: <ph name="HOST_USERNAME" /></translation>
@@ -299,6 +300,7 @@ Desktop Host</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="9213184081240281106">Ungültige Hostkonfiguration</translation>
 <translation id="951991426597076286">Ablehnen</translation>
+<translation id="962733587145768554">Wählen Sie im Dialogfeld für die Verbindung "<ph name="SHARE" />" aus, um den Vorgang abzuschließen.</translation>
 <translation id="979100198331752041">Chrome Remote Desktop auf <ph name="HOSTNAME" /> ist veraltet und muss aktualisiert werden.</translation>
 <translation id="985602178874221306">Die Chromium-Autoren</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (zuletzt online: <ph name="DATE_OR_TIME" />)</translation>

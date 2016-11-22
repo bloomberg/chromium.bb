@@ -27,7 +27,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="1654128982815600832">Inawasha miunganisho ya mbali kwa kompyuta hii...</translation>
 <translation id="170207782578677537">Ilishindwa kusajili kompyuta hii.</translation>
 <translation id="1704090719919187045">Mapendeleo ya Seva Pangishi ya Chromoting</translation>
-<translation id="1730409684442507495">• Ubora wa picha, utendakazi, na matumizi ya betri yaliyoimarishwa.
+<translation id="1730409684442507495">• Ubora wa picha, utendakazi na matumizi ya betri yaliyoimarishwa.
 • Utendakazi ulioimarishwa wa shughuli za kubofya na kuburuta.
 • Vipengele vya uhuishaji wa Kiolesura vilivyoimarishwa.</translation>
 <translation id="174018511426417793">Huna kompyuta zilizosajiliwa. Ili uwashe miunganisho ya mbali, sakinisha Eneo-kazi la Mbali la Chrome hapo na ubofye “<ph name="BUTTON_NAME" />”.</translation>
@@ -223,6 +223,7 @@ ya Mbali ya Chrome</translation>
 <translation id="6640610550128933069">mara ya mwisho mtandaoni <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN yako imesasishwa.</translation>
 <translation id="6681800064886881394">Hakimiliki 2013 Google Inc. Haki Zote Zimehifadhiwa.</translation>
+<translation id="6705482892455291412">Mara tu wanapoweka nambari ya kuthibitisha, utadokezwa kukubali muunganisho na uanze kushiriki kipindi.</translation>
 <translation id="6746493157771801606">Futa historia</translation>
 <translation id="6748108480210050150">Kutoka</translation>
 <translation id="677755392401385740">Seva pangishi ya mtumiaji: <ph name="HOST_USERNAME" /> Imeanza.</translation>
@@ -300,6 +301,7 @@ ya Mbali ya Chrome</translation>
 <translation id="9188433529406846933">Idhinisha</translation>
 <translation id="9213184081240281106">Usanidi wa seva pangishi si sahihi.</translation>
 <translation id="951991426597076286">Kataa</translation>
+<translation id="962733587145768554">Tafadhali chagua '<ph name="SHARE" />' kwenye kisanduku cha kidirisha cha muunganisho ili ukamilishe mchakato.</translation>
 <translation id="979100198331752041">Kompyuta ya Mbali ya Chrome kwenye <ph name="HOSTNAME" /> imepitwa na wakati na inahitaji kusasishwa.</translation>
 <translation id="985602178874221306">Waandishi wa Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (mara ya mwisho mtandaoni <ph name="DATE_OR_TIME" />)</translation>

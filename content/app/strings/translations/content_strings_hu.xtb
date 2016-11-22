@@ -34,6 +34,7 @@
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2226276347425096477">Kérjük, rövidítse le a szöveget legfeljebb <ph name="MAX_CHARACTERS" /> karakterre (jelenleg <ph name="CURRENT_LENGTH" /> karaktert használ).</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" />. hét, <ph name="YEAR" /></translation>
+<translation id="2277199496770840904"><ph name="NUMBER" />. szám</translation>
 <translation id="2291999235780842123">jelölőnégyzet</translation>
 <translation id="2335594187091864976">dátum- és időválasztó</translation>
 <translation id="248395913932153421">nap</translation>

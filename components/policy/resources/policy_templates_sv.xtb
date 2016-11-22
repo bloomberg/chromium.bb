@@ -21,7 +21,7 @@
       Den här policyn gäller bara användare vars domän matchar enhetens registreringsdomän. För alla andra användare överförs cookies som anges av IdP:n bara till användarens profil under den första inloggningen på enheten.</translation>
 <translation id="1029536946382325801">Om den är inställd på sant kan användaren, genom att använda maskinvaran i Chrome-enheten, fjärrattestera sin identitet i sekretessinställningarna CA via API:et Enterprise Platform Keys – chrome.enterprise.platformKeys.challengeUserKey().
 
-          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod att visas.</translation>
+          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod kommer att visas.</translation>
 <translation id="1040446814317236570">Aktivera filtrering av webbadresser för PAC (för https://)</translation>
 <translation id="1044878202534415707">Rapportera maskinvarustatistik som exempelvis användning av processor eller RAM-minne.
 
@@ -40,6 +40,7 @@
           Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="1103860406762205913">Aktiverar den gamla webbaserade inloggningen</translation>
+<translation id="1117535567637097036">Protokollhanterarna som ställs in via den här principen används inte för intent i Android.</translation>
 <translation id="1128903365609589950">Konfigurerar den katalog som <ph name="PRODUCT_NAME" /> ska använda för att lagra cachade filer på hårddisken.
 
       Om du ställer in den här policyn använder <ph name="PRODUCT_NAME" /> den angivna katalogen oavsett om användaren har angett flaggan --disk-cache-dir eller inte. Undvik dataförlust och andra oväntade fel genom att inte ställa in den här policyn på en volyms rotkatalog eller på en katalog som används i andra syften eftersom <ph name="PRODUCT_NAME" /> hanterar dess innehåll.
@@ -56,6 +57,25 @@
 <translation id="1152117524387175066">Rapportera vilket läge enhetens utvecklarväxel har vid uppstart.
 
       Om principen anges som False kommer utvecklarväxelns läge inte att redovisas.</translation>
+<translation id="1156080716265314451">Konfigurerar en lista över skrivare.
+
+      Med hjälp av den här principen kan administratören tillhandahålla
+      skrivarkonfigurationer åt användarna.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> och <ph name="PRINTER_DESCRIPTION" /> är strängar i fri form som kan
+      anpassas så att det blir enkelt att välja skrivare. <ph name="PRINTER_MANUFACTURER" /> och <ph name="PRINTER_MODEL" /> ska matcha en av de skrivare från <ph name="PRODUCT_NAME" /> som
+      stöds. <ph name="PRINTER_URI" /> ska vara en adress som går att nå
+      från en klientdator, inklusive <ph name="URI_SCHEME" />,
+      <ph name="URI_PORT" /> och <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> är valfritt. Om det anges används det för att
+      deduplicera <ph name="ZEROCONF_DISCOVERY" />-skrivare.
+
+      Skivarkonfigureringen slutförs första gången en skrivare används. Inga
+      PPD-filer laddas ned förrän skrivaren används. Därefter cachelagras
+      PPD-filer som används ofta.
+
+      Principen påverkar inte om användarna kan konfigurera skrivare på
+      enskilda enheter eller inte. Den är tänkt att vara ett supplement till de
+      enskilda användarnas skrivarkonfiguration.</translation>
 <translation id="1160939557934457296">Inaktivera möjligheten att fortsätta från varningssidan Säker webbsökning</translation>
 <translation id="1198465924256827162">Hur ofta information om enhetsstatus laddas upp, uttryckt i millisekunder.
 
@@ -160,7 +180,6 @@
       inte använda ARC.</translation>
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
-<translation id="1606958238518590302">När principen är inställd på sant kan inte användare spara något på externa lagringsenheter.</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="1617384279878333801">Gör att en person kan läggas till i profilhanteraren</translation>
@@ -173,6 +192,7 @@
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="1679420586049708690">Offentlig session för automatisk inloggning</translation>
+<translation id="1680029600835707254">Den här principen styr vem som får starta en session i <ph name="PRODUCT_OS_NAME" />. Den hindrar inte användarna från att logga in med andra Google-konton i Android. Om du vill förhindra detta konfigurerar du den Android-specifika principen <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> som en del av <ph name="ARC_POLICY" />.</translation>
 <translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Ange begränsning av hämtningen av startvärdet för Variations</translation>
 <translation id="172374442286684480">Tillåt alla webbplatser att ange lokala data</translation>
@@ -200,6 +220,7 @@
       Om du aktiverar den här inställningen kan pluginprogram som inte är föråldrade alltid köras.
 
       Om inställningen är inaktiverad eller inte inställd får användaren välja om pluginprogram som kräver auktorisering ska få köras eller inte. Den här typen av pluginprogram kan utgöra en säkerhetsrisk.</translation>
+<translation id="1781356041596378058">Den här principen styr även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
 <translation id="1827523283178827583">Använd fasta proxyservrar</translation>
@@ -255,6 +276,7 @@
 
       Om principen inte ställs in används standardvärden för alla inställningar.</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
+<translation id="1964802606569741174">Den här principen gäller inte YouTube-appen för Android. Om Säkert läge på YouTube ska vara obligatoriskt bör du blockera möjligheten att installera YouTube-appen för Android.</translation>
 <translation id="1969212217917526199">Åsidosätter policyer på felsökningsversioner av fjärråtkomstvärden.
 
           Värdet analyseras som en JSON-ordlista med policyns namn till mappningar av policyns värde.</translation>
@@ -272,6 +294,7 @@
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta policyvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
 <translation id="2024476116966025075">Konfigurera domännamnet som krävs för fjärråtkomstklienter</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
+<translation id="203096360153626918">Den här principen gäller inte Android-appar. De kan använda helskärmsläge även om den har principen har ställts in på <ph name="FALSE" />.</translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
 
           Möjliga värden är basic, digest, ntlm och negotiate. Avgränsa värdena med komma.
@@ -346,6 +369,7 @@
       Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du laddar ned. Policyn styr endast användningen av onlinetjänsten.
 
       Om den här inställningen inte konfigureras kan användare välja om de vill använda stavningskontrollen eller inte.</translation>
+<translation id="2294382669900758280">Videouppspelning i Android-appar påverkas inte även om den här principen har ställts in på <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
 <translation id="2309390639296060546">Standardinställning för geografisk plats</translation>
 <translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
@@ -453,6 +477,7 @@
       Om ingen inställning anges kan användaren välja att använda eller inte använda denna funktion.
 
       Den här inställningen har tagits bort från och med version 29 av <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2432116014157020512">Lösenord krävs varje vecka (168 timmar).</translation>
 <translation id="2436445024487698630">Tillåter inloggning i <ph name="PRODUCT_NAME" /></translation>
 <translation id="243972079416668391">Ange vilken åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid anslutning till ett elnät.
 
@@ -511,6 +536,13 @@
           Googles direktresultat för webbadresser kan anges så här: <ph name="GOOGLE_INSTANT_SEARCH_URL" />
 
           Principen används bara om principen DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="2569647487017692047">Om principen är inställd på falskt inaktiveras Bluetooth för <ph name="PRODUCT_OS_NAME" /> och användaren kan inte aktivera det igen.
+
+      Om principen är inställd på sant eller inte inställd alls kan användaren aktivera eller inaktivera Bluetooth när som helst.
+
+      Om principen är inställd kan användaren inte ändra eller åsidosätta den.
+
+      När Bluetooth har aktiverats måste användaren logga ut och logga in igen innan ändringarna tillämpas (detta behövs inte när du inaktiverar Bluetooth).</translation>
 <translation id="2571066091915960923">Aktiverar eller inaktiverar proxyfunktionen för datakomprimering och förhindra att användare ändrar inställningen.
 
       Om du aktiverar eller inaktiverar inställningen kan användare inte ändra eller åsidosätta inställningen.
@@ -632,6 +664,7 @@
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
 <translation id="2884728160143956392">Tillåt sessionscookies på dessa webbplatser</translation>
 <translation id="2893546967669465276">Skicka systemloggar till hanteringsservern</translation>
+<translation id="2899002520262095963">Android-appar kan använda nätverkskonfigurationer och CA-certifikat som har angetts via den här principen men saknar tillgång till vissa konfigurationsalternativ.</translation>
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
 <translation id="2948087343485265211">Anger om ljudaktivitet påverkar energihanteringen.
@@ -699,6 +732,7 @@
           Om policyn inte ställs in kan användaren installera alla tillägg i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME" /> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta nedladdningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
+<translation id="3187220842205194486">Android-appar kan inte ges tillgång till företagsnycklar. Den här principen gäller inte dem.</translation>
 <translation id="318812033927804102">Konfigurerar inställningar för tilläggshantering för <ph name="PRODUCT_NAME" />.
 
           Policyn styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterade policyer. Policyn åsidosätter alla äldre policyer om båda är angivna.
@@ -764,6 +798,7 @@
 
       Om policyn inte ställs in kan användaren tillfrågas om han eller hon vill importera, eller så kan importen göras automatiskt.</translation>
 <translation id="3219421230122020860">Inkognitoläget är tillgängligt</translation>
+<translation id="3220624000494482595">Om det är en Android-app som används som kioskapp kommer den inte att kunna påverka versionen av <ph name="PRODUCT_OS_NAME" /> även om den här principen har ställts in på <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Webbadressmönster för att tillåta installationer av tillägg, appar och användarskript från</translation>
 <translation id="3243309373265599239">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska dämpas när enheten är ansluten till elnätet.
 
@@ -798,6 +833,7 @@
 <translation id="3322902067538988734">Om principen är inställd på sant måste användare logga in i <ph name="PRODUCT_NAME" /> med sina profiler för att kunna använda webbläsaren. Och falskt anges som standardvärde för BrowserGuestModeEnabled.
 
       Om principen är inställd på falskt eller om den inte har konfigurerats kan användare använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3347687541825006165">Ställer in hur ofta användaren måste ange lösenord för att kunna använda snabb upplåsning.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
@@ -982,6 +1018,7 @@
 
       Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="3907986150060929099">Anger de rekommenderade språkkoderna för en offentlig session</translation>
+<translation id="3911737181201537215">Den här principen har ingen inverkan på loggningen i Android.</translation>
 <translation id="391531815696899618">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />. Då överförs ingen data till Google Drive.
 
           Om ingen inställning görs eller om Falskt anges kan användaren föra över filer till Google Drive.</translation>
@@ -991,12 +1028,13 @@
 
       Om principen är inställd på sant kommer nätverkspaket för övervakning (så kallade <ph name="HEARTBEATS_TERM" />) att skickas.
       Om principen är inställd på falskt eller inte har angetts skickas inga paket.</translation>
-<translation id="3963602271515417124">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
+<translation id="3963602271515417124">Om detta är sant är attestering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
 
           Om detta är falskt, eller om alternativet inte har angetts, skapas inget certifikat och anrop till tilläggs-API:et enterprise.platformKeys misslyckas.</translation>
 <translation id="3964909636571393861">Ger åtkomst till en lista med webbadresser</translation>
 <translation id="3965339130942650562">Tidsgräns för utloggning av inaktiv användare</translation>
 <translation id="3967075520570946456">Gör att välkomstsidan visas när webbläsaren startas för första gången efter en uppgradering av operativsystemet.</translation>
+<translation id="3968660816994975381">Den här principen styr om det går att lägga till nya användare i <ph name="PRODUCT_OS_NAME" />. Den hindrar inte användarna från att logga in med andra Google-konton i Android. Om du vill förhindra detta konfigurerar du den Android-specifika principen <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> som en del av <ph name="ARC_POLICY" />.</translation>
 <translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
 <translation id="3984028218719007910">Avgör om <ph name="PRODUCT_OS_NAME" /> ska spara lokala kontodata efter utloggning. Om värdet är sant sparas inga konton permanent av <ph name="PRODUCT_OS_NAME" /> och alla data från användarsessionen kasseras efter utloggning. Om policyn är inställd på falskt eller inte konfigurerad kan lokala användardata sparas (krypterade) i enheten.</translation>
 <translation id="3994569321696536679">Aktiverar <ph name="PRODUCT_NAME" />s
@@ -1026,6 +1064,7 @@
 
       Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
 <translation id="4010738624545340900">Tillåt anrop till dialogrutor för filval</translation>
+<translation id="4020682745012723568">Cookies som överförs till användarprofilen är inte tillgängliga för Android-appar.</translation>
 <translation id="4025586928523884733">Policyn Blockerar cookies från tredje part.
 
       Om du aktiverar den här inställningen kan cookies inte sparas av webbsideelement som inte tillhör den domän som står i webbläsarens adressfält.
@@ -1096,6 +1135,7 @@
 <translation id="423797045246308574">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som inte får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenAllowedForUrls åsidosätts dessa undantag av policyn.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
+<translation id="4239720644496144453">Cacheminnet används inte för Android-appar. Om flera användare installerar samma Android-app laddas den ned på nytt varje gång.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4272136423200695428">Aktivera tvingad inloggning för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
@@ -1114,6 +1154,7 @@
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
+<translation id="4397469093966511008">Om den här principen är inställd på falskt kan inte användare skicka systeminformation eller innehåll på sidan till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka systeminformation och innehåll på sidan till Säker webbsökning och bidra till att skadliga appar och webbplatser identifieras.</translation>
 <translation id="4423597592074154136">Ange proxyinställningar manuellt</translation>
 <translation id="4429220551923452215">Aktiverar eller inaktiverar genvägen Appar i bokmärkesfältet.
 
@@ -1133,6 +1174,7 @@
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
+<translation id="4476769083125004742">Om den här principen är inställd på <ph name="BLOCK_GEOLOCATION_SETTING" /> får Android-appar inte tillgång till platsinformation. Om principen är inställd på något annat eller lämnas utan inställning blir användaren tillfrågad om han eller hon vill ge Android-appen tillgång till platsinformationen när det blir aktuellt.</translation>
 <translation id="447686899376429408">Om det här alternativet är inställt på sant eller inte är inställt kan användarna casta flikar, webbplatser eller skrivbordet från webbläsaren. Om det är inställt på falskt går det inte att casta.</translation>
 <translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME" />.
@@ -1165,6 +1207,7 @@
 <translation id="4525521128313814366">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
           Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
+<translation id="4531706050939927436">Android-appar kan tvångsinstalleras via Googles Administratörskonsol med Google Play. Den här principen gäller inte för dem.</translation>
 <translation id="4534500438517478692">Namn på Android-begränsning:</translation>
 <translation id="4541530620466526913">Lokala konton på enheten</translation>
 <translation id="4555850956567117258">Aktivera fjärrattestering för användaren</translation>
@@ -1328,6 +1371,14 @@
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
+<translation id="5209594095390052164">Ger möjlighet att välja om överföringshastigheten i nätverket ska begränsas eller inte.
+      Detta gäller alla användare och alla gränssnitt på enheten. När principen
+      har ställts in används begränsningen tills den inaktiveras via principen.
+      
+
+      Med värdet falskt görs ingen begränsning av överföringshastigheten.
+      Med värdet sant begränsas upp- och nedladdningshastigheten till de angivna värdena (i kbit/s).</translation>
+<translation id="5219844027738217407">För Android-appar påverkar den här principen endast mikrofonen. När principen är inställd på sant är mikrofonen avstängd i alla Android-appar utan undantag.</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5255162913209987122">Kan rekommenderas</translation>
@@ -1403,12 +1454,17 @@
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
-<translation id="5496487987837463732">Om den här policyn är inställd på falskt kan inte användare skicka information om säkerhetsfel de stöter på till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka information när de stöter på ett SSL-fel eller en varning i Säker webbsökning.</translation>
 <translation id="5499375345075963939">Policyn är endast aktiv i återförsäljarläge.
 
       När värdet för den här policyn är angiven och inte är 0 kommer den nuvarande inloggade demoanvändaren att loggas ut automatiskt när en viss tid av inaktivitet har gått.
 
       Policyvärdet ska anges i millisekunder.</translation>
+<translation id="5506213378070007377">Android-statusrapporter skickas till servern.
+
+      Om principen har ställts in på falskt skickas ingen statusinformation.
+      Om principen har ställts in på sant eller lämnats utan värde skickas statusinformation.
+
+      Principen gäller bara om Android-appar har aktiverats.</translation>
 <translation id="5511702823008968136">Aktivera bokmärkesfältet</translation>
 <translation id="5512418063782665071">Webbadress för startsida</translation>
 <translation id="5523812257194833591">En offentlig session för att logga in automatiskt efter en fördröjning.
@@ -1429,6 +1485,7 @@
       frekvensen är 30 sekunder och den högsta 24 timmar. Värden
       utanför detta intervall ändras till närmaste värde inom intervallet.</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
+<translation id="5559079916187891399">Den här principen gäller inte Android-appar.</translation>
 <translation id="5560039246134246593">Lägg till en parameter vid hämtningen av startvärdet för Variations i <ph name="PRODUCT_NAME" />.
 
       Om den anges läggs en frågeparameter som kallas "restrict" till i webbadressen som används för att hämta startvärdet för Variations. Värdet för parametern kommer att vara det värde som anges i policyn.
@@ -1550,6 +1607,7 @@
 <translation id="5893553533827140852">Om inställningen är aktiverad kommer gnubby-autentiseringsbegäranden att skickas via proxy via en fjärranslutning.
 
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
+<translation id="5898486742390981550">När flera användare är inloggade är det bara den primära användaren som kan använda Android-appar.</translation>
 <translation id="5921713479449475707">Tillåt nedladdning av automatiska uppdateringar via HTTP</translation>
 <translation id="5921888683953999946">Ange standardläget för hjälpmedelsfunktionen med en stor markör på inloggningsskärmen.
 
@@ -1565,6 +1623,7 @@
       Om du aktiverar den här inställningen är funktionen SafeSearch i Sök på Google alltid aktiv.
 
       Om du inaktiverar den här inställningen eller inte anger ett värde tvingas inte användningen av SafeSearch i Sök på Google fram.</translation>
+<translation id="5937539742111853215">Den här principen gäller bara utvecklarläget i <ph name="PRODUCT_OS_NAME" />. Om du vill förhindra åtkomst till Androids utvecklaralternativ måste du använda principen <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
 <translation id="5950205771952201658">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME" /> version 19 och senare. Om du aktiverar den här principen återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
 
@@ -1590,13 +1649,6 @@
 
       Om policyn är inställd på falskt kommer maskinvaruacceleration att inaktiveras.</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
-<translation id="6076008833763548615">Inaktivera montering av extern lagring.
-
-      När den här policyn har värdet sant är inte extern lagring tillgängligt i filhyllan.
-
-      Policyn påverkar alla typer av lagringsmedia. Till exempel USB-flashminnen, externa hårddiskar, SD-kort och andra minneskort, optisk lagring osv. Den interna lagringen påverkas inte och du kan därmed komma åt filer som sparats i mappen Hämtade filer. Google Drive påverkas inte heller av den här policyn.
-
-      Om inställningen inaktiveras eller inte konfigureras kan användare använda alla typer av extern lagring som stöds på deras enhet.</translation>
 <translation id="6076099373507468537">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
 
       Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
@@ -1629,6 +1681,7 @@
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
+<translation id="614662973812186053">Den här principen styr även insamlingen av användnings- och diagnostikinformation i Android.</translation>
 <translation id="6151775819333710697">
           Om den här inställningen har aktiverats kan användarna spara lösenord i <ph name="PRODUCT_NAME" /> och låta
           dem fyllas i automatiskt nästa gång de loggar in på en webbplats.
@@ -1643,6 +1696,12 @@
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
+<translation id="6166832345529129545">Kontrollerar vilka snabbupplåsningslägen som får konfigureras och användas.
+      Med den här inställningen tillåts de snabbupplåsningslägen som kan konfigureras och användas för att låsa upp låsskärmen. Värdet är en lista över strängar som ska vara antingen Alla eller Pinkod. Om Alla väljs blir snabbupplåsningslägen som stöds tillgängliga, annars blir lägena i listan tillgängliga.
+
+      Om inställningen konfigureras kan inte snabbupplåsningslägen med typer som saknas i listan konfigureras eller användas.
+
+      Om inställningen inte konfigureras aktiveras läget Pinkod och övriga lägen inaktiveras.</translation>
 <translation id="6167074305866468481">Varning! Stöd för SSLv3 kommer helt att tas bort från <ph name="PRODUCT_NAME" /> efter version 43 (kring juli 2015) och denna princip tas bort samtidigt med detta.
 
       Om principen inte konfigureras använder <ph name="PRODUCT_NAME" /> en standardminimiversion som är SSLv3 i <ph name="PRODUCT_NAME" /> 39 and TLS 1.0 i senare versioner.
@@ -1713,6 +1772,7 @@
       Om du aktiverar inställningen eller inte anger något värde kan användarna styra autofyll. De kan konfigurera autofyllprofiler och aktivera och inaktivera autofyllfunktionen när de vill.</translation>
 <translation id="6394350458541421998">Den här principen finns inte med i <ph name="PRODUCT_OS_NAME" /> version 29 och senare. Använd principen PresentationScreenDimDelayScale i stället.</translation>
 <translation id="6401669939808766804">Logga ut användaren</translation>
+<translation id="6413263121045928260">Lösenord krävs varje dag (24 timmar).</translation>
 <translation id="6417861582779909667">Policyn gör att du kan ställa in en lista med webbadressmönster som inte får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultCookiesSetting om den används eller användarens personliga konfiguration.</translation>
@@ -1740,6 +1800,7 @@
 
           Policyns värde ska anges i millisekunder. Värdet måste vara lägre än inaktivitetstiden.</translation>
 <translation id="6536600139108165863">Automatisk omstart vid avstängning av enhet</translation>
+<translation id="6539246272469751178">Den här principen gäller inte Android-appar. Android-appar använder alltid standardmappen för nedladdningar och har inte tillgång till filer som har laddats ned i någon annan mapp i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="6544897973797372144">Om policyn angetts som sann och policyn ChromeOsReleaseChannel inte är angiven kommer användare på den registrerade domänen att kunna ändra lanseringskanal för enheten. Om policyn angetts som falsk kommer enheten att låsas till den kanal som senast angetts.
 
       Den kanal som användaren valt kommer att åsidosättas av policyn ChromeOsReleaseChannel, men om kanalen för policyn är mer stabil än den som installerats på enheten kommer kanalen endast bytas då versionen för den mer stabila kanalen uppnått ett högre versionsnummer än det som installerats på enheten.</translation>
@@ -1931,6 +1992,7 @@
           till en Active Directory-domän.</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
+<translation id="7072406291414141328">Aktiverar begränsning av bandbredden i nätverket</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
 <translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
 <translation id="7106631983877564505">Policyn aktiverar lås när <ph name="PRODUCT_OS_NAME" />-enheter blir inaktiva eller stängs av.
@@ -2086,6 +2148,7 @@
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="7529144158022474049">Uppdatera spridningsfaktor automatiskt</translation>
+<translation id="7534199150025803530">Den här principen gäller inte appen Google Drive för Android. Om du vill förhindra att Google Drive används via mobilanslutning bör du blockera möjligheten att installera appen Google Drive för Android.</translation>
 <translation id="7553535237300701827">När principen är angiven går autentiseringen vid inloggning till på ett av följande sätt beroende på inställningens värde:
 
       Om principen är inställd på GAIA utförs inloggningen via det vanliga autentiseringsflödet för GAIA.
@@ -2104,6 +2167,8 @@
       Om principen har värdet 0 används cacheminnets standardstorlek men användaren får inte ändra den.
 
       Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --disk-cache-size.</translation>
+<translation id="7604169113182304895">Android-appar kan ta hänsyn till den här listan men måste inte göra det. Det går inte att göra inställningen obligatorisk för dem.</translation>
+<translation id="7611372873040492235">Lösenord krävs var tolfte timme.</translation>
 <translation id="7612157962821894603">Flaggor som gäller hela systemet och som ska tillämpas vid start av <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista över inaktiverade protokollscheman</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
@@ -2236,6 +2301,7 @@
 <translation id="7882585827992171421">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
+<translation id="7882857838942884046">Om du inaktiverar Google Sync kommer säkerhetskopiering och återställning i Android inte att fungera korrekt.</translation>
 <translation id="7882890448959833986">Ignorera varningar för operativsystem som inte stöds</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
 <translation id="7915236031252389808">Här kan du ange webbadressen till en PAC-fil för proxy.
@@ -2276,8 +2342,10 @@
           Om inställningen är aktiverad kan datorn identifiera och ansluta till fjärrvärdenheter även om det finns en brandvägg mellan dem.
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
+<translation id="7986374692540430898">Det går inte att göra det obligatoriskt för Android-appar att ansluta via en proxy. Android-appar har tillgång till ett urval av proxyinställningarna och kan men måste inte följa dem. I principen <ph name="PROXY_MODE_POLICY" /> finns mer information.</translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
+<translation id="8050080920415773384">Integrerad utskrift</translation>
 <translation id="8059164285174960932">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken</translation>
 <translation id="8071636581296916773">Reläserveranvändning aktiveras när fjärrklienter försöker etablera en anslutning till datorn.
 
@@ -2312,6 +2380,7 @@
 <translation id="8140204717286305802">Rapportera en lista över nätverksgränssnitt med typ och maskinvaruadress till servern.
 
       Om principen anges som False skickas inte gränssnittslistan.</translation>
+<translation id="8141795997560411818">Den här principen förhindrar inte användning av appen Google Drive för Android. Om du vill att användarna inte ska ha tillgång till Google Drive bör du blockera möjligheten att installera appen Google Drive för Android.</translation>
 <translation id="8146727383888924340">Tillåt att användare utnyttjar erbjudanden via registrering i Chrome OS</translation>
 <translation id="8148785525797916822">Ignorerar varningar som visas när <ph name="PRODUCT_NAME" /> körs på en dator eller i ett operativsystem som inte längre stöds.</translation>
 <translation id="8148901634826284024">Aktivera hjälpmedelsfunktionerna i högkontrastläge.
@@ -2474,6 +2543,7 @@
 <translation id="8587229956764455752">Tillåt att nya användarkonton skapas</translation>
 <translation id="8614804915612153606">Inaktiverar automatisk uppdatering</translation>
 <translation id="8631434304112909927">till och med version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863319402127182273">För Android-appar påverkar den här principen endast den inbyggda kameran. När principen är inställd på sant är kameran avstängd i alla Android-appar utan undantag.</translation>
 <translation id="8649763579836720255">Chrome OS-enheter kan använda fjärrstyrd attestering (verifierad åtkomst) för att få ett certifikat utfärdat av Chrome OS CA som intygar att enheten kvalificerar för att spela upp skyddat innehåll.  Processen innebär att skicka maskinvaruinformation till Chrome OS CA som unikt identifierar enheten.
 
           Om inställningen är Falskt kommer enheten inte att använda fjärrstyrd attestering för innehållsskydd och skyddat innehåll kanske inte kan spelas upp på enheten.
@@ -2557,6 +2627,15 @@
 <translation id="8833109046074170275">Autentisering via standardflödet för GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> sparar appar och tillägg i cacheminnet vid installation av flera användare som delar enhet. På detta sätt laddas de inte ned för varje användare enskilt.
       Om policyn inte konfigureras eller om värdet är lägre än 1 MB används den cachestorlek som är standard i <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="8858120573534680488">Det går inte att göra det obligatoriskt för Android-appar att ansluta via en proxyserver. Android-appar har tillgång till ett urval av proxyinställningarna enligt nedan och kan men måste inte följa dem.
+
+          Med alternativet Använd aldrig proxyserver får Android-apparna informationen att ingen proxyserver har konfigurerats.
+
+          Med alternativen Använd systemets proxyinställningar eller Fast serverproxy får Android-apparna tillgång till http-proxyserverns adress och port.
+
+          Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används.
+
+          Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME" /> inte visas.</translation>
 <translation id="8870318296973696995">Startsida</translation>
@@ -2627,7 +2706,9 @@
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
+<translation id="9098186110082719131">Lösenord krävs var sjätte timme.</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
+<translation id="9105265795073104888">Bara ett urval av konfigurationsalternativen för proxyserver är tillgängliga för Android-appar. De kan men måste inte använda proxyn. Det går inte att göra inställningen obligatorisk för dem.</translation>
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>
@@ -2660,5 +2741,11 @@
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="944607242500063080">Konfigurera tillåtna snabbupplåsningslägen.</translation>
 <translation id="944817693306670849">Ange storlek för diskcache</translation>
+<translation id="969164417253718105">Inställningen styr hur ofta låsskärmen ska begära att lösenordet anges för att snabb upplåsning ska användas. Snabb upplåsning blir inte tillgänglig när låsskärmen visas om du översteg inställningen senaste gången du angav lösenordet. Om användaren stannar längre än den här tidsperioden på låsskärmen krävs ett lösenord nästa gång användaren anger fel kod eller när låsskärmen visas på nytt.
+
+      Om inställningen konfigureras uppmanas användaren att ange sina lösenord på låsskärmen beroende på inställningen.
+
+      Om inställningen inte konfigureras uppmanas användaren att ange sina lösenord på låsskärmen varje dag.</translation>
 </translationbundle>

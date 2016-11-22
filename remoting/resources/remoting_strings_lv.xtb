@@ -223,6 +223,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="6640610550128933069">pēdējoreiz tiešsaistē: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Jūsu PIN ir atjaunināts.</translation>
 <translation id="6681800064886881394">Autortiesības © 2013 Google Inc. Visas tiesības paturētas.</translation>
+<translation id="6705482892455291412">Tiklīdz tiks ievadīts kods, jūs tiksiet aicināts apstiprināt savienojumu un sākt kopīgot sesiju.</translation>
 <translation id="6746493157771801606">Notīrīt vēsturi</translation>
 <translation id="6748108480210050150">No</translation>
 <translation id="677755392401385740">Saimniekdators startēts šādam lietotājam: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="9188433529406846933">Autorizēšana</translation>
 <translation id="9213184081240281106">Saimniekdatora konfigurācija nav derīga.</translation>
 <translation id="951991426597076286">Noraidīt</translation>
+<translation id="962733587145768554">Lai pabeigtu procesu, savienojuma dialoglodziņā atlasiet “<ph name="SHARE" />”.</translation>
 <translation id="979100198331752041">Chrome attālā darbvirsma saimniekdatorā <ph name="HOSTNAME" /> ir novecojusi un ir jāatjaunina.</translation>
 <translation id="985602178874221306">Chromium autori</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (pēdējoreiz tiešsaistē: <ph name="DATE_OR_TIME" />)</translation>

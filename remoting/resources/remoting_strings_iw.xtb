@@ -223,6 +223,7 @@ Chromoting</translation>
 <translation id="6640610550128933069">חיבור אחרון לרשת ב-<ph name="DATE" /></translation>
 <translation id="6668065415969892472">‏ה-PIN שלך עודכן.</translation>
 <translation id="6681800064886881394">‏Copyright © 2013 Google Inc.‎. כל הזכויות שמורות.</translation>
+<translation id="6705482892455291412">לאחר הזנת הקוד, תתבקש לאשר את החיבור ולהתחיל בשיתוף ההפעלה.</translation>
 <translation id="6746493157771801606">נקה היסטוריה</translation>
 <translation id="6748108480210050150">מאת</translation>
 <translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Chromoting</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="9213184081240281106">תצורה לא חוקית של המארח.</translation>
 <translation id="951991426597076286">דחה</translation>
+<translation id="962733587145768554">בחר באפשרות '<ph name="SHARE" />' בתיבת הדו-שיח של החיבור כדי להשלים את התהליך.</translation>
 <translation id="979100198331752041">‏שולחן העבודה המרוחק של Chrome ב-<ph name="HOSTNAME" /> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="985602178874221306">‏מחברי Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (התחברות אחרונה <ph name="DATE_OR_TIME" />)</translation>

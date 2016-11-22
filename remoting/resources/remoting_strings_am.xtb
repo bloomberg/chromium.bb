@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">ለመጨረሻ ጊዜ መስመር ላይ <ph name="DATE" /></translation>
 <translation id="6668065415969892472">የእርስዎ ፒን ተዘምኗል።</translation>
 <translation id="6681800064886881394">የቅጂ መብት 2013 Google Inc. ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
+<translation id="6705482892455291412">አንዴ ኮዱን ካስገቡት በኋላ ግንኙነቱን እንዲቀበሉ እና ክፍለ-ጊዜውን ማጋራት እንዲጀምሩ ጥያቄ ይደርሰዎታል።</translation>
 <translation id="6746493157771801606">ታሪክ አጽዳ</translation>
 <translation id="6748108480210050150">ከ</translation>
 <translation id="677755392401385740">አስተናጋጅ ለተጠቃሚ ተጀምሯል፦ <ph name="HOST_USERNAME" />።</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">ፈቀዳ ይስጡ</translation>
 <translation id="9213184081240281106">ልክ ያልሆነ የአስተናጋጅ ውቅር።</translation>
 <translation id="951991426597076286">አትቀበል</translation>
+<translation id="962733587145768554">ሂደቱን ለማጠናቀቅ እባክዎ በግንኙነት መገናኛ ሳጥኑ ላይ «<ph name="SHARE" />»ን ይምረጡ።</translation>
 <translation id="979100198331752041">Chrome የርቀት ዴስክቶፕ በ<ph name="HOSTNAME" /> ላይ ጊዜው ያለፈበት እና መዘመን የሚያስፈልገው ነው።</translation>
 <translation id="985602178874221306">የChromium ደራሲዎች</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (መስመር ላይ የነበረበት <ph name="DATE_OR_TIME" /> መጨረሻ ጊዜ)</translation>

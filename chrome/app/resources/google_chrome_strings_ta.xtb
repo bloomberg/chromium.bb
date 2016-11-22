@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1001534784610492198">நிறுவி காப்பகம் சிதைந்துள்ளது அல்லது செல்லுபடியாகாதது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
-<translation id="1013290471399003443">இந்த இணையதளத்தின் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது. சரியான சான்றிதழ் வெளிப்படைத்தன்மைத் தகவலைச் சேவையகம் வழங்கியது.</translation>
 <translation id="103396972844768118">உங்கள் Chrome தரவு தொடர்பான முக்கியமான தகவல்</translation>
 <translation id="1035334672863811645">Chrome இல் உள்நுழைக</translation>
 <translation id="1061441684050139317">இந்தத் தளத்துடன் அதைப் பகிர Chromeக்கு மைக்ரோஃபோன் அணுகல் தேவை.</translation>
@@ -22,6 +21,7 @@
 <translation id="1480489203462860648">முயற்சி செய்யுங்கள், இது ஏற்கனவே நிறுவப்பட்டது</translation>
 <translation id="1553358976309200471">Chromeஐப் புதுப்பி</translation>
 <translation id="1587223624401073077">Google Chrome உங்கள் கேமராவைப் பயன்படுத்துகிறது.</translation>
+<translation id="1587325591171447154"><ph name="FILE_NAME" /> ஆபத்தானது என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="1619887657840448962">Chromeஐப் பாதுகாப்பானதாக்க, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> இல் பட்டியலிடப்படாத பின்வரும் நீட்டிப்பை முடக்கியுள்ளோம், மேலும் அது உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
 <translation id="1628000112320670027">Chrome தொடர்பான உதவி பெறுக</translation>
 <translation id="163860049029591106">Chrome OS பயன்படுத்தி தொடங்குக</translation>
@@ -38,6 +38,7 @@
 <translation id="2063848847527508675">புதுப்பிப்பைப் பயன்படுத்த, Chrome OSஐ மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="2077129598763517140">கிடைக்கும்போது வன்பொருளின் முடுக்கத்தைப் பயன்படுத்தவும்</translation>
 <translation id="2084710999043359739">Chrome இல் சேர்</translation>
+<translation id="2147651015520127414">இந்த இணையதளச் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது.</translation>
 <translation id="2246246234298806438">உள்ளமைக்கப்பட்ட PDF வியூவர் இல்லையென்றால், Google Chrome அச்சிடல் மாதிரிக்காட்சியைக் காண்பிக்காது.</translation>
 <translation id="2252923619938421629">நடப்பு அமைப்புகள் குறித்து தெரிவிப்பதன் மூலம் Google Chrome ஐச் சிறந்ததாக்க உதவவும்</translation>
 <translation id="225614027745146050">நல்வரவு</translation>
@@ -70,7 +71,6 @@
 <translation id="2871893339301912279">Chrome இல் உள்நுழைந்துள்ளீர்கள்!</translation>
 <translation id="2888126860611144412">Chrome அறிமுகம்</translation>
 <translation id="2900322993655997287">Google Chrome ஆல் இயல்புநிலை உலாவியைத் தீர்மானிக்கவோ அமைக்கவோ முடியவில்லை.</translation>
-<translation id="2997147809295888909">இந்த இணையதளத்தின் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது. சான்றிதழ் வெளிப்படைத்தன்மைத் தகவல் எதையும் சேவையகம் வழங்கவில்லை.</translation>
 <translation id="3037838751736561277">Google Chrome பின்புலப் பயன்முறையில் இயங்குகிறது.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> ஐத் துண்டிப்பது, இந்தச் சாதனத்தில் உள்ள உங்கள் வரலாறு, புத்தகக்குறிகள், அமைப்புகள் மற்றும் பிற Chrome தரவை அழிக்கும். உங்கள் Google கணக்கில் சேமிக்கப்பட்ட தரவு அழிக்கப்படாது, மேலும் <ph name="GOOGLE_DASHBOARD_LINK" />Google டாஷ்போர்டில்<ph name="END_GOOGLE_DASHBOARD_LINK" /> நிர்வகிக்கலாம்.</translation>
 <translation id="3065168410429928842">Chrome தாவல்</translation>
@@ -101,7 +101,6 @@
 <translation id="3847841918622877581">உங்கள் உலாவுதல் அனுபவத்தை மேம்படுத்த, Google Chrome ஆனது வலைச் சேவைகளைப் பயன்படுத்தக்கூடும்.</translation>
 <translation id="386202838227397562">அனைத்து Google Chrome சாளரங்களையும் மூடி, பின்னர் முயற்சி செய்க.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3881912906674381083">இந்த இணையதளத்தின் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது. சான்றிதழின் வெளிப்படைத்தன்மைத் தகவலைச் சேவையகம் வழங்கியது, ஆனால் சான்றிதழ் வெளிப்படைத்தன்மைப் பதிவுகளில் எதையும் Chromium ஆல் அடையாளம் காண முடியவில்லை.</translation>
 <translation id="3889417619312448367">Google Chrome ஐ நிறுவல் நீக்குக</translation>
 <translation id="4028693306634653894">Chromeக்கு விரைவாகச் செல்லவும்</translation>
 <translation id="4042449298237264661">Windows XP மற்றும் Windows Vista ஆகியவை இனி ஆதரிக்கப்படாது என்பதால் இந்தக் கணினி இனி Google Chrome புதுப்பிப்புகளைப் பெறாது.</translation>
@@ -135,7 +134,6 @@
 <translation id="4891791193823137474">பின்னணியில் Google Chrome ஐ இயக்கு</translation>
 <translation id="4901390485477164536">அருமை, இயல்புநிலை உலாவி Google Chrome ஆகும்.</translation>
 <translation id="4921569541910214635">கணினியைப் பகிர்ந்து கொண்டுள்ளீர்களா? இப்போது நீங்கள் விரும்பும் விதத்தில் Chromeஐ அமைக்கலாம்.</translation>
-<translation id="4925019873400497719">இந்த இணையதளத்தின் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது. சான்றிதழின் வெளிப்படைத்தன்மைத் தகவலைச் சேவையகம் வழங்கியது, ஆனால் அது செல்லுபடியாகாததாக இருந்தது.</translation>
 <translation id="4953650215774548573">Google Chrome ஐ உங்கள் இயல்புநிலை உலாவியாக அமைக்கவும்</translation>
 <translation id="495931528404527476">Chrome இல்</translation>
 <translation id="4987308747895123092">எல்லா Google Chrome சாளரங்களையும் (Windows 8 பயன்முறையில் உள்ளவை உள்பட) மூடி, மீண்டும் முயற்சிக்கவும்.</translation>
@@ -162,6 +160,7 @@
 <translation id="5563479599352954471">ஒரே தொடுதலில் தேடவும்</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">பக்கத்தை விட்டு வெளியேறாமலே, இணையதளங்களில் தலைப்புகளைப் பற்றி அறியலாம்.</translation>
+<translation id="565744775970812598"><ph name="FILE_NAME" /> ஆபத்தானதாக இருக்கலாம் என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="568643307450491754">Chrome மெனுவில் அல்லது புக்மார்க்குகள் பட்டியில் உங்கள் புக்மார்க்குகளைக் கண்டறிக.</translation>
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
 <translation id="5749068826913805084">கோப்புகளைப் பதிவிறக்க Chromeக்கு சேமிப்பிட அணுகல் தேவை.</translation>
@@ -183,9 +182,11 @@
 <translation id="6236285698028833233">Google Chrome ஆனது புதுப்பித்தலை நிறுத்தியுள்ளது மேலும் உங்கள் இயக்க முறைமையின் இந்தப் பதிப்பை இனி ஆதரிக்காது.</translation>
 <translation id="6291549208091401781">உங்கள் கணினியில் ஏற்கனவே எல்லாப் பயனர்களுக்கும் Google Chrome நிறுவப்பட்டுள்ளது.</translation>
 <translation id="629218512217695915">Chrome ஆல் உருவாக்கப்பட்ட கடவுச்சொல்லைப் பயன்படுத்தவும்</translation>
+<translation id="6338556085225130112">Google Chromeஐப் புதுப்பிக்கிறது</translation>
 <translation id="6368805772029492593">கூடுதல் பாதுகாப்பிற்கு, Google Chrome உங்கள் தரவை என்க்ரிப்ட் செய்யும்.</translation>
 <translation id="6368958679917195344">கூடுதலான <ph name="BEGIN_LINK_CROS_OSS" />ஓப்பன் சோர்ஸ் மென்பொருள்களால்<ph name="END_LINK_CROS_OSS" /> Chrome OS ஐ உருவாக்குவது சாத்தியமானது.</translation>
 <translation id="6400076122676892962">Mac OS X 10.6, 10.7 மற்றும் 10.8 ஆகியவை இனி ஆதரிக்கப்படாது என்பதால் இந்தக் கணினி Google Chrome புதுப்பிப்புகளைப் பெறுவதை விரைவில் நிறுத்தும்.</translation>
+<translation id="6410540444482791104">ஆபத்தான பயன்பாடுகளையும் தளங்களையும் கண்டறிவதற்கு உதவியாக, சில சாதனத் தகவலையும் பக்க உள்ளடக்கத்தையும் Googleக்குத் தானாக அனுப்புவதன் மூலம், Chromeஐ எளிதாகவும் பாதுகாப்பாகவும் பயன்படுத்தும்படி மேம்படுத்துவதற்கு நீங்கள் உதவலாம்.</translation>
 <translation id="6470176598693778404">Mac OS X 10.6, 10.7 மற்றும் 10.8 ஆகியவை இனி ஆதரிக்கப்படாது என்பதால் இந்தக் கணினி இனி Google Chrome புதுப்பிப்புகளைப் பெறாது.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{பதிவிறக்கம் தற்போது செயலில் உள்ளது. பதிவிறக்கத்தை ரத்துசெய்து, Google Chrome இலிருந்து வெளியேற விரும்புகிறீர்களா?}other{# பதிவிறக்கங்கள் தற்போது செயலில் உள்ளன. பதிவிறக்கங்களை ரத்துசெய்து, Google Chrome இலிருந்து வெளியேற விரும்புகிறீர்களா?}}</translation>
 <translation id="6566149418543181476">Google Chromeஐப் புதுப்பிக்கிறது (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -240,6 +241,7 @@
 <translation id="7825851276765848807">குறிப்பிடப்படாத பிழையின் காரணமாக, நிறுவல் தோல்வியடைந்தது. தயவுசெய்து Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="7888186132678118370">பணிப்பட்டியில் Chromeஐப் பொருத்தவும்</translation>
 <translation id="7890208801193284374">நீங்கள் கணினியைப் பகிர்ந்தால், நண்பர்களும் குடும்பத்தினரும் தனிப்பட்ட முறையில் உலாவலாம், மேலும் Chrome ஐ அவர்கள் விருப்பத்திற்கு ஏற்ப அமைத்துக்கொள்ளலாம்.</translation>
+<translation id="7896673875602241923">இதற்கு முன்னர் ஒருவர் இந்தக் கணினியிலுள்ள Chrome இல் <ph name="ACCOUNT_EMAIL_LAST" /> எனும் முகவரியைப் பயன்படுத்தி உள்நுழைந்திருந்தார். உங்கள் தகவலைத் தனிப்பட்டதாக வைத்திருக்க, புதிய Chrome பயனரை உருவாக்கவும்.</translation>
 <translation id="7908168227788431038">கிட்டத்தட்ட புதுப்பிக்கப்பட்டது! புதுப்பிப்பதை முடிக்க, Google Chromeஐ மீண்டும் தொடங்கவும்.</translation>
 <translation id="795025003224538582">மறுதொடக்கம் வேண்டாம்</translation>
 <translation id="7964230182933713106">Chrome OS இந்த மொழியில் காட்டப்படுகிறது.</translation>
@@ -277,5 +279,6 @@
 <translation id="9067395829937117663">Windows 7 அல்லது அதற்குப் பிந்தைய பதிப்புகளில் மட்டுமே Google Chrome இயங்கும்.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />எச்சரிக்கை:<ph name="END_BOLD" /> நீட்டிப்புகள் உங்கள் உலாவல் வரலாற்றைப் பதிவுசெய்வதை Google Chrome ஆல் தடுக்க முடியவில்லை. மறைநிலைப் பயன்முறையில் இந்த நீட்டிப்பை முடக்க, இந்த விருப்பத்தைத் தேர்வுநீக்கம் செய்க.</translation>
 <translation id="911206726377975832">உங்கள் உலாவுதல் தரவையும் நீக்க வேண்டுமா?</translation>
+<translation id="919706545465235479">ஒத்திசைவைத் தொடங்க, Chromeஐப் புதுப்பிக்கவும்</translation>
 <translation id="924447568950697217">Chromeஐ இயல்பு உலாவியாக அமைக்கவும்</translation>
 </translationbundle>

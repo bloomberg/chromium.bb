@@ -12,7 +12,7 @@
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
 <translation id="1107591249535594099">チェックボックスをオンにすると、Chrome はフォームに迅速に入力するために、カード情報のコピーをこのデバイスに保存します。</translation>
-<translation id="1111153019813902504">最近追加したブックマーク</translation>
+<translation id="1111153019813902504">最近アクセスしたブックマーク</translation>
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
 <translation id="1126551341858583091">ローカル ストレージ上のサイズは <ph name="CRASH_SIZE" /> です。</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
@@ -52,12 +52,14 @@
 <translation id="1519264250979466059">ビルド日</translation>
 <translation id="153384715582417236">現時点では他にありません</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
+<translation id="1555130319947370107">青</translation>
 <translation id="1559528461873125649">該当するファイルまたはディレクトリがありません</translation>
 <translation id="1559572115229829303">&lt;p&gt;デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。&lt;/p&gt;
 
       &lt;p&gt;&lt;strong&gt;設定&lt;/strong&gt;アプリの [&lt;strong&gt;全般&lt;/strong&gt;] セクションで日時を調整してください。&lt;/p&gt;</translation>
 <translation id="1583429793053364125">このウェブページを表示中に問題が発生しました。</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
+<translation id="161042844686301425">シアン</translation>
 <translation id="1629803312968146339">Chrome にこのカードを保存しますか？</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
 <translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
@@ -69,6 +71,7 @@
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">AMEX</translation>
 <translation id="1734878702283171397">システム管理者にお問い合わせください。</translation>
+<translation id="1745358365027406341">後でページをダウンロード</translation>
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1753706481035618306">ページ番号</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
@@ -86,7 +89,6 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{他 1 個}other{他 # 個}}</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
-<translation id="2031925387125903299">新しいサイトに初めて訪問する際は保護者の承認が必要です。</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 件の候補}other{# 件の候補}}</translation>
@@ -103,6 +105,7 @@
 <translation id="213826338245044447">モバイルのブックマーク</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
+<translation id="2154054054215849342">お使いのドメインでは同期機能をご利用いただけません</translation>
 <translation id="2166049586286450108">すべてのデータへの管理者アクセス</translation>
 <translation id="2166378884831602661">このサイトは安全に接続できません</translation>
 <translation id="2181821976797666341">ポリシー</translation>
@@ -161,12 +164,12 @@
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2712118517637785082"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書は発行元により取り消されています。これは、サーバーから提示されたセキュリティ認証情報が信頼できないことを示しており、悪意のあるユーザーと通信しようとしている可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2712173769900027643">権限をリクエスト</translation>
+<translation id="2713444072780614174">白</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2728127805433021124">サーバーの証明書は脆弱な署名アルゴリズムを使用して署名されています。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />接続診断ツールを実行する<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">選択したアイテムを削除</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
-<translation id="2778107779445548489">このサイトは保護者によってブロックされています。</translation>
 <translation id="2784949926578158345">接続がリセットされました。</translation>
 <translation id="2824775600643448204">アドレス検索バー</translation>
 <translation id="2826760142808435982">接続は <ph name="CIPHER" /> を使用して暗号化および認証されており、<ph name="KX" /> が鍵交換メカニズムとして使用されています。</translation>
@@ -216,6 +219,7 @@
 <translation id="3286538390144397061">今すぐ再起動</translation>
 <translation id="3303855915957856445">一致する結果は見つかりませんでした</translation>
 <translation id="3305707030755673451">データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
+<translation id="3329013043687509092">彩度</translation>
 <translation id="333371639341676808">このページでこれ以上ダイアログボックスを生成しない</translation>
 <translation id="3338095232262050444">保護された通信</translation>
 <translation id="3340978935015468852">設定</translation>
@@ -263,9 +267,9 @@
 <translation id="3658742229777143148">変更履歴</translation>
 <translation id="3678029195006412963">リクエストに署名できませんでした</translation>
 <translation id="3681007416295224113">証明書情報</translation>
+<translation id="3690164694835360974">ログイン情報は保護されません</translation>
 <translation id="3693415264595406141">パスワード:</translation>
 <translation id="3696411085566228381">なし</translation>
-<translation id="3700528541715530410">このページへのアクセスが許可されていないようです。</translation>
 <translation id="3704609568417268905"><ph name="TIME" />、<ph name="TITLE" />（<ph name="DOMAIN" />）を<ph name="BOOKMARKED" /></translation>
 <translation id="370665806235115550">読み込み中...</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
@@ -283,7 +287,6 @@
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
 <translation id="3885155851504623709">教区</translation>
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
-<translation id="3910267023907260648"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書は脆弱な署名アルゴリズムを使用して署名されています。これは、サーバーから提示されたセキュリティ認証情報が偽装されている可能性を示しており、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3933571093587347751">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書はおそらく明日以降に利用できるようになります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" />}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書はおそらく # 日後から利用できるようになります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" />}}</translation>
 <translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>
 <translation id="3963721102035795474">リーダーモード</translation>
@@ -299,6 +302,7 @@
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="4103763322291513355">&lt;strong&gt;chrome://policy&lt;/strong&gt; にアクセスして、ブラックリストに登録されている URL とシステム管理者が設定した他のポリシーを確認できます。</translation>
 <translation id="4110615724604346410">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書にはエラーがあります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4115378294792113321">マゼンタ</translation>
 <translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
 <translation id="4118212371799607889">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chromium によって信頼されているものではありません。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{他 1 件}other{他 # 件}}</translation>
@@ -328,9 +332,6 @@
 <translation id="4406896451731180161">検索結果</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> でログイン証明書が承認されなかったか、ログイン証明書が提示されていない可能性があります。</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
-<translation id="4458874409874303848">セーフサイト</translation>
-<translation id="4461847750548395463">Google セーフサイトが有効になっています。</translation>
-<translation id="4491452711366281322">未承認のサイト</translation>
 <translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」の検索結果</translation>
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">システム管理者に問い合わせる</translation>
@@ -341,7 +342,6 @@
 <translation id="4589078953350245614"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> への接続は新しい暗号スイートにより暗号化されています。</translation>
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
-<translation id="4627442949885028695">他の端末で開いたタブ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">拡張機能のページを表示しています。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -353,7 +353,6 @@
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4764776831041365478"><ph name="URL" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
-<translation id="4782449893814226250">このページを開いてもよいか保護者にたずねました。</translation>
 <translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
@@ -363,7 +362,6 @@
 <translation id="4914479371620770914">{URL_count,plural, =1{他 1 件のウェブページ}other{他 # 件のウェブページ}}</translation>
 <translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました。</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
-<translation id="4930497775425430760">新しいサイトに初めて訪問する際は保護者の承認が必要です。</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">リストを展開する</translation>
 <translation id="4962322354953122629">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -438,11 +436,11 @@
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5814352347845180253"><ph name="SITE" /> と他の一部のサイトのプレミアム コンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5843436854350372569"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書には脆弱な暗号鍵が含まれています。悪意のあるユーザーによって秘密鍵が破られた可能性があり、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。<ph name="BEGIN_LEARN_MORE_LINK" /><ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="5855235287355719921">このサイトは管理者によってブロックされています。</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
 <translation id="5869405914158311789">このサイトにアクセスできません</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="5872918882028971132">保護者からのおすすめ</translation>
+<translation id="5901630391730855834">黄</translation>
 <translation id="59107663811261420">この販売者に対し、この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
 <translation id="59174027418879706">有効</translation>
 <translation id="5926846154125914413">一部のサイトのプレミアム コンテンツにアクセスできなくなる可能性があります。</translation>
@@ -453,6 +451,7 @@
 <translation id="5990559369517809815">サーバーへのリクエストは拡張機能によってブロックされています。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{ページ 1}other{ページ #}}</translation>
+<translation id="6017514345406065928">緑</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="604124094241169006">自動設定</translation>
 <translation id="6042308850641462728">詳細表示</translation>
@@ -461,7 +460,6 @@
 <translation id="6146055958333702838">ケーブルを確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を
     再起動してください。</translation>
 <translation id="614940544461990577">次をお試しください:</translation>
-<translation id="6150607114729249911">このページを開いてもよいか保護者にたずねる必要があります。</translation>
 <translation id="6151417162996330722">サーバー証明書の有効期限が長すぎます。</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
@@ -507,6 +505,7 @@
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
+<translation id="6727102863431372879">設定</translation>
 <translation id="6731320287533051140">{COUNT,plural, =0{なし}=1{1 件のアイテム}other{# 件のアイテム}}</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
@@ -536,17 +535,15 @@
 <translation id="7090678807593890770"><ph name="LINK" /> を Google で検索してください</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" />に翻訳できませんでした。</translation>
 <translation id="7139724024395191329">管轄区域</translation>
+<translation id="7155487117670177674">お支払い情報は保護されません</translation>
 <translation id="7179921470347911571">今すぐ再起動</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7182878459783632708">ポリシーが設定されていません</translation>
 <translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE" />から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="720210938761809882">ページはブロックされています</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ではセキュリティ規格が遵守されていません。</translation>
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
-<translation id="7231308970288859235">このページを開いてもよいか保護者にたずねる必要があります。</translation>
-<translation id="7246609911581847514">新しいサイトに初めて訪問する際は管理者の承認が必要です。</translation>
 <translation id="724975217298816891">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="725866823122871198">パソコンの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="7269802741830436641">このウェブページにはリダイレクト ループが含まれています</translation>
@@ -577,12 +574,14 @@
 <translation id="7508255263130623398">返されたポリシーの端末 ID が空であるか、現在の端末 ID と一致しません</translation>
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="7518003948725431193">次の URL のウェブページは見つかりませんでした:<ph name="URL" /></translation>
+<translation id="7535087603100972091">値</translation>
 <translation id="7537536606612762813">必須</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
 <translation id="7549584377607005141">このウェブページを正しく表示するには、先ほど入力したデータが必要です。データは再送信できますが、このページで先ほど行った操作を繰り返すことになります。</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
 <translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE" />のページです。翻訳しますか？</translation>
 <translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
+<translation id="7569983096843329377">黒</translation>
 <translation id="7578104083680115302">どの端末でも、Google に保存したカードを使ってサイトやアプリの支払いをすばやく行うことができます。</translation>
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7592362899630581445">サーバーの証明書が名前の制約に違反しています。</translation>
@@ -615,11 +614,10 @@
 <translation id="7815407501681723534">「<ph name="SEARCH_STRING" />」に対し <ph name="NUMBER_OF_RESULTS" /> 件の <ph name="SEARCH_RESULTS" />が見つかりました</translation>
 <translation id="785549533363645510">あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
-<translation id="7894616681410591072">このページにアクセスするには <ph name="NAME" /> さんの許可が必要です。</translation>
 <translation id="7912024687060120840">フォルダの内容:</translation>
-<translation id="7920092496846849526">このページを開いてもよいか保護者にたずねました。</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">サーバーの証明書が有効になっていません。</translation>
+<translation id="7942349550061667556">赤</translation>
 <translation id="7951415247503192394">（32 ビット）</translation>
 <translation id="7956713633345437162">モバイルのブックマーク</translation>
 <translation id="7961015016161918242">使用しない</translation>
@@ -644,7 +642,6 @@
 <translation id="8241707690549784388">検索しているページは、入力した情報を使用しています。このページに戻った場合、操作のやり直しが発生する可能性があります。続行しますか？</translation>
 <translation id="8249320324621329438">前回の取得:</translation>
 <translation id="8261506727792406068">削除</translation>
-<translation id="8279107132611114222">このサイトへのアクセスのリクエストが <ph name="NAME" /> さんに送信されました。</translation>
 <translation id="8289355894181816810">確認方法がわからない場合は、ネットワーク管理者までお問い合わせください。</translation>
 <translation id="8293206222192510085">ブックマークの追加</translation>
 <translation id="8294431847097064396">ソース</translation>
@@ -670,7 +667,6 @@
 <translation id="8559762987265718583">デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="856992080682148">このサイトの証明書は 2017 年またはそれ以降まで有効で、証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
 <translation id="8571890674111243710">ページを<ph name="LANGUAGE" />に翻訳しています...</translation>
-<translation id="8591846766485502580">このサイトは保護者によってブロックされています。</translation>
 <translation id="859285277496340001">この証明書には、取り消されたかどうかを確認する方法が指定されていません。</translation>
 <translation id="8647750283161643317">すべてデフォルトに戻す</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>
@@ -692,6 +688,7 @@
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
 <translation id="8877192140621905067">確認を行うと、カードの詳細がこのサイトと共有されます</translation>
+<translation id="8889402386540077796">色調</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="889901481107108152">この試験運用機能は、お使いのプラットフォームでは利用できません。</translation>
 <translation id="8903921497873541725">拡大する</translation>
@@ -708,6 +705,7 @@
 <translation id="9039213469156557790">加えて、このページには安全でない他のリソースが含まれています。このリソースは送信中に他のユーザーから見られる可能性があります。また、悪意のあるユーザーによって改変されページの動作が変わる可能性もあります。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9065203028668620118">編集</translation>
+<translation id="9068849894565669697">色の選択</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> ページは機能していません</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>

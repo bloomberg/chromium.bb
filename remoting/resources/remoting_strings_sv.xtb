@@ -223,6 +223,7 @@ Desktop Host</translation>
 <translation id="6640610550128933069">senast online den <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
 <translation id="6681800064886881394">Upphovsrätt 2013 Google Inc. Med ensamrätt.</translation>
+<translation id="6705482892455291412">När den andra parten har angett koden blir du ombedd att godkänna anslutningen och börja delningssessionen.</translation>
 <translation id="6746493157771801606">Rensa historik</translation>
 <translation id="6748108480210050150">Från</translation>
 <translation id="677755392401385740">Värd startad för användaren: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Desktop Host</translation>
 <translation id="9188433529406846933">Auktorisera</translation>
 <translation id="9213184081240281106">Ogiltig värdkonfiguration.</translation>
 <translation id="951991426597076286">Godkänn inte</translation>
+<translation id="962733587145768554">Slutför processen genom att välja <ph name="SHARE" /> i dialogrutan för anslutning.</translation>
 <translation id="979100198331752041">Chrome Remote Desktop på <ph name="HOSTNAME" /> är inaktuellt och måste uppdateras.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (senast online <ph name="DATE_OR_TIME" />)</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="no">
 <translation id="1047726139967079566">Legg til bokmerke for denne siden...</translation>
 <translation id="1172898394251786223">Neste felt</translation>
+<translation id="2241634353105152135">Bare én gang</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2467815441875554965">Kontekstbasert søk</translation>
 <translation id="2572712655377361602">En enhetsinnstilling har blokkert tilgangen til bildene dine</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome lagrer dette i <ph name="BEGIN_LINK" />Google-lagrede passord<ph name="END_LINK" />. Deretter legges det inn automatisk, slik at du ikke trenger å huske det selv.</translation>
 <translation id="3567664240939803299">Vil du at Google Smart Lock skal lagre passordet ditt for dette nettstedet?</translation>
 <translation id="3692781555820666866">Når dette er slått på, inneholder søkefeltet forslag til nettsider som kringkastes av enheter i nærheten.</translation>
+<translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="4121993058175073134">For å sende data for netteksport må du konfigurere e-postkontoen din i Innstillinger-appen.</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Oppdater</translation>
+<translation id="4773461607542755386">Vil du åpne denne siden i <ph name="APP_NAME" />-appen?</translation>
 <translation id="4875622588773761625">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for dette nettstedet?</translation>
+<translation id="4881695831933465202">Åpne</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="6039694632319341016">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet ditt for <ph name="USERNAME" /> for dette nettstedet?</translation>
 <translation id="605721222689873409">ÅÅ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Generer passord</translation>
 <translation id="6344783595350022745">Klar tekst</translation>
 <translation id="6456425917241817154">Passord generert av Chrome</translation>
+<translation id="666731172850799929">Åpne i <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Hvorvidt Kontekstbasert søk er aktivert eller ikke.</translation>
 <translation id="7456847797759667638">Åpne sted</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7561196759112975576">Alltid</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7961015016161918242">Aldri</translation>
 </translationbundle>

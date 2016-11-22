@@ -3,6 +3,7 @@
 <translationbundle lang="ar">
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1172898394251786223">الحقل التالي</translation>
+<translation id="2241634353105152135">مرة واحدة فقط</translation>
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
 <translation id="2467815441875554965">البحث السياقي</translation>
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="3567664240939803299">‏هل تريد من Google Smart Lock حفظ كلمة المرور لهذا الموقع؟</translation>
 <translation id="3692781555820666866">عند التمكين، سوف يتضمن المربّع متعدد الاستخدامات اقتراحات لبث صفحات الويب من الأجهزة القريبة منك.</translation>
+<translation id="3789841737615482174">تثبيت</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، الرجاء تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="473775607612524610">تحديث</translation>
+<translation id="4773461607542755386">هل تريد فتح هذه الصفحة في تطبيق <ph name="APP_NAME" />؟</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
+<translation id="4881695831933465202">فتح</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="6039694632319341016">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة مرورك لـ <ph name="USERNAME" /> لهذا الموقع؟</translation>
 <translation id="605721222689873409">العام</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">إنشاء كلمة المرور</translation>
 <translation id="6344783595350022745">محو النص</translation>
 <translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
+<translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">تحديد ما إذا كان البحث السياقي ممكنًا.</translation>
 <translation id="7456847797759667638">فتح موقع...</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
+<translation id="7561196759112975576">دومًا</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 </translationbundle>

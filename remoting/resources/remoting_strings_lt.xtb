@@ -223,6 +223,7 @@ valdymo priegloba</translation>
 <translation id="6640610550128933069">paskutinį kartą prisijungta <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN kodas atnaujintas.</translation>
 <translation id="6681800064886881394">Autorių teisės priklauso „Google Inc.“, 2013 m. Visos teisės saugomos.</translation>
+<translation id="6705482892455291412">Kai bus įvestas kodas, būsite paraginti priimti ryšį ir padėti bendrinti sesiją.</translation>
 <translation id="6746493157771801606">Išvalyti istoriją</translation>
 <translation id="6748108480210050150">Nuo</translation>
 <translation id="677755392401385740">Pradėta naudotojo priegloba: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ valdymo priegloba</translation>
 <translation id="9188433529406846933">Suteikti prieigos teisę</translation>
 <translation id="9213184081240281106">Netinkama prieglobos konfigūracija.</translation>
 <translation id="951991426597076286">Atmesti</translation>
+<translation id="962733587145768554">Kad užbaigtumėte procesą, pasirinkite „<ph name="SHARE" />“ ryšio dialogo lange.</translation>
 <translation id="979100198331752041">„Chrome“ nuotolinis kompiuterio valdymas <ph name="HOSTNAME" /> yra pasenęs ir jį reikia atnaujinti.</translation>
 <translation id="985602178874221306">„Chromium“ autoriai</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (paskutinį kartą prisijungta <ph name="DATE_OR_TIME" />)</translation>

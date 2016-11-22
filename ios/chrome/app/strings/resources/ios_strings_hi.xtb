@@ -3,6 +3,7 @@
 <translationbundle lang="hi">
 <translation id="1047726139967079566">इस पृष्ठ को बुकमार्क करें...</translation>
 <translation id="1172898394251786223">अगला फ़ील्‍ड</translation>
+<translation id="2241634353105152135">बस एक बार</translation>
 <translation id="2320166752086256636">कीबोर्ड छिपाएं</translation>
 <translation id="2467815441875554965">प्रासंगिक खोज</translation>
 <translation id="2572712655377361602">एक डिवाइस नीति ने आपकी फ़ोटो का एक्सेस अवरुद्ध कर दिया है</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome इसे आपके <ph name="BEGIN_LINK" />Google द्वारा सहेजे गए पासवर्ड<ph name="END_LINK" /> में संग्रहीत करेगा और आपके लिए इसे ऑटोमैटिक भरेगा ताकि आपको उसे याद न रखना पड़े.</translation>
 <translation id="3567664240939803299">क्या आप चाहते हैं कि Google Smart Lock इस साइट के लिए आपका पासवर्ड सहेजे?</translation>
 <translation id="3692781555820666866">सक्षम होने पर खोज वाली पट्टी में आपके नज़दीकी डिवाइस द्वारा प्रसारित किए गए वेबपृष्ठों को लिए सुझाव शामिल होंगे.</translation>
+<translation id="3789841737615482174">इंस्‍टॉल करें</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="4121993058175073134">कुल निर्यात डेटा भेजने के लिए, कृपया सेटिंग ऐप्स में अपना ईमेल खाता कॉन्फ़िगर करें.</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
+<translation id="4773461607542755386">इस पृष्ठ को <ph name="APP_NAME" /> में खोलें?</translation>
 <translation id="4875622588773761625">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए आपके पासवर्ड को अपडेट करे?</translation>
+<translation id="4881695831933465202">खोलें</translation>
 <translation id="5317780077021120954">सहेजें</translation>
 <translation id="6039694632319341016">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए <ph name="USERNAME" /> के आपके पासवर्ड को अपडेट करे?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">पासवर्ड जेनरेट करें</translation>
 <translation id="6344783595350022745">लेख साफ़ करें</translation>
 <translation id="6456425917241817154">Chrome जेनरेटड पासवर्ड</translation>
+<translation id="666731172850799929"><ph name="APP_NAME" /> में खोलें</translation>
 <translation id="7222245588540287464">प्रासंगिक खोज सक्षम है या नहीं.</translation>
 <translation id="7456847797759667638">स्थान खोलें...</translation>
 <translation id="7481312909269577407">आगे भेजें</translation>
+<translation id="7561196759112975576">हमेशा</translation>
 <translation id="7588950540487816470">जीता-जागता वेब</translation>
 <translation id="7961015016161918242">कभी नहीं</translation>
 </translationbundle>

@@ -221,6 +221,7 @@
 <translation id="6640610550128933069">последњи пут онлајн <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN је ажуриран.</translation>
 <translation id="6681800064886881394">Ауторска права 2013. Google Inc. Сва права су задржана.</translation>
+<translation id="6705482892455291412">Када се унесе кôд, од вас ће бити затражено да прихватите везу и започнете сесију дељења.</translation>
 <translation id="6746493157771801606">Обриши историју</translation>
 <translation id="6748108480210050150">Од</translation>
 <translation id="677755392401385740">Хост је покренут за корисника: <ph name="HOST_USERNAME" />.</translation>
@@ -297,6 +298,7 @@
 <translation id="9188433529406846933">Одобравање</translation>
 <translation id="9213184081240281106">Конфигурација хоста је неважећа.</translation>
 <translation id="951991426597076286">Одбиј</translation>
+<translation id="962733587145768554">Изаберите „<ph name="SHARE" />“ у прозору дијалога везе да бисте довршили процес.</translation>
 <translation id="979100198331752041">Chrome удаљени рачунар на хосту <ph name="HOSTNAME" /> је застарео и треба да га ажурирате.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (последњи пут онлајн <ph name="DATE_OR_TIME" />)</translation>

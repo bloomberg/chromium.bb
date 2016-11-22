@@ -3,12 +3,13 @@
 <translationbundle lang="zh-CN">
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1172898394251786223">下一个字段</translation>
+<translation id="2241634353105152135">仅一次</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
 <translation id="2467815441875554965">环境相关搜索</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2747003861858887689">上一个字段</translation>
-<translation id="2780046210906776326">没有电子邮件帐户</translation>
+<translation id="2780046210906776326">没有电子邮件帐号</translation>
 <translation id="3172213052701798825">Google Smart Lock（密码专用）</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3567664240939803299">您想让 Google Smart Lock 保存您在此网站上使用的密码吗？</translation>
 <translation id="3692781555820666866">启用此功能后，多功能框会推荐您附近的设备播报的网页。</translation>
+<translation id="3789841737615482174">安装</translation>
 <translation id="385051799172605136">后退</translation>
-<translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐户。</translation>
+<translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐号。</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4773461607542755386">要在 <ph name="APP_NAME" />应用中打开此网页吗？</translation>
 <translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
+<translation id="4881695831933465202">打开</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="6039694632319341016">希望 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您使用 <ph name="USERNAME" /> 登录此网站时所用的密码吗？</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">生成密码</translation>
 <translation id="6344783595350022745">明文</translation>
 <translation id="6456425917241817154">Chrome 生成的密码</translation>
+<translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="7222245588540287464">是否启用环境相关搜索。</translation>
 <translation id="7456847797759667638">打开位置...</translation>
 <translation id="7481312909269577407">前进</translation>
+<translation id="7561196759112975576">永远</translation>
 <translation id="7588950540487816470">实物网</translation>
 <translation id="7961015016161918242">一律不</translation>
 </translationbundle>

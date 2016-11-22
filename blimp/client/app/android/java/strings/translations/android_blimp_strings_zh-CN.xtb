@@ -18,7 +18,7 @@
 <translation id="307654885162326571">输入文字</translation>
 <translation id="3286538390144397061">立即重新启动</translation>
 <translation id="3346106862344060497">已连接到引擎。</translation>
-<translation id="3407245330823033366">请选择一个要使用 Blimp 的帐户。</translation>
+<translation id="3407245330823033366">请选择一个要使用 Blimp 的帐号。</translation>
 <translation id="3775180005489871350">无法获取任务，因为出现了 400 (BAD_REQUEST) 错误。</translation>
 <translation id="3877411575395047031">隐藏调试信息</translation>
 <translation id="4013794286379809233">请登录</translation>
@@ -29,7 +29,7 @@
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
 <translation id="5340171012633472275">引擎版本</translation>
 <translation id="5721743316780845421">Blimp %1$s</translation>
-<translation id="5860346505531085166">无法获取任务，因为相关帐户无访问权限。</translation>
+<translation id="5860346505531085166">无法获取任务，因为相关帐号无访问权限。</translation>
 <translation id="6232798399907177395">Blimp 简介</translation>
 <translation id="6245894610106451476">已收到 (KB)</translation>
 <translation id="6522797484310591766">立即登录</translation>
@@ -42,7 +42,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7795546637165553439">Blimp 设置</translation>
 <translation id="7961542533680218955">已成功获取任务。</translation>
-<translation id="8135971362156222300">请登录 Google 帐户以启用 Blimp。</translation>
+<translation id="8135971362156222300">请登录 Google 帐号以启用 Blimp。</translation>
 <translation id="8514856595257368555">已检索到令牌。</translation>
 <translation id="8880704056643418312">提交数</translation>
 </translationbundle>

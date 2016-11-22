@@ -3,6 +3,7 @@
 <translationbundle lang="ca">
 <translation id="1047726139967079566">Afegeix aquesta pàgina a les adreces d'interès...</translation>
 <translation id="1172898394251786223">Camp següent</translation>
+<translation id="2241634353105152135">Només una vegada</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
 <translation id="2467815441875554965">Cerca contextual</translation>
 <translation id="2572712655377361602">Una política del dispositiu ha bloquejat l'accés a les vostres fotos</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome l'emmagatzemarà a les <ph name="BEGIN_LINK" />contrasenyes desades a Google<ph name="END_LINK" /> i l'emplenarà automàticament perquè no us calgui recordar-la.</translation>
 <translation id="3567664240939803299">Voleu que Google Smart Lock desi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="3692781555820666866">Quan s'activi, l'omnibox inclourà suggeriments de pàgines web emeses pels dispositius que tinguis a prop.</translation>
+<translation id="3789841737615482174">Instal·la</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="4121993058175073134">Definiu el vostre compte de correu electrònic a l'aplicació Configuració per enviar dades d'exportació de xarxa.</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Actualitza</translation>
+<translation id="4773461607542755386">Voleu obrir aquesta pàgina a l'aplicació <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la vostra contrasenya per a aquest lloc?</translation>
+<translation id="4881695831933465202">Obre</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="6039694632319341016">Vols que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la contrasenya de l'usuari <ph name="USERNAME" /> per a aquest lloc?</translation>
 <translation id="605721222689873409">AA</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Genera una contrasenya</translation>
 <translation id="6344783595350022745">Esborra el text</translation>
 <translation id="6456425917241817154">Contrasenya generada per Chrome</translation>
+<translation id="666731172850799929">Obre a <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Si la Cerca contextual està activada o no ho està.</translation>
 <translation id="7456847797759667638">Obre la ubicació...</translation>
 <translation id="7481312909269577407">Endavant</translation>
+<translation id="7561196759112975576">Sempre</translation>
 <translation id="7588950540487816470">El Web físic</translation>
 <translation id="7961015016161918242">Mai</translation>
 </translationbundle>

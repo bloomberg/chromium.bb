@@ -3,6 +3,7 @@
 <translationbundle lang="bn">
 <translation id="1047726139967079566">এই পৃষ্ঠাটি বুকমার্ক করুন...</translation>
 <translation id="1172898394251786223">পরবর্তী ফিল্ড</translation>
+<translation id="2241634353105152135">শুধুমাত্র একবার</translation>
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
 <translation id="2467815441875554965">প্রাসঙ্গিক অনুসন্ধান</translation>
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome এটিকে আপনার <ph name="BEGIN_LINK" />Google এর সংরক্ষিত পাসওয়ার্ডগুলি<ph name="END_LINK" /> এ সংরক্ষণ করতে এবং আপনার জন্য এটিকে স্বতঃপূর্ণ করবে যাতে করে আপনাকে এটি আর মনে রাখতে না হয়৷</translation>
 <translation id="3567664240939803299">আপনি কি চান Google Smart Lock এই সাইটের জন্য আপনার পাসওয়ার্ড সংরক্ষণ করুক?</translation>
 <translation id="3692781555820666866">সক্ষম করা হলে, বহুউপযোগী ক্ষেত্র আপনার আশেপাশের ডিভাইসের জন্য ওয়েব পৃষ্ঠা সমপ্রচারগুলির পরামর্শ অন্তর্ভুক্ত করা হবে।</translation>
+<translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, দয়া করে সিস্টেম অ্যাপ্লিকেশানে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
 <translation id="473775607612524610">আপডেট</translation>
+<translation id="4773461607542755386">এই পৃষ্ঠাটি <ph name="APP_NAME" /> অ্যাপ্লিকেশানে খুলবেন?</translation>
 <translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
+<translation id="4881695831933465202">খুলুন</translation>
 <translation id="5317780077021120954">সংরক্ষণ করুন</translation>
 <translation id="6039694632319341016">আপনি কি চান যে এই সাইটটির ক্ষেত্রে <ph name="USERNAME" /> এর জন্য আপনার পাসওয়ার্ডটি <ph name="PASSWORD_MANAGER_BRAND" /> আপডেট করুক?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">পাসওয়ার্ড তৈরি করুন</translation>
 <translation id="6344783595350022745">পাঠ্য সাফ করুন</translation>
 <translation id="6456425917241817154">Chrome দ্বারা সৃষ্ট পাসওয়ার্ড</translation>
+<translation id="666731172850799929"><ph name="APP_NAME" /> এ খুলুন</translation>
 <translation id="7222245588540287464">প্রাসঙ্গিক অনুসন্ধান সক্ষম থাকবে কিনা৷</translation>
 <translation id="7456847797759667638">অবস্থান খুলুন...</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
+<translation id="7561196759112975576">সবসময়</translation>
 <translation id="7588950540487816470">বাস্তবিক ওয়েব</translation>
 <translation id="7961015016161918242">কখনই নয়</translation>
 </translationbundle>

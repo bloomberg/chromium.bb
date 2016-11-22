@@ -223,6 +223,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="6640610550128933069">naposledy online <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Váš kód PIN bol aktualizovaný.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všetky práva vyhradené.</translation>
+<translation id="6705482892455291412">Po zadaní kódu sa zobrazí výzva na prijatie pripojenia a začatie relácie zdieľania.</translation>
 <translation id="6746493157771801606">Vymazať históriu</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Hostiteľ bol spustený pre používateľa: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="9188433529406846933">Autorizácia</translation>
 <translation id="9213184081240281106">Neplatná konfigurácia hostiteľa</translation>
 <translation id="951991426597076286">Odmietnuť</translation>
+<translation id="962733587145768554">Proces dokončíte tým, že v dialógovom okne pripojenia vyberiete možnosť <ph name="SHARE" />.</translation>
 <translation id="979100198331752041">Vzdialená plocha Chrome na počítači <ph name="HOSTNAME" /> je zastaraná a vyžaduje aktualizáciu.</translation>
 <translation id="985602178874221306">Autori prehliadača Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (naposledy online <ph name="DATE_OR_TIME" />)</translation>

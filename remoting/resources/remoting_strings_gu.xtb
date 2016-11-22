@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">છેલ્લે ઓનલાઇન <ph name="DATE" /></translation>
 <translation id="6668065415969892472">તમારા PIN અપડેટ કરવામાં આવ્યો છે.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. સર્વાધિકાર સુરક્ષિત.</translation>
+<translation id="6705482892455291412">એકવાર તેઓ કોડ દાખલ કરી દે તે પછી, તમને કનેક્શનને સ્વીકારવા અને શેરિંગ સત્ર શરૂ કરવા માટે સંકેત આપવામાં આવશે.</translation>
 <translation id="6746493157771801606">ઇતિહાસ સાફ કરો</translation>
 <translation id="6748108480210050150">પ્રેષક:</translation>
 <translation id="677755392401385740">આ વપરાશકર્તા માટે હોસ્ટ શરૂ: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">અધિકૃત કરો</translation>
 <translation id="9213184081240281106">અમાન્ય હોસ્ટ ગોઠવણી.</translation>
 <translation id="951991426597076286">નકારો</translation>
+<translation id="962733587145768554">પ્રક્રિયા પૂર્ણ કરવા માટે કનેક્શન સંવાદ બૉક્સ પર કૃપા કરીને '<ph name="SHARE" />' પસંદ કરો.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" /> પર Chrome રીમોટ ડેસ્કટૉપ જૂનું છે અને તેને અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="985602178874221306">Chromium લેખકો</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (છેલ્લે ઓનલાઇન <ph name="DATE_OR_TIME" />)</translation>

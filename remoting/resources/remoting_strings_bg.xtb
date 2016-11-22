@@ -223,6 +223,7 @@ Chromoting</translation>
 <translation id="6640610550128933069">последно онлайн: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">ПИН кодът ви е актуализиран.</translation>
 <translation id="6681800064886881394">Авторски права 2013 Google Inc. Всички права запазени.</translation>
+<translation id="6705482892455291412">След като потребителят въведе кода, ще бъдете подканени да приемете връзката и да започнете сесията на споделяне.</translation>
 <translation id="6746493157771801606">Изчистване на историята</translation>
 <translation id="6748108480210050150">От</translation>
 <translation id="677755392401385740">За потребителя е стартиран хост: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Chromoting</translation>
 <translation id="9188433529406846933">Упълномощаване</translation>
 <translation id="9213184081240281106">Невалидна конфигурация на хоста.</translation>
 <translation id="951991426597076286">Отхвърляне</translation>
+<translation id="962733587145768554">Моля, изберете „<ph name="SHARE" />“ в диалоговия прозорец за свързване, за да завършите процеса.</translation>
 <translation id="979100198331752041">Версията на отдалечения работен плот на Chrome на „<ph name="HOSTNAME" />“ не е актуална и трябва да се актуализира.</translation>
 <translation id="985602178874221306">Авторите на Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (последно онлайн: <ph name="DATE_OR_TIME" />)</translation>

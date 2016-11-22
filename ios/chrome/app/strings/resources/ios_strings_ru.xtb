@@ -3,6 +3,7 @@
 <translationbundle lang="ru">
 <translation id="1047726139967079566">Добавить страницу в закладки…</translation>
 <translation id="1172898394251786223">Следующее поле</translation>
+<translation id="2241634353105152135">Однократно</translation>
 <translation id="2320166752086256636">Скрыть клавиатуру</translation>
 <translation id="2467815441875554965">Контекстный поиск</translation>
 <translation id="2572712655377361602">Политика устройства блокирует доступ к фотографиям</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Этот пароль будет добавлен в <ph name="BEGIN_LINK" />список сохраненных паролей<ph name="END_LINK" />, чтобы Chrome мог автоматически вводить его в соответствующие поля.</translation>
 <translation id="3567664240939803299">Сохранить пароль для этого сайта в Google Smart Lock?</translation>
 <translation id="3692781555820666866">Если функция включена, в омнибоксе будут предлагаться страницы с устройств поблизости</translation>
+<translation id="3789841737615482174">Установить</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="4121993058175073134">Чтобы отправлять очищенные данные для экспорта, задайте соответствующие параметры аккаунта электронной почты в приложении "Настройки".</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Обновление</translation>
+<translation id="4773461607542755386">Открыть эту страницу в <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
+<translation id="4881695831933465202">Открыть</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="6039694632319341016">Сохранить в <ph name="PASSWORD_MANAGER_BRAND" /> новый пароль пользователя <ph name="USERNAME" /> для этого сайта?</translation>
 <translation id="605721222689873409">ГГ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Создать пароль</translation>
 <translation id="6344783595350022745">Очистить</translation>
 <translation id="6456425917241817154">Пароль от Chrome</translation>
+<translation id="666731172850799929">Открыть в <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Включить или отключить Контекстный поиск</translation>
 <translation id="7456847797759667638">Открыть адрес...</translation>
 <translation id="7481312909269577407">Вперед</translation>
+<translation id="7561196759112975576">Всегда</translation>
 <translation id="7588950540487816470">Интернет вокруг нас</translation>
 <translation id="7961015016161918242">Нет</translation>
 </translationbundle>

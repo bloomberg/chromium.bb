@@ -27,7 +27,7 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
 <translation id="1704090719919187045">Preferencias de host de Chromoting</translation>
-<translation id="1730409684442507495">• Se ha mejorado el consumo de batería, la capacidad de respuesta y la calidad de imagen del escritorio.
+<translation id="1730409684442507495">• Se han mejorado el consumo de batería, la capacidad de respuesta y la calidad de imagen del escritorio.
 • Se ha mejorado la capacidad de respuesta de las operaciones de hacer clic y arrastrar.
 • Se han mejorado varios efectos de animación de la IU.</translation>
 <translation id="174018511426417793">No tienes ningún ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Escritorio Remoto de Chrome en él y haz clic en <ph name="BUTTON_NAME" />.</translation>
@@ -223,6 +223,7 @@ remoto de Chrome</translation>
 <translation id="6640610550128933069">última conexión el <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Se ha actualizado el PIN.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos los derechos reservados.</translation>
+<translation id="6705482892455291412">Cuando se introduzca el código, se te pedirá que aceptes la conexión y empiece la sesión compartida.</translation>
 <translation id="6746493157771801606">Borrar historial</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">Host iniciado para usuario: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ remoto de Chrome</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuración del host no válida.</translation>
 <translation id="951991426597076286">Rechazar</translation>
+<translation id="962733587145768554">Selecciona <ph name="SHARE" /> en el cuadro de diálogo de conexión para completar el proceso.</translation>
 <translation id="979100198331752041">La aplicación Escritorio Remoto de Chrome de <ph name="HOSTNAME" /> está obsoleta y debe actualizarse.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (fecha de la última conexión <ph name="DATE_OR_TIME" />)</translation>

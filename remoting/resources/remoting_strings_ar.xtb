@@ -224,6 +224,7 @@
 <translation id="6640610550128933069">آخر مرة على الإنترنت <ph name="DATE" /></translation>
 <translation id="6668065415969892472">تم تحديث رقم التعريف الشخصي.</translation>
 <translation id="6681800064886881394">‏حقوق الطبع والنشر لعام 2013 لشركة Google Inc. جميع الحقوق محفوظة.</translation>
+<translation id="6705482892455291412">عند إدخال الرمز، ستتم مطالبتك بقبول الاتصال وبدء جلسة المشاركة.</translation>
 <translation id="6746493157771801606">محو السجل</translation>
 <translation id="6748108480210050150">من</translation>
 <translation id="677755392401385740">بدأ المضيف للمستخدم: <ph name="HOST_USERNAME" />.</translation>
@@ -301,6 +302,7 @@
 <translation id="9188433529406846933">تفويض</translation>
 <translation id="9213184081240281106">تهيئة المضيف غير صالحة.</translation>
 <translation id="951991426597076286">رفض</translation>
+<translation id="962733587145768554">يُرجى تحديد '<ph name="SHARE" />' في مربع حوار الاتصال لاستكمال العملية.</translation>
 <translation id="979100198331752041">‏ميزة سطح المكتب البعيد من Chrome على <ph name="HOSTNAME" /> قديمة ويلزم تحديثها.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (آخر دخول على الإنترنت في تمام <ph name="DATE_OR_TIME" />)</translation>

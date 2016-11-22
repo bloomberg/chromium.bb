@@ -223,6 +223,7 @@ Desktop-host</translation>
 <translation id="6640610550128933069">laatst online: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Je pincode is bijgewerkt.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Alle rechten voorbehouden.</translation>
+<translation id="6705482892455291412">Zodra ze de code opgeven, wordt je gevraagd de verbinding te accepteren en de deelsessie te starten.</translation>
 <translation id="6746493157771801606">Geschiedenis wissen</translation>
 <translation id="6748108480210050150">Van</translation>
 <translation id="677755392401385740">Host gestart voor gebruiker: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Desktop-host</translation>
 <translation id="9188433529406846933">Autoriseren</translation>
 <translation id="9213184081240281106">Ongeldige hostconfiguratie.</translation>
 <translation id="951991426597076286">Afwijzen</translation>
+<translation id="962733587145768554">Selecteer <ph name="SHARE" /> in het dialoogvenster voor de verbinding om het proces te voltooien.</translation>
 <translation id="979100198331752041">Chrome Remote Desktop op <ph name="HOSTNAME" /> is verouderd en moet worden bijgewerkt.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (laatst online: <ph name="DATE_OR_TIME" />)</translation>

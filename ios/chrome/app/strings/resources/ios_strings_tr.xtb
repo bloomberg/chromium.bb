@@ -3,6 +3,7 @@
 <translationbundle lang="tr">
 <translation id="1047726139967079566">Bu Sayfaya Yer İşareti Koy...</translation>
 <translation id="1172898394251786223">Sonraki alan</translation>
+<translation id="2241634353105152135">Sadece bir defa</translation>
 <translation id="2320166752086256636">Klavyeyi gizle</translation>
 <translation id="2467815441875554965">Bağlama Dayalı Arama</translation>
 <translation id="2572712655377361602">Fotoğraflarınıza erişim bir cihaz politikası tarafından engellendi</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome, daha sonra hatırlamak zorunda kalmamanız için bunu <ph name="BEGIN_LINK" />Google kayıtlı şifrelerinizde<ph name="END_LINK" /> depolar ve sizin için otomatik olarak doldurur.</translation>
 <translation id="3567664240939803299">Google Smart Lock'un bu sitedeki şifrenizi kaydetmesini ister misiniz?</translation>
 <translation id="3692781555820666866">Özellik etkinleştirildiğinde, yakınınızdaki cihazların yayınladığı web sayfalarına ilişkin öneriler çok amaçlı adres çubuğunda görünür.</translation>
+<translation id="3789841737615482174">Yükle</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="4121993058175073134">Net-export verilerini göndermek için lütfen Ayarlar uygulamasında e-posta hesabınızı yapılandırın.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Güncelle</translation>
+<translation id="4773461607542755386">Bu sayfa <ph name="APP_NAME" /> uygulamasında açılsın mı?</translation>
 <translation id="4875622588773761625">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini ister misiniz?</translation>
+<translation id="4881695831933465202">Aç</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="6039694632319341016">Bu site için <ph name="USERNAME" /> adlı kullanıcıya ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini istiyor musunuz?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Şifre Oluştur</translation>
 <translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6456425917241817154">Chrome'un Oluşturduğu Şifre</translation>
+<translation id="666731172850799929"><ph name="APP_NAME" /> uygulamasında aç</translation>
 <translation id="7222245588540287464">Bağlama Dayalı Arama'nın etkin olup olmadığı.</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7481312909269577407">İleri</translation>
+<translation id="7561196759112975576">Her zaman</translation>
 <translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 </translationbundle>

@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="1047726139967079566">हे पृष्ठ बुकमार्क करा...</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
+<translation id="2241634353105152135">फक्त एकदाच</translation>
 <translation id="2320166752086256636">कीबोर्ड लपवा</translation>
 <translation id="2467815441875554965">संदर्भीय शोध</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने जतन केलेले संकेतशब्द<ph name="END_LINK" /> मध्ये जतन करेल आणि आपल्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="3567664240939803299">या साइटसाठी Google Smart Lock ने आपला संकेतशब्द जतन करावा असे आपण इच्छिता?</translation>
 <translation id="3692781555820666866">सक्षम केलेले असताना, आपल्या जवळपास असलेले डिव्हाइसेस प्रसारित करतात त्या वेबपृष्ठांसाठी सूचना विविधोपयोगी क्षेत्रात समाविष्‍ट केल्या जातील.</translation>
+<translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="4121993058175073134">निव्वळ-निर्यात डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये आपले ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
 <translation id="473775607612524610">अद्यतनित करा</translation>
+<translation id="4773461607542755386"><ph name="APP_NAME" /> अॅपमध्ये हे पृष्ठ उघडायचे?</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
+<translation id="4881695831933465202">उघडा</translation>
 <translation id="5317780077021120954">जतन करा</translation>
 <translation id="6039694632319341016">या साइटसाठी <ph name="PASSWORD_MANAGER_BRAND" /> नी <ph name="USERNAME" /> करिता आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">संकेतशब्द व्युत्पन्न करा</translation>
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
 <translation id="6456425917241817154">संकेतशब्द Chrome द्वारे व्युत्पन्न करण्यात आला</translation>
+<translation id="666731172850799929"><ph name="APP_NAME" /> मध्ये उघडा</translation>
 <translation id="7222245588540287464">संदर्भीय शोध सक्षम केला आहे किंवा नाही.</translation>
 <translation id="7456847797759667638">स्थान उघडा...</translation>
 <translation id="7481312909269577407">पुढील</translation>
+<translation id="7561196759112975576">नेहमी</translation>
 <translation id="7588950540487816470">भौतिक वेब</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
 </translationbundle>

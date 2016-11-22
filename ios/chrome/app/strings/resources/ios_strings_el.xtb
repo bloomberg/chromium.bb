@@ -3,6 +3,7 @@
 <translationbundle lang="el">
 <translation id="1047726139967079566">Τοποθέτηση Σελιδοδείκτη σε Αυτήν τη Σελίδα...</translation>
 <translation id="1172898394251786223">Επόμενο πεδίο</translation>
+<translation id="2241634353105152135">Μόνο μία φορά</translation>
 <translation id="2320166752086256636">Απόκρυψη πληκτρολογίου</translation>
 <translation id="2467815441875554965">Αναζήτηση με βάση τα συμφραζόμενα</translation>
 <translation id="2572712655377361602">Μια πολιτική συσκευής απέκλεισε την πρόσβαση στις φωτογραφίες σας</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Το Chrome θα αποθηκεύσει αυτόν τον κωδικό στους <ph name="BEGIN_LINK" />αποθηκευμένους κωδικούς πρόσβασης Google<ph name="END_LINK" /> και θα τον συμπληρώνει αυτόματα, έτσι ώστε να μην χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="3567664240939803299">Θέλετε το Google Smart Lock να αποθηκεύσει τον κωδικό πρόσβασης για αυτόν τον ιστότοπο;</translation>
 <translation id="3692781555820666866">Όταν είναι ενεργοποιημένο, το κύριο πλαίσιο θα περιλαμβάνει προτάσεις για ιστοσελίδες που μεταδίδονται από συσκευές που βρίσκονται κοντά σας.</translation>
+<translation id="3789841737615482174">Εγκατάσταση</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="4121993058175073134">Για αποστ. δεδομ.εξαγ.δικτ.,διαμορφ. το email σας στην εφ. "Ρυθμίσεις"</translation>
 <translation id="4728558894243024398">Πλατφόρμα</translation>
 <translation id="473775607612524610">Ενημέρωση</translation>
+<translation id="4773461607542755386">Άνοιγμα αυτής της σελίδας στην εφαρμ. <ph name="APP_NAME" />;</translation>
 <translation id="4875622588773761625">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να ενημερώσει τον κωδικό πρόσβασής σας για αυτόν τον ιστότοπο;</translation>
+<translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="6039694632319341016">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να ενημ. τον κωδ. πρόσ. του χρήστη <ph name="USERNAME" /> για αυτόν τον ιστότοπο;</translation>
 <translation id="605721222689873409">ΕΕ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Δημ.κωδ.πρόσβασης</translation>
 <translation id="6344783595350022745">Διαγραφή κειμένου</translation>
 <translation id="6456425917241817154">Κωδ.πρόσ. από Chrome</translation>
+<translation id="666731172850799929">Άνοιγμα σε <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Δείχνει αν έχει ενεργοποιηθεί η Αναζήτηση με βάση τα συμφραζόμενα.</translation>
 <translation id="7456847797759667638">Άνοιγμα Τοποθεσίας...</translation>
 <translation id="7481312909269577407">Προώθηση</translation>
+<translation id="7561196759112975576">Πάντα</translation>
 <translation id="7588950540487816470">Φυσικό δίκτυο</translation>
 <translation id="7961015016161918242">Ποτέ</translation>
 </translationbundle>

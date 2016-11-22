@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">Město</translation>
 <translation id="6403469950615936250">Tento formát poštovního směrovacího čísla není platný. Příklad platného poštovního směrovacího čísla: <ph name="EXAMPLE" />. Neznáte svoje poštovní směrovací číslo? Vyhledejte ho <ph name="BEGIN_LINK" />zde<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" /> není platná hodnota tohoto pole.</translation>
+<translation id="6768780634682399515">Eircode</translation>
 <translation id="6777217372746654521">Adresa zřejmě obsahuje P. O. BOX. Zadejte prosím ulici nebo adresu budovy.</translation>
 <translation id="6839929833149231406">Region</translation>
+<translation id="684852933191805996">Townland</translation>
 <translation id="6970216967273061347">Obvod</translation>
 <translation id="7087282848513945231">Obvod</translation>
 <translation id="7139724024395191329">Emirát</translation>

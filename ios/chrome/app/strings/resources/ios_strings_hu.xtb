@@ -3,6 +3,7 @@
 <translationbundle lang="hu">
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="1172898394251786223">Következő mező</translation>
+<translation id="2241634353105152135">Csak egyszer</translation>
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
 <translation id="2467815441875554965">Kontextusfüggő keresés</translation>
 <translation id="2572712655377361602">Egy eszközszabályzat letiltotta a fényképeihez való hozzáférést</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">A Chrome eltárolja ezt a jelszót a <ph name="BEGIN_LINK" />mentett Google-jelszavak<ph name="END_LINK" /> közé, és szükség esetén automatikusan beilleszti, így Önnek nem kell megjegyeznie.</translation>
 <translation id="3567664240939803299">Szeretné, hogy a Google Smart Lock mentse a webhely jelszavát?</translation>
 <translation id="3692781555820666866">Ha engedélyezve van, a cím- és keresősáv javaslatokat jelenít meg a közeli eszközök által sugárzott weboldalakról.</translation>
+<translation id="3789841737615482174">Telepítés</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="4121993058175073134">Net-export adatok küldéséhez, kérjük, konfigurálja e-mail fiókját a Beállítások alkalmazásban.</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Frissítés</translation>
+<translation id="4773461607542755386">Megnyitja az oldalt a(z) <ph name="APP_NAME" /> alkalmazással?</translation>
 <translation id="4875622588773761625">Szeretné, hogy a(z) <ph name="PASSWORD_MANAGER_BRAND" /> frissítse jelszavát ezen a webhelyen?</translation>
+<translation id="4881695831933465202">Megnyitás</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="6039694632319341016">Szeretné, hogy a <ph name="PASSWORD_MANAGER_BRAND" /> frissítse a(z) <ph name="USERNAME" /> fiók jelszavát ennél a webhelynél?</translation>
 <translation id="605721222689873409">ÉÉ</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Jelszó létrehozása</translation>
 <translation id="6344783595350022745">Szöveg törlése</translation>
 <translation id="6456425917241817154">A Chrome által generált jelszó</translation>
+<translation id="666731172850799929">Megnyitás itt: <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">A Kontextusfüggő keresés engedélyezett-e vagy sem.</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
 <translation id="7481312909269577407">Előre</translation>
+<translation id="7561196759112975576">Mindig</translation>
 <translation id="7588950540487816470">Fizikai web</translation>
 <translation id="7961015016161918242">Soha</translation>
 </translationbundle>

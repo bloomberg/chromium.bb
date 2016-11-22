@@ -3,6 +3,7 @@
 <translationbundle lang="zh-TW">
 <translation id="1047726139967079566">把此頁加入書籤...</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
+<translation id="2241634353105152135">只有這一次</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
 <translation id="2467815441875554965">內容比對搜尋</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome 會將這組密碼儲存在您的 <ph name="BEGIN_LINK" />Google 儲存的密碼<ph name="END_LINK" />中，並為您自動填入這組密碼，即使您記不住也沒關係。</translation>
 <translation id="3567664240939803299">您要讓 Google Smart Lock 儲存您在這個網站的密碼嗎？</translation>
 <translation id="3692781555820666866">啟用後，網址列的建議項目會包含附近裝置播送的網頁。</translation>
+<translation id="3789841737615482174">安裝</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定您的電子郵件帳戶。</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4773461607542755386">在「<ph name="APP_NAME" />」應用程式中開啟這個網頁？</translation>
 <translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
+<translation id="4881695831933465202">開啟</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="6039694632319341016">要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新你在這個網站為 <ph name="USERNAME" /> 設定的密碼嗎？</translation>
 <translation id="605721222689873409">年</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">產生密碼</translation>
 <translation id="6344783595350022745">清除文字</translation>
 <translation id="6456425917241817154">Chrome 產生的密碼</translation>
+<translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="7222245588540287464">是否啟用內容比對搜尋。</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
 <translation id="7481312909269577407">往前</translation>
+<translation id="7561196759112975576">一律使用</translation>
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7961015016161918242">一律不要</translation>
 </translationbundle>

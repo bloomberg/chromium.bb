@@ -223,6 +223,7 @@ Chromoting</translation>
 <translation id="6640610550128933069">τελευταία σύνδεση <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Το PIN σας έχει ενημερωθεί.</translation>
 <translation id="6681800064886881394">Πνευματικά δικαιώματα 2013 Google Inc. Με την επιφύλαξη παντός δικαιώματος.</translation>
+<translation id="6705482892455291412">Αφού καταχωριστεί ο κωδικός, θα σας ζητηθεί να αποδεχτείτε τη σύνδεση και να ξεκινήσετε την περίοδο λειτουργίας κοινοποίησης.</translation>
 <translation id="6746493157771801606">Διαγραφή ιστορικού</translation>
 <translation id="6748108480210050150">Από</translation>
 <translation id="677755392401385740">Ο κεντρικός υπολογιστής ξεκίνησε για το χρήστη: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ Chromoting</translation>
 <translation id="9188433529406846933">Εξουσιοδότηση</translation>
 <translation id="9213184081240281106">Μη έγκυρη διαμόρφωση κεντρικού υπολογιστή.</translation>
 <translation id="951991426597076286">Απόρριψη</translation>
+<translation id="962733587145768554">Επιλέξτε "<ph name="SHARE" />" στο παράθυρο διαλόγου σύνδεσης, για να ολοκληρώσετε τη διαδικασία.</translation>
 <translation id="979100198331752041">Η λειτουργία "Απομακρυσμένη επιφάνεια εργασίας Chrome" στον υπολογιστή <ph name="HOSTNAME" /> δεν είναι ενημερωμένη και θα πρέπει να ενημερωθεί.</translation>
 <translation id="985602178874221306">Οι συντάκτες του Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (τελευταία σύνδεση <ph name="DATE_OR_TIME" />)</translation>

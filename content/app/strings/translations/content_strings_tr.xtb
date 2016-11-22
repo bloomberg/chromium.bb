@@ -34,6 +34,7 @@
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2226276347425096477">Lütfen bu metni <ph name="MAX_CHARACTERS" /> veya daha az karakter olacak şekilde kısaltın (şu anda <ph name="CURRENT_LENGTH" /> karakter kullanıyorsunuz).</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" />. hafta, <ph name="YEAR" /></translation>
+<translation id="2277199496770840904"><ph name="NUMBER" />. parça</translation>
 <translation id="2291999235780842123">onay kutusu</translation>
 <translation id="2335594187091864976">tarih ve saat seçici</translation>
 <translation id="248395913932153421">Gün</translation>

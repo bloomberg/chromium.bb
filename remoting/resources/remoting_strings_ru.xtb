@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">последний раз в Cети <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN-код обновлен.</translation>
 <translation id="6681800064886881394">© Google Inc., 2013. Все права защищены.</translation>
+<translation id="6705482892455291412">Когда код будет введен, вы сможете подтвердить подключение и начать сеанс доступа.</translation>
 <translation id="6746493157771801606">Удалить историю</translation>
 <translation id="6748108480210050150">От</translation>
 <translation id="677755392401385740">Запущен хост для пользователя: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">Авторизация</translation>
 <translation id="9213184081240281106">Недопустимая конфигурация хоста</translation>
 <translation id="951991426597076286">Отклонить</translation>
+<translation id="962733587145768554">Чтобы установить подключение, выберите "<ph name="SHARE" />" в диалоговом окне.</translation>
 <translation id="979100198331752041">Удаленный рабочий стол Chrome (<ph name="HOSTNAME" />) необходимо обновить.</translation>
 <translation id="985602178874221306">Авторы Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (последнее подключение: <ph name="DATE_OR_TIME" />)</translation>

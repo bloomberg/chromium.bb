@@ -223,6 +223,7 @@ remot de Chrome</translation>
 <translation id="6640610550128933069">darrera vegada en línia: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">S'ha actualitzat el vostre PIN.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Tots els drets reservats.</translation>
+<translation id="6705482892455291412">Quan introdueixin el codi, se't demanarà que acceptis la connexió i comencis la sessió compartida.</translation>
 <translation id="6746493157771801606">Esborra l'historial</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">L'amfitrió ha començat per a l'usuari: <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ remot de Chrome</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="9213184081240281106">La configuració de l'amfitrió no és vàlida.</translation>
 <translation id="951991426597076286">Rebutja</translation>
+<translation id="962733587145768554">Selecciona <ph name="SHARE" /> al quadre de diàleg de la connexió per completar el procés.</translation>
 <translation id="979100198331752041">L'escriptori remot de Chrome a <ph name="HOSTNAME" /> és obsolet i cal actualitzar-lo.</translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (última connexió: <ph name="DATE_OR_TIME" />)</translation>

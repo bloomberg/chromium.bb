@@ -3,6 +3,7 @@
 <translationbundle lang="ko">
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1172898394251786223">다음 필드</translation>
+<translation id="2241634353105152135">한 번만</translation>
 <translation id="2320166752086256636">키보드 숨기기</translation>
 <translation id="2467815441875554965">문맥 검색</translation>
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome은 이 비밀번호를 <ph name="BEGIN_LINK" />Google에 저장된 비밀번호<ph name="END_LINK" />에 저장하고 자동완성 기능을 지원하므로 직접 기억할 필요가 없습니다.</translation>
 <translation id="3567664240939803299">Google Smart Lock에서 이 사이트의 비밀번호를 저장하도록 하시겠습니까?</translation>
 <translation id="3692781555820666866">이 기능을 사용하도록 설정한 경우 내 주변에 있는 기기에서 브로드캐스트하는 웹페이지가 검색주소창에 추천 항목으로 표시됩니다.</translation>
+<translation id="3789841737615482174">설치</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="4121993058175073134">순 내보내기 데이터를 전송하려면 설정 앱에서 이메일 계정을 설정하시기 바랍니다.</translation>
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="473775607612524610">업데이트</translation>
+<translation id="4773461607542755386"><ph name="APP_NAME" /> 앱에서 이 페이지를 여시겠습니까?</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" />에서 이 사이트의 비밀번호를 업데이트하도록 하시겠습니까?</translation>
+<translation id="4881695831933465202">열기</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="6039694632319341016"><ph name="PASSWORD_MANAGER_BRAND" />이(가) 이 사이트에서 <ph name="USERNAME" />의 비밀번호를 업데이트하도록 하시겠습니까?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">비밀번호 생성</translation>
 <translation id="6344783595350022745">텍스트 삭제</translation>
 <translation id="6456425917241817154">Chrome에서 생성한 비밀번호</translation>
+<translation id="666731172850799929"><ph name="APP_NAME" />에서 열기</translation>
 <translation id="7222245588540287464">문맥 검색 사용 설정 여부입니다.</translation>
 <translation id="7456847797759667638">위치 열기...</translation>
 <translation id="7481312909269577407">앞으로</translation>
+<translation id="7561196759112975576">항상</translation>
 <translation id="7588950540487816470">피지컬 웹</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 </translationbundle>

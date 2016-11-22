@@ -25,8 +25,10 @@
 <translation id="6327653052522436195">시/군/구</translation>
 <translation id="6403469950615936250">인식할 수 없는 우편번호 형식입니다(올바른 우편번호의 예: <ph name="EXAMPLE" />). 우편번호를 모르십니까? <ph name="BEGIN_LINK" />여기<ph name="END_LINK" />에서 확인하세요.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" />은(는) 이 입력란에서 유효한 값으로 인식되지 않습니다.</translation>
+<translation id="6768780634682399515">우편번호</translation>
 <translation id="6777217372746654521">주소에 사서함이 포함되어 있습니다. 상세 주소 또는 건물 주소를 사용해 주세요.</translation>
 <translation id="6839929833149231406">지역</translation>
+<translation id="684852933191805996">타운랜드(아일랜드)</translation>
 <translation id="6970216967273061347">구</translation>
 <translation id="7087282848513945231">카운티</translation>
 <translation id="7139724024395191329">에미리트</translation>

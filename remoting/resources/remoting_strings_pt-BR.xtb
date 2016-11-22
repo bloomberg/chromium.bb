@@ -223,6 +223,7 @@ remota do Google Chrome</translation>
 <translation id="6640610550128933069">última vez on-line: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">O PIN foi atualizado.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos os direitos reservados.</translation>
+<translation id="6705482892455291412">Depois que o código é informado, é solicitado que você aceite a conexão e inicie a sessão de compartilhamento.</translation>
 <translation id="6746493157771801606">Limpar histórico</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">Host iniciado para o usuário <ph name="HOST_USERNAME" />.</translation>
@@ -299,6 +300,7 @@ remota do Google Chrome</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuração de host inválida.</translation>
 <translation id="951991426597076286">Recusar</translation>
+<translation id="962733587145768554">Selecione "<ph name="SHARE" />" na caixa de diálogo de conexão para concluir o processo.</translation>
 <translation id="979100198331752041">A Área de trabalho remota do Google Chrome em <ph name="HOSTNAME" /> está desatualizada e precisa ser atualizada.</translation>
 <translation id="985602178874221306">Autores do Chromium</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" /> (última vez on-line em <ph name="DATE_OR_TIME" />)</translation>

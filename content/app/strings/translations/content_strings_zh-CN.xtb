@@ -34,6 +34,7 @@
 <translation id="2148716181193084225">今天</translation>
 <translation id="2226276347425096477">请将该文本减少为 <ph name="MAX_CHARACTERS" /> 个字符或更少（您当前使用了 <ph name="CURRENT_LENGTH" /> 个字符）。</translation>
 <translation id="2247351761944213033"><ph name="YEAR" /> 年第 <ph name="WEEKNUMBER" /> 周</translation>
+<translation id="2277199496770840904">字幕轨 <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">复选框</translation>
 <translation id="2335594187091864976">日期和时间选择器</translation>
 <translation id="248395913932153421">日</translation>

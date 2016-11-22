@@ -61,7 +61,7 @@
 <translation id="2246783206985865117">此设置受您的网域政策管理。</translation>
 <translation id="2256115617011615191">立即重新启动</translation>
 <translation id="225614027745146050">欢迎</translation>
-<translation id="228809120910082333">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
+<translation id="228809120910082333">请在下方确认您的帐号和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
 <translation id="2314101195544969792">您的<ph name="APPLICATION_NAME" />会话已经有一段时间没有活动了，连接即将断开。</translation>
 <translation id="2353140552984634198">您可使用 Chrome 远程访问安全地访问此计算机。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -79,9 +79,9 @@
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">离线</translation>
 <translation id="2888969873284818612">出现网络错误。当您的设备重新联网后，系统将重新启动该应用。</translation>
-<translation id="2894654864775534701">目前，此计算机只能通过另一帐户进行共享。</translation>
+<translation id="2894654864775534701">目前，此计算机只能通过另一帐号进行共享。</translation>
 <translation id="2919669478609886916">您目前正在与其他用户共享此计算机。您希望继续共享吗？</translation>
-<translation id="2921543551052660690">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN" />登录 Chromium<ph name="LINK_END" />，然后重新安装 Chrome 远程访问。</translation>
+<translation id="2921543551052660690">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐号名下的计算机，请使用该帐号<ph name="LINK_BEGIN" />登录 Chromium<ph name="LINK_END" />，然后重新安装 Chrome 远程访问。</translation>
 <translation id="2926340305933667314">无法停用对此计算机的远程访问。请稍后重试。</translation>
 <translation id="2930135165929238380">缺少某些必需的组件。请前往 chrome://plugins，确保 Native Client 处于启用状态。</translation>
 <translation id="2939145106548231838">向主机验证身份</translation>
@@ -114,7 +114,7 @@
 <translation id="3785447812627779171">Chrome 远程
 访问主机</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3884839335308961732">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
+<translation id="3884839335308961732">请在下方确认您的帐号和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3905196214175737742">主机所有者所在网域无效。</translation>
 <translation id="3908017899227008678">缩小以适合浏览器窗口大小</translation>
@@ -207,7 +207,7 @@
 <translation id="6204583485351780592"><ph name="HOSTNAME" />（已过期）</translation>
 <translation id="6221358653751391898">您尚未登录 Chrome。请登录，然后重试。</translation>
 <translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
-<translation id="629730747756840877">帐户</translation>
+<translation id="629730747756840877">帐号</translation>
 <translation id="6304318647555713317">客户端</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">上次联网日期：<ph name="DATE" /></translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="6681800064886881394">版权所有2013 Google Inc。保留所有权利。</translation>
+<translation id="6705482892455291412">他们输入访问代码后，系统会提示您接受连接并开始共享会话。</translation>
 <translation id="6746493157771801606">清除历史记录</translation>
 <translation id="6748108480210050150">发件人</translation>
 <translation id="677755392401385740">已为用户<ph name="HOST_USERNAME" />启动主机。</translation>
@@ -249,7 +250,7 @@
 <translation id="7606912958770842224">启用远程连接</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
-<translation id="7665369617277396874">添加帐户</translation>
+<translation id="7665369617277396874">添加帐号</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
 <translation id="7693372326588366043">刷新主机列表</translation>
 <translation id="7782471917492991422">请检查您的计算机电源管理设置，确保未将该设置配置为无操作时进入休眠模式。</translation>
@@ -257,13 +258,13 @@
 <translation id="7836926030608666805">缺少某些必需的组件。请确保您运行的是最新版本的 Chrome，然后重试。</translation>
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="7869445566579231750">您无权运行该应用。</translation>
-<translation id="7895403300744144251">这台远程计算机的安全政策不允许从您的帐户进行连接。</translation>
+<translation id="7895403300744144251">这台远程计算机的安全政策不允许从您的帐号进行连接。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
 <translation id="7981525049612125370">远程会话已过期。</translation>
 <translation id="8041089156583427627">发送反馈</translation>
 <translation id="8041721485428375115">下载 Chrome 远程桌面主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
-<translation id="8073845705237259513">要使用Chrome远程桌面，您需要先为自己的设备添加一个Google帐户。</translation>
+<translation id="8073845705237259513">要使用Chrome远程桌面，您需要先为自己的设备添加一个Google帐号。</translation>
 <translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="809687642899217504">我的计算机</translation>
 <translation id="811307782653349804">从任何地方访问您自己的计算机。</translation>
@@ -276,13 +277,13 @@
 <translation id="8355326866731426344">此访问代码将在 <ph name="TIMEOUT" /> 后失效。</translation>
 <translation id="8355485110405946777">包含应用日志，以便我们解决您的问题（日志中可能包含私人信息）。</translation>
 <translation id="837021510621780684">来自此计算机</translation>
-<translation id="8383794970363966105">要使用Chrome远程访问，您需要先为自己的设备添加一个Google帐户。</translation>
+<translation id="8383794970363966105">要使用Chrome远程访问，您需要先为自己的设备添加一个Google帐号。</translation>
 <translation id="8386846956409881180">为主机指定的 OAuth 凭据无效。</translation>
 <translation id="8445362773033888690">在Google Play商店中查看</translation>
 <translation id="8509907436388546015">桌面集成进程</translation>
 <translation id="8513093439376855948">用于远程主机管理的本地消息传递主机</translation>
 <translation id="8525306231823319788">全屏</translation>
-<translation id="8548209692293300397">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN" />登录 Google Chrome<ph name="LINK_END" />，然后重新安装 Chrome 远程桌面。</translation>
+<translation id="8548209692293300397">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐号名下的计算机，请使用该帐号<ph name="LINK_BEGIN" />登录 Google Chrome<ph name="LINK_END" />，然后重新安装 Chrome 远程桌面。</translation>
 <translation id="8642984861538780905">一般</translation>
 <translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
 <translation id="8743328882720071828">您要允许 <ph name="CLIENT_USERNAME" /> 查看和控制您的计算机吗？</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">授权</translation>
 <translation id="9213184081240281106">主机配置无效。</translation>
 <translation id="951991426597076286">拒绝</translation>
+<translation id="962733587145768554">请在连接对话框中选择“<ph name="SHARE" />”以完成此过程。</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" />上的 Chrome 远程桌面已过期，需要更新。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" />（上次联网时间：<ph name="DATE_OR_TIME" />）</translation>

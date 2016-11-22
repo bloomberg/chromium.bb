@@ -3,6 +3,7 @@
 <translationbundle lang="hr">
 <translation id="1047726139967079566">Označi ovu stranicu...</translation>
 <translation id="1172898394251786223">Sljedeće polje</translation>
+<translation id="2241634353105152135">Samo jednom</translation>
 <translation id="2320166752086256636">Sakrij tipkovnicu</translation>
 <translation id="2467815441875554965">Kontekstualno pretraživanje</translation>
 <translation id="2572712655377361602">Pravila za uređaje blokirala su pristup fotografijama</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome će to pohraniti u vašim <ph name="BEGIN_LINK" />Googleovim spremljenim zaporkama<ph name="END_LINK" /> i automatski popuniti umjesto vas kako ne biste morali pamtiti.</translation>
 <translation id="3567664240939803299">Želite li da Google Smart Lock spremi vašu zaporku za ovu web-lokaciju?</translation>
 <translation id="3692781555820666866">Kada je ta značajka omogućena, višenamjenski okvir uključit će prijedloge za web-stranice koje emitiraju uređaji u vašoj blizini.</translation>
+<translation id="3789841737615482174">Instaliraj</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="4121993058175073134">Za slanje neto izvezenih datoteka konfigurirajte svoj račun e-pošte u aplikaciji Postavke.</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
+<translation id="4773461607542755386">Želite li otvoriti tu stranicu u apl. <ph name="APP_NAME" />?</translation>
 <translation id="4875622588773761625">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za tu web-lokaciju?</translation>
+<translation id="4881695831933465202">Otvori</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="6039694632319341016">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za korisnika <ph name="USERNAME" /> za tu web-lokaciju?</translation>
 <translation id="605721222689873409">GG</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">Generiranje zaporke</translation>
 <translation id="6344783595350022745">Izbriši tekst</translation>
 <translation id="6456425917241817154">Zaporka koju je generirao Chrome</translation>
+<translation id="666731172850799929">Otvori u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="7222245588540287464">Je li omogućeno kontekstualno pretraživanje.</translation>
 <translation id="7456847797759667638">Otvori lokaciju...</translation>
 <translation id="7481312909269577407">Naprijed</translation>
+<translation id="7561196759112975576">Uvijek</translation>
 <translation id="7588950540487816470">Fizički web</translation>
 <translation id="7961015016161918242">Nikad</translation>
 </translationbundle>

@@ -13,7 +13,7 @@
 
 원격 컴퓨터에서 미국식 영어 키보드를 사용하지 않는 경우 잘못된 텍스트가 입력될 수 있습니다. 미국식 영어 이외의 키보드 레이아웃은 곧 지원될 예정입니다.
 
-개인정보 보호에 대한 자세한 내용은 Google 개인정보취급방침(http://goo.gl/SyrVzj)과 Chrome 개인정보취급방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
+개인정보 보호에 대한 자세한 내용은 Google 개인정보처리방침(http://goo.gl/SyrVzj)과 Chrome 개인정보처리방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
 <translation id="1324095856329524885">(이 컴퓨터에서 사용할 수 없는 기능입니다.)</translation>
 <translation id="1342297293546459414">공유한 컴퓨터를 보고 제어합니다.</translation>
 <translation id="1389790901665088353">Chrome 원격 데스크톱 호스트 설치 프로그램 다운로드</translation>
@@ -27,8 +27,8 @@
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
 <translation id="1704090719919187045">Chromoting 호스트 환경설정</translation>
-<translation id="1730409684442507495">• 데스크톱 이미지 품질, 반응성, 배터리 사용량 개선
-• 클릭-드래그 실행 반응성 개선
+<translation id="1730409684442507495">• 데스크톱 이미지 품질, 반응도, 배터리 사용량 개선
+• 클릭-드래그 작업 반응도 개선
 • 몇 가지 UI 애니메이션 효과 개선</translation>
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="1742469581923031760">연결 중...</translation>
@@ -52,7 +52,7 @@
 • Chrome 웹 스토어의 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 사용하여 각 컴퓨터에서 원격 액세스를 설정할 수 있습니다.
 • Android 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.
 
-개인정보 보호에 대한 자세한 내용은 Google 개인정보취급방침(http://goo.gl/SyrVzj)과 Chrome 개인정보취급방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
+개인정보 보호에 대한 자세한 내용은 Google 개인정보처리방침(http://goo.gl/SyrVzj)과 Chrome 개인정보처리방침(http://goo.gl/0uXE5d)을 참조하세요.</translation>
 <translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
 <translation id="2208514473086078157">정책 설정에서 이 컴퓨터를 Chrome 원격 데스크톱 호스트로 공유하는 것을 허용하지 않습니다. 도움이 필요하면 시스템 관리자에게 문의하세요.</translation>
 <translation id="2220529011494928058">문제 신고</translation>
@@ -223,6 +223,7 @@
 <translation id="6640610550128933069">마지막 사용 날짜: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN이 업데이트되었습니다.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
+<translation id="6705482892455291412">코드가 입력되면 연결을 수락하고 공유 세션을 시작하라는 메시지가 표시됩니다.</translation>
 <translation id="6746493157771801606">기록 삭제</translation>
 <translation id="6748108480210050150">올린이</translation>
 <translation id="677755392401385740">사용자(<ph name="HOST_USERNAME" />)의 호스트가 시작되었습니다.</translation>
@@ -299,6 +300,7 @@
 <translation id="9188433529406846933">승인</translation>
 <translation id="9213184081240281106">호스트 구성이 잘못되었습니다.</translation>
 <translation id="951991426597076286">거부</translation>
+<translation id="962733587145768554">연결 대화상자에서 '<ph name="SHARE" />'를 선택하여 절차를 완료하세요.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME" />의 Chrome 원격 데스크톱이 오래되어 업데이트해야 합니다.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="992215271654996353"><ph name="HOSTNAME" />(최근 연결: <ph name="DATE_OR_TIME" />)</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="gu">
 <translation id="1047726139967079566">આ પૃષ્ઠને બુકમાર્ક કરો...</translation>
 <translation id="1172898394251786223">આગલું ફીલ્ડ</translation>
+<translation id="2241634353105152135">માત્ર એક વખત</translation>
 <translation id="2320166752086256636">કીબોર્ડ છુપાવો</translation>
 <translation id="2467815441875554965">સાંદર્ભિક શોધ</translation>
 <translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટાની ઍક્સેસને અવરોધિત કરી</translation>
@@ -16,11 +17,14 @@
 <translation id="3414292259312108062">Chrome આને તમારા <ph name="BEGIN_LINK" />Google સાચવેલા પાસવર્ડ્સ<ph name="END_LINK" />માં સંગ્રહિત કરશે અને તમારા માટે સ્વતઃભરણ કરશે તેથી તમારે તેને જાતે યાદ રાખવાનું હોતું નથી.</translation>
 <translation id="3567664240939803299">શું તમે ઇચ્છો છો કે Google Smart Lock આ સાઇટ માટે તમારો પાસવર્ડ સાચવે?</translation>
 <translation id="3692781555820666866">સક્ષમ કરવા પર, ઑમ્નિબૉક્સ, તમારી નજીકના ઉપકરણો દ્વારા બ્રોડકાસ્ટ કરવામાં આવેલા વેબ પૃષ્ઠો માટે સૂચનોને શામેલ કરશે.</translation>
+<translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="4121993058175073134">ચોખ્ખો-નિકાસ ડેટા મોકલવા માટે, કૃપા કરીને સેટિંગ્સ એપ્લિકેશનમાં તમારા ઇમેઇલ એકાઉન્ટને ગોઠવો.</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
+<translation id="4773461607542755386">આ પૃષ્ઠને <ph name="APP_NAME" /> એપ્લિકેશનમાં ખોલીએ?</translation>
 <translation id="4875622588773761625">શું તમે ઇચ્છો છો કે આ સાઇટ માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>
+<translation id="4881695831933465202">ખોલો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="6039694632319341016">શું તમે ઇચ્છો છો કે <ph name="PASSWORD_MANAGER_BRAND" /> આ સાઇટ માટે <ph name="USERNAME" /> માટેનો તમારો પાસવર્ડ અપડેટ કરે?</translation>
 <translation id="605721222689873409">YY</translation>
@@ -29,9 +33,11 @@
 <translation id="6314335155547195432">પાસવર્ડ જનરેટ કરો</translation>
 <translation id="6344783595350022745">ટેક્સ્ટ સાફ કરો</translation>
 <translation id="6456425917241817154">Chrome દ્વારા પાસવર્ડ જનરેટ કરાયો</translation>
+<translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="7222245588540287464">સાંદર્ભિક શોધ સક્ષમ કરેલી છે કે નહીં.</translation>
 <translation id="7456847797759667638">સ્થાન ખોલો...</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
+<translation id="7561196759112975576">હંમેશાં</translation>
 <translation id="7588950540487816470">વાસ્તવિક વેબ</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 </translationbundle>
