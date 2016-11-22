@@ -575,6 +575,8 @@ void BrowsingHistoryService::OnURLsDeleted(
 }
 
 void BrowsingHistoryService::OnWebHistoryDeleted() {
+  // TODO(calamity): Only ignore web history deletions when they are actually
+  // initiated by us, rather than ignoring them whenever we are deleting.
   if (!has_pending_delete_request_)
     handler_->HistoryDeleted();
 }
