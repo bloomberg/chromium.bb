@@ -21,12 +21,6 @@
 
 #if CONFIG_EXT_INTERP
 DECLARE_ALIGNED(16, static int8_t,
-                sub_pel_filters_10sharp_signal_dir[15][2][16]);
-
-DECLARE_ALIGNED(16, static int8_t,
-                sub_pel_filters_10sharp_ver_signal_dir[15][6][16]);
-
-DECLARE_ALIGNED(16, static int8_t,
                 sub_pel_filters_12sharp_signal_dir[15][2][16]);
 
 DECLARE_ALIGNED(16, static int8_t,
@@ -46,11 +40,8 @@ typedef int8_t (*SubpelFilterCoeffs)[16];
 static INLINE SubpelFilterCoeffs
 get_subpel_filter_signal_dir(const InterpFilterParams p, int index) {
 #if CONFIG_EXT_INTERP
-  if (p.interp_filter == MULTITAP_SHARP2) {
-    return &sub_pel_filters_12sharp_signal_dir[index][0];
-  }
   if (p.interp_filter == MULTITAP_SHARP) {
-    return &sub_pel_filters_10sharp_signal_dir[index][0];
+    return &sub_pel_filters_12sharp_signal_dir[index][0];
   }
 #endif
 #if USE_TEMPORALFILTER_12TAP
@@ -66,11 +57,8 @@ get_subpel_filter_signal_dir(const InterpFilterParams p, int index) {
 static INLINE SubpelFilterCoeffs
 get_subpel_filter_ver_signal_dir(const InterpFilterParams p, int index) {
 #if CONFIG_EXT_INTERP
-  if (p.interp_filter == MULTITAP_SHARP2) {
-    return &sub_pel_filters_12sharp_ver_signal_dir[index][0];
-  }
   if (p.interp_filter == MULTITAP_SHARP) {
-    return &sub_pel_filters_10sharp_ver_signal_dir[index][0];
+    return &sub_pel_filters_12sharp_ver_signal_dir[index][0];
   }
 #endif
 #if USE_TEMPORALFILTER_12TAP
@@ -993,11 +981,9 @@ typedef struct SimdFilter {
 } SimdFilter;
 
 #if CONFIG_EXT_INTERP
-#define MULTITAP_FILTER_NUM 2
+#define MULTITAP_FILTER_NUM 1
 SimdFilter simd_filters[MULTITAP_FILTER_NUM] = {
-  { MULTITAP_SHARP, &sub_pel_filters_10sharp_signal_dir[0],
-    &sub_pel_filters_10sharp_ver_signal_dir[0] },
-  { MULTITAP_SHARP2, &sub_pel_filters_12sharp_signal_dir[0],
+  { MULTITAP_SHARP, &sub_pel_filters_12sharp_signal_dir[0],
     &sub_pel_filters_12sharp_ver_signal_dir[0] },
 };
 #endif

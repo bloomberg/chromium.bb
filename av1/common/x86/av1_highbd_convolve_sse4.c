@@ -25,11 +25,8 @@ typedef void (*TransposeSave)(const int width, int pixelsNum, uint32_t *src,
 static INLINE HbdSubpelFilterCoeffs
 hbd_get_subpel_filter_ver_signal_dir(const InterpFilterParams p, int index) {
 #if CONFIG_EXT_INTERP
-  if (p.interp_filter == MULTITAP_SHARP2) {
-    return &sub_pel_filters_12sharp_highbd_ver_signal_dir[index][0];
-  }
   if (p.interp_filter == MULTITAP_SHARP) {
-    return &sub_pel_filters_10sharp_highbd_ver_signal_dir[index][0];
+    return &sub_pel_filters_12sharp_highbd_ver_signal_dir[index][0];
   }
 #endif
 #if USE_TEMPORALFILTER_12TAP

@@ -1274,25 +1274,26 @@ static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 
 #if CONFIG_EXT_INTERP
-static const aom_prob default_switchable_interp_prob
-    [SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS - 1] = {
+static const aom_prob
+    default_switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
+                                  [SWITCHABLE_FILTERS - 1] = {
 #if CONFIG_DUAL_FILTER
-      { 235, 192, 128, 128 }, { 36, 243, 208, 128 }, { 34, 16, 128, 128 },
-      { 36, 243, 48, 128 },   { 34, 16, 128, 128 },  { 149, 160, 128, 128 },
-
-      { 235, 192, 128, 128 }, { 36, 243, 208, 128 }, { 34, 16, 128, 128 },
-      { 36, 243, 48, 128 },   { 34, 16, 128, 128 },  { 149, 160, 128, 128 },
-
-      { 235, 192, 128, 128 }, { 36, 243, 208, 128 }, { 34, 16, 128, 128 },
-      { 36, 243, 48, 128 },   { 34, 16, 128, 128 },  { 149, 160, 128, 128 },
-
-      { 235, 192, 128, 128 }, { 36, 243, 208, 128 }, { 34, 16, 128, 128 },
-      { 36, 243, 48, 128 },   { 34, 16, 128, 128 },  { 149, 160, 128, 128 },
+                                    { 235, 192, 128 }, { 36, 243, 48 },
+                                    { 34, 16, 128 },   { 34, 16, 128 },
+                                    { 149, 160, 128 }, { 235, 192, 128 },
+                                    { 36, 243, 48 },   { 34, 16, 128 },
+                                    { 34, 16, 128 },   { 149, 160, 128 },
+                                    { 235, 192, 128 }, { 36, 243, 48 },
+                                    { 34, 16, 128 },   { 34, 16, 128 },
+                                    { 149, 160, 128 }, { 235, 192, 128 },
+                                    { 36, 243, 48 },   { 34, 16, 128 },
+                                    { 34, 16, 128 },   { 149, 160, 128 },
 #else
-      { 235, 192, 128, 128 }, { 36, 243, 208, 128 }, { 34, 16, 128, 128 },
-      { 36, 243, 48, 128 },   { 34, 16, 128, 128 },  { 149, 160, 128, 128 },
+                                    { 235, 192, 128 }, { 36, 243, 48 },
+                                    { 34, 16, 128 },   { 34, 16, 128 },
+                                    { 149, 160, 128 },
 #endif
-    };
+                                  };
 #else  // CONFIG_EXT_INTERP
 #if CONFIG_DUAL_FILTER
 static const aom_prob
@@ -1789,14 +1790,8 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
 #if CONFIG_EXT_INTERP
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =
     {
-      -EIGHTTAP_REGULAR,
-      2,
-      4,
-      6,
-      -EIGHTTAP_SMOOTH,
+      -EIGHTTAP_REGULAR, 2, 4, -MULTITAP_SHARP, -EIGHTTAP_SMOOTH,
       -EIGHTTAP_SMOOTH2,
-      -MULTITAP_SHARP,
-      -MULTITAP_SHARP2,
     };
 #else
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =
