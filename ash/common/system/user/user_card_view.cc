@@ -30,6 +30,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/compositing_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -375,11 +376,6 @@ UserCardView::UserCardView(LoginStatus login_status,
         GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-
-    if (!is_active_user()) {
-      SetPaintToLayer(true);
-      layer()->SetOpacity(0.5f);
-    }
   }
 
   if (login_status == LoginStatus::PUBLIC) {
@@ -390,6 +386,15 @@ UserCardView::UserCardView(LoginStatus login_status,
 }
 
 UserCardView::~UserCardView() {}
+
+void UserCardView::PaintChildren(const ui::PaintContext& context) {
+  if (!is_active_user()) {
+    ui::CompositingRecorder alpha(context, 0xFF / 2, true);
+    View::PaintChildren(context);
+  } else {
+    View::PaintChildren(context);
+  }
+}
 
 void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_STATIC_TEXT;

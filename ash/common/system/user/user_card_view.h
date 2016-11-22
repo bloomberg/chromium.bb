@@ -23,6 +23,7 @@ class UserCardView : public views::View {
   ~UserCardView() override;
 
   // views::View overrides.
+  void PaintChildren(const ui::PaintContext& context) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
