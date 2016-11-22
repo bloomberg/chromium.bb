@@ -128,6 +128,9 @@ extern const av1_extra_bit av1_extra_bits_high12[ENTROPY_TOKENS];
    distinct bands). */
 
 #define COEFF_CONTEXTS 6
+#if CONFIG_EC_MULTISYMBOL
+#define BLOCKZ_CONTEXTS 3
+#endif
 #define COEFF_CONTEXTS0 3  // for band 0
 #define BAND_COEFF_CONTEXTS(band) \
   ((band) == 0 ? COEFF_CONTEXTS0 : COEFF_CONTEXTS)
