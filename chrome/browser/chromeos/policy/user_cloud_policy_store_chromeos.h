@@ -30,15 +30,9 @@ class SessionManagerClient;
 
 namespace policy {
 
-class LegacyPolicyCacheLoader;
-
 // Implements a cloud policy store backed by the Chrome OS' session_manager,
 // which takes care of persisting policy to disk and is accessed via DBus calls
 // through SessionManagerClient.
-//
-// Additionally, this class drives legacy UserPolicyTokenCache and
-// UserPolicyDiskCache instances, migrating policy from these to session_manager
-// storage on the fly.
 class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
  public:
   UserCloudPolicyStoreChromeOS(
@@ -46,9 +40,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
       chromeos::SessionManagerClient* session_manager_client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const AccountId& account_id,
-      const base::FilePath& user_policy_key_dir,
-      const base::FilePath& legacy_token_cache_file,
-      const base::FilePath& legacy_policy_cache_file);
+      const base::FilePath& user_policy_key_dir);
   ~UserCloudPolicyStoreChromeOS() override;
 
   // CloudPolicyStore:
@@ -81,25 +73,6 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   // policy and publishes it if validation succeeded.
   void OnRetrievedPolicyValidated(UserCloudPolicyValidator* validator);
 
-  // Callback for loading legacy caches.
-  void OnLegacyLoadFinished(
-      const std::string& dm_token,
-      const std::string& device_id,
-      Status status,
-      std::unique_ptr<enterprise_management::PolicyFetchResponse>);
-
-  // Completion callback for legacy policy validation.
-  void OnLegacyPolicyValidated(const std::string& dm_token,
-                               const std::string& device_id,
-                               UserCloudPolicyValidator* validator);
-
-  // Installs legacy tokens.
-  void InstallLegacyTokens(const std::string& dm_token,
-                           const std::string& device_id);
-
-  // Removes the passed-in legacy cache directory.
-  static void RemoveLegacyCacheDir(const base::FilePath& dir);
-
   // Invokes |callback| after reloading |policy_key_|.
   void ReloadPolicyKey(const base::Closure& callback);
 
@@ -127,12 +100,6 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   chromeos::SessionManagerClient* session_manager_client_;
   const AccountId account_id_;
   base::FilePath user_policy_key_dir_;
-
-  // TODO(mnissler): Remove all the legacy policy support members below after
-  // the number of pre-M20 clients drops back to zero.
-  base::FilePath legacy_cache_dir_;
-  std::unique_ptr<LegacyPolicyCacheLoader> legacy_loader_;
-  bool legacy_caches_loaded_;
 
   bool policy_key_loaded_;
   base::FilePath policy_key_path_;

@@ -43,16 +43,8 @@ namespace policy {
 
 namespace {
 
-// Subdirectory in the user's profile for storing legacy user policies.
-const base::FilePath::CharType kDeviceManagementDir[] =
-    FILE_PATH_LITERAL("Device Management");
-
-// File in the above directory for storing legacy user policy dmtokens.
-const base::FilePath::CharType kToken[] = FILE_PATH_LITERAL("Token");
-
-// This constant is used to build two different paths. It can be a file inside
-// kDeviceManagementDir where legacy user policy data is stored, and it can be
-// a directory inside the profile directory where other resources are stored.
+// Directory under the profile directory where policy-related resources are
+// stored, see the following constants for details.
 const base::FilePath::CharType kPolicy[] = FILE_PATH_LITERAL("Policy");
 
 // Directory under kPolicy, in the user's profile dir, where policy for
@@ -179,9 +171,6 @@ UserCloudPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     device_management_service->ScheduleInitialization(0);
 
   base::FilePath profile_dir = profile->GetPath();
-  const base::FilePath legacy_dir = profile_dir.Append(kDeviceManagementDir);
-  const base::FilePath policy_cache_file = legacy_dir.Append(kPolicy);
-  const base::FilePath token_cache_file = legacy_dir.Append(kToken);
   const base::FilePath component_policy_cache_dir =
       profile_dir.Append(kPolicy).Append(kComponentsDir);
   const base::FilePath external_data_dir =
@@ -193,8 +182,7 @@ UserCloudPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       new UserCloudPolicyStoreChromeOS(
           chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          background_task_runner, account_id, policy_key_dir, token_cache_file,
-          policy_cache_file));
+          background_task_runner, account_id, policy_key_dir));
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(

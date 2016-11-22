@@ -47,8 +47,6 @@ namespace policy {
 
 namespace {
 
-const char kLegacyDeviceId[] = "legacy-device-id";
-const char kLegacyToken[] = "legacy-token";
 const char kSanitizedUsername[] =
     "0123456789ABCDEF0123456789ABCDEF012345678@example.com";
 const char kDefaultHomepage[] = "http://chromium.org";
@@ -71,7 +69,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(new UserCloudPolicyStoreChromeOS(
         &cryptohome_client_, &session_manager_client_, loop_.task_runner(),
-        account_id_, user_policy_dir(), token_file(), policy_file()));
+        account_id_, user_policy_dir()));
     store_->AddObserver(&observer_);
 
     // Install the initial public key, so that by default the validation of
@@ -206,14 +204,6 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   base::FilePath user_policy_key_file() {
     return user_policy_dir().AppendASCII(kSanitizedUsername)
                             .AppendASCII("policy.pub");
-  }
-
-  base::FilePath token_file() {
-    return tmp_dir_.GetPath().AppendASCII("token");
-  }
-
-  base::FilePath policy_file() {
-    return tmp_dir_.GetPath().AppendASCII("policy");
   }
 
   base::MessageLoopForUI loop_;
@@ -449,128 +439,6 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, LoadInvalidSignature) {
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(policy_.GetBlob()));
   VerifyStoreHasValidationError();
-}
-
-TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationFull) {
-  std::string data;
-
-  em::DeviceCredentials credentials;
-  credentials.set_device_token(kLegacyToken);
-  credentials.set_device_id(kLegacyDeviceId);
-  ASSERT_TRUE(credentials.SerializeToString(&data));
-  ASSERT_NE(-1, base::WriteFile(token_file(), data.c_str(), data.size()));
-
-  em::CachedCloudPolicyResponse cached_policy;
-  cached_policy.mutable_cloud_policy()->CopyFrom(policy_.policy());
-  ASSERT_TRUE(cached_policy.SerializeToString(&data));
-  ASSERT_NE(-1, base::WriteFile(policy_file(), data.c_str(), data.size()));
-
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
-  ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  // Verify that legacy user policy and token have been loaded.
-  em::PolicyData expected_policy_data;
-  EXPECT_TRUE(expected_policy_data.ParseFromString(
-                  cached_policy.cloud_policy().policy_data()));
-  expected_policy_data.clear_public_key_version();
-  expected_policy_data.set_request_token(kLegacyToken);
-  expected_policy_data.set_device_id(kLegacyDeviceId);
-  ASSERT_TRUE(store_->policy());
-  EXPECT_EQ(expected_policy_data.SerializeAsString(),
-            store_->policy()->SerializeAsString());
-  VerifyPolicyMap(kDefaultHomepage);
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-}
-
-TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoToken) {
-  std::string data;
-  testing::Sequence seq;
-
-  em::CachedCloudPolicyResponse cached_policy;
-  cached_policy.mutable_cloud_policy()->CopyFrom(policy_.policy());
-  ASSERT_TRUE(cached_policy.SerializeToString(&data));
-  ASSERT_NE(-1, base::WriteFile(policy_file(), data.c_str(), data.size()));
-
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
-  ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  // Verify the legacy cache has been loaded.
-  em::PolicyData expected_policy_data;
-  EXPECT_TRUE(expected_policy_data.ParseFromString(
-                  cached_policy.cloud_policy().policy_data()));
-  expected_policy_data.clear_public_key_version();
-  ASSERT_TRUE(store_->policy());
-  EXPECT_EQ(expected_policy_data.SerializeAsString(),
-            store_->policy()->SerializeAsString());
-  VerifyPolicyMap(kDefaultHomepage);
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-}
-
-TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoPolicy) {
-  std::string data;
-
-  em::DeviceCredentials credentials;
-  credentials.set_device_token(kLegacyToken);
-  credentials.set_device_id(kLegacyDeviceId);
-  ASSERT_TRUE(credentials.SerializeToString(&data));
-  ASSERT_NE(-1, base::WriteFile(token_file(), data.c_str(), data.size()));
-
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
-  ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  // Verify that legacy user policy and token have been loaded.
-  em::PolicyData expected_policy_data;
-  expected_policy_data.set_request_token(kLegacyToken);
-  expected_policy_data.set_device_id(kLegacyDeviceId);
-  ASSERT_TRUE(store_->policy());
-  EXPECT_EQ(expected_policy_data.SerializeAsString(),
-            store_->policy()->SerializeAsString());
-  EXPECT_TRUE(store_->policy_map().empty());
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-}
-
-TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
-  // Start without an existing public key.
-  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
-
-  std::string data;
-  em::CachedCloudPolicyResponse cached_policy;
-  cached_policy.mutable_cloud_policy()->CopyFrom(policy_.policy());
-  ASSERT_TRUE(cached_policy.SerializeToString(&data));
-  ASSERT_NE(-1, base::WriteFile(policy_file(), data.c_str(), data.size()));
-
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
-  ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  // Verify the legacy cache has been loaded.
-  em::PolicyData expected_policy_data;
-  EXPECT_TRUE(expected_policy_data.ParseFromString(
-                  cached_policy.cloud_policy().policy_data()));
-  expected_policy_data.clear_public_key_version();
-  ASSERT_TRUE(store_->policy());
-  EXPECT_EQ(expected_policy_data.SerializeAsString(),
-            store_->policy()->SerializeAsString());
-  VerifyPolicyMap(kDefaultHomepage);
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-  EXPECT_TRUE(base::PathExists(policy_file()));
-
-  // Now store a new policy using the new homepage location.
-  const char kNewHomepage[] = "http://google.com";
-  policy_.payload().mutable_homepagelocation()->set_value(kNewHomepage);
-  policy_.SetDefaultNewSigningKey();
-  policy_.Build();
-  std::vector<uint8_t> new_public_key;
-  ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
-  ASSERT_NO_FATAL_FAILURE(
-      PerformStorePolicy(&new_public_key, kDefaultHomepage, kNewHomepage));
-  VerifyPolicyMap(kNewHomepage);
-
-  // Verify that the legacy cache has been removed.
-  EXPECT_FALSE(base::PathExists(policy_file()));
 }
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediately) {
