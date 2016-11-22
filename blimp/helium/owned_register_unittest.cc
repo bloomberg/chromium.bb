@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "blimp/helium/coded_value_serializer.h"
 #include "blimp/helium/helium_test.h"
+#include "blimp/helium/stream_helpers.h"
 #include "blimp/helium/syncable_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,23 +37,14 @@ class OwnedRegisterTest : public HeliumTest {
         &OwnedRegisterTest::OnEngineCallbackCalled, base::Unretained(this)));
   }
 
-  Result SyncFromClient() {
-    return Sync(client_reg_.get(), engine_reg_.get(),
-                client_reg_->GetRevision());
-  }
+  // Takes a changeset from |from_lww_register| and applies it to
+  // |to_lww_register|.
+  void Sync(const OwnedRegister<int>& from_register,
+            OwnedRegister<int>* to_register);
 
-  Result SyncFromEngine() {
-    return Sync(engine_reg_.get(), client_reg_.get(),
-                engine_reg_->GetRevision());
-  }
-
-  Result Sync(OwnedRegister<int>* from_register,
-              OwnedRegister<int>* to_register,
-              Revision from);
-
-  Result ApplyMockData(OwnedRegister<int>* to_register,
-                       Revision revision,
-                       int value);
+  std::unique_ptr<OwnedRegisterChangeset<int>> CreateMockChangeset(
+      Revision revision,
+      int value);
 
   std::unique_ptr<OwnedRegister<int>> client_reg_;
   std::unique_ptr<OwnedRegister<int>> engine_reg_;
@@ -64,37 +55,20 @@ class OwnedRegisterTest : public HeliumTest {
 
 // Takes a changeset from |from_register| and applies it to
 // |to_lww_register|.
-Result OwnedRegisterTest::Sync(OwnedRegister<int>* from_register,
-                               OwnedRegister<int>* to_register,
-                               Revision from) {
-  // Create a changeset from |from_register|.
-  std::string changeset;
-  google::protobuf::io::StringOutputStream raw_output_stream(&changeset);
-  google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
-  from_register->CreateChangesetToCurrent(from, &output_stream);
-
-  // Apply the changeset to |to_register|.
-  google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
-                                                          changeset.size());
-  google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
-  return to_register->ApplyChangeset(&input_stream);
+void OwnedRegisterTest::Sync(const OwnedRegister<int>& from_register,
+                             OwnedRegister<int>* to_register) {
+  auto changeset = from_register.CreateChangeset(from_register.GetRevision());
+  ASSERT_TRUE(to_register->ValidateChangeset(*changeset));
+  to_register->ApplyChangeset(*changeset);
 }
 
-Result OwnedRegisterTest::ApplyMockData(OwnedRegister<int>* to_register,
-                                        Revision revision,
-                                        int value) {
-  // Create changeset
-  std::string changeset;
-  google::protobuf::io::StringOutputStream raw_output_stream(&changeset);
-  google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
-  CodedValueSerializer::Serialize(revision, &output_stream);
-  CodedValueSerializer::Serialize(value, &output_stream);
-
-  // Apply the changeset.
-  google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
-                                                          changeset.size());
-  google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
-  return to_register->ApplyChangeset(&input_stream);
+std::unique_ptr<OwnedRegisterChangeset<int>>
+OwnedRegisterTest::CreateMockChangeset(Revision revision, int value) {
+  std::unique_ptr<OwnedRegister<int>::Changeset> changeset =
+      base::MakeUnique<OwnedRegister<int>::Changeset>();
+  changeset->last_modified.Set(revision);
+  changeset->value.Set(value);
+  return changeset;
 }
 
 TEST_F(OwnedRegisterTest, SetIncrementsLocalVersion) {
@@ -122,7 +96,7 @@ TEST_F(OwnedRegisterTest, SyncSuccessfully) {
   Revision engine_rev = engine_reg_->GetRevision();
   client_reg_->Set(123);
 
-  EXPECT_EQ(Result::SUCCESS, SyncFromClient());
+  Sync(*client_reg_, engine_reg_.get());
   EXPECT_EQ(123, engine_reg_->Get());
 
   EXPECT_GT(client_reg_->GetRevision(), client_rev);
@@ -137,10 +111,10 @@ TEST_F(OwnedRegisterTest, ChangesetIgnored) {
 
   Revision engine_rev = engine_reg_->GetRevision();
   client_reg_->Set(123);
-  EXPECT_EQ(Result::SUCCESS, SyncFromClient());
+  Sync(*client_reg_, engine_reg_.get());
   EXPECT_EQ(123, engine_reg_->Get());
 
-  EXPECT_EQ(Result::SUCCESS, SyncFromClient());
+  Sync(*client_reg_, engine_reg_.get());
   EXPECT_EQ(123, engine_reg_->Get());
 
   EXPECT_EQ(engine_reg_->GetRevision(), engine_rev);
@@ -155,14 +129,10 @@ TEST_F(OwnedRegisterTest, ChangesetsAppliedOutOfOrderFails) {
   // Set up the Engine to be at 0:1 revision
   client_reg_->Set(123);
 
-  EXPECT_EQ(Result::SUCCESS, SyncFromClient());
+  Sync(*client_reg_, engine_reg_.get());
   EXPECT_EQ(123, engine_reg_->Get());
 
-  int value = 6;
-  Revision lesser_revision = 0;
-
-  EXPECT_EQ(Result::ERR_PROTOCOL_ERROR,
-            ApplyMockData(engine_reg_.get(), lesser_revision, value));
+  EXPECT_FALSE(client_reg_->ValidateChangeset(*CreateMockChangeset(0u, 5)));
 }
 
 TEST_F(OwnedRegisterTest, InvalidOperationForPeer) {
@@ -171,10 +141,7 @@ TEST_F(OwnedRegisterTest, InvalidOperationForPeer) {
   EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
   EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(0);
 
-  int value = 123;
-  Revision revision = 1;
-  EXPECT_EQ(Result::ERR_PROTOCOL_ERROR,
-            ApplyMockData(engine_reg_.get(), revision, value));
+  EXPECT_FALSE(engine_reg_->ValidateChangeset(*CreateMockChangeset(1u, 5)));
 }
 
 }  // namespace

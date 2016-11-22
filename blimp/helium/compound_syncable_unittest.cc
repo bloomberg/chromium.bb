@@ -21,21 +21,15 @@ namespace blimp {
 namespace helium {
 namespace {
 
-class SampleCompoundSyncable : public CompoundSyncable {
- public:
+struct SampleCompoundSyncable : public CompoundSyncable {
   explicit SampleCompoundSyncable(Peer bias, Peer running_as)
-      : child1_(
-            CreateAndRegister<LwwRegister<int>>(bias, running_as)),
-        child2_(
-            CreateAndRegister<LwwRegister<int>>(bias, running_as)) {}
+      : child1(CreateAndRegister<LwwRegister<int>>(bias, running_as)),
+        child2(CreateAndRegister<LwwRegister<int>>(bias, running_as)) {}
 
-  LwwRegister<int>* mutable_child1() { return child1_.get(); }
-  LwwRegister<int>* mutable_child2() { return child2_.get(); }
+  RegisteredSyncable<LwwRegister<int>> child1;
+  RegisteredSyncable<LwwRegister<int>> child2;
 
  private:
-  RegisteredMember<LwwRegister<int>> child1_;
-  RegisteredMember<LwwRegister<int>> child2_;
-
   DISALLOW_COPY_AND_ASSIGN(SampleCompoundSyncable);
 };
 
@@ -58,31 +52,22 @@ class CompoundSyncableTest : public HeliumTest {
   MOCK_METHOD0(OnClientCallbackCalled, void());
 
  protected:
-  // Propagates pending changes from |engine_| to |client_|.
+  // Propagates pending changes between |engine_| and |client_|.
   void Synchronize() {
-    // Create the changeset stream from |engine_|.
-    std::string changeset;
-    google::protobuf::io::StringOutputStream raw_output_stream(&changeset);
-    google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
+    ASSERT_TRUE(
+        client_.ValidateChangeset(*engine_.CreateChangeset(last_sync_client_)));
+    ASSERT_TRUE(
+        engine_.ValidateChangeset(*client_.CreateChangeset(last_sync_engine_)));
 
-    engine_.CreateChangesetToCurrent(last_sync_engine_, &output_stream);
-    EXPECT_FALSE(changeset.empty());
-    output_stream.Trim();
-
-    // Apply the changeset stream to |client_|.
-    google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
-                                                            changeset.size());
-    google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
+    client_.ApplyChangeset(*engine_.CreateChangeset(last_sync_client_));
+    engine_.ApplyChangeset(*client_.CreateChangeset(last_sync_engine_));
 
     last_sync_engine_ = RevisionGenerator::GetInstance()->current();
-    EXPECT_EQ(Result::SUCCESS, client_.ApplyChangeset(&input_stream));
-    engine_.ReleaseBefore(last_sync_engine_);
-
-    // Ensure EOF.
-    EXPECT_FALSE(input_stream.Skip(1));
+    last_sync_client_ = RevisionGenerator::GetInstance()->current();
   }
 
   Revision last_sync_engine_ = 0;
+  Revision last_sync_client_ = 0;
   SampleCompoundSyncable engine_;
   SampleCompoundSyncable client_;
 
@@ -94,37 +79,50 @@ TEST_F(CompoundSyncableTest, SequentialMutations) {
   EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
   EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(2);
 
-  engine_.mutable_child1()->Set(123);
+  engine_.child1->Set(123);
   Synchronize();
-  EXPECT_EQ(123, client_.mutable_child1()->Get());
+  EXPECT_EQ(123, client_.child1->Get());
 
-  engine_.mutable_child1()->Set(456);
+  engine_.child1->Set(456);
   Synchronize();
-  EXPECT_EQ(456, client_.mutable_child1()->Get());
+  EXPECT_EQ(456, client_.child1->Get());
+}
+
+TEST_F(CompoundSyncableTest, NoOp) {
+  Synchronize();
+
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
+
+  engine_.child1->Set(123);
+  Synchronize();
+  EXPECT_EQ(123, client_.child1->Get());
+
+  Synchronize();
 }
 
 TEST_F(CompoundSyncableTest, MutateMultiple) {
   EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
   EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(2);
 
-  engine_.mutable_child1()->Set(123);
-  engine_.mutable_child2()->Set(456);
+  engine_.child1->Set(123);
+  engine_.child2->Set(456);
   Synchronize();
-  EXPECT_EQ(123, client_.mutable_child1()->Get());
-  EXPECT_EQ(456, client_.mutable_child2()->Get());
+  EXPECT_EQ(123, client_.child1->Get());
+  EXPECT_EQ(456, client_.child2->Get());
 }
 
 TEST_F(CompoundSyncableTest, MutateMultipleDiscrete) {
-  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(0);
-  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(2);
+  EXPECT_CALL(*this, OnClientCallbackCalled()).Times(2);
+  EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(0);
 
-  engine_.mutable_child1()->Set(123);
+  client_.child1->Set(123);
   Synchronize();
-  EXPECT_EQ(123, client_.mutable_child1()->Get());
-  engine_.mutable_child2()->Set(456);
+  EXPECT_EQ(123, client_.child1->Get());
+  client_.child2->Set(456);
   Synchronize();
-  EXPECT_EQ(123, client_.mutable_child1()->Get());
-  EXPECT_EQ(456, client_.mutable_child2()->Get());
+  EXPECT_EQ(123, engine_.child1->Get());
+  EXPECT_EQ(456, engine_.child2->Get());
 }
 
 }  // namespace

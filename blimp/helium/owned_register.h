@@ -5,11 +5,14 @@
 #ifndef BLIMP_HELIUM_OWNED_REGISTER_H_
 #define BLIMP_HELIUM_OWNED_REGISTER_H_
 
-#include "base/optional.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "blimp/helium/blimp_helium_export.h"
-#include "blimp/helium/coded_value_serializer.h"
 #include "blimp/helium/result.h"
 #include "blimp/helium/revision_generator.h"
+#include "blimp/helium/serializable_struct.h"
+#include "blimp/helium/stream_helpers.h"
 #include "blimp/helium/syncable.h"
 #include "blimp/helium/syncable_common.h"
 #include "blimp/helium/version_vector.h"
@@ -18,11 +21,22 @@
 namespace blimp {
 namespace helium {
 
+template <class RegisterType>
+struct OwnedRegisterChangeset : public SerializableStruct {
+  OwnedRegisterChangeset() : last_modified(this), value(this) {}
+  ~OwnedRegisterChangeset() override = default;
+
+  Field<Revision> last_modified;
+  Field<RegisterType> value;
+};
+
 // A Syncable that gives write permissions only to the "owner" Peer,
 // while the other Peer only receives and applies updates.
 template <class RegisterType>
-class OwnedRegister : public Syncable {
+class OwnedRegister : public Syncable<OwnedRegisterChangeset<RegisterType>> {
  public:
+  using ChangesetType = OwnedRegisterChangeset<RegisterType>;
+
   OwnedRegister(Peer running_as, Peer owner);
   ~OwnedRegister() = default;
 
@@ -30,37 +44,36 @@ class OwnedRegister : public Syncable {
   const RegisterType& Get() const;
 
   // Syncable implementation.
-  void SetLocalUpdateCallback(base::Closure local_update_callback) override;
-  void CreateChangesetToCurrent(
-      Revision from,
-      google::protobuf::io::CodedOutputStream* output_stream) override;
-  Result ApplyChangeset(
-      google::protobuf::io::CodedInputStream* input_stream) override;
+  std::unique_ptr<ChangesetType> CreateChangeset(Revision from) const override;
+  void ApplyChangeset(const ChangesetType& changeset) override;
   void ReleaseBefore(Revision checkpoint) override;
+  bool ValidateChangeset(const ChangesetType& changeset) const override;
   Revision GetRevision() const override;
+  void SetLocalUpdateCallback(
+      const base::Closure& local_update_callback) override;
 
  private:
   base::Closure local_update_callback_;
   Revision last_modified_ = 0;
-  bool locally_owned_;
-  base::Optional<RegisterType> value_;
+  Bias bias_;
+  RegisterType value_ = {};
 
   DISALLOW_COPY_AND_ASSIGN(OwnedRegister);
 };
 
 template <class RegisterType>
-OwnedRegister<RegisterType>::OwnedRegister(Peer running_as, Peer owner)
-    : locally_owned_(owner == running_as) {}
+OwnedRegister<RegisterType>::OwnedRegister(Peer owner, Peer running_as)
+    : bias_(ComputeBias(owner, running_as)) {}
 
 template <class RegisterType>
 void OwnedRegister<RegisterType>::SetLocalUpdateCallback(
-    base::Closure local_update_callback) {
+    const base::Closure& local_update_callback) {
   local_update_callback_ = local_update_callback;
 }
 
 template <class RegisterType>
 void OwnedRegister<RegisterType>::Set(const RegisterType& value) {
-  DCHECK(locally_owned_);
+  DCHECK(bias_ == Bias::LOCAL);
 
   value_ = value;
   last_modified_ = GetNextRevision();
@@ -70,13 +83,12 @@ void OwnedRegister<RegisterType>::Set(const RegisterType& value) {
 
 template <class RegisterType>
 const RegisterType& OwnedRegister<RegisterType>::Get() const {
-  DCHECK(value_);
-  return *value_;
+  return value_;
 }
 
 template <class RegisterType>
 Revision OwnedRegister<RegisterType>::GetRevision() const {
-  if (locally_owned_) {
+  if (bias_ == Bias::LOCAL) {
     return last_modified_;
   } else {
     return 0;
@@ -84,47 +96,42 @@ Revision OwnedRegister<RegisterType>::GetRevision() const {
 }
 
 template <class RegisterType>
-void OwnedRegister<RegisterType>::CreateChangesetToCurrent(
-    Revision from,
-    google::protobuf::io::CodedOutputStream* output_stream) {
-  DCHECK(locally_owned_);
-  DCHECK(output_stream);
+std::unique_ptr<typename OwnedRegister<RegisterType>::ChangesetType>
+OwnedRegister<RegisterType>::CreateChangeset(Revision from) const {
+  DCHECK(bias_ == Bias::LOCAL);
 
-  CodedValueSerializer::Serialize(last_modified_, output_stream);
-  CodedValueSerializer::Serialize(*value_, output_stream);
+  std::unique_ptr<ChangesetType> changeset = base::MakeUnique<ChangesetType>();
+  changeset->last_modified.Set(last_modified_);
+  changeset->value.Set(value_);
+  return changeset;
 }
 
 template <class RegisterType>
-Result OwnedRegister<RegisterType>::ApplyChangeset(
-    google::protobuf::io::CodedInputStream* input_stream) {
-  DCHECK(input_stream);
-
-  if (locally_owned_) {
-    return Result::ERR_PROTOCOL_ERROR;
+void OwnedRegister<RegisterType>::ApplyChangeset(
+    const ChangesetType& changeset) {
+  if (last_modified_ < changeset.last_modified()) {
+    value_ = changeset.value();
+    last_modified_ = changeset.last_modified();
   }
-
-  Revision remote;
-  if (!CodedValueSerializer::Deserialize(input_stream, &remote)) {
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-
-  RegisterType input_value;
-  if (!CodedValueSerializer::Deserialize(input_stream, &input_value)) {
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-  if (last_modified_ > remote) {
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-  if (last_modified_ < remote) {
-    value_ = input_value;
-    last_modified_ = remote;
-  }
-  return Result::SUCCESS;
 }
 
 template <class RegisterType>
 void OwnedRegister<RegisterType>::ReleaseBefore(Revision checkpoint) {
   // no-op
+}
+
+template <class RegisterType>
+bool OwnedRegister<RegisterType>::ValidateChangeset(
+    const ChangesetType& changeset) const {
+  if (bias_ == Bias::LOCAL) {
+    return false;
+  }
+
+  if (last_modified_ > changeset.last_modified()) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace helium

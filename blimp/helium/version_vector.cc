@@ -46,6 +46,20 @@ VersionVector::Comparison VersionVector::CompareTo(
   }
 }
 
+VersionVector::Comparison VersionVector::CompareWithBias(
+    const VersionVector& other,
+    Bias bias) const {
+  Comparison cmp = CompareTo(other);
+  if (cmp == Comparison::Conflict) {
+    if (bias == Bias::REMOTE) {
+      return Comparison::LessThan;
+    } else if (bias == Bias::LOCAL) {
+      return Comparison::GreaterThan;
+    }
+  }
+  return cmp;
+}
+
 VersionVector VersionVector::MergeWith(const VersionVector& other) const {
   VersionVector result(std::max(local_revision_, other.local_revision()),
                        std::max(remote_revision_, other.remote_revision()));

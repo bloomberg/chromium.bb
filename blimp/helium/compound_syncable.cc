@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <bitset>
+#include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -15,85 +17,86 @@
 namespace blimp {
 namespace helium {
 
+CompoundChangeset::CompoundChangeset()
+    : compound_changesets(this, std::map<int, std::string>()) {}
+
+CompoundChangeset::~CompoundChangeset() {}
+
 CompoundSyncable::CompoundSyncable() {}
 
 CompoundSyncable::~CompoundSyncable() {}
 
-void CompoundSyncable::SetLocalUpdateCallback(
-    base::Closure local_update_callback) {
+std::unique_ptr<CompoundChangeset> CompoundSyncable::CreateChangeset(
+    Revision from) const {
+  // Populate a map with the serialized changesets of modified member
+  // Syncables.
+  std::map<int, std::string> compound_changesets_map;
+  for (size_t i = 0; i < members_.size(); ++i) {
+    if (members_[i]->GetRevision() >= from) {
+      std::string changeset_data;
+      google::protobuf::io::StringOutputStream raw_output_stream(
+          &changeset_data);
+      google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
+      members_[i]->CreateChangeset(from, &output_stream);
+      output_stream.Trim();
+      if (!changeset_data.empty()) {
+        compound_changesets_map[i] = std::move(changeset_data);
+      }
+    }
+  }
+
+  std::unique_ptr<CompoundChangeset> output_changeset =
+      base::MakeUnique<CompoundChangeset>();
+  output_changeset->compound_changesets.Set(std::move(compound_changesets_map));
+  return output_changeset;
+}
+
+void CompoundSyncable::ApplyChangeset(const CompoundChangeset& changeset) {
+  for (const auto& current_changeset : changeset.compound_changesets()) {
+    members_[current_changeset.first]->ApplyChangeset();
+  }
+}
+
+Revision CompoundSyncable::GetRevision() const {
+  Revision merged_revision = {};
   for (const auto& member : members_) {
+    merged_revision = std::max(merged_revision, member->GetRevision());
+  }
+  return merged_revision;
+}
+
+void CompoundSyncable::SetLocalUpdateCallback(
+    const base::Closure& local_update_callback) {
+  for (auto* member : members_) {
     member->SetLocalUpdateCallback(local_update_callback);
   }
 }
 
-void CompoundSyncable::CreateChangesetToCurrent(
-    Revision from,
-    google::protobuf::io::CodedOutputStream* changeset) {
-  // Write out a bitarray representing the modified state, where for each
-  // modified member |members_[i]|, the bit modified[i] is set to 1.
-  // The bits for unmodified members_ are left as zero.
-  DCHECK_LE(members_.size(), 64u);
-  std::bitset<64> modified;
-  for (size_t i = 0; i < members_.size(); ++i) {
-    if (members_[i]->GetRevision() >= from) {
-      modified[i] = true;
-    }
-  }
-  DCHECK_GT(modified.count(), 0u);
-
-  changeset->WriteVarint64(modified.to_ullong());
-  for (size_t i = 0; i < members_.size(); ++i) {
-    if (modified[i]) {
-      int prev_bytes_written = changeset->ByteCount();
-
-      members_[i]->CreateChangesetToCurrent(from, changeset);
-
-      // Ensure all "modified" children have serialized non-empty payloads.
-      DCHECK_GT(changeset->ByteCount(), prev_bytes_written);
-    }
-  }
-}
-
-Result CompoundSyncable::ApplyChangeset(
-    google::protobuf::io::CodedInputStream* changeset) {
-  uint64_t modified_header;
-  if (!changeset->ReadVarint64(&modified_header)) {
-    DLOG(FATAL) << "Couldn't read modification header.";
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-  if (modified_header > (1u << members_.size())) {
-    DLOG(FATAL) << "Invalid modification header.";
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-
-  std::bitset<64> modified(modified_header);
-
-  for (size_t member_id = 0u; member_id < members_.size(); ++member_id) {
-    if (!modified[member_id]) {
-      continue;
-    }
-
-    Result child_result = members_[member_id]->ApplyChangeset(changeset);
-    if (child_result != Result::SUCCESS) {
-      return child_result;
-    }
-  }
-
-  return Result::SUCCESS;
-}
-
-Revision CompoundSyncable::GetRevision() const {
-  Revision merged = 0u;
-  for (const auto& member : members_) {
-    merged = std::max(merged, member->GetRevision());
-  }
-  return merged;
-}
-
 void CompoundSyncable::ReleaseBefore(Revision from) {
-  for (const auto& next_child : members_) {
-    next_child->ReleaseBefore(from);
+  for (auto* member : members_) {
+    member->ReleaseBefore(from);
   }
+}
+
+bool CompoundSyncable::ValidateChangeset(
+    const CompoundChangeset& changeset) const {
+  for (const auto& current_changeset : changeset.compound_changesets()) {
+    int32_t syncable_id = current_changeset.first;
+    auto changeset = current_changeset.second;
+    if (syncable_id >= static_cast<int>(members_.size())) {
+      return false;
+    }
+
+    google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
+                                                            changeset.size());
+    google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
+
+    if (!members_[syncable_id]->ParseAndValidate(&input_stream)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace helium

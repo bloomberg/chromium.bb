@@ -9,6 +9,7 @@
 
 #include "blimp/common/proto/helium.pb.h"
 #include "blimp/helium/blimp_helium_export.h"
+#include "blimp/helium/syncable_common.h"
 
 namespace blimp {
 namespace helium {
@@ -40,6 +41,12 @@ class BLIMP_HELIUM_EXPORT VersionVector {
   // (2,0).CompareTo((1, 0));
   // * Conflict: Both revisions are different. (1,0).CompareTo(0,1)
   Comparison CompareTo(const VersionVector& other) const;
+
+  // Compares two vector clocks with special handling for conflict cases.
+  // If |this| and |other| are in conflict, then the value of |bias| determines
+  // whether the local VersionVector wins (returned as GreaterThan), or loses
+  // (returned as LessThan).
+  Comparison CompareWithBias(const VersionVector& other, Bias bias) const;
 
   // Merges two vector clocks. This function should be used at synchronization
   // points. i.e. when client receives data from the server or vice versa.

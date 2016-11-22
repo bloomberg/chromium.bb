@@ -4,6 +4,7 @@
 
 #include "blimp/helium/lww_register.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -38,17 +39,10 @@ class LwwRegisterTest : public HeliumTest {
         &LwwRegisterTest::OnEngineCallbackCalled, base::Unretained(this)));
   }
 
-  void SyncFromClient() {
-    Sync(client_.get(), engine_.get(), client_->GetRevision());
-  }
-
-  void SyncFromEngine() {
-    Sync(engine_.get(), client_.get(), engine_->GetRevision());
-  }
-
-  void Sync(LwwRegister<int>* from_lww_register,
-            LwwRegister<int>* to_lww_register,
-            Revision from);
+  // Takes a changeset from |from_lww_register| and applies it to
+  // |to_lww_register|.
+  void Sync(const LwwRegister<int>& from_lww_register,
+            LwwRegister<int>* to_lww_register);
 
   std::unique_ptr<LwwRegister<int>> client_;
   std::unique_ptr<LwwRegister<int>> engine_;
@@ -57,22 +51,12 @@ class LwwRegisterTest : public HeliumTest {
   DISALLOW_COPY_AND_ASSIGN(LwwRegisterTest);
 };
 
-// Takes a changeset from |from_lww_register| and applies it to
-// |to_lww_register|.
-void LwwRegisterTest::Sync(LwwRegister<int>* from_lww_register,
-                           LwwRegister<int>* to_lww_register,
-                           Revision from) {
-  // Create a changeset from |from_lww_register|.
-  std::string changeset;
-  google::protobuf::io::StringOutputStream raw_output_stream(&changeset);
-  google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
-  from_lww_register->CreateChangesetToCurrent(from, &output_stream);
-
-  // Apply the changeset to |to_lww_register|.
-  google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
-                                                          changeset.size());
-  google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
-  to_lww_register->ApplyChangeset(&input_stream);
+void LwwRegisterTest::Sync(const LwwRegister<int>& from_lww_register,
+                           LwwRegister<int>* to_lww_register) {
+  auto changeset =
+      from_lww_register.CreateChangeset(from_lww_register.GetRevision());
+  ASSERT_TRUE(to_lww_register->ValidateChangeset(*changeset));
+  to_lww_register->ApplyChangeset(*changeset);
 }
 
 TEST_F(LwwRegisterTest, SetIncrementsLocalVersion) {
@@ -96,7 +80,7 @@ TEST_F(LwwRegisterTest, ApplyLaterChangeset) {
   EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(0);
 
   client_->Set(123);
-  SyncFromClient();
+  Sync(*client_, engine_.get());
 
   EXPECT_EQ(123, engine_->Get());
 }
@@ -108,10 +92,10 @@ TEST_F(LwwRegisterTest, ApplyEarlierChangeset) {
   EXPECT_CALL(*this, OnEngineCallbackCalled()).Times(1);
 
   client_->Set(123);
-  SyncFromClient();
+  Sync(*client_, engine_.get());
 
   engine_->Set(456);
-  SyncFromClient();
+  Sync(*client_, engine_.get());
 
   EXPECT_EQ(456, engine_->Get());
 }
@@ -124,7 +108,7 @@ TEST_F(LwwRegisterTest, ClientApplyChangesetConflictClientWins) {
 
   client_->Set(123);
   engine_->Set(456);
-  SyncFromEngine();
+  Sync(*engine_, client_.get());
 
   EXPECT_EQ(123, client_->Get());
 }
@@ -137,7 +121,7 @@ TEST_F(LwwRegisterTest, EngineApplyChangesetConflictClientWins) {
 
   client_->Set(123);
   engine_->Set(456);
-  SyncFromClient();
+  Sync(*client_, engine_.get());
 
   EXPECT_EQ(123, engine_->Get());
 }
@@ -150,7 +134,7 @@ TEST_F(LwwRegisterTest, ClientApplyChangesetConflictEngineWins) {
 
   client_->Set(123);
   engine_->Set(456);
-  SyncFromEngine();
+  Sync(*engine_, client_.get());
 
   EXPECT_EQ(456, client_->Get());
 }
@@ -163,7 +147,7 @@ TEST_F(LwwRegisterTest, EngineApplyChangesetConflictEngineWins) {
 
   client_->Set(123);
   engine_->Set(456);
-  SyncFromClient();
+  Sync(*client_, engine_.get());
 
   EXPECT_EQ(456, engine_->Get());
 }

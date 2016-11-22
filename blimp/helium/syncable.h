@@ -10,27 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "blimp/common/mandatory_callback.h"
 #include "blimp/helium/result.h"
 #include "blimp/helium/version_vector.h"
-
-namespace google {
-namespace protobuf {
-namespace io {
-class CodedInputStream;
-class CodedOutputStream;
-}  // namespace io
-}  // namespace protobuf
-}  // namespace google
 
 namespace blimp {
 namespace helium {
 
-namespace proto {
-class ChangesetMessage;
-}
-
-// Syncable is something that supports creating and restoring Changesets.
+// LazySyncable is something that supports creating and restoring Changesets.
 // These objects exchange Changesets between the client and server to keep
 // their peer counterparts eventually synchronized.
 //
@@ -40,70 +26,69 @@ class ChangesetMessage;
 // 2. Consistency: The values stored in client-engine pairs should eventually be
 // equal.
 //
-// Syncable is a base interface that is used for both self contained
-// objects (i.e. Simple register) and objects which are disconnected replicas
-// of external state.
-class Syncable {
+// LazySyncable is a base interface that is used for both self contained objects
+// (i.e. simple register) and objects which are disconnected replicas
+// of external state. In the latter case, the method PrepareToCreateChangeset()
+// is used to tell the LazySyncable to replicate its state asynchronously.
+template <typename ChangesetType>
+class LazySyncable {
  public:
-  virtual ~Syncable() {}
+  // Easy access to the type through which Changesets are serialized for this
+  // Syncable.
+  using Changeset = ChangesetType;
+
+  virtual ~LazySyncable() = default;
+
+  // Serializes a description of changes between |from| and the current state
+  // into the specified |output| changeset. Note that the Sync layer will use
+  // GetRevision() to determine the end-revision for the Changeset, so the
+  // Syncable must ensure that GetRevision() is incremented at least on the next
+  // modification after this call.
+  virtual std::unique_ptr<ChangesetType> CreateChangeset(
+      Revision from) const = 0;
+
+  // Reads and applies a Changeset originating from the peer counterpart of
+  // this Syncable. Failure to apply the changeset should result in a CHECK
+  // failure.
+  virtual void ApplyChangeset(const ChangesetType& changeset) = 0;
 
   // Sets the callback that the Syncable should invoke immediately after being
-  // modified locally.
-  virtual void SetLocalUpdateCallback(base::Closure local_update_callback) = 0;
+  // modified
+  // locally (e.g. LwwRegister::Set() will call it before returning).
+  virtual void SetLocalUpdateCallback(
+      const base::Closure& local_update_callback) = 0;
 
-  // Emits a byte stream representation a changeset comprised of the changes
-  // between |from| and the current revision.
-  //
-  // The Sync layer will construct the changeset with details since |from|,
-  // but the Syncable is responsible for including any revision information
-  // additional to that expressed by the VersionVectors, that is necessary to
-  // detect and resolve conflicts.
-  virtual void CreateChangesetToCurrent(
-      Revision from,
-      google::protobuf::io::CodedOutputStream* output_stream) = 0;
+  // Returns true if |changeset| is semantically correct and can be
+  // Applied() to the state of |this|.
+  virtual bool ValidateChangeset(const ChangesetType& changeset) const {
+    return true;
+  }
 
-  // Reads and applies a stream of changes originating from this Syncable. The
-  // unconsumed bytes of |input_stream| are left intact.
-  // The Syncable is responsible for including sufficient revision data in the
-  // changeset in order to detect change conflicts.
-  virtual Result ApplyChangeset(
-      google::protobuf::io::CodedInputStream* input_stream) = 0;
-
-  // Gives a chance for the Syncable to delete any old data prior to
-  // |checkpoint|.
+  // Allows the Syncable to release book-keeping state related to Revisions
+  // prior to |before|. State relating to Revisions |before| and later must be
+  // retained.
   virtual void ReleaseBefore(Revision checkpoint) = 0;
 
-  // Returns the VersionVector reflecting the last modified state of |this|.
+  // Returns the current Revision of this Syncable. If the returned Revision is
+  // zero then the Syncable is newly-created and has not yet been modified.
   virtual Revision GetRevision() const = 0;
+
+  // Called when the Sync layer is ready to request a Changeset for this
+  // Syncable, to allow for external state to be pulled into the Syncable ready
+  // for synchronous serialization.
+  virtual void PrepareToCreateChangeset(Revision from, base::Closure done) = 0;
 };
 
-// Extends the Syncable interface by adding support to asynchronously replicate
-// state with some
-// external entity.
-//
-// TwoPhaseSyncable name derives from the fact that the state is both created
-// and applied in two stages:
-//
-// 1. Creation
-// 1.1) PreCreateChangesetToCurrent is called which retrieves the state
-// from an external state and saves locally.
-// 1.2) CreateChangesetToCurrent is called to actually create the changeset.
-//
-// 2. Updating
-// 2.1) ApplyChangeset is called which updates the local state and propagates
-//      changes to external state.
-class TwoPhaseSyncable : public Syncable {
+template <typename ChangesetType>
+class Syncable : public LazySyncable<ChangesetType> {
  public:
-  ~TwoPhaseSyncable() override {}
-
-  // This is before calling CreateChangesetToCurrent to give a change for the
-  // TwoPhaseSyncable to pull the latest changes into its local state.
-  //
-  // The callback |done| should be called once the local instance is ready
-  // to accept the call to CreateChangesetToCurrent.
-  virtual void PreCreateChangesetToCurrent(Revision from,
-                                           MandatoryClosure&& done) = 0;
+  // LazySyncable implementation.
+  void PrepareToCreateChangeset(Revision from, base::Closure done) override {
+    // Default no-op implementation.
+    done.Run();
+  }
 };
+
 }  // namespace helium
 }  // namespace blimp
 

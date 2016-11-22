@@ -5,11 +5,14 @@
 #ifndef BLIMP_HELIUM_LWW_REGISTER_H_
 #define BLIMP_HELIUM_LWW_REGISTER_H_
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "blimp/helium/blimp_helium_export.h"
-#include "blimp/helium/coded_value_serializer.h"
 #include "blimp/helium/result.h"
 #include "blimp/helium/revision_generator.h"
+#include "blimp/helium/serializable_struct.h"
+#include "blimp/helium/stream_helpers.h"
 #include "blimp/helium/syncable.h"
 #include "blimp/helium/syncable_common.h"
 #include "blimp/helium/version_vector.h"
@@ -18,61 +21,55 @@
 namespace blimp {
 namespace helium {
 
-// Provides a simple syncable and atomically-writable "register" holding
-// contents of type |RegisterType|. When there is a write conflict, it is
-// resolved by assuming the writer indicated by |bias| has the correct value.
 template <class RegisterType>
-class BLIMP_HELIUM_EXPORT LwwRegister : public Syncable {
+struct LwwRegisterChangeset;
+
+// Defines a register that obeys last-writer-wins semantics.
+// In the event of a write conflict, the state of the locally-biased LwwRegister
+// "wins".
+template <class RegisterType>
+class LwwRegister : public Syncable<LwwRegisterChangeset<RegisterType>> {
  public:
-  LwwRegister(Peer bias, Peer running_as);
+  using Changeset =
+      typename Syncable<LwwRegisterChangeset<RegisterType>>::Changeset;
+
+  LwwRegister(Peer owner, Peer running_as);
   ~LwwRegister() = default;
 
   void Set(const RegisterType& value);
-
   const RegisterType& Get() const;
 
   // Syncable implementation.
-  void SetLocalUpdateCallback(base::Closure local_update_callback) override;
-  void CreateChangesetToCurrent(
-      Revision from,
-      google::protobuf::io::CodedOutputStream* output_stream) override;
-  Result ApplyChangeset(
-      google::protobuf::io::CodedInputStream* input_stream) override;
+  std::unique_ptr<Changeset> CreateChangeset(Revision from) const override;
+  void ApplyChangeset(const Changeset& changeset) override;
   void ReleaseBefore(Revision checkpoint) override;
   Revision GetRevision() const override;
+  void SetLocalUpdateCallback(
+      const base::Closure& local_update_callback) override;
 
  private:
-  VersionVector last_modified_;
-  bool locally_owned_;
-  RegisterType value_;
-  bool value_set_ = false;
   base::Closure local_update_callback_;
+  VersionVector last_modified_;
+  Bias bias_;
+  RegisterType value_;
 
   DISALLOW_COPY_AND_ASSIGN(LwwRegister);
 };
 
 template <class RegisterType>
-LwwRegister<RegisterType>::LwwRegister(Peer bias, Peer running_as)
-    : last_modified_(0, 0), locally_owned_(bias == running_as) {}
+LwwRegister<RegisterType>::LwwRegister(Peer owner, Peer running_as)
+    : bias_(ComputeBias(owner, running_as)) {}
 
 template <class RegisterType>
 void LwwRegister<RegisterType>::Set(const RegisterType& value) {
   value_ = value;
-  value_set_ = true;
   last_modified_.set_local_revision(GetNextRevision());
   local_update_callback_.Run();
 }
 
 template <class RegisterType>
 const RegisterType& LwwRegister<RegisterType>::Get() const {
-  DCHECK(value_set_);
   return value_;
-}
-
-template <class RegisterType>
-void LwwRegister<RegisterType>::SetLocalUpdateCallback(
-    base::Closure local_update_callback) {
-  local_update_callback_ = local_update_callback;
 }
 
 template <class RegisterType>
@@ -81,41 +78,45 @@ Revision LwwRegister<RegisterType>::GetRevision() const {
 }
 
 template <class RegisterType>
-void LwwRegister<RegisterType>::CreateChangesetToCurrent(
-    Revision from,
-    google::protobuf::io::CodedOutputStream* output_stream) {
-  CodedValueSerializer::Serialize(last_modified_, output_stream);
-  CodedValueSerializer::Serialize(value_, output_stream);
+void LwwRegister<RegisterType>::SetLocalUpdateCallback(
+    const base::Closure& local_update_callback) {
+  local_update_callback_ = local_update_callback;
 }
 
 template <class RegisterType>
-Result LwwRegister<RegisterType>::ApplyChangeset(
-    google::protobuf::io::CodedInputStream* input_stream) {
-  VersionVector remote;
-  if (!CodedValueSerializer::Deserialize(input_stream, &remote)) {
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-  remote = remote.Invert();
-  VersionVector::Comparison cmp = last_modified_.CompareTo(remote);
+std::unique_ptr<typename LwwRegister<RegisterType>::Changeset>
+LwwRegister<RegisterType>::CreateChangeset(Revision from) const {
+  std::unique_ptr<Changeset> changeset = base::MakeUnique<Changeset>();
+  changeset->last_modified.Set(last_modified_);
+  changeset->value.Set(value_);
+  return changeset;
+}
 
-  RegisterType input_value;
-  if (!CodedValueSerializer::Deserialize(input_stream, &input_value)) {
-    return Result::ERR_PROTOCOL_ERROR;
-  }
-  if (cmp == VersionVector::Comparison::LessThan ||
-      (cmp == VersionVector::Comparison::Conflict && !locally_owned_)) {
-    value_ = input_value;
-    value_set_ = true;
-  }
+template <class RegisterType>
+void LwwRegister<RegisterType>::ApplyChangeset(
+    const LwwRegister<RegisterType>::Changeset& changeset) {
+  const VersionVector remote_last_modified = changeset.last_modified().Invert();
 
-  last_modified_ = last_modified_.MergeWith(remote);
-  return Result::SUCCESS;
+  if (last_modified_.CompareWithBias(remote_last_modified, bias_) ==
+      VersionVector::Comparison::LessThan) {
+    value_ = changeset.value();
+  }
+  last_modified_ = last_modified_.MergeWith(remote_last_modified);
 }
 
 template <class RegisterType>
 void LwwRegister<RegisterType>::ReleaseBefore(Revision checkpoint) {
   // no-op
 }
+
+template <class RegisterType>
+struct LwwRegisterChangeset : public SerializableStruct {
+  LwwRegisterChangeset() : last_modified(this), value(this) {}
+  ~LwwRegisterChangeset() override {}
+
+  Field<VersionVector> last_modified;
+  Field<RegisterType> value;
+};
 
 }  // namespace helium
 }  // namespace blimp
