@@ -159,7 +159,7 @@ class OmniboxEditModel {
   bool UpdatePermanentText();
 
   // Returns the URL corresponding to the permanent text.
-  GURL PermanentURL();
+  GURL PermanentURL() const;
 
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const base::string16& text);

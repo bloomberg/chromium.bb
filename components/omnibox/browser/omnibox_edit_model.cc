@@ -236,7 +236,7 @@ bool OmniboxEditModel::UpdatePermanentText() {
   return visibly_changed_permanent_text;
 }
 
-GURL OmniboxEditModel::PermanentURL() {
+GURL OmniboxEditModel::PermanentURL() const {
   return url_formatter::FixupURL(base::UTF16ToUTF8(permanent_text_),
                                  std::string());
 }
