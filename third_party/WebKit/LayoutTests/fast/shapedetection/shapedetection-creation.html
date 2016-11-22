@@ -13,7 +13,20 @@ test(function() {
 test(function() {
   var faceDetector = new FaceDetector();
   assert_true(faceDetector instanceof FaceDetector);
-}, 'FaceDetector instance can be created.');
+}, 'FaceDetector instance can be created with no argument.');
+
+// This test verifies that FaceDetector can be created with |maxDetectedFaces|
+// argument
+test(function() {
+  var faceDetector = new FaceDetector({maxDetectedFaces: 5});
+  assert_true(faceDetector instanceof FaceDetector);
+}, 'FaceDetector instance can be created with maxDetectedFaces.');
+
+// This test verifies that FaceDetector can be created with |fastMode| argument
+test(function() {
+  var faceDetector = new FaceDetector({fastMode: true});
+  assert_true(faceDetector instanceof FaceDetector);
+}, 'FaceDetector instance can be created with fastMode.');
 
 // This test verifies that DetectedBarcode can be created
 test(function() {

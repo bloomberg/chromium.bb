@@ -12,7 +12,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // a wrapper struct, so that gfx.mojom.RectF will not be directly referenced
 // inside Blink, and browser can still use gfx types.
 struct FaceDetectionResult {
-  array<gfx.mojom.RectF> boundingBoxes;
+  array<gfx.mojom.RectF> bounding_boxes;
 };
 
 struct BarcodeDetectionResult {
@@ -22,11 +22,17 @@ struct BarcodeDetectionResult {
   gfx.mojom.RectF bounding_box;
 };
 
+struct FaceDetectorOptions {
+  uint32 max_detected_faces;
+  bool fast_mode;
+};
+
 interface ShapeDetection {
   // |frame_data| contains tightly packed image pixels in ARGB32 format,
   // row-major order.
   // TODO(mcasas): Consider using mojo::Bitmap here, https://crbug.com/665488.
-  DetectFaces(handle<shared_buffer> frame_data, uint32 width, uint32 height)
+  DetectFaces(handle<shared_buffer> frame_data, uint32 width, uint32 height,
+  FaceDetectorOptions options)
     => (FaceDetectionResult result);
 
   DetectBarcodes(handle<shared_buffer> frame_data, uint32 width, uint32 height)

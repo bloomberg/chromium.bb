@@ -22,13 +22,13 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FaceDetector* create(ScriptState*);
+  static FaceDetector* create(ScriptState*, const FaceDetectorOptions&);
 
   ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit FaceDetector(LocalFrame&);
+  explicit FaceDetector(LocalFrame&, const FaceDetectorOptions&);
   ~FaceDetector() override = default;
 };
 

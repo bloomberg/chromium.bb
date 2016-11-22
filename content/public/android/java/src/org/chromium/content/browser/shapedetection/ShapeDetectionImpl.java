@@ -12,6 +12,7 @@ import android.media.FaceDetector.Face;
 import org.chromium.base.Log;
 import org.chromium.blink.mojom.BarcodeDetectionResult;
 import org.chromium.blink.mojom.FaceDetectionResult;
+import org.chromium.blink.mojom.FaceDetectorOptions;
 import org.chromium.blink.mojom.ShapeDetection;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
@@ -35,8 +36,8 @@ public class ShapeDetectionImpl implements ShapeDetection {
     public ShapeDetectionImpl() {}
 
     @Override
-    public void detectFaces(
-            SharedBufferHandle frameData, int width, int height, DetectFacesResponse callback) {
+    public void detectFaces(SharedBufferHandle frameData, int width, int height,
+            FaceDetectorOptions options, DetectFacesResponse callback) {
         if (!frameData.isValid()) {
             Log.d(TAG, "Invalid sharedBufferHandle.");
             return;

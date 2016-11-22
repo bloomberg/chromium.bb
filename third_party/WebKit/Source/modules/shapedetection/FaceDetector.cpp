@@ -11,11 +11,18 @@
 
 namespace blink {
 
-FaceDetector* FaceDetector::create(ScriptState* scriptState) {
-  return new FaceDetector(*scriptState->domWindow()->frame());
+FaceDetector* FaceDetector::create(ScriptState* scriptState,
+                                   const FaceDetectorOptions& options) {
+  return new FaceDetector(*scriptState->domWindow()->frame(), options);
 }
 
-FaceDetector::FaceDetector(LocalFrame& frame) : ShapeDetector(frame) {}
+FaceDetector::FaceDetector(LocalFrame& frame,
+                           const FaceDetectorOptions& options)
+    : ShapeDetector(frame) {
+  m_options = mojom::blink::FaceDetectorOptions::New();
+  m_options->max_detected_faces = options.maxDetectedFaces();
+  m_options->fast_mode = options.fastMode();
+}
 
 ScriptPromise FaceDetector::detect(ScriptState* scriptState,
                                    const CanvasImageSourceUnion& imageSource) {

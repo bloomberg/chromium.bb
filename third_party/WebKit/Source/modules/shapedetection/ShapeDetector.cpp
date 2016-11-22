@@ -166,7 +166,7 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
   if (detectorType == DetectorType::Face) {
     m_service->DetectFaces(
         std::move(sharedBufferHandle), img->naturalWidth(),
-        img->naturalHeight(),
+        img->naturalHeight(), m_options.Clone(),
         convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectFaces,
                                         wrapPersistent(this),
                                         wrapPersistent(resolver))));
@@ -306,7 +306,7 @@ ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
   DCHECK(m_service.is_bound());
   if (detectorType == DetectorType::Face) {
     m_service->DetectFaces(
-        std::move(sharedBufferHandle), width, height,
+        std::move(sharedBufferHandle), width, height, m_options.Clone(),
         convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectFaces,
                                         wrapPersistent(this),
                                         wrapPersistent(resolver))));
@@ -330,7 +330,7 @@ void ShapeDetector::onDetectFaces(
     return;
 
   HeapVector<Member<DOMRect>> detectedFaces;
-  for (const auto& boundingBox : faceDetectionResult->boundingBoxes) {
+  for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {
     detectedFaces.append(DOMRect::create(boundingBox->x, boundingBox->y,
                                          boundingBox->width,
                                          boundingBox->height));

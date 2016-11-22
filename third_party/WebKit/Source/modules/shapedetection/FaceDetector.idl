@@ -4,9 +4,8 @@
 
 // https://wicg.github.io/shape-detection-api/#face-detection-api
 
-// TODO(xianglu): Add [Constructor(optional FaceDetectorOptions faceDetectorOptions)]. https://crbug.com/646083
 [
-    Constructor,
+    Constructor(optional FaceDetectorOptions faceDetectorOptions),
     ConstructorCallWith=ScriptState,
     RuntimeEnabled=ShapeDetection,
 ] interface FaceDetector {

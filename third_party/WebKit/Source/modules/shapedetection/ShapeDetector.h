@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
+#include "modules/shapedetection/FaceDetectorOptions.h"
 #include "public/platform/modules/shapedetection/shapedetection.mojom-blink.h"
 
 namespace blink {
@@ -57,6 +58,9 @@ class MODULES_EXPORT ShapeDetector
   mojom::blink::ShapeDetectionPtr m_service;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
+
+ protected:
+  mojom::blink::FaceDetectorOptionsPtr m_options;
 };
 
 }  // namespace blink
