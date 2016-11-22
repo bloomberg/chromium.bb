@@ -487,4 +487,64 @@ TEST(JSONParserTest, InvalidSanity) {
   }
 }
 
+// Test that the nesting depth can be limited to values less than 1000, but
+// cannot be extended past that maximum.
+TEST(JSONParserTest, LimitedDepth) {
+  std::unique_ptr<JSONValue> root;
+
+  // Test cases. Each pair is a JSON string, and the minimum depth required
+  // to successfully parse that string.
+  std::vector<std::pair<const char*, int>> test_cases = {
+      {"[[[[[]]]]]", 5},
+      {"[[[[[\"a\"]]]]]", 6},
+      {"[[],[],[],[],[]]", 2},
+      {"{\"a\":{\"a\":{\"a\":{\"a\":{\"a\": \"a\"}}}}}", 6},
+      {"\"root\"", 1}};
+
+  for (const auto& test_case : test_cases) {
+    // Each test case should parse successfully at the default depth
+    root = parseJSON(test_case.first);
+    EXPECT_TRUE(root.get());
+
+    // ... and should parse successfully at the minimum depth
+    root = parseJSON(test_case.first, test_case.second);
+    EXPECT_TRUE(root.get());
+
+    // ... but should fail to parse at a shallower depth.
+    root = parseJSON(test_case.first, test_case.second - 1);
+    EXPECT_FALSE(root.get());
+  }
+
+  // Test that everything fails to parse with depth 0
+  root = parseJSON("", 0);
+  EXPECT_FALSE(root.get());
+  root = parseJSON("", -1);
+  EXPECT_FALSE(root.get());
+  root = parseJSON("true", 0);
+  EXPECT_FALSE(root.get());
+
+  // Test that the limit can be set to the constant maximum.
+  StringBuilder evil;
+  evil.reserveCapacity(2002);
+  for (int i = 0; i < 1000; ++i)
+    evil.append('[');
+  for (int i = 0; i < 1000; ++i)
+    evil.append(']');
+  root = parseJSON(evil.toString());
+  EXPECT_TRUE(root.get());
+  root = parseJSON(evil.toString(), 1000);
+  EXPECT_TRUE(root.get());
+
+  // Test that the limit cannot be set higher than the constant maximum.
+  evil.clear();
+  for (int i = 0; i < 1001; ++i)
+    evil.append('[');
+  for (int i = 0; i < 1001; ++i)
+    evil.append(']');
+  root = parseJSON(evil.toString());
+  EXPECT_FALSE(root.get());
+  root = parseJSON(evil.toString(), 1001);
+  EXPECT_FALSE(root.get());
+}
+
 }  // namespace blink

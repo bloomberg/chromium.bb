@@ -13,7 +13,7 @@ namespace blink {
 
 namespace {
 
-const int stackLimit = 1000;
+const int kMaxStackLimit = 1000;
 
 enum Token {
   ObjectBegin,
@@ -390,8 +390,8 @@ template <typename CharType>
 std::unique_ptr<JSONValue> buildValue(const CharType* start,
                                       const CharType* end,
                                       const CharType** valueTokenEnd,
-                                      int depth) {
-  if (depth > stackLimit)
+                                      int maxDepth) {
+  if (maxDepth == 0)
     return nullptr;
 
   std::unique_ptr<JSONValue> result;
@@ -438,7 +438,7 @@ std::unique_ptr<JSONValue> buildValue(const CharType* start,
       token = parseToken(start, end, &tokenStart, &tokenEnd);
       while (token != ArrayEnd) {
         std::unique_ptr<JSONValue> arrayNode =
-            buildValue(start, end, &tokenEnd, depth + 1);
+            buildValue(start, end, &tokenEnd, maxDepth - 1);
         if (!arrayNode)
           return nullptr;
         array->pushValue(std::move(arrayNode));
@@ -479,7 +479,7 @@ std::unique_ptr<JSONValue> buildValue(const CharType* start,
         start = tokenEnd;
 
         std::unique_ptr<JSONValue> value =
-            buildValue(start, end, &tokenEnd, depth + 1);
+            buildValue(start, end, &tokenEnd, maxDepth - 1);
         if (!value)
           return nullptr;
         object->setValue(key, std::move(value));
@@ -515,10 +515,12 @@ std::unique_ptr<JSONValue> buildValue(const CharType* start,
 
 template <typename CharType>
 std::unique_ptr<JSONValue> parseJSONInternal(const CharType* start,
-                                             unsigned length) {
+                                             unsigned length,
+                                             int maxDepth) {
   const CharType* end = start + length;
   const CharType* tokenEnd;
-  std::unique_ptr<JSONValue> value = buildValue(start, end, &tokenEnd, 0);
+  std::unique_ptr<JSONValue> value =
+      buildValue(start, end, &tokenEnd, maxDepth);
   if (!value || tokenEnd != end)
     return nullptr;
   return value;
@@ -527,11 +529,19 @@ std::unique_ptr<JSONValue> parseJSONInternal(const CharType* start,
 }  // anonymous namespace
 
 std::unique_ptr<JSONValue> parseJSON(const String& json) {
+  return parseJSON(json, kMaxStackLimit);
+}
+
+std::unique_ptr<JSONValue> parseJSON(const String& json, int maxDepth) {
   if (json.isEmpty())
     return nullptr;
+  if (maxDepth < 0)
+    maxDepth = 0;
+  if (maxDepth > kMaxStackLimit)
+    maxDepth = kMaxStackLimit;
   if (json.is8Bit())
-    return parseJSONInternal(json.characters8(), json.length());
-  return parseJSONInternal(json.characters16(), json.length());
+    return parseJSONInternal(json.characters8(), json.length(), maxDepth);
+  return parseJSONInternal(json.characters16(), json.length(), maxDepth);
 }
 
 }  // namespace blink
