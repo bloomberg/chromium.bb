@@ -86,6 +86,10 @@ BASE_EXPORT void PostTaskWithTraitsAndReply(
     const Closure& task,
     const Closure& reply);
 
+// Delayed tasks posted to TaskRunners returned by the functions below may be
+// coalesced (i.e. delays may be adjusted to reduce the number of wakeups and
+// hence power consumption).
+
 // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
 // using |traits|. Tasks may run in any order and in parallel.
 BASE_EXPORT scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
