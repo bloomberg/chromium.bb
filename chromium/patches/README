@@ -67,8 +67,12 @@ Current patches:
     TODO: push upstream.
 
   Changes to libavformat/mp3dec.c
-    TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
-    these changes are still necessary and either remove or document them.
+    Fixes for MSAN Use-of-uninitialized-value. http://crbug.com/666874.
+    TODO(chcunningham): Submit upstream.
+
+    Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 - 
+    Determine whether these changes are still necessary and either remove or
+    document them.
 
   In libavformat/wavdec.c, exclude code blocks using #if to remove references
     to symbols not in our builds which some toolchains don't elide, for each of
