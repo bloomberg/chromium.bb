@@ -662,8 +662,8 @@ void KioskAppData::OnWebstoreResponseParseSuccess(
                              &icon_url_string))
     return;
 
-  GURL icon_url = GURL(extension_urls::GetWebstoreLaunchURL()).Resolve(
-      icon_url_string);
+  GURL icon_url =
+      extension_urls::GetWebstoreLaunchURL().Resolve(icon_url_string);
   if (!icon_url.is_valid()) {
     LOG(ERROR) << "Webstore response error (icon url): "
                << ValueToString(*webstore_data);

@@ -103,7 +103,7 @@ class ExtensionsClient {
   virtual void RecordDidSuppressFatalError() = 0;
 
   // Returns the base webstore URL prefix.
-  virtual std::string GetWebstoreBaseURL() const = 0;
+  virtual const GURL& GetWebstoreBaseURL() const = 0;
 
   // Returns the URL to use for update manifest queries.
   virtual const GURL& GetWebstoreUpdateURL() const = 0;

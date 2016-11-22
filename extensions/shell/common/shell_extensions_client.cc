@@ -77,6 +77,7 @@ base::LazyInstance<ShellPermissionMessageProvider>
 
 ShellExtensionsClient::ShellExtensionsClient()
     : extensions_api_permissions_(ExtensionsAPIPermissions()),
+      webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),
       webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {}
 
 ShellExtensionsClient::~ShellExtensionsClient() {
@@ -181,8 +182,8 @@ bool ShellExtensionsClient::ShouldSuppressFatalErrors() const {
 void ShellExtensionsClient::RecordDidSuppressFatalError() {
 }
 
-std::string ShellExtensionsClient::GetWebstoreBaseURL() const {
-  return extension_urls::kChromeWebstoreBaseURL;
+const GURL& ShellExtensionsClient::GetWebstoreBaseURL() const {
+  return webstore_base_url_;
 }
 
 const GURL& ShellExtensionsClient::GetWebstoreUpdateURL() const {

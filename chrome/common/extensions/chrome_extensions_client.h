@@ -47,7 +47,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   base::StringPiece GetAPISchema(const std::string& name) const override;
   bool ShouldSuppressFatalErrors() const override;
   void RecordDidSuppressFatalError() override;
-  std::string GetWebstoreBaseURL() const override;
+  const GURL& GetWebstoreBaseURL() const override;
   const GURL& GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;
   std::set<base::FilePath> GetBrowserImagePaths(
@@ -69,6 +69,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   ScriptingWhitelist scripting_whitelist_;
 
   // Mutable to allow caching in a const method.
+  mutable GURL webstore_base_url_;
   mutable GURL webstore_update_url_;
 
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsClient>;

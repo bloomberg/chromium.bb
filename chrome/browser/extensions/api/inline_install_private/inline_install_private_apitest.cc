@@ -40,7 +40,7 @@ class InlineInstallPrivateApiTestApp :
  public:
   InlineInstallPrivateApiTestApp() :
       InlineInstallPrivateApiTestBase(
-          "extensions/api_test/inline_install_private/",
+          "extensions/api_test/inline_install_private",
           "app.crx") {}
 };
 

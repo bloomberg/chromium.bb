@@ -2898,15 +2898,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // is partially controlled by the renderer, namely
   // ChromeContentRendererClient. This test instead relies on the Web
   // Store triggering such navigations.
-  std::string webstore_url = extension_urls::GetWebstoreLaunchURL();
+  GURL webstore_url = extension_urls::GetWebstoreLaunchURL();
 
   // Mock out requests to the Web Store.
   base::FilePath file(GetTestPath("prerender_page.html"));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateMockInterceptorOnIO, GURL(webstore_url), file));
+      base::Bind(&CreateMockInterceptorOnIO, webstore_url, file));
 
-  PrerenderTestURL(CreateClientRedirect(webstore_url),
+  PrerenderTestURL(CreateClientRedirect(webstore_url.spec()),
                    FINAL_STATUS_OPEN_URL, 1);
 }
 

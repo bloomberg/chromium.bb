@@ -132,6 +132,9 @@ void ChromeExtensionsClient::Initialize() {
   // TODO(dmazzoni): remove this once we have an extension API that
   // allows any extension to request read-only access to webui pages.
   scripting_whitelist_.push_back(extension_misc::kChromeVoxExtensionId);
+
+  webstore_base_url_ = GURL(extension_urls::kChromeWebstoreBaseURL);
+  webstore_update_url_ = GURL(extension_urls::GetDefaultWebstoreUpdateUrl());
 }
 
 const PermissionMessageProvider&
@@ -269,16 +272,17 @@ void ChromeExtensionsClient::RecordDidSuppressFatalError() {
                             NUM_CHANNELS_FOR_HISTOGRAM);
 }
 
-std::string ChromeExtensionsClient::GetWebstoreBaseURL() const {
-  std::string gallery_prefix = extension_urls::kChromeWebstoreBaseURL;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAppsGalleryURL))
-    gallery_prefix =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kAppsGalleryURL);
-  if (base::EndsWith(gallery_prefix, "/", base::CompareCase::SENSITIVE))
-    gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
-  return gallery_prefix;
+const GURL& ChromeExtensionsClient::GetWebstoreBaseURL() const {
+  // Browser tests like to alter the command line at runtime with new update
+  // URLs. Just update the cached value of the base url (to avoid reparsing
+  // it) if the value has changed.
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kAppsGalleryURL)) {
+    std::string url = cmdline->GetSwitchValueASCII(switches::kAppsGalleryURL);
+    if (webstore_base_url_.possibly_invalid_spec() != url)
+      webstore_base_url_ = GURL(url);
+  }
+  return webstore_base_url_;
 }
 
 const GURL& ChromeExtensionsClient::GetWebstoreUpdateURL() const {
@@ -289,10 +293,8 @@ const GURL& ChromeExtensionsClient::GetWebstoreUpdateURL() const {
   if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL)) {
     std::string url =
         cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL);
-    if (webstore_update_url_ != url)
+    if (webstore_update_url_.possibly_invalid_spec() != url)
       webstore_update_url_ = GURL(url);
-  } else if (webstore_update_url_.is_empty()) {
-    webstore_update_url_ = GURL(extension_urls::GetDefaultWebstoreUpdateUrl());
   }
   return webstore_update_url_;
 }

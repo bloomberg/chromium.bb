@@ -444,9 +444,10 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  load_time_data.SetString("webStoreLink",
-      google_util::AppendGoogleLocaleParam(
-          GURL(extension_urls::GetWebstoreLaunchURL()), app_locale).spec());
+  load_time_data.SetString(
+      "webStoreLink", google_util::AppendGoogleLocaleParam(
+                          extension_urls::GetWebstoreLaunchURL(), app_locale)
+                          .spec());
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
   load_time_data.SetString("learn_more",

@@ -169,8 +169,11 @@ class WebstoreProviderTest : public InProcessBrowserTest {
         base::Bind(&WebstoreProviderTest::HandleRequest,
                    base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
+    // Minor hack: the gallery URL is expected not to end with a slash. Just
+    // append "path" to maintain this.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL, embedded_test_server()->base_url().spec());
+        ::switches::kAppsGalleryURL,
+        embedded_test_server()->base_url().spec() + "path");
 
     mock_controller_.reset(new AppListControllerDelegateForTest);
     webstore_provider_.reset(new WebstoreProvider(

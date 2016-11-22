@@ -38,7 +38,7 @@ extern const char kChromeWebstoreUpdateURL[];
 // Returns the URL prefix for the extension/apps gallery. Can be set via the
 // --apps-gallery-url switch. The URL returned will not contain a trailing
 // slash. Do not use this as a prefix/extent for the store.
-std::string GetWebstoreLaunchURL();
+GURL GetWebstoreLaunchURL();
 
 // Returns the URL to the extensions category on the Web Store. This is
 // derived from GetWebstoreLaunchURL().

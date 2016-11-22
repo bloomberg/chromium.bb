@@ -298,8 +298,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
                       webstore_install::kInvalidWebstoreResponseError);
       return;
     }
-    icon_url = GURL(extension_urls::GetWebstoreLaunchURL()).Resolve(
-        icon_url_string);
+    icon_url = extension_urls::GetWebstoreLaunchURL().Resolve(icon_url_string);
     if (!icon_url.is_valid()) {
       CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE,
                       webstore_install::kInvalidWebstoreResponseError);

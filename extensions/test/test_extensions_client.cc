@@ -38,7 +38,8 @@ SimpleFeature* CreateFeature() {
 }  // namespace
 
 TestExtensionsClient::TestExtensionsClient()
-    : webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {}
+    : webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),
+      webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {}
 
 TestExtensionsClient::~TestExtensionsClient() {
 }
@@ -147,8 +148,8 @@ bool TestExtensionsClient::ShouldSuppressFatalErrors() const {
 void TestExtensionsClient::RecordDidSuppressFatalError() {
 }
 
-std::string TestExtensionsClient::GetWebstoreBaseURL() const {
-  return extension_urls::kChromeWebstoreBaseURL;
+const GURL& TestExtensionsClient::GetWebstoreBaseURL() const {
+  return webstore_base_url_;
 }
 
 const GURL& TestExtensionsClient::GetWebstoreUpdateURL() const {
