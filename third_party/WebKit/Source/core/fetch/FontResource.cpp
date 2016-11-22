@@ -90,7 +90,10 @@ FontResource::FontResource(const ResourceRequest& resourceRequest,
       m_fontLoadLongLimitTimer(this, &FontResource::fontLoadLongLimitCallback) {
 }
 
-FontResource::~FontResource() {}
+FontResource::~FontResource() {
+  CHECK(!m_fontLoadShortLimitTimer.isActive());
+  CHECK(!m_fontLoadLongLimitTimer.isActive());
+}
 
 void FontResource::didAddClient(ResourceClient* c) {
   DCHECK(FontResourceClient::isExpectedType(c));
