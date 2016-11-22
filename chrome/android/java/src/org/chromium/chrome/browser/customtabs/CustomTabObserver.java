@@ -188,6 +188,7 @@ class CustomTabObserver extends EmptyTabObserver {
             @Override
             public void run() {
                 if (!tab.isHidden() && mCurrentState != STATE_RESET) return;
+                if (tab.getWebContents() == null) return;
                 tab.getWebContents().getContentBitmapAsync(
                         Bitmap.Config.ARGB_8888, mScaleForNavigationInfo, new Rect(), callback);
                 mScreenshotTakenForCurrentNavigation = true;
