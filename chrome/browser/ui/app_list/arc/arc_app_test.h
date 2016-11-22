@@ -86,6 +86,7 @@ class ArcAppTest {
  private:
   const user_manager::User* CreateUserAndLogin();
   bool FindPackage(const arc::mojom::ArcPackageInfo& package);
+  void CreateFakeAppsAndPackages();
 
   // Unowned pointer.
   Profile* profile_ = nullptr;

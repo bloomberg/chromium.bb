@@ -248,6 +248,9 @@ ArcAppListPrefs::ArcAppListPrefs(
 
   DCHECK(arc::ArcSessionManager::IsAllowedForProfile(profile));
 
+  const std::vector<std::string> existing_app_ids = GetAppIds();
+  tracked_apps_.insert(existing_app_ids.begin(), existing_app_ids.end());
+
   // Once default apps are ready OnDefaultAppsReady is called.
 }
 
@@ -569,10 +572,9 @@ void ArcAppListPrefs::NotifyRegisteredApps() {
     }
 
     // Default apps are reported earlier.
-    if (!tracked_apps_.count(app_id)) {
+    if (tracked_apps_.insert(app_id).second) {
       for (auto& observer : observer_list_)
         observer.OnAppRegistered(app_id, *app_info);
-      tracked_apps_.insert(app_id);
     }
   }
 
@@ -667,8 +669,8 @@ void ArcAppListPrefs::OnInstanceReady() {
   arc::mojom::AppInstance* app_instance =
       app_instance_holder_->GetInstanceForMethod("RefreshAppList");
 
+  // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
-  DCHECK(sync_service_);
 
   // Kiosk apps should be run only for kiosk sessions.
   if (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {

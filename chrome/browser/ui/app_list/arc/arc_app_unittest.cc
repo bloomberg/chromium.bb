@@ -27,10 +27,12 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
+#include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -51,8 +53,8 @@ constexpr char kTestPackageName[] = "fake.package.name2";
 
 class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
  public:
-  FakeAppIconLoaderDelegate() {}
-  ~FakeAppIconLoaderDelegate() override {}
+  FakeAppIconLoaderDelegate() = default;
+  ~FakeAppIconLoaderDelegate() override = default;
 
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override {
@@ -91,7 +93,7 @@ void WaitForIconReady(ArcAppListPrefs* prefs,
 
 class ArcAppModelBuilderTest : public AppListTestBase {
  public:
-  ArcAppModelBuilderTest() {}
+  ArcAppModelBuilderTest() = default;
   ~ArcAppModelBuilderTest() override {
     // Release profile file in order to keep right sequence.
     profile_.reset();
@@ -163,12 +165,15 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   ArcAppItem* FindArcItem(const std::string& id) const {
     const size_t count = GetArcItemCount();
+    ArcAppItem* found_item = nullptr;
     for (size_t i = 0; i < count; ++i) {
       ArcAppItem* item = GetArcItem(i);
-      if (item && item->id() == id)
-        return item;
+      if (item && item->id() == id) {
+        DCHECK(!found_item);
+        found_item = item;
+      }
     }
-    return nullptr;
+    return found_item;
   }
 
   // Validate that prefs and model have right content.
@@ -359,8 +364,8 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
 class ArcDefaulAppTest : public ArcAppModelBuilderTest {
  public:
-  ArcDefaulAppTest() {}
-  ~ArcDefaulAppTest() override {}
+  ArcDefaulAppTest() = default;
+  ~ArcDefaulAppTest() override = default;
 
  protected:
   // ArcAppModelBuilderTest:
@@ -374,8 +379,8 @@ class ArcDefaulAppTest : public ArcAppModelBuilderTest {
 
 class ArcDefaulAppForManagedUserTest : public ArcDefaulAppTest {
  public:
-  ArcDefaulAppForManagedUserTest() {}
-  ~ArcDefaulAppForManagedUserTest() override {}
+  ArcDefaulAppForManagedUserTest() = default;
+  ~ArcDefaulAppForManagedUserTest() override = default;
 
  protected:
   // ArcAppModelBuilderTest:
@@ -394,8 +399,8 @@ class ArcDefaulAppForManagedUserTest : public ArcDefaulAppTest {
 
 class ArcPlayStoreAppTest : public ArcDefaulAppTest {
  public:
-  ArcPlayStoreAppTest() {}
-  ~ArcPlayStoreAppTest() override {}
+  ArcPlayStoreAppTest() = default;
+  ~ArcPlayStoreAppTest() override = default;
 
  protected:
   // ArcAppModelBuilderTest:
@@ -425,6 +430,22 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
   scoped_refptr<extensions::Extension> arc_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreAppTest);
+};
+
+class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
+ public:
+  ArcAppModelBuilderRecreate() = default;
+  ~ArcAppModelBuilderRecreate() override = default;
+
+ protected:
+  // ArcAppModelBuilderTest:
+  void OnBeforeArcTestSetup() override {
+    arc::ArcPackageSyncableServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderRecreate);
 };
 
 TEST_F(ArcAppModelBuilderTest, ArcPackagePref) {
@@ -912,6 +933,40 @@ TEST_F(ArcAppModelBuilderTest, LastLaunchTime) {
   ASSERT_NE(nullptr, app_info.get());
   ASSERT_LE(time_before, app_info->last_launch_time);
   ASSERT_GE(time_after, app_info->last_launch_time);
+}
+
+// Validate that arc model contains expected elements on restart.
+TEST_F(ArcAppModelBuilderRecreate, AppModelRestart) {
+  // No apps on initial start.
+  ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
+
+  // Send info about all fake apps except last.
+  std::vector<arc::mojom::AppInfo> apps1(fake_apps().begin(),
+                                         fake_apps().end() - 1);
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps1);
+  // Model has refreshed apps.
+  ValidateHaveApps(apps1);
+  EXPECT_EQ(apps1.size(), GetArcItemCount());
+
+  // Simulate restart.
+  arc_test()->TearDown();
+  ResetBuilder();
+
+  ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
+      profile_.get());
+  arc_test()->SetUp(profile_.get());
+  CreateBuilder();
+
+  // On restart new model contains last apps.
+  ValidateHaveApps(apps1);
+  EXPECT_EQ(apps1.size(), GetArcItemCount());
+
+  // Now refresh old apps with new one.
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(fake_apps());
+  ValidateHaveApps(fake_apps());
+  EXPECT_EQ(fake_apps().size(), GetArcItemCount());
 }
 
 TEST_F(ArcPlayStoreAppTest, PlayStore) {
