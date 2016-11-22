@@ -115,6 +115,14 @@ NativeWidget* MusClient::CreateNativeWidget(
   return native_widget;
 }
 
+void MusClient::AddObserver(MusClientObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void MusClient::RemoveObserver(MusClientObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 MusClient::MusClient(service_manager::Connector* connector,
                      const service_manager::Identity& identity,
                      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
@@ -171,8 +179,8 @@ void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
 }
 
 void MusClient::OnWindowManagerFrameValuesChanged() {
-  // TODO: wire up client area. http://crbug.com/663525.
-  NOTIMPLEMENTED();
+  for (auto& observer : observer_list_)
+    observer.OnWindowManagerFrameValuesChanged();
 }
 
 aura::client::CaptureClient* MusClient::GetCaptureClient() {

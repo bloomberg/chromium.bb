@@ -11,9 +11,11 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -21,6 +23,89 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace views {
+
+namespace {
+
+// As the window manager renderers the non-client decorations this class does
+// very little but honor the client area insets from the window manager.
+class ClientSideNonClientFrameView : public NonClientFrameView {
+ public:
+  explicit ClientSideNonClientFrameView(views::Widget* widget)
+      : widget_(widget) {}
+  ~ClientSideNonClientFrameView() override {}
+
+ private:
+  // Returns the default values of client area insets from the window manager.
+  static gfx::Insets GetDefaultWindowManagerInsets(bool is_maximized) {
+    const WindowManagerFrameValues& values =
+        WindowManagerFrameValues::instance();
+    return is_maximized ? values.maximized_insets : values.normal_insets;
+  }
+
+  // NonClientFrameView:
+  gfx::Rect GetBoundsForClientView() const override {
+    gfx::Rect result(GetLocalBounds());
+    if (widget_->IsFullscreen())
+      return result;
+    result.Inset(GetDefaultWindowManagerInsets(widget_->IsMaximized()));
+    return result;
+  }
+  gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const override {
+    if (widget_->IsFullscreen())
+      return client_bounds;
+
+    const gfx::Insets insets(
+        GetDefaultWindowManagerInsets(widget_->IsMaximized()));
+    return gfx::Rect(client_bounds.x() - insets.left(),
+                     client_bounds.y() - insets.top(),
+                     client_bounds.width() + insets.width(),
+                     client_bounds.height() + insets.height());
+  }
+  int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+    // The window manager provides the shape; do nothing.
+  }
+  void ResetWindowControls() override {
+    // TODO(sky): push to wm?
+  }
+
+  // These have no implementation. The Window Manager handles the actual
+  // rendering of the icon/title. See NonClientFrameViewMash. The values
+  // associated with these methods are pushed to the server by the way of
+  // NativeWidgetMus functions.
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override {}
+
+  gfx::Size GetPreferredSize() const override {
+    return widget_->non_client_view()
+        ->GetWindowBoundsForClientBounds(
+            gfx::Rect(widget_->client_view()->GetPreferredSize()))
+        .size();
+  }
+  gfx::Size GetMinimumSize() const override {
+    return widget_->non_client_view()
+        ->GetWindowBoundsForClientBounds(
+            gfx::Rect(widget_->client_view()->GetMinimumSize()))
+        .size();
+  }
+  gfx::Size GetMaximumSize() const override {
+    gfx::Size max_size = widget_->client_view()->GetMaximumSize();
+    gfx::Size converted_size =
+        widget_->non_client_view()
+            ->GetWindowBoundsForClientBounds(gfx::Rect(max_size))
+            .size();
+    return gfx::Size(max_size.width() == 0 ? 0 : converted_size.width(),
+                     max_size.height() == 0 ? 0 : converted_size.height());
+  }
+
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
+};
+
+}  // namespace
 
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
     internal::NativeWidgetDelegate* native_widget_delegate,
@@ -33,11 +118,13 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
       fullscreen_restore_state_(ui::SHOW_STATE_DEFAULT),
       close_widget_factory_(this) {
   aura::Env::GetInstance()->AddObserver(this);
+  MusClient::Get()->AddObserver(this);
   // TODO: use display id and bounds if available, likely need to pass in
   // InitParams for that.
 }
 
 DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
+  MusClient::Get()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
 }
@@ -45,6 +132,35 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
 bool DesktopWindowTreeHostMus::IsDocked() const {
   return window()->GetProperty(aura::client::kShowStateKey) ==
          ui::SHOW_STATE_DOCKED;
+}
+
+// TODO(erg): In addition to being called on system events, this also needs to
+// be called after window size changed.
+void DesktopWindowTreeHostMus::SendClientAreaToServer() {
+  NonClientView* non_client_view =
+      native_widget_delegate_->AsWidget()->non_client_view();
+  if (!non_client_view || !non_client_view->client_view())
+    return;
+
+  const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
+  SetClientArea(gfx::Insets(
+      client_area_rect.y(), client_area_rect.x(),
+      non_client_view->bounds().height() - client_area_rect.bottom(),
+      non_client_view->bounds().width() - client_area_rect.right()));
+}
+
+void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
+  if (!native_widget_delegate_->HasHitTestMask()) {
+    SetHitTestMask(base::nullopt);
+    return;
+  }
+
+  gfx::Path mask_path;
+  native_widget_delegate_->GetHitTestMask(&mask_path);
+  // TODO(jamescook): Use the full path for the mask.
+  gfx::Rect mask_rect =
+      gfx::ToEnclosingRect(gfx::SkRectToRectF(mask_path.getBounds()));
+  SetHitTestMask(mask_rect);
 }
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
@@ -349,6 +465,10 @@ void DesktopWindowTreeHostMus::SetVisibilityChangedAnimationsEnabled(
   window()->SetProperty(aura::client::kAnimationsDisabledKey, !value);
 }
 
+NonClientFrameView* DesktopWindowTreeHostMus::CreateNonClientFrameView() {
+  return new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
+}
+
 bool DesktopWindowTreeHostMus::ShouldUseNativeFrame() const {
   return false;
 }
@@ -414,6 +534,18 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
                         widget->widget_delegate()->CanMinimize());
   window()->SetProperty(aura::client::kCanResizeKey,
                         widget->widget_delegate()->CanResize());
+}
+
+void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
+  NonClientView* non_client_view =
+      native_widget_delegate_->AsWidget()->non_client_view();
+  if (non_client_view) {
+    non_client_view->Layout();
+    non_client_view->SchedulePaint();
+  }
+
+  SendClientAreaToServer();
+  SendHitTestMaskToServer();
 }
 
 void DesktopWindowTreeHostMus::ShowImpl() {

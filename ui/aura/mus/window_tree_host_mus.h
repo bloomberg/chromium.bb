@@ -50,6 +50,13 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
 
   InputMethodMus* input_method() { return input_method_.get(); }
 
+  // Sets the client area on the underlying mus window.
+  void SetClientArea(const gfx::Insets& insets);
+
+  // Sets the hit test mask on the underlying mus window. Pass base::nullopt to
+  // clear.
+  void SetHitTestMask(const base::Optional<gfx::Rect>& rect);
+
   // Intended only for WindowTreeClient to call.
   void set_display_id(int64_t id) { display_id_ = id; }
   int64_t display_id() const { return display_id_; }

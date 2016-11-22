@@ -130,10 +130,14 @@ void TestWindowTree::SetWindowBounds(uint32_t change_id,
 void TestWindowTree::SetClientArea(
     uint32_t window_id,
     const gfx::Insets& insets,
-    const base::Optional<std::vector<gfx::Rect>>& additional_client_areas) {}
+    const base::Optional<std::vector<gfx::Rect>>& additional_client_areas) {
+  last_client_area_ = insets;
+}
 
 void TestWindowTree::SetHitTestMask(uint32_t window_id,
-                                    const base::Optional<gfx::Rect>& mask) {}
+                                    const base::Optional<gfx::Rect>& mask) {
+  last_hit_test_mask_ = mask;
+}
 
 void TestWindowTree::SetCanAcceptDrops(uint32_t window_id, bool accepts_drops) {
 }

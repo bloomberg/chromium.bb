@@ -84,6 +84,12 @@ class TestWindowTree : public ui::mojom::WindowTree {
   // Data from the most recently added/removed transient window.
   const TransientData& transient_data() const { return transient_data_; }
 
+  const gfx::Insets& last_client_area() const { return last_client_area_; }
+
+  const base::Optional<gfx::Rect>& last_hit_test_mask() const {
+    return last_hit_test_mask_;
+  }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -197,6 +203,10 @@ class TestWindowTree : public ui::mojom::WindowTree {
       last_new_window_properties_;
 
   TransientData transient_data_;
+
+  gfx::Insets last_client_area_;
+
+  base::Optional<gfx::Rect> last_hit_test_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

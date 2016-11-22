@@ -102,6 +102,15 @@ void WindowTreeHostMus::SetBoundsFromServer(const gfx::Rect& bounds) {
   SetBounds(bounds);
 }
 
+void WindowTreeHostMus::SetClientArea(const gfx::Insets& insets) {
+  delegate_->OnWindowTreeHostClientAreaWillChange(this, insets,
+                                                  std::vector<gfx::Rect>());
+}
+
+void WindowTreeHostMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
+  delegate_->OnWindowTreeHostHitTestMaskWillChange(this, rect);
+}
+
 display::Display WindowTreeHostMus::GetDisplay() const {
   for (const display::Display& display :
        display::Screen::GetScreen()->GetAllDisplays()) {

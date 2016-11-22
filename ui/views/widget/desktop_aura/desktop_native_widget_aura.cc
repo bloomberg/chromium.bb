@@ -45,7 +45,6 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/window_reorderer.h"
-#include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/focus_controller.h"
@@ -535,7 +534,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 void DesktopNativeWidgetAura::OnWidgetInitDone() {}
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
-  return ShouldUseNativeFrame() ? new NativeFrameView(GetWidget()) : NULL;
+  return desktop_window_tree_host_->CreateNonClientFrameView();
 }
 
 bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {

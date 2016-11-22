@@ -101,11 +101,6 @@ class AURA_EXPORT WindowTreeClient
 
   client::CaptureClient* GetCaptureClient();
 
-  void SetClientArea(Window* window,
-                     const gfx::Insets& client_area,
-                     const std::vector<gfx::Rect>& additional_client_areas);
-  void SetHitTestMask(Window* window, const gfx::Rect& mask);
-  void ClearHitTestMask(Window* window);
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(Id window_id, bool can_accept_drops);
   void SetCanAcceptEvents(Id window_id, bool can_accept_events);
@@ -420,6 +415,13 @@ class AURA_EXPORT WindowTreeClient
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
                                         const gfx::Rect& bounds) override;
+  void OnWindowTreeHostClientAreaWillChange(
+      WindowTreeHostMus* window_tree_host,
+      const gfx::Insets& client_area,
+      const std::vector<gfx::Rect>& additional_client_areas) override;
+  void OnWindowTreeHostHitTestMaskWillChange(
+      WindowTreeHostMus* window_tree_host,
+      const base::Optional<gfx::Rect>& mask_rect) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel() override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
 

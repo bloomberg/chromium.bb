@@ -44,6 +44,7 @@ class WMState;
 
 namespace views {
 
+class MusClientObserver;
 class PointerWatcherEventRouter2;
 class ScreenMus;
 
@@ -95,6 +96,9 @@ class VIEWS_MUS_EXPORT MusClient
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
 
+  void AddObserver(MusClientObserver* observer);
+  void RemoveObserver(MusClientObserver* observer);
+
  private:
   friend class AuraInit;
   friend class test::MusClientTestApi;
@@ -126,6 +130,8 @@ class VIEWS_MUS_EXPORT MusClient
 
   service_manager::Connector* connector_;
   service_manager::Identity identity_;
+
+  base::ObserverList<MusClientObserver> observer_list_;
 
   std::unique_ptr<wm::WMState> wm_state_;
 

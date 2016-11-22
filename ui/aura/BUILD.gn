@@ -329,6 +329,7 @@ test("aura_unittests") {
     "mus/os_exchange_data_provider_mus_unittest.cc",
     "mus/property_converter_unittest.cc",
     "mus/window_tree_client_unittest.cc",
+    "mus/window_tree_host_mus_unittest.cc",
     "test/run_all_unittests.cc",
     "window_event_dispatcher_unittest.cc",
     "window_targeter_unittest.cc",

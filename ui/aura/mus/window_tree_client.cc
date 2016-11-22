@@ -232,35 +232,6 @@ client::CaptureClient* WindowTreeClient::GetCaptureClient() {
   return delegate_->GetCaptureClient();
 }
 
-void WindowTreeClient::SetClientArea(
-    Window* window,
-    const gfx::Insets& client_area,
-    const std::vector<gfx::Rect>& additional_client_areas) {
-  DCHECK(tree_);
-  float device_scale_factor = ScaleFactorForDisplay(window);
-  std::vector<gfx::Rect> additional_client_areas_in_pixel;
-  for (const gfx::Rect& area : additional_client_areas) {
-    additional_client_areas_in_pixel.push_back(
-        gfx::ConvertRectToPixel(device_scale_factor, area));
-  }
-  tree_->SetClientArea(
-      WindowMus::Get(window)->server_id(),
-      gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
-      additional_client_areas_in_pixel);
-}
-
-void WindowTreeClient::SetHitTestMask(Window* window, const gfx::Rect& mask) {
-  DCHECK(tree_);
-  tree_->SetHitTestMask(
-      WindowMus::Get(window)->server_id(),
-      gfx::ConvertRectToPixel(ScaleFactorForDisplay(window), mask));
-}
-
-void WindowTreeClient::ClearHitTestMask(Window* window) {
-  DCHECK(tree_);
-  tree_->SetHitTestMask(WindowMus::Get(window)->server_id(), base::nullopt);
-}
-
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
   DCHECK(tree_);
   DCHECK(window);
@@ -1508,6 +1479,39 @@ void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     const gfx::Rect& bounds) {
   ScheduleInFlightBoundsChange(WindowMus::Get(window_tree_host->window()),
                                window_tree_host->GetBounds(), bounds);
+}
+
+void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(
+    WindowTreeHostMus* window_tree_host,
+    const gfx::Insets& client_area,
+    const std::vector<gfx::Rect>& additional_client_areas) {
+  DCHECK(tree_);
+  Window* window = window_tree_host->window();
+  float device_scale_factor = ScaleFactorForDisplay(window);
+  std::vector<gfx::Rect> additional_client_areas_in_pixel;
+  for (const gfx::Rect& area : additional_client_areas) {
+    additional_client_areas_in_pixel.push_back(
+        gfx::ConvertRectToPixel(device_scale_factor, area));
+  }
+  tree_->SetClientArea(
+      WindowMus::Get(window)->server_id(),
+      gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
+      additional_client_areas_in_pixel);
+}
+
+void WindowTreeClient::OnWindowTreeHostHitTestMaskWillChange(
+    WindowTreeHostMus* window_tree_host,
+    const base::Optional<gfx::Rect>& mask_rect) {
+  Window* window = window_tree_host->window();
+
+  base::Optional<gfx::Rect> out_rect = base::nullopt;
+  if (mask_rect) {
+    out_rect = gfx::ConvertRectToPixel(ScaleFactorForDisplay(window),
+                                       mask_rect.value());
+  }
+
+  tree_->SetHitTestMask(WindowMus::Get(window_tree_host->window())->server_id(),
+                        out_rect);
 }
 
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel() {

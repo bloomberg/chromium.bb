@@ -36,6 +36,7 @@
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/win/hwnd_util.h"
+#include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
@@ -412,6 +413,12 @@ void DesktopWindowTreeHostWin::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
   content_window_->SetProperty(aura::client::kAnimationsDisabledKey, !value);
+}
+
+NonClientFrameView* DesktopWindowTreeHostWin::CreateNonClientFrameView() {
+  return ShouldUseNativeFrame()
+             ? new NativeFrameView(native_widget_delegate_->AsWidget())
+             : nullptr;
 }
 
 bool DesktopWindowTreeHostWin::ShouldUseNativeFrame() const {

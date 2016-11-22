@@ -25,6 +25,17 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
       WindowTreeHostMus* window_tree_host,
       const gfx::Rect& bounds) = 0;
 
+  // Called when the client area of a WindowTreeHostMus is about to change.
+  virtual void OnWindowTreeHostClientAreaWillChange(
+      WindowTreeHostMus* window_tree_host,
+      const gfx::Insets& client_area,
+      const std::vector<gfx::Rect>& additional_client_areas) = 0;
+
+  // Called when the hit test mask is about to be cleared.
+  virtual void OnWindowTreeHostHitTestMaskWillChange(
+      WindowTreeHostMus* window_tree_host,
+      const base::Optional<gfx::Rect>& mask_rect) = 0;
+
   // Called when a WindowTreeHostMus is created without a WindowPort.
   virtual std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel() = 0;
 

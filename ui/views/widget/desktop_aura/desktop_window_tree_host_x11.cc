@@ -62,6 +62,7 @@
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
+#include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
 
@@ -1000,6 +1001,12 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
 void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
+}
+
+NonClientFrameView* DesktopWindowTreeHostX11::CreateNonClientFrameView() {
+  return ShouldUseNativeFrame()
+             ? new NativeFrameView(native_widget_delegate_->AsWidget())
+             : nullptr;
 }
 
 bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {

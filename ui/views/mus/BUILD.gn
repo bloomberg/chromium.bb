@@ -27,6 +27,7 @@ component("mus") {
     "input_method_mus.h",
     "mus_client.cc",
     "mus_client.h",
+    "mus_client_observer.h",
     "mus_export.h",
     "native_widget_mus.cc",
     "native_widget_mus.h",
