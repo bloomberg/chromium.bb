@@ -80,7 +80,10 @@ source_set("browser") {
 
 buildflag_header("provider_flags") {
   header = "provider_flags.h"
-  flags = [ "USE_IOS_INTERNAL_PROVIDER=$use_ios_internal_provider" ]
+  flags = [
+    "USE_DEFAULT_IOS_PROVIDER=$use_default_ios_provider",
+    "USE_IOS_INTERNAL_PROVIDER=$use_ios_internal_provider",
+  ]
 }
 
 source_set("test_support") {

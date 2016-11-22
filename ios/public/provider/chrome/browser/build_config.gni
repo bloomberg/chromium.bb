@@ -4,8 +4,18 @@
 
 import("//build/config/chrome_build.gni")
 
+_default_ios_provider_target = "//ios/chrome/browser/providers"
+
 declare_args() {
   # Control the provider API implementation used by Chromium on iOS. Requires
   # access to the private Google-internal Chrome on iOS repository if true.
+  # DEPRECATED, will be removed as soon as all downstream code stops using it.
   use_ios_internal_provider = is_chrome_branded
+
+  # Label of the target providing implementation for ChromeBrowserProvider.
+  # Overridden when using the Google-internal repository to build Chrome on iOS.
+  ios_provider_target = _default_ios_provider_target
 }
+
+# True if the provider target used has not been overridden.
+use_default_ios_provider = ios_provider_target == _default_ios_provider_target
