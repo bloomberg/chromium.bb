@@ -139,6 +139,7 @@ class NTPSnippetsBridge
       ntp_snippets::CategoryStatus new_status) override;
   void OnSuggestionInvalidated(
       const ntp_snippets::ContentSuggestion::ID& suggestion_id) override;
+  void OnFullRefreshRequired() override;
   void ContentSuggestionsServiceShutdown() override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,

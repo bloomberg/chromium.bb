@@ -435,6 +435,15 @@ void NTPSnippetsBridge::OnSuggestionInvalidated(
       ConvertUTF8ToJavaString(env, suggestion_id.id_within_category()).obj());
 }
 
+void NTPSnippetsBridge::OnFullRefreshRequired() {
+  if (observer_.is_null()) {
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SnippetsBridge_onFullRefreshRequired(env, observer_.obj());
+}
+
 void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
   observer_.Reset();
   content_suggestions_service_observer_.Remove(content_suggestions_service_);

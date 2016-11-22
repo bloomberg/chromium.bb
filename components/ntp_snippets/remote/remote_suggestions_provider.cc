@@ -504,6 +504,16 @@ void RemoteSuggestionsProvider::ClearCachedSuggestions(Category category) {
   }
 }
 
+void RemoteSuggestionsProvider::OnSignInStateChanged() {
+  // Make sure the status service is registered and we already initialised its
+  // start state.
+  if (!initialized()) {
+    return;
+  }
+
+  snippets_status_service_->OnSignInStateChanged();
+}
+
 void RemoteSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {

@@ -989,6 +989,7 @@ public class NewTabPageAdapterTest {
 
         // On Sign in, we should reset the sections, bring back suggestions instead of the All
         // Dismissed item.
+        mAdapter.onFullRefreshRequired();
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         signinObserver.onSignedIn();
         // Adapter content:

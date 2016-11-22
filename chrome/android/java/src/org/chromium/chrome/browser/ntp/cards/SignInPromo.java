@@ -42,13 +42,13 @@ public class SignInPromo extends OptionalLeaf
     @Nullable
     private final SigninObserver mObserver;
 
-    public SignInPromo(NodeParent parent, NewTabPageAdapter adapter) {
+    public SignInPromo(NodeParent parent) {
         super(parent);
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
 
         final SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
-        mObserver = mDismissed ? null : new SigninObserver(signinManager, adapter);
+        mObserver = mDismissed ? null : new SigninObserver(signinManager);
         setVisible(signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative());
     }
 
@@ -122,14 +122,12 @@ public class SignInPromo extends OptionalLeaf
     class SigninObserver
             implements SignInStateObserver, SignInAllowedObserver, DestructionObserver {
         private final SigninManager mSigninManager;
-        private final NewTabPageAdapter mAdapter;
 
         /** Guards {@link #unregister()}, which can be called multiple times. */
         private boolean mUnregistered;
 
-        private SigninObserver(SigninManager signinManager, NewTabPageAdapter adapter) {
+        private SigninObserver(SigninManager signinManager) {
             mSigninManager = signinManager;
-            mAdapter = adapter;
             mSigninManager.addSignInAllowedObserver(this);
             mSigninManager.addSignInStateObserver(this);
         }
@@ -158,7 +156,6 @@ public class SignInPromo extends OptionalLeaf
         @Override
         public void onSignedIn() {
             setVisible(false);
-            mAdapter.resetSections(/*alwaysAllowEmptySections=*/false);
         }
 
         @Override

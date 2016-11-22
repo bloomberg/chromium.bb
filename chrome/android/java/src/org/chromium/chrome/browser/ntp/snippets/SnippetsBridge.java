@@ -264,6 +264,11 @@ public class SnippetsBridge implements SuggestionsSource {
         if (mObserver != null) mObserver.onSuggestionInvalidated(category, idWithinCategory);
     }
 
+    @CalledByNative
+    private void onFullRefreshRequired() {
+        if (mObserver != null) mObserver.onFullRefreshRequired();
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
     private static native void nativeFetchSnippets(boolean forceRequest);

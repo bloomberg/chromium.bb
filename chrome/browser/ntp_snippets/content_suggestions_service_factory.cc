@@ -240,11 +240,13 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
           ? State::ENABLED
           : State::DISABLED;
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   PrefService* pref_service = profile->GetPrefs();
-  ContentSuggestionsService* service =
-      new ContentSuggestionsService(state, history_service, pref_service);
+  ContentSuggestionsService* service = new ContentSuggestionsService(
+      state, signin_manager, history_service, pref_service);
   if (state == State::DISABLED) {
     // Since we won't initialise the services, they won't get a chance to
     // unschedule their tasks. We do it explicitly here instead.
@@ -261,8 +263,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SyncService* sync_service =

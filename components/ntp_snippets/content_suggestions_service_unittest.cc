@@ -119,6 +119,7 @@ class MockServiceObserver : public ContentSuggestionsService::Observer {
                void(Category changed_category, CategoryStatus new_status));
   MOCK_METHOD1(OnSuggestionInvalidated,
                void(const ContentSuggestion::ID& suggestion_id));
+  MOCK_METHOD0(OnFullRefreshRequired, void());
   MOCK_METHOD0(ContentSuggestionsServiceShutdown, void());
 
  private:
@@ -214,7 +215,8 @@ class ContentSuggestionsServiceTest : public testing::Test {
       ContentSuggestionsService::State enabled) {
     ASSERT_FALSE(service_);
     service_.reset(new ContentSuggestionsService(
-        enabled, /*history_service=*/nullptr, pref_service_.get()));
+        enabled, /*signin_manager=*/nullptr, /*history_service=*/nullptr,
+        pref_service_.get()));
   }
 
   void ResetService() {

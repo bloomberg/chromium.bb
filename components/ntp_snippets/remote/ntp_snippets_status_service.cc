@@ -10,6 +10,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
@@ -28,8 +29,7 @@ NTPSnippetsStatusService::NTPSnippetsStatusService(
     : snippets_status_(SnippetsStatus::EXPLICITLY_DISABLED),
       require_signin_(false),
       signin_manager_(signin_manager),
-      pref_service_(pref_service),
-      signin_observer_(this) {
+      pref_service_(pref_service) {
   std::string param_value_str = variations::GetVariationParamValueByFeature(
       kArticleSuggestionsFeature, kFetchingRequiresSignin);
   if (param_value_str == kFetchingRequiresSigninEnabled) {
@@ -61,8 +61,6 @@ void NTPSnippetsStatusService::Init(
   snippets_status_ = GetSnippetsStatusFromDeps();
   snippets_status_change_callback_.Run(old_snippets_status, snippets_status_);
 
-  signin_observer_.Add(signin_manager_);
-
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kEnableSnippets,
@@ -85,18 +83,12 @@ void NTPSnippetsStatusService::OnStateChanged(
 }
 
 bool NTPSnippetsStatusService::IsSignedIn() const {
+  // TODO(dgn): remove the SigninManager dependency. It should be possible to
+  // replace it by passing the new state via OnSignInStateChanged().
   return signin_manager_ && signin_manager_->IsAuthenticated();
 }
 
-void NTPSnippetsStatusService::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& password) {
-  OnStateChanged(GetSnippetsStatusFromDeps());
-}
-
-void NTPSnippetsStatusService::GoogleSignedOut(const std::string& account_id,
-                                               const std::string& username) {
+void NTPSnippetsStatusService::OnSignInStateChanged() {
   OnStateChanged(GetSnippetsStatusFromDeps());
 }
 

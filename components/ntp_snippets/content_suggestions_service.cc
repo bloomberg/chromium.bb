@@ -23,14 +23,20 @@ namespace ntp_snippets {
 
 ContentSuggestionsService::ContentSuggestionsService(
     State state,
+    SigninManagerBase* signin_manager,
     history::HistoryService* history_service,
     PrefService* pref_service)
     : state_(state),
+      signin_observer_(this),
       history_service_observer_(this),
       ntp_snippets_service_(nullptr),
       pref_service_(pref_service),
       user_classifier_(pref_service) {
   // Can be null in tests.
+  if (signin_manager) {
+    signin_observer_.Add(signin_manager);
+  }
+
   if (history_service) {
     history_service_observer_.Add(history_service);
   }
@@ -285,6 +291,19 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
   }
 }
 
+// SigninManagerBase::Observer implementation
+void ContentSuggestionsService::GoogleSigninSucceeded(
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& password) {
+  OnSignInStateChanged();
+}
+
+void ContentSuggestionsService::GoogleSignedOut(const std::string& account_id,
+                                                const std::string& username) {
+  OnSignInStateChanged();
+}
+
 // history::HistoryServiceObserver implementation.
 void ContentSuggestionsService::OnURLsDeleted(
     history::HistoryService* history_service,
@@ -412,6 +431,19 @@ bool ContentSuggestionsService::RemoveSuggestionByID(
 void ContentSuggestionsService::NotifyCategoryStatusChanged(Category category) {
   for (Observer& observer : observers_) {
     observer.OnCategoryStatusChanged(category, GetCategoryStatus(category));
+  }
+}
+
+void ContentSuggestionsService::OnSignInStateChanged() {
+  // First notify the providers, so they can make the required changes.
+  for (const auto& provider : providers_) {
+    provider->OnSignInStateChanged();
+  }
+
+  // Finally notify the observers so they refresh only after the backend is
+  // ready.
+  for (Observer& observer : observers_) {
+    observer.OnFullRefreshRequired();
   }
 }
 

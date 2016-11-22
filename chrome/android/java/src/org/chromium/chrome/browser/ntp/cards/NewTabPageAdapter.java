@@ -170,7 +170,7 @@ public class NewTabPageAdapter
             }
         };
 
-        mSigninPromo = new SignInPromo(mRoot, this);
+        mSigninPromo = new SignInPromo(mRoot);
         mAllDismissed = new AllDismissedItem(mRoot);
         mFooter = new Footer(mRoot);
         DestructionObserver signInObserver = mSigninPromo.getObserver();
@@ -299,9 +299,7 @@ public class NewTabPageAdapter
                 return;
 
             case CategoryStatus.SIGNED_OUT:
-                resetSection(category, status, /*alwaysAllowEmptySections=*/false);
-                return;
-
+                // TODO(dgn): We currently can only reach this through an old variation parameter.
             default:
                 mSections.get(category).setStatus(status);
                 return;
@@ -312,6 +310,11 @@ public class NewTabPageAdapter
     public void onSuggestionInvalidated(@CategoryInt int category, String idWithinCategory) {
         if (!mSections.containsKey(category)) return;
         mSections.get(category).removeSuggestionById(idWithinCategory);
+    }
+
+    @Override
+    public void onFullRefreshRequired() {
+        resetSections(/*alwaysAllowEmptySections=*/false);
     }
 
     @Override

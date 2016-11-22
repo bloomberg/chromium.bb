@@ -119,6 +119,12 @@ class ContentSuggestionsProvider {
   // from scratch.
   virtual void ClearCachedSuggestions(Category category) = 0;
 
+  // Called when the sign in state has changed. Should be used instead of
+  // directly registering with the SignInManager so that the
+  // ContentSuggestionService can control the order of the updates between
+  // the providers and the observers.
+  virtual void OnSignInStateChanged() {}
+
   // Used only for debugging purposes. Retrieves suggestions for the given
   // |category| that have previously been dismissed and are still stored in the
   // provider. If the provider doesn't store dismissed suggestions for the given

@@ -9,10 +9,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 class PrefRegistrySimple;
 class PrefService;
+class SigninManagerBase;
 
 namespace ntp_snippets {
 
@@ -29,7 +29,7 @@ enum class SnippetsStatus : int {
 
 // Aggregates data from preferences and signin to notify the snippet service of
 // relevant changes in their states.
-class NTPSnippetsStatusService : public SigninManagerBase::Observer {
+class NTPSnippetsStatusService {
  public:
   using SnippetsStatusChangeCallback =
       base::Callback<void(SnippetsStatus /*old_status*/,
@@ -38,7 +38,7 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   NTPSnippetsStatusService(SigninManagerBase* signin_manager,
                            PrefService* pref_service);
 
-  ~NTPSnippetsStatusService() override;
+  virtual ~NTPSnippetsStatusService();
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -46,15 +46,13 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   // called when a significant change in state is detected.
   void Init(const SnippetsStatusChangeCallback& callback);
 
+  // To be called when the signin state changed. Will compute the new
+  // state considering the initialisation configuration and the preferences,
+  // and notify via the registered callback if appropriate.
+  void OnSignInStateChanged();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest, DisabledViaPref);
-
-  // SigninManagerBase::Observer implementation
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
 
   // Callback for the PrefChangeRegistrar.
   void OnSnippetsEnabledChanged();
@@ -73,10 +71,6 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   PrefService* pref_service_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  // The observer for the SigninManager.
-  ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>
-      signin_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsStatusService);
 };

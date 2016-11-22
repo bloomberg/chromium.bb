@@ -150,6 +150,13 @@ void SnippetsInternalsMessageHandler::OnSuggestionInvalidated(
   SendContentSuggestions();
 }
 
+void SnippetsInternalsMessageHandler::OnFullRefreshRequired() {
+  if (!dom_loaded_) {
+    return;
+  }
+  SendContentSuggestions();
+}
+
 void SnippetsInternalsMessageHandler::ContentSuggestionsServiceShutdown() {}
 
 void SnippetsInternalsMessageHandler::HandleRefreshContent(

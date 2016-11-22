@@ -24,6 +24,7 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/user_classifier.h"
+#include "components/signin/core/browser/signin_manager.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -36,6 +37,7 @@ class RemoteSuggestionsProvider;
 // them grouped into categories. There can be at most one provider per category.
 class ContentSuggestionsService : public KeyedService,
                                   public ContentSuggestionsProvider::Observer,
+                                  public SigninManagerBase::Observer,
                                   public history::HistoryServiceObserver {
  public:
   class Observer {
@@ -64,6 +66,11 @@ class ContentSuggestionsService : public KeyedService,
     virtual void OnSuggestionInvalidated(
         const ContentSuggestion::ID& suggestion_id) = 0;
 
+    // Fired when the previously sent data is not valid anymore and a refresh
+    // of all the suggestions is required. Called for example when the sign in
+    // state changes and personalised suggestions have to be shown or discarded.
+    virtual void OnFullRefreshRequired() = 0;
+
     // Sent when the service is shutting down. After the service has shut down,
     // it will not provide any data anymore, though calling the getters is still
     // safe.
@@ -79,6 +86,7 @@ class ContentSuggestionsService : public KeyedService,
   };
 
   ContentSuggestionsService(State state,
+                            SigninManagerBase* signin_manager,
                             history::HistoryService* history_service,
                             PrefService* pref_service);
   ~ContentSuggestionsService() override;
@@ -211,6 +219,13 @@ class ContentSuggestionsService : public KeyedService,
       ContentSuggestionsProvider* provider,
       const ContentSuggestion::ID& suggestion_id) override;
 
+  // SigninManagerBase::Observer implementation
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
+
   // history::HistoryServiceObserver implementation.
   void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
@@ -236,6 +251,8 @@ class ContentSuggestionsService : public KeyedService,
 
   // Fires the OnCategoryStatusChanged event for the given |category|.
   void NotifyCategoryStatusChanged(Category category);
+
+  void OnSignInStateChanged();
 
   void SortCategories();
 
@@ -279,6 +296,11 @@ class ContentSuggestionsService : public KeyedService,
   // loading).
   std::map<Category, std::vector<ContentSuggestion>, Category::CompareByID>
       suggestions_by_category_;
+
+  // Observer for the SigninManager. All observers are notified when the signin
+  // state changes so that they can refresh their list of suggestions.
+  ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>
+      signin_observer_;
 
   // Observer for the HistoryService. All providers are notified when history is
   // deleted.

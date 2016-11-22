@@ -115,12 +115,14 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
           ? State::ENABLED
           : State::DISABLED;
+  SigninManager* signin_manager =
+      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
   HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   std::unique_ptr<ContentSuggestionsService> service =
-      base::MakeUnique<ContentSuggestionsService>(state, history_service,
-                                                  prefs);
+      base::MakeUnique<ContentSuggestionsService>(state, signin_manager,
+                                                  history_service, prefs);
   if (state == State::DISABLED)
     return std::move(service);
 
@@ -136,8 +138,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     // Create the RemoteSuggestionsProvider (articles provider).
-    SigninManager* signin_manager =
-        ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
     OAuth2TokenService* token_service =
         OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
     scoped_refptr<net::URLRequestContextGetter> request_context =

@@ -126,6 +126,7 @@ class RemoteSuggestionsProvider final
       base::Time end,
       const base::Callback<bool(const GURL& url)>& filter) override;
   void ClearCachedSuggestions(Category category) override;
+  void OnSignInStateChanged() override;
   void GetDismissedSuggestionsForDebugging(
       Category category,
       const DismissedSuggestionsCallback& callback) override;
