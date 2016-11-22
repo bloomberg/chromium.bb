@@ -1891,6 +1891,18 @@ TEST_F(WindowSelectorTest, BasicTextFiltering) {
   EXPECT_FALSE(GetWindowItemForWindow(grid_index, window0.get())->dimmed());
   EXPECT_FALSE(GetWindowItemForWindow(grid_index, window1.get())->dimmed());
   EXPECT_FALSE(GetWindowItemForWindow(grid_index, window2.get())->dimmed());
+
+  FilterItems("Foo");
+
+  EXPECT_NE(1.0f, window0->layer()->GetTargetOpacity());
+  EXPECT_NE(1.0f, window1->layer()->GetTargetOpacity());
+  EXPECT_NE(1.0f, window2->layer()->GetTargetOpacity());
+
+  ToggleOverview();
+
+  EXPECT_EQ(1.0f, window0->layer()->GetTargetOpacity());
+  EXPECT_EQ(1.0f, window1->layer()->GetTargetOpacity());
+  EXPECT_EQ(1.0f, window2->layer()->GetTargetOpacity());
 }
 
 // Tests selecting in the overview with dimmed and undimmed items.

@@ -173,6 +173,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
       ignored_by_shelf_(window->GetWindowState()->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->GetTargetTransform()),
+      original_opacity_(window->GetTargetOpacity()),
       weak_ptr_factory_(this) {}
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
@@ -194,6 +195,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
           OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
           window_);
   window_->GetWindowState()->set_ignored_by_shelf(ignored_by_shelf_);
+  SetOpacity(original_opacity_);
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(

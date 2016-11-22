@@ -179,6 +179,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
   // The original transform of the window before entering overview mode.
   gfx::Transform original_transform_;
 
+  // The original opacity of the window before entering overview mode.
+  float original_opacity_;
+
   // A window that holds the content for minimized window.
   std::unique_ptr<views::Widget> minimized_widget_;
 
