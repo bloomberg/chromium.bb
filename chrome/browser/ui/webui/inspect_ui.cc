@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/ui_devtools/devtools_server.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -39,8 +40,9 @@ namespace {
 
 const char kInitUICommand[]  = "init-ui";
 const char kInspectCommand[]  = "inspect";
+const char kInspectAdditionalCommand[] = "inspect-additional";
 const char kActivateCommand[]  = "activate";
-const char kCloseCommand[]  = "close";
+const char kCloseCommand[] = "close";
 const char kReloadCommand[]  = "reload";
 const char kOpenCommand[]  = "open";
 const char kInspectBrowser[] = "inspect-browser";
@@ -58,6 +60,21 @@ const char kTCPDiscoveryConfigCommand[] = "set-tcp-discovery-config";
 const char kPortForwardingDefaultPort[] = "8080";
 const char kPortForwardingDefaultLocation[] = "localhost:8080";
 
+const char kNameField[] = "name";
+const char kUrlField[] = "url";
+const char kIsAdditionalField[] = "isAdditional";
+
+void GetUiDevToolsTargets(base::ListValue& targets) {
+  for (const auto& client_pair :
+       ui::devtools::UiDevToolsServer::GetClientNamesAndUrls()) {
+    auto target_data = base::MakeUnique<base::DictionaryValue>();
+    target_data->SetString(kNameField, client_pair.first);
+    target_data->SetString(kUrlField, client_pair.second);
+    target_data->SetBoolean(kIsAdditionalField, true);
+    targets.Append(std::move(target_data));
+  }
+}
+
 // InspectMessageHandler --------------------------------------------
 
 class InspectMessageHandler : public WebUIMessageHandler {
@@ -72,6 +89,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
 
   void HandleInitUICommand(const base::ListValue* args);
   void HandleInspectCommand(const base::ListValue* args);
+  void HandleInspectAdditionalCommand(const base::ListValue* args);
   void HandleActivateCommand(const base::ListValue* args);
   void HandleCloseCommand(const base::ListValue* args);
   void HandleReloadCommand(const base::ListValue* args);
@@ -93,6 +111,10 @@ void InspectMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kInspectCommand,
       base::Bind(&InspectMessageHandler::HandleInspectCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInspectAdditionalCommand,
+      base::Bind(&InspectMessageHandler::HandleInspectAdditionalCommand,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kActivateCommand,
       base::Bind(&InspectMessageHandler::HandleActivateCommand,
@@ -148,6 +170,19 @@ void InspectMessageHandler::HandleInspectCommand(const base::ListValue* args) {
   std::string id;
   if (ParseStringArgs(args, &source, &id))
     inspect_ui_->Inspect(source, id);
+}
+
+void InspectMessageHandler::HandleInspectAdditionalCommand(
+    const base::ListValue* args) {
+  std::string url;
+  if (ParseStringArgs(args, &url, nullptr)) {
+    WebContents* inspect_ui = web_ui()->GetWebContents();
+    web_ui()->GetWebContents()->GetDelegate()->OpenURLFromTab(
+        inspect_ui,
+        content::OpenURLParams(GURL(url), content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+  }
 }
 
 void InspectMessageHandler::HandleActivateCommand(const base::ListValue* args) {
@@ -407,6 +442,10 @@ void InspectUI::StartListeningNotifications() {
   DevToolsTargetsUIHandler::Callback callback =
       base::Bind(&InspectUI::PopulateTargets, base::Unretained(this));
 
+  base::ListValue additional_targets;
+  GetUiDevToolsTargets(additional_targets);
+  PopulateAdditionalTargets(additional_targets);
+
   AddTargetUIHandler(
       DevToolsTargetsUIHandler::CreateForLocal(callback));
   if (profile->IsOffTheRecord()) {
@@ -555,6 +594,10 @@ void InspectUI::PopulateTargets(const std::string& source,
                                 const base::ListValue& targets) {
   web_ui()->CallJavascriptFunctionUnsafe("populateTargets",
                                          base::StringValue(source), targets);
+}
+
+void InspectUI::PopulateAdditionalTargets(const base::ListValue& targets) {
+  web_ui()->CallJavascriptFunctionUnsafe("populateAdditionalTargets", targets);
 }
 
 void InspectUI::ForceUpdateIfNeeded(const std::string& source_id,

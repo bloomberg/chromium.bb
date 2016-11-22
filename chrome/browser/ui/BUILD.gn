@@ -550,6 +550,7 @@ split_static_library("ui") {
     "//components/sync_sessions",
     "//components/toolbar",
     "//components/tracing:startup_tracing",
+    "//components/ui_devtools",
     "//components/undo",
     "//components/update_client",
     "//components/upload_list",

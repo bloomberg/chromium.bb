@@ -83,6 +83,8 @@ class InspectUI : public content::WebUIController,
   void PopulateTargets(const std::string& source_id,
                        const base::ListValue& targets);
 
+  void PopulateAdditionalTargets(const base::ListValue& targets);
+
   void ForceUpdateIfNeeded(const std::string& source_id,
                            const std::string& target_type);
 
