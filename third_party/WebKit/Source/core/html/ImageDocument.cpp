@@ -201,7 +201,8 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
       m_didShrinkImage(false),
       m_shouldShrinkImage(shouldShrinkToFit()),
       m_imageIsLoaded(false),
-      m_checkerSize(0),
+      m_styleCheckerSize(0),
+      m_styleMouseCursorMode(Default),
       m_shrinkToFitMode(frame()->settings()->viewportEnabled() ? Viewport
                                                                : Desktop) {
   setCompatibilityMode(QuirksMode);
@@ -325,7 +326,7 @@ void ImageDocument::resizeImageToFit() {
   m_imageElement->setWidth(static_cast<int>(imageSize.width() * scale));
   m_imageElement->setHeight(static_cast<int>(imageSize.height() * scale));
 
-  m_imageElement->setInlineStyleProperty(CSSPropertyCursor, CSSValueZoomIn);
+  updateImageStyle();
 }
 
 void ImageDocument::imageClicked(int x, int y) {
@@ -381,6 +382,7 @@ void ImageDocument::updateImageStyle() {
     // show transparency more faithfully.  The pattern is generated via CSS.
     if (m_imageIsLoaded) {
       int newCheckerSize = kBaseCheckerSize;
+      MouseCursorMode newCursorMode = Default;
 
       if (m_shrinkToFitMode == Viewport) {
         double scale;
@@ -398,20 +400,32 @@ void ImageDocument::updateImageStyle() {
         }
 
         newCheckerSize = round(std::max(1.0, newCheckerSize / scale));
+      } else {
+        // In desktop mode, the user can click on the image to zoom in or out.
+        DCHECK_EQ(m_shrinkToFitMode, Desktop);
+        if (imageFitsInWindow()) {
+          newCursorMode = Default;
+        } else {
+          newCursorMode = m_shouldShrinkImage ? ZoomIn : ZoomOut;
+        }
       }
 
-      // The only thing that can differ between updates is the checker size.
-      if (newCheckerSize == m_checkerSize)
+      // The only things that can differ between updates are checker size and
+      // the type of cursor being displayed.
+      if (newCheckerSize == m_styleCheckerSize &&
+          newCursorMode == m_styleMouseCursorMode) {
         return;
-      m_checkerSize = newCheckerSize;
+      }
+      m_styleCheckerSize = newCheckerSize;
+      m_styleMouseCursorMode = newCursorMode;
 
       imageStyle.append("background-position: 0px 0px, ");
-      imageStyle.append(AtomicString::number(m_checkerSize));
+      imageStyle.append(AtomicString::number(m_styleCheckerSize));
       imageStyle.append("px ");
-      imageStyle.append(AtomicString::number(m_checkerSize));
+      imageStyle.append(AtomicString::number(m_styleCheckerSize));
       imageStyle.append("px;");
 
-      int tileSize = m_checkerSize * 2;
+      int tileSize = m_styleCheckerSize * 2;
       imageStyle.append("background-size: ");
       imageStyle.append(AtomicString::number(tileSize));
       imageStyle.append("px ");
@@ -428,6 +442,13 @@ void ImageDocument::updateImageStyle() {
           "#eee 75%, #eee 100%),"
           "linear-gradient(45deg, #eee 25%, white 25%, white 75%, "
           "#eee 75%, #eee 100%);");
+
+      if (m_shrinkToFitMode == Desktop) {
+        if (m_styleMouseCursorMode == ZoomIn)
+          imageStyle.append("cursor: zoom-in;");
+        else if (m_styleMouseCursorMode == ZoomOut)
+          imageStyle.append("cursor: zoom-out;");
+      }
     }
   }
 
@@ -468,11 +489,7 @@ void ImageDocument::restoreImageSize() {
   LayoutSize imageSize = cachedImageSize(m_imageElement);
   m_imageElement->setWidth(imageSize.width().toInt());
   m_imageElement->setHeight(imageSize.height().toInt());
-
-  if (imageFitsInWindow())
-    m_imageElement->removeInlineStyleProperty(CSSPropertyCursor);
-  else
-    m_imageElement->setInlineStyleProperty(CSSPropertyCursor, CSSValueZoomOut);
+  updateImageStyle();
 
   m_didShrinkImage = false;
 }
@@ -528,11 +545,7 @@ void ImageDocument::windowSizeChanged() {
   // If the image has been explicitly zoomed in, restore the cursor if the image
   // fits and set it to a zoom out cursor if the image doesn't fit
   if (!m_shouldShrinkImage) {
-    if (fitsInWindow)
-      m_imageElement->removeInlineStyleProperty(CSSPropertyCursor);
-    else
-      m_imageElement->setInlineStyleProperty(CSSPropertyCursor,
-                                             CSSValueZoomOut);
+    updateImageStyle();
     return;
   }
 

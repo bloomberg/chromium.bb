@@ -1691,3 +1691,6 @@ crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-put.htt
 
 # Flaky on Win 7 dbg
 crbug.com/667875 [ Win7 Debug ] virtual/threaded/inspector/tracing/idle-callback.html [ Pass Failure ]
+
+crbug.com/664782 images/huge-image-viewport-scale.html [ NeedsRebaseline ]
+crbug.com/664782 virtual/gpu-rasterization/images/huge-image-viewport-scale.html [ NeedsRebaseline ]
