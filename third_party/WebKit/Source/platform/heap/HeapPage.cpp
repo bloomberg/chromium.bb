@@ -31,10 +31,10 @@
 #include "platform/heap/HeapPage.h"
 
 #include "base/trace_event/process_memory_dump.h"
+#include "platform/MemoryCoordinator.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
-#include "platform/heap/Heap.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
@@ -1225,7 +1225,7 @@ void NormalPage::sweep() {
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
       // Discarding pages increases page faults and may regress performance.
       // So we enable this only on low-RAM devices.
-      if (ProcessHeap::isLowEndDevice())
+      if (MemoryCoordinator::isLowEndDevice())
         discardPages(startOfGap + sizeof(FreeListEntry), headerAddress);
 #endif
     }
@@ -1237,7 +1237,7 @@ void NormalPage::sweep() {
   if (startOfGap != payloadEnd()) {
     pageArena->addToFreeList(startOfGap, payloadEnd() - startOfGap);
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-    if (ProcessHeap::isLowEndDevice())
+    if (MemoryCoordinator::isLowEndDevice())
       discardPages(startOfGap + sizeof(FreeListEntry), payloadEnd());
 #endif
   }

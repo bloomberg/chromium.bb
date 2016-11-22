@@ -32,6 +32,7 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
  public:
   static MemoryCoordinator& instance();
+  static bool isLowEndDevice();
 
   void registerClient(MemoryCoordinatorClient*);
   void unregisterClient(MemoryCoordinatorClient*);

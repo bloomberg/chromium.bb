@@ -4,6 +4,7 @@
 
 #include "platform/MemoryCoordinator.h"
 
+#include "base/sys_info.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/tracing/TraceEvent.h"
@@ -11,11 +12,17 @@
 
 namespace blink {
 
+// static
 MemoryCoordinator& MemoryCoordinator::instance() {
   DEFINE_STATIC_LOCAL(Persistent<MemoryCoordinator>, external,
                       (new MemoryCoordinator));
   DCHECK(isMainThread());
   return *external.get();
+}
+
+// static
+bool MemoryCoordinator::isLowEndDevice() {
+  return base::SysInfo::IsLowEndDevice();
 }
 
 MemoryCoordinator::MemoryCoordinator() {}

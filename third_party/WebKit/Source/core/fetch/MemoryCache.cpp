@@ -84,7 +84,7 @@ inline MemoryCache::MemoryCache()
       m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune),
       m_size(0) {
   MemoryCacheDumpProvider::instance()->setMemoryCache(this);
-  if (ProcessHeap::isLowEndDevice())
+  if (MemoryCoordinator::isLowEndDevice())
     MemoryCoordinator::instance().registerClient(this);
 }
 
