@@ -276,3 +276,14 @@ fuzzer_test("sqlite3_prepare_v2_fuzzer") {
   ]
   dict = "fuzz/sqlite3_prepare_v2_fuzzer.dict"
 }
+
+fuzzer_test("sqlite3_ossfuzz_fuzzer") {
+  # TODO(mmoroz, shess): remove fuzz/ossfuzz.c after next sqlite3 update.
+  sources = [
+    "fuzz/ossfuzz.c",
+  ]
+  deps = [
+    ":sqlite",
+  ]
+  dict = "fuzz/sql.dict"
+}
