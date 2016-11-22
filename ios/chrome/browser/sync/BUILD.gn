@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("sync") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_chrome_profile_sync_service_factory.cc",
     "ios_chrome_profile_sync_service_factory.h",

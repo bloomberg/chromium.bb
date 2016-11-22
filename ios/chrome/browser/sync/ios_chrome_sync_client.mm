@@ -65,6 +65,10 @@
 #include "ios/web/public/web_thread.h"
 #include "ui/base/device_form_factor.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // iOS implementation of SyncSessionsClient. Needs to be in a separate class
