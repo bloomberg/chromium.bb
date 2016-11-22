@@ -2271,8 +2271,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
   net::EmbeddedTestServer origin_one;
   net::EmbeddedTestServer origin_two;
-  ASSERT_TRUE(origin_one.Start());
-  ASSERT_TRUE(origin_two.Start());
 
   // Block third-party cookies.
   ShellNetworkDelegate::SetBlockThirdPartyCookies(true);
@@ -2284,8 +2282,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
       std::make_pair(std::string("Set-Cookie"), std::string("A=B")));
   origin_one.RegisterRequestHandler(CreateBasicResponseHandler(
       "/foo", cookie_header, "application/octet-stream", "abcd"));
+  ASSERT_TRUE(origin_one.Start());
+
   origin_two.RegisterRequestHandler(
       CreateRedirectHandler("/bar", origin_one.GetURL("/foo")));
+  ASSERT_TRUE(origin_two.Start());
 
   // Download the file.
   SetupEnsureNoPendingDownloads();
@@ -2317,8 +2318,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadAttributeCrossOriginRedirect) {
   net::EmbeddedTestServer origin_one;
   net::EmbeddedTestServer origin_two;
-  ASSERT_TRUE(origin_one.Start());
-  ASSERT_TRUE(origin_two.Start());
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
 
   // The download-attribute.html page contains an anchor element whose href is
   // set to the value of the query parameter (specified as |target| in the URL
@@ -2338,8 +2339,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
   origin_one.RegisterRequestHandler(
       CreateRedirectHandler("/ping", origin_two.GetURL("/download")));
+  origin_one.StartAcceptingConnections();
+
   origin_two.RegisterRequestHandler(CreateBasicResponseHandler(
       "/download", base::StringPairs(), "application/octet-stream", "Hello"));
+  origin_two.StartAcceptingConnections();
 
   NavigateToURLAndWaitForDownload(
       shell(), referrer_url, DownloadItem::COMPLETE);
@@ -2362,8 +2366,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadAttributeSameOriginRedirect) {
   net::EmbeddedTestServer origin_one;
   net::EmbeddedTestServer origin_two;
-  ASSERT_TRUE(origin_one.Start());
-  ASSERT_TRUE(origin_two.Start());
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
 
   // The download-attribute.html page contains an anchor element whose href is
   // set to the value of the query parameter (specified as |target| in the URL
@@ -2388,6 +2392,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       CreateRedirectHandler("/pong", origin_one.GetURL("/download")));
   origin_one.RegisterRequestHandler(CreateBasicResponseHandler(
       "/download", base::StringPairs(), "application/octet-stream", "Hello"));
+
+  origin_one.StartAcceptingConnections();
+  origin_two.StartAcceptingConnections();
 
   NavigateToURLAndWaitForDownload(
       shell(), referrer_url, DownloadItem::COMPLETE);
@@ -2534,11 +2541,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DownloadAttributeCrossOriginIFrame) {
   net::EmbeddedTestServer origin_one;
   net::EmbeddedTestServer origin_two;
-  ASSERT_TRUE(origin_one.Start());
-  ASSERT_TRUE(origin_two.Start());
 
   origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
   origin_two.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  ASSERT_TRUE(origin_one.Start());
+  ASSERT_TRUE(origin_two.Start());
 
   GURL frame_url =
       origin_one.GetURL("/download-attribute.html?target=" +

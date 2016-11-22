@@ -94,10 +94,10 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   MHTMLGenerationTest() : has_mhtml_callback_run_(false), file_size_(0) {}
 
  protected:
-  void SetUp() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(embedded_test_server()->Start());
-    ContentBrowserTest::SetUp();
+    ContentBrowserTest::SetUpOnMainThread();
   }
 
   void GenerateMHTML(const base::FilePath& path, const GURL& url) {
@@ -591,11 +591,10 @@ class MHTMLGenerationSitePerProcessTest : public MHTMLGenerationTest {
   }
 
   void SetUpOnMainThread() override {
-    MHTMLGenerationTest::SetUpOnMainThread();
-
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Started());
     content::SetupCrossSiteRedirector(embedded_test_server());
+
+    MHTMLGenerationTest::SetUpOnMainThread();
   }
 
  private:
