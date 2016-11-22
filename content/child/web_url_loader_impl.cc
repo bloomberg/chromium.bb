@@ -855,10 +855,10 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (error_code != net::OK) {
-      client_->didFail(
-          loader_,
-          CreateWebURLError(request_.url(), stale_copy_in_cache, error_code,
-              was_ignored_by_handler));
+      client_->didFail(loader_,
+                       CreateWebURLError(request_.url(), stale_copy_in_cache,
+                                         error_code, was_ignored_by_handler),
+                       total_transfer_size);
     } else {
       client_->didFinishLoading(loader_,
                                 (completion_time - TimeTicks()).InSecondsF(),
@@ -887,8 +887,9 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   }
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
-    client_->didFail(
-        loader_, CreateWebURLError(request_.url(), false, net::ERR_ABORTED));
+    client_->didFail(loader_,
+                     CreateWebURLError(request_.url(), false, net::ERR_ABORTED),
+                     WebURLLoaderClient::kUnknownEncodedDataLength);
   }
 
   // Notify the browser process that the request is canceled.

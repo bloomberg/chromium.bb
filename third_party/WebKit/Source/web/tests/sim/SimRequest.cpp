@@ -61,7 +61,7 @@ void SimRequest::write(const String& data) {
 void SimRequest::finish() {
   DCHECK(m_isReady);
   if (m_error.reason) {
-    m_client->didFail(m_loader, m_error);
+    m_client->didFail(m_loader, m_error, m_totalEncodedDataLength);
   } else {
     // TODO(esprehn): Is claiming a request time of 0 okay for tests?
     m_client->didFinishLoading(m_loader, 0, m_totalEncodedDataLength);

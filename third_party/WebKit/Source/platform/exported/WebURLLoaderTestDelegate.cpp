@@ -34,8 +34,9 @@ void WebURLLoaderTestDelegate::didReceiveData(
 
 void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient,
                                        WebURLLoader* loader,
-                                       const WebURLError& error) {
-  originalClient->didFail(loader, error);
+                                       const WebURLError& error,
+                                       int64_t totalEncodedDataLength) {
+  originalClient->didFail(loader, error, totalEncodedDataLength);
 }
 
 void WebURLLoaderTestDelegate::didFinishLoading(

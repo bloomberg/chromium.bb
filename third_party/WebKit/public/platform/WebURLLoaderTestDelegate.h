@@ -33,7 +33,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
                               int encodedDataLength);
   virtual void didFail(WebURLLoaderClient* originalClient,
                        WebURLLoader*,
-                       const WebURLError&);
+                       const WebURLError&,
+                       int64_t totalEncodedDataLength);
   virtual void didFinishLoading(WebURLLoaderClient* originalClient,
                                 WebURLLoader*,
                                 double finishTime,

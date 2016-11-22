@@ -1122,11 +1122,11 @@ ArchiveResource* ResourceFetcher::createArchive(Resource* resource) {
 
 void ResourceFetcher::didFinishLoading(Resource* resource,
                                        double finishTime,
-                                       int64_t encodedDataLength,
                                        DidFinishLoadingReason finishReason) {
   network_instrumentation::endResourceLoad(
       resource->identifier(), network_instrumentation::RequestOutcome::Success);
   DCHECK(resource);
+  const int64_t encodedDataLength = resource->response().encodedDataLength();
 
   // When loading a multipart resource, make the loader non-block when finishing
   // loading the first part.

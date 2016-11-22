@@ -124,7 +124,6 @@ class CORE_EXPORT ResourceFetcher
   };
   void didFinishLoading(Resource*,
                         double finishTime,
-                        int64_t encodedDataLength,
                         DidFinishLoadingReason);
   void didFailLoading(Resource*, const ResourceError&);
   void didReceiveResponse(Resource*,

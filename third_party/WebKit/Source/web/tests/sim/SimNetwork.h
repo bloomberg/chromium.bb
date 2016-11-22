@@ -43,7 +43,10 @@ class SimNetwork final : public WebURLLoaderTestDelegate {
                       const char* data,
                       int dataLength,
                       int encodedDataLength) override;
-  void didFail(WebURLLoaderClient*, WebURLLoader*, const WebURLError&) override;
+  void didFail(WebURLLoaderClient*,
+               WebURLLoader*,
+               const WebURLError&,
+               int64_t totalEncodedDataLength) override;
   void didFinishLoading(WebURLLoaderClient*,
                         WebURLLoader*,
                         double finishTime,

@@ -101,7 +101,8 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
     OnLoadCompleteInternal(LOAD_SUCCEEDED);
   }
   void didFail(blink::WebURLLoader* loader,
-               const blink::WebURLError& error) override {
+               const blink::WebURLError& error,
+               int64_t total_encoded_data_length) override {
     OnLoadCompleteInternal(LOAD_FAILED);
   }
 

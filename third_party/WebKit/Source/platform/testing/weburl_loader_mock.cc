@@ -49,7 +49,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     return;
 
   if (error.reason) {
-    delegate->didFail(client_, this, error);
+    delegate->didFail(client_, this, error, data.size());
     return;
   }
   delegate->didReceiveData(client_, this, data.data(), data.size(),

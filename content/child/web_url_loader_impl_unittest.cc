@@ -226,7 +226,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   }
 
   void didFail(blink::WebURLLoader* loader,
-               const blink::WebURLError& error) override {
+               const blink::WebURLError& error,
+               int64_t totalEncodedDataLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     EXPECT_FALSE(did_finish_);

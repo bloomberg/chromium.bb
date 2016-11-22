@@ -300,6 +300,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   double loadFinishTime() const { return m_loadFinishTime; }
 
+  void setEncodedDataLength(int64_t value) {
+    m_response.setEncodedDataLength(value);
+  }
   void addToEncodedBodyLength(int value) {
     m_response.addToEncodedBodyLength(value);
   }

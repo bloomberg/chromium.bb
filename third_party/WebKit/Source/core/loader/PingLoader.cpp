@@ -212,7 +212,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
   void didReceiveData(WebURLLoader*, const char*, int, int, int) final;
   void didFinishLoading(WebURLLoader*, double, int64_t) final;
-  void didFail(WebURLLoader*, const WebURLError&) final;
+  void didFail(WebURLLoader*, const WebURLError&, int64_t) final;
 
   void timeout(TimerBase*);
 
@@ -364,7 +364,9 @@ void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t) {
   dispose();
 }
 
-void PingLoaderImpl::didFail(WebURLLoader*, const WebURLError& resourceError) {
+void PingLoaderImpl::didFail(WebURLLoader*,
+                             const WebURLError& resourceError,
+                             int64_t) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));

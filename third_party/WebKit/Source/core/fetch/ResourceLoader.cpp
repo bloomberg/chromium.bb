@@ -230,19 +230,22 @@ void ResourceLoader::didReceiveData(WebURLLoader*,
 
 void ResourceLoader::didFinishLoadingFirstPartInMultipart() {
   m_fetcher->didFinishLoading(m_resource.get(), 0,
-                              WebURLLoaderClient::kUnknownEncodedDataLength,
                               ResourceFetcher::DidFinishFirstPartInMultipart);
 }
 
 void ResourceLoader::didFinishLoading(WebURLLoader*,
                                       double finishTime,
                                       int64_t encodedDataLength) {
+  m_resource->setEncodedDataLength(encodedDataLength);
   m_loader.reset();
-  m_fetcher->didFinishLoading(m_resource.get(), finishTime, encodedDataLength,
+  m_fetcher->didFinishLoading(m_resource.get(), finishTime,
                               ResourceFetcher::DidFinishLoading);
 }
 
-void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error) {
+void ResourceLoader::didFail(WebURLLoader*,
+                             const WebURLError& error,
+                             int64_t encodedDataLength) {
+  m_resource->setEncodedDataLength(encodedDataLength);
   didFail(error);
 }
 
@@ -280,7 +283,7 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
   if (!m_loader)
     return;
   if (errorOut.reason) {
-    didFail(0, errorOut);
+    didFail(0, errorOut, encodedDataLength);
     return;
   }
   didReceiveResponse(0, responseOut);
