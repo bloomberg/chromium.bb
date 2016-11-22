@@ -34,8 +34,6 @@ class OwnerKeyUtil;
 
 namespace chromeos {
 
-class FakeOwnerSettingsService;
-
 // The class is a profile-keyed service which holds public/private keypair
 // corresponds to a profile. The keypair is reloaded automatically when profile
 // is created and TPM token is ready. Note that the private part of a key can be
