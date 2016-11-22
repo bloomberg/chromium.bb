@@ -12,16 +12,29 @@
 
 namespace blink {
 
+class NGBox;
+
 class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
  public:
   // This modifies the passed-in children vector.
-  NGPhysicalFragment(NGPhysicalSize size,
-                     NGPhysicalSize overflow,
-                     HeapVector<Member<const NGPhysicalFragmentBase>>& children,
-                     NGMarginStrut margin_strut);
+  NGPhysicalFragment(
+      NGPhysicalSize size,
+      NGPhysicalSize overflow,
+      HeapVector<Member<const NGPhysicalFragmentBase>>& children,
+      HeapLinkedHashSet<WeakMember<NGBox>>& out_of_flow_descendants,
+      Vector<NGLogicalOffset> out_of_flow_offsets,
+      NGMarginStrut margin_strut);
 
   const HeapVector<Member<const NGPhysicalFragmentBase>>& Children() const {
     return children_;
+  }
+
+  const HeapLinkedHashSet<WeakMember<NGBox>>& OutOfFlowDescendants() const {
+    return out_of_flow_descendants_;
+  }
+
+  const Vector<NGLogicalOffset>& OutOfFlowOffsets() const {
+    return out_of_flow_offsets_;
   }
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
@@ -30,7 +43,8 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
 
  private:
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
-
+  HeapLinkedHashSet<WeakMember<NGBox>> out_of_flow_descendants_;
+  Vector<NGLogicalOffset> out_of_flow_offsets_;
   NGMarginStrut margin_strut_;
 };
 

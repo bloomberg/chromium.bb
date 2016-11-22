@@ -23,7 +23,7 @@ namespace blink {
 // NGFragmentBase classes which transforms information into the logical
 // coordinate system.
 class CORE_EXPORT NGPhysicalFragmentBase
-    : public GarbageCollected<NGPhysicalFragmentBase> {
+    : public GarbageCollectedFinalized<NGPhysicalFragmentBase> {
  public:
   enum NGFragmentType { FragmentBox = 0, FragmentText = 1 };
 
@@ -62,6 +62,8 @@ class CORE_EXPORT NGPhysicalFragmentBase
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() { visitor->trace(break_token_); }
   DECLARE_TRACE();
+
+  void finalizeGarbageCollectedObject();
 
  protected:
   NGPhysicalFragmentBase(NGPhysicalSize size,

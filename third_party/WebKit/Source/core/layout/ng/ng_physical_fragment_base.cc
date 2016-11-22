@@ -16,4 +16,11 @@ DEFINE_TRACE(NGPhysicalFragmentBase) {
     static_cast<NGPhysicalFragment*>(this)->traceAfterDispatch(visitor);
 }
 
+void NGPhysicalFragmentBase::finalizeGarbageCollectedObject() {
+  if (Type() == FragmentText)
+    static_cast<NGPhysicalTextFragment*>(this)->~NGPhysicalTextFragment();
+  else
+    static_cast<NGPhysicalFragment*>(this)->~NGPhysicalFragment();
+}
+
 }  // namespace blink

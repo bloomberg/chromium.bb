@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_box.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -79,9 +81,14 @@ NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
         writing_mode_, direction_, physical_size, child->Size()));
     children.append(child);
   }
-  return new NGPhysicalFragment(physical_size,
-                                overflow_.ConvertToPhysical(writing_mode_),
-                                children, margin_strut_);
+  return new NGPhysicalFragment(
+      physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
+      out_of_flow_descendants_, out_of_flow_offsets_, margin_strut_);
+}
+
+DEFINE_TRACE(NGFragmentBuilder) {
+  visitor->trace(children_);
+  visitor->trace(out_of_flow_descendants_);
 }
 
 }  // namespace blink
