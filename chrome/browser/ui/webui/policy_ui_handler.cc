@@ -320,6 +320,8 @@ class DeviceActiveDirectoryPolicyStatusProvider : public PolicyStatusProvider {
 
  private:
   const policy::CloudPolicyStore* store_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceActiveDirectoryPolicyStatusProvider);
 };
 #endif
 
