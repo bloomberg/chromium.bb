@@ -114,6 +114,8 @@ crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.htm
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
+crbug.com/667286 inspector/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
+
 # ====== Paint team owned tests to here ======
 
 
