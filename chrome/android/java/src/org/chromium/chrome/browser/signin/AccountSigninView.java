@@ -223,6 +223,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
         if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(getContext(),
                     new UserRecoverableErrorHandler.ModalDialog(mDelegate.getActivity()))) {
+            setUpSigninButton(false);
             return;
         }
 
@@ -429,6 +430,11 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(getContext(),
+                                new UserRecoverableErrorHandler.ModalDialog(
+                                        mDelegate.getActivity()))) {
+                        return;
+                    }
                     RecordUserAction.record("Signin_AddAccountToDevice");
                     mListener.onNewAccount();
                 }
