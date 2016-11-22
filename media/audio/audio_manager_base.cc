@@ -106,7 +106,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const LogCallback& log_callback) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (!params.IsValid()) {
     DLOG(ERROR) << "Audio parameters are invalid";
@@ -160,7 +160,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     const AudioParameters& params,
     const std::string& device_id,
     const LogCallback& log_callback) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels) ||
       device_id.empty()) {
@@ -204,7 +204,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     const AudioParameters& params,
     const std::string& device_id) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   // If the caller supplied an empty device id to select the default device,
   // we fetch the actual device id of the default device so that the lookup
@@ -286,6 +286,7 @@ void AudioManagerBase::GetAudioOutputDeviceNames(
 }
 
 void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(stream);
   CHECK_GT(num_output_streams_, 0);
   // TODO(xians) : Have a clearer destruction path for the AudioOutputStream.
@@ -296,6 +297,7 @@ void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {
 }
 
 void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(stream);
   // TODO(xians) : Have a clearer destruction path for the AudioInputStream.
   CHECK_EQ(1u, input_streams_.erase(stream));
