@@ -82,8 +82,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
   Color platformFocusRingColor() const override;
 
-  double caretBlinkInterval() const final;
-
   // System fonts.
   virtual void systemFont(CSSValueID systemFontID,
                           FontStyle&,

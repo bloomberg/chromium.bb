@@ -1726,6 +1726,3 @@ crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/basic.html [ Timeou
 # These tests (erroneously?) see a platform-specific 'server' header
 crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-match.https.html [ Pass Failure ]
 crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-put.https.html [ Pass Failure ]
-
-# Flaky failure
-crbug.com/667403 [ Mac ] fast/forms/relayout-shifts-inner-editor.html [ Pass Failure ]

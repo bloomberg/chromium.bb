@@ -249,15 +249,6 @@ Color LayoutThemeDefault::platformFocusRingColor() const {
   return focusRingColor;
 }
 
-double LayoutThemeDefault::caretBlinkInterval() const {
-  // Disable the blinking caret in layout test mode, as it introduces
-  // a race condition for the pixel tests. http://b/1198440
-  if (LayoutTestSupport::isRunningLayoutTest())
-    return 0;
-
-  return LayoutTheme::caretBlinkInterval();
-}
-
 void LayoutThemeDefault::systemFont(CSSValueID systemFontID,
                                     FontStyle& fontStyle,
                                     FontWeight& fontWeight,
