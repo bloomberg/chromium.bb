@@ -61,6 +61,9 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #endif
   scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner() override;
 
+  gfx::Insets GetDialogButtonInsets() override;
+  int GetDialogRelatedButtonHorizontalSpacing() override;
+
  private:
 #if defined(OS_WIN)
   typedef std::map<HMONITOR, int> AppbarAutohideEdgeMap;

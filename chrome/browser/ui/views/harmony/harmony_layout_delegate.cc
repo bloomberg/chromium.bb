@@ -16,24 +16,23 @@ HarmonyLayoutDelegate* HarmonyLayoutDelegate::Get() {
 }
 
 int HarmonyLayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
-  const int kLayoutUnit = 16;
   switch (type) {
     case LayoutDistanceType::PANEL_VERT_MARGIN:
-      return kLayoutUnit;
+      return kHarmonyLayoutUnit;
     case LayoutDistanceType::RELATED_BUTTON_HORIZONTAL_SPACING:
-      return kLayoutUnit / 2;
+      return kHarmonyLayoutUnit / 2;
     case LayoutDistanceType::RELATED_CONTROL_HORIZONTAL_SPACING:
-      return kLayoutUnit;
+      return kHarmonyLayoutUnit;
     case LayoutDistanceType::RELATED_CONTROL_VERTICAL_SPACING:
-      return kLayoutUnit / 2;
+      return kHarmonyLayoutUnit / 2;
     case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING:
-      return kLayoutUnit;
+      return kHarmonyLayoutUnit;
     case LayoutDistanceType::UNRELATED_CONTROL_LARGE_VERTICAL_SPACING:
-      return kLayoutUnit;
+      return kHarmonyLayoutUnit;
     case LayoutDistanceType::BUTTON_VEDGE_MARGIN_NEW:
-      return kLayoutUnit;
+      return kHarmonyLayoutUnit;
     case LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW:
-      return kLayoutUnit;
+      return kHarmonyLayoutUnit;
   }
   NOTREACHED();
   return 0;

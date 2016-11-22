@@ -9,6 +9,9 @@
 
 class HarmonyLayoutDelegate : public LayoutDelegate {
  public:
+  // The Harmony layout unit. All distances are in terms of this unit.
+  static const int kHarmonyLayoutUnit = 16;
+
   HarmonyLayoutDelegate() {}
   ~HarmonyLayoutDelegate() override {}
 

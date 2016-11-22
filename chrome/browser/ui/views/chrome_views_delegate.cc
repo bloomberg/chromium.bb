@@ -21,12 +21,14 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/views/harmony/harmony_layout_delegate.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
@@ -507,6 +509,18 @@ void ChromeViewsDelegate::OnGotAppbarAutohideEdges(
 scoped_refptr<base::TaskRunner>
 ChromeViewsDelegate::GetBlockingPoolTaskRunner() {
   return content::BrowserThread::GetBlockingPool();
+}
+
+gfx::Insets ChromeViewsDelegate::GetDialogButtonInsets() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit);
+  return ViewsDelegate::GetDialogButtonInsets();
+}
+
+int ChromeViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return HarmonyLayoutDelegate::kHarmonyLayoutUnit / 2;
+  return ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing();
 }
 
 #if !defined(USE_ASH)
