@@ -161,7 +161,8 @@ __gCrWeb['findInPage'].overTime = function() {
  *     of them.  False to require the full phrase to be there.
  *     Undefined will try the full phrase, and if nothing is found do the split.
  * @param {number} timeout Maximum time to run.
- * @return {number} How many results there are in the page.
+ * @return {string} How many results there are in the page in the form of
+       [highlightedWordsCount, [index, pageLocationX, pageLocationY]].
  */
 __gCrWeb['findInPage']['highlightWord'] =
     function(findText, opt_split, timeout) {
@@ -211,7 +212,8 @@ __gCrWeb['findInPage']['highlightWord'] =
  * into sections that can be stopped and restarted later.  Because the js runs
  * in the main UI thread, anything over timeout will cause the UI to lock up.
  * @param {number} timeout Only run find in page until timeout.
- * @return {boolean} Whether find in page completed.
+ * @return {string} string in the form of "[bool, int]", where bool indicates
+                    whether the text was found and int idicates text position.
  */
 __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
   var opt_split = false;
@@ -370,8 +372,8 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
 
 /**
  * Converts a node list to an array.
- * @param {object} nodeList DOM node list.
- * @return {object} array.
+ * @param {NodeList} nodeList DOM node list.
+ * @return {Array<Node>} array.
  */
 __gCrWeb['findInPage'].toArray = function(nodeList) {
   var array = [];
@@ -383,7 +385,7 @@ __gCrWeb['findInPage'].toArray = function(nodeList) {
 /**
  * Return all elements of class name, spread out over various frames.
  * @param {string} name of class.
- * @return {object} array of elements matching class name.
+ * @return {Array<Node>} array of elements matching class name.
  */
 __gCrWeb['findInPage'].getAllElementsByClassName = function(name) {
   var nodeList = document.getElementsByClassName(name);
@@ -561,8 +563,8 @@ __gCrWeb['findInPage']['goPrev'] = function() {
 
 /**
  * Adds the special highlighting to the result at the index.
- * @param {number} opt_index Index to replace __gCrWeb['findInPage']['index']
- *                 with.
+ * @param {number=} opt_index Index to replace __gCrWeb['findInPage']['index']
+ *                  with.
  */
 __gCrWeb['findInPage'].addHighlightToIndex = function(opt_index) {
   if (opt_index !== undefined) {
@@ -654,8 +656,8 @@ __gCrWeb['findInPage'].scaleCoordinates = function(coordinates) {
 
 /**
  * Finds the position of the result and scrolls to it.
- * @param {number} opt_index Index to replace __gCrWeb['findInPage']['index']
- *                 with.
+ * @param {number=} opt_index Index to replace __gCrWeb['findInPage']['index']
+ *                  with.
  * @return {string} JSON encoded array of the scroll coordinates "[x, y]".
  */
 __gCrWeb['findInPage'].findScrollDimensions = function(opt_index) {
