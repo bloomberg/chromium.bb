@@ -21,6 +21,7 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/recovery/recovery_install_global_error_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/sync_global_error_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -271,6 +272,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
     // Start global error services now so we badge the menu correctly.
     SyncGlobalErrorFactory::GetForProfile(profile);
+    RecoveryInstallGlobalErrorFactory::GetForProfile(profile);
   }
   return self;
 }
