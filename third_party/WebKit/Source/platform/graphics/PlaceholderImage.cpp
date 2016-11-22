@@ -63,23 +63,6 @@ void PlaceholderImage::draw(SkCanvas* canvas,
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kFillColor);
   canvas->drawRect(destRect, paint);
-
-  if (getImageObserver())
-    getImageObserver()->didDraw(this);
-}
-
-void PlaceholderImage::drawPattern(GraphicsContext& destContext,
-                                   const FloatRect& srcRect,
-                                   const FloatSize& scale,
-                                   const FloatPoint& phase,
-                                   SkBlendMode compositeOp,
-                                   const FloatRect& destRect,
-                                   const FloatSize& repeatSpacing) {
-  Image::drawPattern(destContext, srcRect, scale, phase, compositeOp, destRect,
-                     repeatSpacing);
-
-  if (getImageObserver())
-    getImageObserver()->didDraw(this);
 }
 
 void PlaceholderImage::destroyDecodedData() {

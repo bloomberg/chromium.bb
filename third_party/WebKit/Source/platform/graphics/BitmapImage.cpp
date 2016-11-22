@@ -290,9 +290,6 @@ void BitmapImage::draw(
   if (image->isLazyGenerated())
     PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
 
-  if (ImageObserver* observer = getImageObserver())
-    observer->didDraw(this);
-
   startAnimation();
 }
 

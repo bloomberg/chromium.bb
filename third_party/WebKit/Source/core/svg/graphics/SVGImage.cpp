@@ -407,9 +407,6 @@ void SVGImage::drawInternal(SkCanvas* canvas,
     canvas->drawPicture(recording.get());
   }
 
-  if (getImageObserver())
-    getImageObserver()->didDraw(this);
-
   // Start any (SMIL) animations if needed. This will restart or continue
   // animations if preceded by calls to resetAnimation or stopAnimation
   // respectively.

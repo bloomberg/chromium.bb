@@ -42,7 +42,6 @@ class PLATFORM_EXPORT ImageObserver : public GarbageCollectedMixin {
 
  public:
   virtual void decodedSizeChangedTo(const Image*, size_t newSize) = 0;
-  virtual void didDraw(const Image*) = 0;
 
   virtual bool shouldPauseAnimation(const Image*) = 0;
   virtual void animationAdvanced(const Image*) = 0;

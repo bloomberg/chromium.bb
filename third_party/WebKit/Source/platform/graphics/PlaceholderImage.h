@@ -45,14 +45,6 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
             RespectImageOrientationEnum,
             ImageClampingMode) override;
 
-  void drawPattern(GraphicsContext&,
-                   const FloatRect& srcRect,
-                   const FloatSize& scale,
-                   const FloatPoint& phase,
-                   SkBlendMode,
-                   const FloatRect& destRect,
-                   const FloatSize& repeatSpacing) override;
-
   void destroyDecodedData() override;
 
  private:

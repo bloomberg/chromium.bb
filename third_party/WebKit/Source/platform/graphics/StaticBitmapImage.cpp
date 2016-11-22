@@ -37,9 +37,6 @@ void StaticBitmapImage::drawHelper(SkCanvas* canvas,
 
   canvas->drawImageRect(image.get(), adjustedSrcRect, dstRect, &paint,
                         WebCoreClampingModeToSkiaRectConstraint(clampMode));
-
-  if (ImageObserver* observer = getImageObserver())
-    observer->didDraw(this);
 }
 
 }  // namespace blink

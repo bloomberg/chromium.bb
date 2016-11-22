@@ -45,7 +45,6 @@ class SVGImageTest : public ::testing::Test {
     PauseControlImageObserver(bool shouldPause) : m_shouldPause(shouldPause) {}
 
     void decodedSizeChangedTo(const Image*, size_t newSize) override {}
-    void didDraw(const Image*) override {}
 
     bool shouldPauseAnimation(const Image*) override { return m_shouldPause; }
     void animationAdvanced(const Image*) override {}

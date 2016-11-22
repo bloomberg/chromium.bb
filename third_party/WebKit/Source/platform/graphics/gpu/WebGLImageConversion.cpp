@@ -2914,14 +2914,10 @@ bool WebGLImageConversion::packImageData(Image* image,
     return false;
   data.resize(packedSize);
 
-  if (!packPixels(reinterpret_cast<const uint8_t*>(pixels), sourceFormat,
-                  sourceImageWidth, sourceImageHeight, sourceImageSubRectangle,
-                  depth, sourceUnpackAlignment, unpackImageHeight, format, type,
-                  alphaOp, data.data(), flipY))
-    return false;
-  if (ImageObserver* observer = image->getImageObserver())
-    observer->didDraw(image);
-  return true;
+  return packPixels(
+      reinterpret_cast<const uint8_t*>(pixels), sourceFormat, sourceImageWidth,
+      sourceImageHeight, sourceImageSubRectangle, depth, sourceUnpackAlignment,
+      unpackImageHeight, format, type, alphaOp, data.data(), flipY);
 }
 
 bool WebGLImageConversion::extractImageData(

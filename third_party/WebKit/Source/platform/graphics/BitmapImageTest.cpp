@@ -57,7 +57,6 @@ class BitmapImageTest : public ::testing::Test {
           safeCast<int>(newSize) - safeCast<int>(m_lastDecodedSize);
       m_lastDecodedSize = newSize;
     }
-    void didDraw(const Image*) override {}
     bool shouldPauseAnimation(const Image*) override { return false; }
     void animationAdvanced(const Image*) override {}
 

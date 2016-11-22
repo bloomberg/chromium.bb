@@ -580,8 +580,6 @@ void ImageResource::decodedSizeChangedTo(const blink::Image* image,
   setDecodedSize(newSize);
 }
 
-void ImageResource::didDraw(const blink::Image* image) {}
-
 bool ImageResource::shouldPauseAnimation(const blink::Image* image) {
   if (!image || image != m_image)
     return false;
