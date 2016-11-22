@@ -272,6 +272,77 @@ TEST(test_subsurface_place_above_nested_parent)
 	client_roundtrip(client);
 }
 
+TEST(test_subsurface_place_above_grandparent)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subsurface *sub;
+	struct wl_subcompositor *subco;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	sub = wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	/* can't place a subsurface above its grandparent */
+	wl_subsurface_place_above(sub, com.parent);
+
+	expect_protocol_error(client, &wl_subsurface_interface,
+			      WL_SUBSURFACE_ERROR_BAD_SURFACE);
+}
+
+TEST(test_subsurface_place_above_great_aunt)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subsurface *sub;
+	struct wl_subcompositor *subco;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	sub = wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	/* can't place a subsurface above its parents' siblings */
+	wl_subsurface_place_above(sub, com.child[1]);
+
+	expect_protocol_error(client, &wl_subsurface_interface,
+			      WL_SUBSURFACE_ERROR_BAD_SURFACE);
+}
+
+TEST(test_subsurface_place_above_child)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subcompositor *subco;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	/* can't place a subsurface above its own child subsurface */
+	wl_subsurface_place_above(com.sub[0], grandchild);
+
+	expect_protocol_error(client, &wl_subsurface_interface,
+			      WL_SUBSURFACE_ERROR_BAD_SURFACE);
+}
+
 TEST(test_subsurface_place_below_nested_parent)
 {
 	struct client *client;
@@ -292,6 +363,77 @@ TEST(test_subsurface_place_below_nested_parent)
 	wl_subsurface_place_below(sub, com.child[0]);
 
 	client_roundtrip(client);
+}
+
+TEST(test_subsurface_place_below_grandparent)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subsurface *sub;
+	struct wl_subcompositor *subco;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	sub = wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	/* can't place a subsurface below its grandparent */
+	wl_subsurface_place_below(sub, com.parent);
+
+	expect_protocol_error(client, &wl_subsurface_interface,
+			      WL_SUBSURFACE_ERROR_BAD_SURFACE);
+}
+
+TEST(test_subsurface_place_below_great_aunt)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subsurface *sub;
+	struct wl_subcompositor *subco;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	sub = wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	/* can't place a subsurface below its parents' siblings */
+	wl_subsurface_place_below(sub, com.child[1]);
+
+	expect_protocol_error(client, &wl_subsurface_interface,
+			      WL_SUBSURFACE_ERROR_BAD_SURFACE);
+}
+
+TEST(test_subsurface_place_below_child)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subcompositor *subco;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	/* can't place a subsurface below its own child subsurface */
+	wl_subsurface_place_below(com.sub[0], grandchild);
+
+	expect_protocol_error(client, &wl_subsurface_interface,
+			      WL_SUBSURFACE_ERROR_BAD_SURFACE);
 }
 
 TEST(test_subsurface_place_above_stranger)
