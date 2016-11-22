@@ -568,6 +568,14 @@ public class NewTabPageAdapter
         return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
     }
 
+    /**
+     * @return The info associated to the provided category.
+     * @throws NullPointerException if {@code category} isn't currently registered with the adapter.
+     * */
+    public SuggestionsCategoryInfo getCategoryInfo(@CategoryInt int category) {
+        return mSections.get(category).getCategoryInfo();
+    }
+
     @VisibleForTesting
     public boolean hasAllBeenDismissed() {
         return mSections.isEmpty() && !mSigninPromo.isVisible();

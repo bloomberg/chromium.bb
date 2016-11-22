@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
-
 import java.io.File;
 
 /**
@@ -47,10 +45,6 @@ public class SnippetArticle {
     /** The position of this article in the complete list. Populated by NewTabPageAdapter. */
     public int mGlobalPosition = -1;
 
-    /** The layout that should be used to display the snippet. */
-    @ContentSuggestionsCardLayoutEnum
-    public final int mCardLayout;
-
     /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
     private Bitmap mThumbnailBitmap;
 
@@ -80,7 +74,7 @@ public class SnippetArticle {
      */
     public SnippetArticle(int category, String idWithinCategory, String title, String publisher,
             String previewText, String url, String ampUrl, long timestamp, float score,
-            int position, @ContentSuggestionsCardLayoutEnum int cardLayout) {
+            int position) {
         mCategory = category;
         mIdWithinCategory = idWithinCategory;
         mTitle = title;
@@ -91,7 +85,6 @@ public class SnippetArticle {
         mPublishTimestampMilliseconds = timestamp;
         mScore = score;
         mPosition = position;
-        mCardLayout = cardLayout;
     }
 
     @Override

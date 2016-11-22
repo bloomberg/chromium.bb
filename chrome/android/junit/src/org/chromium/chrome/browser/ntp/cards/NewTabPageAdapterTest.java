@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo.SigninObserver;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -283,7 +282,7 @@ public class NewTabPageAdapterTest {
         // The adapter should ignore any new incoming data.
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
                 Arrays.asList(new SnippetArticle[] {new SnippetArticle(0, "foo", "title1", "pub1",
-                        "txt1", "foo", "bar", 0, 0, 0, ContentSuggestionsCardLayout.FULL_CARD)}));
+                        "txt1", "foo", "bar", 0, 0, 0)}));
 
         assertItemsFor(section(numSuggestions));
     }
@@ -311,7 +310,7 @@ public class NewTabPageAdapterTest {
         // The adapter should ignore any new incoming data.
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
                 Arrays.asList(new SnippetArticle[] {new SnippetArticle(0, "foo", "title1", "pub1",
-                        "txt1", "foo", "bar", 0, 0, 0, ContentSuggestionsCardLayout.FULL_CARD)}));
+                        "txt1", "foo", "bar", 0, 0, 0)}));
         assertItemsFor(section(numSuggestions));
     }
 
@@ -359,8 +358,7 @@ public class NewTabPageAdapterTest {
         // If we have snippets, we should not load the new list (i.e. the extra item does *not*
         // appear).
         suggestions.add(new SnippetArticle(0, "https://site.com/url1", "title1", "pub1", "txt1",
-                "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0,
-                ContentSuggestionsCardLayout.FULL_CARD));
+                "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0));
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, suggestions);
         assertItemsFor(section(3));
 

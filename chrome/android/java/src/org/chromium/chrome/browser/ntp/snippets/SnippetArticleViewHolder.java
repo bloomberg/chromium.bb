@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -148,8 +149,10 @@ public class SnippetArticleViewHolder
      * Updates the layout taking into account screen dimensions and the type of snippet displayed.
      */
     private void updateLayout() {
+        SuggestionsCategoryInfo info =
+                mRecyclerView.getNewTabPageAdapter().getCategoryInfo(mArticle.mCategory);
         boolean narrow = mUiConfig.getCurrentDisplayStyle() == UiConfig.DISPLAY_STYLE_NARROW;
-        boolean minimal = mArticle.mCardLayout == ContentSuggestionsCardLayout.MINIMAL_CARD;
+        boolean minimal = info.getCardLayout() == ContentSuggestionsCardLayout.MINIMAL_CARD;
 
         // If the screen is narrow or we are using the minimal layout, hide the article snippet.
         boolean hideSnippet = narrow || minimal;

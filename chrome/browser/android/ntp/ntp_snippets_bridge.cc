@@ -56,7 +56,6 @@ base::Time TimeFromJavaTime(jlong timestamp_ms) {
 ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
     JNIEnv* env,
     const Category& category,
-    const CategoryInfo& info,
     const std::vector<ContentSuggestion>& suggestions) {
   ScopedJavaLocalRef<jobject> result =
       Java_SnippetsBridge_createSuggestionList(env);
@@ -70,8 +69,7 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
             ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
             ConvertUTF8ToJavaString(env, suggestion.url().spec()),
             ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
-            suggestion.publish_date().ToJavaTime(), suggestion.score(),
-            static_cast<int>(info.card_layout()));
+            suggestion.publish_date().ToJavaTime(), suggestion.score());
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::DOWNLOADS) &&
         suggestion.download_suggestion_extra() != nullptr) {
@@ -236,11 +234,8 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
     const base::android::JavaParamRef<jobject>& obj,
     jint j_category_id) {
   Category category = CategoryFromIDValue(j_category_id);
-  base::Optional<CategoryInfo> info =
-      content_suggestions_service_->GetCategoryInfo(category);
-  DCHECK(info);
   return ToJavaSuggestionList(
-      env, category, *info,
+      env, category,
       content_suggestions_service_->GetSuggestionsForCategory(category));
 }
 
@@ -464,15 +459,9 @@ void NTPSnippetsBridge::OnSuggestionsFetched(
     std::vector<ContentSuggestion> suggestions) {
   // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
   JNIEnv* env = AttachCurrentThread();
-  // It's possible that the category has been dismissed in the meantime, and
-  // so info is nullopt. In that case, don't update the UI.
-  base::Optional<CategoryInfo> info =
-      content_suggestions_service_->GetCategoryInfo(category);
-  if (info) {
-    Java_SnippetsBridge_onMoreSuggestions(
-        env, observer_, category.id(),
-        ToJavaSuggestionList(env, category, *info, suggestions));
-  }
+  Java_SnippetsBridge_onMoreSuggestions(
+      env, observer_, category.id(),
+      ToJavaSuggestionList(env, category, suggestions));
 }
 
 Category NTPSnippetsBridge::CategoryFromIDValue(jint id) {
