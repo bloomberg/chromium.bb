@@ -72,6 +72,12 @@ class LiveTabContextProvider;
 void SetChromeBrowserProvider(ChromeBrowserProvider* provider);
 ChromeBrowserProvider* GetChromeBrowserProvider();
 
+// Factory function for the embedder specific provider. This function must be
+// implemented by the embedder and will be selected via linking (i.e. by the
+// build system). Should only be used in the application startup code, not by
+// the tests (as they may use a different provider).
+std::unique_ptr<ChromeBrowserProvider> CreateChromeBrowserProvider();
+
 // A class that allows embedding iOS-specific functionality in the
 // ios_chrome_browser target.
 class ChromeBrowserProvider {

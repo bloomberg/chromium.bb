@@ -16,6 +16,7 @@ source_set("providers") {
   deps = [
     "//base",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser:provider_flags",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
