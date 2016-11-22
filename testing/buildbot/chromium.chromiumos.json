@@ -67,6 +67,7 @@
           "--test-launcher-filter-file=src/testing/buildbot/filters/mash.browser_tests.filter",
           "--use-test-config"
         ],
+        "hard_timeout": 60,
         "name": "mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -473,6 +474,7 @@
           "--test-launcher-filter-file=src/testing/buildbot/filters/mash.browser_tests.filter",
           "--use-test-config"
         ],
+        "hard_timeout": 60,
         "name": "mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": false
