@@ -205,23 +205,27 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         TextView link = (TextView) view.findViewById(R.id.link);
         link.setVisibility(selected ? View.VISIBLE : View.GONE);
         if (selected) {
-            ForegroundColorSpan linkSpan = new ForegroundColorSpan(
-                    ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color));
-            if (LocationUtils.getInstance().isSystemLocationSettingEnabled()) {
-                String message = mContext.getString(
-                        locationEnabled(position, true)
-                        ? R.string.search_engine_location_allowed
-                        : R.string.search_engine_location_blocked);
-                SpannableString messageWithLink = new SpannableString(message);
-                messageWithLink.setSpan(linkSpan, 0, messageWithLink.length(), 0);
-                link.setText(messageWithLink);
+            if (getLocationPermissionType(position, true) == ContentSetting.ASK) {
+                link.setVisibility(View.GONE);
             } else {
-                link.setText(SpanApplier.applySpans(
-                        mContext.getString(R.string.android_location_off),
-                        new SpanInfo("<link>", "</link>", linkSpan)));
-            }
+                ForegroundColorSpan linkSpan = new ForegroundColorSpan(
+                        ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color));
+                if (LocationUtils.getInstance().isSystemLocationSettingEnabled()) {
+                    String message = mContext.getString(
+                            locationEnabled(position, true)
+                            ? R.string.search_engine_location_allowed
+                            : R.string.search_engine_location_blocked);
+                    SpannableString messageWithLink = new SpannableString(message);
+                    messageWithLink.setSpan(linkSpan, 0, messageWithLink.length(), 0);
+                    link.setText(messageWithLink);
+                } else {
+                    link.setText(SpanApplier.applySpans(
+                            mContext.getString(R.string.android_location_off),
+                            new SpanInfo("<link>", "</link>", linkSpan)));
+                }
 
-            link.setOnClickListener(this);
+                link.setOnClickListener(this);
+            }
         }
 
         return view;
@@ -287,17 +291,27 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         }
     }
 
-    private boolean locationEnabled(int position, boolean checkGeoHeader) {
-        if (position == -1) return false;
+    private ContentSetting getLocationPermissionType(int position, boolean checkGeoHeader) {
+        if (position == -1) {
+            return ContentSetting.BLOCK;
+        }
 
         String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                 toIndex(position));
         GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
-        // Handle the case where the geoHeader being sent when no permission has been specified.
-        if (locationPermission == ContentSetting.ASK && checkGeoHeader) {
-            return GeolocationHeader.isGeoHeaderEnabledForUrl(mContext, url, false);
+        if (locationPermission == ContentSetting.ASK) {
+            // Handle the case where the geoHeader being sent when no permission has been specified.
+            if (checkGeoHeader && GeolocationHeader.isGeoHeaderEnabledForUrl(
+                    mContext, url, false)) {
+                locationPermission = ContentSetting.ALLOW;
+            }
         }
-        return locationPermission == ContentSetting.ALLOW;
+        return locationPermission;
     }
+
+    private boolean locationEnabled(int position, boolean checkGeoHeader) {
+        return getLocationPermissionType(position, checkGeoHeader) == ContentSetting.ALLOW;
+    }
+
 }
