@@ -121,8 +121,10 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
       break;
   }
 
-  if (decoder)
+  if (decoder) {
     decoder->setData(data.release(), dataComplete);
+    decoder->m_targetColorSpace = globalTargetColorSpace();
+  }
 
   return decoder;
 }
@@ -421,7 +423,7 @@ SkColorSpace* gTargetColorSpace = nullptr;
 }  // namespace
 
 // static
-void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
+void ImageDecoder::setGlobalTargetColorProfile(const WebVector<char>& profile) {
   if (profile.isEmpty())
     return;
 
@@ -440,6 +442,23 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
   BitmapImageMetrics::countOutputGamma(gTargetColorSpace);
 }
 
+// static
+sk_sp<SkColorSpace> ImageDecoder::globalTargetColorSpace() {
+  // Take a lock around initializing and accessing the global device color
+  // profile.
+  SpinLock::Guard guard(gTargetColorSpaceLock);
+
+  // Initialize the output device profile to sRGB if it has not yet been
+  // initialized.
+  if (!gTargetColorSpace) {
+    gTargetColorSpace =
+        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
+  }
+
+  gTargetColorSpace->ref();
+  return sk_sp<SkColorSpace>(gTargetColorSpace);
+}
+
 sk_sp<SkColorSpace> ImageDecoder::colorSpace() const {
   // TODO(ccameron): This should always return a non-null SkColorSpace. This is
   // disabled for now because specifying a non-renderable color space results in
@@ -453,49 +472,45 @@ sk_sp<SkColorSpace> ImageDecoder::colorSpace() const {
   return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
 }
 
-void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
-                                                      unsigned iccLength) {
+void ImageDecoder::setEmbeddedColorProfile(const char* iccData,
+                                           unsigned iccLength) {
   sk_sp<SkColorSpace> colorSpace = SkColorSpace::MakeICC(iccData, iccLength);
   if (!colorSpace)
     DLOG(ERROR) << "Failed to parse image ICC profile";
-  setColorSpaceAndComputeTransform(std::move(colorSpace));
+  setEmbeddedColorSpace(std::move(colorSpace));
 }
 
-void ImageDecoder::setColorSpaceAndComputeTransform(
-    sk_sp<SkColorSpace> colorSpace) {
+void ImageDecoder::setEmbeddedColorSpace(sk_sp<SkColorSpace> colorSpace) {
   DCHECK(!m_ignoreColorSpace);
   DCHECK(!m_hasHistogrammedColorSpace);
 
   m_embeddedColorSpace = colorSpace;
+  m_sourceToTargetColorTransformNeedsUpdate = true;
+}
 
-  m_sourceToOutputDeviceColorTransform = nullptr;
+SkColorSpaceXform* ImageDecoder::colorTransform() {
+  if (!m_sourceToTargetColorTransformNeedsUpdate)
+    return m_sourceToTargetColorTransform.get();
+  m_sourceToTargetColorTransformNeedsUpdate = false;
+  m_sourceToTargetColorTransform = nullptr;
 
   // With color correct rendering, we do not transform to the output color space
   // at decode time.  Instead, we tag the raw image pixels and pass the tagged
   // SkImage to Skia.
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
-    return;
+    return nullptr;
 
   if (!m_embeddedColorSpace)
-    return;
+    return nullptr;
 
-  // Take a lock around initializing and accessing the global device color
-  // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
-
-  // Initialize the output device profile to sRGB if it has not yet been
-  // initialized.
-  if (!gTargetColorSpace) {
-    gTargetColorSpace =
-        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
+  if (SkColorSpace::Equals(m_embeddedColorSpace.get(),
+                           m_targetColorSpace.get())) {
+    return nullptr;
   }
 
-  if (SkColorSpace::Equals(m_embeddedColorSpace.get(), gTargetColorSpace)) {
-    return;
-  }
-
-  m_sourceToOutputDeviceColorTransform =
-      SkColorSpaceXform::New(m_embeddedColorSpace.get(), gTargetColorSpace);
+  m_sourceToTargetColorTransform = SkColorSpaceXform::New(
+      m_embeddedColorSpace.get(), m_targetColorSpace.get());
+  return m_sourceToTargetColorTransform.get();
 }
 
 }  // namespace blink

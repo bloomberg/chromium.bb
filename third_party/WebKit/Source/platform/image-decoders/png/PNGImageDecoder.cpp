@@ -161,7 +161,7 @@ void PNGImageDecoder::headerAvailable() {
     // gray-scale image buffer and hand that to CoreGraphics.
     sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info);
     if (colorSpace) {
-      setColorSpaceAndComputeTransform(colorSpace);
+      setEmbeddedColorSpace(colorSpace);
     }
   }
 

@@ -312,7 +312,7 @@ int main(int argc, char* argv[]) {
     applyColorCorrection = (--argc, ++argv, true);
     WebVector<char> profile;
     getScreenColorProfile(&profile);  // Returns a color spin color profile.
-    ImageDecoder::setTargetColorProfile(profile);
+    ImageDecoder::setGlobalTargetColorProfile(profile);
   }
 
   if (argc < 2) {

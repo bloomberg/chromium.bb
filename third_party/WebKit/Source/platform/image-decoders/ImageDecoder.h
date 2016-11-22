@@ -207,7 +207,12 @@ class PLATFORM_EXPORT ImageDecoder {
   ImageOrientation orientation() const { return m_orientation; }
 
   bool ignoresColorSpace() const { return m_ignoreColorSpace; }
-  static void setTargetColorProfile(const WebVector<char>&);
+
+  // Set the target color profile into which all images with embedded color
+  // profiles should be converted. Note that only the first call to this
+  // function in this process has any effect.
+  static void setGlobalTargetColorProfile(const WebVector<char>&);
+  static sk_sp<SkColorSpace> globalTargetColorSpace();
 
   // This returns the color space of this image. If the image had no embedded
   // color profile, this will return sRGB. Returns nullptr if color correct
@@ -220,14 +225,11 @@ class PLATFORM_EXPORT ImageDecoder {
   bool hasEmbeddedColorSpace() const { return m_embeddedColorSpace.get(); }
 
   // Set the embedded color space directly or via ICC profile.
-  void setColorProfileAndComputeTransform(const char* iccData,
-                                          unsigned iccLength);
-  void setColorSpaceAndComputeTransform(sk_sp<SkColorSpace> srcSpace);
+  void setEmbeddedColorProfile(const char* iccData, unsigned iccLength);
+  void setEmbeddedColorSpace(sk_sp<SkColorSpace> srcSpace);
 
-  // Transformation from encoded color space to target color space.
-  SkColorSpaceXform* colorTransform() {
-    return m_sourceToOutputDeviceColorTransform.get();
-  }
+  // Transformation from embedded color space to target color space.
+  SkColorSpaceXform* colorTransform();
 
   // Sets the "decode failure" flag.  For caller convenience (since so
   // many callers want to return false after calling this), returns false
@@ -378,8 +380,10 @@ class PLATFORM_EXPORT ImageDecoder {
   bool m_failed = false;
   bool m_hasHistogrammedColorSpace = false;
 
+  sk_sp<SkColorSpace> m_targetColorSpace = nullptr;
   sk_sp<SkColorSpace> m_embeddedColorSpace = nullptr;
-  std::unique_ptr<SkColorSpaceXform> m_sourceToOutputDeviceColorTransform;
+  bool m_sourceToTargetColorTransformNeedsUpdate = false;
+  std::unique_ptr<SkColorSpaceXform> m_sourceToTargetColorTransform;
 };
 
 }  // namespace blink
