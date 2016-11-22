@@ -11,6 +11,7 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   var iframeElement = document.createElement('iframe');
   iframeElement.style.width = '100%';
   iframeElement.style.height = '100%';
+  iframeElement.style.border = '0';
   privates(iframeElement).internal = this;
   return iframeElement;
 };
