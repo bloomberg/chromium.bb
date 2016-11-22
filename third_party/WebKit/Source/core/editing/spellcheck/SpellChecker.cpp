@@ -28,10 +28,12 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
+#include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/Range.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
@@ -816,14 +818,38 @@ void SpellChecker::replaceMisspelledRange(const String& text) {
                               markers[0]->endOffset()));
   if (markerRange.isNull())
     return;
+
   frame().selection().setSelection(
       SelectionInDOMTree::Builder().setBaseAndExtent(markerRange).build());
+
+  Document& currentDocument = *frame().document();
+
+  // Dispatch 'beforeinput'.
+  Element* const target = frame().editor().findEventTargetFromSelection();
+  RangeVector* const ranges =
+      new RangeVector(1, frame().selection().firstRange());
+  DataTransfer* const dataTransfer = DataTransfer::create(
+      DataTransfer::DataTransferType::InsertReplacementText,
+      DataTransferAccessPolicy::DataTransferReadable,
+      DataObject::createFromString(text));
+
+  const bool cancel =
+      dispatchBeforeInputDataTransfer(
+          target, InputEvent::InputType::InsertReplacementText, dataTransfer,
+          ranges) != DispatchEventResult::NotCanceled;
+
+  // 'beforeinput' event handler may destroy target frame.
+  if (currentDocument != frame().document())
+    return;
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  frame().editor().replaceSelectionWithText(text, false, false);
+  if (cancel)
+    return;
+  frame().editor().replaceSelectionWithText(
+      text, false, false, InputEvent::InputType::InsertReplacementText);
 }
 
 static bool shouldCheckOldSelection(const Position& oldSelectionStart) {

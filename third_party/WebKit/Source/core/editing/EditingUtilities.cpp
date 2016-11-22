@@ -27,6 +27,7 @@
 
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
+#include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -56,6 +57,8 @@
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutTableCell.h"
+#include "platform/clipboard/ClipboardMimeTypes.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -2034,7 +2037,7 @@ DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target,
     return DispatchEventResult::NotCanceled;
   if (!target)
     return DispatchEventResult::NotCanceled;
-  // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
+  // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
       InputEvent::InputType::InsertText, data,
@@ -2052,7 +2055,7 @@ DispatchEventResult dispatchBeforeInputFromComposition(
     return DispatchEventResult::NotCanceled;
   if (!target)
     return DispatchEventResult::NotCanceled;
-  // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
+  // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
   // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
   InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
       inputType, data, cancelable, InputEvent::EventIsComposing::IsComposing,
@@ -2083,9 +2086,27 @@ DispatchEventResult dispatchBeforeInputDataTransfer(
     return DispatchEventResult::NotCanceled;
   if (!target)
     return DispatchEventResult::NotCanceled;
-  InputEvent* beforeInputEvent = InputEvent::createBeforeInput(
-      inputType, dataTransfer, InputEvent::EventCancelable::IsCancelable,
-      InputEvent::EventIsComposing::NotComposing, ranges);
+
+  DCHECK(inputType == InputEvent::InputType::InsertFromPaste ||
+         inputType == InputEvent::InputType::InsertReplacementText ||
+         inputType == InputEvent::InputType::InsertFromDrop ||
+         inputType == InputEvent::InputType::DeleteByCut)
+      << "Unsupported inputType: " << (int)inputType;
+
+  InputEvent* beforeInputEvent;
+
+  if (hasRichlyEditableStyle(*(target->toNode())) || !dataTransfer) {
+    beforeInputEvent = InputEvent::createBeforeInput(
+        inputType, dataTransfer, InputEvent::EventCancelable::IsCancelable,
+        InputEvent::EventIsComposing::NotComposing, ranges);
+  } else {
+    const String& data = dataTransfer->getData(mimeTypeTextPlain);
+    // TODO(chongz): Pass appropriate |ranges| after it's defined on spec.
+    // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
+    beforeInputEvent = InputEvent::createBeforeInput(
+        inputType, data, InputEvent::EventCancelable::IsCancelable,
+        InputEvent::EventIsComposing::NotComposing, nullptr);
+  }
   return target->dispatchEvent(beforeInputEvent);
 }
 

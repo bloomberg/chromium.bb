@@ -978,8 +978,9 @@ void WebLocalFrameImpl::replaceSelection(const WebString& text) {
   bool selectReplacement =
       frame()->editor().behavior().shouldSelectReplacement();
   bool smartReplace = true;
-  frame()->editor().replaceSelectionWithText(text, selectReplacement,
-                                             smartReplace);
+  frame()->editor().replaceSelectionWithText(
+      text, selectReplacement, smartReplace,
+      InputEvent::InputType::InsertReplacementText);
 }
 
 void WebLocalFrameImpl::setMarkedText(const WebString& text,

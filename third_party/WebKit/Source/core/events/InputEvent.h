@@ -34,6 +34,7 @@ class InputEvent final : public UIEvent {
     InsertHorizontalRule,
     InsertFromPaste,
     InsertFromDrop,
+    InsertReplacementText,
     // Deletion.
     DeleteComposedCharacterForward,
     DeleteComposedCharacterBackward,

@@ -212,13 +212,15 @@ bool Editor::handleTextEvent(TextEvent* event) {
   m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (event->isPaste()) {
-    if (event->pastingFragment())
-      replaceSelectionWithFragment(event->pastingFragment(), false,
-                                   event->shouldSmartReplace(),
-                                   event->shouldMatchStyle());
-    else
+    if (event->pastingFragment()) {
+      replaceSelectionWithFragment(
+          event->pastingFragment(), false, event->shouldSmartReplace(),
+          event->shouldMatchStyle(), InputEvent::InputType::InsertFromPaste);
+    } else {
       replaceSelectionWithText(event->data(), false,
-                               event->shouldSmartReplace());
+                               event->shouldSmartReplace(),
+                               InputEvent::InputType::InsertFromPaste);
+    }
     return true;
   }
 
@@ -559,7 +561,8 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard) {
 void Editor::replaceSelectionWithFragment(DocumentFragment* fragment,
                                           bool selectReplacement,
                                           bool smartReplace,
-                                          bool matchStyle) {
+                                          bool matchStyle,
+                                          InputEvent::InputType inputType) {
   DCHECK(!frame().document()->needsLayoutTreeUpdate());
   if (frame().selection().isNone() ||
       !frame().selection().isContentEditable() || !fragment)
@@ -576,16 +579,18 @@ void Editor::replaceSelectionWithFragment(DocumentFragment* fragment,
     options |= ReplaceSelectionCommand::MatchStyle;
   DCHECK(frame().document());
   ReplaceSelectionCommand::create(*frame().document(), fragment, options,
-                                  InputEvent::InputType::InsertFromPaste)
+                                  inputType)
       ->apply();
   revealSelectionAfterEditingOperation();
 }
 
 void Editor::replaceSelectionWithText(const String& text,
                                       bool selectReplacement,
-                                      bool smartReplace) {
+                                      bool smartReplace,
+                                      InputEvent::InputType inputType) {
   replaceSelectionWithFragment(createFragmentFromText(selectedRange(), text),
-                               selectReplacement, smartReplace, true);
+                               selectReplacement, smartReplace, true,
+                               inputType);
 }
 
 // TODO(xiaochengh): Merge it with |replaceSelectionWithFragment()|.
@@ -1299,7 +1304,10 @@ void Editor::transpose() {
     frame().selection().setSelection(newSelection);
 
   // Insert the transposed characters.
-  replaceSelectionWithText(transposed, false, false);
+  // TODO(chongz): Once we add |InsertTranspose| in |InputEvent::InputType|, we
+  // should use it instead of |InsertFromPaste|.
+  replaceSelectionWithText(transposed, false, false,
+                           InputEvent::InputType::InsertFromPaste);
 }
 
 void Editor::addToKillRing(const EphemeralRange& range) {

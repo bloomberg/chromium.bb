@@ -6418,7 +6418,8 @@ TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
       WebSettings::EditingBehaviorWin);
 
   element->focus();
-  frame->frame()->editor().replaceSelectionWithText("A", false, false);
+  frame->frame()->editor().replaceSelectionWithText(
+      "A", false, false, InputEvent::InputType::InsertReplacementText);
   frame->frame()->spellChecker().cancelCheck();
 }
 

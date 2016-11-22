@@ -254,10 +254,12 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void replaceSelectionWithFragment(DocumentFragment*,
                                     bool selectReplacement,
                                     bool smartReplace,
-                                    bool matchStyle);
+                                    bool matchStyle,
+                                    InputEvent::InputType);
   void replaceSelectionWithText(const String&,
                                 bool selectReplacement,
-                                bool smartReplace);
+                                bool smartReplace,
+                                InputEvent::InputType);
 
   // TODO(xiaochengh): Replace |bool| parameters by |enum|.
   void replaceSelectionAfterDragging(DocumentFragment*,

@@ -56,6 +56,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
 
  public:
   static DataObject* createFromPasteboard(PasteMode);
+  static DataObject* createFromString(const String&);
   static DataObject* create();
   static DataObject* create(WebDragData);
 

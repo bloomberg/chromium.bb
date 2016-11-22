@@ -56,10 +56,12 @@ class CORE_EXPORT DataTransfer final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Whether this transfer is serving a drag-drop or copy-paste request.
+  // Whether this transfer is serving a drag-drop, copy-paste, spellcheck,
+  // auto-correct or similar request.
   enum DataTransferType {
     CopyAndPaste,
     DragAndDrop,
+    InsertReplacementText,
   };
 
   static DataTransfer* create(DataTransferType,

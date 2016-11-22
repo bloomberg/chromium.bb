@@ -62,6 +62,12 @@ DataObject* DataObject::createFromPasteboard(PasteMode pasteMode) {
   return dataObject;
 }
 
+DataObject* DataObject::createFromString(const String& data) {
+  DataObject* dataObject = create();
+  dataObject->add(data, mimeTypeTextPlain);
+  return dataObject;
+}
+
 DataObject* DataObject::create() {
   return new DataObject;
 }
