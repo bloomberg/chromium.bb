@@ -165,17 +165,12 @@ class CORE_EXPORT FrameLoader final {
   void setOpener(LocalFrame*);
 
   const AtomicString& requiredCSP() const { return m_requiredCSP; }
-  void setRequiredCSP(const AtomicString& requiredCSP) {
-    m_requiredCSP = requiredCSP;
-  }
   void recordLatestRequiredCSP();
 
   void detach();
 
   void finishedParsing();
   void checkCompleted();
-
-  void receivedMainResourceRedirect(const KURL& newURL);
 
   void clearProvisionalHistoryItem();
 
@@ -229,7 +224,6 @@ class CORE_EXPORT FrameLoader final {
 
  private:
   void checkTimerFired(TimerBase*);
-  void didAccessInitialDocumentTimerFired(TimerBase*);
 
   bool prepareRequestForThisFrame(FrameLoadRequest&);
   FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
