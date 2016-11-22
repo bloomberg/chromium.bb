@@ -197,7 +197,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream,
   // Handle to the actual PCM playback device.
   snd_pcm_t* playback_handle_;
 
-  std::unique_ptr<media::SeekableBuffer> buffer_;
+  std::unique_ptr<SeekableBuffer> buffer_;
   uint32_t frames_per_packet_;
 
   InternalState state_;

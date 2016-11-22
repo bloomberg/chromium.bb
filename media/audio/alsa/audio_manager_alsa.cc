@@ -127,9 +127,8 @@ AudioParameters AudioManagerAlsa::GetInputStreamParameters(
       kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
-void AudioManagerAlsa::GetAlsaAudioDevices(
-    StreamType type,
-    media::AudioDeviceNames* device_names) {
+void AudioManagerAlsa::GetAlsaAudioDevices(StreamType type,
+                                           AudioDeviceNames* device_names) {
   // Constants specified by the ALSA API for device hints.
   static const char kPcmInterfaceName[] = "pcm";
   int card = -1;
@@ -150,10 +149,9 @@ void AudioManagerAlsa::GetAlsaAudioDevices(
   }
 }
 
-void AudioManagerAlsa::GetAlsaDevicesInfo(
-    AudioManagerAlsa::StreamType type,
-    void** hints,
-    media::AudioDeviceNames* device_names) {
+void AudioManagerAlsa::GetAlsaDevicesInfo(AudioManagerAlsa::StreamType type,
+                                          void** hints,
+                                          AudioDeviceNames* device_names) {
   static const char kIoHintName[] = "IOID";
   static const char kNameHintName[] = "NAME";
   static const char kDescriptionHintName[] = "DESC";
@@ -174,7 +172,7 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
     // still empty.  Note, pulse has exclusively opened the default
     // device, so we must open the device via the "default" moniker.
     if (device_names->empty())
-      device_names->push_front(media::AudioDeviceName::CreateDefault());
+      device_names->push_front(AudioDeviceName::CreateDefault());
 
     // Get the unique device name for the device.
     std::unique_ptr<char, base::FreeDeleter> unique_device_name(
@@ -186,7 +184,7 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
       std::unique_ptr<char, base::FreeDeleter> desc(
           wrapper_->DeviceNameGetHint(*hint_iter, kDescriptionHintName));
 
-      media::AudioDeviceName name;
+      AudioDeviceName name;
       name.unique_id = unique_device_name.get();
       if (desc) {
         // Use the more user friendly description as name.

@@ -148,9 +148,9 @@ class AlsaPcmOutputStreamTest : public testing::Test {
   // in all tests that use buffer_ without opening the stream.
   void InitBuffer(AlsaPcmOutputStream* test_stream) {
     DCHECK(test_stream);
-    packet_ = new media::DataBuffer(kTestPacketSize);
+    packet_ = new DataBuffer(kTestPacketSize);
     packet_->set_data_size(kTestPacketSize);
-    test_stream->buffer_.reset(new media::SeekableBuffer(0, kTestPacketSize));
+    test_stream->buffer_.reset(new SeekableBuffer(0, kTestPacketSize));
     test_stream->buffer_->Append(packet_.get());
   }
 
@@ -180,7 +180,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
   StrictMock<MockAlsaWrapper> mock_alsa_wrapper_;
   std::unique_ptr<StrictMock<MockAudioManagerAlsa>, AudioManagerDeleter>
       mock_manager_;
-  scoped_refptr<media::DataBuffer> packet_;
+  scoped_refptr<DataBuffer> packet_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AlsaPcmOutputStreamTest);

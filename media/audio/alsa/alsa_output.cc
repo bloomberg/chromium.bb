@@ -232,7 +232,7 @@ bool AlsaPcmOutputStream::Open() {
       channel_mixer_ ? mixed_audio_bus_->channels() * bytes_per_sample_
                      : bytes_per_frame_;
   uint32_t output_packet_size = frames_per_packet_ * bytes_per_output_frame_;
-  buffer_.reset(new media::SeekableBuffer(0, output_packet_size));
+  buffer_.reset(new SeekableBuffer(0, output_packet_size));
 
   // Get alsa buffer size.
   snd_pcm_uframes_t buffer_size;
@@ -376,8 +376,7 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
     const base::TimeDelta delay =
         AudioTimestampHelper::FramesToTime(GetCurrentDelay(), sample_rate_);
 
-    scoped_refptr<media::DataBuffer> packet =
-        new media::DataBuffer(packet_size_);
+    scoped_refptr<DataBuffer> packet = new DataBuffer(packet_size_);
     int frames_filled =
         RunDataCallback(delay, tick_clock_->NowTicks(), audio_bus_.get());
 
@@ -400,14 +399,14 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
     // which has front center at channel index 4 and LFE at channel index 5.
     // See http://ffmpeg.org/pipermail/ffmpeg-cvslog/2011-June/038454.html.
     switch (output_channel_layout) {
-      case media::CHANNEL_LAYOUT_5_0:
-      case media::CHANNEL_LAYOUT_5_0_BACK:
+      case CHANNEL_LAYOUT_5_0:
+      case CHANNEL_LAYOUT_5_0_BACK:
         output_bus->SwapChannels(2, 3);
         output_bus->SwapChannels(3, 4);
         break;
-      case media::CHANNEL_LAYOUT_5_1:
-      case media::CHANNEL_LAYOUT_5_1_BACK:
-      case media::CHANNEL_LAYOUT_7_1:
+      case CHANNEL_LAYOUT_5_1:
+      case CHANNEL_LAYOUT_5_1_BACK:
+      case CHANNEL_LAYOUT_7_1:
         output_bus->SwapChannels(2, 4);
         output_bus->SwapChannels(3, 5);
         break;

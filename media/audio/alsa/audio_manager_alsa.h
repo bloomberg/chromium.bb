@@ -67,14 +67,13 @@ class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
   };
 
   // Gets a list of available ALSA devices.
-  void GetAlsaAudioDevices(StreamType type,
-                           media::AudioDeviceNames* device_names);
+  void GetAlsaAudioDevices(StreamType type, AudioDeviceNames* device_names);
 
   // Gets the ALSA devices' names and ids that support streams of the
   // given type.
   void GetAlsaDevicesInfo(StreamType type,
                           void** hint,
-                          media::AudioDeviceNames* device_names);
+                          AudioDeviceNames* device_names);
 
   // Checks if the specific ALSA device is available.
   static bool IsAlsaDeviceAvailable(StreamType type,
