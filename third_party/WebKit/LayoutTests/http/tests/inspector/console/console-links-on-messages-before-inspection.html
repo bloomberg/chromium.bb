@@ -15,7 +15,7 @@ function test()
 {
     var mainTarget = SDK.targetManager.mainTarget();
     var debuggerModel = SDK.DebuggerModel.fromTarget(mainTarget);
-    var message = new SDK.ConsoleMessage(mainTarget, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, "hello?", null, " http://127.0.0.1:8000/inspector/resources/source2.js");
+    var message = new SDK.ConsoleMessage(mainTarget, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, "hello?", null, "http://127.0.0.1:8000/inspector/resources/source2.js");
     mainTarget.consoleModel.addMessage(message);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
 

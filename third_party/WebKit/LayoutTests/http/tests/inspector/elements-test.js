@@ -402,7 +402,8 @@ function extractLinkText(element)
     if (!anchor)
         return element.textContent;
     var anchorText = anchor.textContent;
-    var uiLocation = anchor[Components.Linkifier._uiLocationSymbol];
+    var info = Components.Linkifier._linkInfo(anchor);
+    var uiLocation = info && info.uiLocation;
     var anchorTarget = uiLocation ? (uiLocation.uiSourceCode.name() + ":" + (uiLocation.lineNumber + 1) + ":" + (uiLocation.columnNumber + 1)) : "";
     return anchorText + " -> " + anchorTarget;
 }

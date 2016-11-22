@@ -57,8 +57,9 @@ function test()
         var fragment = Components.linkifyStringAsFragment(linkifyMe);
         var anchor = fragment.querySelector('a');
         InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + anchor.href);
-        InspectorTest.addResult("The lineNumber is " + anchor.lineNumber + " with type " + (typeof anchor.lineNumber));
-        InspectorTest.addResult("The columnNumber is " + anchor.columnNumber + " with type " + (typeof anchor.columnNumber));
+        var info = Components.Linkifier._linkInfo(anchor);
+        InspectorTest.addResult("The lineNumber is " + (info && info.lineNumber));
+        InspectorTest.addResult("The columnNumber is " + (info && info.columnNumber));
 
         linkifier = new Components.Linkifier();
         var count1 = liveLocationsCount();
