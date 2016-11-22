@@ -943,7 +943,7 @@ static INLINE TX_SIZE get_txsize_from_blocklen(int bs) {
 #if CONFIG_TX64X64
     case 64: return TX_64X64;
 #endif  // CONFIG_TX64X64
-    default: assert(0); return NULL;
+    default: assert(0); return TX_INVALID;
   }
 }
 
