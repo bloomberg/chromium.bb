@@ -8,6 +8,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMStringEncoding.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Expose internal parser function for testing.
 NSData* ExtractVoiceSearchAudioDataFromPageHTML(NSString* pageHTML);
 

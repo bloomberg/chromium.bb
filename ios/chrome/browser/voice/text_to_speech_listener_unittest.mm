@@ -11,6 +11,10 @@
 #include "testing/gtest_mac.h"
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMStringEncoding.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 NSString* const kHTMLFormat =
     @"<html><head><script>%@</script></head><body></body></html>";
@@ -26,7 +30,7 @@ NSString* const kValidVoiceSearchScript =
 }
 
 // The expected audio data to be returned by the TextToSpeechListener.
-@property(nonatomic, retain) NSData* expectedAudioData;
+@property(nonatomic, strong) NSData* expectedAudioData;
 
 // Whether |-textToSpeechListener:didReceiveResult:| was called.
 @property(nonatomic, assign) BOOL audioDataReceived;
@@ -38,7 +42,7 @@ NSString* const kValidVoiceSearchScript =
 @synthesize audioDataReceived = _audioDataReceived;
 
 - (void)setExpectedAudioData:(NSData*)expectedAudioData {
-  _expectedAudioData.reset([expectedAudioData retain]);
+  _expectedAudioData.reset(expectedAudioData);
 }
 
 - (NSData*)expectedAudioData {
