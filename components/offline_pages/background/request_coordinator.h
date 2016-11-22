@@ -117,7 +117,7 @@ class RequestCoordinator : public KeyedService,
 
   // Used to denote that the foreground thread is ready for the offliner
   // to start work on a previously entered, but unavailable request.
-  void EnableForOffliner(int64_t request_id);
+  void EnableForOffliner(int64_t request_id, const ClientId& client_id);
 
   // If a request that is unavailable to the offliner is finished elsewhere,
   // (by the tab helper synchronous download), send a notificaiton that it
@@ -231,19 +231,12 @@ class RequestCoordinator : public KeyedService,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Receives the result of add requests to the request queue.
-  void AddRequestResultCallback(AddRequestResult result,
+  void AddRequestResultCallback(RequestAvailability availability,
+                                AddRequestResult result,
                                 const SavePageRequest& request);
-
-  // Receives the result of mark attempt completed requests.
-  void MarkAttemptCompletedDoneCallback(
-      int64_t request_id,
-      const ClientId& client_id,
-      std::unique_ptr<UpdateRequestsResult> result);
 
   void UpdateMultipleRequestsCallback(
       std::unique_ptr<UpdateRequestsResult> result);
-
-  void CompletedRequestCallback(const MultipleItemStatuses& status);
 
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
@@ -329,10 +322,14 @@ class RequestCoordinator : public KeyedService,
   void RemoveAttemptedRequest(const SavePageRequest& request,
                               BackgroundSavePageResult status);
 
-  // Completes aborting the request, reports an error if it fails.
-  void MarkAttemptAbortedDone(int64_t request_id,
-                              const ClientId& client_id,
-                              std::unique_ptr<UpdateRequestsResult> result);
+  // Marks the attempt as aborted. This makes the request available again
+  // for offlining.
+  void MarkAttemptAborted(int64_t request_id, const std::string& name_space);
+
+  // Reports change from marking request, reports an error if it fails.
+  void MarkAttemptDone(int64_t request_id,
+                       const std::string& name_space,
+                       std::unique_ptr<UpdateRequestsResult> result);
 
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.

@@ -9,10 +9,10 @@ namespace {
 // The max number of started tries is to guard against pages that make the
 // prerenderer crash.  It should be greater than or equal to the max number of
 // completed tries.
-const int kMaxStartedTries = 4;
+const int kMaxStartedTries = 5;
 // The number of max completed tries is based on Gin2G-poor testing showing that
 // we often need about 4 tries with a 2 minute window, or 3 retries with a 3
-// minute window.
+// minute window. Also, we count one try now for foreground/disabled requests.
 const int kMaxCompletedTries = 3;
 // By the time we get to a week, the user has forgotten asking for a page.
 const int kRequestExpirationTimeInSeconds = 60 * 60 * 24 * 7;

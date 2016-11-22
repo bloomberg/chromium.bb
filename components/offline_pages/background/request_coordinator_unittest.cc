@@ -1038,21 +1038,45 @@ TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
   PumpLoop();
   EXPECT_NE(request_id, 0l);
 
-  // Ensure the start processing request stops before the completion callback.
-  EnableOfflinerCallback(false);
-
-  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions(),
-                                             immediate_callback()));
+  // Verify request added in OFFLINING state.
+  EXPECT_TRUE(observer().added_called());
+  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
 
   // Call the method under test, making sure we send SUCCESS to the observer.
   coordinator()->MarkRequestCompleted(request_id);
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // Our observer should have seen SUCCESS instead of REMOVED.
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
             observer().last_status());
   EXPECT_TRUE(observer().completed_called());
+}
+
+TEST_F(RequestCoordinatorTest, EnableForOffliner) {
+  // Pretend we are on low-end device so immediate start won't happen.
+  SetIsLowEndDeviceForTest(true);
+
+  int64_t request_id = coordinator()->SavePageLater(
+      kUrl1, kClientId1, kUserRequested,
+      RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER);
+  PumpLoop();
+  EXPECT_NE(request_id, 0l);
+
+  // Verify request added and initial change to OFFLINING (in foreground).
+  EXPECT_TRUE(observer().added_called());
+  EXPECT_TRUE(observer().changed_called());
+  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
+  observer().Clear();
+
+  // Ensure that the new request does not finish so we can verify state change.
+  EnableOfflinerCallback(false);
+
+  coordinator()->EnableForOffliner(request_id, kClientId1);
+  PumpLoop();
+
+  // Verify request changed again.
+  EXPECT_TRUE(observer().changed_called());
+  EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
 }
 
 TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {

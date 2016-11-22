@@ -287,7 +287,8 @@ void RecentTabHelper::ReportDownloadStatusToRequestCoordinator() {
   if (download_info_->page_snapshot_completed_)
     request_coordinator->MarkRequestCompleted(download_info_->request_id_);
   else
-    request_coordinator->EnableForOffliner(download_info_->request_id_);
+    request_coordinator->EnableForOffliner(download_info_->request_id_,
+                                           download_info_->client_id_);
 }
 
 bool RecentTabHelper::IsSamePage() const {

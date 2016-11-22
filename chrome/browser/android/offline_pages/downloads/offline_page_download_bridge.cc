@@ -99,7 +99,7 @@ void SavePageIfNotNavigatedAway(const GURL& original_url,
       offline_pages::RequestCoordinator* request_coordinator =
           offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
               web_contents->GetBrowserContext());
-      request_coordinator->EnableForOffliner(request_id);
+      request_coordinator->EnableForOffliner(request_id, client_id);
     }
     return;
   }
