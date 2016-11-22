@@ -20,13 +20,15 @@ public interface VrDaydreamApi {
 
     /**
      * Register the intent to launch after phone inserted into a Daydream viewer.
+     * @return false if unable to acquire DaydreamApi instance.
      */
-    void registerDaydreamIntent(final PendingIntent pendingIntent);
+    boolean registerDaydreamIntent(final PendingIntent pendingIntent);
 
     /**
      * Unregister the intent if any.
+     * @return false if unable to acquire DaydreamApi instance.
      */
-    void unregisterDaydreamIntent();
+    boolean unregisterDaydreamIntent();
 
     /**
      * Create an Intent to launch a VR activity with the given component name.
@@ -35,14 +37,16 @@ public interface VrDaydreamApi {
 
     /**
      * Launch the given Intent in VR mode.
+     * @return false if unable to acquire DaydreamApi instance.
      */
-    void launchInVr(final PendingIntent pendingIntent);
+    boolean launchInVr(final PendingIntent pendingIntent);
 
     /**
      * @param requestCode The requestCode used by startActivityForResult.
      * @param intent The data passed to VrCore as part of the exit request.
+     * @return false if unable to acquire DaydreamApi instance.
      */
-    void exitFromVr(int requestCode, final Intent intent);
+    boolean exitFromVr(int requestCode, final Intent intent);
 
     /**
      * Sets VR Mode to |enabled|.

@@ -163,7 +163,9 @@ public class VrShellDelegate {
             }
         } else {
             if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, false);
-            mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent());
+            if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+                mVrShell.setWebVrModeEnabled(false);
+            }
         }
 
         mRequestedWebVR = false;
@@ -258,7 +260,7 @@ public class VrShellDelegate {
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVR(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
 
-        mVrDaydreamApi.launchInVr(getPendingEnterVRIntent());
+        if (!mVrDaydreamApi.launchInVr(getPendingEnterVRIntent())) return ENTER_VR_CANCELLED;
         return ENTER_VR_REQUESTED;
     }
 
@@ -351,7 +353,9 @@ public class VrShellDelegate {
             mVrDaydreamApi.setVrModeEnabled(false);
         } else {
             // For now, we don't handle re-entering VR when exit fails, so keep trying to exit.
-            mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent());
+            if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+                mVrDaydreamApi.setVrModeEnabled(false);
+            }
         }
     }
 
@@ -415,9 +419,7 @@ public class VrShellDelegate {
         if (!mInVr) return;
         mRequestedWebVR = false;
         if (returnTo2D) {
-            if (showTransition) {
-                mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent());
-            } else {
+            if (!showTransition || !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
                 mVrDaydreamApi.setVrModeEnabled(false);
             }
         } else {

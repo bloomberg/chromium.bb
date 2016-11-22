@@ -32,26 +32,22 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
         return DaydreamApi.isDaydreamReadyPlatform(mActivity);
     }
 
-    private void checkDaydreamReadyDevice() {
-        if (!DaydreamApi.isDaydreamReadyPlatform(mActivity)) {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     @Override
-    public void registerDaydreamIntent(final PendingIntent pendingIntent) {
-        checkDaydreamReadyDevice();
+    public boolean registerDaydreamIntent(final PendingIntent pendingIntent) {
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        if (daydreamApi == null) return false;
         daydreamApi.registerDaydreamIntent(pendingIntent);
         daydreamApi.close();
+        return true;
     }
 
     @Override
-    public void unregisterDaydreamIntent() {
-        checkDaydreamReadyDevice();
+    public boolean unregisterDaydreamIntent() {
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        if (daydreamApi == null) return false;
         daydreamApi.unregisterDaydreamIntent();
         daydreamApi.close();
+        return true;
     }
 
     @Override
@@ -60,19 +56,21 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
-    public void launchInVr(final PendingIntent pendingIntent) {
-        checkDaydreamReadyDevice();
+    public boolean launchInVr(final PendingIntent pendingIntent) {
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        if (daydreamApi == null) return false;
         daydreamApi.launchInVr(pendingIntent);
         daydreamApi.close();
+        return true;
     }
 
     @Override
-    public void exitFromVr(int requestCode, final Intent intent) {
-        checkDaydreamReadyDevice();
+    public boolean exitFromVr(int requestCode, final Intent intent) {
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        if (daydreamApi == null) return false;
         daydreamApi.exitFromVr(mActivity, requestCode, intent);
         daydreamApi.close();
+        return true;
     }
 
     @Override
