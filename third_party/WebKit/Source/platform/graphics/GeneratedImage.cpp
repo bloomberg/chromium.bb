@@ -63,7 +63,7 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext,
   SkPaint fillPaint = destContext.fillPaint();
   picturePattern->applyToPaint(fillPaint, patternMatrix);
   fillPaint.setColor(SK_ColorBLACK);
-  fillPaint.setBlendMode(static_cast<SkBlendMode>(compositeOp));
+  fillPaint.setBlendMode(compositeOp);
 
   destContext.drawRect(destRect, fillPaint);
 }

@@ -307,7 +307,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   paint.setShader(SkShader::MakePictureShader(
       std::move(tilePicture), SkShader::kRepeat_TileMode,
       SkShader::kRepeat_TileMode, &patternTransform, nullptr));
-  paint.setBlendMode(static_cast<SkBlendMode>(compositeOp));
+  paint.setBlendMode(compositeOp);
   paint.setColorFilter(sk_ref_sp(context.getColorFilter()));
   context.drawRect(dstRect, paint);
 }

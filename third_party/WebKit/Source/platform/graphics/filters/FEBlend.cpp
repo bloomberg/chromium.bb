@@ -54,8 +54,8 @@ sk_sp<SkImageFilter> FEBlend::createImageFilter() {
       SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
   sk_sp<SkImageFilter> background(
       SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace()));
-  SkBlendMode mode = static_cast<SkBlendMode>(
-      WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode));
+  SkBlendMode mode =
+      WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode);
   SkImageFilter::CropRect cropRect = getCropRect();
   return SkXfermodeImageFilter::Make(mode, std::move(background),
                                      std::move(foreground), &cropRect);
