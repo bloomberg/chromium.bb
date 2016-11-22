@@ -207,18 +207,6 @@ Response InspectorLogAgent::stopViolationsReport() {
   return Response::OK();
 }
 
-void InspectorLogAgent::reportLongTask(
-    double startTime,
-    double endTime,
-    const HeapHashSet<Member<Frame>>& contextFrames) {
-  double time = (endTime - startTime) * 1000;
-  String messageText =
-      String::format("Long running JavaScript task took %ldms", lround(time));
-  ConsoleMessage* message = ConsoleMessage::create(
-      ViolationMessageSource, WarningMessageLevel, messageText);
-  consoleMessageAdded(message);
-}
-
 void InspectorLogAgent::reportLongLayout(double duration) {
   String messageText =
       String::format("Forced reflow while executing JavaScript took %ldms",

@@ -22,5 +22,4 @@ Layout Properties:
     type : "Layout"
 }
 Text details for Layout: forced-layout-in-microtask.html:14
-Layout has a warning
 

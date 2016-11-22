@@ -17,5 +17,4 @@ UpdateLayoutTree Properties:
     type : "UpdateLayoutTree"
 }
 Text details for UpdateLayoutTree: wrapCallFunctionForTimeline.js:7
-UpdateLayoutTree has a warning
 

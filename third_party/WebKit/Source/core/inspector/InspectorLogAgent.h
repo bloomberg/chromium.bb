@@ -42,9 +42,6 @@ class CORE_EXPORT InspectorLogAgent
 
  private:
   // PerformanceMonitor::Client implementation.
-  void reportLongTask(double startTime,
-                      double endTime,
-                      const HeapHashSet<Member<Frame>>& contextFrames) override;
   void reportLongLayout(double duration) override;
   void reportGenericViolation(PerformanceMonitor::Violation,
                               const String& text,
