@@ -471,6 +471,9 @@ post_process_cmdline() {
     # Enable reference_buffer by default
     soft_enable reference_buffer
 
+    #Enable delta_q by default
+    soft_enable delta_q
+
     # Enable daala_ec by default
     ! enabled ans && soft_enable daala_ec
 
