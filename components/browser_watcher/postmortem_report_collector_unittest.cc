@@ -389,8 +389,9 @@ class PostmortemReportCollectorCollectionTest : public testing::Test {
       return nullptr;
 
     // Get the memory's base address.
-    void* mem_base = allocator->GetAsObject<char>(
-        mem_reference, GlobalActivityTracker::kTypeIdActivityTracker);
+    void* mem_base = allocator->GetAsArray<char>(
+        mem_reference, GlobalActivityTracker::kTypeIdActivityTracker,
+        PersistentMemoryAllocator::kSizeAny);
     if (mem_base == nullptr)
       return nullptr;
 
