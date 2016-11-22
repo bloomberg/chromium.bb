@@ -117,8 +117,8 @@ public class CompositorViewHolder extends CoordinatorLayout
     private boolean mEnableCompositorTabStrip;
 
     // Cache objects that should not be created frequently.
-    private final Rect mCacheViewport = new Rect();
-    private final Rect mCacheVisibleViewport = new Rect();
+    private final RectF mCacheViewport = new RectF();
+    private final RectF mCacheVisibleViewport = new RectF();
     private DrawingInfo mProgressBarDrawingInfo;
 
     // If we've drawn at least one frame.
@@ -509,7 +509,7 @@ public class CompositorViewHolder extends CoordinatorLayout
         // TODO(changwan): check if this can be merged with setContentMotionEventOffsets.
         if (mTabVisible != null && mTabVisible.getContentViewCore() != null) {
             mTabVisible.getContentViewCore().setSmartClipOffsets(
-                    -mCacheViewport.left, -mCacheViewport.top);
+                    (int) -mCacheViewport.left, (int) -mCacheViewport.top);
         }
         if (mLayoutManager != null) {
             mLayoutManager.pushNewViewport(
@@ -678,7 +678,7 @@ public class CompositorViewHolder extends CoordinatorLayout
     }
 
     @Override
-    public int getOverlayTranslateY() {
+    public float getOverlayTranslateY() {
         return areBrowserControlsPermanentlyHidden()
                 ? getTopControlsHeightPixels()
                 : mCacheVisibleViewport.top;

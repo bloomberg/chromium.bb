@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.layouts;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.RectF;
 import android.os.Build;
 import android.util.SparseArray;
 import android.view.MotionEvent;
@@ -186,11 +185,11 @@ public class LayoutManagerDocument extends LayoutManager
     }
 
     @Override
-    protected void onViewportChanged(RectF viewportDp) {
-        super.onViewportChanged(viewportDp);
+    protected void onViewportChanged() {
+        super.onViewportChanged();
         for (int i = 0; i < mTabCache.size(); i++) {
             // This assumes that the content width/height is always the size of the host.
-            mTabCache.valueAt(i).setContentSize(viewportDp.width(), viewportDp.height());
+            mTabCache.valueAt(i).setContentSize(mHost.getWidth(), mHost.getHeight());
         }
     }
 
@@ -282,11 +281,11 @@ public class LayoutManagerDocument extends LayoutManager
             boolean isTitleNeeded, float maxContentWidth, float maxContentHeight) {
         LayoutTab tab = mTabCache.get(id);
         if (tab == null) {
-            tab = new LayoutTab(id, incognito, mLastContentWidthDp, mLastContentHeightDp,
+            tab = new LayoutTab(id, incognito, mHost.getWidth(), mHost.getHeight(),
                     showCloseButton, isTitleNeeded);
             mTabCache.put(id, tab);
         } else {
-            tab.init(mLastContentWidthDp, mLastContentHeightDp, showCloseButton, isTitleNeeded);
+            tab.init(mHost.getWidth(), mHost.getHeight(), showCloseButton, isTitleNeeded);
         }
         if (maxContentWidth > 0.f) tab.setMaxContentWidth(maxContentWidth);
         if (maxContentHeight > 0.f) tab.setMaxContentHeight(maxContentHeight);

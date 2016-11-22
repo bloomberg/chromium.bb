@@ -183,7 +183,7 @@ public class TabContentManager {
             }
         }
 
-        int overlayTranslateY = mContentOffsetProvider.getOverlayTranslateY();
+        float overlayTranslateY = mContentOffsetProvider.getOverlayTranslateY();
 
         try {
             bitmap = Bitmap.createBitmap(

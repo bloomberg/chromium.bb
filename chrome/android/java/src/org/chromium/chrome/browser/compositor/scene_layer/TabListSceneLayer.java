@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Rect;
+import android.graphics.RectF;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.JNINamespace;
@@ -42,7 +42,7 @@ public class TabListSceneLayer extends SceneLayer {
      * @param resourceManager An object for accessing static and dynamic resources.
      * @param fullscreenManager The fullscreen manager for browser controls information.
      */
-    public void pushLayers(Context context, Rect viewport, Rect contentViewport, Layout layout,
+    public void pushLayers(Context context, RectF viewport, RectF contentViewport, Layout layout,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         if (mNativePtr == 0) return;

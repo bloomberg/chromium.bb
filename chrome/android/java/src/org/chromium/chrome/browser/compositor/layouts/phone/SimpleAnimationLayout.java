@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts.phone;
 
 import android.content.Context;
-import android.graphics.Rect;
+import android.graphics.RectF;
 import android.view.animation.Interpolator;
 
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -412,7 +412,7 @@ public class SimpleAnimationLayout
     }
 
     @Override
-    protected void updateSceneLayer(Rect viewport, Rect contentViewport,
+    protected void updateSceneLayer(RectF viewport, RectF contentViewport,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,

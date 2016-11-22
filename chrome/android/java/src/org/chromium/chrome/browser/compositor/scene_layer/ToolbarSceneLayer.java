@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
-import android.graphics.Rect;
+import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
@@ -46,7 +46,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     private LayoutRenderHost mRenderHost;
 
     /** The size of the viewport (full-screen minus status bar). */
-    private Rect mViewport;
+    private RectF mViewport;
 
     /**
      * @param context An Android context to use.
@@ -58,7 +58,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         mContext = context;
         mLayoutProvider = provider;
         mRenderHost = renderHost;
-        mViewport = new Rect();
+        mViewport = new RectF();
     }
 
     /**

@@ -146,15 +146,15 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      *
      * @param tabId                   The id of the source {@link Tab}.
      * @param isIncognito             Whether the tab in the in the incognito stack.
-     * @param maxContentTextureWidth  The maximum width for drawing the content.
-     * @param maxContentTextureHeight The maximum height for drawing the content.
+     * @param maxContentTextureWidth  The maximum width for drawing the content in px.
+     * @param maxContentTextureHeight The maximum height for drawing the content in px.
      * @param showCloseButton         Whether a close button should be displayed in the corner.
      * @param isTitleNeeded           Whether that tab need a title texture. This is an
      *                                optimization to save cycles and memory. This is
      *                                ignored if the title texture is already set.
      */
-    public LayoutTab(int tabId, boolean isIncognito, float maxContentTextureWidth,
-            float maxContentTextureHeight, boolean showCloseButton, boolean isTitleNeeded) {
+    public LayoutTab(int tabId, boolean isIncognito, int maxContentTextureWidth,
+            int maxContentTextureHeight, boolean showCloseButton, boolean isTitleNeeded) {
         mId = tabId;
         mIsIncognito = isIncognito;
         init(maxContentTextureWidth, maxContentTextureHeight, showCloseButton, isTitleNeeded);
@@ -163,14 +163,14 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     /**
      * Initializes a {@link LayoutTab} to its default value so it can be reused.
      *
-     * @param maxContentTextureWidth  The maximum width of the page content in dp.
-     * @param maxContentTextureHeight The maximum height of the page content in dp.
+     * @param maxContentTextureWidth  The maximum width of the page content in px.
+     * @param maxContentTextureHeight The maximum height of the page content in px.
      * @param showCloseButton         Whether to show the close button on the tab border.
      * @param isTitleNeeded           Whether that tab need a title texture. This is an
      *                                optimization to save cycles and memory. This is
      *                                ignored if the title texture is already set.
      */
-    public void init(float maxContentTextureWidth, float maxContentTextureHeight,
+    public void init(int maxContentTextureWidth, int maxContentTextureHeight,
             boolean showCloseButton, boolean isTitleNeeded) {
         mAlpha = 1.0f;
         mSaturation = 1.0f;
@@ -200,10 +200,10 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
         mInsetBorderVertical = false;
         mToolbarYOffset = 0.f;
         mSideBorderScale = 1.f;
-        mOriginalContentWidth = maxContentTextureWidth;
-        mOriginalContentHeight = maxContentTextureHeight;
-        mMaxContentWidth = maxContentTextureWidth;
-        mMaxContentHeight = maxContentTextureHeight;
+        mOriginalContentWidth = maxContentTextureWidth * sPxToDp;
+        mOriginalContentHeight = maxContentTextureHeight * sPxToDp;
+        mMaxContentWidth = maxContentTextureWidth * sPxToDp;
+        mMaxContentHeight = maxContentTextureHeight * sPxToDp;
 
         mInitFromHostCalled = false;
     }
@@ -804,12 +804,12 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     }
 
     /**
-     * @param originalContentWidth  The maximum content width for the given orientation.
-     * @param originalContentHeight The maximum content height for the given orientation.
+     * @param originalContentWidth  The maximum content width for the given orientation in px.
+     * @param originalContentHeight The maximum content height for the given orientation in px.
      */
-    public void setContentSize(float originalContentWidth, float originalContentHeight) {
-        mOriginalContentWidth = originalContentWidth;
-        mOriginalContentHeight = originalContentHeight;
+    public void setContentSize(int originalContentWidth, int originalContentHeight) {
+        mOriginalContentWidth = originalContentWidth * sPxToDp;
+        mOriginalContentHeight = originalContentHeight * sPxToDp;
     }
 
     /**

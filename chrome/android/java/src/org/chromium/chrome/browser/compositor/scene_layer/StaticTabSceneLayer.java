@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
-import android.graphics.Rect;
+import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -37,7 +37,7 @@ public class StaticTabSceneLayer extends SceneLayer {
      * @param fullscreenManager The FullscreenManager.
      * @param layoutTab         The LayoutTab.
      */
-    public void update(float dpToPx, Rect contentViewport, LayerTitleCache layerTitleCache,
+    public void update(float dpToPx, RectF contentViewport, LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ChromeFullscreenManager fullscreenManager,
             LayoutTab layoutTab) {
         if (layoutTab == null) {
