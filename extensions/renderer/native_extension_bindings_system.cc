@@ -8,6 +8,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
@@ -200,7 +201,7 @@ void NativeExtensionBindingsSystem::SendRequest(
   params.worker_thread_id = -1;
   params.service_worker_version_id = kInvalidServiceWorkerVersionId;
 
-  send_ipc_.Run(params);
+  send_ipc_.Run(script_context, params);
 }
 
 }  // namespace extensions

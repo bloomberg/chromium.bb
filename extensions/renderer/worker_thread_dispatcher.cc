@@ -9,8 +9,10 @@
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/js_extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/service_worker_data.h"
 
 namespace extensions {
@@ -40,6 +42,15 @@ ServiceWorkerData* GetServiceWorkerData() {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK(data);
   return data;
+}
+
+// Handler for sending IPCs with native extension bindings.
+void SendRequestIPC(ScriptContext* context,
+                    const ExtensionHostMsg_Request_Params& params) {
+  // TODO(devlin): This won't handle incrementing/decrementing service worker
+  // lifetime.
+  WorkerThreadDispatcher::Get()->Send(
+      new ExtensionHostMsg_RequestWorker(params));
 }
 
 }  // namespace
@@ -106,10 +117,15 @@ void WorkerThreadDispatcher::AddWorkerData(
     ResourceBundleSourceMap* source_map) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
-    std::unique_ptr<ExtensionBindingsSystem> bindings_system =
-        base::MakeUnique<JsExtensionBindingsSystem>(
-            source_map, base::MakeUnique<ServiceWorkerRequestSender>(
-                            this, service_worker_version_id));
+    std::unique_ptr<ExtensionBindingsSystem> bindings_system;
+    if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+      bindings_system = base::MakeUnique<NativeExtensionBindingsSystem>(
+          base::Bind(&SendRequestIPC));
+    } else {
+      bindings_system = base::MakeUnique<JsExtensionBindingsSystem>(
+          source_map, base::MakeUnique<ServiceWorkerRequestSender>(
+                          this, service_worker_version_id));
+    }
     ServiceWorkerData* new_data = new ServiceWorkerData(
         service_worker_version_id, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);

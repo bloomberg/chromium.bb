@@ -1728,6 +1728,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,
       extensions::switches::kIsolateExtensions,
+      extensions::switches::kNativeCrxBindings,
       extensions::switches::kWhitelistedExtensionID,
 #endif
       switches::kAllowInsecureLocalhost,

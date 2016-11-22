@@ -75,6 +75,7 @@
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/module_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/process_info_native_handler.h"
 #include "extensions/renderer/render_frame_observer_natives.h"
 #include "extensions/renderer/renderer_extension_registry.h"
@@ -186,6 +187,17 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   }
 };
 
+// Handler for sending IPCs with native extension bindings. Only used for
+// the main thread.
+void SendRequestIPC(ScriptContext* context,
+                    const ExtensionHostMsg_Request_Params& params) {
+  content::RenderFrame* frame = context->GetRenderFrame();
+  if (!frame)
+    return;
+  // TODO(devlin): Handle IO-thread messages.
+  frame->Send(new ExtensionHostMsg_Request(frame->GetRoutingID(), params));
+}
+
 base::LazyInstance<WorkerScriptContextSet> g_worker_script_context_set =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -198,13 +210,19 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
-      bindings_system_(
-          new JsExtensionBindingsSystem(&source_map_,
-                                        base::MakeUnique<RequestSender>())),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
       *(base::CommandLine::ForCurrentProcess());
+
+  if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+    bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
+        base::Bind(&SendRequestIPC));
+  } else {
+    bindings_system_ = base::MakeUnique<JsExtensionBindingsSystem>(
+        &source_map_, base::MakeUnique<RequestSender>());
+  }
+
   set_idle_notifications_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
       command_line.HasSwitch(::switches::kSingleProcess);

@@ -62,7 +62,7 @@ namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
 class FilteredEventRouter;
-class JsExtensionBindingsSystem;
+class ExtensionBindingsSystem;
 class ManifestPermissionSet;
 class RequestSender;
 class ScriptContext;
@@ -281,7 +281,7 @@ class Dispatcher : public content::RenderThreadObserver,
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
 
   // The bindings system associated with the main thread.
-  std::unique_ptr<JsExtensionBindingsSystem> bindings_system_;
+  std::unique_ptr<ExtensionBindingsSystem> bindings_system_;
 
   // The platforms system font family and size;
   std::string system_font_family_;

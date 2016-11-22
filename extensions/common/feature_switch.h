@@ -41,6 +41,7 @@ class FeatureSwitch {
   static FeatureSwitch* embedded_extension_options();
   static FeatureSwitch* trace_app_source();
   static FeatureSwitch* load_media_router_component_extension();
+  static FeatureSwitch* native_crx_bindings();
 
   enum DefaultValue {
     DEFAULT_ENABLED,

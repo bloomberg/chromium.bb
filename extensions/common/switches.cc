@@ -110,6 +110,9 @@ const char kWhitelistedExtensionID[] = "whitelisted-extension-id";
 // Pass launch source to platform apps.
 const char kTraceAppSource[] = "enable-trace-app-source";
 
+// Enables the use of C++-based extension bindings (instead of JS generation).
+const char kNativeCrxBindings[] = "native-crx-bindings";
+
 // Enable package hash check: the .crx file sha256 hash sum should be equal to
 // the one received from update manifest.
 const char kEnableCrxHashCheck[] = "enable-crx-hash-check";

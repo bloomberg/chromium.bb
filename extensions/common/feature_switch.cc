@@ -54,11 +54,12 @@ class CommonSwitches {
         load_media_router_component_extension(
             kLoadMediaRouterComponentExtensionFlag,
 #if defined(GOOGLE_CHROME_BUILD)
-            FeatureSwitch::DEFAULT_ENABLED)
+            FeatureSwitch::DEFAULT_ENABLED),
 #else
-            FeatureSwitch::DEFAULT_DISABLED)
+            FeatureSwitch::DEFAULT_DISABLED),
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  {
+        native_crx_bindings(switches::kNativeCrxBindings,
+                            FeatureSwitch::DEFAULT_DISABLED) {
   }
 
   // Enables extensions to be easily installed from sites other than the web
@@ -78,6 +79,7 @@ class CommonSwitches {
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
   FeatureSwitch load_media_router_component_extension;
+  FeatureSwitch native_crx_bindings;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -114,6 +116,9 @@ FeatureSwitch* FeatureSwitch::trace_app_source() {
 }
 FeatureSwitch* FeatureSwitch::load_media_router_component_extension() {
   return &g_common_switches.Get().load_media_router_component_extension;
+}
+FeatureSwitch* FeatureSwitch::native_crx_bindings() {
+  return &g_common_switches.Get().native_crx_bindings;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

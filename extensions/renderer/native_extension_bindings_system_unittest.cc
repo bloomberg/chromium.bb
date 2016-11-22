@@ -9,6 +9,7 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
@@ -68,7 +69,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     APIBindingTest::TearDown();
   }
 
-  void MockSendIPC(const ExtensionHostMsg_Request_Params& params) {
+  void MockSendIPC(ScriptContext* context,
+                   const ExtensionHostMsg_Request_Params& params) {
     last_params_.name = params.name;
     last_params_.arguments.Swap(params.arguments.CreateDeepCopy().get());
     last_params_.extension_id = params.extension_id;

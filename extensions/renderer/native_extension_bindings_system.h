@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/callback.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api_bindings_system.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "v8/include/v8.h"
+
+struct ExtensionHostMsg_Request_Params;
 
 namespace extensions {
 class ScriptContext;
@@ -26,7 +27,8 @@ class ScriptContext;
 class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  public:
   using SendIPCMethod =
-      base::Callback<void(const ExtensionHostMsg_Request_Params&)>;
+      base::Callback<void(ScriptContext*,
+                          const ExtensionHostMsg_Request_Params&)>;
 
   explicit NativeExtensionBindingsSystem(const SendIPCMethod& send_ipc);
   ~NativeExtensionBindingsSystem() override;
