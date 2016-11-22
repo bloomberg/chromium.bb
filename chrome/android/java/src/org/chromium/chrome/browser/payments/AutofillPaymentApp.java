@@ -92,6 +92,14 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
+    public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
+        assert methodsAndData != null;
+        Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
+        methodNames.retainAll(getAppMethodNames());
+        return !methodNames.isEmpty();
+    }
+
+    @Override
     public String getAppIdentifier() {
         return "Chrome_Autofill_Payment_App";
     }

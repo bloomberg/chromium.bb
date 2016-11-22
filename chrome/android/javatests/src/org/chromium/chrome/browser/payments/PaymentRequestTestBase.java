@@ -786,6 +786,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
+        public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
+            assert methodsAndData != null;
+            return methodsAndData.containsKey(mMethodName);
+        }
+
+        @Override
         public String getAppIdentifier() {
             return mMethodName;
         }

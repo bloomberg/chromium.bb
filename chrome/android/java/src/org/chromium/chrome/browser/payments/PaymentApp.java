@@ -43,11 +43,22 @@ public interface PaymentApp {
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",
      * "mastercard"] in basic card payments. Should return a list of at least one method name.
-     * https://w3c.github.io/browser-payment-api/specs/basic-card-payment.html#method-id
+     * https://w3c.github.io/webpayments-methods-card/#method-id
      *
      * @return The list of all payment method names that this app supports.
      */
     Set<String> getAppMethodNames();
+
+    /**
+     * Checks whether the app can support the payment methods when the method-specific data is taken
+     * into account.
+     *
+     * @param methodsAndData A mapping from the payment methods supported by this app to the
+     *                       corresponding method-specific data. Should not be null.
+     * @return True if the given methods are supported when the method-specific data is taken into
+     *         account.
+     */
+    boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData);
 
     /**
      * Returns the identifier for this payment app to be saved in user preferences. For example,

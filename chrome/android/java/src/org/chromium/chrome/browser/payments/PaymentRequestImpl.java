@@ -494,7 +494,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
             paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methods);
         }
-        return result;
+        return Collections.unmodifiableMap(result);
     }
 
     /** Queries the installed payment apps for their instruments that merchant supports. */
@@ -508,7 +508,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentApp app = mApps.get(i);
             Map<String, PaymentMethodData> appMethods =
                     filterMerchantMethodData(mMethodData, app.getAppMethodNames());
-            if (appMethods == null) {
+            if (appMethods == null || !app.supportsMethodsAndData(appMethods)) {
                 mPendingApps.remove(app);
             } else {
                 mArePaymentMethodsSupported = true;
@@ -535,7 +535,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 result.put(method, merchantMethodData.get(method));
             }
         }
-        return result;
+        return result == null ? null : Collections.unmodifiableMap(result);
     }
 
     /**
@@ -599,7 +599,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
         mRawTotal = details.total;
-        mRawLineItems = Arrays.asList(details.displayItems);
+        mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
         mUiShippingOptions = getShippingOptions(details.shippingOptions, totalCurrency, formatter);
 
@@ -640,7 +640,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     item.label, "", formatter.format(item.amount.value), item.pending));
         }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     /**
@@ -668,7 +668,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, selectedItemIndex,
-                result);
+                Collections.unmodifiableList(result));
     }
 
     /**
