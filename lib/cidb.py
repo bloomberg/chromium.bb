@@ -1297,15 +1297,16 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       start_date: (Type: datetime.date) The first date on which you want action
           history.
       end_date: (Type: datetime.date) The last date on which you want action
-          history.
+          history (inclusive).
     """
     values = {'start_date': start_date.strftime(self._DATE_FORMAT),
               'end_date': end_date.strftime(self._DATE_FORMAT)}
 
     # Enforce start and end date.
-    conds = 'DATE(timestamp) >= %(start_date)s'
+    conds = 'timestamp >= TIMESTAMP(%(start_date)s)'
     if end_date:
-      conds += ' AND DATE(timestamp) <= %(end_date)s'
+      conds += (' AND timestamp < '
+                'TIMESTAMP(DATE_ADD(%(end_date)s, INTERVAL 1 DAY))')
 
     changes = ('SELECT DISTINCT change_number, patch_number, change_source '
                'FROM clActionTable WHERE %s' % conds)
