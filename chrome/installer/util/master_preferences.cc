@@ -173,7 +173,7 @@ void MasterPreferences::InitializeFromCommandLine(
   if (env != NULL) {
     std::string is_machine_var;
     env->GetVar(env_vars::kGoogleUpdateIsMachineEnvVar, &is_machine_var);
-    if (!is_machine_var.empty() && is_machine_var[0] == '1') {
+    if (is_machine_var == "1") {
       VLOG(1) << "Taking system-level from environment.";
       name.assign(installer::master_preferences::kDistroDict);
       name.append(".").append(installer::master_preferences::kSystemLevel);

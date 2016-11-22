@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -21,6 +22,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+// A helper class to set the "GoogleUpdateIsMachine" environment variable.
+class ScopedGoogleUpdateIsMachine {
+ public:
+  explicit ScopedGoogleUpdateIsMachine(const char* value)
+      : env_(base::Environment::Create()) {
+    env_->SetVar("GoogleUpdateIsMachine", value);
+  }
+
+  ~ScopedGoogleUpdateIsMachine() {
+    env_->UnSetVar("GoogleUpdateIsMachine");
+  }
+
+ private:
+  std::unique_ptr<base::Environment> env_;
+};
+
 class MasterPreferencesTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -406,4 +424,39 @@ TEST_F(MasterPreferencesTest, DontEnforceLegacyCreateAllShortcutsNotSpecified) {
     EXPECT_FALSE(do_not_create_desktop_shortcut);
     EXPECT_FALSE(do_not_create_quick_launch_shortcut);
     EXPECT_FALSE(do_not_create_taskbar_shortcut);
+}
+
+TEST_F(MasterPreferencesTest, GoogleUpdateIsMachine) {
+  {
+    ScopedGoogleUpdateIsMachine env_setter("0");
+    installer::MasterPreferences prefs(
+        base::CommandLine(base::FilePath(FILE_PATH_LITERAL("setup.exe"))));
+    bool value = false;
+    prefs.GetBool(installer::master_preferences::kSystemLevel, &value);
+    EXPECT_FALSE(value);
+  }
+  {
+    ScopedGoogleUpdateIsMachine env_setter("1");
+    installer::MasterPreferences prefs(
+        base::CommandLine(base::FilePath(FILE_PATH_LITERAL("setup.exe"))));
+    bool value = false;
+    prefs.GetBool(installer::master_preferences::kSystemLevel, &value);
+    EXPECT_TRUE(value);
+  }
+  {
+    ScopedGoogleUpdateIsMachine env_setter("1bridgetoofar");
+    installer::MasterPreferences prefs(
+        base::CommandLine(base::FilePath(FILE_PATH_LITERAL("setup.exe"))));
+    bool value = false;
+    prefs.GetBool(installer::master_preferences::kSystemLevel, &value);
+    EXPECT_FALSE(value);
+  }
+  {
+    ScopedGoogleUpdateIsMachine env_setter("2");
+    installer::MasterPreferences prefs(
+        base::CommandLine(base::FilePath(FILE_PATH_LITERAL("setup.exe"))));
+    bool value = false;
+    prefs.GetBool(installer::master_preferences::kSystemLevel, &value);
+    EXPECT_FALSE(value);
+  }
 }
