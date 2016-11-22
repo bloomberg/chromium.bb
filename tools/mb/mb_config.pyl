@@ -193,6 +193,8 @@
       'WebKit Mac - WPTServe': 'release_bot',
       'WebKit Win - WPTServe': 'release_bot_x86',
       'WebKit Linux - RandomOrder': 'release_bot',
+      'WebKit Mac - RandomOrder': 'release_bot',
+      'WebKit Win - RandomOrder': 'release_bot_x86',
       'Win 10 Fast Ring': 'release_trybot',
       'Windows deterministic': 'release_bot_x86',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
