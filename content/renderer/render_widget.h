@@ -102,6 +102,7 @@ class ImeEventGuard;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
+class RenderViewImpl;
 class RenderWidgetCompositor;
 class RenderWidgetOwnerDelegate;
 class RenderWidgetScreenMetricsEmulator;
@@ -127,12 +128,12 @@ class CONTENT_EXPORT RenderWidget
       public RenderWidgetScreenMetricsEmulatorDelegate,
       public base::RefCounted<RenderWidget> {
  public:
-  // Creates a new RenderWidget.  The opener_id is the routing ID of the
-  // RenderView that this widget lives inside.
-  static RenderWidget* Create(int32_t opener_id,
-                              CompositorDependencies* compositor_deps,
-                              blink::WebPopupType popup_type,
-                              const ScreenInfo& screen_info);
+  // Creates a new RenderWidget for a popup. |opener| is the RenderView that
+  // this widget lives inside.
+  static RenderWidget* CreateForPopup(RenderViewImpl* opener,
+                                      CompositorDependencies* compositor_deps,
+                                      blink::WebPopupType popup_type,
+                                      const ScreenInfo& screen_info);
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
   static RenderWidget* CreateForFrame(int widget_routing_id,
@@ -151,6 +152,9 @@ class CONTENT_EXPORT RenderWidget
                                                        bool,
                                                        bool);
   using RenderWidgetInitializedCallback = void (*)(RenderWidget*);
+  using ShowCallback = base::Callback<void(RenderWidget* widget_to_show,
+                                           blink::WebNavigationPolicy policy,
+                                           const gfx::Rect& initial_rect)>;
   static void InstallCreateHook(
       CreateRenderWidgetFunction create_render_widget,
       RenderWidgetInitializedCallback render_widget_initialized_callback);
@@ -446,7 +450,9 @@ class CONTENT_EXPORT RenderWidget
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
   // Called by Create() functions and subclasses to finish initialization.
-  void Init(int32_t opener_id, blink::WebWidget* web_widget);
+  // |show_callback| will be invoked once WebWidgetClient::show() occurs, and
+  // should be null if show() won't be triggered for this widget.
+  void Init(const ShowCallback& show_callback, blink::WebWidget* web_widget);
 
   // Allows the process to exit once the unload handler has finished, if there
   // are no other active RenderWidgets.
@@ -645,15 +651,6 @@ class CONTENT_EXPORT RenderWidget
   // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<RenderWidgetCompositor> compositor_;
 
-  // Set to the ID of the view that initiated creating this view, if any. When
-  // the view was initiated by the browser (the common case), this will be
-  // MSG_ROUTING_NONE. This is used in determining ownership when opening
-  // child tabs. See RenderWidget::createWebViewWithRequest.
-  //
-  // This ID may refer to an invalid view if that view is closed before this
-  // view is.
-  int32_t opener_id_;
-
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
 
@@ -839,6 +836,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates whether this widget has focus.
   bool has_focus_;
+
+  // A callback into the creator/opener of this widget, to be executed when
+  // WebWidgetClient::show() occurs.
+  ShowCallback show_callback_;
 
 #if defined(OS_MACOSX)
   // Responds to IPCs from TextInputClientMac regarding getting string at given

@@ -93,7 +93,7 @@ void AwContentRendererClient::RenderThreadStarted() {
 bool AwContentRendererClient::HandleNavigation(
     content::RenderFrame* render_frame,
     bool is_content_initiated,
-    int opener_id,
+    bool render_view_was_created_by_renderer,
     blink::WebFrame* frame,
     const blink::WebURLRequest& request,
     blink::WebNavigationType type,
@@ -130,7 +130,14 @@ bool AwContentRendererClient::HandleNavigation(
 
   // use NavigationInterception throttle to handle the call as that can
   // be deferred until after the java side has been constructed.
-  if (opener_id != MSG_ROUTING_NONE) {
+  //
+  // TODO(nick): |render_view_was_created_by_renderer| was plumbed in to
+  // preserve the existing code behavior, but it doesn't appear to be correct.
+  // In particular, this value will be true for the initial navigation of a
+  // RenderView created via window.open(), but it will also be true for all
+  // subsequent navigations in that RenderView, no matter how they are
+  // initiated.
+  if (render_view_was_created_by_renderer) {
     return false;
   }
 

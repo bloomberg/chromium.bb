@@ -546,7 +546,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
       navigation_gesture_(NavigationGestureUnknown),
-      opened_by_user_gesture_(true),
       history_list_offset_(-1),
       history_list_length_(0),
       frames_in_progress_(0),
@@ -565,6 +564,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       speech_recognition_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
+      was_created_by_renderer_(false),
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id),
@@ -572,20 +572,24 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
   GetWidget()->set_owner_delegate(this);
 }
 
-void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
-                                bool was_created_by_renderer) {
-  int opener_view_routing_id = MSG_ROUTING_NONE;
-  WebFrame* opener_frame = RenderFrameImpl::ResolveOpener(
-      params.opener_frame_route_id, &opener_view_routing_id);
-  if (!was_created_by_renderer)
-    opener_view_routing_id = MSG_ROUTING_NONE;
+void RenderViewImpl::Initialize(
+    const mojom::CreateViewParams& params,
+    const RenderWidget::ShowCallback& show_callback) {
+  bool was_created_by_renderer = !show_callback.is_null();
+#if defined(OS_ANDROID)
+  // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
+  // HandleNavigation codepath.
+  was_created_by_renderer_ = was_created_by_renderer;
+#endif
+  WebFrame* opener_frame =
+      RenderFrameImpl::ResolveOpener(params.opener_frame_route_id, nullptr);
 
   display_mode_ = params.initial_size.display_mode;
 
   webview_ =
       WebView::create(this, is_hidden() ? blink::WebPageVisibilityStateHidden
                                         : blink::WebPageVisibilityStateVisible);
-  RenderWidget::Init(opener_view_routing_id, webview_->widget());
+  RenderWidget::Init(show_callback, webview_->widget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -677,9 +681,11 @@ void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
   content_detectors_.push_back(base::MakeUnique<EmailDetector>());
 #endif
 
-  // If this is a popup, we must wait for the CreatingNew_ACK message before
-  // completing initialization.  Otherwise, we can finish it now.
-  if (opener_id_ == MSG_ROUTING_NONE)
+  // If this RenderView's creation was initiated by an opener page in this
+  // process, (e.g. window.open()), we won't be visible until we ask the opener,
+  // via show_callback, to make us visible. Otherwise, we went through a
+  // browser-initiated creation, and show() won't be called.
+  if (!was_created_by_renderer)
     did_show_ = true;
 
   // Set the main frame's name.  Only needs to be done for WebLocalFrames,
@@ -1065,9 +1071,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 }
 
 /*static*/
-RenderViewImpl* RenderViewImpl::Create(CompositorDependencies* compositor_deps,
-                                       const mojom::CreateViewParams& params,
-                                       bool was_created_by_renderer) {
+RenderViewImpl* RenderViewImpl::Create(
+    CompositorDependencies* compositor_deps,
+    const mojom::CreateViewParams& params,
+    const RenderWidget::ShowCallback& show_callback) {
   DCHECK(params.view_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
@@ -1075,7 +1082,7 @@ RenderViewImpl* RenderViewImpl::Create(CompositorDependencies* compositor_deps,
   else
     render_view = new RenderViewImpl(compositor_deps, params);
 
-  render_view->Initialize(params, was_created_by_renderer);
+  render_view->Initialize(params, show_callback);
   return render_view;
 }
 
@@ -1334,6 +1341,35 @@ void RenderViewImpl::SendUpdateState() {
                                    HistoryEntryToPageState(entry)));
 }
 
+void RenderViewImpl::ShowCreatedPopupWidget(RenderWidget* popup_widget,
+                                            WebNavigationPolicy policy,
+                                            const gfx::Rect& initial_rect) {
+  Send(new ViewHostMsg_ShowWidget(GetRoutingID(), popup_widget->routing_id(),
+                                  initial_rect));
+}
+
+void RenderViewImpl::ShowCreatedFullscreenWidget(
+    RenderWidget* fullscreen_widget,
+    WebNavigationPolicy policy,
+    const gfx::Rect& initial_rect) {
+  Send(new ViewHostMsg_ShowFullscreenWidget(GetRoutingID(),
+                                            fullscreen_widget->routing_id()));
+}
+
+void RenderViewImpl::ShowCreatedViewWidget(bool opened_by_user_gesture,
+                                           RenderWidget* render_view_to_show,
+                                           WebNavigationPolicy policy,
+                                           const gfx::Rect& initial_rect) {
+  // |render_view_to_show| represents a pending view opened (e.g. a popup opened
+  // via window.open()) by this object, but not yet shown (it's offscreen, and
+  // still owned by the opener). Sending |ViewHostMsg_ShowView| will move it off
+  // the opener's pending list, into e.g. its own tab or window.
+  Send(new ViewHostMsg_ShowView(GetRoutingID(),
+                                render_view_to_show->routing_id(),
+                                NavigationPolicyToDisposition(policy),
+                                initial_rect, opened_by_user_gesture));
+}
+
 void RenderViewImpl::SendFrameStateUpdates() {
   // We only use this path in OOPIF-enabled modes.
   DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
@@ -1466,16 +1502,19 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.max_size = gfx::Size();
   view_params.page_zoom_level = page_zoom_level_;
 
+  RenderWidget::ShowCallback show_callback =
+      base::Bind(&RenderViewImpl::ShowCreatedViewWidget, this->AsWeakPtr(),
+                 opened_by_user_gesture);
+
   RenderViewImpl* view =
-      RenderViewImpl::Create(compositor_deps_, view_params, true);
-  view->opened_by_user_gesture_ = opened_by_user_gesture;
+      RenderViewImpl::Create(compositor_deps_, view_params, show_callback);
 
   return view->webview();
 }
 
 WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidget::Create(GetRoutingID(), compositor_deps_,
-                                              popup_type, screen_info_);
+  RenderWidget* widget = RenderWidget::CreateForPopup(this, compositor_deps_,
+                                                      popup_type, screen_info_);
   if (!widget)
     return NULL;
   if (screen_metrics_emulator_) {
@@ -1775,32 +1814,21 @@ void RenderViewImpl::didFocus() {
   }
 }
 
-// We are supposed to get a single call to Show for a newly created RenderView
-// that was created via RenderViewImpl::CreateWebView.  So, we wait until this
-// point to dispatch the ShowView message.
+// We are supposed to get a single call to show() for a newly created RenderView
+// that was created via RenderViewImpl::createView.  We wait until this point to
+// run |show_callback|, which is bound to our opener's ShowCreatedViewWidget()
+// method.
 //
 // This method provides us with the information about how to display the newly
 // created RenderView (i.e., as a blocked popup or as a new tab).
-//
 void RenderViewImpl::show(WebNavigationPolicy policy) {
-  if (did_show_) {
+  if (did_show_ && !webkit_preferences_.supports_multiple_windows) {
     // When supports_multiple_windows is disabled, popups are reusing
     // the same view. In some scenarios, this makes WebKit to call show() twice.
-    if (webkit_preferences_.supports_multiple_windows)
-      NOTREACHED() << "received extraneous Show call";
     return;
   }
-  did_show_ = true;
 
-  DCHECK(opener_id_ != MSG_ROUTING_NONE);
-
-  // NOTE: initial_rect_ may still have its default values at this point, but
-  // that's okay.  It'll be ignored if disposition is not NEW_POPUP, or the
-  // browser process will impose a default position otherwise.
-  Send(new ViewHostMsg_ShowView(opener_id_, GetRoutingID(),
-                                NavigationPolicyToDisposition(policy),
-                                initial_rect_, opened_by_user_gesture_));
-  SetPendingWindowRect(initial_rect_);
+  RenderWidget::show(policy);
 }
 
 void RenderViewImpl::onMouseDown(const WebNode& mouse_down_node) {

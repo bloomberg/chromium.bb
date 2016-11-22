@@ -254,17 +254,17 @@ class PepperWidget : public WebWidget {
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32_t routing_id,
-    int32_t opener_id,
+    const RenderWidget::ShowCallback& show_callback,
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
     const ScreenInfo& screen_info) {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
-  DCHECK_NE(MSG_ROUTING_NONE, opener_id);
+  DCHECK(!show_callback.is_null());
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(routing_id, compositor_deps, plugin,
                                        active_url, screen_info));
-  widget->Init(opener_id);
+  widget->Init(show_callback, new PepperWidget(widget.get()));
   widget->AddRef();
   return widget.get();
 }
@@ -275,7 +275,13 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
     const ScreenInfo& screen_info)
-    : RenderWidgetFullscreen(routing_id, compositor_deps, screen_info),
+    : RenderWidget(routing_id,
+                   compositor_deps,
+                   blink::WebPopupTypeNone,
+                   screen_info,
+                   false,
+                   false,
+                   false),
       active_url_(active_url),
       plugin_(plugin),
       layer_(NULL),
@@ -344,7 +350,7 @@ bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
   if (handled)
     return true;
 
-  return RenderWidgetFullscreen::OnMessageReceived(msg);
+  return RenderWidget::OnMessageReceived(msg);
 }
 
 void RenderWidgetFullscreenPepper::DidInitiatePaint() {
@@ -366,10 +372,6 @@ void RenderWidgetFullscreenPepper::OnResize(const ResizeParams& params) {
   if (layer_)
     layer_->setBounds(blink::WebSize(params.new_size));
   RenderWidget::OnResize(params);
-}
-
-WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
-  return new PepperWidget(this);
 }
 
 GURL RenderWidgetFullscreenPepper::GetURLForGraphicsContext3D() {

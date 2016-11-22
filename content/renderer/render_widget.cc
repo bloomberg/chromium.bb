@@ -350,7 +350,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
       owner_delegate_(nullptr),
-      opener_id_(MSG_ROUTING_NONE),
       next_paint_flags_(0),
       auto_resize_mode_(false),
       need_update_rect_for_auto_resize_(false),
@@ -422,23 +421,24 @@ void RenderWidget::InstallCreateHook(
 }
 
 // static
-RenderWidget* RenderWidget::Create(int32_t opener_id,
-                                   CompositorDependencies* compositor_deps,
-                                   blink::WebPopupType popup_type,
-                                   const ScreenInfo& screen_info) {
-  DCHECK(opener_id != MSG_ROUTING_NONE);
-
+RenderWidget* RenderWidget::CreateForPopup(
+    RenderViewImpl* opener,
+    CompositorDependencies* compositor_deps,
+    blink::WebPopupType popup_type,
+    const ScreenInfo& screen_info) {
   // Do a synchronous IPC to obtain a routing ID.
   int32_t routing_id = MSG_ROUTING_NONE;
   if (!RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
-          opener_id, popup_type, &routing_id)) {
+          opener->GetRoutingID(), popup_type, &routing_id)) {
     return nullptr;
   }
 
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
                        false, false, false));
-  widget->Init(opener_id, RenderWidget::CreateWebWidget(widget.get()));
+  ShowCallback opener_callback =
+      base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->AsWeakPtr());
+  widget->Init(opener_callback, RenderWidget::CreateWebWidget(widget.get()));
   DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
   return widget.get();
 }
@@ -471,7 +471,7 @@ RenderWidget* RenderWidget::CreateForFrame(
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
-  widget->Init(MSG_ROUTING_NONE,
+  widget->Init(RenderWidget::ShowCallback(),
                RenderWidget::CreateWebFrameWidget(widget.get(), frame));
 
   if (g_render_widget_initialized)
@@ -522,15 +522,15 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
-void RenderWidget::Init(int32_t opener_id, WebWidget* web_widget) {
+void RenderWidget::Init(const ShowCallback& show_callback,
+                        WebWidget* web_widget) {
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   input_handler_.reset(new RenderWidgetInputHandler(
       GetRenderWidgetInputHandlerDelegate(this), this));
 
-  if (opener_id != MSG_ROUTING_NONE)
-    opener_id_ = opener_id;
+  show_callback_ = show_callback;
 
   webwidget_internal_ = web_widget;
   webwidget_mouse_lock_target_.reset(
@@ -1359,19 +1359,22 @@ void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
 // This method provides us with the information about how to display the newly
 // created RenderWidget (i.e., as a blocked popup or as a new tab).
 //
-void RenderWidget::show(WebNavigationPolicy) {
+void RenderWidget::show(WebNavigationPolicy policy) {
   DCHECK(!did_show_) << "received extraneous Show call";
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
-  DCHECK(opener_id_ != MSG_ROUTING_NONE);
+  DCHECK(!show_callback_.is_null());
 
   if (did_show_)
     return;
 
   did_show_ = true;
+
+  // The opener is responsible for actually showing this widget.
+  show_callback_.Run(this, policy, initial_rect_);
+
   // NOTE: initial_rect_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if as_popup is false, or the browser
   // process will impose a default position otherwise.
-  Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_rect_));
   SetPendingWindowRect(initial_rect_);
 }
 

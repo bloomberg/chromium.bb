@@ -213,7 +213,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // ignored by WebKit. This method is used by CEF and android_webview.
   virtual bool HandleNavigation(RenderFrame* render_frame,
                                 bool is_content_initiated,
-                                int opener_id,
+                                bool render_view_was_created_by_renderer,
                                 blink::WebFrame* frame,
                                 const blink::WebURLRequest& request,
                                 blink::WebNavigationType type,

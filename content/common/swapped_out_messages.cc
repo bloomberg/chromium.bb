@@ -27,6 +27,9 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_Focus::ID:
     // Handled by RenderViewHost.
     case ViewHostMsg_ClosePage_ACK::ID:
+    case ViewHostMsg_ShowFullscreenWidget::ID:
+    case ViewHostMsg_ShowView::ID:
+    case ViewHostMsg_ShowWidget::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
     // Handled by SharedWorkerMessageFilter.
     case ViewHostMsg_DocumentDetached::ID:
@@ -68,12 +71,6 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
   // Note that synchronous messages that are not handled will receive an
   // error reply instead, to avoid leaving the renderer in a stuck state.
   switch (msg.type()) {
-    // Sends an ACK.
-    case ViewHostMsg_ShowView::ID:
-    // Sends an ACK.
-    case ViewHostMsg_ShowWidget::ID:
-    // Sends an ACK.
-    case ViewHostMsg_ShowFullscreenWidget::ID:
     // Updates the previous navigation entry.
     case ViewHostMsg_UpdateState::ID:
     // Sends an ACK.

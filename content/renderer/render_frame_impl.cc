@@ -1353,11 +1353,18 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
                                     &fullscreen_widget_routing_id)) {
     return nullptr;
   }
+  RenderWidget::ShowCallback show_callback = base::Bind(
+      &RenderViewImpl::ShowCreatedFullscreenWidget, render_view()->AsWeakPtr());
 
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
-      fullscreen_widget_routing_id, render_view()->routing_id(),
+      fullscreen_widget_routing_id, show_callback,
       GetRenderWidget()->compositor_deps(), plugin, active_url,
       GetRenderWidget()->screen_info());
+  // TODO(nick): The show() handshake seems like unnecessary complexity here,
+  // since there's no real delay between CreateFullscreenWidget and
+  // ShowCreatedFullscreenWidget. Would it be simpler to have the
+  // CreateFullscreenWidget mojo method implicitly show the window, and skip the
+  // subsequent step?
   widget->show(blink::WebNavigationPolicyIgnore);
   return widget;
 }
@@ -5084,11 +5091,13 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
        !pending_navigation_params_->request_params.redirects.empty());
 
 #ifdef OS_ANDROID
+  bool render_view_was_created_by_renderer =
+      render_view_->was_created_by_renderer_;
   // The handlenavigation API is deprecated and will be removed once
   // crbug.com/325351 is resolved.
   if (GetContentClient()->renderer()->HandleNavigation(
-          this, is_content_initiated, render_view_->opener_id_, frame_,
-          info.urlRequest, info.navigationType, info.defaultPolicy,
+          this, is_content_initiated, render_view_was_created_by_renderer,
+          frame_, info.urlRequest, info.navigationType, info.defaultPolicy,
           is_redirect)) {
     return blink::WebNavigationPolicyIgnore;
   }

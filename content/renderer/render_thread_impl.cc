@@ -2130,7 +2130,8 @@ gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
 void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  RenderViewImpl::Create(compositor_deps, *params, false);
+  RenderViewImpl::Create(compositor_deps, *params,
+                         RenderWidget::ShowCallback());
 }
 
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {

@@ -98,10 +98,10 @@ class WebHitTestResult;
 namespace content {
 
 class HistoryController;
+class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
-class RendererDateTimePicker;
 class SpeechRecognitionDispatcher;
 struct FaviconURL;
 struct FileChooserParams;
@@ -127,15 +127,17 @@ class CONTENT_EXPORT RenderViewImpl
       public RenderView,
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
-  // Creates a new RenderView. |opener_id| is the routing ID of the RenderView
-  // responsible for creating this RenderView. Note that if the original opener
-  // has been closed, |window_was_created_with_opener| will be true and
-  // |opener_id| will be MSG_ROUTING_NONE. When |swapped_out| is true, the
-  // |proxy_routing_id| is specified, so a RenderFrameProxy can be created for
-  // this RenderView's main RenderFrame.
-  static RenderViewImpl* Create(CompositorDependencies* compositor_deps,
-                                const mojom::CreateViewParams& params,
-                                bool was_created_by_renderer);
+  // Creates a new RenderView. Note that if the original opener has been closed,
+  // |params.window_was_created_with_opener| will be true and
+  // |params.opener_frame_route_id| will be MSG_ROUTING_NONE. When
+  // |params.swapped_out| is true, |params.proxy_routing_id| is specified, so a
+  // RenderFrameProxy can be created for this RenderView's main RenderFrame. The
+  // opener should provide a non-null value for |show_callback| if it needs to
+  // send an additional IPC to finish making this view visible.
+  static RenderViewImpl* Create(
+      CompositorDependencies* compositor_deps,
+      const mojom::CreateViewParams& params,
+      const RenderWidget::ShowCallback& show_callback);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.
@@ -223,6 +225,20 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Synchronously sends the current navigation state to the browser.
   void SendUpdateState();
+
+  // A popup widget opened by this view needs to be shown.
+  void ShowCreatedPopupWidget(RenderWidget* popup_widget,
+                              blink::WebNavigationPolicy policy,
+                              const gfx::Rect& initial_rect);
+  // A RenderWidgetFullscreen widget opened by this view needs to be shown.
+  void ShowCreatedFullscreenWidget(RenderWidget* fullscreen_widget,
+                                   blink::WebNavigationPolicy policy,
+                                   const gfx::Rect& initial_rect);
+  // A RenderView widget opened by this view needs to be shown.
+  void ShowCreatedViewWidget(bool opened_by_user_gesture,
+                             RenderWidget* render_view,
+                             blink::WebNavigationPolicy policy,
+                             const gfx::Rect& initial_rect);
 
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
@@ -405,7 +421,7 @@ class CONTENT_EXPORT RenderViewImpl
                  const mojom::CreateViewParams& params);
 
   void Initialize(const mojom::CreateViewParams& params,
-                  bool was_created_by_renderer);
+                  const RenderWidget::ShowCallback& show_callback);
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
@@ -678,9 +694,6 @@ class CONTENT_EXPORT RenderViewImpl
   // TODO(nasko): Move to RenderFrame, as this is per-frame state.
   NavigationGesture navigation_gesture_;
 
-  // Used for popups.
-  bool opened_by_user_gesture_;
-
   // Timer used to delay the updating of nav state (see
   // StartNavStateSyncTimerIfNecessary).
   base::OneShotTimer nav_state_sync_timer_;
@@ -805,6 +818,8 @@ class CONTENT_EXPORT RenderViewImpl
   // A date/time picker object for date and time related input elements.
   std::unique_ptr<RendererDateTimePicker> date_time_picker_client_;
 
+  // Whether this was a renderer-created or browser-created RenderView.
+  bool was_created_by_renderer_;
 #endif
 
   // Misc ----------------------------------------------------------------------

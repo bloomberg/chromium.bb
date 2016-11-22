@@ -61,7 +61,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      false,
                      false),
         always_overscroll_(false) {
-    Init(MSG_ROUTING_NONE, mock_webwidget());
+    Init(RenderWidget::ShowCallback(), mock_webwidget());
   }
 
   void SetTouchRegion(const std::vector<gfx::Rect>& rects) {
@@ -383,7 +383,7 @@ class PopupRenderWidget : public RenderWidget {
                      false,
                      false,
                      false) {
-    Init(MSG_ROUTING_NONE, mock_webwidget());
+    Init(RenderWidget::ShowCallback(), mock_webwidget());
     did_show_ = true;
   }
 

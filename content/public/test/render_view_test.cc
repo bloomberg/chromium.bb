@@ -318,8 +318,8 @@ void RenderViewTest::SetUp() {
   view_params.max_size = gfx::Size();
 
   // This needs to pass the mock render thread to the view.
-  RenderViewImpl* view =
-      RenderViewImpl::Create(compositor_deps_.get(), view_params, false);
+  RenderViewImpl* view = RenderViewImpl::Create(
+      compositor_deps_.get(), view_params, RenderWidget::ShowCallback());
   view_ = view;
 }
 

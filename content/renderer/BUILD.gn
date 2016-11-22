@@ -302,8 +302,6 @@ target(link_target_type, "renderer") {
     "render_view_win.cc",
     "render_widget.cc",
     "render_widget.h",
-    "render_widget_fullscreen.cc",
-    "render_widget_fullscreen.h",
     "render_widget_mouse_lock_dispatcher.cc",
     "render_widget_mouse_lock_dispatcher.h",
     "render_widget_owner_delegate.h",

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/fullscreen_container.h"
-#include "content/renderer/render_widget_fullscreen.h"
+#include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "url/gurl.h"
 
@@ -21,17 +21,18 @@ class WebLayer;
 }
 
 namespace content {
+class CompositorDependencies;
 class PepperPluginInstanceImpl;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
 // invalidate rects.
-class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
+class RenderWidgetFullscreenPepper : public RenderWidget,
                                      public FullscreenContainer {
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32_t routing_id,
-      int32_t opener_id,
+      const RenderWidget::ShowCallback& show_callback,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
       const GURL& active_url,
@@ -45,8 +46,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) override;
   void SetLayer(blink::WebLayer* layer) override;
 
-  // IPC::Listener implementation. This overrides the implementation
-  // in RenderWidgetFullscreen.
+  // RenderWidget overrides.
   bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Could be NULL when this widget is closing.
@@ -68,9 +68,6 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   void DidInitiatePaint() override;
   void Close() override;
   void OnResize(const ResizeParams& params) override;
-
-  // RenderWidgetFullscreen API.
-  blink::WebWidget* CreateWebWidget() override;
 
   // RenderWidget overrides.
   GURL GetURLForGraphicsContext3D() override;
