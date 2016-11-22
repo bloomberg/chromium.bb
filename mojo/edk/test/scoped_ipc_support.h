@@ -7,38 +7,15 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
 namespace test {
 
 base::TaskRunner* GetIoTaskRunner();
-
-namespace internal {
-
-class ScopedIPCSupportHelper {
- public:
-  ScopedIPCSupportHelper();
-  ~ScopedIPCSupportHelper();
-
-  void Init(ProcessDelegate* process_delegate,
-            scoped_refptr<base::TaskRunner> io_thread_task_runner);
-
-  void OnShutdownCompleteImpl();
-
- private:
-  scoped_refptr<base::TaskRunner> io_thread_task_runner_;
-
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupportHelper);
-};
-
-}  // namespace internal
 
 // A simple class that calls |InitIPCSupport()| on construction and
 // |ShutdownIPCSupport()| on destruction.
@@ -53,7 +30,8 @@ class ScopedIPCSupport : public ProcessDelegate {
   // Note: Executed on the I/O thread.
   void OnShutdownComplete() override;
 
-  internal::ScopedIPCSupportHelper helper_;
+  base::Closure shutdown_closure_;
+  base::WaitableEvent shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupport);
 };

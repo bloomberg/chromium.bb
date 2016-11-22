@@ -4,9 +4,10 @@
 
 #include "mojo/edk/test/scoped_ipc_support.h"
 
-#include <utility>
-
-#include "base/message_loop/message_loop.h"
+#include "base/bind.h"
+#include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
 
 namespace mojo {
@@ -21,40 +22,39 @@ base::TaskRunner* GetIoTaskRunner() {
   return g_io_task_runner;
 }
 
-namespace internal {
-
-ScopedIPCSupportHelper::ScopedIPCSupportHelper() {
-}
-
-ScopedIPCSupportHelper::~ScopedIPCSupportHelper() {
-  ShutdownIPCSupport();
-  run_loop_.Run();
-}
-
-void ScopedIPCSupportHelper::Init(
-    ProcessDelegate* process_delegate,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  io_thread_task_runner_ = io_thread_task_runner;
-  InitIPCSupport(process_delegate, io_thread_task_runner_);
-}
-
-void ScopedIPCSupportHelper::OnShutdownCompleteImpl() {
-  run_loop_.Quit();
-}
-
-}  // namespace internal
-
 ScopedIPCSupport::ScopedIPCSupport(
-    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
+    scoped_refptr<base::TaskRunner> io_thread_task_runner)
+    : shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
   g_io_task_runner = io_thread_task_runner.get();
-  helper_.Init(this, std::move(io_thread_task_runner));
+  InitIPCSupport(this, io_thread_task_runner);
 }
 
 ScopedIPCSupport::~ScopedIPCSupport() {
+  // ShutdownIPCSupport always runs OnShutdownComplete on the current
+  // ThreadTaskRunnerHandle if set. Otherwise it's run on the IPC thread. We
+  // account for both possibilities here to avoid unnecessarily starting a new
+  // MessageLoop or blocking the existing one.
+  //
+  // TODO(rockot): Clean this up. ShutdownIPCSupport should probably always call
+  // call OnShutdownComplete from the IPC thread.
+  ShutdownIPCSupport();
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::RunLoop run_loop;
+    shutdown_closure_ = base::Bind(IgnoreResult(&base::TaskRunner::PostTask),
+                                   base::ThreadTaskRunnerHandle::Get(),
+                                   FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  } else {
+    shutdown_event_.Wait();
+  }
 }
 
 void ScopedIPCSupport::OnShutdownComplete() {
-  helper_.OnShutdownCompleteImpl();
+  if (!shutdown_closure_.is_null())
+    shutdown_closure_.Run();
+  else
+    shutdown_event_.Signal();
 }
 
 }  // namespace test

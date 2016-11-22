@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/content/common/translate.mojom.h"

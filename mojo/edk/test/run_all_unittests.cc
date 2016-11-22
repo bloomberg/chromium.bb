@@ -43,11 +43,8 @@ int main(int argc, char** argv) {
 
   mojo::test::TestSupport::Init(new mojo::edk::test::TestSupportImpl());
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  // Leak this because its destructor calls mojo::edk::ShutdownIPCSupport which
-  // really does nothing in the new EDK but does depend on the current message
-  // loop, which is destructed inside base::LaunchUnitTests.
-  new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner());
 
+  mojo::edk::test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
   return base::LaunchUnitTests(
       argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
