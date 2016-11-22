@@ -118,7 +118,6 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     // Cache objects that should not be created frequently.
     private final RectF mCacheViewport = new RectF();
-    private final RectF mCacheVisibleViewport = new RectF();
     private DrawingInfo mProgressBarDrawingInfo;
 
     // If we've drawn at least one frame.
@@ -204,7 +203,7 @@ public class CompositorViewHolder extends CoordinatorLayout
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                propagateViewportToLayouts(right - left, bottom - top);
+                onViewportChanged();
 
                 // If there's an event that needs to occur after the keyboard is hidden, post
                 // it as a delayed event.  Otherwise this happens in the midst of the
@@ -230,7 +229,7 @@ public class CompositorViewHolder extends CoordinatorLayout
      */
     public void setLayoutManager(LayoutManager layoutManager) {
         mLayoutManager = layoutManager;
-        propagateViewportToLayouts(getWidth(), getHeight());
+        onViewportChanged();
     }
 
     /**
@@ -453,13 +452,13 @@ public class CompositorViewHolder extends CoordinatorLayout
     @Override
     public void onContentOffsetChanged(float offset) {
         mLastContentOffset = offset;
-        propagateViewportToLayouts(getWidth(), getHeight());
+        onViewportChanged();
     }
 
     @Override
     public void onVisibleContentOffsetChanged(float offset, boolean needsAnimate) {
         mLastVisibleContentOffset = offset;
-        propagateViewportToLayouts(getWidth(), getHeight());
+        onViewportChanged();
         if (needsAnimate) requestRender();
     }
 
@@ -494,27 +493,12 @@ public class CompositorViewHolder extends CoordinatorLayout
         }
     }
 
-    private void propagateViewportToLayouts(int contentWidth, int contentHeight) {
-        int heightMinusBrowserControls = contentHeight
-                - (getTopControlsHeightPixels() + getBottomControlsHeightPixels());
-        int bottomControlOffset = mFullscreenManager != null
-                ? (int) mFullscreenManager.getBottomControlOffset() : 0;
-        int viewportBottom =
-                contentHeight - (getBottomControlsHeightPixels() - bottomControlOffset);
-
-        // The only time that mCacheViewport and mCacheVisibleViewport are different is when the
-        // browser has manipulated the browser controls offset.
-        mCacheViewport.set(0, (int) mLastContentOffset, contentWidth, viewportBottom);
-        mCacheVisibleViewport.set(0, (int) mLastVisibleContentOffset, contentWidth, viewportBottom);
+    private void onViewportChanged() {
         // TODO(changwan): check if this can be merged with setContentMotionEventOffsets.
         if (mTabVisible != null && mTabVisible.getContentViewCore() != null) {
-            mTabVisible.getContentViewCore().setSmartClipOffsets(
-                    (int) -mCacheViewport.left, (int) -mCacheViewport.top);
+            mTabVisible.getContentViewCore().setSmartClipOffsets(0, (int) -mLastContentOffset);
         }
-        if (mLayoutManager != null) {
-            mLayoutManager.pushNewViewport(
-                    mCacheViewport, mCacheVisibleViewport, heightMinusBrowserControls);
-        }
+        if (mLayoutManager != null) mLayoutManager.onViewportChanged();
     }
 
     /**
@@ -538,6 +522,32 @@ public class CompositorViewHolder extends CoordinatorLayout
         }
 
         TraceEvent.end("CompositorViewHolder:layout");
+    }
+
+    @Override
+    public void getWindowViewport(RectF outRect) {
+        outRect.set(0, 0, getWidth(), getHeight());
+    }
+
+    @Override
+    public void getVisibleViewport(RectF outRect) {
+        // All of these values are in pixels.
+        float viewportTop = 0;
+        float bottomControlOffset = 0;
+        if (mFullscreenManager != null) {
+            viewportTop = mFullscreenManager.getTopVisibleContentOffset();
+            bottomControlOffset = mFullscreenManager.getBottomControlOffset();
+        }
+        float viewportBottom =
+                getHeight() - (getBottomControlsHeightPixels() - bottomControlOffset);
+
+        outRect.set(0, viewportTop, getWidth(), viewportBottom);
+    }
+
+    @Override
+    public float getHeightMinusBrowserControls() {
+        return getHeight() - (getTopControlsHeightPixels() + getBottomControlsHeightPixels());
+
     }
 
     @Override
@@ -614,7 +624,7 @@ public class CompositorViewHolder extends CoordinatorLayout
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         if (changed) {
-            propagateViewportToLayouts(r - l, b - t);
+            onViewportChanged();
         }
         super.onLayout(changed, l, t, r, b);
 
@@ -644,7 +654,7 @@ public class CompositorViewHolder extends CoordinatorLayout
             mLastVisibleContentOffset = mFullscreenManager.getTopVisibleContentOffset();
             mFullscreenManager.addListener(this);
         }
-        propagateViewportToLayouts(getWidth(), getHeight());
+        onViewportChanged();
     }
 
     @Override
@@ -681,7 +691,7 @@ public class CompositorViewHolder extends CoordinatorLayout
     public float getOverlayTranslateY() {
         return areBrowserControlsPermanentlyHidden()
                 ? getTopControlsHeightPixels()
-                : mCacheVisibleViewport.top;
+                : mLastVisibleContentOffset;
     }
 
     /**
