@@ -130,6 +130,7 @@ source_set("internal") {
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp/gpu",
     "//services/ui/public/interfaces",
+    "//skia/public/interfaces",
     "//ui/display",
     "//ui/events",
     "//ui/gfx/geometry",

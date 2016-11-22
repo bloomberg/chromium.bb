@@ -23,8 +23,6 @@ namespace mojo {
 // TODO(beng): these methods serialize types used for standard properties
 //             to vectors of bytes used by Window::SetSharedProperty().
 //             replace this with serialization code generated @ bindings.
-//             This would be especially useful for SkBitmap, which could be
-//             replaced with the skia.Bitmap mojom struct serialization.
 
 template <>
 struct TypeConverter<std::vector<uint8_t>, gfx::Rect> {
@@ -80,8 +78,6 @@ struct TypeConverter<std::string, std::vector<uint8_t>> {
   static std::string Convert(const std::vector<uint8_t>& input);
 };
 
-// NOTE: These methods only serialize and deserialize the common case of RGBA
-// 8888 bitmaps with premultiplied alpha.
 template <>
 struct TypeConverter<std::vector<uint8_t>, SkBitmap> {
   static std::vector<uint8_t> Convert(const SkBitmap& input);
