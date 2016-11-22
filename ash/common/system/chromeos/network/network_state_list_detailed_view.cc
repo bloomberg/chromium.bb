@@ -507,7 +507,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
       proxy_settings_button_md_ = new SystemMenuButton(
           this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
           IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
-      title_row()->AddViewToTitleRow(proxy_settings_button_md_);
+      tri_view()->AddView(TriView::Container::END, proxy_settings_button_md_);
     }
 
     return;
