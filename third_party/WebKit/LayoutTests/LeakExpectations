@@ -120,6 +120,13 @@ crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-ce
 crbug.com/664874 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
 crbug.com/664874 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
 
+# -----------------------------------------------------------------
+# RemotePlayback with TraceWrappables enabled.
+# -----------------------------------------------------------------
+crbug.com/667746 media/remoteplayback/watch-availability-initial-callback.html [ Leak ]
+crbug.com/667746 media/remoteplayback/availability-callback-gc.html [ Leak ]
+crbug.com/667746 media/remoteplayback/prompt-twice-throws.html [ Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
