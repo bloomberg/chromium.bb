@@ -83,7 +83,8 @@ void UtilityHandler::OnUnzipToDir(const base::FilePath& zip_path,
                                   const base::FilePath& dir) {
   // First extract only the manifest to determine the extension type.
   if (!zip::UnzipWithFilterCallback(zip_path, dir,
-                                    base::Bind(&Unpacker::IsManifestFile))) {
+                                    base::Bind(&Unpacker::IsManifestFile),
+                                    false /* log_skipped_files */)) {
     Send(new ExtensionUtilityHostMsg_UnzipToDir_Failed(
         std::string(kExtensionHandlerUnzipError)));
     ReleaseProcessIfNeeded();
@@ -107,7 +108,8 @@ void UtilityHandler::OnUnzipToDir(const base::FilePath& zip_path,
 
   // TODO(crbug.com/645263): This silently ignores blocked file types.
   //                         Add install warnings.
-  if (!zip::UnzipWithFilterCallback(zip_path, dir, filetype_filter_cb)) {
+  if (!zip::UnzipWithFilterCallback(zip_path, dir, filetype_filter_cb,
+                                    true /* log_skipped_files */)) {
     Send(new ExtensionUtilityHostMsg_UnzipToDir_Failed(
         std::string(kExtensionHandlerUnzipError)));
   } else {
