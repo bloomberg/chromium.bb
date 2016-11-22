@@ -25,6 +25,7 @@
 #include "components/prefs/pref_value_map.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_data.h"
+#include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 
 namespace {
@@ -50,6 +51,8 @@ const char DefaultSearchManager::kSuggestionsURL[] = "suggestions_url";
 const char DefaultSearchManager::kInstantURL[] = "instant_url";
 const char DefaultSearchManager::kImageURL[] = "image_url";
 const char DefaultSearchManager::kNewTabURL[] = "new_tab_url";
+const char DefaultSearchManager::kContextualSearchURL[] =
+    "contextual_search_url";
 const char DefaultSearchManager::kFaviconURL[] = "favicon_url";
 const char DefaultSearchManager::kOriginatingURL[] = "originating_url";
 
@@ -158,58 +161,8 @@ void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
     NotifyObserver();
     return;
   }
-
-  base::DictionaryValue url_dict;
-  url_dict.SetString(kID, base::Int64ToString(data.id));
-  url_dict.SetString(kShortName, data.short_name());
-  url_dict.SetString(kKeyword, data.keyword());
-  url_dict.SetInteger(kPrepopulateID, data.prepopulate_id);
-  url_dict.SetString(kSyncGUID, data.sync_guid);
-
-  url_dict.SetString(kURL, data.url());
-  url_dict.SetString(kSuggestionsURL, data.suggestions_url);
-  url_dict.SetString(kInstantURL, data.instant_url);
-  url_dict.SetString(kImageURL, data.image_url);
-  url_dict.SetString(kNewTabURL, data.new_tab_url);
-  url_dict.SetString(kFaviconURL, data.favicon_url.spec());
-  url_dict.SetString(kOriginatingURL, data.originating_url.spec());
-
-  url_dict.SetString(kSearchURLPostParams, data.search_url_post_params);
-  url_dict.SetString(kSuggestionsURLPostParams,
-                     data.suggestions_url_post_params);
-  url_dict.SetString(kInstantURLPostParams, data.instant_url_post_params);
-  url_dict.SetString(kImageURLPostParams, data.image_url_post_params);
-
-  url_dict.SetBoolean(kSafeForAutoReplace, data.safe_for_autoreplace);
-
-  url_dict.SetString(kDateCreated,
-                     base::Int64ToString(data.date_created.ToInternalValue()));
-  url_dict.SetString(kLastModified,
-                     base::Int64ToString(data.last_modified.ToInternalValue()));
-  url_dict.SetInteger(kUsageCount, data.usage_count);
-
-  std::unique_ptr<base::ListValue> alternate_urls(new base::ListValue);
-  for (std::vector<std::string>::const_iterator it =
-           data.alternate_urls.begin();
-       it != data.alternate_urls.end(); ++it) {
-    alternate_urls->AppendString(*it);
-  }
-  url_dict.Set(kAlternateURLs, alternate_urls.release());
-
-  std::unique_ptr<base::ListValue> encodings(new base::ListValue);
-  for (std::vector<std::string>::const_iterator it =
-           data.input_encodings.begin();
-       it != data.input_encodings.end(); ++it) {
-    encodings->AppendString(*it);
-  }
-  url_dict.Set(kInputEncodings, encodings.release());
-
-  url_dict.SetString(kSearchTermsReplacementKey,
-                     data.search_terms_replacement_key);
-
-  url_dict.SetBoolean(kCreatedByPolicy, data.created_by_policy);
-
-  pref_service_->Set(kDefaultSearchProviderDataPrefName, url_dict);
+  pref_service_->Set(kDefaultSearchProviderDataPrefName,
+                     *TemplateURLDataToDictionary(data));
 }
 
 void DefaultSearchManager::SetExtensionControlledDefaultSearchEngine(
@@ -307,97 +260,11 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
       return;
   }
 
-  std::string search_url;
-  base::string16 keyword;
-  url_dict->GetString(kURL, &search_url);
-  url_dict->GetString(kKeyword, &keyword);
-  if (search_url.empty() || keyword.empty())
+  auto turl_data = TemplateURLDataFromDictionary(*url_dict);
+  if (!turl_data)
     return;
 
-  prefs_default_search_.reset(new TemplateURLData);
-  prefs_default_search_->SetKeyword(keyword);
-  prefs_default_search_->SetURL(search_url);
-
-  std::string id;
-  url_dict->GetString(kID, &id);
-  base::StringToInt64(id, &prefs_default_search_->id);
-  base::string16 short_name;
-  url_dict->GetString(kShortName, &short_name);
-  prefs_default_search_->SetShortName(short_name);
-  url_dict->GetInteger(kPrepopulateID, &prefs_default_search_->prepopulate_id);
-  url_dict->GetString(kSyncGUID, &prefs_default_search_->sync_guid);
-
-  url_dict->GetString(kSuggestionsURL, &prefs_default_search_->suggestions_url);
-  url_dict->GetString(kInstantURL, &prefs_default_search_->instant_url);
-  url_dict->GetString(kImageURL, &prefs_default_search_->image_url);
-  url_dict->GetString(kNewTabURL, &prefs_default_search_->new_tab_url);
-
-  std::string favicon_url;
-  std::string originating_url;
-  url_dict->GetString(kFaviconURL, &favicon_url);
-  url_dict->GetString(kOriginatingURL, &originating_url);
-  prefs_default_search_->favicon_url = GURL(favicon_url);
-  prefs_default_search_->originating_url = GURL(originating_url);
-
-  url_dict->GetString(kSearchURLPostParams,
-                      &prefs_default_search_->search_url_post_params);
-  url_dict->GetString(kSuggestionsURLPostParams,
-                      &prefs_default_search_->suggestions_url_post_params);
-  url_dict->GetString(kInstantURLPostParams,
-                      &prefs_default_search_->instant_url_post_params);
-  url_dict->GetString(kImageURLPostParams,
-                      &prefs_default_search_->image_url_post_params);
-
-  url_dict->GetBoolean(kSafeForAutoReplace,
-                       &prefs_default_search_->safe_for_autoreplace);
-
-  std::string date_created_str;
-  std::string last_modified_str;
-  url_dict->GetString(kDateCreated, &date_created_str);
-  url_dict->GetString(kLastModified, &last_modified_str);
-
-  int64_t date_created = 0;
-  if (base::StringToInt64(date_created_str, &date_created)) {
-    prefs_default_search_->date_created =
-        base::Time::FromInternalValue(date_created);
-  }
-
-  int64_t last_modified = 0;
-  if (base::StringToInt64(date_created_str, &last_modified)) {
-    prefs_default_search_->last_modified =
-        base::Time::FromInternalValue(last_modified);
-  }
-
-  url_dict->GetInteger(kUsageCount, &prefs_default_search_->usage_count);
-
-  const base::ListValue* alternate_urls = NULL;
-  if (url_dict->GetList(kAlternateURLs, &alternate_urls)) {
-    for (base::ListValue::const_iterator it = alternate_urls->begin();
-         it != alternate_urls->end();
-         ++it) {
-      std::string alternate_url;
-      if ((*it)->GetAsString(&alternate_url))
-        prefs_default_search_->alternate_urls.push_back(alternate_url);
-    }
-  }
-
-  const base::ListValue* encodings = NULL;
-  if (url_dict->GetList(kInputEncodings, &encodings)) {
-    for (base::ListValue::const_iterator it = encodings->begin();
-         it != encodings->end();
-         ++it) {
-      std::string encoding;
-      if ((*it)->GetAsString(&encoding))
-        prefs_default_search_->input_encodings.push_back(encoding);
-    }
-  }
-
-  url_dict->GetString(kSearchTermsReplacementKey,
-                      &prefs_default_search_->search_terms_replacement_key);
-
-  url_dict->GetBoolean(kCreatedByPolicy,
-                       &prefs_default_search_->created_by_policy);
-
+  prefs_default_search_ = std::move(turl_data);
   MergePrefsDataWithPrepopulated();
 }
 

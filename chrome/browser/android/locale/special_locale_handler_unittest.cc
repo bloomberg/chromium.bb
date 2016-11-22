@@ -10,6 +10,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -28,12 +29,10 @@ class MockSpecialLocaleHandler : public SpecialLocaleHandler {
   std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
       Profile* profile) override {
     std::vector<std::unique_ptr<TemplateURLData>> result;
-    result.push_back(
-        TemplateURLPrepopulateData::MakeTemplateURLDataFromPrepopulatedEngine(
-            TemplateURLPrepopulateData::so_360));
-    result.push_back(
-        TemplateURLPrepopulateData::MakeTemplateURLDataFromPrepopulatedEngine(
-            TemplateURLPrepopulateData::naver));
+    result.push_back(TemplateURLDataFromPrepopulatedEngine(
+        TemplateURLPrepopulateData::so_360));
+    result.push_back(TemplateURLDataFromPrepopulatedEngine(
+        TemplateURLPrepopulateData::naver));
     return result;
   }
 

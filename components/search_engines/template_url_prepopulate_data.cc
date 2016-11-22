@@ -21,6 +21,7 @@
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_data.h"
+#include "components/search_engines/template_url_data_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
@@ -972,56 +973,8 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulationSetFromCountryID(
 
   std::vector<std::unique_ptr<TemplateURLData>> t_urls;
   for (size_t i = 0; i < num_engines; ++i)
-    t_urls.push_back(MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]));
+    t_urls.push_back(TemplateURLDataFromPrepopulatedEngine(*engines[i]));
   return t_urls;
-}
-
-std::unique_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
-    const base::string16& name,
-    const base::string16& keyword,
-    const base::StringPiece& search_url,
-    const base::StringPiece& suggest_url,
-    const base::StringPiece& instant_url,
-    const base::StringPiece& image_url,
-    const base::StringPiece& new_tab_url,
-    const base::StringPiece& contextual_search_url,
-    const base::StringPiece& search_url_post_params,
-    const base::StringPiece& suggest_url_post_params,
-    const base::StringPiece& instant_url_post_params,
-    const base::StringPiece& image_url_post_params,
-    const base::StringPiece& favicon_url,
-    const base::StringPiece& encoding,
-    const base::ListValue& alternate_urls,
-    const base::StringPiece& search_terms_replacement_key,
-    int id) {
-  std::unique_ptr<TemplateURLData> data(new TemplateURLData);
-
-  data->SetShortName(name);
-  data->SetKeyword(keyword);
-  data->SetURL(search_url.as_string());
-  data->suggestions_url = suggest_url.as_string();
-  data->instant_url = instant_url.as_string();
-  data->image_url = image_url.as_string();
-  data->new_tab_url = new_tab_url.as_string();
-  data->contextual_search_url = contextual_search_url.as_string();
-  data->search_url_post_params = search_url_post_params.as_string();
-  data->suggestions_url_post_params = suggest_url_post_params.as_string();
-  data->instant_url_post_params = instant_url_post_params.as_string();
-  data->image_url_post_params = image_url_post_params.as_string();
-  data->favicon_url = GURL(favicon_url);
-  data->safe_for_autoreplace = true;
-  data->input_encodings.push_back(encoding.as_string());
-  data->date_created = base::Time();
-  data->last_modified = base::Time();
-  data->prepopulate_id = id;
-  for (size_t i = 0; i < alternate_urls.GetSize(); ++i) {
-    std::string alternate_url;
-    alternate_urls.GetString(i, &alternate_url);
-    DCHECK(!alternate_url.empty());
-    data->alternate_urls.push_back(alternate_url);
-  }
-  data->search_terms_replacement_key = search_terms_replacement_key.as_string();
-  return data;
 }
 
 std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedTemplateURLData(
@@ -1037,52 +990,10 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedTemplateURLData(
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
     const base::DictionaryValue* engine;
-    base::string16 name;
-    base::string16 keyword;
-    std::string search_url;
-    std::string favicon_url;
-    std::string encoding;
-    int id = -1;
-    // The following fields are required for each search engine configuration.
-    if (list->GetDictionary(i, &engine) &&
-        engine->GetString("name", &name) && !name.empty() &&
-        engine->GetString("keyword", &keyword) && !keyword.empty() &&
-        engine->GetString("search_url", &search_url) && !search_url.empty() &&
-        engine->GetString("favicon_url", &favicon_url) &&
-        !favicon_url.empty() &&
-        engine->GetString("encoding", &encoding) && !encoding.empty() &&
-        engine->GetInteger("id", &id)) {
-      // These fields are optional.
-      std::string suggest_url;
-      std::string instant_url;
-      std::string image_url;
-      std::string new_tab_url;
-      std::string contextual_search_url;
-      std::string search_url_post_params;
-      std::string suggest_url_post_params;
-      std::string instant_url_post_params;
-      std::string image_url_post_params;
-      base::ListValue empty_list;
-      const base::ListValue* alternate_urls = &empty_list;
-      std::string search_terms_replacement_key;
-      engine->GetString("suggest_url", &suggest_url);
-      engine->GetString("instant_url", &instant_url);
-      engine->GetString("image_url", &image_url);
-      engine->GetString("new_tab_url", &new_tab_url);
-      engine->GetString("contextual_search_url", &contextual_search_url);
-      engine->GetString("search_url_post_params", &search_url_post_params);
-      engine->GetString("suggest_url_post_params", &suggest_url_post_params);
-      engine->GetString("instant_url_post_params", &instant_url_post_params);
-      engine->GetString("image_url_post_params", &image_url_post_params);
-      engine->GetList("alternate_urls", &alternate_urls);
-      engine->GetString("search_terms_replacement_key",
-          &search_terms_replacement_key);
-      t_urls.push_back(MakePrepopulatedTemplateURLData(
-          name, keyword, search_url, suggest_url, instant_url, image_url,
-          new_tab_url, contextual_search_url, search_url_post_params,
-          suggest_url_post_params, instant_url_post_params,
-          image_url_post_params, favicon_url, encoding, *alternate_urls,
-          search_terms_replacement_key, id));
+    if (list->GetDictionary(i, &engine)) {
+      auto t_url = TemplateURLDataFromOverrideDictionary(*engine);
+      if (t_url)
+        t_urls.push_back(std::move(t_url));
     }
   }
   return t_urls;
@@ -1143,24 +1054,6 @@ std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
 std::vector<const PrepopulatedEngine*> GetAllPrepopulatedEngines() {
   return std::vector<const PrepopulatedEngine*>(std::begin(kAllEngines),
                                                 std::end(kAllEngines));
-}
-
-std::unique_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
-    const PrepopulatedEngine& engine) {
-  base::ListValue alternate_urls;
-  if (engine.alternate_urls) {
-    for (size_t i = 0; i < engine.alternate_urls_size; ++i)
-      alternate_urls.AppendString(std::string(engine.alternate_urls[i]));
-  }
-
-  return MakePrepopulatedTemplateURLData(
-      base::WideToUTF16(engine.name), base::WideToUTF16(engine.keyword),
-      engine.search_url, engine.suggest_url, engine.instant_url,
-      engine.image_url, engine.new_tab_url, engine.contextual_search_url,
-      engine.search_url_post_params, engine.suggest_url_post_params,
-      engine.instant_url_post_params, engine.image_url_post_params,
-      engine.favicon_url, engine.encoding, alternate_urls,
-      engine.search_terms_replacement_key, engine.id);
 }
 
 void ClearPrepopulatedEnginesInPrefs(PrefService* prefs) {

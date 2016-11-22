@@ -55,10 +55,6 @@ std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
 // Returns all prepopulated engines for all locales. Used only by tests.
 std::vector<const PrepopulatedEngine*> GetAllPrepopulatedEngines();
 
-// Returns a TemplateURLData for the specified prepopulated engine.
-std::unique_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
-    const PrepopulatedEngine& engine);
-
 // Removes prepopulated engines and their version stored in user prefs.
 void ClearPrepopulatedEnginesInPrefs(PrefService* prefs);
 

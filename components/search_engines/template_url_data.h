@@ -13,12 +13,40 @@
 #include "components/search_engines/template_url_id.h"
 #include "url/gurl.h"
 
+namespace base {
+class ListValue;
+}
+
 // The data for the TemplateURL.  Separating this into its own class allows most
 // users to do SSA-style usage of TemplateURL: construct a TemplateURLData with
 // whatever fields are desired, then create an immutable TemplateURL from it.
 struct TemplateURLData {
   TemplateURLData();
   TemplateURLData(const TemplateURLData& other);
+  // Creates a TemplateURLData suitable for prepopulated engines.
+  // Note that unlike in the default constructor, |safe_for_autoreplace| will
+  // be set to true. date_created and last_modified will be set to null time
+  // value, instead of current time.
+  // StringPiece in arguments is used to pass const char* pointer members
+  // of PrepopulatedEngine structure which can be nullptr.
+  TemplateURLData(const base::string16& name,
+                  const base::string16& keyword,
+                  base::StringPiece search_url,
+                  base::StringPiece suggest_url,
+                  base::StringPiece instant_url,
+                  base::StringPiece image_url,
+                  base::StringPiece new_tab_url,
+                  base::StringPiece contextual_search_url,
+                  base::StringPiece search_url_post_params,
+                  base::StringPiece suggest_url_post_params,
+                  base::StringPiece instant_url_post_params,
+                  base::StringPiece image_url_post_params,
+                  base::StringPiece favicon_url,
+                  base::StringPiece encoding,
+                  const base::ListValue& alternate_urls_list,
+                  base::StringPiece search_terms_replacement_key,
+                  int prepopulate_id);
+
   ~TemplateURLData();
 
   // A short description of the template. This is the name we show to the user

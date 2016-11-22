@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 
 TemplateURLData::TemplateURLData()
     : safe_for_autoreplace(false),
@@ -23,6 +24,54 @@ TemplateURLData::TemplateURLData()
       url_("x") {}
 
 TemplateURLData::TemplateURLData(const TemplateURLData& other) = default;
+
+TemplateURLData::TemplateURLData(const base::string16& name,
+                                 const base::string16& keyword,
+                                 base::StringPiece search_url,
+                                 base::StringPiece suggest_url,
+                                 base::StringPiece instant_url,
+                                 base::StringPiece image_url,
+                                 base::StringPiece new_tab_url,
+                                 base::StringPiece contextual_search_url,
+                                 base::StringPiece search_url_post_params,
+                                 base::StringPiece suggest_url_post_params,
+                                 base::StringPiece instant_url_post_params,
+                                 base::StringPiece image_url_post_params,
+                                 base::StringPiece favicon_url,
+                                 base::StringPiece encoding,
+                                 const base::ListValue& alternate_urls_list,
+                                 base::StringPiece search_terms_replacement_key,
+                                 int prepopulate_id)
+    : suggestions_url(suggest_url.as_string()),
+      instant_url(instant_url.as_string()),
+      image_url(image_url.as_string()),
+      new_tab_url(new_tab_url.as_string()),
+      contextual_search_url(contextual_search_url.as_string()),
+      search_url_post_params(search_url_post_params.as_string()),
+      suggestions_url_post_params(suggest_url_post_params.as_string()),
+      instant_url_post_params(instant_url_post_params.as_string()),
+      image_url_post_params(image_url_post_params.as_string()),
+      favicon_url(GURL(favicon_url)),
+      safe_for_autoreplace(true),
+      id(0),
+      date_created(base::Time()),
+      last_modified(base::Time()),
+      created_by_policy(false),
+      usage_count(0),
+      prepopulate_id(prepopulate_id),
+      sync_guid(base::GenerateGUID()),
+      search_terms_replacement_key(search_terms_replacement_key.as_string()) {
+  SetShortName(name);
+  SetKeyword(keyword);
+  SetURL(search_url.as_string());
+  input_encodings.push_back(encoding.as_string());
+  for (size_t i = 0; i < alternate_urls_list.GetSize(); ++i) {
+    std::string alternate_url;
+    alternate_urls_list.GetString(i, &alternate_url);
+    DCHECK(!alternate_url.empty());
+    alternate_urls.push_back(alternate_url);
+  }
+}
 
 TemplateURLData::~TemplateURLData() {
 }

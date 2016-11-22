@@ -40,6 +40,7 @@ class DefaultSearchManager {
   static const char kInstantURL[];
   static const char kImageURL[];
   static const char kNewTabURL[];
+  static const char kContextualSearchURL[];
   static const char kFaviconURL[];
   static const char kOriginatingURL[];
 

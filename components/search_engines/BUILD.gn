@@ -30,6 +30,8 @@ static_library("search_engines") {
     "template_url.h",
     "template_url_data.cc",
     "template_url_data.h",
+    "template_url_data_util.cc",
+    "template_url_data_util.h",
     "template_url_fetcher.cc",
     "template_url_fetcher.h",
     "template_url_id.h",

@@ -19,6 +19,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -153,6 +154,9 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_TRUE(t_urls[0]->instant_url.empty());
   EXPECT_EQ(0u, t_urls[0]->alternate_urls.size());
   EXPECT_TRUE(t_urls[0]->search_terms_replacement_key.empty());
+  EXPECT_TRUE(t_urls[0]->safe_for_autoreplace);
+  EXPECT_TRUE(t_urls[0]->date_created.is_null());
+  EXPECT_TRUE(t_urls[0]->last_modified.is_null());
 
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
@@ -272,6 +276,9 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
     ASSERT_FALSE(GetHostFromTemplateURLData(*t_urls[i]).empty());
     ASSERT_FALSE(t_urls[i]->input_encodings.empty());
     EXPECT_GT(t_urls[i]->prepopulate_id, 0);
+    EXPECT_TRUE(t_urls[0]->safe_for_autoreplace);
+    EXPECT_TRUE(t_urls[0]->date_created.is_null());
+    EXPECT_TRUE(t_urls[0]->last_modified.is_null());
   }
 
   // Ensures the default URL is Google and has the optional fields filled.
@@ -357,8 +364,7 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeForAllPrepopulatedEngines) {
       TemplateURLPrepopulateData::GetAllPrepopulatedEngines();
   for (const PrepopulatedEngine* engine : all_engines) {
     std::unique_ptr<TemplateURLData> data =
-        TemplateURLPrepopulateData::MakeTemplateURLDataFromPrepopulatedEngine(
-            *engine);
+        TemplateURLDataFromPrepopulatedEngine(*engine);
     EXPECT_EQ(engine->type,
               TemplateURL(*data).GetEngineType(SearchTermsData()));
   }
