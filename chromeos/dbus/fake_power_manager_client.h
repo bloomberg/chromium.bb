@@ -39,6 +39,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   bool have_video_activity_report() const {
     return !video_activity_reports_.empty();
   }
+  int num_set_backlights_forced_off_calls() const {
+    return num_set_backlights_forced_off_calls_;
+  }
 
   // PowerManagerClient overrides
   void Init(dbus::Bus* bus) override;
@@ -111,6 +114,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   int num_request_shutdown_calls_;
   int num_set_policy_calls_;
   int num_set_is_projecting_calls_;
+  int num_set_backlights_forced_off_calls_;
 
   // Number of pending suspend readiness callbacks.
   int num_pending_suspend_readiness_callbacks_;

@@ -21,6 +21,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -297,6 +298,29 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnMaximizeMode) {
   generator_->MoveMouseBy(1, 1);
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->ExitPenPointerMode();
+}
+
+// Tests that a single set of power button pressed-and-released operation should
+// cause only one SetBacklightsForcedOff call.
+TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
+  ui::KeyEvent power_key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_POWER,
+                                 ui::EF_NONE);
+  ui::KeyEvent power_key_released(ui::ET_KEY_RELEASED, ui::VKEY_POWER,
+                                  ui::EF_NONE);
+
+  // There are two |power_key_pressed| events and |power_key_released| events
+  // generated for each pressing and releasing, and multiple repeating pressed
+  // events depending on holding.
+  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  PressPowerButton();
+  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  ReleasePowerButton();
+  tablet_controller_->OnKeyEvent(&power_key_released);
+  tablet_controller_->OnKeyEvent(&power_key_released);
+  EXPECT_EQ(1, power_manager_client_->num_set_backlights_forced_off_calls());
 }
 
 }  // namespace test
