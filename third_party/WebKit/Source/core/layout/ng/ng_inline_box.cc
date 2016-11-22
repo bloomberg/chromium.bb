@@ -49,7 +49,6 @@ void NGInlineBox::PrepareLayout() {
     last_inline_ = curr;
 
   CollectInlines(start_inline_, last_inline_);
-  CollapseWhiteSpace();
   SegmentText();
   ShapeText();
 }
@@ -72,6 +71,7 @@ void NGInlineBox::CollectInlines(LayoutObject* start,
   LayoutObject* node = start;
   while (node) {
     if (node->isText()) {
+      builder->SetIsSVGText(node->isSVGInlineText());
       builder->Append(toLayoutText(node)->text(), node->style());
     } else if (node->isFloating() || node->isOutOfFlowPositioned()) {
       // Skip positioned objects.
@@ -83,7 +83,7 @@ void NGInlineBox::CollectInlines(LayoutObject* start,
       // For atomic inlines add a unicode "object replacement character" to
       // signal the presence of a non-text object to the unicode bidi algorithm.
       if (node->isAtomicInlineLevel()) {
-        builder->Append(objectReplacementCharacter, nullptr);
+        builder->Append(objectReplacementCharacter);
       }
 
       // Otherwise traverse to children if they exist.
@@ -106,11 +106,6 @@ void NGInlineBox::CollectInlines(LayoutObject* start,
         return;
     }
   }
-}
-
-void NGInlineBox::CollapseWhiteSpace() {
-  // TODO(eae): Implement. This needs to adjust the offsets for each item as it
-  // collapses whitespace.
 }
 
 void NGInlineBox::SegmentText() {
@@ -175,6 +170,11 @@ void NGLayoutInlineItem::Split(Vector<NGLayoutInlineItem>& items,
   items.insert(index + 1, items[index]);
   items[index].end_offset_ = offset;
   items[index + 1].start_offset_ = offset;
+}
+
+void NGLayoutInlineItem::SetEndOffset(unsigned end_offset) {
+  DCHECK_GE(end_offset, start_offset_);
+  end_offset_ = end_offset;
 }
 
 void NGInlineBox::ShapeText() {

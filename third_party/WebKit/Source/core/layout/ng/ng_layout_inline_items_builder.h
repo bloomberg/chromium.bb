@@ -17,8 +17,12 @@ class ComputedStyle;
 class LayoutObject;
 class NGLayoutInlineItem;
 
-// AppendBidiControlForBlockIfNeeded builds a string and a list of
-// NGLayoutInlineItem from inlines.
+// NGLayoutInlineItemsBuilder builds a string and a list of NGLayoutInlineItem
+// from inlines.
+//
+// When appending, spaces are collapsed according to CSS Text, The white space
+// processing rules
+// https://drafts.csswg.org/css-text-3/#white-space-rules
 //
 // By calling EnterInline/ExitInline, it inserts bidirectional control
 // characters as defined in:
@@ -31,11 +35,28 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
       : items_(items) {}
   ~NGLayoutInlineItemsBuilder();
 
-  String ToString() { return text_.toString(); }
+  String ToString();
 
+  void SetIsSVGText(bool value) { is_svgtext_ = value; }
+
+  // Append a string.
+  // When appending, spaces are collapsed according to CSS Text, The white space
+  // processing rules
+  // https://drafts.csswg.org/css-text-3/#white-space-rules
   void Append(const String&, const ComputedStyle*);
-  void Append(UChar32, const ComputedStyle*);
-  void AppendBidiControl(const ComputedStyle*, UChar32 ltr, UChar32 rtl);
+
+  // Append a character.
+  // Currently this function is for adding control characters such as
+  // objectReplacementCharacter, and does not support all space collapsing logic
+  // as its String version does.
+  void Append(UChar);
+
+  // Append a character.
+  // The character is opaque to space collapsing that spaces before this
+  // character and after this character can collapse as if this character does
+  // not exist.
+  void AppendAsOpaqueToSpaceCollapsing(UChar);
+  void AppendBidiControl(const ComputedStyle*, UChar ltr, UChar rtl);
 
   void EnterBlock(const ComputedStyle*);
   void ExitBlock();
@@ -48,11 +69,24 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
 
   typedef struct OnExitNode {
     LayoutObject* node;
-    UChar32 character;
+    UChar character;
   } OnExitNode;
   Vector<OnExitNode> exits_;
 
-  void Enter(LayoutObject*, UChar32);
+  bool is_last_collapsible_space_ = true;
+  bool has_pending_newline_ = false;
+  bool is_svgtext_ = false;
+
+  // Because newlines may be removed depends on following characters, newlines
+  // at the end of input string is not added to |text_| but instead
+  // |has_pending_newline_| flag is set.
+  // This function determines whether to add the newline or ignore.
+  void ProcessPendingNewline(const String&, const ComputedStyle*);
+
+  // Removes the collapsible space at the end of |text_| if exists.
+  void RemoveTrailingCollapsibleSpace(unsigned*);
+
+  void Enter(LayoutObject*, UChar);
   void Exit(LayoutObject*);
 };
 

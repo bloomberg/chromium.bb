@@ -54,7 +54,6 @@ class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
   void CollectInlines(LayoutObject* start,
                       LayoutObject* last,
                       NGLayoutInlineItemsBuilder*);
-  void CollapseWhiteSpace();
   void SegmentText();
   void ShapeText();
 
@@ -94,6 +93,8 @@ class NGLayoutInlineItem {
   TextDirection Direction() const { return bidi_level_ & 1 ? RTL : LTR; }
   UScriptCode Script() const { return script_; }
   const ComputedStyle* Style() const { return style_; }
+
+  void SetEndOffset(unsigned);
 
   static void Split(Vector<NGLayoutInlineItem>&,
                     unsigned index,
