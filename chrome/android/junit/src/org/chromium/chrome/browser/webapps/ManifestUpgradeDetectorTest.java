@@ -13,9 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -67,8 +64,42 @@ public class ManifestUpgradeDetectorTest {
     }
 
     /**
+     * ManifestUpgradeDetectorFetcher subclass which:
+     * - Does not use native.
+     * - Which returns the "Downloaded Manifest Data" passed to the constructor when
+     *   {@link #start()} is called.
+     */
+    private static class TestManifestUpgradeDetectorFetcher extends ManifestUpgradeDetectorFetcher {
+        FetchedManifestData mFetchedManifestData;
+
+        public TestManifestUpgradeDetectorFetcher(FetchedManifestData fetchedManifestData) {
+            mFetchedManifestData = fetchedManifestData;
+        }
+
+        @Override
+        public boolean start(Tab tab, String scopeUrl, String manifestUrl, Callback callback) {
+            mCallback = callback;
+
+            // Call {@link #onDataAvailable()} instead of the callback because
+            // {@link #onDataAvailable()} sets defaults which we want to test.
+            onDataAvailable(mFetchedManifestData.startUrl, mFetchedManifestData.scopeUrl,
+                    mFetchedManifestData.name, mFetchedManifestData.shortName,
+                    mFetchedManifestData.bestIconUrl, mFetchedManifestData.bestIconMurmur2Hash,
+                    mFetchedManifestData.bestIcon, mFetchedManifestData.iconUrls,
+                    mFetchedManifestData.displayMode, mFetchedManifestData.orientation,
+                    mFetchedManifestData.themeColor, mFetchedManifestData.backgroundColor);
+            return true;
+        }
+
+        @Override
+        public void destroy() {
+            // Do nothing.
+        }
+    }
+
+    /**
      * ManifestUpgradeDetector subclass which:
-     * - Stubs out ManifestUpgradeDetectorFetcher.
+     * - Uses mock ManifestUpgradeDetectorFetcher.
      * - Uses {@link fetchedData} passed into the constructor as the "Downloaded Manifest Data".
      * - Tracks whether an upgraded WebAPK was requested.
      * - Tracks whether "upgrade needed checking logic" has terminated.
@@ -83,21 +114,8 @@ public class ManifestUpgradeDetectorTest {
         }
 
         @Override
-        public ManifestUpgradeDetectorFetcher createFetcher(
-                Tab tab, String scopeUrl, String manifestUrl) {
-            ManifestUpgradeDetectorFetcher fetcher =
-                    Mockito.mock(ManifestUpgradeDetectorFetcher.class);
-            Answer<Void> mockStart = new Answer<Void>() {
-                public Void answer(InvocationOnMock invocation) throws Throwable {
-                    ManifestUpgradeDetectorFetcher.Callback callback =
-                            (ManifestUpgradeDetectorFetcher.Callback) invocation.getArguments()[0];
-                    callback.onGotManifestData(mFetchedData);
-                    return null;
-                }
-            };
-            Mockito.doAnswer(mockStart).when(fetcher).start(
-                    Mockito.any(ManifestUpgradeDetectorFetcher.Callback.class));
-            return fetcher;
+        public ManifestUpgradeDetectorFetcher createFetcher() {
+            return new TestManifestUpgradeDetectorFetcher(mFetchedData);
         }
 
         // Stubbed out because real implementation uses native.
@@ -222,9 +240,11 @@ public class ManifestUpgradeDetectorTest {
     @Test
     public void testManifestEmptyScopeShouldNotUpgrade() {
         WebApkMetaData oldData = createDefaultWebApkMetaData();
-        oldData.scope = "";
+        // webapk_installer.cc sets the scope to the default scope if the scope is empty.
+        oldData.scope = ShortcutHelper.getScopeFromUrl(oldData.startUrl);
         FetchedManifestData fetchedData = createDefaultFetchedManifestData();
         fetchedData.scopeUrl = "";
+        Assert.assertTrue(!oldData.scope.equals(fetchedData.scopeUrl));
 
         TestCallback callback = new TestCallback();
         TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData, callback);

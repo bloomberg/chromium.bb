@@ -55,21 +55,19 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
     private long mNativePointer;
 
     /** The tab that is being observed. */
-    private final Tab mTab;
+    private Tab mTab;
 
-    private Callback mCallback;
-
-    public ManifestUpgradeDetectorFetcher(Tab tab, String scopeUrl, String manifestUrl) {
-        mTab = tab;
-        mNativePointer = nativeInitialize(scopeUrl, manifestUrl);
-    }
+    protected Callback mCallback;
 
     /**
      * Starts fetching the web manifest resources.
      * @param callback Called once the Web Manifest has been downloaded.
      */
-    public boolean start(Callback callback) {
-        if (mTab == null || mTab.getWebContents() == null) return false;
+    public boolean start(Tab tab, String scopeUrl, String manifestUrl, Callback callback) {
+        if (tab.getWebContents() == null) return false;
+
+        mTab = tab;
+        mNativePointer = nativeInitialize(scopeUrl, manifestUrl);
         mCallback = callback;
         mTab.addObserver(this);
         nativeStart(mNativePointer, mTab.getWebContents());
@@ -107,7 +105,7 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      * Called when the updated Web Manifest has been fetched.
      */
     @CalledByNative
-    private void onDataAvailable(String startUrl, String scopeUrl, String name, String shortName,
+    protected void onDataAvailable(String startUrl, String scopeUrl, String name, String shortName,
             String bestIconUrl, String bestIconMurmur2Hash, Bitmap bestIconBitmap,
             String[] iconUrls, int displayMode, int orientation, long themeColor,
             long backgroundColor) {

@@ -80,17 +80,15 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
             return false;
         }
 
-        mFetcher = createFetcher(mTab, mMetaData.scope, mMetaData.manifestUrl);
-        mFetcher.start(this);
-        return true;
+        mFetcher = createFetcher();
+        return mFetcher.start(mTab, mMetaData.scope, mMetaData.manifestUrl, this);
     }
 
     /**
      * Creates ManifestUpgradeDataFetcher.
      */
-    protected ManifestUpgradeDetectorFetcher createFetcher(Tab tab, String scopeUrl,
-            String manifestUrl) {
-        return new ManifestUpgradeDetectorFetcher(tab, scopeUrl, manifestUrl);
+    protected ManifestUpgradeDetectorFetcher createFetcher() {
+        return new ManifestUpgradeDetectorFetcher();
     }
 
     /**

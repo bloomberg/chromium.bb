@@ -90,14 +90,13 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     /**
      * Starts a ManifestUpgradeDetectorFetcher. Calls {@link callback} once the fetcher is done.
      */
-    private void startManifestUpgradeDetectorFetcher(String scopeUrl, String manifestUrl,
-            final ManifestUpgradeDetectorFetcher.Callback callback) {
-        final ManifestUpgradeDetectorFetcher fetcher =
-                new ManifestUpgradeDetectorFetcher(mTab, scopeUrl, manifestUrl);
+    private void startManifestUpgradeDetectorFetcher(final String scopeUrl,
+            final String manifestUrl, final ManifestUpgradeDetectorFetcher.Callback callback) {
+        final ManifestUpgradeDetectorFetcher fetcher = new ManifestUpgradeDetectorFetcher();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                fetcher.start(callback);
+                fetcher.start(mTab, scopeUrl, manifestUrl, callback);
             }
         });
     }
