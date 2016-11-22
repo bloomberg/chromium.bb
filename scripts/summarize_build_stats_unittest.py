@@ -195,6 +195,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
           'total_builds': 4,
           'first_build_num': 1,
           'last_build_num': 4,
+          'last_build_id': mock.ANY,
           'cl_handling_time_50': 0.0,
           'cl_handling_time_90': 0.0,
           'cq_time_50': 0.0,

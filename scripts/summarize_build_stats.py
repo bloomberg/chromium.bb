@@ -162,7 +162,9 @@ class CLStatsEngine(object):
       logging.info('Sorting by build number.')
       self.builds.sort(key=lambda x: x['build_number'])
 
+    logging.info('Gathering cl actions history')
     self.claction_history = self.db.GetActionHistory(start_date, end_date)
+    logging.info('Gathering build annotations')
     self.GatherBuildAnnotations()
 
     self.builds_by_build_id.update(
@@ -363,6 +365,7 @@ class CLStatsEngine(object):
         'total_builds': len(self.builds),
         'first_build_num': self.builds[0]['build_number'],
         'last_build_num': self.builds[-1]['build_number'],
+        'last_build_id': self.builds[-1]['id'],
         'unique_cls': len(self.claction_history.affected_cls),
         'unique_patches': len(self.claction_history.affected_patches),
         'submitted_patches': len(self.claction_history.submit_actions),
@@ -610,7 +613,7 @@ CQ run time was <b>{cq_run_time_50:.2f} hours</b> 50%ile <b>{cq_run_time_90:.2f}
     <th>Median Time (hours)</th>
     <th>90th Percentile (hours)</th>
   </tr>
-  {slow_slaves_html}
+{slow_slaves_html}
 </table>
 </p>
 
@@ -656,7 +659,7 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
  </tr>
  <tr>
    <td>[_<replace>X</replace>_]</td>
-   <td><replace>REPLACE</replace></td>
+   <td>_<replace>REPLACE</replace>_</td>
  </tr>
  <tr>
    <td>[_<replace>X</replace>_]</td>
@@ -678,8 +681,8 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
 </ul>
 
 <h2>What was the patch turnaround time?</h2>
-<p id="note"> Copy/Paste in the histogram from to top of <a href="http://go/chromiumos-build-annotator">go/chromiumos-build-annotator</a>. Update your visible list to match the build ID's listed at the top of your email first, or the values will be randomized.  </p>
-_<replace>IMAGE_PLACEHOLDER</replace>_<br>
+<p id="note"> Copy/Paste in the histogram from the top of <a href="https://chromiumos-build-annotator.googleplex.com/build_annotations/builds_list/master-paladin/?num_builds={total_builds}&latest_build_id={last_build_id}">the completed build annotation page.</a>
+_<replace>IMAGE PLACEHOLDER</replace>_<br>
 <br>
 
 <i>Generated on {datetime}</i>
@@ -692,43 +695,36 @@ def GenerateReport(file_out, summary):
   report = summary.copy()
   report['datetime'] = str(datetime.datetime.now())
 
-  def gen_html_row(l):
-    s = ""
-    for r in l:
-      s += '  <tr>\n'
-      for i in r:
-        s += "    <td>{}</td>".format(i)
-      s += '  </tr>\n'
-    return s
+  slow_slaves_html = ''
+  for slave, count, per_50, per_90 in summary['slowest_cq_slaves']:
+    slow_slaves_html += '  <tr>\n'
+    slow_slaves_html += '    <td>{}</td>\n'.format(slave)
+    slow_slaves_html += '    <td>{:d}</td>\n'.format(count)
+    slow_slaves_html += '    <td>{:.2f}</td>\n'.format(per_50)
+    slow_slaves_html += '    <td>{:.2f}</td>\n'.format(per_90)
+    slow_slaves_html += '  </tr>\n'
+  report['slow_slaves_html'] = slow_slaves_html
 
-  report['slow_slaves_html'] = gen_html_row(summary['slowest_cq_slaves'])
+  sorted_blame_counts = sorted([(v, k) for (k, v) in
+                                summary['patch_blame_counts'].iteritems()],
+                               reverse=True)
+  cq_flakes = [{'id': b_id, 'rejections': rejs}
+               for b_id, rejs in sorted_blame_counts]
+  flake_fmt = ('  <li><a href="http://{id}">{id}</a> (<b>[{rejections}] false '
+               'rejections</b>): _<replace>Brief explanation of bug. If '
+               'fixed, or describe workarounds</replace>_</li>')
+  report['cq_flakes_html'] = '\n'.join([flake_fmt.format(**x)
+                                        for x in cq_flakes])
 
-  def gen_html_list(fmt, items):
-    s = ""
-    for i in items:
-      s += "  <li>{}</li>\n".format(fmt.format(**i))
-    return s
-
-  cq_flakes = []
-  for rejections, b_id in sorted(((v, k) for (k, v) \
-      in summary['patch_blame_counts'].items()), reverse=True):
-    cq_flakes.append({'id': b_id, 'rejections': rejections})
-
-  flake_fmt = '<a href="http://{id}">{id}</a> (<b>[{rejections}] false ' + \
-              'rejections</b>): _<replace>Brief explanation of bug. If ' + \
-              'fixed, or describe workarounds</replace>_'
-
-  report['cq_flakes_html'] = gen_html_list(flake_fmt, cq_flakes)
-
-  cl_fails = []
-  for rejections, b_id in \
-    sorted(((v, k) for (k, v) in summary['build_blame_counts'].items()),
-           reverse=True):
-    cl_fails.append({'id': b_id, 'rejections': rejections})
-
-  cl_flake_fmt = '<a href="http://{id}">{id}</a> (<b>[{rejections}] false ' + \
-                 'rejection of build</b>): _<replace>explanation</replace>_'
-  report['cl_flakes_html'] = gen_html_list(cl_flake_fmt, cl_fails)
+  sorted_fails = sorted([(v, k) for (k, v) in
+                         summary['build_blame_counts'].iteritems()],
+                        reverse=True)
+  cl_fails = [{'id': b_id, 'rejections': rejs} for rejs, b_id in sorted_fails]
+  cl_flake_fmt = ('  <li><a href="http://{id}">{id}</a> '
+                  '(<b>[{rejections}] false rejection of build</b>): '
+                  '_<replace>explanation</replace>_</li>')
+  report['cl_flakes_html'] = '\n'.join([cl_flake_fmt.format(**x)
+                                        for x in cl_fails])
 
   file_out.write(ReportHTMLTemplate.format(**report))
 
