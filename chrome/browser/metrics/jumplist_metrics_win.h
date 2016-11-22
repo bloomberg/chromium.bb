@@ -21,7 +21,6 @@ enum JumplistCategory {
 
 // Category types that can be logged with the --win-jumplist-action switch.
 extern const char kMostVisitedCategory[];
-extern const char kProfilesCategory[];
 extern const char kRecentlyClosedCategory[];
 
 // Logs a histogram for the JumplistCategory of the item that was clicked.
