@@ -297,8 +297,6 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
             source_item->expected_modification_time());
         data_item =
             new BlobDataItem(std::move(element), source_item->data_handle_);
-        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.Bytes",
-                             read_size / 1024);
 
         DCHECK(!BlobDataBuilder::IsFutureFileItem(source_item->data_element()))
             << "File allocation unimplemented.";
@@ -315,6 +313,8 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         break;
       }
       case DataElement::TYPE_DISK_CACHE_ENTRY: {
+        UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.CacheEntry",
+                             read_size / 1024);
         std::unique_ptr<DataElement> element(new DataElement());
         element->SetToDiskCacheEntryRange(source_item->offset() + item_offset,
                                           read_size);
