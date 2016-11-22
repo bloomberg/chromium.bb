@@ -82,7 +82,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
 RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     int routing_id,
     int render_view_routing_id,
-    int opener_routing_id,
+    blink::WebFrame* opener,
     int parent_routing_id,
     const FrameReplicationState& replicated_state) {
   RenderFrameProxy* parent = nullptr;
@@ -94,9 +94,6 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     if (!parent)
       return nullptr;
   }
-
-  blink::WebFrame* opener =
-      RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
 
   std::unique_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
@@ -327,8 +324,7 @@ void RenderFrameProxy::OnSetChildFrameSurface(
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
-  blink::WebFrame* opener =
-      RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
+  blink::WebFrame* opener = RenderFrameImpl::ResolveOpener(opener_routing_id);
   web_frame_->setOpener(opener);
 }
 

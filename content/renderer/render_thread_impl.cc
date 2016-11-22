@@ -2176,9 +2176,10 @@ void RenderThreadImpl::CreateFrameProxy(
                                 base::IntToString(opener_routing_id));
   base::debug::SetCrashKeyValue("newproxy_parent_id",
                                 base::IntToString(parent_routing_id));
-  RenderFrameProxy::CreateFrameProxy(routing_id, render_view_routing_id,
-                                     opener_routing_id, parent_routing_id,
-                                     replicated_state);
+  RenderFrameProxy::CreateFrameProxy(
+      routing_id, render_view_routing_id,
+      RenderFrameImpl::ResolveOpener(opener_routing_id), parent_routing_id,
+      replicated_state);
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(

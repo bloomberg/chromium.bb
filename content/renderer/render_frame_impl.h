@@ -227,13 +227,8 @@ class CONTENT_EXPORT RenderFrameImpl
       CreateRenderFrameImplFunction create_render_frame_impl);
 
   // Looks up and returns the WebFrame corresponding to a given opener frame
-  // routing ID.  Also stores the opener's RenderView routing ID into
-  // |opener_view_routing_id|.
-  //
-  // TODO(alexmos): remove RenderViewImpl's dependency on
-  // opener_view_routing_id.
-  static blink::WebFrame* ResolveOpener(int opener_frame_routing_id,
-                                        int* opener_view_routing_id);
+  // routing ID.
+  static blink::WebFrame* ResolveOpener(int opener_frame_routing_id);
 
   // Overwrites the given URL to use an HTML5 embed if possible.
   blink::WebURL overrideFlashEmbedWithHTML(const blink::WebURL& url) override;

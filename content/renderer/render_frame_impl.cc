@@ -978,7 +978,7 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.sandbox_flags, render_frame,
         previous_sibling_web_frame,
         frame_owner_properties.ToWebFrameOwnerProperties(),
-        ResolveOpener(opener_routing_id, nullptr));
+        ResolveOpener(opener_routing_id));
 
     // The RenderFrame is created and inserted into the frame tree in the above
     // call to createLocalChild.
@@ -1039,11 +1039,7 @@ void RenderFrameImpl::InstallCreateHook(
 }
 
 // static
-blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
-                                                int* opener_view_routing_id) {
-  if (opener_view_routing_id)
-    *opener_view_routing_id = MSG_ROUTING_NONE;
-
+blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id) {
   if (opener_frame_routing_id == MSG_ROUTING_NONE)
     return nullptr;
 
@@ -1051,20 +1047,13 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
   // RenderFrame, so need to check both.
   RenderFrameProxy* opener_proxy =
       RenderFrameProxy::FromRoutingID(opener_frame_routing_id);
-  if (opener_proxy) {
-    if (opener_view_routing_id)
-      *opener_view_routing_id = opener_proxy->render_view()->GetRoutingID();
-
+  if (opener_proxy)
     return opener_proxy->web_frame();
-  }
 
   RenderFrameImpl* opener_frame =
       RenderFrameImpl::FromRoutingID(opener_frame_routing_id);
-  if (opener_frame) {
-    if (opener_view_routing_id)
-      *opener_view_routing_id = opener_frame->render_view()->GetRoutingID();
+  if (opener_frame)
     return opener_frame->GetWebFrame();
-  }
 
   return nullptr;
 }
@@ -2137,7 +2126,7 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
 }
 
 void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
-  WebFrame* opener = ResolveOpener(opener_routing_id, nullptr);
+  WebFrame* opener = ResolveOpener(opener_routing_id);
   frame_->setOpener(opener);
 }
 

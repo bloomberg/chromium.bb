@@ -581,9 +581,6 @@ void RenderViewImpl::Initialize(
   // HandleNavigation codepath.
   was_created_by_renderer_ = was_created_by_renderer;
 #endif
-  WebFrame* opener_frame =
-      RenderFrameImpl::ResolveOpener(params.opener_frame_route_id, nullptr);
-
   display_mode_ = params.initial_size.display_mode;
 
   webview_ =
@@ -654,6 +651,9 @@ void RenderViewImpl::Initialize(
 
   ApplyBlinkSettings(command_line, webview()->settings());
 
+  WebFrame* opener_frame =
+      RenderFrameImpl::ResolveOpener(params.opener_frame_route_id);
+
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params.main_frame_routing_id, params.main_frame_widget_routing_id,
@@ -662,9 +662,9 @@ void RenderViewImpl::Initialize(
 
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
-    RenderFrameProxy::CreateFrameProxy(
-        params.proxy_routing_id, GetRoutingID(), params.opener_frame_route_id,
-        MSG_ROUTING_NONE, params.replicated_frame_state);
+    RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id, GetRoutingID(),
+                                       opener_frame, MSG_ROUTING_NONE,
+                                       params.replicated_frame_state);
   }
 
   if (main_render_frame_)
