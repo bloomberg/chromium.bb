@@ -21,11 +21,13 @@ class VMTest(object):
       '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests'
   TEST_PATTERNS = ['testBrowserCreation']
   GUEST_TEST_PATTERNS = []
+  SANITY_TEST = '/usr/local/autotest/bin/vm_sanity.py'
 
   def __init__(self, image_path, qemu_path, enable_kvm, display, catapult_tests,
-               guest, start_vm, ssh_port):
+               vm_sanity, guest, start_vm, ssh_port):
     self.start_time = datetime.datetime.utcnow()
     self.test_pattern = catapult_tests
+    self.vm_sanity = vm_sanity
     self.guest = guest
     self.start_vm = start_vm
     self.ssh_port = ssh_port
@@ -55,7 +57,6 @@ class VMTest(object):
     if self.start_vm:
       self._vm.Start()
     self._vm.WaitForBoot()
-    self._vm.RemoteCommand(['chmod', '+x', self.CATAPULT_RUN_TESTS])
 
   def Build(self, build_dir):
     """Build chrome.
@@ -88,6 +89,8 @@ class VMTest(object):
       True if all tests passed.
     """
 
+    self._vm.RemoteCommand(['chmod', '+x', self.CATAPULT_RUN_TESTS])
+
     browser = 'system-guest' if guest else 'system'
     result = self._vm.RemoteCommand([self.CATAPULT_RUN_TESTS,
                                      '--browser=%s' % browser,
@@ -103,6 +106,9 @@ class VMTest(object):
     Returns:
       True if all tests passed.
     """
+
+    if self.vm_sanity:
+      return self._vm.RemoteCommand([self.SANITY_TEST]).returncode == 0
 
     if self.test_pattern:
       return self._RunCatapultTests(self.test_pattern, self.guest)
@@ -132,6 +138,9 @@ def ParseCommandLine(argv):
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests',
                       help='Catapult test pattern to run, passed to run_tests.')
+  parser.add_argument('--vm-sanity', action='store_true', default=False,
+                      help='Run a minimal and fast sanity test that ensures '
+                           'chrome starts and login works.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
   parser.add_argument('--build-dir', type='path',
@@ -162,8 +171,8 @@ def main(argv):
   vm_test = VMTest(image_path=args.image_path,
                    qemu_path=args.qemu_path, enable_kvm=args.enable_kvm,
                    display=args.display, catapult_tests=args.catapult_tests,
-                   guest=args.guest, start_vm=args.start_vm,
-                   ssh_port=args.ssh_port)
+                   vm_sanity=args.vm_sanity, guest=args.guest,
+                   start_vm=args.start_vm, ssh_port=args.ssh_port)
 
   if (args.build or args.deploy) and not args.build_dir:
     args.error('Must specifiy --build-dir with --build or --deploy.')
