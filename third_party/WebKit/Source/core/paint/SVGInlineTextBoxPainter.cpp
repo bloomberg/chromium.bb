@@ -371,11 +371,16 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
                   ApplyToStrokeMode, strokePaint))
             break;
           strokePaint.setAntiAlias(true);
+          float strokeScaleFactor =
+              svgDecorationStyle.vectorEffect() == VE_NON_SCALING_STROKE
+                  ? 1 / scalingFactor
+                  : 1;
           StrokeData strokeData;
           SVGLayoutSupport::applyStrokeStyleToStrokeData(
-              strokeData, decorationStyle, *decorationLayoutObject, 1);
-          if (svgDecorationStyle.vectorEffect() == VE_NON_SCALING_STROKE)
-            strokeData.setThickness(strokeData.thickness() / scalingFactor);
+              strokeData, decorationStyle, *decorationLayoutObject,
+              strokeScaleFactor);
+          if (strokeScaleFactor != 1)
+            strokeData.setThickness(strokeData.thickness() * strokeScaleFactor);
           strokeData.setupPaint(&strokePaint);
           paintInfo.context.drawPath(path.getSkPath(), strokePaint);
         }
@@ -419,11 +424,15 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo,
   }
 
   if (resourceMode == ApplyToStrokeMode) {
+    // The stroke geometry needs be generated based on the scaled font.
+    float strokeScaleFactor =
+        style.svgStyle().vectorEffect() != VE_NON_SCALING_STROKE ? scalingFactor
+                                                                 : 1;
     StrokeData strokeData;
     SVGLayoutSupport::applyStrokeStyleToStrokeData(
-        strokeData, style, parentInlineLayoutObject(), 1);
-    if (style.svgStyle().vectorEffect() != VE_NON_SCALING_STROKE)
-      strokeData.setThickness(strokeData.thickness() * scalingFactor);
+        strokeData, style, parentInlineLayoutObject(), strokeScaleFactor);
+    if (strokeScaleFactor != 1)
+      strokeData.setThickness(strokeData.thickness() * strokeScaleFactor);
     strokeData.setupPaint(&paint);
   }
   return true;
