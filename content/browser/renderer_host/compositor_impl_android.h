@@ -134,6 +134,7 @@ class CONTENT_EXPORT CompositorImpl
       scoped_refptr<cc::ContextProvider> context_provider);
 
   bool HavePendingReadbacks();
+  void SetBackgroundColor(int color);
 
   cc::FrameSinkId frame_sink_id_;
 

@@ -397,7 +397,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
     : frame_sink_id_(
           ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
       resource_manager_(root_window),
-      has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
       surface_handle_(gpu::kNullSurfaceHandle),
@@ -519,9 +518,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
   host_->SetFrameSinkId(frame_sink_id_);
   host_->GetLayerTree()->SetViewportSize(size_);
-  host_->GetLayerTree()->set_has_transparent_background(
-      has_transparent_background_);
-  host_->GetLayerTree()->set_background_color(SK_ColorBLACK);
+  SetHasTransparentBackground(false);
   host_->GetLayerTree()->SetDeviceScaleFactor(device_scale_factor_);
 
   if (needs_animate_)
@@ -568,10 +565,24 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   root_window_->GetLayer()->SetBounds(size);
 }
 
-void CompositorImpl::SetHasTransparentBackground(bool flag) {
-  has_transparent_background_ = flag;
-  if (host_)
-    host_->GetLayerTree()->set_has_transparent_background(flag);
+void CompositorImpl::SetHasTransparentBackground(bool transparent) {
+  has_transparent_background_ = transparent;
+  if (host_) {
+    host_->GetLayerTree()->set_has_transparent_background(transparent);
+
+    // Give a delay in setting the background color to avoid the color for
+    // the normal mode (white) affecting the UI transition.
+    base::ThreadTaskRunnerHandle::Get().get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CompositorImpl::SetBackgroundColor,
+                   weak_factory_.GetWeakPtr(),
+                   transparent ? SK_ColorBLACK : SK_ColorWHITE),
+        base::TimeDelta::FromMilliseconds(500));
+  }
+}
+
+void CompositorImpl::SetBackgroundColor(int color) {
+  host_->GetLayerTree()->set_background_color(color);
 }
 
 void CompositorImpl::SetNeedsComposite() {
