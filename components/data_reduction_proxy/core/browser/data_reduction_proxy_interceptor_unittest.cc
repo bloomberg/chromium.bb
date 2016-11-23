@@ -476,7 +476,13 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithBypassAndRetry) {
   EXPECT_EQ(std::vector<GURL>(1, GURL("http://foo.com")), request->url_chain());
 }
 
-TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectChainToHttps) {
+// https://crbug.com/668197: Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_RedirectChainToHttps DISABLED_RedirectChainToHttps
+#else
+#define MAYBE_RedirectChainToHttps RedirectChainToHttps
+#endif
+TEST_F(DataReductionProxyInterceptorEndToEndTest, MAYBE_RedirectChainToHttps) {
   // First, a redirect is successfully received through the Data Reduction
   // Proxy. HSTS is forced for play.google.com and prebaked into Chrome, so
   // http://play.google.com will automatically be redirected to
