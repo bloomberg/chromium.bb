@@ -426,7 +426,17 @@ bool setURL(const String& origin,
   return originURL.isValid();
 }
 
-}  // anonymous namespace
+size_t getNFCMessageSize(
+    const device::nfc::mojom::blink::NFCMessagePtr& message) {
+  size_t messageSize = message->url.charactersSizeInBytes();
+  for (size_t i = 0; i < message->data.size(); ++i) {
+    messageSize += message->data[i]->media_type.charactersSizeInBytes();
+    messageSize += message->data[i]->data.size();
+  }
+  return messageSize;
+}
+
+}  // namespace
 
 NFC::NFC(LocalFrame* frame)
     : PageVisibilityObserver(frame->page()),
@@ -487,6 +497,12 @@ ScriptPromise NFC::push(ScriptState* scriptState,
           message))
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(SyntaxError));
+
+  if (getNFCMessageSize(message) >
+      device::nfc::mojom::blink::NFCMessage::kMaxSize) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(NotSupportedError));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   m_requests.add(resolver);

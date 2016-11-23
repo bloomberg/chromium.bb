@@ -150,4 +150,10 @@ nfc_test(nfc => {
   return assertRejectsWithError(promise, 'AbortError');
 }, 'nfc.cancelPush should reject pending promise with AbortError.')
 
+nfc_test(nfc => {
+  return assertRejectsWithError(
+      navigator.nfc.push(new ArrayBuffer(32 * 1024 + 1)),
+      'NotSupportedError');
+}, 'Reject promise with NotSupportedError if NFC message size exceeds 32KB.');
+
 </script>
