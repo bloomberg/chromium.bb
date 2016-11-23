@@ -625,7 +625,9 @@ endif
 
 if BUILD_SIMPLE_DMABUF_DRM_CLIENT
 demo_clients += weston-simple-dmabuf-drm
-weston_simple_dmabuf_drm_SOURCES = clients/simple-dmabuf-drm.c
+weston_simple_dmabuf_drm_SOURCES =			\
+	clients/simple-dmabuf-drm.c			\
+	clients/simple-dmabuf-drm-data.h
 nodist_weston_simple_dmabuf_drm_SOURCES =		\
 	protocol/xdg-shell-unstable-v6-protocol.c		\
 	protocol/xdg-shell-unstable-v6-client-protocol.h	\

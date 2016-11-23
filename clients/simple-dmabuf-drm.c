@@ -26,6 +26,7 @@
  */
 
 #include "config.h"
+#include "simple-dmabuf-drm-data.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -50,10 +51,12 @@
 
 #include <wayland-client.h>
 #include "shared/zalloc.h"
+#include "shared/platform.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
 
+extern const unsigned nv12_tiled[];
 struct buffer;
 
 struct display {
@@ -64,7 +67,10 @@ struct display {
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct zwp_linux_dmabuf_v1 *dmabuf;
 	int xrgb8888_format_found;
+	int nv12_format_found;
+	int nv12_modifier_found;
 	int req_dmabuf_immediate;
+	int req_dmabuf_modifiers;
 };
 
 struct drm_device {
@@ -101,6 +107,7 @@ struct buffer {
 	int height;
 	int bpp;
 	unsigned long stride;
+	int format;
 };
 
 #define NUM_BUFFERS 3
@@ -249,11 +256,19 @@ fill_content(struct buffer *my_buf)
 
 	assert(my_buf->mmap);
 
-	for (y = 0; y < my_buf->height; y++) {
-		pix = (uint32_t *)(my_buf->mmap + y * my_buf->stride);
-		for (x = 0; x < my_buf->width; x++) {
-			*pix++ = (0xff << 24) | ((x % 256) << 16) |
-			         ((y % 256) << 8) | 0xf0;
+	if (my_buf->format == DRM_FORMAT_NV12) {
+		pix = (uint32_t *) my_buf->mmap;
+		for (y = 0; y < my_buf->height; y++)
+			memcpy(&pix[y * my_buf->width / 4],
+			       &nv12_tiled[my_buf->width * y / 4],
+			       my_buf->width);
+	}
+	else {
+		for (y = 0; y < my_buf->height; y++) {
+			pix = (uint32_t *)(my_buf->mmap + y * my_buf->stride);
+			for (x = 0; x < my_buf->width; x++)
+				*pix++ = (0xff << 24) | ((x % 256) << 16) |
+					 ((y % 256) << 8) | 0xf0;
 		}
 	}
 }
@@ -364,10 +379,10 @@ static const struct zwp_linux_buffer_params_v1_listener params_listener = {
 
 static int
 create_dmabuf_buffer(struct display *display, struct buffer *buffer,
-		     int width, int height)
+		     int width, int height, int format)
 {
 	struct zwp_linux_buffer_params_v1 *params;
-	uint64_t modifier;
+	uint64_t modifier = 0;
 	uint32_t flags;
 	struct drm_device *drm_dev;
 
@@ -378,8 +393,18 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 	drm_dev = buffer->dev;
 
 	buffer->width = width;
-	buffer->height = height;
-	buffer->bpp = 32; /* hardcoded XRGB8888 format */
+	switch (format) {
+	case DRM_FORMAT_NV12:
+		/* adjust height for allocation of NV12 Y and UV planes */
+		buffer->height = height * 3 / 2;
+		buffer->bpp = 8;
+		modifier = DRM_FORMAT_MOD_SAMSUNG_64_32_TILE;
+		break;
+	default:
+		buffer->height = height;
+		buffer->bpp = 32;
+	}
+	buffer->format = format;
 
 	if (!drm_dev->alloc_bo(buffer)) {
 		fprintf(stderr, "alloc_bo failed\n");
@@ -402,10 +427,13 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 		goto error2;
 	}
 
-	/* We now have a dmabuf! It should contain 2x2 tiles (i.e. each tile
-	 * is 256x256) of misc colours, and be mappable, either as ARGB8888, or
-	 * XRGB8888. */
-	modifier = 0;
+	/* We now have a dmabuf! For format XRGB8888, it should contain 2x2
+	 * tiles (i.e. each tile is 256x256) of misc colours, and be mappable,
+	 * either as ARGB8888, or XRGB8888. For format NV12, it should contain
+	 * the Y and UV components, and needs to be re-adjusted for passing the
+	 * correct height to the compositor.
+	 */
+	buffer->height = height;
 	flags = 0;
 
 	params = zwp_linux_dmabuf_v1_create_params(display->dmabuf);
@@ -416,12 +444,23 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 				       buffer->stride,
 				       modifier >> 32,
 				       modifier & 0xffffffff);
+
+	if (format == DRM_FORMAT_NV12) {
+		/* add the second plane params */
+		zwp_linux_buffer_params_v1_add(params,
+					       buffer->dmabuf_fd,
+					       1,
+					       buffer->width * buffer->height,
+					       buffer->stride,
+					       modifier >> 32,
+					       modifier & 0xffffffff);
+	}
 	zwp_linux_buffer_params_v1_add_listener(params, &params_listener, buffer);
 	if (display->req_dmabuf_immediate) {
 		buffer->buffer = zwp_linux_buffer_params_v1_create_immed(params,
 					  buffer->width,
 					  buffer->height,
-					  DRM_FORMAT_XRGB8888,
+					  format,
 					  flags);
 		wl_buffer_add_listener(buffer->buffer, &buffer_listener, buffer);
 	}
@@ -429,7 +468,7 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 		zwp_linux_buffer_params_v1_create(params,
 					  buffer->width,
 					  buffer->height,
-					  DRM_FORMAT_XRGB8888,
+					  format,
 					  flags);
 
 	return 0;
@@ -478,7 +517,7 @@ static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
 };
 
 static struct window *
-create_window(struct display *display, int width, int height)
+create_window(struct display *display, int width, int height, int format)
 {
 	struct window *window;
 	int i;
@@ -527,7 +566,7 @@ create_window(struct display *display, int width, int height)
 
 	for (i = 0; i < NUM_BUFFERS; ++i) {
 		ret = create_dmabuf_buffer(display, &window->buffers[i],
-		                               width, height);
+		                               width, height, format);
 
 		if (ret < 0)
 			return NULL;
@@ -615,17 +654,26 @@ dmabuf_modifiers(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf,
 		 uint32_t format, uint32_t modifier_hi, uint32_t modifier_lo)
 {
 	struct display *d = data;
+	uint64_t modifier = ((uint64_t) modifier_hi << 32) | modifier_lo;
 
-	if (format == DRM_FORMAT_XRGB8888)
+	switch (format) {
+	case DRM_FORMAT_XRGB8888:
 		d->xrgb8888_format_found = 1;
-
-	/* XXX: do something useful with modifiers */
+		break;
+	case DRM_FORMAT_NV12:
+		d->nv12_format_found = 1;
+		if (modifier == DRM_FORMAT_MOD_SAMSUNG_64_32_TILE)
+			d->nv12_modifier_found = 1;
+		break;
+	default:
+		break;
+	}
 }
 
 static void
 dmabuf_format(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf, uint32_t format)
 {
-	/* XXX: will be deprecated. */
+	/* XXX: deprecated */
 }
 
 static const struct zwp_linux_dmabuf_v1_listener dmabuf_listener = {
@@ -661,9 +709,16 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->fshell = wl_registry_bind(registry,
 					     id, &zwp_fullscreen_shell_v1_interface, 1);
 	} else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
+		int ver;
+		if (d->req_dmabuf_modifiers)
+			ver = 3;
+		else if (d->req_dmabuf_immediate)
+			ver = 2;
+		else
+			ver = 1;
 		d->dmabuf = wl_registry_bind(registry,
 					     id, &zwp_linux_dmabuf_v1_interface,
-					     d->req_dmabuf_immediate ? 2 : 1);
+					     ver);
 		zwp_linux_dmabuf_v1_add_listener(d->dmabuf, &dmabuf_listener, d);
 	}
 }
@@ -680,9 +735,10 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 static struct display *
-create_display(int is_immediate)
+create_display(int is_immediate, int format)
 {
 	struct display *display;
+	const char *extensions;
 
 	display = malloc(sizeof *display);
 	if (display == NULL) {
@@ -692,9 +748,17 @@ create_display(int is_immediate)
 	display->display = wl_display_connect(NULL);
 	assert(display->display);
 
-	/* XXX: fake, because the compositor does not yet advertise anything */
-	display->xrgb8888_format_found = 1;
 	display->req_dmabuf_immediate = is_immediate;
+	display->req_dmabuf_modifiers = (format == DRM_FORMAT_NV12);
+
+	/*
+	 * hard code format if the platform egl doesn't support format
+	 * querying / advertising.
+	 */
+	extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (extensions && !weston_check_egl_extension(extensions,
+				"EGL_EXT_image_dma_buf_import_modifiers"))
+		display->xrgb8888_format_found = 1;
 
 	display->registry = wl_display_get_registry(display->display);
 	wl_registry_add_listener(display->registry,
@@ -707,8 +771,10 @@ create_display(int is_immediate)
 
 	wl_display_roundtrip(display->display);
 
-	if (!display->xrgb8888_format_found) {
-		fprintf(stderr, "DRM_FORMAT_XRGB8888 not available\n");
+	if ((format == DRM_FORMAT_XRGB8888 && !display->xrgb8888_format_found) ||
+		(format == DRM_FORMAT_NV12 && (!display->nv12_format_found ||
+			!display->nv12_modifier_found))) {
+		fprintf(stderr, "requested format is not available\n");
 		exit(1);
 	}
 
@@ -742,6 +808,43 @@ signal_int(int signum)
 	running = 0;
 }
 
+static void
+print_usage_and_exit(void)
+{
+	printf("usage flags:\n"
+		"\t'--import-immediate=<>'\n\t\t0 to import dmabuf via roundtrip,"
+		"\n\t\t1 to enable import without roundtrip\n"
+		"\t'--import-format=<>'\n\t\tXRGB to import dmabuf as XRGB8888,"
+		"\n\t\tNV12 to import as multi plane NV12 with tiling modifier\n");
+	exit(0);
+}
+
+static int
+is_import_mode_immediate(const char* c)
+{
+	if (!strcmp(c, "1"))
+		return 1;
+	else if (!strcmp(c, "0"))
+		return 0;
+	else
+		print_usage_and_exit();
+
+	return 0;
+}
+
+static int
+parse_import_format(const char* c)
+{
+	if (!strcmp(c, "NV12"))
+		return DRM_FORMAT_NV12;
+	else if (!strcmp(c, "XRGB"))
+		return DRM_FORMAT_XRGB8888;
+	else
+		print_usage_and_exit();
+
+	return 0;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -749,22 +852,30 @@ main(int argc, char **argv)
 	struct display *display;
 	struct window *window;
 	int is_immediate = 0;
-	int ret = 0;
+	int import_format = DRM_FORMAT_XRGB8888;
+	int ret = 0, i = 0;
 
 	if (argc > 1) {
-		if (!strcmp(argv[1], "immed")) {
-			is_immediate = 1;
-		}
-		else {
-			fprintf(stderr, "usage:\n\tsimple-dmabuf-intel [options]\n"
-				"available options:\n\timmed: avoid dmabuf "
-				"creation roundtrip and import immediately\n");
-			return 1;
+		static const char import_mode[] = "--import-immediate=";
+		static const char format[] = "--import-format=";
+		for (i = 1; i < argc; i++) {
+			if (!strncmp(argv[i], import_mode,
+				     sizeof(import_mode) - 1)) {
+				is_immediate = is_import_mode_immediate(argv[i]
+							+ sizeof(import_mode) - 1);
+			}
+			else if (!strncmp(argv[i], format, sizeof(format) - 1)) {
+				import_format = parse_import_format(argv[i]
+							+ sizeof(format) - 1);
+			}
+			else {
+				print_usage_and_exit();
+			}
 		}
 	}
 
-	display = create_display(is_immediate);
-	window = create_window(display, 250, 250);
+	display = create_display(is_immediate, import_format);
+	window = create_window(display, 256, 256, import_format);
 	if (!window)
 		return 1;
 

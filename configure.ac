@@ -385,7 +385,7 @@ AC_ARG_ENABLE(simple-dmabuf-drm-client,
                              [do not build the simple dmabuf drm client]),,
               enable_simple_dmabuf_drm_client="auto")
 if ! test "x$enable_simple_dmabuf_drm_client" = "xno"; then
-  PKG_CHECK_MODULES(SIMPLE_DMABUF_DRM_CLIENT, [wayland-client libdrm],
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_DRM_CLIENT, [wayland-client libdrm egl],
     [PKG_CHECK_MODULES(LIBDRM_PLATFORM, [libdrm_freedreno],
       AC_DEFINE([HAVE_LIBDRM_FREEDRENO], [1], [Build freedreno dmabuf client]) have_simple_dmabuf_drm_client=freedreno,
     [PKG_CHECK_MODULES(LIBDRM_PLATFORM, [libdrm_intel],
