@@ -101,6 +101,12 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Warning: This method will destruct the caller.
   virtual void requestReload(const WebURL& newUrl) = 0;
 
+  // Returns if there's a selected video track.
+  virtual bool hasSelectedVideoTrack() = 0;
+
+  // Returns the selected video track id (or an empty id if there's none).
+  virtual WebMediaPlayer::TrackId getSelectedVideoTrackId() = 0;
+
  protected:
   ~WebMediaPlayerClient() {}
 };

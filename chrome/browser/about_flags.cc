@@ -2005,6 +2005,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION,
      kOsWin | kOsMac | kOsLinux | kOsAndroid,
      FEATURE_VALUE_TYPE(media::kNewAudioRenderingMixingStrategy)},
+    {"disable-background-video-track",
+     IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_NAME,
+     IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION,
+     kOsAll,
+     FEATURE_VALUE_TYPE(media::kBackgroundVideoTrackOptimization)},
 #if defined(OS_CHROMEOS)
     {"files-quick-view", IDS_FLAGS_FILES_QUICK_VIEW_NAME,
      IDS_FLAGS_FILES_QUICK_VIEW_DESCRIPTION, kOsCrOS,

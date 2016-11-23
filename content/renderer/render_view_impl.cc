@@ -1059,6 +1059,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.always_show_context_menu_on_touch);
 
   settings->setHideDownloadUI(prefs.hide_download_ui);
+  WebRuntimeFeatures::enableBackgroundVideoTrackOptimization(
+      prefs.background_video_track_optimization_enabled);
 
 #if defined(OS_MACOSX)
   settings->setDoubleTapToZoomEnabled(true);

@@ -155,6 +155,10 @@ const base::Feature kResumeBackgroundVideo {
 #endif
 };
 
+// Let video track be unselected when video is playing in the background.
+const base::Feature kBackgroundVideoTrackOptimization{
+    "BackgroundVideoTrackOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

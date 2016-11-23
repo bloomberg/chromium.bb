@@ -268,3 +268,4 @@ LazyParseCSS status=experimental
 ParseHTMLOnMainThread status=test
 SendBeaconThrowForBlobWithNonSimpleType status=experimental
 PerformanceNavigationTiming2 status=test
+BackgroundVideoTrackOptimization status=stable

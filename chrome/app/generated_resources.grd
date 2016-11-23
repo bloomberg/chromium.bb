@@ -15569,6 +15569,14 @@ read aloud to screenreader users to announce that a completion is available.">
       Use the new audio rendering mixing strategy.
     </message>
 
+    <!-- Background video track disabling experiment strings. -->
+    <message name="IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_NAME" desc="Name of the flag for enabling optimizing background video playback.">
+      Optimize background video playback.
+    </message>
+    <message name="IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION" desc="Description of the flag for enabling optimizing background video playback.">
+      Disable video tracks when the video is played in the background to optimize performance.
+    </message>
+
     <if expr="is_win">
       <message name="IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME" desc="The name of the utility process used to handle shell operations.">
         Shell Handler

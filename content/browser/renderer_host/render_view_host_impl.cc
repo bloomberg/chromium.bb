@@ -80,6 +80,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "media/base/media_switches.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -525,6 +526,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   if (delegate_ && delegate_->HideDownloadUI())
     prefs.hide_download_ui = true;
+
+  prefs.background_video_track_optimization_enabled =
+      base::FeatureList::IsEnabled(media::kBackgroundVideoTrackOptimization);
 
   std::map<std::string, std::string> expensive_background_throttling_prefs;
   variations::GetVariationParamsByFeature(

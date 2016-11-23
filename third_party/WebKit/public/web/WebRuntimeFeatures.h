@@ -137,6 +137,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableExpensiveBackgroundTimerThrottling(bool);
   BLINK_EXPORT static void enableCanvas2dDynamicRenderingModeSwitching(bool);
   BLINK_EXPORT static void enableSendBeaconThrowForBlobWithNonSimpleType(bool);
+  BLINK_EXPORT static void enableBackgroundVideoTrackOptimization(bool);
 
  private:
   WebRuntimeFeatures();

@@ -124,6 +124,10 @@ bool IsResumeBackgroundVideosEnabled() {
   return base::FeatureList::IsEnabled(kResumeBackgroundVideo);
 }
 
+bool IsBackgroundVideoTrackOptimizationEnabled() {
+  return base::FeatureList::IsEnabled(kBackgroundVideoTrackOptimization);
+}
+
 bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   bool result = state == blink::WebMediaPlayer::NetworkStateFormatError ||
                 state == blink::WebMediaPlayer::NetworkStateNetworkError ||
@@ -651,7 +655,9 @@ void WebMediaPlayerImpl::selectedVideoTrackChanged(
 
   std::ostringstream logstr;
   std::vector<MediaTrack::Id> selectedVideoMediaTrackId;
-  if (selectedTrackId) {
+  bool canAddVideoTrack =
+      !IsBackgroundVideoTrackOptimizationEnabled() || !IsHidden();
+  if (selectedTrackId && canAddVideoTrack) {
     selectedVideoMediaTrackId.push_back(selectedTrackId->utf8().data());
     logstr << selectedVideoMediaTrackId[0];
   }
@@ -1309,6 +1315,10 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  if (IsBackgroundVideoTrackOptimizationEnabled())
+    selectedVideoTrackChanged(nullptr);
+
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
@@ -1323,6 +1333,12 @@ void WebMediaPlayerImpl::OnShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
+
+  if (IsBackgroundVideoTrackOptimizationEnabled() &&
+      client_->hasSelectedVideoTrack()) {
+    WebMediaPlayer::TrackId trackId = client_->getSelectedVideoTrackId();
+    selectedVideoTrackChanged(&trackId);
+  }
 
   must_suspend_ = false;
   background_pause_timer_.Stop();
@@ -1700,8 +1716,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 #endif
 
   bool is_suspended = pipeline_controller_.IsSuspended();
-  bool is_backgrounded =
-      IsBackgroundedSuspendEnabled() && delegate_ && delegate_->IsHidden();
+  bool is_backgrounded = IsBackgroundedSuspendEnabled() && IsHidden();
   PlayState state = UpdatePlayState_ComputePlayState(
       is_remote, is_streaming, is_suspended, is_backgrounded);
   SetDelegateState(state.delegate_state);
@@ -1960,10 +1975,16 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       pipeline_metadata_.natural_size,
       base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
-  if (delegate_ && delegate_->IsHidden())
+  if (IsHidden())
     watch_time_reporter_->OnHidden();
   else
     watch_time_reporter_->OnShown();
+}
+
+bool WebMediaPlayerImpl::IsHidden() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  return delegate_ && delegate_->IsHidden();
 }
 
 }  // namespace media

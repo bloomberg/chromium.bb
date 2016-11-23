@@ -2558,7 +2558,6 @@ void HTMLMediaElement::togglePlayState() {
 }
 
 AudioTrackList& HTMLMediaElement::audioTracks() {
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
   return *m_audioTracks;
 }
 
@@ -2600,9 +2599,6 @@ WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(
                   << (String)label << "', '" << (String)language << "', "
                   << boolString(enabled) << ")";
 
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
-    return blink::WebMediaPlayer::TrackId();
-
   AudioTrack* audioTrack =
       AudioTrack::create(id, kindString, label, language, enabled);
   audioTracks().add(audioTrack);
@@ -2613,14 +2609,10 @@ WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(
 void HTMLMediaElement::removeAudioTrack(WebMediaPlayer::TrackId trackId) {
   BLINK_MEDIA_LOG << "removeAudioTrack(" << (void*)this << ")";
 
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
-    return;
-
   audioTracks().remove(trackId);
 }
 
 VideoTrackList& HTMLMediaElement::videoTracks() {
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
   return *m_videoTracks;
 }
 
@@ -2655,9 +2647,6 @@ WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(
                   << (String)label << "', '" << (String)language << "', "
                   << boolString(selected) << ")";
 
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
-    return blink::WebMediaPlayer::TrackId();
-
   // If another track was selected (potentially by the user), leave it selected.
   if (selected && videoTracks().selectedIndex() != -1)
     selected = false;
@@ -2671,9 +2660,6 @@ WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(
 
 void HTMLMediaElement::removeVideoTrack(WebMediaPlayer::TrackId trackId) {
   BLINK_MEDIA_LOG << "removeVideoTrack(" << (void*)this << ")";
-
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
-    return;
 
   videoTracks().remove(trackId);
 }
@@ -3203,6 +3189,21 @@ void HTMLMediaElement::cancelledRemotePlaybackRequest() {
 void HTMLMediaElement::remotePlaybackStarted() {
   if (remotePlaybackClient())
     remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connected);
+}
+
+bool HTMLMediaElement::hasSelectedVideoTrack() {
+  DCHECK(RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled());
+
+  return m_videoTracks && m_videoTracks->selectedIndex() != -1;
+}
+
+WebMediaPlayer::TrackId HTMLMediaElement::getSelectedVideoTrackId() {
+  DCHECK(RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled());
+  DCHECK(hasSelectedVideoTrack());
+
+  int selectedTrackIndex = m_videoTracks->selectedIndex();
+  VideoTrack* track = m_videoTracks->anonymousIndexedGetter(selectedTrackIndex);
+  return track->id();
 }
 
 bool HTMLMediaElement::isAutoplayingMuted() {
@@ -3859,8 +3860,10 @@ DEFINE_TRACE_WRAPPERS(HTMLMediaElement) {
 }
 
 void HTMLMediaElement::createPlaceholderTracksIfNecessary() {
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled() &&
+      !RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled()) {
     return;
+  }
 
   // Create a placeholder audio track if the player says it has audio but it
   // didn't explicitly announce the tracks.
@@ -3876,8 +3879,10 @@ void HTMLMediaElement::createPlaceholderTracksIfNecessary() {
 }
 
 void HTMLMediaElement::selectInitialTracksIfNecessary() {
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
+  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled() &&
+      !RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled()) {
     return;
+  }
 
   // Enable the first audio track if an audio track hasn't been enabled yet.
   if (audioTracks().length() > 0 && !audioTracks().hasEnabledTrack())

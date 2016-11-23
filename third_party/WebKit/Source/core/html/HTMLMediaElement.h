@@ -394,6 +394,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   void disconnectedFromRemoteDevice() final;
   void cancelledRemotePlaybackRequest() final;
   void remotePlaybackStarted() final;
+  bool hasSelectedVideoTrack() final;
+  WebMediaPlayer::TrackId getSelectedVideoTrackId() final;
   bool isAutoplayingMuted() final;
   void requestReload(const WebURL&) final;
 
@@ -722,6 +724,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   friend class TrackDisplayUpdateScope;
   friend class AutoplayExperimentHelper;
   friend class MediaControlsTest;
+  friend class HTMLVideoElementTest;
 
   Member<AutoplayExperimentHelper::Client> m_autoplayHelperClient;
   Member<AutoplayExperimentHelper> m_autoplayHelper;

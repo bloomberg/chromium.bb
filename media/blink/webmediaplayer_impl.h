@@ -360,6 +360,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   void CreateWatchTimeReporter();
 
+  // Returns true if the player is hidden.
+  bool IsHidden() const;
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate

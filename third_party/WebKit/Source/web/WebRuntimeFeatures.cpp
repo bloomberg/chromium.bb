@@ -354,4 +354,8 @@ void WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(
       enable);
 }
 
+void WebRuntimeFeatures::enableBackgroundVideoTrackOptimization(bool enable) {
+  RuntimeEnabledFeatures::setBackgroundVideoTrackOptimizationEnabled(enable);
+}
+
 }  // namespace blink
