@@ -5,9 +5,4 @@
 @include common-auth
 @include common-account
 @include common-password
-session [success=ok ignore=ignore module_unknown=ignore default=bad] pam_selinux.so close
-session required pam_limits.so
 @include common-session
-session [success=ok ignore=ignore module_unknown=ignore default=bad] pam_selinux.so open
-session required pam_env.so readenv=1
-session required pam_env.so readenv=1 user_readenv=1 envfile=/etc/default/locale

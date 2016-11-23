@@ -19,8 +19,6 @@ ME2ME_PROGNAME = $(BUILD_DIR)/remoting_me2me_host
 ME2ME_DEBUGFILE = $(ME2ME_PROGNAME).debug
 START_PROGNAME = $(BUILD_DIR)/remoting_start_host
 START_DEBUGFILE = $(START_PROGNAME).debug
-SESSION_WRAPPER_PROGNAME = $(BUILD_DIR)/remoting_user_session
-SESSION_WRAPPER_DEBUGFILE = $(SESSION_WRAPPER_PROGNAME).debug
 ME2ME_NM_PROGNAME = $(BUILD_DIR)/remoting_native_messaging_host
 ME2ME_NM_DEBUGFILE = $(ME2ME_NM_PROGNAME).debug
 REMOTE_ASSISTANCE_PROGNAME = $(BUILD_DIR)/remote_assistance_host
@@ -54,9 +52,6 @@ install:
 
 	eu-strip -f "$(START_DEBUGFILE)" "$(START_PROGNAME)"
 	install "$(START_PROGNAME)" "$(INSTALL_DIR)/start-host"
-
-	eu-strip -f "$(SESSION_WRAPPER_DEBUGFILE)" "$(SESSION_WRAPPER_PROGNAME)"
-	install "$(SESSION_WRAPPER_PROGNAME)" "$(INSTALL_DIR)/user-session"
 
 	eu-strip -f "$(ME2ME_NM_DEBUGFILE)" "$(ME2ME_NM_PROGNAME)"
 	install "$(ME2ME_NM_PROGNAME)" "$(INSTALL_DIR)/native-messaging-host"

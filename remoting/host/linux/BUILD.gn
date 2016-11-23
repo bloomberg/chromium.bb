@@ -9,18 +9,6 @@ group("all_tests") {
 }
 
 if (enable_me2me_host) {
-  executable("remoting_user_session") {
-    sources = [
-      "remoting_user_session.cc",
-    ]
-
-    deps = [
-      "//base",
-    ]
-
-    libs = [ "pam" ]
-  }
-
   copy("remoting_me2me_host_copy_script") {
     sources = [
       "linux_me2me_host.py",
