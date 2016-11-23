@@ -63,6 +63,11 @@ base::Optional<T> Max(const base::Optional<T>& a, const base::Optional<T>& b) {
   return std::max(a.value(), b.value());
 }
 
+std::string PointerToId(void* pointer) {
+  return base::StringPrintf(
+      "%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
+}
+
 }  // namespace
 
 TaskQueueThrottler::TimeBudgetPool::TimeBudgetPool(
@@ -132,6 +137,9 @@ void TaskQueueThrottler::TimeBudgetPool::EnableThrottling(LazyNow* lazy_now) {
     return;
   is_enabled_ = true;
 
+  TRACE_EVENT0(task_queue_throttler_->tracing_category_,
+               "TaskQueueThrottler_TimeBudgetPool_EnableThrottling");
+
   BlockThrottledQueues(lazy_now->Now());
 }
 
@@ -139,6 +147,9 @@ void TaskQueueThrottler::TimeBudgetPool::DisableThrottling(LazyNow* lazy_now) {
   if (!is_enabled_)
     return;
   is_enabled_ = false;
+
+  TRACE_EVENT0(task_queue_throttler_->tracing_category_,
+               "TaskQueueThrottler_TimeBudgetPool_DisableThrottling");
 
   for (TaskQueue* queue : associated_task_queues_) {
     if (!task_queue_throttler_->IsThrottled(queue))
@@ -226,8 +237,7 @@ void TaskQueueThrottler::TimeBudgetPool::AsValueInto(
 
   state->BeginArray("task_queues");
   for (TaskQueue* queue : associated_task_queues_) {
-    state->AppendString(base::StringPrintf(
-        "%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(queue))));
+    state->AppendString(PointerToId(queue));
   }
   state->EndArray();
 
@@ -375,7 +385,7 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
       task_queue->SetQueueEnabled(enabled);
     }
 
-    TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUntrottled",
+    TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUnthrottled",
                  "task_queue", task_queue);
   }
 }
@@ -553,13 +563,25 @@ void TaskQueueThrottler::AsValueInto(base::trace_event::TracedValue* state,
         (pending_pump_throttled_tasks_runtime_.value() - now).InSecondsF());
   }
 
-  state->BeginDictionary("time_budget_pools");
+  state->SetBoolean("allow_throttling", allow_throttling_);
 
+  state->BeginDictionary("time_budget_pools");
   for (const auto& map_entry : time_budget_pools_) {
     TaskQueueThrottler::TimeBudgetPool* pool = map_entry.first;
     pool->AsValueInto(state, now);
   }
+  state->EndDictionary();
 
+  state->BeginDictionary("queue_details");
+  for (const auto& map_entry : queue_details_) {
+    state->BeginDictionaryWithCopiedName(PointerToId(map_entry.first));
+
+    state->SetInteger("throttling_ref_count",
+                      map_entry.second.throttling_ref_count);
+    state->SetBoolean("enabled", map_entry.second.enabled);
+
+    state->EndDictionary();
+  }
   state->EndDictionary();
 }
 
@@ -618,6 +640,8 @@ void TaskQueueThrottler::DisableThrottling() {
 
   pump_throttled_tasks_closure_.Cancel();
   pending_pump_throttled_tasks_runtime_ = base::nullopt;
+
+  TRACE_EVENT0(tracing_category_, "TaskQueueThrottler_DisableThrottling");
 }
 
 void TaskQueueThrottler::EnableThrottling() {
@@ -639,6 +663,8 @@ void TaskQueueThrottler::EnableThrottling() {
     MaybeSchedulePumpQueue(FROM_HERE, lazy_now.Now(), queue,
                            GetNextAllowedRunTime(lazy_now.Now(), queue));
   }
+
+  TRACE_EVENT0(tracing_category_, "TaskQueueThrottler_EnableThrottling");
 }
 
 }  // namespace scheduler

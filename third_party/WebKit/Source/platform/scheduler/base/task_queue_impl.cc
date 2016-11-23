@@ -48,6 +48,23 @@ const char* TaskQueue::NameForQueueType(TaskQueue::QueueType queue_type) {
   return nullptr;
 }
 
+// static
+const char* TaskQueue::PriorityToString(QueuePriority priority) {
+  switch (priority) {
+    case CONTROL_PRIORITY:
+      return "control";
+    case HIGH_PRIORITY:
+      return "high";
+    case NORMAL_PRIORITY:
+      return "normal";
+    case BEST_EFFORT_PRIORITY:
+      return "best_effort";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 namespace internal {
 
 TaskQueueImpl::TaskQueueImpl(
@@ -481,31 +498,14 @@ TaskQueueImpl::QueuePriority TaskQueueImpl::GetQueuePriority() const {
   return static_cast<TaskQueue::QueuePriority>(set_index);
 }
 
-// static
-const char* TaskQueueImpl::PriorityToString(QueuePriority priority) {
-  switch (priority) {
-    case CONTROL_PRIORITY:
-      return "control";
-    case HIGH_PRIORITY:
-      return "high";
-    case NORMAL_PRIORITY:
-      return "normal";
-    case BEST_EFFORT_PRIORITY:
-      return "best_effort";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
 void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   base::AutoLock lock(any_thread_lock_);
   state->BeginDictionary();
   state->SetString("name", GetName());
   state->SetString(
-      "id", base::StringPrintf(
-                "%" PRIx64,
-                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this))));
+      "task_queue_id",
+      base::StringPrintf("%" PRIx64, static_cast<uint64_t>(
+                                         reinterpret_cast<uintptr_t>(this))));
   state->SetBoolean("enabled", main_thread_only().is_enabled);
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());

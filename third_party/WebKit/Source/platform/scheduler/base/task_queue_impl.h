@@ -152,9 +152,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void NotifyWillProcessTask(const base::PendingTask& pending_task);
   void NotifyDidProcessTask(const base::PendingTask& pending_task);
 
-  // Can be called on any thread.
-  static const char* PriorityToString(TaskQueue::QueuePriority priority);
-
   WorkQueue* delayed_work_queue() {
     return main_thread_only().delayed_work_queue.get();
   }

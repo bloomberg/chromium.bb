@@ -1321,8 +1321,6 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       MainThreadOnly().has_visible_render_widget_with_touch_handler);
   state->SetString("current_use_case",
                    UseCaseToString(MainThreadOnly().current_use_case));
-  state->SetString("rail_mode",
-                   RAILModeToString(MainThreadOnly().current_policy.rail_mode));
   state->SetBoolean("loading_tasks_seem_expensive",
                     MainThreadOnly().loading_tasks_seem_expensive);
   state->SetBoolean("timer_tasks_seem_expensive",
@@ -1381,6 +1379,10 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                        .InMillisecondsF());
   state->SetBoolean("is_audio_playing", MainThreadOnly().is_audio_playing);
 
+  state->BeginDictionary("policy");
+  MainThreadOnly().current_policy.AsValueInto(state.get());
+  state->EndDictionary();
+
   // TODO(skyostil): Can we somehow trace how accurate these estimates were?
   state->SetDouble(
       "longest_jank_free_task_duration",
@@ -1406,6 +1408,36 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->EndDictionary();
 
   return std::move(state);
+}
+
+void RendererSchedulerImpl::TaskQueuePolicy::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetBoolean("is_enabled", is_enabled);
+  state->SetString("priority", TaskQueue::PriorityToString(priority));
+  state->SetString("time_domain_type",
+                   TimeDomainTypeToString(time_domain_type));
+}
+
+void RendererSchedulerImpl::Policy::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->BeginDictionary("compositor_queue_policy");
+  compositor_queue_policy.AsValueInto(state);
+  state->EndDictionary();
+
+  state->BeginDictionary("loading_queue_policy");
+  loading_queue_policy.AsValueInto(state);
+  state->EndDictionary();
+
+  state->BeginDictionary("timer_queue_policy");
+  timer_queue_policy.AsValueInto(state);
+  state->EndDictionary();
+
+  state->BeginDictionary("default_queue_policy");
+  default_queue_policy.AsValueInto(state);
+  state->EndDictionary();
+
+  state->SetString("rail_mode", RAILModeToString(rail_mode));
+  state->SetBoolean("should_disable_throttling", should_disable_throttling);
 }
 
 void RendererSchedulerImpl::OnIdlePeriodStarted() {
@@ -1703,6 +1735,22 @@ const char* RendererSchedulerImpl::RAILModeToString(v8::RAILMode rail_mode) {
       return "idle";
     case v8::PERFORMANCE_LOAD:
       return "load";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// static
+const char* RendererSchedulerImpl::TimeDomainTypeToString(
+    TimeDomainType domain_type) {
+  switch (domain_type) {
+    case TimeDomainType::REAL:
+      return "real";
+    case TimeDomainType::THROTTLED:
+      return "throttled";
+    case TimeDomainType::VIRTUAL:
+      return "virtual";
     default:
       NOTREACHED();
       return nullptr;

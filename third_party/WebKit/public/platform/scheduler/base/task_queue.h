@@ -54,6 +54,9 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     FIRST_QUEUE_PRIORITY = CONTROL_PRIORITY,
   };
 
+  // Can be called on any thread.
+  static const char* PriorityToString(QueuePriority priority);
+
   enum class QueueType {
     // Keep TaskQueue::NameForQueueType in sync.
     // This enum is used for a histogram and it should not be re-numbered.

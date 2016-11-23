@@ -201,6 +201,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     VIRTUAL,
   };
 
+  static const char* TimeDomainTypeToString(TimeDomainType domain_type);
+
   struct TaskQueuePolicy {
     TaskQueuePolicy()
         : is_enabled(true),
@@ -215,6 +217,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
       return is_enabled == other.is_enabled && priority == other.priority &&
              time_domain_type == other.time_domain_type;
     }
+
+    void AsValueInto(base::trace_event::TracedValue* state) const;
   };
 
   struct Policy {
@@ -233,6 +237,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
              rail_mode == other.rail_mode &&
              should_disable_throttling == other.should_disable_throttling;
     }
+
+    void AsValueInto(base::trace_event::TracedValue* state) const;
   };
 
   class PollableNeedsUpdateFlag {
