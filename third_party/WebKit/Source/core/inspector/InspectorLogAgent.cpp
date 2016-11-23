@@ -92,7 +92,7 @@ void InspectorLogAgent::restore() {
   if (config) {
     protocol::ErrorSupport errors;
     startViolationsReport(
-        protocol::Array<ViolationSetting>::parse(config, &errors));
+        protocol::Array<ViolationSetting>::fromValue(config, &errors));
   }
 }
 
@@ -184,7 +184,7 @@ Response InspectorLogAgent::startViolationsReport(
     std::unique_ptr<protocol::Array<ViolationSetting>> settings) {
   if (!m_enabled)
     return Response::Error("Log is not enabled");
-  m_state->setValue(LogAgentState::logViolations, settings->serialize());
+  m_state->setValue(LogAgentState::logViolations, settings->toValue());
   if (!m_performanceMonitor)
     return Response::Error("Violations are not supported for this target");
   m_performanceMonitor->unsubscribeAll(this);

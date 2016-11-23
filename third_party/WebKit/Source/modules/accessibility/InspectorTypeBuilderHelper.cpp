@@ -72,28 +72,28 @@ std::unique_ptr<AXProperty> createProperty(IgnoredReason reason) {
 std::unique_ptr<AXValue> createValue(const String& value, const String& type) {
   return AXValue::create()
       .setType(type)
-      .setValue(protocol::ValueConversions<String>::serialize(value))
+      .setValue(protocol::ValueConversions<String>::toValue(value))
       .build();
 }
 
 std::unique_ptr<AXValue> createValue(int value, const String& type) {
   return AXValue::create()
       .setType(type)
-      .setValue(protocol::ValueConversions<int>::serialize(value))
+      .setValue(protocol::ValueConversions<int>::toValue(value))
       .build();
 }
 
 std::unique_ptr<AXValue> createValue(float value, const String& type) {
   return AXValue::create()
       .setType(type)
-      .setValue(protocol::ValueConversions<double>::serialize(value))
+      .setValue(protocol::ValueConversions<double>::toValue(value))
       .build();
 }
 
 std::unique_ptr<AXValue> createBooleanValue(bool value, const String& type) {
   return AXValue::create()
       .setType(type)
-      .setValue(protocol::ValueConversions<bool>::serialize(value))
+      .setValue(protocol::ValueConversions<bool>::toValue(value))
       .build();
 }
 

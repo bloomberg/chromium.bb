@@ -146,7 +146,7 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState,
       protocol::DictionaryValue::create();
   auxDataValue->setBoolean("isDefault", world.isMainWorld());
   auxDataValue->setString("frameId", IdentifiersFactory::frameId(frame));
-  String auxData = auxDataValue->toJSONString();
+  String auxData = auxDataValue->serialize();
   String humanReadableName = world.isIsolatedWorld()
                                  ? world.isolatedWorldHumanReadableName()
                                  : String();

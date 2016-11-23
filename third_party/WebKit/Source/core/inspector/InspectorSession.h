@@ -57,14 +57,24 @@ class CORE_EXPORT InspectorSession
 
  private:
   // protocol::FrontendChannel implementation.
-  void sendProtocolResponse(int callId, const String& message) override;
-  void sendProtocolNotification(const String& message) override;
+  void sendProtocolResponse(
+      int callId,
+      std::unique_ptr<protocol::Serializable> message) override;
+  void sendProtocolNotification(
+      std::unique_ptr<protocol::Serializable> message) override;
 
   // v8_inspector::V8Inspector::Channel implementation.
+  void sendResponse(
+      int callId,
+      std::unique_ptr<v8_inspector::StringBuffer> message) override;
+  void sendNotification(
+      std::unique_ptr<v8_inspector::StringBuffer> message) override;
+  // TODO(kozyatinskiy): remove it.
   void sendProtocolResponse(int callId,
-                            const v8_inspector::StringView& message) override;
-  void sendProtocolNotification(
-      const v8_inspector::StringView& message) override;
+                            const v8_inspector::StringView& message) {}
+  void sendProtocolNotification(const v8_inspector::StringView& message) {}
+
+  void sendProtocolResponse(int callId, const String& message);
 
   Client* m_client;
   std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
@@ -74,7 +84,8 @@ class CORE_EXPORT InspectorSession
   std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
   std::unique_ptr<protocol::DictionaryValue> m_state;
   HeapVector<Member<InspectorAgent>> m_agents;
-  Vector<String> m_notificationQueue;
+  class Notification;
+  Vector<std::unique_ptr<Notification>> m_notificationQueue;
   String m_lastSentState;
 };
 

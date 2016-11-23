@@ -412,12 +412,12 @@ bool InspectorHighlight::getBoxModel(
     (*model)->setShapeOutside(
         protocol::DOM::ShapeOutsideInfo::create()
             .setBounds(buildArrayForQuad(boundsQuad))
-            .setShape(protocol::Array<protocol::Value>::parse(
+            .setShape(protocol::Array<protocol::Value>::fromValue(
                 ShapePathBuilder::buildPath(*view, *layoutObject,
                                             *shapeOutsideInfo, paths.shape, 1.f)
                     .get(),
                 &errors))
-            .setMarginShape(protocol::Array<protocol::Value>::parse(
+            .setMarginShape(protocol::Array<protocol::Value>::fromValue(
                 ShapePathBuilder::buildPath(*view, *layoutObject,
                                             *shapeOutsideInfo,
                                             paths.marginShape, 1.f)

@@ -431,7 +431,7 @@ void LayoutEditor::evaluateInOverlay(
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(std::move(argument));
   m_scriptController->executeScriptInMainWorld(
-      "dispatch(" + command->toJSONString() + ")",
+      "dispatch(" + command->serialize() + ")",
       ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 

@@ -488,7 +488,7 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
   std::unique_ptr<protocol::Value> logValue = protocol::StringUtil::parseJSON(
       snapshot->snapshotCommandLog()->toJSONString());
   *commandLog =
-      Array<protocol::DictionaryValue>::parse(logValue.get(), &errors);
+      Array<protocol::DictionaryValue>::fromValue(logValue.get(), &errors);
   if (errors.hasErrors())
     return Response::Error(errors.errors());
   return Response::OK();

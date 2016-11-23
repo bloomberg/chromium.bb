@@ -25,12 +25,13 @@ void DevToolsSession::ResetDispatcher() {
 
 void DevToolsSession::sendProtocolResponse(
     int call_id,
-    const std::string& message) {
-  agent_host_->SendMessageToClient(session_id_, message);
+    std::unique_ptr<protocol::Serializable> message) {
+  agent_host_->SendMessageToClient(session_id_, message->serialize());
 }
 
-void DevToolsSession::sendProtocolNotification(const std::string& message) {
-  agent_host_->SendMessageToClient(session_id_, message);
+void DevToolsSession::sendProtocolNotification(
+    std::unique_ptr<protocol::Serializable> message) {
+  agent_host_->SendMessageToClient(session_id_, message->serialize());
 }
 
 void DevToolsSession::flushProtocolNotifications() {

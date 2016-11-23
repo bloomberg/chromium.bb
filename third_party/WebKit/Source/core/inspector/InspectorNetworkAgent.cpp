@@ -139,7 +139,7 @@ static std::unique_ptr<protocol::Network::Headers> buildObjectForHeaders(
   for (const auto& header : headers)
     headersObject->setString(header.key.getString(), header.value);
   protocol::ErrorSupport errors;
-  return protocol::Network::Headers::parse(headersObject.get(), &errors);
+  return protocol::Network::Headers::fromValue(headersObject.get(), &errors);
 }
 
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
@@ -1194,7 +1194,7 @@ Response InspectorNetworkAgent::setUserAgentOverride(const String& userAgent) {
 Response InspectorNetworkAgent::setExtraHTTPHeaders(
     const std::unique_ptr<protocol::Network::Headers> headers) {
   m_state->setObject(NetworkAgentState::extraRequestHeaders,
-                     headers->serialize());
+                     headers->toValue());
   return Response::OK();
 }
 

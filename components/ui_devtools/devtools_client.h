@@ -40,8 +40,11 @@ class UiDevToolsClient : public protocol::FrontendChannel {
   void DisableAllAgents();
 
   // protocol::FrontendChannel
-  void sendProtocolResponse(int callId, const String& message) override;
-  void sendProtocolNotification(const String& message) override;
+  void sendProtocolResponse(
+      int callId,
+      std::unique_ptr<protocol::Serializable> message) override;
+  void sendProtocolNotification(
+      std::unique_ptr<protocol::Serializable> message) override;
   void flushProtocolNotifications() override;
 
   std::string name_;

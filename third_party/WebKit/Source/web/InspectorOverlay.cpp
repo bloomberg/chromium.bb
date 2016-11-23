@@ -636,7 +636,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method,
   toLocalFrame(overlayPage()->mainFrame())
       ->script()
       .executeScriptInMainWorld(
-          "dispatch(" + command->toJSONString() + ")",
+          "dispatch(" + command->serialize() + ")",
           ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
@@ -650,7 +650,7 @@ void InspectorOverlay::evaluateInOverlay(
   toLocalFrame(overlayPage()->mainFrame())
       ->script()
       .executeScriptInMainWorld(
-          "dispatch(" + command->toJSONString() + ")",
+          "dispatch(" + command->serialize() + ")",
           ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 

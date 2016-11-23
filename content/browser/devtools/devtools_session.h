@@ -20,8 +20,11 @@ class DevToolsSession : public protocol::FrontendChannel {
 
  private:
   // protocol::FrontendChannel implementation.
-  void sendProtocolResponse(int call_id, const std::string& message) override;
-  void sendProtocolNotification(const std::string& message) override;
+  void sendProtocolResponse(
+      int call_id,
+      std::unique_ptr<protocol::Serializable> message) override;
+  void sendProtocolNotification(
+      std::unique_ptr<protocol::Serializable> message) override;
   void flushProtocolNotifications() override;
 
   DevToolsAgentHostImpl* agent_host_;

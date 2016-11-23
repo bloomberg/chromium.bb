@@ -48,10 +48,12 @@ class FakeFrontendChannel : public FrontendChannel {
   }
 
   // FrontendChannel
-  void sendProtocolResponse(int callId, const std::string& message) override {}
+  void sendProtocolResponse(int callId,
+                            std::unique_ptr<Serializable> message) override {}
   void flushProtocolNotifications() override {}
-  void sendProtocolNotification(const std::string& message) override {
-    protocol_notification_messages_.push_back(message);
+  void sendProtocolNotification(
+      std::unique_ptr<Serializable> message) override {
+    protocol_notification_messages_.push_back(message->serialize());
   }
 
  private:

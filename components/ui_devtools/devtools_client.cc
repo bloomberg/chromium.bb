@@ -51,14 +51,17 @@ void UiDevToolsClient::DisableAllAgents() {
     agent->Disable();
 }
 
-void UiDevToolsClient::sendProtocolResponse(int callId, const String& message) {
+void UiDevToolsClient::sendProtocolResponse(
+    int callId,
+    std::unique_ptr<protocol::Serializable> message) {
   if (connected())
-    server_->SendOverWebSocket(connection_id_, message);
+    server_->SendOverWebSocket(connection_id_, message->serialize());
 }
 
-void UiDevToolsClient::sendProtocolNotification(const String& message) {
+void UiDevToolsClient::sendProtocolNotification(
+    std::unique_ptr<protocol::Serializable> message) {
   if (connected())
-    server_->SendOverWebSocket(connection_id_, message);
+    server_->SendOverWebSocket(connection_id_, message->serialize());
 }
 
 void UiDevToolsClient::flushProtocolNotifications() {

@@ -8,6 +8,7 @@ import optparse
 import collections
 import functools
 import re
+import copy
 try:
     import json
 except ImportError:
@@ -200,6 +201,7 @@ def calculate_imports_and_exports(config, protocol):
         if not has_exports(domain_json, clear):
             continue
         if domain in exported_domains:
+            domain_json["has_exports"] = True
             protocol.exported_domains.append(domain)
         if domain in imported_domains:
             protocol.imported_domains.append(domain)
@@ -468,6 +470,20 @@ def main():
     protocol.imported_domains = read_protocol_file(config.imported.path, protocol.json_api) if config.imported else []
     patch_full_qualified_refs(protocol)
     calculate_imports_and_exports(config, protocol)
+
+    for domain in protocol.json_api["domains"]:
+        if "events" in domain:
+            for event in domain["events"]:
+                event_type = dict()
+                event_type["description"] = "Wrapper for notification params"
+                event_type["type"] = "object"
+                event_type["id"] = to_title_case(event["name"]) + "Notification"
+                if "parameters" in event:
+                    event_type["properties"] = copy.deepcopy(event["parameters"])
+                if "types" not in domain:
+                    domain["types"] = list()
+                domain["types"].append(event_type)
+
     create_type_definitions(protocol, "::".join(config.imported.namespace) if config.imported else "")
 
     if not config.exported and len(protocol.exported_domains):
