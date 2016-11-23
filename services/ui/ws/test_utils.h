@@ -26,7 +26,6 @@
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/test_change_tracker.h"
 #include "services/ui/ws/user_activity_monitor.h"
-#include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_manager_state.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
@@ -77,25 +76,6 @@ class TestPlatformScreen : public display::PlatformScreen {
   std::set<int64_t> display_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformScreen);
-};
-
-// -----------------------------------------------------------------------------
-
-class UserDisplayManagerTestApi {
- public:
-  explicit UserDisplayManagerTestApi(UserDisplayManager* udm) : udm_(udm) {}
-  ~UserDisplayManagerTestApi() {}
-
-  void SetTestObserver(mojom::DisplayManagerObserver* observer) {
-    udm_->test_observer_ = observer;
-    if (observer)
-      udm_->OnObserverAdded(observer);
-  }
-
- private:
-  UserDisplayManager* udm_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTestApi);
 };
 
 // -----------------------------------------------------------------------------
@@ -600,14 +580,13 @@ class WindowServerTestHelper {
   TestWindowServerDelegate* window_server_delegate() {
     return &window_server_delegate_;
   }
-  base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
   mojom::Cursor cursor_id_;
   TestPlatformDisplayFactory platform_display_factory_;
   TestWindowServerDelegate window_server_delegate_;
   std::unique_ptr<WindowServer> window_server_;
-  base::MessageLoop message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestHelper);
 };

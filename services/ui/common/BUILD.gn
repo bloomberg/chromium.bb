@@ -55,3 +55,18 @@ source_set("run_all_service_tests") {
     deps += [ "//ui/ozone" ]
   }
 }
+
+source_set("task_runner_test_base") {
+  testonly = true
+
+  sources = [
+    "task_runner_test_base.cc",
+    "task_runner_test_base.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}

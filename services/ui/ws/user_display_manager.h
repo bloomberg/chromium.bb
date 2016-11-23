@@ -25,10 +25,6 @@ class Display;
 class DisplayManager;
 class UserDisplayManagerDelegate;
 
-namespace test {
-class UserDisplayManagerTestApi;
-}
-
 // Provides per user display state.
 class UserDisplayManager : public mojom::DisplayManager {
  public:
@@ -60,9 +56,10 @@ class UserDisplayManager : public mojom::DisplayManager {
   // mouse cursor position. Each call returns a new handle.
   mojo::ScopedSharedBufferHandle GetCursorLocationMemory();
 
- private:
-  friend class test::UserDisplayManagerTestApi;
+  // Overriden from mojom::DisplayManager:
+  void AddObserver(mojom::DisplayManagerObserverPtr observer) override;
 
+ private:
   // Called when a new observer is added. If frame decorations are available
   // notifies the observer immediately.
   void OnObserverAdded(mojom::DisplayManagerObserver* observer);
@@ -74,9 +71,6 @@ class UserDisplayManager : public mojom::DisplayManager {
 
   // Calls OnDisplays() on |observer|.
   void CallOnDisplays(mojom::DisplayManagerObserver* observer);
-
-  // Overriden from mojom::DisplayManager:
-  void AddObserver(mojom::DisplayManagerObserverPtr observer) override;
 
   base::subtle::Atomic32* cursor_location_memory() {
     return reinterpret_cast<base::subtle::Atomic32*>(
@@ -97,9 +91,6 @@ class UserDisplayManager : public mojom::DisplayManager {
   // WARNING: only use these once |got_valid_frame_decorations_| is true.
   mojo::InterfacePtrSet<mojom::DisplayManagerObserver>
       display_manager_observers_;
-
-  // Observer used for tests.
-  mojom::DisplayManagerObserver* test_observer_ = nullptr;
 
   // The current location of the cursor. This is always kept up to date so we
   // can atomically write this to |cursor_location_memory()| once it is created.

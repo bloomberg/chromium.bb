@@ -237,6 +237,7 @@ test("mus_ws_unittests") {
     "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
+    "//services/ui/common:task_runner_test_base",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",
     "//services/ui/public/cpp/tests:test_support",

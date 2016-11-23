@@ -9,6 +9,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/ui/common/task_runner_test_base.h"
 #include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,30 +75,21 @@ class TestUserIdleObserver : public mojom::UserIdleObserver {
   DISALLOW_COPY_AND_ASSIGN(TestUserIdleObserver);
 };
 
-class UserActivityMonitorTest : public testing::Test {
+class UserActivityMonitorTest : public TaskRunnerTestBase {
  public:
   UserActivityMonitorTest() {}
   ~UserActivityMonitorTest() override {}
 
   UserActivityMonitor* monitor() { return monitor_.get(); }
 
-  void FastForwardBy(base::TimeDelta delta) {
-    task_runner_->FastForwardBy(delta);
-  }
-  void RunUntilIdle() { task_runner_->RunUntilIdle(); }
-
  private:
   // testing::Test:
   void SetUp() override {
-    task_runner_ = make_scoped_refptr(new base::TestMockTimeTaskRunner(
-        base::Time::Now(), base::TimeTicks::Now()));
-    message_loop_.SetTaskRunner(task_runner_);
-    monitor_ =
-        base::MakeUnique<UserActivityMonitor>(task_runner_->GetMockTickClock());
+    TaskRunnerTestBase::SetUp();
+    monitor_ = base::MakeUnique<UserActivityMonitor>(
+        task_runner()->GetMockTickClock());
   }
 
-  base::MessageLoop message_loop_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<UserActivityMonitor> monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityMonitorTest);
@@ -115,19 +107,19 @@ TEST_F(UserActivityMonitorTest, UserActivityObserver) {
   EXPECT_TRUE(second_observer.GetAndResetReceivedUserActivity());
 
   // The next activity after just one second should not notify either observer.
-  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  RunTasksForNext(base::TimeDelta::FromSeconds(1));
   monitor()->OnUserActivity();
   RunUntilIdle();
   EXPECT_FALSE(first_observer.GetAndResetReceivedUserActivity());
   EXPECT_FALSE(second_observer.GetAndResetReceivedUserActivity());
 
-  FastForwardBy(base::TimeDelta::FromMilliseconds(2001));
+  RunTasksForNext(base::TimeDelta::FromMilliseconds(2001));
   monitor()->OnUserActivity();
   RunUntilIdle();
   EXPECT_TRUE(first_observer.GetAndResetReceivedUserActivity());
   EXPECT_FALSE(second_observer.GetAndResetReceivedUserActivity());
 
-  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  RunTasksForNext(base::TimeDelta::FromSeconds(1));
   monitor()->OnUserActivity();
   RunUntilIdle();
   EXPECT_FALSE(first_observer.GetAndResetReceivedUserActivity());
@@ -149,7 +141,7 @@ TEST_F(UserActivityMonitorTest, UserIdleObserverConnectNotification) {
 
   // If an observer is added without any user activity and the system has been
   // idle, then the observer receives an IDLE notification immediately.
-  FastForwardBy(base::TimeDelta::FromMinutes(5));
+  RunTasksForNext(base::TimeDelta::FromMinutes(5));
   TestUserIdleObserver second_observer;
   monitor()->AddUserIdleObserver(4, second_observer.GetPtr());
   RunUntilIdle();
@@ -171,7 +163,7 @@ TEST_F(UserActivityMonitorTest, UserIdleObserverConnectNotification) {
   EXPECT_TRUE(first_observer.GetAndResetIdleState(&idle_state));
   EXPECT_EQ(UserIdleObserver::IdleState::ACTIVE, idle_state);
 
-  FastForwardBy(base::TimeDelta::FromMinutes(10));
+  RunTasksForNext(base::TimeDelta::FromMinutes(10));
   TestUserIdleObserver fourth_observer;
   monitor()->AddUserIdleObserver(1, fourth_observer.GetPtr());
   RunUntilIdle();
@@ -186,7 +178,7 @@ TEST_F(UserActivityMonitorTest, UserIdleObserverConnectNotification) {
 
   // All observers are idle. These should not receive any IDLE notifications as
   // more time passes by.
-  FastForwardBy(base::TimeDelta::FromMinutes(100));
+  RunTasksForNext(base::TimeDelta::FromMinutes(100));
   RunUntilIdle();
   EXPECT_FALSE(first_observer.GetAndResetIdleState(&idle_state));
   EXPECT_FALSE(second_observer.GetAndResetIdleState(&idle_state));

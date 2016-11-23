@@ -476,6 +476,9 @@ bool TestWindowServerDelegate::IsTestConfig() const {
 WindowServerTestHelper::WindowServerTestHelper()
     : cursor_id_(mojom::Cursor::CURSOR_NULL),
       platform_display_factory_(&cursor_id_) {
+  // Some tests create their own message loop, for example to add a task runner.
+  if (!base::MessageLoop::current())
+    message_loop_ = base::MakeUnique<base::MessageLoop>();
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
   window_server_ = base::MakeUnique<WindowServer>(&window_server_delegate_);
   window_server_delegate_.set_window_server(window_server_.get());
@@ -558,7 +561,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
 
 void WindowEventTargetingHelper::SetTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  ws_test_helper_.message_loop()->SetTaskRunner(task_runner);
+  base::MessageLoop::current()->SetTaskRunner(task_runner);
 }
 
 // ----------------------------------------------------------------------------

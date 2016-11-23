@@ -32,8 +32,6 @@ void UserDisplayManager::OnFrameDecorationValuesChanged() {
     got_valid_frame_decorations_ = true;
     display_manager_observers_.ForAllPtrs([this](
         mojom::DisplayManagerObserver* observer) { CallOnDisplays(observer); });
-    if (test_observer_)
-      CallOnDisplays(test_observer_);
     return;
   }
 
@@ -42,8 +40,6 @@ void UserDisplayManager::OnFrameDecorationValuesChanged() {
       [this, &displays](mojom::DisplayManagerObserver* observer) {
         observer->OnDisplaysChanged(displays.Clone().PassStorage());
       });
-  if (test_observer_)
-    test_observer_->OnDisplaysChanged(displays.Clone().PassStorage());
 }
 
 void UserDisplayManager::AddDisplayManagerBinding(
@@ -62,8 +58,6 @@ void UserDisplayManager::OnDisplayUpdate(Display* display) {
       [&displays](mojom::DisplayManagerObserver* observer) {
         observer->OnDisplaysChanged(displays.Clone().PassStorage());
       });
-  if (test_observer_)
-    test_observer_->OnDisplaysChanged(displays.Clone().PassStorage());
 }
 
 void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
@@ -74,8 +68,6 @@ void UserDisplayManager::OnWillDestroyDisplay(Display* display) {
       [&display](mojom::DisplayManagerObserver* observer) {
         observer->OnDisplayRemoved(display->GetId());
       });
-  if (test_observer_)
-    test_observer_->OnDisplayRemoved(display->GetId());
 }
 
 void UserDisplayManager::OnPrimaryDisplayChanged(int64_t primary_display_id) {
@@ -86,8 +78,6 @@ void UserDisplayManager::OnPrimaryDisplayChanged(int64_t primary_display_id) {
       [primary_display_id](mojom::DisplayManagerObserver* observer) {
         observer->OnPrimaryDisplayChanged(primary_display_id);
       });
-  if (test_observer_)
-    test_observer_->OnPrimaryDisplayChanged(primary_display_id);
 }
 
 void UserDisplayManager::OnMouseCursorLocationChanged(const gfx::Point& point) {
@@ -120,6 +110,13 @@ mojo::ScopedSharedBufferHandle UserDisplayManager::GetCursorLocationMemory() {
 
   return cursor_location_handle_->Clone(
       mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+}
+
+void UserDisplayManager::AddObserver(
+    mojom::DisplayManagerObserverPtr observer) {
+  mojom::DisplayManagerObserver* observer_impl = observer.get();
+  display_manager_observers_.AddPtr(std::move(observer));
+  OnObserverAdded(observer_impl);
 }
 
 void UserDisplayManager::OnObserverAdded(
@@ -163,13 +160,6 @@ void UserDisplayManager::CallOnDisplays(
       GetAllDisplays().PassStorage(),
       display::PlatformScreen::GetInstance()->GetPrimaryDisplayId(),
       display::kInvalidDisplayId);
-}
-
-void UserDisplayManager::AddObserver(
-    mojom::DisplayManagerObserverPtr observer) {
-  mojom::DisplayManagerObserver* observer_impl = observer.get();
-  display_manager_observers_.AddPtr(std::move(observer));
-  OnObserverAdded(observer_impl);
 }
 
 }  // namespace ws
