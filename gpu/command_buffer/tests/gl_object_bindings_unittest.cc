@@ -30,6 +30,10 @@ class ObjectBindingsTest : public testing::Test {
 };
 
 TEST_F(ObjectBindingsTest, Buffers) {
+  if (!IsApplicable()) {
+    return;
+  }
+
   const std::pair<GLenum, GLenum> buffer_bindings[] = {
       {GL_ARRAY_BUFFER, GL_ARRAY_BUFFER_BINDING},
       {GL_ELEMENT_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER_BINDING},
@@ -66,6 +70,10 @@ TEST_F(ObjectBindingsTest, Buffers) {
 }
 
 TEST_F(ObjectBindingsTest, FramebufferAttachments) {
+  if (!IsApplicable()) {
+    return;
+  }
+
   GLuint texture = 0;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
