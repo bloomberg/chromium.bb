@@ -84,7 +84,8 @@ class ImeListItemView : public ActionableView {
                   bool selected,
                   const SkColor button_color)
       : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
-        ime_list_view_(list_view) {
+        ime_list_view_(list_view),
+        selected_(selected) {
     if (MaterialDesignController::IsSystemTrayMenuMaterial())
       SetInkDropMode(InkDropHostView::InkDropMode::ON);
 
@@ -132,6 +133,7 @@ class ImeListItemView : public ActionableView {
           gfx::VectorIconId::CHECK_CIRCLE, kMenuIconSize, button_color));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
+    SetAccessibleName(label_->text());
   }
 
   ~ImeListItemView() override {}
@@ -147,6 +149,13 @@ class ImeListItemView : public ActionableView {
     UpdateStyle();
   }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    ActionableView::GetAccessibleNodeData(node_data);
+    node_data->role = ui::AX_ROLE_CHECK_BOX;
+    node_data->AddStateFlag(selected_ ? ui::AX_STATE_CHECKED
+                                      : ui::AX_STATE_NONE);
+  }
+
  private:
   // Updates the style of |label_| based on the current native theme.
   void UpdateStyle() {
@@ -157,8 +166,9 @@ class ImeListItemView : public ActionableView {
 
   // The label shows the IME name.
   views::Label* label_;
-
   ImeListView* ime_list_view_;
+  bool selected_;
+
   DISALLOW_COPY_AND_ASSIGN(ImeListItemView);
 };
 
