@@ -57,7 +57,8 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
 
   // cc::mojom::MojoCompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
+                             cc::CompositorFrame frame) override;
 
   // cc::mojom::MojoCompositorFrameSinkPrivate:
   void AddChildFrameSink(const cc::FrameSinkId& child_frame_sink_id) override;
@@ -97,14 +98,12 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
 
   DisplayCompositor* display_compositor_;  // owns this.
 
-  gfx::Size last_submitted_frame_size_;
   // GpuCompositorFrameSink holds a cc::Display if it created with
   // non-null gpu::SurfaceHandle. In the window server, the display root
   // window's CompositorFrameSink will have a valid gpu::SurfaceHandle.
   std::unique_ptr<cc::Display> display_;
 
   cc::LocalFrameId local_frame_id_;
-  cc::SurfaceIdAllocator surface_id_allocator_;
   cc::SurfaceFactory surface_factory_;
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.

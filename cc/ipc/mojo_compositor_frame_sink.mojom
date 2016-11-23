@@ -7,6 +7,7 @@ module cc.mojom;
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/frame_sink_id.mojom";
+import "cc/ipc/local_frame_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 
 // A MojoCompositorFrameSink is an interface for receiving CompositorFrame
@@ -21,11 +22,14 @@ interface MojoCompositorFrameSink {
 
   // Submits a CompositorFrame to the display compositor that will be presented
   // to screen the next time frames from all CompositorFrameSinks are aggregated
-  // to produce a display CompositorFrame.
+  // to produce a display CompositorFrame. If a client wishes to allocate a new
+  // surface (e.g. during resize), then it can simply allocate a new
+  // |local_frame_id|.
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
-  SubmitCompositorFrame(cc.mojom.CompositorFrame frame);
+  SubmitCompositorFrame(cc.mojom.LocalFrameId local_frame_id,
+                        cc.mojom.CompositorFrame frame);
 
   // TODO(fsamuel): ReadbackBitmap API would be useful here.
 };

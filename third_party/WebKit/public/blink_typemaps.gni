@@ -5,6 +5,7 @@
 typemaps = [
   "//cc/ipc/begin_frame_args.typemap",
   "//cc/ipc/compositor_frame_for_blink.typemap",
+  "//cc/ipc/local_frame_id.typemap",
   "//cc/ipc/returned_resource.typemap",
   "//cc/ipc/surface_id.typemap",
   "//cc/ipc/surface_sequence.typemap",

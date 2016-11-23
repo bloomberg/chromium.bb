@@ -45,6 +45,7 @@ void OffscreenCanvasCompositorFrameSink::Create(
 }
 
 void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
+    const cc::LocalFrameId& local_frame_id,
     cc::CompositorFrame frame) {
   ++ack_pending_count_;
   surface_factory_->SubmitCompositorFrame(

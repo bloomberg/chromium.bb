@@ -64,14 +64,23 @@ void WindowCompositorFrameSink::SubmitCompositorFrame(
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!compositor_frame_sink_)
     return;
-  compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
+
+  gfx::Size frame_size = last_submitted_frame_size_;
+  if (!frame.render_pass_list.empty())
+    frame_size = frame.render_pass_list[0]->output_rect.size();
+  if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_)
+    local_frame_id_ = id_allocator_.GenerateId();
+
+  compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
+                                                std::move(frame));
+
+  last_submitted_frame_size_ = frame_size;
 }
 
 WindowCompositorFrameSink::WindowCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSink>
-        compositor_frame_sink_info,
+    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
     cc::mojom::MojoCompositorFrameSinkClientRequest client_request)
     : cc::CompositorFrameSink(std::move(context_provider),
                               nullptr,

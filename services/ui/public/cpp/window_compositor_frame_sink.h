@@ -11,6 +11,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace gpu {
@@ -46,8 +47,7 @@ class WindowCompositorFrameSink
   WindowCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSink>
-          compositor_frame_sink_info,
+      cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
       cc::mojom::MojoCompositorFrameSinkClientRequest client_request);
 
   // cc::mojom::MojoCompositorFrameSinkClient implementation:
@@ -58,11 +58,12 @@ class WindowCompositorFrameSink
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
+  gfx::Size last_submitted_frame_size_;
+  cc::LocalFrameId local_frame_id_;
+  cc::SurfaceIdAllocator id_allocator_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
-  mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSink>
-      compositor_frame_sink_info_;
-  mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSinkClient>
-      client_request_;
+  cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info_;
+  cc::mojom::MojoCompositorFrameSinkClientRequest client_request_;
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
   std::unique_ptr<mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient>>
       client_binding_;
@@ -87,12 +88,11 @@ class WindowCompositorFrameSinkBinding {
 
   WindowCompositorFrameSinkBinding(
       cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink_request,
-      mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSinkClient>
+      cc::mojom::MojoCompositorFrameSinkClientPtrInfo
           compositor_frame_sink_client);
 
   cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink_request_;
-  mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSinkClient>
-      compositor_frame_sink_client_;
+  cc::mojom::MojoCompositorFrameSinkClientPtrInfo compositor_frame_sink_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCompositorFrameSinkBinding);
 };

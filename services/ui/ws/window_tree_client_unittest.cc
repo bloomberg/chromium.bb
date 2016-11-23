@@ -2167,7 +2167,9 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   render_pass->SetNew(cc::RenderPassId(1, 1), frame_rect, frame_rect,
                       gfx::Transform());
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
-  surface_ptr->SubmitCompositorFrame(std::move(compositor_frame));
+  cc::LocalFrameId local_frame_id(1, base::UnguessableToken::Create());
+  surface_ptr->SubmitCompositorFrame(local_frame_id,
+                                     std::move(compositor_frame));
   // Make sure the parent connection gets the surface ID.
   wt_client1()->WaitForChangeCount(1);
   // Verify that the submitted frame is for |window_2_101|.

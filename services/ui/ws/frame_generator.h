@@ -13,6 +13,7 @@
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_delegate.h"
@@ -120,6 +121,9 @@ class FrameGenerator : public ServerWindowTracker,
   FrameGeneratorDelegate* delegate_;
   ServerWindow* const root_window_;
 
+  gfx::Size last_submitted_frame_size_;
+  cc::LocalFrameId local_frame_id_;
+  cc::SurfaceIdAllocator id_allocator_;
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
 
   // Represents the top level root surface id that should reference the display

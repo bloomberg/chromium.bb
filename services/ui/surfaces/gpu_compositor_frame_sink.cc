@@ -73,17 +73,20 @@ void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
   UpdateNeedsBeginFramesInternal();
 }
 
-void GpuCompositorFrameSink::SubmitCompositorFrame(cc::CompositorFrame frame) {
-  gfx::Size frame_size = frame.render_pass_list[0]->output_rect.size();
+void GpuCompositorFrameSink::SubmitCompositorFrame(
+    const cc::LocalFrameId& local_frame_id,
+    cc::CompositorFrame frame) {
   // If the size of the CompostiorFrame has changed then destroy the existing
   // Surface and create a new one of the appropriate size.
-  if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_) {
+  if (local_frame_id_ != local_frame_id) {
     if (local_frame_id_.is_valid())
       surface_factory_.Destroy(local_frame_id_);
-    local_frame_id_ = surface_id_allocator_.GenerateId();
+    local_frame_id_ = local_frame_id;
     surface_factory_.Create(local_frame_id_);
-    if (display_)
+    if (display_ && !frame.render_pass_list.empty()) {
+      gfx::Size frame_size = frame.render_pass_list[0]->output_rect.size();
       display_->Resize(frame_size);
+    }
   }
   ++ack_pending_count_;
   surface_factory_.SubmitCompositorFrame(
@@ -94,7 +97,6 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(cc::CompositorFrame frame) {
     display_->SetLocalFrameId(local_frame_id_,
                               frame.metadata.device_scale_factor);
   }
-  last_submitted_frame_size_ = frame_size;
 }
 
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {

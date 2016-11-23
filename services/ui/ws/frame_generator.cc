@@ -100,8 +100,16 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
+
   if (compositor_frame_sink_) {
-    compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
+    gfx::Size frame_size = last_submitted_frame_size_;
+    if (!frame.render_pass_list.empty())
+      frame_size = frame.render_pass_list[0]->output_rect.size();
+    if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_)
+      local_frame_id_ = id_allocator_.GenerateId();
+    compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
+                                                  std::move(frame));
+    last_submitted_frame_size_ = frame_size;
 
     // Remove dead references after we submit a frame. This has to happen after
     // the frame is submitted otherwise we could end up deleting a surface that

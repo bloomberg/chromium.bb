@@ -25,7 +25,8 @@ class OffscreenCanvasCompositorFrameSink
                      cc::mojom::MojoCompositorFrameSinkRequest request);
 
   // cc::mojom::MojoCompositorFrameSink implementation.
-  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
+                             cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
 
   // cc::SurfaceFactoryClient implementation.
