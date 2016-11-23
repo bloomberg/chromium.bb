@@ -688,6 +688,11 @@ static bool shouldSendFinishNotification(LocalFrame* frame) {
   // An event might have restarted a child frame.
   if (!allDescendantsAreComplete(frame))
     return false;
+
+  // Don't notify if the frame is being detached.
+  if (frame->isDetaching())
+    return false;
+
   return true;
 }
 

@@ -132,10 +132,6 @@ class WebLocalFrame : public WebFrame {
   // Returns true if the current frame's load event has not completed.
   virtual bool isLoading() const = 0;
 
-  // Returns true if the current frame is detaching/detached. crbug.com/654654
-  virtual bool isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873()
-      const = 0;
-
   // Returns true if there is a pending redirect or location change
   // within specified interval (in seconds). This could be caused by:
   // * an HTTP Refresh header

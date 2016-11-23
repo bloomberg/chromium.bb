@@ -10656,4 +10656,95 @@ TEST_F(WebFrameTest, UniqueNames) {
   EXPECT_EQ(10u, names.size());
 }
 
+TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
+  class LoadingObserverFrameClient
+      : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    void frameDetached(WebLocalFrame*, DetachType) override {
+      m_didCallFrameDetached = true;
+    }
+
+    void didStopLoading() override {
+      // TODO(dcheng): Investigate not calling this as well during frame detach.
+      m_didCallDidStopLoading = true;
+    }
+
+    void didFailProvisionalLoad(WebLocalFrame*,
+                                const WebURLError&,
+                                WebHistoryCommitType) override {
+      EXPECT_TRUE(false) << "The load should not have failed.";
+    }
+
+    void didFinishDocumentLoad(WebLocalFrame*) override {
+      // TODO(dcheng): Investigate not calling this as well during frame detach.
+      m_didCallDidFinishDocumentLoad = true;
+    }
+
+    void didHandleOnloadEvents(WebLocalFrame*) override {
+      // TODO(dcheng): Investigate not calling this as well during frame detach.
+      m_didCallDidHandleOnloadEvents = true;
+    }
+
+    void didFinishLoad(WebLocalFrame*) override {
+      EXPECT_TRUE(false) << "didFinishLoad() should not have been called.";
+    }
+
+    void dispatchLoad() override {
+      EXPECT_TRUE(false) << "dispatchLoad() should not have been called.";
+    }
+
+    bool didCallFrameDetached() const { return m_didCallFrameDetached; }
+    bool didCallDidStopLoading() const { return m_didCallDidStopLoading; }
+    bool didCallDidFinishDocumentLoad() const {
+      return m_didCallDidFinishDocumentLoad;
+    }
+    bool didCallDidHandleOnloadEvents() const {
+      return m_didCallDidHandleOnloadEvents;
+    }
+
+   private:
+    bool m_didCallFrameDetached = false;
+    bool m_didCallDidStopLoading = false;
+    bool m_didCallDidFinishDocumentLoad = false;
+    bool m_didCallDidHandleOnloadEvents = false;
+  };
+
+  class MainFrameClient : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    WebLocalFrame* createChildFrame(WebLocalFrame* parent,
+                                    WebTreeScopeType scope,
+                                    const WebString& name,
+                                    const WebString& uniqueName,
+                                    WebSandboxFlags sandboxFlags,
+                                    const WebFrameOwnerProperties&) override {
+      WebLocalFrame* frame = WebLocalFrame::create(scope, &m_childClient);
+      parent->appendChild(frame);
+      return frame;
+    }
+
+    LoadingObserverFrameClient& childClient() { return m_childClient; }
+
+   private:
+    LoadingObserverFrameClient m_childClient;
+  };
+
+  registerMockedHttpURLLoad("single_iframe.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(m_baseURL + "visible_iframe.html"),
+      WebString::fromUTF8("frame_with_frame.html"));
+  registerMockedHttpURLLoad("parent_detaching_frame.html");
+
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  MainFrameClient mainFrameClient;
+  webViewHelper.initializeAndLoad(m_baseURL + "single_iframe.html", true,
+                                  &mainFrameClient);
+
+  EXPECT_TRUE(mainFrameClient.childClient().didCallFrameDetached());
+  EXPECT_TRUE(mainFrameClient.childClient().didCallDidStopLoading());
+  EXPECT_TRUE(mainFrameClient.childClient().didCallDidFinishDocumentLoad());
+  EXPECT_TRUE(mainFrameClient.childClient().didCallDidHandleOnloadEvents());
+
+  webViewHelper.reset();
+}
+
 }  // namespace blink

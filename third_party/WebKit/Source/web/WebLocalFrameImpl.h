@@ -263,8 +263,6 @@ class WEB_EXPORT WebLocalFrameImpl final
                 bool isClientRedirect) override;
   bool maybeRenderFallbackContent(const WebURLError&) const override;
   bool isLoading() const override;
-  bool isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873()
-      const override;
   bool isNavigationScheduledWithin(double interval) const override;
   void setCommittedFirstRealLoad() override;
   void setHasReceivedUserGesture() override;
