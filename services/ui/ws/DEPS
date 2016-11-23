@@ -4,6 +4,7 @@ include_rules = [
   "+gpu/ipc/client",
   "+gpu/ipc/common",
   "+services/ui/gpu/interfaces",
+  "-services/ui/surfaces",
 ]
 
 specific_include_rules = {

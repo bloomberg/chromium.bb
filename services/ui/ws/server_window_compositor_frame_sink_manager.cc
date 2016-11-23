@@ -4,9 +4,8 @@
 
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 
+#include "cc/ipc/display_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/surfaces/gpu_compositor_frame_sink.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"

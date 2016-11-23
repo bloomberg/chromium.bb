@@ -6,8 +6,13 @@
 #define SERVICES_UI_WS_TEST_SERVER_WINDOW_DELEGATE_H_
 
 #include "base/macros.h"
-#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/server_window_delegate.h"
+
+namespace cc {
+namespace mojom {
+class DisplayCompositor;
+}
+}
 
 namespace ui {
 
@@ -28,7 +33,6 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
 
   ServerWindow* root_window_;
-  std::unique_ptr<ui::DisplayCompositor> display_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };
