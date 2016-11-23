@@ -1413,7 +1413,7 @@ crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
-crbug.com/646133 [ Trusty Win7 Debug ] imported/wpt/quirks-mode/unitless-length.html [ Timeout ]
+crbug.com/646133 imported/wpt/quirks-mode/unitless-length.html [ Timeout ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
