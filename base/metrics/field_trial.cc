@@ -38,7 +38,7 @@ const char kActivationMarker = '*';
 // for now while the implementation is fleshed out (e.g. data format, single
 // shared memory segment). See https://codereview.chromium.org/2365273004/ and
 // crbug.com/653874
-const bool kUseSharedMemoryForFieldTrials = false;
+const bool kUseSharedMemoryForFieldTrials = true;
 
 // Constants for the field trial allocator.
 const char kAllocatorName[] = "FieldTrialAllocator";
