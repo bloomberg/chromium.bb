@@ -598,6 +598,9 @@ bool SpdyHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
 Error SpdyHttpStream::GetTokenBindingSignature(crypto::ECPrivateKey* key,
                                                TokenBindingType tb_type,
                                                std::vector<uint8_t>* out) {
+  if (stream_closed_)
+    return ERR_CONNECTION_CLOSED;
+
   return spdy_session_->GetTokenBindingSignature(key, tb_type, out);
 }
 

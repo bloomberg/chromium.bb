@@ -6,8 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "net/base/request_priority.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -27,6 +30,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::test::IsError;
 using net::test::IsOk;
 
 namespace net {
@@ -210,6 +214,53 @@ TEST_F(HttpNetworkTransactionSSLTest, NoTokenBindingOverHttp) {
   std::string token_binding_header;
   EXPECT_FALSE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
                                  &token_binding_header));
+}
+
+// Regression test for https://crbug.com/667683.
+TEST_F(HttpNetworkTransactionSSLTest, TokenBindingAsync) {
+  ssl_config_service_ = new TokenBindingSSLConfigService;
+  session_params_.ssl_config_service = ssl_config_service_.get();
+
+  // Create a separate thread for ChannelIDService
+  // so that asynchronous Channel ID creation can be delayed.
+  base::Thread channel_id_thread("ThreadForChannelIDService");
+  channel_id_thread.Start();
+  scoped_refptr<base::DeferredSequencedTaskRunner> channel_id_runner =
+      new base::DeferredSequencedTaskRunner(channel_id_thread.task_runner());
+  ChannelIDService channel_id_service(new DefaultChannelIDStore(nullptr),
+                                      channel_id_runner);
+  session_params_.channel_id_service = &channel_id_service;
+
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.token_binding_negotiated = true;
+  ssl_data.token_binding_key_param = TB_PARAM_ECDSAP256;
+  ssl_data.next_proto = kProtoHTTP2;
+  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+
+  MockRead reads[] = {MockRead(ASYNC, OK, 0)};
+  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
+  mock_socket_factory_.AddSocketDataProvider(&data);
+
+  HttpNetworkSession session(session_params_);
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
+
+  HttpRequestInfo request_info;
+  request_info.url = GURL("https://www.example.com/");
+  request_info.method = "GET";
+  request_info.token_binding_referrer = "encrypted.example.com";
+
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_info, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  base::RunLoop().RunUntilIdle();
+
+  // When ChannelIdService calls back to HttpNetworkSession,
+  // SpdyHttpStream should not crash.
+  channel_id_runner->Start();
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_CONNECTION_CLOSED));
 }
 #endif  // !defined(OS_IOS)
 
