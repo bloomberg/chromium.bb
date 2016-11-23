@@ -196,7 +196,7 @@ function extension_testOpenResourceHandler(nextTest)
     webInspector.panels.setOpenResourceHandler(handleOpenResource);
     webInspector.inspectedWindow.eval("logMessage()", function() {
         evaluateOnFrontend("InspectorTest.clickOnURL();");
-        evaluateOnFrontend("Components.openAnchorLocationRegistry.activeHandler = 'test extension'; InspectorTest.clickOnURL();");
+        evaluateOnFrontend("Components.Linkifier._linkHandlerSetting().set('test extension'); InspectorTest.clickOnURL();");
     });
 }
 

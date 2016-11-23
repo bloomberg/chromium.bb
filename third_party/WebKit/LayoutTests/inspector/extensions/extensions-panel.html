@@ -192,7 +192,7 @@ function extension_testCreatePanel(nextTest)
             panel.show();
         }
         webInspector.panels.setOpenResourceHandler(handleOpenResource);
-        evaluateOnFrontend("Components.openAnchorLocationRegistry._activeHandler = 'test extension'");
+        evaluateOnFrontend("Components.Linkifier._linkHandlerSetting().set('test extension')");
         evaluateOnFrontend("InspectorTest.logMessageAndClickOnURL();");
         expectOnShown = true;
     }
