@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_export.h"
 
@@ -101,9 +100,9 @@ class IPC_EXPORT ChannelReader {
   virtual bool ShouldDispatchInputMessage(Message* msg) = 0;
 
   // Overridden by subclasses to get attachments that are sent alongside the IPC
-  // channel (as opposed to through a broker).
+  // channel.
   // Returns true on success. False means a fatal channel error.
-  virtual bool GetNonBrokeredAttachments(Message* msg) = 0;
+  virtual bool GetAttachments(Message* msg) = 0;
 
   // Performs post-dispatch checks. Called when all input buffers are empty,
   // though there could be more data ready to be read from the OS.

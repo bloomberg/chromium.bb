@@ -23,7 +23,7 @@ class IPC_EXPORT PlatformFileAttachment : public MessageAttachment {
   explicit PlatformFileAttachment(base::ScopedFD file);
 
   Type GetType() const override;
-  base::PlatformFile TakePlatformFile() override;
+  base::PlatformFile TakePlatformFile();
 
   base::PlatformFile file() const { return file_; }
   bool Owns() const { return owning_.is_valid(); }

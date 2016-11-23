@@ -26,11 +26,6 @@ class IPC_EXPORT MojoHandleAttachment : public MessageAttachment {
 
   Type GetType() const override;
 
-#if defined(OS_POSIX)
-  // Should not be called.
-  base::PlatformFile TakePlatformFile() override;
-#endif  // OS_POSIX
-
   // Returns the owning handle transferring the ownership.
   mojo::ScopedHandle TakeHandle();
 

@@ -10,36 +10,16 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
+#include "ipc/ipc_message_attachment.h"
 #include "ipc/mach_port_mac.h"
 
 namespace IPC {
 namespace internal {
 
 // This class represents an OSX mach_port_t attached to a Chrome IPC message.
-class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
+class IPC_EXPORT MachPortAttachmentMac : public MessageAttachment {
  public:
-  struct IPC_EXPORT WireFormat {
-    // IPC translation requires that classes passed through IPC have a default
-    // constructor.
-    WireFormat() : mach_port(0), destination_process(0) {}
-
-    WireFormat(uint32_t mach_port, const base::ProcessId& destination_process)
-        : mach_port(mach_port), destination_process(destination_process) {}
-
-    // The mach port that is intended for duplication, or the mach port that has
-    // been duplicated, depending on context.
-    // The type is uint32_t instead of mach_port_t to ensure that the wire
-    // format stays consistent.
-    uint32_t mach_port;
-    static_assert(sizeof(mach_port_t) <= sizeof(uint32_t),
-                  "mach_port_t must be smaller than uint32_t");
-
-    // The id of the destination process that the handle is duplicated into.
-    base::ProcessId destination_process;
-  };
-
   // This constructor increments the ref count of |mach_port_| and takes
   // ownership of the result. Should only be called by the sender of a Chrome
   // IPC message.
@@ -52,15 +32,7 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
   // ref count. Should only be called by the receiver of a Chrome IPC message.
   MachPortAttachmentMac(mach_port_t mach_port, FromWire from_wire);
 
-  // This constructor takes ownership of |wire_format.mach_port|, but does not
-  // modify its ref count. Should only be called by the receiver of a Chrome IPC
-  // message.
-  explicit MachPortAttachmentMac(const WireFormat& wire_format);
-
-  BrokerableType GetBrokerableType() const override;
-
-  // Returns the wire format of this attachment.
-  WireFormat GetWireFormat(const base::ProcessId& destination) const;
+  Type GetType() const override;
 
   mach_port_t get_mach_port() const { return mach_port_; }
 

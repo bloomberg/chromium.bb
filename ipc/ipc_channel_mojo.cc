@@ -124,14 +124,14 @@ base::ScopedFD TakeOrDupFile(internal::PlatformFileAttachment* attachment) {
 
 MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
                               mojom::SerializedHandlePtr* serialized) {
-  if (attachment->GetType() == MessageAttachment::TYPE_MOJO_HANDLE) {
+  if (attachment->GetType() == MessageAttachment::Type::MOJO_HANDLE) {
     *serialized = CreateSerializedHandle(
         static_cast<internal::MojoHandleAttachment&>(*attachment).TakeHandle(),
         mojom::SerializedHandle::Type::MOJO_HANDLE);
     return MOJO_RESULT_OK;
   }
 #if defined(OS_POSIX)
-  if (attachment->GetType() == MessageAttachment::TYPE_PLATFORM_FILE) {
+  if (attachment->GetType() == MessageAttachment::Type::PLATFORM_FILE) {
     // We dup() the handles in IPC::Message to transmit.
     // IPC::MessageAttachmentSet has intricate lifecycle semantics
     // of FDs, so just to dup()-and-own them is the safest option.
@@ -148,10 +148,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
   }
 #endif
 #if defined(OS_MACOSX)
-  DCHECK_EQ(attachment->GetType(),
-            MessageAttachment::TYPE_BROKERABLE_ATTACHMENT);
-  DCHECK_EQ(static_cast<BrokerableAttachment&>(*attachment).GetBrokerableType(),
-            BrokerableAttachment::MACH_PORT);
+  DCHECK_EQ(attachment->GetType(), MessageAttachment::Type::MACH_PORT);
   internal::MachPortAttachmentMac& mach_port_attachment =
       static_cast<internal::MachPortAttachmentMac&>(*attachment);
   MojoResult result = WrapMachPort(mach_port_attachment.get_mach_port(),
@@ -159,10 +156,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
   mach_port_attachment.reset_mach_port_ownership();
   return result;
 #elif defined(OS_WIN)
-  DCHECK_EQ(attachment->GetType(),
-            MessageAttachment::TYPE_BROKERABLE_ATTACHMENT);
-  DCHECK_EQ(static_cast<BrokerableAttachment&>(*attachment).GetBrokerableType(),
-            BrokerableAttachment::WIN_HANDLE);
+  DCHECK_EQ(attachment->GetType(), MessageAttachment::Type::WIN_HANDLE);
   internal::HandleAttachmentWin& handle_attachment =
       static_cast<internal::HandleAttachmentWin&>(*attachment);
   MojoResult result = WrapPlatformHandle(
@@ -409,18 +403,9 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
   std::vector<mojom::SerializedHandlePtr> output_handles;
   MessageAttachmentSet* set = message->attachment_set();
 
-  for (unsigned i = 0;
-       result == MOJO_RESULT_OK && i < set->num_non_brokerable_attachments();
-       ++i) {
-    result = WrapAttachment(set->GetNonBrokerableAttachmentAt(i).get(),
-                            &output_handles);
+  for (unsigned i = 0; result == MOJO_RESULT_OK && i < set->size(); ++i) {
+    result = WrapAttachment(set->GetAttachmentAt(i).get(), &output_handles);
   }
-  for (unsigned i = 0;
-       result == MOJO_RESULT_OK && i < set->num_brokerable_attachments(); ++i) {
-    result = WrapAttachment(set->GetBrokerableAttachmentAt(i).get(),
-                            &output_handles);
-  }
-
   set->CommitAllDescriptors();
 
   if (!output_handles.empty())

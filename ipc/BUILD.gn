@@ -9,8 +9,6 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 component("ipc") {
   sources = [
-    "brokerable_attachment.cc",
-    "brokerable_attachment.h",
     "export_template.h",
     "handle_attachment_win.cc",
     "handle_attachment_win.h",
