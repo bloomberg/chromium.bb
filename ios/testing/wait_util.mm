@@ -12,6 +12,7 @@ const NSTimeInterval kSpinDelaySeconds = 0.01;
 const NSTimeInterval kWaitForJSCompletionTimeout = 2.0;
 const NSTimeInterval kWaitForUIElementTimeout = 4.0;
 const NSTimeInterval kWaitForDownloadTimeout = 10.0;
+const NSTimeInterval kWaitForPageLoadTimeout = 10.0;
 
 bool WaitUntilConditionOrTimeout(NSTimeInterval timeout,
                                  ConditionBlock condition) {

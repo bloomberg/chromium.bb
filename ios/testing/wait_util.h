@@ -23,6 +23,9 @@ extern const NSTimeInterval kWaitForJSCompletionTimeout;
 // Constant for timeout in seconds while waiting for a download to complete.
 extern const NSTimeInterval kWaitForDownloadTimeout;
 
+// Constant for timeout in seconds while waiting for a pageload to complete.
+extern const NSTimeInterval kWaitForPageLoadTimeout;
+
 // Returns true when condition() becomes true, otherwise returns false after
 // |timeout|.
 bool WaitUntilConditionOrTimeout(NSTimeInterval timeout,
