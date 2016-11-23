@@ -559,6 +559,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mUiShippingOptions.isEmpty() && mShippingAddressesSection.getSelectedItem() != null) {
             mShippingAddressesSection.getSelectedItem().setInvalid();
             mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
+            mShippingAddressesSection.setErrorMessage(details.error);
         }
 
         if (mPaymentInformationCallback != null) {

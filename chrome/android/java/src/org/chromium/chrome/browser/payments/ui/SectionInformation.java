@@ -30,6 +30,7 @@ public class SectionInformation {
     @PaymentRequestUI.DataType private final int mDataType;
     private ArrayList<PaymentOption> mItems;
     private int mSelectedItem;
+    public String mErrorMessage;
 
     /**
      * Builds an empty section without selection.
@@ -172,5 +173,15 @@ public class SectionInformation {
             return R.string.payments_add_card;
         }
         return 0;
+    }
+
+    /** @param msg The optional error message to display when the selection is invalid. */
+    public void setErrorMessage(String msg) {
+        mErrorMessage = msg;
+    }
+
+    /** @return The optional error message to display when the selection is invalid. */
+    public String getErrorMessage() {
+        return mErrorMessage;
     }
 }

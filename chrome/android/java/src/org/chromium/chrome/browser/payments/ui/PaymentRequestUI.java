@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
+import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -1089,17 +1090,23 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     @Override
     public String getAdditionalText(PaymentRequestSection section) {
-        if (section == mShippingAddressSection) {
-            int selectedItemIndex = mShippingAddressSectionInformation.getSelectedItemIndex();
-            boolean isNecessary = selectedItemIndex == SectionInformation.NO_SELECTION
-                    || selectedItemIndex == SectionInformation.INVALID_SELECTION;
-            return isNecessary
-                    ? mContext.getString(selectedItemIndex == SectionInformation.NO_SELECTION
-                            ? mShippingStrings.getSelectPrompt()
-                            : mShippingStrings.getUnsupported())
-                    : null;
+        if (section != mShippingAddressSection) return null;
+
+        int selectedItemIndex = mShippingAddressSectionInformation.getSelectedItemIndex();
+        if (selectedItemIndex != SectionInformation.NO_SELECTION
+                && selectedItemIndex != SectionInformation.INVALID_SELECTION) {
+            return null;
         }
-        return null;
+
+        String customErrorMessage = mShippingAddressSectionInformation.getErrorMessage();
+        if (selectedItemIndex == SectionInformation.INVALID_SELECTION
+                && !TextUtils.isEmpty(customErrorMessage)) {
+            return customErrorMessage;
+        }
+
+        return mContext.getString(selectedItemIndex == SectionInformation.NO_SELECTION
+                        ? mShippingStrings.getSelectPrompt()
+                        : mShippingStrings.getUnsupported());
     }
 
     @Override
