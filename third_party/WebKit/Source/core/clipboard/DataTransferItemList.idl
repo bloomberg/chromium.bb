@@ -34,8 +34,7 @@ interface DataTransferItemList {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter DataTransferItem (unsigned long index);
     [RaisesException] DataTransferItem? add(DOMString data, DOMString type);
-    // TODO(foolip): The file argument should not be nullable.
-    DataTransferItem? add(File? file);
+    DataTransferItem? add(File file);
     [RaisesException, ImplementedAs=deleteItem] void remove(unsigned long index);
     void clear();
 };

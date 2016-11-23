@@ -29,7 +29,9 @@ function itemListDragStart(dataTransfer)
 {
     testDataTransfer = dataTransfer;
     shouldThrow('testDataTransfer.items.add()');
+    shouldThrow('testDataTransfer.items.add(undefined)');
     shouldThrow('testDataTransfer.items.add("sample")');
+    shouldThrow('testDataTransfer.items.add(null)');
     testItem = dataTransfer.items.add('sample', 'text/plain');
     shouldBeEqualToString('testItem.kind', 'string');
     shouldBeEqualToString('testItem.type', 'text/plain');

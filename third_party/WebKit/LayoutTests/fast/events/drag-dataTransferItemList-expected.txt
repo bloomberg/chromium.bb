@@ -30,7 +30,9 @@ PASS testData is expectedTestData
 PASS testData is expectedTestData
 Running test with DataTransferItemList drag handler and Legacy drop handler
 PASS testDataTransfer.items.add() threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': 1 argument required, but only 0 present..
+PASS testDataTransfer.items.add(undefined) threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'..
 PASS testDataTransfer.items.add("sample") threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'..
+PASS testDataTransfer.items.add(null) threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'..
 PASS testItem.kind is "string"
 PASS testItem.type is "text/plain"
 PASS testItem.kind is "string"
@@ -50,7 +52,9 @@ PASS testDataTransfer.getData("text/html") is "<em>Markup</em>"
 PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with DataTransferItemList drag handler and DataTransferItemList drop handler
 PASS testDataTransfer.items.add() threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': 1 argument required, but only 0 present..
+PASS testDataTransfer.items.add(undefined) threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'..
 PASS testDataTransfer.items.add("sample") threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'..
+PASS testDataTransfer.items.add(null) threw exception TypeError: Failed to execute 'add' on 'DataTransferItemList': parameter 1 is not of type 'File'..
 PASS testItem.kind is "string"
 PASS testItem.type is "text/plain"
 PASS testItem.kind is "string"
