@@ -417,6 +417,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     }
                 });
 
+        mStarted = true;
+
         // Initialize thread-unsafe singletons.
         AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
         mGeolocationPermissions = new GeolocationPermissionsAdapter(
@@ -427,7 +429,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     awBrowserContext.getServiceWorkerController());
         }
 
-        mStarted = true;
         mRunQueue.drainQueue();
     }
 
@@ -443,8 +444,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     // Only on UI thread.
     AwBrowserContext getBrowserContextOnUiThread() {
-        // TODO(crbug.com/667337)
-        // assert mStarted;
+        assert mStarted;
 
         if (BuildConfig.DCHECK_IS_ON && !ThreadUtils.runningOnUiThread()) {
             throw new RuntimeException(
