@@ -2185,6 +2185,64 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
       view()->historyForwardListCount() + 1);
 }
 
+// IPC Listener that runs a callback when a console.log() is executed from
+// javascript.
+class ConsoleCallbackFilter : public IPC::Listener {
+ public:
+  explicit ConsoleCallbackFilter(
+      base::Callback<void(const base::string16&)> callback)
+      : callback_(callback) {}
+
+  bool OnMessageReceived(const IPC::Message& msg) override {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(ConsoleCallbackFilter, msg)
+      IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddMessageToConsole,
+                          OnDidAddMessageToConsole)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnDidAddMessageToConsole(int32_t,
+                                const base::string16& message,
+                                int32_t,
+                                const base::string16&) {
+    callback_.Run(message);
+  }
+
+ private:
+  base::Callback<void(const base::string16&)> callback_;
+};
+
+// Tests that there's no UaF after dispatchBeforeUnloadEvent.
+// See https://crbug.com/666714.
+TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
+  LoadHTML(
+      "<script>window.onbeforeunload = function() { "
+      "window.console.log('OnBeforeUnload called'); }</script>");
+
+  // Creates a callback that swaps the frame when the 'OnBeforeUnload called'
+  // log is printed from the beforeunload handler.
+  std::unique_ptr<ConsoleCallbackFilter> callback_filter(
+      new ConsoleCallbackFilter(base::Bind(
+          [](RenderFrameImpl* frame, const base::string16& msg) {
+            // Makes sure this happens during the beforeunload handler.
+            EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
+
+            // Swaps the main frame.
+            frame->OnMessageReceived(FrameMsg_SwapOut(
+                frame->GetRoutingID(), 1, false, FrameReplicationState()));
+          },
+          base::Unretained(frame()))));
+  render_thread_->sink().AddFilter(callback_filter.get());
+
+  // Simulates a BeforeUnload IPC received from the browser.
+  frame()->OnMessageReceived(
+      FrameMsg_BeforeUnload(frame()->GetRoutingID(), false));
+
+  render_thread_->sink().RemoveFilter(callback_filter.get());
+}
+
 TEST_F(RenderViewImplBlinkSettingsTest, Default) {
   DoSetUp();
   EXPECT_FALSE(settings()->viewportEnabled());
