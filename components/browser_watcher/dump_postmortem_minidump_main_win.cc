@@ -33,12 +33,58 @@ bool ParseCommandLine(const base::CommandLine* cmd,
   return true;
 }
 
+void Indent(FILE* out, size_t indent_level) {
+  DCHECK(out);
+  for (size_t i = 0; i < indent_level; ++i)
+    fprintf(out, "  ");
+}
+
+void PrintActivity(FILE* out,
+                   size_t indent_level,
+                   const browser_watcher::Activity& activity) {
+  DCHECK(out);
+  Indent(out, indent_level);
+  fprintf(out, "Activity\n");
+  Indent(out, indent_level + 1);
+  fprintf(out, "type: %d\n", activity.type());
+  Indent(out, indent_level + 1);
+  fprintf(out, "time: %lld\n", activity.time());
+  switch (activity.type()) {
+    case browser_watcher::Activity::NONE:
+      break;
+    case browser_watcher::Activity::ACT_TASK_RUN:
+      Indent(out, indent_level + 1);
+      fprintf(out, "origin_address: %llx\n", activity.origin_address());
+      fprintf(out, "task_sequence_id: %lld\n", activity.task_sequence_id());
+      break;
+    case browser_watcher::Activity::ACT_LOCK_ACQUIRE:
+      Indent(out, indent_level + 1);
+      fprintf(out, "lock_address: %llx\n", activity.lock_address());
+      break;
+    case browser_watcher::Activity::ACT_EVENT_WAIT:
+      Indent(out, indent_level + 1);
+      fprintf(out, "event_address: %llx\n", activity.event_address());
+      break;
+    case browser_watcher::Activity::ACT_THREAD_JOIN:
+      Indent(out, indent_level + 1);
+      fprintf(out, "thread_id: %lld\n", activity.thread_id());
+      break;
+    case browser_watcher::Activity::ACT_PROCESS_WAIT:
+      Indent(out, indent_level + 1);
+      fprintf(out, "process_id: %lld\n", activity.process_id());
+      break;
+  }
+}
+
 void PrintProcessState(FILE* out,
                        const browser_watcher::ProcessState& process) {
-  fprintf(out, "%s", "Process:\n");
-  for (int i = 0; i < process.threads_size(); ++i) {
-    const browser_watcher::ThreadState thread = process.threads(i);
-    fprintf(out, "%s\n", thread.thread_name().c_str());
+  fprintf(out, "Process %lld (%d threads)\n", process.process_id(),
+          process.threads_size());
+  for (const browser_watcher::ThreadState& thread : process.threads()) {
+    fprintf(out, "Thread %lld (%s) : %d activities\n", thread.thread_id(),
+            thread.thread_name().c_str(), thread.activity_count());
+    for (const browser_watcher::Activity& activity : thread.activities())
+      PrintActivity(out, 1, activity);
   }
 }
 
