@@ -66,7 +66,7 @@ class VolumeButton : public ButtonListenerActionableView {
                views::ButtonListener* listener,
                system::TrayAudioDelegate* audio_delegate)
       : ButtonListenerActionableView(owner,
-                                     TrayPopupInkDropStyle::INSET_BOUNDS,
+                                     TrayPopupInkDropStyle::HOST_CENTERED,
                                      listener),
         audio_delegate_(audio_delegate),
         image_(TrayPopupUtils::CreateMainImageView()),
