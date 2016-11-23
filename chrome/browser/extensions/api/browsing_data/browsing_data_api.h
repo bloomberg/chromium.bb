@@ -51,7 +51,6 @@ extern const char kUnprotectedWebKey[];
 // Errors!
 extern const char kBadDataTypeDetails[];
 extern const char kDeleteProhibitedError[];
-extern const char kOneAtATimeError[];
 
 }  // namespace extension_browsing_data_api_constants
 

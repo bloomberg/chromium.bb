@@ -249,22 +249,6 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
-  BrowsingDataRemover* browsing_data_remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
-  browsing_data_remover->SetRemoving(true);
-  scoped_refptr<BrowsingDataRemoveFunction> function =
-      new BrowsingDataRemoveFunction();
-  EXPECT_TRUE(base::MatchPattern(
-      RunFunctionAndReturnError(function.get(), kRemoveEverythingArguments,
-                                browser()),
-      extension_browsing_data_api_constants::kOneAtATimeError));
-  browsing_data_remover->SetRemoving(false);
-
-  EXPECT_EQ(base::Time(), GetBeginTime());
-  EXPECT_EQ(-1, GetRemovalMask());
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
