@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -129,12 +130,23 @@ void RequestQueueDuplicateCheckDone(
 
 void ModelDuplicateCheckDone(const GURL& original_url,
                              const ScopedJavaGlobalRef<jobject>& j_tab_ref,
-                             bool has_duplicates) {
+                             bool has_duplicates,
+                             const base::Time& latest_saved_time) {
   content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
   if (!web_contents)
     return;
 
   if (has_duplicates) {
+    base::TimeDelta time_since_most_recent_duplicate =
+        base::Time::Now() - latest_saved_time;
+    // Using CUSTOM_COUNTS instead of time-oriented histogram to record
+    // samples in seconds rather than milliseconds.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.DownloadRequestTimeSinceDuplicateSaved",
+        time_since_most_recent_duplicate.InSeconds(),
+        base::TimeDelta::FromSeconds(1).InSeconds(),
+        base::TimeDelta::FromDays(7).InSeconds(), 50);
+
     OfflinePageInfoBarDelegate::Create(
         base::Bind(&SavePageIfNotNavigatedAway, original_url, j_tab_ref),
         original_url, web_contents);

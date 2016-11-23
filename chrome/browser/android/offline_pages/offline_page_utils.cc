@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
@@ -150,20 +151,24 @@ void OfflinePageUtils::CheckExistenceOfPagesWithURL(
     content::BrowserContext* browser_context,
     const std::string name_space,
     const GURL& offline_page_url,
-    const base::Callback<void(bool)>& callback) {
+    const PagesExistCallback& callback) {
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   DCHECK(offline_page_model);
-  auto continuation = [](const std::string& name_space,
-                         const base::Callback<void(bool)>& callback,
-                         const std::vector<OfflinePageItem>& pages) {
+  auto continuation = [](
+      const std::string& name_space,
+      const base::Callback<void(bool, const base::Time&)>& callback,
+      const std::vector<OfflinePageItem>& pages) {
+    base::Time latest_saved_time;
     for (auto& page : pages) {
-      if (page.client_id.name_space == name_space) {
-        callback.Run(true);
-        return;
+      // TODO(fgorski): We should use policy to check for namespaces visible in
+      // UI.
+      if (page.client_id.name_space == name_space &&
+          latest_saved_time < page.creation_time) {
+        latest_saved_time = page.creation_time;
       }
     }
-    callback.Run(false);
+    callback.Run(!latest_saved_time.is_null(), latest_saved_time);
   };
 
   offline_page_model->GetPagesByURL(

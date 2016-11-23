@@ -12,6 +12,10 @@
 
 class GURL;
 
+namespace base {
+class Time;
+}
+
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -20,6 +24,13 @@ class WebContents;
 namespace offline_pages {
 struct OfflinePageHeader;
 struct OfflinePageItem;
+
+// Callback used for checking if specific |pages_exist| and what is the
+// |latest_saved_time| for those pages. The former being a basic return type,
+// while the latter is meant to be used as a helper to report UMA.
+using PagesExistCallback =
+    base::Callback<void(bool /* pages_exist */,
+                        const base::Time& /* latest_saved_time */)>;
 
 class OfflinePageUtils {
  public:
@@ -54,16 +65,21 @@ class OfflinePageUtils {
   // ID of the tab.
   static bool GetTabId(content::WebContents* web_contents, int* tab_id);
 
+  // Performs a check, whether pages with specified |url| is already saved in
+  // with a specified |name_space|. Result is returned in a |callback|, where
+  // first parameter indicates whether offline pages with |url| exit, while
+  // second is a helper value to report UMA, indicating the time the latest
+  // existing page with such URL was saved.
   static void CheckExistenceOfPagesWithURL(
       content::BrowserContext* browser_context,
       const std::string name_space,
-      const GURL& offline_url,
-      const base::Callback<void(bool)>& callback);
+      const GURL& url,
+      const PagesExistCallback& callback);
 
   static void CheckExistenceOfRequestsWithURL(
       content::BrowserContext* browser_context,
       const std::string name_space,
-      const GURL& offline_page_url,
+      const GURL& url,
       const base::Callback<void(bool)>& callback);
 
   static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);

@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/common/chrome_constants.h"
@@ -43,9 +44,14 @@ const char* kTestPage1ClientId = "1234";
 const char* kTestPage2ClientId = "5678";
 const char* kTestPage4ClientId = "9876";
 
-void BoolCallback(bool* actual_result, bool call_result) {
-  DCHECK(actual_result);
-  *actual_result = call_result;
+void HasDuplicatesCallback(bool* out_has_duplicates,
+                           base::Time* out_latest_saved_time,
+                           bool has_duplicates,
+                           const base::Time& latest_saved_time) {
+  DCHECK(out_has_duplicates);
+  DCHECK(out_latest_saved_time);
+  *out_has_duplicates = has_duplicates;
+  *out_latest_saved_time = latest_saved_time;
 }
 
 }  // namespace
@@ -190,19 +196,24 @@ std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
 }
 
 TEST_F(OfflinePageUtilsTest, CheckExistenceOfPagesWithURL) {
-  bool page_exists = false;
+  bool has_duplicates = false;
+  base::Time latest_saved_time;
   // This page should be available.
   OfflinePageUtils::CheckExistenceOfPagesWithURL(
       profile(), kDownloadNamespace, kTestPage1Url,
-      base::Bind(&BoolCallback, base::Unretained(&page_exists)));
+      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
+                 base::Unretained(&latest_saved_time)));
   RunUntilIdle();
-  EXPECT_TRUE(page_exists);
+  EXPECT_TRUE(has_duplicates);
+  EXPECT_NE(base::Time(), latest_saved_time);
   // This one should be missing
   OfflinePageUtils::CheckExistenceOfPagesWithURL(
       profile(), kDownloadNamespace, kTestPage3Url,
-      base::Bind(&BoolCallback, base::Unretained(&page_exists)));
+      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
+                 base::Unretained(&latest_saved_time)));
   RunUntilIdle();
-  EXPECT_FALSE(page_exists);
+  EXPECT_FALSE(has_duplicates);
+  EXPECT_EQ(base::Time(), latest_saved_time);
 }
 
 }  // namespace offline_pages
