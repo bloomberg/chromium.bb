@@ -116,6 +116,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return not _IGNORED_STATS_RE.search(value.name)
 
 
+@benchmark.Disabled('win10') # http://crbug.com/667941
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
   PLATFORM = 'desktop'
