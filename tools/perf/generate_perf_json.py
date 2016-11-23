@@ -368,7 +368,7 @@ def get_waterfall_config():
     swarming=[
       {
        'gpu': '102b:0534',
-       'os': 'linux',
+       'os': 'Ubuntu-14.04',
        'device_ids': [
            'build148-m1', 'build149-m1',
            'build150-m1', 'build151-m1', 'build152-m1'
