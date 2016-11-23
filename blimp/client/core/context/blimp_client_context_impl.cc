@@ -28,6 +28,7 @@
 #include "blimp/client/core/switches/blimp_client_switches.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "blimp/net/thread_pipe_manager.h"
 #include "components/prefs/pref_service.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/location_arbitrator.h"
@@ -71,7 +72,7 @@ BlimpClientContext* BlimpClientContext::Create(
   auto settings = base::MakeUnique<Settings>(local_state);
   return new BlimpClientContextImpl(
       io_thread_task_runner, file_thread_task_runner,
-      std::move(compositor_dependencies), std::move(settings));
+      std::move(compositor_dependencies), std::move(settings), nullptr);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -97,7 +98,8 @@ BlimpClientContextImpl::BlimpClientContextImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     std::unique_ptr<CompositorDependencies> compositor_dependencies,
-    std::unique_ptr<Settings> settings)
+    std::unique_ptr<Settings> settings,
+    std::unique_ptr<PipeManager> pipe_manager)
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
       file_thread_task_runner_(file_thread_task_runner),
@@ -120,16 +122,19 @@ BlimpClientContextImpl::BlimpClientContextImpl(
                                    navigation_feature_.get(),
                                    render_widget_feature_.get(),
                                    tab_control_feature_.get())),
+      pipe_manager_(std::move(pipe_manager)),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
       base::MakeUnique<CrossThreadNetworkEventObserver>(
           connection_status_.GetWeakPtr(),
           base::SequencedTaskRunnerHandle::Get())));
 
-  // The |thread_pipe_manager_| must be set up correctly before features are
+  // The |pipe_manager_| must be set up correctly before features are
   // registered.
-  thread_pipe_manager_ = base::MakeUnique<ThreadPipeManager>(
-      io_thread_task_runner_, net_components_->GetBrowserConnectionHandler());
+  if (!pipe_manager_) {
+    pipe_manager_ = base::MakeUnique<ThreadPipeManager>(
+        io_thread_task_runner_, net_components_->GetBrowserConnectionHandler());
+  }
 
   RegisterFeatures();
   settings_feature_->PushSettings();
@@ -235,31 +240,31 @@ void BlimpClientContextImpl::OnAssignmentReceived(
 
 void BlimpClientContextImpl::RegisterFeatures() {
   // Register features' message senders and receivers.
-  thread_pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
-                                        blob_channel_feature_.get());
+  pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
+                                 blob_channel_feature_.get());
   geolocation_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kGeolocation,
-                                            geolocation_feature_.get()));
+      pipe_manager_->RegisterFeature(BlimpMessage::kGeolocation,
+                                     geolocation_feature_.get()));
   ime_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
-                                            ime_feature_.get()));
+      pipe_manager_->RegisterFeature(BlimpMessage::kIme,
+                                     ime_feature_.get()));
   navigation_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kNavigation,
-                                            navigation_feature_.get()));
+      pipe_manager_->RegisterFeature(BlimpMessage::kNavigation,
+                                     navigation_feature_.get()));
   render_widget_feature_->set_outgoing_input_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kInput,
-                                            render_widget_feature_.get()));
+      pipe_manager_->RegisterFeature(BlimpMessage::kInput,
+                                     render_widget_feature_.get()));
   render_widget_feature_->set_outgoing_compositor_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kCompositor,
-                                            render_widget_feature_.get()));
-  thread_pipe_manager_->RegisterFeature(BlimpMessage::kRenderWidget,
-                                        render_widget_feature_.get());
+      pipe_manager_->RegisterFeature(BlimpMessage::kCompositor,
+                                     render_widget_feature_.get()));
+  pipe_manager_->RegisterFeature(BlimpMessage::kRenderWidget,
+                                 render_widget_feature_.get());
   settings_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
-                                            settings_feature_.get()));
+      pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
+                                     settings_feature_.get()));
   tab_control_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
-                                            tab_control_feature_.get()));
+      pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
+                                     tab_control_feature_.get()));
 }
 
 void BlimpClientContextImpl::DropConnection() {

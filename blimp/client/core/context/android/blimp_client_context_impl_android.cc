@@ -55,7 +55,8 @@ BlimpClientContextImplAndroid::BlimpClientContextImplAndroid(
     : BlimpClientContextImpl(io_thread_task_runner,
                              file_thread_task_runner,
                              std::move(compositor_dependencies),
-                             std::move(settings)) {
+                             std::move(settings),
+                             nullptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_obj_.Reset(env, Java_BlimpClientContextImpl_create(

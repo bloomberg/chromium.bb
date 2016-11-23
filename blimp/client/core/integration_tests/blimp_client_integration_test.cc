@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/core/context/blimp_client_context_impl.h"
-
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -11,18 +9,18 @@
 #include "base/threading/thread.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/context/blimp_client_context_impl.h"
 #include "blimp/client/core/settings/settings.h"
-#include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "blimp/client/test/compositor/mock_compositor_dependencies.h"
 #include "blimp/client/test/test_blimp_client_context_delegate.h"
+#include "blimp/net/fake_blimp_message_processor.h"
+#include "blimp/net/fake_pipe_manager.h"
 #include "components/prefs/testing_pref_service.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
-#include "blimp/client/core/settings/android/settings_android.h"
 #include "ui/android/window_android.h"
 #endif  // defined(OS_ANDROID)
 
@@ -30,18 +28,33 @@ namespace blimp {
 namespace client {
 namespace {
 
-class BlimpClientContextImplTest : public testing::Test {
+class BlimpClientIntegrationTest : public testing::Test {
  public:
-  BlimpClientContextImplTest() : io_thread_("BlimpTestIO") {}
-  ~BlimpClientContextImplTest() override {}
+  BlimpClientIntegrationTest() : io_thread_("BlimpTestIO") {}
+  ~BlimpClientIntegrationTest() override = default;
 
   void SetUp() override {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
+
+    Settings::RegisterPrefs(prefs_.registry());
+
 #if defined(OS_ANDROID)
     window_ = ui::WindowAndroid::CreateForTesting();
 #endif  // defined(OS_ANDROID)
+
+    std::unique_ptr<FakePipeManager> pipe_manager(
+        base::MakeUnique<FakePipeManager>());
+    pipe_manager_ = pipe_manager.get();
+
+    context_ = base::MakeUnique<BlimpClientContextImpl>(
+        io_thread_.task_runner(), io_thread_.task_runner(),
+        base::MakeUnique<MockCompositorDependencies>(),
+        base::MakeUnique<Settings>(&prefs_),
+        std::move(pipe_manager));
+
+    context_->SetDelegate(&delegate_);
   }
 
   void TearDown() override {
@@ -54,38 +67,29 @@ class BlimpClientContextImplTest : public testing::Test {
 
  protected:
   base::Thread io_thread_;
+  FakePipeManager* pipe_manager_;
+  TestingPrefServiceSimple prefs_;
   gfx::NativeWindow window_ = nullptr;
+  TestBlimpClientContextDelegate delegate_;
+  std::unique_ptr<BlimpClientContextImpl> context_;
 
  private:
   base::MessageLoop message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlimpClientContextImplTest);
+  DISALLOW_COPY_AND_ASSIGN(BlimpClientIntegrationTest);
 };
 
-TEST_F(BlimpClientContextImplTest,
-       CreatedBlimpContentsGetsHelpersAttachedAndHasTabControlFeature) {
-  TestingPrefServiceSimple prefs;
-  Settings::RegisterPrefs(prefs.registry());
-
-  auto settings = base::MakeUnique<Settings>(&prefs);
-  BlimpClientContextImpl blimp_client_context(
-      io_thread_.task_runner(), io_thread_.task_runner(),
-      base::MakeUnique<MockCompositorDependencies>(), std::move(settings),
-      nullptr);
-  TestBlimpClientContextDelegate delegate;
-  blimp_client_context.SetDelegate(&delegate);
-
-  BlimpContents* attached_blimp_contents = nullptr;
-
-  EXPECT_CALL(delegate, AttachBlimpContentsHelpers(testing::_))
-      .WillOnce(testing::SaveArg<0>(&attached_blimp_contents))
-      .RetiresOnSaturation();
-
+TEST_F(BlimpClientIntegrationTest, Navigate) {
   std::unique_ptr<BlimpContents> blimp_contents =
-      blimp_client_context.CreateBlimpContents(window_);
-  DCHECK(blimp_contents);
-  DCHECK_EQ(blimp_contents.get(), attached_blimp_contents);
-  blimp_client_context.SetDelegate(nullptr);
+      context_->CreateBlimpContents(window_);
+  blimp_contents->GetNavigationController().GoForward();
+
+  FakeBlimpMessageProcessor* nav_processor =
+      pipe_manager_->GetOutgoingMessageProcessor(BlimpMessage::kNavigation);
+
+  EXPECT_EQ(1U, nav_processor->messages().size());
+  auto message = nav_processor->messages().at(0);
+  EXPECT_EQ(NavigationMessage::GO_FORWARD, message.navigation().type());
 }
 
 }  // namespace

@@ -22,7 +22,7 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "blimp/client/public/session/assignment.h"
-#include "blimp/net/thread_pipe_manager.h"
+#include "blimp/net/pipe_manager.h"
 #include "url/gurl.h"
 
 namespace blimp {
@@ -52,11 +52,14 @@ class BlimpClientContextImpl
   // operations.
   // The |file_thread_task_runner| must be the task runner to use for file
   // operations.
+  // |pipe_manager| is an optional override. If it's null, a default pipe
+  // manager will be created.
   BlimpClientContextImpl(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
       std::unique_ptr<CompositorDependencies> compositor_dependencies,
-      std::unique_ptr<Settings> settings);
+      std::unique_ptr<Settings> settings,
+      std::unique_ptr<PipeManager> pipe_manager);
   ~BlimpClientContextImpl() override;
 
   // BlimpClientContext implementation.
@@ -131,7 +134,7 @@ class BlimpClientContextImpl
   // Must be deleted on the IO thread.
   std::unique_ptr<ClientNetworkComponents> net_components_;
 
-  std::unique_ptr<ThreadPipeManager> thread_pipe_manager_;
+  std::unique_ptr<PipeManager> pipe_manager_;
 
   std::unique_ptr<AssignmentFetcher> assignment_fetcher_;
 

@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_net_export.h"
+#include "blimp/net/pipe_manager.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -20,7 +21,6 @@ class SequencedTaskRunner;
 
 namespace blimp {
 
-class BlimpMessageProcessor;
 class BlimpMessageThreadPipe;
 class BrowserConnectionHandler;
 class ConnectionThreadPipeManager;
@@ -29,7 +29,7 @@ class ConnectionThreadPipeManager;
 // SequencedTaskRunner, and per-feature message processors running on the same
 // TaskRunner as the caller. This is used to allow Blimp feature implementations
 // to operate on the UI thread, with network I/O delegated to an IO thread.
-class BLIMP_NET_EXPORT ThreadPipeManager {
+class BLIMP_NET_EXPORT ThreadPipeManager : public PipeManager {
  public:
   // Caller is responsible for ensuring that |connection_handler| outlives
   // |this|.
@@ -37,14 +37,11 @@ class BLIMP_NET_EXPORT ThreadPipeManager {
       const scoped_refptr<base::SequencedTaskRunner>& connection_task_runner,
       BrowserConnectionHandler* connection_handler);
 
-  ~ThreadPipeManager();
+  ~ThreadPipeManager() override;
 
-  // Registers a message processor |incoming_processor| which will receive all
-  // messages of the |feature_case| specified. Returns a BlimpMessageProcessor
-  // object for sending messages of the given feature.
   std::unique_ptr<BlimpMessageProcessor> RegisterFeature(
       BlimpMessage::FeatureCase feature_case,
-      BlimpMessageProcessor* incoming_processor);
+      BlimpMessageProcessor* incoming_processor) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> connection_task_runner_;

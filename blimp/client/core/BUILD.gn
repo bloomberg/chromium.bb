@@ -8,6 +8,7 @@ if (is_android) {
 }
 
 import("//blimp/client/core/config.gni")
+import("//testing/test.gni")
 
 # This target is here to let //chrome depend on //blimp/client/public
 # and automatically get the correct implementation of //blimp/client/core
@@ -66,6 +67,7 @@ group("unit_tests") {
     "//blimp/client/core/context:unit_tests",
     "//blimp/client/core/feedback:unit_tests",
     "//blimp/client/core/geolocation:unit_tests",
+    "//blimp/client/core/integration_tests",
     "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/session:unit_tests",
     "//blimp/client/core/settings:unit_tests",
