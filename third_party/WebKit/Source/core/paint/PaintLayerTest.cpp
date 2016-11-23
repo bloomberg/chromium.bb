@@ -12,6 +12,26 @@ namespace blink {
 
 using PaintLayerTest = RenderingTest;
 
+TEST_F(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
+  setBodyInnerHTML(
+      " <div id='parent'><div id='absposparent'><div id='absposchild'>"
+      " </div></div></div>"
+      "<style>"
+      "  #parent { position: absolute; z-index: 0; overflow: hidden;"
+      "  background: lightgray; width: 150px; height: 150px;"
+      "  will-change: transform; }"
+      "  #absposparent { position: absolute; z-index: 0; }"
+      "  #absposchild { position: absolute; top: 0px; left: 0px; height: 200px;"
+      "  width: 200px; background: lightblue; }</style>");
+
+  PaintLayer* parentLayer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  // Since "absposchild" is clipped by "parent", it should not expand the
+  // composited bounds for "parent" beyond its intrinsic size of 150x150.
+  EXPECT_EQ(LayoutRect(0, 0, 150, 150),
+            parentLayer->boundingBoxForCompositing());
+}
+
 TEST_F(PaintLayerTest, PaintingExtentReflection) {
   setBodyInnerHTML(
       "<div id='target' style='background-color: blue; position: absolute;"

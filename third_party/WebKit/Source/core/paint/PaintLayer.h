@@ -428,14 +428,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   LayoutRect boxForClipPath() const;
 
   LayoutRect boundingBoxForCompositingOverlapTest() const;
+  LayoutRect boundingBoxForCompositing() const;
 
   // If true, this layer's children are included in its bounds for overlap
   // testing.  We can't rely on the children's positions if this layer has a
   // filter that could have moved the children's pixels around.
   bool overlapBoundsIncludeChildren() const;
-  LayoutRect boundingBoxForCompositing(
-      const PaintLayer* ancestorLayer = 0,
-      CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
 
   LayoutUnit staticInlinePosition() const { return m_staticInlinePosition; }
   LayoutUnit staticBlockPosition() const { return m_staticBlockPosition; }
@@ -1108,6 +1106,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool isSelfPaintingLayerForIntrinsicOrScrollingReasons() const;
 
   bool shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const;
+
+  void expandRectForStackingChildren(const PaintLayer* compositedLayer,
+                                     LayoutRect& result,
+                                     PaintLayer::CalculateBoundsOptions) const;
+
+  // The return value is in the space of |stackingParent|, if non-null, or
+  // |this| otherwise.
+  LayoutRect boundingBoxForCompositingInternal(
+      const PaintLayer* compositedLayer,
+      const PaintLayer* stackingParent,
+      CalculateBoundsOptions) const;
 
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip

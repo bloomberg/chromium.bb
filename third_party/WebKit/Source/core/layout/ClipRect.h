@@ -77,7 +77,7 @@ class ClipRect {
     return *this;
   }
 
-  String toString() { return m_rect.toString(); }
+  String toString() const { return m_rect.toString(); }
 
  private:
   LayoutRect m_rect;

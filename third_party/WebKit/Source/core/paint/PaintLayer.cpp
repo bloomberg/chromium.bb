@@ -2475,8 +2475,8 @@ LayoutRect PaintLayer::boundingBoxForCompositingOverlapTest() const {
   // Should we return the unfragmented bounds for overlap testing? Or perhaps
   // assume fragmented layers always overlap?
   return overlapBoundsIncludeChildren()
-             ? boundingBoxForCompositing(this,
-                                         NeverIncludeTransformForAncestorLayer)
+             ? boundingBoxForCompositingInternal(
+                   this, nullptr, NeverIncludeTransformForAncestorLayer)
              : fragmentsBoundingBox(this);
 }
 
@@ -2484,20 +2484,19 @@ bool PaintLayer::overlapBoundsIncludeChildren() const {
   return hasFilterThatMovesPixels();
 }
 
-static void expandRectForStackingChildren(
-    const PaintLayer* ancestorLayer,
+void PaintLayer::expandRectForStackingChildren(
+    const PaintLayer* compositedLayer,
     LayoutRect& result,
-    PaintLayer::CalculateBoundsOptions options) {
-  DCHECK(ancestorLayer->stackingNode()->isStackingContext() ||
-         !ancestorLayer->stackingNode()->hasPositiveZOrderList());
+    PaintLayer::CalculateBoundsOptions options) const {
+  DCHECK(stackingNode()->isStackingContext() ||
+         !stackingNode()->hasPositiveZOrderList());
 
 #if DCHECK_IS_ON()
   LayerListMutationDetector mutationChecker(
-      const_cast<PaintLayer*>(ancestorLayer)->stackingNode());
+      const_cast<PaintLayer*>(this)->stackingNode());
 #endif
 
-  PaintLayerStackingNodeIterator iterator(*ancestorLayer->stackingNode(),
-                                          AllChildren);
+  PaintLayerStackingNodeIterator iterator(*this->stackingNode(), AllChildren);
   while (PaintLayerStackingNode* node = iterator.next()) {
     // Here we exclude both directly composited layers and squashing layers
     // because those Layers don't paint into the graphics layer
@@ -2508,8 +2507,8 @@ static void expandRectForStackingChildren(
                        IncludeTransformsAndCompositedChildLayers &&
         node->layer()->compositingState() != NotComposited)
       continue;
-    result.unite(
-        node->layer()->boundingBoxForCompositing(ancestorLayer, options));
+    result.unite(node->layer()->boundingBoxForCompositingInternal(
+        compositedLayer, this, options));
   }
 }
 
@@ -2526,18 +2525,22 @@ LayoutRect PaintLayer::physicalBoundingBoxIncludingStackingChildren(
   return result;
 }
 
-LayoutRect PaintLayer::boundingBoxForCompositing(
-    const PaintLayer* ancestorLayer,
+LayoutRect PaintLayer::boundingBoxForCompositing() const {
+  return boundingBoxForCompositingInternal(
+      this, nullptr, MaybeIncludeTransformForAncestorLayer);
+}
+
+LayoutRect PaintLayer::boundingBoxForCompositingInternal(
+    const PaintLayer* compositedLayer,
+    const PaintLayer* stackingParent,
     CalculateBoundsOptions options) const {
   if (!isSelfPaintingLayer())
     return LayoutRect();
 
-  if (!ancestorLayer)
-    ancestorLayer = this;
-
   // FIXME: This could be improved to do a check like
   // hasVisibleNonCompositingDescendantLayers() (bug 92580).
-  if (this != ancestorLayer && !hasVisibleContent() && !hasVisibleDescendant())
+  if (this != compositedLayer && !hasVisibleContent() &&
+      !hasVisibleDescendant())
     return LayoutRect();
 
   // Without composited scrolling, the root layer is the size of the document.
@@ -2551,38 +2554,40 @@ LayoutRect PaintLayer::boundingBoxForCompositing(
   if (layoutObject()->isLayoutFlowThread())
     return LayoutRect();
 
+  const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
+
   // If there is a clip applied by an ancestor to this PaintLayer but below or
   // equal to |ancestorLayer|, use that clip as the bounds rather than the
   // recursive bounding boxes, since the latter may be larger than the actual
   // size. See https://bugs.webkit.org/show_bug.cgi?id=80372 for examples.
-  LayoutRect result = clipper().localClipRect(ancestorLayer);
+  LayoutRect result = clipper().localClipRect(compositedLayer);
   // TODO(chrishtr): avoid converting to IntRect and back.
-  if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
+  if (result == LayoutRect(LayoutRect::infiniteIntRect()))
     result = physicalBoundingBox(LayoutPoint());
 
-    const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
+  expandRectForStackingChildren(compositedLayer, result, options);
 
-    expandRectForStackingChildren(this, result, options);
-
-    // Only enlarge by the filter outsets if we know the filter is going to be
-    // rendered in software.  Accelerated filters will handle their own outsets.
-    if (paintsWithFilters())
-      result = mapLayoutRectForFilter(result);
-  }
+  // Only enlarge by the filter outsets if we know the filter is going to be
+  // rendered in software.  Accelerated filters will handle their own outsets.
+  if (paintsWithFilters())
+    result = mapLayoutRectForFilter(result);
 
   if (transform() && (options == IncludeTransformsAndCompositedChildLayers ||
                       ((paintsWithTransform(GlobalPaintNormalPhase) &&
-                        (this != ancestorLayer ||
+                        (this != compositedLayer ||
                          options == MaybeIncludeTransformForAncestorLayer)))))
     result = transform()->mapRect(result);
 
-  if (shouldFragmentCompositedBounds(ancestorLayer)) {
-    convertFromFlowThreadToVisualBoundingBoxInAncestor(ancestorLayer, result);
+  if (shouldFragmentCompositedBounds(compositedLayer)) {
+    convertFromFlowThreadToVisualBoundingBoxInAncestor(compositedLayer, result);
     return result;
   }
-  LayoutPoint delta;
-  convertToLayerCoords(ancestorLayer, delta);
-  result.moveBy(delta);
+
+  if (stackingParent) {
+    LayoutPoint delta;
+    convertToLayerCoords(stackingParent, delta);
+    result.moveBy(delta);
+  }
   return result;
 }
 

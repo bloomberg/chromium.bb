@@ -116,4 +116,28 @@ TEST_F(PaintLayerClipperTest, NestedContainPaintClip) {
   EXPECT_EQ(LayoutRect(0, 0, 200, 400), layerBounds);
 }
 
+TEST_F(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
+  setBodyInnerHTML(
+      "<div id='transformed'"
+      "    style='will-change: transform; width: 100px; height: 100px;"
+      "    overflow: hidden'>"
+      "  <div id='fixed' "
+      "      style='position: fixed; width: 100px; height: 100px;"
+      "      top: -50px'>"
+      "   </div>"
+      "</div>");
+
+  LayoutRect infiniteRect(LayoutRect::infiniteIntRect());
+  PaintLayer* transformed =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("transformed"))
+          ->layer();
+  PaintLayer* fixed =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("fixed"))->layer();
+
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+            transformed->clipper().localClipRect(transformed));
+  EXPECT_EQ(LayoutRect(0, 50, 100, 100),
+            fixed->clipper().localClipRect(transformed));
+}
+
 }  // namespace blink

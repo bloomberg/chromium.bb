@@ -94,7 +94,8 @@ static void applyClipRects(const ClipRectsContext& context,
     if (layoutObject.isPositioned())
       clipRects.setPosClipRect(
           intersection(newOverflowClip, clipRects.posClipRect()));
-    if (layoutObject.isLayoutView())
+    if (layoutObject.isLayoutView() ||
+        layoutObject.hasTransformRelatedProperty())
       clipRects.setFixedClipRect(
           intersection(newOverflowClip, clipRects.fixedClipRect()));
     if (layoutObject.styleRef().containsPaint()) {
