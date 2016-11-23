@@ -512,6 +512,7 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 #endif  // CONFIG_SUPERTX
 
 #if CONFIG_EXT_TX
+
 #define ALLOW_INTRA_EXT_TX 1
 
 static const int num_ext_tx_set_inter[EXT_TX_SETS_INTER] = { 1, 16, 12, 2 };
@@ -524,18 +525,20 @@ static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter) {
   return (tx_size == TX_16X16 ? 2 : 1);
 }
 
-static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][TX_SIZES] = {
-  { 0, 0, 0, 0 },  // unused
-  { 1, 1, 0, 0 },
-  { 0, 0, 1, 0 },
-};
+static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA]
+                                            [EXT_TX_SIZES] = {
+                                              { 1, 1, 1, 1 },  // unused
+                                              { 1, 1, 0, 0 },
+                                              { 0, 0, 1, 0 },
+                                            };
 
-static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][TX_SIZES] = {
-  { 0, 0, 0, 0 },  // unused
-  { 1, 1, 0, 0 },
-  { 0, 0, 1, 0 },
-  { 0, 0, 0, 1 },
-};
+static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER]
+                                            [EXT_TX_SIZES] = {
+                                              { 1, 1, 1, 1 },  // unused
+                                              { 1, 1, 0, 0 },
+                                              { 0, 0, 1, 0 },
+                                              { 0, 0, 0, 1 },
+                                            };
 
 // Transform types used in each intra set
 static const int ext_tx_used_intra[EXT_TX_SETS_INTRA][TX_TYPES] = {
@@ -757,7 +760,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
     }
     if (is_inter_block(mbmi))
       // UV Inter only
-      return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] == TX_32X32)
+      return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] >= TX_32X32)
                  ? DCT_DCT
                  : mbmi->tx_type;
   }

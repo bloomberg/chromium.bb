@@ -901,7 +901,7 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
     case BLOCK_64X64: build_masks(lfi_n, mip[0], 0, 0, lfm); break;
     case BLOCK_64X32: build_masks(lfi_n, mip[0], 0, 0, lfm);
 #if CONFIG_SUPERTX && CONFIG_TX64X64
-      if (supertx_enabled(&mip->mbmi)) break;
+      if (supertx_enabled(&mip[0]->mbmi)) break;
 #endif  // CONFIG_SUPERTX && CONFIG_TX64X64
       mip2 = mip + mode_info_stride * 4;
       if (4 >= max_rows) break;
@@ -909,7 +909,7 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
       break;
     case BLOCK_32X64: build_masks(lfi_n, mip[0], 0, 0, lfm);
 #if CONFIG_SUPERTX && CONFIG_TX64X64
-      if (supertx_enabled(&mip->mbmi)) break;
+      if (supertx_enabled(&mip[0]->mbmi)) break;
 #endif  // CONFIG_SUPERTX && CONFIG_TX64X64
       mip2 = mip + 4;
       if (4 >= max_cols) break;
@@ -917,8 +917,8 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
       break;
     default:
 #if CONFIG_SUPERTX && CONFIG_TX64X64
-      if (mip->mbmi.tx_size == TX_64X64) {
-        build_masks(cm, mip, 0, 0, lfm);
+      if (mip[0]->mbmi.tx_size == TX_64X64) {
+        build_masks(lfi_n, mip[0], 0, 0, lfm);
       } else {
 #endif  // CONFIG_SUPERTX && CONFIG_TX64X64
         for (idx_32 = 0; idx_32 < 4; mip += offset_32[idx_32], ++idx_32) {

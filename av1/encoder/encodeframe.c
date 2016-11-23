@@ -5108,7 +5108,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
       count16x16_lp += counts->tx_size_implied[4][TX_16X16];
       count32x32_32x32p += counts->tx_size_implied[3][TX_32X32];
       count32x32_lp += counts->tx_size_implied[4][TX_32X32];
-      count64x64_64x64p += counts->tx_size[4][TX_64X64];
+      count64x64_64x64p += counts->tx_size_implied[4][TX_64X64];
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
       if (count4x4 == 0 && count16x16_lp == 0 && count16x16_16x16p == 0 &&
           count32x32_lp == 0 && count32x32_32x32p == 0 &&
