@@ -3792,9 +3792,12 @@
     },
     "bob-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "bob"
         ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
