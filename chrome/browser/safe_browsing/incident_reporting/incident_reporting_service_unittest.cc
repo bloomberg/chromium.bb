@@ -20,7 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -37,7 +37,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/quota_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -196,10 +196,7 @@ class IncidentReportingServiceTest : public testing::Test {
   static const char kFakeExtensionId[];
 
   IncidentReportingServiceTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        thread_task_runner_handle_(task_runner_),
-        ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
-        profile_manager_(TestingBrowserProcess::GetGlobal()),
+      : profile_manager_(TestingBrowserProcess::GetGlobal()),
         on_create_download_finder_action_(
             ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND),
         on_delayed_analysis_action_(ON_DELAYED_ANALYSIS_NO_ACTION),
@@ -235,8 +232,9 @@ class IncidentReportingServiceTest : public testing::Test {
 #endif
 
     instance_.reset(new TestIncidentReportingService(
-        task_runner_, base::Bind(&IncidentReportingServiceTest::PreProfileAdd,
-                                 base::Unretained(this)),
+        base::ThreadTaskRunnerHandle::Get(),
+        base::Bind(&IncidentReportingServiceTest::PreProfileAdd,
+                   base::Unretained(this)),
         base::Bind(&IncidentReportingServiceTest::CollectEnvironmentData,
                    base::Unretained(this)),
         base::Bind(&IncidentReportingServiceTest::CreateDownloadFinder,
@@ -341,11 +339,15 @@ class IncidentReportingServiceTest : public testing::Test {
   bool UploaderDestroyed() const { return uploader_destroyed_; }
   bool DelayedAnalysisRan() const { return delayed_analysis_ran_; }
 
+  // Fakes BrowserThreads and the main MessageLoop.
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  // Replaces the main MessageLoop's TaskRunner with a TaskRunner on which time
+  // is mocked to allow testing of things bound to timers below.
+  base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner_;
+
   extensions::QuotaService::ScopedDisablePurgeForTesting
       disable_purge_for_testing_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle thread_task_runner_handle_;
-  content::TestBrowserThread ui_thread_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<TestIncidentReportingService> instance_;
   base::Closure on_start_upload_callback_;
@@ -629,7 +631,7 @@ TEST_F(IncidentReportingServiceTest, AddIncident) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that environment and extension collection took place.
   EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
@@ -659,7 +661,7 @@ TEST_F(IncidentReportingServiceTest, CoalesceIncidents) {
                 ON_PROFILE_ADDITION_ADD_TWO_INCIDENTS, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that environment and extension collection took place.
   EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
@@ -688,7 +690,7 @@ TEST_F(IncidentReportingServiceTest, NoSafeBrowsing) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that no report upload took place.
   AssertNoUpload();
@@ -708,7 +710,7 @@ TEST_F(IncidentReportingServiceTest, SafeBrowsingFieldTrial) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that environment collection took place.
   EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
@@ -739,7 +741,7 @@ TEST_F(IncidentReportingServiceTest, SafeBrowsingNoFieldTrial) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Downloads and environment data should have not been collected
   // (DownloadFinder will be created, but should be a no-op since no eligible
@@ -765,7 +767,7 @@ TEST_F(IncidentReportingServiceTest, ExtendedReportingNoFieldTrial) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that environment collection took place.
   EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
@@ -800,7 +802,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Downloads and environment data should have not been collected
   // (DownloadFinder will be created, but should be a no-op since no eligible
@@ -821,7 +823,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
       profile, MakeTestIncident("squids"));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that environment collection took place.
   EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
@@ -849,7 +851,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadNoUpload) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that the download finder was run but that no report upload took
   // place.
@@ -873,7 +875,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedIncidentOneUpload) {
                                    ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Assert that no report upload took place.
   AssertNoUpload();
@@ -886,7 +888,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedIncidentOneUpload) {
       profile, MakeTestIncident("leeches"));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that an additional report upload took place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -907,7 +909,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedSameIncidentNoUpload) {
                                    ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Assert that no report upload took place.
   AssertNoUpload();
@@ -919,7 +921,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadPrunedSameIncidentNoUpload) {
   AddTestIncident(profile);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
@@ -940,7 +942,7 @@ TEST_F(IncidentReportingServiceTest, NoProfilesNoUpload) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that the download finder was run but that no report upload took
   // place.
@@ -962,7 +964,7 @@ TEST_F(IncidentReportingServiceTest, OneIncidentOneUpload) {
                                    ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that report upload took place and contained the incident and
   // environment data.
@@ -972,7 +974,7 @@ TEST_F(IncidentReportingServiceTest, OneIncidentOneUpload) {
   AddTestIncident(profile);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
@@ -990,7 +992,7 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
                                    ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that report upload took place and contained the incident and
   // environment data.
@@ -1001,7 +1003,7 @@ TEST_F(IncidentReportingServiceTest, TwoIncidentsTwoUploads) {
       profile, MakeTestIncident("leeches"));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that an additional report upload took place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1019,7 +1021,7 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that report upload took place and contained the incident and
   // environment data.
@@ -1030,7 +1032,7 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
                 ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that a second report upload took place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1052,7 +1054,7 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
   DeleteProfileOnUpload(profile);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that report upload took place and contained the incident and
   // environment data.
@@ -1073,7 +1075,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideNoProfileNoUpload) {
   AddTestIncident(nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // No upload should have taken place.
   AssertNoUpload();
@@ -1094,7 +1096,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUpload) {
   AddTestIncident(nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // An upload should have taken place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1103,7 +1105,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUpload) {
   AddTestIncident(nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
@@ -1126,7 +1128,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // An upload should have taken place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1135,7 +1137,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
   receiver->AddIncidentForProcess(MakeTestIncident("leeches"));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that an additional report upload took place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1152,7 +1154,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideNoUploadAfterProfile) {
   AddTestIncident(nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that no report upload took place.
   AssertNoUpload();
@@ -1162,7 +1164,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideNoUploadAfterProfile) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // No upload should have taken place.
   AssertNoUpload();
@@ -1177,7 +1179,7 @@ TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
   RegisterAnalysis(ON_DELAYED_ANALYSIS_NO_ACTION);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Confirm that the callback was not run.
   ASSERT_FALSE(DelayedAnalysisRan());
@@ -1190,7 +1192,7 @@ TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Confirm that the callback was run.
   ASSERT_TRUE(DelayedAnalysisRan());
@@ -1210,7 +1212,7 @@ TEST_F(IncidentReportingServiceTest, AnalysisAfterProfile) {
   RegisterAnalysis(ON_DELAYED_ANALYSIS_NO_ACTION);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Not run yet.
   ASSERT_FALSE(DelayedAnalysisRan());
@@ -1220,7 +1222,7 @@ TEST_F(IncidentReportingServiceTest, AnalysisAfterProfile) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // And now they have.
   ASSERT_TRUE(DelayedAnalysisRan());
@@ -1241,7 +1243,7 @@ TEST_F(IncidentReportingServiceTest, AnalysisWhenRegisteredWithProfile) {
   RegisterAnalysis(ON_DELAYED_ANALYSIS_NO_ACTION);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Confirm that the callbacks were run.
   ASSERT_TRUE(DelayedAnalysisRan());
@@ -1262,7 +1264,7 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisNoProfileNoUpload) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // The callback should not have been run.
   ASSERT_FALSE(DelayedAnalysisRan());
@@ -1286,7 +1288,7 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisOneUpload) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // The callback should have been run.
   ASSERT_TRUE(DelayedAnalysisRan());
@@ -1298,7 +1300,7 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisOneUpload) {
   AddTestIncident(nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that no additional report upload took place.
   AssertNoUpload();
@@ -1324,7 +1326,7 @@ TEST_F(IncidentReportingServiceTest, NoDownloadNoWaiting) {
   AddTestIncident(profile);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Verify that the download finder was run but that no report upload took
   // place.
@@ -1351,7 +1353,7 @@ TEST_F(IncidentReportingServiceTest, NonBinaryDownloadStillUploads) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Confirm that the callbacks were run.
   ASSERT_TRUE(DelayedAnalysisRan());
@@ -1377,7 +1379,7 @@ TEST_F(IncidentReportingServiceTest, UploadsWithBothDownloadTypes) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Confirm that the callbacks were run.
   ASSERT_TRUE(DelayedAnalysisRan());
@@ -1413,7 +1415,7 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
                     ON_PROFILE_ADDITION_NO_ACTION, std::move(incidents_sent));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   const base::DictionaryValue* new_state =
       profile->GetPrefs()->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
@@ -1438,7 +1440,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // An upload should have taken place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1447,7 +1449,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   receiver->ClearIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // No uploads should have taken place.
   ExpectTestIncidentUploadWithBinaryDownload(0);
@@ -1456,7 +1458,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
   receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // An upload should have taken place.
   ExpectTestIncidentUploadWithBinaryDownload(1);
@@ -1478,7 +1480,7 @@ TEST_F(IncidentReportingServiceTest, ClearProcessIncidentOnCleanState) {
   receiver->ClearIncidentForProcess(MakeTestIncident(nullptr));
 
   // Let all tasks run.
-  task_runner_->RunUntilIdle();
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // No uploads should have taken place.
   ExpectTestIncidentUploadWithBinaryDownload(0);

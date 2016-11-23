@@ -174,6 +174,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Returns whether another update is currently scheduled.
   bool IsUpdateScheduled() const;
 
+  static base::TimeDelta GetUpdateTimeoutForTesting();
+
  protected:
   // Constructs a SafeBrowsingProtocolManager for |delegate| that issues
   // network requests using |request_context_getter|.
@@ -280,7 +282,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Called after the chunks are added to the database.
   void OnAddChunksComplete();
 
- private:
   // Map of GetHash requests to parameters which created it.
   struct FullHashDetails {
     FullHashDetails();

@@ -59,8 +59,9 @@ void RecordUpdateResult(UpdateResult result) {
   UMA_HISTOGRAM_ENUMERATION("SB2.UpdateResult", result, UPDATE_RESULT_MAX);
 }
 
-const char kSBUpdateFrequencyFinchExperiment[] = "SafeBrowsingUpdateFrequency";
-const char kSBUpdateFrequencyFinchParam[] = "NextUpdateIntervalInMinutes";
+constexpr char kSBUpdateFrequencyFinchExperiment[] =
+    "SafeBrowsingUpdateFrequency";
+constexpr char kSBUpdateFrequencyFinchParam[] = "NextUpdateIntervalInMinutes";
 
 // This will be used for experimenting on a small subset of the population to
 // better estimate the benefit of updating the safe browsing hashes more
@@ -80,19 +81,21 @@ base::TimeDelta GetNextUpdateIntervalFromFinch() {
 namespace safe_browsing {
 
 // Minimum time, in seconds, from start up before we must issue an update query.
-static const int kSbTimerStartIntervalSecMin = 60;
+constexpr int kSbTimerStartIntervalSecMin = 60;
 
 // Maximum time, in seconds, from start up before we must issue an update query.
-static const int kSbTimerStartIntervalSecMax = 300;
+constexpr int kSbTimerStartIntervalSecMax = 300;
 
-// The maximum time, in seconds, to wait for a response to an update request.
-static const int kSbMaxUpdateWaitSec = 30;
+// The maximum time to wait for a response to an update request.
+constexpr base::TimeDelta kSbMaxUpdateWait = base::TimeDelta::FromSeconds(30);
 
 // Maximum back off multiplier.
-static const size_t kSbMaxBackOff = 8;
+constexpr size_t kSbMaxBackOff = 8;
 
-const char kGetHashUmaResponseMetricName[] = "SB2.GetHashResponseOrErrorCode";
-const char kGetChunkUmaResponseMetricName[] = "SB2.GetChunkResponseOrErrorCode";
+constexpr char kGetHashUmaResponseMetricName[] =
+    "SB2.GetHashResponseOrErrorCode";
+constexpr char kGetChunkUmaResponseMetricName[] =
+    "SB2.GetChunkResponseOrErrorCode";
 
 // The default SBProtocolManagerFactory.
 class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
@@ -188,6 +191,11 @@ void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
 
 bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {
   return update_timer_.IsRunning();
+}
+
+// static
+base::TimeDelta SafeBrowsingProtocolManager::GetUpdateTimeoutForTesting() {
+  return kSbMaxUpdateWait;
 }
 
 SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {}
@@ -590,8 +598,7 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
   request_->Start();
 
   // Begin the update request timeout.
-  timeout_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(kSbMaxUpdateWaitSec),
-                       this,
+  timeout_timer_.Start(FROM_HERE, kSbMaxUpdateWait, this,
                        &SafeBrowsingProtocolManager::UpdateResponseTimeout);
 
   return true;
@@ -672,8 +679,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   request_->Start();
 
   // Begin the update request timeout.
-  timeout_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(kSbMaxUpdateWaitSec),
-                       this,
+  timeout_timer_.Start(FROM_HERE, kSbMaxUpdateWait, this,
                        &SafeBrowsingProtocolManager::UpdateResponseTimeout);
 }
 
