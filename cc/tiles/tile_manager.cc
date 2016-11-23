@@ -1220,11 +1220,9 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   CHECK(tile_task_manager_);
   DCHECK(IsReadyToActivate());
   DCHECK(IsReadyToDraw());
+  // Signals notifier is already scheduled above in the same function.
   signals_.ready_to_activate = need_to_signal_activate;
   signals_.ready_to_draw = need_to_signal_draw;
-  // TODO(ericrk): Investigate why we need to schedule this (not just call it
-  // inline). http://crbug.com/498439
-  signals_check_notifier_.Schedule();
 }
 
 bool TileManager::MarkTilesOutOfMemory(
