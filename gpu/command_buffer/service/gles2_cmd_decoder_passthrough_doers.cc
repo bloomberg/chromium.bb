@@ -194,7 +194,12 @@ void AppendStringToBuffer(std::vector<uint8_t>* data,
 
 // Implementations of commands
 error::Error GLES2DecoderPassthroughImpl::DoActiveTexture(GLenum texture) {
+  FlushErrors();
   glActiveTexture(texture);
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
   active_texture_unit_ = static_cast<size_t>(texture) - GL_TEXTURE0;
   return error::kNoError;
 }
@@ -266,12 +271,34 @@ error::Error GLES2DecoderPassthroughImpl::DoBindSampler(GLuint unit,
 
 error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
                                                         GLuint texture) {
-  glBindTexture(target, GetTextureServiceID(texture, resources_,
-                                            bind_generates_resource_));
-  if (target == GL_TEXTURE_2D &&
-      active_texture_unit_ < bound_textures_.size()) {
-    bound_textures_[active_texture_unit_] = texture;
+  GLuint service_id =
+      GetTextureServiceID(texture, resources_, bind_generates_resource_);
+
+  FlushErrors();
+
+  glBindTexture(target, service_id);
+
+  // Only update tracking if no error was generated in the bind call
+  if (FlushErrors()) {
+    return error::kNoError;
   }
+
+  // Track the currently bound textures
+  DCHECK(bound_textures_.find(target) != bound_textures_.end());
+  DCHECK(bound_textures_[target].size() > active_texture_unit_);
+  bound_textures_[target][active_texture_unit_] = texture;
+
+  // Create a new texture object to track this texture
+  auto texture_object_iter = resources_->texture_object_map.find(texture);
+  if (texture_object_iter == resources_->texture_object_map.end()) {
+    resources_->texture_object_map.insert(
+        std::make_pair(texture, new TexturePassthrough(service_id, target)));
+  } else {
+    // Shouldn't be possible to get here if this texture has a different
+    // target than the one it was just bound to
+    DCHECK(texture_object_iter->second->target() == target);
+  }
+
   return error::kNoError;
 }
 
@@ -2664,26 +2691,23 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttribDivisorANGLE(
 error::Error GLES2DecoderPassthroughImpl::DoProduceTextureCHROMIUM(
     GLenum target,
     const volatile GLbyte* mailbox) {
-  // TODO(geofflang): validation
+  auto bound_textures_iter = bound_textures_.find(target);
+  if (bound_textures_iter == bound_textures_.end()) {
+    InsertError(GL_INVALID_OPERATION, "Invalid texture target.");
+    return error::kNoError;
+  }
 
-  GLuint texture_client_id = bound_textures_[active_texture_unit_];
-  scoped_refptr<TexturePassthrough> texture;
-
+  GLuint texture_client_id = bound_textures_iter->second[active_texture_unit_];
   auto texture_object_iter =
       resources_->texture_object_map.find(texture_client_id);
-  if (texture_object_iter != resources_->texture_object_map.end()) {
-    texture = texture_object_iter->second.get();
-  } else {
-    GLuint service_id =
-        GetTextureServiceID(texture_client_id, resources_, false);
-    texture = new TexturePassthrough(service_id);
-    resources_->texture_object_map.insert(
-        std::make_pair(texture_client_id, texture));
+  if (texture_object_iter == resources_->texture_object_map.end()) {
+    InsertError(GL_INVALID_OPERATION, "Unknown texture for target.");
+    return error::kNoError;
   }
 
   const Mailbox& mb = Mailbox::FromVolatile(
       *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  mailbox_manager_->ProduceTexture(mb, texture.get());
+  mailbox_manager_->ProduceTexture(mb, texture_object_iter->second.get());
   return error::kNoError;
 }
 
@@ -2691,19 +2715,17 @@ error::Error GLES2DecoderPassthroughImpl::DoProduceTextureDirectCHROMIUM(
     GLuint texture_client_id,
     GLenum target,
     const volatile GLbyte* mailbox) {
-  // TODO(geofflang): validation
-
-  scoped_refptr<TexturePassthrough> texture;
   auto texture_object_iter =
       resources_->texture_object_map.find(texture_client_id);
-  if (texture_object_iter != resources_->texture_object_map.end()) {
-    texture = texture_object_iter->second.get();
-  } else {
-    GLuint service_id =
-        GetTextureServiceID(texture_client_id, resources_, false);
-    texture = new TexturePassthrough(service_id);
-    resources_->texture_object_map.insert(
-        std::make_pair(texture_client_id, texture));
+  if (texture_object_iter == resources_->texture_object_map.end()) {
+    InsertError(GL_INVALID_OPERATION, "Unknown texture for target.");
+    return error::kNoError;
+  }
+
+  scoped_refptr<TexturePassthrough> texture = texture_object_iter->second;
+  if (texture->target() != target) {
+    InsertError(GL_INVALID_OPERATION, "Texture target does not match.");
+    return error::kNoError;
   }
 
   const Mailbox& mb = Mailbox::FromVolatile(
@@ -2715,21 +2737,41 @@ error::Error GLES2DecoderPassthroughImpl::DoProduceTextureDirectCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoConsumeTextureCHROMIUM(
     GLenum target,
     const volatile GLbyte* mailbox) {
-  // TODO(geofflang): validation
+  auto bound_textures_iter = bound_textures_.find(target);
+  if (bound_textures_iter == bound_textures_.end()) {
+    InsertError(GL_INVALID_OPERATION, "Invalid texture target.");
+    return error::kNoError;
+  }
+
+  GLuint client_id = bound_textures_iter->second[active_texture_unit_];
+  if (client_id == 0) {
+    InsertError(GL_INVALID_OPERATION, "Unknown texture for target.");
+    return error::kNoError;
+  }
 
   const Mailbox& mb = Mailbox::FromVolatile(
       *reinterpret_cast<const volatile Mailbox*>(mailbox));
   scoped_refptr<TexturePassthrough> texture = static_cast<TexturePassthrough*>(
       group_->mailbox_manager()->ConsumeTexture(mb));
   if (texture == nullptr) {
-    // TODO(geofflang): error, missing mailbox
+    InsertError(GL_INVALID_OPERATION, "Invalid mailbox name.");
     return error::kNoError;
   }
 
-  GLuint client_id = bound_textures_[active_texture_unit_];
+  if (texture->target() != target) {
+    InsertError(GL_INVALID_OPERATION, "Texture target does not match.");
+    return error::kNoError;
+  }
+
+  // Update id mappings
+  resources_->texture_id_map.RemoveClientID(client_id);
   resources_->texture_id_map.SetIDMapping(client_id, texture->service_id());
   resources_->texture_object_map.erase(client_id);
   resources_->texture_object_map.insert(std::make_pair(client_id, texture));
+
+  // Bind the service id that now represents this texture
+  UpdateTextureBinding(target, client_id, texture->service_id());
+
   return error::kNoError;
 }
 
@@ -2737,25 +2779,35 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLenum target,
     GLuint texture_client_id,
     const volatile GLbyte* mailbox) {
-  // TODO(geofflang): validation
-
   if (resources_->texture_id_map.GetServiceID(texture_client_id, nullptr)) {
     return error::kInvalidArguments;
   }
+
   const Mailbox& mb = Mailbox::FromVolatile(
       *reinterpret_cast<const volatile Mailbox*>(mailbox));
   scoped_refptr<TexturePassthrough> texture = static_cast<TexturePassthrough*>(
       group_->mailbox_manager()->ConsumeTexture(mb));
   if (texture == nullptr) {
-    // TODO(geofflang): error, missing mailbox
+    InsertError(GL_INVALID_OPERATION, "Invalid mailbox name.");
     return error::kNoError;
   }
 
+  if (texture->target() != target) {
+    InsertError(GL_INVALID_OPERATION, "Texture target does not match.");
+    return error::kNoError;
+  }
+
+  // Update id mappings
+  resources_->texture_id_map.RemoveClientID(texture_client_id);
   resources_->texture_id_map.SetIDMapping(texture_client_id,
                                           texture->service_id());
   resources_->texture_object_map.erase(texture_client_id);
   resources_->texture_object_map.insert(
       std::make_pair(texture_client_id, texture));
+
+  // Bind the service id that now represents this texture
+  UpdateTextureBinding(target, texture_client_id, texture->service_id());
+
   return error::kNoError;
 }
 

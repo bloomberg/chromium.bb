@@ -439,10 +439,15 @@ void TextureManager::Destroy(bool have_context) {
 }
 
 TextureBase::TextureBase(GLuint service_id)
-    : service_id_(service_id), mailbox_manager_(nullptr) {}
+    : service_id_(service_id), target_(GL_NONE), mailbox_manager_(nullptr) {}
 
 TextureBase::~TextureBase() {
   DCHECK_EQ(nullptr, mailbox_manager_);
+}
+
+void TextureBase::SetTarget(GLenum target) {
+  DCHECK_EQ(0u, target_);  // you can only set this once.
+  target_ = target;
 }
 
 void TextureBase::DeleteFromMailboxManager() {
@@ -457,8 +462,10 @@ void TextureBase::SetMailboxManager(MailboxManager* mailbox_manager) {
   mailbox_manager_ = mailbox_manager;
 }
 
-TexturePassthrough::TexturePassthrough(GLuint service_id)
-    : TextureBase(service_id), have_context_(true) {}
+TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
+    : TextureBase(service_id), have_context_(true) {
+  TextureBase::SetTarget(target);
+}
 
 TexturePassthrough::~TexturePassthrough() {
   DeleteFromMailboxManager();
@@ -478,7 +485,6 @@ Texture::Texture(GLuint service_id)
       cleared_(true),
       num_uncleared_mips_(0),
       num_npot_faces_(0),
-      target_(0),
       usage_(GL_NONE),
       base_level_(0),
       max_level_(1000),
@@ -746,8 +752,7 @@ void Texture::MarkMipmapsGenerated() {
 }
 
 void Texture::SetTarget(GLenum target, GLint max_levels) {
-  DCHECK_EQ(0u, target_);  // you can only set this once.
-  target_ = target;
+  TextureBase::SetTarget(target);
   size_t num_faces = (target == GL_TEXTURE_CUBE_MAP) ? 6 : 1;
   face_infos_.resize(num_faces);
   for (size_t ii = 0; ii < num_faces; ++ii) {

@@ -287,6 +287,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
 
+  void UpdateTextureBinding(GLenum target, GLuint client_id, GLuint service_id);
+
   int commands_to_process_;
 
   DebugMarkerManager debug_marker_manager_;
@@ -347,7 +349,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;
-  std::vector<GLuint> bound_textures_;
+  std::unordered_map<GLenum, std::vector<GLuint>> bound_textures_;
 
   // Track the service-id to type of all queries for validation
   struct QueryInfo {

@@ -191,7 +191,12 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &num_texture_units);
 
   active_texture_unit_ = 0;
-  bound_textures_.resize(num_texture_units, 0);
+  bound_textures_[GL_TEXTURE_2D].resize(num_texture_units, 0);
+  bound_textures_[GL_TEXTURE_CUBE_MAP].resize(num_texture_units, 0);
+  if (feature_info_->IsWebGL2OrES3Context()) {
+    bound_textures_[GL_TEXTURE_2D_ARRAY].resize(num_texture_units, 0);
+    bound_textures_[GL_TEXTURE_3D].resize(num_texture_units, 0);
+  }
 
   if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
       feature_info_->feature_flags().khr_debug) {
@@ -819,6 +824,33 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
   // If glFinish() has been called, all of our queries should be completed.
   DCHECK(!did_finish || pending_queries_.empty());
   return error::kNoError;
+}
+
+void GLES2DecoderPassthroughImpl::UpdateTextureBinding(GLenum target,
+                                                       GLuint client_id,
+                                                       GLuint service_id) {
+  size_t cur_texture_unit = active_texture_unit_;
+  const auto& target_bound_textures = bound_textures_.at(target);
+  for (size_t bound_texture_index = 0;
+       bound_texture_index < target_bound_textures.size();
+       bound_texture_index++) {
+    GLuint bound_client_id = target_bound_textures[bound_texture_index];
+    if (bound_client_id == client_id) {
+      // Update the active texture unit if needed
+      if (bound_texture_index != cur_texture_unit) {
+        glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + bound_texture_index));
+        cur_texture_unit = bound_texture_index;
+      }
+
+      // Update the texture binding
+      glBindTexture(target, service_id);
+    }
+  }
+
+  // Reset the active texture unit if it was changed
+  if (cur_texture_unit != active_texture_unit_) {
+    glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + active_texture_unit_));
+  }
 }
 
 #define GLES2_CMD_OP(name)                                               \
