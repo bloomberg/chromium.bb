@@ -106,9 +106,9 @@ class CapsLockDefaultView : public ActionableView {
   }
 
   // ActionableView:
-  void OnThemeChanged() override {
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    ActionableView::OnNativeThemeChanged(theme);
     UpdateStyle();
-    ActionableView::OnThemeChanged();
   }
 
  private:
