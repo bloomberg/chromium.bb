@@ -464,6 +464,9 @@ post_process_cmdline() {
     # Enable filter_7bit by default
     soft_enable filter_7bit
 
+    # Enable reference_buffer by default
+    soft_enable reference_buffer
+
     # Enable daala_ec by default
     ! enabled ans && soft_enable daala_ec
 
