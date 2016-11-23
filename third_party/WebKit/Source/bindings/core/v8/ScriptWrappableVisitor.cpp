@@ -29,6 +29,7 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor() {}
 void ScriptWrappableVisitor::TracePrologue() {
   // This CHECK ensures that wrapper tracing is not started from scopes
   // that forbid GC execution, e.g., constructors.
+  CHECK(ThreadState::current());
   CHECK(!ThreadState::current()->isGCForbidden());
   performCleanup();
 
@@ -41,10 +42,12 @@ void ScriptWrappableVisitor::TracePrologue() {
 }
 
 void ScriptWrappableVisitor::EnterFinalPause() {
+  CHECK(ThreadState::current());
   ActiveScriptWrappable::traceActiveScriptWrappables(m_isolate, this);
 }
 
 void ScriptWrappableVisitor::TraceEpilogue() {
+  CHECK(ThreadState::current());
   DCHECK(m_markingDeque.isEmpty());
 #if DCHECK_IS_ON()
   ScriptWrappableVisitorVerifier verifier;
@@ -58,11 +61,13 @@ void ScriptWrappableVisitor::TraceEpilogue() {
 }
 
 void ScriptWrappableVisitor::AbortTracing() {
+  CHECK(ThreadState::current());
   m_shouldCleanup = true;
   performCleanup();
 }
 
 size_t ScriptWrappableVisitor::NumberOfWrappersToTrace() {
+  CHECK(ThreadState::current());
   return m_markingDeque.size();
 }
 
@@ -163,6 +168,7 @@ void ScriptWrappableVisitor::RegisterV8Reference(
 void ScriptWrappableVisitor::RegisterV8References(
     const std::vector<std::pair<void*, void*>>&
         internalFieldsOfPotentialWrappers) {
+  CHECK(ThreadState::current());
   // TODO(hlopko): Visit the vector in the V8 instead of passing it over if
   // there is no performance impact
   for (auto& pair : internalFieldsOfPotentialWrappers) {
@@ -176,6 +182,7 @@ bool ScriptWrappableVisitor::AdvanceTracing(
   // Do not drain the marking deque in a state where we can generally not
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
+  CHECK(ThreadState::current());
   DCHECK(!ThreadState::current()->isGCForbidden());
   DCHECK(m_tracingInProgress);
   WTF::AutoReset<bool>(&m_advancingTracing, true);
