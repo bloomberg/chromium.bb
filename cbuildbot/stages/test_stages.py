@@ -329,7 +329,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     # Wait for UploadHWTestArtifacts to generate and upload the artifacts.
     if not self.GetParallel('test_artifacts_uploaded',
                             pretty_name='payloads and test artifacts'):
-      logging.PrintBuildbotStepWarnings('missing test artifacts')
+      logging.PrintBuildbotStepWarnings()
+      logging.warning('missing test artifacts')
       logging.warning('Cannot run %s because UploadTestArtifacts failed. '
                       'See UploadTestArtifacts for details.' % self.stage_name)
       return False
