@@ -227,6 +227,10 @@ struct gl_renderer {
 	struct wl_signal destroy_signal;
 
 	struct wl_listener output_destroy_listener;
+
+	int has_dmabuf_import_modifiers;
+	PFNEGLQUERYDMABUFFORMATSEXTPROC query_dmabuf_formats;
+	PFNEGLQUERYDMABUFMODIFIERSEXTPROC query_dmabuf_modifiers;
 };
 
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
@@ -1866,6 +1870,70 @@ import_dmabuf(struct gl_renderer *gr,
 }
 
 static bool
+gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
+				int **formats, int *num_formats)
+{
+	struct gl_renderer *gr = get_renderer(wc);
+	EGLint num;
+
+	assert(gr->has_dmabuf_import);
+
+	if (!gr->has_dmabuf_import_modifiers ||
+	    !gr->query_dmabuf_formats(gr->egl_display, 0, NULL, &num)) {
+		*num_formats = 0;
+		return false;
+	}
+
+	*formats = calloc(num, sizeof(int));
+	if (*formats == NULL) {
+		*num_formats = 0;
+		return false;
+	}
+	if (!gr->query_dmabuf_formats(gr->egl_display, num, *formats,
+			(EGLint*) &num)) {
+		*num_formats = 0;
+		free(*formats);
+		return false;
+	}
+
+	*num_formats = num;
+	return true;
+}
+
+static bool
+gl_renderer_query_dmabuf_modifiers(struct weston_compositor *wc, int format,
+					uint64_t **modifiers,
+					int *num_modifiers)
+{
+	struct gl_renderer *gr = get_renderer(wc);
+	int num;
+
+	assert(gr->has_dmabuf_import);
+
+	if (!gr->has_dmabuf_import_modifiers ||
+		!gr->query_dmabuf_modifiers(gr->egl_display, format, 0, NULL,
+					    NULL, &num)) {
+		*num_modifiers = 0;
+		return false;
+	}
+
+	*modifiers = calloc(num, sizeof(uint64_t));
+	if (*modifiers == NULL) {
+		*num_modifiers = 0;
+		return false;
+	}
+	if (!gr->query_dmabuf_modifiers(gr->egl_display, format,
+				num, *modifiers, NULL, &num)) {
+		*num_modifiers = 0;
+		free(*modifiers);
+		return false;
+	}
+
+	*num_modifiers = num;
+	return true;
+}
+
+static bool
 gl_renderer_import_dmabuf(struct weston_compositor *ec,
 			  struct linux_dmabuf_buffer *dmabuf)
 {
@@ -2855,6 +2923,7 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 
 	gr->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
 	gr->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
+
 	gr->bind_display =
 		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
 	gr->unbind_display =
@@ -2907,6 +2976,15 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 
 	if (weston_check_egl_extension(extensions, "EGL_EXT_image_dma_buf_import"))
 		gr->has_dmabuf_import = 1;
+
+	if (weston_check_egl_extension(extensions,
+				"EGL_EXT_image_dma_buf_import_modifiers")) {
+		gr->query_dmabuf_formats =
+			(void *) eglGetProcAddress("eglQueryDmaBufFormatsEXT");
+		gr->query_dmabuf_modifiers =
+			(void *) eglGetProcAddress("eglQueryDmaBufModifiersEXT");
+		gr->has_dmabuf_import_modifiers = 1;
+	}
 
 	if (weston_check_egl_extension(extensions, "GL_EXT_texture_rg"))
 		gr->has_gl_texture_rg = 1;
@@ -3146,8 +3224,13 @@ gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 		goto fail_with_error;
 
 	wl_list_init(&gr->dmabuf_images);
-	if (gr->has_dmabuf_import)
+	if (gr->has_dmabuf_import) {
 		gr->base.import_dmabuf = gl_renderer_import_dmabuf;
+		gr->base.query_dmabuf_formats =
+			gl_renderer_query_dmabuf_formats;
+		gr->base.query_dmabuf_modifiers =
+			gl_renderer_query_dmabuf_modifiers;
+	}
 
 	if (gr->has_surfaceless_context) {
 		weston_log("EGL_KHR_surfaceless_context available\n");

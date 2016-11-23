@@ -747,6 +747,13 @@ struct weston_renderer {
 	/** See weston_compositor_import_dmabuf() */
 	bool (*import_dmabuf)(struct weston_compositor *ec,
 			      struct linux_dmabuf_buffer *buffer);
+
+	bool (*query_dmabuf_formats)(struct weston_compositor *ec,
+				int **formats, int *num_formats);
+
+	bool (*query_dmabuf_modifiers)(struct weston_compositor *ec,
+				int format, uint64_t **modifiers,
+				int *num_modifiers);
 };
 
 enum weston_capability {
