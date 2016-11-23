@@ -40,7 +40,6 @@ extern "C" {
 #define WL_HIDE_DEPRECATED
 #include <wayland-server.h>
 
-#include "version.h"
 #include "matrix.h"
 #include "config-parser.h"
 #include "zalloc.h"
