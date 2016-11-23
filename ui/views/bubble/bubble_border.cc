@@ -363,11 +363,14 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 
 gfx::Insets BubbleBorder::GetInsets() const {
   if (UseMd()) {
-     gfx::Insets blur(kLargeShadowBlur);
-     gfx::Insets offset(-kLargeShadowVerticalOffset, 0,
-                        kLargeShadowVerticalOffset, 0);
-     gfx::Insets border(kBorderThicknessDip);
-     return blur + offset;
+    if (shadow_ == NO_ASSETS)
+      return gfx::Insets();
+
+    gfx::Insets blur(kLargeShadowBlur);
+    gfx::Insets offset(-kLargeShadowVerticalOffset, 0,
+                       kLargeShadowVerticalOffset, 0);
+    gfx::Insets border(kBorderThicknessDip);
+    return blur + offset;
   }
 
   // The insets contain the stroke and shadow pixels outside the bubble fill.
@@ -505,7 +508,17 @@ void BubbleBorder::DrawArrow(gfx::Canvas* canvas,
   canvas->DrawPath(path, paint);
 }
 
+SkRRect BubbleBorder::GetClientRect(const View& view) const {
+  gfx::RectF bounds(view.GetLocalBounds());
+  bounds.Inset(GetInsets());
+  return SkRRect::MakeRectXY(gfx::RectFToSkRect(bounds),
+                             GetBorderCornerRadius(), GetBorderCornerRadius());
+}
+
 void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
+  if (shadow_ == NO_ASSETS)
+    return PaintNoAssets(view, canvas);
+
   gfx::ScopedCanvas scoped(canvas);
 
   SkPaint paint;
@@ -521,22 +534,22 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
   paint.setColor(SkColorSetA(SK_ColorBLACK, 0x26));
   paint.setAntiAlias(true);
 
-  gfx::RectF bounds(view.GetLocalBounds());
-  bounds.Inset(GetInsets());
-  // Clip out a round rect so the fill and shadow don't draw over the contents
-  // of the bubble.
-  SkRRect clip_r_rect =
-      SkRRect::MakeRectXY(gfx::RectFToSkRect(bounds), GetBorderCornerRadius(),
-                          GetBorderCornerRadius());
-  canvas->sk_canvas()->clipRRect(clip_r_rect, SkRegion::kDifference_Op,
+  SkRRect r_rect = GetClientRect(view);
+  canvas->sk_canvas()->clipRRect(r_rect, SkRegion::kDifference_Op,
                                  true /*doAntiAlias*/);
 
   // The border is drawn outside the content area.
-  SkRRect r_rect = clip_r_rect;
   const SkScalar one_pixel =
       SkFloatToScalar(kBorderStrokeThicknessPx / canvas->image_scale());
   r_rect.inset(-one_pixel, -one_pixel);
   canvas->sk_canvas()->drawRRect(r_rect, paint);
+}
+
+void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {
+  gfx::ScopedCanvas scoped(canvas);
+  canvas->sk_canvas()->clipRRect(GetClientRect(view), SkRegion::kDifference_Op,
+                                 true /*doAntiAlias*/);
+  canvas->sk_canvas()->drawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 }
 
 internal::BorderImages* BubbleBorder::GetImagesForTest() const {
