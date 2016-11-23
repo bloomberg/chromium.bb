@@ -1904,6 +1904,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
       EXPECT_CALL(*gl, Disable(GL_STENCIL_TEST)).InSequence(seq);
       EXPECT_CALL(*gl, Enable(GL_BLEND)).InSequence(seq);
       EXPECT_CALL(*gl, Disable(GL_SCISSOR_TEST)).InSequence(seq);
+      EXPECT_CALL(*gl, Scissor(0, 0, 0, 0)).InSequence(seq);
 
       // Partial frame, we should use a scissor to swap only that part when
       // partial swap is enabled.

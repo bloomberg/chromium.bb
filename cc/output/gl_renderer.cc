@@ -380,7 +380,6 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
       is_scissor_enabled_(false),
-      scissor_rect_needs_reset_(true),
       stencil_shadow_(false),
       blend_shadow_(false),
       highp_threshold_min_(highp_threshold_min),
@@ -3223,15 +3222,27 @@ void GLRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
 
   // Don't unnecessarily ask the context to change the scissor, because it
   // may cause undesired GPU pipeline flushes.
-  if (scissor_rect == scissor_rect_ && !scissor_rect_needs_reset_)
+  if (scissor_rect == scissor_rect_) {
+#if DCHECK_IS_ON()
+    // GetIntegerv doesn't modify the output array when GL context is lost or
+    // in test mock. Also our GL wrapper requires output to be initialized with
+    // 0 or -1. Assuming lost context if the output is still -1.
+    GLint actual_scissor[4] = {-1};
+    gl_->GetIntegerv(GL_SCISSOR_BOX, actual_scissor);
+    if (actual_scissor[0] == -1)
+      return;
+    DCHECK(scissor_rect.x() == actual_scissor[0] &&
+           scissor_rect.y() == actual_scissor[1] &&
+           scissor_rect.width() == actual_scissor[2] &&
+           scissor_rect.height() == actual_scissor[3]);
+#endif
     return;
+  }
 
   scissor_rect_ = scissor_rect;
   FlushTextureQuadCache(SHARED_BINDING);
   gl_->Scissor(scissor_rect.x(), scissor_rect.y(), scissor_rect.width(),
                scissor_rect.height());
-
-  scissor_rect_needs_reset_ = false;
 }
 
 void GLRenderer::SetViewport() {
@@ -3723,7 +3734,7 @@ void GLRenderer::CleanupSharedObjects() {
 
 void GLRenderer::ReinitializeGLState() {
   is_scissor_enabled_ = false;
-  scissor_rect_needs_reset_ = true;
+  scissor_rect_ = gfx::Rect();
   stencil_shadow_ = false;
   blend_shadow_ = true;
   program_shadow_ = 0;
@@ -3755,13 +3766,13 @@ void GLRenderer::RestoreGLState() {
   else
     gl_->Disable(GL_BLEND);
 
-  if (is_scissor_enabled_) {
+  if (is_scissor_enabled_)
     gl_->Enable(GL_SCISSOR_TEST);
-    gl_->Scissor(scissor_rect_.x(), scissor_rect_.y(), scissor_rect_.width(),
-                 scissor_rect_.height());
-  } else {
+  else
     gl_->Disable(GL_SCISSOR_TEST);
-  }
+
+  gl_->Scissor(scissor_rect_.x(), scissor_rect_.y(), scissor_rect_.width(),
+               scissor_rect_.height());
 }
 
 bool GLRenderer::IsContextLost() {
