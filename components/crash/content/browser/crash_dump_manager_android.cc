@@ -101,37 +101,44 @@ void CrashDumpManager::ProcessMinidump(
   // TODO(wnwen): If these numbers match up to TabWebContentsObserver's
   //     TabRendererCrashStatus histogram, then remove that one as this is more
   //     accurate with more detail.
-  if (process_type == content::PROCESS_TYPE_RENDERER &&
+  if ((process_type == content::PROCESS_TYPE_RENDERER ||
+       process_type == content::PROCESS_TYPE_GPU) &&
       app_state != base::android::APPLICATION_STATE_UNKNOWN) {
-    ExitStatus renderer_exit_status;
+    ExitStatus exit_status;
     bool is_running =
         (app_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
     bool is_paused =
         (app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
     if (file_size == 0) {
       if (is_running) {
-        renderer_exit_status = EMPTY_MINIDUMP_WHILE_RUNNING;
+        exit_status = EMPTY_MINIDUMP_WHILE_RUNNING;
       } else if (is_paused) {
-        renderer_exit_status = EMPTY_MINIDUMP_WHILE_PAUSED;
+        exit_status = EMPTY_MINIDUMP_WHILE_PAUSED;
       } else {
-        renderer_exit_status = EMPTY_MINIDUMP_WHILE_BACKGROUND;
+        exit_status = EMPTY_MINIDUMP_WHILE_BACKGROUND;
       }
     } else {
       if (is_running) {
-        renderer_exit_status = VALID_MINIDUMP_WHILE_RUNNING;
+        exit_status = VALID_MINIDUMP_WHILE_RUNNING;
       } else if (is_paused) {
-        renderer_exit_status = VALID_MINIDUMP_WHILE_PAUSED;
+        exit_status = VALID_MINIDUMP_WHILE_PAUSED;
       } else {
-        renderer_exit_status = VALID_MINIDUMP_WHILE_BACKGROUND;
+        exit_status = VALID_MINIDUMP_WHILE_BACKGROUND;
       }
     }
-    if (termination_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
-      UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
-                                renderer_exit_status,
-                                ExitStatus::MINIDUMP_STATUS_COUNT);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatusUnbound",
-                                renderer_exit_status,
+    if (process_type == content::PROCESS_TYPE_RENDERER) {
+      if (termination_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
+        UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
+                                  exit_status,
+                                  ExitStatus::MINIDUMP_STATUS_COUNT);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatusUnbound",
+                                  exit_status,
+                                  ExitStatus::MINIDUMP_STATUS_COUNT);
+      }
+    } else if (process_type == content::PROCESS_TYPE_GPU) {
+      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessDetailedExitStatus",
+                                exit_status,
                                 ExitStatus::MINIDUMP_STATUS_COUNT);
     }
   }
@@ -172,7 +179,7 @@ void CrashDumpManager::BrowserChildProcessHostDisconnected(
               data.handle,
               static_cast<content::ProcessType>(data.process_type),
               base::TERMINATION_STATUS_MAX_ENUM,
-              base::android::APPLICATION_STATE_UNKNOWN);
+              base::android::ApplicationStatusListener::GetState());
 }
 
 void CrashDumpManager::BrowserChildProcessCrashed(
