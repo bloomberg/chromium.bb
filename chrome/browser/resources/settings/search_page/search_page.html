@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="/controls/extension_controlled_indicator.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/search_engines_page/search_engines_page.html">
 <link rel="import" href="/search_engines_page/search_engines_browser_proxy.html">
@@ -12,19 +13,41 @@
 
 <dom-module id="settings-search-page">
   <template>
-    <style include="settings-shared md-select"></style>
+    <style include="settings-shared md-select">
+      #search-wrapper {
+        align-items: center;
+        display: flex;
+        min-height: var(--settings-box-min-height);
+      }
+    </style>
     <settings-animated-pages id="pages" section="search">
       <neon-animatable route-path="default">
-        <div class="settings-box first">
-          <p class="start">$i18n{searchExplanation}</p>
-          <div>
-            <select class="md-select" on-change="onChange_">
-              <template is="dom-repeat" items="[[searchEngines_]]">
-                <option selected$="[[item.default]]">[[item.name]]</option>
-              </template>
-            </select>
-            <span class="md-select-underline"></span>
+        <div class="settings-box first block">
+          <div id="search-wrapper">
+            <p class="start">$i18n{searchExplanation}</p>
+            <div>
+              <select class="md-select" on-change="onChange_"
+                  disabled$="[[
+                      prefs.default_search_provider.enabled.extensionId]]">
+                <template is="dom-repeat" items="[[searchEngines_]]">
+                  <option selected$="[[item.default]]">[[item.name]]</option>
+                </template>
+              </select>
+              <span class="md-select-underline"></span>
+            </div>
           </div>
+          <template is="dom-if"
+              if="[[prefs.default_search_provider.enabled.extensionId]]">
+            <extension-controlled-indicator
+                extension-id="[[
+                    prefs.default_search_provider.enabled.extensionId]]"
+                extension-name="[[
+                    prefs.default_search_provider.enabled.controlledByName]]"
+                extension-can-be-disabled="[[
+                    prefs.default_search_provider.enabled.extensionCanBeDisabled]]"
+                on-disable-extension="onDisableExtension_">
+            </extension-controlled-indicator>
+          </template>
         </div>
         <div id="subpage-trigger" class="settings-box two-line"
             on-tap="onManageSearchEnginesTap_" actionable>

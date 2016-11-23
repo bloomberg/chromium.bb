@@ -52,13 +52,13 @@
 <if expr="chromeos">
       <template is="dom-if" if="[[showPage(pageVisibility.device)]]" restamp>
         <settings-section page-title="$i18n{devicePageTitle}" section="device">
-          <settings-device-page  prefs="{{prefs}}"></settings-device-page>
+          <settings-device-page prefs="{{prefs}}"></settings-device-page>
         </settings-section>
       </template>
 </if>
       <template is="dom-if" if="[[showPage(pageVisibility.search)]]" restamp>
         <settings-section page-title="$i18n{searchPageTitle}" section="search">
-          <settings-search-page></settings-search-page>
+          <settings-search-page prefs="[[prefs]]"></settings-search-page>
         </settings-section>
       </template>
 <if expr="not chromeos">

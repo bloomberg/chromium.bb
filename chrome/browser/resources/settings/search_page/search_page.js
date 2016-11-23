@@ -10,6 +10,8 @@ Polymer({
   is: 'settings-search-page',
 
   properties: {
+    prefs: Object,
+
     /**
      * List of default search engines available.
      * @private {!Array<!SearchEngine>}
@@ -18,10 +20,10 @@ Polymer({
       type: Array,
       value: function() { return []; }
     },
-
-    /** @private {!settings.SearchEnginesBrowserProxy} */
-    browserProxy_: Object,
   },
+
+  /** @private {?settings.SearchEnginesBrowserProxy} */
+  browserProxy_: null,
 
   /** @override */
   created: function() {
@@ -38,14 +40,19 @@ Polymer({
   },
 
   /** @private */
-  onManageSearchEnginesTap_: function() {
-    settings.navigateTo(settings.Route.SEARCH_ENGINES);
-  },
-
-  /** @private */
-  onChange_: function(e) {
+  onChange_: function() {
     var select = /** @type {!HTMLSelectElement} */ (this.$$('select'));
     var searchEngine = this.searchEngines_[select.selectedIndex];
     this.browserProxy_.setDefaultSearchEngine(searchEngine.modelIndex);
+  },
+
+  /** @private */
+  onDisableExtension_: function() {
+    this.fire('refresh-pref', 'default_search_provider.enabled');
+  },
+
+  /** @private */
+  onManageSearchEnginesTap_: function() {
+    settings.navigateTo(settings.Route.SEARCH_ENGINES);
   },
 });

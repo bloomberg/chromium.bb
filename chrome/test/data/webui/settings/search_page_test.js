@@ -73,6 +73,31 @@ cr.define('settings_search_page', function() {
           });
         });
       });
+
+      test('ControlledByExtension', function() {
+        return browserProxy.whenCalled('getSearchEnginesList').then(function() {
+          var selectElement = page.$$('select');
+          assertFalse(selectElement.disabled);
+          assertFalse(!!page.$$('extension-controlled-indicator'));
+
+          page.prefs = {
+            default_search_provider: {
+              enabled: {
+                controlledBy: chrome.settingsPrivate.ControlledBy.EXTENSION,
+                controlledByName: 'fake extension name',
+                enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+                extensionId: 'fake extension id',
+                extensionCanBeDisabled: true,
+                value: true,
+              },
+            },
+          };
+          Polymer.dom.flush();
+
+          assertTrue(selectElement.disabled);
+          assertTrue(!!page.$$('extension-controlled-indicator'));
+        });
+      });
     });
   }
 

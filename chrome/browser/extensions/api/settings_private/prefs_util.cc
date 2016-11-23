@@ -162,6 +162,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[translate::TranslatePrefs::kPrefTranslateBlockedLanguages] =
       settings_private::PrefType::PREF_TYPE_LIST;
 
+  // Search page.
+  (*s_whitelist)[::prefs::kDefaultSearchProviderEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Site Settings prefs.
   (*s_whitelist)[::prefs::kBlockThirdPartyCookies] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
