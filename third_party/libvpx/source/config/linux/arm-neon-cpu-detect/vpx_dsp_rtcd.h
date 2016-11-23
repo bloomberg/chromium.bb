@@ -75,17 +75,20 @@ void vpx_d117_predictor_8x8_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *a
 #define vpx_d117_predictor_8x8 vpx_d117_predictor_8x8_c
 
 void vpx_d135_predictor_16x16_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-#define vpx_d135_predictor_16x16 vpx_d135_predictor_16x16_c
+void vpx_d135_predictor_16x16_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+RTCD_EXTERN void (*vpx_d135_predictor_16x16)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_d135_predictor_32x32_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-#define vpx_d135_predictor_32x32 vpx_d135_predictor_32x32_c
+void vpx_d135_predictor_32x32_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+RTCD_EXTERN void (*vpx_d135_predictor_32x32)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_d135_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 void vpx_d135_predictor_4x4_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 RTCD_EXTERN void (*vpx_d135_predictor_4x4)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_d135_predictor_8x8_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-#define vpx_d135_predictor_8x8 vpx_d135_predictor_8x8_c
+void vpx_d135_predictor_8x8_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+RTCD_EXTERN void (*vpx_d135_predictor_8x8)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_d153_predictor_16x16_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 #define vpx_d153_predictor_16x16 vpx_d153_predictor_16x16_c
@@ -128,7 +131,8 @@ void vpx_d45_predictor_16x16_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_
 RTCD_EXTERN void (*vpx_d45_predictor_16x16)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_d45_predictor_32x32_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-#define vpx_d45_predictor_32x32 vpx_d45_predictor_32x32_c
+void vpx_d45_predictor_32x32_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+RTCD_EXTERN void (*vpx_d45_predictor_32x32)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_d45_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 void vpx_d45_predictor_4x4_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -329,7 +333,7 @@ void vpx_idct32x32_1024_add_neon(const tran_low_t *input, uint8_t *dest, int des
 RTCD_EXTERN void (*vpx_idct32x32_1024_add)(const tran_low_t *input, uint8_t *dest, int dest_stride);
 
 void vpx_idct32x32_135_add_c(const tran_low_t *input, uint8_t *dest, int dest_stride);
-void vpx_idct32x32_1024_add_neon(const tran_low_t *input, uint8_t *dest, int dest_stride);
+void vpx_idct32x32_135_add_neon(const tran_low_t *input, uint8_t *dest, int dest_stride);
 RTCD_EXTERN void (*vpx_idct32x32_135_add)(const tran_low_t *input, uint8_t *dest, int dest_stride);
 
 void vpx_idct32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int dest_stride);
@@ -861,10 +865,18 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_NEON) vpx_convolve_avg = vpx_convolve_avg_neon;
     vpx_convolve_copy = vpx_convolve_copy_c;
     if (flags & HAS_NEON) vpx_convolve_copy = vpx_convolve_copy_neon;
+    vpx_d135_predictor_16x16 = vpx_d135_predictor_16x16_c;
+    if (flags & HAS_NEON) vpx_d135_predictor_16x16 = vpx_d135_predictor_16x16_neon;
+    vpx_d135_predictor_32x32 = vpx_d135_predictor_32x32_c;
+    if (flags & HAS_NEON) vpx_d135_predictor_32x32 = vpx_d135_predictor_32x32_neon;
     vpx_d135_predictor_4x4 = vpx_d135_predictor_4x4_c;
     if (flags & HAS_NEON) vpx_d135_predictor_4x4 = vpx_d135_predictor_4x4_neon;
+    vpx_d135_predictor_8x8 = vpx_d135_predictor_8x8_c;
+    if (flags & HAS_NEON) vpx_d135_predictor_8x8 = vpx_d135_predictor_8x8_neon;
     vpx_d45_predictor_16x16 = vpx_d45_predictor_16x16_c;
     if (flags & HAS_NEON) vpx_d45_predictor_16x16 = vpx_d45_predictor_16x16_neon;
+    vpx_d45_predictor_32x32 = vpx_d45_predictor_32x32_c;
+    if (flags & HAS_NEON) vpx_d45_predictor_32x32 = vpx_d45_predictor_32x32_neon;
     vpx_d45_predictor_4x4 = vpx_d45_predictor_4x4_c;
     if (flags & HAS_NEON) vpx_d45_predictor_4x4 = vpx_d45_predictor_4x4_neon;
     vpx_d45_predictor_8x8 = vpx_d45_predictor_8x8_c;
@@ -932,7 +944,7 @@ static void setup_rtcd_internal(void)
     vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_c;
     if (flags & HAS_NEON) vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_neon;
     vpx_idct32x32_135_add = vpx_idct32x32_135_add_c;
-    if (flags & HAS_NEON) vpx_idct32x32_135_add = vpx_idct32x32_1024_add_neon;
+    if (flags & HAS_NEON) vpx_idct32x32_135_add = vpx_idct32x32_135_add_neon;
     vpx_idct32x32_1_add = vpx_idct32x32_1_add_c;
     if (flags & HAS_NEON) vpx_idct32x32_1_add = vpx_idct32x32_1_add_neon;
     vpx_idct32x32_34_add = vpx_idct32x32_34_add_c;

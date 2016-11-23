@@ -38,9 +38,9 @@ if (is_nacl) {
   # vpx_config.asm
   if (is_ios && current_cpu == "arm") {
     os_category = current_os
-  } else if (is_posix) { # Should cover linux, mac, and the ios simulator.
+  } else if (is_posix) {  # Should cover linux, mac, and the ios simulator.
     os_category = "linux"
-  } else { # This should only match windows.
+  } else {  # This should only match windows.
     os_category = current_os
   }
   platform_include_dir =
