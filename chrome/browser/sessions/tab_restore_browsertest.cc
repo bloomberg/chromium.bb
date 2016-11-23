@@ -673,9 +673,16 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
       0);
 }
 
+// https://crbug.com/667932: Flakiness on linux_chromium_asan_rel_ng bot.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_RestoreTabWithSpecialURLOnBack DISABLED_RestoreTabWithSpecialURLOnBack
+#else
+#define MAYBE_RestoreTabWithSpecialURLOnBack RestoreTabWithSpecialURLOnBack
+#endif
+
 // Restore tab with special URL in its navigation history, go back to that
 // entry and see that it loads properly. See http://crbug.com/31905
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURLOnBack) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL http_url(embedded_test_server()->GetURL("/title1.html"));
