@@ -1601,7 +1601,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     m_bitfields.setFullPaintInvalidationReason(PaintInvalidationNone);
   }
 
-  virtual void clearPaintInvalidationFlags();
+  void clearPaintInvalidationFlags();
 
   bool mayNeedPaintInvalidation() const {
     return m_bitfields.mayNeedPaintInvalidation();
