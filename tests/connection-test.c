@@ -130,6 +130,41 @@ TEST(connection_queue)
 	close(s[1]);
 }
 
+static void
+va_list_wrapper(const char *signature, union wl_argument *args, int count, ...)
+{
+	va_list ap;
+	va_start(ap, count);
+	wl_argument_from_va_list(signature, args, count, ap);
+	va_end(ap);
+}
+
+TEST(argument_from_va_list)
+{
+	union wl_argument args[WL_CLOSURE_MAX_ARGS];
+	struct wl_object fake_object;
+	struct wl_array fake_array;
+
+	va_list_wrapper("i", args, 1, 100);
+	assert(args[0].i == 100);
+
+	va_list_wrapper("is", args, 2, 101, "value");
+	assert(args[0].i == 101);
+	assert(strcmp(args[1].s, "value") == 0);
+
+	va_list_wrapper("?iuf?sonah", args, 8,
+			102, 103, wl_fixed_from_int(104), "value",
+			&fake_object, 105, &fake_array, 106);
+	assert(args[0].i == 102);
+	assert(args[1].u == 103);
+	assert(args[2].f == wl_fixed_from_int(104));
+	assert(strcmp(args[3].s, "value") == 0);
+	assert(args[4].o == &fake_object);
+	assert(args[5].n == 105);
+	assert(args[6].a == &fake_array);
+	assert(args[7].h == 106);
+}
+
 struct marshal_data {
 	struct wl_connection *read_connection;
 	struct wl_connection *write_connection;
