@@ -41,7 +41,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (350,299.64) size 239.36x42.19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (350,299.64) size 239.36x19.19
           chunk 1 text run 1 at (350.00,315.00) startOffset 0 endOffset 39 width 239.36: "This textbox (textbox 3) is transformed"
-        LayoutSVGTSpan {tspan} at (0,0) size 230x20
+        LayoutSVGTSpan {tspan} at (350,299.64) size 239.36x42.19
           LayoutSVGInlineText {#text} at (350,322.64) size 229.11x19.19
             chunk 1 text run 1 at (350.00,338.00) startOffset 0 endOffset 38 width 229.12: "and accepts all characters (up to 300)"
       LayoutSVGText {text} at (620,299.64) size 298.23x19.19 contains 1 chunk(s)

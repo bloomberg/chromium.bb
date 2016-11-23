@@ -6,7 +6,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-2) size 40x22
           chunk 1 text run 1 at (10.00,15.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x22
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-2) size 33x22
@@ -16,7 +16,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-2) size 40x22
           chunk 1 text run 1 at (10.00,15.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x22
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-2) size 33x22
@@ -26,7 +26,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-2) size 40x22
           chunk 1 text run 1 at (10.00,15.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x22
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-2) size 33x22
@@ -36,7 +36,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-2) size 40x22
           chunk 1 text run 1 at (10.00,15.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x22
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-2) size 33x22
@@ -46,7 +46,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-7) size 101x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-7) size 40x22
           chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-7) size 101x27
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-7) size 33x22
@@ -56,7 +56,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-2) size 40x22
           chunk 1 text run 1 at (10.00,15.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x22
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-2) size 33x22
@@ -66,7 +66,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x35.59 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,11.59) size 40x22
           chunk 1 text run 1 at (10.00,28.60) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x35.59
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,11.59) size 33x22
@@ -76,7 +76,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x30.50 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,6.50) size 40x22
           chunk 1 text run 1 at (10.00,23.50) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x30.50
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,6.50) size 33x22
@@ -86,7 +86,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x28 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,4) size 40x22
           chunk 1 text run 1 at (10.00,21.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x28
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,4) size 33x22
@@ -96,7 +96,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x26.50 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,2.50) size 40x22
           chunk 1 text run 1 at (10.00,19.50) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x26.50
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,2.50) size 33x22
@@ -106,7 +106,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-7) size 101x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,-7) size 40x22
           chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-7) size 101x27
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,-7) size 33x22
@@ -116,7 +116,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,-2) size 101x39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,15) size 40x22
           chunk 1 text run 1 at (10.00,32.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,-2) size 101x39
           LayoutSVGInlineText {#text} at (50,-2) size 29x22
             chunk 1 text run 1 at (50.00,15.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,15) size 33x22
@@ -126,7 +126,7 @@ layer at (0,0) size 400x400
       LayoutSVGText {text} at (10,15) size 101x22 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,15) size 40x22
           chunk 1 text run 1 at (10.00,32.00) startOffset 0 endOffset 5 width 40.00: "This "
-        LayoutSVGTSpan {tspan} at (0,0) size 29x22
+        LayoutSVGTSpan {tspan} at (10,15) size 101x22
           LayoutSVGInlineText {#text} at (50,15) size 29x22
             chunk 1 text run 1 at (50.00,32.00) startOffset 0 endOffset 4 width 28.00: "is a"
         LayoutSVGInlineText {#text} at (78,15) size 33x22

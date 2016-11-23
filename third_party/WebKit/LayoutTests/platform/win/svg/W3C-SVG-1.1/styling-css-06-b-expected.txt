@@ -5,15 +5,15 @@ layer at (0,0) size 480x360
     LayoutSVGContainer {g} at (50,73) size 359.14x173
       LayoutSVGContainer {g} at (50,73) size 359.14x173
         LayoutSVGText {text} at (50,73) size 84.84x33 contains 1 chunk(s)
-          LayoutSVGInline {a} at (0,0) size 85x33
+          LayoutSVGInline {a} at (50,73) size 84.84x33
             LayoutSVGInlineText {#text} at (50,73) size 84.84x33
               chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 7 width 84.86: "Visited"
         LayoutSVGText {text} at (250,73) size 116.66x33 contains 1 chunk(s)
-          LayoutSVGInline {a} at (0,0) size 117x33
+          LayoutSVGInline {a} at (250,73) size 116.66x33
             LayoutSVGInlineText {#text} at (250,73) size 116.66x33
               chunk 1 text run 1 at (250.00,100.00) startOffset 0 endOffset 9 width 116.66: "Unvisited"
         LayoutSVGText {text} at (50,143) size 119.11x33 contains 1 chunk(s)
-          LayoutSVGInline {a} at (0,0) size 120x33
+          LayoutSVGInline {a} at (50,143) size 119.11x33
             LayoutSVGInlineText {#text} at (50,143) size 119.11x33
               chunk 1 text run 1 at (50.00,170.00) startOffset 0 endOffset 8 width 119.12: "Hover me"
         LayoutSVGText {text} at (250,143) size 159.14x33 contains 1 chunk(s)

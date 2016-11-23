@@ -12,7 +12,7 @@ layer at (0,0) size 450x500
         LayoutSVGPath {path} at (25,150) size 400x300 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 25 150 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20"]
       LayoutSVGRect {rect} at (20,100) size 205x375 [fill={[type=SOLID] [color=#C8C8FF]}] [x=20.00] [y=100.00] [width=205.00] [height=375.00]
       LayoutSVGText {text} at (21.22,132) size 408.63x262 contains 1 chunk(s)
-        LayoutSVGTextPath {textPath} at (0,0) size 409x262
+        LayoutSVGTextPath {textPath} at (21.22,132) size 408.63x262
           LayoutSVGInlineText {#text} at (21.22,132) size 408.63x262
             chunk 1 text run 1 at (31.11,150.00) startOffset 0 endOffset 1 width 12.22: "T"
             chunk 1 text run 2 at (42.22,150.00) startOffset 1 endOffset 2 width 10.00: "h"

@@ -8,15 +8,15 @@ layer at (0,0) size 800x600
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 25 width 159.00: "Referenced character data"
       LayoutSVGPath {path} at (100,140) size 100x10 [fill={[type=SOLID] [color=#000000]}] [data="M 100 150 L 150 140 L 200 150"]
     LayoutSVGText {text} at (100,35) size 71x19 contains 1 chunk(s)
-      LayoutSVGInline {a} at (0,0) size 71x19
-        LayoutSVGTSpan {tspan} at (0,0) size 71x19
+      LayoutSVGInline {a} at (100,35) size 71x19
+        LayoutSVGTSpan {tspan} at (100,35) size 71x19
           LayoutSVGInlineText {#text} at (100,35) size 71x19
             chunk 1 text run 1 at (100.00,50.00) startOffset 0 endOffset 13 width 71.00: "tspan in link"
     LayoutSVGText {text} at (0,0) size 0x0
       LayoutSVGInline {a} at (0,0) size 0x0
     LayoutSVGText {text} at (97.05,124.89) size 92.17x29.02 contains 1 chunk(s)
-      LayoutSVGInline {a} at (0,0) size 93x30
-        LayoutSVGTextPath {textPath} at (0,0) size 93x30
+      LayoutSVGInline {a} at (97.05,124.89) size 92.17x29.02
+        LayoutSVGTextPath {textPath} at (97.05,124.89) size 92.17x29.02
           LayoutSVGInlineText {#text} at (97.05,124.89) size 92.17x29.02
             chunk 1 text run 1 at (101.96,149.61) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 text run 2 at (107.35,148.53) startOffset 1 endOffset 2 width 7.00: "e"
@@ -35,13 +35,13 @@ layer at (0,0) size 800x600
             chunk 1 text run 15 at (175.01,145.00) startOffset 14 endOffset 15 width 7.00: "n"
             chunk 1 text run 16 at (182.37,146.47) startOffset 15 endOffset 16 width 8.00: "k"
     LayoutSVGText {text} at (100,185) size 91x19 contains 1 chunk(s)
-      LayoutSVGInline {a} at (0,0) size 91x19
+      LayoutSVGInline {a} at (100,185) size 91x19
         LayoutSVGInlineText {#text} at (100,185) size 91x19
           chunk 1 text run 1 at (100.00,200.00) startOffset 0 endOffset 15 width 91.00: "ltGlyph content"
     LayoutSVGText {text} at (100,235) size 121x19 contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (0,0) size 121x19
-        LayoutSVGInline {a} at (0,0) size 121x19
-          LayoutSVGTSpan {tspan} at (0,0) size 121x19
+      LayoutSVGTSpan {tspan} at (100,235) size 121x19
+        LayoutSVGInline {a} at (100,235) size 121x19
+          LayoutSVGTSpan {tspan} at (100,235) size 121x19
             LayoutSVGInlineText {#text} at (100,235) size 121x19
               chunk 1 text run 1 at (100.00,250.00) startOffset 0 endOffset 22 width 121.00: "tspan in link in tspan"
     LayoutSVGText {text} at (0,0) size 0x0

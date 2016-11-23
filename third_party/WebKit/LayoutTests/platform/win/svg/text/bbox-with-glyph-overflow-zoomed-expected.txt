@@ -10,7 +10,7 @@ layer at (0,0) size 800x249
         LayoutSVGHiddenContainer {defs} at (20,20) size 180x0
           LayoutSVGPath {path} at (20,20) size 180x0 [fill={[type=SOLID] [color=#000000]}] [data="M 20 20 L 200 20"]
         LayoutSVGText {text} at (17.77,9.45) size 84.42x13.33 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 85x14
+          LayoutSVGTextPath {textPath} at (17.77,9.45) size 84.42x13.33
             LayoutSVGInlineText {#text} at (17.77,9.45) size 84.42x13.33
               chunk 1 text run 1 at (21.67,20.00) startOffset 0 endOffset 1 width 3.33: "f"
               chunk 1 text run 2 at (25.00,20.00) startOffset 1 endOffset 2 width 3.33: "f"
@@ -40,7 +40,7 @@ layer at (0,0) size 800x249
         LayoutSVGText {text} at (17.77,28.89) size 67.20x26.11 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (17.77,39.45) size 24.44x13.33
             chunk 1 text run 1 at (20.00,50.00) startOffset 0 endOffset 6 width 19.99: "ffffff"
-          LayoutSVGTSpan {tspan} at (0,0) size 50x27
+          LayoutSVGTSpan {tspan} at (17.77,28.89) size 67.20x26.11
             LayoutSVGInlineText {#text} at (36.09,28.89) size 48.88x26.11
               chunk 1 text run 1 at (39.99,50.00) startOffset 0 endOffset 6 width 40.00: "ffffff"
         LayoutSVGText {text} at (20,61.67) size 32.05x16.66 contains 1 chunk(s)

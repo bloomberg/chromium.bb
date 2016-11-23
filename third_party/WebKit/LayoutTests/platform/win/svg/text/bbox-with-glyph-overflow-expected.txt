@@ -13,14 +13,14 @@ layer at (0,0) size 800x538
         LayoutSVGText {text} at (41,105) size 184.80x56 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (41,105) size 101.45x56
             chunk 1 text run 1 at (50.00,150.00) startOffset 0 endOffset 6 width 83.35: "ffffff"
-          LayoutSVGTSpan {tspan} at (0,0) size 102x56
+          LayoutSVGTSpan {tspan} at (41,105) size 184.80x56
             LayoutSVGInlineText {#text} at (124.34,105) size 101.45x56
               chunk 1 text run 1 at (133.35,150.00) startOffset 0 endOffset 6 width 83.35: "ffffff"
         LayoutSVGText {text} at (45,179) size 204.13x88 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 61x33
+          LayoutSVGTSpan {tspan} at (45,179) size 204.13x88
             LayoutSVGInlineText {#text} at (45,223) size 60.67x33
               chunk 1 text run 1 at (50.00,250.00) startOffset 0 endOffset 6 width 50.01: "ffffff"
-          LayoutSVGTSpan {tspan} at (0,0) size 164x88
+          LayoutSVGTSpan {tspan} at (45,179) size 204.13x88
             LayoutSVGInlineText {#text} at (86,179) size 163.13x88
               chunk 1 text run 1 at (100.01,250.00) startOffset 0 endOffset 6 width 133.36: "ffffff"
         LayoutSVGText {text} at (37.77,299.84) size 299.28x100.30 contains 1 chunk(s)

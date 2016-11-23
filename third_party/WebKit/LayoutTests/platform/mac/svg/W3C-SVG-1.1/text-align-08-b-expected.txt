@@ -7,10 +7,10 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (50,64) size 555.61x174 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (50,64) size 331.47x174
           chunk 1 text run 1 at (50.00,200.00) startOffset 0 endOffset 3 width 326.23: "a\x{729C}\x{923}"
-        LayoutSVGTSpan {tspan} at (0,0) size 166x86
+        LayoutSVGTSpan {tspan} at (50,64) size 555.61x174
           LayoutSVGInlineText {#text} at (376.22,133) size 165.73x86
             chunk 1 text run 1 at (376.23,200.00) startOffset 0 endOffset 3 width 163.11: "a\x{729C}\x{923}"
-        LayoutSVGTSpan {tspan} at (0,0) size 67x36
+        LayoutSVGTSpan {tspan} at (50,64) size 555.61x174
           LayoutSVGInlineText {#text} at (539.33,172) size 66.28x36
             chunk 1 text run 1 at (539.34,200.00) startOffset 0 endOffset 3 width 65.25: "a\x{729C}\x{923}"
         LayoutSVGInlineText {#text} at (0,0) size 0x0

@@ -29,29 +29,29 @@ layer at (0,0) size 480x360
           [filter="RotateMap"] LayoutSVGResourceFilter {filter} at (158,15) size 128x128
         LayoutSVGRect {rect} at (163,112) size 118x30 [fill={[type=SOLID] [color=#DDDDDD]}] [x=163.00] [y=112.00] [width=118.00] [height=30.00]
         LayoutSVGText {text} at (170.64,114) size 102.70x27 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 100x14
+          LayoutSVGTSpan {tspan} at (170.64,114) size 102.70x27
             LayoutSVGInlineText {#text} at (170.64,114) size 99.38x14
               chunk 1 (middle anchor) text run 1 at (170.65,125.00) startOffset 0 endOffset 16 width 99.38: "Displacement Map"
           LayoutSVGInlineText {#text} at (270.02,114) size 3.33x14
             chunk 1 (middle anchor) text run 1 at (270.02,125.00) startOffset 0 endOffset 1 width 3.33: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 93x14
+          LayoutSVGTSpan {tspan} at (170.64,114) size 102.70x27
             LayoutSVGInlineText {#text} at (176.30,127) size 91.38x14
               chunk 1 (middle anchor) text run 1 at (176.31,138.00) startOffset 0 endOffset 18 width 91.39: "(20 deg. rotation)"
         LayoutSVGRect {rect} at (301,15) size 128x128 [fill={[type=SOLID] [color=#000000]}] [x=301.00] [y=15.00] [width=128.00] [height=128.00]
           [filter="RotateMapTest"] LayoutSVGResourceFilter {filter} at (301,15) size 128x128
         LayoutSVGRect {rect} at (-1,-1) size 2x2 [transform={m=((30.07,10.94)(-10.94,30.07)) t=(365.00,79.00)}] [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=-1.00] [y=-1.00] [width=2.00] [height=2.00]
         LayoutSVGText {text} at (301.30,149) size 127.39x38 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 35x14
+          LayoutSVGTSpan {tspan} at (301.30,149) size 127.39x38
             LayoutSVGInlineText {#text} at (346.31,149) size 34x14
               chunk 1 (middle anchor) text run 1 at (346.33,160.00) startOffset 0 endOffset 6 width 34.01: "Result"
           LayoutSVGInlineText {#text} at (380.33,149) size 3.33x14
             chunk 1 (middle anchor) text run 1 at (380.34,160.00) startOffset 0 endOffset 1 width 3.33: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 125x14
+          LayoutSVGTSpan {tspan} at (301.30,149) size 127.39x38
             LayoutSVGInlineText {#text} at (301.30,161) size 124.06x14
               chunk 1 (middle anchor) text run 1 at (301.30,172.00) startOffset 0 endOffset 23 width 124.07: "(overlayed with 20 deg."
           LayoutSVGInlineText {#text} at (425.36,161) size 3.33x14
             chunk 1 (middle anchor) text run 1 at (425.37,172.00) startOffset 0 endOffset 1 width 3.33: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 121x14
+          LayoutSVGTSpan {tspan} at (301.30,149) size 127.39x38
             LayoutSVGInlineText {#text} at (304.95,173) size 120.06x14
               chunk 1 (middle anchor) text run 1 at (304.96,184.00) startOffset 0 endOffset 23 width 120.08: "rotated blue rectangle)"
         LayoutSVGRect {rect} at (15,158) size 128x128 [fill={[type=SOLID] [color=#000000]}] [x=15.00] [y=158.00] [width=128.00] [height=128.00]
@@ -64,12 +64,12 @@ layer at (0,0) size 480x360
           [filter="SphereMap"] LayoutSVGResourceFilter {filter} at (158,158) size 128x128
         LayoutSVGRect {rect} at (163,255) size 118x30 [fill={[type=SOLID] [color=#DDDDDD]}] [x=163.00] [y=255.00] [width=118.00] [height=30.00]
         LayoutSVGText {text} at (167.97,257) size 108.03x29 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 101x14
+          LayoutSVGTSpan {tspan} at (167.97,257) size 108.03x29
             LayoutSVGInlineText {#text} at (170.64,257) size 99.38x14
               chunk 1 (middle anchor) text run 1 at (170.65,268.00) startOffset 0 endOffset 16 width 99.38: "Displacement Map"
           LayoutSVGInlineText {#text} at (270.02,257) size 3.33x14
             chunk 1 (middle anchor) text run 1 at (270.02,268.00) startOffset 0 endOffset 1 width 3.33: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 109x14
+          LayoutSVGTSpan {tspan} at (167.97,257) size 108.03x29
             LayoutSVGInlineText {#text} at (167.97,272) size 108.03x14
               chunk 1 (middle anchor) text run 1 at (167.98,283.00) startOffset 0 endOffset 22 width 108.04: "(spherical distortion)"
         LayoutSVGRect {rect} at (301,200) size 128x128 [fill={[type=SOLID] [color=#000000]}] [x=301.00] [y=200.00] [width=128.00] [height=128.00]

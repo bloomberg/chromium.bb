@@ -48,6 +48,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
+#include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGShape.h"
@@ -484,6 +485,10 @@ void write(TextStream& ts,
   }
   if (o.isSVGText()) {
     writeSVGText(ts, toLayoutSVGText(o), indent);
+    return;
+  }
+  if (o.isSVGInline()) {
+    writeSVGInline(ts, toLayoutSVGInline(o), indent);
     return;
   }
   if (o.isSVGInlineText()) {

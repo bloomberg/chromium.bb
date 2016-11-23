@@ -6,21 +6,21 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (0,-15) size 287x19
         chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 49 width 287.00: "\"super\" in the following text should be rendered."
     LayoutSVGText {text} at (-1,-24.50) size 101x38 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,70.00)}] contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (0,0) size 47x20
+      LayoutSVGTSpan {tspan} at (-1,-24.50) size 101x38
         LayoutSVGInlineText {#text} at (-1,-15) size 47x19
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 46.00: "Normal"
-      LayoutSVGTSpan {tspan} at (0,0) size 33x19
+      LayoutSVGTSpan {tspan} at (-1,-24.50) size 101x38
         LayoutSVGInlineText {#text} at (46,-24.50) size 33x19
           chunk 1 text run 1 at (46.00,-9.50) startOffset 0 endOffset 5 width 33.00: "super"
-      LayoutSVGTSpan {tspan} at (0,0) size 21x19
+      LayoutSVGTSpan {tspan} at (-1,-24.50) size 101x38
         LayoutSVGInlineText {#text} at (79,-5.50) size 21x19
           chunk 1 text run 1 at (79.00,9.50) startOffset 0 endOffset 3 width 21.00: "sub"
       LayoutSVGInlineText {#text} at (0,0) size 0x0
     LayoutSVGText {text} at (-1,-15.80) size 80x19.80 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,120.00)}] contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (0,0) size 47x20
+      LayoutSVGTSpan {tspan} at (-1,-15.80) size 80x19.80
         LayoutSVGInlineText {#text} at (-1,-15) size 47x19
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 46.00: "Normal"
-      LayoutSVGTSpan {tspan} at (0,0) size 33x19
+      LayoutSVGTSpan {tspan} at (-1,-15.80) size 80x19.80
         LayoutSVGInlineText {#text} at (46,-15.80) size 33x19
           chunk 1 text run 1 at (46.00,-0.80) startOffset 0 endOffset 5 width 33.00: "super"
       LayoutSVGInlineText {#text} at (0,0) size 0x0

@@ -185,7 +185,7 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 7 at (345.50,124.99) startOffset 6 endOffset 7 height 17.00: "e"
           chunk 1 (vertical) text run 8 at (345.50,131.65) startOffset 7 endOffset 8 height 17.00: "d"
           chunk 1 (vertical) text run 9 at (345.50,139.15) startOffset 8 endOffset 9 height 17.00: " "
-        LayoutSVGTSpan {tspan} at (0,0) size 49x18
+        LayoutSVGTSpan {tspan} at (341.50,75) size 17x167.70
           LayoutSVGInlineText {#text} at (341.50,142.89) size 17x48.58
             chunk 1 (vertical) text run 1 at (345.50,142.90) startOffset 0 endOffset 1 height 17.00: "<"
             chunk 1 (vertical) text run 2 at (345.50,151.35) startOffset 1 endOffset 2 height 17.00: "t"
@@ -214,7 +214,7 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 7 at (395.50,124.99) startOffset 6 endOffset 7 height 17.00: "e"
           chunk 1 (vertical) text run 8 at (395.50,131.65) startOffset 7 endOffset 8 height 17.00: "d"
           chunk 1 (vertical) text run 9 at (395.50,139.15) startOffset 8 endOffset 9 height 17.00: " "
-        LayoutSVGTSpan {tspan} at (0,0) size 165x18
+        LayoutSVGTSpan {tspan} at (391.50,75) size 17x289.13
           LayoutSVGInlineText {#text} at (391.50,142.89) size 17x164.86
             chunk 1 (vertical) text run 1 at (395.50,142.90) startOffset 0 endOffset 1 height 17.00: "o"
             chunk 1 (vertical) text run 2 at (395.50,159.90) startOffset 1 endOffset 2 height 17.00: "r"
@@ -239,7 +239,7 @@ layer at (0,0) size 450x500
         LayoutSVGContainer {use} at (15,0) size 315x45
           LayoutSVGPath {path} at (100,0) size 2100x300 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
         LayoutSVGText {text} at (10.14,0.75) size 297.08x43.42 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 44x298
+          LayoutSVGTextPath {textPath} at (10.14,0.75) size 297.08x43.42
             LayoutSVGInlineText {#text} at (10.14,0.75) size 297.08x43.42
               chunk 1 (vertical) text run 1 at (20.05,24.99) startOffset 0 endOffset 1 height 14.00: "V"
               chunk 1 (vertical) text run 2 at (30.48,15.74) startOffset 1 endOffset 2 height 14.00: "e"

@@ -5,9 +5,9 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (20,75) size 206x57 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (20,75) size 83.50x57
         chunk 1 text run 1 at (20.00,120.00) startOffset 0 endOffset 4 width 83.51: "Test"
-      LayoutSVGTSpan {tspan} at (0,0) size 123x57
+      LayoutSVGTSpan {tspan} at (20,75) size 206x57
         LayoutSVGInlineText {#text} at (103.50,75) size 13x57
           chunk 1 text run 1 at (103.51,120.00) startOffset 0 endOffset 1 width 13.00: " "
-        LayoutSVGTSpan {tspan} at (0,0) size 76x57
+        LayoutSVGTSpan {tspan} at (20,75) size 206x57
           LayoutSVGInlineText {#text} at (150,75) size 76x57
             chunk 1 text run 1 at (150.00,120.00) startOffset 0 endOffset 4 width 76.00: "text"

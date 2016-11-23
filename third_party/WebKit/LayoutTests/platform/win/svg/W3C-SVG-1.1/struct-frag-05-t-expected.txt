@@ -4,7 +4,7 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (197.78,64) size 84.42x45
       LayoutSVGText {text} at (197.78,64) size 84.42x45 contains 1 chunk(s)
-        LayoutSVGInline {toto:a} at (0,0) size 85x45
+        LayoutSVGInline {toto:a} at (197.78,64) size 84.42x45
           LayoutSVGInlineText {#text} at (197.78,64) size 84.42x45
             chunk 1 (middle anchor) text run 1 at (197.78,100.00) startOffset 0 endOffset 5 width 84.43: "Valid"
         LayoutSVGInlineText {#text} at (0,0) size 0x0

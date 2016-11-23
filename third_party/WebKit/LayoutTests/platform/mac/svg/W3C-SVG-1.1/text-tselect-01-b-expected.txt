@@ -20,22 +20,22 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (25,126) size 323.73x17.36
             chunk 1 text run 1 at (25.00,140.00) startOffset 0 endOffset 47 width 323.74: "text selection should not go across lines here."
         LayoutSVGText {text} at (25,176) size 360.19x92 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 356x18
+          LayoutSVGTSpan {tspan} at (25,176) size 360.19x92
             LayoutSVGInlineText {#text} at (25,176) size 355.75x17.36
               chunk 1 text run 1 at (25.00,190.00) startOffset 0 endOffset 50 width 355.76: "However, these lines of text are achieved by using"
           LayoutSVGInlineText {#text} at (380.75,176) size 4.44x17
             chunk 1 text run 1 at (380.76,190.00) startOffset 0 endOffset 1 width 4.45: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 348x18
+          LayoutSVGTSpan {tspan} at (25,176) size 360.19x92
             LayoutSVGInlineText {#text} at (25,201) size 347.66x17.17
               chunk 1 text run 1 at (25.00,215.00) startOffset 0 endOffset 51 width 347.66: "one 'tspan' per line, all contained within the same"
           LayoutSVGInlineText {#text} at (372.66,201) size 4.44x17
             chunk 1 text run 1 at (372.66,215.00) startOffset 0 endOffset 1 width 4.45: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 343x18
+          LayoutSVGTSpan {tspan} at (25,176) size 360.19x92
             LayoutSVGInlineText {#text} at (25,226) size 342.31x17.36
               chunk 1 text run 1 at (25.00,240.00) startOffset 0 endOffset 51 width 342.31: "'text' element, so you should be able to select all"
           LayoutSVGInlineText {#text} at (367.31,226) size 4.44x17
             chunk 1 text run 1 at (367.31,240.00) startOffset 0 endOffset 1 width 4.45: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 193x17
+          LayoutSVGTSpan {tspan} at (25,176) size 360.19x92
             LayoutSVGInlineText {#text} at (25,251) size 192.08x17
               chunk 1 text run 1 at (25.00,265.00) startOffset 0 endOffset 28 width 192.09: "four lines at the same time."
           LayoutSVGInlineText {#text} at (0,0) size 0x0

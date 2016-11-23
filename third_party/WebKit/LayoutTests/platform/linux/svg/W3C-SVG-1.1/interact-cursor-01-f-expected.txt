@@ -7,7 +7,7 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (97.91,2) size 284.17x29 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (97.91,2) size 131.17x29
           chunk 1 (middle anchor) text run 1 at (97.91,25.00) startOffset 0 endOffset 12 width 131.18: "Text Cursor "
-        LayoutSVGInline {a} at (0,0) size 154x29
+        LayoutSVGInline {a} at (97.91,2) size 284.17x29
           LayoutSVGInlineText {#text} at (229.08,2) size 153x29
             chunk 1 (middle anchor) text run 1 at (229.09,25.00) startOffset 0 endOffset 14 width 153.00: "Pointer Cursor"
         LayoutSVGInlineText {#text} at (0,0) size 0x0

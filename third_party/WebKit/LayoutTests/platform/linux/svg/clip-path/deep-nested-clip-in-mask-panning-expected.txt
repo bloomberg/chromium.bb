@@ -39,6 +39,6 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (104.50,235) size 291x44 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (104.50,235) size 291x19
         chunk 1 (middle anchor) text run 1 at (104.50,250.00) startOffset 0 endOffset 52 width 291.00: "The left shape should still be visible after panning"
-      LayoutSVGTSpan {tspan} at (0,0) size 263x19
+      LayoutSVGTSpan {tspan} at (104.50,235) size 291x44
         LayoutSVGInlineText {#text} at (119,260) size 262x19
           chunk 1 (middle anchor) text run 1 at (119.00,275.00) startOffset 0 endOffset 44 width 262.00: "And the right shape shouldn't look distorted"

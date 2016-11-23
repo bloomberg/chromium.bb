@@ -10,7 +10,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (127.09,173) size 225.78x33 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (127.09,173) size 85.81x33
             chunk 1 (middle anchor) text run 1 at (127.10,200.00) startOffset 0 endOffset 6 width 85.83: "Bonne "
-          LayoutSVGTSpan {tspan} at (0,0) size 131x33
+          LayoutSVGTSpan {tspan} at (127.09,173) size 225.78x33
             LayoutSVGInlineText {#text} at (212.92,173) size 129.97x33
               chunk 1 (middle anchor) text run 1 at (212.93,200.00) startOffset 0 endOffset 10 width 129.98: "avant-midi"
           LayoutSVGInlineText {#text} at (342.89,173) size 9.98x33

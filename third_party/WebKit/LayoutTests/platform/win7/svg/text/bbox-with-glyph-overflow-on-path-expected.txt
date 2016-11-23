@@ -13,7 +13,7 @@ layer at (0,0) size 800x538
           LayoutSVGPath {path} at (50,250) size 350x100 [fill={[type=SOLID] [color=#000000]}] [data="M 50 250 L 400 350"]
           LayoutSVGPath {path} at (50,450) size 350x0 [fill={[type=SOLID] [color=#000000]}] [data="M 50 450 L 400 450"]
         LayoutSVGText {text} at (41,55) size 351.50x56 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 352x56
+          LayoutSVGTextPath {textPath} at (41,55) size 351.50x56
             LayoutSVGInlineText {#text} at (41,55) size 351.50x56
               chunk 1 text run 1 at (56.95,100.00) startOffset 0 endOffset 1 width 13.89: "f"
               chunk 1 text run 2 at (70.84,100.00) startOffset 1 endOffset 2 width 13.89: "f"
@@ -41,7 +41,7 @@ layer at (0,0) size 800x538
               chunk 1 text run 24 at (376.45,100.00) startOffset 23 endOffset 24 width 13.89: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (57.48,139) size 351.52x56 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 352x56
+          LayoutSVGTextPath {textPath} at (57.48,139) size 351.52x56
             LayoutSVGInlineText {#text} at (57.48,139) size 351.52x56
               chunk 1 text run 1 at (393.05,150.00) startOffset 0 endOffset 1 width 13.89: "f"
               chunk 1 text run 2 at (379.16,150.00) startOffset 1 endOffset 2 width 13.89: "f"
@@ -69,7 +69,7 @@ layer at (0,0) size 800x538
               chunk 1 text run 24 at (73.55,150.00) startOffset 23 endOffset 24 width 13.89: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (38.31,204.25) size 353.36x150.41 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 354x151
+          LayoutSVGTextPath {textPath} at (38.31,204.25) size 353.36x150.41
             LayoutSVGInlineText {#text} at (38.31,204.25) size 353.36x150.41
               chunk 1 text run 1 at (56.68,251.91) startOffset 0 endOffset 1 width 13.89: "f"
               chunk 1 text run 2 at (70.04,255.72) startOffset 1 endOffset 2 width 13.89: "f"
@@ -97,7 +97,7 @@ layer at (0,0) size 800x538
               chunk 1 text run 24 at (363.89,339.68) startOffset 23 endOffset 24 width 13.89: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (50,395) size 139.22x70 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 140x70
+          LayoutSVGTextPath {textPath} at (50,395) size 139.22x70
             LayoutSVGInlineText {#text} at (50,395) size 139.22x70
               chunk 1 text run 1 at (59.70,450.00) startOffset 0 endOffset 1 width 19.41: "'"
               chunk 1 text run 2 at (82.12,450.00) startOffset 1 endOffset 2 width 25.42: "f"

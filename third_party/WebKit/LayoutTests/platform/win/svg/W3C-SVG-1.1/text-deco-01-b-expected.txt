@@ -17,27 +17,27 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (25,183) size 161.75x27
             chunk 1 text run 1 at (25.00,205.00) startOffset 0 endOffset 15 width 161.43: "Underlined text"
         LayoutSVGText {text} at (25,253) size 366.45x27 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 46x27
+          LayoutSVGTSpan {tspan} at (25,253) size 366.45x27
             LayoutSVGInlineText {#text} at (25,253) size 45.36x27
               chunk 1 text run 1 at (25.00,275.00) startOffset 0 endOffset 3 width 45.36: "One"
           LayoutSVGInlineText {#text} at (70.36,253) size 6.66x27
             chunk 1 text run 1 at (70.36,275.00) startOffset 0 endOffset 1 width 6.67: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 54x27
+          LayoutSVGTSpan {tspan} at (25,253) size 366.45x27
             LayoutSVGInlineText {#text} at (76.03,253) size 53.02x27
               chunk 1 text run 1 at (77.03,275.00) startOffset 0 endOffset 4 width 52.02: "word"
           LayoutSVGInlineText {#text} at (129.05,253) size 6.66x27
             chunk 1 text run 1 at (129.05,275.00) startOffset 0 endOffset 1 width 6.67: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 40x27
+          LayoutSVGTSpan {tspan} at (25,253) size 366.45x27
             LayoutSVGInlineText {#text} at (135.72,253) size 38.69x27
               chunk 1 text run 1 at (135.72,275.00) startOffset 0 endOffset 3 width 38.70: "has"
           LayoutSVGInlineText {#text} at (174.41,253) size 6.66x27
             chunk 1 text run 1 at (174.41,275.00) startOffset 0 endOffset 1 width 6.67: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 87x27
+          LayoutSVGTSpan {tspan} at (25,253) size 366.45x27
             LayoutSVGInlineText {#text} at (181.08,253) size 86.61x27
               chunk 1 text run 1 at (181.08,275.00) startOffset 0 endOffset 9 width 86.29: "different"
           LayoutSVGInlineText {#text} at (267.36,253) size 6.66x27
             chunk 1 text run 1 at (267.37,275.00) startOffset 0 endOffset 1 width 6.67: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 118x27
+          LayoutSVGTSpan {tspan} at (25,253) size 366.45x27
             LayoutSVGInlineText {#text} at (274.03,253) size 117.42x27
               chunk 1 text run 1 at (274.04,275.00) startOffset 0 endOffset 11 width 117.42: "underlining"
           LayoutSVGInlineText {#text} at (0,0) size 0x0

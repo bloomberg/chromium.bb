@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (240,51.77) size 210.83x32.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (240,51.77) size 27.48x12.80
           chunk 1 text run 1 at (240.00,62.00) startOffset 0 endOffset 6 width 27.49: "Fruits"
-        LayoutSVGTSpan {tspan} at (0,0) size 211x13
+        LayoutSVGTSpan {tspan} at (240,51.77) size 210.83x32.80
           LayoutSVGInlineText {#text} at (240,71.77) size 210.83x12.80
             chunk 1 text run 1 at (240.00,82.00) startOffset 0 endOffset 42 width 210.84: "This comboBox allows only single selection"
       LayoutSVGText {text} at (240,301.77) size 31.16x12.80 contains 1 chunk(s)
@@ -23,16 +23,16 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (240,322.77) size 104.53x42.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (240,322.77) size 104.48x12.80
           chunk 1 text run 1 at (240.00,333.00) startOffset 0 endOffset 19 width 104.50: "This comboBox gives"
-        LayoutSVGTSpan {tspan} at (0,0) size 105x13
+        LayoutSVGTSpan {tspan} at (240,322.77) size 104.53x42.80
           LayoutSVGInlineText {#text} at (240,337.77) size 104.53x12.80
             chunk 1 text run 1 at (240.00,348.00) startOffset 0 endOffset 19 width 104.53: "feedback on changes"
-        LayoutSVGTSpan {tspan} at (0,0) size 74x13
+        LayoutSVGTSpan {tspan} at (240,322.77) size 104.53x42.80
           LayoutSVGInlineText {#text} at (240,352.77) size 73.34x12.80
             chunk 1 text run 1 at (240.00,363.00) startOffset 0 endOffset 16 width 73.35: "in the selection"
       LayoutSVGText {text} at (50,389.77) size 168.67x12.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (50,389.77) size 168.67x12.80
           chunk 1 text run 1 at (50.00,400.00) startOffset 0 endOffset 33 width 168.68: "The Following Roses are selected:"
-        LayoutSVGTSpan {tspan} at (0,0) size 0x1
+        LayoutSVGTSpan {tspan} at (50,389.77) size 168.67x12.80
           LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGText {text} at (240,551.77) size 38.48x12.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (240,551.77) size 38.48x12.80
@@ -106,7 +106,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (220,201.77) size 337.39x32.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (220,201.77) size 198.59x12.80
           chunk 1 text run 1 at (220.00,212.00) startOffset 0 endOffset 39 width 198.60: "Communities of Kt. Aargau (Switzerland)"
-        LayoutSVGTSpan {tspan} at (0,0) size 338x13
+        LayoutSVGTSpan {tspan} at (220,201.77) size 337.39x32.80
           LayoutSVGInlineText {#text} at (220,221.77) size 337.39x12.80
             chunk 1 text run 1 at (220.00,232.00) startOffset 0 endOffset 67 width 337.39: "Note that one can also transform the group containing the combo box"
     LayoutSVGContainer {g} at (50,550) size 170x128

@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (101,101) size 100x30 [fill={[type=SOLID] [color=#000080]}] [x=101.00] [y=101.00] [width=100.00] [height=30.00]
         LayoutSVGRect {rect} at (100,100) size 100x30 [fill={[type=SOLID] [color=#B0C4DE]}] [x=100.00] [y=100.00] [width=100.00] [height=30.00]
         LayoutSVGText {text} at (126.31,108.88) size 47.36x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 48x16
+          LayoutSVGTSpan {tspan} at (126.31,108.88) size 47.36x15.36
             LayoutSVGInlineText {#text} at (126.31,108.88) size 47.36x15.36
               chunk 1 (middle anchor) text run 1 at (126.32,120.40) startOffset 0 endOffset 8 width 47.36: "Click me"
       LayoutSVGContainer {g} at (219,99) size 102x32
@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (221,101) size 100x30 [fill={[type=SOLID] [color=#000080]}] [x=221.00] [y=101.00] [width=100.00] [height=30.00]
         LayoutSVGRect {rect} at (220,100) size 100x30 [fill={[type=SOLID] [color=#B0C4DE]}] [x=220.00] [y=100.00] [width=100.00] [height=30.00]
         LayoutSVGText {text} at (241.19,108.88) size 57.59x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 58x16
+          LayoutSVGTSpan {tspan} at (241.19,108.88) size 57.59x15.36
             LayoutSVGInlineText {#text} at (241.19,108.88) size 57.59x15.36
               chunk 1 (middle anchor) text run 1 at (241.20,120.40) startOffset 0 endOffset 10 width 57.60: "Click me 2"
       LayoutSVGContainer {g} at (339,99) size 132x32
@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (341,101) size 130x30 [fill={[type=SOLID] [color=#000080]}] [x=341.00] [y=101.00] [width=130.00] [height=30.00]
         LayoutSVGRect {rect} at (340,100) size 130x30 [fill={[type=SOLID] [color=#B0C4DE]}] [x=340.00] [y=100.00] [width=130.00] [height=30.00]
         LayoutSVGText {text} at (351.23,108.88) size 107.52x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 108x16
+          LayoutSVGTSpan {tspan} at (351.23,108.88) size 107.52x15.36
             LayoutSVGInlineText {#text} at (351.23,108.88) size 107.52x15.36
               chunk 1 (middle anchor) text run 1 at (351.24,120.40) startOffset 0 endOffset 19 width 107.52: "Deactivate Button 2"
       LayoutSVGContainer {g} at (489,99) size 122x32
@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (491,101) size 120x30 [fill={[type=SOLID] [color=#000080]}] [x=491.00] [y=101.00] [width=120.00] [height=30.00]
         LayoutSVGRect {rect} at (490,100) size 120x30 [fill={[type=SOLID] [color=#B0C4DE]}] [x=490.00] [y=100.00] [width=120.00] [height=30.00]
         LayoutSVGText {text} at (505.19,108.88) size 89.59x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 90x16
+          LayoutSVGTSpan {tspan} at (505.19,108.88) size 89.59x15.36
             LayoutSVGInlineText {#text} at (505.19,108.88) size 89.59x15.36
               chunk 1 (middle anchor) text run 1 at (505.20,120.40) startOffset 0 endOffset 16 width 89.60: "Switch Button on"
       LayoutSVGContainer {g} at (629,99) size 132x32
@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (631,101) size 130x30 [fill={[type=SOLID] [color=#000080]}] [x=631.00] [y=101.00] [width=130.00] [height=30.00]
         LayoutSVGRect {rect} at (630,100) size 130x30 [fill={[type=SOLID] [color=#B0C4DE]}] [x=630.00] [y=100.00] [width=130.00] [height=30.00]
         LayoutSVGText {text} at (647.63,108.88) size 94.72x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 95x16
+          LayoutSVGTSpan {tspan} at (647.63,108.88) size 94.72x15.36
             LayoutSVGInlineText {#text} at (647.63,108.88) size 94.72x15.36
               chunk 1 (middle anchor) text run 1 at (647.64,120.40) startOffset 0 endOffset 15 width 94.72: "Remove Button 1"
       LayoutSVGContainer {g} at (779,99) size 132x32
@@ -54,7 +54,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (781,101) size 130x30 [fill={[type=SOLID] [color=#000080]}] [x=781.00] [y=101.00] [width=130.00] [height=30.00]
         LayoutSVGRect {rect} at (780,100) size 130x30 [fill={[type=SOLID] [color=#B0C4DE]}] [x=780.00] [y=100.00] [width=130.00] [height=30.00]
         LayoutSVGText {text} at (795.08,108.88) size 99.83x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 100x16
+          LayoutSVGTSpan {tspan} at (795.08,108.88) size 99.83x15.36
             LayoutSVGInlineText {#text} at (795.08,108.88) size 99.83x15.36
               chunk 1 (middle anchor) text run 1 at (795.08,120.40) startOffset 0 endOffset 18 width 99.84: "Switch Button 4 on"
       LayoutSVGContainer {g} at (199,299) size 152x62
@@ -62,13 +62,13 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (201,301) size 150x60 [fill={[type=SOLID] [color=#000080]}] [x=201.00] [y=301.00] [width=150.00] [height=60.00]
         LayoutSVGRect {rect} at (200,300) size 150x60 [fill={[type=SOLID] [color=#B0C4DE]}] [x=200.00] [y=300.00] [width=150.00] [height=60.00]
         LayoutSVGText {text} at (228.91,310.67) size 92.16x41.77 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 93x16
+          LayoutSVGTSpan {tspan} at (228.91,310.67) size 92.16x41.77
             LayoutSVGInlineText {#text} at (228.91,310.67) size 92.16x15.36
               chunk 1 (middle anchor) text run 1 at (228.92,322.20) startOffset 0 endOffset 19 width 92.16: "This is a multiline"
-          LayoutSVGTSpan {tspan} at (0,0) size 81x16
+          LayoutSVGTSpan {tspan} at (228.91,310.67) size 92.16x41.77
             LayoutSVGInlineText {#text} at (234.67,323.88) size 79.36x15.36
               chunk 1 (middle anchor) text run 1 at (235.96,335.40) startOffset 0 endOffset 15 width 78.08: "textbutton with"
-          LayoutSVGTSpan {tspan} at (0,0) size 74x16
+          LayoutSVGTSpan {tspan} at (228.91,310.67) size 92.16x41.77
             LayoutSVGInlineText {#text} at (238.52,337.08) size 72.95x15.36
               chunk 1 (middle anchor) text run 1 at (238.52,348.60) startOffset 0 endOffset 13 width 72.96: "round corners"
     LayoutSVGContainer {g} at (299,144) size 77x27

@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (10,16) size 255.50x17
         chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 38 width 255.50: "The two words should be the same size:"
     LayoutSVGText {text} at (10,-2.27) size 6.39x17.72 [transform={m=((15.00,0.00)(0.00,15.00)) t=(0.00,0.00)}] contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (0,0) size 2x2
+      LayoutSVGTSpan {tspan} at (10,-2.27) size 6.39x17.72
         LayoutSVGInlineText {#text} at (10,11.47) size 1.39x0.66
           chunk 1 text run 1 at (10.00,12.00) startOffset 0 endOffset 4 width 1.33: "TINY"
       LayoutSVGInlineText {#text} at (11.33,-2.27) size 4x17.72
         chunk 1 text run 1 at (11.33,12.00) startOffset 0 endOffset 1 width 4.00: " "
-      LayoutSVGTSpan {tspan} at (0,0) size 2x2
+      LayoutSVGTSpan {tspan} at (10,-2.27) size 6.39x17.72
         LayoutSVGInlineText {#text} at (15.33,11.55) size 1.06x0.59
           chunk 1 text run 1 at (15.33,12.00) startOffset 0 endOffset 4 width 1.07: "TINY"
       LayoutSVGInlineText {#text} at (0,0) size 0x0

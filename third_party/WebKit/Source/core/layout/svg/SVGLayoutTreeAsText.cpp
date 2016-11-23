@@ -33,6 +33,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
+#include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceLinearGradient.h"
@@ -655,6 +656,14 @@ void writeSVGText(TextStream& ts, const LayoutSVGText& text, int indent) {
   writeStandardPrefix(ts, text, indent);
   writePositionAndStyle(ts, text);
   writeLayoutSVGTextBox(ts, text);
+  ts << "\n";
+  writeResources(ts, text, indent);
+  writeChildren(ts, text, indent);
+}
+
+void writeSVGInline(TextStream& ts, const LayoutSVGInline& text, int indent) {
+  writeStandardPrefix(ts, text, indent);
+  writePositionAndStyle(ts, text);
   ts << "\n";
   writeResources(ts, text, indent);
   writeChildren(ts, text, indent);

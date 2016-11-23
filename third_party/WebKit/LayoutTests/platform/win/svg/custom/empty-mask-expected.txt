@@ -9,6 +9,6 @@ layer at (0,0) size 800x600
       [masker="mask"] LayoutSVGResourceMasker {mask} at (0,0) size 0x0
     LayoutSVGText {text} at (60,46) size 22.22x17 contains 1 chunk(s)
       [masker="mask"] LayoutSVGResourceMasker {mask} at (0,0) size 0x0
-      LayoutSVGTSpan {tspan} at (0,0) size 23x17
+      LayoutSVGTSpan {tspan} at (60,46) size 22.22x17
         LayoutSVGInlineText {#text} at (60,46) size 22.22x17
           chunk 1 text run 1 at (60.00,60.00) startOffset 0 endOffset 4 width 22.22: "test"

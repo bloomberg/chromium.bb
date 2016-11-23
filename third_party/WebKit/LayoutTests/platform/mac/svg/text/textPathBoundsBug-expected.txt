@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGPath {path} at (100,100) size 100x0 [stroke={[type=SOLID] [color=#800080]}] [fill={[type=SOLID] [color=#000000]}] [data="M 100 100 L 200 100"]
     LayoutSVGText {text} at (100,89) size 26.69x14 contains 1 chunk(s)
-      LayoutSVGTextPath {textPath} at (0,0) size 27x14
+      LayoutSVGTextPath {textPath} at (100,89) size 26.69x14
         LayoutSVGInlineText {#text} at (100,89) size 26.69x14
           chunk 1 (middle anchor) text run 1 at (103.34,100.00) startOffset 4 endOffset 5 width 6.67: "5"
           chunk 1 (middle anchor) text run 2 at (110.01,100.00) startOffset 5 endOffset 6 width 6.67: "6"

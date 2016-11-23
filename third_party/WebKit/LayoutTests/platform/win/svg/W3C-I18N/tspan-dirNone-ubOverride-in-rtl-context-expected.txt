@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (81.19,133.81) size 297.59x19.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (294.05,133.81) size 84.73x19.80
           chunk 1 (middle anchor) text run 1 at (294.65,150.00) startOffset 0 endOffset 14 width 84.15 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-        LayoutSVGTSpan {tspan} at (0,0) size 203x20
+        LayoutSVGTSpan {tspan} at (81.19,133.81) size 297.59x19.80
           LayoutSVGInlineText {#text} at (92.58,133.81) size 202.05x19.80
             chunk 1 (middle anchor) text run 1 at (92.59,150.00) startOffset 0 endOffset 26 width 202.06 RTL override: "dirNone ubOverride, \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
         LayoutSVGInlineText {#text} at (81.19,133.81) size 11.39x19.80

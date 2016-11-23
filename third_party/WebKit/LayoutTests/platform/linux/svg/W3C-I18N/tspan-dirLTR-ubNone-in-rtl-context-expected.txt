@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (99.56,133.20) size 260.86x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (277.63,133.20) size 82.80x21
           chunk 1 (middle anchor) text run 1 at (277.63,150.00) startOffset 0 endOffset 14 width 82.80 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-        LayoutSVGTSpan {tspan} at (0,0) size 167x21
+        LayoutSVGTSpan {tspan} at (99.56,133.20) size 260.86x21
           LayoutSVGInlineText {#text} at (111.56,133.20) size 166.05x21
             chunk 1 (middle anchor) text run 1 at (111.57,150.00) startOffset 0 endOffset 8 width 44.40 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
             chunk 1 (middle anchor) text run 1 at (155.97,150.00) startOffset 0 endOffset 13 width 121.66: "dirLTR ubNone"

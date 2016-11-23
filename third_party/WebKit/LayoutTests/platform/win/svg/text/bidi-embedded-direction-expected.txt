@@ -6,7 +6,7 @@ layer at (0,0) size 150x275
     LayoutSVGText {text} at (9,28) size 113.06x27 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (67.34,28) size 54.72x27
         chunk 1 text run 1 at (67.35,50.00) startOffset 0 endOffset 5 width 54.73 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD} "
-      LayoutSVGTSpan {tspan} at (0,0) size 59x27
+      LayoutSVGTSpan {tspan} at (9,28) size 113.06x27
         LayoutSVGInlineText {#text} at (9,28) size 58.34x27
           chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 5 width 57.35: "world"
       LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -19,7 +19,7 @@ layer at (0,0) size 150x275
     LayoutSVGText {text} at (9,128) size 115.72x27 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (67.34,128) size 57.38x27
         chunk 1 text run 1 at (67.35,150.00) startOffset 0 endOffset 6 width 57.38 RTL override: "hello "
-      LayoutSVGTSpan {tspan} at (0,0) size 59x27
+      LayoutSVGTSpan {tspan} at (9,128) size 115.72x27
         LayoutSVGInlineText {#text} at (9,128) size 58.34x27
           chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 5 width 57.35: "world"
       LayoutSVGInlineText {#text} at (0,0) size 0x0

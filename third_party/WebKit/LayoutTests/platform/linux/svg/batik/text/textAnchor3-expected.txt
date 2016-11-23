@@ -46,83 +46,83 @@ layer at (0,0) size 450x500
           LayoutSVGPath {line} at (230,70) size 0x120 [stroke={[type=SOLID] [color=#B0C4DE]}] [x1=230.00] [y1=70.00] [x2=230.00] [y2=190.00]
           LayoutSVGPath {line} at (270,70) size 0x120 [stroke={[type=SOLID] [color=#B0C4DE]}] [x1=270.00] [y1=70.00] [x2=270.00] [y2=190.00]
       LayoutSVGText {text} at (0,-15) size 205x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,94.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 168x29
+        LayoutSVGTSpan {tspan} at (0,-15) size 205x29
           LayoutSVGInlineText {#text} at (0,-15) size 168x29
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 text run 1 at (120.00,0.00) startOffset 0 endOffset 1 width 3.00: "i"
             chunk 1 text run 1 at (160.00,10.00) startOffset 0 endOffset 1 width 8.00: "k"
-        LayoutSVGTSpan {tspan} at (0,0) size 37x19
+        LayoutSVGTSpan {tspan} at (0,-15) size 205x29
           LayoutSVGInlineText {#text} at (168,-5) size 37x19
             chunk 1 text run 1 at (168.00,10.00) startOffset 0 endOffset 7 width 37.00: " rules!"
       LayoutSVGText {text} at (-5,-15) size 187.50x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,134.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 151x29
+        LayoutSVGTSpan {tspan} at (-5,-15) size 187.50x29
           LayoutSVGInlineText {#text} at (-5,-15) size 150.50x29
             chunk 1 (middle anchor) text run 1 at (-5.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 (middle anchor) text run 1 at (36.50,0.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 (middle anchor) text run 1 at (78.00,0.00) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 (middle anchor) text run 1 at (118.50,0.00) startOffset 0 endOffset 1 width 3.00: "i"
             chunk 1 (middle anchor) text run 1 at (137.50,10.00) startOffset 0 endOffset 1 width 8.00: "k"
-        LayoutSVGTSpan {tspan} at (0,0) size 38x19
+        LayoutSVGTSpan {tspan} at (-5,-15) size 187.50x29
           LayoutSVGInlineText {#text} at (145.50,-5) size 37x19
             chunk 1 text run 1 at (145.50,10.00) startOffset 0 endOffset 7 width 37.00: " rules!"
       LayoutSVGText {text} at (-10,-15) size 170x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,174.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 133x29
+        LayoutSVGTSpan {tspan} at (-10,-15) size 170x29
           LayoutSVGInlineText {#text} at (-10,-15) size 133x29
             chunk 1 (end anchor) text run 1 at (-10.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 (end anchor) text run 1 at (33.00,0.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 (end anchor) text run 1 at (76.00,0.00) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 (end anchor) text run 1 at (117.00,0.00) startOffset 0 endOffset 1 width 3.00: "i"
             chunk 1 (end anchor) text run 1 at (115.00,10.00) startOffset 0 endOffset 1 width 8.00: "k"
-        LayoutSVGTSpan {tspan} at (0,0) size 37x19
+        LayoutSVGTSpan {tspan} at (-10,-15) size 170x29
           LayoutSVGInlineText {#text} at (123,-5) size 37x19
             chunk 1 text run 1 at (123.00,10.00) startOffset 0 endOffset 7 width 37.00: " rules!"
       LayoutSVGText {text} at (0,-15) size 95x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,240.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 95x19
+        LayoutSVGTSpan {tspan} at (0,-15) size 95x19
           LayoutSVGInlineText {#text} at (0,-15) size 95x19
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 3 width 15.00: "tik"
       LayoutSVGText {text} at (-5,-15) size 92.50x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,280.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 93x19
+        LayoutSVGTSpan {tspan} at (-5,-15) size 92.50x19
           LayoutSVGInlineText {#text} at (-5,-15) size 92.50x19
             chunk 1 (middle anchor) text run 1 at (-5.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 (middle anchor) text run 1 at (36.50,0.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 (middle anchor) text run 1 at (72.50,0.00) startOffset 0 endOffset 3 width 15.00: "tik"
       LayoutSVGText {text} at (-10,-15) size 90x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,320.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 90x19
+        LayoutSVGTSpan {tspan} at (-10,-15) size 90x19
           LayoutSVGInlineText {#text} at (-10,-15) size 90x19
             chunk 1 (end anchor) text run 1 at (-10.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 (end anchor) text run 1 at (33.00,0.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 (end anchor) text run 1 at (65.00,0.00) startOffset 0 endOffset 3 width 15.00: "tik"
       LayoutSVGText {text} at (0,-15) size 168x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,390.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 131x29
+        LayoutSVGTSpan {tspan} at (0,-15) size 168x29
           LayoutSVGInlineText {#text} at (0,-15) size 131x29
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 text run 1 at (40.00,10.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 text run 1 at (120.00,10.00) startOffset 0 endOffset 2 width 11.00: "ik"
-        LayoutSVGTSpan {tspan} at (0,0) size 37x19
+        LayoutSVGTSpan {tspan} at (0,-15) size 168x29
           LayoutSVGInlineText {#text} at (131,-5) size 37x19
             chunk 1 text run 1 at (131.00,10.00) startOffset 0 endOffset 7 width 37.00: " rules!"
       LayoutSVGText {text} at (-5,-15) size 149x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,430.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 112x29
+        LayoutSVGTSpan {tspan} at (-5,-15) size 149x29
           LayoutSVGInlineText {#text} at (-5,-15) size 112x29
             chunk 1 (middle anchor) text run 1 at (-5.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 (middle anchor) text run 1 at (36.50,10.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 (middle anchor) text run 1 at (78.00,0.00) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 (middle anchor) text run 1 at (96.00,10.00) startOffset 0 endOffset 2 width 11.00: "ik"
-        LayoutSVGTSpan {tspan} at (0,0) size 37x19
+        LayoutSVGTSpan {tspan} at (-5,-15) size 149x29
           LayoutSVGInlineText {#text} at (107,-5) size 37x19
             chunk 1 text run 1 at (107.00,10.00) startOffset 0 endOffset 7 width 37.00: " rules!"
       LayoutSVGText {text} at (-10,-15) size 130x29 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,470.00)}] contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 93x29
+        LayoutSVGTSpan {tspan} at (-10,-15) size 130x29
           LayoutSVGInlineText {#text} at (-10,-15) size 93x29
             chunk 1 (end anchor) text run 1 at (-10.00,0.00) startOffset 0 endOffset 1 width 10.00: "B"
             chunk 1 (end anchor) text run 1 at (33.00,10.00) startOffset 0 endOffset 1 width 7.00: "a"
             chunk 1 (end anchor) text run 1 at (76.00,0.00) startOffset 0 endOffset 1 width 4.00: "t"
             chunk 1 (end anchor) text run 1 at (72.00,10.00) startOffset 0 endOffset 2 width 11.00: "ik"
-        LayoutSVGTSpan {tspan} at (0,0) size 37x19
+        LayoutSVGTSpan {tspan} at (-10,-15) size 130x29
           LayoutSVGInlineText {#text} at (83,-5) size 37x19
             chunk 1 text run 1 at (83.00,10.00) startOffset 0 endOffset 7 width 37.00: " rules!"

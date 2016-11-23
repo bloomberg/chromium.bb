@@ -135,7 +135,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (200,8) size 49.98x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (200,8) size 26.91x14
             chunk 1 (middle anchor) text run 1 at (188.18,19.00) startOffset 0 endOffset 7 width 39.64: "Apache "
-          LayoutSVGTSpan {tspan} at (0,0) size 19x14
+          LayoutSVGTSpan {tspan} at (200,8) size 49.98x14
             LayoutSVGInlineText {#text} at (226.91,8) size 17.64x14
               chunk 1 (middle anchor) text run 1 at (227.83,19.00) startOffset 0 endOffset 5 width 26.00: "Batik"
           LayoutSVGInlineText {#text} at (244.56,8) size 5.42x14
@@ -153,12 +153,12 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (160,29) size 173.55x42.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (160,29) size 173.55x14
             chunk 1 text run 1 at (160.00,40.00) startOffset 0 endOffset 32 width 173.55: "lengthAdjust=\"spacingAndGlyphs\" "
-          LayoutSVGTSpan {tspan} at (0,0) size 81x15
+          LayoutSVGTSpan {tspan} at (160,29) size 173.55x42.80
             LayoutSVGInlineText {#text} at (160,43.39) size 80.55x14
               chunk 1 text run 1 at (160.00,54.40) startOffset 0 endOffset 15 width 80.55: "textLength=\"25\""
           LayoutSVGInlineText {#text} at (240.55,43.39) size 3x14
             chunk 1 text run 1 at (240.55,54.40) startOffset 0 endOffset 1 width 3.00: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 77x15
+          LayoutSVGTSpan {tspan} at (160,29) size 173.55x42.80
             LayoutSVGInlineText {#text} at (160,57.80) size 76.55x14
               chunk 1 text run 1 at (160.00,68.80) startOffset 0 endOffset 15 width 76.55: "font-size=\"100\""
     LayoutSVGContainer {use} at (1,1) size 446x496

@@ -192,7 +192,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (500,303.38) size 325.11x39.66 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (500,303.38) size 305.91x20.47
           chunk 1 text run 1 at (500.00,320.00) startOffset 0 endOffset 41 width 305.92: "This colourPicker has a callBack function"
-        LayoutSVGTSpan {tspan} at (0,0) size 326x21
+        LayoutSVGTSpan {tspan} at (500,303.38) size 325.11x39.66
           LayoutSVGInlineText {#text} at (500,322.56) size 325.11x20.47
             chunk 1 text run 1 at (500.00,339.20) startOffset 0 endOffset 42 width 325.12: "attached that changes the background color"
       LayoutSVGContainer {g} at (500,200) size 300x90
@@ -234,7 +234,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (511,443) size 110x20 [fill={[type=SOLID] [color=#696969]}] [x=511.00] [y=443.00] [width=110.00] [height=20.00]
         LayoutSVGRect {rect} at (510,442) size 110x20 [fill={[type=SOLID] [color=#DCDCDC]}] [x=510.00] [y=442.00] [width=110.00] [height=20.00]
         LayoutSVGText {text} at (517,445.88) size 96x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 96x16
+          LayoutSVGTSpan {tspan} at (517,445.88) size 96x15.36
             LayoutSVGInlineText {#text} at (517,445.88) size 96x15.36
               chunk 1 (middle anchor) text run 1 at (517.00,457.40) startOffset 0 endOffset 17 width 96.00: "Hide ColourPicker"
       LayoutSVGContainer {g} at (509,469) size 112x22
@@ -242,7 +242,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (511,471) size 110x20 [fill={[type=SOLID] [color=#696969]}] [x=511.00] [y=471.00] [width=110.00] [height=20.00]
         LayoutSVGRect {rect} at (510,470) size 110x20 [fill={[type=SOLID] [color=#DCDCDC]}] [x=510.00] [y=470.00] [width=110.00] [height=20.00]
         LayoutSVGText {text} at (522.11,473.88) size 85.75x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 86x16
+          LayoutSVGTSpan {tspan} at (522.11,473.88) size 85.75x15.36
             LayoutSVGInlineText {#text} at (522.11,473.88) size 85.75x15.36
               chunk 1 (middle anchor) text run 1 at (522.12,485.40) startOffset 0 endOffset 15 width 85.76: "Set Random Fill"
       LayoutSVGContainer {g} at (509,497) size 112x22
@@ -250,7 +250,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (511,499) size 110x20 [fill={[type=SOLID] [color=#696969]}] [x=511.00] [y=499.00] [width=110.00] [height=20.00]
         LayoutSVGRect {rect} at (510,498) size 110x20 [fill={[type=SOLID] [color=#DCDCDC]}] [x=510.00] [y=498.00] [width=110.00] [height=20.00]
         LayoutSVGText {text} at (512.52,501.88) size 104.95x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 105x16
+          LayoutSVGTSpan {tspan} at (512.52,501.88) size 104.95x15.36
             LayoutSVGInlineText {#text} at (512.52,501.88) size 104.95x15.36
               chunk 1 (middle anchor) text run 1 at (512.52,513.40) startOffset 0 endOffset 17 width 104.96: "Set Random Stroke"
       LayoutSVGContainer {g} at (499,169) size 182x22
@@ -258,7 +258,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (501,171) size 180x20 [fill={[type=SOLID] [color=#696969]}] [x=501.00] [y=171.00] [width=180.00] [height=20.00]
         LayoutSVGRect {rect} at (500,170) size 180x20 [fill={[type=SOLID] [color=#DCDCDC]}] [x=500.00] [y=170.00] [width=180.00] [height=20.00]
         LayoutSVGText {text} at (504.88,173.88) size 170.23x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 171x16
+          LayoutSVGTSpan {tspan} at (504.88,173.88) size 170.23x15.36
             LayoutSVGInlineText {#text} at (504.88,173.88) size 170.23x15.36
               chunk 1 (middle anchor) text run 1 at (504.88,185.40) startOffset 0 endOffset 29 width 170.24: "Randomly Resize Colour Picker"
       LayoutSVGContainer {g} at (684,169) size 182x22
@@ -266,7 +266,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (686,171) size 180x20 [fill={[type=SOLID] [color=#696969]}] [x=686.00] [y=171.00] [width=180.00] [height=20.00]
         LayoutSVGRect {rect} at (685,170) size 180x20 [fill={[type=SOLID] [color=#DCDCDC]}] [x=685.00] [y=170.00] [width=180.00] [height=20.00]
         LayoutSVGText {text} at (693.08,173.88) size 163.83x15.36 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 164x16
+          LayoutSVGTSpan {tspan} at (693.08,173.88) size 163.83x15.36
             LayoutSVGInlineText {#text} at (693.08,173.88) size 163.83x15.36
               chunk 1 (middle anchor) text run 1 at (693.08,185.40) startOffset 0 endOffset 27 width 163.84: "Randomly Move Colour Picker"
     LayoutSVGContainer {g} at (459,498) size 27x18.23
@@ -274,6 +274,6 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (461,500) size 25x16 [fill={[type=SOLID] [color=#696969]}] [x=461.00] [y=500.00] [width=25.00] [height=16.00]
       LayoutSVGRect {rect} at (460,499) size 25x16 [fill={[type=SOLID] [color=#DCDCDC]}] [x=460.00] [y=499.00] [width=25.00] [height=16.00]
       LayoutSVGText {text} at (464.17,500.88) size 16.63x15.36 contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 17x16
+        LayoutSVGTSpan {tspan} at (464.17,500.88) size 16.63x15.36
           LayoutSVGInlineText {#text} at (464.17,500.88) size 16.63x15.36
             chunk 1 (middle anchor) text run 1 at (464.18,512.40) startOffset 0 endOffset 2 width 16.64: "OK"

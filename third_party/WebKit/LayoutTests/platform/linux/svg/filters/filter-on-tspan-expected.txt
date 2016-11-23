@@ -8,7 +8,8 @@ layer at (0,0) size 800x600
     LayoutSVGText {text} at (100,85) size 91.88x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (100,85) size 63x19
         chunk 1 text run 1 at (100.00,100.00) startOffset 0 endOffset 12 width 63.00: "Die ist ein "
-      LayoutSVGTSpan {tspan} at (0,0) size 25x19
+      LayoutSVGTSpan {tspan} at (100,85) size 91.88x19
+        [filter="filter"] LayoutSVGResourceFilter {filter} at (90.81,83.10) size 110.25x22.80
         LayoutSVGInlineText {#text} at (163,85) size 24.88x19
           [filter="filter"] LayoutSVGResourceFilter {filter} at (160.51,83.10) size 29.85x22.80
           chunk 1 text run 1 at (163.00,100.00) startOffset 0 endOffset 4 width 24.88: "Test"

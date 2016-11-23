@@ -54,7 +54,7 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-41.50,-28) size 83x35 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-41.50,-27) size 24x34
             chunk 1 (middle anchor) text run 1 at (-41.50,0.00) startOffset 0 endOffset 2 width 24.00: "sa"
-          LayoutSVGTSpan {tspan} at (0,0) size 24x35
+          LayoutSVGTSpan {tspan} at (-41.50,-28) size 83x35
             LayoutSVGInlineText {#text} at (-17.50,-28) size 24x35
               chunk 1 (middle anchor) text run 1 at (-17.50,0.00) startOffset 0 endOffset 1 width 24.00: "m"
           LayoutSVGInlineText {#text} at (6.50,-27) size 35x34

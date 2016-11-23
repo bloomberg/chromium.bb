@@ -24,60 +24,60 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (54.50,92) size 145.30x80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (54.50,112) size 35x60
           chunk 1 (middle anchor) text run 1 at (54.50,160.00) startOffset 0 endOffset 1 width 35.00: "B"
-        LayoutSVGTSpan {tspan} at (0,0) size 19x32
+        LayoutSVGTSpan {tspan} at (54.50,92) size 145.30x80
           LayoutSVGInlineText {#text} at (88.50,114) size 19x32
             chunk 1 (middle anchor) text run 1 at (89.50,140.00) startOffset 0 endOffset 1 width 18.00: "A"
         LayoutSVGInlineText {#text} at (107.50,92) size 33x60
           chunk 1 (middle anchor) text run 1 at (107.50,140.00) startOffset 0 endOffset 1 width 33.00: "T"
-        LayoutSVGTSpan {tspan} at (0,0) size 10x45
+        LayoutSVGTSpan {tspan} at (54.50,92) size 145.30x80
           LayoutSVGInlineText {#text} at (140.50,104) size 10x45
             chunk 1 (middle anchor) text run 1 at (140.50,140.00) startOffset 0 endOffset 1 width 10.00: "I"
-        LayoutSVGTSpan {tspan} at (0,0) size 55x70
+        LayoutSVGTSpan {tspan} at (54.50,92) size 145.30x80
           LayoutSVGInlineText {#text} at (146.39,94.89) size 53.41x68.34
             chunk 1 (middle anchor) text run 1 at (150.50,140.00) startOffset 0 endOffset 1 width 35.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGText {text} at (260.50,92) size 153.11x81 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (260.50,112) size 36x61
           chunk 1 (middle anchor) text run 1 at (260.50,160.00) startOffset 0 endOffset 1 width 36.00: "B"
-        LayoutSVGTSpan {tspan} at (0,0) size 20x31
+        LayoutSVGTSpan {tspan} at (260.50,92) size 153.11x81
           LayoutSVGInlineText {#text} at (296.50,116) size 20x31
             chunk 1 (middle anchor) text run 1 at (296.50,140.00) startOffset 0 endOffset 1 width 19.00: "A"
         LayoutSVGInlineText {#text} at (315.50,92) size 33x61
           chunk 1 (middle anchor) text run 1 at (315.50,140.00) startOffset 0 endOffset 1 width 33.00: "T"
-        LayoutSVGTSpan {tspan} at (0,0) size 13x46
+        LayoutSVGTSpan {tspan} at (260.50,92) size 153.11x81
           LayoutSVGInlineText {#text} at (348.50,104) size 13x46
             chunk 1 (middle anchor) text run 1 at (348.50,140.00) startOffset 0 endOffset 1 width 13.00: "I"
-        LayoutSVGTSpan {tspan} at (0,0) size 58x72
+        LayoutSVGTSpan {tspan} at (260.50,92) size 153.11x81
           LayoutSVGInlineText {#text} at (357.05,94.89) size 56.56x70.31
             chunk 1 (middle anchor) text run 1 at (361.50,140.00) startOffset 0 endOffset 1 width 38.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGText {text} at (54.50,192) size 145.30x80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (54.50,212) size 35x60
           chunk 1 (middle anchor) text run 1 at (54.50,260.00) startOffset 0 endOffset 1 width 35.00: "B"
-        LayoutSVGTSpan {tspan} at (0,0) size 19x32
+        LayoutSVGTSpan {tspan} at (54.50,192) size 145.30x80
           LayoutSVGInlineText {#text} at (88.50,214) size 19x32
             chunk 1 (middle anchor) text run 1 at (89.50,240.00) startOffset 0 endOffset 1 width 18.00: "A"
         LayoutSVGInlineText {#text} at (107.50,192) size 33x60
           chunk 1 (middle anchor) text run 1 at (107.50,240.00) startOffset 0 endOffset 1 width 33.00: "T"
-        LayoutSVGTSpan {tspan} at (0,0) size 10x45
+        LayoutSVGTSpan {tspan} at (54.50,192) size 145.30x80
           LayoutSVGInlineText {#text} at (140.50,204) size 10x45
             chunk 1 (middle anchor) text run 1 at (140.50,240.00) startOffset 0 endOffset 1 width 10.00: "I"
-        LayoutSVGTSpan {tspan} at (0,0) size 55x70
+        LayoutSVGTSpan {tspan} at (54.50,192) size 145.30x80
           LayoutSVGInlineText {#text} at (146.39,194.89) size 53.41x68.34
             chunk 1 (middle anchor) text run 1 at (150.50,240.00) startOffset 0 endOffset 1 width 35.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGText {text} at (260.50,192) size 153.11x81 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (260.50,212) size 36x61
           chunk 1 (middle anchor) text run 1 at (260.50,260.00) startOffset 0 endOffset 1 width 36.00: "B"
-        LayoutSVGTSpan {tspan} at (0,0) size 20x31
+        LayoutSVGTSpan {tspan} at (260.50,192) size 153.11x81
           LayoutSVGInlineText {#text} at (296.50,216) size 20x31
             chunk 1 (middle anchor) text run 1 at (296.50,240.00) startOffset 0 endOffset 1 width 19.00: "A"
         LayoutSVGInlineText {#text} at (315.50,192) size 33x61
           chunk 1 (middle anchor) text run 1 at (315.50,240.00) startOffset 0 endOffset 1 width 33.00: "T"
-        LayoutSVGTSpan {tspan} at (0,0) size 13x46
+        LayoutSVGTSpan {tspan} at (260.50,192) size 153.11x81
           LayoutSVGInlineText {#text} at (348.50,204) size 13x46
             chunk 1 (middle anchor) text run 1 at (348.50,240.00) startOffset 0 endOffset 1 width 13.00: "I"
-        LayoutSVGTSpan {tspan} at (0,0) size 58x72
+        LayoutSVGTSpan {tspan} at (260.50,192) size 153.11x81
           LayoutSVGInlineText {#text} at (357.05,194.89) size 56.56x70.31
             chunk 1 (middle anchor) text run 1 at (361.50,240.00) startOffset 0 endOffset 1 width 38.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -86,16 +86,16 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (54.50,312) size 35x60
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (51,306) size 42x72
           chunk 1 (middle anchor) text run 1 at (54.50,360.00) startOffset 0 endOffset 1 width 35.00: "B"
-        LayoutSVGTSpan {tspan} at (0,0) size 19x32
+        LayoutSVGTSpan {tspan} at (54.50,292) size 145.30x80
           LayoutSVGInlineText {#text} at (88.50,314) size 19x32
             chunk 1 (middle anchor) text run 1 at (89.50,340.00) startOffset 0 endOffset 1 width 18.00: "A"
         LayoutSVGInlineText {#text} at (107.50,292) size 33x60
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (104.20,286) size 39.60x72
           chunk 1 (middle anchor) text run 1 at (107.50,340.00) startOffset 0 endOffset 1 width 33.00: "T"
-        LayoutSVGTSpan {tspan} at (0,0) size 10x45
+        LayoutSVGTSpan {tspan} at (54.50,292) size 145.30x80
           LayoutSVGInlineText {#text} at (140.50,304) size 10x45
             chunk 1 (middle anchor) text run 1 at (140.50,340.00) startOffset 0 endOffset 1 width 10.00: "I"
-        LayoutSVGTSpan {tspan} at (0,0) size 55x70
+        LayoutSVGTSpan {tspan} at (54.50,292) size 145.30x80
           LayoutSVGInlineText {#text} at (146.39,294.89) size 53.41x68.34
             chunk 1 (middle anchor) text run 1 at (150.50,340.00) startOffset 0 endOffset 1 width 35.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -105,16 +105,16 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (260.50,312) size 36x61
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (256.90,305.90) size 43.20x73.20
           chunk 1 (middle anchor) text run 1 at (260.50,360.00) startOffset 0 endOffset 1 width 36.00: "B"
-        LayoutSVGTSpan {tspan} at (0,0) size 20x31
+        LayoutSVGTSpan {tspan} at (260.50,292) size 153.11x81
           LayoutSVGInlineText {#text} at (296.50,316) size 20x31
             chunk 1 (middle anchor) text run 1 at (296.50,340.00) startOffset 0 endOffset 1 width 19.00: "A"
         LayoutSVGInlineText {#text} at (315.50,292) size 33x61
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (312.20,285.90) size 39.60x73.20
           chunk 1 (middle anchor) text run 1 at (315.50,340.00) startOffset 0 endOffset 1 width 33.00: "T"
-        LayoutSVGTSpan {tspan} at (0,0) size 13x46
+        LayoutSVGTSpan {tspan} at (260.50,292) size 153.11x81
           LayoutSVGInlineText {#text} at (348.50,304) size 13x46
             chunk 1 (middle anchor) text run 1 at (348.50,340.00) startOffset 0 endOffset 1 width 13.00: "I"
-        LayoutSVGTSpan {tspan} at (0,0) size 58x72
+        LayoutSVGTSpan {tspan} at (260.50,292) size 153.11x81
           LayoutSVGInlineText {#text} at (357.05,294.89) size 56.56x70.31
             chunk 1 (middle anchor) text run 1 at (361.50,340.00) startOffset 0 endOffset 1 width 38.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
