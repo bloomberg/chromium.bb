@@ -37,8 +37,11 @@
 /** @polymerBehavior */
 var CrScrollableBehavior = {
   properties: {
-    /** @private */
-    intervalId_: Number,
+    /** @private {number|null} */
+    intervalId_: {
+      type: Number,
+      value: null
+    }
   },
 
   ready: function() {
@@ -56,7 +59,7 @@ var CrScrollableBehavior = {
   },
 
   detached: function() {
-    if (this.intervalId_)
+    if (this.intervalId_ !== null)
       clearInterval(this.intervalId_);
   },
 
@@ -65,10 +68,13 @@ var CrScrollableBehavior = {
    * This ensures that the <iron-list> contents of dynamically sized
    * containers are resized correctly.
    */
-  updateScrollableContents() {
+  updateScrollableContents: function() {
+    if (this.intervalId_ !== null)
+      return;  // notifyResize is arelady in progress.
+
     let nodeList = this.root.querySelectorAll('[scrollable] iron-list');
-    // Use setTimeout to avoid initial render / sizing issues.
-    this.intervalId_ = setInterval(function() {
+    // Use setInterval to avoid initial render / sizing issues.
+    this.intervalId_ = window.setInterval(function() {
       let unreadyNodes = [];
       for (let node of nodeList) {
         if (node.parentNode.scrollHeight == 0) {
@@ -78,10 +84,12 @@ var CrScrollableBehavior = {
         let ironList = /** @type {!IronListElement} */ (node);
         ironList.notifyResize();
       }
-      if (unreadyNodes.length == 0)
-        clearInterval(this.intervalId_);
-      else
+      if (unreadyNodes.length == 0) {
+        window.clearInterval(this.intervalId_);
+        this.intervalId_ = null;
+      } else {
         nodeList = unreadyNodes;
+      }
     }.bind(this), 10);
   },
 
@@ -90,7 +98,7 @@ var CrScrollableBehavior = {
    * @param {!Event} event
    * @private
    */
-  updateScrollEvent_(event) {
+  updateScrollEvent_: function(event) {
     let scrollable = /** @type {!HTMLElement} */ (event.target);
     this.updateScroll_(scrollable);
   },
@@ -100,7 +108,7 @@ var CrScrollableBehavior = {
    * @param {!HTMLElement} scrollable
    * @private
    */
-  updateScroll_(scrollable) {
+  updateScroll_: function(scrollable) {
     scrollable.classList.toggle(
         'can-scroll', scrollable.clientHeight < scrollable.scrollHeight);
     scrollable.classList.toggle('is-scrolled', scrollable.scrollTop > 0);
