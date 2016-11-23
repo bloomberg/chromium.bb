@@ -29,6 +29,7 @@
 #include "modules/payments/PaymentsValidators.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -732,8 +733,10 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
 
   if (!allowedToUsePaymentRequest(scriptState->domWindow()->frame())) {
     exceptionState.throwSecurityError(
-        "Must be in a top-level browsing context or an iframe needs to specify "
-        "'allowpaymentrequest' explicitly");
+        RuntimeEnabledFeatures::paymentRequestIFrameEnabled()
+            ? "Must be in a top-level browsing context or an iframe needs to "
+              "specify 'allowpaymentrequest' explicitly"
+            : "Must be in a top-level browsing context");
     return;
   }
 

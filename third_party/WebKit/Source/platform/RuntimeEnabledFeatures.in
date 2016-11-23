@@ -173,6 +173,7 @@ PassPaintVisualRectToCompositor
 PaymentApp status=experimental
 // PaymentRequest is enabled by default on Android
 PaymentRequest status=experimental
+PaymentRequestIFrame status=experimental
 PaymentRequestPayerName status=stable
 PerformanceObserver status=stable
 PermissionDelegation status=test
