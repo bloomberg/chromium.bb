@@ -13,50 +13,24 @@ Install the Chrome Public APK with the following:
 ./build/android/adb_install_apk.py $(PRODUCT_DIR)/apks/ChromePublic.apk
 ```
 
-This is mostly equivalent to just running:
-
-```bash
-adb install $(PRODUCT_DIR)/apks/ChromePublic.apk
-```
-
 ### Setting up command line flags
 
 Set up any command line flags with:
 
 ```bash
-./build/android/adb_chrome_public_command_line --your-flag-here
+./build/android/adb_chrome_public_command_line <your flags here>
 ```
 
-To see your current command line, run `adb_blimp_command_line` without any
-arguments.
-
-The Chrome APK blimp client reads command line arguments from the file
-`/data/local/chrome-command-line` and the above script reads/writes that file.
-Typical format of the file is `chrome --your-flag-here`. So one can use `adb`
-directly to create the file:
-
+For example:
 ```bash
-echo 'chrome --engine-ip=10.0.2.2 --engine-port=25467 --engine-transport=tcp' \
-  '--blimp-client-token-path=/data/data/org.chromium.chrome/blimp_client_token' \
-  '--vmodule="*=1""' > /tmp/chrome-command-line
-adb push /tmp/chrome-command-line /data/local/chrome-command-line
-adb shell start chmod 0664 /data/local/chrome-command-line
+./build/android/adb_chrome_public_command_line --engine-ip=127.0.0.1 \
+--engine-port=25467 --engine-transport=tcp \
+--blimp-client-token-path=/data/data/org.chromium.chrome/blimp_client_token \
+--vmodule="*=1"
 ```
 
-### Forcefully enabling the blimp client
-
-Usually, the end user will have to manually enable blimp by using the Blimp
-panel in the application settings, but for developers it might be beneficial to
-skip this check by forcefully enabling the blimp client.
-
-You can do this by adding the command line flag:
-```
---enable-blimp
-```
-
-*Note:* This still does not skip the authentication checks for the assigner. You
-will still have to either pass in the `--engine-ip=...` argument or sign in
-with a valid account.
+To see your current command line, run 
+`./build/android/adb_chrome_public_command_line` without any arguments.
 
 ### Instructing client to connect to specific host
 
@@ -70,11 +44,6 @@ SSL-encrypted connections take an additional flag
 `--engine-cert-path` which specifies a path to a PEM-encoded certificate
 file (e.g. `--engine-cert-path=/path_on_device_to/file.pem`). Remember to also
 copy the file to the device when using this option.
-
-### Requesting the complete page from the engine
-The engine sends partially rendered content to the client. To request the
-complete page from the engine, use the `--download-whole-document` flag on the
-client.
 
 ### Specifying the client auth token file
 The client needs access to a file containing a client auth token. One should
@@ -93,16 +62,38 @@ To have the client use the given client auth token file, use the
 An example of a client token file is
 [test_client_token](https://code.google.com/p/chromium/codesearch#chromium/src/blimp/test/data/test_client_token).
 
-### Start the Client
+### Optional: Forcefully enabling the blimp client
+
+Usually, the end user will have to manually enable blimp by using the Blimp
+panel in the application settings, but for developers it might be beneficial to
+skip this check by forcefully enabling the blimp client.
+
+You can do this by adding the command line flag:
+```
+--enable-blimp
+```
+
+*Note:* This still does not skip the authentication checks for the assigner. You
+will still have to either pass in the `--engine-ip=...` argument or sign in
+with a valid account.
+
+### Optional: Requesting the complete page from the engine
+
+The engine sends partially rendered content to the client. To request the
+complete page from the engine, use the `--download-whole-document` flag on the
+client.
+
+### Give Permissions & Start the Client
+
+Give permissions to app: Long-press the chromium icon on your app drawer,
+dragging it to the “App info” shortcut that appears at the top of the screen,
+and releasing it. Once the "App info" opens, there should be a "Permissions"
+entry. Make sure to enable all permissions inside the "Permissions" screen.
+
 Run the Chrome Public APK with:
 
 ```bash
 ./build/android/adb_run_chrome_public
-```
-The script under the cover uses adb to start the application:
-
-```bash
-adb shell am start -a android.intent.action.VIEW -n org.chromium.chrome/com.google.android.apps.chrome.Main
 ```
 
 ### Connecting to an Engine running on a workstation
