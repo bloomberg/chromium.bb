@@ -242,7 +242,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
 
-  int gpu_process_id_;
   int render_process_id_;
 
   MediaInternals* media_internals_;

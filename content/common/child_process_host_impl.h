@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace IPC {
 class MessageFilter;
@@ -88,14 +87,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
 
   // Message handlers:
   void OnShutdownRequest();
-  void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                 uint32_t width,
-                                 uint32_t height,
-                                 gfx::BufferFormat format,
-                                 gfx::BufferUsage usage,
-                                 gfx::GpuMemoryBufferHandle* handle);
-  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                const gpu::SyncToken& sync_token);
 
   // Initializes the IPC channel and returns true on success. |channel_| must be
   // non-null.

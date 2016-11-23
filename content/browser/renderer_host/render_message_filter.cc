@@ -144,7 +144,6 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       dom_storage_context_(dom_storage_context),
-      gpu_process_id_(0),
       render_process_id_(render_process_id),
       media_internals_(media_internals),
       cache_storage_context_(cache_storage_context),
@@ -609,16 +608,12 @@ void RenderMessageFilter::OnEstablishGpuChannel(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<IPC::Message> reply(reply_ptr);
 
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
+  GpuProcessHost* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!host) {
-    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
-    if (!host) {
-      reply->set_reply_error();
-      Send(reply.release());
-      return;
-    }
-
-    gpu_process_id_ = host->host_id();
+    reply->set_reply_error();
+    Send(reply.release());
+    return;
   }
 
   bool preempts = false;
