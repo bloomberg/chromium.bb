@@ -30,6 +30,10 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   bool negotiated() const override;
   int id() const override;
   DataState state() const override;
+  uint32_t messages_sent() const override;
+  uint64_t bytes_sent() const override;
+  uint32_t messages_received() const override;
+  uint64_t bytes_received() const override;
   uint64_t buffered_amount() const override;
   void Close() override;
   bool Send(const webrtc::DataBuffer& buffer) override;

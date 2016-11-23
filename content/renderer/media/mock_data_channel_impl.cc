@@ -53,6 +53,26 @@ int MockDataChannel::id() const {
 
 MockDataChannel::DataState MockDataChannel::state() const { return state_; }
 
+uint32_t MockDataChannel::messages_sent() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+uint64_t MockDataChannel::bytes_sent() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+uint32_t MockDataChannel::messages_received() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+uint64_t MockDataChannel::bytes_received() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 // For testing.
 void MockDataChannel::changeState(DataState state) {
   state_ = state;
