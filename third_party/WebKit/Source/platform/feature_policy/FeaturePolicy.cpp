@@ -198,7 +198,10 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
 void FeaturePolicy::setHeaderPolicy(const String& policy,
                                     Vector<String>* messages) {
   DCHECK(m_headerWhitelists.isEmpty());
-  std::unique_ptr<JSONArray> policyJSON = parseJSONHeader(policy);
+  // Use a reasonable parse depth limit; the actual maximum depth is only going
+  // to be 4 for a valid policy, but we'll give the featurePolicyParser a chance
+  // to report more specific errors, unless the string is really invalid.
+  std::unique_ptr<JSONArray> policyJSON = parseJSONHeader(policy, 50);
   if (!policyJSON) {
     if (messages)
       messages->append("Unable to parse header");

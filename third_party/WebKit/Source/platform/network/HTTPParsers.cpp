@@ -899,12 +899,14 @@ bool parseMultipartHeadersFromBody(const char* bytes,
 }
 
 // See https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01, Section 4.
-std::unique_ptr<JSONArray> parseJSONHeader(const String& header) {
+std::unique_ptr<JSONArray> parseJSONHeader(const String& header,
+                                           int maxParseDepth) {
   StringBuilder sb;
   sb.append("[");
   sb.append(header);
   sb.append("]");
-  std::unique_ptr<JSONValue> headerValue = parseJSON(sb.toString());
+  std::unique_ptr<JSONValue> headerValue =
+      parseJSON(sb.toString(), maxParseDepth);
   return JSONArray::from(std::move(headerValue));
 }
 

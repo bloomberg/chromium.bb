@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  blink::parseJSON(WTF::String(data, size));
+  blink::parseJSON(WTF::String(data, size), 500);
   return 0;
 }
 

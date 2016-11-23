@@ -162,9 +162,11 @@ PLATFORM_EXPORT bool parseMultipartHeadersFromBody(const char* bytes,
 
 // Parses a header value containing JSON data, according to
 // https://tools.ietf.org/html/draft-ietf-httpbis-jfv-01
-// Returns an empty unique_ptr if the header cannot be parsed as JSON.
-PLATFORM_EXPORT std::unique_ptr<JSONArray> parseJSONHeader(
-    const String& header);
+// Returns an empty unique_ptr if the header cannot be parsed as JSON. JSON
+// strings which represent object nested deeper than |maxParseDepth| will also
+// cause an empty return value.
+PLATFORM_EXPORT std::unique_ptr<JSONArray> parseJSONHeader(const String& header,
+                                                           int maxParseDepth);
 
 }  // namespace blink
 
