@@ -161,12 +161,17 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
     DCHECK(tree_ != PENDING_TREE || !tiling->has_tiles());
     tiling->SetRasterSourceAndResize(raster_source);
 
+    // Force |UpdateTilePriorities| on commit for cases where the compositor is
+    // heavily pipelined resulting in back to back draw and commit. This
+    // prevents the early out from |UpdateTilePriorities| because frame time
+    // didn't change. That in turn causes an early out from PrepareTiles which
+    // can cause checkerboarding.
+    state_since_last_tile_priority_update_.invalidated = true;
+
     // We can commit on either active or pending trees, but only active one can
     // have tiles at this point.
-    if (tree_ == ACTIVE_TREE) {
+    if (tree_ == ACTIVE_TREE)
       tiling->Invalidate(layer_invalidation);
-      state_since_last_tile_priority_update_.invalidated = true;
-    }
 
     // This is needed for cases where the live tiles rect didn't change but
     // recordings exist in the raster source that did not exist on the last

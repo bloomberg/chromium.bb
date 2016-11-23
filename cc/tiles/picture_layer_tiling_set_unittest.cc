@@ -984,5 +984,58 @@ TEST(PictureLayerTilingTest, InvalidateAfterComputeTilePriorityRects) {
       tiling_set->UpdateTilePriorities(viewport, 1.f, time, Occlusion(), true));
 }
 
+TEST(PictureLayerTilingTest, InvalidateAfterUpdateRasterSourceForCommit) {
+  FakePictureLayerTilingClient pending_client;
+  FakePictureLayerTilingClient active_client;
+  std::unique_ptr<PictureLayerTilingSet> pending_set =
+      PictureLayerTilingSet::Create(PENDING_TREE, &pending_client, 1000, 1.f,
+                                    1000, 1000.f);
+  std::unique_ptr<PictureLayerTilingSet> active_set =
+      PictureLayerTilingSet::Create(ACTIVE_TREE, &active_client, 1000, 1.f,
+                                    1000, 1000.f);
+
+  gfx::Size layer_bounds(100, 100);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  auto* pending_tiling = pending_set->AddTiling(1.f, raster_source);
+  pending_tiling->set_resolution(HIGH_RESOLUTION);
+  active_client.set_twin_tiling_set(pending_set.get());
+
+  double time = 1.;
+  gfx::Rect viewport(0, 0, 100, 100);
+
+  // The first commit will update the raster source for pending tilings.
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(raster_source,
+                                                           Region(), 1.f, 1.f);
+  // UpdateTilePriorities for pending set gets called during UDP in commit.
+  EXPECT_TRUE(pending_set->UpdateTilePriorities(viewport, 1.f, time,
+                                                Occlusion(), true));
+  // The active set doesn't have tilings yet.
+  EXPECT_FALSE(
+      active_set->UpdateTilePriorities(viewport, 1.f, time, Occlusion(), true));
+
+  // On activation tilings are copied from pending set to active set.
+  active_set->UpdateTilingsToCurrentRasterSourceForActivation(
+      raster_source, pending_set.get(), Region(), 1.f, 1.f);
+  // Pending set doesn't have any tilings now.
+  EXPECT_FALSE(pending_set->UpdateTilePriorities(viewport, 1.f, time,
+                                                 Occlusion(), true));
+  // UpdateTilePriorities for active set gets called during UDP in draw.
+  EXPECT_TRUE(
+      active_set->UpdateTilePriorities(viewport, 1.f, time, Occlusion(), true));
+
+  // Even though frame time and viewport haven't changed since last commit we
+  // update tile priorities because of potential invalidations.
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(raster_source,
+                                                           Region(), 1.f, 1.f);
+  // UpdateTilePriorities for pending set gets called during UDP in commit.
+  EXPECT_TRUE(pending_set->UpdateTilePriorities(viewport, 1.f, time,
+                                                Occlusion(), true));
+  // No changes for active set until activation.
+  EXPECT_FALSE(
+      active_set->UpdateTilePriorities(viewport, 1.f, time, Occlusion(), true));
+}
+
 }  // namespace
 }  // namespace cc
