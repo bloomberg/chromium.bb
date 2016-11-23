@@ -707,10 +707,11 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
   DownloaderTestDelegate downloader_;
 };
 
+// Disabled due to flakiness (crbug.com/668067)
 // We want to test what happens at startup with a corroption-disabled policy
 // force installed extension. So we set that up in the PRE test here.
 IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
-                       PRE_PolicyCorruptedOnStartup) {
+                       DISABLED_PRE_PolicyCorruptedOnStartup) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   RegistryObserver registry_observer(registry);
 
@@ -731,8 +732,10 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
   EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
 }
 
+// Disabled due to flakiness (crbug.com/668067)
 // Now actually test what happens on the next startup after the PRE test above.
-IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
+                       DISABLED_PolicyCorruptedOnStartup) {
   // Expect that the extension is still disabled for corruption.
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(id_);
