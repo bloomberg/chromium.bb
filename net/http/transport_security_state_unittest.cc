@@ -1235,12 +1235,7 @@ TEST_F(TransportSecurityStateTest, LongNames) {
   EXPECT_FALSE(state.GetDynamicPKPState(kLongName, &pkp_state));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_BuiltinCertPins DISABLED_BuiltinCertPins
-#else
-#define MAYBE_BuiltinCertPins BuiltinCertPins
-#endif
-TEST_F(TransportSecurityStateTest, MAYBE_BuiltinCertPins) {
+TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   TransportSecurityState state;
   EnableStaticPins(&state);
   TransportSecurityState::STSState sts_state;
