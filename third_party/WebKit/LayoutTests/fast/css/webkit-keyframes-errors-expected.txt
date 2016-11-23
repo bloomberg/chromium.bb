@@ -1,1 +1,0 @@
-Test for Blink bug 228870: CSS parser incorrectly handles invalid @-webkit-keyframes key values

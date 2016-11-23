@@ -1,8 +1,8 @@
 <html>
 <body>
-    <p>Test for Blink bug <a href="https://code.google.com/p/chromium/issues/detail?id=228870">228870</a>: CSS parser incorrectly handles invalid @-webkit-keyframes key values</p>
+    <p>Test for Blink bug <a href="https://code.google.com/p/chromium/issues/detail?id=228870">228870</a>: CSS parser incorrectly handles invalid @keyframes key values</p>
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             0 {foo: bar;}
         }
 
@@ -12,7 +12,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             0, 100% {foo: bar;}
         }
 
@@ -22,7 +22,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             10%, none {foo: bar;}
         }
 
@@ -32,7 +32,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             -10%, from {foo: bar;}
         }
 
@@ -42,7 +42,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             0 {foo: bar;} from
         }
 
@@ -52,7 +52,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             {foo: bar;}
         }
 
@@ -62,7 +62,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             10%
         }
 
@@ -72,7 +72,7 @@
     </style>
 
     <style>
-        @-webkit-keyframes foo {
+        @keyframes foo {
             from (}) {}
             #(}) {}
         }
