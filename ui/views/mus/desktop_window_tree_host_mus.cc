@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -163,11 +164,22 @@ void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
   SetHitTestMask(mask_rect);
 }
 
+float DesktopWindowTreeHostMus::GetScaleFactor() const {
+  // TODO(sky): GetDisplayNearestWindow() should take a const aura::Window*.
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(const_cast<aura::Window*>(window()))
+      .device_scale_factor();
+}
+
+void DesktopWindowTreeHostMus::SetBoundsInDips(
+    const gfx::Rect& bounds_in_dips) {
+  SetBounds(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dips));
+}
+
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
-  // TODO: handle device scale, http://crbug.com/663524.
   if (!params.bounds.IsEmpty())
-    SetBounds(params.bounds);
+    SetBoundsInDips(params.bounds);
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
@@ -268,11 +280,10 @@ bool DesktopWindowTreeHostMus::IsVisible() const {
 
 void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
   // Use GetBounds() as the origin of window() is always at 0, 0.
-  gfx::Rect screen_bounds = GetBounds();
-  // TODO: handle device scale, http://crbug.com/663524. Also, |screen_bounds|
-  // is in pixels and should be dip.
+  gfx::Rect screen_bounds =
+      gfx::ConvertRectToDIP(GetScaleFactor(), GetBounds());
   screen_bounds.set_size(size);
-  SetBounds(screen_bounds);
+  SetBoundsInDips(screen_bounds);
 }
 
 void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
@@ -301,10 +312,7 @@ void DesktopWindowTreeHostMus::CenterWindow(const gfx::Size& size) {
 
   gfx::Rect resulting_bounds(bounds_to_center_in);
   resulting_bounds.ClampToCenteredSize(size);
-
-  // TODO: handle device scale, http://crbug.com/663524. SetBounds() expects
-  // pixels.
-  SetBounds(resulting_bounds);
+  SetBoundsInDips(resulting_bounds);
 }
 
 void DesktopWindowTreeHostMus::GetWindowPlacement(
@@ -316,8 +324,7 @@ void DesktopWindowTreeHostMus::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
-  // TODO: convert to dips, http://crbug.com/663524.
-  return GetBounds();
+  return gfx::ConvertRectToDIP(GetScaleFactor(), GetBounds());
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetClientAreaBoundsInScreen() const {
@@ -563,14 +570,15 @@ void DesktopWindowTreeHostMus::HideImpl() {
 }
 
 void DesktopWindowTreeHostMus::SetBounds(const gfx::Rect& bounds_in_pixels) {
-  // TODO: handle conversion to dips, http://crbug.com/663524.
   gfx::Rect final_bounds_in_pixels = bounds_in_pixels;
   if (GetBounds().size() != bounds_in_pixels.size()) {
     gfx::Size size = bounds_in_pixels.size();
-    size.SetToMax(native_widget_delegate_->GetMinimumSize());
-    const gfx::Size max_size = native_widget_delegate_->GetMaximumSize();
-    if (!max_size.IsEmpty())
-      size.SetToMin(max_size);
+    size.SetToMax(gfx::ConvertSizeToPixel(
+        GetScaleFactor(), native_widget_delegate_->GetMinimumSize()));
+    const gfx::Size max_size_in_pixels = gfx::ConvertSizeToPixel(
+        GetScaleFactor(), native_widget_delegate_->GetMaximumSize());
+    if (!max_size_in_pixels.IsEmpty())
+      size.SetToMin(max_size_in_pixels);
     final_bounds_in_pixels.set_size(size);
   }
   WindowTreeHostMus::SetBounds(final_bounds_in_pixels);

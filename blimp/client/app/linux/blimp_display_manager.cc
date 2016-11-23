@@ -14,6 +14,7 @@
 #include "ui/events/gesture_detection/motion_event_generic.h"
 #include "ui/events/gestures/motion_event_aura.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/x11/x11_window.h"
@@ -40,7 +41,8 @@ BlimpDisplayManager::BlimpDisplayManager(
 BlimpDisplayManager::~BlimpDisplayManager() = default;
 
 void BlimpDisplayManager::SetWindowSize(const gfx::Size& window_size) {
-  platform_window_->SetBounds(gfx::Rect(window_size));
+  platform_window_->SetBounds(
+      gfx::ConvertRectToPixel(device_pixel_ratio_, gfx::Rect(window_size)));
 }
 
 void BlimpDisplayManager::SetBlimpContents(

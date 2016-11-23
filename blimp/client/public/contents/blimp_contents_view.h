@@ -43,7 +43,7 @@ class BlimpContentsView {
   virtual scoped_refptr<cc::Layer> GetLayer() = 0;
 
   // Called to set both the size and the scale of the BlimpContents.  |size| is
-  // in pixels and |device_scale_factor| is in terms of dp to px.
+  // in pixels and |device_scale_factor| is in terms of px to dp.
   virtual void SetSizeAndScale(const gfx::Size& size,
                                float device_scale_factor) = 0;
 

@@ -36,6 +36,11 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void SendClientAreaToServer();
   void SendHitTestMaskToServer();
 
+  // Helper function to get the scale factor.
+  float GetScaleFactor() const;
+
+  void SetBoundsInDips(const gfx::Rect& bounds_in_dips);
+
   // DesktopWindowTreeHost:
   void Init(aura::Window* content_window,
             const Widget::InitParams& params) override;
