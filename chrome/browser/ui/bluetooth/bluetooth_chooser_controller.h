@@ -39,7 +39,7 @@ class BluetoothChooserController : public ChooserController {
   void RefreshOptions() override;
   void OpenAdapterOffHelpUrl() const override;
   base::string16 GetStatus() const override;
-  void Select(size_t index) override;
+  void Select(const std::vector<size_t>& indices) override;
   void Cancel() override;
   void Close() override;
   void OpenHelpCenterUrl() const override;

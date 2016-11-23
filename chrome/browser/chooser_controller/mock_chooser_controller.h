@@ -34,7 +34,7 @@ class MockChooserController : public ChooserController {
   bool IsPaired(size_t index) const override;
   base::string16 GetStatus() const override;
   MOCK_METHOD0(RefreshOptions, void());
-  MOCK_METHOD1(Select, void(size_t index));
+  MOCK_METHOD1(Select, void(const std::vector<size_t>& indices));
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Close, void());
   MOCK_CONST_METHOD0(OpenHelpCenterUrl, void());

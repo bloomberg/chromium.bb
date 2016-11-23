@@ -109,7 +109,9 @@ base::string16 UsbChooserController::GetStatus() const {
   return base::string16();
 }
 
-void UsbChooserController::Select(size_t index) {
+void UsbChooserController::Select(const std::vector<size_t>& indices) {
+  DCHECK_EQ(1u, indices.size());
+  size_t index = indices[0];
   DCHECK_LT(index, devices_.size());
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);

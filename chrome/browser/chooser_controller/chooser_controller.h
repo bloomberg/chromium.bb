@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
 #define CHROME_BROWSER_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -66,6 +68,9 @@ class ChooserController {
   // For WebBluetooth, it is a signal strength icon.
   virtual bool ShouldShowIconBeforeText() const;
 
+  // Returns if the chooser allows multiple items to be selected.
+  virtual bool AllowMultipleSelection() const;
+
   // Returns the text to be displayed in the chooser when there are no options.
   virtual base::string16 GetNoOptionsText() const = 0;
 
@@ -101,8 +106,9 @@ class ChooserController {
 
   // These three functions are called just before this object is destroyed:
 
-  // Called when the user selects the |index|th element from the dialog.
-  virtual void Select(size_t index) = 0;
+  // Called when the user selects elements from the dialog. |indices| contains
+  // the indices of the selected elements.
+  virtual void Select(const std::vector<size_t>& indices) = 0;
 
   // Called when the user presses the 'Cancel' button in the dialog.
   virtual void Cancel() = 0;

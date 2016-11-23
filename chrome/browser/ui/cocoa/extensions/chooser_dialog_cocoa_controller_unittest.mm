@@ -849,14 +849,17 @@ TEST_F(ChooserDialogCocoaControllerTest, SelectAnOptionAndPressConnectButton) {
   // Select option 0 and press "Connect" button.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
            byExtendingSelection:NO];
-  EXPECT_CALL(*mock_chooser_controller_, Select(0)).Times(1);
+  std::vector<size_t> indices(1);
+  indices[0] = 0;
+  EXPECT_CALL(*mock_chooser_controller_, Select(indices)).Times(1);
   EXPECT_CALL(*mock_chooser_controller_, Cancel()).Times(0);
   [connect_button_ performClick:chooser_dialog_controller_];
 
   // Select option 2 and press "Connect" button.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:2]
            byExtendingSelection:NO];
-  EXPECT_CALL(*mock_chooser_controller_, Select(2)).Times(1);
+  indices[0] = 2;
+  EXPECT_CALL(*mock_chooser_controller_, Select(indices)).Times(1);
   EXPECT_CALL(*mock_chooser_controller_, Cancel()).Times(0);
   [connect_button_ performClick:chooser_dialog_controller_];
 }
@@ -1090,6 +1093,101 @@ TEST_F(ChooserDialogCocoaControllerTest,
               rescan_button_.title);
   EXPECT_TRUE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest, MultipleSelection) {
+  CreateChooserDialog();
+  [table_view_ setAllowsMultipleSelection:YES];
+
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("a"),
+      MockChooserController::kNoSignalStrengthLevelImage,
+      MockChooserController::ConnectedPairedStatus::CONNECTED |
+          MockChooserController::ConnectedPairedStatus::PAIRED);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar,
+      MockChooserController::ConnectedPairedStatus::NONE);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar,
+      MockChooserController::ConnectedPairedStatus::NONE);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("d"), MockChooserController::kSignalStrengthLevel2Bar,
+      MockChooserController::ConnectedPairedStatus::NONE);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("e"), MockChooserController::kSignalStrengthLevel3Bar,
+      MockChooserController::ConnectedPairedStatus::NONE);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("f"), MockChooserController::kSignalStrengthLevel4Bar,
+      MockChooserController::ConnectedPairedStatus::NONE);
+
+  NSMutableIndexSet* selected_rows = [NSMutableIndexSet indexSet];
+  // Select options "a", "c", "d".
+  [selected_rows addIndex:0];
+  [selected_rows addIndex:2];
+  [selected_rows addIndex:3];
+  [table_view_ selectRowIndexes:selected_rows byExtendingSelection:NO];
+
+  // The options are: [a] b [c] [d] e f. The option with [] is selected.
+  EXPECT_NSEQ(selected_rows, [table_view_ selectedRowIndexes]);
+  ExpectRowImageIsConnectedImage(0, SK_ColorWHITE);
+  ExpectSignalStrengthLevelImageIs(
+      1, MockChooserController::kSignalStrengthLevel0Bar,
+      MockChooserController::kImageColorUnselected);
+  ExpectSignalStrengthLevelImageIs(
+      2, MockChooserController::kSignalStrengthLevel1Bar,
+      MockChooserController::kImageColorSelected);
+  ExpectSignalStrengthLevelImageIs(
+      3, MockChooserController::kSignalStrengthLevel2Bar,
+      MockChooserController::kImageColorSelected);
+  ExpectSignalStrengthLevelImageIs(
+      4, MockChooserController::kSignalStrengthLevel3Bar,
+      MockChooserController::kImageColorUnselected);
+  ExpectSignalStrengthLevelImageIs(
+      5, MockChooserController::kSignalStrengthLevel4Bar,
+      MockChooserController::kImageColorUnselected);
+  ExpectRowTextColorIs(0, [NSColor whiteColor]);
+  ExpectRowTextColorIs(1, [NSColor blackColor]);
+  ExpectRowTextColorIs(2, [NSColor whiteColor]);
+  ExpectRowTextColorIs(3, [NSColor whiteColor]);
+  ExpectRowTextColorIs(4, [NSColor blackColor]);
+  ExpectRowTextColorIs(5, [NSColor blackColor]);
+  ExpectPairedTextColorIs(
+      0, skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen300));
+  EXPECT_TRUE(connect_button_.enabled);
+
+  // Remove option "b".
+  // The options are: [a] [c] [d] e f.
+  mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("b"));
+  EXPECT_TRUE([table_view_ isRowSelected:0]);
+  EXPECT_TRUE([table_view_ isRowSelected:1]);
+  EXPECT_TRUE([table_view_ isRowSelected:2]);
+  EXPECT_FALSE([table_view_ isRowSelected:3]);
+  EXPECT_FALSE([table_view_ isRowSelected:4]);
+  EXPECT_TRUE(connect_button_.enabled);
+
+  // Remove option "c".
+  // The options are: [a] [d] e f.
+  mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("c"));
+  EXPECT_TRUE([table_view_ isRowSelected:0]);
+  EXPECT_TRUE([table_view_ isRowSelected:1]);
+  EXPECT_FALSE([table_view_ isRowSelected:2]);
+  EXPECT_FALSE([table_view_ isRowSelected:3]);
+  EXPECT_TRUE(connect_button_.enabled);
+
+  // Remove option "a".
+  // The options are: [d] e f.
+  mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("a"));
+  EXPECT_TRUE([table_view_ isRowSelected:0]);
+  EXPECT_FALSE([table_view_ isRowSelected:1]);
+  EXPECT_FALSE([table_view_ isRowSelected:2]);
+  EXPECT_TRUE(connect_button_.enabled);
+
+  // Remove option "d".
+  // The options are: e f.
+  mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
+  EXPECT_FALSE([table_view_ isRowSelected:0]);
+  EXPECT_FALSE([table_view_ isRowSelected:1]);
+  EXPECT_FALSE(connect_button_.enabled);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, PressAdapterOffHelpButton) {

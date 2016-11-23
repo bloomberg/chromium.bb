@@ -64,7 +64,7 @@ ChooserContentView::ChooserContentView(
       this, table_columns,
       chooser_controller_->ShouldShowIconBeforeText() ? views::ICON_AND_TEXT
                                                       : views::TEXT_ONLY,
-      true /* single_selection */);
+      !chooser_controller_->AllowMultipleSelection() /* single_selection */);
   table_view_->set_select_on_remove(false);
   table_view_->SetObserver(table_view_observer);
   table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
@@ -285,7 +285,10 @@ bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 void ChooserContentView::Accept() {
-  chooser_controller_->Select(table_view_->selection_model().active());
+  std::vector<size_t> indices(
+      table_view_->selection_model().selected_indices().begin(),
+      table_view_->selection_model().selected_indices().end());
+  chooser_controller_->Select(indices);
 }
 
 void ChooserContentView::Cancel() {

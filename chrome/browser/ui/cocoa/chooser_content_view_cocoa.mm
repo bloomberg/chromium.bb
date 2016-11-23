@@ -315,15 +315,18 @@ void ChooserContentViewController::OnOptionRemoved(size_t index) {
   // selected, if so, deselect it. Also if the removed item is before the
   // currently selected item, the currently selected item's index needs to
   // be adjusted by one.
-  NSInteger idx = static_cast<NSInteger>(index);
-  NSInteger selected_row = [table_view_ selectedRow];
-  if (selected_row == idx) {
-    [table_view_ deselectRow:idx];
-  } else if (selected_row > idx) {
-    [table_view_
-            selectRowIndexes:[NSIndexSet indexSetWithIndex:selected_row - 1]
-        byExtendingSelection:NO];
+  NSIndexSet* selected_rows = [table_view_ selectedRowIndexes];
+  NSMutableIndexSet* updated_selected_rows = [NSMutableIndexSet indexSet];
+  NSUInteger row = [selected_rows firstIndex];
+  while (row != NSNotFound) {
+    if (row < index)
+      [updated_selected_rows addIndex:row];
+    else if (row > index)
+      [updated_selected_rows addIndex:row - 1];
+    row = [selected_rows indexGreaterThanIndex:row];
   }
+
+  [table_view_ selectRowIndexes:updated_selected_rows byExtendingSelection:NO];
 
   UpdateTableView();
 }
@@ -379,14 +382,11 @@ void ChooserContentViewController::OnRefreshStateChanged(bool refreshing) {
 void ChooserContentViewController::UpdateTableView() {
   [table_view_ setEnabled:chooser_controller_->NumOptions() > 0];
   // For NSView-based table views, calling reloadData will deselect the
-  // currently selected row, so |selected_row| stores the currently selected
-  // row in order to select it again.
-  NSInteger selected_row = [table_view_ selectedRow];
+  // currently selected row, so |selected_rows| stores the currently selected
+  // rows in order to select them again.
+  NSIndexSet* selected_rows = [table_view_ selectedRowIndexes];
   [table_view_ reloadData];
-  if (selected_row != -1) {
-    [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selected_row]
-             byExtendingSelection:NO];
-  }
+  [table_view_ selectRowIndexes:selected_rows byExtendingSelection:NO];
 }
 
 @implementation ChooserContentViewCocoa
@@ -500,6 +500,10 @@ void ChooserContentViewController::UpdateTableView() {
     // Make the column title invisible.
     [tableView_ setHeaderView:nil];
     [tableView_ setFocusRingType:NSFocusRingTypeNone];
+    [tableView_
+        setAllowsMultipleSelection:chooserController_->AllowMultipleSelection()
+                                       ? YES
+                                       : NO];
 
     // Spinner.
     // Set the spinner in the center of the scroll view.
@@ -794,7 +798,14 @@ void ChooserContentViewController::UpdateTableView() {
 }
 
 - (void)accept {
-  chooserController_->Select([tableView_ selectedRow]);
+  NSIndexSet* selectedRows = [tableView_ selectedRowIndexes];
+  NSUInteger index = [selectedRows firstIndex];
+  std::vector<size_t> indices;
+  while (index != NSNotFound) {
+    indices.push_back(index);
+    index = [selectedRows indexGreaterThanIndex:index];
+  }
+  chooserController_->Select(indices);
 }
 
 - (void)cancel {
@@ -818,15 +829,16 @@ void ChooserContentViewController::UpdateTableView() {
 }
 
 - (void)updateContentRowColor {
-  NSInteger selectedRow = [tableView_ selectedRow];
+  NSIndexSet* selectedRows = [tableView_ selectedRowIndexes];
   NSInteger numOptions =
       base::checked_cast<NSInteger>(chooserController_->NumOptions());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (NSInteger rowIndex = 0; rowIndex < numOptions; ++rowIndex) {
+    BOOL isSelected = [selectedRows containsIndex:rowIndex];
     // Update the color of the text.
     [[self tableRowViewText:rowIndex]
-        setTextColor:(rowIndex == selectedRow ? [NSColor whiteColor]
-                                              : [NSColor blackColor])];
+        setTextColor:(isSelected ? [NSColor whiteColor]
+                                 : [NSColor blackColor])];
 
     // Update the color of the image.
     if (chooserController_->ShouldShowIconBeforeText()) {
@@ -834,14 +846,13 @@ void ChooserContentViewController::UpdateTableView() {
         [[self tableRowViewImage:rowIndex]
             setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
                          gfx::VectorIconId::BLUETOOTH_CONNECTED,
-                         rowIndex == selectedRow ? SK_ColorWHITE
-                                                 : gfx::kChromeIconGrey))];
+                         isSelected ? SK_ColorWHITE : gfx::kChromeIconGrey))];
       } else {
         int signalStrengthLevel =
             chooserController_->GetSignalStrengthLevel(rowIndex);
         if (signalStrengthLevel != -1) {
           int imageId =
-              rowIndex == selectedRow
+              isSelected
                   ? kSignalStrengthLevelImageSelectedIds[signalStrengthLevel]
                   : kSignalStrengthLevelImageIds[signalStrengthLevel];
           [[self tableRowViewImage:rowIndex]
@@ -853,10 +864,9 @@ void ChooserContentViewController::UpdateTableView() {
     // Update the color of paired status.
     NSTextField* pairedStatusText = [self tableRowViewPairedStatus:rowIndex];
     if (pairedStatusText) {
-      [pairedStatusText
-          setTextColor:(skia::SkColorToCalibratedNSColor(
-                           rowIndex == selectedRow ? gfx::kGoogleGreen300
-                                                   : gfx::kGoogleGreen700))];
+      [pairedStatusText setTextColor:(skia::SkColorToCalibratedNSColor(
+                                         isSelected ? gfx::kGoogleGreen300
+                                                    : gfx::kGoogleGreen700))];
     }
   }
 }

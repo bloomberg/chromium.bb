@@ -351,7 +351,8 @@ TEST_F(BluetoothChooserControllerWithDevicesAddedTest, RefreshOptions) {
 
 TEST_F(BluetoothChooserControllerWithDevicesAddedTest,
        SelectingOneDeviceShouldCallEventHandler) {
-  bluetooth_chooser_controller_.Select(0);
+  std::vector<size_t> indices{0};
+  bluetooth_chooser_controller_.Select(indices);
   EXPECT_EQ(content::BluetoothChooser::Event::SELECTED, last_event_);
   EXPECT_EQ("id_a", last_device_id_);
 }

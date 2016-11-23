@@ -47,7 +47,7 @@ class UsbChooserController : public ChooserController,
   bool IsPaired(size_t index) const override;
   void RefreshOptions() override;
   base::string16 GetStatus() const override;
-  void Select(size_t index) override;
+  void Select(const std::vector<size_t>& indices) override;
   void Cancel() override;
   void Close() override;
   void OpenHelpCenterUrl() const override;

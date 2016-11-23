@@ -107,7 +107,9 @@ base::string16 BluetoothChooserController::GetStatus() const {
   return status_text_;
 }
 
-void BluetoothChooserController::Select(size_t index) {
+void BluetoothChooserController::Select(const std::vector<size_t>& indices) {
+  DCHECK_EQ(1u, indices.size());
+  size_t index = indices[0];
   RecordInteractionWithChooser(event_handler_.is_null());
   if (event_handler_.is_null()) {
     return;
