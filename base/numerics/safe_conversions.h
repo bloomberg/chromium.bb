@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <cassert>
 #include <limits>
 #include <type_traits>
 
-#include "base/logging.h"
 #include "base/numerics/safe_conversions_impl.h"
 
 namespace base {
@@ -41,11 +41,15 @@ constexpr typename std::enable_if<!std::numeric_limits<T>::is_signed,
   return false;
 }
 
-// Just fires a CHECK(false). Used for numeric boundary errors.
+// Forces a crash, like a CHECK(false). Used for numeric boundary errors.
 struct CheckOnFailure {
   template <typename T>
   static T HandleFailure() {
-    CHECK(false);
+#if defined(__GNUC__) || defined(__clang__)
+    __builtin_trap();
+#else
+    ((void)(*(volatile char*)0 = 0));
+#endif
     return T();
   }
 };
@@ -75,6 +79,7 @@ struct SaturatedCastNaNBehaviorReturnZero {
 namespace internal {
 // This wrapper is used for C++11 constexpr support by avoiding the declaration
 // of local variables in the saturated_cast template function.
+// TODO(jschuh): convert this back to a switch once we support C++14.
 template <typename Dst, class NaNHandler, typename Src>
 constexpr Dst saturated_cast_impl(const Src value,
                                   const RangeConstraint constraint) {
@@ -84,9 +89,7 @@ constexpr Dst saturated_cast_impl(const Src value,
                     ? std::numeric_limits<Dst>::min()
                     : (constraint == RANGE_OVERFLOW
                            ? std::numeric_limits<Dst>::max()
-                           : (constraint == RANGE_INVALID
-                                  ? NaNHandler::template HandleFailure<Dst>()
-                                  : (NOTREACHED(), static_cast<Dst>(value)))));
+                           : NaNHandler::template HandleFailure<Dst>()));
 }
 }  // namespace internal
 

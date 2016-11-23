@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/core/common/unindexed_ruleset.h"
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace subresource_filter {

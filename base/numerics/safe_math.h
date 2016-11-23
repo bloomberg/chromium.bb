@@ -10,7 +10,6 @@
 #include <limits>
 #include <type_traits>
 
-#include "base/logging.h"
 #include "base/numerics/safe_math_impl.h"
 
 namespace base {

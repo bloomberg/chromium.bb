@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "ui/display/util/edid_parser.h"
 #include "ui/gfx/geometry/size.h"
 

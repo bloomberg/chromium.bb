@@ -16,6 +16,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"

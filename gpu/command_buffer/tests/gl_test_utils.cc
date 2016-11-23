@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"

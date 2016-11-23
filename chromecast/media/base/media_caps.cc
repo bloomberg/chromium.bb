@@ -4,6 +4,7 @@
 
 #include "chromecast/media/base/media_caps.h"
 
+#include "base/logging.h"
 #include "chromecast/public/avsettings.h"
 
 namespace chromecast {
