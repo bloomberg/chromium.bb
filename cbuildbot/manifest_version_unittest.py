@@ -401,8 +401,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
   def testGetSlaveStatusesFromBuildbucket(self):
     """Test GetSlaveStatusesFromBuildbucket"""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2'
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
 
     buildbucket_client_mock = mock.Mock()
@@ -473,13 +473,13 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      side_effect=build_statuses)
 
     return self.manager.GetBuildersStatus(
-        'builderid', builders, buildbucket_id_dict=buildbucket_id_dict)
+        'builderid', builders, build_info_dict=buildbucket_id_dict)
 
   def testGetBuildersStatusBothFinishedWithBuildbucket(self):
     """Tests GetBuilderStatus where both Buildbucket builds have finished."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2'
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     buildbucket_client_mock = mock.Mock()
     self.manager = self.BuildManager(buildbucket_client=buildbucket_client_mock)
@@ -514,8 +514,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testGetMissingWithBuildbucket(self):
     """Tests GetMissing returns the missing builders with Buildbucket."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2'
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -547,8 +547,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testGetMissingNoneWithBuildbucket(self):
     """Tests GetMissing returns nothing with Buildbucket."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2'
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -593,11 +593,11 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testGetCompletedWithBuildbucket(self):
     """Tests GetCompleted with Buildbucket"""
     buildbucket_id_dict = {
-        'scheduled': 'id_1',
-        'started': 'id_2',
-        'completed_success': 'id_3',
-        'completed_failure': 'id_4',
-        'completed_canceled': 'id_5'
+        'scheduled': {'buildbucket_id':'id_1', 'retry': 0},
+        'started': {'buildbucket_id': 'id_2', 'retry': 0},
+        'completed_success': {'buildbucket_id': 'id_3', 'retry': 0},
+        'completed_failure': {'buildbucket_id': 'id_4', 'retry': 0},
+        'completed_canceled': {'buildbucket_id': 'id_5', 'retry': 0}
     }
     status = {
         'scheduled': {
@@ -653,8 +653,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testCompletedWithBuildbucket(self):
     """Tests Completed returns proper bool with Buildbucket."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2'
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     statusNotCompleted = {
         'build1': {
@@ -702,8 +702,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testShouldFailForBuilderStartTimeoutTrueWithBuildbucket(self):
     """Tests that ShouldFailForBuilderStartTimeout says fail when it should."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -748,8 +748,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
     have completed.
     """
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build2': {
@@ -790,8 +790,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
     completed.
     """
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -822,8 +822,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testShouldWaitAllBuildersCompletedWithBuildbucket(self):
     """ShouldWait says no because all builders finished with Buildbucket."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -855,8 +855,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testShouldWaitScheduledBuilderWithBuildbucket(self):
     """ShouldWait says no because a builder is in scheduled with Buildbucket."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -879,8 +879,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testShouldWaitNoScheduledBuilderWithBuildbucket(self):
     """ShouldWait says no because all scheduled builds are completed."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {
@@ -903,8 +903,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testShouldWaitMissingBuilderWithBuildbucket(self):
     """ShouldWait says yes waiting because one build status is missing."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build2': {
@@ -934,8 +934,8 @@ class SlaveStatusTest(cros_test_lib.TestCase):
   def testShouldWaitBuildersStillBuildingWithBuildbucket(self):
     """ShouldWait says yes because builders still in started status."""
     buildbucket_id_dict = {
-        'build1': 'id_1',
-        'build2': 'id_2',
+        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
+        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     status = {
         'build1': {

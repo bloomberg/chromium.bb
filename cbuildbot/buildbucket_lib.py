@@ -79,30 +79,35 @@ def GetServiceAccount(service_account=None):
   return None
 
 def GetScheduledBuildDict(scheduled_slave_list):
-  """Parse the scheduled builds from the scheduled_slave_list.
+  """Parse the build information from the scheduled_slave_list metadata.
 
   Args:
     scheduled_slave_list: A list of scheduled builds recorded in the
-                          master manifest. In the format of
+                          master metadata. In the format of
                           [(build_config, buildbucket_id, created_ts)].
 
   Returns:
-    A dict mapping builds to buildbucket_ids.
+    A dict mapping build config name to its buildbucket information dict
+    (current buildbucket_id, current created_ts, retry #).
   """
   if scheduled_slave_list is None:
     return {}
 
-  scheduled_slave_map = {}
-  for (slave_name, buildbucket_id, created_ts) in scheduled_slave_list:
-    if (slave_name not in scheduled_slave_map or
-        created_ts > scheduled_slave_map.get(slave_name)[1]):
-      # If a slave occurs multiple times in the scheduled_slave_list,
-      # use the most recently created one.
-      scheduled_slave_map[slave_name] = buildbucket_id, created_ts
+  build_info_dict = {}
+  for (build_config, buildbucket_id, created_ts) in scheduled_slave_list:
+    if build_config not in build_info_dict:
+      build_info_dict[build_config] = {'buildbucket_id':buildbucket_id,
+                                       'created_ts': created_ts,
+                                       'retry': 0}
+    else:
+      # If a slave occurs multiple times, increment retry count and keep
+      # the buildbucket_id and created_ts of most recently created one.
+      build_info_dict[build_config]['retry'] += 1
+      if created_ts > build_info_dict[build_config]['created_ts']:
+        build_info_dict[build_config]['buildbucket_id'] = buildbucket_id
+        build_info_dict[build_config]['created_ts'] = created_ts
 
-  build_buildbucket_id_dict = {config: b_id for config, (b_id, _) in
-                               scheduled_slave_map.iteritems()}
-  return build_buildbucket_id_dict
+  return build_info_dict
 
 class BuildbucketClient(object):
   """Buildbucket client to interact with the Buildbucket server."""

@@ -347,9 +347,9 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     with self.assertRaises(completion_stages.ImportantBuilderFailedException):
       stage.PerformStage()
 
-    self.assertEqual(stage.build_buildbucket_id_dict['build_1'],
+    self.assertEqual(stage.build_info_dict['build_1']['buildbucket_id'],
                      'buildbucket_id_1')
-    self.assertEqual(stage.build_buildbucket_id_dict['build_2'],
+    self.assertEqual(stage.build_info_dict['build_2']['buildbucket_id'],
                      'buildbucket_id_2')
 
   def testAnnotateBuildStatusFromBuildbucket(self):
@@ -360,7 +360,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         ('build_1', 'buildbucket_id_1', 1),
         ('build_2', 'buildbucket_id_2', 2)
     }
-    stage.build_buildbucket_id_dict = (
+    stage.build_info_dict = (
         buildbucket_lib.GetScheduledBuildDict(scheduled_slaves_list))
 
     mock_logging_link = self.PatchObject(

@@ -361,6 +361,9 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
 
   def testGetScheduledBuildDict(self):
     """test GetScheduledBuildDict."""
+    buildbucket_id = 'buildbucket_id'
+    retry = 'retry'
+    created_ts = 'created_ts'
     config_name_1 = 'config_name_1'
     config_name_2 = 'config_name_2'
     config_name_3 = 'config_name_3'
@@ -373,25 +376,40 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
                   (config_name_3, id_3, 3)]
     build_dict = buildbucket_lib.GetScheduledBuildDict(slave_list)
     self.assertEqual(len(build_dict), 3)
-    self.assertEqual(build_dict[config_name_1], id_1)
-    self.assertEqual(build_dict[config_name_2], id_2)
-    self.assertEqual(build_dict[config_name_3], id_3)
+    self.assertEqual(build_dict[config_name_1][buildbucket_id], id_1)
+    self.assertEqual(build_dict[config_name_2][buildbucket_id], id_2)
+    self.assertEqual(build_dict[config_name_3][buildbucket_id], id_3)
+    self.assertEqual(build_dict[config_name_1][retry], 0)
+    self.assertEqual(build_dict[config_name_2][retry], 0)
+    self.assertEqual(build_dict[config_name_3][retry], 0)
+    self.assertEqual(build_dict[config_name_1][created_ts], 1)
+    self.assertEqual(build_dict[config_name_2][created_ts], 2)
+    self.assertEqual(build_dict[config_name_3][created_ts], 3)
+
 
     slave_list = [(config_name_1, id_1, 1),
                   (config_name_2, id_2, 2),
                   (config_name_1, id_3, 3)]
     build_dict = buildbucket_lib.GetScheduledBuildDict(slave_list)
     self.assertEqual(len(build_dict), 2)
-    self.assertEqual(build_dict[config_name_1], id_3)
-    self.assertEqual(build_dict[config_name_2], id_2)
+    self.assertEqual(build_dict[config_name_1][buildbucket_id], id_3)
+    self.assertEqual(build_dict[config_name_2][buildbucket_id], id_2)
+    self.assertEqual(build_dict[config_name_1][retry], 1)
+    self.assertEqual(build_dict[config_name_2][retry], 0)
+    self.assertEqual(build_dict[config_name_1][created_ts], 3)
+    self.assertEqual(build_dict[config_name_2][created_ts], 2)
 
     slave_list = [(config_name_1, id_1, 3),
                   (config_name_2, id_2, 2),
                   (config_name_1, id_3, 1)]
     build_dict = buildbucket_lib.GetScheduledBuildDict(slave_list)
     self.assertEqual(len(build_dict), 2)
-    self.assertEqual(build_dict[config_name_1], id_1)
-    self.assertEqual(build_dict[config_name_2], id_2)
+    self.assertEqual(build_dict[config_name_1][buildbucket_id], id_1)
+    self.assertEqual(build_dict[config_name_2][buildbucket_id], id_2)
+    self.assertEqual(build_dict[config_name_1][retry], 1)
+    self.assertEqual(build_dict[config_name_2][retry], 0)
+    self.assertEqual(build_dict[config_name_1][created_ts], 3)
+    self.assertEqual(build_dict[config_name_2][created_ts], 2)
 
     build_dict = buildbucket_lib.GetScheduledBuildDict([])
     self.assertEqual(build_dict, {})

@@ -139,7 +139,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def __init__(self, *args, **kwargs):
     super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
-    self.build_buildbucket_id_dict = None
+    self.build_info_dict = None
     self.buildbucket_client = None
 
     if config_lib.UseBuildbucketScheduler(self._run.config):
@@ -207,7 +207,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           self._run.attrs.metadata.GetValue('build_id'),
           builder_names,
           timeout=timeout,
-          buildbucket_id_dict=self.build_buildbucket_id_dict))
+          build_info_dict=self.build_info_dict))
     return slave_statuses
 
   def _HandleStageException(self, exc_info):
@@ -285,7 +285,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if config_lib.UseBuildbucketScheduler(self._run.config):
       scheduled_slaves_list = (
           self._run.attrs.metadata.GetDict().get('scheduled_slaves', []))
-      self.build_buildbucket_id_dict = (
+      self.build_info_dict = (
           buildbucket_lib.GetScheduledBuildDict(scheduled_slaves_list))
 
     # Upload our pass/fail status to Google Storage.
@@ -340,8 +340,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       no_stat: Config names of the slave builds with None status.
     """
     for config_name in no_stat:
-      if config_name in self.build_buildbucket_id_dict:
-        buildbucket_id = self.build_buildbucket_id_dict[config_name]
+      if config_name in self.build_info_dict:
+        buildbucket_id = self.build_info_dict[config_name]['buildbucket_id']
         assert buildbucket_id is not None, 'buildbucket_id is None'
         try:
           content = self.buildbucket_client.GetBuildRequest(

@@ -431,14 +431,14 @@ class SlaveStatus(object):
   BUILDER_START_TIMEOUT = 5
 
   def __init__(self, status, start_time, builders_array, previous_completed,
-               buildbucket_id_dict=None):
+               build_info_dict=None):
     """Initializes a slave status object.
 
     For the master builds scheduling slave builds through the Buildbucket, the
-    buildbucket_id_dict will not be None. When buildbucket_id_dict is provided,
+    build_info_dict will not be None. When build_info_dict is provided,
     interpret the slave status data fetched from Buildbucket.
     For the master builds scheduling slave builds through git commits, the
-    buildbucket_id_dict will be None. When buildbucket_id_dict is not provided,
+    build_info_dict will be None. When build_info_dict is not provided,
     interpret the slave status data fetched from CIDB.
 
     Args:
@@ -446,7 +446,9 @@ class SlaveStatus(object):
       start_time: datetime.datetime object of when the build started.
       builders_array: List of the expected builders.
       previous_completed: Set of builders that have finished already.
-      buildbucket_id_dict: A dict mapping build names to buildbucket_ids.
+      build_info_dict: A dict mapping build config name to its buildbucket
+          information dict(current buildbucket_id, current created_ts, retry #).
+          See buildbucket_lib.GetScheduledBuildDict for details.
     """
     self.status = status
     self.start_time = start_time
@@ -454,11 +456,11 @@ class SlaveStatus(object):
     self.previous_completed = previous_completed
     self.completed = {}
 
-    self.buildbucket_id_dict = buildbucket_id_dict
+    self.build_info_dict = build_info_dict
 
     # Dict mapping status to the set of builds in this status.
     self.status_buildset_dict = {}
-    if buildbucket_id_dict is not None:
+    if build_info_dict is not None:
       self._SetStatusBuildsDict()
 
   def _SetStatusBuildsDict(self):
@@ -502,7 +504,7 @@ class SlaveStatus(object):
       A list of the completed builders.
     """
     if not self.completed:
-      if self.buildbucket_id_dict is not None:
+      if self.build_info_dict is not None:
         self.completed = self.GetBuildbucketBuilds(
             constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
       else:
@@ -514,7 +516,7 @@ class SlaveStatus(object):
     # Logging of the newly complete builders.
     for builder in sorted(self.completed - self.previous_completed):
       status = (self.status[builder].get('result')
-                if self.buildbucket_id_dict is not None
+                if self.build_info_dict is not None
                 else self.status[builder])
       logging.info('Build config %s completed with status "%s".',
                    builder, status)
@@ -528,11 +530,11 @@ class SlaveStatus(object):
     Returns:
       A bool of True if all builders successfully completed, False otherwise.
     """
-    if self.buildbucket_id_dict is not None:
-      # All scheduled builds were added in buildbucket_id_dict by the master
-      # build. When all the builds in buildbucket_id_dict have completed,
+    if self.build_info_dict is not None:
+      # All scheduled builds were added in build_info_dict by the master
+      # build. When all the builds in build_info_dict have completed,
       # we claim that completed is True.
-      return len(self.GetCompleted()) == len(self.buildbucket_id_dict.keys())
+      return len(self.GetCompleted()) == len(self.build_info_dict.keys())
     else:
       return len(self.GetCompleted()) == len(self.builders_array)
 
@@ -559,15 +561,15 @@ class SlaveStatus(object):
     for builder in missing_builds:
       logging.error('No status found for build config %s.', builder)
 
-    if self.buildbucket_id_dict is not None:
+    if self.build_info_dict is not None:
       scheduled_builds = self.GetBuildbucketBuilds(
           constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED)
 
-      # All scheduled builds added in buildbucket_id_dict are
+      # All scheduled builds added in build_info_dict are
       # either in completed status or still in scheduled status.
       other_builders_completed = (
           (len(scheduled_builds) + len(completed_builds)) ==
-          len(self.buildbucket_id_dict.keys()))
+          len(self.build_info_dict.keys()))
 
       for builder in scheduled_builds:
         logging.error('Builder not started %s.', builder)
@@ -873,11 +875,13 @@ class BuildSpecsManager(object):
       status_dict[d['build_config']] = d['status']
     return status_dict
 
-  def GetSlaveStatusesFromBuildbucket(self, buildbucket_id_dict):
-    """Get statues of slaves recorded in the buildbucket_id_dict
+  def GetSlaveStatusesFromBuildbucket(self, build_info_dict):
+    """Get statues of slaves recorded in the build_info_dict
 
     Args:
-      buildbucket_id_dict: A dict mapping build names to buildbucket_ids.
+      build_info_dict: A dict mapping build config name to its buildbucket
+          information dict(current buildbucket_id, current created_ts, retry #).
+          See buildbucket_lib.GetScheduledBuildDict for details.
 
     Returns:
       A dict mapping the slave name to a status dict. The status dict contains
@@ -887,8 +891,9 @@ class BuildSpecsManager(object):
     assert self.buildbucket_client is not None, 'buildbucket_client is None'
 
     status_dict = {}
-    for build_config, buildbucket_id in buildbucket_id_dict.iteritems():
+    for build_config, info in build_info_dict.iteritems():
       try:
+        buildbucket_id = info['buildbucket_id']
         content = self.buildbucket_client.GetBuildRequest(
             buildbucket_id, self.dry_run)
         status = buildbucket_lib.GetBuildStatus(content)
@@ -904,35 +909,37 @@ class BuildSpecsManager(object):
     return status_dict
 
   def GetSlaveStatus(self, start_time, builders_array, builders_completed,
-                     master_build_id, buildbucket_id_dict):
+                     master_build_id, build_info_dict):
     """Get statuses of slaves.
 
-    When buildbucket_id_dict is None, get slave statuses from CIDB given
+    When build_info_dict is None, get slave statuses from CIDB given
     the master_build_id; else, get slave statues from the Buildbucket server
-    given the build to buildbucket_id dict.
+    given the build to build_info dict.
 
     Args:
       start_time: Start timestamp to get the slave statuses.
       builders_array: A list of the names of build configs to check.
       builders_completed: A list of builds already completed.
       master_build_id: Master build id of the slave builds.
-      buildbucket_id_dict: A dict mapping build names to buildbucket_ids.
+      build_info_dict: A dict mapping build config name to its buildbucket
+          information dict(current buildbucket_id, current created_ts, retry #).
+          See buildbucket_lib.GetScheduledBuildDict for details.
 
     Returns:
       An instance of SlaveStatus presenting the slave statues.
     """
-    if buildbucket_id_dict is None:
+    if build_info_dict is None:
       return SlaveStatus(
           self.GetSlaveStatusesFromCIDB(master_build_id),
           start_time, builders_array, builders_completed)
     else:
       return SlaveStatus(
-          self.GetSlaveStatusesFromBuildbucket(buildbucket_id_dict),
+          self.GetSlaveStatusesFromBuildbucket(build_info_dict),
           start_time, builders_array, builders_completed,
-          buildbucket_id_dict=buildbucket_id_dict)
+          build_info_dict=build_info_dict)
 
   def GetBuildersStatus(self, master_build_id, builders_array, timeout=3 * 60,
-                        buildbucket_id_dict=None):
+                        build_info_dict=None):
     """Get the statuses of the slave builders of the master.
 
     This function checks the status of slaves in |builders_array|. It
@@ -944,7 +951,9 @@ class BuildSpecsManager(object):
       master_build_id: Master build id to check.
       builders_array: A list of the names of build configs to check.
       timeout: Number of seconds to wait for the results.
-      buildbucket_id_dict: A dict mapping build names to buildbucket_ids.
+      build_info_dict: A dict mapping build config name to its buildbucket
+          information dict(current buildbucket_id, current created_ts, retry #).
+          See buildbucket_lib.GetScheduledBuildDict for details.
 
     Returns:
       A build_config name-> status dictionary of build statuses.
@@ -962,7 +971,7 @@ class BuildSpecsManager(object):
           lambda statuses: statuses.ShouldWait(),
           lambda: self.GetSlaveStatus(
               start_time, builders_array, builders_completed,
-              master_build_id, buildbucket_id_dict),
+              master_build_id, build_info_dict),
           timeout,
           period=self.SLEEP_TIMEOUT,
           side_effect_func=_PrintRemainingTime)
