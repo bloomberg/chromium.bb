@@ -8764,4 +8764,44 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
       "{\"vibrate\":[\"*\"]}",
       root->child_at(0)->current_replication_state().feature_policy_header);
 }
+
+// Ensure that an iframe that navigates cross-site doesn't use the same process
+// as its parent. Then when its parent navigates it via the "srcdoc" attribute,
+// it must reuse its parent's process.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       IframeSrcdocAfterCrossSiteNavigation) {
+  GURL parent_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL child_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b()"));
+  GURL blank_url(url::kAboutBlankURL);
+
+  // #1 Navigate to a page with a cross-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), parent_url));
+
+  // Ensure that the iframe uses its own process.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(parent_url, root->current_url());
+  EXPECT_EQ(child_url, child->current_url());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // #2 Navigate the iframe to its srcdoc attribute.
+  TestNavigationObserver load_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.getElementById('child-0').srcdoc = 'srcdoc content';"));
+  load_observer.Wait();
+
+  // Ensure that the iframe reuses its parent's process.
+  EXPECT_EQ(blank_url, child->current_url());
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+}
+
 }  // namespace content
