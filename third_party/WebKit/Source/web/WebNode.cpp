@@ -37,6 +37,7 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TagCollection.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/Event.h"
@@ -60,26 +61,6 @@
 #include "wtf/PtrUtil.h"
 
 namespace blink {
-
-namespace {
-
-class NodeDispatchSimulatedClickTask : public SuspendableTask {
-  WTF_MAKE_NONCOPYABLE(NodeDispatchSimulatedClickTask);
-
- public:
-  NodeDispatchSimulatedClickTask(const WebPrivatePtr<Node>& node) {
-    m_node = node;
-  }
-
-  ~NodeDispatchSimulatedClickTask() { m_node.reset(); }
-
-  void run() override { m_node->dispatchSimulatedClick(nullptr); }
-
- private:
-  WebPrivatePtr<Node> m_node;
-};
-
-}  // namespace
 
 void WebNode::reset() {
   m_private.reset();
@@ -167,8 +148,13 @@ bool WebNode::isDocumentTypeNode() const {
 }
 
 void WebNode::simulateClick() {
-  m_private->getExecutionContext()->postSuspendableTask(
-      makeUnique<NodeDispatchSimulatedClickTask>(m_private));
+  TaskRunnerHelper::get(TaskType::UserInteraction,
+                        m_private->getExecutionContext())
+      ->postTask(
+          FROM_HERE,
+          WTF::bind(&Node::dispatchSimulatedClick,
+                    wrapWeakPersistent(m_private.get()), nullptr, SendNoEvents,
+                    SimulatedClickCreationScope::FromUserAgent));
 }
 
 WebElementCollection WebNode::getElementsByHTMLTagName(
