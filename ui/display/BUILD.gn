@@ -20,6 +20,8 @@ component("display") {
     "chromeos/display_util.h",
     "chromeos/query_content_protection_task.cc",
     "chromeos/query_content_protection_task.h",
+    "chromeos/touchscreen_util.cc",
+    "chromeos/touchscreen_util.h",
     "chromeos/update_display_configuration_task.cc",
     "chromeos/update_display_configuration_task.h",
     "display.cc",
@@ -81,6 +83,7 @@ component("display") {
     "//base",
     "//third_party/re2",
     "//ui/display/util",
+    "//ui/events/devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -185,9 +188,8 @@ test("display_unittests") {
     "chromeos/configure_displays_task_unittest.cc",
     "chromeos/display_configurator_unittest.cc",
     "chromeos/query_content_protection_task_unittest.cc",
+    "chromeos/touchscreen_util_unittest.cc",
     "chromeos/update_display_configuration_task_unittest.cc",
-    "chromeos/x11/display_util_x11_unittest.cc",
-    "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
     "display_change_notifier_unittest.cc",
     "display_list_unittest.cc",
     "display_unittest.cc",
@@ -205,6 +207,7 @@ test("display_unittests") {
 
   deps = [
     ":display",
+    ":display_manager_test_api",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
@@ -213,6 +216,7 @@ test("display_unittests") {
     "//testing/gtest",
     "//ui/display/types",
     "//ui/display/util",
+    "//ui/events/devices",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
@@ -223,8 +227,8 @@ test("display_unittests") {
     sources -= [ "display_change_notifier_unittest.cc" ]
   }
 
-  if (is_chromeos && use_ozone) {
-    sources -= [
+  if (is_chromeos && use_x11) {
+    sources += [
       "chromeos/x11/display_util_x11_unittest.cc",
       "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
     ]

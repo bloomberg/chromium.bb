@@ -756,8 +756,6 @@ component("ash") {
     "touch/touch_transformer_controller.h",
     "touch/touch_uma.cc",
     "touch/touch_uma.h",
-    "touch/touchscreen_util.cc",
-    "touch/touchscreen_util.h",
     "utility/screenshot_controller.cc",
     "utility/screenshot_controller.h",
     "virtual_keyboard_controller.cc",
@@ -990,8 +988,6 @@ component("ash") {
       "display/resolution_notification_controller.h",
       "touch/touch_transformer_controller.cc",
       "touch/touch_transformer_controller.h",
-      "touch/touchscreen_util.cc",
-      "touch/touchscreen_util.h",
       "virtual_keyboard_controller.cc",
       "virtual_keyboard_controller.h",
     ]
@@ -1317,7 +1313,6 @@ test("ash_unittests") {
     "tooltips/tooltip_controller_unittest.cc",
     "touch/touch_observer_hud_unittest.cc",
     "touch/touch_transformer_controller_unittest.cc",
-    "touch/touchscreen_util_unittest.cc",
     "utility/screenshot_controller_unittest.cc",
     "virtual_keyboard_controller_unittest.cc",
     "wm/always_on_top_controller_unittest.cc",
@@ -1457,7 +1452,6 @@ test("ash_unittests") {
       "magnifier/magnification_controller_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
       "sticky_keys/sticky_keys_unittest.cc",
-      "touch/touchscreen_util_unittest.cc",
       "virtual_keyboard_controller_unittest.cc",
 
       # All tests for multiple displays: not supported on Windows Ash.

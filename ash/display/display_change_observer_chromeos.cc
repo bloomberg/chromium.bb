@@ -14,13 +14,13 @@
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
-#include "ash/touch/touchscreen_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/chromeos/touchscreen_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -277,7 +277,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     new_info.set_maximum_cursor_size(state->maximum_cursor_size());
   }
 
-  AssociateTouchscreens(
+  display::AssociateTouchscreens(
       &displays,
       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices());
   // DisplayManager can be null during the boot.

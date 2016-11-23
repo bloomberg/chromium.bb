@@ -2,83 +2,86 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/display/chromeos/touchscreen_util.h"
+
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/touch/touchscreen_util.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen_base.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 
-namespace ash {
+namespace display {
 
-using DisplayInfoList = std::vector<display::ManagedDisplayInfo>;
+using DisplayInfoList = std::vector<ManagedDisplayInfo>;
 
-class TouchscreenUtilTest : public test::AshTestBase {
+class TouchscreenUtilTest : public testing::Test {
  public:
   TouchscreenUtilTest() {}
   ~TouchscreenUtilTest() override {}
 
+  DisplayManager* display_manager() { return display_manager_.get(); }
+
+  // testing::Test:
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    // Recreate for each test, DisplayManager has a lot of state.
+    display_manager_ =
+        base::MakeUnique<DisplayManager>(base::MakeUnique<ScreenBase>());
+
     // Internal display will always match to internal touchscreen. If internal
     // touchscreen can't be detected, it is then associated to a touch screen
     // with matching size.
     {
-      display::ManagedDisplayInfo display(1, "1", false);
-      scoped_refptr<display::ManagedDisplayMode> mode(
-          new display::ManagedDisplayMode(gfx::Size(1920, 1080), 60.0,
-                                          false /* interlaced */,
-                                          true /* native */, 1.0 /* ui_scale */,
-                                          1.0 /* device_scale_factor */));
-      display::ManagedDisplayInfo::ManagedDisplayModeList modes(1, mode);
+      ManagedDisplayInfo display(1, "1", false);
+      scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
+          gfx::Size(1920, 1080), 60.0, false /* interlaced */,
+          true /* native */, 1.0 /* ui_scale */,
+          1.0 /* device_scale_factor */));
+      ManagedDisplayInfo::ManagedDisplayModeList modes(1, mode);
       display.SetManagedDisplayModes(modes);
       displays_.push_back(display);
     }
 
     {
-      display::ManagedDisplayInfo display(2, "2", false);
+      ManagedDisplayInfo display(2, "2", false);
 
-      scoped_refptr<display::ManagedDisplayMode> mode(
-          new display::ManagedDisplayMode(gfx::Size(800, 600), 60.0,
-                                          false /* interlaced */,
-                                          true /* native */, 1.0 /* ui_scale */,
-                                          1.0 /* device_scale_factor */));
-      display::ManagedDisplayInfo::ManagedDisplayModeList modes(1, mode);
+      scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
+          gfx::Size(800, 600), 60.0, false /* interlaced */, true /* native */,
+          1.0 /* ui_scale */, 1.0 /* device_scale_factor */));
+      ManagedDisplayInfo::ManagedDisplayModeList modes(1, mode);
       display.SetManagedDisplayModes(modes);
       displays_.push_back(display);
     }
 
     // Display without native mode. Must not be matched to any touch screen.
     {
-      display::ManagedDisplayInfo display(3, "3", false);
+      ManagedDisplayInfo display(3, "3", false);
       displays_.push_back(display);
     }
 
     {
-      display::ManagedDisplayInfo display(4, "4", false);
+      ManagedDisplayInfo display(4, "4", false);
 
-      scoped_refptr<display::ManagedDisplayMode> mode(
-          new display::ManagedDisplayMode(gfx::Size(1024, 768), 60.0,
-                                          false /* interlaced */,
-                                          /* native */ true, 1.0 /* ui_scale */,
-                                          1.0 /* device_scale_factor */));
-      display::ManagedDisplayInfo::ManagedDisplayModeList modes(1, mode);
+      scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
+          gfx::Size(1024, 768), 60.0, false /* interlaced */,
+          /* native */ true, 1.0 /* ui_scale */,
+          1.0 /* device_scale_factor */));
+      ManagedDisplayInfo::ManagedDisplayModeList modes(1, mode);
       display.SetManagedDisplayModes(modes);
       displays_.push_back(display);
     }
   }
 
-  void TearDown() override {
-    displays_.clear();
-    test::AshTestBase::TearDown();
-  }
+  void TearDown() override { displays_.clear(); }
 
  protected:
   DisplayInfoList displays_;
+  std::unique_ptr<DisplayManager> display_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchscreenUtilTest);
@@ -87,8 +90,8 @@ class TouchscreenUtilTest : public test::AshTestBase {
 TEST_F(TouchscreenUtilTest, NoTouchscreens) {
   std::vector<ui::TouchscreenDevice> devices;
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   for (size_t i = 0; i < displays_.size(); ++i)
@@ -108,8 +111,8 @@ TEST_F(TouchscreenUtilTest, ManyTouchscreens) {
   DisplayInfoList displays;
   displays.push_back(displays_[3]);
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays, devices);
 
   for (int i = 0; i < 5; ++i)
@@ -125,8 +128,8 @@ TEST_F(TouchscreenUtilTest, OneToOneMapping) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "2",
                             gfx::Size(1024, 768), 0));
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].input_devices().size());
@@ -143,8 +146,8 @@ TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "2",
                             gfx::Size(1024, 768), 0));
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].input_devices().size());
@@ -163,8 +166,8 @@ TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "2",
                             gfx::Size(1023, 768), 0));
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(0u, displays_[0].input_devices().size());
@@ -188,8 +191,8 @@ TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
   displays.push_back(displays_[0]);
   displays.push_back(displays_[1]);
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays[0].id());
   AssociateTouchscreens(&displays, devices);
 
   EXPECT_EQ(0u, displays[0].input_devices().size());
@@ -211,8 +214,8 @@ TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
   displays.push_back(displays_[0]);
   displays.push_back(displays_[1]);
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays[0].id());
   AssociateTouchscreens(&displays, devices);
 
   // Internal touchscreen is always mapped to internal display.
@@ -231,8 +234,8 @@ TEST_F(TouchscreenUtilTest, MultipleInternal) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "2",
                             gfx::Size(1920, 1080), 0));
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(2u, displays_[0].input_devices().size());
@@ -253,8 +256,8 @@ TEST_F(TouchscreenUtilTest, MultipleInternalAndExternal) {
       ui::TouchscreenDevice(3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "3",
                             gfx::Size(1024, 768), 0));
 
-  display::test::ScopedSetInternalDisplayId set_internal(
-      Shell::GetInstance()->display_manager(), displays_[0].id());
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(2u, displays_[0].input_devices().size());
@@ -286,4 +289,4 @@ TEST_F(TouchscreenUtilTest, TestWithNoInternalDisplay) {
   EXPECT_EQ(0u, displays_[3].input_devices().size());
 }
 
-}  // namespace ash
+}  // namespace display
