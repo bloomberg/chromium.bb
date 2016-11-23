@@ -100,14 +100,6 @@ class WTF_EXPORT String {
   String(StringImpl* impl) : m_impl(impl) {}
   String(PassRefPtr<StringImpl> impl) : m_impl(impl) {}
 
-  String(const String&);
-  String& operator=(const String&);
-
-  String(String&&);
-  String& operator=(String&&);
-
-  ~String();
-
   void swap(String& o) { m_impl.swap(o.m_impl); }
 
   template <typename CharType>

@@ -71,16 +71,6 @@ String::String(const char* characters)
                               reinterpret_cast<const LChar*>(characters))
                         : nullptr) {}
 
-String::String(const String&) = default;
-
-String& String::operator=(const String&) = default;
-
-String::String(String&&) = default;
-
-String& String::operator=(String&&) = default;
-
-String::~String() {}
-
 void String::append(const StringView& string) {
   if (string.isEmpty())
     return;
