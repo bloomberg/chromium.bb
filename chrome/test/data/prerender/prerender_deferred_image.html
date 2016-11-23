@@ -31,7 +31,7 @@ function DidDisplayPass() {
   return imageWasLoaded;
 }
 
-// Wait for a sister image to load before calling DidPrerenderPass.
+// Wait for a sibling image to load before calling DidPrerenderPass.
 // TODO(davidben): Wait on something more reasonable. This should
 // still pass reliably, but will only fail flakily on regression.
 var image2 = new Image();

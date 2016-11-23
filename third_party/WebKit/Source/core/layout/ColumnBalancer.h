@@ -110,7 +110,7 @@ class ColumnBalancer {
 // column height without creating overflowing columns, we will have to stretch
 // the columns by some amount and lay out again. We may need to do this several
 // times (but typically not more times than the number of columns that we have).
-// The amount to stretch is provided by the sister of this class, named
+// The amount to stretch is provided by the sibling of this class, named
 // MinimumSpaceShortageFinder.
 class InitialColumnHeightFinder final : public ColumnBalancer {
  public:
