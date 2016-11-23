@@ -23,14 +23,46 @@ enum DataLoss {
   Total,
 };
 
-[Native]
-struct Key;
+// Represents key types that hold no data and so cannot be options in the
+// KeyData union.
+// TODO(jsbell): These types should be cleaned up end-to-end, leaving only the
+// dataful options.
+enum DatalessKeyType {
+  Invalid,
+  Null,
+};
 
-[Native]
-struct KeyPath;
+union KeyData {
+  array<Key> key_array;
+  array<uint8> binary;
+  mojo.common.mojom.String16 string;
+  double date;
+  double number;
+  DatalessKeyType other;
+};
 
-[Native]
-struct KeyRange;
+// Defined as a structure so that it can by typemapped with StructTraits.
+struct Key {
+  KeyData data;
+};
+
+// Represents WebIDBKeyPathTypeString and WebIDBKeyPathTypeArray in a key path.
+union KeyPathData {
+  mojo.common.mojom.String16 string;
+  array<mojo.common.mojom.String16> string_array;
+};
+
+struct KeyPath {
+  // A null value here corresponds to WebIDBKeyPathTypeNull.
+  KeyPathData? data;
+};
+
+struct KeyRange {
+  Key lower;
+  Key upper;
+  bool lower_open;
+  bool upper_open;
+};
 
 enum PutMode {
   AddOrUpdate,

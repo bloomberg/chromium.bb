@@ -6,9 +6,45 @@
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_STRUCT_TRAITS_H_
 
 #include "content/common/indexed_db/indexed_db.mojom.h"
-#include "content/common/indexed_db/indexed_db_metadata.h"
 
 namespace mojo {
+
+template <>
+struct StructTraits<indexed_db::mojom::KeyDataView, content::IndexedDBKey> {
+  static indexed_db::mojom::KeyDataPtr data(const content::IndexedDBKey& key);
+  static bool Read(indexed_db::mojom::KeyDataView data,
+                   content::IndexedDBKey* out);
+};
+
+template <>
+struct StructTraits<indexed_db::mojom::KeyPathDataView,
+                    content::IndexedDBKeyPath> {
+  static indexed_db::mojom::KeyPathDataPtr data(
+      const content::IndexedDBKeyPath& key_path);
+  static bool Read(indexed_db::mojom::KeyPathDataView data,
+                   content::IndexedDBKeyPath* out);
+};
+
+template <>
+struct StructTraits<indexed_db::mojom::KeyRangeDataView,
+                    content::IndexedDBKeyRange> {
+  static const content::IndexedDBKey& lower(
+      const content::IndexedDBKeyRange& key_range) {
+    return key_range.lower();
+  }
+  static const content::IndexedDBKey& upper(
+      const content::IndexedDBKeyRange& key_range) {
+    return key_range.upper();
+  }
+  static bool lower_open(const content::IndexedDBKeyRange& key_range) {
+    return key_range.lower_open();
+  }
+  static bool upper_open(const content::IndexedDBKeyRange& key_range) {
+    return key_range.upper_open();
+  }
+  static bool Read(indexed_db::mojom::KeyRangeDataView data,
+                   content::IndexedDBKeyRange* out);
+};
 
 template <>
 struct StructTraits<indexed_db::mojom::IndexKeysDataView,

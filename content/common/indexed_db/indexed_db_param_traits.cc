@@ -7,17 +7,12 @@
 #include <string>
 #include <vector>
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "ipc/ipc_message_utils.h"
 
 using content::IndexedDBKey;
-using content::IndexedDBKeyPath;
 using content::IndexedDBKeyRange;
 
-using blink::WebIDBKeyPathTypeArray;
-using blink::WebIDBKeyPathTypeNull;
-using blink::WebIDBKeyPathTypeString;
 using blink::WebIDBKeyType;
 using blink::WebIDBKeyTypeArray;
 using blink::WebIDBKeyTypeBinary;
@@ -175,102 +170,6 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
       l->append("null");
       break;
     case WebIDBKeyTypeMin:
-    default:
-      NOTREACHED();
-      break;
-  }
-  l->append(")");
-}
-
-void ParamTraits<IndexedDBKeyPath>::GetSize(base::PickleSizer* s,
-                                            const param_type& p) {
-  GetParamSize(s, static_cast<int>(p.type()));
-  switch (p.type()) {
-    case WebIDBKeyPathTypeArray:
-      GetParamSize(s, p.array());
-      return;
-    case WebIDBKeyPathTypeString:
-      GetParamSize(s, p.string());
-      return;
-    case WebIDBKeyPathTypeNull:
-      return;
-    default:
-      NOTREACHED();
-      return;
-  }
-}
-
-void ParamTraits<IndexedDBKeyPath>::Write(base::Pickle* m,
-                                          const param_type& p) {
-  WriteParam(m, static_cast<int>(p.type()));
-  switch (p.type()) {
-    case WebIDBKeyPathTypeArray:
-      WriteParam(m, p.array());
-      return;
-    case WebIDBKeyPathTypeString:
-      WriteParam(m, p.string());
-      return;
-    case WebIDBKeyPathTypeNull:
-      return;
-    default:
-      NOTREACHED();
-      return;
-  }
-}
-
-bool ParamTraits<IndexedDBKeyPath>::Read(const base::Pickle* m,
-                                         base::PickleIterator* iter,
-                                         param_type* r) {
-  int type;
-  if (!ReadParam(m, iter, &type))
-    return false;
-
-  switch (type) {
-    case WebIDBKeyPathTypeArray: {
-      std::vector<base::string16> array;
-      if (!ReadParam(m, iter, &array))
-        return false;
-      *r = IndexedDBKeyPath(array);
-      return true;
-    }
-    case WebIDBKeyPathTypeString: {
-      base::string16 string;
-      if (!ReadParam(m, iter, &string))
-        return false;
-      *r = IndexedDBKeyPath(string);
-      return true;
-    }
-    case WebIDBKeyPathTypeNull:
-      *r = IndexedDBKeyPath();
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
-  l->append("<IndexedDBKeyPath>(");
-  switch (p.type()) {
-    case WebIDBKeyPathTypeArray: {
-      l->append("array=[");
-      bool first = true;
-      for (const base::string16& entry : p.array()) {
-        if (!first)
-          l->append(", ");
-        first = false;
-        LogParam(entry, l);
-      }
-      l->append("]");
-      break;
-    }
-    case WebIDBKeyPathTypeString:
-      l->append("string=");
-      LogParam(p.string(), l);
-      break;
-    case WebIDBKeyPathTypeNull:
-      l->append("null");
-      break;
     default:
       NOTREACHED();
       break;
