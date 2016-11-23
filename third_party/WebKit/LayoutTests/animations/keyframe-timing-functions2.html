@@ -16,22 +16,22 @@
       height: 100px;
       width: 100px;
       background-color: blue;
-      -webkit-animation-name: move;
-      -webkit-animation-duration: 1.5s;
+      animation-name: move;
+      animation-duration: 1.5s;
     }
 
-    @-webkit-keyframes move {
+    @keyframes move {
       0%   {
         left: 0;
-        -webkit-animation-timing-function: ease-out;
+        animation-timing-function: ease-out;
       }
       10% {
         left: 100px;
-        -webkit-animation-timing-function: linear;
+        animation-timing-function: linear;
       }
       90% {
         left: 500px;
-        -webkit-animation-timing-function: ease-in;
+        animation-timing-function: ease-in;
       }
       100% {
         left: 600px;

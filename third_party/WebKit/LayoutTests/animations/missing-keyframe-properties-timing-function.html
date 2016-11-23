@@ -9,14 +9,14 @@
       width: 100px;
       height: 100px;
       background-color: blue;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-timing-function: ease-in;
+      animation-duration: 2s;
+      animation-timing-function: ease-in;
     }
     
     #box1 {
-      -webkit-animation-name: move;
+      animation-name: move;
     }
-    @-webkit-keyframes move {
+    @keyframes move {
         from {
           opacity: 0;
           left: 100px;
@@ -26,7 +26,7 @@
         }
         50% {
           left: 200px;
-          -webkit-animation-timing-function: linear;
+          animation-timing-function: linear;
         }
         to {
           left: 400px;
@@ -34,9 +34,9 @@
     }
 
     #box2 {
-      -webkit-animation-name: move2;
+      animation-name: move2;
     }
-    @-webkit-keyframes move2 {
+    @keyframes move2 {
         from {
           opacity: 0;
           transform: translateX(100px);
@@ -46,7 +46,7 @@
         }
         50% {
           transform: translateX(200px);
-          -webkit-animation-timing-function: linear;
+          animation-timing-function: linear;
         }
         to {
           transform: translateX(400px);
@@ -60,9 +60,9 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [0.5, "box1", "left", 132, 15],
-      [0.5, "box2", "webkitTransform.4", 132, 15],
+      [0.5, "box2", "transform.4", 132, 15],
       [1.5, "box1", "left", 300, 15],
-      [1.5, "box2", "webkitTransform.4", 300, 15],
+      [1.5, "box2", "transform.4", 300, 15],
     ];
     
     runAnimationTest(expectedValues);

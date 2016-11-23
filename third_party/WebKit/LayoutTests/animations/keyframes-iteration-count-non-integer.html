@@ -13,12 +13,12 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        -webkit-animation-duration: 2s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
-        -webkit-animation-iteration-count: 0.3;
+        animation-duration: 2s;
+        animation-timing-function: linear;
+        animation-name: anim;
+        animation-iteration-count: 0.3;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 50px; }
         20%  { left: 100px; }
         40%  { left: 100px; }
@@ -35,7 +35,7 @@
         testRunner.waitUntilDone();
     }
     
-    document.addEventListener("webkitAnimationEnd", function(event){
+    document.addEventListener("animationend", function(event){
         var result;
         if (event.elapsedTime > 0 && event.elapsedTime < 1)
             result = "PASS end of animation";

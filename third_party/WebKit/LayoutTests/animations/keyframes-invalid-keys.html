@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Keyframes with invalid keys</title>
   <style type="text/css" media="screen">
-    @-webkit-keyframes anim {
+    @keyframes anim {
         50% { left: 3px; }
 
         /* Out-of-range percentage values */
@@ -28,9 +28,9 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        -webkit-animation-duration: 1s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
+        animation-duration: 1s;
+        animation-timing-function: linear;
+        animation-name: anim;
     }
 
     </style>

@@ -16,22 +16,22 @@
       height: 100px;
       width: 100px;
       background-color: blue;
-      -webkit-animation-name: move;
-      -webkit-animation-duration: 1.5s;
+      animation-name: move;
+      animation-duration: 1.5s;
     }
 
-    @-webkit-keyframes move {
+    @keyframes move {
       0%   {
         transform: translateX(0);
-        -webkit-animation-timing-function: ease-out;
+        animation-timing-function: ease-out;
       }
       10% {
         transform: translateX(100px);
-        -webkit-animation-timing-function: linear;
+        animation-timing-function: linear;
       }
       90% {
         transform: translateX(500px);
-        -webkit-animation-timing-function: ease-in;
+        animation-timing-function: ease-in;
       }
       100% {
         transform: translateX(600px);
@@ -44,7 +44,7 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.75, "box", "webkitTransform.4", 300, 20],
+      [0.75, "box", "transform.4", 300, 20],
     ];
     
     runAnimationTest(expectedValues);
