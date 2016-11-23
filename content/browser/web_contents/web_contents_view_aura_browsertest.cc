@@ -805,11 +805,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
 }
 
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || defined(OS_LINUX)
 // This appears to be flaky in the same was as the other overscroll
 // tests. Enabling for non-Windows platforms.
 // See http://crbug.com/369871.
-// For linux, see http://crbug.com/381294
+// For linux, see http://crbug.com/381294.
+// For ChromeOS, see http://crbug.com/668128.
 #define MAYBE_RepeatedQuickOverscrollGestures DISABLED_RepeatedQuickOverscrollGestures
 #else
 #define MAYBE_RepeatedQuickOverscrollGestures RepeatedQuickOverscrollGestures
