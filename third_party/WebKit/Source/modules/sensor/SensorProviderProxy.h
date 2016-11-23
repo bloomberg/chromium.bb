@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class Page;
 class SensorProxy;
 class SensorReadingFactory;
 
@@ -29,10 +30,11 @@ class SensorProviderProxy final
 
   ~SensorProviderProxy();
 
-  SensorProxy* createSensor(device::mojom::blink::SensorType,
-                            std::unique_ptr<SensorReadingFactory>);
+  SensorProxy* createSensorProxy(device::mojom::blink::SensorType,
+                                 Page*,
+                                 std::unique_ptr<SensorReadingFactory>);
 
-  SensorProxy* getSensor(device::mojom::blink::SensorType);
+  SensorProxy* getSensorProxy(device::mojom::blink::SensorType);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -49,7 +51,7 @@ class SensorProviderProxy final
   void onSensorProviderConnectionError();
 
   using SensorsSet = HeapHashSet<WeakMember<SensorProxy>>;
-  SensorsSet m_sensors;
+  SensorsSet m_sensorProxies;
 
   device::mojom::blink::SensorProviderPtr m_sensorProvider;
 };

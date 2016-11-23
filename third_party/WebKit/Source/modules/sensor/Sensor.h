@@ -10,7 +10,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/PlatformEventController.h"
-#include "core/page/PageVisibilityObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/sensor/SensorOptions.h"
 #include "modules/sensor/SensorProxy.h"
@@ -21,12 +20,11 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 class SensorReading;
-class SensorPollingStrategy;
+class SensorUpdateNotificationStrategy;
 
 class Sensor : public EventTargetWithInlineData,
                public ActiveScriptWrappable,
                public ContextLifecycleObserver,
-               public PageVisibilityObserver,
                public SensorProxy::Observer {
   USING_GARBAGE_COLLECTED_MIXIN(Sensor);
   DEFINE_WRAPPERTYPEINFO();
@@ -89,25 +87,20 @@ class Sensor : public EventTargetWithInlineData,
   void onSensorError(ExceptionCode,
                      const String& sanitizedMessage,
                      const String& unsanitizedMessage) override;
+  void onSuspended() override;
 
   void onStartRequestCompleted(bool);
   void onStopRequestCompleted(bool);
 
-  // PageVisibilityObserver overrides.
-  void pageVisibilityChanged() override;
-
   void startListening();
   void stopListening();
 
-  // Makes sensor reading refresh its values from the shared buffer.
-  void pollForData();
+  void onSensorUpdateNotification();
 
   void updateState(SensorState newState);
   void reportError(ExceptionCode = UnknownError,
                    const String& sanitizedMessage = String(),
                    const String& unsanitizedMessage = String());
-
-  void updatePollingStatus();
 
   void notifySensorReadingChanged();
   void notifyOnActivate();
@@ -118,7 +111,7 @@ class Sensor : public EventTargetWithInlineData,
   device::mojom::blink::SensorType m_type;
   SensorState m_state;
   Member<SensorProxy> m_sensorProxy;
-  std::unique_ptr<SensorPollingStrategy> m_polling;
+  std::unique_ptr<SensorUpdateNotificationStrategy> m_sensorUpdateNotifier;
   device::SensorReading m_storedData;
   SensorConfigurationPtr m_configuration;
 };

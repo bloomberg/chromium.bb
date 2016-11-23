@@ -16,15 +16,18 @@ namespace blink {
 
 SensorProxy::SensorProxy(SensorType sensorType,
                          SensorProviderProxy* provider,
+                         Page* page,
                          std::unique_ptr<SensorReadingFactory> readingFactory)
-    : m_type(sensorType),
+    : PageVisibilityObserver(page),
+      m_type(sensorType),
       m_mode(ReportingMode::CONTINUOUS),
       m_provider(provider),
       m_clientBinding(this),
       m_state(SensorProxy::Uninitialized),
       m_suspended(false),
       m_readingFactory(std::move(readingFactory)),
-      m_maximumFrequency(0.0) {}
+      m_maximumFrequency(0.0),
+      m_timer(this, &SensorProxy::onTimerFired) {}
 
 SensorProxy::~SensorProxy() {}
 
@@ -36,6 +39,7 @@ DEFINE_TRACE(SensorProxy) {
   visitor->trace(m_reading);
   visitor->trace(m_observers);
   visitor->trace(m_provider);
+  PageVisibilityObserver::trace(visitor);
 }
 
 void SensorProxy::addObserver(Observer* observer) {
@@ -67,14 +71,17 @@ void SensorProxy::addConfiguration(
     SensorConfigurationPtr configuration,
     std::unique_ptr<Function<void(bool)>> callback) {
   DCHECK(isInitialized());
+  auto wrapper = WTF::bind(&SensorProxy::onAddConfigurationCompleted,
+                           wrapWeakPersistent(this), configuration->frequency,
+                           passed(std::move(callback)));
   m_sensor->AddConfiguration(std::move(configuration),
-                             convertToBaseCallback(std::move(callback)));
+                             convertToBaseCallback(std::move(wrapper)));
 }
 
-void SensorProxy::removeConfiguration(
-    SensorConfigurationPtr configuration,
-    std::unique_ptr<Function<void(bool)>> callback) {
+void SensorProxy::removeConfiguration(SensorConfigurationPtr configuration) {
   DCHECK(isInitialized());
+  auto callback = WTF::bind(&SensorProxy::onRemoveConfigurationCompleted,
+                            wrapWeakPersistent(this), configuration->frequency);
   m_sensor->RemoveConfiguration(std::move(configuration),
                                 convertToBaseCallback(std::move(callback)));
 }
@@ -86,6 +93,12 @@ void SensorProxy::suspend() {
 
   m_sensor->Suspend();
   m_suspended = true;
+
+  if (usesPollingTimer())
+    updatePollingStatus();
+
+  for (Observer* observer : m_observers)
+    observer->onSuspended();
 }
 
 void SensorProxy::resume() {
@@ -95,12 +108,18 @@ void SensorProxy::resume() {
 
   m_sensor->Resume();
   m_suspended = false;
+
+  if (usesPollingTimer())
+    updatePollingStatus();
 }
 
-const device::mojom::blink::SensorConfiguration* SensorProxy::defaultConfig()
-    const {
+const SensorConfiguration* SensorProxy::defaultConfig() const {
   DCHECK(isInitialized());
   return m_defaultConfig.get();
+}
+
+bool SensorProxy::usesPollingTimer() const {
+  return isInitialized() && (m_mode == ReportingMode::CONTINUOUS);
 }
 
 void SensorProxy::updateSensorReading() {
@@ -117,6 +136,9 @@ void SensorProxy::updateSensorReading() {
   }
 
   m_reading = m_readingFactory->createSensorReading(readingData);
+
+  for (Observer* observer : m_observers)
+    observer->onSensorReadingChanged();
 }
 
 void SensorProxy::RaiseError() {
@@ -124,8 +146,18 @@ void SensorProxy::RaiseError() {
 }
 
 void SensorProxy::SensorReadingChanged() {
-  for (Observer* observer : m_observers)
-    observer->onSensorReadingChanged();
+  updateSensorReading();
+}
+
+void SensorProxy::pageVisibilityChanged() {
+  if (!isInitialized())
+    return;
+
+  if (page()->visibilityState() != PageVisibilityStateVisible) {
+    suspend();
+  } else {
+    resume();
+  }
 }
 
 void SensorProxy::handleSensorError(ExceptionCode code,
@@ -134,6 +166,11 @@ void SensorProxy::handleSensorError(ExceptionCode code,
   if (!Platform::current()) {
     // TODO(rockot): Remove this hack once renderer shutdown sequence is fixed.
     return;
+  }
+
+  if (usesPollingTimer()) {  // Stop polling.
+    m_frequenciesUsed.clear();
+    updatePollingStatus();
   }
 
   m_state = Uninitialized;
@@ -195,6 +232,36 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
     observer->onSensorInitialized();
 }
 
+void SensorProxy::onAddConfigurationCompleted(
+    double frequency,
+    std::unique_ptr<Function<void(bool)>> callback,
+    bool result) {
+  if (usesPollingTimer() && result) {
+    m_frequenciesUsed.append(frequency);
+    updatePollingStatus();
+  }
+
+  (*callback)(result);
+}
+
+void SensorProxy::onRemoveConfigurationCompleted(double frequency,
+                                                 bool result) {
+  if (!result)
+    DVLOG(1) << "Failure at sensor configuration removal";
+
+  if (!usesPollingTimer())
+    return;
+
+  size_t index = m_frequenciesUsed.find(frequency);
+  if (index == kNotFound) {
+    // Could happen e.g. if 'handleSensorError' was called before.
+    return;
+  }
+
+  m_frequenciesUsed.remove(index);
+  updatePollingStatus();
+}
+
 bool SensorProxy::tryReadFromBuffer(device::SensorReading& result) {
   DCHECK(isInitialized());
   const ReadingBuffer* buffer =
@@ -206,6 +273,30 @@ bool SensorProxy::tryReadFromBuffer(device::SensorReading& result) {
     return false;
   result = readingData;
   return true;
+}
+
+void SensorProxy::updatePollingStatus() {
+  DCHECK(usesPollingTimer());
+
+  if (m_suspended || m_frequenciesUsed.isEmpty()) {
+    m_timer.stop();
+    return;
+  }
+  // TODO(Mikhail): Consider using sorted queue instead of searching
+  // max element each time.
+  auto it =
+      std::max_element(m_frequenciesUsed.begin(), m_frequenciesUsed.end());
+  DCHECK_GT(*it, 0.0);
+
+  double repeatInterval = 1 / *it;
+  if (!m_timer.isActive() || m_timer.repeatInterval() != repeatInterval) {
+    updateSensorReading();
+    m_timer.startRepeating(repeatInterval, BLINK_FROM_HERE);
+  }
+}
+
+void SensorProxy::onTimerFired(TimerBase*) {
+  updateSensorReading();
 }
 
 }  // namespace blink

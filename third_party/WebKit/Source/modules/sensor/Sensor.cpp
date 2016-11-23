@@ -10,9 +10,9 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorErrorEvent.h"
-#include "modules/sensor/SensorPollingStrategy.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "modules/sensor/SensorReading.h"
+#include "modules/sensor/SensorUpdateNotificationStrategy.h"
 
 using namespace device::mojom::blink;
 
@@ -24,8 +24,6 @@ Sensor::Sensor(ScriptState* scriptState,
                SensorType type)
     : ActiveScriptWrappable(this),
       ContextLifecycleObserver(scriptState->getExecutionContext()),
-      PageVisibilityObserver(
-          toDocument(scriptState->getExecutionContext())->page()),
       m_sensorOptions(sensorOptions),
       m_type(type),
       m_state(Sensor::SensorState::Idle) {
@@ -127,7 +125,6 @@ DEFINE_TRACE(Sensor) {
   visitor->trace(m_sensorProxy);
   ActiveScriptWrappable::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
-  PageVisibilityObserver::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
 }
 
@@ -164,11 +161,11 @@ void Sensor::initSensorProxyIfNeeded() {
     return;
 
   auto provider = SensorProviderProxy::from(document->frame());
-  m_sensorProxy = provider->getSensor(m_type);
+  m_sensorProxy = provider->getSensorProxy(m_type);
 
   if (!m_sensorProxy) {
-    m_sensorProxy =
-        provider->createSensor(m_type, createSensorReadingFactory());
+    m_sensorProxy = provider->createSensorProxy(m_type, document->page(),
+                                                createSensorReadingFactory());
   }
 }
 
@@ -186,14 +183,18 @@ void Sensor::onSensorInitialized() {
 }
 
 void Sensor::onSensorReadingChanged() {
-  if (m_polling)
-    m_polling->onSensorReadingChanged();
+  if (m_state == Sensor::SensorState::Active) {
+    DCHECK(m_sensorUpdateNotifier);
+    m_sensorUpdateNotifier->onSensorReadingChanged();
+  }
 }
 
 void Sensor::onSensorError(ExceptionCode code,
                            const String& sanitizedMessage,
                            const String& unsanitizedMessage) {
   reportError(code, sanitizedMessage, unsanitizedMessage);
+  if (m_sensorUpdateNotifier)
+    m_sensorUpdateNotifier->cancelPendingNotifications();
 }
 
 void Sensor::onStartRequestCompleted(bool result) {
@@ -209,36 +210,12 @@ void Sensor::onStartRequestCompleted(bool result) {
 
   DCHECK(m_configuration);
   DCHECK(m_sensorProxy);
-  auto pollCallback = WTF::bind(&Sensor::pollForData, wrapWeakPersistent(this));
+  auto updateCallback =
+      WTF::bind(&Sensor::onSensorUpdateNotification, wrapWeakPersistent(this));
   DCHECK_GT(m_configuration->frequency, 0);
-  m_polling = SensorPollingStrategy::create(1 / m_configuration->frequency,
-                                            std::move(pollCallback),
-                                            m_sensorProxy->reportingMode());
+  m_sensorUpdateNotifier = SensorUpdateNotificationStrategy::create(
+      m_configuration->frequency, std::move(updateCallback));
   updateState(Sensor::SensorState::Active);
-}
-
-void Sensor::onStopRequestCompleted(bool result) {
-  if (m_state == Sensor::SensorState::Idle)
-    return;
-
-  if (!result)
-    reportError(OperationError);
-
-  DCHECK(m_sensorProxy);
-  m_sensorProxy->removeObserver(this);
-}
-
-void Sensor::pageVisibilityChanged() {
-  updatePollingStatus();
-
-  if (!m_sensorProxy || !m_sensorProxy->isInitialized())
-    return;
-
-  if (page()->visibilityState() != PageVisibilityStateVisible) {
-    m_sensorProxy->suspend();
-  } else {
-    m_sensorProxy->resume();
-  }
 }
 
 void Sensor::startListening() {
@@ -268,29 +245,24 @@ void Sensor::stopListening() {
   DCHECK(m_sensorProxy);
   updateState(Sensor::SensorState::Idle);
 
+  if (m_sensorUpdateNotifier)
+    m_sensorUpdateNotifier->cancelPendingNotifications();
+
   if (m_sensorProxy->isInitialized()) {
-    auto callback =
-        WTF::bind(&Sensor::onStopRequestCompleted, wrapWeakPersistent(this));
     DCHECK(m_configuration);
-    m_sensorProxy->removeConfiguration(m_configuration->Clone(),
-                                       std::move(callback));
-  } else {
-    m_sensorProxy->removeObserver(this);
+    m_sensorProxy->removeConfiguration(m_configuration->Clone());
   }
+  m_sensorProxy->removeObserver(this);
 }
 
-void Sensor::pollForData() {
-  if (m_state != Sensor::SensorState::Active) {
-    DCHECK(m_polling);
-    m_polling->stopPolling();
+void Sensor::onSensorUpdateNotification() {
+  if (m_state != Sensor::SensorState::Active)
     return;
-  }
 
   DCHECK(m_sensorProxy);
   DCHECK(m_sensorProxy->isInitialized());
-  m_sensorProxy->updateSensorReading();
-
   DCHECK(m_sensorProxy->sensorReading());
+
   if (getExecutionContext() &&
       m_sensorProxy->sensorReading()->isReadingUpdated(m_storedData)) {
     getExecutionContext()->postTask(
@@ -314,7 +286,6 @@ void Sensor::updateState(Sensor::SensorState newState) {
   }
 
   m_state = newState;
-  updatePollingStatus();
 }
 
 void Sensor::reportError(ExceptionCode code,
@@ -331,16 +302,9 @@ void Sensor::reportError(ExceptionCode code,
   }
 }
 
-void Sensor::updatePollingStatus() {
-  if (!m_polling)
-    return;
-
-  if (m_state != Sensor::SensorState::Active ||
-      page()->visibilityState() != PageVisibilityStateVisible) {
-    m_polling->stopPolling();
-  } else {
-    m_polling->startPolling();
-  }
+void Sensor::onSuspended() {
+  if (m_sensorUpdateNotifier)
+    m_sensorUpdateNotifier->cancelPendingNotifications();
 }
 
 void Sensor::notifySensorReadingChanged() {
