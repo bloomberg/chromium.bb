@@ -27,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
@@ -116,6 +117,9 @@ bool UpdateTaskCategory(
   if (!PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
 
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  int icon_index = distribution->GetIconIndex();
+
   ShellLinkItemList items;
 
   // Create an IShellLink object which launches Chrome, and add it to the
@@ -128,7 +132,7 @@ bool UpdateTaskCategory(
     base::ReplaceSubstringsAfterOffset(
         &chrome_title, 0, L"&", base::StringPiece16());
     chrome->set_title(chrome_title);
-    chrome->set_icon(chrome_path.value(), 0);
+    chrome->set_icon(chrome_path.value(), icon_index);
     items.push_back(chrome);
   }
 
@@ -143,7 +147,7 @@ bool UpdateTaskCategory(
     base::ReplaceSubstringsAfterOffset(
         &incognito_title, 0, L"&", base::StringPiece16());
     incognito->set_title(incognito_title);
-    incognito->set_icon(chrome_path.value(), 0);
+    incognito->set_icon(chrome_path.value(), icon_index);
     items.push_back(incognito);
   }
 
