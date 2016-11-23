@@ -4,8 +4,10 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
@@ -1059,6 +1061,15 @@ config("chromium_code") {
     cflags = [ "-Wall" ]
     if (treat_warnings_as_errors) {
       cflags += [ "-Werror" ]
+
+      # The compiler driver can sometimes (rarely) emit warnings before calling
+      # the actual linker.  Make sure these warnings are treated as errors as
+      # well.
+      # TODO(thakis): Enable this in use_custom_libcxx (asan) builds.
+      # TODO(thakis): Enable this in chromecast builds.
+      if (!use_custom_libcxx && !is_chromecast) {
+        ldflags = [ "-Werror" ]
+      }
     }
     if (is_clang) {
       # Enable -Wextra for chromium_code when we control the compiler.
@@ -1115,6 +1126,12 @@ config("no_chromium_code") {
     # code. crbug.com/589724
     if (treat_warnings_as_errors && is_clang) {
       cflags += [ "-Werror" ]
+
+      # TODO(thakis): Enable this in use_custom_libcxx (asan) builds.
+      # TODO(thakis): Enable this in chromecast builds.
+      if (!use_custom_libcxx && !is_chromecast) {
+        ldflags = [ "-Werror" ]
+      }
     }
     if (is_clang && !is_nacl) {
       # TODO(thakis): Remove !is_nacl once
