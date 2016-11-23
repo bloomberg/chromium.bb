@@ -127,6 +127,10 @@ class FlipboardMobileStory(_NewsBrowsingStory):
   ITEM_SCROLL_REPEAT = 4
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return possible_browser.platform.IsSvelte()  # crbug.com/668097
+
 
 @decorators.Disabled('mac') # crbug.com/663025
 class FlipboardDesktopStory(_NewsBrowsingStory):
