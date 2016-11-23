@@ -29,14 +29,14 @@ class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents an inline node to be laid out.
-// TODO(layout-dev): Make this and NGBox inherit from a common class.
-class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
+// TODO(layout-dev): Make this and NGBlockNode inherit from a common class.
+class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style);
-  ~NGInlineBox() override;
+  NGInlineNode(LayoutObject* start_inline, ComputedStyle* block_style);
+  ~NGInlineNode() override;
 
   bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
-  NGInlineBox* NextSibling() override;
+  NGInlineNode* NextSibling() override;
 
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
@@ -49,7 +49,7 @@ class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  NGInlineBox();  // This constructor is only for testing.
+  NGInlineNode();  // This constructor is only for testing.
   void CollectInlines(LayoutObject* start, LayoutObject* last);
   void CollectInlines(LayoutObject* start,
                       LayoutObject* last,
@@ -61,10 +61,10 @@ class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
   LayoutObject* last_inline_;
   RefPtr<ComputedStyle> block_style_;
 
-  Member<NGInlineBox> next_sibling_;
+  Member<NGInlineNode> next_sibling_;
   Member<NGLayoutAlgorithm> layout_algorithm_;
 
-  // Text content for all inline items represented by a single NGInlineBox
+  // Text content for all inline items represented by a single NGInlineNode
   // instance. Encoded either as UTF-16 or latin-1 depending on content.
   String text_content_;
   Vector<NGLayoutInlineItem> items_;
@@ -114,10 +114,10 @@ class NGLayoutInlineItem {
   const ComputedStyle* style_;
   Vector<RefPtr<const ShapeResult>> shape_results_;
 
-  friend class NGInlineBox;
+  friend class NGInlineNode;
 };
 
-DEFINE_TYPE_CASTS(NGInlineBox,
+DEFINE_TYPE_CASTS(NGInlineNode,
                   NGLayoutInputNode,
                   node,
                   node->Type() == NGLayoutInputNode::LegacyInline,

@@ -33,7 +33,8 @@ class CORE_EXPORT NGConstraintSpace final
   // coordinates.
   NGConstraintSpace(NGWritingMode, TextDirection, NGPhysicalConstraintSpace*);
 
-  // This should live on NGBox or another layout bridge and probably take a root
+  // This should live on NGBlockNode or another layout bridge and probably take
+  // a root
   // NGConstraintSpace or a NGPhysicalConstraintSpace.
   static NGConstraintSpace* CreateFromLayoutObject(const LayoutBox&);
 

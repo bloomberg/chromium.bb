@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_box.h"
+#include "core/layout/ng/ng_block_node.h"
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
@@ -22,21 +22,21 @@
 
 namespace blink {
 
-NGBox::NGBox(LayoutObject* layout_object)
+NGBlockNode::NGBlockNode(LayoutObject* layout_object)
     : NGLayoutInputNode(NGLayoutInputNodeType::LegacyBlock),
       layout_box_(toLayoutBox(layout_object)) {
   DCHECK(layout_box_);
 }
 
-NGBox::NGBox(ComputedStyle* style)
+NGBlockNode::NGBlockNode(ComputedStyle* style)
     : NGLayoutInputNode(NGLayoutInputNodeType::LegacyBlock),
       layout_box_(nullptr),
       style_(style) {
   DCHECK(style_);
 }
 
-bool NGBox::Layout(const NGConstraintSpace* constraint_space,
-                   NGFragmentBase** out) {
+bool NGBlockNode::Layout(const NGConstraintSpace* constraint_space,
+                         NGFragmentBase** out) {
   DCHECK(!minmax_algorithm_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   if (layout_box_ && layout_box_->isOutOfFlowPositioned())
@@ -71,7 +71,7 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   return true;
 }
 
-bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
+bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
     // TODO(layout-ng): This could be somewhat optimized by directly calling
@@ -105,7 +105,7 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
         Style()->direction(), builder.ToConstraintSpace());
 
     minmax_algorithm_ = new NGBlockLayoutAlgorithm(
-        Style(), toNGBox(FirstChild()), constraint_space);
+        Style(), toNGBlockNode(FirstChild()), constraint_space);
   }
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGLayoutAlgorithm::MinAndMaxState state =
@@ -139,8 +139,8 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
       new NGConstraintSpace(FromPlatformWritingMode(Style()->getWritingMode()),
                             Style()->direction(), builder.ToConstraintSpace());
 
-  minmax_algorithm_ = new NGBlockLayoutAlgorithm(Style(), toNGBox(FirstChild()),
-                                                 constraint_space);
+  minmax_algorithm_ = new NGBlockLayoutAlgorithm(
+      Style(), toNGBlockNode(FirstChild()), constraint_space);
   while (!minmax_algorithm_->Layout(nullptr, &physical_fragment, nullptr))
     continue;
 
@@ -152,53 +152,53 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   return true;
 }
 
-ComputedStyle* NGBox::MutableStyle() {
+ComputedStyle* NGBlockNode::MutableStyle() {
   if (style_)
     return style_.get();
   DCHECK(layout_box_);
   return layout_box_->mutableStyle();
 }
 
-const ComputedStyle* NGBox::Style() const {
+const ComputedStyle* NGBlockNode::Style() const {
   if (style_)
     return style_.get();
   DCHECK(layout_box_);
   return layout_box_->style();
 }
 
-NGBox* NGBox::NextSibling() {
+NGBlockNode* NGBlockNode::NextSibling() {
   if (!next_sibling_) {
     LayoutObject* next_sibling =
         layout_box_ ? layout_box_->nextSibling() : nullptr;
-    NGBox* box = next_sibling ? new NGBox(next_sibling) : nullptr;
+    NGBlockNode* box = next_sibling ? new NGBlockNode(next_sibling) : nullptr;
     SetNextSibling(box);
   }
   return next_sibling_;
 }
 
-NGLayoutInputNode* NGBox::FirstChild() {
+NGLayoutInputNode* NGBlockNode::FirstChild() {
   if (!first_child_) {
     LayoutObject* child = layout_box_ ? layout_box_->slowFirstChild() : nullptr;
     if (child) {
       if (child->isInline()) {
-        SetFirstChild(new NGInlineBox(child, MutableStyle()));
+        SetFirstChild(new NGInlineNode(child, MutableStyle()));
       } else {
-        SetFirstChild(new NGBox(child));
+        SetFirstChild(new NGBlockNode(child));
       }
     }
   }
   return first_child_;
 }
 
-void NGBox::SetNextSibling(NGBox* sibling) {
+void NGBlockNode::SetNextSibling(NGBlockNode* sibling) {
   next_sibling_ = sibling;
 }
 
-void NGBox::SetFirstChild(NGLayoutInputNode* child) {
+void NGBlockNode::SetFirstChild(NGLayoutInputNode* child) {
   first_child_ = child;
 }
 
-DEFINE_TRACE(NGBox) {
+DEFINE_TRACE(NGBlockNode) {
   visitor->trace(layout_coordinator_);
   visitor->trace(minmax_algorithm_);
   visitor->trace(fragment_);
@@ -207,7 +207,7 @@ DEFINE_TRACE(NGBox) {
   NGLayoutInputNode::trace(visitor);
 }
 
-void NGBox::PositionUpdated() {
+void NGBlockNode::PositionUpdated() {
   if (!layout_box_)
     return;
   DCHECK(layout_box_->parent()) << "Should be called on children only.";
@@ -224,7 +224,7 @@ void NGBox::PositionUpdated() {
   }
 }
 
-bool NGBox::CanUseNewLayout() {
+bool NGBlockNode::CanUseNewLayout() {
   if (!layout_box_)
     return true;
   if (!layout_box_->isLayoutBlockFlow())
@@ -236,7 +236,7 @@ bool NGBox::CanUseNewLayout() {
   return true;
 }
 
-bool NGBox::HasInlineChildren() {
+bool NGBlockNode::HasInlineChildren() {
   if (!layout_box_)
     return false;
 
@@ -251,7 +251,7 @@ bool NGBox::HasInlineChildren() {
   return false;
 }
 
-void NGBox::CopyFragmentDataToLayoutBox(
+void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space) {
   DCHECK(layout_box_);
   layout_box_->setWidth(fragment_->Width());
@@ -279,7 +279,8 @@ void NGBox::CopyFragmentDataToLayoutBox(
     // Ensure the position of the children are copied across to the
     // LayoutObject tree.
   } else {
-    for (NGBox* box = toNGBox(FirstChild()); box; box = box->NextSibling()) {
+    for (NGBlockNode* box = toNGBlockNode(FirstChild()); box;
+         box = box->NextSibling()) {
       if (box->fragment_)
         box->PositionUpdated();
     }
@@ -293,7 +294,7 @@ void NGBox::CopyFragmentDataToLayoutBox(
   }
 }
 
-NGPhysicalFragment* NGBox::RunOldLayout(
+NGPhysicalFragment* NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   // TODO(layout-ng): If fixedSize is true, set the override width/height too
   NGLogicalSize available_size = constraint_space.AvailableSize();

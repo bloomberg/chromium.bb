@@ -15,7 +15,7 @@ class CORE_EXPORT NGFragmentBuilder final
  public:
   NGFragmentBuilder(NGPhysicalFragmentBase::NGFragmentType);
 
-  using WeakBoxList = HeapLinkedHashSet<WeakMember<NGBox>>;
+  using WeakBoxList = HeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
   NGFragmentBuilder& SetDirection(TextDirection);

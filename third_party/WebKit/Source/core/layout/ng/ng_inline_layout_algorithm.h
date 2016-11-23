@@ -6,7 +6,7 @@
 #define NGInlineLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_inline_box.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "wtf/RefPtr.h"
 
@@ -32,7 +32,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param space The constraint space which the algorithm should generate a
   //              fragment within.
   NGInlineLayoutAlgorithm(PassRefPtr<const ComputedStyle>,
-                          NGInlineBox* first_child,
+                          NGInlineNode* first_child,
                           NGConstraintSpace* space,
                           NGBreakToken* break_token = nullptr);
 
@@ -47,7 +47,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
   const ComputedStyle& Style() const { return *style_; }
 
   RefPtr<const ComputedStyle> style_;
-  Member<NGInlineBox> first_child_;
+  Member<NGInlineNode> first_child_;
   Member<NGConstraintSpace> constraint_space_;
   Member<NGBreakToken> break_token_;
 };

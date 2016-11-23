@@ -10,7 +10,7 @@
 namespace blink {
 
 NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
-    NGInlineBox* inline_box,
+    NGInlineNode* inline_box,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
     : inline_box_(inline_box),

@@ -17,13 +17,13 @@ as well). For each different type of layout, we have a
 The input to an [NGLayoutAlgorithm](ng_layout_algorithm.h) is the same tuple
 for every kind of layout:
 
- - The [NGBox](ng_box.h) which we are currently performing layout for. The
+ - The [NGBlockNode](ng_block_node.h) which we are currently performing layout for. The
    following information is accessed:
 
    - The [ComputedStyle](../../style/ComputedStyle.h) for the node which we are
      currently performing laying for.
 
-   - The list of children [NGBox](ng_box.h)es to perform layout upon, and their
+   - The list of children [NGBlockNode](ng_block_node.h)es to perform layout upon, and their
      respective style objects.
 
  - The [NGConstraintSpace](ng_constraint_space.h) which represents the "space"

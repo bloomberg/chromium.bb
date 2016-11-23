@@ -22,17 +22,17 @@ class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
-class CORE_EXPORT NGBox final : public NGLayoutInputNode {
+class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   friend NGLayoutInputNode;
 
  public:
-  explicit NGBox(LayoutObject*);
+  explicit NGBlockNode(LayoutObject*);
 
   // TODO(layout-ng): make it private and declare a friend class to use in tests
-  explicit NGBox(ComputedStyle*);
+  explicit NGBlockNode(ComputedStyle*);
 
   bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
-  NGBox* NextSibling() override;
+  NGBlockNode* NextSibling() override;
 
   // Computes the value of min-content and max-content for this box.
   // The return value has the same meaning as for Layout.
@@ -50,7 +50,7 @@ class CORE_EXPORT NGBox final : public NGLayoutInputNode {
 
   NGLayoutInputNode* FirstChild();
 
-  void SetNextSibling(NGBox*);
+  void SetNextSibling(NGBlockNode*);
   void SetFirstChild(NGLayoutInputNode*);
 
   DECLARE_VIRTUAL_TRACE();
@@ -76,14 +76,14 @@ class CORE_EXPORT NGBox final : public NGLayoutInputNode {
   // combination.
   LayoutBox* layout_box_;
   RefPtr<ComputedStyle> style_;
-  Member<NGBox> next_sibling_;
+  Member<NGBlockNode> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
   Member<NGLayoutCoordinator> layout_coordinator_;
   Member<NGLayoutAlgorithm> minmax_algorithm_;
   Member<NGPhysicalFragment> fragment_;
 };
 
-DEFINE_TYPE_CASTS(NGBox,
+DEFINE_TYPE_CASTS(NGBlockNode,
                   NGLayoutInputNode,
                   node,
                   node->Type() == NGLayoutInputNode::LegacyBlock,

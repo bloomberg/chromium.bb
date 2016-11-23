@@ -13,7 +13,7 @@
 namespace blink {
 
 struct MinAndMaxContentSizes;
-class NGBox;
+class NGBlockNode;
 class NGConstraintSpace;
 class NGFragmentBase;
 class NGPhysicalFragmentBase;
@@ -36,8 +36,8 @@ class CORE_EXPORT NGLayoutAlgorithm
   // This function can not be const because for interruptible layout, we have
   // to be able to store state information.
   // If this function returns NotFinished, it has to be called again.
-  // If it returns ChildAlgorithmRequired, the NGBox out parameter will
-  // be set with the NGBox that needs to be layed out next.
+  // If it returns ChildAlgorithmRequired, the NGBlockNode out parameter will
+  // be set with the NGBlockNode that needs to be layed out next.
   // If it returns NewFragment, the NGPhysicalFragmentBase out parameter
   // will contain the new fragment.
   virtual NGLayoutStatus Layout(NGFragmentBase*,

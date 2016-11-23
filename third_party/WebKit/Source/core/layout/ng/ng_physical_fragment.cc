@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
-#include "core/layout/ng/ng_box.h"
+#include "core/layout/ng/ng_block_node.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -13,7 +13,7 @@ NGPhysicalFragment::NGPhysicalFragment(
     NGPhysicalSize size,
     NGPhysicalSize overflow,
     HeapVector<Member<const NGPhysicalFragmentBase>>& children,
-    HeapLinkedHashSet<WeakMember<NGBox>>& out_of_flow_descendants,
+    HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
     Vector<NGLogicalOffset> out_of_flow_offsets,
     NGMarginStrut margin_strut)
     : NGPhysicalFragmentBase(size, overflow, FragmentBox),

@@ -177,7 +177,7 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
-    NGBox* first_child,
+    NGBlockNode* first_child,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
     : state_(kStateInit),

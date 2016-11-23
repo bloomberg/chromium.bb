@@ -7,14 +7,14 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_inline_box.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
-    NGInlineBox* first_child,
+    NGInlineNode* first_child,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
     : style_(style),

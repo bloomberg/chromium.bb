@@ -393,7 +393,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   LayoutUnit logicalHeightWithVisibleOverflow() const final;
 
-  // This function is only public so we can call it from NGBox while we're
+  // This function is only public so we can call it from NGBlockNode while we're
   // still working on LayoutNG.
   void updateIsSelfCollapsing() {
     m_isSelfCollapsing = checkIfIsSelfCollapsingBlock();

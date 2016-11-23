@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class NGBox;
+class NGBlockNode;
 
 class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
  public:
@@ -21,7 +21,7 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
       NGPhysicalSize size,
       NGPhysicalSize overflow,
       HeapVector<Member<const NGPhysicalFragmentBase>>& children,
-      HeapLinkedHashSet<WeakMember<NGBox>>& out_of_flow_descendants,
+      HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
       Vector<NGLogicalOffset> out_of_flow_offsets,
       NGMarginStrut margin_strut);
 
@@ -29,7 +29,8 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
     return children_;
   }
 
-  const HeapLinkedHashSet<WeakMember<NGBox>>& OutOfFlowDescendants() const {
+  const HeapLinkedHashSet<WeakMember<NGBlockNode>>& OutOfFlowDescendants()
+      const {
     return out_of_flow_descendants_;
   }
 
@@ -43,7 +44,7 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
 
  private:
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
-  HeapLinkedHashSet<WeakMember<NGBox>> out_of_flow_descendants_;
+  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
   Vector<NGLogicalOffset> out_of_flow_offsets_;
   NGMarginStrut margin_strut_;
 };

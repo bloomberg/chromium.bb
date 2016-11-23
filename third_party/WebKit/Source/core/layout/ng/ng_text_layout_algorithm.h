@@ -6,7 +6,7 @@
 #define NGInlineLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_inline_box.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "wtf/RefPtr.h"
 
@@ -17,10 +17,10 @@ class NGConstraintSpace;
 class NGPhysicalFragment;
 class NGBreakToken;
 
-// A class for text layout. This takes a NGInlineBox which consists only
+// A class for text layout. This takes a NGInlineNode which consists only
 // non-atomic inlines and produces NGTextFragments.
 //
-// Unlike other layout algorithms this takes a NGInlineBox as its input instead
+// Unlike other layout algorithms this takes a NGInlineNode as its input instead
 // of the ComputedStyle as it operates over multiple inlines with different
 // style.
 class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
@@ -29,7 +29,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param inline_box The inline box to produce fragments from.
   // @param space The constraint space which the algorithm should generate a
   //              fragments within.
-  NGTextLayoutAlgorithm(NGInlineBox* inline_box,
+  NGTextLayoutAlgorithm(NGInlineNode* inline_box,
                         NGConstraintSpace* space,
                         NGBreakToken* break_token = nullptr);
 
@@ -40,7 +40,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Member<NGInlineBox> inline_box_;
+  Member<NGInlineNode> inline_box_;
   Member<NGConstraintSpace> constraint_space_;
   Member<NGBreakToken> break_token_;
 };

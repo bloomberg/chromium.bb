@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_inline_box.h"
+#include "core/layout/ng/ng_inline_node.h"
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/style/ComputedStyle.h"
@@ -24,7 +24,8 @@
 
 namespace blink {
 
-NGInlineBox::NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style)
+NGInlineNode::NGInlineNode(LayoutObject* start_inline,
+                           ComputedStyle* block_style)
     : NGLayoutInputNode(NGLayoutInputNodeType::LegacyInline),
       start_inline_(start_inline),
       last_inline_(nullptr),
@@ -33,17 +34,17 @@ NGInlineBox::NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style)
   PrepareLayout();  // TODO(layout-dev): Shouldn't be called here.
 }
 
-NGInlineBox::NGInlineBox()
+NGInlineNode::NGInlineNode()
     : NGLayoutInputNode(NGLayoutInputNodeType::LegacyInline),
       start_inline_(nullptr),
       last_inline_(nullptr),
       block_style_(nullptr) {}
 
-NGInlineBox::~NGInlineBox() {}
+NGInlineNode::~NGInlineNode() {}
 
-void NGInlineBox::PrepareLayout() {
+void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
-  // NGInlineBox represent a collection of adjacent non-atomic inlines.
+  // NGInlineNode represent a collection of adjacent non-atomic inlines.
   last_inline_ = start_inline_;
   for (LayoutObject* curr = start_inline_; curr; curr = curr->nextSibling())
     last_inline_ = curr;
@@ -54,10 +55,10 @@ void NGInlineBox::PrepareLayout() {
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
-// NGInlineBox object. Collects LayoutText items, merging them up into the
+// NGInlineNode object. Collects LayoutText items, merging them up into the
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
-void NGInlineBox::CollectInlines(LayoutObject* start, LayoutObject* last) {
+void NGInlineNode::CollectInlines(LayoutObject* start, LayoutObject* last) {
   NGLayoutInlineItemsBuilder builder(&items_);
   builder.EnterBlock(block_style_.get());
   CollectInlines(start, last, &builder);
@@ -65,9 +66,9 @@ void NGInlineBox::CollectInlines(LayoutObject* start, LayoutObject* last) {
   text_content_ = builder.ToString();
 }
 
-void NGInlineBox::CollectInlines(LayoutObject* start,
-                                 LayoutObject* last,
-                                 NGLayoutInlineItemsBuilder* builder) {
+void NGInlineNode::CollectInlines(LayoutObject* start,
+                                  LayoutObject* last,
+                                  NGLayoutInlineItemsBuilder* builder) {
   LayoutObject* node = start;
   while (node) {
     if (node->isText()) {
@@ -108,7 +109,7 @@ void NGInlineBox::CollectInlines(LayoutObject* start,
   }
 }
 
-void NGInlineBox::SegmentText() {
+void NGInlineNode::SegmentText() {
   if (text_content_.isEmpty())
     return;
   // TODO(kojii): Move this to caller, this will be used again after line break.
@@ -177,7 +178,7 @@ void NGLayoutInlineItem::SetEndOffset(unsigned end_offset) {
   end_offset_ = end_offset;
 }
 
-void NGInlineBox::ShapeText() {
+void NGInlineNode::ShapeText() {
   // TODO(layout-dev): Should pass the entire range to the shaper as context
   // and then shape each item based on the relevant font.
   for (auto& item : items_) {
@@ -198,8 +199,8 @@ void NGInlineBox::ShapeText() {
   }
 }
 
-bool NGInlineBox::Layout(const NGConstraintSpace* constraint_space,
-                         NGFragmentBase** out) {
+bool NGInlineNode::Layout(const NGConstraintSpace* constraint_space,
+                          NGFragmentBase** out) {
   // TODO(layout-dev): Perform pre-layout text step.
 
   // NOTE: We don't need to change the coordinate system here as we are an
@@ -227,18 +228,18 @@ bool NGInlineBox::Layout(const NGConstraintSpace* constraint_space,
   return true;
 }
 
-NGInlineBox* NGInlineBox::NextSibling() {
+NGInlineNode* NGInlineNode::NextSibling() {
   if (!next_sibling_) {
     LayoutObject* next_sibling =
         last_inline_ ? last_inline_->nextSibling() : nullptr;
     next_sibling_ = next_sibling
-                        ? new NGInlineBox(next_sibling, block_style_.get())
+                        ? new NGInlineNode(next_sibling, block_style_.get())
                         : nullptr;
   }
   return next_sibling_;
 }
 
-DEFINE_TRACE(NGInlineBox) {
+DEFINE_TRACE(NGInlineNode) {
   visitor->trace(next_sibling_);
   visitor->trace(layout_algorithm_);
   NGLayoutInputNode::trace(visitor);

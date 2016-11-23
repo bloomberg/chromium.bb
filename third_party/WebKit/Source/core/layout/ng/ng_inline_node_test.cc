@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_inline_box.h"
+#include "core/layout/ng/ng_inline_node.h"
 
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,12 +11,12 @@ namespace blink {
 
 namespace {
 
-class NGInlineBoxForTest : public NGInlineBox {
+class NGInlineNodeForTest : public NGInlineNode {
  public:
-  NGInlineBoxForTest(const ComputedStyle* block_style) {
+  NGInlineNodeForTest(const ComputedStyle* block_style) {
     block_style_ = const_cast<ComputedStyle*>(block_style);
   }
-  using NGInlineBox::NGInlineBox;
+  using NGInlineNode::NGInlineNode;
 
   String& Text() { return text_content_; }
   Vector<NGLayoutInlineItem>& Items() { return items_; }
@@ -36,20 +36,20 @@ class NGInlineBoxForTest : public NGInlineBox {
     items_.clear();
   }
 
-  void SegmentText() { NGInlineBox::SegmentText(); }
+  void SegmentText() { NGInlineNode::SegmentText(); }
 };
 
 class NGInlineBoxTest : public ::testing::Test {};
 
 TEST_F(NGInlineBoxTest, SegmentEmpty) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
-  NGInlineBoxForTest* box = new NGInlineBoxForTest(style.get());
+  NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->SegmentText();
 }
 
 TEST_F(NGInlineBoxTest, SegmentASCII) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
-  NGInlineBoxForTest* box = new NGInlineBoxForTest(style.get());
+  NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText("Hello");
   box->SegmentText();
   ASSERT_EQ(1u, box->Items().size());
@@ -61,7 +61,7 @@ TEST_F(NGInlineBoxTest, SegmentASCII) {
 
 TEST_F(NGInlineBoxTest, SegmentHebrew) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
-  NGInlineBoxForTest* box = new NGInlineBoxForTest(style.get());
+  NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA");
   box->SegmentText();
   ASSERT_EQ(1u, box->Items().size());
@@ -73,7 +73,7 @@ TEST_F(NGInlineBoxTest, SegmentHebrew) {
 
 TEST_F(NGInlineBoxTest, SegmentSplit1To2) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
-  NGInlineBoxForTest* box = new NGInlineBoxForTest(style.get());
+  NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA");
   box->SegmentText();
   ASSERT_EQ(2u, box->Items().size());
@@ -89,7 +89,7 @@ TEST_F(NGInlineBoxTest, SegmentSplit1To2) {
 
 TEST_F(NGInlineBoxTest, SegmentSplit3To4) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
-  NGInlineBoxForTest* box = new NGInlineBoxForTest(style.get());
+  NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText("Hel");
   box->AppendText(u"lo \u05E2");
   box->AppendText(u"\u05D1\u05E8\u05D9\u05EA");

@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_layout_inline_items_builder.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/ng/ng_inline_box.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6,7 +6,7 @@
 #define NGBlockLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_box.h"
+#include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
@@ -30,7 +30,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param space The constraint space which the algorithm should generate a
   //              fragment within.
   NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>,
-                         NGBox* first_child,
+                         NGBlockNode* first_child,
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
@@ -97,13 +97,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   RefPtr<const ComputedStyle> style_;
 
-  Member<NGBox> first_child_;
+  Member<NGBlockNode> first_child_;
   Member<NGConstraintSpace> constraint_space_;
   Member<NGBreakToken> break_token_;
   Member<NGFragmentBuilder> builder_;
   Member<NGConstraintSpaceBuilder> space_builder_;
   Member<NGConstraintSpace> space_for_current_child_;
-  Member<NGBox> current_child_;
+  Member<NGBlockNode> current_child_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
