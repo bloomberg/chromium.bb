@@ -259,7 +259,7 @@ letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, conver
 lighting-color interpolable, svg, converter=convertColor
 line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
 list-style-image interpolable, inherited, custom_value, typedom_types=[Image]
-list-style-position inherited
+list-style-position inherited, keyword_only, keywords=[outside|inside]
 list-style-type inherited
 margin-bottom interpolable, initial=initialMargin, converter=convertQuirkyLength
 margin-left interpolable, initial=initialMargin, converter=convertQuirkyLength

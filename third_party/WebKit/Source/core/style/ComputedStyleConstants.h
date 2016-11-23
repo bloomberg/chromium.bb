@@ -432,8 +432,6 @@ enum EBreak {
                // shorthands.
 };
 
-enum class EListStylePosition : unsigned { Outside, Inside };
-
 enum class ECursor : unsigned {
   Auto,
   Cross,

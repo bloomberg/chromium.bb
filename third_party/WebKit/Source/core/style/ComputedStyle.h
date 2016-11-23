@@ -215,7 +215,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     inline bool compareEqualNonIndependent(const InheritedData& other) const {
       return (m_listStyleType == other.m_listStyleType) &&
-             (m_listStylePosition == other.m_listStylePosition) &&
              (m_textAlign == other.m_textAlign) &&
              (m_textTransform == other.m_textTransform) &&
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
@@ -231,7 +230,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     }
 
     unsigned m_listStyleType : 7;      // EListStyleType
-    unsigned m_listStylePosition : 1;  // EListStylePosition
     unsigned m_textAlign : 4;          // ETextAlign
     unsigned m_textTransform : 2;      // ETextTransform
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
@@ -363,8 +361,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_listStyleType =
         static_cast<unsigned>(initialListStyleType());
-    m_inheritedData.m_listStylePosition =
-        static_cast<unsigned>(initialListStylePosition());
     m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
     m_inheritedData.m_textTransform =
         static_cast<unsigned>(initialTextTransform());
@@ -2127,17 +2123,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setListStyleType(EListStyleType v) {
     m_inheritedData.m_listStyleType = static_cast<unsigned>(v);
-  }
-
-  // list-style-position
-  static EListStylePosition initialListStylePosition() {
-    return EListStylePosition::Outside;
-  }
-  EListStylePosition listStylePosition() const {
-    return static_cast<EListStylePosition>(m_inheritedData.m_listStylePosition);
-  }
-  void setListStylePosition(EListStylePosition v) {
-    m_inheritedData.m_listStylePosition = static_cast<unsigned>(v);
   }
 
   // list-style-image
