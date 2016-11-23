@@ -1633,9 +1633,9 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
 
   void SetUp() override {
     // We need to start the test server to get the host&port in the url.
-    ASSERT_TRUE(embedded_test_server()->Start());
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&SafeBrowsingDatabaseManagerCookieTest::HandleRequest));
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     sb_factory_.reset(new TestSafeBrowsingServiceFactory());
     SetProtocolConfigURLPrefix(

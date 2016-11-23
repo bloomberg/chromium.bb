@@ -599,7 +599,7 @@ class ChromeRenderProcessHostBackgroundingTest
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
     // Set up the server and get the test pages.
     base::FilePath test_data_dir;
@@ -608,6 +608,8 @@ class ChromeRenderProcessHostBackgroundingTest
         test_data_dir.AppendASCII("chrome/test/data/"));
     audio_url_ = embedded_test_server()->GetURL("/extensions/loop_audio.html");
     no_audio_url_ = embedded_test_server()->GetURL("/title1.html");
+
+    embedded_test_server()->StartAcceptingConnections();
 
     // Open a browser, navigate to the audio page and get its WebContents.
     ui_test_utils::NavigateToURL(browser(), audio_url_);

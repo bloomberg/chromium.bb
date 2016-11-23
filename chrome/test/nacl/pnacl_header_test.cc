@@ -48,8 +48,6 @@ PnaclHeaderTest::PnaclHeaderTest() : noncors_loads_(0), cors_loads_(0) {}
 PnaclHeaderTest::~PnaclHeaderTest() {}
 
 void PnaclHeaderTest::StartServer() {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   // For most requests, just serve files, but register a special test handler
   // that watches for the .pexe fetch also.
   base::FilePath test_data_dir;
@@ -57,6 +55,7 @@ void PnaclHeaderTest::StartServer() {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&PnaclHeaderTest::WatchForPexeFetch, base::Unretained(this)));
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+  ASSERT_TRUE(embedded_test_server()->Start());
 }
 
 void PnaclHeaderTest::RunLoadTest(const std::string& url,

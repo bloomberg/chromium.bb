@@ -1043,12 +1043,12 @@ class PrivetHttpWithServerTest : public ::testing::Test,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
     server_.reset(new EmbeddedTestServer(EmbeddedTestServer::TYPE_HTTP));
-    ASSERT_TRUE(server_->Start());
 
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
     server_->ServeFilesFromDirectory(
         test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
+    ASSERT_TRUE(server_->Start());
 
     client_.reset(new PrivetHTTPClientImpl("test", server_->host_port_pair(),
                                            context_getter_));
