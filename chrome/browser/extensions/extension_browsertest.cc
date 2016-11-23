@@ -127,7 +127,6 @@ void ExtensionBrowserTest::SetUp() {
 void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
-  observer_.reset(new ChromeExtensionTestNotificationObserver(browser()));
 
   // We don't want any warning bubbles for, e.g., unpacked extensions.
   ExtensionMessageBubbleFactory::set_override_for_tests(

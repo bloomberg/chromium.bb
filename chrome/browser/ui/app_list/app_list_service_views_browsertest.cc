@@ -143,6 +143,8 @@ class AppListControllerAppInfoDialogBrowserTest :
     if (GetParam())
       arc::ArcSessionManager::Get()->EnableArc();
 #endif
+    ExtensionBrowserTest::SetUpOnMainThread();
+
     // Install a test extension.
     base::FilePath test_extension_path;
     EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_extension_path));

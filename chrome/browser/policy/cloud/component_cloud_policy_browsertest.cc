@@ -119,6 +119,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(PolicyServiceIsEmpty(g_browser_process->policy_service()))
         << "Pre-existing policies in this machine will make this test fail.";
 

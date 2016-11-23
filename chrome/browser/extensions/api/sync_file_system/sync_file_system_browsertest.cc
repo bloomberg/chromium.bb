@@ -84,6 +84,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   void SetUpOnMainThread() override {
+    extensions::PlatformAppBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
 
     SyncFileSystemServiceFactory* factory =

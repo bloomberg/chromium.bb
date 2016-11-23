@@ -134,6 +134,7 @@ class CertificateProviderApiTest : public ExtensionApiTest {
   }
 
   void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     // Set up the AutoSelectCertificateForUrls policy to avoid the client
     // certificate selection dialog.
     const std::string autoselect_pattern =

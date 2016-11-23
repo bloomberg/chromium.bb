@@ -61,6 +61,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   ~BluetoothPrivateApiTest() override {}
 
   void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kTestExtensionId);
     mock_adapter_ = new NiceMock<MockBluetoothAdapter>();
@@ -71,8 +72,6 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
         .WillByDefault(Return(mock_device_.get()));
     ON_CALL(*mock_adapter_, IsPresent()).WillByDefault(Return(true));
   }
-
-  void TearDownOnMainThread() override {}
 
   BluetoothEventRouter* event_router() {
     return BluetoothAPI::Get(browser()->profile())->event_router();

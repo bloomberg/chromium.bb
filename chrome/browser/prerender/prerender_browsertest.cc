@@ -2671,6 +2671,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
 
   void SetUpOnMainThread() override {
     PrerenderBrowserTest::SetUpOnMainThread();
+    ExtensionApiTest::SetUpOnMainThread();
   }
 };
 

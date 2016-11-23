@@ -118,9 +118,13 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
   }
 
-  void TearDownOnMainThread() override { model_.reset(); }
+  void TearDownOnMainThread() override {
+    model_.reset();
+    ExtensionBrowserTest::TearDownOnMainThread();
+  }
 
   void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Add content/test/data so we can use cross_site_iframe_factory.html

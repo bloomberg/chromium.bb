@@ -114,6 +114,7 @@ class GcdPrivateAPITest : public ExtensionApiTest {
 class GcdPrivateWithMdnsAPITest : public GcdPrivateAPITest {
  public:
   void SetUpOnMainThread() override {
+    GcdPrivateAPITest::SetUpOnMainThread();
     test_service_discovery_client_ =
         new local_discovery::TestServiceDiscoveryClient();
     test_service_discovery_client_->Start();
@@ -121,7 +122,7 @@ class GcdPrivateWithMdnsAPITest : public GcdPrivateAPITest {
 
   void TearDownOnMainThread() override {
     test_service_discovery_client_ = nullptr;
-    ExtensionApiTest::TearDownOnMainThread();
+    GcdPrivateAPITest::TearDownOnMainThread();
   }
 
  protected:

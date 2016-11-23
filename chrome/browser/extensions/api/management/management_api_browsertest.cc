@@ -179,6 +179,7 @@ class ExtensionManagementApiEscalationTest :
   static const char kId[];
 
   void SetUpOnMainThread() override {
+    ExtensionManagementApiBrowserTest::SetUpOnMainThread();
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath pem_path = test_data_dir_.
         AppendASCII("permissions_increase").AppendASCII("permissions.pem");

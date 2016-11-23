@@ -25,6 +25,7 @@ namespace {
 class ExtensionBindingsApiTest : public ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));

@@ -33,6 +33,7 @@ class SocketApiTest : public ExtensionApiTest {
         resolver_creator_(new extensions::MockHostResolverCreator()) {}
 
   void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }

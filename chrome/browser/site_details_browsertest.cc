@@ -171,6 +171,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
   ~SiteDetailsBrowserTest() override {}
 
   void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Add content/test/data so we can use cross_site_iframe_factory.html
