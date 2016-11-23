@@ -320,14 +320,14 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   class RowBackgroundDisplayItemClient : public DisplayItemClient {
    public:
-    RowBackgroundDisplayItemClient(const LayoutTableRow&);
+    RowBackgroundDisplayItemClient(const LayoutTableCell&);
 
     // DisplayItemClient methods.
     String debugName() const;
     LayoutRect visualRect() const;
 
    private:
-    const LayoutTableRow& m_layoutTableRow;
+    const LayoutTableCell& m_layoutTableCell;
   };
 
   bool usesCompositedCellDisplayItemClients() const;

@@ -470,7 +470,7 @@ void LayoutTableCell::ensureIsReadyForPaintInvalidation() {
     return;
   if (!m_rowBackgroundDisplayItemClient) {
     m_rowBackgroundDisplayItemClient =
-        wrapUnique(new LayoutTableCell::RowBackgroundDisplayItemClient(*row()));
+        wrapUnique(new LayoutTableCell::RowBackgroundDisplayItemClient(*this));
   }
 }
 
@@ -520,15 +520,15 @@ void LayoutTableCell::styleDidChange(StyleDifference diff,
 }
 
 LayoutTableCell::RowBackgroundDisplayItemClient::RowBackgroundDisplayItemClient(
-    const LayoutTableRow& layoutTableRow)
-    : m_layoutTableRow(layoutTableRow) {}
+    const LayoutTableCell& layoutTableCell)
+    : m_layoutTableCell(layoutTableCell) {}
 
 String LayoutTableCell::RowBackgroundDisplayItemClient::debugName() const {
   return "RowBackground";
 }
 
 LayoutRect LayoutTableCell::RowBackgroundDisplayItemClient::visualRect() const {
-  return m_layoutTableRow.visualRect();
+  return m_layoutTableCell.row()->visualRect();
 }
 
 // The following rules apply for resolving conflicts and figuring out which

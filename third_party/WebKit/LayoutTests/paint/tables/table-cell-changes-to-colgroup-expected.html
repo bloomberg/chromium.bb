@@ -1,0 +1,18 @@
+<!doctype html>
+<style>
+.c7 { background: white; direction: rtl; }
+.c7[class*="c7"] { display: table-column-group; }
+.c13 { display: table-cell; border-style: ridge; will-change: transform; }
+</style>
+<script>
+var nodes = Array();
+nodes[1] = document.createElement('label');
+nodes[1].setAttribute('class', 'c7');
+document.documentElement.appendChild(nodes[1]);
+nodes[2] = document.createElement('colgroup');
+nodes[2].setAttribute('class', 'c11');
+document.documentElement.appendChild(nodes[2]);
+nodes[3] = document.createElement('aside');
+nodes[3].setAttribute('class', 'c13');
+document.documentElement.appendChild(nodes[3]);
+</script>
