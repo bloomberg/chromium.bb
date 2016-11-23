@@ -300,7 +300,8 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
       force_show_keyboard_(false),
-      should_block_shelf_auto_hide_(false) {
+      should_block_shelf_auto_hide_(false),
+      keyboard_suppressed_(false) {
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
     SetContentsBackground(false);
@@ -309,13 +310,17 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
   }
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
-  WmShell::Get()->system_tray_notifier()->AddIMEObserver(this);
+  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  tray_notifier->AddIMEObserver(this);
+  tray_notifier->AddVirtualKeyboardObserver(this);
 }
 
 ImeMenuTray::~ImeMenuTray() {
   if (bubble_)
     bubble_->bubble_view()->reset_delegate();
-  WmShell::Get()->system_tray_notifier()->RemoveIMEObserver(this);
+  SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
+  tray_notifier->RemoveIMEObserver(this);
+  tray_notifier->RemoveVirtualKeyboardObserver(this);
 }
 
 void ImeMenuTray::ShowImeMenuBubble() {
@@ -341,8 +346,8 @@ void ImeMenuTray::ShowImeMenuBubble() {
   }
 
   // Adds IME list to the bubble.
-  ime_list_view_ =
-      new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME);
+  ime_list_view_ = new ImeListView(nullptr, ShouldShowKeyboardToggle(),
+                                   ImeListView::SHOW_SINGLE_IME);
 
   uint32_t current_height = ime_list_view_->scroll_content()->height();
   const gfx::Range height_range = GetImeListViewRange();
@@ -431,6 +436,11 @@ bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
   return InputMethodManager::Get() &&
          InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
          !current_ime_.third_party;
+}
+
+bool ImeMenuTray::ShouldShowKeyboardToggle() const {
+  return keyboard_suppressed_ &&
+         !WmShell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
 }
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -539,6 +549,12 @@ void ImeMenuTray::OnKeyboardHidden() {
 
   WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
   force_show_keyboard_ = false;
+}
+
+void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
+  if (suppressed != keyboard_suppressed_ && bubble_)
+    HideImeMenuBubble();
+  keyboard_suppressed_ = suppressed;
 }
 
 void ImeMenuTray::UpdateTrayLabel() {
