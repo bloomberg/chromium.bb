@@ -34,6 +34,9 @@ class ImeListView : public TrayDetailsView {
                       bool show_keyboard_toggle,
                       SingleImeBehavior single_ime_behavior);
 
+  // Removes (and destroys) all child views.
+  virtual void ResetImeListView();
+
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
@@ -42,9 +45,6 @@ class ImeListView : public TrayDetailsView {
  private:
   // To allow the test class to access |ime_map_|.
   friend class ImeMenuTrayTest;
-
-  // Removes (and destroys) all child views.
-  void ResetImeListView();
 
   // Appends the IMEs to the scrollable area of the detailed view.
   void AppendIMEList(const IMEInfoList& list);

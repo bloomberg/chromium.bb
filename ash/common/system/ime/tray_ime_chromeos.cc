@@ -151,6 +151,11 @@ class IMEDetailedView : public ImeListView {
       ShowSettings();
   }
 
+  void ResetImeListView() override {
+    ImeListView::ResetImeListView();
+    settings_button_ = nullptr;
+  }
+
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override {
     ImeListView::HandleButtonPressed(sender, event);
@@ -160,11 +165,6 @@ class IMEDetailedView : public ImeListView {
 
   void CreateExtraTitleRowButtons() override {
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      // It is possible that the settings button has already been created
-      // through a previous call to Update().
-      if (settings_button_)
-        return;
-
       tri_view()->SetContainerVisible(TriView::Container::END, true);
       settings_button_ = CreateSettingsButton(login_);
       tri_view()->AddView(TriView::Container::END, settings_button_);
