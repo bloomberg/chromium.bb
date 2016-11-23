@@ -345,6 +345,7 @@ cr.define('dnd', function() {
       chrome.bookmarkManagerPrivate.startDrag(draggedNodes.map(function(node) {
         return node.id;
       }), isFromTouch);
+      chrome.metricsPrivate.recordUserAction('BookmarkManager_StartDrag');
     }
   }
 
@@ -483,6 +484,8 @@ cr.define('dnd', function() {
         chrome.bookmarkManagerPrivate.drop(dropInfo.parentId, dropInfo.index);
       else
         chrome.bookmarkManagerPrivate.drop(dropInfo.parentId);
+
+      chrome.metricsPrivate.recordUserAction('BookmarkManager_Drop');
 
       e.preventDefault();
     }

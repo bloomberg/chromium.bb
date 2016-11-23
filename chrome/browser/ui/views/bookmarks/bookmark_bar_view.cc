@@ -1202,6 +1202,8 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   DCHECK(data.is_valid());
   bool copy = drop_info_->location.operation == ui::DragDropTypes::DRAG_COPY;
   drop_info_.reset();
+
+  content::RecordAction(base::UserMetricsAction("BookmarkBar_DragEnd"));
   return chrome::DropBookmarks(
       browser_->profile(), data, parent_node, index, copy);
 }

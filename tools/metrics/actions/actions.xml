@@ -2193,8 +2193,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BookmarkBar_DragEnd">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Logged when a bookmark drag ends in the bookmark bar
+  </description>
 </action>
 
 <action name="BookmarkBar_DragFromFolder">
@@ -2352,6 +2354,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BookmarkManager_Drop">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user drops a bookmark after a drag in the bookmark manager.
+  </description>
+</action>
+
 <action name="BookmarkManager_Export">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -2395,6 +2404,13 @@ should be able to be added at any place in this file.
 <action name="BookmarkManager_Sort">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="BookmarkManager_StartDrag">
+  <owner>calamity@chromium.org</owner>
+  <description>
+    Fired when a user starts a drag in the bookmark manager.
+  </description>
 </action>
 
 <action name="BookmarkManager_Sync">
