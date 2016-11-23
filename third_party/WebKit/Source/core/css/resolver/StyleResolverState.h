@@ -100,6 +100,13 @@ class CORE_EXPORT StyleResolverState {
 
   CSSAnimationUpdate& animationUpdate() { return m_animationUpdate; }
 
+  bool isAnimatingCustomProperties() const {
+    return m_isAnimatingCustomProperties;
+  }
+  void setIsAnimatingCustomProperties(bool value) {
+    m_isAnimatingCustomProperties = value;
+  }
+
   void setParentStyle(PassRefPtr<ComputedStyle> parentStyle) {
     m_parentStyle = parentStyle;
   }
@@ -201,6 +208,7 @@ class CORE_EXPORT StyleResolverState {
   RefPtr<ComputedStyle> m_parentStyle;
 
   CSSAnimationUpdate m_animationUpdate;
+  bool m_isAnimatingCustomProperties;
 
   bool m_applyPropertyToRegularStyle;
   bool m_applyPropertyToVisitedLinkStyle;

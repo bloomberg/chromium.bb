@@ -231,19 +231,15 @@ bool CSSAnimations::isTransitionAnimationForInspector(
   return false;
 }
 
-void CSSAnimations::calculateUpdate(const Element* animatingElement,
-                                    Element& element,
-                                    const ComputedStyle& style,
-                                    ComputedStyle* parentStyle,
-                                    CSSAnimationUpdate& animationUpdate,
-                                    StyleResolver* resolver) {
+void CSSAnimations::calculateCompositorAndTransitionUpdate(
+    const Element* animatingElement,
+    Element& element,
+    const ComputedStyle& style,
+    ComputedStyle* parentStyle,
+    CSSAnimationUpdate& animationUpdate) {
   calculateCompositorAnimationUpdate(animationUpdate, animatingElement, element,
                                      style, parentStyle);
-  calculateAnimationUpdate(animationUpdate, animatingElement, element, style,
-                           parentStyle, resolver);
-  calculateAnimationActiveInterpolations(animationUpdate, animatingElement);
   calculateTransitionUpdate(animationUpdate, animatingElement, style);
-  calculateTransitionActiveInterpolations(animationUpdate, animatingElement);
 }
 
 static const KeyframeEffectModelBase* getKeyframeEffectModelBase(
@@ -427,6 +423,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update,
                              *cssAnimations->m_runningAnimations[i]->animation);
     }
   }
+  calculateAnimationActiveInterpolations(update, animatingElement);
 }
 
 void CSSAnimations::snapshotCompositorKeyframes(
@@ -826,6 +823,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
       }
     }
   }
+  calculateTransitionActiveInterpolations(update, animatingElement);
 }
 
 void CSSAnimations::cancel() {
@@ -1092,6 +1090,18 @@ bool CSSAnimations::isAffectedByKeyframesFromScope(const Element& element,
   if (treeScope.rootNode() == treeScope.document())
     return false;
   return toShadowRoot(treeScope.rootNode()).host() == element;
+}
+
+bool CSSAnimations::isCustomPropertyHandle(const PropertyHandle& property) {
+  return property.isCSSProperty() &&
+         property.cssProperty() == CSSPropertyVariable;
+}
+
+bool CSSAnimations::isAnimatingCustomProperties(
+    const ElementAnimations* elementAnimations) {
+  return elementAnimations &&
+         elementAnimations->effectStack().affectsProperties(
+             isCustomPropertyHandle);
 }
 
 DEFINE_TRACE(CSSAnimations) {

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+@keyframes test {
+  from { --x: { background-color: green; }; }
+  to { --x: { background-color: lime; }; }
+}
+div {
+  --x: {
+    animation: test 10s linear;
+    background-color: red;
+  };
+  @apply --x;
+}
+#targetA {
+  animation-delay: -2.5s;
+}
+#targetB {
+  animation-delay: -7.5s;
+}
+</style>
+<div id="targetA"></div>
+<div id="targetB"></div>
+<script>
+test(() => {
+  assert_equals(getComputedStyle(targetA).backgroundColor, 'rgb(0, 128, 0)');
+  assert_equals(getComputedStyle(targetB).backgroundColor, 'rgb(0, 255, 0)');
+}, 'CSS Animations on custom properties should be reflected in @apply references');
+</script>
