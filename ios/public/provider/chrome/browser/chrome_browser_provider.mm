@@ -142,6 +142,10 @@ OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
   return nullptr;
 }
 
+UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
+  return nullptr;
+}
+
 BrandedImageProvider* ChromeBrowserProvider::GetBrandedImageProvider() const {
   return nullptr;
 }

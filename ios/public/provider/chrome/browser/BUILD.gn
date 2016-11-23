@@ -40,6 +40,8 @@ source_set("browser") {
     "ui/infobar_view_protocol.h",
     "ui/logo_vendor.h",
     "ui/text_field_styling.h",
+    "user_feedback/user_feedback_provider.h",
+    "user_feedback/user_feedback_provider.mm",
     "voice/audio_session_controller.h",
     "voice/logo_animation_controller.h",
     "voice/voice_search_bar.h",
@@ -116,6 +118,8 @@ source_set("test_support") {
     "ui/test_infobar_view.mm",
     "ui/test_styled_text_field.h",
     "ui/test_styled_text_field.mm",
+    "user_feedback/test_user_feedback_provider.h",
+    "user_feedback/test_user_feedback_provider.mm",
     "voice/test_voice_search_provider.h",
     "voice/test_voice_search_provider.mm",
   ]

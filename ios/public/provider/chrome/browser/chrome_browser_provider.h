@@ -25,6 +25,7 @@ class InfoBarViewDelegate;
 class OmahaServiceProvider;
 class PrefRegistrySimple;
 class PrefService;
+class UserFeedbackProvider;
 class VoiceSearchProvider;
 
 namespace autofill {
@@ -171,6 +172,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the omaha service provider.
   virtual OmahaServiceProvider* GetOmahaServiceProvider() const;
+
+  // Returns an instance of the user feedback provider.
+  virtual UserFeedbackProvider* GetUserFeedbackProvider() const;
 
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>

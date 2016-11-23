@@ -18,6 +18,7 @@
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/ui/test_infobar_view.h"
 #import "ios/public/provider/chrome/browser/ui/test_styled_text_field.h"
+#import "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
@@ -32,7 +33,8 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
       omaha_service_provider_(base::MakeUnique<TestOmahaServiceProvider>()),
       signin_resources_provider_(
           base::MakeUnique<TestSigninResourcesProvider>()),
-      voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()) {}
+      voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()),
+      user_feedback_provider_(base::MakeUnique<TestUserFeedbackProvider>()) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
 
@@ -87,6 +89,11 @@ AppDistributionProvider* TestChromeBrowserProvider::GetAppDistributionProvider()
 OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
     const {
   return omaha_service_provider_.get();
+}
+
+UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
+    const {
+  return user_feedback_provider_.get();
 }
 
 std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
