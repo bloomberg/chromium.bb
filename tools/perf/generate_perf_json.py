@@ -541,8 +541,7 @@ BENCHMARK_NAME_BLACKLIST = [
 
 
 def current_benchmarks(use_whitelist):
-  current_dir = os.path.dirname(__file__)
-  benchmarks_dir = os.path.join(current_dir, 'benchmarks')
+  benchmarks_dir = os.path.join(os.getcwd(), 'benchmarks')
   top_level_dir = os.path.dirname(benchmarks_dir)
 
   all_benchmarks = discover.DiscoverClasses(
@@ -663,15 +662,19 @@ def generate_all_tests(waterfall):
   tests['AAAAA2 See //tools/perf/generate_perf_json.py to make changes'] = {}
   filename = '%s.json' % waterfall['name']
 
-  current_dir = os.path.dirname(os.path.abspath(__file__))
-  src_dir = os.path.dirname(os.path.dirname(current_dir))
+  src_dir = os.path.dirname(os.path.dirname(os.getcwd()))
 
   with open(os.path.join(src_dir, 'testing', 'buildbot', filename), 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
 
+def chdir_to_parent_directory():
+  parent_directory = os.path.dirname(os.path.abspath(__file__))
+  os.chdir(parent_directory)
 
 def main():
+  chdir_to_parent_directory()
+
   waterfall = get_waterfall_config()
   waterfall['name'] = 'chromium.perf'
   fyi_waterfall = get_fyi_waterfall_config()
