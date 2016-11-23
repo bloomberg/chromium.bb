@@ -11,8 +11,8 @@
 test(function() {
     var topDiv = document.getElementById("top");
     var scroller = document.getElementById("scroller");
-    topDiv.style.display = "block";
     topDiv.offsetTop;
+    topDiv.style.display = "block";
     assert_equals(scroller.clientWidth, scroller.scrollWidth);
 });
 </script>
