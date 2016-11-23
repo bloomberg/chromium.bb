@@ -25,6 +25,10 @@ id ExecuteJavaScript(WebState* web_state,
                      NSString* javascript,
                      NSError** out_error);
 
+// Synchronously returns the result of executed JavaScript on interstitial page
+// displayed for |web_state|.
+id ExecuteScriptOnInterstitial(WebState* web_state, NSString* script);
+
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_TEST_EARL_GREY_JS_TEST_UTIL_H_

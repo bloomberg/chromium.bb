@@ -13,9 +13,11 @@
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
 #include "ios/testing/wait_util.h"
+#import "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
-using web::test::ExecuteJavaScript;
+using testing::WaitUntilConditionOrTimeout;
 
 namespace {
 
@@ -31,17 +33,16 @@ id<GREYMatcher> webViewWithText(std::string text,
                                 web::WebState* web_state,
                                 bool should_contain_text) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
-    return testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^{
-          std::unique_ptr<base::Value> value =
-              ExecuteJavaScript(web_state, kGetDocumentBodyJavaScript);
-          std::string body;
-          if (value && value->GetAsString(&body)) {
-            BOOL contains_text = body.find(text) != std::string::npos;
-            return contains_text == should_contain_text;
-          }
-          return false;
-        });
+    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+      std::unique_ptr<base::Value> value =
+          web::test::ExecuteJavaScript(web_state, kGetDocumentBodyJavaScript);
+      std::string body;
+      if (value && value->GetAsString(&body)) {
+        BOOL contains_text = body.find(text) != std::string::npos;
+        return contains_text == should_contain_text;
+      }
+      return false;
+    });
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
@@ -89,35 +90,33 @@ id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
                                               CGSize expected_size,
                                               WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
-    return testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^{
-          NSString* const kGetElementAttributesScript = [NSString
-              stringWithFormat:@"var image = document.getElementById('%@');"
-                               @"var imageHeight = image.height;"
-                               @"var imageWidth = image.width;"
-                               @"JSON.stringify({"
-                               @"  height:imageHeight,"
-                               @"  width:imageWidth"
-                               @"});",
-                               base::SysUTF8ToNSString(image_id)];
-          std::unique_ptr<base::Value> value = ExecuteJavaScript(
-              web_state, base::SysNSStringToUTF8(kGetElementAttributesScript));
-          std::string result;
-          if (value && value->GetAsString(&result)) {
-            NSString* evaluation_result = base::SysUTF8ToNSString(result);
-            NSData* image_attributes_as_data =
-                [evaluation_result dataUsingEncoding:NSUTF8StringEncoding];
-            NSDictionary* image_attributes =
-                [NSJSONSerialization JSONObjectWithData:image_attributes_as_data
-                                                options:0
-                                                  error:nil];
-            CGFloat height = [image_attributes[@"height"] floatValue];
-            CGFloat width = [image_attributes[@"width"] floatValue];
-            return (height < expected_size.height &&
-                    width < expected_size.width);
-          }
-          return false;
-        });
+    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+      NSString* const kGetElementAttributesScript = [NSString
+          stringWithFormat:@"var image = document.getElementById('%@');"
+                           @"var imageHeight = image.height;"
+                           @"var imageWidth = image.width;"
+                           @"JSON.stringify({"
+                           @"  height:imageHeight,"
+                           @"  width:imageWidth"
+                           @"});",
+                           base::SysUTF8ToNSString(image_id)];
+      std::unique_ptr<base::Value> value = web::test::ExecuteJavaScript(
+          web_state, base::SysNSStringToUTF8(kGetElementAttributesScript));
+      std::string result;
+      if (value && value->GetAsString(&result)) {
+        NSString* evaluation_result = base::SysUTF8ToNSString(result);
+        NSData* image_attributes_as_data =
+            [evaluation_result dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary* image_attributes =
+            [NSJSONSerialization JSONObjectWithData:image_attributes_as_data
+                                            options:0
+                                              error:nil];
+        CGFloat height = [image_attributes[@"height"] floatValue];
+        CGFloat width = [image_attributes[@"width"] floatValue];
+        return (height < expected_size.height && width < expected_size.width);
+      }
+      return false;
+    });
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
@@ -136,16 +135,15 @@ id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
     std::string script = base::StringPrintf(kTestCssSelectorJavaScriptTemplate,
                                             selector.c_str());
-    return testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^{
-          bool did_succeed = false;
-          std::unique_ptr<base::Value> value =
-              ExecuteJavaScript(web_state, script);
-          if (value) {
-            value->GetAsBoolean(&did_succeed);
-          }
-          return did_succeed;
-        });
+    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+      bool did_succeed = false;
+      std::unique_ptr<base::Value> value =
+          web::test::ExecuteJavaScript(web_state, script);
+      if (value) {
+        value->GetAsBoolean(&did_succeed);
+      }
+      return did_succeed;
+    });
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
@@ -174,6 +172,34 @@ id<GREYMatcher> webViewScrollView(WebState* web_state) {
   return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                                descriptionBlock:describe]
       autorelease];
+}
+
+id<GREYMatcher> interstitialContainingText(NSString* text,
+                                           WebState* web_state) {
+  MatchesBlock matches = ^BOOL(WKWebView* view) {
+    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+      web::WebInterstitialImpl* interstitial =
+          static_cast<web::WebInterstitialImpl*>(
+              web_state->GetWebInterstitial());
+      if (![view isDescendantOfView:interstitial->GetContentView()])
+        return false;
+
+      NSString* script = base::SysUTF8ToNSString(kGetDocumentBodyJavaScript);
+      id body = ExecuteScriptOnInterstitial(web_state, script);
+      return [body containsString:text] ? true : false;
+    });
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"interstitial containing "];
+    [description appendText:text];
+  };
+
+  return grey_allOf(webViewInWebState(web_state),
+                    [[[GREYElementMatcherBlock alloc]
+                        initWithMatchesBlock:matches
+                            descriptionBlock:describe] autorelease],
+                    nil);
 }
 
 }  // namespace web

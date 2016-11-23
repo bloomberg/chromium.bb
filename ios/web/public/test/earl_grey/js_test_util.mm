@@ -9,9 +9,21 @@
 
 #include "base/timer/elapsed_timer.h"
 #import "ios/testing/wait_util.h"
+#import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
+using testing::kWaitForJSCompletionTimeout;
+using testing::WaitUntilConditionOrTimeout;
+
 namespace web {
+
+// Evaluates the given |script| on |interstitial|.
+void ExecuteScriptForTesting(web::WebInterstitialImpl* interstitial,
+                             NSString* script,
+                             web::JavaScriptResultBlock handler) {
+  DCHECK(interstitial);
+  interstitial->ExecuteJavaScript(script, handler);
+}
 
 void WaitUntilWindowIdInjected(WebState* web_state) {
   bool is_window_id_injected = false;
@@ -20,7 +32,7 @@ void WaitUntilWindowIdInjected(WebState* web_state) {
 
   base::ElapsedTimer timer;
   base::TimeDelta timeout =
-      base::TimeDelta::FromSeconds(testing::kWaitForJSCompletionTimeout);
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
 
   // Keep polling until either the JavaScript execution returns with expected
   // value (indicating that Window ID is set), the timeout occurs, or an
@@ -43,29 +55,43 @@ void WaitUntilWindowIdInjected(WebState* web_state) {
 id ExecuteJavaScript(WebState* web_state,
                      NSString* javascript,
                      NSError** out_error) {
-  __block BOOL did_complete = NO;
+  __block bool did_complete = false;
   __block id result = nil;
   CRWJSInjectionReceiver* receiver = web_state->GetJSInjectionReceiver();
   [receiver executeJavaScript:javascript
             completionHandler:^(id value, NSError* error) {
-              did_complete = YES;
+              did_complete = true;
               result = [value copy];
               if (out_error)
                 *out_error = [error copy];
             }];
 
   // Wait for completion.
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for JavaScript execution to complete."
-                  block:^{
-                    return did_complete;
-                  }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForJSCompletionTimeout],
-             @"Script execution timed out");
+  BOOL suceeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return did_complete;
+  });
+  GREYAssert(suceeded, @"Script execution timed out");
 
   if (out_error)
     [*out_error autorelease];
   return [result autorelease];
+}
+
+id ExecuteScriptOnInterstitial(WebState* web_state, NSString* script) {
+  web::WebInterstitialImpl* interstitial =
+      static_cast<web::WebInterstitialImpl*>(web_state->GetWebInterstitial());
+
+  __block id script_result = nil;
+  __block bool did_finish = false;
+  web::ExecuteScriptForTesting(interstitial, script, ^(id result, NSError*) {
+    script_result = [[result copy] autorelease];
+    did_finish = true;
+  });
+  BOOL suceeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return did_finish;
+  });
+  GREYAssert(suceeded, @"Script execution timed out");
+  return script_result;
 }
 
 }  // namespace web
