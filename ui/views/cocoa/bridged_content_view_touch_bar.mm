@@ -48,8 +48,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 // NSTouchBarDelegate protocol implementation.
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
-    NS_AVAILABLE_MAC(10_12_1) {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
   if (!hostedView_)
     return nil;
 
@@ -62,9 +61,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
     }
     if ([items count] == 0)
       return nil;
-    return [NSClassFromString(@"NSGroupTouchBarItem")
-        groupItemWithIdentifier:identifier
-                          items:items];
+    return [NSGroupTouchBarItem groupItemWithIdentifier:identifier items:items];
   }
 
   ui::DialogButton type = ui::DIALOG_BUTTON_NONE;
@@ -104,7 +101,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 
 // NSTouchBarProvider protocol implementation (via NSResponder category).
 
-- (NSTouchBar*)makeTouchBar NS_AVAILABLE_MAC(10_12_1) {
+- (NSTouchBar*)makeTouchBar {
   if (!hostedView_)
     return nil;
 
