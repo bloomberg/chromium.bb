@@ -12,6 +12,7 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
+#include "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,6 +31,7 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
       signin_error_provider_(base::MakeUnique<ios::SigninErrorProvider>()),
       signin_resources_provider_(
           base::MakeUnique<ios::SigninResourcesProvider>()),
+      user_feedback_provider_(base::MakeUnique<UserFeedbackProvider>()),
       voice_search_provider_(base::MakeUnique<ChromiumVoiceSearchProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
@@ -69,6 +71,10 @@ id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
     ios::ChromeBrowserState* browser_state,
     id<UrlLoader> loader) const {
   return [[ChromiumLogoController alloc] init];
+}
+
+UserFeedbackProvider* ChromiumBrowserProvider::GetUserFeedbackProvider() const {
+  return user_feedback_provider_.get();
 }
 
 BrandedImageProvider* ChromiumBrowserProvider::GetBrandedImageProvider() const {
