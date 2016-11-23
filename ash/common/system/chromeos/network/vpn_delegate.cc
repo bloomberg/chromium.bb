@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/chromeos/network/vpn_list.h"
-
-#include <utility>
+#include "ash/common/system/chromeos/network/vpn_delegate.h"
 
 #include "base/logging.h"
 
@@ -27,15 +25,15 @@ bool VPNProvider::operator==(const VPNProvider& other) const {
          third_party_provider_name == other.third_party_provider_name;
 }
 
-VpnList::Observer::~Observer() {}
+VPNDelegate::Observer::~Observer() {}
 
-VpnList::VpnList() {
+VPNDelegate::VPNDelegate() {
   AddBuiltInProvider();
 }
 
-VpnList::~VpnList() {}
+VPNDelegate::~VPNDelegate() {}
 
-bool VpnList::HaveThirdPartyVPNProviders() const {
+bool VPNDelegate::HaveThirdPartyVPNProviders() const {
   for (const VPNProvider& provider : vpn_providers_) {
     if (provider.third_party)
       return true;
@@ -43,38 +41,31 @@ bool VpnList::HaveThirdPartyVPNProviders() const {
   return false;
 }
 
-void VpnList::AddObserver(Observer* observer) {
+void VPNDelegate::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void VpnList::RemoveObserver(Observer* observer) {
+void VPNDelegate::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void VpnList::BindRequest(mojom::VpnListRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void VpnList::SetThirdPartyVpnProviders(
-    std::vector<mojom::ThirdPartyVpnProviderPtr> providers) {
+void VPNDelegate::SetThirdPartyVpnProviders(
+    const std::vector<VPNProvider>& third_party_providers) {
   vpn_providers_.clear();
-  vpn_providers_.reserve(providers.size() + 1);
-  // Add the OpenVPN provider.
+  vpn_providers_.reserve(third_party_providers.size() + 1);
   AddBuiltInProvider();
   // Append the extension-backed providers.
-  for (const auto& provider : providers) {
-    vpn_providers_.push_back(
-        VPNProvider(provider->extension_id, provider->name));
-  }
+  vpn_providers_.insert(vpn_providers_.end(), third_party_providers.begin(),
+                        third_party_providers.end());
   NotifyObservers();
 }
 
-void VpnList::NotifyObservers() {
+void VPNDelegate::NotifyObservers() {
   for (auto& observer : observer_list_)
     observer.OnVPNProvidersChanged();
 }
 
-void VpnList::AddBuiltInProvider() {
+void VPNDelegate::AddBuiltInProvider() {
   // The VPNProvider() constructor generates the built-in provider and has no
   // extension ID.
   vpn_providers_.push_back(VPNProvider());

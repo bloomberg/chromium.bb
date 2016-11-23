@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/vpn_list_forwarder.h"
+#include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 
-#include "ash/public/interfaces/vpn_list.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -12,18 +11,20 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/api/vpn_provider/vpn_service.h"
+#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -41,23 +42,9 @@ Profile* GetProfileForPrimaryUser() {
   return chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
 }
 
-// Connects to the VpnList mojo interface in ash.
-ash::mojom::VpnListPtr ConnectToVpnList() {
-  ash::mojom::VpnListPtr vpn_list;
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  // Under mash the VpnList interface is in the ash process. In classic ash
-  // we provide it to ourself.
-  if (chrome::IsRunningInMash())
-    connector->ConnectToInterface("ash", &vpn_list);
-  else
-    connector->ConnectToInterface("content_browser", &vpn_list);
-  return vpn_list;
-}
-
 }  // namespace
 
-VpnListForwarder::VpnListForwarder() : weak_factory_(this) {
+VPNDelegateChromeOS::VPNDelegateChromeOS() : weak_factory_(this) {
   if (user_manager::UserManager::Get()->GetPrimaryUser()) {
     // If a user is logged in, start observing the primary user's extension
     // registry immediately.
@@ -70,19 +57,36 @@ VpnListForwarder::VpnListForwarder() : weak_factory_(this) {
   }
 }
 
-VpnListForwarder::~VpnListForwarder() {
+VPNDelegateChromeOS::~VPNDelegateChromeOS() {
   if (extension_registry_)
     extension_registry_->RemoveObserver(this);
 }
 
-void VpnListForwarder::OnExtensionLoaded(
+void VPNDelegateChromeOS::ShowAddPage(const std::string& extension_id) {
+  if (extension_id.empty()) {
+    // Show the "add network" dialog for the built-in OpenVPN/L2TP provider.
+    SystemTrayClient::Get()->ShowNetworkCreate(shill::kTypeVPN);
+    return;
+  }
+
+  Profile* const profile = GetProfileForPrimaryUser();
+  if (!profile)
+    return;
+
+  // Request that the third-party VPN provider identified by |key.extension_id|
+  // show its "add network" dialog.
+  chromeos::VpnServiceFactory::GetForBrowserContext(profile)
+      ->SendShowAddDialogToExtension(extension_id);
+}
+
+void VPNDelegateChromeOS::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
   if (IsVPNProvider(extension))
     UpdateVPNProviders();
 }
 
-void VpnListForwarder::OnExtensionUnloaded(
+void VPNDelegateChromeOS::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
@@ -90,15 +94,15 @@ void VpnListForwarder::OnExtensionUnloaded(
     UpdateVPNProviders();
 }
 
-void VpnListForwarder::OnShutdown(extensions::ExtensionRegistry* registry) {
+void VPNDelegateChromeOS::OnShutdown(extensions::ExtensionRegistry* registry) {
   DCHECK(extension_registry_);
   extension_registry_->RemoveObserver(this);
   extension_registry_ = nullptr;
 }
 
-void VpnListForwarder::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
+void VPNDelegateChromeOS::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
   const Profile* const profile = content::Source<Profile>(source).ptr();
   if (!chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
@@ -115,40 +119,26 @@ void VpnListForwarder::Observe(int type,
   registrar_.RemoveAll();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&VpnListForwarder::AttachToPrimaryUserExtensionRegistry,
+      base::Bind(&VPNDelegateChromeOS::AttachToPrimaryUserExtensionRegistry,
                  weak_factory_.GetWeakPtr()));
 }
 
-void VpnListForwarder::UpdateVPNProviders() {
+void VPNDelegateChromeOS::UpdateVPNProviders() {
   DCHECK(extension_registry_);
 
-  std::vector<ash::mojom::ThirdPartyVpnProviderPtr> third_party_providers;
+  std::vector<ash::VPNProvider> third_party_providers;
   for (const auto& extension : extension_registry_->enabled_extensions()) {
-    if (!IsVPNProvider(extension.get()))
-      continue;
-
-    ash::mojom::ThirdPartyVpnProviderPtr provider =
-        ash::mojom::ThirdPartyVpnProvider::New();
-    provider->name = extension->name();
-    provider->extension_id = extension->id();
-    third_party_providers.push_back(std::move(provider));
+    if (IsVPNProvider(extension.get())) {
+      third_party_providers.push_back(
+          ash::VPNProvider(extension->id(), extension->name()));
+    }
   }
 
-  // Ash starts without any third-party providers. If we've never sent one then
-  // there's no need to send an empty list. This case commonly occurs on startup
-  // when the user has no third-party VPN extensions installed.
-  if (!sent_providers_ && third_party_providers.empty())
-    return;
-
-  // It's rare to install or uninstall VPN provider extensions, so don't bother
-  // caching the interface pointer between calls to this function.
-  ash::mojom::VpnListPtr vpn_list = ConnectToVpnList();
-  vpn_list->SetThirdPartyVpnProviders(std::move(third_party_providers));
-
-  sent_providers_ = true;
+  // Ash adds the built-in OpenVPN/L2TP provider.
+  SetThirdPartyVpnProviders(third_party_providers);
 }
 
-void VpnListForwarder::AttachToPrimaryUserExtensionRegistry() {
+void VPNDelegateChromeOS::AttachToPrimaryUserExtensionRegistry() {
   DCHECK(!extension_registry_);
   extension_registry_ =
       extensions::ExtensionRegistry::Get(GetProfileForPrimaryUser());

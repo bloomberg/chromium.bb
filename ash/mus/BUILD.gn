@@ -131,6 +131,8 @@ source_set("lib") {
       "network_connect_delegate_mus.h",
       "system_tray_delegate_mus.cc",
       "system_tray_delegate_mus.h",
+      "vpn_delegate_mus.cc",
+      "vpn_delegate_mus.h",
     ]
 
     deps += [

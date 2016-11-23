@@ -14,7 +14,6 @@ class ChromeLauncherControllerMus;
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
 class SystemTrayClient;
-class VpnListForwarder;
 
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
@@ -31,7 +30,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
   std::unique_ptr<ImmersiveContextMus> immersive_context_;
   std::unique_ptr<SystemTrayClient> system_tray_client_;
-  std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

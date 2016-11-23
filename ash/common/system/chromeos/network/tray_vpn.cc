@@ -10,7 +10,7 @@
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "ash/common/system/chromeos/network/network_state_list_detailed_view.h"
-#include "ash/common/system/chromeos/network/vpn_list.h"
+#include "ash/common/system/chromeos/network/vpn_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -45,9 +45,15 @@ class VpnDefaultView : public TrayItemMore,
   }
 
   static bool ShouldShow() {
+    VPNDelegate* vpn_delegate =
+        WmShell::Get()->system_tray_delegate()->GetVPNDelegate();
+    // Tests may not have a VPN delegate. They should not show the VPN entry.
+    if (!vpn_delegate)
+      return false;
+
     // Show the VPN entry in the ash tray bubble if at least one third-party VPN
     // provider is installed.
-    if (WmShell::Get()->vpn_list()->HaveThirdPartyVPNProviders())
+    if (vpn_delegate->HaveThirdPartyVPNProviders())
       return true;
 
     // Also show the VPN entry if at least one VPN network is configured.

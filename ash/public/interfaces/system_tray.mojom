@@ -64,10 +64,6 @@ interface SystemTrayClient {
   // ('wifi', 'cellular', etc.).
   ShowNetworkCreate(string type);
 
-  // Shows the "add network" UI to create a third-party extension-backed VPN
-  // connection (e.g. Cisco AnyConnect).
-  ShowThirdPartyVpnCreate(string extension_id);
-
   // Shows settings related to networking. If |network_id| is empty, shows
   // general settings. Otherwise shows settings for the individual network.
   // On devices |network_id| is a GUID, but on Linux desktop and in tests it can

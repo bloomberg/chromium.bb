@@ -13,6 +13,7 @@
 namespace ash {
 
 class NetworkingConfigDelegate;
+class VPNDelegate;
 
 // Handles the settings displayed in the system tray menu. For the classic ash
 // version see SystemTrayDelegateChromeOS.
@@ -28,8 +29,10 @@ class SystemTrayDelegateMus : public DefaultSystemTrayDelegate {
  private:
   // SystemTrayDelegate:
   NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
+  VPNDelegate* GetVPNDelegate() const override;
 
   std::unique_ptr<NetworkingConfigDelegate> networking_config_delegate_;
+  std::unique_ptr<VPNDelegate> vpn_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateMus);
 };

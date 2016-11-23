@@ -9,7 +9,6 @@
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
-          "ash::mojom::VpnList",
           "ash::mojom::WallpaperController"
         ],
         "mus:window_manager": [ "ui::mojom::AcceleratorRegistrar" ]

@@ -52,7 +52,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/common/system/chromeos/keyboard_brightness_controller.h"
-#include "ash/common/system/chromeos/network/vpn_list.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #endif
 
@@ -265,7 +264,6 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
 #if defined(OS_CHROMEOS)
   brightness_control_delegate_.reset(new system::BrightnessControllerChromeos);
   keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);
-  vpn_list_ = base::MakeUnique<VpnList>();
 #endif
 }
 

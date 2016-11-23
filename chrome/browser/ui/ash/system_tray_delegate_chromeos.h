@@ -42,6 +42,7 @@
 
 namespace ash {
 class SystemTrayNotifier;
+class VPNDelegate;
 }
 
 namespace user_manager {
@@ -114,6 +115,7 @@ class SystemTrayDelegateChromeOS
       ash::CustodianInfoTrayObserver* observer) override;
   void RemoveCustodianInfoTrayObserver(
       ash::CustodianInfoTrayObserver* observer) override;
+  ash::VPNDelegate* GetVPNDelegate() const override;
   std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
       ash::SystemTray* tray) override;
 
@@ -242,6 +244,7 @@ class SystemTrayDelegateChromeOS
   std::unique_ptr<ash::CastConfigDelegate> cast_config_delegate_;
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  std::unique_ptr<ash::VPNDelegate> vpn_delegate_;
 
   base::ObserverList<ash::CustodianInfoTrayObserver>
       custodian_info_changed_observers_;
