@@ -31,8 +31,8 @@
 #ifndef ElementAnimations_h
 #define ElementAnimations_h
 
-#include "core/animation/AnimationStack.h"
 #include "core/animation/CustomCompositorAnimations.h"
+#include "core/animation/EffectStack.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
@@ -55,8 +55,8 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
   // Animations that are currently active for this element, their effects will
   // be applied during a style recalc. CSS Transitions are included in this
   // stack.
-  AnimationStack& animationStack() { return m_animationStack; }
-  const AnimationStack& animationStack() const { return m_animationStack; }
+  EffectStack& effectStack() { return m_effectStack; }
+  const EffectStack& effectStack() const { return m_effectStack; }
   // Tracks long running animations that are responsible for applying mutations
   // from compositor worker.
   CustomCompositorAnimations& customCompositorAnimations() {
@@ -75,7 +75,7 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
   AnimationCountedSet& animations() { return m_animations; }
 
   bool isEmpty() const {
-    return m_animationStack.isEmpty() && m_cssAnimations.isEmpty() &&
+    return m_effectStack.isEmpty() && m_cssAnimations.isEmpty() &&
            m_animations.isEmpty();
   }
 
@@ -95,7 +95,7 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
  private:
   bool isAnimationStyleChange() const;
 
-  AnimationStack m_animationStack;
+  EffectStack m_effectStack;
   CustomCompositorAnimations m_customCompositorAnimations;
   CSSAnimations m_cssAnimations;
   AnimationCountedSet m_animations;

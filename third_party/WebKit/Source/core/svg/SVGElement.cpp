@@ -28,8 +28,8 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"
-#include "core/animation/AnimationStack.h"
 #include "core/animation/DocumentAnimations.h"
+#include "core/animation/EffectStack.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
@@ -229,8 +229,8 @@ static bool isSVGAttributeHandle(const PropertyHandle& propertyHandle) {
 
 void SVGElement::applyActiveWebAnimations() {
   ActiveInterpolationsMap activeInterpolationsMap =
-      AnimationStack::activeInterpolations(
-          &elementAnimations()->animationStack(), nullptr, nullptr,
+      EffectStack::activeInterpolations(
+          &elementAnimations()->effectStack(), nullptr, nullptr,
           KeyframeEffectReadOnly::DefaultPriority, isSVGAttributeHandle);
   for (auto& entry : activeInterpolationsMap) {
     const QualifiedName& attribute = entry.key.svgAttribute();

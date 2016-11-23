@@ -861,14 +861,14 @@ void CSSAnimations::calculateAnimationActiveInterpolations(
     const Element* animatingElement) {
   ElementAnimations* elementAnimations =
       animatingElement ? animatingElement->elementAnimations() : nullptr;
-  AnimationStack* animationStack =
-      elementAnimations ? &elementAnimations->animationStack() : nullptr;
+  EffectStack* effectStack =
+      elementAnimations ? &elementAnimations->effectStack() : nullptr;
 
   if (update.newAnimations().isEmpty() &&
       update.suppressedAnimations().isEmpty()) {
     ActiveInterpolationsMap activeInterpolationsForAnimations(
-        AnimationStack::activeInterpolations(
-            animationStack, nullptr, nullptr,
+        EffectStack::activeInterpolations(
+            effectStack, nullptr, nullptr,
             KeyframeEffectReadOnly::DefaultPriority, isStylePropertyHandle));
     update.adoptActiveInterpolationsForAnimations(
         activeInterpolationsForAnimations);
@@ -884,8 +884,8 @@ void CSSAnimations::calculateAnimationActiveInterpolations(
     newEffects.append(updatedAnimation.effect);
 
   ActiveInterpolationsMap activeInterpolationsForAnimations(
-      AnimationStack::activeInterpolations(
-          animationStack, &newEffects, &update.suppressedAnimations(),
+      EffectStack::activeInterpolations(
+          effectStack, &newEffects, &update.suppressedAnimations(),
           KeyframeEffectReadOnly::DefaultPriority, isStylePropertyHandle));
   update.adoptActiveInterpolationsForAnimations(
       activeInterpolationsForAnimations);
@@ -896,14 +896,14 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
     const Element* animatingElement) {
   ElementAnimations* elementAnimations =
       animatingElement ? animatingElement->elementAnimations() : nullptr;
-  AnimationStack* animationStack =
-      elementAnimations ? &elementAnimations->animationStack() : nullptr;
+  EffectStack* effectStack =
+      elementAnimations ? &elementAnimations->effectStack() : nullptr;
 
   ActiveInterpolationsMap activeInterpolationsForTransitions;
   if (update.newTransitions().isEmpty() &&
       update.cancelledTransitions().isEmpty()) {
-    activeInterpolationsForTransitions = AnimationStack::activeInterpolations(
-        animationStack, nullptr, nullptr,
+    activeInterpolationsForTransitions = EffectStack::activeInterpolations(
+        effectStack, nullptr, nullptr,
         KeyframeEffectReadOnly::TransitionPriority, isStylePropertyHandle);
   } else {
     HeapVector<Member<const InertEffect>> newTransitions;
@@ -921,8 +921,8 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
       }
     }
 
-    activeInterpolationsForTransitions = AnimationStack::activeInterpolations(
-        animationStack, &newTransitions, &cancelledAnimations,
+    activeInterpolationsForTransitions = EffectStack::activeInterpolations(
+        effectStack, &newTransitions, &cancelledAnimations,
         KeyframeEffectReadOnly::TransitionPriority, isStylePropertyHandle);
   }
 

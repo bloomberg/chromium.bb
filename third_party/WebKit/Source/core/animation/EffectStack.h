@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationStack_h
-#define AnimationStack_h
+#ifndef EffectStack_h
+#define EffectStack_h
 
 #include "core/CoreExport.h"
 #include "core/animation/Animation.h"
@@ -49,12 +49,12 @@ class InertEffect;
 
 // Represents the order in which a sequence of SampledEffects should apply.
 // This sequence is broken down to per PropertyHandle granularity.
-class CORE_EXPORT AnimationStack {
+class CORE_EXPORT EffectStack {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(AnimationStack);
+  WTF_MAKE_NONCOPYABLE(EffectStack);
 
  public:
-  AnimationStack();
+  EffectStack();
 
   void add(SampledEffect* sampledEffect) {
     m_sampledEffects.append(sampledEffect);
@@ -64,7 +64,7 @@ class CORE_EXPORT AnimationStack {
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
   static ActiveInterpolationsMap activeInterpolations(
-      AnimationStack*,
+      EffectStack*,
       const HeapVector<Member<const InertEffect>>* newAnimations,
       const HeapHashSet<Member<const Animation>>* suppressedAnimations,
       KeyframeEffectReadOnly::Priority,
@@ -79,9 +79,9 @@ class CORE_EXPORT AnimationStack {
   // Effects sorted by priority. Lower priority at the start of the list.
   HeapVector<Member<SampledEffect>> m_sampledEffects;
 
-  friend class AnimationAnimationStackTest;
+  friend class AnimationEffectStackTest;
 };
 
 }  // namespace blink
 
-#endif  // AnimationStack_h
+#endif  // EffectStack_h

@@ -62,7 +62,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   Priority getPriority() const { return m_priority; }
   Element* target() const { return m_target; }
 
-  void notifySampledEffectRemovedFromAnimationStack();
+  void notifySampledEffectRemovedFromEffectStack();
 
   bool isCandidateForAnimationOnCompositor(double animationPlaybackRate) const;
   // Must only be called once.

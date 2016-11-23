@@ -59,19 +59,23 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style) {
     }
   }
 
-  if (style.hasCurrentOpacityAnimation())
+  if (style.hasCurrentOpacityAnimation()) {
     style.setIsRunningOpacityAnimationOnCompositor(
-        m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyOpacity));
-  if (style.hasCurrentTransformAnimation())
+        m_effectStack.hasActiveAnimationsOnCompositor(CSSPropertyOpacity));
+  }
+  if (style.hasCurrentTransformAnimation()) {
     style.setIsRunningTransformAnimationOnCompositor(
-        m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
-  if (style.hasCurrentFilterAnimation())
+        m_effectStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
+  }
+  if (style.hasCurrentFilterAnimation()) {
     style.setIsRunningFilterAnimationOnCompositor(
-        m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyFilter));
-  if (style.hasCurrentBackdropFilterAnimation())
+        m_effectStack.hasActiveAnimationsOnCompositor(CSSPropertyFilter));
+  }
+  if (style.hasCurrentBackdropFilterAnimation()) {
     style.setIsRunningBackdropFilterAnimationOnCompositor(
-        m_animationStack.hasActiveAnimationsOnCompositor(
+        m_effectStack.hasActiveAnimationsOnCompositor(
             CSSPropertyBackdropFilter));
+  }
 }
 
 void ElementAnimations::restartAnimationOnCompositor() {
@@ -82,7 +86,7 @@ void ElementAnimations::restartAnimationOnCompositor() {
 DEFINE_TRACE(ElementAnimations) {
   visitor->trace(m_cssAnimations);
   visitor->trace(m_customCompositorAnimations);
-  visitor->trace(m_animationStack);
+  visitor->trace(m_effectStack);
   visitor->trace(m_animations);
 }
 

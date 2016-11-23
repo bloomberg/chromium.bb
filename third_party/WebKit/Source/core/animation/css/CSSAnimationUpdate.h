@@ -5,7 +5,7 @@
 #ifndef CSSAnimationUpdate_h
 #define CSSAnimationUpdate_h
 
-#include "core/animation/AnimationStack.h"
+#include "core/animation/EffectStack.h"
 #include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"

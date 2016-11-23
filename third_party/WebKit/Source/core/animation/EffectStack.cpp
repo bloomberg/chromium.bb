@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationStack.h"
+#include "core/animation/EffectStack.h"
 
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/InvalidatableInterpolation.h"
@@ -43,7 +43,7 @@ namespace {
 
 void copyToActiveInterpolationsMap(
     const Vector<RefPtr<Interpolation>>& source,
-    AnimationStack::PropertyHandleFilter propertyHandleFilter,
+    EffectStack::PropertyHandleFilter propertyHandleFilter,
     ActiveInterpolationsMap& target) {
   for (const auto& interpolation : source) {
     PropertyHandle property = interpolation->getProperty();
@@ -73,7 +73,7 @@ bool compareSampledEffects(const Member<SampledEffect>& sampledEffect1,
 
 void copyNewAnimationsToActiveInterpolationsMap(
     const HeapVector<Member<const InertEffect>>& newAnimations,
-    AnimationStack::PropertyHandleFilter propertyHandleFilter,
+    EffectStack::PropertyHandleFilter propertyHandleFilter,
     ActiveInterpolationsMap& result) {
   for (const auto& newAnimation : newAnimations) {
     Vector<RefPtr<Interpolation>> sample;
@@ -85,9 +85,9 @@ void copyNewAnimationsToActiveInterpolationsMap(
 
 }  // namespace
 
-AnimationStack::AnimationStack() {}
+EffectStack::EffectStack() {}
 
-bool AnimationStack::hasActiveAnimationsOnCompositor(
+bool EffectStack::hasActiveAnimationsOnCompositor(
     CSSPropertyID property) const {
   for (const auto& sampledEffect : m_sampledEffects) {
     // TODO(dstockwell): move the playing check into AnimationEffectReadOnly and
@@ -100,21 +100,21 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(
   return false;
 }
 
-ActiveInterpolationsMap AnimationStack::activeInterpolations(
-    AnimationStack* animationStack,
+ActiveInterpolationsMap EffectStack::activeInterpolations(
+    EffectStack* effectStack,
     const HeapVector<Member<const InertEffect>>* newAnimations,
     const HeapHashSet<Member<const Animation>>* suppressedAnimations,
     KeyframeEffectReadOnly::Priority priority,
     PropertyHandleFilter propertyHandleFilter) {
   ActiveInterpolationsMap result;
 
-  if (animationStack) {
+  if (effectStack) {
     HeapVector<Member<SampledEffect>>& sampledEffects =
-        animationStack->m_sampledEffects;
+        effectStack->m_sampledEffects;
     // std::sort doesn't work with OwnPtrs
     nonCopyingSort(sampledEffects.begin(), sampledEffects.end(),
                    compareSampledEffects);
-    animationStack->removeRedundantSampledEffects();
+    effectStack->removeRedundantSampledEffects();
     for (const auto& sampledEffect : sampledEffects) {
       if (sampledEffect->priority() != priority ||
           (suppressedAnimations && sampledEffect->effect() &&
@@ -126,14 +126,14 @@ ActiveInterpolationsMap AnimationStack::activeInterpolations(
     }
   }
 
-  if (newAnimations)
+  if (newAnimations) {
     copyNewAnimationsToActiveInterpolationsMap(*newAnimations,
                                                propertyHandleFilter, result);
-
+  }
   return result;
 }
 
-void AnimationStack::removeRedundantSampledEffects() {
+void EffectStack::removeRedundantSampledEffects() {
   HashSet<PropertyHandle> replacedProperties;
   for (size_t i = m_sampledEffects.size(); i--;) {
     SampledEffect& sampledEffect = *m_sampledEffects[i];
@@ -148,17 +148,17 @@ void AnimationStack::removeRedundantSampledEffects() {
     if (!sampledEffect->interpolations().isEmpty())
       m_sampledEffects[newSize++].swap(sampledEffect);
     else if (sampledEffect->effect())
-      sampledEffect->effect()->notifySampledEffectRemovedFromAnimationStack();
+      sampledEffect->effect()->notifySampledEffectRemovedFromEffectStack();
   }
   m_sampledEffects.shrink(newSize);
 }
 
-DEFINE_TRACE(AnimationStack) {
+DEFINE_TRACE(EffectStack) {
   visitor->trace(m_sampledEffects);
 }
 
-bool AnimationStack::getAnimatedBoundingBox(FloatBox& box,
-                                            CSSPropertyID property) const {
+bool EffectStack::getAnimatedBoundingBox(FloatBox& box,
+                                         CSSPropertyID property) const {
   FloatBox originalBox(box);
   for (const auto& sampledEffect : m_sampledEffects) {
     if (sampledEffect->effect() &&

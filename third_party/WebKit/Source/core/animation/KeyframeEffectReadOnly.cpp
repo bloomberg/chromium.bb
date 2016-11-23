@@ -129,8 +129,8 @@ void KeyframeEffectReadOnly::specifiedTimingChanged() {
   }
 }
 
-static AnimationStack& ensureAnimationStack(Element* element) {
-  return element->ensureElementAnimations().animationStack();
+static EffectStack& ensureEffectStack(Element* element) {
+  return element->ensureElementAnimations().effectStack();
 }
 
 bool KeyframeEffectReadOnly::hasMultipleTransformProperties() const {
@@ -195,7 +195,7 @@ void KeyframeEffectReadOnly::applyEffects() {
       SampledEffect* sampledEffect = SampledEffect::create(this);
       sampledEffect->mutableInterpolations().swap(interpolations);
       m_sampledEffect = sampledEffect;
-      ensureAnimationStack(m_target).add(sampledEffect);
+      ensureEffectStack(m_target).add(sampledEffect);
       changed = true;
     } else {
       return;
@@ -273,7 +273,7 @@ double KeyframeEffectReadOnly::calculateTimeToEffectChange(
   }
 }
 
-void KeyframeEffectReadOnly::notifySampledEffectRemovedFromAnimationStack() {
+void KeyframeEffectReadOnly::notifySampledEffectRemovedFromEffectStack() {
   m_sampledEffect = nullptr;
 }
 
