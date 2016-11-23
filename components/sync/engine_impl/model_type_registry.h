@@ -87,6 +87,9 @@ class ModelTypeRegistry : public ModelTypeConnector,
   // applied.
   ModelTypeSet GetInitialSyncEndedTypes() const;
 
+  // Returns the set of non-blocking types with initial sync done.
+  ModelTypeSet GetInitialSyncDoneNonBlockingTypes() const;
+
   // Simple getters.
   UpdateHandlerMap* update_handler_map();
   CommitContributorMap* commit_contributor_map();

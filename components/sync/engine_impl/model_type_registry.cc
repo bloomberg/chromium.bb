@@ -245,6 +245,16 @@ ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
   return result;
 }
 
+ModelTypeSet ModelTypeRegistry::GetInitialSyncDoneNonBlockingTypes() const {
+  ModelTypeSet types;
+  for (const auto& worker : model_type_workers_) {
+    if (worker->IsInitialSyncEnded()) {
+      types.Put(worker->GetModelType());
+    }
+  }
+  return types;
+}
+
 UpdateHandlerMap* ModelTypeRegistry::update_handler_map() {
   return &update_handler_map_;
 }

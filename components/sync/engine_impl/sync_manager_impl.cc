@@ -194,6 +194,10 @@ void SyncManagerImpl::ConfigureSyncer(
   DCHECK(!ready_task.is_null());
   DCHECK(initialized_);
 
+  // Don't download non-blocking types that have already completed initial sync.
+  to_download.RemoveAll(
+      model_type_registry_->GetInitialSyncDoneNonBlockingTypes());
+
   DVLOG(1) << "Configuring -"
            << "\n\t"
            << "current types: "
