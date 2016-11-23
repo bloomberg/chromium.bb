@@ -1877,15 +1877,23 @@ BPF_TEST_C(SandboxBPF, PthreadBitMask, PthreadPolicyBitMask) {
 
 #if defined(__aarch64__)
 #ifndef PTRACE_GETREGS
+#if defined(__GLIBC__)
+#define PTRACE_GETREGS static_cast<enum __ptrace_request>(12)
+#else
 #define PTRACE_GETREGS 12
-#endif
-#endif
+#endif  // defined(__GLIBC__)
+#endif  // !defined(PTRACE_GETREGS)
+#endif  // defined(__aarch64__)
 
 #if defined(__aarch64__)
 #ifndef PTRACE_SETREGS
+#if defined(__GLIBC__)
+#define PTRACE_SETREGS static_cast<enum __ptrace_request>(13)
+#else
 #define PTRACE_SETREGS 13
-#endif
-#endif
+#endif  // defined(__GLIBC__)
+#endif  // !defined(PTRACE_SETREGS)
+#endif  // defined(__aarch64__)
 
 // Changes the syscall to run for a child being sandboxed using seccomp-bpf with
 // PTRACE_O_TRACESECCOMP.  Should only be called when the child is stopped on
