@@ -64,10 +64,6 @@ std::string GenerateHeader(size_t response_data_size) {
       response_data_size);
 }
 
-int64_t TotalReceivedBytes(size_t response_data_size) {
-  return response_data_size + GenerateHeader(response_data_size).size();
-}
-
 std::string GenerateData(size_t response_data_size) {
   return std::string(response_data_size, 'a');
 }
@@ -252,8 +248,7 @@ TEST_F(AsyncResourceHandlerTest, Construct) {
 TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
   // Larger than kInlinedLeadingChunkSize and smaller than
   // kMaxAllocationSize.
-  constexpr auto kDataSize = 4096;
-  StartRequestAndWaitWithResponseDataSize(kDataSize);
+  StartRequestAndWaitWithResponseDataSize(4096);
   const auto& messages = filter_->messages();
   ASSERT_EQ(4u, messages.size());
   ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[2]->type());
@@ -261,19 +256,9 @@ TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
-  EXPECT_EQ(kDataSize, encoded_data_length);
+  EXPECT_EQ(4096, encoded_data_length);
   int encoded_body_length = std::get<4>(params);
-  EXPECT_EQ(kDataSize, encoded_body_length);
-
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[3]->type());
-  ResourceMsg_RequestComplete::Param completion_params;
-  ResourceMsg_RequestComplete::Read(messages[3].get(), &completion_params);
-  ResourceRequestCompletionStatus completion_status =
-      std::get<1>(completion_params);
-
-  EXPECT_EQ(TotalReceivedBytes(kDataSize),
-            completion_status.encoded_data_length);
-  EXPECT_EQ(kDataSize, completion_status.encoded_body_length);
+  EXPECT_EQ(4096, encoded_body_length);
 }
 
 TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
@@ -284,8 +269,7 @@ TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
       features::kOptimizeLoadingIPCForSmallResources);
 
   // Smaller than kInlinedLeadingChunkSize.
-  constexpr auto kDataSize = 8;
-  StartRequestAndWaitWithResponseDataSize(kDataSize);
+  StartRequestAndWaitWithResponseDataSize(8);
   const auto& messages = filter_->messages();
   ASSERT_EQ(3u, messages.size());
   ASSERT_EQ(ResourceMsg_InlinedDataChunkReceived::ID, messages[1]->type());
@@ -293,25 +277,14 @@ TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
   ResourceMsg_InlinedDataChunkReceived::Read(messages[1].get(), &params);
 
   int encoded_data_length = std::get<2>(params);
-  EXPECT_EQ(kDataSize, encoded_data_length);
+  EXPECT_EQ(8, encoded_data_length);
   int encoded_body_length = std::get<3>(params);
-  EXPECT_EQ(kDataSize, encoded_body_length);
-
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[2]->type());
-  ResourceMsg_RequestComplete::Param completion_params;
-  ResourceMsg_RequestComplete::Read(messages[2].get(), &completion_params);
-  ResourceRequestCompletionStatus completion_status =
-      std::get<1>(completion_params);
-
-  EXPECT_EQ(TotalReceivedBytes(kDataSize),
-            completion_status.encoded_data_length);
-  EXPECT_EQ(kDataSize, completion_status.encoded_body_length);
+  EXPECT_EQ(8, encoded_body_length);
 }
 
 TEST_F(AsyncResourceHandlerTest, TwoChunksLengths) {
   // Larger than kMaxAllocationSize.
-  constexpr auto kDataSize = 64 * 1024;
-  StartRequestAndWaitWithResponseDataSize(kDataSize);
+  StartRequestAndWaitWithResponseDataSize(64*1024);
   const auto& messages = filter_->messages();
   ASSERT_EQ(5u, messages.size());
   ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[2]->type());
@@ -330,15 +303,6 @@ TEST_F(AsyncResourceHandlerTest, TwoChunksLengths) {
   EXPECT_EQ(32768, encoded_data_length);
   encoded_body_length = std::get<4>(params);
   EXPECT_EQ(32768, encoded_body_length);
-
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[4]->type());
-  ResourceMsg_RequestComplete::Param completion_params;
-  ResourceMsg_RequestComplete::Read(messages[4].get(), &completion_params);
-  ResourceRequestCompletionStatus completion_status =
-      std::get<1>(completion_params);
-  EXPECT_EQ(TotalReceivedBytes(kDataSize),
-            completion_status.encoded_data_length);
-  EXPECT_EQ(kDataSize, completion_status.encoded_body_length);
 }
 
 }  // namespace

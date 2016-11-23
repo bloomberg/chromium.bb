@@ -514,7 +514,6 @@ void AsyncResourceHandler::OnResponseCompleted(
   request_complete_data.completion_time = TimeTicks::Now();
   request_complete_data.encoded_data_length =
       request()->GetTotalReceivedBytes();
-  request_complete_data.encoded_body_length = request()->GetRawBodyBytes();
   info->filter()->Send(
       new ResourceMsg_RequestComplete(GetRequestID(), request_complete_data));
 

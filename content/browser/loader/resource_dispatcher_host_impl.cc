@@ -245,7 +245,6 @@ void AbortRequestBeforeItStarts(
     // No security info needed, connection not established.
     request_complete_data.completion_time = base::TimeTicks();
     request_complete_data.encoded_data_length = 0;
-    request_complete_data.encoded_body_length = 0;
     if (url_loader_client) {
       url_loader_client->OnComplete(request_complete_data);
     } else {
