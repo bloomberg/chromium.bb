@@ -14,6 +14,7 @@
       See http://goo.gl/Y1OdAq for instructions on adding additional icons.
       -->
       <g id="arrow-forward"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></g>
+      <g id="close"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></g>
     </defs>
   </svg>
 </iron-iconset-svg>
@@ -37,10 +38,10 @@
 </if>
   <div class="main-pane">
     <div class="name-container">
-      <div class="name"></div>
       <div class="learn-more-container">
         <div class="learn-more"></div>
       </div>
+      <div class="name"></div>
     </div>
     <div class="auth-container">
       <!-- Password Authentication -->
@@ -161,39 +162,48 @@
     <div class="expanded-pane-contents">
       <div class="side-container">
         <div class="expanded-pane-name"></div>
-        <div class="reminder" i18n-content="publicAccountReminder"></div>
-        <div class="language-and-input-section">
-          <div class="select-with-label">
-            <label class="language-select-label"
-                   i18n-content="publicSessionSelectLanguage">
-            </label>
-            <div class="select-container">
-              <select class="language-select"></select>
-            </div>
+        <div class="expanded-pane-container">
+          <div class="expanded-pane-learn-more-container">
+            <div class="expanded-pane-learn-more"></div>
           </div>
-          <div class="select-with-label">
-            <label class="keyboard-select-label"
-                   i18n-content="publicSessionSelectKeyboard">
-            </label>
-            <div class="select-container">
-              <select class="keyboard-select"></select>
+          <div class="info"></div>
+          <div class="monitoring-container">
+            <span class="monitoring-warning"
+                  i18n-content="publicAccountMonitoringWarning"></span>
+            <a class="monitoring-learn-more" href="#" role="button"
+               i18n-content="publicAccountLearnMore"></a>
+          </div>
+          <div class="reminder" i18n-content="publicAccountReminder"></div>
+          <div class="language-and-input-section">
+            <div class="select-with-label">
+              <label class="language-select-label"
+                     i18n-content="publicSessionSelectLanguage">
+              </label>
+              <div class="select-container">
+                <select class="language-select"></select>
+              </div>
+            </div>
+            <div class="select-with-label">
+              <label class="keyboard-select-label"
+                     i18n-content="publicSessionSelectKeyboard">
+              </label>
+              <div class="select-container">
+                <select class="keyboard-select"></select>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <div class="horizontal-line"></div>
       <div class="bottom-container">
-        <div class="expanded-pane-learn-more-container">
-          <div class="expanded-pane-learn-more"></div>
-        </div>
-        <div class="info"></div>
+        <paper-button raised class="enter-button"
+                i18n-content="publicAccountEnter"
+                i18n-values="aria-label:publicAccountEnterAccessibleName">
+        </paper-button>
         <div class="language-and-input-container">
           <a class="language-and-input" href="#" role="button"
              i18n-content="publicSessionLanguageAndInput"></a>
         </div>
-        <button class="enter-button"
-                i18n-content="publicAccountEnter"
-                i18n-values="aria-label:publicAccountEnterAccessibleName">
-        </button>
       </div>
     </div>
   </div>

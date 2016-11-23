@@ -862,6 +862,18 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("publicAccountEnter", base::string16());
   localized_strings->SetString("publicAccountEnterAccessibleName",
                                base::string16());
+  localized_strings->SetString("publicAccountMonitoringWarning",
+                               base::string16());
+  localized_strings->SetString("publicAccountLearnMore", base::string16());
+  localized_strings->SetString("publicAccountMonitoringInfo", base::string16());
+  localized_strings->SetString("publicAccountMonitoringInfoItem1",
+                               base::string16());
+  localized_strings->SetString("publicAccountMonitoringInfoItem2",
+                               base::string16());
+  localized_strings->SetString("publicAccountMonitoringInfoItem3",
+                               base::string16());
+  localized_strings->SetString("publicAccountMonitoringInfoItem4",
+                               base::string16());
   localized_strings->SetString("publicSessionSelectLanguage", base::string16());
   localized_strings->SetString("publicSessionSelectKeyboard", base::string16());
   localized_strings->SetString("signinBannerText", base::string16());

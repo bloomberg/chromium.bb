@@ -2092,6 +2092,11 @@ cr.define('login', function() {
       languageAndInput.addEventListener('click',
                                         this.transitionToAdvanced_.bind(this));
 
+      var monitoringLearnMore = this.querySelector('.monitoring-learn-more');
+      monitoringLearnMore.tabIndex = UserPodTabOrder.POD_INPUT;
+      monitoringLearnMore.addEventListener(
+          'click', this.onMonitoringLearnMoreClicked_.bind(this));
+
       this.enterButtonElement.addEventListener('click', (function(e) {
         this.enterButtonElement.disabled = true;
         var locale = this.querySelector('.language-select').value;
@@ -2240,6 +2245,45 @@ cr.define('login', function() {
         // Guard timer set to animation duration + 20ms.
         ensureTransitionEndEvent(languageAndInputSection, 380);
       }, 0);
+    },
+
+    /**
+     * Show a dialog when user clicks on learn more (monitoring) button.
+     */
+    onMonitoringLearnMoreClicked_: function() {
+      if (!this.dialogContainer_) {
+        this.dialogContainer_ = document.createElement('div');
+        this.dialogContainer_.classList.add('monitoring-dialog-container');
+        var topContainer = document.querySelector('#scroll-container');
+        topContainer.appendChild(this.dialogContainer_);
+      }
+      // Public Session POD in advanced view has a different size so add a dummy
+      // parent element to enable different CSS settings.
+      this.dialogContainer_.classList.toggle(
+          'advanced', this.classList.contains('advanced'))
+      var html = '';
+      var infoItems = ['publicAccountMonitoringInfoItem1',
+                       'publicAccountMonitoringInfoItem2',
+                       'publicAccountMonitoringInfoItem3',
+                       'publicAccountMonitoringInfoItem4'];
+      for (item of infoItems) {
+        html += '<p class="cr-dialog-item">';
+        html += loadTimeData.getString(item);
+        html += '</p>';
+      }
+      var title = loadTimeData.getString('publicAccountMonitoringInfo');
+      this.dialog_ = new cr.ui.dialogs.BaseDialog(this.dialogContainer_);
+      this.dialog_.showHtml(title, html, undefined,
+                            this.onMonitoringDialogClosed_.bind(this));
+      this.parentNode.disabled = true;
+    },
+
+    /**
+     * Cleanup after the monitoring warning dialog is closed.
+     */
+    onMonitoringDialogClosed_: function() {
+      this.parentNode.disabled = false;
+      this.dialog_ = undefined;
     },
 
     /**
