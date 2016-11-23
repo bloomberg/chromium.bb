@@ -108,6 +108,9 @@ _proc_count_metric = ts_mon.GaugeMetric(
 _autoserv_proc_count_metric = ts_mon.GaugeMetric(
     'dev/proc/autoserv_count',
     description='Number of autoserv processes currently running.')
+_sysmon_proc_count_metric = ts_mon.GaugeMetric(
+    'dev/proc/sysmon_count',
+    description='Number of sysmon processes currently running.')
 _load_average_metric = ts_mon.FloatMetric(
     'dev/proc/load_average',
     description='Number of processes currently '
@@ -305,13 +308,17 @@ def _get_python_arch():
 
 def get_proc_info():
   autoserv_count = 0
+  sysmon_count = 0
   total = 0
   for proc in psutil.process_iter():
     if _is_parent_autoserv(proc):
       autoserv_count += 1
+    elif _is_sysmon(proc):
+      sysmon_count += 1
     total += 1
   logging.debug('autoserv_count: %s', autoserv_count)
   _autoserv_proc_count_metric.set(autoserv_count)
+  _sysmon_proc_count_metric.set(sysmon_count)
   _proc_count_metric.set(total)
 
 
@@ -326,6 +333,26 @@ def _is_autoserv(proc):
   # be named autoserv exactly and start with a shebang that is /usr/bin/python,
   # NOT /bin/env
   return proc.name() == 'autoserv'
+
+
+def _is_sysmon(proc):
+  """Return whether proc is a sysmon process."""
+  # This is fragile due to the virtualenv bootstrap of sysmon.
+  # The process tree for an Upstart invocation of sysmon is:
+  #
+  # init -> sudo -> python2 -> python
+  #
+  # If sysmon is started without using Upstart:
+  #
+  # init -> (shell) -> python2 -> python
+  #
+  # The extra python2 is due to the virtualenv wrapper script, which should do
+  # an exec to avoid wasting a process.  The fact that the first has a 2 and
+  # the second doesn't is basically just luck.
+  #
+  # TODO(ayatane): Once the chromite virtualenv wrapper uses exec, clean this
+  # up.
+  return proc.name() == 'python' and 'sysmon' in ' '.join(proc.cmdline())
 
 
 def get_load_avg():
