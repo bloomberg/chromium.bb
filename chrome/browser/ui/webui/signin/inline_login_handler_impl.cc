@@ -201,7 +201,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     const ClientOAuthResult& result,
     Profile* profile,
     Profile::CreateStatus status) {
-  UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
+  if (signin::IsForceSigninEnabled())
+    UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
   content::WebContents* contents = NULL;
   Browser* browser = NULL;
   if (handler_) {
