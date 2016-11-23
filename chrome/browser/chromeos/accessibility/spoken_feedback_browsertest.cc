@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxNavigateAndSelect) {
   EXPECT_EQ("Title", speech_monitor_.GetNextUtterance());
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextStickyMode) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
   EnableChromeVox();
 
   ui_test_utils::NavigateToURL(
