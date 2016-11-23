@@ -4405,6 +4405,20 @@ HTMLFrameOwnerElement* Document::localOwner() const {
   return frame()->deprecatedLocalOwner();
 }
 
+void Document::willChangeFrameOwnerProperties(int marginWidth,
+                                              int marginHeight,
+                                              ScrollbarMode scrollingMode) {
+  DCHECK(frame() && frame()->owner());
+  FrameOwner* owner = frame()->owner();
+
+  if (marginWidth != owner->marginWidth())
+    body()->setIntegralAttribute(marginwidthAttr, marginWidth);
+  if (marginHeight != owner->marginHeight())
+    body()->setIntegralAttribute(marginheightAttr, marginHeight);
+  if (scrollingMode != owner->scrollingMode())
+    view()->setNeedsLayout();
+}
+
 bool Document::isInInvisibleSubframe() const {
   if (!localOwner())
     return false;  // this is a local root element

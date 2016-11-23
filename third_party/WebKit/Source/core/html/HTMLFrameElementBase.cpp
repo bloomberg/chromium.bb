@@ -141,16 +141,10 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name,
     m_frameName = value;
   } else if (name == nameAttr) {
     m_frameName = value;
-    // FIXME: If we are already attached, this doesn't actually change the
-    // frame's name.
-    // FIXME: If we are already attached, this doesn't check for frame name
-    // conflicts and generate a unique frame name.
   } else if (name == marginwidthAttr) {
     setMarginWidth(value.toInt());
-    // FIXME: If we are already attached, this has no effect.
   } else if (name == marginheightAttr) {
     setMarginHeight(value.toInt());
-    // FIXME: If we are already attached, this has no effect.
   } else if (name == scrollingAttr) {
     // Auto and yes both simply mean "allow scrolling." No means "don't allow
     // scrolling."
@@ -158,7 +152,6 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name,
       setScrollingMode(ScrollbarAuto);
     else if (equalIgnoringCase(value, "no"))
       setScrollingMode(ScrollbarAlwaysOff);
-    // FIXME: If we are already attached, this has no effect.
   } else if (name == onbeforeunloadAttr) {
     // FIXME: should <frame> elements have beforeunload handlers?
     setAttributeEventListener(
@@ -253,16 +246,37 @@ void HTMLFrameElementBase::defaultEventHandler(Event* event) {
 }
 
 void HTMLFrameElementBase::setScrollingMode(ScrollbarMode scrollbarMode) {
+  if (m_scrollingMode == scrollbarMode)
+    return;
+
+  if (contentDocument()) {
+    contentDocument()->willChangeFrameOwnerProperties(
+        m_marginWidth, m_marginHeight, scrollbarMode);
+  }
   m_scrollingMode = scrollbarMode;
   frameOwnerPropertiesChanged();
 }
 
 void HTMLFrameElementBase::setMarginWidth(int marginWidth) {
+  if (m_marginWidth == marginWidth)
+    return;
+
+  if (contentDocument()) {
+    contentDocument()->willChangeFrameOwnerProperties(
+        marginWidth, m_marginHeight, m_scrollingMode);
+  }
   m_marginWidth = marginWidth;
   frameOwnerPropertiesChanged();
 }
 
 void HTMLFrameElementBase::setMarginHeight(int marginHeight) {
+  if (m_marginHeight == marginHeight)
+    return;
+
+  if (contentDocument()) {
+    contentDocument()->willChangeFrameOwnerProperties(
+        m_marginWidth, marginHeight, m_scrollingMode);
+  }
   m_marginHeight = marginHeight;
   frameOwnerPropertiesChanged();
 }

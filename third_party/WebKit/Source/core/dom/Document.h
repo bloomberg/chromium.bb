@@ -59,6 +59,7 @@
 #include "platform/Length.h"
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
@@ -826,6 +827,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Returns the owning element in the parent document. Returns nullptr if
   // this is the top level document or the owner is remote.
   HTMLFrameOwnerElement* localOwner() const;
+
+  void willChangeFrameOwnerProperties(int marginWidth,
+                                      int marginHeight,
+                                      ScrollbarMode);
 
   // Returns true if this document belongs to a frame that the parent document
   // made invisible (for instance by setting as style display:none).

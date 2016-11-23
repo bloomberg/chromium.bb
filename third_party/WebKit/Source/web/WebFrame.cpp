@@ -5,6 +5,7 @@
 #include "public/web/WebFrame.h"
 
 #include "bindings/core/v8/WindowProxyManager.h"
+#include "core/HTMLNames.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -138,6 +139,16 @@ void WebFrame::setFrameOwnerProperties(
   // for frames with a remote owner.
   RemoteFrameOwner* owner = toRemoteFrameOwner(toImplBase()->frame()->owner());
   DCHECK(owner);
+
+  Frame* frame = toImplBase()->frame();
+  DCHECK(frame);
+
+  if (frame->isLocalFrame()) {
+    toLocalFrame(frame)->document()->willChangeFrameOwnerProperties(
+        properties.marginWidth, properties.marginHeight,
+        static_cast<ScrollbarMode>(properties.scrollingMode));
+  }
+
   owner->setScrollingMode(properties.scrollingMode);
   owner->setMarginWidth(properties.marginWidth);
   owner->setMarginHeight(properties.marginHeight);
