@@ -5,7 +5,6 @@
 #include "ash/mus/system_tray_delegate_mus.h"
 
 #include "ash/common/system/networking_config_delegate.h"
-#include "ash/mus/vpn_delegate_mus.h"
 
 namespace ash {
 namespace {
@@ -30,8 +29,7 @@ class StubNetworkingConfigDelegate : public NetworkingConfigDelegate {
 }  // namespace
 
 SystemTrayDelegateMus::SystemTrayDelegateMus()
-    : networking_config_delegate_(new StubNetworkingConfigDelegate),
-      vpn_delegate_(new VPNDelegateMus) {}
+    : networking_config_delegate_(new StubNetworkingConfigDelegate) {}
 
 SystemTrayDelegateMus::~SystemTrayDelegateMus() {
 }
@@ -39,10 +37,6 @@ SystemTrayDelegateMus::~SystemTrayDelegateMus() {
 NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()
     const {
   return networking_config_delegate_.get();
-}
-
-VPNDelegate* SystemTrayDelegateMus::GetVPNDelegate() const {
-  return vpn_delegate_.get();
 }
 
 }  // namespace ash

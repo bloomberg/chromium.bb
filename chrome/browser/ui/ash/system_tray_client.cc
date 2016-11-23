@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
@@ -30,9 +31,12 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "extensions/browser/api/vpn_provider/vpn_service.h"
+#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -252,6 +256,23 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
     return;
   }
   chromeos::NetworkConfigView::ShowForType(type, nullptr /* parent */);
+}
+
+void SystemTrayClient::ShowThirdPartyVpnCreate(
+    const std::string& extension_id) {
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    return;
+
+  Profile* profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  if (!profile)
+    return;
+
+  // Request that the third-party VPN provider show its "add network" dialog.
+  chromeos::VpnServiceFactory::GetForBrowserContext(profile)
+      ->SendShowAddDialogToExtension(extension_id);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

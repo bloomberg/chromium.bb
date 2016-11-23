@@ -55,6 +55,7 @@ class ASH_EXPORT SystemTrayController
   void ShowPublicAccountInfo();
   void ShowNetworkConfigure(const std::string& network_id);
   void ShowNetworkCreate(const std::string& type);
+  void ShowThirdPartyVpnCreate(const std::string& extension_id);
   void ShowNetworkSettings(const std::string& network_id);
   void ShowProxySettings();
   void SignOut();

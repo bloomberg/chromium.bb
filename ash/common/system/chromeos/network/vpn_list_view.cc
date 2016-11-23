@@ -14,10 +14,10 @@
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "ash/common/system/chromeos/network/network_list_delegate.h"
-#include "ash/common/system/chromeos/network/vpn_delegate.h"
+#include "ash/common/system/chromeos/network/vpn_list.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_menu_button.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
@@ -320,18 +320,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 }  // namespace
 
 VPNListView::VPNListView(NetworkListDelegate* delegate) : delegate_(delegate) {
-  WmShell::Get()->system_tray_delegate()->GetVPNDelegate()->AddObserver(this);
+  WmShell::Get()->vpn_list()->AddObserver(this);
 }
 
 VPNListView::~VPNListView() {
-  // We need the check as on shell destruction, the delegate is destroyed first.
-  SystemTrayDelegate* const system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
-  if (system_tray_delegate) {
-    VPNDelegate* const vpn_delegate = system_tray_delegate->GetVPNDelegate();
-    if (vpn_delegate)
-      vpn_delegate->RemoveObserver(this);
-  }
+  WmShell::Get()->vpn_list()->RemoveObserver(this);
 }
 
 void VPNListView::Update() {
@@ -433,11 +426,16 @@ void VPNListView::OnViewClicked(views::View* sender) {
     // If the user clicks on a provider entry, request that the "add network"
     // dialog for this provider be shown.
     const VPNProvider& provider = provider_iter->second;
-    WmShell::Get()->RecordUserMetricsAction(
-        provider.third_party ? UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED
-                             : UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
-    WmShell::Get()->system_tray_delegate()->GetVPNDelegate()->ShowAddPage(
-        provider.extension_id);
+    WmShell* shell = WmShell::Get();
+    if (provider.third_party) {
+      shell->RecordUserMetricsAction(
+          UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
+      shell->system_tray_controller()->ShowThirdPartyVpnCreate(
+          provider.extension_id);
+    } else {
+      shell->RecordUserMetricsAction(UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
+      shell->system_tray_controller()->ShowNetworkCreate(shill::kTypeVPN);
+    }
     return;
   }
 
@@ -493,7 +491,7 @@ void VPNListView::AddProvidersAndNetworks(
     const chromeos::NetworkStateHandler::NetworkStateList& networks) {
   // Get the list of VPN providers enabled in the primary user's profile.
   std::vector<VPNProvider> providers =
-      WmShell::Get()->system_tray_delegate()->GetVPNDelegate()->vpn_providers();
+      WmShell::Get()->vpn_list()->vpn_providers();
 
   // Add providers with at least one configured network along with their
   // networks. Providers are added in the order of their highest priority

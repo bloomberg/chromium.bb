@@ -18,6 +18,7 @@ source_set("unittests") {
     "//ash",
     "//ash/common/test:test_support",
     "//ash/public/cpp",
+    "//ash/public/interfaces",
     "//ash/test:test_support_without_content",
     "//ui/base",
     "//ui/display",
@@ -30,7 +31,7 @@ source_set("unittests") {
     sources += [
       "system/chromeos/audio/tray_audio_unittest.cc",
       "system/chromeos/brightness/tray_brightness_unittest.cc",
-      "system/chromeos/network/vpn_delegate_unittest.cc",
+      "system/chromeos/network/vpn_list_unittest.cc",
       "system/chromeos/screen_security/screen_tray_item_unittest.cc",
       "system/chromeos/supervised/tray_supervised_user_unittest.cc",
     ]

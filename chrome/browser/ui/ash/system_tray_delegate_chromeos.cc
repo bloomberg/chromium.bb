@@ -59,7 +59,6 @@
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
-#include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -145,7 +144,6 @@ bool IsSessionInSecondaryLoginScreen() {
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
     : cast_config_delegate_(base::MakeUnique<CastConfigDelegateMediaRouter>()),
       networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
-      vpn_delegate_(new VPNDelegateChromeOS),
       weak_ptr_factory_(this) {
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -588,10 +586,6 @@ void SystemTrayDelegateChromeOS::AddCustodianInfoTrayObserver(
 void SystemTrayDelegateChromeOS::RemoveCustodianInfoTrayObserver(
     ash::CustodianInfoTrayObserver* observer) {
   custodian_info_changed_observers_.RemoveObserver(observer);
-}
-
-ash::VPNDelegate* SystemTrayDelegateChromeOS::GetVPNDelegate() const {
-  return vpn_delegate_.get();
 }
 
 std::unique_ptr<ash::SystemTrayItem>

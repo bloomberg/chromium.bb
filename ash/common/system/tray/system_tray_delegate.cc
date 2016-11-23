@@ -158,10 +158,6 @@ void SystemTrayDelegate::AddCustodianInfoTrayObserver(
 void SystemTrayDelegate::RemoveCustodianInfoTrayObserver(
     CustodianInfoTrayObserver* observer) {}
 
-VPNDelegate* SystemTrayDelegate::GetVPNDelegate() const {
-  return nullptr;
-}
-
 std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateRotationLockTrayItem(
     SystemTray* tray) {
   return nullptr;

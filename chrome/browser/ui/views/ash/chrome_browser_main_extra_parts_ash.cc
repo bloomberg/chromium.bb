@@ -30,6 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #endif  // defined(OS_CHROMEOS)
@@ -71,6 +72,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
 
+  vpn_list_forwarder_ = base::MakeUnique<VpnListForwarder>();
+
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
   // initialized. Otherwise, virtual keyboard extension will not load at login
   // screen.
@@ -102,6 +105,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #if defined(OS_CHROMEOS)
+  vpn_list_forwarder_.reset();
   system_tray_client_.reset();
 #endif
   chrome::CloseAsh();

@@ -28,6 +28,7 @@
           "ash::mojom::WallpaperController",
           "ash::mojom::WallpaperManager",
           "ash::mojom::VolumeController",
+          "ash::mojom::VpnList",
           "keyboard::mojom::Keyboard"
         ],
         "mash:launchable": [
