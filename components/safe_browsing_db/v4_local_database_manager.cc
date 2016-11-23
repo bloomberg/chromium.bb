@@ -31,6 +31,8 @@ const ThreatSeverity kLeastSeverity =
 ListInfos GetListInfos() {
   // NOTE(vakh): When adding a store here, add the corresponding store-specific
   // histograms also.
+  // NOTE(vakh): Delete file "AnyIpMalware.store". It has been renamed to
+  // "IpMalware.store". If it exists, it should be 75 bytes long.
   // The first argument to ListInfo specifies whether to sync hash prefixes for
   // that list. This can be false for two reasons:
   // - The server doesn't support that list yet. Once the server adds support
@@ -240,25 +242,21 @@ bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
 }
 
 bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
-  // TODO(vakh): Implement this skeleton.
-  // Use: GetUrlCsdWhitelistId()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+  return HandleUrlSynchronously(url, StoresToCheck({GetUrlCsdWhitelistId()}));
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
     const std::string& str) {
-  // TODO(vakh): Implement this skeleton.
-  // Use: GetCertCsdDownloadWhitelistId()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+  return HandleHashSynchronously(
+      str, StoresToCheck({GetCertCsdDownloadWhitelistId()}));
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
-  // TODO(vakh): Implement this skeleton.
-  // Use: GetUrlCsdDownloadWhitelistId()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+  return HandleUrlSynchronously(
+      url, StoresToCheck({GetUrlCsdDownloadWhitelistId()}));
 }
 
 bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
@@ -266,27 +264,22 @@ bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
   if (!enabled_) {
     return false;
   }
+
   FullHash hashed_encoded_ip;
   if (!V4ProtocolManagerUtil::IPAddressToEncodedIPV6Hash(ip_address,
                                                          &hashed_encoded_ip)) {
     return false;
   }
 
-  std::set<FullHash> hashed_encoded_ips{hashed_encoded_ip};
-  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
-      nullptr, ClientCallbackType::CHECK_MALWARE_IP,
-      StoresToCheck({GetIpMalwareId()}), hashed_encoded_ips);
-
-  // HandleCheckSynchronously() tells us whether the resource is safe.
-  return !HandleCheckSynchronously(std::move(check));
+  return HandleHashSynchronously(hashed_encoded_ip,
+                                 StoresToCheck({GetIpMalwareId()}));
 }
 
 bool V4LocalDatabaseManager::MatchModuleWhitelistString(
     const std::string& str) {
-  // TODO(vakh): Implement this skeleton.
-  // Use: GetChromeFilenameClientIncidentId()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+  return HandleHashSynchronously(
+      str, StoresToCheck({GetChromeFilenameClientIncidentId()}));
 }
 
 ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
@@ -294,9 +287,8 @@ ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
 }
 
 bool V4LocalDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+  return false;
 }
 
 bool V4LocalDatabaseManager::IsDownloadProtectionEnabled() const {
@@ -306,9 +298,8 @@ bool V4LocalDatabaseManager::IsDownloadProtectionEnabled() const {
 }
 
 bool V4LocalDatabaseManager::IsMalwareKillSwitchOn() {
-  // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
+  return false;
 }
 
 bool V4LocalDatabaseManager::IsSupported() const {
@@ -413,7 +404,7 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL ||
       check->client_callback_type == ClientCallbackType::CHECK_DOWNLOAD_URLS ||
       check->client_callback_type == ClientCallbackType::CHECK_EXTENSION_IDS ||
-      check->client_callback_type == ClientCallbackType::CHECK_MALWARE_IP) {
+      check->client_callback_type == ClientCallbackType::CHECK_OTHER) {
     DCHECK(!check->full_hashes.empty());
 
     full_hash_to_store_and_hash_prefixes->clear();
@@ -502,14 +493,38 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
   return false;
 }
 
-bool V4LocalDatabaseManager::HandleCheckSynchronously(
-    std::unique_ptr<PendingCheck> check) {
-  if (!v4_database_) {
-    return true;
+bool V4LocalDatabaseManager::HandleHashSynchronously(
+    const FullHash& hash,
+    const StoresToCheck& stores_to_check) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_ || !v4_database_) {
+    return false;
   }
 
+  std::set<FullHash> hashes{hash};
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      nullptr, ClientCallbackType::CHECK_OTHER, stores_to_check, hashes);
+
   FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-  return !GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes);
+  return GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes);
+}
+
+bool V4LocalDatabaseManager::HandleUrlSynchronously(
+    const GURL& url,
+    const StoresToCheck& stores_to_check) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_ || !v4_database_) {
+    return false;
+  }
+
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      nullptr, ClientCallbackType::CHECK_OTHER, stores_to_check,
+      std::vector<GURL>(1, url));
+
+  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+  return GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes);
 }
 
 void V4LocalDatabaseManager::OnFullHashResponse(
