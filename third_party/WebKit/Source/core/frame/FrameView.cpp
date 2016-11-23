@@ -4121,15 +4121,6 @@ IntRect FrameView::contentsToScreen(const IntRect& rect) const {
   return window->viewportToScreen(contentsToViewport(rect), this);
 }
 
-IntRect FrameView::soonToBeRemovedContentsToUnscaledViewport(
-    const IntRect& rectInContents) const {
-  IntRect rectInFrame = contentsToFrame(rectInContents);
-  IntRect rectInRootFrame = convertToRootFrame(rectInFrame);
-  return enclosingIntRect(
-      m_frame->host()->visualViewport().mainViewToViewportCSSPixels(
-          rectInRootFrame));
-}
-
 IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(
     const IntPoint& pointInViewport) const {
   IntPoint pointInRootFrame = flooredIntPoint(

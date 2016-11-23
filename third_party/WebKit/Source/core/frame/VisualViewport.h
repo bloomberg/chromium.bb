@@ -132,7 +132,6 @@ class CORE_EXPORT VisualViewport final
   // Convert the given rect in the main FrameView's coordinates into a rect
   // in the viewport. The given and returned rects are in CSS pixels, meaning
   // scale isn't applied.
-  FloatRect mainViewToViewportCSSPixels(const FloatRect&) const;
   FloatPoint viewportCSSPixelsToRootFrame(const FloatPoint&) const;
 
   // Clamp the given point, in document coordinates, to the maximum/minimum

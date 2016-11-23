@@ -169,14 +169,6 @@ FloatRect VisualViewport::visibleRectInDocument() const {
   return FloatRect(viewLocation, visibleSize());
 }
 
-FloatRect VisualViewport::mainViewToViewportCSSPixels(
-    const FloatRect& rect) const {
-  // Note, this is in CSS Pixels so we don't apply scale.
-  FloatRect rectInViewport = rect;
-  rectInViewport.move(-scrollOffset());
-  return rectInViewport;
-}
-
 FloatPoint VisualViewport::viewportCSSPixelsToRootFrame(
     const FloatPoint& point) const {
   // Note, this is in CSS Pixels so we don't apply scale.

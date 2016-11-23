@@ -95,8 +95,7 @@ bool ExternalPopupMenu::showInternal() {
                        ->localToAbsoluteQuad(FloatQuad(
                            toLayoutBox(layoutObject)->borderBoundingBox())));
     IntRect rect(quad.enclosingBoundingBox());
-    IntRect rectInViewport =
-        m_localFrame->view()->soonToBeRemovedContentsToUnscaledViewport(rect);
+    IntRect rectInViewport = m_localFrame->view()->contentsToViewport(rect);
     m_webExternalPopupMenu->show(rectInViewport);
     return true;
   } else {

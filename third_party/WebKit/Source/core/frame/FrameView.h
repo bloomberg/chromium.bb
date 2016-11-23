@@ -577,7 +577,6 @@ class CORE_EXPORT FrameView final
   // in viewport space, but sized in CSS pixels. This is an artifact of the
   // old pinch-zoom path. These callers should be converted to expect a rect
   // fully in viewport space. crbug.com/459591.
-  IntRect soonToBeRemovedContentsToUnscaledViewport(const IntRect&) const;
   IntPoint soonToBeRemovedUnscaledViewportToContents(const IntPoint&) const;
 
   // Methods for converting between Frame and Content (i.e. Document)

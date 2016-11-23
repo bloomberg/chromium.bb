@@ -514,8 +514,7 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   const ScopedJavaLocalRef<jobject> popup_view = select_popup_.view();
   if (popup_view.is_null())
     return;
-  view->SetAnchorRect(popup_view,
-                      gfx::ScaleRect(gfx::RectF(bounds), page_scale_));
+  view->SetAnchorRect(popup_view, gfx::RectF(bounds));
   Java_ContentViewCore_showSelectPopup(
       env, j_obj, popup_view, reinterpret_cast<intptr_t>(frame), items_array,
       enabled_array, multiple, selected_array, right_aligned);
