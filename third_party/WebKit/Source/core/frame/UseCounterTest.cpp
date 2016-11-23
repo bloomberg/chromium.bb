@@ -250,7 +250,7 @@ TEST(UseCounterTest, MAYBE_SVGImageContext) {
 #define MAYBE_InspectorDisablesMeasurement InspectorDisablesMeasurement
 #endif
 
-TEST(UseCounterTest, InspectorDisablesMeasurement) {
+TEST(UseCounterTest, MAYBE_InspectorDisablesMeasurement) {
   UseCounter useCounter;
   HistogramTester histogramTester;
 
