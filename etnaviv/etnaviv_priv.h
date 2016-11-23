@@ -189,13 +189,13 @@ struct etna_cmd_stream_priv {
 
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
-static inline void get_abs_timeout(struct drm_etnaviv_timespec *tv, uint32_t ms)
+static inline void get_abs_timeout(struct drm_etnaviv_timespec *tv, uint64_t ns)
 {
 	struct timespec t;
-	uint32_t s = ms / 1000;
+	uint32_t s = ns / 1000000000;
 	clock_gettime(CLOCK_MONOTONIC, &t);
 	tv->tv_sec = t.tv_sec + s;
-	tv->tv_nsec = t.tv_nsec + ((ms - (s * 1000)) * 1000000);
+	tv->tv_nsec = t.tv_nsec + ns - (s * 1000000000);
 }
 
 #endif /* ETNAVIV_PRIV_H_ */

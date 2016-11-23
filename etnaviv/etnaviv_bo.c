@@ -330,7 +330,7 @@ int etna_bo_cpu_prep(struct etna_bo *bo, uint32_t op)
 		.op = op,
 	};
 
-	get_abs_timeout(&req.timeout, 5000);
+	get_abs_timeout(&req.timeout, 5000000000);
 
 	return drmCommandWrite(bo->dev->fd, DRM_ETNAVIV_GEM_CPU_PREP,
 			&req, sizeof(req));

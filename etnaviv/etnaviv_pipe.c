@@ -43,7 +43,7 @@ int etna_pipe_wait(struct etna_pipe *pipe, uint32_t timestamp, uint32_t ms)
 	if (ms == 0)
 		req.flags |= ETNA_WAIT_NONBLOCK;
 
-	get_abs_timeout(&req.timeout, ms);
+	get_abs_timeout(&req.timeout, ms * 1000000);
 
 	ret = drmCommandWrite(dev->fd, DRM_ETNAVIV_WAIT_FENCE, &req, sizeof(req));
 	if (ret) {
