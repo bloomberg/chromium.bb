@@ -691,18 +691,9 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
 
   StyleResolverState state(document(), elementContext, defaultParent);
 
-  const ComputedStyle* baseComputedStyle = nullptr;
   ElementAnimations* elementAnimations = element->elementAnimations();
-  if (elementAnimations) {
-    // TODO(alancutter): Use the base computed style optimisation in the
-    // presence of custom property animations that don't affect pre-animated
-    // computed values.
-    if (CSSAnimations::isAnimatingCustomProperties(elementAnimations)) {
-      state.setIsAnimatingCustomProperties(true);
-    } else {
-      baseComputedStyle = elementAnimations->baseComputedStyle();
-    }
-  }
+  const ComputedStyle* baseComputedStyle =
+      elementAnimations ? elementAnimations->baseComputedStyle() : nullptr;
 
   if (baseComputedStyle) {
     state.setStyle(ComputedStyle::clone(*baseComputedStyle));
@@ -785,8 +776,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
     if (state.hasDirAutoAttribute())
       state.style()->setSelfOrAncestorHasDirAutoAttribute(true);
 
-    applyMatchedPropertiesAndCustomPropertyAnimations(
-        state, collector.matchedResult(), element);
+    applyMatchedProperties(state, collector.matchedResult());
     applyCallbackSelectors(state);
 
     // Cache our original display.
@@ -794,7 +784,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
 
     adjustComputedStyle(state, element);
 
-    if (elementAnimations && !state.isAnimatingCustomProperties())
+    if (elementAnimations)
       elementAnimations->updateBaseComputedStyle(state.style());
   } else {
     INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), baseStylesUsed, 1);
@@ -804,7 +794,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
   // applied before important rules, but this currently happens here as we
   // require adjustment to have happened before deciding which properties to
   // transition.
-  if (applyAnimatedStandardProperties(state, element)) {
+  if (applyAnimatedProperties(state, element)) {
     INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), stylesAnimated, 1);
     adjustComputedStyle(state, element);
   }
@@ -951,8 +941,7 @@ bool StyleResolver::pseudoStyleForElementInternal(
     if (!collector.matchedResult().hasMatchedProperties())
       return false;
 
-    applyMatchedPropertiesAndCustomPropertyAnimations(
-        state, collector.matchedResult(), pseudoElement);
+    applyMatchedProperties(state, collector.matchedResult());
     applyCallbackSelectors(state);
 
     // Cache our original display.
@@ -970,7 +959,7 @@ bool StyleResolver::pseudoStyleForElementInternal(
   // applied before important rules, but this currently happens here as we
   // require adjustment to have happened before deciding which properties to
   // transition.
-  if (applyAnimatedStandardProperties(state, pseudoElement))
+  if (applyAnimatedProperties(state, pseudoElement))
     adjustComputedStyle(state, 0);
 
   document().styleEngine().incStyleForElementCount();
@@ -1128,9 +1117,8 @@ void StyleResolver::collectPseudoRulesForElement(
   }
 }
 
-bool StyleResolver::applyAnimatedStandardProperties(
-    StyleResolverState& state,
-    const Element* animatingElement) {
+bool StyleResolver::applyAnimatedProperties(StyleResolverState& state,
+                                            const Element* animatingElement) {
   Element* element = state.element();
   DCHECK(element);
 
@@ -1144,9 +1132,9 @@ bool StyleResolver::applyAnimatedStandardProperties(
       !state.style()->transitions() && !state.style()->animations())
     return false;
 
-  CSSAnimations::calculateCompositorAndTransitionUpdate(
-      animatingElement, *element, *state.style(), state.parentStyle(),
-      state.animationUpdate());
+  CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(),
+                                 state.parentStyle(), state.animationUpdate(),
+                                 this);
 
   CSSAnimations::snapshotCompositorKeyframes(
       *element, state.animationUpdate(), *state.style(), state.parentStyle());
@@ -1614,46 +1602,20 @@ void StyleResolver::notifyResizeForViewportUnits() {
   m_matchedPropertiesCache.clearViewportDependent();
 }
 
-void StyleResolver::applyMatchedPropertiesAndCustomPropertyAnimations(
-    StyleResolverState& state,
-    const MatchResult& matchResult,
-    const Element* animatingElement) {
-  CacheSuccess cacheSuccess = applyMatchedCache(state, matchResult);
-  NeedsApplyPass needsApplyPass;
-  if (!cacheSuccess.isFullCacheHit()) {
-    applyCustomProperties(state, matchResult, false, cacheSuccess,
-                          needsApplyPass);
-    applyMatchedAnimationProperties(state, matchResult, cacheSuccess,
-                                    needsApplyPass);
-  }
-  if (state.style()->animations() ||
-      (state.element() && state.element()->hasAnimations())) {
-    calculateAnimationUpdate(state, animatingElement);
-    if (state.isAnimatingCustomProperties()) {
-      cacheSuccess.setFailed();
-      applyCustomProperties(state, matchResult, true, cacheSuccess,
-                            needsApplyPass);
-    }
-  }
-  if (!cacheSuccess.isFullCacheHit()) {
-    applyMatchedStandardProperties(state, matchResult, cacheSuccess,
-                                   needsApplyPass);
-  }
-}
-
-StyleResolver::CacheSuccess StyleResolver::applyMatchedCache(
-    StyleResolverState& state,
-    const MatchResult& matchResult) {
+void StyleResolver::applyMatchedProperties(StyleResolverState& state,
+                                           const MatchResult& matchResult) {
   const Element* element = state.element();
   DCHECK(element);
+
+  INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyApply,
+                                1);
 
   unsigned cacheHash =
       matchResult.isCacheable()
           ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(),
                                          matchResult.matchedProperties().size())
           : 0;
-  bool isInheritedCacheHit = false;
-  bool isNonInheritedCacheHit = false;
+  bool applyInheritedOnly = false;
   const CachedMatchedProperties* cachedMatchedProperties =
       cacheHash
           ? m_matchedPropertiesCache.find(cacheHash, state,
@@ -1689,36 +1651,22 @@ StyleResolver::CacheSuccess StyleResolver::applyMatchedCache(
       state.style()->setInsideLink(linkStatus);
 
       updateFont(state);
-      isInheritedCacheHit = true;
-    }
 
-    isNonInheritedCacheHit = true;
+      return;
+    }
+    applyInheritedOnly = true;
   }
 
-  return CacheSuccess(isInheritedCacheHit, isNonInheritedCacheHit, cacheHash,
-                      cachedMatchedProperties);
-}
+  NeedsApplyPass needsApplyPass;
 
-void StyleResolver::applyCustomProperties(StyleResolverState& state,
-                                          const MatchResult& matchResult,
-                                          bool applyAnimations,
-                                          const CacheSuccess& cacheSuccess,
-                                          NeedsApplyPass& needsApplyPass) {
-  DCHECK(!cacheSuccess.isFullCacheHit());
-  bool applyInheritedOnly = cacheSuccess.shouldApplyInheritedOnly();
-
-  // TODO(leviw): We need the proper bit for tracking whether we need to do
-  // this work.
+  // TODO(leviw): We need the proper bit for tracking whether we need to do this
+  // work.
   applyMatchedProperties<ResolveVariables, UpdateNeedsApplyPass>(
       state, matchResult.authorRules(), false, applyInheritedOnly,
       needsApplyPass);
   applyMatchedProperties<ResolveVariables, CheckNeedsApplyPass>(
       state, matchResult.authorRules(), true, applyInheritedOnly,
       needsApplyPass);
-  if (applyAnimations) {
-    applyAnimatedProperties<ResolveVariables>(
-        state, state.animationUpdate().activeInterpolationsForAnimations());
-  }
   // TODO(leviw): stop recalculating every time
   CSSVariableResolver::resolveVariableDefinitions(state);
 
@@ -1731,59 +1679,15 @@ void StyleResolver::applyCustomProperties(StyleResolverState& state,
       applyMatchedProperties<ResolveVariables, CheckNeedsApplyPass>(
           state, matchResult.authorRules(), true, applyInheritedOnly,
           needsApplyPass);
-      if (applyAnimations) {
-        applyAnimatedProperties<ResolveVariables>(
-            state, state.animationUpdate().activeInterpolationsForAnimations());
-      }
       CSSVariableResolver::resolveVariableDefinitions(state);
     }
   }
-}
 
-void StyleResolver::applyMatchedAnimationProperties(
-    StyleResolverState& state,
-    const MatchResult& matchResult,
-    const CacheSuccess& cacheSuccess,
-    NeedsApplyPass& needsApplyPass) {
-  DCHECK(!cacheSuccess.isFullCacheHit());
-  bool applyInheritedOnly = cacheSuccess.shouldApplyInheritedOnly();
-
+  // Apply animation affecting properties.
   applyMatchedProperties<AnimationPropertyPriority, UpdateNeedsApplyPass>(
       state, matchResult.allRules(), false, applyInheritedOnly, needsApplyPass);
   applyMatchedProperties<AnimationPropertyPriority, CheckNeedsApplyPass>(
       state, matchResult.allRules(), true, applyInheritedOnly, needsApplyPass);
-}
-
-void StyleResolver::calculateAnimationUpdate(StyleResolverState& state,
-                                             const Element* animatingElement) {
-  Element* element = state.element();
-  DCHECK(state.style()->animations() || (element && element->hasAnimations()));
-
-  CSSAnimations::calculateAnimationUpdate(
-      state.animationUpdate(), animatingElement, *element, *state.style(),
-      state.parentStyle(), this);
-
-  if (state.isAnimatingCustomProperties())
-    return;
-  for (const auto& propertyHandle :
-       state.animationUpdate().activeInterpolationsForAnimations().keys()) {
-    if (CSSAnimations::isCustomPropertyHandle(propertyHandle)) {
-      state.setIsAnimatingCustomProperties(true);
-      return;
-    }
-  }
-}
-
-void StyleResolver::applyMatchedStandardProperties(
-    StyleResolverState& state,
-    const MatchResult& matchResult,
-    const CacheSuccess& cacheSuccess,
-    NeedsApplyPass& needsApplyPass) {
-  INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyApply,
-                                1);
-
-  DCHECK(!cacheSuccess.isFullCacheHit());
-  bool applyInheritedOnly = cacheSuccess.shouldApplyInheritedOnly();
 
   // Now we have all of the matched rules in the appropriate order. Walk the
   // rules and apply high-priority properties first, i.e., those properties that
@@ -1799,7 +1703,7 @@ void StyleResolver::applyMatchedStandardProperties(
   applyMatchedProperties<HighPropertyPriority, CheckNeedsApplyPass>(
       state, matchResult.uaRules(), true, applyInheritedOnly, needsApplyPass);
 
-  if (UNLIKELY(isSVGForeignObjectElement(state.element()))) {
+  if (UNLIKELY(isSVGForeignObjectElement(element))) {
     // LayoutSVGRoot handles zooming for the whole SVG subtree, so foreignObject
     // content should not be scaled again.
     //
@@ -1813,8 +1717,8 @@ void StyleResolver::applyMatchedStandardProperties(
     state.setEffectiveZoom(ComputedStyle::initialZoom());
   }
 
-  if (cacheSuccess.cachedMatchedProperties &&
-      cacheSuccess.cachedMatchedProperties->computedStyle->effectiveZoom() !=
+  if (cachedMatchedProperties &&
+      cachedMatchedProperties->computedStyle->effectiveZoom() !=
           state.style()->effectiveZoom()) {
     state.fontBuilder().didChangeEffectiveZoom();
     applyInheritedOnly = false;
@@ -1825,9 +1729,9 @@ void StyleResolver::applyMatchedStandardProperties(
 
   // Many properties depend on the font. If it changes we just apply all
   // properties.
-  if (cacheSuccess.cachedMatchedProperties &&
-      cacheSuccess.cachedMatchedProperties->computedStyle
-              ->getFontDescription() != state.style()->getFontDescription())
+  if (cachedMatchedProperties &&
+      cachedMatchedProperties->computedStyle->getFontDescription() !=
+          state.style()->getFontDescription())
     applyInheritedOnly = false;
 
   // Registered custom properties are computed after high priority properties.
@@ -1864,14 +1768,12 @@ void StyleResolver::applyMatchedStandardProperties(
 
   loadPendingResources(state);
 
-  if (!state.isAnimatingCustomProperties() &&
-      !cacheSuccess.cachedMatchedProperties && cacheSuccess.cacheHash &&
+  if (!cachedMatchedProperties && cacheHash &&
       MatchedPropertiesCache::isCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(),
                                   matchedPropertyCacheAdded, 1);
     m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(),
-                                 cacheSuccess.cacheHash,
-                                 matchResult.matchedProperties());
+                                 cacheHash, matchResult.matchedProperties());
   }
 
   DCHECK(!state.fontBuilder().fontDirty());

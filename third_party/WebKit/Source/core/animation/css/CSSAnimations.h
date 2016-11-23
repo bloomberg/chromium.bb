@@ -63,20 +63,12 @@ class CSSAnimations final {
   static const StylePropertyShorthand& propertiesForTransitionAll();
   static bool isAnimationAffectingProperty(CSSPropertyID);
   static bool isAffectedByKeyframesFromScope(const Element&, const TreeScope&);
-  static bool isAnimatingCustomProperties(const ElementAnimations*);
-  static bool isCustomPropertyHandle(const PropertyHandle&);
-  static void calculateAnimationUpdate(CSSAnimationUpdate&,
-                                       const Element* animatingElement,
-                                       Element&,
-                                       const ComputedStyle&,
-                                       ComputedStyle* parentStyle,
-                                       StyleResolver*);
-  static void calculateCompositorAndTransitionUpdate(
-      const Element* animatingElement,
-      Element&,
-      const ComputedStyle&,
-      ComputedStyle* parentStyle,
-      CSSAnimationUpdate&);
+  static void calculateUpdate(const Element* animatingElement,
+                              Element&,
+                              const ComputedStyle&,
+                              ComputedStyle* parentStyle,
+                              CSSAnimationUpdate&,
+                              StyleResolver*);
   static void snapshotCompositorKeyframes(Element&,
                                           CSSAnimationUpdate&,
                                           const ComputedStyle&,
@@ -156,6 +148,12 @@ class CSSAnimations final {
       Element&,
       const ComputedStyle&,
       const ComputedStyle* parentStyle);
+  static void calculateAnimationUpdate(CSSAnimationUpdate&,
+                                       const Element* animatingElement,
+                                       Element&,
+                                       const ComputedStyle&,
+                                       ComputedStyle* parentStyle,
+                                       StyleResolver*);
   static void calculateTransitionUpdate(CSSAnimationUpdate&,
                                         const Element* animatingElement,
                                         const ComputedStyle&);

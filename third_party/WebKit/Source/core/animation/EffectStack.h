@@ -63,7 +63,6 @@ class CORE_EXPORT EffectStack {
   bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
-  bool affectsProperties(PropertyHandleFilter) const;
   static ActiveInterpolationsMap activeInterpolations(
       EffectStack*,
       const HeapVector<Member<const InertEffect>>* newAnimations,

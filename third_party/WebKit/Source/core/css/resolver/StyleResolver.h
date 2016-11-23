@@ -210,33 +210,10 @@ class CORE_EXPORT StyleResolver final
   void collectTreeBoundaryCrossingRulesV0CascadeOrder(const Element&,
                                                       ElementRuleCollector&);
 
-  struct CacheSuccess {
-    STACK_ALLOCATED();
-    bool isInheritedCacheHit;
-    bool isNonInheritedCacheHit;
-    unsigned cacheHash;
-    Member<const CachedMatchedProperties> cachedMatchedProperties;
-
-    CacheSuccess(bool isInheritedCacheHit,
-                 bool isNonInheritedCacheHit,
-                 unsigned cacheHash,
-                 const CachedMatchedProperties* cachedMatchedProperties)
-        : isInheritedCacheHit(isInheritedCacheHit),
-          isNonInheritedCacheHit(isNonInheritedCacheHit),
-          cacheHash(cacheHash),
-          cachedMatchedProperties(cachedMatchedProperties) {}
-
-    bool isFullCacheHit() const {
-      return isInheritedCacheHit && isNonInheritedCacheHit;
-    }
-    bool shouldApplyInheritedOnly() const {
-      return isNonInheritedCacheHit && !isInheritedCacheHit;
-    }
-    void setFailed() {
-      isInheritedCacheHit = false;
-      isNonInheritedCacheHit = false;
-    }
-  };
+  void applyMatchedProperties(StyleResolverState&, const MatchResult&);
+  bool applyAnimatedProperties(StyleResolverState&,
+                               const Element* animatingElement);
+  void applyCallbackSelectors(StyleResolverState&);
 
   // These flags indicate whether an apply pass for a given CSSPropertyPriority
   // and isImportant is required.
@@ -261,30 +238,6 @@ class CORE_EXPORT StyleResolver final
     CheckNeedsApplyPass = false,
     UpdateNeedsApplyPass = true,
   };
-
-  void applyMatchedPropertiesAndCustomPropertyAnimations(
-      StyleResolverState&,
-      const MatchResult&,
-      const Element* animatingElement);
-  CacheSuccess applyMatchedCache(StyleResolverState&, const MatchResult&);
-  void applyCustomProperties(StyleResolverState&,
-                             const MatchResult&,
-                             bool applyAnimations,
-                             const CacheSuccess&,
-                             NeedsApplyPass&);
-  void applyMatchedAnimationProperties(StyleResolverState&,
-                                       const MatchResult&,
-                                       const CacheSuccess&,
-                                       NeedsApplyPass&);
-  void applyMatchedStandardProperties(StyleResolverState&,
-                                      const MatchResult&,
-                                      const CacheSuccess&,
-                                      NeedsApplyPass&);
-  void calculateAnimationUpdate(StyleResolverState&,
-                                const Element* animatingElement);
-  bool applyAnimatedStandardProperties(StyleResolverState&, const Element*);
-
-  void applyCallbackSelectors(StyleResolverState&);
 
   template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
   void applyMatchedProperties(StyleResolverState&,

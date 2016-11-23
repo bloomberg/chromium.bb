@@ -100,16 +100,6 @@ bool EffectStack::hasActiveAnimationsOnCompositor(
   return false;
 }
 
-bool EffectStack::affectsProperties(PropertyHandleFilter filter) const {
-  for (const auto& sampledEffect : m_sampledEffects) {
-    for (const auto& interpolation : sampledEffect->interpolations()) {
-      if (filter(interpolation->getProperty()))
-        return true;
-    }
-  }
-  return false;
-}
-
 ActiveInterpolationsMap EffectStack::activeInterpolations(
     EffectStack* effectStack,
     const HeapVector<Member<const InertEffect>>* newAnimations,
