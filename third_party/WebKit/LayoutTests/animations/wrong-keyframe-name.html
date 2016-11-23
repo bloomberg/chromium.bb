@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <style>
 #test1 {
-    -webkit-animation-fill-mode: forwards;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-name: green;
+    animation-fill-mode: forwards;
+    animation-duration: 1s;
+    animation-name: green;
 }
 #test2 {
-    -webkit-animation-fill-mode: forwards;
-    -webkit-animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-duration: 1s;
 }
 #test3 {
-    -webkit-animation-fill-mode: forwards;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-name: notredorgreen;
+    animation-fill-mode: forwards;
+    animation-duration: 1s;
+    animation-name: notredorgreen;
 }
-@-webkit-keyframes green {
+@keyframes green {
     from {
       background-color: white;
     }
@@ -22,7 +22,7 @@
       background-color: green;
     }
 }
-@-webkit-keyframes red {
+@keyframes red {
     from {
       background-color: white;
     }
@@ -42,15 +42,15 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 var pass = true;
-test1.addEventListener('webkitAnimationStart', function() {
-    test2.style.webkitAnimationName = 'green';
+test1.addEventListener('animationstart', function() {
+    test2.style.animationName = 'green';
 });
-test2.addEventListener('webkitAnimationStart', function() {
+test2.addEventListener('animationstart', function() {
     result.innerText = pass ? 'PASS' : 'FAIL';
     if (window.testRunner)
         testRunner.notifyDone();
 });
-test3.addEventListener('webkitAnimationStart', function() {
+test3.addEventListener('animationstart', function() {
     pass = false;
 });
 </script>

@@ -11,19 +11,19 @@
       margin: 10px;
     }
     .animation {
-      -webkit-animation-duration: 0.1s;
-      -webkit-animation-name: animation;
+      animation-duration: 0.1s;
+      animation-name: animation;
     }
     #animation1 {
-      -webkit-animation-delay: 0.05s;
+      animation-delay: 0.05s;
     }
     #animation2 {
-      -webkit-animation-delay: -0.05s;
+      animation-delay: -0.05s;
     }
     #animation3 {
-      -webkit-animation-delay: -0.15s;
+      animation-delay: -0.15s;
     }
-    @-webkit-keyframes animation {
+    @keyframes animation {
         from { left: 0; }
         to   { left: 500px; }
     }
@@ -40,12 +40,12 @@
     }
 
     var count = 0;
-    document.addEventListener('webkitAnimationStart', function(event) {
+    document.addEventListener('animationstart', function(event) {
         var pass = event.elapsedTime === [0, 0.05, 0.15][count++];
         log((pass ? 'PASS' : 'FAIL') + ': ' + event.target.id + ': Start event: elapsedTime=' + event.elapsedTime);
     }, false);
 
-    document.addEventListener('webkitAnimationEnd', function(event) {
+    document.addEventListener('animationend', function(event) {
         var pass = event.elapsedTime === 0.1;
         log((pass ? 'PASS' : 'FAIL') + ': ' + event.target.id + ': End event: elapsedTime=' + event.elapsedTime);
         switch (count) {

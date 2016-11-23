@@ -21,10 +21,10 @@
     }
     
     .animating {
-      -webkit-animation: spin 2s infinite linear;
+      animation: spin 2s infinite linear;
     }
     
-    @-webkit-keyframes spin {
+    @keyframes spin {
       from { transform: rotate(90deg); }
       to   { transform: rotate(360deg); }
     }
@@ -38,7 +38,7 @@
     function runTest()
     {
       var box = document.getElementById('to-animate');
-      box.addEventListener('webkitAnimationStart', animationStarted, false);
+      box.addEventListener('animationstart', animationStarted, false);
       box.className = 'animating box';
     }
     

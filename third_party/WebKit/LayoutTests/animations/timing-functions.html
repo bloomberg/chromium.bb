@@ -13,10 +13,10 @@
       height: 5px;
       width: 5px;
       background-color: blue;
-      -webkit-animation-duration: 1s;
-      -webkit-animation-name: anim;
+      animation-duration: 1s;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 100px; }
         to   { left: 200px; }
     }
@@ -28,16 +28,16 @@
       height: 5px;
       width: 5px;
       background-color: blue;
-      -webkit-animation-duration: 1s;
-      -webkit-animation-name: anim-step-middle;
+      animation-duration: 1s;
+      animation-name: anim-step-middle;
       /* 
        * Set initial timing function to something other than the default (ease)
        * to check that attempts to set easing to step-middle result in the
        * default, not the initial, being used.
        */
-      -webkit-animation-timing-function: linear;
+      animation-timing-function: linear;
     }
-    @-webkit-keyframes anim-step-middle {
+    @keyframes anim-step-middle {
         from { left: 100px; }
         to   { left: 200px; }
     }
@@ -45,35 +45,35 @@
     #box1 {
     }
     #box2 {
-      -webkit-animation-timing-function: ease;
+      animation-timing-function: ease;
     }
     #box3 {
-      -webkit-animation-timing-function: linear;
+      animation-timing-function: linear;
     }
     #box4 {
-      -webkit-animation-timing-function: step-start;
+      animation-timing-function: step-start;
     }
     #box5 {
-      -webkit-animation-timing-function: step-end;
+      animation-timing-function: step-end;
     }
     #box6 {
-      -webkit-animation-timing-function: steps(3);
+      animation-timing-function: steps(3);
     }
     #box7 {
-      -webkit-animation-timing-function: steps(3, start);
+      animation-timing-function: steps(3, start);
     }
     #box8 {
-      -webkit-animation-timing-function: steps(3, end);
+      animation-timing-function: steps(3, end);
     }
     /*
      * The step-middle functions are invalid except through the Web Animations API
      * and should behave like 'ease', unless step-middle has been added to the CSS specification.
      */
     #box9 {
-      -webkit-animation-timing-function: steps(3, middle);
+      animation-timing-function: steps(3, middle);
     }
     #box10 {
-      -webkit-animation-timing-function: step-middle;
+      animation-timing-function: step-middle;
     }
     
   </style>

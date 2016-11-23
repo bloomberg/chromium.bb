@@ -24,10 +24,10 @@
     }
 
     #container.moved .hardware {
-      -webkit-animation: move 300ms linear;
+      animation: move 300ms linear;
     }
 
-    @-webkit-keyframes move {
+    @keyframes move {
       from { left: 0; }
       to   { left: 300px; }
     }
@@ -45,7 +45,7 @@
       if (window.testRunner)
         testRunner.waitUntilDone();
 
-      document.getElementById('tester').addEventListener('webkitAnimationEnd', testEnded, false);
+      document.getElementById('tester').addEventListener('animationend', testEnded, false);
       document.getElementById('container').className = 'moved';
     }
     

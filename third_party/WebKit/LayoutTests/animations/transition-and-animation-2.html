@@ -13,14 +13,14 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        -webkit-animation-duration: 0.3s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
-        -webkit-transition-property: -webkit-transform;
-        -webkit-transition-duration: 10s;
-        -webkit-transition-timing-function: linear;
+        animation-duration: 0.3s;
+        animation-timing-function: linear;
+        animation-name: anim;
+        transition-property: transform;
+        transition-duration: 10s;
+        transition-timing-function: linear;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: translate(0,100px) }
         to   { transform: translate(400px, 100px) }
     }
@@ -36,7 +36,7 @@
     // FIXME: This doesn't get called so we don't trigger a transition...
     function setup()
     {
-        document.getElementById("box").style.webkitTransform = "translateX(400px)";
+        document.getElementById("box").style.transform = "translateX(400px)";
     }
     
     runAnimationTest(expectedValues, undefined, undefined, 'do-not-use-pause-api');
@@ -44,7 +44,7 @@
   </script>
 </head>
 <body>
-This test has a transition and animation on the same property (-webkit-transform). 
+This test has a transition and animation on the same property (transform).
 The animation starts and then the transition is triggered. The transition should start
 at the position before the animation started (the unanimated position), which is (0,0). If it
 starts from the start point of the animation (0,100) then there is an error

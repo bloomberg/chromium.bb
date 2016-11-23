@@ -5,7 +5,7 @@
   <style>
     
     .animating {
-      -webkit-animation: slide 10s alternate linear infinite;
+      animation: slide 10s alternate linear infinite;
     }
     
     .container {
@@ -47,7 +47,7 @@
       transform: translateZ(0);
     }
     
-    @-webkit-keyframes slide {
+    @keyframes slide {
       from { transform: translateX(0px); }
       to { transform: translateX(100px); }
     }

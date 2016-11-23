@@ -9,28 +9,28 @@
       background-color: red;
       left: 0px;
       margin-bottom: 10px;
-      -webkit-animation: test 0.8s linear forwards;
-      -webkit-animation-play-state: paused;
+      animation: test 0.8s linear forwards;
+      animation-play-state: paused;
       animation: test 0.8s linear forwards;
       animation-play-state: paused;
     }
     .running {
-      -webkit-animation-play-state: running;
+      animation-play-state: running;
       animation-play-state: running;
     }
     #animation1 {
-      -webkit-animation-delay: -0.2s;
+      animation-delay: -0.2s;
       animation-delay: -0.2s;
     }
     #animation2 {
-      -webkit-animation-delay: 0s;
+      animation-delay: 0s;
       animation-delay: 0s;
     }
     #animation3 {
-      -webkit-animation-delay: 0.2s;
+      animation-delay: 0.2s;
       animation-delay: 0.2s;
     }
-    @-webkit-keyframes test {
+    @keyframes test {
         from { left: 100px; }
         to   { left: 300px; }
     }

@@ -13,13 +13,13 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        -webkit-animation-duration: 0.5s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
-        -webkit-transition-property: -webkit-transform;
-        -webkit-transition-duration: 10s;
+        animation-duration: 0.5s;
+        animation-timing-function: linear;
+        animation-name: anim;
+        transition-property: transform;
+        transition-duration: 10s;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: translateX(200px); }
         to   { transform: translateX(300px); }
     }
@@ -29,7 +29,7 @@
     
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.55, "box", "webkitTransform", "none", null],
+      [0.55, "box", "transform", "none", null],
     ];
     
     runAnimationTest(expectedValues, undefined, undefined, 'do-not-use-pause-api');
@@ -37,7 +37,7 @@
   </script>
 </head>
 <body>
-This test has a transition and animation on the same property (-webkit-transform). But the transition is never triggered,
+This test has a transition and animation on the same property (transform). But the transition is never triggered,
 so nothing should be moving when the animation finishes.
 <div id="box">
 </div>

@@ -1,4 +1,4 @@
-This tests the operation of -webkit-animation-play-state. We test style while the animations are paused and once unpaused.
+This tests the operation of animation-play-state. We test style while the animations are paused and once unpaused.
 
 transform
 left

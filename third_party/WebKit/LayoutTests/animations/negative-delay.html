@@ -9,25 +9,25 @@
       width: 20px;
       height: 20px;
       position: absolute;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-iteration-count: 1;
-      -webkit-animation-timing-function: linear;
+      animation-duration: 2s;
+      animation-iteration-count: 1;
+      animation-timing-function: linear;
     }
 
     .move {
-      -webkit-animation-name: square-move;
+      animation-name: square-move;
     }
 
     .translate {
-      -webkit-animation-name: square-translate;
+      animation-name: square-translate;
     }
 
-    @-webkit-keyframes square-move {
+    @keyframes square-move {
       0%    { left: 0px; }
       100%  { left: 600px; }
     }
 
-    @-webkit-keyframes square-translate {
+    @keyframes square-translate {
       0%    { transform: translateX(0); }
       100%  { transform: translateX(600px); }
     }
@@ -35,7 +35,7 @@
     #square1 {
       top: 20px;
       left: 20px;
-      -webkit-animation-delay: -1s;
+      animation-delay: -1s;
     }
 
     #square2 {
@@ -46,7 +46,7 @@
     #square3 {
       top: 100px;
       left: 20px;
-      -webkit-animation-delay: -1s;
+      animation-delay: -1s;
     }
 
     #square4 {
@@ -65,10 +65,10 @@
       [0, "square2", "left", 0, 15],
       [0.5, "square1", "left", 450, 15],
       [0.5, "square2", "left", 150, 15],
-      [0, "square3", "webkitTransform.4", 300, 20],
-      [0, "square4", "webkitTransform.4", 0, 20],
-      [0.5, "square3", "webkitTransform.4", 450, 20],
-      [0.5, "square4", "webkitTransform.4", 150, 20],
+      [0, "square3", "transform.4", 300, 20],
+      [0, "square4", "transform.4", 0, 20],
+      [0.5, "square3", "transform.4", 450, 20],
+      [0.5, "square4", "transform.4", 150, 20],
     ];
 
     runAnimationTest(expectedValues);

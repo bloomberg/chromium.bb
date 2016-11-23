@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <head>
-  <title>Test of -webkit-animation-play-state</title>
+  <title>Test of animation-play-state</title>
   <style>
     .target {
       height: 100px;
       width: 100px;
-      -webkit-animation-duration: 40ms;
-      -webkit-animation-timing-function: linear;
+      animation-duration: 40ms;
+      animation-timing-function: linear;
     }
     #translate {
       background-color: blue;
-      -webkit-animation-name: move1;
+      animation-name: move1;
     }
-    @-webkit-keyframes move1 {
+    @keyframes move1 {
         from { transform: translateX(100px); }
         to   { transform: translateX(200px); }
     }
     #left {
       position: relative;
       background-color: red;
-      -webkit-animation-name: move2;
+      animation-name: move2;
     }
-    @-webkit-keyframes move2 {
+    @keyframes move2 {
         from { left: 100px; }
         to   { left: 200px; }
     }
     .paused {
-      -webkit-animation-play-state: paused;
+      animation-play-state: paused;
     }
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript"></script>
@@ -55,7 +55,7 @@
     }
 
     var start = function() {
-      document.removeEventListener('webkitAnimationStart', start, false);
+      document.removeEventListener('animationstart', start, false);
       setTimeout(pause, 20);
     }
 
@@ -63,32 +63,32 @@
     var left;
     function pause() {
       togglePaused();
-      transform = getComputedStyle(document.getElementById('translate')).webkitTransform;
+      transform = getComputedStyle(document.getElementById('translate')).transform;
       left = getComputedStyle(document.getElementById('left')).left;
       setTimeout(resume, 20);
     }
 
     function resume() {
-      logPassFail(transform, getComputedStyle(document.getElementById('translate')).webkitTransform, 'translate', 'when paused');
+      logPassFail(transform, getComputedStyle(document.getElementById('translate')).transform, 'translate', 'when paused');
       logPassFail(left, getComputedStyle(document.getElementById('left')).left, 'left', 'when paused');
       togglePaused();
       setTimeout(end, 100);
     }
 
     function end() {
-      logPassFail('none', getComputedStyle(document.getElementById('translate')).webkitTransform, 'translate', 'at end');
+      logPassFail('none', getComputedStyle(document.getElementById('translate')).transform, 'translate', 'at end');
       logPassFail('0px', getComputedStyle(document.getElementById('left')).left, 'left', 'at end');
       if (window.testRunner) {
         testRunner.notifyDone();
       }
     }
 
-    document.addEventListener('webkitAnimationStart', start, false);
+    document.addEventListener('animationstart', start, false);
   </script>
 </head>
 <body>
 <p>
-  This tests the operation of -webkit-animation-play-state. We test style
+  This tests the operation of animation-play-state. We test style
   while the animations are paused and once unpaused.
 </p>
 <div class="target" id="translate">transform</div>

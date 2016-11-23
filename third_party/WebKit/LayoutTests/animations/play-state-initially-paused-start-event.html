@@ -10,28 +10,28 @@
       margin-bottom: 10px;
     }
     .animated {
-      -webkit-animation: test 10ms linear forwards;
-      -webkit-animation-play-state: paused;
+      animation: test 10ms linear forwards;
+      animation-play-state: paused;
       animation: test 10ms linear forwards;
       animation-play-state: paused;
     }
     .running {
-      -webkit-animation-play-state: running;
+      animation-play-state: running;
       animation-play-state: running;
     }
     #animation1 {
-      -webkit-animation-delay: -10ms;
+      animation-delay: -10ms;
       animation-delay: -10ms;
     }
     #animation2 {
-      -webkit-animation-delay: 0ms;
+      animation-delay: 0ms;
       animation-delay: 0ms;
     }
     #animation3 {
-      -webkit-animation-delay: 10ms;
+      animation-delay: 10ms;
       animation-delay: 10ms;
     }
-    @-webkit-keyframes test {
+    @keyframes test {
         from { left: 100px; }
         to   { left: 300px; }
     }
@@ -82,7 +82,7 @@
     function start(target, expectImmediateStartEvent) {
       isRunning = false;
       var startEventHandler = onStartEventFired.bind(null, expectImmediateStartEvent);
-      target.addEventListener('webkitAnimationStart', startEventHandler);
+      target.addEventListener('animationstart', startEventHandler);
       target.addEventListener('animationstart', startEventHandler);
       target.classList.add('animated');
       if (!expectImmediateStartEvent) {

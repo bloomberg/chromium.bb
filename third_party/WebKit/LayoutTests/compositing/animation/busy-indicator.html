@@ -26,32 +26,32 @@
                width: 18px;
                height: 30px;
                opacity: 0;
-               -webkit-animation-duration: 2.4s;
+               animation-duration: 2.4s;
              }
              .progress-indicator.visible .progress-indicator0 {
                left: 0px;
-               -webkit-animation-delay: 0.4s;
+               animation-delay: 0.4s;
              }
              .progress-indicator.visible .progress-indicator1 {
                left: 19px;
-               -webkit-animation-delay: 0.8s;
+               animation-delay: 0.8s;
              }
              .progress-indicator.visible .progress-indicator2 {
                left: 38px;
-               -webkit-animation-delay: 1.2s;
+               animation-delay: 1.2s;
              }
              .progress-indicator.visible .progress-indicator3 {
                left: 57px;
-               -webkit-animation-delay: 1.6s;
+               animation-delay: 1.6s;
              }
              .progress-indicator.visible .progress-indicator4 {
                left: 76px;
-               -webkit-animation-delay: 2s;
+               animation-delay: 2s;
              }
              .progress-indicator.visible { display: block; }
-             .progress-indicator.visible > div { -webkit-animation-play-state: running; }
+             .progress-indicator.visible > div { animation-play-state: running; }
 
-             @-webkit-keyframes spinner {
+             @keyframes spinner {
                  0% {
                      transform: scale(0.7);
                      opacity: 1;
@@ -74,7 +74,7 @@
                  }
              }
              .progress-indicator.visible > div {
-                 -webkit-animation-name: spinner;
+                 animation-name: spinner;
              }
     </style>
     <script type="text/javascript" charset="utf-8">
@@ -90,7 +90,7 @@
           testRunner.waitUntilDone();
 
         document.getElementById('app-loading-progress').addEventListener(
-            'webkitAnimationEnd', testEnded, false);
+            'animationend', testEnded, false);
       }
 
       window.addEventListener('load', startTest, false);
