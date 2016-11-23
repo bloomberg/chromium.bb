@@ -59,18 +59,19 @@ class InstantService : public KeyedService,
   }
 #endif
 
+  // Invoked whenever an NTP is opened. Causes an async refresh of Most Visited
+  // items.
+  void OnNewTabPageOpened();
+
   // Most visited item API.
 
-  // Invoked by the InstantController when the Instant page wants to delete a
-  // Most Visited item.
+  // Invoked when the Instant page wants to delete a Most Visited item.
   void DeleteMostVisitedItem(const GURL& url);
 
-  // Invoked by the InstantController when the Instant page wants to undo the
-  // blacklist action.
+  // Invoked when the Instant page wants to undo the deletion.
   void UndoMostVisitedDeletion(const GURL& url);
 
-  // Invoked by the InstantController when the Instant page wants to undo all
-  // Most Visited deletions.
+  // Invoked when the Instant page wants to undo all Most Visited deletions.
   void UndoAllMostVisitedDeletions();
 
   // Invoked by the InstantController to update theme information for NTP.

@@ -169,6 +169,13 @@ void InstantService::RemoveObserver(InstantServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void InstantService::OnNewTabPageOpened() {
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
+  if (top_sites)
+    top_sites->SyncWithHistory();
+}
+
 void InstantService::DeleteMostVisitedItem(const GURL& url) {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);

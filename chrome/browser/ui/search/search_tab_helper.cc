@@ -204,6 +204,9 @@ void SearchTabHelper::OnTabActivated() {
   ipc_router_.OnTabActivated();
 
   if (search::IsInstantNTP(web_contents_)) {
+    if (instant_service_)
+      instant_service_->OnNewTabPageOpened();
+
     // Force creation of NTPUserDataLogger, if we loaded an NTP. The
     // NTPUserDataLogger tries to detect whether the NTP is being created at
     // startup or from the user opening a new tab, and if we wait until later,
