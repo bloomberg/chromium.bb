@@ -58,16 +58,13 @@ class ChromeExtensionFunctionDetails {
   // contents then defaults to the foremost one.
   content::WebContents* GetAssociatedWebContents();
 
-  // Gets the web contents where the function is originated. This will return
-  // the sender's web contents if it's not from a background page. Otherwise
-  // this method will try to find the web contents from source_tab_id if it's
-  // not TabStripModel::kNoTab, or find the app's web contents by the extension
-  // id. If the web contents still can't be found, NULL will be returned.
-  content::WebContents* GetOriginWebContents();
-
   // Find a UI surface to display any UI (like a permission prompt) for the
-  // extension calling this function. If the origin's window can't be found,
-  // the browser's window will be returned.
+  // extension calling this function. This will check, in order of preference,
+  // - The current window for the function (as defined by
+  //   WindowControllerList::CurrentWindowForFunction()),
+  // - The sender web contents
+  // - Open app windows
+  // - A browser with the same profile
   gfx::NativeWindow GetNativeWindowForUI();
 
   // Returns a pointer to the associated UIThreadExtensionFunction
