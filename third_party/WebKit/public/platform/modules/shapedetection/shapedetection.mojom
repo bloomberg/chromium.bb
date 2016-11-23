@@ -32,7 +32,7 @@ interface ShapeDetection {
   // row-major order.
   // TODO(mcasas): Consider using mojo::Bitmap here, https://crbug.com/665488.
   DetectFaces(handle<shared_buffer> frame_data, uint32 width, uint32 height,
-  FaceDetectorOptions options)
+              FaceDetectorOptions options)
     => (FaceDetectionResult result);
 
   DetectBarcodes(handle<shared_buffer> frame_data, uint32 width, uint32 height)

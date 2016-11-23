@@ -49,6 +49,14 @@ ShapeDetector::ShapeDetector(LocalFrame& frame) {
   frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
 }
 
+ShapeDetector::ShapeDetector(LocalFrame& frame,
+                             const FaceDetectorOptions& options)
+    : ShapeDetector(frame) {
+  m_options = mojom::blink::FaceDetectorOptions::New();
+  m_options->max_detected_faces = options.maxDetectedFaces();
+  m_options->fast_mode = options.fastMode();
+}
+
 ScriptPromise ShapeDetector::detectShapes(
     ScriptState* scriptState,
     DetectorType detectorType,

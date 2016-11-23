@@ -18,17 +18,13 @@ async_test(function(t) {
     .catch(error => {
       assert_unreached("Error creating MockShapeDetection: " + error);
     })
-    .then(detectorWithDefault => {
-      return detectorWithDefault.detect(img);
-    })
+    .then(detectorWithDefault => detectorWithDefault.detect(img))
     .then(t.step_func(faceDetectionResult => {
         assert_equals(theMock.getMaxDetectedFaces(), 10, "default maxDetectedFaces");
         assert_equals(theMock.getFastMode(), false, "default maxDetectedFaces");
         return new FaceDetector({maxDetectedFaces: 7, fastMode: true});
     }))
-    .then(detectorWithOptions => {
-      return detectorWithOptions.detect(img)
-    })
+    .then(detectorWithOptions => detectorWithOptions.detect(img))
     .then(t.step_func(faceDetectionResult => {
         assert_equals(theMock.getMaxDetectedFaces(), 7, "maxDetectedFaces");
         assert_equals(theMock.getFastMode(), true, "maxDetectedFaces");

@@ -28,7 +28,7 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit FaceDetector(LocalFrame&, const FaceDetectorOptions&);
+  FaceDetector(LocalFrame&, const FaceDetectorOptions&);
   ~FaceDetector() override = default;
 };
 

@@ -18,11 +18,7 @@ FaceDetector* FaceDetector::create(ScriptState* scriptState,
 
 FaceDetector::FaceDetector(LocalFrame& frame,
                            const FaceDetectorOptions& options)
-    : ShapeDetector(frame) {
-  m_options = mojom::blink::FaceDetectorOptions::New();
-  m_options->max_detected_faces = options.maxDetectedFaces();
-  m_options->fast_mode = options.fastMode();
-}
+    : ShapeDetector(frame, options) {}
 
 ScriptPromise FaceDetector::detect(ScriptState* scriptState,
                                    const CanvasImageSourceUnion& imageSource) {

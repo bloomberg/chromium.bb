@@ -26,6 +26,7 @@ class MODULES_EXPORT ShapeDetector
     // https://github.com/WICG/shape-detection-api/issues/6
   };
   explicit ShapeDetector(LocalFrame&);
+  ShapeDetector(LocalFrame&, const FaceDetectorOptions&);
   virtual ~ShapeDetector() = default;
 
   ScriptPromise detectShapes(ScriptState*,
