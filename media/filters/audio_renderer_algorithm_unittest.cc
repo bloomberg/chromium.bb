@@ -83,7 +83,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
   ~AudioRendererAlgorithmTest() override {}
 
   void Initialize() {
-    Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 3000, 300);
+    Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, kSamplesPerSecond,
+               kSamplesPerSecond / 10);
   }
 
   void Initialize(ChannelLayout channel_layout,

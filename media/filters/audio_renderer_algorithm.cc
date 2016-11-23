@@ -121,45 +121,13 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
   //              <---------->                     <---------->
   //                Candidate      ...               Candidate
   //                   1,          ...         |num_candidate_blocks_|
-  search_block_center_offset_ = num_candidate_blocks_ / 2 +
-      (ola_window_size_ / 2 - 1);
-
-  ola_window_.reset(new float[ola_window_size_]);
-  internal::GetSymmetricHanningWindow(ola_window_size_, ola_window_.get());
-
-  transition_window_.reset(new float[ola_window_size_ * 2]);
-  internal::GetSymmetricHanningWindow(2 * ola_window_size_,
-                                      transition_window_.get());
-
-  wsola_output_ = AudioBus::Create(channels_, ola_window_size_ + ola_hop_size_);
-  wsola_output_->Zero();  // Initialize for overlap-and-add of the first block.
-
-  // Auxiliary containers.
-  optimal_block_ = AudioBus::Create(channels_, ola_window_size_);
-  search_block_ = AudioBus::Create(
-      channels_, num_candidate_blocks_ + (ola_window_size_ - 1));
-  target_block_ = AudioBus::Create(channels_, ola_window_size_);
+  search_block_center_offset_ =
+      num_candidate_blocks_ / 2 + (ola_window_size_ / 2 - 1);
 
   // If no mask is provided, assume all channels are valid.
   if (channel_mask_.empty())
     channel_mask_ = std::vector<bool>(channels_, true);
   DCHECK_EQ(channel_mask_.size(), static_cast<size_t>(channels_));
-
-  // WSOLA is quite expensive to run, so if a channel mask exists, use it to
-  // reduce the size of our search space.
-  std::vector<float*> active_target_channels;
-  std::vector<float*> active_search_channels;
-  for (int ch = 0; ch < channels_; ++ch) {
-    if (channel_mask_[ch]) {
-      active_target_channels.push_back(target_block_->channel(ch));
-      active_search_channels.push_back(search_block_->channel(ch));
-    }
-  }
-
-  target_block_wrapper_ =
-      AudioBus::WrapVector(target_block_->frames(), active_target_channels);
-  search_block_wrapper_ =
-      AudioBus::WrapVector(search_block_->frames(), active_search_channels);
 }
 
 int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
@@ -214,6 +182,44 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     return frames_read;
   }
 
+  // Allocate structures on first non-1.0 playback rate; these can eat a fair
+  // chunk of memory. ~56kB for stereo 48kHz, up to ~765kB for 7.1 192kHz.
+  if (!ola_window_) {
+    ola_window_.reset(new float[ola_window_size_]);
+    internal::GetSymmetricHanningWindow(ola_window_size_, ola_window_.get());
+
+    transition_window_.reset(new float[ola_window_size_ * 2]);
+    internal::GetSymmetricHanningWindow(2 * ola_window_size_,
+                                        transition_window_.get());
+
+    // Initialize for overlap-and-add of the first block.
+    wsola_output_ =
+        AudioBus::Create(channels_, ola_window_size_ + ola_hop_size_);
+    wsola_output_->Zero();
+
+    // Auxiliary containers.
+    optimal_block_ = AudioBus::Create(channels_, ola_window_size_);
+    search_block_ = AudioBus::Create(
+        channels_, num_candidate_blocks_ + (ola_window_size_ - 1));
+    target_block_ = AudioBus::Create(channels_, ola_window_size_);
+
+    // WSOLA is quite expensive to run, so if a channel mask exists, use it to
+    // reduce the size of our search space.
+    std::vector<float*> active_target_channels;
+    std::vector<float*> active_search_channels;
+    for (int ch = 0; ch < channels_; ++ch) {
+      if (channel_mask_[ch]) {
+        active_target_channels.push_back(target_block_->channel(ch));
+        active_search_channels.push_back(search_block_->channel(ch));
+      }
+    }
+
+    target_block_wrapper_ =
+        AudioBus::WrapVector(target_block_->frames(), active_target_channels);
+    search_block_wrapper_ =
+        AudioBus::WrapVector(search_block_->frames(), active_search_channels);
+  }
+
   int rendered_frames = 0;
   do {
     rendered_frames +=
@@ -230,7 +236,8 @@ void AudioRendererAlgorithm::FlushBuffers() {
   output_time_ = 0.0;
   search_block_index_ = 0;
   target_block_index_ = 0;
-  wsola_output_->Zero();
+  if (wsola_output_)
+    wsola_output_->Zero();
   num_complete_frames_ = 0;
 
   // Reset |capacity_| so growth triggered by underflows doesn't penalize seek
