@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +21,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -170,6 +172,14 @@ void ArcKioskAppManager::RemoveObserver(ArcKioskAppManagerObserver* observer) {
 }
 
 void ArcKioskAppManager::UpdateApps() {
+  // Do not populate ARC kiosk apps if ARC apps can't be run on the device.
+  // Apps won't be added to kiosk Apps menu and won't be auto-launched.
+  if (!arc::ArcBridgeService::GetEnabled(
+          base::CommandLine::ForCurrentProcess())) {
+    VLOG(1) << "Device doesn't support ARC apps, don't populate ARC kiosk apps";
+    return;
+  }
+
   // Store current apps. We will compare old and new apps to determine which
   // apps are new, and which were deleted.
   ArcKioskApps old_apps(std::move(apps_));
