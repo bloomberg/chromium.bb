@@ -1577,7 +1577,7 @@ import_simple_dmabuf(struct gl_renderer *gr,
                      struct dmabuf_attributes *attributes)
 {
 	struct egl_image *image;
-	EGLint attribs[30];
+	EGLint attribs[40];
 	int atti = 0;
 
 	/* This requires the Mesa commit in
@@ -1594,7 +1594,6 @@ import_simple_dmabuf(struct gl_renderer *gr,
 	attribs[atti++] = attributes->height;
 	attribs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
 	attribs[atti++] = attributes->format;
-	/* XXX: Add modifier here when supported */
 
 	if (attributes->n_planes > 0) {
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_FD_EXT;
@@ -1603,6 +1602,12 @@ import_simple_dmabuf(struct gl_renderer *gr,
 		attribs[atti++] = attributes->offset[0];
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
 		attribs[atti++] = attributes->stride[0];
+		if (gr->has_dmabuf_import_modifiers) {
+			attribs[atti++] = EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT;
+			attribs[atti++] = attributes->modifier[0] & 0xFFFFFFFF;
+			attribs[atti++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT;
+			attribs[atti++] = attributes->modifier[0] >> 32;
+		}
 	}
 
 	if (attributes->n_planes > 1) {
@@ -1612,6 +1617,12 @@ import_simple_dmabuf(struct gl_renderer *gr,
 		attribs[atti++] = attributes->offset[1];
 		attribs[atti++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
 		attribs[atti++] = attributes->stride[1];
+		if (gr->has_dmabuf_import_modifiers) {
+			attribs[atti++] = EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT;
+			attribs[atti++] = attributes->modifier[1] & 0xFFFFFFFF;
+			attribs[atti++] = EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT;
+			attribs[atti++] = attributes->modifier[1] >> 32;
+		}
 	}
 
 	if (attributes->n_planes > 2) {
@@ -1621,6 +1632,12 @@ import_simple_dmabuf(struct gl_renderer *gr,
 		attribs[atti++] = attributes->offset[2];
 		attribs[atti++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
 		attribs[atti++] = attributes->stride[2];
+		if (gr->has_dmabuf_import_modifiers) {
+			attribs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT;
+			attribs[atti++] = attributes->modifier[2] & 0xFFFFFFFF;
+			attribs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT;
+			attribs[atti++] = attributes->modifier[2] >> 32;
+		}
 	}
 
 	attribs[atti++] = EGL_NONE;
@@ -1944,8 +1961,14 @@ gl_renderer_import_dmabuf(struct weston_compositor *ec,
 	assert(gr->has_dmabuf_import);
 
 	for (i = 0; i < dmabuf->attributes.n_planes; i++) {
-		/* EGL import does not have modifiers */
+		/* return if EGL doesn't support import modifiers */
 		if (dmabuf->attributes.modifier[i] != 0)
+			if (!gr->has_dmabuf_import_modifiers)
+				return false;
+
+		/* return if modifiers passed are unequal */
+		if (dmabuf->attributes.modifier[i] !=
+		    dmabuf->attributes.modifier[0])
 			return false;
 	}
 
