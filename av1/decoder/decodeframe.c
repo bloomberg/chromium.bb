@@ -3467,11 +3467,6 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 
   assert(tile_cols * tile_rows > 1);
 
-#if CONFIG_ANS
-  // TODO(any): This might just work now. Needs to be tested.
-  abort();  // FIXME: Tile parsing broken
-#endif      // CONFIG_ANS
-
   // TODO(jzern): See if we can remove the restriction of passing in max
   // threads to the decoder.
   if (pbi->num_tile_workers == 0) {
