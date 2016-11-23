@@ -488,9 +488,9 @@ def GetUncompressedSharedLibraryFromAPK(apkname, offset):
             break
   return soname, sosize
 
-def GetSharedLibraryInHost(soname, sosize, dirs):
+def GetSharedLibraryInHost(soname, dirs):
   """Find the shared library in given host directories by comparing
-     the name and size.
+     the name.
   Return:
      the shared libray in host if found.
   """
@@ -498,9 +498,8 @@ def GetSharedLibraryInHost(soname, sosize, dirs):
     host_so_file = os.path.join(dir, os.path.basename(soname))
     if not os.path.isfile(host_so_file):
       continue
-    if sosize == os.stat(host_so_file).st_size:
-      logging.debug("%s match to the one in APK" % host_so_file)
-      return host_so_file
+    logging.debug("%s match to the one in APK" % host_so_file)
+    return host_so_file
 
 def FindSharedLibraryFromAPKs(out_dir, offset):
   """Find the shared library at the specifc offset of APK.
@@ -521,15 +520,17 @@ def FindSharedLibraryFromAPKs(out_dir, offset):
     soname, sosize = GetUncompressedSharedLibraryFromAPK(apk, offset)
     if soname == "":
       continue
-    # These are possible directores for the shared libraries,
-    # Beside out_dir, others are possible secondary abi output dir
-    # for Monochrome.
-    dirs = [out_dir,
-           os.path.join(out_dir, "arm_v8_arm"),
-           os.path.join(out_dir, "mips_v8_mips"),
-           os.path.join(out_dir, "x86"),
+    # The relocation section of libraries in APK is packed, we can't
+    # detect library by its size, and have to rely on the order of lib
+    # directories; for a specific ARCH, the libraries are in either
+    # out_dir or out_dir/android_ARCH, and android_ARCH directory could
+    # exists or not, so having android_ARCH directory be in first, we
+    # will find the correct lib.
+    dirs = [
+           os.path.join(out_dir, "android_%s" % symbol.ARCH),
+           out_dir,
            ]
-    host_so_file = GetSharedLibraryInHost(soname, sosize, dirs)
+    host_so_file = GetSharedLibraryInHost(soname, dirs)
     if host_so_file:
       shared_libraries += [(soname, host_so_file)]
   # If there are more than one libraries found, it means detecting
