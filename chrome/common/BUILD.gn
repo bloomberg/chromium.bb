@@ -77,6 +77,8 @@ static_library("common") {
     "common_param_traits_macros.h",
     "component_flash_hint_file_linux.cc",
     "component_flash_hint_file_linux.h",
+    "conflicts/module_watcher_win.cc",
+    "conflicts/module_watcher_win.h",
     "content_restriction.h",
     "content_settings_pattern_serializer.cc",
     "content_settings_pattern_serializer.h",
@@ -667,6 +669,8 @@ source_set("app_mode_app_support") {
 
 mojom("mojo_bindings") {
   sources = [
+    "conflicts/module_database_win.mojom",
+    "conflicts/module_event_win.mojom",
     "network_diagnostics.mojom",
     "resource_usage_reporter.mojom",
     "shell_handler_win.mojom",

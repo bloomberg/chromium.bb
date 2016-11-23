@@ -3345,6 +3345,7 @@ test("unit_tests") {
     "../common/chrome_content_client_unittest.cc",
     "../common/chrome_paths_unittest.cc",
     "../common/component_flash_hint_file_linux_unittest.cc",
+    "../common/conflicts/module_watcher_win_unittest.cc",
     "../common/crash_keys_unittest.cc",
     "../common/ini_parser_unittest.cc",
     "../common/mac/cfbundle_blocker_unittest.mm",
@@ -4713,6 +4714,7 @@ test("unit_tests") {
     data_deps += [
       "//chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_1",
       "//chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_2",
+      ":conflicts_dll",
     ]
 
     libs = [
@@ -5110,5 +5112,14 @@ if (is_chromeos) {
       deps += [ "//components/font_service:manifest" ]
       packaged_services += [ "font_service" ]
     }
+  }
+}
+
+if (is_win) {
+  loadable_module("conflicts_dll") {
+    testonly = true
+    sources = [
+      "conflicts/conflicts_dll.cc",
+    ]
   }
 }

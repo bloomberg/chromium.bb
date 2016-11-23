@@ -1,0 +1,27 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojom;
+
+// The types of module events that can occur.
+enum ModuleEventType {
+  // A module was already loaded, but its presence is being observed.
+  MODULE_ALREADY_LOADED,
+  // A module is in the process of being loaded.
+  MODULE_LOADED,
+  // A module is in the process of being unloaded.
+  MODULE_UNLOADED,
+};
+
+// A notification about a module being loaded or unloaded.
+struct ModuleEvent {
+  // The type of event.
+  ModuleEventType event_type;
+  // The full path to the module being loaded or unloaded.
+  string module_path;
+  // The load address of the module.
+  uint64 load_address;
+  // The size of the module in memory, in bytes.
+  uint32 size;
+};
