@@ -121,6 +121,7 @@ CREATE TABLE `buildTable` (
   `buildbucket_id` varchar(80) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `buildbot_generation` (`buildbot_generation`,`builder_name`,`waterfall`,`build_number`),
+  UNIQUE KEY `buildbucket_id_index` (`buildbucket_id`),
   KEY `master_build_id` (`master_build_id`),
   KEY `build_config_index` (`build_config`),
   KEY `last_updated_index` (`last_updated`),
