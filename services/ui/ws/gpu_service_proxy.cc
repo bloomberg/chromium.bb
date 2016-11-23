@@ -90,7 +90,7 @@ void GpuServiceProxy::CreateGpuMemoryBuffer(
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
   }
-  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::AllocateGpuMemoryBuffer(
+  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
       id, size, format));
 }
 

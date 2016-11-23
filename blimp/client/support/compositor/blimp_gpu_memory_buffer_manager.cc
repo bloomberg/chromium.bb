@@ -120,7 +120,7 @@ BlimpGpuMemoryBufferManager::GetDefaultBufferToTextureTargetMap() {
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-BlimpGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+BlimpGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,

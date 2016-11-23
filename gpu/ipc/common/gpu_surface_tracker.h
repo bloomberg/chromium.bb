@@ -23,7 +23,7 @@ namespace gpu {
 // window surfaces exposed to the GPU process. Every surface gets registered to
 // this class, and gets a handle.  The handle can be passed to
 // CommandBufferProxyImpl::Create or to
-// GpuMemoryBufferManager::AllocateGpuMemoryBuffer.
+// GpuMemoryBufferManager::CreateGpuMemoryBuffer.
 // On Android, the handle is used in the GPU process to get a reference to the
 // ANativeWindow, using GpuSurfaceLookup (implemented by
 // SurfaceTextureManagerImpl).

@@ -33,18 +33,14 @@ ChildGpuMemoryBufferManager::~ChildGpuMemoryBufferManager() {
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+ChildGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle) {
   DCHECK_EQ(gpu::kNullSurfaceHandle, surface_handle);
-  TRACE_EVENT2("renderer",
-               "ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer",
-               "width",
-               size.width(),
-               "height",
-               size.height());
+  TRACE_EVENT2("renderer", "ChildGpuMemoryBufferManager::CreateGpuMemoryBuffer",
+               "width", size.width(), "height", size.height());
 
   gfx::GpuMemoryBufferHandle handle;
   IPC::Message* message = new ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer(

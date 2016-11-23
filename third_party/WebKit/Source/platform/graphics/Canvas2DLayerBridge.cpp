@@ -311,7 +311,7 @@ Canvas2DLayerBridge::createIOSurfaceBackedTexture() {
     return nullptr;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer =
-      gpuMemoryBufferManager->AllocateGpuMemoryBuffer(
+      gpuMemoryBufferManager->CreateGpuMemoryBuffer(
           gfx::Size(m_size), gfx::BufferFormat::RGBA_8888,
           gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle);
   if (!gpuMemoryBuffer)

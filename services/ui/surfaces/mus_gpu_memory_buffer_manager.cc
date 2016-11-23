@@ -23,7 +23,7 @@ MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
 MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {}
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MusGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+MusGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,

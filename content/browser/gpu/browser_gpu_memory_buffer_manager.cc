@@ -216,7 +216,7 @@ uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+BrowserGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -286,7 +286,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     return;
   }
 
-  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::AllocateGpuMemoryBuffer(
+  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
       id, size, format));
 }
 

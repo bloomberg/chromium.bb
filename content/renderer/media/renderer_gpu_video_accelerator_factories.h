@@ -71,7 +71,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   gpu::SyncToken CreateSyncToken() override;
   void WaitSyncToken(const gpu::SyncToken& sync_token) override;
 
-  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;

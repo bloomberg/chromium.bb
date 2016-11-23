@@ -19,7 +19,7 @@ class ChildGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   ~ChildGpuMemoryBufferManager() override;
 
   // Overridden from gpu::GpuMemoryBufferManager:
-  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

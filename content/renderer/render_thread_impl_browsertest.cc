@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_P(RenderThreadImplGpuMemoryBufferBrowserTest,
   gfx::Size buffer_size(4, 4);
 
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
-      memory_buffer_manager()->AllocateGpuMemoryBuffer(
+      memory_buffer_manager()->CreateGpuMemoryBuffer(
           buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
           gpu::kNullSurfaceHandle);
   ASSERT_TRUE(buffer);

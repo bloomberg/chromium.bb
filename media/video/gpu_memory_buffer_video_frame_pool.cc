@@ -753,7 +753,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     plane_resource.size = gfx::Size(width, height);
 
     const gfx::BufferFormat buffer_format = GpuMemoryBufferFormat(format, i);
-    plane_resource.gpu_memory_buffer = gpu_factories_->AllocateGpuMemoryBuffer(
+    plane_resource.gpu_memory_buffer = gpu_factories_->CreateGpuMemoryBuffer(
         plane_resource.size, buffer_format,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
 

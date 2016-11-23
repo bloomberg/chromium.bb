@@ -26,7 +26,7 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       gfx::BufferFormat format,
       const DestructionCallback& callback);
 
-  static gfx::GpuMemoryBufferHandle AllocateGpuMemoryBuffer(
+  static gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format);

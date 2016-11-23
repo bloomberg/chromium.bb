@@ -66,13 +66,13 @@ class StubGpuMemoryBufferManager : public cc::TestGpuMemoryBufferManager {
 
   void set_allocate_succeeds(bool value) { allocate_succeeds_ = value; }
 
-  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gpu::SurfaceHandle surface_handle) override {
     if (!surface_handle) {
-      return TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+      return TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
           size, format, usage, surface_handle);
     }
     if (allocate_succeeds_)

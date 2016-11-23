@@ -218,10 +218,9 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
   // must allocate a buffer with BufferUsage CPU_READ_WRITE_PERSISTENT.
   if (!staging_buffer->gpu_memory_buffer) {
     staging_buffer->gpu_memory_buffer =
-        resource_provider_->gpu_memory_buffer_manager()
-            ->AllocateGpuMemoryBuffer(
-                staging_buffer->size, BufferFormat(resource->format()),
-                StagingBufferUsage(), gpu::kNullSurfaceHandle);
+        resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
+            staging_buffer->size, BufferFormat(resource->format()),
+            StagingBufferUsage(), gpu::kNullSurfaceHandle);
   }
 
   gfx::Rect playback_rect = raster_full_rect;

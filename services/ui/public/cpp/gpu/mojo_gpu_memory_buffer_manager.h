@@ -46,7 +46,7 @@ class MojoGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
                               const gpu::SyncToken& sync_token);
 
   // Overridden from gpu::GpuMemoryBufferManager:
-  std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

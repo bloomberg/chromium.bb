@@ -869,7 +869,7 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
 
   DCHECK(gpu_memory_buffer_manager_);
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
-      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
           gfx::Size(base::checked_cast<int>(width),
                     base::checked_cast<int>(height)),
           gpu::DefaultBufferFormatForImageFormat(internalformat),

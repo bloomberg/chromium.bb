@@ -522,7 +522,7 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
     unsigned usage) {
   CheckLock();
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
-      channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
+      channel_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
           gfx::Size(width, height),
           gpu::DefaultBufferFormatForImageFormat(internal_format),
           gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle));

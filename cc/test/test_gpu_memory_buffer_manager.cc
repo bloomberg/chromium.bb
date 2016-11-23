@@ -153,7 +153,7 @@ void TestGpuMemoryBufferManager::OnGpuMemoryBufferDestroyed(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,

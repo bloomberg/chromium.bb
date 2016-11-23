@@ -1318,7 +1318,7 @@ gfx::GpuMemoryBuffer*
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
   if (!gpu_memory_buffer_) {
     gpu_memory_buffer_ =
-        resource_provider_->gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+        resource_provider_->gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
             size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
   }
   return gpu_memory_buffer_.get();
@@ -1876,7 +1876,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   gl->BindTexture(resource->target, resource->gl_id);
   if (resource->type == RESOURCE_TYPE_GPU_MEMORY_BUFFER) {
     resource->gpu_memory_buffer =
-        gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+        gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
             size, BufferFormat(format), resource->usage,
             gpu::kNullSurfaceHandle);
     if (resource->gpu_memory_buffer && enable_color_correct_rendering_) {

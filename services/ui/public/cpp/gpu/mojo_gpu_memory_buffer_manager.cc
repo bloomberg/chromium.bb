@@ -97,7 +97,7 @@ void MojoGpuMemoryBufferManager::DeletedGpuMemoryBuffer(
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MojoGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
+MojoGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,

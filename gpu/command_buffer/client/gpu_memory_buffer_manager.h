@@ -20,8 +20,8 @@ class GPU_EXPORT GpuMemoryBufferManager {
  public:
   GpuMemoryBufferManager();
 
-  // Allocates a GpuMemoryBuffer that can be shared with another process.
-  virtual std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  // Creates a GpuMemoryBuffer that can be shared with another process.
+  virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

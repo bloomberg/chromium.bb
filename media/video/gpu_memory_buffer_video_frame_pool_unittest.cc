@@ -264,10 +264,10 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame2) {
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
 }
 
-// AllocateGpuMemoryBuffer can return null (e.g: when the GPU process is down).
+// CreateGpuMemoryBuffer can return null (e.g: when the GPU process is down).
 // This test checks that in that case we don't crash and still create the
 // textures.
-TEST_F(GpuMemoryBufferVideoFramePoolTest, AllocateGpuMemoryBufferFail) {
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateGpuMemoryBufferFail) {
   scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
   scoped_refptr<VideoFrame> frame;
   mock_gpu_factories_->SetFailToAllocateGpuMemoryBufferForTesting(true);

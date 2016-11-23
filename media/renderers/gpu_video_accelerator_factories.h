@@ -97,7 +97,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
-  virtual std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;

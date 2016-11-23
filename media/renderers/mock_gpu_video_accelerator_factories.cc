@@ -91,7 +91,7 @@ bool MockGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
+MockGpuVideoAcceleratorFactories::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage /* usage */) {

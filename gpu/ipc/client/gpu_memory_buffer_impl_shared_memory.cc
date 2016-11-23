@@ -54,7 +54,7 @@ GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
 
 // static
 gfx::GpuMemoryBufferHandle
-GpuMemoryBufferImplSharedMemory::AllocateGpuMemoryBuffer(
+GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format) {
@@ -159,7 +159,7 @@ base::Closure GpuMemoryBufferImplSharedMemory::AllocateForTesting(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gfx::GpuMemoryBufferHandle* handle) {
-  *handle = AllocateGpuMemoryBuffer(handle->id, size, format);
+  *handle = CreateGpuMemoryBuffer(handle->id, size, format);
   return base::Bind(&base::DoNothing);
 }
 

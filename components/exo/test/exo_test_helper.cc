@@ -23,9 +23,9 @@ std::unique_ptr<gfx::GpuMemoryBuffer> ExoTestHelper::CreateGpuMemoryBuffer(
   return aura::Env::GetInstance()
       ->context_factory()
       ->GetGpuMemoryBufferManager()
-      ->AllocateGpuMemoryBuffer(size, gfx::BufferFormat::RGBA_8888,
-                                gfx::BufferUsage::GPU_READ,
-                                gpu::kNullSurfaceHandle);
+      ->CreateGpuMemoryBuffer(size, gfx::BufferFormat::RGBA_8888,
+                              gfx::BufferUsage::GPU_READ,
+                              gpu::kNullSurfaceHandle);
 }
 
 }  // namespace test
