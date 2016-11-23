@@ -55,7 +55,7 @@ static double od_rsqrt_table(int i) {
 static double od_custom_rsqrt_dynamic_table(const double* table,
  const int table_size, const double start, const int i) {
   if (i < table_size) return table[i];
-  else return od_rsqrt_table(start + 2*i + 1);
+  else return od_rsqrt_table((int)(start + 2*i + 1));
 }
 
 /*Fills tables used in od_custom_rsqrt_dynamic_table for a given start.*/
@@ -63,7 +63,7 @@ static void od_fill_dynamic_rqrt_table(double *table, const int table_size,
  const double start) {
   int i;
   for (i = 0; i < table_size; i++)
-    table[i] = od_rsqrt_table(start + 2*i + 1);
+    table[i] = od_rsqrt_table((int)(start + 2*i + 1));
 }
 
 /** Find the codepoint on the given PSphere closest to the desired
