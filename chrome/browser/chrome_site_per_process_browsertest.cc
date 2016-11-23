@@ -330,7 +330,8 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
   EmbeddedPDFInsideCrossOriginFrame
 #endif
 // This test verifies that when navigating an OOPIF to a page with <embed>-ed
-// PDF, the guest is properly created (https://crbug.com/649856).
+// PDF, the guest is properly created, and by removing the embedder frame, the
+// guest is properly destroyed (https://crbug.com/649856).
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
                        MAYBE_EmbeddedPDFInsideCrossOriginFrame) {
   // Navigate to a page with an <iframe>.
@@ -350,5 +351,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
   EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
 
   // Wait until the guest for PDF is created.
-  test_guest_view_manager()->WaitForSingleGuestCreated();
+  content::WebContents* guest_web_contents =
+      test_guest_view_manager()->WaitForSingleGuestCreated();
+
+  // Now detach the frame and observe that the guest is destroyed.
+  content::WebContentsDestroyedWatcher observer(guest_web_contents);
+  EXPECT_TRUE(ExecuteScript(
+      active_web_contents,
+      "document.body.removeChild(document.querySelector('iframe'));"));
+  observer.Wait();
+  EXPECT_EQ(0U, test_guest_view_manager()->GetNumGuestsActive());
 }
