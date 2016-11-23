@@ -153,6 +153,10 @@ class BrowsingDataRemover : public KeyedService
                        REMOVE_SITE_USAGE_DATA |
                        REMOVE_DURABLE_PERMISSION,
 
+    // Datatypes protected by Important Sites.
+    IMPORTANT_SITES_DATATYPES = REMOVE_SITE_DATA |
+                                REMOVE_CACHE,
+
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.
     FILTERABLE_DATATYPES = REMOVE_SITE_DATA |
@@ -173,6 +177,12 @@ class BrowsingDataRemover : public KeyedService
     // disk as soon as possible.
     REMOVE_WIPE_PROFILE = REMOVE_ALL | REMOVE_NOCHECKS,
   };
+
+  // Important sites protect a small set of sites from the deletion of certain
+  // datatypes. Therefore, those datatypes must be filterable by
+  // url/origin/domain.
+  static_assert(0 == (IMPORTANT_SITES_DATATYPES & ~FILTERABLE_DATATYPES),
+                "All important sites datatypes must be filterable.");
 
   // A helper enum to report the deletion of cookies and/or cache. Do not
   // reorder the entries, as this enum is passed to UMA.

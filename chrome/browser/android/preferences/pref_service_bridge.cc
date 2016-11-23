@@ -648,12 +648,12 @@ static void ClearBrowsingData(
         ignoring_domains, ignoring_domain_reasons);
   }
 
-  // Delete the filterable types with a filter, and the rest completely.
-  // TODO(msramek): This is only necessary until the filter is implemented in
-  // all data storage backends.
-  int filterable_mask = remove_mask & BrowsingDataRemover::FILTERABLE_DATATYPES;
-  int nonfilterable_mask =
-      remove_mask & ~BrowsingDataRemover::FILTERABLE_DATATYPES;
+  // Delete the types protected by Important Sites with a filter,
+  // and the rest completely.
+  int filterable_mask =
+      remove_mask & BrowsingDataRemover::IMPORTANT_SITES_DATATYPES;
+  int nonfilterable_mask = remove_mask &
+      ~BrowsingDataRemover::IMPORTANT_SITES_DATATYPES;
 
   // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
   // done with both removal tasks.
