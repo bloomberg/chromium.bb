@@ -40,7 +40,7 @@ class MostVisitedSitesBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_url,
       jboolean add_url);
-  void RecordTileTypeMetrics(
+  void RecordPageImpression(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jintArray>& jtile_types,

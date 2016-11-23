@@ -104,12 +104,15 @@ public class MostVisitedSites {
     }
 
     /**
-     * Records metrics about which types of tiles are displayed.
+     * Records metrics about an impression, including the sources (local, server, ...) and visual
+     * types of the tiles that are shown.
      * @param tileTypes An array of values from MostVisitedTileType indicating the type of each
      *                  tile that's currently showing.
+     * @param sources An array of values from NTPTileSource indicating the source of each tile
+     *                that's currently showing.
      */
-    public void recordTileTypeMetrics(int[] tileTypes, int[] sources) {
-        nativeRecordTileTypeMetrics(mNativeMostVisitedSitesBridge, tileTypes, sources);
+    public void recordPageImpression(int[] tileTypes, int[] sources) {
+        nativeRecordPageImpression(mNativeMostVisitedSitesBridge, tileTypes, sources);
     }
 
     /**
@@ -128,7 +131,7 @@ public class MostVisitedSites {
     private native void nativeAddOrRemoveBlacklistedUrl(
             long nativeMostVisitedSitesBridge, String url,
             boolean addUrl);
-    private native void nativeRecordTileTypeMetrics(long nativeMostVisitedSitesBridge,
+    private native void nativeRecordPageImpression(long nativeMostVisitedSitesBridge,
             int[] tileTypes, int[] sources);
     private native void nativeRecordOpenedMostVisitedItem(
             long nativeMostVisitedSitesBridge, int index, int tileType, int source);

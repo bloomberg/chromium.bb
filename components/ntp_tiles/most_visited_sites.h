@@ -178,18 +178,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The maximum number of most visited sites to return.
   int num_sites_;
 
-  // True if we are still waiting for an initial set of most visited sites (from
-  // either TopSites or the SuggestionsService).
-  bool waiting_for_most_visited_sites_;
-
-  // True if we are still waiting for the set of popular sites. Immediately set
-  // to false if popular sites are disabled, or are not required.
-  bool waiting_for_popular_sites_;
-
-  // True if we have recorded impression metrics. They are recorded once both
-  // the previous flags are false.
-  bool recorded_impressions_;
-
   std::unique_ptr<
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>
       suggestions_subscription_;

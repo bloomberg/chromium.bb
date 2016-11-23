@@ -199,7 +199,7 @@ void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(
   most_visited_.AddOrRemoveBlacklistedUrl(url, add_url);
 }
 
-void MostVisitedSitesBridge::RecordTileTypeMetrics(
+void MostVisitedSitesBridge::RecordPageImpression(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jintArray>& jtile_types,
@@ -218,6 +218,11 @@ void MostVisitedSitesBridge::RecordTileTypeMetrics(
     sources.push_back(static_cast<NTPTileSource>(source));
   }
 
+  int num_tiles = static_cast<int>(sources.size());
+  for (int i = 0; i < num_tiles; i++) {
+    ntp_tiles::metrics::RecordTileImpression(i, sources[i]);
+  }
+  ntp_tiles::metrics::RecordPageImpression(num_tiles);
   ntp_tiles::metrics::RecordImpressionTileTypes(tile_types, sources);
 }
 

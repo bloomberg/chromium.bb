@@ -639,7 +639,7 @@ public class NewTabPage
                 sources[i] = items[i].getSource();
             }
 
-            mMostVisitedSites.recordTileTypeMetrics(tileTypes, sources);
+            mMostVisitedSites.recordPageImpression(tileTypes, sources);
 
             if (isNtpOfflinePagesEnabled()) {
                 final int maxNumTiles = 12;
