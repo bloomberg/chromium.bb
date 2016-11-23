@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -37,6 +36,7 @@
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
+#include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video_capture_types.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -334,7 +334,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
       : report_callback_(report_callback),
         error_callback_(error_callback) {
     buffer_pool_ = new media::VideoCaptureBufferPoolImpl(
-        base::MakeUnique<VideoCaptureBufferTrackerFactoryImpl>(), 2);
+        base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(), 2);
   }
   ~StubClient() override {}
 

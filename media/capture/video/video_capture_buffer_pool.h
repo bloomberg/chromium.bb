@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_POOL_H_
-#define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_POOL_H_
+#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_POOL_H_
+#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_POOL_H_
 
 #include "base/memory/ref_counted.h"
 #include "media/capture/capture_export.h"
@@ -106,4 +106,4 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_POOL_H_
+#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_POOL_H_
