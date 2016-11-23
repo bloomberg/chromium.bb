@@ -61,6 +61,8 @@ class AURA_EXPORT PropertyConverter {
   }
 
   // Specializations for properties to pointer types supporting mojo conversion.
+  void RegisterProperty(const WindowProperty<gfx::ImageSkia*>* property,
+                        const char* transport_name);
   void RegisterProperty(const WindowProperty<gfx::Rect*>* property,
                         const char* transport_name);
   void RegisterProperty(const WindowProperty<std::string*>* property,
@@ -77,6 +79,8 @@ class AURA_EXPORT PropertyConverter {
 
   // Maps of aura::WindowProperty<T> to their mus property names.
   // This supports types that can be serialized for Mojo, eg. T=std::string*.
+  std::map<const WindowProperty<gfx::ImageSkia*>*, const char*>
+      image_properties_;
   std::map<const WindowProperty<gfx::Rect*>*, const char*> rect_properties_;
   std::map<const WindowProperty<std::string*>*, const char*> string_properties_;
   std::map<const WindowProperty<base::string16*>*, const char*>

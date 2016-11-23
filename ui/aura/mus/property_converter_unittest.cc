@@ -11,14 +11,17 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/skia_util.h"
 
 // See aura_constants.cc for bool, int32_t, int64_t, std::string, gfx::Rect,
-// and base::string16. It also declares the uint32_t type via SkColor.
+// base::string16, uint32_t (via SkColor), and gfx::ImageSkia.
 DECLARE_WINDOW_PROPERTY_TYPE(uint8_t)
 DECLARE_WINDOW_PROPERTY_TYPE(uint16_t)
 DECLARE_WINDOW_PROPERTY_TYPE(uint64_t)
@@ -39,6 +42,8 @@ DEFINE_WINDOW_PROPERTY_KEY(int16_t, kTestPropertyKey6, 0);
 DEFINE_WINDOW_PROPERTY_KEY(int32_t, kTestPropertyKey7, 0);
 DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey8, 0);
 
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kTestImagePropertyKey,
+                                 nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kTestStringPropertyKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
@@ -54,6 +59,7 @@ const char kTestPropertyServerKey6[] = "test-property-server6";
 const char kTestPropertyServerKey7[] = "test-property-server7";
 const char kTestPropertyServerKey8[] = "test-property-server8";
 
+const char kTestImagePropertyServerKey[] = "test-image-property-server";
 const char kTestRectPropertyServerKey[] = "test-rect-property-server";
 const char kTestStringPropertyServerKey[] = "test-string-property-server";
 const char kTestString16PropertyServerKey[] = "test-string16-property-server";
@@ -135,6 +141,46 @@ TEST_F(PropertyConverterTest, PrimitiveProperties) {
   const int64_t value_8a = INT64_MIN / 5, value_8b = INT64_MIN / 6;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey8,
                         kTestPropertyServerKey8, value_8a, value_8b);
+}
+
+// Verifies property setting behavior for a gfx::ImageSkia* property.
+TEST_F(PropertyConverterTest, ImageSkiaProperty) {
+  PropertyConverter property_converter;
+  property_converter.RegisterProperty(kTestImagePropertyKey,
+                                      kTestImagePropertyServerKey);
+  EXPECT_EQ(
+      kTestImagePropertyServerKey,
+      property_converter.GetTransportNameForPropertyKey(kTestImagePropertyKey));
+
+  SkBitmap bitmap_1;
+  bitmap_1.allocN32Pixels(16, 32);
+  bitmap_1.eraseARGB(255, 11, 22, 33);
+  gfx::ImageSkia value_1 = gfx::ImageSkia::CreateFrom1xBitmap(bitmap_1);
+  std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
+  window->SetProperty(kTestImagePropertyKey, new gfx::ImageSkia(value_1));
+  gfx::ImageSkia* image_out_1 = window->GetProperty(kTestImagePropertyKey);
+  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap_1, *image_out_1->bitmap()));
+
+  std::string transport_name_out;
+  std::unique_ptr<std::vector<uint8_t>> transport_value_out;
+  EXPECT_TRUE(property_converter.ConvertPropertyForTransport(
+      window.get(), kTestImagePropertyKey, &transport_name_out,
+      &transport_value_out));
+  EXPECT_EQ(kTestImagePropertyServerKey, transport_name_out);
+  EXPECT_EQ(mojo::ConvertTo<std::vector<uint8_t>>(bitmap_1),
+            *transport_value_out.get());
+
+  SkBitmap bitmap_2;
+  bitmap_2.allocN32Pixels(16, 16);
+  bitmap_2.eraseARGB(255, 33, 22, 11);
+  EXPECT_FALSE(gfx::BitmapsAreEqual(bitmap_1, bitmap_2));
+  gfx::ImageSkia value_2 = gfx::ImageSkia::CreateFrom1xBitmap(bitmap_2);
+  std::vector<uint8_t> transport_value =
+      mojo::ConvertTo<std::vector<uint8_t>>(bitmap_2);
+  property_converter.SetPropertyFromTransportValue(
+      window.get(), kTestImagePropertyServerKey, &transport_value);
+  gfx::ImageSkia* image_out_2 = window->GetProperty(kTestImagePropertyKey);
+  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap_2, *image_out_2->bitmap()));
 }
 
 // Verifies property setting behavior for a gfx::Rect* property.

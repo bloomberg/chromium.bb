@@ -194,16 +194,6 @@ base::string16 GetWindowTitle(const ui::Window* window) {
       ui::mojom::WindowManager::kWindowTitle_Property);
 }
 
-mojo::Array<uint8_t> GetWindowAppIcon(const ui::Window* window) {
-  if (window->HasSharedProperty(
-          ui::mojom::WindowManager::kWindowAppIcon_Property)) {
-    return mojo::Array<uint8_t>::From(
-        window->GetSharedProperty<std::vector<uint8_t>>(
-            ui::mojom::WindowManager::kWindowAppIcon_Property));
-  }
-  return mojo::Array<uint8_t>();
-}
-
 void SetAppID(ui::Window* window, const base::string16& app_id) {
   window->SetSharedProperty<base::string16>(
       ui::mojom::WindowManager::kAppID_Property, app_id);

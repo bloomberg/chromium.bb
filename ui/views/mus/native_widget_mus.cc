@@ -337,17 +337,6 @@ int ResizeBehaviorFromDelegate(WidgetDelegate* delegate) {
   return behavior;
 }
 
-// Returns the 1x window app icon or an empty SkBitmap if no icon is available.
-// TODO(jamescook): Support other scale factors.
-SkBitmap AppIconFromDelegate(WidgetDelegate* delegate) {
-  if (!delegate)
-    return SkBitmap();
-  gfx::ImageSkia app_icon = delegate->GetWindowAppIcon();
-  if (app_icon.isNull())
-    return SkBitmap();
-  return app_icon.GetRepresentation(1.f).sk_bitmap();
-}
-
 // Handles acknowledgment of an input event, either immediately when a nested
 // message loop starts, or upon destruction.
 class EventAckHandler : public base::MessageLoop::NestingObserver {
@@ -402,6 +391,18 @@ ui::mojom::ShowState GetShowState(const ui::Window* window) {
 
   return static_cast<ui::mojom::ShowState>(window->GetSharedProperty<int32_t>(
       ui::mojom::WindowManager::kShowState_Property));
+}
+
+// Set the app or window icon property for the window.
+void SetIconProperty(ui::Window* window,
+                     const char* const property,
+                     const gfx::ImageSkia& icon) {
+  // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+  SkBitmap bitmap = icon.GetRepresentation(1.f).sk_bitmap();
+  if (!bitmap.isNull())
+    window->SetSharedProperty<SkBitmap>(property, bitmap);
+  else if (window->HasSharedProperty(property))
+    window->ClearSharedProperty(property);
 }
 
 }  // namespace
@@ -692,10 +693,22 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
         mojo::ConvertTo<std::vector<uint8_t>>(
             ResizeBehaviorFromDelegate(init_params.delegate));
   }
-  SkBitmap app_icon = AppIconFromDelegate(init_params.delegate);
-  if (!app_icon.isNull()) {
-    (*properties)[ui::mojom::WindowManager::kWindowAppIcon_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(app_icon);
+
+  if (init_params.delegate) {
+    // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+    gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
+    SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).sk_bitmap();
+    if (!app_bitmap.isNull()) {
+      (*properties)[ui::mojom::WindowManager::kAppIcon_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(app_bitmap);
+    }
+    // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+    gfx::ImageSkia window_icon = init_params.delegate->GetWindowIcon();
+    SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).sk_bitmap();
+    if (!window_bitmap.isNull()) {
+      (*properties)[ui::mojom::WindowManager::kWindowIcon_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(window_bitmap);
+    }
   }
 }
 
@@ -939,18 +952,10 @@ void NativeWidgetMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
   if (is_parallel_widget_in_window_manager())
     return;
 
-  const char* const kWindowAppIcon_Property =
-      ui::mojom::WindowManager::kWindowAppIcon_Property;
-
-  if (!app_icon.isNull()) {
-    // Send the app icon 1x bitmap to the window manager.
-    // TODO(jamescook): Support other scale factors.
-    window_->SetSharedProperty<SkBitmap>(
-        kWindowAppIcon_Property, app_icon.GetRepresentation(1.f).sk_bitmap());
-  } else if (window_->HasSharedProperty(kWindowAppIcon_Property)) {
-    // Remove the existing icon.
-    window_->ClearSharedProperty(kWindowAppIcon_Property);
-  }
+  SetIconProperty(window_, ui::mojom::WindowManager::kWindowIcon_Property,
+                  window_icon);
+  SetIconProperty(window_, ui::mojom::WindowManager::kAppIcon_Property,
+                  app_icon);
 }
 
 void NativeWidgetMus::InitModalType(ui::ModalType modal_type) {

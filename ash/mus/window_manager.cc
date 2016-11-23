@@ -317,11 +317,12 @@ bool WindowManager::OnWmSetProperty(
     const std::string& name,
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed values.
-  return name == ui::mojom::WindowManager::kShowState_Property ||
+  return name == ui::mojom::WindowManager::kAppIcon_Property ||
+         name == ui::mojom::WindowManager::kShowState_Property ||
          name == ui::mojom::WindowManager::kPreferredSize_Property ||
          name == ui::mojom::WindowManager::kResizeBehavior_Property ||
          name == ui::mojom::WindowManager::kShelfItemType_Property ||
-         name == ui::mojom::WindowManager::kWindowAppIcon_Property ||
+         name == ui::mojom::WindowManager::kWindowIcon_Property ||
          name == ui::mojom::WindowManager::kWindowTitle_Property;
 }
 

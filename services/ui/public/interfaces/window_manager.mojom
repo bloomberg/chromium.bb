@@ -25,6 +25,8 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 interface WindowManager {
   // Whether the window is always on top. Type: bool.
   const string kAlwaysOnTop_Property = "prop:always_on_top";
+  // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
+  const string kAppIcon_Property = "prop:app-icon";
   // Disables the window manager from handling immersive fullscreen for the
   // window. This is typically done if the client wants to handle immersive
   // themselves. Type: bool.
@@ -67,8 +69,8 @@ interface WindowManager {
   const string kShowState_Property = "prop:show-state";
   // The window bounds as set by user input. Type: gfx::Rect.
   const string kUserSetBounds_Property = "prop:user-set-bounds";
-  // The window's app icon. Type: SkBitmap
-  const string kWindowAppIcon_Property = "prop:window-app-icon";
+  // The window icon; typically 16x16 for titlebars. Type: SkBitmap
+  const string kWindowIcon_Property = "prop:window-icon";
   // The window type. Type: mojom::WindowType
   const string kWindowType_Property = "prop:window-type";
   // The window's title. Type: mojom::String

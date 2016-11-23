@@ -54,6 +54,20 @@ bool PropertyConverter::ConvertPropertyForTransport(
   if (transport_name->empty())
     return false;
 
+  auto image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
+  if (image_properties_.count(image_key) > 0) {
+    const gfx::ImageSkia* value = window->GetProperty(image_key);
+    if (value) {
+      // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+      SkBitmap bitmap = value->GetRepresentation(1.f).sk_bitmap();
+      *transport_value = base::MakeUnique<std::vector<uint8_t>>(
+          mojo::ConvertTo<std::vector<uint8_t>>(bitmap));
+    } else {
+      *transport_value = base::MakeUnique<std::vector<uint8_t>>();
+    }
+    return true;
+  }
+
   auto rect_key = static_cast<const WindowProperty<gfx::Rect*>*>(key);
   if (rect_properties_.count(rect_key) > 0) {
     *transport_value = GetArray(window, rect_key);
@@ -84,6 +98,10 @@ bool PropertyConverter::ConvertPropertyForTransport(
 std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
   if (primitive_properties_.count(key) > 0)
     return primitive_properties_[key].second;
+
+  auto image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
+  if (image_properties_.count(image_key) > 0)
+    return image_properties_[image_key];
 
   auto rect_key = static_cast<const WindowProperty<gfx::Rect*>*>(key);
   if (rect_properties_.count(rect_key) > 0)
@@ -120,6 +138,17 @@ void PropertyConverter::SetPropertyFromTransportValue(
     }
   }
 
+  for (const auto& image_property : image_properties_) {
+    if (image_property.second == transport_name) {
+      // TODO(msw): Validate the data somehow, before trying to convert?
+      // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+      const SkBitmap bitmap = mojo::ConvertTo<SkBitmap>(*data);
+      const gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+      window->SetProperty(image_property.first, new gfx::ImageSkia(image));
+      return;
+    }
+  }
+
   for (const auto& rect_property : rect_properties_) {
     if (rect_property.second == transport_name) {
       if (data->size() != 16u) {
@@ -151,6 +180,12 @@ void PropertyConverter::SetPropertyFromTransportValue(
   }
 
   DVLOG(2) << "Unknown mus property name: " << transport_name;
+}
+
+void PropertyConverter::RegisterProperty(
+    const WindowProperty<gfx::ImageSkia*>* property,
+    const char* transport_name) {
+  image_properties_[property] = transport_name;
 }
 
 void PropertyConverter::RegisterProperty(
