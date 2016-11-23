@@ -330,12 +330,12 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_autofill_cc.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_blocked_popups.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_camera.png"/>
+    <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_chrome.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_desktop_notifications.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_geolocation.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_microphone.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_midi.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_multiple_downloads.png"/>
-    <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_previews.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_protected_media_identifier.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_restore.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_screen_share.png"/>

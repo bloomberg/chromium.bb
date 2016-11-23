@@ -37,7 +37,8 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MULTIPLE_DOWNLOADS,
                     R.drawable.infobar_multiple_downloads)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_NOTIFICATIONS,
                     R.drawable.infobar_desktop_notifications)
-DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PREVIEWS, R.drawable.infobar_previews)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PREVIEWS,
+                    R.drawable.infobar_chrome)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER,
                     R.drawable.infobar_protected_media_identifier)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SUBRESOURCE_FILTERING,
