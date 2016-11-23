@@ -64,7 +64,7 @@ public class PostMessageHandler {
      */
     public void reset(final WebContents webContents) {
         if (mOrigin == null) return;
-        webContents.addObserver(new WebContentsObserver() {
+        new WebContentsObserver(webContents) {
             private boolean mNavigatedOnce;
 
             @Override
@@ -119,7 +119,7 @@ public class PostMessageHandler {
                     }
                 });
             }
-        });
+        };
     }
 
     /**
