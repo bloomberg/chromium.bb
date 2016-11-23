@@ -13,6 +13,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_listener.h"
+#include "media/base/android/media_server_crash_listener.h"
 
 namespace media {
 
@@ -22,6 +23,8 @@ static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     {"MediaDrmBridge", MediaDrmBridge::RegisterMediaDrmBridge},
     {"MediaPlayerBridge", MediaPlayerBridge::RegisterMediaPlayerBridge},
     {"MediaPlayerListener", MediaPlayerListener::RegisterMediaPlayerListener},
+    {"MediaServerCrashListener",
+     MediaServerCrashListener::RegisterMediaServerCrashListener},
 };
 
 bool RegisterJni(JNIEnv* env) {
