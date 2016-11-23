@@ -224,11 +224,11 @@ TEST_F(CallStackProfileStructTraitsTest, Profile) {
                       Module(0x4100, "b", base::FilePath()),
                     },
                     {
-                      {
-                        Frame(0x4010, 0),
-                        Frame(0x4110, 1),
-                        Frame(0x4110, Frame::kUnknownModuleIndex),
-                      }
+                      Sample({
+                          Frame(0x4010, 0),
+                          Frame(0x4110, 1),
+                          Frame(0x4110, Frame::kUnknownModuleIndex),
+                      }),
                     },
                     base::TimeDelta::FromSeconds(1),
                     base::TimeDelta::FromSeconds(2)),
@@ -242,15 +242,15 @@ TEST_F(CallStackProfileStructTraitsTest, Profile) {
                       Module(0x4100, "b", base::FilePath()),
                     },
                     {
-                      {
-                        Frame(0x4010, 0),
-                        Frame(0x4110, 1),
-                        Frame(0x4110, Frame::kUnknownModuleIndex),
-                      },
-                      {
-                        Frame(0x4010, 0),
-                        Frame(0x4110, 2),
-                      },
+                      Sample({
+                          Frame(0x4010, 0),
+                          Frame(0x4110, 1),
+                          Frame(0x4110, Frame::kUnknownModuleIndex),
+                      }),
+                      Sample({
+                          Frame(0x4010, 0),
+                          Frame(0x4110, 2),
+                      }),
                     },
                     base::TimeDelta::FromSeconds(1),
                     base::TimeDelta::FromSeconds(2)),

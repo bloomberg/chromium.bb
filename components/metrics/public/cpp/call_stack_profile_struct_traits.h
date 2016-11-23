@@ -80,6 +80,31 @@ struct StructTraits<metrics::mojom::CallStackFrameDataView,
 };
 
 template <>
+struct StructTraits<metrics::mojom::CallStackSampleDataView,
+                    base::StackSamplingProfiler::Sample> {
+  static const std::vector<base::StackSamplingProfiler::Frame>& frames(
+      const base::StackSamplingProfiler::Sample& sample) {
+    return sample.frames;
+  }
+  static int32_t process_phases(
+      const base::StackSamplingProfiler::Sample& sample) {
+    return sample.process_phases;
+  }
+
+  static bool Read(metrics::mojom::CallStackSampleDataView data,
+                   base::StackSamplingProfiler::Sample* out) {
+    std::vector<base::StackSamplingProfiler::Frame> frames;
+    if (!data.ReadFrames(&frames))
+      return false;
+
+    *out = base::StackSamplingProfiler::Sample();
+    out->frames = std::move(frames);
+    out->process_phases = data.process_phases();
+    return true;
+  }
+};
+
+template <>
 struct StructTraits<metrics::mojom::CallStackProfileDataView,
                     base::StackSamplingProfiler::CallStackProfile> {
   static const std::vector<base::StackSamplingProfiler::Module>& modules(
@@ -103,7 +128,7 @@ struct StructTraits<metrics::mojom::CallStackProfileDataView,
       std::vector<base::StackSamplingProfiler::Sample> samples,
       size_t module_count) {
     for (const base::StackSamplingProfiler::Sample& sample : samples) {
-      for (const base::StackSamplingProfiler::Frame& frame : sample) {
+      for (const base::StackSamplingProfiler::Frame& frame : sample.frames) {
         if (frame.module_index >= module_count &&
             frame.module_index !=
                 base::StackSamplingProfiler::Frame::kUnknownModuleIndex)

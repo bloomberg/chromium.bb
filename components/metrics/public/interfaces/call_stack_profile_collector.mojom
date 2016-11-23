@@ -19,9 +19,14 @@ struct CallStackFrame {
   uint64 module_index;
 };
 
+struct CallStackSample {
+  array<CallStackFrame> frames;
+  uint32 process_phases;
+};
+
 struct CallStackProfile {
   array<CallStackModule> modules;
-  array<array<CallStackFrame>> samples;
+  array<CallStackSample> samples;
   mojo.common.mojom.TimeDelta profile_duration;
   mojo.common.mojom.TimeDelta sampling_period;
 };

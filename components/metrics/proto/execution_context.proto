@@ -47,3 +47,29 @@ enum Thread {
   RENDER_THREAD = 9;
   UTILITY_THREAD = 10;
 }
+
+// Process phases, or where in the lifetime of the process it is such as
+// startup, normal operation, shutdown, etc. These don't necessarily occur in
+// the order defined here so it's fine to add new ones to further segregrate
+// the lifetime of a process.
+enum ProcessPhase {
+  // The browser's main message loop has been started.
+  // Based on histogram Startup.BrowserMainRunnerImplInitializeStep2Time.
+  MAIN_LOOP_START = 0;
+
+  // The beginning of navigation in the first web contents' main frame.
+  // Based on histogram Startup.FirstWebContents.MainNavigationStart.
+  MAIN_NAVIGATION_START = 1;
+
+  // The navigation is committed (first bytes received) in the first web
+  // contents' main frame.
+  // Based on histogram Startup.FirstWebContents.MainNavigationFinished.
+  MAIN_NAVIGATION_FINISHED = 2;
+
+  // First non-empty paint of the first web contents.
+  // Based on histogram Startup.FirstWebContents.NonEmptyPaint2.
+  FIRST_NONEMPTY_PAINT = 3;
+
+  // Process shutdown has begun.
+  SHUTDOWN_START = 4;
+}

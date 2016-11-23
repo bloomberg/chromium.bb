@@ -12,6 +12,8 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
+import "execution_context.proto";
+
 // Next tag: 5
 message CallStackProfile {
   // Describes an entry in the callstack.
@@ -32,6 +34,12 @@ message CallStackProfile {
 
     // Number of times this stack signature occurs.
     optional int64 count = 2;
+
+    // This repeating field indicates the current phase of the system such as
+    // whether it is in startup, general operation, or shutdown. It is a full
+    // list with the first sample and after that each indicates only the new
+    // phases that are achieved.
+    repeated ProcessPhase process_phase = 3;
   }
 
   // Uniquely identifies a module.
