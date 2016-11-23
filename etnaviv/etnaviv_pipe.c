@@ -32,6 +32,11 @@
 
 int etna_pipe_wait(struct etna_pipe *pipe, uint32_t timestamp, uint32_t ms)
 {
+	return etna_pipe_wait_ns(pipe, timestamp, ms * 1000000);
+}
+
+int etna_pipe_wait_ns(struct etna_pipe *pipe, uint32_t timestamp, uint64_t ns)
+{
 	struct etna_device *dev = pipe->gpu->dev;
 	int ret;
 
@@ -40,10 +45,10 @@ int etna_pipe_wait(struct etna_pipe *pipe, uint32_t timestamp, uint32_t ms)
 		.fence = timestamp,
 	};
 
-	if (ms == 0)
+	if (ns == 0)
 		req.flags |= ETNA_WAIT_NONBLOCK;
 
-	get_abs_timeout(&req.timeout, ms * 1000000);
+	get_abs_timeout(&req.timeout, ns);
 
 	ret = drmCommandWrite(dev->fd, DRM_ETNAVIV_WAIT_FENCE, &req, sizeof(req));
 	if (ret) {
