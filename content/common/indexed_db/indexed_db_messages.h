@@ -39,14 +39,6 @@ typedef std::map<int32_t, std::vector<int32_t>> ObservationIndex;
 
 // Argument structures used in messages
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBCursorDirection,
-                          blink::WebIDBCursorDirectionLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBPutMode, blink::WebIDBPutModeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBTaskType, blink::WebIDBTaskTypeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBTransactionMode,
-                          blink::WebIDBTransactionModeLast)
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDataLoss, blink::WebIDBDataLossTotal)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBOperationType,
                           blink::WebIDBOperationTypeLast)
 

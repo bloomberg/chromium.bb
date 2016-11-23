@@ -139,6 +139,8 @@ source_set("common") {
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",
     "indexed_db/indexed_db_constants.h",
+    "indexed_db/indexed_db_enum_traits.cc",
+    "indexed_db/indexed_db_enum_traits.h",
     "indexed_db/indexed_db_key.cc",
     "indexed_db/indexed_db_key.h",
     "indexed_db/indexed_db_key_path.cc",

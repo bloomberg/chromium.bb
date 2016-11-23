@@ -11,11 +11,17 @@ module indexed_db.mojom;
 import "mojo/common/common_custom_types.mojom";
 import "url/mojo/origin.mojom";
 
-[Native]
-enum CursorDirection;
+enum CursorDirection {
+  Next,
+  NextNoDuplicate,
+  Prev,
+  PrevNoDuplicate,
+};
 
-[Native]
-enum DataLoss;
+enum DataLoss {
+  None,
+  Total,
+};
 
 [Native]
 struct Key;
@@ -26,14 +32,22 @@ struct KeyPath;
 [Native]
 struct KeyRange;
 
-[Native]
-enum PutMode;
+enum PutMode {
+  AddOrUpdate,
+  AddOnly,
+  CursorUpdate,
+};
 
-[Native]
-enum TaskType;
+enum TaskType {
+  Normal,
+  Preemptive,
+};
 
-[Native]
-enum TransactionMode;
+enum TransactionMode {
+  ReadOnly,
+  ReadWrite,
+  VersionChange,
+};
 
 struct IndexMetadata {
   int64 id;

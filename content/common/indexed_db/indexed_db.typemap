@@ -11,7 +11,7 @@ public_headers = [
   "//third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
 ]
 traits_headers = [
-  "//content/common/indexed_db/indexed_db_messages.h",
+  "//content/common/indexed_db/indexed_db_enum_traits.h",
   "//content/common/indexed_db/indexed_db_param_traits.h",
   "//content/common/indexed_db/indexed_db_struct_traits.h",
 ]
