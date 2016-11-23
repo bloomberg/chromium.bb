@@ -64,7 +64,7 @@ void OffTheRecordChromeBrowserStateIOData::Handle::DoomIncognitoCache() {
   scoped_refptr<net::URLRequestContextGetter> getter =
       main_request_context_getter_;
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
         DCHECK_CURRENTLY_ON(web::WebThread::IO);
         net::HttpCache* cache = getter->GetURLRequestContext()
                                     ->http_transaction_factory()

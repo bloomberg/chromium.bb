@@ -91,7 +91,7 @@ const char kScriptCommandPrefix[] = "webui";
         new web::WebStateObserverBridge(webState, self));
     base::WeakNSObject<CRWWebUIManager> weakSelf(self);
     _webState->AddScriptCommandCallback(
-        base::BindBlock(
+        base::BindBlockArc(
             ^bool(const base::DictionaryValue& message, const GURL&, bool) {
               return [weakSelf handleWebUIJSMessage:message];
             }),

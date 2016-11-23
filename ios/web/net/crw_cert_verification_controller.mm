@@ -129,10 +129,11 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
         cert->os_cert_handle(), net::X509Certificate::OSCertHandles());
   }
   DCHECK(cert->GetIntermediateCertificates().empty());
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-    _certPolicyCache->AllowCertForHost(
-        cert.get(), base::SysNSStringToUTF8(host), status);
-  }));
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+                             _certPolicyCache->AllowCertForHost(
+                                 cert.get(), base::SysNSStringToUTF8(host),
+                                 status);
+                           }));
 }
 
 #pragma mark - Private
@@ -165,22 +166,24 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                      completionHandler:(web::PolicyDecisionHandler)handler {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(handler);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-    // |loadPolicyForRejectedTrustResult:certStatus:serverTrust:host:| can
-    // only be called on IO thread.
-    net::CertStatus certStatus =
-        [self certStatusFromTrustResult:trustResult serverTrust:trust];
+  web::WebThread::PostTask(
+      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+        // |loadPolicyForRejectedTrustResult:certStatus:serverTrust:host:| can
+        // only be called on IO thread.
+        net::CertStatus certStatus =
+            [self certStatusFromTrustResult:trustResult serverTrust:trust];
 
-    web::CertAcceptPolicy policy =
-        [self loadPolicyForRejectedTrustResult:trustResult
-                                    certStatus:certStatus
-                                   serverTrust:trust.get()
-                                          host:host];
+        web::CertAcceptPolicy policy =
+            [self loadPolicyForRejectedTrustResult:trustResult
+                                        certStatus:certStatus
+                                       serverTrust:trust.get()
+                                              host:host];
 
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlock(^{
-      handler(policy, certStatus);
-    }));
-  }));
+        web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                                 base::BindBlockArc(^{
+                                   handler(policy, certStatus);
+                                 }));
+      }));
 }
 
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
@@ -189,15 +192,18 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   DCHECK(completionHandler);
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
-  base::WorkerPool::PostTask(FROM_HERE, base::BindBlock(^{
-    SecTrustResultType trustResult = kSecTrustResultInvalid;
-    if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
-      trustResult = kSecTrustResultInvalid;
-    }
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlock(^{
-      completionHandler(trustResult);
-    }));
-  }), false /* task_is_slow */);
+  base::WorkerPool::PostTask(
+      FROM_HERE, base::BindBlockArc(^{
+        SecTrustResultType trustResult = kSecTrustResultInvalid;
+        if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
+          trustResult = kSecTrustResultInvalid;
+        }
+        web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                                 base::BindBlockArc(^{
+                                   completionHandler(trustResult);
+                                 }));
+      }),
+      false /* task_is_slow */);
 }
 
 - (web::CertAcceptPolicy)
