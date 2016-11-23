@@ -85,7 +85,7 @@ class LayoutGrid final : public LayoutBlock {
 
   int paintIndexForGridItem(const LayoutBox* layoutBox) const {
     SECURITY_DCHECK(!m_gridIsDirty);
-    return m_gridItemsIndexesMap.get(layoutBox);
+    return m_grid.gridItemPaintOrder(*layoutBox);
   }
 
   size_t autoRepeatCountForDirection(GridTrackSizingDirection direction) const {
@@ -353,19 +353,42 @@ class LayoutGrid final : public LayoutBlock {
     size_t numRows() const { return m_grid.size(); }
 
     void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
-    void insert(LayoutBox&, const GridArea&);
+    void insert(LayoutBox&, const GridArea&, bool isOrthogonalChild);
+
+    bool hasInFlowGridItems() const { return !m_gridItemArea.isEmpty(); }
+    bool hasAnyOrthogonalChildren() const { return m_hasAnyOrthogonalChildren; }
+
+    GridArea gridItemArea(const LayoutBox& item) const;
+    void setGridItemArea(const LayoutBox& item, GridArea);
+
+    size_t gridItemPaintOrder(const LayoutBox& item) const;
+    void setGridItemPaintOrder(const LayoutBox& item, size_t order);
 
     const GridCell& cell(size_t row, size_t column) const {
       return m_grid[row][column];
     }
 
-    void shrinkToFit() { m_grid.shrinkToFit(); }
+    int smallestTrackStart(GridTrackSizingDirection) const;
+    void setSmallestTracksStart(int rowStart, int columnStart);
 
+    void shrinkToFit() { m_grid.shrinkToFit(); }
     void clear();
+
+#if ENABLE(ASSERT)
+    bool hasAnyGridItemPaintOrder() const;
+#endif
 
    private:
     friend class GridIterator;
+
+    int m_smallestColumnStart{0};
+    int m_smallestRowStart{0};
+
+    bool m_hasAnyOrthogonalChildren{false};
     GridAsMatrix m_grid;
+
+    HashMap<const LayoutBox*, GridArea> m_gridItemArea;
+    HashMap<const LayoutBox*, size_t> m_gridItemsIndexesMap;
   };
   Grid m_grid;
 
@@ -374,21 +397,14 @@ class LayoutGrid final : public LayoutBlock {
   Vector<LayoutUnit> m_columnPositions;
   LayoutUnit m_offsetBetweenColumns;
   LayoutUnit m_offsetBetweenRows;
-  HashMap<const LayoutBox*, GridArea> m_gridItemArea;
   OrderIterator m_orderIterator;
   Vector<LayoutBox*> m_gridItemsOverflowingGridArea;
-  HashMap<const LayoutBox*, size_t> m_gridItemsIndexesMap;
 
   LayoutUnit m_minContentHeight{-1};
   LayoutUnit m_maxContentHeight{-1};
 
-  int m_smallestRowStart;
-  int m_smallestColumnStart;
-
   size_t m_autoRepeatColumns{0};
   size_t m_autoRepeatRows{0};
-
-  bool m_hasAnyOrthogonalChildren;
 
   std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyColumns{nullptr};
   std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyRows{nullptr};
