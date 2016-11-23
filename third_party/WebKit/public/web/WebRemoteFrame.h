@@ -54,6 +54,9 @@ class WebRemoteFrame : public WebFrame {
   virtual void setReplicatedName(const WebString& name,
                                  const WebString& uniqueName) const = 0;
 
+  virtual void setReplicatedFeaturePolicyHeader(
+      const WebString& headerValue) const = 0;
+
   // Adds |header| to the set of replicated CSP headers.
   virtual void addReplicatedContentSecurityPolicyHeader(
       const WebString& headerValue,

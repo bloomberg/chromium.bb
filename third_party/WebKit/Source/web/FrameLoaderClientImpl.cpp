@@ -866,6 +866,12 @@ void FrameLoaderClientImpl::didChangeSandboxFlags(Frame* childFrame,
       WebFrame::fromFrame(childFrame), static_cast<WebSandboxFlags>(flags));
 }
 
+void FrameLoaderClientImpl::didSetFeaturePolicyHeader(
+    const String& headerValue) {
+  if (m_webFrame->client())
+    m_webFrame->client()->didSetFeaturePolicyHeader(headerValue);
+}
+
 void FrameLoaderClientImpl::didAddContentSecurityPolicy(
     const String& headerValue,
     ContentSecurityPolicyHeaderType type,

@@ -620,6 +620,23 @@ class SitePerProcessEmbedderCSPEnforcementBrowserTest
   }
 };
 
+// SitePerProcessFeaturePolicyBrowserTest
+
+class SitePerProcessFeaturePolicyBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessFeaturePolicyBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    // TODO(iclelland): Remove this switch when Feature Policy ships.
+    // https://crbug.com/623682
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "FeaturePolicy");
+  }
+};
+
 double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
   double device_scale_factor;
   const char kGetFrameDeviceScaleFactor[] =
@@ -8658,4 +8675,93 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // calls AssertNoURLRequests() in the shell's URLRequestContext destructor.
 }
 
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       TestFeaturePolicyReplicationOnSameOriginNavigation) {
+  GURL start_url(
+      embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
+  GURL first_nav_url(
+      embedded_test_server()->GetURL("a.com", "/feature-policy2.html"));
+  GURL second_nav_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ("{\"vibrate\":[\"self\"]}",
+            root->current_replication_state().feature_policy_header);
+
+  // When the main frame navigates to a page with a new policy, it should
+  // overwrite the old one.
+  EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
+  EXPECT_EQ("{\"vibrate\":[\"*\"]}",
+            root->current_replication_state().feature_policy_header);
+
+  // When the main frame navigates to a page without a policy, the replicated
+  // policy header should be cleared.
+  EXPECT_TRUE(NavigateToURL(shell(), second_nav_url));
+  EXPECT_EQ("", root->current_replication_state().feature_policy_header);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       TestFeaturePolicyReplicationOnCrossOriginNavigation) {
+  GURL start_url(
+      embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
+  GURL first_nav_url(
+      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+  GURL second_nav_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ("{\"vibrate\":[\"self\"]}",
+            root->current_replication_state().feature_policy_header);
+
+  // When the main frame navigates to a page with a new policy, it should
+  // overwrite the old one.
+  EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
+  EXPECT_EQ("{\"vibrate\":[\"*\"]}",
+            root->current_replication_state().feature_policy_header);
+
+  // When the main frame navigates to a page without a policy, the replicated
+  // policy header should be cleared.
+  EXPECT_TRUE(NavigateToURL(shell(), second_nav_url));
+  EXPECT_EQ("", root->current_replication_state().feature_policy_header);
+}
+
+// Test that the replicated feature policy header is correct in subframes as
+// they navigate.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       TestFeaturePolicyReplicationFromRemoteFrames) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/feature-policy-main.html"));
+  GURL first_nav_url(
+      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+  GURL second_nav_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ("{\"vibrate\":[\"self\", \"http://example.com/\"]}",
+            root->current_replication_state().feature_policy_header);
+  EXPECT_EQ(1UL, root->child_count());
+  EXPECT_EQ(
+      "{\"vibrate\":[\"self\"]}",
+      root->child_at(0)->current_replication_state().feature_policy_header);
+
+  // Navigate the iframe cross-site.
+  NavigateFrameToURL(root->child_at(0), first_nav_url);
+  EXPECT_EQ(
+      "{\"vibrate\":[\"*\"]}",
+      root->child_at(0)->current_replication_state().feature_policy_header);
+
+  // Navigate the iframe to another location, this one with no policy header
+  NavigateFrameToURL(root->child_at(0), second_nav_url);
+  EXPECT_EQ(
+      "", root->child_at(0)->current_replication_state().feature_policy_header);
+
+  // Navigate the iframe back to a page with a policy
+  NavigateFrameToURL(root->child_at(0), first_nav_url);
+  EXPECT_EQ(
+      "{\"vibrate\":[\"*\"]}",
+      root->child_at(0)->current_replication_state().feature_policy_header);
+}
 }  // namespace content

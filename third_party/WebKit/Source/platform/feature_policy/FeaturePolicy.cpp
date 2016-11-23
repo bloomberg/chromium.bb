@@ -29,14 +29,14 @@ const FeaturePolicy::Feature* featureForName(
 
 // Converts a list of JSON feature policy items into a mapping of features to
 // whitelists. For future compatibility, unrecognized features are simply
-// ignored, as are unparseable origins. Any errors in the input will cause an
-// error message appended to |messages|.
+// ignored, as are unparseable origins. If |messages| is not null, then any
+// errors in the input will cause an error message to be appended to it.
 HashMap<const FeaturePolicy::Feature*,
         std::unique_ptr<FeaturePolicy::Whitelist>>
 parseFeaturePolicyFromJson(std::unique_ptr<JSONArray> policyItems,
                            RefPtr<SecurityOrigin> origin,
                            FeaturePolicy::FeatureList& features,
-                           Vector<String>& messages) {
+                           Vector<String>* messages) {
   HashMap<const FeaturePolicy::Feature*,
           std::unique_ptr<FeaturePolicy::Whitelist>>
       whitelists;
@@ -44,7 +44,8 @@ parseFeaturePolicyFromJson(std::unique_ptr<JSONArray> policyItems,
   for (size_t i = 0; i < policyItems->size(); ++i) {
     JSONObject* item = JSONObject::cast(policyItems->at(i));
     if (!item) {
-      messages.append("Policy is not an object");
+      if (messages)
+        messages->append("Policy is not an object");
       continue;  // Array element is not an object; skip
     }
 
@@ -53,7 +54,8 @@ parseFeaturePolicyFromJson(std::unique_ptr<JSONArray> policyItems,
       String featureName = entry.first;
       JSONArray* targets = JSONArray::cast(entry.second);
       if (!targets) {
-        messages.append("Whitelist is not an array of strings.");
+        if (messages)
+          messages->append("Whitelist is not an array of strings.");
         continue;
       }
 
@@ -78,7 +80,8 @@ parseFeaturePolicyFromJson(std::unique_ptr<JSONArray> policyItems,
             }
           }
         } else {
-          messages.append("Whitelist is not an array of strings.");
+          if (messages)
+            messages->append("Whitelist is not an array of strings.");
         }
       }
       whitelists.set(feature, std::move(whitelist));
@@ -193,11 +196,12 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
 }
 
 void FeaturePolicy::setHeaderPolicy(const String& policy,
-                                    Vector<String>& messages) {
+                                    Vector<String>* messages) {
   DCHECK(m_headerWhitelists.isEmpty());
   std::unique_ptr<JSONArray> policyJSON = parseJSONHeader(policy);
   if (!policyJSON) {
-    messages.append("Unable to parse header");
+    if (messages)
+      messages->append("Unable to parse header");
     return;
   }
   m_headerWhitelists = parseFeaturePolicyFromJson(

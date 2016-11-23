@@ -255,6 +255,14 @@ void FrameTreeNode::SetFrameName(const std::string& name,
   replication_state_.unique_name = unique_name;
 }
 
+void FrameTreeNode::SetFeaturePolicyHeader(const std::string& header) {
+  replication_state_.feature_policy_header = header;
+}
+
+void FrameTreeNode::ResetFeaturePolicy() {
+  replication_state_.feature_policy_header.clear();
+}
+
 void FrameTreeNode::AddContentSecurityPolicy(
     const ContentSecurityPolicyHeader& header) {
   replication_state_.accumulated_csp_headers.push_back(header);

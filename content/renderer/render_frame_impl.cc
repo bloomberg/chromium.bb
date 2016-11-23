@@ -3109,6 +3109,12 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
       routing_id_, GetRoutingIdForFrameOrProxy(child_frame), flags));
 }
 
+void RenderFrameImpl::didSetFeaturePolicyHeader(
+    const blink::WebString& header_value) {
+  Send(new FrameHostMsg_DidSetFeaturePolicyHeader(routing_id_,
+                                                  header_value.utf8()));
+}
+
 void RenderFrameImpl::didAddContentSecurityPolicy(
     const blink::WebString& header_value,
     blink::WebContentSecurityPolicyType type,

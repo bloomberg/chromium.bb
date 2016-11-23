@@ -128,8 +128,9 @@ class PLATFORM_EXPORT FeaturePolicy final {
       RefPtr<SecurityOrigin>);
 
   // Sets the declared policy from the Feature-Policy HTTP header. If the header
-  // cannot be parsed, errors will be appended to the |messages| vector.
-  void setHeaderPolicy(const String&, Vector<String>& messages);
+  // cannot be parsed, errors will be appended to the |messages| vector, if not
+  // null.
+  void setHeaderPolicy(const String&, Vector<String>* messages);
 
   // Returns whether or not the given feature is enabled by this policy.
   bool isFeatureEnabledForOrigin(const Feature&, const SecurityOrigin&) const;

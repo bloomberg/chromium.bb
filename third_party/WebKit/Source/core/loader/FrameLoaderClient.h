@@ -275,6 +275,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
 
   virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) {}
 
+  virtual void didSetFeaturePolicyHeader(const String& headerValue) {}
+
   // Called when a new Content Security Policy is added to the frame's document.
   // This can be triggered by handling of HTTP headers, handling of <meta>
   // element, or by inheriting CSP from the parent (in case of about:blank).

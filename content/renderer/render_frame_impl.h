@@ -488,6 +488,7 @@ class CONTENT_EXPORT RenderFrameImpl
       bool is_potentially_trustworthy_unique_origin) override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
+  void didSetFeaturePolicyHeader(const blink::WebString& header_value) override;
   void didAddContentSecurityPolicy(
       const blink::WebString& header_value,
       blink::WebContentSecurityPolicyType type,

@@ -432,6 +432,19 @@ void WebRemoteFrameImpl::setReplicatedName(const WebString& name,
   frame()->tree().setPrecalculatedName(name, uniqueName);
 }
 
+void WebRemoteFrameImpl::setReplicatedFeaturePolicyHeader(
+    const WebString& headerValue) const {
+  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+    FeaturePolicy* parentFeaturePolicy = nullptr;
+    if (parent()) {
+      Frame* parentFrame = frame()->client()->parent();
+      parentFeaturePolicy = parentFrame->securityContext()->getFeaturePolicy();
+    }
+    frame()->securityContext()->setFeaturePolicyFromHeader(headerValue,
+                                                           parentFeaturePolicy);
+  }
+}
+
 void WebRemoteFrameImpl::addReplicatedContentSecurityPolicyHeader(
     const WebString& headerValue,
     WebContentSecurityPolicyType type,

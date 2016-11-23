@@ -223,6 +223,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->setReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
+  web_frame_->setReplicatedFeaturePolicyHeader(
+      blink::WebString::fromUTF8(state.feature_policy_header));
 
   web_frame_->resetReplicatedContentSecurityPolicy();
   for (const auto& header : state.accumulated_csp_headers)

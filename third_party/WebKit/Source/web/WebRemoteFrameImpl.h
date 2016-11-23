@@ -148,6 +148,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void setReplicatedSandboxFlags(WebSandboxFlags) const override;
   void setReplicatedName(const WebString& name,
                          const WebString& uniqueName) const override;
+  void setReplicatedFeaturePolicyHeader(const WebString&) const override;
   void addReplicatedContentSecurityPolicyHeader(
       const WebString& headerValue,
       WebContentSecurityPolicyType,

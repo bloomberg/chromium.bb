@@ -84,6 +84,10 @@ struct CONTENT_EXPORT FrameReplicationState {
   // scratch.
   std::string unique_name;
 
+  // Feature policy header. May be empty if no header was sent with the
+  // document.
+  std::string feature_policy_header;
+
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).
   std::vector<ContentSecurityPolicyHeader> accumulated_csp_headers;

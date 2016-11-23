@@ -19,7 +19,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       blink::SecurityOrigin::createFromString("https://example.com/");
   std::unique_ptr<blink::FeaturePolicy> policy =
       blink::FeaturePolicy::createFromParentPolicy(nullptr, origin);
-  policy->setHeaderPolicy(WTF::String(data, size), messages);
+  policy->setHeaderPolicy(WTF::String(data, size), &messages);
   return 0;
 }
 

@@ -149,6 +149,13 @@ class CONTENT_EXPORT FrameTreeNode {
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name, const std::string& unique_name);
 
+  // Set the frame's feature policy from an HTTP header, clearing any existing
+  // policy.
+  void SetFeaturePolicyHeader(const std::string& header);
+
+  // Clear any feature policy associated with the frame.
+  void ResetFeaturePolicy();
+
   // Add CSP header to replication state and notify proxies about the update.
   void AddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
 

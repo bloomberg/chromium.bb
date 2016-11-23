@@ -582,9 +582,11 @@ void NavigatorImpl::DidNavigate(
       params.insecure_request_policy);
 
   // Navigating to a new location means a new, fresh set of http headers and/or
-  // <meta> elements - we need to reset CSP policy to an empty set.
-  if (!is_navigation_within_page)
+  // <meta> elements - we need to reset CSP and Feature Policy.
+  if (!is_navigation_within_page) {
     render_frame_host->frame_tree_node()->ResetContentSecurityPolicy();
+    render_frame_host->frame_tree_node()->ResetFeaturePolicy();
+  }
 
   // When using --site-per-process, we notify the RFHM for all navigations,
   // not just main frame navigations.

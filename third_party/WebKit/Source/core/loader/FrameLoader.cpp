@@ -523,6 +523,7 @@ void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable) {
 
 void FrameLoader::didBeginDocument() {
   DCHECK(m_frame);
+  DCHECK(m_frame->client());
   DCHECK(m_frame->document());
   DCHECK(m_frame->document()->fetcher());
 
@@ -577,25 +578,25 @@ void FrameLoader::didBeginDocument() {
         m_frame->document(),
         m_documentLoader->response().httpHeaderField(HTTPNames::Origin_Trial));
     if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
-      std::unique_ptr<FeaturePolicy> featurePolicy(
-          FeaturePolicy::createFromParentPolicy(
-              (isLoadingMainFrame() ? nullptr
-                                    : m_frame->client()
-                                          ->parent()
-                                          ->securityContext()
-                                          ->getFeaturePolicy()),
-              m_frame->securityContext()->getSecurityOrigin()));
-      Vector<String> messages;
-      featurePolicy->setHeaderPolicy(
+      FeaturePolicy* parentFeaturePolicy =
+          (isLoadingMainFrame() ? nullptr
+                                : m_frame->client()
+                                      ->parent()
+                                      ->securityContext()
+                                      ->getFeaturePolicy());
+      const String& featurePolicyHeader =
           m_documentLoader->response().httpHeaderField(
-              HTTPNames::Feature_Policy),
-          messages);
+              HTTPNames::Feature_Policy);
+      Vector<String> messages;
+      m_frame->securityContext()->setFeaturePolicyFromHeader(
+          featurePolicyHeader, parentFeaturePolicy, &messages);
       for (auto& message : messages) {
         m_frame->document()->addConsoleMessage(ConsoleMessage::create(
             OtherMessageSource, ErrorMessageLevel,
             "Error with Feature-Policy header: " + message));
       }
-      m_frame->document()->setFeaturePolicy(std::move(featurePolicy));
+      if (!featurePolicyHeader.isEmpty())
+        client()->didSetFeaturePolicyHeader(featurePolicyHeader);
     }
   }
 

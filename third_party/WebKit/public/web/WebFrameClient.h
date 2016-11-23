@@ -229,6 +229,10 @@ class BLINK_EXPORT WebFrameClient {
   virtual void didChangeSandboxFlags(WebFrame* childFrame,
                                      WebSandboxFlags flags) {}
 
+  // Called when a Feature-Policy HTTP header is encountered while loading the
+  // frame's document.
+  virtual void didSetFeaturePolicyHeader(const WebString& headerValue) {}
+
   // Called when a new Content Security Policy is added to the frame's
   // document.  This can be triggered by handling of HTTP headers, handling
   // of <meta> element, or by inheriting CSP from the parent (in case of
