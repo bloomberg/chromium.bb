@@ -84,6 +84,10 @@ class DisplayCompositor : public cc::SurfaceObserver,
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                         bool* changed) override;
 
+  // SurfaceManager should be the first object constructed and the last object
+  // destroyed in order to ensure that all other objects that depend on it have
+  // access to a valid pointer for the entirety of their liftimes.
+  cc::SurfaceManager manager_;
   std::unordered_map<cc::FrameSinkId,
                      std::unique_ptr<GpuCompositorFrameSink>,
                      cc::FrameSinkIdHash>
@@ -92,7 +96,6 @@ class DisplayCompositor : public cc::SurfaceObserver,
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
   cc::mojom::DisplayCompositorClientPtr client_;
-  cc::SurfaceManager manager_;
 
   // SurfaceIds that have temporary references from top level root so they
   // aren't GC'd before DisplayCompositorClient can add a real reference. This
