@@ -6,17 +6,9 @@
     "Clang tip-of-tree builder for iOS."
   ],
   "xcode version": "8.0",
-  "GYP_DEFINES": [
-    "OS=ios",
-    "chromium_ios_signing=0",
-    "component=static_library",
-    "clang_use_chrome_plugins=0",
-    "target_subarch=arm32",
-    "werror="
-  ],
   "gn_args": [
-    "is_component_build=false",
     "ios_enable_code_signing=false",
+    "is_component_build=false",
     "llvm_force_head_revision=true",
     "target_cpu=\"arm\"",
     "target_os=\"ios\""
@@ -24,9 +16,7 @@
   "env": {
     "LLVM_FORCE_HEAD_REVISION": "YES"
   },
-  "mb_type": "gn",
   "compiler": "ninja",
-  "additional_compile_targets": ["gn_all"],
   "configuration": "Release",
   "sdk": "iphoneos10.0",
   "tests": [

@@ -7,19 +7,6 @@
     "Tests run on iPhone 5s (64-bit) and iPad Retina (32-bit)."
   ],
   "xcode version": "8.0",
-  "GYP_DEFINES": [
-    "OS=ios",
-    "chromium_ios_signing=0",
-    "component=static_library",
-    "enable_websockets=false",
-    "disable_brotli_filter=true",
-    "disable_file_support=true",
-    "disable_ftp_support=true",
-    "gomadir=$(goma_dir)",
-    "target_subarch=both",
-    "use_goma=1",
-    "use_platform_icu_alternatives=true"
-  ],
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "disable_brotli_filter=true",
@@ -33,7 +20,6 @@
     "target_os=\"ios\"",
     "use_platform_icu_alternatives=true"
   ],
-  "mb_type": "gn",
   "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",

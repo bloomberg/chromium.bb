@@ -9,25 +9,16 @@
     "Build is performed with gn+ninja."
   ],
   "xcode version": "8.0",
-  "GYP_DEFINES": [
-    "OS=ios",
-    "chromium_ios_signing=0",
-    "component=static_library",
-    "use_goma=1",
-    "gomadir=$(goma_dir)",
-    "target_subarch=both"
-  ],
   "gn_args": [
-    "is_debug=true",
-    "target_os=\"ios\"",
+    "additional_target_cpus=[\"x86\"]",
+    "goma_dir=\"$(goma_dir)\"",
     "ios_enable_code_signing=false",
     "is_component_build=false",
-    "use_goma=true",
-    "goma_dir=\"$(goma_dir)\"",
+    "is_debug=true",
     "target_cpu=\"x64\"",
-    "additional_target_cpus=[\"x86\"]"
+    "target_os=\"ios\"",
+    "use_goma=true"
   ],
-  "mb_type": "gn",
   "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",

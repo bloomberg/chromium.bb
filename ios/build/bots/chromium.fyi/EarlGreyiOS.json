@@ -7,22 +7,13 @@
     "Tests run on iPhone 5s (64-bit)."
   ],
   "xcode version": "8.0",
-  "GYP_DEFINES": [
-    "OS=ios",
-    "chromium_ios_signing=0",
-    "component=static_library",
-    "use_goma=1",
-    "gomadir=$(goma_dir)",
-    "target_subarch=arm64"
-  ],
   "gn_args": [
-    "is_component_build=false",
     "goma_dir=\"$(goma_dir)\"",
+    "is_component_build=false",
     "target_cpu=\"x64\"",
     "target_os=\"ios\"",
     "use_goma=true"
   ],
-  "mb_type": "gn",
   "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",
