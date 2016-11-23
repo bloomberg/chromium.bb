@@ -23,6 +23,9 @@ bool GetStabilityFileForProcess(const base::Process& process,
 // Returns a pattern that matches file names returned by GetFileForProcess.
 base::FilePath::StringType GetStabilityFilePattern();
 
+// Marks the stability file for deletion.
+void MarkStabilityFileForDeletion(const base::FilePath& user_data_dir);
+
 }  // namespace browser_watcher
 
 #endif  // COMPONENTS_BROWSER_WATCHER_STABILITY_DEBUGGING_WIN_H_

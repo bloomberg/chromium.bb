@@ -6,10 +6,14 @@
 
 #include <string>
 
+#include "base/feature_list.h"
+#include "base/files/file.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/path_service.h"
+#include "base/process/process.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/browser_watcher/features.h"
 
 namespace browser_watcher {
 
@@ -58,6 +62,27 @@ bool GetStabilityFileForProcess(const base::Process& process,
 base::FilePath::StringType GetStabilityFilePattern() {
   return base::FilePath::StringType(FILE_PATH_LITERAL("*-*")) +
          base::PersistentMemoryAllocator::kFileExtension;
+}
+
+void MarkStabilityFileForDeletion(const base::FilePath& user_data_dir) {
+  if (!base::FeatureList::IsEnabled(
+          browser_watcher::kStabilityDebuggingFeature)) {
+    return;
+  }
+
+  base::FilePath stability_file;
+  if (!GetStabilityFileForProcess(base::Process::Current(), user_data_dir,
+                                  &stability_file)) {
+    // TODO(manzagop): add a metric for this.
+    return;
+  }
+
+  // Open (with delete) and then immediately close the file by going out of
+  // scope. This should cause the stability debugging file to be deleted prior
+  // to the next execution.
+  base::File file(stability_file, base::File::FLAG_OPEN |
+                                      base::File::FLAG_READ |
+                                      base::File::FLAG_DELETE_ON_CLOSE);
 }
 
 }  // namespace browser_watcher

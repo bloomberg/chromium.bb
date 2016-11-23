@@ -68,6 +68,9 @@ class MetricsServiceClient {
   // Called by the metrics service when a log has been uploaded.
   virtual void OnLogUploadComplete() = 0;
 
+  // Called by the metrics service to record a clean shutdown.
+  virtual void OnLogCleanShutdown() {}
+
   // Gathers metrics that will be filled into the system profile protobuf,
   // calling |done_callback| when complete.
   virtual void InitializeSystemProfileMetrics(

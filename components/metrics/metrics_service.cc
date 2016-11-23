@@ -1208,7 +1208,7 @@ void MetricsService::LogCleanShutdown() {
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
-
+  client_->OnLogCleanShutdown();
   clean_exit_beacon_.WriteBeaconValue(true);
   RecordCurrentState(local_state_);
   local_state_->SetInteger(prefs::kStabilityExecutionPhase,

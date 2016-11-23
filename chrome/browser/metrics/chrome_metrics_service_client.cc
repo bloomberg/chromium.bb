@@ -106,6 +106,7 @@
 #include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "components/browser_watcher/stability_debugging_win.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 
@@ -393,6 +394,17 @@ void ChromeMetricsServiceClient::OnLogUploadComplete() {
 #if defined(OS_WIN)
   chrome::CollectTimeTicksStats();
 #endif
+}
+
+void ChromeMetricsServiceClient::OnLogCleanShutdown() {
+#if defined(OS_WIN)
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    // TODO(manzagop): add a metric.
+    return;
+  }
+  browser_watcher::MarkStabilityFileForDeletion(user_data_dir);
+#endif  // OS_WIN
 }
 
 void ChromeMetricsServiceClient::InitializeSystemProfileMetrics(
