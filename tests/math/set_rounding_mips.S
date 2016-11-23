@@ -4,8 +4,6 @@
  * found in the LICENSE file.
  */
 
-#define JUMP_MASK $t6
-
 /*
  * Rounding mode control field is bits [1:0] in FCSR.
  * This function takes the two-bit value and sets bits [1:0].
@@ -41,7 +39,6 @@ set_rounding_control_field:
 #endif
         nop /* Force return sequence to next bundle. */
 
-        and $ra, $ra, JUMP_MASK
         jr $ra
         nop
 
