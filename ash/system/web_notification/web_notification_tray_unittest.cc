@@ -54,6 +54,8 @@ WebNotificationTray* GetTray() {
       ->web_notification_tray();
 }
 
+#if defined(OS_CHROMEOS)
+
 WebNotificationTray* GetSecondaryTray() {
   StatusAreaWidget* status_area_widget =
       StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget();
@@ -61,6 +63,8 @@ WebNotificationTray* GetSecondaryTray() {
     return status_area_widget->web_notification_tray();
   return NULL;
 }
+
+#endif
 
 message_center::MessageCenter* GetMessageCenter() {
   return GetTray()->message_center();

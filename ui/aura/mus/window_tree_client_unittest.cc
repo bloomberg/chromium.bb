@@ -58,10 +58,6 @@ void SetWindowVisibility(Window* window, bool visible) {
     window->Hide();
 }
 
-Window* GetFirstRoot(WindowTreeClient* client) {
-  return client->GetRoots().empty() ? nullptr : *client->GetRoots().begin();
-}
-
 bool IsWindowHostVisible(Window* window) {
   return window->GetRootWindow()->GetHost()->compositor()->IsVisible();
 }
@@ -440,22 +436,6 @@ TEST_F(WindowTreeClientWmTest, SetVisibleFailedWithPendingChange) {
                                                   original_visible);
   EXPECT_EQ(original_visible, root_window()->TargetVisibility());
 }
-
-/*
-// Verifies |is_modal| is reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientWmTest, SetModalFailed) {
-  WindowTreeSetup setup;
-  Window* root = GetFirstRoot();
-  ASSERT_TRUE(root);
-  EXPECT_FALSE(root->is_modal());
-  root->SetModal();
-  uint32_t change_id;
-  ASSERT_TRUE(window_tree()->GetAndClearChangeId(&change_id));
-  EXPECT_TRUE(root->is_modal());
-  window_tree_client()->OnChangeCompleted(change_id, false);
-  EXPECT_FALSE(root->is_modal());
-}
-*/
 
 namespace {
 

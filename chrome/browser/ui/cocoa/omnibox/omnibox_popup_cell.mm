@@ -100,9 +100,6 @@ NSFont* LargeSuperscriptFont() {
   NSFontDescriptor* descriptor = [font fontDescriptor];
   return [NSFont fontWithDescriptor:descriptor size:size];
 }
-NSFont* SmallFont() {
-  return OmniboxViewMac::GetSmallFont();
-}
 
 // Sets the writing direction to |direction| for a given |range| of
 // |attributedString|.

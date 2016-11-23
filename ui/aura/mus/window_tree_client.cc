@@ -64,10 +64,6 @@ inline uint16_t HiWord(uint32_t id) {
   return static_cast<uint16_t>((id >> 16) & 0xFFFF);
 }
 
-inline uint16_t LoWord(uint32_t id) {
-  return static_cast<uint16_t>(id & 0xFFFF);
-}
-
 struct WindowPortPropertyDataMus : public WindowPortPropertyData {
   std::string transport_name;
   std::unique_ptr<std::vector<uint8_t>> transport_value;

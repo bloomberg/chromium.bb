@@ -537,11 +537,15 @@ int CountryCharsToCountryIDWithUpdate(char c1, char c2) {
   return CountryCharsToCountryID(c1, c2);
 }
 
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+
 int CountryStringToCountryID(const std::string& country) {
   return (country.length() == 2)
              ? CountryCharsToCountryIDWithUpdate(country[0], country[1])
              : kCountryIDUnknown;
 }
+
+#endif
 
 #if defined(OS_WIN)
 
@@ -1038,6 +1042,7 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
 }
 
 #if defined(OS_ANDROID)
+
 std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
     const std::string& locale,
     PrefService* prefs) {
@@ -1049,6 +1054,7 @@ std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
 
   return GetPrepopulationSetFromCountryID(country_id);
 }
+
 #endif
 
 std::vector<const PrepopulatedEngine*> GetAllPrepopulatedEngines() {

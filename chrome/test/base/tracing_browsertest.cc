@@ -29,9 +29,6 @@ using base::trace_event::MemoryDumpType;
 using tracing::BeginTracingWithTraceConfig;
 using tracing::EndTracing;
 
-const char g_category[] = "test_tracing";
-const char g_event[] = "TheEvent";
-
 class TracingBrowserTest : public InProcessBrowserTest {
  protected:
   // Execute some no-op javascript on the current tab - this triggers a trace
@@ -82,11 +79,6 @@ class TracingBrowserTest : public InProcessBrowserTest {
     EXPECT_NE(std::string::npos, json_events.find("blink_gc"));
   }
 };
-
-void AddEvents(int num) {
-  for (int i = 0; i < num; ++i)
-    TRACE_EVENT_INSTANT0(g_category, g_event, TRACE_EVENT_SCOPE_THREAD);
-}
 
 IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
   PerformDumpMemoryTestActions(base::trace_event::TraceConfig(

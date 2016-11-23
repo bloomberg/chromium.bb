@@ -81,19 +81,6 @@ const int kOmniboxLargeFontSizeDelta = 9;
 const int kOmniboxNormalFontSizeDelta = 1;
 const int kOmniboxSmallMaterialFontSizeDelta = -1;
 
-// TODO(shess): This is ugly, find a better way.  Using it right now
-// so that I can crib from gtk and still be able to see that I'm using
-// the same values easily.
-NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
-  DCHECK_LE(rr, 255);
-  DCHECK_LE(bb, 255);
-  DCHECK_LE(gg, 255);
-  return [NSColor colorWithCalibratedRed:static_cast<float>(rr)/255.0
-                                   green:static_cast<float>(gg)/255.0
-                                    blue:static_cast<float>(bb)/255.0
-                                   alpha:1.0];
-}
-
 NSColor* HostTextColor(bool in_dark_mode) {
   return in_dark_mode ? [NSColor whiteColor] : [NSColor blackColor];
 }

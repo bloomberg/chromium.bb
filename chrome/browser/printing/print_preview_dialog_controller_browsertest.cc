@@ -127,11 +127,6 @@ void PluginsLoadedCallback(
   quit_closure.Run();
 }
 
-void PluginEnabledCallback(const base::Closure& quit_closure, bool can_enable) {
-  EXPECT_TRUE(can_enable);
-  quit_closure.Run();
-}
-
 bool GetPdfPluginInfo(content::WebPluginInfo* info) {
   base::FilePath pdf_plugin_path = base::FilePath::FromUTF8Unsafe(
       ChromeContentClient::kPDFPluginPath);

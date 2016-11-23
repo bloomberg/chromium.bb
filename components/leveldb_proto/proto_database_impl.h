@@ -181,9 +181,9 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
   }
 }
 
-void LoadKeysFromTaskRunner(LevelDB* database,
-                            std::vector<std::string>* keys,
-                            bool* success) {
+inline void LoadKeysFromTaskRunner(LevelDB* database,
+                                   std::vector<std::string>* keys,
+                                   bool* success) {
   DCHECK(success);
   DCHECK(keys);
   keys->clear();

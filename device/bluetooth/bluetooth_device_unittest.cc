@@ -27,6 +27,8 @@
 
 namespace device {
 
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+
 namespace {
 
 int8_t ToInt8(BluetoothTest::TestRSSI rssi) {
@@ -38,6 +40,8 @@ int8_t ToInt8(BluetoothTest::TestTxPower tx_power) {
 }
 
 }  // namespace
+
+#endif
 
 using UUIDSet = BluetoothDevice::UUIDSet;
 using ServiceDataMap = BluetoothDevice::ServiceDataMap;
