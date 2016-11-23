@@ -43,6 +43,14 @@
 
 namespace settings {
 
+namespace {
+
+const char kProfileShortcutSettingHidden[] = "profileShortcutSettingHidden";
+const char kProfileShortcutFound[] = "profileShortcutFound";
+const char kProfileShortcutNotFound[] = "profileShortcutNotFound";
+
+}  // namespace
+
 ManageProfileHandler::ManageProfileHandler(Profile* profile)
     : profile_(profile), observer_(this), weak_factory_(this) {}
 
@@ -58,8 +66,8 @@ void ManageProfileHandler::RegisterMessages() {
       base::Bind(&ManageProfileHandler::HandleSetProfileIconAndName,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "requestHasProfileShortcuts",
-      base::Bind(&ManageProfileHandler::HandleRequestHasProfileShortcuts,
+      "requestProfileShortcutStatus",
+      base::Bind(&ManageProfileHandler::HandleRequestProfileShortcutStatus,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "addProfileShortcut",
@@ -172,7 +180,7 @@ void ManageProfileHandler::HandleSetProfileIconAndName(
   profiles::UpdateProfileName(profile_, new_profile_name);
 }
 
-void ManageProfileHandler::HandleRequestHasProfileShortcuts(
+void ManageProfileHandler::HandleRequestProfileShortcutStatus(
     const base::ListValue* args) {
   AllowJavascript();
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -182,15 +190,14 @@ void ManageProfileHandler::HandleRequestHasProfileShortcuts(
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
+  // Don't show the add/remove desktop shortcut button in the single user case.
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  ProfileAttributesEntry* entry;
-  if (!storage.GetProfileAttributesWithPath(profile_->GetPath(), &entry))
+  if (storage.GetNumberOfProfiles() <= 1u) {
+    ResolveJavascriptCallback(base::StringValue(callback_id),
+                              base::StringValue(kProfileShortcutSettingHidden));
     return;
-
-  // Don't show the add/remove desktop shortcut button in the single user case.
-  if (storage.GetNumberOfProfiles() <= 1u)
-    return;
+  }
 
   ProfileShortcutManager* shortcut_manager =
       g_browser_process->profile_manager()->profile_shortcut_manager();
@@ -204,8 +211,10 @@ void ManageProfileHandler::HandleRequestHasProfileShortcuts(
 void ManageProfileHandler::OnHasProfileShortcuts(
     const std::string& callback_id, bool has_shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ResolveJavascriptCallback(base::StringValue(callback_id),
-                            base::FundamentalValue(has_shortcuts));
+  ResolveJavascriptCallback(
+      base::StringValue(callback_id),
+      base::StringValue(has_shortcuts ? kProfileShortcutFound
+                                      : kProfileShortcutNotFound));
 }
 
 void ManageProfileHandler::HandleAddProfileShortcut(

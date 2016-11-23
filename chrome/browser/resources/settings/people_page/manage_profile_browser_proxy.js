@@ -6,6 +6,18 @@
  * @fileoverview A helper object used from the "Manage Profile" subpage of
  * the People section to interact with the browser. Chrome Browser only.
  */
+
+/**
+ * Contains the possible profile shortcut statuses. These strings must be kept
+ * in sync with the C++ Manage Profile handler.
+ * @enum {string}
+ */
+var ProfileShortcutStatus = {
+  PROFILE_SHORTCUT_SETTING_HIDDEN: 'profileShortcutSettingHidden',
+  PROFILE_SHORTCUT_NOT_FOUND: 'profileShortcutNotFound',
+  PROFILE_SHORTCUT_FOUND: 'profileShortcutFound',
+};
+
 cr.define('settings', function() {
   /** @interface */
   function ManageProfileBrowserProxy() {}
@@ -26,9 +38,9 @@ cr.define('settings', function() {
 
     /**
      * Returns whether the current profile has a shortcut.
-     * @return {!Promise<boolean>}
+     * @return {!Promise<ProfileShortcutStatus>}
      */
-    getHasProfileShortcut: function() {},
+    getProfileShortcutStatus: function() {},
 
     /**
      * Adds a shortcut for the current profile.
@@ -62,8 +74,8 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    getHasProfileShortcut: function() {
-      return cr.sendWithPromise('requestHasProfileShortcuts');
+    getProfileShortcutStatus: function() {
+      return cr.sendWithPromise('requestProfileShortcutStatus');
     },
 
     /** @override */

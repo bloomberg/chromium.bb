@@ -22,7 +22,7 @@
           disabled="[[isProfileNameDisabled_(syncStatus)]]">
       </paper-input>
     </div>
-    <template is="dom-if" if="[[isProfileShortcutsEnabled_]]">
+    <template is="dom-if" if="[[isProfileShortcutSettingVisible_]]">
       <div class="settings-box first">
         <div class="flex">$i18n{showShortcutLabel}</div>
         <paper-toggle-button id="hasShortcutToggle"

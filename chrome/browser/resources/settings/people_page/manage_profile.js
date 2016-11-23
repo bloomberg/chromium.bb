@@ -55,15 +55,8 @@ Polymer({
 
     /**
      * True if the profile shortcuts feature is enabled.
-     * @private
      */
-    isProfileShortcutsEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('profileShortcutsEnabled');
-      },
-      readOnly: true,
-    },
+    isProfileShortcutSettingVisible_: Boolean,
   },
 
   /** @override */
@@ -81,11 +74,17 @@ Polymer({
     if (settings.getCurrentRoute() == settings.Route.MANAGE_PROFILE) {
       this.$.name.value = this.profileName;
 
-      if (this.isProfileShortcutsEnabled_) {
-        var setHasProfileShortcut = function(hasProfileShortcut) {
-          this.hasProfileShortcut_ = hasProfileShortcut;
-        }.bind(this);
-        this.browserProxy_.getHasProfileShortcut().then(setHasProfileShortcut);
+      if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
+        this.browserProxy_.getProfileShortcutStatus().then(function(status) {
+          if (status == ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
+            this.isProfileShortcutSettingVisible_ = false;
+            return;
+          }
+
+          this.isProfileShortcutSettingVisible_ = true;
+          this.hasProfileShortcut_ =
+              status == ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
+        }.bind(this));
       }
     }
   },

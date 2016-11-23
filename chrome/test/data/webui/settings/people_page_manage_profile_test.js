@@ -12,14 +12,22 @@ cr.define('settings_people_page_manage_profile', function() {
     settings.TestBrowserProxy.call(this, [
       'getAvailableIcons',
       'setProfileIconAndName',
-      'getHasProfileShortcut',
+      'getProfileShortcutStatus',
       'addProfileShortcut',
       'removeProfileShortcut',
     ]);
+
+    /** @private {!ProfileShortcutStatus} */
+    this.profileShortcutStatus_ = ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
   };
 
   TestManageProfileBrowserProxy.prototype = {
     __proto__: settings.TestBrowserProxy.prototype,
+
+    /** @param {!ProfileShortcutStatus} status */
+    setProfileShortcutStatus: function(status) {
+      this.profileShortcutStatus_ = status;
+    },
 
     /** @override */
     getAvailableIcons: function() {
@@ -33,9 +41,10 @@ cr.define('settings_people_page_manage_profile', function() {
       this.methodCalled('setProfileIconAndName', [iconUrl, name]);
     },
 
-    getHasProfileShortcut: function() {
-      this.methodCalled('getHasProfileShortcut');
-      return Promise.resolve(true);
+    /** @override */
+    getProfileShortcutStatus: function() {
+      this.methodCalled('getProfileShortcutStatus');
+      return Promise.resolve([this.profileShortcutStatus_]);
     },
 
     /** @override */
@@ -176,8 +185,6 @@ cr.define('settings_people_page_manage_profile', function() {
         manageProfile.profileName = 'Initial Fake Name';
         manageProfile.syncStatus = {supervisedUser: false, childUser: false};
         document.body.appendChild(manageProfile);
-        settings.navigateTo(settings.Route.MANAGE_PROFILE);
-        Polymer.dom.flush();
       });
 
       teardown(function() { manageProfile.remove(); });
@@ -185,15 +192,20 @@ cr.define('settings_people_page_manage_profile', function() {
       // Tests profile shortcut toggle is visible and toggling it removes and
       // creates the profile shortcut respectively.
       test('ManageProfileShortcutToggle', function() {
-        var hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
-        assertTrue(!!hasShortcutToggle);
+        settings.navigateTo(settings.Route.MANAGE_PROFILE);
+        Polymer.dom.flush();
 
-        return browserProxy.whenCalled('getHasProfileShortcut')
+        assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
+
+        return browserProxy.whenCalled('getProfileShortcutStatus')
             .then(function() {
           Polymer.dom.flush();
 
+          var hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
+          assertTrue(!!hasShortcutToggle);
+
           // The profile shortcut toggle is checked.
-          assertTrue(hasShortcutToggle.active);
+          assertTrue(hasShortcutToggle.checked);
 
           // Simulate tapping the profile shortcut toggle.
           MockInteractions.tap(hasShortcutToggle);
@@ -202,12 +214,53 @@ cr.define('settings_people_page_manage_profile', function() {
             Polymer.dom.flush();
 
             // The profile shortcut toggle is checked.
-            assertFalse(hasShortcutToggle.active);
+            assertFalse(hasShortcutToggle.checked);
 
             // Simulate tapping the profile shortcut toggle.
             MockInteractions.tap(hasShortcutToggle);
             return browserProxy.whenCalled('addProfileShortcut');
           });
+        });
+      });
+
+      // Tests profile shortcut toggle is visible and toggled off when no
+      // profile shortcut is found.
+      test('ManageProfileShortcutToggle', function() {
+        browserProxy.setProfileShortcutStatus(
+            ProfileShortcutStatus.PROFILE_SHORTCUT_NOT_FOUND);
+
+        settings.navigateTo(settings.Route.MANAGE_PROFILE);
+        Polymer.dom.flush();
+
+        assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
+
+        return browserProxy.whenCalled('getProfileShortcutStatus')
+            .then(function() {
+          Polymer.dom.flush();
+
+          var hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
+          assertTrue(!!hasShortcutToggle);
+
+          assertFalse(hasShortcutToggle.checked);
+        });
+      });
+
+      // Tests the case when the profile shortcut setting is hidden. This can
+      // occur in the single profile case.
+      test('ManageProfileShortcutSettingHIdden', function() {
+        browserProxy.setProfileShortcutStatus(
+            ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN);
+
+        settings.navigateTo(settings.Route.MANAGE_PROFILE);
+        Polymer.dom.flush();
+
+        assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
+
+        return browserProxy.whenCalled('getProfileShortcutStatus')
+            .then(function() {
+          Polymer.dom.flush();
+
+          assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
         });
       });
     });
