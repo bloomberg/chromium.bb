@@ -41,7 +41,8 @@ void CheckBubbleAndReferenceView(views::BubbleDialogDelegateView* bubble,
   // It should be below the reference view, but not too far below.
   EXPECT_GE(bubble_bounds.y(), reference_bounds.y());
   // The arrow should be poking into the anchor.
-  EXPECT_LE(bubble_bounds.y(), reference_bounds.bottom());
+  const int kShadowWidth = 1;
+  EXPECT_LE(bubble_bounds.y(), reference_bounds.bottom() + kShadowWidth);
   // The bubble should intersect the reference view somewhere along the x-axis.
   EXPECT_FALSE(bubble_bounds.x() > reference_bounds.right());
   EXPECT_FALSE(reference_bounds.x() > bubble_bounds.right());
