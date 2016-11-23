@@ -168,6 +168,11 @@ class PtrStorageImpl<T,
                      strongOrWeak,
                      GarbageCollectedLifetime> {
  public:
+  using BlinkPtrType =
+      typename WebPrivatePtrPersistentStorageType<T,
+                                                  crossThreadDestruction,
+                                                  strongOrWeak>::Type;
+
   void assign(T* val) {
     if (!val) {
       release();
@@ -175,9 +180,7 @@ class PtrStorageImpl<T,
     }
 
     if (!m_handle)
-      m_handle = new (
-          typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction,
-                                                      strongOrWeak>::Type)();
+      m_handle = new BlinkPtrType;
 
     (*m_handle) = val;
   }
@@ -197,9 +200,7 @@ class PtrStorageImpl<T,
   }
 
  private:
-  typename WebPrivatePtrPersistentStorageType<T,
-                                              crossThreadDestruction,
-                                              strongOrWeak>::Type* m_handle;
+  BlinkPtrType* m_handle;
 };
 
 template <typename T,
@@ -316,13 +317,11 @@ class WebPrivatePtr {
 
  private:
 #if INSIDE_BLINK
-  PtrStorage<T, crossThreadDestruction, strongOrWeak>& storage() {
-    return PtrStorage<T, crossThreadDestruction, strongOrWeak>::fromSlot(
-        &m_storage);
-  }
-  const PtrStorage<T, crossThreadDestruction, strongOrWeak>& storage() const {
-    return PtrStorage<T, crossThreadDestruction, strongOrWeak>::fromSlot(
-        &m_storage);
+  using PtrStorageType = PtrStorage<T, crossThreadDestruction, strongOrWeak>;
+
+  PtrStorageType& storage() { return PtrStorageType::fromSlot(&m_storage); }
+  const PtrStorageType& storage() const {
+    return PtrStorageType::fromSlot(&m_storage);
   }
 #endif
 
@@ -331,11 +330,11 @@ class WebPrivatePtr {
   // INSIDE_BLINK is set, but we need to make sure that it is not
   // used outside there; the compiler-provided version won't handle reference
   // counting properly.
-  WebPrivatePtr& operator=(const WebPrivatePtr& other);
+  WebPrivatePtr& operator=(const WebPrivatePtr& other) = delete;
 #endif
   // Disable the copy constructor; classes that contain a WebPrivatePtr
   // should implement their copy constructor using assign().
-  WebPrivatePtr(const WebPrivatePtr&);
+  WebPrivatePtr(const WebPrivatePtr&) = delete;
 
   void* m_storage;
 };
