@@ -1577,7 +1577,7 @@ import_simple_dmabuf(struct gl_renderer *gr,
                      struct dmabuf_attributes *attributes)
 {
 	struct egl_image *image;
-	EGLint attribs[40];
+	EGLint attribs[50];
 	int atti = 0;
 
 	/* This requires the Mesa commit in
@@ -1637,6 +1637,21 @@ import_simple_dmabuf(struct gl_renderer *gr,
 			attribs[atti++] = attributes->modifier[2] & 0xFFFFFFFF;
 			attribs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT;
 			attribs[atti++] = attributes->modifier[2] >> 32;
+		}
+	}
+
+	if (gr->has_dmabuf_import_modifiers) {
+		if (attributes->n_planes > 3) {
+			attribs[atti++] = EGL_DMA_BUF_PLANE3_FD_EXT;
+			attribs[atti++] = attributes->fd[3];
+			attribs[atti++] = EGL_DMA_BUF_PLANE3_OFFSET_EXT;
+			attribs[atti++] = attributes->offset[3];
+			attribs[atti++] = EGL_DMA_BUF_PLANE3_PITCH_EXT;
+			attribs[atti++] = attributes->stride[3];
+			attribs[atti++] = EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT;
+			attribs[atti++] = attributes->modifier[3] & 0xFFFFFFFF;
+			attribs[atti++] = EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT;
+			attribs[atti++] = attributes->modifier[3] >> 32;
 		}
 	}
 
