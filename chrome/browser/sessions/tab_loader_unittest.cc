@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/memory_coordinator_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,8 +22,7 @@ class TabLoaderTest : public testing::Test {
  public:
   using RestoredTab = SessionRestoreDelegate::RestoredTab;
 
-  TabLoaderTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+  TabLoaderTest() = default;
 
   // testing::Test:
   void SetUp() override {
@@ -45,9 +44,8 @@ class TabLoaderTest : public testing::Test {
   std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
   std::vector<RestoredTab> restored_tabs_;
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile testing_profile_;
-  content::TestBrowserThread ui_thread_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:

@@ -405,8 +405,9 @@ class PrerenderTest : public testing::Test {
  private:
   // Needed to pass PrerenderManager's DCHECKs.
   base::MessageLoop message_loop_;
-  TestingProfile profile_;
   content::TestBrowserThread ui_thread_;
+
+  TestingProfile profile_;
   std::unique_ptr<UnitTestPrerenderManager> prerender_manager_;
   std::unique_ptr<PrerenderLinkManager> prerender_link_manager_;
   int last_prerender_id_;

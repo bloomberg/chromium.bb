@@ -56,11 +56,15 @@ class ProfileInfoCacheTest : public testing::Test {
   base::FilePath GetProfilePath(const std::string& base_name);
   void ResetCache();
 
+ private:
+  // TestBrowserThreadBundle needs to be up through the destruction of the
+  // TestingProfileManager below.
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
   TestingProfileManager testing_profile_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   ProfileNameVerifierObserver name_observer_;
   base::ScopedPathOverride user_data_dir_override_;
 };

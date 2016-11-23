@@ -88,10 +88,10 @@ class ProfileListDesktopTest : public testing::Test {
   int change_count() const { return mock_observer_->change_count(); }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager manager_;
   std::unique_ptr<MockObserver> mock_observer_;
   std::unique_ptr<AvatarMenu> avatar_menu_;
-  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopTest);
 };

@@ -296,8 +296,9 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
   // Infrastructure needed for using the TestWebContentsFactory. These are
   // initialized once by the fixture and reused across unittests.
   base::MessageLoop message_loop_;
-  TestingProfile testing_profile_;
   content::TestBrowserThread ui_thread_;
+  // |ui_thread_| needs to still be alive when |testing_profile_| is destroyed.
+  TestingProfile testing_profile_;
 
   // A new web contents factory is generated per test. This automatically cleans
   // up any tabs created by previous tests.

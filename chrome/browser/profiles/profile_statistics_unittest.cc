@@ -105,8 +105,8 @@ class ProfileStatisticsTest : public testing::Test {
   TestingProfileManager* manager() { return &manager_; }
 
  private:
-  TestingProfileManager manager_;
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfileManager manager_;
 };
 
 TEST_F(ProfileStatisticsTest, ProfileAttributesStorage) {

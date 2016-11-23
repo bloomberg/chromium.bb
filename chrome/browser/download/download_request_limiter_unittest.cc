@@ -161,6 +161,11 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     content_settings_->ShutdownOnUIThread();
     content_settings_ = nullptr;
     testing_delegate_.TearDown();
+
+    // |profile_| must be teared down before
+    // |RenderViewHostTestHarness::thread_bundle_|.
+    profile_.reset();
+
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

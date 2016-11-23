@@ -88,9 +88,9 @@ class ChromeSigninClientTest : public testing::Test {
   SigninClient* signin_client() { return signin_client_; }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<Profile> profile_;
   SigninClient* signin_client_;
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 void ChromeSigninClientTest::SetUp() {
