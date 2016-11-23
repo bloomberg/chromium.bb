@@ -122,6 +122,8 @@
 #include "content/public/browser/screen_orientation_provider.h"
 #include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
 #include "media/base/android/media_client_android.h"
+#include "ui/android/screen_android.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gl_surface.h"
 #endif
 
@@ -967,6 +969,11 @@ int BrowserMainLoop::CreateThreads() {
 }
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
+#if defined(OS_ANDROID)
+  // Let screen instance be overridable by parts.
+  ui::SetScreenAndroid();
+#endif
+
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");

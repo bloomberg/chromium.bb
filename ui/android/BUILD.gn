@@ -15,6 +15,8 @@ component("android") {
     "context_provider_factory.h",
     "delegated_frame_host_android.cc",
     "delegated_frame_host_android.h",
+    "display_android_manager.cc",
+    "display_android_manager.h",
     "edge_effect.cc",
     "edge_effect.h",
     "edge_effect_base.cc",
@@ -32,6 +34,7 @@ component("android") {
     "resources/resource_manager_impl.cc",
     "resources/resource_manager_impl.h",
     "resources/ui_resource_provider.h",
+    "screen_android.h",
     "ui_android_export.h",
     "ui_android_jni_registrar.cc",
     "ui_android_jni_registrar.h",
@@ -58,10 +61,24 @@ component("android") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "dummy_screen_android.cc",
+    "dummy_screen_android.h",
+  ]
+
+  deps = [
+    "//ui/android",
+    "//ui/display",
+  ]
+}
+
 generate_jni("ui_android_jni_headers") {
   sources = [
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
+    "java/src/org/chromium/ui/display/DisplayAndroidManager.java",
     "java/src/org/chromium/ui/resources/ResourceManager.java",
   ]
   jni_package = "ui_android"
