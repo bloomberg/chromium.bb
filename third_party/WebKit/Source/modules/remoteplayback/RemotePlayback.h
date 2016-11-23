@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -29,6 +30,7 @@ class ScriptState;
 class MODULES_EXPORT RemotePlayback final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable,
+      public ContextLifecycleObserver,
       NON_EXPORTED_BASE(public WebRemotePlaybackClient) {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
@@ -65,6 +67,8 @@ class MODULES_EXPORT RemotePlayback final
 
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;
+
+  void contextDestroyed() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
