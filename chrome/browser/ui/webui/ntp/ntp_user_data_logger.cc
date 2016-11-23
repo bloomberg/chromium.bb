@@ -179,7 +179,15 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
            << "number of tiles: " << number_of_tiles;
 
-  ntp_tiles::metrics::RecordPageImpression(number_of_tiles);
+  ntp_tiles::NTPTileSource source =
+      has_server_side_suggestions_
+          ? ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE
+          : ntp_tiles::NTPTileSource::TOP_SITES;
+  std::vector<std::pair<ntp_tiles::NTPTileSource,
+                        ntp_tiles::metrics::MostVisitedTileType>>
+      tiles(number_of_tiles,
+            std::make_pair(source, ntp_tiles::metrics::THUMBNAIL));
+  ntp_tiles::metrics::RecordPageImpression(tiles);
 
   LogLoadTimeHistogram("NewTabPage.LoadTime", load_time);
 
@@ -189,8 +197,8 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   LogLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time);
 
   // Split between Web and Local.
-  std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
-  LogLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time);
+  std::string variant = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
+  LogLoadTimeHistogram("NewTabPage.LoadTime." + variant, load_time);
 
   // Split between Startup and non-startup.
   std::string status = during_startup_ ? "Startup" : "NewTab";

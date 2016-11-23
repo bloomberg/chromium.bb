@@ -65,33 +65,38 @@ void RecordTileImpression(int index, NTPTileSource source) {
   LogHistogramEvent(histogram, static_cast<int>(index), kMaxNumTiles);
 }
 
-void RecordPageImpression(int number_of_tiles) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", number_of_tiles);
-}
+void RecordPageImpression(
+    const std::vector<std::pair<NTPTileSource, MostVisitedTileType>>& tiles) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", tiles.size());
 
-void RecordImpressionTileTypes(
-    const std::vector<MostVisitedTileType>& tile_types,
-    const std::vector<NTPTileSource>& sources) {
   int counts_per_type[NUM_RECORDED_TILE_TYPES] = {0};
-  for (size_t i = 0; i < tile_types.size(); ++i) {
-    MostVisitedTileType tile_type = tile_types[i];
-    DCHECK_LT(tile_type, NUM_RECORDED_TILE_TYPES);
+  bool have_tile_types = false;
+  for (const auto& tile : tiles) {
+    NTPTileSource source = tile.first;
+    MostVisitedTileType tile_type = tile.second;
+    if (tile_type >= NUM_RECORDED_TILE_TYPES) {
+      continue;
+    }
+
+    have_tile_types = true;
     ++counts_per_type[tile_type];
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type,
                               NUM_RECORDED_TILE_TYPES);
 
     std::string histogram = base::StringPrintf(
-        "NewTabPage.TileType.%s", GetSourceHistogramName(sources[i]).c_str());
+        "NewTabPage.TileType.%s", GetSourceHistogramName(source).c_str());
     LogHistogramEvent(histogram, tile_type, NUM_RECORDED_TILE_TYPES);
   }
 
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
-                              counts_per_type[ICON_REAL]);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
-                              counts_per_type[ICON_COLOR]);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
-                              counts_per_type[ICON_DEFAULT]);
+  if (have_tile_types) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
+                                counts_per_type[ICON_REAL]);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
+                                counts_per_type[ICON_COLOR]);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
+                                counts_per_type[ICON_DEFAULT]);
+  }
 }
 
 void RecordTileClick(int index,
