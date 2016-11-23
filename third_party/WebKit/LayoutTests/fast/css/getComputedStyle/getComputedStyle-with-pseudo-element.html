@@ -102,8 +102,8 @@
           height: 100px;
           opacity: 1.0;
           background-color: green;
-          -webkit-animation: move 300ms linear;
-          -webkit-transform-style: preserve-3d;
+          animation: move 300ms linear;
+          transform-style: preserve-3d;
           transform: trasnlate3d(10px, 0, 0);
       }
 
@@ -112,7 +112,7 @@
          opacity: 0.5;
      }
 
-      @-webkit-keyframes move {
+      @keyframes move {
           from { transform: translate3d(10px, 0, 0); }
           to   { transform: translate3d(300px, 0, 0); }
       }
@@ -191,7 +191,7 @@
             testRunner.waitUntilDone();
 
         // FIXME: It is currently necessary to run the animation at least once before querying for the style on the pseudo-element will work.
-        document.getElementById("testHardwareAcceleratedCompositing").addEventListener('webkitAnimationEnd', runTests, false);
+        document.getElementById("testHardwareAcceleratedCompositing").addEventListener('animationend', runTests, false);
       }
 
       function runTests()

@@ -14,10 +14,10 @@
     background-color: blue;    
 }
 #target.animated:after {
-    -webkit-animation: anim 1ms forwards;
+    animation: anim 1ms forwards;
     animation: anim 1ms forwards;
 }
-@-webkit-keyframes anim {
+@keyframes anim {
     from {
         left: 0px;
         display: block;
@@ -47,7 +47,7 @@ if (window.testRunner) {
 
 function go() {
     var target = document.getElementById('target');
-    target.addEventListener('webkitAnimationEnd', completeTest);
+    target.addEventListener('animationend', completeTest);
     target.classList.add('animated');
 }
 

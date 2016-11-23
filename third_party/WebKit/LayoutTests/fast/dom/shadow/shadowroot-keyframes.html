@@ -2,7 +2,7 @@
 <html>
 <head>
 <style>
-@-webkit-keyframes anim {
+@keyframes anim {
     from {
         background-color: red;
     }
@@ -26,16 +26,16 @@ function getBackgroundColor(element) {
 }
 
 var shadowRootWithKeyframe = document.getElementById("d1").createShadowRoot();
-shadowRootWithKeyframe.innerHTML = '<style>@-webkit-keyframes anim {' +
+shadowRootWithKeyframe.innerHTML = '<style>@keyframes anim {' +
     'from { background-color:red; } to { background-color: blue; } }' +
     '#box { height: 100px; width: 100px; background: red; ' +
-    '-webkit-animation: anim 0.5s both; }</style>' +
+    'animation: anim 0.5s both; }</style>' +
     '<div id="box"></div>';
 
 var shadowRootWithoutKeyframe = document.getElementById("d2").createShadowRoot();
 shadowRootWithoutKeyframe.innerHTML = '<style>' +
     '#box { height: 100px; width: 100px; background: red; ' +
-    '-webkit-animation: anim 0.5s both; }</style>' +
+    'animation: anim 0.5s both; }</style>' +
     '<div id="box"></div>';
 
 window.setTimeout(function() {

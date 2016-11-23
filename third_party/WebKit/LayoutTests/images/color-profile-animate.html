@@ -2,10 +2,10 @@
 <html>
 <style>
   .fade {
-    -webkit-animation: fader linear 0.5s
+    animation: fader linear 0.5s
   }
 
-  @-webkit-keyframes fader {
+  @keyframes fader {
      0% { opacity: 1.0 }
     50% { opacity: 0.0 }
   }
@@ -16,7 +16,7 @@
 
 <script>
 function fade(element) {
-  element.addEventListener('webkitAnimationEnd', end, false);
+  element.addEventListener('animationend', end, false);
   element.classList.toggle('fade');
 }
 
