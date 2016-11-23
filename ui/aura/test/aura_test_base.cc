@@ -170,6 +170,7 @@ Window* AuraTestBase::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   Window* window = new Window(nullptr);
   SetWindowType(window, window_type);
+  window->Init(ui::LAYER_NOT_DRAWN);
   return window;
 }
 
@@ -184,7 +185,10 @@ void AuraTestBase::OnWmNewDisplay(
   window_tree_host_mus_ = std::move(window_tree_host);
 }
 
-void AuraTestBase::OnWmDisplayRemoved(Window* window) {}
+void AuraTestBase::OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) {
+  if (window_tree_host_mus_.get() == window_tree_host)
+    window_tree_host_mus_.reset();
+}
 
 void AuraTestBase::OnWmDisplayModified(const display::Display& display) {}
 

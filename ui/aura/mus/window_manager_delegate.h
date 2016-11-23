@@ -113,8 +113,9 @@ class AURA_EXPORT WindowManagerDelegate {
       std::unique_ptr<WindowTreeHostMus> window_tree_host,
       const display::Display& display) = 0;
 
-  // Called when a display is removed. |window| is the root of the display.
-  virtual void OnWmDisplayRemoved(Window* window) = 0;
+  // Called when a display is removed. |window_tree_host| is the WindowTreeHost
+  // for the display.
+  virtual void OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) = 0;
 
   // Called when a display is modified.
   virtual void OnWmDisplayModified(const display::Display& display) = 0;

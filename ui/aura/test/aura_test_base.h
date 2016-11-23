@@ -106,7 +106,7 @@ class AuraTestBase : public testing::Test,
                                   bool janky) override;
   void OnWmNewDisplay(std::unique_ptr<WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override;
-  void OnWmDisplayRemoved(Window* window) override;
+  void OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) override;
   void OnWmDisplayModified(const display::Display& display) override;
   ui::mojom::EventResult OnAccelerator(uint32_t id,
                                        const ui::Event& event) override;

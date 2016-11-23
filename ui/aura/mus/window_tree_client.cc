@@ -1272,15 +1272,15 @@ void WindowTreeClient::WmNewDisplayAdded(const display::Display& display,
 
 void WindowTreeClient::WmDisplayRemoved(int64_t display_id) {
   DCHECK(window_manager_delegate_);
-  // TODO: route to WindowTreeHost.
-  /*
-  for (Window* root : roots_) {
-    if (root->display_id() == display_id) {
-      window_manager_delegate_->OnWmDisplayRemoved(root);
+  for (WindowMus* root : roots_) {
+    DCHECK(root->GetWindow()->GetHost());
+    WindowTreeHostMus* window_tree_host =
+        static_cast<WindowTreeHostMus*>(root->GetWindow()->GetHost());
+    if (window_tree_host->display_id() == display_id) {
+      window_manager_delegate_->OnWmDisplayRemoved(window_tree_host);
       return;
     }
   }
-  */
 }
 
 void WindowTreeClient::WmDisplayModified(const display::Display& display) {
