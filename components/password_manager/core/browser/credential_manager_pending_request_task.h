@@ -37,9 +37,6 @@ class CredentialManagerPendingRequestTaskDelegate {
   // Retrieves the current page origin.
   virtual GURL GetOrigin() const = 0;
 
-  // Retrieves a synthetic PasswordForm for the current page origin.
-  virtual PasswordStore::FormDigest GetSynthesizedFormForOrigin() const = 0;
-
   // Returns the PasswordManagerClient.
   virtual PasswordManagerClient* client() const = 0;
 
@@ -60,10 +57,8 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
       CredentialManagerPendingRequestTaskDelegate* delegate,
       const SendCredentialCallback& callback,
       bool request_zero_click_only,
-      const GURL& request_origin,
       bool include_passwords,
-      const std::vector<GURL>& request_federations,
-      const std::vector<std::string>& affiliated_realms);
+      const std::vector<GURL>& request_federations);
   ~CredentialManagerPendingRequestTask() override;
 
   SendCredentialCallback send_callback() const { return send_callback_; }
@@ -80,7 +75,6 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
   const GURL origin_;
   const bool include_passwords_;
   std::set<std::string> federations_;
-  std::set<std::string> affiliated_realms_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequestTask);
 };

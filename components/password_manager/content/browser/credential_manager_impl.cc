@@ -177,38 +177,13 @@ void CredentialManagerImpl::Get(bool zero_click_only,
     return;
   }
 
-  if (store->affiliated_match_helper()) {
-    store->affiliated_match_helper()->GetAffiliatedAndroidRealms(
-        GetSynthesizedFormForOrigin(),
-        base::Bind(&CredentialManagerImpl::ScheduleRequestTask,
-                   weak_factory_.GetWeakPtr(), callback, zero_click_only,
-                   include_passwords, federations));
-  } else {
-    std::vector<std::string> no_affiliated_realms;
-    ScheduleRequestTask(callback, zero_click_only, include_passwords,
-                        federations, no_affiliated_realms);
-  }
-}
-
-void CredentialManagerImpl::ScheduleRequestTask(
-    const GetCallback& callback,
-    bool zero_click_only,
-    bool include_passwords,
-    const std::vector<GURL>& federations,
-    const std::vector<std::string>& android_realms) {
-  DCHECK(GetPasswordStore());
   pending_request_.reset(new CredentialManagerPendingRequestTask(
       this, base::Bind(&RunMojoGetCallback, callback), zero_click_only,
-      web_contents()->GetLastCommittedURL().GetOrigin(), include_passwords,
-      federations, android_realms));
-
+      include_passwords, federations));
   // This will result in a callback to
   // PendingRequestTask::OnGetPasswordStoreResults().
-  GetPasswordStore()->GetAutofillableLogins(pending_request_.get());
-}
-
-PasswordStore* CredentialManagerImpl::GetPasswordStore() {
-  return client_ ? client_->GetPasswordStore() : nullptr;
+  GetPasswordStore()->GetLogins(GetSynthesizedFormForOrigin(),
+                                pending_request_.get());
 }
 
 bool CredentialManagerImpl::IsZeroClickAllowed() const {
@@ -278,6 +253,15 @@ PasswordManagerClient* CredentialManagerImpl::client() const {
   return client_;
 }
 
+PasswordStore* CredentialManagerImpl::GetPasswordStore() {
+  return client_ ? client_->GetPasswordStore() : nullptr;
+}
+
+void CredentialManagerImpl::DoneRequiringUserMediation() {
+  DCHECK(pending_require_user_mediation_);
+  pending_require_user_mediation_.reset();
+}
+
 PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
     const {
   PasswordStore::FormDigest digest = {
@@ -285,11 +269,6 @@ PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
       web_contents()->GetLastCommittedURL().GetOrigin()};
   digest.signon_realm = digest.origin.spec();
   return digest;
-}
-
-void CredentialManagerImpl::DoneRequiringUserMediation() {
-  DCHECK(pending_require_user_mediation_);
-  pending_require_user_mediation_.reset();
 }
 
 }  // namespace password_manager

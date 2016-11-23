@@ -64,8 +64,6 @@ class CredentialManager
       const password_manager::SendCredentialCallback& send_callback,
       const autofill::PasswordForm* form) override;
   password_manager::PasswordManagerClient* client() const override;
-  password_manager::PasswordStore::FormDigest GetSynthesizedFormForOrigin()
-      const override;
 
   // password_manager::CredentialManagerPendingRequireUserMediationTaskDelegate:
   password_manager::PasswordStore* GetPasswordStore() override;

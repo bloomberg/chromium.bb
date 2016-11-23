@@ -67,7 +67,6 @@ class CredentialManagerImpl
   void SendPasswordForm(const SendCredentialCallback& send_callback,
                         const autofill::PasswordForm* form) override;
   PasswordManagerClient* client() const override;
-  PasswordStore::FormDigest GetSynthesizedFormForOrigin() const override;
 
   // CredentialManagerPendingSignedOutTaskDelegate:
   PasswordStore* GetPasswordStore() override;
@@ -76,19 +75,13 @@ class CredentialManagerImpl
   // CredentialManagerPasswordFormManagerDelegate:
   void OnProvisionalSaveComplete() override;
 
+  // Returns FormDigest for the current URL.
+  PasswordStore::FormDigest GetSynthesizedFormForOrigin() const;
+
  private:
   // Returns the driver for the current main frame.
   // Virtual for testing.
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();
-
-  // Schedules a CredentiaManagerPendingRequestTask (during
-  // |OnRequestCredential()|) after the PasswordStore's AffiliationMatchHelper
-  // grabs a list of realms related to the current web origin.
-  void ScheduleRequestTask(const GetCallback& callback,
-                           bool zero_click_only,
-                           bool include_passwords,
-                           const std::vector<GURL>& federations,
-                           const std::vector<std::string>& android_realms);
 
   PasswordManagerClient* client_;
   std::unique_ptr<CredentialManagerPasswordFormManager> form_manager_;

@@ -79,16 +79,13 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
     CredentialManagerPendingRequestTaskDelegate* delegate,
     const SendCredentialCallback& callback,
     bool request_zero_click_only,
-    const GURL& request_origin,
     bool include_passwords,
-    const std::vector<GURL>& request_federations,
-    const std::vector<std::string>& affiliated_realms)
+    const std::vector<GURL>& request_federations)
     : delegate_(delegate),
       send_callback_(callback),
       zero_click_only_(request_zero_click_only),
-      origin_(request_origin),
-      include_passwords_(include_passwords),
-      affiliated_realms_(affiliated_realms.begin(), affiliated_realms.end()) {
+      origin_(delegate_->GetOrigin()),
+      include_passwords_(include_passwords) {
   CHECK(!delegate_->client()->DidLastPageLoadEncounterSSLErrors());
   for (const GURL& federation : request_federations)
     federations_.insert(url::Origin(federation.GetOrigin()).Serialize());
@@ -111,7 +108,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   }
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_results;
-  std::vector<std::unique_ptr<autofill::PasswordForm>> affiliated_results;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> psl_results;
   for (auto& form : results) {
     // Ensure that the form we're looking at matches the password and
     // federation filters provided.
@@ -125,20 +122,12 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // PasswordForm definition: scheme, host, port and path.
     // GURL definition: scheme, host, and port.
     // So we can't compare them directly.
-    if (form->origin.GetOrigin() == origin_.GetOrigin()) {
+    if (form->is_affiliation_based_match ||
+        form->origin.GetOrigin() == origin_.GetOrigin()) {
       local_results.push_back(std::move(form));
-    } else if (affiliated_realms_.count(form->signon_realm) &&
-               AffiliatedMatchHelper::IsValidAndroidCredential(
-                   PasswordStore::FormDigest(*form))) {
-      form->is_affiliation_based_match = true;
-      affiliated_results.push_back(std::move(form));
+    } else if (form->is_public_suffix_match) {
+      psl_results.push_back(std::move(form));
     }
-  }
-
-  if (!affiliated_results.empty()) {
-    password_manager_util::TrimUsernameOnlyCredentials(&affiliated_results);
-    std::move(affiliated_results.begin(), affiliated_results.end(),
-              std::back_inserter(local_results));
   }
 
   // Remove empty usernames from the list.

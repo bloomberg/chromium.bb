@@ -110,6 +110,16 @@ PasswordForm CreateFederated() {
   return form;
 }
 
+// Creates an Android federated credential.
+PasswordForm CreateAndroidFederated() {
+  PasswordForm form = CreateFederated();
+  form.signon_realm = "android://hash@com.example.android/";
+  form.origin = GURL(form.signon_realm);
+  form.action = GURL();
+  form.is_affiliation_based_match = true;
+  return form;
+}
+
 }  // namespace
 
 class FormFetcherImplTest : public testing::Test {
@@ -162,15 +172,18 @@ TEST_F(FormFetcherImplTest, NonFederated) {
 // Check that federated PasswordStore results are handled correctly.
 TEST_F(FormFetcherImplTest, Federated) {
   PasswordForm federated = CreateFederated();
+  PasswordForm android_federated = CreateAndroidFederated();
   form_fetcher_.AddConsumer(&consumer_);
   form_fetcher_.set_state(FormFetcher::State::WAITING);
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(base::MakeUnique<PasswordForm>(federated));
+  results.push_back(base::MakeUnique<PasswordForm>(android_federated));
   EXPECT_CALL(consumer_, ProcessMatches(IsEmpty(), 0u));
   form_fetcher_.SetResults(std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_.GetState());
-  EXPECT_THAT(form_fetcher_.GetFederatedMatches(),
-              UnorderedElementsAre(Pointee(federated)));
+  EXPECT_THAT(
+      form_fetcher_.GetFederatedMatches(),
+      UnorderedElementsAre(Pointee(federated), Pointee(android_federated)));
 }
 
 // Check that mixed PasswordStore results are handled correctly.
@@ -179,6 +192,8 @@ TEST_F(FormFetcherImplTest, Mixed) {
   federated1.username_value = ASCIIToUTF16("user");
   PasswordForm federated2 = CreateFederated();
   federated2.username_value = ASCIIToUTF16("user_B");
+  PasswordForm federated3 = CreateAndroidFederated();
+  federated3.username_value = ASCIIToUTF16("user_B");
   PasswordForm non_federated1 = CreateNonFederated();
   non_federated1.username_value = ASCIIToUTF16("user");
   PasswordForm non_federated2 = CreateNonFederated();
@@ -191,6 +206,7 @@ TEST_F(FormFetcherImplTest, Mixed) {
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(base::MakeUnique<PasswordForm>(federated1));
   results.push_back(base::MakeUnique<PasswordForm>(federated2));
+  results.push_back(base::MakeUnique<PasswordForm>(federated3));
   results.push_back(base::MakeUnique<PasswordForm>(non_federated1));
   results.push_back(base::MakeUnique<PasswordForm>(non_federated2));
   results.push_back(base::MakeUnique<PasswordForm>(non_federated3));
@@ -202,7 +218,8 @@ TEST_F(FormFetcherImplTest, Mixed) {
   form_fetcher_.SetResults(std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_.GetState());
   EXPECT_THAT(form_fetcher_.GetFederatedMatches(),
-              UnorderedElementsAre(Pointee(federated1), Pointee(federated2)));
+              UnorderedElementsAre(Pointee(federated1), Pointee(federated2),
+                                   Pointee(federated3)));
 }
 
 // Check that PasswordStore results are filtered correctly.

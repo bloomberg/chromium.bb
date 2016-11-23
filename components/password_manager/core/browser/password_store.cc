@@ -492,12 +492,6 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
         FillMatchingLogins({PasswordForm::SCHEME_HTML, realm, GURL()}));
     for (auto& result : more_results)
       result->is_affiliation_based_match = true;
-    more_results.erase(
-        std::remove_if(more_results.begin(), more_results.end(),
-                       [](const std::unique_ptr<PasswordForm>& result) {
-                         return !result->federation_origin.unique();
-                       }),
-        more_results.end());
     password_manager_util::TrimUsernameOnlyCredentials(&more_results);
     const size_t results_count = results.size();
     results.resize(results_count + more_results.size());

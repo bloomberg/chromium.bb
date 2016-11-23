@@ -480,8 +480,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
        "", "", L"", L"", L"",
        L"username_value_4",
        L"", true, 1},
-      // Federated credential for this second Android application; this should
-      // not be returned.
+      // Federated credential for this second Android application.
       {PasswordForm::SCHEME_HTML,
        kTestAndroidRealm2,
        "", "", L"", L"", L"",
@@ -527,6 +526,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
       base::MakeUnique<PasswordForm>(*all_credentials[3]));
   expected_results.push_back(
       base::MakeUnique<PasswordForm>(*all_credentials[5]));
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[6]));
 
   for (const auto& result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm &&

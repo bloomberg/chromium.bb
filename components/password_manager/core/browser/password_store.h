@@ -167,9 +167,6 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Searches for a matching PasswordForm, and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
-  // TODO(engedy): Currently, this will not return federated logins saved from
-  // Android applications that are affiliated with the realm of |form|. Need to
-  // decide if this is the desired behavior. See: https://crbug.com/539844.
   virtual void GetLogins(const FormDigest& form,
                          PasswordStoreConsumer* consumer);
 

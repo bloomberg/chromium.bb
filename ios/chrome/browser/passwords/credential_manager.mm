@@ -156,13 +156,14 @@ void CredentialManager::CredentialsRequested(
   std::vector<GURL> federation_urls;
   for (const auto& federation : federations)
     federation_urls.push_back(GURL(federation));
-  std::vector<std::string> realms;
   pending_request_.reset(
       new password_manager::CredentialManagerPendingRequestTask(
           this, base::Bind(&CredentialManager::SendCredentialByID,
                            base::Unretained(this), request_id),
-          zero_click_only, page_url, true, federation_urls, realms));
-  store->GetAutofillableLogins(pending_request_.get());
+          zero_click_only, true, federation_urls));
+  password_manager::PasswordStore::FormDigest form = {
+      autofill::PasswordForm::SCHEME_HTML, page_url.spec(), page_url};
+  store->GetLogins(form, pending_request_.get());
 }
 
 void CredentialManager::SignedIn(int request_id,
@@ -302,15 +303,6 @@ void CredentialManager::SendPasswordForm(
 
 password_manager::PasswordManagerClient* CredentialManager::client() const {
   return client_;
-}
-
-password_manager::PasswordStore::FormDigest
-CredentialManager::GetSynthesizedFormForOrigin() const {
-  password_manager::PasswordStore::FormDigest form = {
-      autofill::PasswordForm::SCHEME_HTML, std::string(),
-      web_state()->GetLastCommittedURL().GetOrigin()};
-  form.signon_realm = form.origin.spec();
-  return form;
 }
 
 void CredentialManager::OnProvisionalSaveComplete() {

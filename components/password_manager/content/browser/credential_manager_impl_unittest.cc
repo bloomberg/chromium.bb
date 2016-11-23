@@ -570,7 +570,6 @@ TEST_F(CredentialManagerImplTest, CredentialManagerGetOverwriteZeroClick) {
   form_.skip_zero_click = true;
   form_.username_element = base::ASCIIToUTF16("username-element");
   form_.password_element = base::ASCIIToUTF16("password-element");
-  form_.signon_realm = "this is a realm";
   form_.origin = GURL("https://example.com/old_form.html");
   store_->AddLogin(form_);
   RunAllPendingTasks();
