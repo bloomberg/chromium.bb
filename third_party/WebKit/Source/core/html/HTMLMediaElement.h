@@ -720,6 +720,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   class AutoplayHelperClientImpl;
 
   friend class AutoplayUmaHelper;  // for isAutoplayAllowedPerSettings
+  friend class AutoplayUmaHelperTest;
   friend class Internals;
   friend class TrackDisplayUpdateScope;
   friend class AutoplayExperimentHelper;

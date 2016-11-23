@@ -5,6 +5,8 @@
 #ifndef AutoplayUmaHelper_h
 #define AutoplayUmaHelper_h
 
+#include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventListener.h"
 #include "platform/heap/Handle.h"
 
@@ -40,13 +42,18 @@ class Document;
 class ElementVisibilityObserver;
 class HTMLMediaElement;
 
-class AutoplayUmaHelper final : public EventListener {
+class CORE_EXPORT AutoplayUmaHelper : public EventListener,
+                                      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(AutoplayUmaHelper);
+
  public:
   static AutoplayUmaHelper* create(HTMLMediaElement*);
 
   ~AutoplayUmaHelper();
 
   bool operator==(const EventListener&) const override;
+
+  void contextDestroyed() override;
 
   void onAutoplayInitiated(AutoplaySource);
 
@@ -61,15 +68,15 @@ class AutoplayUmaHelper final : public EventListener {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class MockAutoplayUmaHelper;
+
   explicit AutoplayUmaHelper(HTMLMediaElement*);
-
   void handleEvent(ExecutionContext*, Event*) override;
-
   void handlePlayingEvent();
   void handlePauseEvent();
-  void handleUnloadEvent();
+  virtual void handleContextDestroyed();  // Make virtual for testing.
 
-  void maybeUnregisterUnloadListener();
+  void maybeUnregisterContextDestroyedObserver();
 
   void maybeStartRecordingMutedVideoPlayMethodBecomeVisible();
   void maybeStopRecordingMutedVideoPlayMethodBecomeVisible(bool isVisible);
@@ -80,7 +87,7 @@ class AutoplayUmaHelper final : public EventListener {
   void onVisibilityChangedForMutedVideoOffscreenDuration(bool isVisibile);
   void onVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool isVisible);
 
-  bool shouldListenToUnloadEvent() const;
+  bool shouldListenToContextDestroyed() const;
 
   // The autoplay source. Use AutoplaySource::NumberOfSources for invalid
   // source.

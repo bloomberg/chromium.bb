@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Histogram.h"
@@ -28,6 +27,7 @@ AutoplayUmaHelper* AutoplayUmaHelper::create(HTMLMediaElement* element) {
 
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
     : EventListener(CPPEventListenerType),
+      ContextLifecycleObserver(nullptr),
       m_source(AutoplaySource::NumberOfSources),
       m_element(element),
       m_mutedVideoPlayMethodVisibilityObserver(nullptr),
@@ -105,15 +105,10 @@ void AutoplayUmaHelper::recordAutoplayUnmuteStatus(
 }
 
 void AutoplayUmaHelper::didMoveToNewDocument(Document& oldDocument) {
-  if (!shouldListenToUnloadEvent())
+  if (!shouldListenToContextDestroyed())
     return;
 
-  if (oldDocument.domWindow())
-    oldDocument.domWindow()->removeEventListener(EventTypeNames::unload, this,
-                                                 false);
-  if (m_element->document().domWindow())
-    m_element->document().domWindow()->addEventListener(EventTypeNames::unload,
-                                                        this, false);
+  setContext(&m_element->document());
 }
 
 void AutoplayUmaHelper::onVisibilityChangedForMutedVideoPlayMethodBecomeVisible(
@@ -146,8 +141,6 @@ void AutoplayUmaHelper::handleEvent(ExecutionContext* executionContext,
     handlePlayingEvent();
   else if (event->type() == EventTypeNames::pause)
     handlePauseEvent();
-  else if (event->type() == EventTypeNames::unload)
-    handleUnloadEvent();
   else
     NOTREACHED();
 }
@@ -163,7 +156,11 @@ void AutoplayUmaHelper::handlePauseEvent() {
   maybeStopRecordingMutedVideoOffscreenDuration();
 }
 
-void AutoplayUmaHelper::handleUnloadEvent() {
+void AutoplayUmaHelper::contextDestroyed() {
+  handleContextDestroyed();
+}
+
+void AutoplayUmaHelper::handleContextDestroyed() {
   maybeStopRecordingMutedVideoPlayMethodBecomeVisible(false);
   maybeStopRecordingMutedVideoOffscreenDuration();
 }
@@ -179,9 +176,7 @@ void AutoplayUmaHelper::maybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
                     onVisibilityChangedForMutedVideoPlayMethodBecomeVisible,
                 wrapWeakPersistent(this)));
   m_mutedVideoPlayMethodVisibilityObserver->start();
-  if (m_element->document().domWindow())
-    m_element->document().domWindow()->addEventListener(EventTypeNames::unload,
-                                                        this, false);
+  setContext(&m_element->document());
 }
 
 void AutoplayUmaHelper::maybeStopRecordingMutedVideoPlayMethodBecomeVisible(
@@ -195,7 +190,7 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoPlayMethodBecomeVisible(
   histogram.count(visible);
   m_mutedVideoPlayMethodVisibilityObserver->stop();
   m_mutedVideoPlayMethodVisibilityObserver = nullptr;
-  maybeUnregisterUnloadListener();
+  maybeUnregisterContextDestroyedObserver();
 }
 
 void AutoplayUmaHelper::maybeStartRecordingMutedVideoOffscreenDuration() {
@@ -214,9 +209,7 @@ void AutoplayUmaHelper::maybeStartRecordingMutedVideoOffscreenDuration() {
                     wrapWeakPersistent(this)));
   m_mutedVideoOffscreenDurationVisibilityObserver->start();
   m_element->addEventListener(EventTypeNames::pause, this, false);
-  if (m_element->document().domWindow())
-    m_element->document().domWindow()->addEventListener(EventTypeNames::unload,
-                                                        this, false);
+  setContext(&m_element->document());
 }
 
 void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
@@ -251,22 +244,23 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
   m_mutedVideoOffscreenDurationVisibilityObserver = nullptr;
   m_mutedVideoAutoplayOffscreenDurationMS = 0;
   m_element->removeEventListener(EventTypeNames::pause, this, false);
-  maybeUnregisterUnloadListener();
+  maybeUnregisterContextDestroyedObserver();
 }
 
-void AutoplayUmaHelper::maybeUnregisterUnloadListener() {
-  if (!shouldListenToUnloadEvent() && m_element->document().domWindow())
-    m_element->document().domWindow()->removeEventListener(
-        EventTypeNames::unload, this, false);
+void AutoplayUmaHelper::maybeUnregisterContextDestroyedObserver() {
+  if (!shouldListenToContextDestroyed()) {
+    setContext(nullptr);
+  }
 }
 
-bool AutoplayUmaHelper::shouldListenToUnloadEvent() const {
+bool AutoplayUmaHelper::shouldListenToContextDestroyed() const {
   return m_mutedVideoPlayMethodVisibilityObserver ||
          m_mutedVideoOffscreenDurationVisibilityObserver;
 }
 
 DEFINE_TRACE(AutoplayUmaHelper) {
   EventListener::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_element);
   visitor->trace(m_mutedVideoPlayMethodVisibilityObserver);
   visitor->trace(m_mutedVideoOffscreenDurationVisibilityObserver);
