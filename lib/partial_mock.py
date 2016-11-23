@@ -86,7 +86,7 @@ class Regex(Comparator):
 
 
 class ListRegex(Regex):
-  """Checks if an iterable of strings matches a regular expression."""
+  """Checks if any string from an iterable matches a regular expression."""
 
   @staticmethod
   def _ProcessArg(arg):

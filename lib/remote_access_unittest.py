@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import os
-import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -203,30 +202,37 @@ class RemoteShTest(RemoteAccessTest):
 class CheckIfRebootedTest(RemoteAccessTest):
   """Tests of the _CheckIfRebooted function."""
 
-  def MockCheckReboot(self, returncode):
-    self.rsh_mock.AddCmdResult(
-        partial_mock.Regex('.*%s.*' % re.escape(remote_access.REBOOT_MARKER)),
-        returncode)
+  _OLD_BOOT_ID = '1234'
+  _NEW_BOOT_ID = '5678'
 
+  def _SetCheckRebootResult(self, returncode=0, output='', error=''):
+    """Sets the result object fields to mock a specific ssh command.
+
+    The command is the one used to fetch the boot ID (cat /proc/sys/...)
+    """
+    self.rsh_mock.AddCmdResult(partial_mock.ListRegex('/proc/sys/.*'),
+                               returncode=returncode,
+                               output=output, error=error)
   def testSuccess(self):
     """Test the case of successful reboot."""
-    self.MockCheckReboot(0)
-    self.assertTrue(self.host._CheckIfRebooted())
+    self._SetCheckRebootResult(returncode=0, output=self._NEW_BOOT_ID)
+    self.assertTrue(self.host._CheckIfRebooted(self._OLD_BOOT_ID))
 
-  def testRemoteFailure(self):
-    """Test case of reboot pending."""
-    self.MockCheckReboot(1)
-    self.assertFalse(self.host._CheckIfRebooted())
+  def testFailure(self):
+    """Test case of failed reboot (boot ID did not change)."""
+    self._SetCheckRebootResult(0, output=self._OLD_BOOT_ID)
+    self.assertFalse(self.host._CheckIfRebooted(self._OLD_BOOT_ID))
 
   def testSshFailure(self):
-    """Test case of connection down."""
-    self.MockCheckReboot(remote_access.SSH_ERROR_CODE)
-    self.assertFalse(self.host._CheckIfRebooted())
+    """Test case of reboot pending (ssh failed)."""
+    self._SetCheckRebootResult(returncode=remote_access.SSH_ERROR_CODE)
+    self.assertFalse(self.host._CheckIfRebooted(self._OLD_BOOT_ID))
 
   def testInvalidErrorCode(self):
     """Test case of bad error code returned."""
-    self.MockCheckReboot(2)
-    self.assertRaises(Exception, self.host._CheckIfRebooted)
+    self._SetCheckRebootResult(returncode=2)
+    self.assertRaises(Exception,
+                      lambda: self.host._CheckIfRebooted(self._OLD_BOOT_ID))
 
 
 class RemoteDeviceTest(cros_test_lib.MockTestCase):

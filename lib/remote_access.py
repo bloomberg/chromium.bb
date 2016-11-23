@@ -30,12 +30,15 @@ LOCALHOST = 'localhost'
 LOCALHOST_IP = '127.0.0.1'
 ROOT_ACCOUNT = 'root'
 
-REBOOT_MARKER = '/tmp/awaiting_reboot'
 REBOOT_MAX_WAIT = 180
 REBOOT_SSH_CONNECT_TIMEOUT = 2
 REBOOT_SSH_CONNECT_ATTEMPTS = 2
 CHECK_INTERVAL = 5
 DEFAULT_SSH_PORT = 22
+# Ssh returns status 255 when it encounters errors in its own code.  Otherwise
+# it returns the status of the command that it ran on the host, including
+# possibly 255.  Here we assume that 255 indicates only ssh errors.  This may
+# be a reasonable guess for our purposes.
 SSH_ERROR_CODE = 255
 
 # SSH default known_hosts filepath.
@@ -341,48 +344,64 @@ class RemoteAccess(object):
       else:
         raise
 
-  def _CheckIfRebooted(self):
-    """Checks whether a remote device has rebooted successfully.
+  def _GetBootId(self, rebooting=False):
+    """Obtains unique boot session identifier.
 
-    This uses a rapidly-retried SSH connection, which will wait for at most
-    about ten seconds. If the network returns an error (e.g. host unreachable)
-    the actual delay may be shorter.
+    If rebooting is True, uses a SSH connection with a short timeout,
+    which will wait for at most about ten seconds. If the network returns
+    an error (e.g. host unreachable) the delay can be shorter.
+    If rebooting is True and an ssh error occurs, None is returned.
+    """
+    if rebooting:
+      # In tests SSH seems to be waiting rather longer than would be expected
+      # from these parameters. These values produce a ~5 second wait.
+      connect_settings = CompileSSHConnectSettings(
+          ConnectTimeout=REBOOT_SSH_CONNECT_TIMEOUT,
+          ConnectionAttempts=REBOOT_SSH_CONNECT_ATTEMPTS)
+      result = self.RemoteSh(['cat', '/proc/sys/kernel/random/boot_id'],
+                             connect_settings=connect_settings,
+                             error_code_ok=True, ssh_error_ok=True,
+                             log_output=True)
+      if result.returncode == SSH_ERROR_CODE:
+        return None
+      elif result.returncode == 0:
+        return result.output.rstrip()
+      else:
+        raise Exception('Unexpected error code %s getting boot ID.'
+                        % result.returncode)
+    else:
+      result = self.RemoteSh(['cat', '/proc/sys/kernel/random/boot_id'],
+                             log_output=True)
+      return result.output.rstrip()
+
+
+  def _CheckIfRebooted(self, old_boot_id):
+    """Checks if the remote device has successfully rebooted
+
+    This compares the remote device old and current boot IDs.  If
+    ssh errors occur, the device has likely not booted and False is
+    returned.  Basically only returns True if it is proven that the
+    device has rebooted.  May throw exceptions.
 
     Returns:
-      Whether the device has successfully rebooted.
+       True if the device has successfully rebooted, false otherwise.
     """
-    # In tests SSH seems to be waiting rather longer than would be expected
-    # from these parameters. These values produce a ~5 second wait.
-    connect_settings = CompileSSHConnectSettings(
-        ConnectTimeout=REBOOT_SSH_CONNECT_TIMEOUT,
-        ConnectionAttempts=REBOOT_SSH_CONNECT_ATTEMPTS)
-    cmd = "[ ! -e '%s' ]" % REBOOT_MARKER
-    result = self.RemoteSh(cmd, connect_settings=connect_settings,
-                           error_code_ok=True, ssh_error_ok=True,
-                           capture_output=True)
+    new_boot_id = self._GetBootId(rebooting=True)
+    return new_boot_id and new_boot_id != old_boot_id
 
-    errors = {0: 'Reboot complete.',
-              1: 'Device has not yet shutdown.',
-              255: 'Cannot connect to device; reboot in progress.'}
-    if result.returncode not in errors:
-      raise Exception('Unknown error code %s returned by %s.'
-                      % (result.returncode, cmd))
-
-    logging.info(errors[result.returncode])
-    return result.returncode == 0
 
   def RemoteReboot(self, timeout_sec=REBOOT_MAX_WAIT):
     """Reboot the remote device."""
     logging.info('Rebooting %s...', self.remote_host)
-    if self.username != ROOT_ACCOUNT:
-      self.RemoteSh('sudo sh -c "touch %s && sudo reboot"' % REBOOT_MARKER)
-    else:
-      self.RemoteSh('touch %s && reboot' % REBOOT_MARKER)
-
+    old_boot_id = self._GetBootId()
+    reboot_cmd = 'reboot' if self.username == ROOT_ACCOUNT else 'sudo reboot'
+    # Use ssh_error_ok=True in the remote shell invocations because the reboot
+    # might kill sshd before the connection completes normally.
+    self.RemoteSh(reboot_cmd, ssh_error_ok=True)
     time.sleep(CHECK_INTERVAL)
     try:
-      timeout_util.WaitForReturnTrue(self._CheckIfRebooted, timeout_sec,
-                                     period=CHECK_INTERVAL)
+      timeout_util.WaitForReturnTrue(lambda: self._CheckIfRebooted(old_boot_id),
+                                     timeout_sec, period=CHECK_INTERVAL)
     except timeout_util.TimeoutError:
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (timeout_sec,))

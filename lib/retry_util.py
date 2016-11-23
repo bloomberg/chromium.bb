@@ -73,7 +73,6 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     logging.debug('Retrying in %f seconds...', random_delay)
     time.sleep(random_delay)
 
-
   log_all_retries = kwargs.pop('log_all_retries', False)
   sleep = kwargs.pop('sleep', 0)
   if max_retry < 0:
@@ -104,7 +103,8 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       delay()
 
     if attempt and log_all_retries:
-      logging.debug('Will retry %s (attempt %d)', functor.__name__, attempt + 1)
+      fname = functor.__name__ if hasattr(functor, '__name__') else "<nameless>"
+      logging.debug('retrying %s (attempt %d)', fname, attempt + 1)
 
     if attempt and sleep:
       if backoff_factor > 1:
@@ -126,8 +126,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.
       if not handler(e):
-        logging.debug('Encountered unexpected exception %s(%s), not retrying.',
-                      e.__class__, e)
+        logging.debug('ending retries with error: %s(%s)', e.__class__, e)
         if exception_to_raise:
           raise exception_to_raise(
               '%s, %s: %s' % (str(e), exc_info[0], exc_info[1]))
