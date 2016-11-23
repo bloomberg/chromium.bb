@@ -1187,11 +1187,47 @@ TEST(FieldTrialListTest, AddTrialsToAllocator) {
 
   FieldTrialList field_trial_list2(nullptr);
   std::unique_ptr<base::SharedMemory> shm(new SharedMemory(handle, true));
-  shm.get()->Map(4 << 10);  // Hardcoded, equal to kFieldTrialAllocationSize.
+  // 4 KiB is enough to hold the trials only created for this test.
+  shm.get()->Map(4 << 10);
   FieldTrialList::CreateTrialsFromSharedMemory(std::move(shm));
   std::string check_string;
   FieldTrialList::AllStatesToString(&check_string);
   EXPECT_EQ(save_string, check_string);
+}
+
+TEST(FieldTrialListTest, DoNotAddSimulatedFieldTrialsToAllocator) {
+  constexpr char kTrialName[] = "trial";
+  base::SharedMemoryHandle handle;
+  {
+    // Create a simulated trial and a real trial and call group() on them, which
+    // should only add the real trial to the field trial allocator.
+    FieldTrialList field_trial_list(nullptr);
+    FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
+
+    // This shouldn't add to the allocator.
+    scoped_refptr<FieldTrial> simulated_trial =
+        FieldTrial::CreateSimulatedFieldTrial(kTrialName, 100, "Simulated",
+                                              0.95);
+    simulated_trial->group();
+
+    // This should add to the allocator.
+    FieldTrial* real_trial =
+        FieldTrialList::CreateFieldTrial(kTrialName, "Real");
+    real_trial->group();
+
+    handle = base::SharedMemory::DuplicateHandle(
+        field_trial_list.field_trial_allocator_->shared_memory()->handle());
+  }
+
+  // Check that there's only one entry in the allocator.
+  FieldTrialList field_trial_list2(nullptr);
+  std::unique_ptr<base::SharedMemory> shm(new SharedMemory(handle, true));
+  // 4 KiB is enough to hold the trials only created for this test.
+  shm.get()->Map(4 << 10);
+  FieldTrialList::CreateTrialsFromSharedMemory(std::move(shm));
+  std::string check_string;
+  FieldTrialList::AllStatesToString(&check_string);
+  ASSERT_EQ(check_string.find("Simulated"), std::string::npos);
 }
 
 }  // namespace base

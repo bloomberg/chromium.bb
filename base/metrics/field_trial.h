@@ -221,6 +221,8 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, SetForcedChangeDefault_NonDefault);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, FloatBoundariesGiveEqualGroupSizes);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, DoesNotSurpassTotalProbability);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
+                           DoNotAddSimulatedFieldTrialsToAllocator);
 
   friend class base::FieldTrialList;
 
@@ -552,6 +554,8 @@ class BASE_EXPORT FieldTrialList {
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, InstantiateAllocator);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, AddTrialsToAllocator);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
+                           DoNotAddSimulatedFieldTrialsToAllocator);
 
 #if defined(OS_WIN)
   // Takes in |handle| that should have been retrieved from the command line and

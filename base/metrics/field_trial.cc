@@ -407,7 +407,7 @@ void FieldTrial::FinalizeGroupChoiceImpl(bool is_locked) {
   SetGroupChoice(default_group_name_, kDefaultGroupNumber);
 
   // Add the field trial to shared memory.
-  if (kUseSharedMemoryForFieldTrials)
+  if (kUseSharedMemoryForFieldTrials && trial_registered_)
     FieldTrialList::OnGroupFinalized(is_locked, this);
 }
 
