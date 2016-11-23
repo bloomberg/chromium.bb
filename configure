@@ -461,6 +461,9 @@ post_process_cmdline() {
     # Enable ref_mv by default
     soft_enable ref_mv
 
+    # Enable filter_7bit by default
+    soft_enable filter_7bit
+
     # Enable daala_ec by default
     ! enabled ans && soft_enable daala_ec
 
