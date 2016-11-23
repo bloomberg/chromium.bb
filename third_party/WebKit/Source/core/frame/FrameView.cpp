@@ -1485,7 +1485,7 @@ void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     setNeedsPaintPropertyUpdate();
     // The object's scroll properties are not affected by its own background.
-    object->setAllAncestorsNeedPaintPropertyUpdate();
+    object->setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
   }
 }
 
@@ -1501,7 +1501,7 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     setNeedsPaintPropertyUpdate();
     // The object's scroll properties are not affected by its own background.
-    object->setAllAncestorsNeedPaintPropertyUpdate();
+    object->setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
   }
 }
 

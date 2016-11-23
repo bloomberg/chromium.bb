@@ -1473,7 +1473,6 @@ StyleDifference LayoutObject::adjustStyleDifference(
 
       // When transform, opacity, etc. change, paint properties will also change
       // so we need to mark this object as needing an update.
-      // TODO(pdr): Also update in the non-spv2 codepath?
       getMutableForPainting().setNeedsPaintPropertyUpdate();
     }
   } else {
@@ -2509,12 +2508,16 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor,
   return o;
 }
 
-LayoutObject* LayoutObject::paintInvalidationParent() const {
+inline LayoutObject* LayoutObject::paintInvalidationParent() const {
   if (isLayoutView())
     return LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem());
   if (isColumnSpanAll())
     return spannerPlaceholder();
   return parent();
+}
+
+LayoutObject* LayoutObject::slowPaintInvalidationParentForTesting() const {
+  return paintInvalidationParent();
 }
 
 bool LayoutObject::isSelectionBorder() const {
@@ -2722,6 +2725,27 @@ void LayoutObject::willBeRemovedFromTree() {
     // findReferencingScrollAnchors.
     m_bitfields.setIsScrollAnchorObject(false);
     findReferencingScrollAnchors(this, Clear);
+  }
+}
+
+void LayoutObject::setNeedsPaintPropertyUpdate() {
+  m_bitfields.setNeedsPaintPropertyUpdate(true);
+
+  // Mark all ancestors as having a descendant needing paint property updates.
+  // |paintInvalidationParent()| is used to ensure we continue marking across
+  // frame boundaries.
+  LayoutObject* ancestor = paintInvalidationParent();
+  while (ancestor && !ancestor->descendantNeedsPaintPropertyUpdate()) {
+    ancestor->m_bitfields.setDescendantNeedsPaintPropertyUpdate(true);
+    ancestor = ancestor->paintInvalidationParent();
+  }
+}
+
+void LayoutObject::setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling() {
+  LayoutObject* ancestor = paintInvalidationParent();
+  while (ancestor) {
+    ancestor->setNeedsPaintPropertyUpdate();
+    ancestor = ancestor->paintInvalidationParent();
   }
 }
 

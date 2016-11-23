@@ -26,7 +26,7 @@ class VisualRectMappingTest : public RenderingTest {
       const LayoutObject& paintInvalidationContainer) {
     Vector<const LayoutObject*> ancestors;
     for (const LayoutObject* ancestor = &object; ancestor != layoutView;
-         ancestor = ancestor->paintInvalidationParent())
+         ancestor = ancestor->slowPaintInvalidationParentForTesting())
       ancestors.append(ancestor);
 
     Vector<Optional<PaintInvalidationState>> paintInvalidationStates(

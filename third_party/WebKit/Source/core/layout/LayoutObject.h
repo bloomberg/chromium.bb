@@ -1707,6 +1707,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void clearNeedsPaintPropertyUpdate() {
       m_layoutObject.clearNeedsPaintPropertyUpdate();
     }
+    void clearDescendantNeedsPaintPropertyUpdate() {
+      m_layoutObject.clearDescendantNeedsPaintPropertyUpdate();
+    }
 
    protected:
     friend class PaintPropertyTreeBuilder;
@@ -1734,25 +1737,29 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // state (location, transform, etc) as well as properties from ancestors.
   // When these inputs change, setNeedsPaintPropertyUpdate will cause a property
   // tree update during the next document lifecycle update.
-  // TODO(pdr): Add additional granularity such as the ability to signal that
-  // only a local paint property update is needed.
-  void setNeedsPaintPropertyUpdate() {
-    m_bitfields.setNeedsPaintPropertyUpdate(true);
-  }
-  // TODO(pdr): This can be removed once we have more granular update flags.
-  void setAllAncestorsNeedPaintPropertyUpdate() {
-    if (m_parent) {
-      m_parent->setNeedsPaintPropertyUpdate();
-      m_parent->setAllAncestorsNeedPaintPropertyUpdate();
-    }
+  //
+  // In addition to tracking if an object needs its own paint properties
+  // updated, |descendantNeedsPaintPropertyUpdate| is used to track if any
+  // descendant needs an update too. This bit is up the tree, crossing frames,
+  // when calling |setNeedsPaintPropertyUpdate|.
+  void setNeedsPaintPropertyUpdate();
+  bool needsPaintPropertyUpdate() const {
+    return m_bitfields.needsPaintPropertyUpdate();
   }
   void clearNeedsPaintPropertyUpdate() {
     DCHECK_EQ(document().lifecycle().state(), DocumentLifecycle::InPrePaint);
     m_bitfields.setNeedsPaintPropertyUpdate(false);
   }
-  bool needsPaintPropertyUpdate() const {
-    return m_bitfields.needsPaintPropertyUpdate();
+  bool descendantNeedsPaintPropertyUpdate() const {
+    return m_bitfields.descendantNeedsPaintPropertyUpdate();
   }
+  void clearDescendantNeedsPaintPropertyUpdate() {
+    DCHECK_EQ(document().lifecycle().state(), DocumentLifecycle::InPrePaint);
+    m_bitfields.setDescendantNeedsPaintPropertyUpdate(false);
+  }
+  // Main thread scrolling reasons require fully updating paint propeties of all
+  // ancestors (see: ScrollPaintPropertyNode.h).
+  void setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
 
   void setIsScrollAnchorObject() { m_bitfields.setIsScrollAnchorObject(true); }
   // Clears the IsScrollAnchorObject bit if and only if no ScrollAnchors still
@@ -2054,7 +2061,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //   if any or nullptr;
   // - For multi-column spanner, returns the spanner placeholder;
   // - Otherwise returns parent().
-  LayoutObject* paintInvalidationParent() const;
+  inline LayoutObject* paintInvalidationParent() const;
+  LayoutObject* slowPaintInvalidationParentForTesting() const;
 
   RefPtr<ComputedStyle> m_style;
 
@@ -2149,6 +2157,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasPreviousSelectionVisualRect(false),
           m_hasPreviousBoxGeometries(false),
           m_needsPaintPropertyUpdate(true),
+          m_descendantNeedsPaintPropertyUpdate(true),
           m_backgroundChangedSinceLastPaintInvalidation(false),
           m_positionedState(IsStaticallyPositioned),
           m_selectionState(SelectionNone),
@@ -2321,13 +2330,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Whether the paint properties need to be updated. For more details, see
     // LayoutObject::needsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(needsPaintPropertyUpdate, NeedsPaintPropertyUpdate);
+    // Whether the paint properties of a descendant need to be updated. For more
+    // details, see LayoutObject::descendantNeedsPaintPropertyUpdate().
+    ADD_BOOLEAN_BITFIELD(descendantNeedsPaintPropertyUpdate,
+                         DescendantNeedsPaintPropertyUpdate);
 
     ADD_BOOLEAN_BITFIELD(backgroundChangedSinceLastPaintInvalidation,
                          BackgroundChangedSinceLastPaintInvalidation);
 
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 8;
+    unsigned m_unusedBits : 7;
 
    private:
     // This is the cached 'position' value of this object

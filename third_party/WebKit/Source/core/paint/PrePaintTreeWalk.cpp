@@ -118,6 +118,8 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
               .layoutObjectInFlowThread(),
          localContext);
     object.getMutableForPainting().clearPaintInvalidationFlags();
+    object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
+    object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
     return;
   }
 
@@ -152,6 +154,7 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
 
   object.getMutableForPainting().clearPaintInvalidationFlags();
   object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
+  object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
 }
 
 }  // namespace blink

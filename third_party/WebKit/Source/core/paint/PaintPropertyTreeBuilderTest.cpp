@@ -2889,4 +2889,46 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
   EXPECT_EQ(filterProperties->effect(), childPaintState.effect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, DescendantNeedsUpdateAcrossFrames) {
+  setBodyInnerHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='divWithTransform' style='transform: translate3d(1px,2px,3px);'>"
+      "  <iframe style='border: 7px solid black'></iframe>"
+      "</div>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; }</style><div id='transform' style='transform: "
+      "translate3d(4px, 5px, 6px); width: 100px; height: 200px'></div>");
+
+  FrameView* frameView = document().view();
+  frameView->updateAllLifecyclePhases();
+
+  LayoutObject* divWithTransform =
+      document().getElementById("divWithTransform")->layoutObject();
+  LayoutObject* childLayoutView = childDocument().layoutView();
+  LayoutObject* innerDivWithTransform =
+      childDocument().getElementById("transform")->layoutObject();
+
+  // Initially, no objects should need a descendant update.
+  EXPECT_FALSE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(divWithTransform->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(childLayoutView->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(innerDivWithTransform->descendantNeedsPaintPropertyUpdate());
+
+  // Marking the child div as needing a paint property update should propagate
+  // up the tree and across frames.
+  innerDivWithTransform->setNeedsPaintPropertyUpdate();
+  EXPECT_TRUE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(divWithTransform->descendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(childLayoutView->descendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(innerDivWithTransform->needsPaintPropertyUpdate());
+  EXPECT_FALSE(innerDivWithTransform->descendantNeedsPaintPropertyUpdate());
+
+  // After a lifecycle update, no nodes should need a descendant update.
+  frameView->updateAllLifecyclePhases();
+  EXPECT_FALSE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(divWithTransform->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(childLayoutView->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(innerDivWithTransform->descendantNeedsPaintPropertyUpdate());
+}
+
 }  // namespace blink
