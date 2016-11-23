@@ -86,24 +86,15 @@ component("ipc") {
     "param_traits_write_macros.h",
     "struct_constructor_macros.h",
     "struct_destructor_macros.h",
-    "unix_domain_socket_util.cc",
-    "unix_domain_socket_util.h",
   ]
 
   if (is_nacl && !is_nacl_nonsfi) {
-    sources -= [
-      "ipc_channel.cc",
-      "unix_domain_socket_util.cc",
-    ]
+    sources -= [ "ipc_channel.cc" ]
   } else {
     sources -= [
       "ipc_channel_nacl.cc",
       "ipc_channel_nacl.h",
     ]
-  }
-
-  if (is_win || is_nacl_nonsfi) {
-    sources -= [ "unix_domain_socket_util.cc" ]
   }
 
   defines = [ "IPC_IMPLEMENTATION" ]
@@ -184,10 +175,6 @@ if (!is_ios) {
       "ipc_test_messages.h",
       "sync_socket_unittest.cc",
     ]
-
-    if (!is_win && !is_ios) {
-      sources += [ "unix_domain_socket_util_unittest.cc" ]
-    }
 
     if (!is_ios) {
       sources += [ "ipc_send_fds_test.cc" ]

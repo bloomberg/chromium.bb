@@ -6,7 +6,6 @@ include_rules = [
   "+components/prefs",
   "+components/signin/core/account_id",
   "+components/user_manager",
-  "+ipc",
   "+mojo",
   "+third_party/re2",
   "+third_party/skia",

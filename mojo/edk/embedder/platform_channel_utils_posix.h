@@ -74,10 +74,12 @@ PlatformChannelRecvmsg(PlatformHandle h,
 // Returns false if |server_handle| encounters an unrecoverable error.
 // Returns true if it's valid to keep listening on |server_handle|. In this
 // case, it's possible that a connection wasn't successfully established; then,
-// |connection_handle| will be invalid.
+// |connection_handle| will be invalid. If |check_peer_user| is True, the
+// connection will be rejected if the peer is running as a different user.
 MOJO_SYSTEM_IMPL_EXPORT bool ServerAcceptConnection(
     PlatformHandle server_handle,
-    ScopedPlatformHandle* connection_handle);
+    ScopedPlatformHandle* connection_handle,
+    bool check_peer_user = true);
 
 }  // namespace edk
 }  // namespace mojo

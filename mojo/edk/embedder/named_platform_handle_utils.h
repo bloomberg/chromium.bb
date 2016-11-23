@@ -18,6 +18,15 @@ namespace edk {
 
 struct NamedPlatformHandle;
 
+#if defined(OS_POSIX)
+
+// The maximum length of the name of a unix domain socket. The standard size on
+// linux is 108, mac is 104. To maintain consistency across platforms we
+// standardize on the smaller value.
+const size_t kMaxSocketNameLength = 104;
+
+#endif
+
 struct CreateServerHandleOptions {
 #if defined(OS_WIN)
   // If true, creating a server handle will fail if another pipe with the same

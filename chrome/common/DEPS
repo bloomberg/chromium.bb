@@ -41,7 +41,7 @@ include_rules = [
   "+chrome/installer",
 ]
 specific_include_rules = {
-  "service_process_util\.h": [
+  "service_process_util.*": [
     "+mojo/edk/embedder",
   ],
 }

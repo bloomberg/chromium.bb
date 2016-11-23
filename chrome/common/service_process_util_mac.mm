@@ -27,7 +27,7 @@
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/service_process_util_posix.h"
 #include "components/version_info/version_info.h"
-#include "ipc/unix_domain_socket_util.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 
 @interface NSFileManager (YosemiteSDK)
 - (BOOL)getRelationship:(NSURLRelationship*)outRelationship
@@ -94,7 +94,7 @@ base::FilePath GetServiceProcessSocketName() {
   PathService::Get(base::DIR_TEMP, &socket_name);
   std::string pipe_name = GetServiceProcessScopedName("srv");
   socket_name = socket_name.Append(pipe_name);
-  CHECK_LT(socket_name.value().size(), IPC::kMaxSocketNameLength);
+  CHECK_LT(socket_name.value().size(), mojo::edk::kMaxSocketNameLength);
   return socket_name;
 }
 

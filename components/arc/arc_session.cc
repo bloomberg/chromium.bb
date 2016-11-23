@@ -28,8 +28,9 @@
 #include "components/arc/arc_bridge_host_impl.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
-#include "ipc/unix_domain_socket_util.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
@@ -210,18 +211,19 @@ class ArcSessionImpl : public ArcSession,
  private:
   // Creates the UNIX socket on a worker pool and then processes its file
   // descriptor.
-  static base::ScopedFD CreateSocket();
-  void OnSocketCreated(base::ScopedFD fd);
+  static mojo::edk::ScopedPlatformHandle CreateSocket();
+  void OnSocketCreated(mojo::edk::ScopedPlatformHandle fd);
 
   // DBus callback for StartArcInstance().
-  void OnInstanceStarted(base::ScopedFD socket_fd,
+  void OnInstanceStarted(mojo::edk::ScopedPlatformHandle socket_fd,
                          StartArcInstanceResult result);
 
   // Synchronously accepts a connection on |socket_fd| and then processes the
   // connected socket's file descriptor.
-  static base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
-                                    base::ScopedFD cancel_fd);
-  void OnMojoConnected(base::ScopedFD fd);
+  static mojo::edk::ScopedPlatformHandle ConnectMojo(
+      mojo::edk::ScopedPlatformHandle socket_fd,
+      base::ScopedFD cancel_fd);
+  void OnMojoConnected(mojo::edk::ScopedPlatformHandle fd);
 
   // Request to stop ARC instance via DBus.
   void StopArcInstance();
@@ -291,13 +293,13 @@ void ArcSessionImpl::Start() {
 }
 
 // static
-base::ScopedFD ArcSessionImpl::CreateSocket() {
+mojo::edk::ScopedPlatformHandle ArcSessionImpl::CreateSocket() {
   base::FilePath socket_path(kArcBridgeSocketPath);
 
-  int raw_fd = -1;
-  if (!IPC::CreateServerUnixDomainSocket(socket_path, &raw_fd))
-    return base::ScopedFD();
-  base::ScopedFD socket_fd(raw_fd);
+  mojo::edk::ScopedPlatformHandle socket_fd = mojo::edk::CreateServerHandle(
+      mojo::edk::NamedPlatformHandle(socket_path.value()));
+  if (!socket_fd.is_valid())
+    return socket_fd;
 
   // Change permissions on the socket.
   struct group arc_bridge_group;
@@ -306,29 +308,30 @@ base::ScopedFD ArcSessionImpl::CreateSocket() {
   if (HANDLE_EINTR(getgrnam_r(kArcBridgeSocketGroup, &arc_bridge_group, buf,
                               sizeof(buf), &arc_bridge_group_res)) < 0) {
     PLOG(ERROR) << "getgrnam_r";
-    return base::ScopedFD();
+    return mojo::edk::ScopedPlatformHandle();
   }
 
   if (!arc_bridge_group_res) {
     LOG(ERROR) << "Group '" << kArcBridgeSocketGroup << "' not found";
-    return base::ScopedFD();
+    return mojo::edk::ScopedPlatformHandle();
   }
 
   if (HANDLE_EINTR(chown(kArcBridgeSocketPath, -1, arc_bridge_group.gr_gid)) <
       0) {
     PLOG(ERROR) << "chown";
-    return base::ScopedFD();
+    return mojo::edk::ScopedPlatformHandle();
   }
 
   if (!base::SetPosixFilePermissions(socket_path, 0660)) {
     PLOG(ERROR) << "Could not set permissions: " << socket_path.value();
-    return base::ScopedFD();
+    return mojo::edk::ScopedPlatformHandle();
   }
 
   return socket_fd;
 }
 
-void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
+void ArcSessionImpl::OnSocketCreated(
+    mojo::edk::ScopedPlatformHandle socket_fd) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, State::CREATING_SOCKET);
 
@@ -362,8 +365,9 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
                  base::Passed(&socket_fd)));
 }
 
-void ArcSessionImpl::OnInstanceStarted(base::ScopedFD socket_fd,
-                                       StartArcInstanceResult result) {
+void ArcSessionImpl::OnInstanceStarted(
+    mojo::edk::ScopedPlatformHandle socket_fd,
+    StartArcInstanceResult result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == State::STOPPED) {
     // This is the case that error is notified via DBus before the
@@ -411,18 +415,20 @@ void ArcSessionImpl::OnInstanceStarted(base::ScopedFD socket_fd,
 }
 
 // static
-base::ScopedFD ArcSessionImpl::ConnectMojo(base::ScopedFD socket_fd,
-                                           base::ScopedFD cancel_fd) {
-  if (!WaitForSocketReadable(socket_fd.get(), cancel_fd.get())) {
+mojo::edk::ScopedPlatformHandle ArcSessionImpl::ConnectMojo(
+    mojo::edk::ScopedPlatformHandle socket_fd,
+    base::ScopedFD cancel_fd) {
+  if (!WaitForSocketReadable(socket_fd.get().handle, cancel_fd.get())) {
     VLOG(1) << "Mojo connection was cancelled.";
-    return base::ScopedFD();
+    return mojo::edk::ScopedPlatformHandle();
   }
 
-  int raw_fd = -1;
-  if (!IPC::ServerOnConnect(socket_fd.get(), &raw_fd)) {
-    return base::ScopedFD();
+  mojo::edk::ScopedPlatformHandle scoped_fd;
+  if (!mojo::edk::ServerAcceptConnection(socket_fd.get(), &scoped_fd,
+                                         /* check_peer_user = */ false) ||
+      !scoped_fd.is_valid()) {
+    return mojo::edk::ScopedPlatformHandle();
   }
-  base::ScopedFD scoped_fd(raw_fd);
 
   // Hardcode pid 0 since it is unused in mojo.
   const base::ProcessHandle kUnusedChildProcessHandle = 0;
@@ -437,17 +443,16 @@ base::ScopedFD ArcSessionImpl::ConnectMojo(base::ScopedFD socket_fd,
 
   struct iovec iov = {const_cast<char*>(""), 1};
   ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-      mojo::edk::PlatformHandle(scoped_fd.get()), &iov, 1, handles->data(),
-      handles->size());
+      scoped_fd.get(), &iov, 1, handles->data(), handles->size());
   if (result == -1) {
     PLOG(ERROR) << "sendmsg";
-    return base::ScopedFD();
+    return mojo::edk::ScopedPlatformHandle();
   }
 
   return scoped_fd;
 }
 
-void ArcSessionImpl::OnMojoConnected(base::ScopedFD fd) {
+void ArcSessionImpl::OnMojoConnected(mojo::edk::ScopedPlatformHandle fd) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == State::STOPPED) {
@@ -471,8 +476,8 @@ void ArcSessionImpl::OnMojoConnected(base::ScopedFD fd) {
     return;
   }
 
-  mojo::ScopedMessagePipeHandle server_pipe = mojo::edk::CreateMessagePipe(
-      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(fd.release())));
+  mojo::ScopedMessagePipeHandle server_pipe =
+      mojo::edk::CreateMessagePipe(std::move(fd));
   if (!server_pipe.is_valid()) {
     LOG(ERROR) << "Invalid pipe";
     StopArcInstance();

@@ -247,7 +247,8 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
 }
 
 bool ServerAcceptConnection(PlatformHandle server_handle,
-                            ScopedPlatformHandle* connection_handle) {
+                            ScopedPlatformHandle* connection_handle,
+                            bool check_peer_user) {
   DCHECK(server_handle.is_valid());
   connection_handle->reset();
 #if defined(OS_NACL)
@@ -260,7 +261,7 @@ bool ServerAcceptConnection(PlatformHandle server_handle,
     return IsRecoverableError();
 
   // Verify that the IPC channel peer is running as the same user.
-  if (!IsPeerAuthorized(accept_handle.get())) {
+  if (check_peer_user && !IsPeerAuthorized(accept_handle.get())) {
     return true;
   }
 

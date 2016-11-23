@@ -89,7 +89,6 @@ static_library("arc") {
     "//components/user_manager",
     "//device/bluetooth",
     "//google_apis",
-    "//ipc:ipc",
     "//mojo/edk/system",
     "//skia",
     "//third_party/re2:re2",

@@ -60,7 +60,6 @@
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/wm_helper.h"
-#include "ipc/unix_domain_socket_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
