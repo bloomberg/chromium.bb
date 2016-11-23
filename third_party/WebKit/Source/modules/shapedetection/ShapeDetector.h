@@ -10,7 +10,8 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/FaceDetectorOptions.h"
-#include "public/platform/modules/shapedetection/shapedetection.mojom-blink.h"
+#include "public/platform/modules/shapedetection/barcodedetection.mojom-blink.h"
+#include "public/platform/modules/shapedetection/facedetection.mojom-blink.h"
 
 namespace blink {
 
@@ -56,12 +57,13 @@ class MODULES_EXPORT ShapeDetector
   void onDetectBarcodes(ScriptPromiseResolver*,
                         Vector<mojom::blink::BarcodeDetectionResultPtr>);
 
-  mojom::blink::ShapeDetectionPtr m_service;
+  mojom::blink::FaceDetectionPtr m_faceService;
+  mojom::blink::BarcodeDetectionPtr m_barcodeService;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 
  protected:
-  mojom::blink::FaceDetectorOptionsPtr m_options;
+  mojom::blink::FaceDetectorOptionsPtr m_faceDetectorOptions;
 };
 
 }  // namespace blink

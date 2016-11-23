@@ -6,17 +6,17 @@ package org.chromium.content.browser.shapedetection;
 
 import android.content.Context;
 
-import org.chromium.blink.mojom.ShapeDetection;
+import org.chromium.blink.mojom.FaceDetection;
 import org.chromium.services.service_manager.InterfaceFactory;
 
 /**
  * A factory method for registry in InterfaceRegistrarImpl.java.
  */
-public class ShapeDetectionFactory implements InterfaceFactory<ShapeDetection> {
-    public ShapeDetectionFactory(Context context) {}
+public class FaceDetectionFactory implements InterfaceFactory<FaceDetection> {
+    public FaceDetectionFactory(Context context) {}
 
     @Override
-    public ShapeDetection createImpl() {
-        return new ShapeDetectionImpl();
+    public FaceDetection createImpl() {
+        return new FaceDetectionImpl();
     }
 }

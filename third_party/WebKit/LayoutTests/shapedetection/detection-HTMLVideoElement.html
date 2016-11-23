@@ -2,10 +2,12 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
-<script src="resources/mock-shapedetection.js"></script>
+<script src="resources/mock-barcodedetection.js"></script>
+<script src="resources/mock-facedetection.js"></script>
 <script>
 
-var createTestForVideoElement = function(detectorName, detectionResultTest) {
+var createTestForVideoElement = function(detectorName, mockReady,
+                                         detectionResultTest) {
   async_test(function(t) {
     var video = document.createElement('video');
     video.src = "../imported/wpt/media/white.webm";
@@ -14,14 +16,14 @@ var createTestForVideoElement = function(detectorName, detectionResultTest) {
     video.onerror = this.unreached_func("<video> error");
     video.onplay = this.step_func(function() {
       var theMock = null;
-      mockShapeDetectionReady
+      mockReady()
         .then(mock => {
           theMock = mock;
           var detector = eval("new " + detectorName + "();");
           return detector;
         })
         .catch(error => {
-          assert_unreached("Error creating MockShapeDetection: " + error);
+          assert_unreached("Error creating MockFaceDetection: " + error);
         })
         .then(detector => {
           return detector.detect(video);
@@ -36,7 +38,7 @@ var createTestForVideoElement = function(detectorName, detectionResultTest) {
     });
 
     video.load();
-  }, 'Detector detect(HTMLVideoElement)');
+  }, "Detector detect(HTMLVideoElement)");
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -55,10 +57,20 @@ function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
 }
 
 // These tests verify that a Detector's detect() works on an HTMLVideoElement.
-// Use the mock mojo server implemented in mock-shapedetection.js.
+// Use the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForVideoElement, [
-  [ "Face", "FaceDetector", FaceDetectorDetectionResultTest ],
-  [ "Barcode", "BarcodeDetector", BarcodeDetectorDetectionResultTest ]
+  [
+    "Face",
+    "FaceDetector",
+    () => { return mockFaceDetectionReady; },
+    FaceDetectorDetectionResultTest
+  ],
+  [
+    "Barcode",
+    "BarcodeDetector",
+    () => { return mockBarcodeDetectionReady; },
+    BarcodeDetectorDetectionResultTest
+  ]
 ]);
 
 </script>

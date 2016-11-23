@@ -15,26 +15,16 @@ struct FaceDetectionResult {
   array<gfx.mojom.RectF> bounding_boxes;
 };
 
-struct BarcodeDetectionResult {
-  // Barcode or QR extracted contents (see e.g.
-  // https://github.com/zxing/zxing/wiki/Barcode-Contents).
-  string raw_value;
-  gfx.mojom.RectF bounding_box;
-};
-
 struct FaceDetectorOptions {
   uint32 max_detected_faces;
   bool fast_mode;
 };
 
-interface ShapeDetection {
+interface FaceDetection {
   // |frame_data| contains tightly packed image pixels in ARGB32 format,
   // row-major order.
   // TODO(mcasas): Consider using mojo::Bitmap here, https://crbug.com/665488.
-  DetectFaces(handle<shared_buffer> frame_data, uint32 width, uint32 height,
-              FaceDetectorOptions options)
+  Detect(handle<shared_buffer> frame_data, uint32 width, uint32 height,
+         FaceDetectorOptions options)
     => (FaceDetectionResult result);
-
-  DetectBarcodes(handle<shared_buffer> frame_data, uint32 width, uint32 height)
-    => (array<BarcodeDetectionResult> results);
 };

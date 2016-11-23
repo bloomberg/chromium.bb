@@ -44,17 +44,19 @@ static CanvasImageSource* toImageSourceInternal(
 }  // anonymous namespace
 
 ShapeDetector::ShapeDetector(LocalFrame& frame) {
-  DCHECK(!m_service.is_bound());
+  DCHECK(!m_faceService.is_bound());
+  DCHECK(!m_barcodeService.is_bound());
   DCHECK(frame.interfaceProvider());
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
+  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_faceService));
+  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_barcodeService));
 }
 
 ShapeDetector::ShapeDetector(LocalFrame& frame,
                              const FaceDetectorOptions& options)
     : ShapeDetector(frame) {
-  m_options = mojom::blink::FaceDetectorOptions::New();
-  m_options->max_detected_faces = options.maxDetectedFaces();
-  m_options->fast_mode = options.fastMode();
+  m_faceDetectorOptions = mojom::blink::FaceDetectorOptions::New();
+  m_faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
+  m_faceDetectorOptions->fast_mode = options.fastMode();
 }
 
 ScriptPromise ShapeDetector::detectShapes(
@@ -163,23 +165,25 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  if (!m_service) {
-    resolver->reject(DOMException::create(
-        NotSupportedError, "Shape detection service unavailable."));
-    return promise;
-  }
-
   m_serviceRequests.add(resolver);
-  DCHECK(m_service.is_bound());
   if (detectorType == DetectorType::Face) {
-    m_service->DetectFaces(
-        std::move(sharedBufferHandle), img->naturalWidth(),
-        img->naturalHeight(), m_options.Clone(),
-        convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectFaces,
-                                        wrapPersistent(this),
-                                        wrapPersistent(resolver))));
+    if (!m_faceService) {
+      resolver->reject(DOMException::create(
+          NotSupportedError, "Face detection service unavailable."));
+      return promise;
+    }
+    m_faceService->Detect(std::move(sharedBufferHandle), img->naturalWidth(),
+                          img->naturalHeight(), m_faceDetectorOptions.Clone(),
+                          convertToBaseCallback(WTF::bind(
+                              &ShapeDetector::onDetectFaces,
+                              wrapPersistent(this), wrapPersistent(resolver))));
   } else if (detectorType == DetectorType::Barcode) {
-    m_service->DetectBarcodes(
+    if (!m_barcodeService) {
+      resolver->reject(DOMException::create(
+          NotSupportedError, "Barcode detection service unavailable."));
+      return promise;
+    }
+    m_barcodeService->Detect(
         std::move(sharedBufferHandle), img->naturalWidth(),
         img->naturalHeight(),
         convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectBarcodes,
@@ -298,12 +302,6 @@ ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
     return promise;
   }
 
-  if (!m_service) {
-    resolver->reject(DOMException::create(
-        NotSupportedError, "Shape detection service unavailable."));
-    return promise;
-  }
-
   const mojo::ScopedSharedBufferMapping mappedBuffer =
       sharedBufferHandle->Map(size);
   DCHECK(mappedBuffer.get());
@@ -311,15 +309,24 @@ ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
   memcpy(mappedBuffer.get(), data, size);
 
   m_serviceRequests.add(resolver);
-  DCHECK(m_service.is_bound());
   if (detectorType == DetectorType::Face) {
-    m_service->DetectFaces(
-        std::move(sharedBufferHandle), width, height, m_options.Clone(),
-        convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectFaces,
-                                        wrapPersistent(this),
-                                        wrapPersistent(resolver))));
+    if (!m_faceService) {
+      resolver->reject(DOMException::create(
+          NotSupportedError, "Face detection service unavailable."));
+      return promise;
+    }
+    m_faceService->Detect(std::move(sharedBufferHandle), width, height,
+                          m_faceDetectorOptions.Clone(),
+                          convertToBaseCallback(WTF::bind(
+                              &ShapeDetector::onDetectFaces,
+                              wrapPersistent(this), wrapPersistent(resolver))));
   } else if (detectorType == DetectorType::Barcode) {
-    m_service->DetectBarcodes(
+    if (!m_barcodeService) {
+      resolver->reject(DOMException::create(
+          NotSupportedError, "Barcode detection service unavailable."));
+      return promise;
+    }
+    m_barcodeService->Detect(
         std::move(sharedBufferHandle), width, height,
         convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectBarcodes,
                                         wrapPersistent(this),

@@ -2,7 +2,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
-<script src="resources/mock-shapedetection.js"></script>
+<script src="resources/mock-facedetection.js"></script>
 <body>
 <img id='img' src='../media/content/greenbox.png'/>
 </body>
@@ -10,7 +10,7 @@
 async_test(function(t) {
   var img = document.getElementById("img");
   var theMock = null;
-  mockShapeDetectionReady
+  mockFaceDetectionReady
     .then(mock => {
       theMock = mock;
       return new FaceDetector();

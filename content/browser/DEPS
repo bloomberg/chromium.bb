@@ -122,7 +122,7 @@ include_rules = [
   # one separately.
   "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h",
-  "+third_party/WebKit/public/platform/modules/shapedetection/shapedetection.mojom.h",
+  "+third_party/WebKit/public/platform/modules/shapedetection/facedetection.mojom.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

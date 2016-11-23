@@ -11,7 +11,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
-#include "public/platform/modules/shapedetection/shapedetection.mojom-blink.h"
 
 namespace blink {
 

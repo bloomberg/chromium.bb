@@ -2,10 +2,12 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
-<script src="resources/mock-shapedetection.js"></script>
+<script src="resources/mock-barcodedetection.js"></script>
+<script src="resources/mock-facedetection.js"></script>
 <script>
 
-var createTestForImageBitmap = function(detectorName, detectionResultTest) {
+var createTestForImageBitmap = function(detectorName, mockReady,
+                                        detectionResultTest) {
   async_test(function(t) {
     var img = new Image();
 
@@ -16,7 +18,7 @@ var createTestForImageBitmap = function(detectorName, detectionResultTest) {
       createImageBitmap(img)
           .then(imageBitmap => {
             theImageBitmap = imageBitmap;
-            return mockShapeDetectionReady;
+            return mockReady();
           })
           .catch(error => {
             assert_unreached('createImageBitmap() error: ' + error);
@@ -27,7 +29,7 @@ var createTestForImageBitmap = function(detectorName, detectionResultTest) {
             return detector;
           })
           .catch(error => {
-            assert_unreached("Error creating MockShapeDetection: " + error);
+            assert_unreached("Error creating MockFaceDetection: " + error);
           })
           .then(detector => {
             return detector.detect(theImageBitmap);
@@ -41,7 +43,7 @@ var createTestForImageBitmap = function(detectorName, detectionResultTest) {
           });
     }
     img.src = '../media/content/greenbox.png';
-  }, 'Detector detect(ImageBitmap)');
+  }, "Detector detect(ImageBitmap)");
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -59,10 +61,20 @@ function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
 }
 
 // These tests verify that a Detector's detect() works on an ImageBitmap.
-// Use the mock mojo server implemented in mock-shapedetection.js.
+// Use the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForImageBitmap, [
-  [ "Face", "FaceDetector", FaceDetectorDetectionResultTest ],
-  [ "Barcode", "BarcodeDetector", BarcodeDetectorDetectionResultTest ]
+  [
+    "Face",
+    "FaceDetector",
+    () => { return mockFaceDetectionReady; },
+    FaceDetectorDetectionResultTest
+  ],
+  [
+    "Barcode",
+    "BarcodeDetector",
+    () => { return mockBarcodeDetectionReady; },
+    BarcodeDetectorDetectionResultTest
+  ]
 ]);
 
 </script>

@@ -10,10 +10,9 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 
 import org.chromium.base.Log;
-import org.chromium.blink.mojom.BarcodeDetectionResult;
+import org.chromium.blink.mojom.FaceDetection;
 import org.chromium.blink.mojom.FaceDetectionResult;
 import org.chromium.blink.mojom.FaceDetectorOptions;
-import org.chromium.blink.mojom.ShapeDetection;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
@@ -22,22 +21,20 @@ import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import java.nio.ByteBuffer;
 
 /**
- * Android implementation of the shapedetection service defined in
- * third_party/WebKit/public/platform/modules/shapedetection/shapedetection.mojom
+ * Android implementation of the FaceDetection service defined in
+ * third_party/WebKit/public/platform/modules/FaceDetection/FaceDetection.mojom
  */
-public class ShapeDetectionImpl implements ShapeDetection {
-    private static final String TAG = "ShapeDetectionImpl";
+public class FaceDetectionImpl implements FaceDetection {
+    private static final String TAG = "FaceDetectionImpl";
     // By default, there is no limit in the number of faces detected.
     private static final int MAX_FACES = 10;
     // Referred from
     // https://cs.chromium.org/chromium/src/mojo/edk/system/broker_host.cc?l=24
     private static final int MOJO_SHAREDBUFFER_MAX_BYTES = 16 * 1024 * 1024;
 
-    public ShapeDetectionImpl() {}
-
     @Override
-    public void detectFaces(SharedBufferHandle frameData, int width, int height,
-            FaceDetectorOptions options, DetectFacesResponse callback) {
+    public void detect(SharedBufferHandle frameData, int width, int height,
+            FaceDetectorOptions options, DetectResponse callback) {
         if (!frameData.isValid()) {
             Log.d(TAG, "Invalid sharedBufferHandle.");
             return;
@@ -107,13 +104,6 @@ public class ShapeDetectionImpl implements ShapeDetection {
         }
 
         callback.call(faceDetectionResult);
-    }
-
-    @Override
-    public void detectBarcodes(
-            SharedBufferHandle frameData, int width, int height, DetectBarcodesResponse callback) {
-        // TODO(mcasas): https://crbug.com/665150 implement this method.
-        callback.call(new BarcodeDetectionResult[0]);
     }
 
     @Override
