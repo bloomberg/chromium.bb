@@ -91,10 +91,9 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   return "chrome-ext-ansg";
 }
 
-std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
-    bool for_search) const {
+std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return search::InstantExtendedEnabledParam(for_search);
+  return search::InstantExtendedEnabledParam();
 }
 
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(

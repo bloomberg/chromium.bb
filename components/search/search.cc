@@ -147,10 +147,7 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
 }
 
-std::string InstantExtendedEnabledParam(bool for_search) {
-  // TODO(treib): Remove |for_search| and update callers that set it to true.
-  if (for_search)
-    return std::string();
+std::string InstantExtendedEnabledParam() {
   return std::string(google_util::kInstantExtendedAPIParam) + "=" +
          base::Uint64ToString(EmbeddedSearchPageVersion()) + "&";
 }

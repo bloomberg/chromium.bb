@@ -123,9 +123,8 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   return "chrome-ext-ansg";
 }
 
-std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
-    bool for_search) const {
-  return search::InstantExtendedEnabledParam(for_search);
+std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
+  return search::InstantExtendedEnabledParam();
 }
 
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(

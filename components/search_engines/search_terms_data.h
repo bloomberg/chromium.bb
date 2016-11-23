@@ -49,8 +49,9 @@ class SearchTermsData {
   // This implementation returns the empty string.
   virtual std::string GetSuggestRequestIdentifier() const;
 
-  // Returns a string indicating whether InstantExtended is enabled.
-  virtual std::string InstantExtendedEnabledParam(bool for_search) const;
+  // Returns a string indicating whether InstantExtended is enabled, suitable
+  // for adding as a query string param to the homepage or search requests.
+  virtual std::string InstantExtendedEnabledParam() const;
 
   // Returns a string that will cause the search results page to update
   // incrementally.

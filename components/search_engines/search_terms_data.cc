@@ -54,8 +54,7 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
-std::string SearchTermsData::InstantExtendedEnabledParam(
-    bool for_search) const {
+std::string SearchTermsData::InstantExtendedEnabledParam() const {
   return std::string();
 }
 

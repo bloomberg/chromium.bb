@@ -279,7 +279,7 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string GetApplicationLocale() const override;
   base::string16 GetRlzParameterValue(bool from_app_list) const override;
   std::string GetSearchClient() const override;
-  std::string InstantExtendedEnabledParam(bool for_search) const override;
+  std::string InstantExtendedEnabledParam() const override;
   std::string ForceInstantResultsParam(bool for_prerender) const override;
   std::string GoogleImageSearchSource() const override;
 
@@ -289,7 +289,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   base::string16 rlz_parameter_value_;
   std::string search_client_;
   std::string instant_extended_enabled_param_;
-  std::string instant_extended_enabled_param_for_search_;
   std::string force_instant_results_param_;
   std::string force_instant_results_param_for_prerender_;
   std::string google_image_search_source_;
@@ -304,9 +303,7 @@ SearchTermsDataSnapshot::SearchTermsDataSnapshot(
       rlz_parameter_value_(search_terms_data.GetRlzParameterValue(false)),
       search_client_(search_terms_data.GetSearchClient()),
       instant_extended_enabled_param_(
-          search_terms_data.InstantExtendedEnabledParam(false)),
-      instant_extended_enabled_param_for_search_(
-          search_terms_data.InstantExtendedEnabledParam(true)),
+          search_terms_data.InstantExtendedEnabledParam()),
       force_instant_results_param_(
           search_terms_data.ForceInstantResultsParam(false)),
       force_instant_results_param_for_prerender_(
@@ -334,10 +331,8 @@ std::string SearchTermsDataSnapshot::GetSearchClient() const {
   return search_client_;
 }
 
-std::string SearchTermsDataSnapshot::InstantExtendedEnabledParam(
-    bool for_search) const {
-  return for_search ? instant_extended_enabled_param_ :
-      instant_extended_enabled_param_for_search_;
+std::string SearchTermsDataSnapshot::InstantExtendedEnabledParam() const {
+  return instant_extended_enabled_param_;
 }
 
 std::string SearchTermsDataSnapshot::ForceInstantResultsParam(

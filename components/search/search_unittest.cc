@@ -165,17 +165,13 @@ typedef EmbeddedSearchFieldTrialTest InstantExtendedEnabledParamTest;
 TEST_F(InstantExtendedEnabledParamTest, QueryExtractionDisabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                      "Group1 espv:12"));
-  // Make sure InstantExtendedEnabledParam() returns an empty string for search
-  // requests.
-  EXPECT_EQ("", InstantExtendedEnabledParam(true));
-  EXPECT_EQ("espv=12&", InstantExtendedEnabledParam(false));
+  EXPECT_EQ("espv=12&", InstantExtendedEnabledParam());
 }
 
 TEST_F(InstantExtendedEnabledParamTest, UseDefaultEmbeddedSearchPageVersion) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:-1"));
-  EXPECT_EQ("", InstantExtendedEnabledParam(true));
-  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(false));
+  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam());
 }
 
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)

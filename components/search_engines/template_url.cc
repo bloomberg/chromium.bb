@@ -986,11 +986,13 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_INSTANT_EXTENDED_ENABLED:
         DCHECK(!i->is_post_param);
+        // Regular search requests don't use Instant, so only add the param for
+        // other types.
         HandleReplacement(std::string(),
-                          search_terms_data.InstantExtendedEnabledParam(
-                              type_ == SEARCH),
-                          *i,
-                          &url);
+                          type_ == SEARCH
+                              ? std::string()
+                              : search_terms_data.InstantExtendedEnabledParam(),
+                          *i, &url);
         break;
 
       case GOOGLE_CONTEXTUAL_SEARCH_VERSION:
