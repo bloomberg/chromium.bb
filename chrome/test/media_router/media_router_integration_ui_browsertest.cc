@@ -30,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       "window.document.getElementById('media-router-container')."
       "sinksToShow_.length)");
   ASSERT_GT(ExecuteScriptAndExtractInt(dialog_contents, sink_length_script), 0);
-
+  LOG(INFO) << "Choose Sink";
   ChooseSink(web_contents, kTestSinkName);
 
 // Linux and Windows bots run browser tests without a physical display, which
@@ -57,10 +57,13 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   CheckDialogRemainsOpen(web_contents);
 #elif defined(OS_LINUX) || defined(OS_WIN)
   Wait(base::TimeDelta::FromSeconds(5));
+  LOG(INFO) << "Waiting for dialog to be closed";
   WaitUntilDialogClosed(web_contents);
+  LOG(INFO) << "Reopen MR dialog";
   dialog_contents = OpenMRDialog(web_contents);
 #endif
 
+  LOG(INFO) << "Check route details dialog";
   std::string route_script;
   // Verify the route details is not undefined.
   route_script = base::StringPrintf(
@@ -94,6 +97,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       "domAutomationController.send("
       "window.document.getElementById('media-router-container').shadowRoot."
       "getElementById('container-header') != undefined)");
+  LOG(INFO) << "Checking container-header";
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
       base::Bind(
@@ -108,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   std::string sink_name = ExecuteScriptAndExtractString(
       dialog_contents, sink_script);
   ASSERT_EQ(kTestSinkName, sink_name);
+  LOG(INFO) << "Finish verification";
 
 #if defined(OS_MACOSX)
   // Simulate moving the mouse off the dialog. Confirm that the dialog closes
@@ -121,10 +126,13 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       "new Event('mouseleave')))");
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_leave_script));
 #endif
+  LOG(INFO) << "Closing route on UI";
   CloseRouteOnUI();
 #if defined(OS_MACOSX)
+  LOG(INFO) << "Waiting for dialog to be closed";
   WaitUntilDialogClosed(web_contents);
 #endif
+  LOG(INFO) << "Closed dialog, end of test";
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
