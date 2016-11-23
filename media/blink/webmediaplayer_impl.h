@@ -298,10 +298,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Gets the duration value reported by the pipeline.
   double GetPipelineDuration() const;
 
-  // Called by VideoRendererImpl on its internal thread with the new frame to be
-  // painted.
-  void FrameReady(const scoped_refptr<VideoFrame>& frame);
-
   // Returns the current video frame from |compositor_|. Blocks until the
   // compositor can return the frame.
   scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor();
