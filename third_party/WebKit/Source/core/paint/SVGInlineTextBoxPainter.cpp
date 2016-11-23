@@ -51,12 +51,9 @@ FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
     const ComputedStyle& style,
     const LayoutPoint& paintOffset,
     bool includeSelectionRect) const {
-  // We compute the paint rect with what looks like the logical values, to match
-  // the computation in SVGInlineTextBox::calculateBoundaries, and the fact that
-  // vertical (etc) layouts are handled by SVGTextLayoutEngine.
-  LayoutRect bounds(LayoutPoint(m_svgInlineTextBox.topLeft() + paintOffset),
-                    LayoutSize(m_svgInlineTextBox.logicalWidth(),
-                               m_svgInlineTextBox.logicalHeight()));
+  LayoutRect bounds(
+      m_svgInlineTextBox.locationIncludingFlipping() + paintOffset,
+      m_svgInlineTextBox.size());
   if (hasShadow(paintInfo, style))
     bounds.expand(style.textShadow()->rectOutsetsIncludingOriginal());
   if (includeSelectionRect) {
