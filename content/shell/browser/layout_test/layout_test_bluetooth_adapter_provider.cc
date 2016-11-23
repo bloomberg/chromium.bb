@@ -63,7 +63,7 @@ namespace {
 // Bluetooth UUIDs suitable to pass to BluetoothUUID():
 // Services:
 const char kBatteryServiceUUID[] = "180f";
-const char kBlacklistTestServiceUUID[] = "611c954a-263b-4f4a-aab6-01ddb953f985";
+const char kBlocklistTestServiceUUID[] = "611c954a-263b-4f4a-aab6-01ddb953f985";
 const char kDeviceInformationServiceUUID[] = "180a";
 const char kGenericAccessServiceUUID[] = "1800";
 const char kGlucoseServiceUUID[] = "1808";
@@ -74,7 +74,7 @@ const char kRequestDisconnectionServiceUUID[] =
     "01d7d889-7451-419f-aeb8-d65e7b9277af";
 const char kTxPowerServiceUUID[] = "1804";
 // Characteristics:
-const char kBlacklistExcludeReadsCharacteristicUUID[] =
+const char kBlocklistExcludeReadsCharacteristicUUID[] =
     "bad1c9a2-9a5b-4015-8b60-1579bbbf2135";
 const char kRequestDisconnectionCharacteristicUUID[] =
     "01d7d88a-7451-419f-aeb8-d65e7b9277af";
@@ -228,8 +228,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetStopNotifySessionFinishesAfterReconnectionAdapter(
         false /* disconnect */);
   }
-  if (fake_adapter_name == "BlacklistTestAdapter")
-    return GetBlacklistTestAdapter();
+  if (fake_adapter_name == "BlocklistTestAdapter")
+    return GetBlocklistTestAdapter();
   if (fake_adapter_name == "FailingConnectionsAdapter")
     return GetFailingConnectionsAdapter();
   if (fake_adapter_name == "FailingGATTOperationsAdapter")
@@ -1074,20 +1074,20 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
 
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
-LayoutTestBluetoothAdapterProvider::GetBlacklistTestAdapter() {
+LayoutTestBluetoothAdapterProvider::GetBlocklistTestAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
 
   BluetoothDevice::UUIDList uuids;
-  uuids.push_back(BluetoothUUID(kBlacklistTestServiceUUID));
+  uuids.push_back(BluetoothUUID(kBlocklistTestServiceUUID));
   uuids.push_back(BluetoothUUID(kDeviceInformationServiceUUID));
   uuids.push_back(BluetoothUUID(kGenericAccessServiceUUID));
   uuids.push_back(BluetoothUUID(kHeartRateServiceUUID));
   uuids.push_back(BluetoothUUID(kHumanInterfaceDeviceServiceUUID));
 
   std::unique_ptr<NiceMockBluetoothDevice> device(
-      GetConnectableDevice(adapter.get(), "Blacklist Test Device", uuids));
+      GetConnectableDevice(adapter.get(), "Blocklist Test Device", uuids));
 
-  device->AddMockService(GetBlacklistTestService(device.get()));
+  device->AddMockService(GetBlocklistTestService(device.get()));
   device->AddMockService(GetDeviceInformationService(device.get()));
   device->AddMockService(GetGenericAccessService(device.get()));
   device->AddMockService(GetHeartRateService(adapter.get(), device.get()));
@@ -1299,22 +1299,22 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTService(
 
 // static
 std::unique_ptr<NiceMockBluetoothGattService>
-LayoutTestBluetoothAdapterProvider::GetBlacklistTestService(
+LayoutTestBluetoothAdapterProvider::GetBlocklistTestService(
     device::MockBluetoothDevice* device) {
-  std::unique_ptr<NiceMockBluetoothGattService> blacklist_test_service(
-      GetBaseGATTService("Blacklist Test", device, kBlacklistTestServiceUUID));
+  std::unique_ptr<NiceMockBluetoothGattService> blocklist_test_service(
+      GetBaseGATTService("Blocklist Test", device, kBlocklistTestServiceUUID));
 
   std::unique_ptr<NiceMockBluetoothGattCharacteristic>
-      blacklist_exclude_reads_characteristic(GetBaseGATTCharacteristic(
-          "Excluded Reads Characteristic", blacklist_test_service.get(),
-          kBlacklistExcludeReadsCharacteristicUUID,
+      blocklist_exclude_reads_characteristic(GetBaseGATTCharacteristic(
+          "Excluded Reads Characteristic", blocklist_test_service.get(),
+          kBlocklistExcludeReadsCharacteristicUUID,
           BluetoothRemoteGattCharacteristic::PROPERTY_READ |
               BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
   // Crash if ReadRemoteCharacteristic called. Not using GoogleMock's Expect
   // because this is used in layout tests that may not report a mock expectation
   // error correctly as a layout test failure.
-  ON_CALL(*blacklist_exclude_reads_characteristic,
+  ON_CALL(*blocklist_exclude_reads_characteristic,
           ReadRemoteCharacteristic(_, _))
       .WillByDefault(
           Invoke([](const BluetoothRemoteGattCharacteristic::ValueCallback&,
@@ -1323,14 +1323,14 @@ LayoutTestBluetoothAdapterProvider::GetBlacklistTestService(
           }));
 
   // Write response.
-  ON_CALL(*blacklist_exclude_reads_characteristic,
+  ON_CALL(*blocklist_exclude_reads_characteristic,
           WriteRemoteCharacteristic(_, _, _))
       .WillByDefault(RunCallback<1 /* success callback */>());
 
-  blacklist_test_service->AddMockCharacteristic(
-      std::move(blacklist_exclude_reads_characteristic));
+  blocklist_test_service->AddMockCharacteristic(
+      std::move(blocklist_exclude_reads_characteristic));
 
-  return blacklist_test_service;
+  return blocklist_test_service;
 }
 
 // static

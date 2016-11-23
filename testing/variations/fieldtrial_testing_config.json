@@ -2284,7 +2284,7 @@
             ]
         }
     ],
-    "WebBluetoothBlacklist": [
+    "WebBluetoothBlocklist": [
         {
             "platforms": [
                 "android",
@@ -2296,11 +2296,11 @@
             "experiments": [
                 {
                     "//1": "The value 'ed5f25a4:e' is included for the",
-                    "//2": "WebBluetoothTest BlacklistShouldBlock test.",
+                    "//2": "WebBluetoothTest BlocklistShouldBlock test.",
                     "//3": "TODO(643013): Remove other values in Chrome 55 or later.",
                     "name": "TestGroup",
                     "params": {
-                        "blacklist_additions": "00060000:e,fffd:e,ed5f25a4:e"
+                        "blocklist_additions": "00060000:e,fffd:e,ed5f25a4:e"
                     }
                 }
             ]

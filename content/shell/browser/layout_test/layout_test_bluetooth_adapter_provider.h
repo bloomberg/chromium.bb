@@ -396,20 +396,20 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetStopNotifySessionFinishesAfterReconnectionAdapter(bool disconnect);
 
-  // |BlacklistTestAdapter|
+  // |BlocklistTestAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:
-  //   - |ConnectableDevice|(adapter, "Blacklist Test Device", uuids)
+  //   - |ConnectableDevice|(adapter, "Blocklist Test Device", uuids)
   //      - UUIDs:
-  //         - Blacklist Test Service UUID
+  //         - Blocklist Test Service UUID
   //           (611c954a-263b-4f4a-aab6-01ddb953f985)
   //         - Device Information UUID (0x180a)
   //         - Generic Access UUID (0x1800)
   //         - Heart Rate UUID (0x180d)
-  //         - Human Interface Device UUID (0x1812) (a blacklisted service)
+  //         - Human Interface Device UUID (0x1812) (a blocklisted service)
   //      - Services:
-  //         - Blacklist Test Service - Characteristics as described in
-  //           GetBlacklistTestService.
+  //         - Blocklist Test Service - Characteristics as described in
+  //           GetBlocklistTestService.
   //         - Device Information Service - Characteristics as described in
   //           GetDeviceInformationService.
   //         - Generic Access Service - Characteristics as described in
@@ -417,9 +417,9 @@ class LayoutTestBluetoothAdapterProvider {
   //         - Heart Rate Service - Characteristics as described in
   //           GetHeartRateService.
   //         - Human Interface Device Service - No characteristics needed
-  //           because the service is blacklisted.
+  //           because the service is blocklisted.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetBlacklistTestAdapter();
+  GetBlocklistTestAdapter();
 
   // |DelayedServicesDiscoveryAdapter|
   // Inherits from |EmptyAdapter|
@@ -654,7 +654,7 @@ class LayoutTestBluetoothAdapterProvider {
   // |DeviceInformationService|
   // Internal Structure:
   //  - Characteristics:
-  //     - Serial Number String: (0x2a25) (a blacklisted characteristic)
+  //     - Serial Number String: (0x2a25) (a blocklisted characteristic)
   //        - Mock Functions:
   //           - Read: Fails test.
   //           - GetProperties: Returns
@@ -662,10 +662,10 @@ class LayoutTestBluetoothAdapterProvider {
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothGattService>>
   GetDeviceInformationService(device::MockBluetoothDevice* device);
 
-  // |BlacklistTestService|
+  // |BlocklistTestService|
   // Internal Structure:
   //  - Characteristics:
-  //     - Blacklist Exclude Reads Characteristic:
+  //     - Blocklist Exclude Reads Characteristic:
   //       (bad1c9a2-9a5b-4015-8b60-1579bbbf2135)
   //        - Mock Functions:
   //           - Read: Fails test.
@@ -674,7 +674,7 @@ class LayoutTestBluetoothAdapterProvider {
   //               BluetoothRemoteGattCharacteristic::PROPERTY_READ |
   //               BluetoothRemoteGattCharacteristic::PROPERTY_WRITE
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothGattService>>
-  GetBlacklistTestService(device::MockBluetoothDevice* device);
+  GetBlocklistTestService(device::MockBluetoothDevice* device);
 
   // |GenericAccessService|
   // Internal Structure:
@@ -686,7 +686,7 @@ class LayoutTestBluetoothAdapterProvider {
   //           - GetProperties: Returns
   //               BluetoothRemoteGattCharacteristic::PROPERTY_READ |
   //               BluetoothRemoteGattCharacteristic::PROPERTY_WRITE
-  //     - Peripheral Privacy Flag: (0x2A02) (blacklisted for writes)
+  //     - Peripheral Privacy Flag: (0x2A02) (blocklisted for writes)
   //        - Mock Functions:
   //           - Read: Calls success callback with boolean value 'false'.
   //           - Write: Fails test.

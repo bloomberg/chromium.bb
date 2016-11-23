@@ -2,10 +2,10 @@
 
 // Bluetooth UUID constants:
 // Services:
-var blacklist_test_service_uuid = "611c954a-263b-4f4a-aab6-01ddb953f985";
+var blocklist_test_service_uuid = "611c954a-263b-4f4a-aab6-01ddb953f985";
 var request_disconnection_service_uuid = "01d7d889-7451-419f-aeb8-d65e7b9277af";
 // Characteristics:
-var blacklist_exclude_reads_characteristic_uuid =
+var blocklist_exclude_reads_characteristic_uuid =
   "bad1c9a2-9a5b-4015-8b60-1579bbbf2135";
 var request_disconnection_characteristic_uuid =
   "01d7d88a-7451-419f-aeb8-d65e7b9277af";

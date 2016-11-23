@@ -51,7 +51,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // This function performs the following checks before starting a discovery
   // session:
   //   - Validates filters in |request_device_options|.
-  //   - Removes any blacklisted UUIDs from
+  //   - Removes any blocklisted UUIDs from
   //     |request_device_options.optinal_services|.
   //   - Checks if the request came from a cross-origin iframe.
   //   - Checks if the request came from a unique origin.

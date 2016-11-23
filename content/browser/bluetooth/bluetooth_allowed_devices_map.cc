@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "content/browser/bluetooth/bluetooth_blacklist.h"
+#include "content/browser/bluetooth/bluetooth_blocklist.h"
 #include "content/common/bluetooth/web_bluetooth_device_id.h"
 
 using device::BluetoothUUID;
@@ -135,7 +135,7 @@ bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
     const url::Origin& origin,
     const WebBluetoothDeviceId& device_id,
     const BluetoothUUID& service_uuid) const {
-  if (BluetoothBlacklist::Get().IsExcluded(service_uuid)) {
+  if (BluetoothBlocklist::Get().IsExcluded(service_uuid)) {
     return false;
   }
 

@@ -126,33 +126,33 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, KillSwitchShouldBlock) {
               testing::MatchesRegex("NotFoundError: .*globally disabled.*"));
 }
 
-// Tests that using Finch field trial parameters for blacklist additions has
+// Tests that using Finch field trial parameters for blocklist additions has
 // the effect of rejecting requestDevice calls.
-IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlacklistShouldBlock) {
+IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlocklistShouldBlock) {
   // Fake the BluetoothAdapter to say it's present.
   scoped_refptr<device::MockBluetoothAdapter> adapter =
       new testing::NiceMock<device::MockBluetoothAdapter>;
   EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
 
-  if (base::FieldTrialList::TrialExists("WebBluetoothBlacklist")) {
-    LOG(INFO) << "WebBluetoothBlacklist field trial already configured.";
-    ASSERT_NE(variations::GetVariationParamValue("WebBluetoothBlacklist",
-                                                 "blacklist_additions")
+  if (base::FieldTrialList::TrialExists("WebBluetoothBlocklist")) {
+    LOG(INFO) << "WebBluetoothBlocklist field trial already configured.";
+    ASSERT_NE(variations::GetVariationParamValue("WebBluetoothBlocklist",
+                                                 "blocklist_additions")
                   .find("ed5f25a4"),
               std::string::npos)
-        << "ERROR: WebBluetoothBlacklist field trial being tested in\n"
+        << "ERROR: WebBluetoothBlocklist field trial being tested in\n"
            "testing/variations/fieldtrial_testing_config_*.json must\n"
            "include this test's random UUID 'ed5f25a4' in\n"
-           "blacklist_additions.\n";
+           "blocklist_additions.\n";
   } else {
-    LOG(INFO) << "Creating WebBluetoothBlacklist field trial for test.";
+    LOG(INFO) << "Creating WebBluetoothBlocklist field trial for test.";
     // Create a field trial with test parameter.
     std::map<std::string, std::string> params;
-    params["blacklist_additions"] = "ed5f25a4:e";
-    variations::AssociateVariationParams("WebBluetoothBlacklist", "TestGroup",
+    params["blocklist_additions"] = "ed5f25a4:e";
+    variations::AssociateVariationParams("WebBluetoothBlocklist", "TestGroup",
                                          params);
-    base::FieldTrialList::CreateFieldTrial("WebBluetoothBlacklist",
+    base::FieldTrialList::CreateFieldTrial("WebBluetoothBlocklist",
                                            "TestGroup");
   }
 
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlacklistShouldBlock) {
       "  });",
       &rejection));
   EXPECT_THAT(rejection,
-              testing::MatchesRegex("SecurityError: .*blacklisted UUID.*"));
+              testing::MatchesRegex("SecurityError: .*blocklisted UUID.*"));
 }
 
 }  // namespace

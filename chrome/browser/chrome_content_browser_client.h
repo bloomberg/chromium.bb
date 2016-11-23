@@ -170,7 +170,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin) override;
-  std::string GetWebBluetoothBlacklist() override;
+  std::string GetWebBluetoothBlocklist() override;
   net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url,
       content::ResourceContext* context) override;

@@ -112,14 +112,14 @@ DOMException* BluetoothError::take(
       // SecurityErrors:
       MAP_ERROR(GATT_NOT_AUTHORIZED, SecurityError,
                 "GATT operation not authorized.");
-      MAP_ERROR(BLACKLISTED_CHARACTERISTIC_UUID, SecurityError,
-                "getCharacteristic(s) called with blacklisted UUID. "
+      MAP_ERROR(BLOCKLISTED_CHARACTERISTIC_UUID, SecurityError,
+                "getCharacteristic(s) called with blocklisted UUID. "
                 "https://goo.gl/4NeimX");
-      MAP_ERROR(BLACKLISTED_READ, SecurityError,
-                "readValue() called on blacklisted object marked "
+      MAP_ERROR(BLOCKLISTED_READ, SecurityError,
+                "readValue() called on blocklisted object marked "
                 "exclude-reads. https://goo.gl/4NeimX");
-      MAP_ERROR(BLACKLISTED_WRITE, SecurityError,
-                "writeValue() called on blacklisted object marked "
+      MAP_ERROR(BLOCKLISTED_WRITE, SecurityError,
+                "writeValue() called on blocklisted object marked "
                 "exclude-writes. https://goo.gl/4NeimX");
       MAP_ERROR(NOT_ALLOWED_TO_ACCESS_ANY_SERVICE, SecurityError,
                 "Origin is not allowed to access any service. Tip: Add the "
@@ -129,8 +129,8 @@ DOMException* BluetoothError::take(
                 "Origin is not allowed to access the service. Tip: Add the "
                 "service UUID to 'optionalServices' in requestDevice() "
                 "options. https://goo.gl/HxfxSQ");
-      MAP_ERROR(REQUEST_DEVICE_WITH_BLACKLISTED_UUID, SecurityError,
-                "requestDevice() called with a filter containing a blacklisted "
+      MAP_ERROR(REQUEST_DEVICE_WITH_BLOCKLISTED_UUID, SecurityError,
+                "requestDevice() called with a filter containing a blocklisted "
                 "UUID. https://goo.gl/4NeimX");
       MAP_ERROR(REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME, SecurityError,
                 "requestDevice() called from cross-origin iframe.");

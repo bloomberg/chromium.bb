@@ -15,7 +15,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/bluetooth/bluetooth_blacklist.h"
+#include "content/browser/bluetooth/bluetooth_blocklist.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
@@ -466,11 +466,11 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
   RecordGetCharacteristicsCharacteristic(quantity, characteristics_uuid);
 
   if (characteristics_uuid &&
-      BluetoothBlacklist::Get().IsExcluded(characteristics_uuid.value())) {
+      BluetoothBlocklist::Get().IsExcluded(characteristics_uuid.value())) {
     RecordGetCharacteristicsOutcome(quantity,
-                                    UMAGetCharacteristicOutcome::BLACKLISTED);
+                                    UMAGetCharacteristicOutcome::BLOCKLISTED);
     callback.Run(
-        blink::mojom::WebBluetoothResult::BLACKLISTED_CHARACTERISTIC_UUID,
+        blink::mojom::WebBluetoothResult::BLOCKLISTED_CHARACTERISTIC_UUID,
         nullptr /* characteristics */);
     return;
   }
@@ -498,7 +498,7 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
       response_characteristics;
   for (device::BluetoothRemoteGattCharacteristic* characteristic :
        characteristics) {
-    if (BluetoothBlacklist::Get().IsExcluded(characteristic->GetUUID())) {
+    if (BluetoothBlocklist::Get().IsExcluded(characteristic->GetUUID())) {
       continue;
     }
     std::string characteristic_instance_id = characteristic->GetIdentifier();
@@ -559,10 +559,10 @@ void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
     return;
   }
 
-  if (BluetoothBlacklist::Get().IsExcludedFromReads(
+  if (BluetoothBlocklist::Get().IsExcludedFromReads(
           query_result.characteristic->GetUUID())) {
-    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
-    callback.Run(blink::mojom::WebBluetoothResult::BLACKLISTED_READ,
+    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::BLOCKLISTED);
+    callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_READ,
                  nullptr /* value */);
     return;
   }
@@ -603,10 +603,10 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
     return;
   }
 
-  if (BluetoothBlacklist::Get().IsExcludedFromWrites(
+  if (BluetoothBlocklist::Get().IsExcludedFromWrites(
           query_result.characteristic->GetUUID())) {
-    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
-    callback.Run(blink::mojom::WebBluetoothResult::BLACKLISTED_WRITE);
+    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::BLOCKLISTED);
+    callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_WRITE);
     return;
   }
 

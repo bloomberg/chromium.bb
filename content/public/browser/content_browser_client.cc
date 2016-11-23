@@ -224,7 +224,7 @@ ContentBrowserClient::AllowWebBluetooth(
   return AllowWebBluetoothResult::ALLOW;
 }
 
-std::string ContentBrowserClient::GetWebBluetoothBlacklist() {
+std::string ContentBrowserClient::GetWebBluetoothBlocklist() {
   return std::string();
 }
 

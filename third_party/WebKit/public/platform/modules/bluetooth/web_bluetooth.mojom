@@ -61,12 +61,12 @@ enum WebBluetoothResult {
   GATT_UNTRANSLATED_ERROR_CODE,
   // SecurityError:
   GATT_NOT_AUTHORIZED,
-  BLACKLISTED_CHARACTERISTIC_UUID,
-  BLACKLISTED_READ,
-  BLACKLISTED_WRITE,
+  BLOCKLISTED_CHARACTERISTIC_UUID,
+  BLOCKLISTED_READ,
+  BLOCKLISTED_WRITE,
   NOT_ALLOWED_TO_ACCESS_ANY_SERVICE,
   NOT_ALLOWED_TO_ACCESS_SERVICE,
-  REQUEST_DEVICE_WITH_BLACKLISTED_UUID,
+  REQUEST_DEVICE_WITH_BLOCKLISTED_UUID,
   REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME,
   REQUEST_DEVICE_WITHOUT_FRAME,
 };
@@ -131,7 +131,7 @@ interface WebBluetoothService {
   RemoteServerDisconnect(WebBluetoothDeviceId device_id);
 
   // If |services_uuid| is present, returns services with |services_uuid|.
-  // Otherwise returns all non-blacklisted services.
+  // Otherwise returns all non-blocklisted services.
   // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one
   // service will be returned.
   RemoteServerGetPrimaryServices(

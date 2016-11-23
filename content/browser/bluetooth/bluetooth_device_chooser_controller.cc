@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/bluetooth/bluetooth_blacklist.h"
+#include "content/browser/bluetooth/bluetooth_blocklist.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -268,15 +268,15 @@ void BluetoothDeviceChooserController::GetDevice(
   options_ = std::move(options);
   LogRequestDeviceOptions(options_);
 
-  // Check blacklist to reject invalid filters and adjust optional_services.
-  if (BluetoothBlacklist::Get().IsExcluded(options_->filters)) {
+  // Check blocklist to reject invalid filters and adjust optional_services.
+  if (BluetoothBlocklist::Get().IsExcluded(options_->filters)) {
     RecordRequestDeviceOutcome(
-        UMARequestDeviceOutcome::BLACKLISTED_SERVICE_IN_FILTER);
+        UMARequestDeviceOutcome::BLOCKLISTED_SERVICE_IN_FILTER);
     PostErrorCallback(
-        blink::mojom::WebBluetoothResult::REQUEST_DEVICE_WITH_BLACKLISTED_UUID);
+        blink::mojom::WebBluetoothResult::REQUEST_DEVICE_WITH_BLOCKLISTED_UUID);
     return;
   }
-  BluetoothBlacklist::Get().RemoveExcludedUUIDs(options_.get());
+  BluetoothBlocklist::Get().RemoveExcludedUUIDs(options_.get());
 
   const url::Origin requesting_origin =
       render_frame_host_->GetLastCommittedOrigin();

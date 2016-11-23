@@ -2127,9 +2127,9 @@ ChromeContentBrowserClient::AllowWebBluetooth(
   return AllowWebBluetoothResult::ALLOW;
 }
 
-std::string ChromeContentBrowserClient::GetWebBluetoothBlacklist() {
-  return variations::GetVariationParamValue("WebBluetoothBlacklist",
-                                            "blacklist_additions");
+std::string ChromeContentBrowserClient::GetWebBluetoothBlocklist() {
+  return variations::GetVariationParamValue("WebBluetoothBlocklist",
+                                            "blocklist_additions");
 }
 
 net::URLRequestContext*

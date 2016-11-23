@@ -66,7 +66,7 @@ enum class UMARequestDeviceOutcome {
   CHOSEN_DEVICE_VANISHED = 8,
   BLUETOOTH_CHOOSER_CANCELLED = 9,
   BLUETOOTH_CHOOSER_DENIED_PERMISSION = 10,
-  BLACKLISTED_SERVICE_IN_FILTER = 11,
+  BLOCKLISTED_SERVICE_IN_FILTER = 11,
   BLUETOOTH_OVERVIEW_HELP_LINK_PRESSED = 12,
   ADAPTER_OFF_HELP_LINK_PRESSED = 13,
   NEED_LOCATION_HELP_LINK_PRESSED = 14,
@@ -178,7 +178,7 @@ enum class UMAGetCharacteristicOutcome {
   NO_DEVICE = 1,
   NO_SERVICE = 2,
   NOT_FOUND = 3,
-  BLACKLISTED = 4,
+  BLOCKLISTED = 4,
   NO_CHARACTERISTICS = 5,
   // Note: Add new outcomes immediately above this line.
   // Make sure to update the enum list in
@@ -225,7 +225,7 @@ enum UMAGATTOperationOutcome {
   NOT_AUTHORIZED = 10,
   NOT_PAIRED = 11,
   NOT_SUPPORTED = 12,
-  BLACKLISTED = 13,
+  BLOCKLISTED = 13,
   // Note: Add new GATT Outcomes immediately above this line.
   // Make sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.

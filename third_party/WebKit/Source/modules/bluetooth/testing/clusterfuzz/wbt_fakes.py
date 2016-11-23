@@ -4,7 +4,7 @@
 
 """Module that contains information about Web Bluetooth's Fake Adapters."""
 
-BLACKLISTED_UUID = '611c954a-263b-4f4a-aab6-01ddb953f985'
+BLOCKLISTED_UUID = '611c954a-263b-4f4a-aab6-01ddb953f985'
 DISCONNECTION_UUID = '01d7d889-7451-419f-aeb8-d65e7b9277af'
 GATT_ERROR_UUID = '000000a0-97e5-4cd7-b9f1-f5a427670c59'
 
@@ -34,7 +34,7 @@ ADVERTISED_SERVICES = [
     'heart_rate',
     'human_interface_device',
     'device_information',
-    BLACKLISTED_UUID,
+    BLOCKLISTED_UUID,
     CONNECTION_ERROR_UUIDS[0],
     DISCONNECTION_UUID,
     GATT_ERROR_UUID,
@@ -48,7 +48,7 @@ SERVICES = [
     'generic_access',
     'heart_rate',
     'human_interface_device',
-    BLACKLISTED_UUID,
+    BLOCKLISTED_UUID,
     DISCONNECTION_UUID,
     GATT_ERROR_UUID,
 ]
@@ -86,7 +86,7 @@ ALL_ADAPTERS = [
     'HeartRateAdapter',
     'TwoHeartRateServicesAdapter',
     'DisconnectingHeartRateAdapter',
-    'BlacklistTestAdapter',
+    'BlocklistTestAdapter',
     'FailingConnectionsAdapter',
     'FailingGATTOperationsAdapter',
     'DelayedServicesDiscoveryAdapter',
@@ -119,8 +119,8 @@ ADAPTERS_WITH_DEVICES = [
         ['generic_access', 'heart_rate'],
     ),
     (
-        'BlacklistTestAdapter',
-        [BLACKLISTED_UUID, 'device_information', 'generic_access',
+        'BlocklistTestAdapter',
+        [BLOCKLISTED_UUID, 'device_information', 'generic_access',
          'heart_rate', 'human_interface_device'],
     ),
     (
@@ -156,8 +156,8 @@ ADAPTERS_WITH_SERVICES = [
         ['generic_access', 'heart_rate', DISCONNECTION_UUID],
     ),
     (
-        'BlacklistTestAdapter',
-        [BLACKLISTED_UUID, 'device_information', 'generic_access',
+        'BlocklistTestAdapter',
+        [BLOCKLISTED_UUID, 'device_information', 'generic_access',
          'heart_rate', 'human_interface_device'],
     ),
     (
@@ -185,9 +185,9 @@ ADAPTERS_WITH_CHARACTERISTICS = [
          (DISCONNECTION_UUID, ['01d7d88a-7451-419f-aeb8-d65e7b9277af'])]
     ),
     (
-        'BlacklistTestAdapter',
+        'BlocklistTestAdapter',
         [GENERIC_ACCESS_SERVICE, HEART_RATE_SERVICE, (
-            BLACKLISTED_UUID, ['bad1c9a2-9a5b-4015-8b60-1579bbbf2135'],
+            BLOCKLISTED_UUID, ['bad1c9a2-9a5b-4015-8b60-1579bbbf2135'],
         ), (
             'device_information', ['serial_number_string'],
         )]
