@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -432,39 +434,66 @@ class OpenSystemSettingsHelper {
 
 OpenSystemSettingsHelper* OpenSystemSettingsHelper::instance_ = nullptr;
 
-void RecordPinnedToTaskbarProcessError(bool error) {
-  UMA_HISTOGRAM_BOOLEAN("Windows.IsPinnedToTaskbar.ProcessError", error);
+// Helper class to determine if Chrome is pinned to the taskbar. Hides the
+// complexity of managing the lifetime of a UtilityProcessMojoClient.
+class IsPinnedToTaskbarHelper {
+ public:
+  using ResultCallback = win::IsPinnedToTaskbarCallback;
+  using ErrorCallback = win::ConnectionErrorCallback;
+  static void GetState(const ErrorCallback& error_callback,
+                       const ResultCallback& result_callback);
+
+ private:
+  IsPinnedToTaskbarHelper(const ErrorCallback& error_callback,
+                          const ResultCallback& result_callback);
+
+  void OnConnectionError();
+  void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar);
+
+  content::UtilityProcessMojoClient<chrome::mojom::ShellHandler> shell_handler_;
+
+  ErrorCallback error_callback_;
+  ResultCallback result_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(IsPinnedToTaskbarHelper);
+};
+
+// static
+void IsPinnedToTaskbarHelper::GetState(const ErrorCallback& error_callback,
+                                       const ResultCallback& result_callback) {
+  // Self-deleting when the ShellHandler completes.
+  new IsPinnedToTaskbarHelper(error_callback, result_callback);
 }
 
-// Record the UMA histogram when a response is received. The callback that binds
-// to this function holds a reference to the ShellHandlerClient to keep it alive
-// until invokation.
-void OnIsPinnedToTaskbarResult(
-    content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>* client,
+IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(
+    const ErrorCallback& error_callback,
+    const ResultCallback& result_callback)
+    : shell_handler_(
+          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME)),
+      error_callback_(error_callback),
+      result_callback_(result_callback) {
+  // |shell_handler_| owns the callbacks and is guaranteed to be destroyed
+  // before |this|, therefore making base::Unretained() safe to use.
+  shell_handler_.set_error_callback(base::Bind(
+      &IsPinnedToTaskbarHelper::OnConnectionError, base::Unretained(this)));
+  shell_handler_.set_disable_sandbox();
+  shell_handler_.Start();
+
+  shell_handler_.service()->IsPinnedToTaskbar(
+      base::Bind(&IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult,
+                 base::Unretained(this)));
+}
+
+void IsPinnedToTaskbarHelper::OnConnectionError() {
+  error_callback_.Run();
+  delete this;
+}
+
+void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
     bool succeeded,
     bool is_pinned_to_taskbar) {
-  // Clean up the utility process.
-  delete client;
-
-  RecordPinnedToTaskbarProcessError(false);
-
-  enum Result { NOT_PINNED, PINNED, FAILURE, NUM_RESULTS };
-
-  Result result = FAILURE;
-  if (succeeded)
-    result = is_pinned_to_taskbar ? PINNED : NOT_PINNED;
-  UMA_HISTOGRAM_ENUMERATION("Windows.IsPinnedToTaskbar", result, NUM_RESULTS);
-}
-
-// Called when a connection error happen with the shell handler process. A call
-// to this function is mutially exclusive with a call to
-// OnIsPinnedToTaskbarResult().
-void OnShellHandlerConnectionError(
-    content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>* client) {
-  // Clean up the utility process.
-  delete client;
-
-  RecordPinnedToTaskbarProcessError(true);
+  result_callback_.Run(succeeded, is_pinned_to_taskbar);
+  delete this;
 }
 
 }  // namespace
@@ -709,23 +738,10 @@ void MigrateTaskbarPins() {
       base::TimeDelta::FromSeconds(kMigrateTaskbarPinsDelaySeconds));
 }
 
-void RecordIsPinnedToTaskbarHistogram() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  // The code to check if Chrome is pinned to the taskbar brings in shell
-  // extensions which can hinder stability so it is executed in a utility
-  // process.
-  content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>* client =
-      new content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME));
-
-  client->set_error_callback(
-      base::Bind(&OnShellHandlerConnectionError, client));
-  client->set_disable_sandbox();
-  client->Start();
-
-  client->service()->IsPinnedToTaskbar(
-      base::Bind(&OnIsPinnedToTaskbarResult, client));
+void GetIsPinnedToTaskbarState(
+    const ConnectionErrorCallback& on_error_callback,
+    const IsPinnedToTaskbarCallback& result_callback) {
+  IsPinnedToTaskbarHelper::GetState(on_error_callback, result_callback);
 }
 
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,

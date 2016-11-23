@@ -113,8 +113,8 @@ enum UMATouchEventsState {
 
 #if defined(OS_ANDROID) && defined(__arm__)
 enum UMAAndroidArmFpu {
-  UMA_ANDROID_ARM_FPU_VFPV3_D16, // The ARM CPU only supports vfpv3-d16.
-  UMA_ANDROID_ARM_FPU_NEON,      // The Arm CPU supports NEON.
+  UMA_ANDROID_ARM_FPU_VFPV3_D16,  // The ARM CPU only supports vfpv3-d16.
+  UMA_ANDROID_ARM_FPU_NEON,       // The Arm CPU supports NEON.
   UMA_ANDROID_ARM_FPU_COUNT
 };
 #endif  // defined(OS_ANDROID) && defined(__arm__)
@@ -314,6 +314,36 @@ void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
 
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
+#if defined(OS_WIN)
+void RecordPinnedToTaskbarProcessError(bool error) {
+  UMA_HISTOGRAM_BOOLEAN("Windows.IsPinnedToTaskbar.ProcessError", error);
+}
+
+void OnShellHandlerConnectionError() {
+  RecordPinnedToTaskbarProcessError(true);
+}
+
+// Record the UMA histogram when a response is received.
+void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
+  RecordPinnedToTaskbarProcessError(false);
+
+  // Used for histograms; do not reorder.
+  enum Result { NOT_PINNED = 0, PINNED = 1, FAILURE = 2, NUM_RESULTS };
+
+  Result result = FAILURE;
+  if (succeeded)
+    result = is_pinned_to_taskbar ? PINNED : NOT_PINNED;
+  UMA_HISTOGRAM_ENUMERATION("Windows.IsPinnedToTaskbar", result, NUM_RESULTS);
+}
+
+// Records the pinned state of the current executable into a histogram.
+void RecordIsPinnedToTaskbarHistogram() {
+  shell_integration::win::GetIsPinnedToTaskbarState(
+      base::Bind(&OnShellHandlerConnectionError),
+      base::Bind(&OnIsPinnedToTaskbarResult));
+}
+#endif  // defined(OS_WIN)
+
 }  // namespace
 
 ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
@@ -369,7 +399,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #if defined(OS_WIN)
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&shell_integration::win::RecordIsPinnedToTaskbarHistogram),
+      base::Bind(&RecordIsPinnedToTaskbarHistogram),
       kStartupMetricsGatheringDelay);
 #endif  // defined(OS_WIN)
 

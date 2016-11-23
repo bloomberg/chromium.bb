@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_WIN10_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_WIN10_HANDLER_H_
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "chrome/common/shell_handler_win.mojom.h"
-#include "content/public/browser/utility_process_mojo_client.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -36,7 +34,7 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
 
   void StartIsPinnedToTaskbarCheck();
 
-  // Callback for chrome::mojom::ShellHandler's call to IsPinnedToTaskbar().
+  // Callback for shell_integration::win::GetIsPinnedToTaskbarState().
   void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar);
 
   // Sets the internal result and optionally call
@@ -48,9 +46,6 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
   // promise.
   void SendPinnedToTaskbarStateResult();
 
-  std::unique_ptr<
-      content::UtilityProcessMojoClient<chrome::mojom::ShellHandler>>
-      client_;
   base::OneShotTimer timer_;
 
   // Acts as a cache to hold the taskbar pinned state of Chrome. It has no value
@@ -62,6 +57,8 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
   // variable is used to determine if the result should be sent to the caller
   // when it is received, or wait for the call to happen.
   std::string pinned_state_callback_id_;
+
+  base::WeakPtrFactory<WelcomeWin10Handler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeWin10Handler);
 };

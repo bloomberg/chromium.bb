@@ -57,9 +57,16 @@ base::string16 GetAppModelIdForProfile(const base::string16& app_name,
 // calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
 base::string16 GetChromiumModelIdForProfile(const base::FilePath& profile_path);
 
-// Records the pinned state of the current executable into a histogram. Must be
-// called on the IO thread.
-void RecordIsPinnedToTaskbarHistogram();
+// Returns the taskbar pin state of Chrome via the IsPinnedToTaskbarCallback.
+// The first bool is true if the state could be calculated, and the second bool
+// is true if Chrome is pinned to the taskbar.
+// The ConnectionErrorCallback is called instead if something wrong happened
+// with the connection to the remote process.
+using ConnectionErrorCallback = base::Closure;
+using IsPinnedToTaskbarCallback = base::Callback<void(bool, bool)>;
+void GetIsPinnedToTaskbarState(
+    const ConnectionErrorCallback& on_error_callback,
+    const IsPinnedToTaskbarCallback& result_callback);
 
 // Migrates existing chrome taskbar pins by tagging them with correct app id.
 // see http://crbug.com/28104
