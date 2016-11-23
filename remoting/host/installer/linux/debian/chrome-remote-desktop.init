@@ -12,6 +12,7 @@
 # /etc/init.d/chrome-remote-desktop: Start and stop Chrome Remote Desktop host daemon.
 
 HOST_PATH=/opt/google/chrome-remote-desktop/chrome-remote-desktop
+USER_SESSION_PATH=/opt/google/chrome-remote-desktop/user-session
 
 # Group of users for which Chrome Remote Desktop is enabled. Users are added
 # to that group when they start the host for the first time.
@@ -46,47 +47,46 @@ run_with_timeout() {
   return 1
 }
 
-# Usage: run_and_ignore_error [--login] user program [args...]
-#   --login:
-#     Run program in a clean login shell. This requires backgrounding, since
-#     the user's .profile or .login script might be run, which might contain
-#     blocking commands.
+# Usage: run_and_ignore_error user action
+# Carries out the specified action, ignoring any errors.
+#   action:
+#     --start is handled specially using the user-session wrapper to start a
+#     clean log-in session. In any other case, the host script is called through
+#     sudo with the specified action flag.
 run_and_ignore_error() {
-  login_options=""
-  if [ "$1" = "--login" ]; then
-    login_options="-b -i"
-    shift
-  fi
-
-  user=$1
-  shift
+  user="$1"
+  action="$2"
 
   set +e
-  sudo -u "$user" $login_options "$@"
+  if [ "$action" = "--start" ]; then
+    "$USER_SESSION_PATH" --user="$user" --me2me-script="$HOST_PATH"
+  else
+    sudo -u "$user" "$HOST_PATH" "$action"
+  fi
 }
 
 do_start() {
   log_begin_msg "Starting Chrome Remote Desktop host for $1..."
-  run_and_ignore_error --login $1 "$HOST_PATH" --start
+  run_and_ignore_error $1 --start
   log_end_msg $?
 }
 
 do_stop() {
   log_begin_msg "Stopping Chrome Remote Desktop host for $1..."
-  run_with_timeout run_and_ignore_error $1 "$HOST_PATH" --stop
+  run_with_timeout run_and_ignore_error $1 --stop
   log_end_msg $?
 }
 
 do_reload() {
   log_begin_msg "Reloading Chrome Remote Desktop host configuration for $1..."
-  run_and_ignore_error $1 "$HOST_PATH" --reload
+  run_and_ignore_error $1 --reload
   log_end_msg $?
 }
 
 do_restart() {
   log_begin_msg "Restarting Chrome Remote Desktop host for $1..."
-  run_and_ignore_error $1 "$HOST_PATH" --stop
-  run_and_ignore_error --login $1 "$HOST_PATH" --start
+  run_and_ignore_error $1 --stop
+  run_and_ignore_error $1 --start
   log_end_msg $?
 }
 

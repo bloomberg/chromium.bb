@@ -359,54 +359,62 @@ class Desktop:
       display += 1
     return display
 
-  def _init_child_env(self):
-    # Create clean environment for new session, so it is cleanly separated from
-    # the user's console X session.
-    self.child_env = {}
+  def _init_child_env(self, keep_env):
+    if keep_env:
+      self.child_env = dict(os.environ)
+    else:
+      # Create clean environment for new session, so it is cleanly separated
+      # from the user's console X session.
+      self.child_env = {}
 
-    for key in [
-        "HOME",
-        "LANG",
-        "LOGNAME",
-        "PATH",
-        "SHELL",
-        "USER",
-        "USERNAME",
-        LOG_FILE_ENV_VAR]:
-      if key in os.environ:
-        self.child_env[key] = os.environ[key]
+      for key in [
+          "HOME",
+          "LANG",
+          "LOGNAME",
+          "PATH",
+          "SHELL",
+          "USER",
+          "USERNAME",
+          LOG_FILE_ENV_VAR]:
+        if key in os.environ:
+          self.child_env[key] = os.environ[key]
+
+      # Initialize the environment from files that would normally be read in a
+      # PAM-authenticated session.
+      for env_filename in [
+        "/etc/environment",
+        "/etc/default/locale",
+        os.path.expanduser("~/.pam_environment")]:
+        if not os.path.exists(env_filename):
+          continue
+        try:
+          with open(env_filename, "r") as env_file:
+            for line in env_file:
+              line = line.rstrip("\n")
+              # Split at the first "=", leaving any further instances in the
+              # value.
+              key_value_pair = line.split("=", 1)
+              if len(key_value_pair) == 2:
+                key, value = tuple(key_value_pair)
+                # The file stores key=value assignments, but the value may be
+                # quoted, so strip leading & trailing quotes from it.
+                value = value.strip("'\"")
+                self.child_env[key] = value
+        except IOError:
+          logging.error("Failed to read file: %s" % env_filename)
 
     # Ensure that the software-rendering GL drivers are loaded by the desktop
     # session, instead of any hardware GL drivers installed on the system.
-    self.child_env["LD_LIBRARY_PATH"] = (
+    library_path = (
         "/usr/lib/%(arch)s-linux-gnu/mesa:"
         "/usr/lib/%(arch)s-linux-gnu/dri:"
         "/usr/lib/%(arch)s-linux-gnu/gallium-pipe" %
         { "arch": platform.machine() })
 
-    # Initialize the environment from files that would normally be read in a
-    # PAM-authenticated session.
-    for env_filename in [
-      "/etc/environment",
-      "/etc/default/locale",
-      os.path.expanduser("~/.pam_environment")]:
-      if not os.path.exists(env_filename):
-        continue
-      try:
-        with open(env_filename, "r") as env_file:
-          for line in env_file:
-            line = line.rstrip("\n")
-            # Split at the first "=", leaving any further instances in the
-            # value.
-            key_value_pair = line.split("=", 1)
-            if len(key_value_pair) == 2:
-              key, value = tuple(key_value_pair)
-              # The file stores key=value assignments, but the value may be
-              # quoted, so strip leading & trailing quotes from it.
-              value = value.strip("'\"")
-              self.child_env[key] = value
-      except IOError:
-        logging.error("Failed to read file: %s" % env_filename)
+    if "LD_LIBRARY_PATH" in self.child_env:
+      library_path += ":" + self.child_env["LD_LIBRARY_PATH"]
+
+    self.child_env["LD_LIBRARY_PATH"] = library_path
 
   def _setup_pulseaudio(self):
     self.pulseaudio_pipe = None
@@ -649,8 +657,8 @@ class Desktop:
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
-  def launch_session(self, x_args):
-    self._init_child_env()
+  def launch_session(self, keep_env, x_args):
+    self._init_child_env(keep_env)
     self._setup_pulseaudio()
     self._setup_gnubby()
     self._launch_x_server(x_args)
@@ -1236,6 +1244,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
                     action="store", metavar="USER",
                     help="Adds the specified user to the chrome-remote-desktop "
                     "group (must be run as root).")
+  parser.add_option("", "--keep-parent-env", dest="keep_env", default=False,
+                    action="store_true",
+                    help=optparse.SUPPRESS_HELP)
   parser.add_option("", "--watch-resolution", dest="watch_resolution",
                     type="int", nargs=2, default=False, action="store",
                     help=optparse.SUPPRESS_HELP)
@@ -1469,7 +1480,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
           relaunch_times.append(x_server_inhibitor.earliest_relaunch_time)
         else:
           logging.info("Launching X server and X session.")
-          desktop.launch_session(args)
+          desktop.launch_session(options.keep_env, args)
           x_server_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
                                             backoff_time)
           allow_relaunch_self = True
