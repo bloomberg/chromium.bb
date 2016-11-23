@@ -233,11 +233,9 @@ TEST_F(InkDropImplTest, LayersArentRemovedWhenPreemptingFadeOut) {
 }
 
 #if DCHECK_IS_ON()
-TEST_F(InkDropImplTest, SettingHighlightStateDuringStateExitIsntAllowed) {
-  // This test uses a death assert, which works by forking the process. That
-  // doesn't work well with mus.
-  if (ViewsTestBase::IsAuraMusClient() || ViewsTestBase::IsMus())
-    return;
+TEST_F(InkDropImplTest,
+       SettingHighlightStateDuringStateExitIsntAllowedDeathTest) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   test::InkDropImplTestApi::SetStateOnExitHighlightState::Install(
       test_api()->state_factory());
