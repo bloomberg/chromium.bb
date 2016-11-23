@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/build_time.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "crypto/rsa_private_key.h"
@@ -60,8 +59,6 @@ static_assert(arraysize(kGoogleAviatorLogID) - 1 == crypto::kSHA256Length,
 class CTPolicyEnforcerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    VerifyBuildIsTimely();
-
     policy_enforcer_.reset(new CTPolicyEnforcer);
 
     std::string der_test_cert(ct::GetDerEncodedX509Cert());
@@ -134,20 +131,6 @@ class CTPolicyEnforcerTest : public ::testing::Test {
   }
 
  protected:
-  void VerifyBuildIsTimely() {
-    base::Time build_time = base::GetBuildTime();
-    base::Time now = base::Time::Now();
-
-    // Internally CTPolicyEnforcer expects the build time to be no older than 10
-    // weeks. If it is then many tests in this file (and other net unittests)
-    // will fail. crbug.com/666821
-    EXPECT_LT((now - build_time).InDays(), 70)
-        << "IMPORTANT: There is a problem with the system clock and/or the "
-           "build timestamp. This will lead to many net_unittests failing "
-           "(crbug.com/666821)\n"
-        << "now: " << now << ", build_time: " << build_time;
-  }
-
   std::unique_ptr<CTPolicyEnforcer> policy_enforcer_;
   scoped_refptr<X509Certificate> chain_;
   std::string google_log_id_;
