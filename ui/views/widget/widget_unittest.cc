@@ -3649,6 +3649,18 @@ TEST_F(WidgetTest, WidgetRemovalsObserverCalled) {
   widget->RemoveRemovalsObserver(&removals_observer);
 }
 
+// Test that WidgetRemovalsObserver::OnWillRemoveView is called when deleting
+// the root view.
+TEST_F(WidgetTest, WidgetRemovalsObserverCalledWhenRemovingRootView) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  TestWidgetRemovalsObserver removals_observer;
+  widget->AddRemovalsObserver(&removals_observer);
+  views::View* root_view = widget->GetRootView();
+
+  widget.reset();
+  EXPECT_TRUE(removals_observer.DidRemoveView(root_view));
+}
+
 // Test that WidgetRemovalsObserver::OnWillRemoveView is called when moving
 // a view from one widget to another, but not when moving a view within
 // the same widget.
