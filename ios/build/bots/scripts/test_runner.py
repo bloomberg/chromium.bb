@@ -510,26 +510,22 @@ class SimulatorTestRunner(TestRunner):
         '-d', self.platform,
         '-s', self.version,
     ]
-    args = []
 
     if test_filter:
       kif_filter = get_kif_test_filter(test_filter, invert=invert)
       gtest_filter = get_gtest_filter(test_filter, invert=invert)
       cmd.extend(['-e', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
-
-      if self.xcode_version == '8.0':
-        args.extend(['-c', '--gtest_filter=%s' % gtest_filter])
-      else:
-        args.append('--gtest_filter=%s' % gtest_filter)
+      cmd.extend(['-c', '--gtest_filter=%s' % gtest_filter])
 
     for env_var in self.env_vars:
       cmd.extend(['-e', env_var])
 
+    for test_arg in self.test_args:
+      cmd.extend(['-c', test_arg])
+
     cmd.append(self.app_path)
     if self.xctest_path:
       cmd.append(self.xctest_path)
-    cmd.extend(self.test_args)
-    cmd.extend(args)
     return cmd
 
   def get_launch_env(self):
