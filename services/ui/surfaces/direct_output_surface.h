@@ -46,12 +46,17 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 
  private:
-  void OnSwapBuffersComplete();
-  void OnVSyncParametersUpdated(const base::TimeTicks& timebase,
-                                const base::TimeDelta& interval);
+  // Called when a swap completion is signaled from ImageTransportSurface.
+  void OnGpuSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
+  void OnVSyncParametersUpdated(base::TimeTicks timebase,
+                                base::TimeDelta interval);
 
   cc::OutputSurfaceClient* client_ = nullptr;
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
+
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 };
 

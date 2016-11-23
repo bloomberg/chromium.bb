@@ -59,6 +59,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       ImageFactory* image_factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+  virtual gpu::Capabilities GetCapabilities() = 0;
+
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
   virtual gles2::GLES2Implementation* GetImplementation() = 0;

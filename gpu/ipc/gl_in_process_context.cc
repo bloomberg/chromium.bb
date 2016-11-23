@@ -63,6 +63,7 @@ class GLInProcessContextImpl
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // GLInProcessContext implementation:
+  gpu::Capabilities GetCapabilities() override;
   gles2::GLES2Implementation* GetImplementation() override;
   void SetSwapBuffersCompletionCallback(
       const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
@@ -88,6 +89,10 @@ GLInProcessContextImpl::GLInProcessContextImpl() = default;
 
 GLInProcessContextImpl::~GLInProcessContextImpl() {
   Destroy();
+}
+
+Capabilities GLInProcessContextImpl::GetCapabilities() {
+  return command_buffer_->GetCapabilities();
 }
 
 gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {

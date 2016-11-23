@@ -53,7 +53,10 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
 
   context_provider->SetSwapBuffersCompletionCallback(
       base::Bind(&DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
+  context_provider->SetUpdateVSyncParametersCallback(
+      base::Bind(&DirectOutputSurfaceOzone::OnVSyncParametersUpdated,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 DirectOutputSurfaceOzone::~DirectOutputSurfaceOzone() {
@@ -140,13 +143,6 @@ bool DirectOutputSurfaceOzone::HasExternalStencilTest() const {
 
 void DirectOutputSurfaceOzone::ApplyExternalStencil() {}
 
-void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK(client_);
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
-}
-
 void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,
@@ -165,6 +161,15 @@ void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
 
   if (force_swap)
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
+}
+
+void DirectOutputSurfaceOzone::OnVSyncParametersUpdated(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  // TODO(brianderson): We should not be receiving 0 intervals.
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(
+      timebase,
+      interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
 }
 
 }  // namespace ui

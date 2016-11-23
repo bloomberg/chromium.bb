@@ -121,18 +121,7 @@ base::Lock* InProcessContextProvider::GetLock() {
 }
 
 gpu::Capabilities InProcessContextProvider::ContextCapabilities() {
-  gpu::Capabilities capabilities;
-  capabilities.texture_rectangle = true;
-  capabilities.sync_query = true;
-  switch (PlatformColor::Format()) {
-    case PlatformColor::SOURCE_FORMAT_RGBA8:
-      capabilities.texture_format_bgra8888 = false;
-      break;
-    case PlatformColor::SOURCE_FORMAT_BGRA8:
-      capabilities.texture_format_bgra8888 = true;
-      break;
-  }
-  return capabilities;
+  return context_->GetCapabilities();
 }
 
 void InProcessContextProvider::SetLostContextCallback(

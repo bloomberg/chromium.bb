@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
@@ -25,6 +26,12 @@ DirectOutputSurface::DirectOutputSurface(
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
+  context_provider->SetSwapBuffersCompletionCallback(
+      base::Bind(&DirectOutputSurface::OnGpuSwapBuffersCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
+  context_provider->SetUpdateVSyncParametersCallback(
+      base::Bind(&DirectOutputSurface::OnVSyncParametersUpdated,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 DirectOutputSurface::~DirectOutputSurface() {}
@@ -61,17 +68,6 @@ void DirectOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
         frame.sub_buffer_rect);
   }
-
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
-
-  gpu::SyncToken sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-  context_provider_->ContextSupport()->SignalSyncToken(
-      sync_token, base::Bind(&DirectOutputSurface::OnSwapBuffersComplete,
-                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 uint32_t DirectOutputSurface::GetFramebufferCopyTextureFormat() {
@@ -104,17 +100,20 @@ bool DirectOutputSurface::HasExternalStencilTest() const {
 
 void DirectOutputSurface::ApplyExternalStencil() {}
 
-void DirectOutputSurface::OnVSyncParametersUpdated(
-    const base::TimeTicks& timebase,
-    const base::TimeDelta& interval) {
+void DirectOutputSurface::OnGpuSwapBuffersCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  client_->DidReceiveSwapBuffersAck();
+}
+
+void DirectOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
+                                                   base::TimeDelta interval) {
   // TODO(brianderson): We should not be receiving 0 intervals.
   synthetic_begin_frame_source_->OnUpdateVSyncParameters(
       timebase,
       interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
 }
 
-void DirectOutputSurface::OnSwapBuffersComplete() {
-  client_->DidReceiveSwapBuffersAck();
-}
 
 }  // namespace ui

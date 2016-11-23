@@ -1082,6 +1082,39 @@ void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
 
 void InProcessCommandBuffer::DidSwapBuffersComplete(
     SwapBuffersCompleteParams params) {
+  if (!origin_task_runner_) {
+    DidSwapBuffersCompleteOnOriginThread(std::move(params));
+    return;
+  }
+  origin_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread,
+                 client_thread_weak_ptr_, base::Passed(&params)));
+}
+
+const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
+  return context_group_->feature_info();
+}
+
+void InProcessCommandBuffer::SetLatencyInfoCallback(
+    const LatencyInfoCallback& callback) {
+  // TODO(fsamuel): Implement this.
+}
+
+void InProcessCommandBuffer::UpdateVSyncParameters(base::TimeTicks timebase,
+                                                   base::TimeDelta interval) {
+  if (!origin_task_runner_) {
+    UpdateVSyncParametersOnOriginThread(timebase, interval);
+    return;
+  }
+  origin_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread,
+                 client_thread_weak_ptr_, timebase, interval));
+}
+
+void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
+    SwapBuffersCompleteParams params) {
 #if defined(OS_MACOSX)
   gpu::GpuProcessHostedCALayerTreeParamsMac params_mac;
   params_mac.ca_context_id = params.ca_context_id;
@@ -1110,17 +1143,9 @@ void InProcessCommandBuffer::DidSwapBuffersComplete(
   }
 }
 
-const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
-  return context_group_->feature_info();
-}
-
-void InProcessCommandBuffer::SetLatencyInfoCallback(
-    const LatencyInfoCallback& callback) {
-  // TODO(fsamuel): Implement this.
-}
-
-void InProcessCommandBuffer::UpdateVSyncParameters(base::TimeTicks timebase,
-                                                   base::TimeDelta interval) {
+void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
   if (!update_vsync_parameters_completion_callback_.is_null())
     update_vsync_parameters_completion_callback_.Run(timebase, interval);
 }

@@ -160,6 +160,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
+  void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params);
+  void UpdateVSyncParametersOnOriginThread(base::TimeTicks timebase,
+                                           base::TimeDelta interval);
+
   // The serializer interface to the GPU service (i.e. thread).
   class Service {
    public:
