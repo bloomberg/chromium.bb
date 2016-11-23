@@ -180,8 +180,6 @@ component("gpu") {
       "avda_shared_state.cc",
       "avda_shared_state.h",
       "avda_state_provider.h",
-      "avda_surface_tracker.cc",
-      "avda_surface_tracker.h",
     ]
 
     if (enable_webrtc) {

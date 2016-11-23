@@ -50,7 +50,7 @@
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_client_android.h"
-#include "media/gpu/avda_surface_tracker.h"
+#include "media/gpu/avda_codec_allocator.h"
 #endif
 
 namespace content {
@@ -509,7 +509,7 @@ void GpuChildThread::OnWakeUpGpu() {
 }
 
 void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
-  media::AVDASurfaceTracker::GetInstance()->NotifyDestroyingSurface(surface_id);
+  media::AVDACodecAllocator::Instance()->OnSurfaceDestroyed(surface_id);
   Send(new GpuHostMsg_DestroyingVideoSurfaceAck(surface_id));
 }
 #endif

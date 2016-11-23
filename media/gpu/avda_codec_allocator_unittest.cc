@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/tick_clock.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::Invoke;
+using testing::NiceMock;
+using testing::_;
 
 namespace media {
 namespace {
@@ -20,6 +25,18 @@ void RunAndSignalTask(base::WaitableEvent* event,
                       ReturnType* return_value,
                       const base::Callback<ReturnType(void)>& cb) {
   *return_value = cb.Run();
+  event->Signal();
+}
+
+void WaitUntilRestarted(base::WaitableEvent* about_to_wait_event,
+                        base::WaitableEvent* wait_event) {
+  // Notify somebody that we've started.
+  if (about_to_wait_event)
+    about_to_wait_event->Signal();
+  wait_event->Wait();
+}
+
+void SignalImmediately(base::WaitableEvent* event) {
   event->Signal();
 }
 }
@@ -45,6 +62,19 @@ class MockTickClock : public base::TickClock {
  private:
   base::Lock lock_;
   base::TimeTicks now_;
+};
+
+class MockClient : public AVDACodecAllocatorClient {
+ public:
+  MOCK_METHOD1(OnSurfaceAvailable, void(bool success));
+  MOCK_METHOD0(OnSurfaceDestroyed, void());
+
+  // Gmock doesn't let us mock methods taking move-only types.
+  MOCK_METHOD1(OnCodecConfiguredMock, void(VideoCodecBridge* media_codec));
+  void OnCodecConfigured(
+      std::unique_ptr<VideoCodecBridge> media_codec) override {
+    OnCodecConfiguredMock(media_codec.get());
+  }
 };
 
 class AVDACodecAllocatorTest : public testing::Test {
@@ -73,19 +103,19 @@ class AVDACodecAllocatorTest : public testing::Test {
                          return new AVDACodecAllocator(test_info);
                        },
                        test_information_.get()));
+    allocator2_ = new AVDACodecAllocator(test_information_.get());
 
     // All threads should be stopped
-    ASSERT_FALSE(IsThreadRunning(AVDACodecAllocator::TaskType::AUTO_CODEC));
-    ASSERT_FALSE(IsThreadRunning(AVDACodecAllocator::TaskType::SW_CODEC));
+    ASSERT_FALSE(IsThreadRunning(TaskType::AUTO_CODEC));
+    ASSERT_FALSE(IsThreadRunning(TaskType::SW_CODEC));
 
     // Register an AVDA instance to start the allocator's threads.
     ASSERT_TRUE(StartThread(avda1_));
 
     // Assert that at least the AUTO_CODEC thread is started.  The other might
     // not be.
-    ASSERT_TRUE(IsThreadRunning(AVDACodecAllocator::TaskType::AUTO_CODEC));
-    ASSERT_EQ(AVDACodecAllocator::TaskType::AUTO_CODEC,
-              TaskTypeForAllocation());
+    ASSERT_TRUE(IsThreadRunning(TaskType::AUTO_CODEC));
+    ASSERT_EQ(TaskType::AUTO_CODEC, TaskTypeForAllocation());
   }
 
   void TearDown() override {
@@ -100,34 +130,27 @@ class AVDACodecAllocatorTest : public testing::Test {
                                allocator_));
 
     allocator_thread_.Stop();
+    delete allocator2_;
   }
 
  protected:
-  static void WaitUntilRestarted(base::WaitableEvent* about_to_wait_event,
-                                 base::WaitableEvent* wait_event) {
-    // Notify somebody that we've started.
-    about_to_wait_event->Signal();
-    wait_event->Wait();
-  }
-
-  static void SignalImmediately(base::WaitableEvent* event) { event->Signal(); }
 
   // Start / stop the threads for |avda| on the right thread.
-  bool StartThread(AndroidVideoDecodeAccelerator* avda) {
+  bool StartThread(AVDACodecAllocatorClient* avda) {
     return PostAndWait(FROM_HERE, base::Bind(
                                       [](AVDACodecAllocator* allocator,
-                                         AndroidVideoDecodeAccelerator* avda) {
+                                         AVDACodecAllocatorClient* avda) {
                                         return allocator->StartThread(avda);
                                       },
                                       allocator_, avda));
   }
 
-  void StopThread(AndroidVideoDecodeAccelerator* avda) {
+  void StopThread(AVDACodecAllocatorClient* avda) {
     // Note that we also wait for the stop event, so that we know that the
     // stop has completed.  It's async with respect to the allocator thread.
     PostAndWait(FROM_HERE, base::Bind(
                                [](AVDACodecAllocator* allocator,
-                                  AndroidVideoDecodeAccelerator* avda) {
+                                  AVDACodecAllocatorClient* avda) {
                                  allocator->StopThread(avda);
                                  return true;
                                },
@@ -138,25 +161,24 @@ class AVDACodecAllocatorTest : public testing::Test {
   }
 
   // Return the running state of |task_type|, doing the necessary thread hops.
-  bool IsThreadRunning(AVDACodecAllocator::TaskType task_type) {
+  bool IsThreadRunning(TaskType task_type) {
     return PostAndWait(
         FROM_HERE,
         base::Bind(
-            [](AVDACodecAllocator* allocator,
-               AVDACodecAllocator::TaskType task_type) {
+            [](AVDACodecAllocator* allocator, TaskType task_type) {
               return allocator->GetThreadForTesting(task_type).IsRunning();
             },
             allocator_, task_type));
   }
 
-  AVDACodecAllocator::TaskType TaskTypeForAllocation() {
+  TaskType TaskTypeForAllocation() {
     return PostAndWait(FROM_HERE,
                        base::Bind(&AVDACodecAllocator::TaskTypeForAllocation,
                                   base::Unretained(allocator_)));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(
-      AVDACodecAllocator::TaskType task_type) {
+      TaskType task_type) {
     return PostAndWait(FROM_HERE,
                        base::Bind(&AVDACodecAllocator::TaskRunnerFor,
                                   base::Unretained(allocator_), task_type));
@@ -183,12 +205,17 @@ class AVDACodecAllocatorTest : public testing::Test {
   // Test info that we provide to the codec allocator.
   std::unique_ptr<AVDACodecAllocator::TestInformation> test_information_;
 
-  // Allocator that we own.  Would be a unique_ptr, but the destructor is
-  // private.  Plus, we need to destruct it from the right thread.
+  // Allocators that we own. The first is intialized to be used on the allocator
+  // thread and the second one is initialized on the test thread. Each test
+  // should only be using one of the two. They are not unique_ptrs because the
+  // destructor is private and they need to be destructed on the right thread.
   AVDACodecAllocator* allocator_ = nullptr;
+  AVDACodecAllocator* allocator2_ = nullptr;
 
-  AndroidVideoDecodeAccelerator* avda1_ = (AndroidVideoDecodeAccelerator*)0x1;
-  AndroidVideoDecodeAccelerator* avda2_ = (AndroidVideoDecodeAccelerator*)0x2;
+  NiceMock<MockClient> client1_, client2_, client3_;
+  NiceMock<MockClient>* avda1_ = &client1_;
+  NiceMock<MockClient>* avda2_ = &client2_;
+  NiceMock<MockClient>* avda3_ = &client3_;
 };
 
 TEST_F(AVDACodecAllocatorTest, TestMultiInstance) {
@@ -200,8 +227,8 @@ TEST_F(AVDACodecAllocatorTest, TestMultiInstance) {
   StopThread(avda1_);
 
   // Verify that the AUTO_CODEC thread is still running.
-  ASSERT_TRUE(IsThreadRunning(AVDACodecAllocator::TaskType::AUTO_CODEC));
-  ASSERT_EQ(AVDACodecAllocator::TaskType::AUTO_CODEC, TaskTypeForAllocation());
+  ASSERT_TRUE(IsThreadRunning(TaskType::AUTO_CODEC));
+  ASSERT_EQ(TaskType::AUTO_CODEC, TaskTypeForAllocation());
 
   // Remove the second instance and wait for it to stop.  Remember that it
   // stops after messages have been posted to the thread, so we don't know
@@ -209,12 +236,12 @@ TEST_F(AVDACodecAllocatorTest, TestMultiInstance) {
   StopThread(avda2_);
 
   // Verify that the threads have stopped.
-  ASSERT_FALSE(IsThreadRunning(AVDACodecAllocator::TaskType::AUTO_CODEC));
-  ASSERT_FALSE(IsThreadRunning(AVDACodecAllocator::TaskType::SW_CODEC));
+  ASSERT_FALSE(IsThreadRunning(TaskType::AUTO_CODEC));
+  ASSERT_FALSE(IsThreadRunning(TaskType::SW_CODEC));
 }
 
 TEST_F(AVDACodecAllocatorTest, TestHangThread) {
-  ASSERT_EQ(AVDACodecAllocator::TaskType::AUTO_CODEC, TaskTypeForAllocation());
+  ASSERT_EQ(TaskType::AUTO_CODEC, TaskTypeForAllocation());
 
   // Hang the AUTO_CODEC thread.
   base::WaitableEvent about_to_wait_event(
@@ -223,10 +250,9 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
   base::WaitableEvent wait_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  TaskRunnerFor(AVDACodecAllocator::TaskType::AUTO_CODEC)
-      ->PostTask(FROM_HERE,
-                 base::Bind(&AVDACodecAllocatorTest::WaitUntilRestarted,
-                            &about_to_wait_event, &wait_event));
+  TaskRunnerFor(TaskType::AUTO_CODEC)
+      ->PostTask(FROM_HERE, base::Bind(&WaitUntilRestarted,
+                                       &about_to_wait_event, &wait_event));
   // Wait until the task starts, so that |allocator_| starts the hang timer.
   about_to_wait_event.Wait();
 
@@ -236,22 +262,88 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
   // Note that this should return the SW codec task type even if that thread
   // failed to start.  TaskRunnerFor() will return the current thread in that
   // case too.
-  ASSERT_EQ(AVDACodecAllocator::TaskType::SW_CODEC, TaskTypeForAllocation());
+  ASSERT_EQ(TaskType::SW_CODEC, TaskTypeForAllocation());
 
   // Un-hang the thread and wait for it to let another task run.  This will
   // notify |allocator_| that the thread is no longer hung.
   base::WaitableEvent done_waiting_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  TaskRunnerFor(AVDACodecAllocator::TaskType::AUTO_CODEC)
+  TaskRunnerFor(TaskType::AUTO_CODEC)
       ->PostTask(FROM_HERE,
-                 base::Bind(&AVDACodecAllocatorTest::SignalImmediately,
-                            &done_waiting_event));
+                 base::Bind(&SignalImmediately, &done_waiting_event));
   wait_event.Signal();
   done_waiting_event.Wait();
 
   // Verify that we've un-failed over.
-  ASSERT_EQ(AVDACodecAllocator::TaskType::AUTO_CODEC, TaskTypeForAllocation());
+  ASSERT_EQ(TaskType::AUTO_CODEC, TaskTypeForAllocation());
+}
+
+TEST_F(AVDACodecAllocatorTest, AllocatingASurfaceTextureAlwaysSucceeds) {
+  ASSERT_TRUE(
+      allocator2_->AllocateSurface(avda1_, SurfaceManager::kNoSurfaceID));
+  ASSERT_TRUE(
+      allocator2_->AllocateSurface(avda2_, SurfaceManager::kNoSurfaceID));
+}
+
+TEST_F(AVDACodecAllocatorTest, AllocatingAnOwnedSurfaceFails) {
+  ASSERT_TRUE(allocator2_->AllocateSurface(avda1_, 1));
+  ASSERT_FALSE(allocator2_->AllocateSurface(avda2_, 1));
+}
+
+TEST_F(AVDACodecAllocatorTest, LaterWaitersReplaceEarlierWaiters) {
+  allocator2_->AllocateSurface(avda1_, 1);
+  allocator2_->AllocateSurface(avda2_, 1);
+  EXPECT_CALL(*avda2_, OnSurfaceAvailable(false));
+  allocator2_->AllocateSurface(avda3_, 1);
+}
+
+TEST_F(AVDACodecAllocatorTest, WaitersBecomeOwnersWhenSurfacesAreReleased) {
+  allocator2_->AllocateSurface(avda1_, 1);
+  allocator2_->AllocateSurface(avda2_, 1);
+  EXPECT_CALL(*avda2_, OnSurfaceAvailable(true));
+  allocator2_->DeallocateSurface(avda1_, 1);
+  // The surface should still be owned.
+  ASSERT_FALSE(allocator2_->AllocateSurface(avda1_, 1));
+}
+
+TEST_F(AVDACodecAllocatorTest, DeallocatingUnownedSurfacesIsSafe) {
+  allocator2_->DeallocateSurface(avda1_, 1);
+  allocator2_->DeallocateSurface(avda1_, SurfaceManager::kNoSurfaceID);
+}
+
+TEST_F(AVDACodecAllocatorTest, WaitersAreRemovedIfTheyDeallocate) {
+  allocator2_->AllocateSurface(avda1_, 1);
+  allocator2_->AllocateSurface(avda2_, 1);
+  allocator2_->DeallocateSurface(avda2_, 1);
+  // avda2_ should should not receive a notification.
+  EXPECT_CALL(*avda2_, OnSurfaceAvailable(_)).Times(0);
+  allocator2_->DeallocateSurface(avda1_, 1);
+}
+
+TEST_F(AVDACodecAllocatorTest, OwnersAreNotifiedOnDestruction) {
+  allocator2_->AllocateSurface(avda1_, 1);
+  // Not notified for a surface it doesn't own.
+  EXPECT_CALL(*avda1_, OnSurfaceDestroyed()).Times(0);
+  allocator2_->OnSurfaceDestroyed(123);
+  // But notified for a surface it does own.
+  EXPECT_CALL(*avda1_, OnSurfaceDestroyed());
+  allocator2_->OnSurfaceDestroyed(1);
+}
+
+TEST_F(AVDACodecAllocatorTest, WaitersAreNotifiedOnDestruction) {
+  allocator2_->AllocateSurface(avda1_, 1);
+  allocator2_->AllocateSurface(avda2_, 1);
+  EXPECT_CALL(*avda2_, OnSurfaceAvailable(false));
+  allocator2_->OnSurfaceDestroyed(1);
+}
+
+TEST_F(AVDACodecAllocatorTest, DeallocatingIsSafeDuringSurfaceDestroyed) {
+  allocator2_->AllocateSurface(avda1_, 1);
+  EXPECT_CALL(*avda1_, OnSurfaceDestroyed()).WillOnce(Invoke([=]() {
+    allocator2_->DeallocateSurface(avda1_, 1);
+  }));
+  allocator2_->OnSurfaceDestroyed(1);
 }
 
 }  // namespace media
