@@ -293,7 +293,6 @@ EXPERIMENT_LIST="
     parallel_deblocking
     tile_groups
     ec_adapt
-    simp_mv_pred
     rd_debug
     reference_buffer
     coef_interleave
