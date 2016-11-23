@@ -525,7 +525,7 @@ group("both_gn_and_gyp") {
     ]
   }
 
-  if (is_win || is_mac) {
+  if (is_win || is_mac || is_linux) {
     deps += [ "//third_party/swiftshader" ]
   }
 
