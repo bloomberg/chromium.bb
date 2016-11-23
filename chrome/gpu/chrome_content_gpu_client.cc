@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -65,11 +66,14 @@ ChromeContentGpuClient::~ChromeContentGpuClient() {}
 void ChromeContentGpuClient::Initialize(
     base::FieldTrialList::Observer* observer) {
   DCHECK(!field_trial_syncer_);
-  field_trial_syncer_.reset(
-      new chrome_variations::ChildProcessFieldTrialSyncer(observer));
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  field_trial_syncer_->InitFieldTrialObserving(command_line);
+  // No need for field trial syncer if we're in the browser process.
+  if (!command_line.HasSwitch(switches::kInProcessGPU)) {
+    field_trial_syncer_.reset(
+        new chrome_variations::ChildProcessFieldTrialSyncer(observer));
+    field_trial_syncer_->InitFieldTrialObserving(command_line);
+  }
 }
 
 void ChromeContentGpuClient::ExposeInterfacesToBrowser(
