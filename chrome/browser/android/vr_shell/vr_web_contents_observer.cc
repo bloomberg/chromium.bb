@@ -43,4 +43,14 @@ void VrWebContentsObserver::DidFinishNavigation(
   ui_interface_->SetURL(navigation_handle->GetURL());
 }
 
+void VrWebContentsObserver::DidToggleFullscreenModeForTab(
+    bool entered_fullscreen, bool will_cause_resize) {
+  // TODO(amp): Use will_cause_resize to signal ui of pending size changes.
+  if (entered_fullscreen) {
+    ui_interface_->SetMode(UiInterface::Mode::CINEMA);
+  } else {
+    ui_interface_->SetMode(UiInterface::Mode::STANDARD);
+  }
+}
+
 }  // namespace vr_shell

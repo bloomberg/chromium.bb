@@ -25,6 +25,7 @@ class UiInterface {
     STANDARD,
     WEB_VR,
     MENU,
+    CINEMA,
   };
 
   UiInterface();

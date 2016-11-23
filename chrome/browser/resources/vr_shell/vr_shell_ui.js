@@ -11,6 +11,7 @@ var vrShellUi = (function() {
   let uiRootElement = document.querySelector('#ui');
   let uiStyle = window.getComputedStyle(uiRootElement);
   let scaleFactor = uiStyle.getPropertyValue('--scaleFactor');
+  /** @const */ var ANIM_DURATION = 150;
 
   function getStyleFloat(style, property) {
     let value = parseFloat(style.getPropertyValue(property));
@@ -19,14 +20,17 @@ var vrShellUi = (function() {
 
   class ContentQuad {
     constructor() {
-      /** @const */ var SCREEN_HEIGHT = 1.6;
-      /** @const */ var SCREEN_DISTANCE = 2.0;
+      /** @const */ this.SCREEN_HEIGHT = 1.6;
+      /** @const */ this.SCREEN_RATIO = 16 / 9;
+      /** @const */ this.BROWSING_SCREEN_DISTANCE = 2.0;
+      /** @const */ this.CINEMA_SCREEN_DISTANCE = 3.0;
 
       let element = new api.UiElement(0, 0, 0, 0);
-      element.setIsContentQuad(false);
+      element.setIsContentQuad();
       element.setVisible(false);
-      element.setSize(SCREEN_HEIGHT * 16 / 9, SCREEN_HEIGHT);
-      element.setTranslation(0, 0, -SCREEN_DISTANCE);
+      element.setSize(
+          this.SCREEN_HEIGHT * this.SCREEN_RATIO, this.SCREEN_HEIGHT);
+      element.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
       this.elementId = scene.addElement(element);
     }
 
@@ -35,6 +39,19 @@ var vrShellUi = (function() {
       update.setVisible(enabled);
       scene.updateElement(this.elementId, update);
     }
+
+    setCinemaMode(enabled) {
+      let anim = new api.Animation(this.elementId, ANIM_DURATION);
+      if (enabled) {
+        anim.setTranslation(0, 0, -this.CINEMA_SCREEN_DISTANCE);
+      } else {
+        anim.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
+      }
+      scene.addAnimation(anim);
+    }
+
+    // TODO(crbug/643815): Add a method setting aspect ratio (and possible
+    // animation of changing it).
 
     getElementId() {
       return this.elementId;
@@ -84,7 +101,7 @@ var vrShellUi = (function() {
       let caption = this.domElement.querySelector('.caption');
       button.style.opacity = buttonOpacity;
       caption.style.opacity = captionOpacity;
-      let anim = new api.Animation(this.uiElementId, 150);
+      let anim = new api.Animation(this.uiElementId, ANIM_DURATION);
       anim.setTranslation(0, 0, distanceForward);
       if (this.uiAnimationId >= 0) {
         scene.removeAnimation(this.uiAnimationId);
@@ -107,7 +124,15 @@ var vrShellUi = (function() {
       this.buttons = [];
       let descriptors = [
           ['#back', function() {
-            api.doAction(api.Action.HISTORY_BACK);
+            // If we are in cinema mode, revert to standard mode on back press.
+            if (sceneManager.mode == api.Mode.CINEMA) {
+              // TODO(crbug/644511): Send a message back to native to handle
+              // switching back to standard mode and out of full screen instead
+              // of only changing the mode here.
+              sceneManager.setMode(api.Mode.STANDARD);
+            } else {
+              api.doAction(api.Action.HISTORY_BACK);
+            }
           }],
           ['#reload', function() {
             api.doAction(api.Action.RELOAD);
@@ -376,9 +401,15 @@ var vrShellUi = (function() {
 
     setMode(mode) {
       this.mode = mode;
-      this.contentQuad.setEnabled(mode == api.Mode.STANDARD);
-      this.controls.setEnabled(mode == api.Mode.STANDARD);
-      this.omnibox.setEnabled(mode == api.Mode.STANDARD);
+      this.contentQuad.setEnabled(
+          mode == api.Mode.STANDARD || mode == api.Mode.CINEMA);
+      this.contentQuad.setCinemaMode(mode == api.Mode.CINEMA);
+      // TODO(crbug/643815): Set aspect ratio on content quad when available.
+      // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
+      this.controls.setEnabled(
+          mode == api.Mode.STANDARD || mode == api.Mode.CINEMA);
+      this.omnibox.setEnabled(
+          mode == api.Mode.STANDARD || mode == api.Mode.CINEMA);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
     }
 

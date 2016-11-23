@@ -112,6 +112,11 @@ var ui = (function() {
 
     /*
      * Remove an animation from the scene.
+     *
+     * Note that animations are flushed when they complete and are not required
+     * to be removed. Also new animations of the same type will effectively
+     * override the original so there is no need to remove in that scenario
+     * either.
      */
     removeAnimation(id) {
       // To-do: Make sure ID exists.

@@ -82,7 +82,9 @@ var api = (function() {
   var Mode = Object.freeze({
     'UNKNOWN': -1,
     'STANDARD': 0,
-    'WEB_VR': 1
+    'WEB_VR': 1,
+    'MENU': 2,
+    'CINEMA': 3
   });
 
   /**
