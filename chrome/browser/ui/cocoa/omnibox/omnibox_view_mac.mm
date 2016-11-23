@@ -716,19 +716,6 @@ gfx::NativeView OmniboxViewMac::GetRelativeWindowForPopup() const {
   return NULL;
 }
 
-void OmniboxViewMac::SetGrayTextAutocompletion(
-    const base::string16& suggest_text) {
-  if (suggest_text == suggest_text_)
-    return;
-  suggest_text_ = suggest_text;
-  [field_ setGrayTextAutocompletion:base::SysUTF16ToNSString(suggest_text)
-                          textColor:SuggestTextColor()];
-}
-
-base::string16 OmniboxViewMac::GetGrayTextAutocompletion() const {
-  return suggest_text_;
-}
-
 int OmniboxViewMac::GetTextWidth() const {
   // Not used on mac.
   NOTREACHED();
@@ -813,15 +800,6 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
         cmd == @selector(insertTabIgnoringFieldEditor:)) &&
         !model()->is_keyword_hint()) {
       model()->OnUpOrDownKeyPressed(1);
-      return true;
-    }
-  }
-
-  if (cmd == @selector(moveRight:)) {
-    // Only commit suggested text if the cursor is all the way to the right and
-    // there is no selection.
-    if (suggest_text_.length() > 0 && IsCaretAtEnd()) {
-      model()->CommitSuggestedText();
       return true;
     }
   }

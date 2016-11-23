@@ -132,9 +132,6 @@ class AutocompleteTextFieldObserver {
 
   // Animation object used for resizing the autocomplete field.
   base::scoped_nsobject<NSViewAnimation> resizeAnimation_;
-
-  base::scoped_nsobject<NSString> suggestText_;
-  base::scoped_nsobject<NSColor> suggestColor_;
 }
 
 @property(nonatomic) AutocompleteTextFieldObserver* observer;
@@ -169,29 +166,9 @@ class AutocompleteTextFieldObserver {
 // via -[NSView addToolTipRect:owner:userData:].
 - (void)addToolTip:(NSString*)tooltip forRect:(NSRect)aRect;
 
-// Sets the suggest text that shows at the end of the field's normal text.
-// This can't be simply appended to the field's text storage because that
-// will end any pending IME session.
-- (void)setGrayTextAutocompletion:(NSString*)suggestText
-                        textColor:(NSColor*)suggestColor;
-
-- (NSString*)suggestText;
-- (NSColor*)suggestColor;
-
 // Obtain the bubble anchor point for |decoration|. In window coordinates.
 - (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration;
 
 @end
-
-namespace autocomplete_text_field {
-
-// Draw gray text suggestion in |controlView|.
-void DrawGrayTextAutocompletion(NSAttributedString* mainText,
-                                NSString* suggestText,
-                                NSColor* suggestColor,
-                                NSView* controlView,
-                                NSRect frame);
-
-}  // namespace autocomplete_text_field
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_

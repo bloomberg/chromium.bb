@@ -193,12 +193,6 @@ class LocationBarView : public LocationBar,
   // comments on |ime_inline_autocomplete_view_|.
   void SetImeInlineAutocompletion(const base::string16& text);
 
-  // Invoked from OmniboxViewWin to show gray text autocompletion.
-  void SetGrayTextAutocompletion(const base::string16& text);
-
-  // Returns the current gray text autocompletion.
-  base::string16 GetGrayTextAutocompletion() const;
-
   // Set if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   // Repaints if necessary.
@@ -313,9 +307,6 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 
-  // Returns true if the suggest text is valid.
-  bool HasValidSuggestText() const;
-
   // Returns text describing the URL's security level, to be placed in the
   // security chip.
   base::string16 GetSecurityText() const;
@@ -424,10 +415,6 @@ class LocationBarView : public LocationBar,
 
   // Shown if the user has selected a keyword.
   SelectedKeywordView* selected_keyword_view_;
-
-  // View responsible for showing suggested text. This is NULL when there is no
-  // suggested text.
-  views::Label* suggested_text_view_;
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;

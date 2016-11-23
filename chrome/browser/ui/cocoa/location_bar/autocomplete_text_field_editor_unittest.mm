@@ -195,15 +195,6 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
   [editor_ display];
 }
 
-// Test setting gray text, mostly to ensure nothing leaks or crashes.
-TEST_F(AutocompleteTextFieldEditorTest, GrayText) {
-  [editor_ display];
-  EXPECT_FALSE([editor_ needsDisplay]);
-  [field_ setGrayTextAutocompletion:@"foo" textColor:[NSColor redColor]];
-  EXPECT_TRUE([editor_ needsDisplay]);
-  [editor_ display];
-}
-
 // Test that -paste: is correctly delegated to the observer.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Paste) {
   EXPECT_CALL(field_observer_, OnPaste());

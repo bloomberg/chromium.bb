@@ -243,15 +243,6 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 }
 
-// Test setting gray text, mostly to ensure nothing leaks or crashes.
-TEST_F(AutocompleteTextFieldTest, GrayText) {
-  [field_ display];
-  EXPECT_FALSE([field_ needsDisplay]);
-  [field_ setGrayTextAutocompletion:@"foo" textColor:[NSColor redColor]];
-  EXPECT_TRUE([field_ needsDisplay]);
-  [field_ display];
-}
-
 TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {
   InSequence dummy;  // Call mock in exactly the order specified.
 

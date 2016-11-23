@@ -80,10 +80,6 @@ class TestingOmniboxView : public OmniboxView {
   }
   gfx::NativeView GetNativeView() const override { return nullptr; }
   gfx::NativeView GetRelativeWindowForPopup() const override { return nullptr; }
-  void SetGrayTextAutocompletion(const base::string16& input) override {}
-  base::string16 GetGrayTextAutocompletion() const override {
-    return base::string16();
-  }
   int GetTextWidth() const override { return 0; }
   int GetWidth() const override { return 0; }
   bool IsImeComposing() const override { return false; }

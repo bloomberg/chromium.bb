@@ -60,7 +60,6 @@ class OmniboxEditModel {
   struct State {
     State(bool user_input_in_progress,
           const base::string16& user_text,
-          const base::string16& gray_text,
           const base::string16& keyword,
           bool is_keyword_hint,
           KeywordModeEntryMethod keyword_mode_entry_method,
@@ -72,7 +71,6 @@ class OmniboxEditModel {
 
     bool user_input_in_progress;
     const base::string16 user_text;
-    const base::string16 gray_text;
     const base::string16 keyword;
     const bool is_keyword_hint;
     KeywordModeEntryMethod keyword_mode_entry_method;
@@ -163,11 +161,6 @@ class OmniboxEditModel {
 
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const base::string16& text);
-
-  // Commits the gray suggested text as if it's been input by the user.
-  // Returns true if the text was committed.
-  // TODO: can the return type be void?
-  bool CommitSuggestedText();
 
   // Invoked any time the text may have changed in the edit. Notifies the
   // controller.
@@ -304,9 +297,6 @@ class OmniboxEditModel {
 
   // Returns true if pasting is in progress.
   bool is_pasting() const { return paste_state_ == PASTING; }
-
-  // TODO(beaudoin): Try not to expose this.
-  bool in_revert() const { return in_revert_; }
 
   // Called when the user presses up or down.  |count| is a repeat count,
   // negative for moving up, positive for moving down.

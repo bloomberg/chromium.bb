@@ -536,16 +536,6 @@ gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
   return GetWidget()->GetTopLevelWidget()->GetNativeView();
 }
 
-void OmniboxViewViews::SetGrayTextAutocompletion(const base::string16& input) {
-  if (location_bar_view_)
-    location_bar_view_->SetGrayTextAutocompletion(input);
-}
-
-base::string16 OmniboxViewViews::GetGrayTextAutocompletion() const {
-  return location_bar_view_ ?
-      location_bar_view_->GetGrayTextAutocompletion() : base::string16();
-}
-
 int OmniboxViewViews::GetWidth() const {
   return location_bar_view_ ? location_bar_view_->width() : 0;
 }
@@ -966,21 +956,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         return false;
       model()->ClearKeyword();
       return true;
-
-    // Handle the right-arrow key for LTR text and the left-arrow key for RTL
-    // text if there is gray text that needs to be committed.
-    case ui::VKEY_RIGHT:
-      if (GetCursorPosition() == text().length() &&
-          GetTextDirection() == base::i18n::LEFT_TO_RIGHT) {
-        return model()->CommitSuggestedText();
-      }
-      break;
-    case ui::VKEY_LEFT:
-      if (GetCursorPosition() == text().length() &&
-          GetTextDirection() == base::i18n::RIGHT_TO_LEFT) {
-        return model()->CommitSuggestedText();
-      }
-      break;
 
     default:
       break;

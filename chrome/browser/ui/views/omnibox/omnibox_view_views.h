@@ -147,8 +147,6 @@ class OmniboxViewViews
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  void SetGrayTextAutocompletion(const base::string16& input) override;
-  base::string16 GetGrayTextAutocompletion() const override;
   int GetWidth() const override;
   bool IsImeShowingPopup() const override;
   void ShowImeIfNeeded() override;

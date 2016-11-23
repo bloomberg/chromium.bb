@@ -147,35 +147,6 @@ TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
   EXPECT_EQ(-1, model->up_or_down_count());
 }
 
-TEST_F(OmniboxViewMacTest, SetGrayTextAutocompletion) {
-  const NSRect frame = NSMakeRect(0, 0, 50, 30);
-  base::scoped_nsobject<AutocompleteTextField> field(
-      [[AutocompleteTextField alloc] initWithFrame:frame]);
-
-  TestingToolbarModelDelegate delegate;
-  ToolbarModelImpl toolbar_model(&delegate, content::kMaxURLDisplayChars);
-  TestingOmniboxEditController controller(&toolbar_model);
-  OmniboxViewMac view(&controller, profile(), NULL, field.get());
-
-  // This is deleted by the omnibox view.
-  MockOmniboxEditModel* model =
-      new MockOmniboxEditModel(&view, &controller, profile());
-  SetModel(&view, model);
-
-  MockOmniboxPopupView popup_view;
-  OmniboxPopupModel popup_model(&popup_view, model);
-
-  view.SetUserText(base::ASCIIToUTF16("Alfred"));
-  EXPECT_EQ("Alfred", base::UTF16ToUTF8(view.GetText()));
-  view.SetGrayTextAutocompletion(base::ASCIIToUTF16(" Hitchcock"));
-  EXPECT_EQ("Alfred", base::UTF16ToUTF8(view.GetText()));
-  EXPECT_EQ(" Hitchcock", base::UTF16ToUTF8(view.GetGrayTextAutocompletion()));
-
-  view.SetUserText(base::string16());
-  EXPECT_EQ(base::string16(), view.GetText());
-  EXPECT_EQ(base::string16(), view.GetGrayTextAutocompletion());
-}
-
 TEST_F(OmniboxViewMacTest, UpDownArrow) {
   OmniboxViewMac view(NULL, profile(), NULL, NULL);
 

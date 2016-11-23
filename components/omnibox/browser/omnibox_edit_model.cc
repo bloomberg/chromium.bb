@@ -90,7 +90,6 @@ const char kFocusToOpenTimeHistogram[] =
 
 OmniboxEditModel::State::State(bool user_input_in_progress,
                                const base::string16& user_text,
-                               const base::string16& gray_text,
                                const base::string16& keyword,
                                bool is_keyword_hint,
                                KeywordModeEntryMethod keyword_mode_entry_method,
@@ -99,7 +98,6 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                const AutocompleteInput& autocomplete_input)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
-      gray_text(gray_text),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
       keyword_mode_entry_method(keyword_mode_entry_method),
@@ -159,10 +157,8 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
 
   UMA_HISTOGRAM_BOOLEAN("Omnibox.SaveStateForTabSwitch.UserInputInProgress",
                         user_input_in_progress_);
-  return State(
-      user_input_in_progress_, user_text_, view_->GetGrayTextAutocompletion(),
-      keyword_, is_keyword_hint_, keyword_mode_entry_method_,
-      focus_state_, focus_source_, input_);
+  return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
+               keyword_mode_entry_method_, focus_state_, focus_source_, input_);
 }
 
 void OmniboxEditModel::RestoreState(const State* state) {
@@ -186,7 +182,6 @@ void OmniboxEditModel::RestoreState(const State* state) {
     keyword_ = state->keyword;
     is_keyword_hint_ = state->is_keyword_hint;
     keyword_mode_entry_method_ = state->keyword_mode_entry_method;
-    view_->SetGrayTextAutocompletion(state->gray_text);
   }
 }
 
@@ -217,20 +212,11 @@ bool OmniboxEditModel::UpdatePermanentText() {
   // always safe to change the text; this also prevents someone toggling "Show
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
-  //
-  // If the page is auto-committing gray text, however, we generally don't want
-  // to make any change to the edit.  While auto-commits modify the underlying
-  // permanent URL, they're intended to have no effect on the user's editing
-  // process -- before and after the auto-commit, the omnibox should show the
-  // same user text and the same instant suggestion, even if the auto-commit
-  // happens while the edit doesn't have focus.
   base::string16 new_permanent_text =
       controller_->GetToolbarModel()->GetFormattedURL(nullptr);
-  base::string16 gray_text = view_->GetGrayTextAutocompletion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
-      (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen())) &&
-      (gray_text.empty() || new_permanent_text != user_text_ + gray_text);
+      (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
 
   permanent_text_ = new_permanent_text;
   return visibly_changed_permanent_text;
@@ -251,23 +237,7 @@ void OmniboxEditModel::SetUserText(const base::string16& text) {
   has_temporary_text_ = false;
 }
 
-bool OmniboxEditModel::CommitSuggestedText() {
-  const base::string16 suggestion = view_->GetGrayTextAutocompletion();
-  if (suggestion.empty())
-    return false;
-
-  const base::string16 final_text = view_->GetText() + suggestion;
-  view_->OnBeforePossibleChange();
-  view_->SetWindowTextAndCaretPos(final_text, final_text.length(), false,
-      false);
-  view_->OnAfterPossibleChange(true);
-  return true;
-}
-
 void OmniboxEditModel::OnChanged() {
-  // Hide any suggestions we might be showing.
-  view_->SetGrayTextAutocompletion(base::string16());
-
   // Don't call CurrentMatch() when there's no editing, as in this case we'll
   // never actually use it.  This avoids running the autocomplete providers (and
   // any systems they then spin up) during startup.

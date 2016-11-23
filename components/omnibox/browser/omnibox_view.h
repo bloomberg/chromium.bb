@@ -189,12 +189,6 @@ class OmniboxView {
   // the top-most window is the relative window.
   virtual gfx::NativeView GetRelativeWindowForPopup() const = 0;
 
-  // Shows |input| as gray suggested text after what the user has typed.
-  virtual void SetGrayTextAutocompletion(const base::string16& input) = 0;
-
-  // Returns the current gray suggested text.
-  virtual base::string16 GetGrayTextAutocompletion() const = 0;
-
   // Returns the width in pixels needed to display the current text. The
   // returned value includes margins.
   virtual int GetTextWidth() const = 0;

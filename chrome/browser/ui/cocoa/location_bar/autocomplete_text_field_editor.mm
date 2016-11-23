@@ -593,12 +593,6 @@ BOOL ThePasteboardIsTooDamnBig() {
   if (observer)
     observer->OnBeforeDrawRect();
   [super drawRect:rect];
-  autocomplete_text_field::DrawGrayTextAutocompletion(
-      [self textStorage],
-      [[self delegate] suggestText],
-      [[self delegate] suggestColor],
-      self,
-      [self bounds]);
   if (observer)
     observer->OnDidDrawRect();
 }

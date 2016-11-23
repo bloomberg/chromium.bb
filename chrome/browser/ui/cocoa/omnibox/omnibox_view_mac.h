@@ -89,8 +89,6 @@ class OmniboxViewMac : public OmniboxView,
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  void SetGrayTextAutocompletion(const base::string16& input) override;
-  base::string16 GetGrayTextAutocompletion() const override;
   int GetTextWidth() const override;
   int GetWidth() const override;
   bool IsImeComposing() const override;
@@ -218,8 +216,6 @@ class OmniboxViewMac : public OmniboxView,
 
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
-
-  base::string16 suggest_text_;
 
   // State used to coalesce changes to text and selection to avoid drawing
   // transient state.
