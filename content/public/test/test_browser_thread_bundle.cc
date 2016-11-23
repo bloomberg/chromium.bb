@@ -81,30 +81,12 @@ void TestBrowserThreadBundle::Init() {
         new TestBrowserThread(BrowserThread::FILE, message_loop_.get()));
   }
 
-  if (options_ & REAL_FILE_USER_BLOCKING_THREAD) {
-    file_user_blocking_thread_.reset(
-        new TestBrowserThread(BrowserThread::FILE_USER_BLOCKING));
-  } else {
-    file_user_blocking_thread_.reset(
-        new TestBrowserThread(BrowserThread::FILE_USER_BLOCKING,
-                              message_loop_.get()));
-  }
-
-  if (options_ & REAL_PROCESS_LAUNCHER_THREAD) {
-    process_launcher_thread_.reset(
-        new TestBrowserThread(BrowserThread::PROCESS_LAUNCHER));
-  } else {
-    process_launcher_thread_.reset(
-        new TestBrowserThread(BrowserThread::PROCESS_LAUNCHER,
-                              message_loop_.get()));
-  }
-
-  if (options_ & REAL_CACHE_THREAD) {
-    cache_thread_.reset(new TestBrowserThread(BrowserThread::CACHE));
-  } else {
-    cache_thread_.reset(
-        new TestBrowserThread(BrowserThread::CACHE, message_loop_.get()));
-  }
+  file_user_blocking_thread_.reset(new TestBrowserThread(
+      BrowserThread::FILE_USER_BLOCKING, message_loop_.get()));
+  process_launcher_thread_.reset(new TestBrowserThread(
+      BrowserThread::PROCESS_LAUNCHER, message_loop_.get()));
+  cache_thread_.reset(
+      new TestBrowserThread(BrowserThread::CACHE, message_loop_.get()));
 
   if (options_ & REAL_IO_THREAD) {
     io_thread_.reset(new TestBrowserThread(BrowserThread::IO));
@@ -125,15 +107,6 @@ void TestBrowserThreadBundle::Start() {
 
   if (options_ & REAL_FILE_THREAD)
     file_thread_->Start();
-
-  if (options_ & REAL_FILE_USER_BLOCKING_THREAD)
-    file_user_blocking_thread_->Start();
-
-  if (options_ & REAL_PROCESS_LAUNCHER_THREAD)
-    process_launcher_thread_->Start();
-
-  if (options_ & REAL_CACHE_THREAD)
-    cache_thread_->Start();
 
   if (options_ & REAL_IO_THREAD)
     io_thread_->StartIOThread();

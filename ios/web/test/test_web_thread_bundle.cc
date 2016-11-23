@@ -73,22 +73,10 @@ void TestWebThreadBundle::Init(int options) {
     file_thread_.reset(new TestWebThread(WebThread::FILE, message_loop_.get()));
   }
 
-  if (options & TestWebThreadBundle::REAL_FILE_USER_BLOCKING_THREAD) {
-    file_user_blocking_thread_.reset(
-        new TestWebThread(WebThread::FILE_USER_BLOCKING));
-    file_user_blocking_thread_->Start();
-  } else {
-    file_user_blocking_thread_.reset(
-        new TestWebThread(WebThread::FILE_USER_BLOCKING, message_loop_.get()));
-  }
+  file_user_blocking_thread_.reset(
+      new TestWebThread(WebThread::FILE_USER_BLOCKING, message_loop_.get()));
 
-  if (options & TestWebThreadBundle::REAL_CACHE_THREAD) {
-    cache_thread_.reset(new TestWebThread(WebThread::CACHE));
-    cache_thread_->Start();
-  } else {
-    cache_thread_.reset(
-        new TestWebThread(WebThread::CACHE, message_loop_.get()));
-  }
+  cache_thread_.reset(new TestWebThread(WebThread::CACHE, message_loop_.get()));
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {
     io_thread_.reset(new TestWebThread(WebThread::IO));

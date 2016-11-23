@@ -67,11 +67,8 @@ class TestBrowserThreadBundle {
     IO_MAINLOOP = 0x01,
     REAL_DB_THREAD = 0x02,
     REAL_FILE_THREAD = 0x08,
-    REAL_FILE_USER_BLOCKING_THREAD = 0x10,
-    REAL_PROCESS_LAUNCHER_THREAD = 0x20,
-    REAL_CACHE_THREAD = 0x40,
-    REAL_IO_THREAD = 0x80,
-    DONT_START_THREADS = 0x100,
+    REAL_IO_THREAD = 0x10,
+    DONT_START_THREADS = 0x20,
   };
 
   TestBrowserThreadBundle();

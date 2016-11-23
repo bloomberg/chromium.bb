@@ -51,10 +51,8 @@ class TestWebThreadBundle {
     DEFAULT = 0x00,
     IO_MAINLOOP = 0x01,
     REAL_DB_THREAD = 0x02,
-    REAL_FILE_THREAD = 0x08,
-    REAL_FILE_USER_BLOCKING_THREAD = 0x10,
-    REAL_CACHE_THREAD = 0x20,
-    REAL_IO_THREAD = 0x40,
+    REAL_FILE_THREAD = 0x04,
+    REAL_IO_THREAD = 0x08,
   };
 
   TestWebThreadBundle();
