@@ -9,7 +9,7 @@
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [8, 8, 630, 20],
-          "reason": "forced by layout"
+          "reason": "border box change"
         },
         {
           "object": "LayoutText #text",
@@ -22,19 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "forced by layout"
+      "reason": "border box change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
+      "reason": "border box change"
     },
     {
       "object": "LayoutBR BR",

@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [9, 9, 400, 100],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutInline SPAN id='a'",
           "rect": [234, 10, 300, 56],
           "reason": "forced by layout"
@@ -20,40 +15,11 @@
           "object": "LayoutText #text",
           "rect": [234, 15, 300, 50],
           "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [9, 10, 13, 56],
-          "reason": "forced by layout"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox '\u00A0'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
-    },
     {
       "object": "LayoutInline SPAN id='a'",
       "reason": "forced by layout"

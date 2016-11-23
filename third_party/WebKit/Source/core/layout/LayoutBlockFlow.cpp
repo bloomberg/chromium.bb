@@ -278,9 +278,7 @@ bool LayoutBlockFlow::updateLogicalWidthAndColumnWidth() {
 }
 
 void LayoutBlockFlow::checkForPaginationLogicalHeightChange(
-    LayoutUnit& pageLogicalHeight,
-    bool& pageLogicalHeightChanged,
-    bool& hasSpecifiedPageLogicalHeight) {
+    LayoutUnit& pageLogicalHeight) {
   if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
     // Calculate the non-auto content box height, or set it to 0 if it's auto.
     // We need to know this before layout, so that we can figure out where to
@@ -300,8 +298,6 @@ void LayoutBlockFlow::checkForPaginationLogicalHeightChange(
       columnHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() -
                      scrollbarLogicalHeight();
     }
-    pageLogicalHeightChanged =
-        columnHeight != flowThread->columnHeightAvailable();
     flowThread->setColumnHeightAvailable(std::max(columnHeight, LayoutUnit()));
   } else if (isLayoutFlowThread()) {
     LayoutFlowThread* flowThread = toLayoutFlowThread(this);
@@ -319,8 +315,6 @@ void LayoutBlockFlow::checkForPaginationLogicalHeightChange(
     // multicol implementation is gone.
     pageLogicalHeight =
         flowThread->isPageLogicalHeightKnown() ? LayoutUnit(1) : LayoutUnit();
-
-    pageLogicalHeightChanged = flowThread->pageLogicalSizeChanged();
   }
 }
 
@@ -475,13 +469,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
 
   rebuildFloatsFromIntruding();
 
-  bool pageLogicalHeightChanged = false;
-  bool hasSpecifiedPageLogicalHeight = false;
-  checkForPaginationLogicalHeightChange(pageLogicalHeight,
-                                        pageLogicalHeightChanged,
-                                        hasSpecifiedPageLogicalHeight);
-  if (pageLogicalHeightChanged)
-    relayoutChildren = true;
+  checkForPaginationLogicalHeightChange(pageLogicalHeight);
 
   LayoutState state(*this, pageLogicalHeight, logicalWidthChanged);
 

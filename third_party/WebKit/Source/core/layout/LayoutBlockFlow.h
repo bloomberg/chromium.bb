@@ -590,10 +590,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                       LayoutUnit& totalLogicalWidth,
                                       LayoutUnit& availableLogicalWidth,
                                       unsigned expansionOpportunityCount);
-  void checkForPaginationLogicalHeightChange(
-      LayoutUnit& pageLogicalHeight,
-      bool& pageLogicalHeightChanged,
-      bool& hasSpecifiedPageLogicalHeight);
+  void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight);
 
   bool shouldBreakAtLineToAvoidWidow() const {
     return m_rareData && m_rareData->m_lineBreakToAvoidWidow >= 0;
