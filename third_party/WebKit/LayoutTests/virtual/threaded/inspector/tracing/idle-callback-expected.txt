@@ -87,4 +87,5 @@ FireIdleCallback Properties:
     type : "FireIdleCallback"
 }
 Text details for FireIdleCallback: idle-callback.html:15
+FireIdleCallback has a warning
 

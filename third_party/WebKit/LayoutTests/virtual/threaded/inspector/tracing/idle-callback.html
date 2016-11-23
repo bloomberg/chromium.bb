@@ -3,7 +3,7 @@
 <script src="../../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function performActions()
+function performActions(idleWarningAddOn)
 {
     var callback;
     var promise = new Promise((fulfill) => callback = fulfill);
@@ -17,6 +17,8 @@ function performActions()
     function slowIdleCallback(deadline)
     {
         while (deadline.timeRemaining()) {};
+        var addOnDeadline = performance.now() + idleWarningAddOn;
+        while (performance.now() < addOnDeadline) {};
         if (callback)
             callback();
     }
@@ -25,7 +27,7 @@ function performActions()
 
 function test()
 {
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    InspectorTest.invokeAsyncWithTimeline(`(() => performActions(${TimelineModel.TimelineModel.Thresholds.IdleCallbackAddon}))`, finish);
 
     function finish()
     {
