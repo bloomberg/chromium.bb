@@ -4,57 +4,24 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV id='outer'",
-      "position": [8, 8],
-      "bounds": [300, 300],
-      "shouldFlattenTransform": false,
       "drawsContent": true,
-      "backgroundColor": "#0000FF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [285, 285],
-      "shouldFlattenTransform": false
-    },
-    {
-      "name": "Scrolling Contents Layer",
-      "bounds": [650, 600],
-      "contentsOpaque": true,
-      "drawsContent": true
-    },
-    {
-      "name": "Overflow Controls Host Layer",
-      "bounds": [300, 300]
-    },
-    {
-      "name": "Horizontal Scrollbar Layer",
-      "position": [0, 285],
-      "bounds": [285, 15],
       "paintInvalidations": [
         {
-          "object": "Horizontal Scrollbar Layer",
-          "rect": [0, 0, 285, 15],
-          "reason": "full"
+          "object": "LayoutBlockFlow (positioned) DIV id='outer'",
+          "rect": [8, 293, 285, 15],
+          "reason": "scroll"
         }
       ]
     },
     {
-      "name": "Vertical Scrollbar Layer",
-      "position": [285, 0],
-      "bounds": [15, 285]
-    },
-    {
-      "name": "Scroll Corner Layer",
-      "position": [285, 285],
-      "bounds": [15, 15],
-      "drawsContent": true
+      "name": "Ancestor Clipping Layer",
+      "position": [8, 8],
+      "bounds": [285, 285],
+      "shouldFlattenTransform": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
-      "position": [-307, 8],
+      "position": [-315, 0],
       "bounds": [600, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -69,6 +36,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
     {
       "object": "LayoutBlockFlow DIV id='inner'",
       "reason": "style change"

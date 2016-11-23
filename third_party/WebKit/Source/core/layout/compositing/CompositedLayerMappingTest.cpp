@@ -874,7 +874,7 @@ TEST_P(CompositedLayerMappingTest,
   setBodyInnerHTML(
       "<style>"
       "#scroller { overflow: scroll; height: 200px; width: 200px; background: "
-      "white local content-box; outline: 1px solid blue;}"
+      "white local content-box; outline: 1px solid blue; contain: paint; }"
       "#scrolled { height: 300px; }"
       "</style>"
       "<div id=\"parent\">"

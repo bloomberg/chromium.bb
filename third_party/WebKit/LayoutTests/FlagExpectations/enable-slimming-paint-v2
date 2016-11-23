@@ -2138,6 +2138,12 @@ crbug.com/654554 fast/forms/suggestion-picker/week-suggestion-picker-appearance.
 
 crbug.com/667071 svg/foreignObject/vertical-foreignObject.html [ Failure ]
 
+Bug(none) fast/deprecated-flexbox/009-horizontal.html [ Failure ]
+Bug(none) fast/deprecated-flexbox/009.html [ Failure ]
+Bug(none) fast/overflow/003.xml [ Failure ]
+Bug(none) fast/overflow/overflow-float-stacking.html [ Failure ]
+Bug(none) fast/overflow/overflow-stacking.html [ Failure ]
+
 # Notes about rebaselined tests:
 #
 # Rebaselined for small pixel differences.
