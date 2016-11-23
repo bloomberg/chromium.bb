@@ -68,7 +68,8 @@ ChromotingHost::ChromotingHost(
     std::unique_ptr<protocol::SessionManager> session_manager,
     scoped_refptr<protocol::TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
+    const DesktopEnvironmentOptions& options)
     : desktop_environment_factory_(desktop_environment_factory),
       session_manager_(std::move(session_manager)),
       transport_context_(transport_context),
@@ -76,7 +77,7 @@ ChromotingHost::ChromotingHost(
       video_encode_task_runner_(video_encode_task_runner),
       started_(false),
       login_backoff_(&kDefaultBackoffPolicy),
-      enable_curtaining_(false),
+      desktop_environment_options_(options),
       weak_factory_(this) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
@@ -131,23 +132,6 @@ void ChromotingHost::SetAuthenticatorFactory(
     std::unique_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
   session_manager_->set_authenticator_factory(std::move(authenticator_factory));
-}
-
-void ChromotingHost::SetEnableCurtaining(bool enable) {
-  DCHECK(CalledOnValidThread());
-
-  if (enable_curtaining_ == enable)
-    return;
-
-  enable_curtaining_ = enable;
-
-  // Disconnect all existing clients because they might be running not
-  // curtained.
-  // TODO(alexeypa): fix this such that the curtain is applied to the not
-  // curtained sessions or disconnect only the client connected to not
-  // curtained sessions.
-  if (enable_curtaining_)
-    DisconnectAllClients();
 }
 
 void ChromotingHost::SetMaximumSessionDuration(
@@ -272,23 +256,12 @@ void ChromotingHost::OnIncomingSession(
         video_encode_task_runner_, audio_task_runner_));
   }
 
-  DesktopEnvironmentOptions options =
-      DesktopEnvironmentOptions::CreateDefault();
-  options.set_enable_curtaining(enable_curtaining_);
+  DesktopEnvironmentOptions options = desktop_environment_options_;
+  // TODO(zijiehe): Apply HostSessionOptions to options.
   // Create a ClientSession object.
   clients_.push_back(base::MakeUnique<ClientSession>(
       this, std::move(connection), desktop_environment_factory_, options,
       max_session_duration_, pairing_registry_, extensions_.get()));
-}
-
-void ChromotingHost::DisconnectAllClients() {
-  DCHECK(CalledOnValidThread());
-
-  while (!clients_.empty()) {
-    size_t size = clients_.size();
-    clients_.front()->DisconnectSession(protocol::OK);
-    CHECK_EQ(clients_.size(), size - 1);
-  }
 }
 
 }  // namespace remoting

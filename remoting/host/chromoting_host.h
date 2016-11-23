@@ -18,6 +18,7 @@
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/host/client_session.h"
+#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
@@ -74,7 +75,8 @@ class ChromotingHost : public base::NonThreadSafe,
       std::unique_ptr<protocol::SessionManager> session_manager,
       scoped_refptr<protocol::TransportContext> transport_context,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
+      const DesktopEnvironmentOptions& options);
   ~ChromotingHost() override;
 
   // Asynchronously starts the host.
@@ -100,12 +102,6 @@ class ChromotingHost : public base::NonThreadSafe,
   // factory before all authenticators it created are deleted.
   void SetAuthenticatorFactory(
       std::unique_ptr<protocol::AuthenticatorFactory> authenticator_factory);
-
-  // Enables/disables curtaining when one or more clients are connected.
-  // Takes immediate effect if clients are already connected.
-  // TODO(zijiehe): Replace this function with
-  // SetDesktopEnvironmentOptions(const DesktopEnvironmentOptions&).
-  void SetEnableCurtaining(bool enable);
 
   // Sets the maximum duration of any session. By default, a session has no
   // maximum duration.
@@ -148,11 +144,6 @@ class ChromotingHost : public base::NonThreadSafe,
 
   typedef ScopedVector<HostExtension> HostExtensionList;
 
-  // Immediately disconnects all active clients. Host-internal components may
-  // shutdown asynchronously, but the caller is guaranteed not to receive
-  // callbacks for disconnected clients after this call returns.
-  void DisconnectAllClients();
-
   // Unless specified otherwise all members of this class must be
   // used on the network thread only.
 
@@ -175,8 +166,8 @@ class ChromotingHost : public base::NonThreadSafe,
   // Login backoff state.
   net::BackoffEntry login_backoff_;
 
-  // True if the curtain mode is enabled.
-  bool enable_curtaining_;
+  // Options to initialize a DesktopEnvironment.
+  const DesktopEnvironmentOptions desktop_environment_options_;
 
   // The maximum duration of any session.
   base::TimeDelta max_session_duration_;

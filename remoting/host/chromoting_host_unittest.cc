@@ -70,7 +70,8 @@ class ChromotingHostTest : public testing::Test {
         desktop_environment_factory_.get(), base::WrapUnique(session_manager_),
         protocol::TransportContext::ForTests(protocol::TransportRole::SERVER),
         task_runner_,    // Audio
-        task_runner_));  // Video encode
+        task_runner_,
+        DesktopEnvironmentOptions::CreateDefault()));  // Video encode
     host_->AddStatusObserver(&host_status_observer_);
 
     xmpp_login_ = "host@domain";
@@ -154,10 +155,6 @@ class ChromotingHostTest : public testing::Test {
     task_runner_ = nullptr;
 
     base::RunLoop().RunUntilIdle();
-  }
-
-  void DisconnectAllClients() {
-    host_->DisconnectAllClients();
   }
 
   void NotifyConnectionClosed1() {
@@ -382,17 +379,6 @@ TEST_F(ChromotingHostTest, OnSessionRouteChange) {
   EXPECT_CALL(host_status_observer_,
               OnClientRouteChange(session_jid1_, channel_name, _));
   host_->OnSessionRouteChange(get_client(0), channel_name, route);
-}
-
-TEST_F(ChromotingHostTest, DisconnectAllClients) {
-  StartHost();
-
-  ExpectClientConnected(0);
-  SimulateClientConnection(0, true, false);
-
-  ExpectClientDisconnected(0);
-  DisconnectAllClients();
-  testing::Mock::VerifyAndClearExpectations(&host_status_observer_);
 }
 
 }  // namespace remoting

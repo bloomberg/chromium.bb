@@ -231,7 +231,8 @@ void It2MeHost::FinishConnect() {
   host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
                                  std::move(session_manager), transport_context,
                                  host_context_->audio_task_runner(),
-                                 host_context_->video_encode_task_runner()));
+                                 host_context_->video_encode_task_runner(),
+                                 DesktopEnvironmentOptions::CreateDefault()));
   host_->AddStatusObserver(this);
   host_status_logger_.reset(
       new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::IT2ME,

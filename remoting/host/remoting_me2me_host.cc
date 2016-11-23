@@ -53,6 +53,7 @@
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/config_watcher.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/gcd_rest_client.h"
@@ -376,7 +377,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::string talkgadget_prefix_;
   bool allow_pairing_ = true;
 
-  bool curtain_required_ = false;
+  DesktopEnvironmentOptions desktop_environment_options_;
   ThirdPartyAuthConfig third_party_auth_config_;
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
@@ -437,9 +438,14 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
                          int* exit_code_out,
                          ShutdownWatchdog* shutdown_watchdog)
     : context_(std::move(context)),
+      desktop_environment_options_(DesktopEnvironmentOptions::CreateDefault()),
       self_(this),
       exit_code_out_(exit_code_out),
       shutdown_watchdog_(shutdown_watchdog) {
+  // TODO(zijiehe):
+  // desktop_environment_options_.desktop_capture_options()
+  //     ->set_use_update_notifications(true);
+  // And remove the same line from me2me_desktop_environment.cc.
   StartOnUiThread();
 }
 
@@ -1133,7 +1139,7 @@ void HostProcess::ApplyUsernamePolicy() {
     // for each connection, removing the need for an explicit user-name matching
     // check.
 #if defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
-    if (curtain_required_)
+    if (desktop_environment_options_.enable_curtaining())
       return;
 #endif  // defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
 
@@ -1217,13 +1223,15 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
+  bool curtain_required;
   if (!policies->GetBoolean(policy::key::kRemoteAccessHostRequireCurtain,
-                            &curtain_required_)) {
+                            &curtain_required)) {
     return false;
   }
+  desktop_environment_options_.set_enable_curtaining(curtain_required);
 
 #if defined(OS_MACOSX)
-  if (curtain_required_) {
+  if (curtain_required) {
     // When curtain mode is in effect on Mac, the host process runs in the
     // user's switched-out session, but launchd will also run an instance at
     // the console login screen.  Even if no user is currently logged-on, we
@@ -1242,15 +1250,13 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   }
 #endif
 
-  if (curtain_required_) {
+  if (curtain_required) {
     HOST_LOG << "Policy requires curtain-mode.";
   } else {
     HOST_LOG << "Policy does not require curtain-mode.";
   }
 
-  if (host_)
-    host_->SetEnableCurtaining(curtain_required_);
-  return false;
+  return true;
 }
 
 bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
@@ -1444,7 +1450,8 @@ void HostProcess::StartHost() {
   host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
                                  std::move(session_manager), transport_context,
                                  context_->audio_task_runner(),
-                                 context_->video_encode_task_runner()));
+                                 context_->video_encode_task_runner(),
+                                 desktop_environment_options_));
 
   if (security_key_auth_policy_enabled_ && security_key_extension_supported_) {
     host_->AddExtension(
@@ -1477,7 +1484,6 @@ void HostProcess::StartHost() {
       HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-  host_->SetEnableCurtaining(curtain_required_);
   host_->Start(host_owner_email_);
 
   CreateAuthenticatorFactory();
