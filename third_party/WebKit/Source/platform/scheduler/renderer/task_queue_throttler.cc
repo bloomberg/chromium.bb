@@ -105,7 +105,7 @@ void TaskQueueThrottler::TimeBudgetPool::AddQueue(base::TimeTicks now,
 
   associated_task_queues_.insert(queue);
 
-  if (!is_enabled_ || !metadata.IsThrottled())
+  if (!is_enabled_ || !task_queue_throttler_->IsThrottled(queue))
     return;
 
   queue->SetQueueEnabled(false);
@@ -120,7 +120,7 @@ void TaskQueueThrottler::TimeBudgetPool::RemoveQueue(base::TimeTicks now,
   DCHECK(find_it != task_queue_throttler_->queue_details_.end() &&
          find_it->second.time_budget_pool == this);
   find_it->second.time_budget_pool = nullptr;
-  bool is_throttled = find_it->second.IsThrottled();
+  bool is_throttled = task_queue_throttler_->IsThrottled(queue);
 
   task_queue_throttler_->MaybeDeleteQueueMetadata(find_it);
   associated_task_queues_.erase(queue);
@@ -304,8 +304,8 @@ TaskQueueThrottler::~TaskQueueThrottler() {
   // It's possible for queues to be still throttled, so we need to tidy up
   // before unregistering the time domain.
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
-    if (map_entry.second.IsThrottled()) {
-      TaskQueue* task_queue = map_entry.first;
+    TaskQueue* task_queue = map_entry.first;
+    if (IsThrottled(task_queue)) {
       task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
       task_queue->RemoveFence();
     }
@@ -324,7 +324,7 @@ void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
 
   find_it->second.enabled = enabled;
 
-  if (!find_it->second.IsThrottled()) {
+  if (!IsThrottled(task_queue)) {
     task_queue->SetQueueEnabled(enabled);
     return;
   }
@@ -342,13 +342,11 @@ void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
 void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   DCHECK_NE(task_queue, task_runner_.get());
 
-  std::pair<TaskQueueMap::iterator, bool> insert_result =
-      queue_details_.insert(std::make_pair(task_queue, Metadata()));
+  std::pair<TaskQueueMap::iterator, bool> insert_result = queue_details_.insert(
+      std::make_pair(task_queue, Metadata(0 /* ref_count */,
+                                          task_queue->IsQueueEnabled())));
 
-  if (!insert_result.first->second.IsThrottled()) {
-    // The insert was successful so we need to throttle the queue.
-    insert_result.first->second.enabled = task_queue->IsQueueEnabled();
-
+  if (insert_result.first->second.throttling_ref_count == 0) {
     if (allow_throttling_) {
       task_queue->SetTimeDomain(time_domain_.get());
       task_queue->RemoveFence();
@@ -391,10 +389,13 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
 }
 
 bool TaskQueueThrottler::IsThrottled(TaskQueue* task_queue) const {
+  if (!allow_throttling_)
+    return false;
+
   auto find_it = queue_details_.find(task_queue);
   if (find_it == queue_details_.end())
     return false;
-  return find_it->second.IsThrottled();
+  return find_it->second.throttling_ref_count > 0;
 }
 
 void TaskQueueThrottler::UnregisterTaskQueue(TaskQueue* task_queue) {
@@ -448,7 +449,7 @@ void TaskQueueThrottler::PumpThrottledTasks() {
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
     TaskQueue* task_queue = map_entry.first;
     if (!map_entry.second.enabled || task_queue->IsEmpty() ||
-        !map_entry.second.IsThrottled())
+        !IsThrottled(task_queue))
       continue;
 
     // Don't enable queues whose budget pool doesn't allow them to run now.
@@ -616,7 +617,7 @@ base::TimeTicks TaskQueueThrottler::GetNextAllowedRunTime(base::TimeTicks now,
 }
 
 void TaskQueueThrottler::MaybeDeleteQueueMetadata(TaskQueueMap::iterator it) {
-  if (!it->second.IsThrottled() && !it->second.time_budget_pool)
+  if (it->second.throttling_ref_count == 0 && !it->second.time_budget_pool)
     queue_details_.erase(it);
 }
 
@@ -627,7 +628,7 @@ void TaskQueueThrottler::DisableThrottling() {
   allow_throttling_ = false;
 
   for (const auto& map_entry : queue_details_) {
-    if (!map_entry.second.IsThrottled())
+    if (map_entry.second.throttling_ref_count == 0)
       continue;
 
     TaskQueue* queue = map_entry.first;
@@ -653,7 +654,7 @@ void TaskQueueThrottler::EnableThrottling() {
   LazyNow lazy_now(tick_clock_);
 
   for (const auto& map_entry : queue_details_) {
-    if (!map_entry.second.IsThrottled())
+    if (map_entry.second.throttling_ref_count == 0)
       continue;
 
     TaskQueue* queue = map_entry.first;

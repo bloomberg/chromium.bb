@@ -992,5 +992,65 @@ TEST_F(TaskQueueThrottlerTest, GrantAdditionalBudget) {
   pool->Close();
 }
 
+TEST_F(TaskQueueThrottlerTest, EnableAndDisableThrottlingAndTimeBudgets) {
+  // This test checks that if time budget pool is enabled when throttling
+  // is disabled, it does not throttle the queue.
+  std::vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->DisableThrottling();
+
+  TaskQueueThrottler::TimeBudgetPool* pool =
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  LazyNow lazy_now(clock_.get());
+  pool->DisableThrottling(&lazy_now);
+
+  pool->AddQueue(base::TimeTicks(), timer_queue_.get());
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(100));
+
+  lazy_now = LazyNow(clock_.get());
+  pool->EnableThrottling(&lazy_now);
+
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(200));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(300)));
+}
+
+TEST_F(TaskQueueThrottlerTest, AddQueueToBudgetPoolWhenThrottlingDisabled) {
+  // This test checks that a task queue is added to time budget pool
+  // when throttling is disabled, is does not throttle queue.
+  std::vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->DisableThrottling();
+
+  TaskQueueThrottler::TimeBudgetPool* pool =
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(100));
+
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                base::TimeDelta::FromMilliseconds(200));
+
+  pool->AddQueue(base::TimeTicks(), timer_queue_.get());
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(300)));
+}
+
 }  // namespace scheduler
 }  // namespace blink

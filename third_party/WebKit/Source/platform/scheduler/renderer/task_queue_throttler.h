@@ -235,8 +235,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
     TimeBudgetPool* time_budget_pool;
 
-    bool IsThrottled() const { return throttling_ref_count > 0; }
-
     void SetQueueEnabled(TaskQueue* task_queue);
   };
   using TaskQueueMap = std::unordered_map<TaskQueue*, Metadata>;
