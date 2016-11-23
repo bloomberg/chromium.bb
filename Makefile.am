@@ -1332,6 +1332,7 @@ EXTRA_DIST = \
 	src/common/windows/pdb_source_line_writer.h \
 	src/common/windows/string_utils-inl.h \
 	src/common/windows/string_utils.cc \
+	src/processor/microdump_stackwalk_test_vars \
 	src/processor/stackwalk_common.cc \
 	src/processor/stackwalk_common.h \
 	src/processor/stackwalker_selftest_sol.s \
