@@ -1,5 +1,5 @@
 Upstream cherry-picks, most recent cherry-picks at end of list:
-  none
+  9d83b209d8861f1daf55f6719b1e0c226ed7269a lavf/mov.c mov_fix_index() fix for nb_old <=0
 
 Autorename:
   autorename_* files are renamed copies of various files that would cause
