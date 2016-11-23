@@ -52,8 +52,6 @@ class MEDIA_EXPORT MediaClientAndroid {
  private:
   friend class KeySystemManager;
 
-  base::hash_map<std::string, UUID> key_system_uuid_map_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaClientAndroid);
 };
 
