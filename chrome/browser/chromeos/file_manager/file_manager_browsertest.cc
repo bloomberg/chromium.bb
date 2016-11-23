@@ -199,7 +199,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "deleteOneItemFromToolbar")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    QuickView,
+    DISABLED_QuickView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openQuickView")));
 
