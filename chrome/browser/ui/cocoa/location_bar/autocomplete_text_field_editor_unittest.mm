@@ -242,6 +242,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, PasteAndGo) {
 
 // Test that the menu is constructed correctly.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Menu) {
+  EXPECT_CALL(field_observer_, CanPasteAndGo()).WillOnce(Return(true));
   EXPECT_CALL(field_observer_, GetPasteActionStringId()).
       WillOnce(Return(IDS_PASTE_AND_GO));
 
@@ -253,7 +254,9 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Menu) {
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
+  NSMenuItem* pasteAndGo = [items objectAtIndex:i++];
+  EXPECT_EQ([pasteAndGo action], @selector(pasteAndGo:));
+  EXPECT_TRUE([pasteAndGo isEnabled]);
   EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
   EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(commandDispatch:));
@@ -290,16 +293,16 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoValidate) {
   for (NSUInteger i = 0; i < [items count]; ++i) {
     NSMenuItem* item = [items objectAtIndex:i];
     if ([item action] == @selector(pasteAndGo:)) {
+      EXPECT_TRUE([item isEnabled]);
       EXPECT_TRUE([editor_ validateMenuItem:item]);
       break;
     }
   }
 }
 
-// Test that the menu validation works as expected when !CanPasteAndGo().
+// Test that the GetPasteActionStringId() is not called when !CanPasteAndGo().
 TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoValidate) {
-  EXPECT_CALL(field_observer_, GetPasteActionStringId())
-      .WillOnce(Return(IDS_PASTE_AND_GO));
+  EXPECT_CALL(field_observer_, GetPasteActionStringId()).Times(0);
   EXPECT_CALL(field_observer_, CanPasteAndGo()).WillOnce(Return(false));
 
   NSMenu* menu = MenuFromRightClick(editor_);
@@ -308,6 +311,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoValidate) {
   for (NSUInteger i = 0; i < [items count]; ++i) {
     NSMenuItem* item = [items objectAtIndex:i];
     if ([item action] == @selector(pasteAndGo:)) {
+      EXPECT_FALSE([item isEnabled]);
       EXPECT_FALSE([editor_ validateMenuItem:item]);
       break;
     }
