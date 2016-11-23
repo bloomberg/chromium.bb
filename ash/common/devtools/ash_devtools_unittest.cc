@@ -8,6 +8,7 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "base/strings/stringprintf.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

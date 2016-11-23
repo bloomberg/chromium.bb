@@ -5,11 +5,13 @@
 #ifndef CC_SURFACES_FRAME_SINK_ID_H_
 #define CC_SURFACES_FRAME_SINK_ID_H_
 
+#include <stdint.h>
+
+#include <iosfwd>
+#include <string>
 #include <tuple>
 
-#include "base/format_macros.h"
 #include "base/hash.h"
-#include "base/strings/stringprintf.h"
 
 namespace cc {
 
@@ -42,14 +44,14 @@ class FrameSinkId {
 
   size_t hash() const { return base::HashInts(client_id_, sink_id_); }
 
-  std::string ToString() const {
-    return base::StringPrintf("FrameSinkId(%d, %d)", client_id_, sink_id_);
-  }
+  std::string ToString() const;
 
  private:
   uint32_t client_id_;
   uint32_t sink_id_;
 };
+
+std::ostream& operator<<(std::ostream& out, const FrameSinkId& frame_sink_id);
 
 struct FrameSinkIdHash {
   size_t operator()(const FrameSinkId& key) const { return key.hash(); }

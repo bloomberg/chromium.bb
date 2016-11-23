@@ -70,10 +70,10 @@ void FrameGenerator::OnSurfaceCreated(const cc::SurfaceId& surface_id,
   }
 
   SurfaceReference& ref = iter->second;
-  DCHECK(surface_id.frame_sink_id() == ref.child_id.frame_sink_id());
+  DCHECK_EQ(surface_id.frame_sink_id(), ref.child_id.frame_sink_id());
 
   // This shouldn't be called multiple times for the same SurfaceId.
-  DCHECK(surface_id.local_frame_id() != ref.child_id.local_frame_id());
+  DCHECK_NE(surface_id.local_frame_id(), ref.child_id.local_frame_id());
 
   // Add a reference from parent to new surface first.
   GetDisplayCompositor()->AddSurfaceReference(ref.parent_id, surface_id);

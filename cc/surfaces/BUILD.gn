@@ -6,8 +6,11 @@ import("//cc/cc.gni")
 
 cc_source_set("surface_id") {
   sources = [
+    "frame_sink_id.cc",
     "frame_sink_id.h",
+    "local_frame_id.cc",
     "local_frame_id.h",
+    "surface_id.cc",
     "surface_id.h",
     "surface_sequence.h",
     "surface_sequence_generator.cc",

@@ -6,10 +6,12 @@
 #define CC_SURFACES_LOCAL_FRAME_ID_H_
 
 #include <inttypes.h>
+
+#include <iosfwd>
+#include <string>
 #include <tuple>
 
 #include "base/hash.h"
-#include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
 
 namespace cc {
@@ -48,15 +50,14 @@ class LocalFrameId {
         local_id_, static_cast<uint64_t>(base::UnguessableTokenHash()(nonce_)));
   }
 
-  std::string ToString() const {
-    return base::StringPrintf("LocalFrameId(%d, %s" PRIu64 ")", local_id_,
-                              nonce_.ToString().c_str());
-  }
+  std::string ToString() const;
 
  private:
   uint32_t local_id_;
   base::UnguessableToken nonce_;
 };
+
+std::ostream& operator<<(std::ostream& out, const LocalFrameId& local_frame_id);
 
 struct LocalFrameIdHash {
   size_t operator()(const LocalFrameId& key) const { return key.hash(); }
