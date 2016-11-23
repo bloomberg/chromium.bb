@@ -96,11 +96,11 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       return drop_pinch_gesture_events_;
 
     case WebInputEvent::GesturePinchEnd:
-      if (drop_pinch_gesture_events_) {
-        drop_pinch_gesture_events_ = false;
-        return true;
-      }
-      break;
+      // TODO(mustaq): Don't reset drop_pinch_gesture_events_ here because a
+      // pinch-zoom-out-then-zoom-in sends two separate pinch sequences within a
+      // single gesture-scroll sequence, see crbug.com/662047#c13. Is it
+      // expected?
+      return drop_pinch_gesture_events_;
 
     // The double tap gesture is a tap ending event. If a double tap gesture is
     // filtered out, replace it with a tap event.

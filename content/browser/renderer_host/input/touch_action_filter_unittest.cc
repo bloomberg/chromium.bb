@@ -423,6 +423,9 @@ TEST(TouchActionFilterTest, Pinch) {
   EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
   EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
   EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
 
   // Pinch is not allowed with touch-action: pan-x pan-y.
