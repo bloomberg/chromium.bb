@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-requestdeviceoptions
+// https://webbluetoothcg.github.io/web-bluetooth/#dictdef-requestdeviceoptions
 
 dictionary RequestDeviceOptions {
-    required sequence<BluetoothScanFilter>  filters;
+    required sequence<BluetoothScanFilterInit>  filters;
     sequence<BluetoothServiceUUID> optionalServices = [];
 };

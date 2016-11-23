@@ -62,7 +62,7 @@ class WebBluetooth {
   virtual ~WebBluetooth() {}
 
   // Bluetooth Methods:
-  // See https://webbluetoothchrome.github.io/web-bluetooth/#device-discovery
+  // See https://webbluetoothcg.github.io/web-bluetooth/#device-discovery
   // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
   virtual void requestDevice(const WebRequestDeviceOptions&,
                              WebBluetoothRequestDeviceCallbacks*) {}
@@ -71,7 +71,7 @@ class WebBluetooth {
 
   // BluetoothRemoteGATTServer methods:
   // See
-  // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
+  // https://webbluetoothcg.github.io/web-bluetooth/#bluetoothremotegattserver
   virtual void connect(const WebString& deviceId,
                        WebBluetoothDevice* device,
                        WebBluetoothRemoteGATTServerConnectCallbacks*) {}
@@ -85,7 +85,7 @@ class WebBluetooth {
 
   // BluetoothRemoteGATTService methods:
   // See
-  // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattservice
+  // https://webbluetoothcg.github.io/web-bluetooth/#bluetoothremotegattservice
   virtual void getCharacteristics(
       const WebString& serviceInstanceID,
       // Corresponds to WebBluetoothGATTQueryQuantity in web_bluetooth.mojom
@@ -95,7 +95,7 @@ class WebBluetooth {
 
   // BluetoothRemoteGATTCharacteristic methods:
   // See
-  // https://webbluetoothchrome.github.io/web-bluetooth/#bluetoothgattcharacteristic
+  // https://webbluetoothcg.github.io/web-bluetooth/#bluetoothremotegattcharacteristic
   virtual void readValue(const WebString& characteristicInstanceID,
                          WebBluetoothReadValueCallbacks*) {}
   virtual void writeValue(const WebString& characteristicInstanceID,

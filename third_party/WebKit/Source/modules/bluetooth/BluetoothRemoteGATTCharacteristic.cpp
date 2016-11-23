@@ -270,7 +270,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   WebBluetooth* webbluetooth =
       BluetoothSupplement::fromScriptState(scriptState);
   // Partial implementation of writeValue algorithm:
-  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
+  // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattcharacteristic-writevalue
 
   // If bytes is more than 512 bytes long (the maximum length of an attribute
   // value, per Long Attribute Values) return a promise rejected with an

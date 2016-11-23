@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothdevice
+// https://webbluetoothcg.github.io/web-bluetooth/#bluetoothdevice
 
 // Implement BluetoothDevice interface: http://crbug.com/421668
 

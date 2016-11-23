@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattservice
+// https://webbluetoothcg.github.io/web-bluetooth/#bluetoothremotegattservice
 
 // Implement BluetoothRemoteGATTService interface: https://crbug.com/483342
 
