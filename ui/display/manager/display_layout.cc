@@ -215,14 +215,14 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
     return true;
 
   bool has_primary_as_parent = false;
-  int64_t id = 0;
-
+  int64_t prev_id = std::numeric_limits<int64_t>::min();
   for (const auto& placement : layout.placement_list) {
     // Placements are sorted by display_id.
-    if (id >= placement.display_id) {
+    if (prev_id >= placement.display_id) {
       LOG(ERROR) << "PlacementList must be sorted by display_id";
       return false;
     }
+    prev_id = placement.display_id;
     if (placement.display_id == kInvalidDisplayId) {
       LOG(ERROR) << "display_id is not initialized";
       return false;
