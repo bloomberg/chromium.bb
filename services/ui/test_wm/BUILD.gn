@@ -17,9 +17,12 @@ service("test_wm") {
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/display",
     "//ui/display:test_support",
     "//ui/gfx/geometry/mojo",
+    "//ui/wm",
   ]
 
   data_deps = [

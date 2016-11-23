@@ -22,6 +22,8 @@ class WM_EXPORT WMState {
   WMState();
   ~WMState();
 
+  CaptureController* capture_controller() { return capture_controller_.get(); }
+
  private:
   std::unique_ptr<TransientWindowStackingClient> window_stacking_client_;
   std::unique_ptr<TransientWindowController> transient_window_client_;

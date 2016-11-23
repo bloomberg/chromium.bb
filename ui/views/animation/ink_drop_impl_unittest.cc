@@ -14,6 +14,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace views {
 
@@ -233,6 +234,11 @@ TEST_F(InkDropImplTest, LayersArentRemovedWhenPreemptingFadeOut) {
 
 #if DCHECK_IS_ON()
 TEST_F(InkDropImplTest, SettingHighlightStateDuringStateExitIsntAllowed) {
+  // This test uses a death assert, which works by forking the process. That
+  // doesn't work well with mus.
+  if (ViewsTestBase::IsAuraMusClient() || ViewsTestBase::IsMus())
+    return;
+
   test::InkDropImplTestApi::SetStateOnExitHighlightState::Install(
       test_api()->state_factory());
   ASSERT_DEATH_IF_SUPPORTED(

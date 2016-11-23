@@ -49,6 +49,7 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#include "ui/base/x/x11_util.h"  // nogncheck
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
@@ -149,6 +150,7 @@ void Service::OnStart() {
   XInitThreads();
   if (test_config_)
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
+  ui::SetDefaultX11ErrorHandlers();
 #endif
 
   InitializeResources(context()->connector());
