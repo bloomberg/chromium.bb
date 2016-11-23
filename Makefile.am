@@ -394,12 +394,12 @@ wayland_backend_la_CFLAGS =			\
 wayland_backend_la_SOURCES = 					\
 	libweston/compositor-wayland.c				\
 	libweston/compositor-wayland.h				\
-	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-client-protocol.h	\
 	shared/helpers.h
-nodist_wayland_backend_la_SOURCES =			\
-	protocol/fullscreen-shell-unstable-v1-protocol.c		\
-	protocol/fullscreen-shell-unstable-v1-client-protocol.h
+nodist_wayland_backend_la_SOURCES =				\
+	protocol/fullscreen-shell-unstable-v1-protocol.c	\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
+	protocol/xdg-shell-unstable-v6-protocol.c		\
+	protocol/xdg-shell-unstable-v6-client-protocol.h
 endif
 
 if ENABLE_HEADLESS_COMPOSITOR
