@@ -400,8 +400,26 @@ class ChannelPosix : public Channel,
       }
 
       if (result < 0) {
-        if (errno != EAGAIN && errno != EWOULDBLOCK)
+        if (errno != EAGAIN && errno != EWOULDBLOCK
+#if defined(OS_MACOSX)
+            // On OS X if sendmsg() is trying to send fds between processes and
+            // there isn't enough room in the output buffer to send the fd
+            // structure over atomically then EMSGSIZE is returned.
+            //
+            // EMSGSIZE presents a problem since the system APIs can only call
+            // us when there's room in the socket buffer and not when there is
+            // "enough" room.
+            //
+            // The current behavior is to return to the event loop when EMSGSIZE
+            // is received and hopefull service another FD.  This is however
+            // still technically a busy wait since the event loop will call us
+            // right back until the receiver has read enough data to allow
+            // passing the FD over atomically.
+            && errno != EMSGSIZE
+#endif
+            ) {
           return false;
+        }
         message_view.SetHandles(std::move(handles));
         outgoing_messages_.emplace_front(std::move(message_view));
         WaitForWriteOnIOThreadNoLock();

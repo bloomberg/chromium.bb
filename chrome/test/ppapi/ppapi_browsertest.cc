@@ -1299,10 +1299,6 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
 // back.
 IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
                        MAYBE_PPAPI_NACL(SuccessfulLoad)) {
-#if defined(OS_MACOSX)
-  if (base::mac::IsOS10_10() || base::mac::IsOS10_11())
-    return;  // Fails when swarmed. http://crbug.com/660582
-#endif
   RunTests("packaged_app");
 }
 
