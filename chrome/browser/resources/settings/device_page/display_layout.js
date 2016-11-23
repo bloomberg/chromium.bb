@@ -75,7 +75,7 @@ Polymer({
    * @return {boolean} Whether the calculation was successful.
    * @private
    */
-  calculateVisualScale_() {
+  calculateVisualScale_: function() {
     var displayAreaDiv = this.$.displayArea;
     if (!displayAreaDiv || !displayAreaDiv.offsetWidth || !this.displays ||
         !this.displays.length) {
@@ -215,7 +215,9 @@ Polymer({
               Object.assign({}, calculatedBounds));
       newBounds.left += Math.round(amount.x / this.visualScale);
       newBounds.top += Math.round(amount.y / this.visualScale);
-      newBounds = this.updateDisplayBounds(id, newBounds);
+
+      if (this.displays.length >= 2)
+        newBounds = this.updateDisplayBounds(id, newBounds);
     }
     var left =
         this.visualOffset_.left + Math.round(newBounds.left * this.visualScale);

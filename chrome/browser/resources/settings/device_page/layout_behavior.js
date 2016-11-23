@@ -81,11 +81,12 @@ var LayoutBehavior = {
    *     bounds for the display.
    * @return {!chrome.system.display.Bounds}
    */
-  updateDisplayBounds(id, newBounds) {
+  updateDisplayBounds: function(id, newBounds) {
     this.dragLayoutId = id;
 
     // Find the closest parent.
     var closestId = this.findClosest_(id, newBounds);
+    assert(closestId);
 
     // Find the closest edge.
     var closestBounds = this.getCalculatedDisplayBounds(closestId);
@@ -128,7 +129,7 @@ var LayoutBehavior = {
    * Called when dragging ends. Sends the updated layout to chrome.
    * @param {string} id
    */
-  finishUpdateDisplayBounds(id) {
+  finishUpdateDisplayBounds: function(id) {
     this.highlightEdge_('', undefined);  // Remove any highlights.
     if (id != this.dragLayoutId || !this.dragBounds_ ||
         !this.dragLayoutPosition_) {
