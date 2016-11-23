@@ -427,6 +427,7 @@ DSP_SRCS-yes += simd/v128_intrinsics.h
 DSP_SRCS-yes += simd/v128_intrinsics_c.h
 DSP_SRCS-yes += simd/v256_intrinsics.h
 DSP_SRCS-yes += simd/v256_intrinsics_c.h
+DSP_SRCS-yes += simd/v256_intrinsics_v128.h
 DSP_SRCS-$(HAVE_SSE2) += simd/v64_intrinsics_x86.h
 DSP_SRCS-$(HAVE_SSE2) += simd/v128_intrinsics_x86.h
 DSP_SRCS-$(HAVE_SSE2) += simd/v256_intrinsics_x86.h
