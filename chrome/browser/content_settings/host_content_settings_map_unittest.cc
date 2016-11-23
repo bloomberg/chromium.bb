@@ -711,7 +711,9 @@ TEST_F(HostContentSettingsMapTest, TypeIsolatedSettings) {
                 host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 }
 
-TEST_F(HostContentSettingsMapTest, OffTheRecord) {
+TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
+  // The cookie setting has an initial value of ALLOW, so all changes should be
+  // inherited from regular to incognito mode.
   TestingProfile profile;
   Profile* otr_profile = profile.GetOffTheRecordProfile();
   HostContentSettingsMap* host_content_settings_map =
@@ -730,6 +732,16 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
 
   // Changing content settings on the main map should also affect the
   // incognito map.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      host, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+      CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+            otr_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
   host_content_settings_map->SetContentSettingDefaultScope(
       host, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
       CONTENT_SETTING_BLOCK);
@@ -753,10 +765,57 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
                 host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
 }
 
-TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritPref) {
-  // Permissions marked INHERIT_IN_INCOGNITO_EXCEPT_ALLOW in
-  // ContentSettingsRegistry (e.g. push & notifications) only inherit BLOCK
-  // settings from regular to incognito.
+TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
+  // The popup setting has an initial value of BLOCK, so  popup doesn't inherit
+  // settings to incognito
+  TestingProfile profile;
+  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  HostContentSettingsMap* otr_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile);
+
+  GURL host("http://example.com/");
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            otr_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  // Changing content settings on the main map should not affect the
+  // incognito map.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      host, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            otr_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  // Changing content settings on the incognito map should NOT affect the
+  // main map.
+  host_content_settings_map->SetContentSettingDefaultScope(host, GURL(),
+                                         CONTENT_SETTINGS_TYPE_POPUPS,
+                                         std::string(), CONTENT_SETTING_BLOCK);
+  otr_map->SetContentSettingDefaultScope(host, GURL(),
+                                         CONTENT_SETTINGS_TYPE_POPUPS,
+                                         std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            otr_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+}
+
+TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
+  // Permissions marked INHERIT_IF_LESS_PERMISSIVE in
+  // ContentSettingsRegistry only inherit BLOCK and ASK settings from regular
+  // to incognito if the initial value is ASK.
   TestingProfile profile;
   Profile* otr_profile = profile.GetOffTheRecordProfile();
   HostContentSettingsMap* host_content_settings_map =
@@ -803,10 +862,10 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritPref) {
           host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
 }
 
-TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritDefault) {
-  // Permissions marked INHERIT_IN_INCOGNITO_EXCEPT_ALLOW in
-  // ContentSettingsRegistry (e.g. push & notifications) only inherit BLOCK
-  // default settings from regular to incognito.
+TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritDefault) {
+  // Permissions marked INHERIT_IF_LESS_PERMISSIVE in
+  // ContentSettingsRegistry only inherit BLOCK and ASK settings from regular
+  // to incognito if the initial value is ASK.
   TestingProfile profile;
   Profile* otr_profile = profile.GetOffTheRecordProfile();
   HostContentSettingsMap* host_content_settings_map =
@@ -818,58 +877,58 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritDefault) {
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       host_content_settings_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+          host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             otr_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       otr_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+          host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   // BLOCK should be inherited from the main map to the incognito map.
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_BLOCK);
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL));
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
       host_content_settings_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+          host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             otr_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL));
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
       otr_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+          host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 
   // ALLOW should not be inherited from the main map to the incognito map (but
   // it still overwrites the BLOCK, hence incognito reverts to ASK).
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL));
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       host_content_settings_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+          host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             otr_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       otr_map->GetContentSetting(
-          host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+          host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string()));
 }
 
-TEST_F(HostContentSettingsMapTest, OffTheRecordDontInheritSetting) {
+TEST_F(HostContentSettingsMapTest, IncognitoDontInheritSetting) {
   // Website settings marked DONT_INHERIT_IN_INCOGNITO in
   // WebsiteSettingsRegistry (e.g. usb chooser data) don't inherit any values
   // from from regular to incognito.

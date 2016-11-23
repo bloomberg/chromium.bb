@@ -37,6 +37,25 @@ static_assert(arraysize(kContentSettingsStringMapping) ==
               "kContentSettingsToFromString should have "
               "CONTENT_SETTING_NUM_SETTINGS elements");
 
+// Content settings sorted from most to least permissive. The order is chosen
+// to check if a permission grants more rights than another. This is intuitive
+// for ALLOW, ASK and BLOCK. SESSION_ONLY and DETECT_IMPORTANT_CONTENT are never
+// used in the same setting so their respective order is not important but both
+// belong between ALLOW and ASK. DEFAULT should never be used and is therefore
+// not part of this array.
+const ContentSetting kContentSettingOrder[] = {
+    CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_SESSION_ONLY,
+    CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+    CONTENT_SETTING_ASK,
+    CONTENT_SETTING_BLOCK
+};
+
+static_assert(arraysize(kContentSettingOrder) ==
+              CONTENT_SETTING_NUM_SETTINGS - 1,
+              "kContentSettingOrder should have CONTENT_SETTING_NUM_SETTINGS-1"
+              "entries");
+
 }  // namespace
 
 namespace content_settings {
@@ -96,10 +115,8 @@ PatternPair ParsePatternString(const std::string& pattern_str) {
   }
 
   PatternPair pattern_pair;
-  pattern_pair.first =
-      ContentSettingsPattern::FromString(pattern_str_list[0]);
-  pattern_pair.second =
-      ContentSettingsPattern::FromString(pattern_str_list[1]);
+  pattern_pair.first = ContentSettingsPattern::FromString(pattern_str_list[0]);
+  pattern_pair.second = ContentSettingsPattern::FromString(pattern_str_list[1]);
   return pattern_pair;
 }
 
@@ -156,6 +173,19 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
       CONTENT_SETTINGS_TYPE_AUTOPLAY,
       ResourceIdentifier(),
       &(rules->autoplay_rules));
+}
+
+bool IsMorePermissive(ContentSetting a, ContentSetting b) {
+  // Check whether |a| or |b| is reached first in kContentSettingOrder.
+  // If |a| is first, it means that |a| is more permissive than |b|.
+  for (ContentSetting setting : kContentSettingOrder) {
+    if (setting == b)
+      return false;
+    if (setting == a)
+      return true;
+  }
+  NOTREACHED();
+  return true;
 }
 
 }  // namespace content_settings

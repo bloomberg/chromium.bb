@@ -21,12 +21,14 @@ class ContentSettingsInfo {
   enum IncognitoBehavior {
     // Content setting will be inherited from regular to incognito profiles
     // as usual.
+    // TODO(dullweber): Remove as soon as INHERIT_IF_LESS_PERMISSIVE was tested.
     INHERIT_IN_INCOGNITO,
 
-    // Content setting will only partially inherit from regular to incognito
-    // profiles: BLOCK will inherit as usual, but ALLOW will become ASK.
-    // This is unusual, so seek privacy review before using this.
-    INHERIT_IN_INCOGNITO_EXCEPT_ALLOW
+    // Content settings can be inherited if the setting is less permissive
+    // than the initial default value of the content setting. Example: A setting
+    // with an initial value of ASK will be inherited if it is set to BLOCK or
+    // ASK but ALLOW will become ASK in incognito mode.
+    INHERIT_IF_LESS_PERMISSIVE
   };
 
   // This object does not take ownership of |website_settings_info|.

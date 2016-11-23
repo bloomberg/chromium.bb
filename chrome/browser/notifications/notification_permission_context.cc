@@ -214,7 +214,7 @@ void NotificationPermissionContext::DecidePermission(
   // from using that to detect whether incognito mode is active, we deny after a
   // random time delay, to simulate a user clicking a bubble/infobar. See also
   // ContentSettingsRegistry::Init, which marks notifications as
-  // INHERIT_IN_INCOGNITO_EXCEPT_ALLOW, and
+  // INHERIT_IF_LESS_PERMISSIVE, and
   // PermissionMenuModel::PermissionMenuModel which prevents users from manually
   // allowing the permission.
   if (profile()->IsOffTheRecord()) {

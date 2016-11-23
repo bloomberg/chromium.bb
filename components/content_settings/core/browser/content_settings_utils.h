@@ -86,6 +86,9 @@ std::unique_ptr<base::Value> ContentSettingToValue(ContentSetting setting);
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules);
 
+// Returns true if setting |a| is more permissive than setting |b|.
+bool IsMorePermissive(ContentSetting a, ContentSetting b);
+
 }  // namespace content_settings
 
 #endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_UTILS_H_

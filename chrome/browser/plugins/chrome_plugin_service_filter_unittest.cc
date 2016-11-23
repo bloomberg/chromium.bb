@@ -367,21 +367,28 @@ TEST_F(ChromePluginServiceFilterTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
-  // Allow plugins in the original profile.
+  GURL url("http://www.google.com");
+
+  // Allow plugins for this url in the incognito profile.
   HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_ALLOW);
+      HostContentSettingsMapFactory::GetForProfile(incognito);
+  map->SetContentSettingDefaultScope(
+      url, url,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
 
   // We pass the availablity check in incognito based on the original content
   // setting.
-  GURL url("http://www.google.com");
   url::Origin main_frame_origin(url);
   EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
                                 incognito->GetResourceContext(), flash_plugin));
 
-  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  map->SetContentSettingDefaultScope(
+      url, url,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      std::string(),
+      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // Now we fail the availability check due to the content setting carrying
   // over.

@@ -125,7 +125,7 @@ void ContentSettingsRegistry::Init() {
                          CONTENT_SETTING_SESSION_ONLY),
            WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::ALL_PLATFORMS,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_IMAGES, "images", CONTENT_SETTING_ALLOW,
            WebsiteSettingsInfo::SYNCABLE,
@@ -134,7 +134,7 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript",
            CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::SYNCABLE,
@@ -144,7 +144,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
            CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
@@ -155,7 +155,7 @@ void ContentSettingsRegistry::Init() {
                          CONTENT_SETTING_DETECT_IMPORTANT_CONTENT),
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_POPUPS, "popups", CONTENT_SETTING_BLOCK,
            WebsiteSettingsInfo::SYNCABLE,
@@ -164,7 +164,7 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::ALL_PLATFORMS,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_GEOLOCATION, "geolocation",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -174,7 +174,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -186,7 +186,7 @@ void ContentSettingsRegistry::Init() {
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
            // See also NotificationPermissionContext::DecidePermission which
            // implements additional incognito exceptions.
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -196,7 +196,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -206,7 +206,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -215,7 +215,7 @@ void ContentSettingsRegistry::Init() {
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "automatic-downloads",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE,
@@ -226,7 +226,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex", CONTENT_SETTING_ASK,
            WebsiteSettingsInfo::SYNCABLE, WhitelistedSchemes(),
@@ -235,7 +235,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
            "protected-media-identifier", CONTENT_SETTING_ASK,
@@ -245,7 +245,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::PLATFORM_ANDROID |
                WebsiteSettingsRegistry::PLATFORM_CHROMEOS,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, "durable-storage",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -254,7 +254,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_KEYGEN, "keygen", CONTENT_SETTING_BLOCK,
            WebsiteSettingsInfo::SYNCABLE, WhitelistedSchemes(),
@@ -262,7 +262,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync",
            CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::UNSYNCABLE,
@@ -271,7 +271,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_AUTOPLAY, "autoplay", CONTENT_SETTING_ALLOW,
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
@@ -279,7 +279,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   // Content settings that aren't used to store any data. TODO(raymes): use a
   // different mechanism rather than content settings to represent these.
@@ -290,14 +290,14 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(), ValidSettings(),
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(), ValidSettings(),
            WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
   Register(CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, "bluetooth-guard",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
@@ -306,7 +306,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 }
 
 void ContentSettingsRegistry::Register(
@@ -321,11 +321,6 @@ void ContentSettingsRegistry::Register(
     ContentSettingsInfo::IncognitoBehavior incognito_behavior) {
   // Ensure that nothing has been registered yet for the given type.
   DCHECK(!website_settings_registry_->Get(type));
-  DCHECK(incognito_behavior !=
-             ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW ||
-         base::ContainsKey(valid_settings, CONTENT_SETTING_ASK))
-      << "If INHERIT_IN_INCOGNITO_EXCEPT_ALLOW is set, ASK must be listed as a "
-         "valid setting.";
   std::unique_ptr<base::Value> default_value(
       new base::FundamentalValue(static_cast<int>(initial_default_value)));
   const WebsiteSettingsInfo* website_settings_info =

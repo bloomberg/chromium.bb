@@ -511,18 +511,21 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForAllowedOrigin) {
   ExpectPosition(fake_latitude(), fake_longitude());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForOffTheRecord) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, PromptForOffTheRecord) {
   // For a regular profile the user is prompted, and when granted the position
   // gets to the script.
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   ASSERT_TRUE(WatchPositionAndGrantPermission());
   ExpectPosition(fake_latitude(), fake_longitude());
 
-  // The permission is persisted for the regular profile, and inherited by its
-  // incognito profile. Go incognito, and check that the user is not prompted
-  // again and the position gets to the script.
+  // The permission from the regular profile is not inherited because it is more
+  // permissive than the initial default for geolocation. This prevents
+  // identifying information to be sent to a server without explicit consent by
+  // the user.
+  // Go incognito, and check that the user is prompted again and when granted,
+  // the position gets to the script.
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_OFFTHERECORD));
-  WatchPositionAndObservePermissionRequest(false);
+  ASSERT_TRUE(WatchPositionAndGrantPermission());
   ExpectPosition(fake_latitude(), fake_longitude());
 }
 
