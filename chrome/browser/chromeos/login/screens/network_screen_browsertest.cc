@@ -168,7 +168,13 @@ class HandsOffNetworkScreenTest : public NetworkScreenTest {
   DISALLOW_COPY_AND_ASSIGN(HandsOffNetworkScreenTest);
 };
 
-IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, RequiresNoInput) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_RequiresNoInput DISABLED_RequiresNoInput
+#else
+#define MAYBE_RequiresNoInput RequiresNoInput
+#endif
+
+IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, MAYBE_RequiresNoInput) {
   WizardController* wizard_controller = WizardController::default_controller();
 
   // Allow the WizardController to advance throught the enrollment flow.
