@@ -121,6 +121,30 @@ bool PolicyProhibitsUnmanaged() {
   return policy_prohibites_unmanaged;
 }
 
+// TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
+void SetupConnectedItemMd(HoverHighlightView* container,
+                          const base::string16& text,
+                          const gfx::ImageSkia& image) {
+  container->AddIconAndLabels(
+      image, text,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
+  style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
+  style.SetupLabel(container->sub_text_label());
+}
+
+// TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
+void SetupConnectingItemMd(HoverHighlightView* container,
+                           const base::string16& text,
+                           const gfx::ImageSkia& image) {
+  container->AddIconAndLabels(
+      image, text,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
+  ThrobberView* throbber = new ThrobberView;
+  throbber->Start();
+  container->AddRightView(throbber);
+}
+
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -957,17 +981,22 @@ void NetworkStateListDetailedView::ToggleMobile() {
 
 views::View* NetworkStateListDetailedView::CreateViewForNetwork(
     const NetworkInfo& info) {
-  HoverHighlightView* view = new HoverHighlightView(this);
-  view->AddIconAndLabel(info.image, info.label, info.highlight);
-  view->set_tooltip(info.tooltip);
+  HoverHighlightView* container = new HoverHighlightView(this);
+  if (info.connected)
+    SetupConnectedItemMd(container, info.label, info.image);
+  else if (info.connecting)
+    SetupConnectingItemMd(container, info.label, info.image);
+  else
+    container->AddIconAndLabel(info.image, info.label, info.highlight);
+  container->set_tooltip(info.tooltip);
   if (!UseMd()) {
-    view->SetBorder(
+    container->SetBorder(
         views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   }
   views::View* controlled_icon = CreateControlledByExtensionView(info);
   if (controlled_icon)
-    view->AddChildView(controlled_icon);
-  return view;
+    container->AddChildView(controlled_icon);
+  return container;
 }
 
 bool NetworkStateListDetailedView::IsViewHovered(views::View* view) {
@@ -982,10 +1011,16 @@ NetworkTypePattern NetworkStateListDetailedView::GetNetworkTypePattern() const {
 void NetworkStateListDetailedView::UpdateViewForNetwork(
     views::View* view,
     const NetworkInfo& info) {
-  HoverHighlightView* highlight = static_cast<HoverHighlightView*>(view);
-  highlight->AddIconAndLabel(info.image, info.label, info.highlight);
+  HoverHighlightView* container = static_cast<HoverHighlightView*>(view);
+  DCHECK(!container->has_children());
+  if (info.connected)
+    SetupConnectedItemMd(container, info.label, info.image);
+  else if (info.connecting)
+    SetupConnectingItemMd(container, info.label, info.image);
+  else
+    container->AddIconAndLabel(info.image, info.label, info.highlight);
   views::View* controlled_icon = CreateControlledByExtensionView(info);
-  highlight->set_tooltip(info.tooltip);
+  container->set_tooltip(info.tooltip);
   if (controlled_icon)
     view->AddChildView(controlled_icon);
 }

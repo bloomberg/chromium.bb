@@ -31,6 +31,8 @@ struct NetworkInfo {
   gfx::ImageSkia image;
   bool disable;
   bool highlight;
+  bool connected;
+  bool connecting;
   Type type;
 };
 

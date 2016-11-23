@@ -7,12 +7,18 @@
 namespace ash {
 
 NetworkInfo::NetworkInfo()
-    : disable(false), highlight(false), type(Type::UNKNOWN) {}
+    : disable(false),
+      highlight(false),
+      connected(false),
+      connecting(false),
+      type(Type::UNKNOWN) {}
 
 NetworkInfo::NetworkInfo(const std::string& path)
     : service_path(path),
       disable(false),
       highlight(false),
+      connected(false),
+      connecting(false),
       type(Type::UNKNOWN) {}
 
 NetworkInfo::~NetworkInfo() {}

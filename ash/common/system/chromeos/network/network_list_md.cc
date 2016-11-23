@@ -298,8 +298,8 @@ void NetworkListViewMd::Update() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   handler->GetVisibleNetworkList(&network_list);
   UpdateNetworks(network_list);
-  OrderNetworks();
   UpdateNetworkIcons();
+  OrderNetworks();
   UpdateNetworkListInternal();
 }
 
@@ -338,6 +338,10 @@ void NetworkListViewMd::OrderNetworks() {
           GetOrder(handler_->GetNetworkState(network2->service_path));
       if (order1 != order2)
         return order1 < order2;
+      if (network1->connected != network2->connected)
+        return network1->connected;
+      if (network1->connecting != network2->connecting)
+        return network1->connecting;
       if (network1->highlight != network2->highlight)
         return network1->highlight;
       return network1->service_path.compare(network2->service_path) < 0;
@@ -384,8 +388,9 @@ void NetworkListViewMd::UpdateNetworkIcons() {
     info->disable =
         (network->activation_state() == shill::kActivationStateActivating) ||
         prohibited_by_policy;
-    info->highlight =
-        network->IsConnectedState() || network->IsConnectingState();
+    info->connected = network->IsConnectedState();
+    info->connecting = network->IsConnectingState();
+    info->highlight = info->connected || info->connecting;
     if (network->Matches(NetworkTypePattern::WiFi()))
       info->type = NetworkInfo::Type::WIFI;
     else if (network->Matches(NetworkTypePattern::Cellular()))
