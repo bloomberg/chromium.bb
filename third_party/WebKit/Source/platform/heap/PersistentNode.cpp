@@ -34,7 +34,9 @@ int PersistentRegion::numberOfPersistents() {
         ++persistentCount;
     }
   }
-  ASSERT(persistentCount == m_persistentCount);
+#if DCHECK_IS_ON()
+  DCHECK_EQ(persistentCount, m_persistentCount);
+#endif
   return persistentCount;
 }
 

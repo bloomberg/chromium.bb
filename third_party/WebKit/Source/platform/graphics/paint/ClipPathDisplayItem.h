@@ -50,7 +50,7 @@ class PLATFORM_EXPORT EndClipPathDisplayItem final
                                   WebDisplayItemList*) const override;
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
     return otherType == kBeginClipPath;
   }

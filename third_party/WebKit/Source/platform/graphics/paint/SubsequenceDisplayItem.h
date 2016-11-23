@@ -22,7 +22,7 @@ class EndSubsequenceDisplayItem final : public PairedEndDisplayItem {
   EndSubsequenceDisplayItem(const DisplayItemClient& client)
       : PairedEndDisplayItem(client, kEndSubsequence, sizeof(*this)) {}
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
     return getType() == kEndSubsequence && otherType == kSubsequence;
   }

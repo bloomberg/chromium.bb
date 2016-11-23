@@ -418,7 +418,7 @@ class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
                        size_t derivedSize)
       : DisplayItem(client, type, derivedSize) {}
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isEndAndPairedWith(DisplayItem::Type otherType) const override = 0;
 #endif
 

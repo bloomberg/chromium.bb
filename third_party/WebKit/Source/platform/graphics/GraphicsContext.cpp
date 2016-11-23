@@ -255,7 +255,9 @@ void GraphicsContext::endLayer() {
 
   restoreLayer();
 
-  ASSERT(m_layerCount-- > 0);
+#if DCHECK_IS_ON()
+  DCHECK_GT(m_layerCount--, 0);
+#endif
 }
 
 void GraphicsContext::beginRecording(const FloatRect& bounds) {

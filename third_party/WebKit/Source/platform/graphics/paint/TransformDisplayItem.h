@@ -48,7 +48,7 @@ class PLATFORM_EXPORT EndTransformDisplayItem final
                                   WebDisplayItemList*) const override;
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
     return otherType == kBeginTransform;
   }

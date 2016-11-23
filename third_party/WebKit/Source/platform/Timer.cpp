@@ -58,7 +58,9 @@ TimerBase::~TimerBase() {
 void TimerBase::start(double nextFireInterval,
                       double repeatInterval,
                       const WebTraceLocation& caller) {
-  ASSERT(m_thread == currentThread());
+#if DCHECK_IS_ON()
+  DCHECK_EQ(m_thread, currentThread());
+#endif
 
   m_location = caller;
   m_repeatInterval = repeatInterval;
@@ -66,7 +68,9 @@ void TimerBase::start(double nextFireInterval,
 }
 
 void TimerBase::stop() {
-  ASSERT(m_thread == currentThread());
+#if DCHECK_IS_ON()
+  DCHECK_EQ(m_thread, currentThread());
+#endif
 
   m_repeatInterval = 0;
   m_nextFireTime = 0;
@@ -96,7 +100,9 @@ WebTaskRunner* TimerBase::timerTaskRunner() const {
 }
 
 void TimerBase::setNextFireTime(double now, double delay) {
-  ASSERT(m_thread == currentThread());
+#if DCHECK_IS_ON()
+  DCHECK_EQ(m_thread, currentThread());
+#endif
 
   double newTime = now + delay;
 

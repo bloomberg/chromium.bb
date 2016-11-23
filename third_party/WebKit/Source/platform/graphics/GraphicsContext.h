@@ -449,7 +449,7 @@ class PLATFORM_EXPORT GraphicsContext {
   SkMetaData m_metaData;
 
 #if DCHECK_IS_ON()
-  unsigned m_layerCount;
+  int m_layerCount;
   bool m_disableDestructionChecks;
   bool m_inDrawingRecorder;
 #endif

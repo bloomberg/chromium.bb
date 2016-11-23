@@ -64,7 +64,7 @@ class PLATFORM_EXPORT EndClipDisplayItem final : public PairedEndDisplayItem {
                                   WebDisplayItemList*) const override;
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
     return DisplayItem::isClipType(otherType);
   }

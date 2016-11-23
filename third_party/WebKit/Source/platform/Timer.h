@@ -196,7 +196,9 @@ class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
 
 NO_SANITIZE_ADDRESS
 inline bool TimerBase::isActive() const {
-  ASSERT(m_thread == currentThread());
+#if DCHECK_IS_ON()
+  DCHECK_EQ(m_thread, currentThread());
+#endif
   return m_weakPtrFactory.hasWeakPtrs();
 }
 

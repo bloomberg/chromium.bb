@@ -63,7 +63,7 @@ class PLATFORM_EXPORT EndTransform3DDisplayItem final
                                   WebDisplayItemList*) const override;
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
     return DisplayItem::transform3DTypeToEndTransform3DType(otherType) ==
            getType();

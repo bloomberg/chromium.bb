@@ -130,7 +130,9 @@ class PLATFORM_EXPORT PersistentRegion final {
   }
 
   void freePersistentNode(PersistentNode* persistentNode) {
-    ASSERT(m_persistentCount > 0);
+#if DCHECK_IS_ON()
+    DCHECK_GT(m_persistentCount, 0);
+#endif
     persistentNode->setFreeListNext(m_freeListHead);
     m_freeListHead = persistentNode;
 #if DCHECK_IS_ON()
