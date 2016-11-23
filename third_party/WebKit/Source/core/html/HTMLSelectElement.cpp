@@ -316,7 +316,7 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name,
               ensureUniqueElementData().attributes().find(sizeAttr))
         sizeAttribute->setValue(attrSize);
     }
-    m_size = std::max(size, 0u);
+    m_size = size;
     setNeedsValidityCheck();
     if (m_size != oldSize) {
       if (inActiveDocument())
