@@ -457,6 +457,7 @@ void PropertyTreeManager::setupRootClipNode() {
       gfx::SizeF(m_rootLayer->GetLayerTree()->device_viewport_size()));
   clipNode.transform_id = kRealRootNodeId;
   clipNode.target_transform_id = kRealRootNodeId;
+  clipNode.target_effect_id = kSecondaryRootNodeId;
 
   m_clipNodeMap.set(ClipPaintPropertyNode::root(), clipNode.id);
   m_rootLayer->SetClipTreeIndex(clipNode.id);
