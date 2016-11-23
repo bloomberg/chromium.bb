@@ -128,7 +128,18 @@ class CORE_EXPORT PaintLayerPainter {
   bool shouldPaintLayerInSoftwareMode(const GlobalPaintFlags,
                                       PaintLayerFlags paintFlags);
 
+  // Returns true if the painted output of this PaintLayer and its children is
+  // invisible and therefore can't impact painted output.
+  bool paintedOutputInvisible(const PaintLayerPaintingInfo&);
+
   PaintLayer& m_paintLayer;
+
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest, DontPaintWithTinyOpacity);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
+                           DontPaintWithTinyOpacityAndBackdropFilter);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
+                           DoPaintWithCompositedTinyOpacity);
+  FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest, DoPaintWithNonTinyOpacity);
 };
 
 }  // namespace blink

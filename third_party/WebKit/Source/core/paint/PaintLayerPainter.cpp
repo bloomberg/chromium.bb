@@ -63,6 +63,29 @@ static ShouldRespectOverflowClipType shouldRespectOverflowClip(
              : RespectOverflowClip;
 }
 
+bool PaintLayerPainter::paintedOutputInvisible(
+    const PaintLayerPaintingInfo& paintingInfo) {
+  if (m_paintLayer.layoutObject()->hasBackdropFilter())
+    return false;
+
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      m_paintLayer.layoutObject()->styleRef().opacity())
+    return false;
+
+  // 0.0004f < 1/2048. With 10-bit color channels (only available on the
+  // newest Macs; otherwise it's 8-bit), we see that an alpha of 1/2048 or
+  // less leads to a color output of less than 0.5 in all channels, hence
+  // not visible.
+  static const float kMinimumVisibleOpacity = 0.0004f;
+  if (m_paintLayer.paintsWithTransparency(paintingInfo.getGlobalPaintFlags())) {
+    if (m_paintLayer.layoutObject()->styleRef().opacity() <
+        kMinimumVisibleOpacity) {
+      return true;
+    }
+  }
+  return false;
+}
+
 PaintResult PaintLayerPainter::paintLayer(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,
@@ -95,8 +118,7 @@ PaintResult PaintLayerPainter::paintLayer(
     return FullyPainted;
 
   // If this layer is totally invisible then there is nothing to paint.
-  if (!m_paintLayer.layoutObject()->opacity() &&
-      !m_paintLayer.layoutObject()->hasBackdropFilter())
+  if (paintedOutputInvisible(paintingInfo))
     return FullyPainted;
 
   if (m_paintLayer.paintsWithTransparency(paintingInfo.getGlobalPaintFlags()))
