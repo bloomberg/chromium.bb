@@ -177,13 +177,8 @@ static void collectScopedResolversForHostedShadowTrees(
   }
 }
 
-StyleResolver::StyleResolver(Document& document)
-    : m_document(document), m_printMediaType(false), m_styleSharingDepth(0) {
-  FrameView* view = document.view();
-  DCHECK(view);
-  m_medium = new MediaQueryEvaluator(&view->frame());
-  m_printMediaType =
-      equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
+StyleResolver::StyleResolver(Document& document) : m_document(document) {
+  updateMediaType();
 }
 
 StyleResolver::~StyleResolver() {}
@@ -218,8 +213,10 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
          isSVGStyleElement(cssSheet.ownerNode()) ||
          cssSheet.ownerNode()->isConnected());
 
+  const MediaQueryEvaluator& evaluator =
+      document().styleEngine().ensureMediaQueryEvaluator();
   if (cssSheet.mediaQueries() &&
-      !m_medium->eval(cssSheet.mediaQueries(),
+      !evaluator.eval(cssSheet.mediaQueries(),
                       &m_viewportDependentMediaQueryResults,
                       &m_deviceDependentMediaQueryResults))
     return;
@@ -240,7 +237,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
   if (treeScope->rootNode().isDocumentNode())
     treeScope = m_document;
   treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(cssSheet,
-                                                             *m_medium);
+                                                             evaluator);
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets() {
@@ -1860,8 +1857,10 @@ void StyleResolver::addDeviceDependentMediaQueries(
 }
 
 bool StyleResolver::mediaQueryAffectedByViewportChange() const {
+  const MediaQueryEvaluator& evaluator =
+      document().styleEngine().ensureMediaQueryEvaluator();
   for (unsigned i = 0; i < m_viewportDependentMediaQueryResults.size(); ++i) {
-    if (m_medium->eval(m_viewportDependentMediaQueryResults[i]->expression()) !=
+    if (evaluator.eval(m_viewportDependentMediaQueryResults[i]->expression()) !=
         m_viewportDependentMediaQueryResults[i]->result())
       return true;
   }
@@ -1869,17 +1868,25 @@ bool StyleResolver::mediaQueryAffectedByViewportChange() const {
 }
 
 bool StyleResolver::mediaQueryAffectedByDeviceChange() const {
+  const MediaQueryEvaluator& evaluator =
+      document().styleEngine().ensureMediaQueryEvaluator();
   for (unsigned i = 0; i < m_deviceDependentMediaQueryResults.size(); ++i) {
-    if (m_medium->eval(m_deviceDependentMediaQueryResults[i]->expression()) !=
+    if (evaluator.eval(m_deviceDependentMediaQueryResults[i]->expression()) !=
         m_deviceDependentMediaQueryResults[i]->result())
       return true;
   }
   return false;
 }
 
+void StyleResolver::updateMediaType() {
+  if (FrameView* view = document().view()) {
+    m_printMediaType =
+        equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
+  }
+}
+
 DEFINE_TRACE(StyleResolver) {
   visitor->trace(m_matchedPropertiesCache);
-  visitor->trace(m_medium);
   visitor->trace(m_viewportDependentMediaQueryResults);
   visitor->trace(m_deviceDependentMediaQueryResults);
   visitor->trace(m_selectorFilter);

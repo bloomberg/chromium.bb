@@ -176,9 +176,10 @@ class CORE_EXPORT StyleResolver final
 
   PseudoElement* createPseudoElementIfNeeded(Element& parent, PseudoId);
 
-  DECLARE_TRACE();
-
   void setRuleUsageTracker(StyleRuleUsageTracker*);
+  void updateMediaType();
+
+  DECLARE_TRACE();
 
  private:
   explicit StyleResolver(Document&);
@@ -276,13 +277,12 @@ class CORE_EXPORT StyleResolver final
 
   PseudoElement* createPseudoElement(Element* parent, PseudoId);
 
-  Document& document() { return *m_document; }
+  Document& document() const { return *m_document; }
 
   static ComputedStyle* s_styleNotYetAvailable;
 
   MatchedPropertiesCache m_matchedPropertiesCache;
 
-  Member<MediaQueryEvaluator> m_medium;
   MediaQueryResultList m_viewportDependentMediaQueryResults;
   MediaQueryResultList m_deviceDependentMediaQueryResults;
 
@@ -293,9 +293,9 @@ class CORE_EXPORT StyleResolver final
 
   Member<StyleRuleUsageTracker> m_tracker;
 
-  bool m_printMediaType;
+  bool m_printMediaType = false;
 
-  unsigned m_styleSharingDepth;
+  unsigned m_styleSharingDepth = 0;
   HeapVector<Member<StyleSharingList>, styleSharingMaxDepth>
       m_styleSharingLists;
 };

@@ -55,6 +55,7 @@ namespace blink {
 
 class CSSFontSelector;
 class CSSStyleSheet;
+class MediaQueryEvaluator;
 class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
@@ -117,7 +118,7 @@ class CORE_EXPORT StyleEngine final
     return m_globalRuleSet.watchedSelectorsRuleSet();
   }
 
-  void clearMediaQueryRuleSetStyleSheets();
+  void mediaQueryAffectingValueChanged();
   void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
   void updateActiveStyleSheets(StyleResolverUpdateMode);
   void updateActiveStyle();
@@ -196,6 +197,7 @@ class CORE_EXPORT StyleEngine final
   void clearMasterResolver();
 
   StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
+  const MediaQueryEvaluator& ensureMediaQueryEvaluator();
 
   CSSFontSelector* fontSelector() { return m_fontSelector; }
   void setFontSelector(CSSFontSelector*);
@@ -279,7 +281,7 @@ class CORE_EXPORT StyleEngine final
 
   typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
 
-  void clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet&);
+  void mediaQueryAffectingValueChanged(UnorderedTreeScopeSet&);
   const RuleFeatureSet& ruleFeatureSet() const {
     return m_globalRuleSet.ruleFeatureSet();
   }
@@ -355,6 +357,7 @@ class CORE_EXPORT StyleEngine final
 
   Member<StyleResolver> m_resolver;
   Member<ViewportStyleResolver> m_viewportResolver;
+  Member<MediaQueryEvaluator> m_mediaQueryEvaluator;
   StyleInvalidator m_styleInvalidator;
 
   Member<CSSFontSelector> m_fontSelector;

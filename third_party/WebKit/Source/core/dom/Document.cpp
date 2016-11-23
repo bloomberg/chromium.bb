@@ -579,7 +579,7 @@ MediaQueryMatcher& Document::mediaQueryMatcher() {
 
 void Document::mediaQueryAffectingValueChanged() {
   m_evaluateMediaQueriesOnStyleRecalc = true;
-  styleEngine().clearMediaQueryRuleSetStyleSheets();
+  styleEngine().mediaQueryAffectingValueChanged();
   InspectorInstrumentation::mediaQueryResultChanged(this);
 }
 

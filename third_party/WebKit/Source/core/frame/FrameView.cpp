@@ -1442,9 +1442,9 @@ void FrameView::setDisplayMode(WebDisplayMode mode) {
 }
 
 void FrameView::setMediaType(const AtomicString& mediaType) {
-  ASSERT(m_frame->document());
-  m_frame->document()->mediaQueryAffectingValueChanged();
+  DCHECK(m_frame->document());
   m_mediaType = mediaType;
+  m_frame->document()->mediaQueryAffectingValueChanged();
 }
 
 AtomicString FrameView::mediaType() const {

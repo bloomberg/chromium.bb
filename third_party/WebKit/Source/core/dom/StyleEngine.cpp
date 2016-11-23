@@ -265,7 +265,7 @@ bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(
   return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
 }
 
-void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(
+void StyleEngine::mediaQueryAffectingValueChanged(
     UnorderedTreeScopeSet& treeScopes) {
   for (TreeScope* treeScope : treeScopes) {
     DCHECK(treeScope != m_document);
@@ -276,10 +276,12 @@ void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(
   }
 }
 
-void StyleEngine::clearMediaQueryRuleSetStyleSheets() {
+void StyleEngine::mediaQueryAffectingValueChanged() {
   resolverChanged(FullStyleUpdate);
   documentStyleSheetCollection().clearMediaQueryRuleSetStyleSheets();
-  clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
+  mediaQueryAffectingValueChanged(m_activeTreeScopes);
+  if (m_resolver)
+    m_resolver->updateMediaType();
 }
 
 void StyleEngine::updateStyleSheetsInImport(
@@ -493,7 +495,8 @@ void StyleEngine::clearMasterResolver() {
 
 void StyleEngine::didDetach() {
   clearResolver();
-  m_viewportResolver.clear();
+  m_viewportResolver = nullptr;
+  m_mediaQueryEvaluator = nullptr;
 }
 
 bool StyleEngine::shouldClearResolver() const {
@@ -1136,6 +1139,16 @@ void StyleEngine::applyRuleSetChanges(
   scheduleInvalidationsForRuleSets(treeScope, changedRuleSets);
 }
 
+const MediaQueryEvaluator& StyleEngine::ensureMediaQueryEvaluator() {
+  if (!m_mediaQueryEvaluator) {
+    if (document().frame())
+      m_mediaQueryEvaluator = new MediaQueryEvaluator(document().frame());
+    else
+      m_mediaQueryEvaluator = new MediaQueryEvaluator("all");
+  }
+  return *m_mediaQueryEvaluator;
+}
+
 DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_document);
   visitor->trace(m_injectedAuthorStyleSheets);
@@ -1148,6 +1161,7 @@ DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_globalRuleSet);
   visitor->trace(m_resolver);
   visitor->trace(m_viewportResolver);
+  visitor->trace(m_mediaQueryEvaluator);
   visitor->trace(m_styleInvalidator);
   visitor->trace(m_fontSelector);
   visitor->trace(m_textToSheetCache);
