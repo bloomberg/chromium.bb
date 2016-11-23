@@ -2685,7 +2685,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
-  CHECK(scriptMessage.frameInfo.mainFrame);
+  if (!scriptMessage.frameInfo.mainFrame) {
+    // Messages from iframes are not currently supported.
+    return NO;
+  }
+
   int errorCode = 0;
   std::string errorMessage;
   std::unique_ptr<base::Value> inputJSONData(
