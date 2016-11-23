@@ -277,10 +277,10 @@ void AttachmentUploaderImplTest::SetUp() {
   url_request_context_getter_ =
       new net::TestURLRequestContextGetter(message_loop_.task_runner());
 
-  ASSERT_TRUE(server_.Start());
   server_.RegisterRequestHandler(
       base::Bind(&RequestHandler::HandleRequest,
                  base::Unretained(request_handler_.get())));
+  ASSERT_TRUE(server_.Start());
 
   GURL url(base::StringPrintf("http://localhost:%u/", server_.port()));
 
