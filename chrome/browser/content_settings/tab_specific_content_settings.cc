@@ -800,7 +800,7 @@ bool TabSpecificContentSettings::OnMessageReceived(
 
 void TabSpecificContentSettings::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
     return;
 
   const content::NavigationController& controller =
