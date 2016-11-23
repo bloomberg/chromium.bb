@@ -1,10 +1,6 @@
 {
   "android.webkit.cts.WebViewTest": [
     {
-      "name": "testFindNext",
-      "_bug_id": "crbug.com/618089"
-    },
-    {
       "name": "testPageScroll",
       "_bug_id": "crbug.com/534643"
     }
