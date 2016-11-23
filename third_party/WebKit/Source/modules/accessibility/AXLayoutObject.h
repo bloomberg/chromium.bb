@@ -102,6 +102,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   String fontFamily() const final;
   // Font size is in pixels.
   float fontSize() const final;
+  String imageDataUrl(const IntSize& maxSize) const final;
   String text() const override;
   AccessibilityTextDirection textDirection() const final;
   int textLength() const override;

@@ -459,6 +459,9 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ui::AX_ACTION_DO_DEFAULT:
       target.performDefaultAction();
       break;
+    case ui::AX_ACTION_GET_IMAGE_DATA:
+      OnGetImageData(target, data.target_rect.size());
+      break;
     case ui::AX_ACTION_HIT_TEST:
       OnHitTest(data.target_point);
       break;
@@ -572,6 +575,23 @@ void RenderAccessibilityImpl::OnSetAccessibilityFocus(
 
   // Explicitly send a tree change update event now.
   HandleAXEvent(obj, ui::AX_EVENT_TREE_CHANGED);
+}
+
+void RenderAccessibilityImpl::OnGetImageData(
+    const blink::WebAXObject& obj, const gfx::Size& max_size) {
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
+  if (tree_source_.image_data_node_id() == obj.axID())
+    return;
+
+  tree_source_.set_image_data_node_id(obj.axID());
+  tree_source_.set_max_image_data_size(max_size);
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  serializer_.DeleteClientSubtree(obj);
+  HandleAXEvent(obj, ui::AX_EVENT_IMAGE_FRAME_UPDATED);
 }
 
 void RenderAccessibilityImpl::OnReset(int reset_token) {

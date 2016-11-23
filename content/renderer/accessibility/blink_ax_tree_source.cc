@@ -130,7 +130,6 @@ ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
     : render_frame_(render_frame),
-      accessibility_focus_id_(-1),
       frozen_(false) {}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
@@ -723,6 +722,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     const gfx::Point& maxScrollOffset = src.maximumScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X_MAX, maxScrollOffset.x());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX, maxScrollOffset.y());
+  }
+
+  if (dst->id == image_data_node_id_) {
+    dst->AddStringAttribute(ui::AX_ATTR_IMAGE_DATA_URL,
+                            src.imageDataUrl(max_image_data_size_).utf8());
   }
 }
 

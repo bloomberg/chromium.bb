@@ -34,6 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPoint.h"
 #include "../platform/WebPrivatePtr.h"
+#include "../platform/WebSize.h"
 #include "../platform/WebVector.h"
 #include "WebAXEnums.h"
 #include <memory>
@@ -59,6 +60,7 @@ class WebURL;
 struct WebFloatRect;
 struct WebPoint;
 struct WebRect;
+struct WebSize;
 
 // An instance of this class, while kept alive, indicates that accessibility
 // should be temporarily enabled. If accessibility was enabled globally
@@ -156,6 +158,8 @@ class WebAXObject {
   BLINK_EXPORT WebString fontFamily() const;
   BLINK_EXPORT float fontSize() const;
   BLINK_EXPORT bool canvasHasFallbackContent() const;
+  // If this is an image, returns the image (scaled to maxSize) as a data url.
+  BLINK_EXPORT WebString imageDataUrl(const WebSize& maxSize) const;
   BLINK_EXPORT WebAXInvalidState invalidState() const;
   // Only used when invalidState() returns WebAXInvalidStateOther.
   BLINK_EXPORT WebString ariaInvalidValue() const;

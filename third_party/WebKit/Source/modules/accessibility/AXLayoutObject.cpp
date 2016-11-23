@@ -43,8 +43,10 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -52,8 +54,11 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/HTMLVideoElement.h"
+#include "core/html/ImageData.h"
 #include "core/html/LabelsNodeList.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/LayoutHTMLCanvas.h"
@@ -852,6 +857,70 @@ float AXLayoutObject::fontSize() const {
     return AXNodeObject::fontSize();
 
   return style->computedFontSize();
+}
+
+String AXLayoutObject::imageDataUrl(const IntSize& maxSize) const {
+  Node* node = getNode();
+  if (!node)
+    return String();
+
+  ImageBitmapOptions options;
+  ImageBitmap* imageBitmap = nullptr;
+  Document* document = &node->document();
+  if (isHTMLImageElement(node)) {
+    imageBitmap = ImageBitmap::create(toHTMLImageElement(node),
+                                      Optional<IntRect>(), document, options);
+  } else if (isHTMLCanvasElement(node)) {
+    imageBitmap = ImageBitmap::create(toHTMLCanvasElement(node),
+                                      Optional<IntRect>(), options);
+  } else if (isHTMLVideoElement(node)) {
+    imageBitmap = ImageBitmap::create(toHTMLVideoElement(node),
+                                      Optional<IntRect>(), document, options);
+  }
+  if (!imageBitmap)
+    return String();
+
+  sk_sp<SkImage> image = imageBitmap->bitmapImage()->imageForCurrentFrame();
+  if (!image || image->width() <= 0 || image->height() <= 0)
+    return String();
+
+  // Determine the width and height of the output image, using a proportional
+  // scale factor such that it's no larger than |maxSize|, if |maxSize| is not
+  // empty. It only resizes the image to be smaller (if necessary), not
+  // larger.
+  float xScale = maxSize.width() ? maxSize.width() * 1.0 / image->width() : 1.0;
+  float yScale =
+      maxSize.height() ? maxSize.height() * 1.0 / image->height() : 1.0;
+  float scale = std::min(xScale, yScale);
+  if (scale >= 1.0)
+    scale = 1.0;
+  int width = std::round(image->width() * scale);
+  int height = std::round(image->height() * scale);
+
+  // Draw the scaled image into a bitmap in native format.
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
+  SkCanvas canvas(bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawImageRect(image, SkRect::MakeIWH(width, height), nullptr);
+
+  // Copy the bits into a buffer in RGBA_8888 unpremultiplied format
+  // for encoding.
+  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                                       kUnpremul_SkAlphaType);
+  size_t rowBytes = info.minRowBytes();
+  Vector<char> pixelStorage(info.getSafeSize(rowBytes));
+  SkPixmap pixmap(info, pixelStorage.data(), rowBytes);
+  if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
+    return String();
+
+  // Encode as a PNG and return as a data url.
+  String dataUrl =
+      ImageDataBuffer(
+          IntSize(width, height),
+          reinterpret_cast<const unsigned char*>(pixelStorage.data()))
+          .toDataURL("image/png", 1.0);
+  return dataUrl;
 }
 
 String AXLayoutObject::text() const {

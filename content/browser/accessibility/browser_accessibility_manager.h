@@ -186,6 +186,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // information about each of these actions.
   void Decrement(const BrowserAccessibility& node);
   void DoDefaultAction(const BrowserAccessibility& node);
+  void GetImageData(const BrowserAccessibility& node,
+                    const gfx::Size& max_size);
   void HitTest(const gfx::Point& point);
   void Increment(const BrowserAccessibility& node);
   void ScrollToMakeVisible(

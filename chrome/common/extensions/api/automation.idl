@@ -24,6 +24,7 @@
     documentSelectionChanged,
     expandedChanged,
     focus,
+    imageFrameUpdated,
     hide,
     hover,
     invalidStatusChanged,
@@ -574,6 +575,11 @@
 
     // Places focus on this node.
     static void focus();
+
+    // Request a data url for the contents of an image, optionally
+    // resized.  Pass zero for maxWidth and/or maxHeight for the
+    // original size.
+    static void getImageData(long maxWidth, long maxHeight);
 
     // Scrolls this node to make it visible.
     static void makeVisible();

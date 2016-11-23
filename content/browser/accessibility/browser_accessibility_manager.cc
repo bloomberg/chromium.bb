@@ -604,6 +604,19 @@ void BrowserAccessibilityManager::DoDefaultAction(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
+void BrowserAccessibilityManager::GetImageData(
+    const BrowserAccessibility& node,
+    const gfx::Size& max_size) {
+  if (!delegate_)
+    return;
+
+  ui::AXActionData action_data;
+  action_data.action = ui::AX_ACTION_GET_IMAGE_DATA;
+  action_data.target_node_id = node.GetId();
+  action_data.target_rect = gfx::Rect(gfx::Point(), max_size);
+  delegate_->AccessibilityPerformAction(action_data);
+}
+
 void BrowserAccessibilityManager::Increment(
     const BrowserAccessibility& node) {
   if (!delegate_)

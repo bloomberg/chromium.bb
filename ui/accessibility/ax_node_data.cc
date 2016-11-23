@@ -616,6 +616,10 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_HTML_TAG:
         result += " html_tag=" + value;
         break;
+      case AX_ATTR_IMAGE_DATA_URL:
+        result += " image_data_url=(" +
+            IntToString(static_cast<int>(value.size())) + " bytes)";
+        break;
       case AX_ATTR_LANGUAGE:
         result += " language=" + value;
         break;

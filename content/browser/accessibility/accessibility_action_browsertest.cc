@@ -12,7 +12,10 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -35,6 +38,21 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     return web_contents->GetRootBrowserAccessibilityManager();
+  }
+
+  void GetBitmapFromImageDataURL(BrowserAccessibility* target,
+                                 SkBitmap* bitmap) {
+    std::string image_data_url = target->GetStringAttribute(
+        ui::AX_ATTR_IMAGE_DATA_URL);
+    std::string mimetype;
+    std::string charset;
+    std::string png_data;
+    ASSERT_TRUE(net::DataURL::Parse(GURL(image_data_url),
+                                    &mimetype, &charset, &png_data));
+    ASSERT_EQ("image/png", mimetype);
+    ASSERT_TRUE(gfx::PNGCodec::Decode(
+        reinterpret_cast<const unsigned char*>(png_data.data()),
+        png_data.size(), bitmap));
   }
 
  private:
@@ -128,6 +146,136 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
     waiter2.WaitForNotification();
   }
   EXPECT_EQ(8.0, target->GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         AccessibilityModeComplete,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url("data:text/html,"
+           "<body>"
+           "<canvas aria-label='canvas' id='c' width='4' height='2'></canvas>"
+           "<script>\n"
+           "  var c = document.getElementById('c').getContext('2d');\n"
+           "  c.beginPath();\n"
+           "  c.moveTo(0, 0.5);\n"
+           "  c.lineTo(4, 0.5);\n"
+           "  c.strokeStyle = '#ff0000';\n"
+           "  c.stroke();\n"
+           "  c.beginPath();\n"
+           "  c.moveTo(0, 1.5);\n"
+           "  c.lineTo(4, 1.5);\n"
+           "  c.strokeStyle = '#0000ff';\n"
+           "  c.stroke();\n"
+           "</script>"
+           "</body>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target = FindNode(ui::AX_ROLE_CANVAS, "canvas");
+  ASSERT_NE(nullptr, target);
+
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
+                                          AccessibilityModeComplete,
+                                          ui::AX_EVENT_IMAGE_FRAME_UPDATED);
+  GetManager()->GetImageData(*target, gfx::Size());
+  waiter2.WaitForNotification();
+
+  SkBitmap bitmap;
+  GetBitmapFromImageDataURL(target, &bitmap);
+  ASSERT_EQ(4, bitmap.width());
+  ASSERT_EQ(2, bitmap.height());
+  EXPECT_EQ(SK_ColorRED, bitmap.getColor(0, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap.getColor(1, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap.getColor(2, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap.getColor(3, 0));
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 1));
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(1, 1));
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(2, 1));
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(3, 1));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImageScale) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         AccessibilityModeComplete,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url("data:text/html,"
+           "<body>"
+           "<canvas aria-label='canvas' id='c' width='40' height='20'></canvas>"
+           "<script>\n"
+           "  var c = document.getElementById('c').getContext('2d');\n"
+           "  c.fillStyle = '#00ff00';\n"
+           "  c.fillRect(0, 0, 40, 10);\n"
+           "  c.fillStyle = '#ff00ff';\n"
+           "  c.fillRect(0, 10, 40, 10);\n"
+           "</script>"
+           "</body>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target = FindNode(ui::AX_ROLE_CANVAS, "canvas");
+  ASSERT_NE(nullptr, target);
+
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
+                                          AccessibilityModeComplete,
+                                          ui::AX_EVENT_IMAGE_FRAME_UPDATED);
+  GetManager()->GetImageData(*target, gfx::Size(4, 4));
+  waiter2.WaitForNotification();
+
+  SkBitmap bitmap;
+  GetBitmapFromImageDataURL(target, &bitmap);
+  ASSERT_EQ(4, bitmap.width());
+  ASSERT_EQ(2, bitmap.height());
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(1, 0));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(2, 0));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(3, 0));
+  EXPECT_EQ(SK_ColorMAGENTA, bitmap.getColor(0, 1));
+  EXPECT_EQ(SK_ColorMAGENTA, bitmap.getColor(1, 1));
+  EXPECT_EQ(SK_ColorMAGENTA, bitmap.getColor(2, 1));
+  EXPECT_EQ(SK_ColorMAGENTA, bitmap.getColor(3, 1));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         AccessibilityModeComplete,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url("data:text/html,"
+           "<body>"
+           "<img src='data:image/gif;base64,R0lGODdhAgADAKEDAAAA//"
+           "8AAAD/AP///ywAAAAAAgADAAACBEwkAAUAOw=='>"
+           "</body>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target = FindNode(ui::AX_ROLE_IMAGE, "");
+  ASSERT_NE(nullptr, target);
+
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
+                                          AccessibilityModeComplete,
+                                          ui::AX_EVENT_IMAGE_FRAME_UPDATED);
+  GetManager()->GetImageData(*target, gfx::Size());
+  waiter2.WaitForNotification();
+
+  SkBitmap bitmap;
+  GetBitmapFromImageDataURL(target, &bitmap);
+  ASSERT_EQ(2, bitmap.width());
+  ASSERT_EQ(3, bitmap.height());
+  EXPECT_EQ(SK_ColorRED, bitmap.getColor(0, 0));
+  EXPECT_EQ(SK_ColorRED, bitmap.getColor(1, 0));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 1));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(1, 1));
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 2));
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(1, 2));
 }
 
 }  // namespace content

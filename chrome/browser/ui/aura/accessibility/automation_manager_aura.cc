@@ -117,6 +117,7 @@ void AutomationManagerAura::PerformAction(
       break;
     case ui::AX_ACTION_BLUR:
     case ui::AX_ACTION_DECREMENT:
+    case ui::AX_ACTION_GET_IMAGE_DATA:
     case ui::AX_ACTION_HIT_TEST:
     case ui::AX_ACTION_INCREMENT:
     case ui::AX_ACTION_REPLACE_SELECTED_TEXT:

@@ -145,6 +145,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, LineStartOffsets) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageData) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "image_data.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest(

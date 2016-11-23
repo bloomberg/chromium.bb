@@ -38,6 +38,7 @@
     focus,
     hide,                      // Remove: http://crbug.com/392502
     hover,
+    image_frame_updated,       // Web
     invalid_status_changed,    // Implicit
     layout_complete,           // Web
     live_region_created,       // Implicit
@@ -242,6 +243,9 @@
 
     focus,
 
+    // Return the content of this image object in the image_data attribute.
+    get_image_data,
+
     // Given a point, find the object it corresponds to and fire a
     // HOVER event on it in response.
     hit_test,
@@ -304,6 +308,7 @@
     // Only present when different from parent.
     font_family,
     html_tag,
+    image_data_url,
     // Only present when different from parent.
     language,
     name,

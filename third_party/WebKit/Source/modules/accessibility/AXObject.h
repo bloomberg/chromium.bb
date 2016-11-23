@@ -765,6 +765,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual int headingLevel() const { return 0; }
   // Value should be 1-based. 0 means not supported.
   virtual unsigned hierarchicalLevel() const { return 0; }
+  // Return the content of an image or canvas as an image data url in
+  // PNG format. If |maxSize| is not empty and if the image is larger than
+  // those dimensions, the image will be resized proportionally first to fit.
+  virtual String imageDataUrl(const IntSize& maxSize) const { return nullAtom; }
   virtual AccessibilityOrientation orientation() const;
   virtual String text() const { return String(); }
   virtual AccessibilityTextDirection textDirection() const {

@@ -367,6 +367,12 @@ AutomationNodeImpl.prototype = {
     this.performAction_('focus');
   },
 
+  getImageData: function(maxWidth, maxHeight) {
+    this.performAction_('getImageData',
+                        { maxWidth: maxWidth,
+                          maxHeight: maxHeight });
+  },
+
   makeVisible: function() {
     this.performAction_('makeVisible');
   },
@@ -657,6 +663,7 @@ var stringAttributes = [
     'dropeffect',
     'help',
     'htmlTag',
+    'imageDataUrl',
     'language',
     'liveRelevant',
     'liveStatus',
@@ -1061,6 +1068,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'find',
     'findAll',
     'focus',
+    'getImageData',
     'makeVisible',
     'matches',
     'setSelection',

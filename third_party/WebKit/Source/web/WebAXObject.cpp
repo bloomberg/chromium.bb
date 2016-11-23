@@ -608,6 +608,13 @@ bool WebAXObject::canvasHasFallbackContent() const {
   return m_private->canvasHasFallbackContent();
 }
 
+WebString WebAXObject::imageDataUrl(const WebSize& maxSize) const {
+  if (isDetached())
+    return WebString();
+
+  return m_private->imageDataUrl(maxSize);
+}
+
 WebAXInvalidState WebAXObject::invalidState() const {
   if (isDetached())
     return WebAXInvalidStateUndefined;
