@@ -9203,6 +9203,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           int_mv cur_mv;
           RD_STATS tmp_rd_stats, tmp_rd_stats_y, tmp_rd_stats_uv;
 
+          av1_invalid_rd_stats(&tmp_rd_stats);
+
           mbmi->ref_mv_idx = 1 + ref_idx;
 
           for (ref = 0; ref < 1 + comp_pred; ++ref) {
