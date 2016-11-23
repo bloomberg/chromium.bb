@@ -26,6 +26,7 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
@@ -150,9 +151,9 @@ void LoadDisplayProperties() {
     const base::DictionaryValue* dict_value = nullptr;
     if (!it.value().GetAsDictionary(&dict_value) || dict_value == nullptr)
       continue;
-    int64_t id = display::Display::kInvalidDisplayID;
+    int64_t id = display::kInvalidDisplayId;
     if (!base::StringToInt64(it.key(), &id) ||
-        id == display::Display::kInvalidDisplayID) {
+        id == display::kInvalidDisplayId) {
       continue;
     }
     display::Display::Rotation rotation = display::Display::ROTATE_0;

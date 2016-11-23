@@ -12,6 +12,7 @@
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/devices/device_data_manager.h"
 
@@ -154,12 +155,12 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   device_manager->ClearTouchDeviceAssociations();
 
   // Display IDs and display::ManagedDisplayInfo for mirror or extended mode.
-  int64_t display1_id = display::Display::kInvalidDisplayID;
-  int64_t display2_id = display::Display::kInvalidDisplayID;
+  int64_t display1_id = display::kInvalidDisplayId;
+  int64_t display2_id = display::kInvalidDisplayId;
   display::ManagedDisplayInfo display1;
   display::ManagedDisplayInfo display2;
   // Display ID and display::ManagedDisplayInfo for single display mode.
-  int64_t single_display_id = display::Display::kInvalidDisplayID;
+  int64_t single_display_id = display::kInvalidDisplayId;
   display::ManagedDisplayInfo single_display;
 
   WindowTreeHostManager* window_tree_host_manager =
@@ -170,15 +171,15 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   } else if (display_manager->num_connected_displays() == 1 ||
              display_manager->IsInUnifiedMode()) {
     single_display_id = display_manager->first_display_id();
-    DCHECK(single_display_id != display::Display::kInvalidDisplayID);
+    DCHECK(single_display_id != display::kInvalidDisplayId);
     single_display = display_manager->GetDisplayInfo(single_display_id);
     UpdateTouchRadius(single_display);
   } else {
     display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     display1_id = list[0];
     display2_id = list[1];
-    DCHECK(display1_id != display::Display::kInvalidDisplayID &&
-           display2_id != display::Display::kInvalidDisplayID);
+    DCHECK(display1_id != display::kInvalidDisplayId &&
+           display2_id != display::kInvalidDisplayId);
     display1 = display_manager->GetDisplayInfo(display1_id);
     display2 = display_manager->GetDisplayInfo(display2_id);
     UpdateTouchRadius(display1);

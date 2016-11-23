@@ -66,10 +66,6 @@ class DISPLAY_EXPORT Display final {
     TOUCH_SUPPORT_UNAVAILABLE,
   };
 
-  // Use display::kInvalidDisplayId from display_constants.h in new code.
-  // TODO(kylechar): Delete after all references are gone.
-  enum : int64_t { kInvalidDisplayID = display::kInvalidDisplayId };
-
   // Creates a display with kInvalidDisplayId as default.
   Display();
   explicit Display(int64_t id);

@@ -69,6 +69,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/view_model.h"
@@ -211,8 +212,7 @@ void RootWindowController::Shutdown() {
   GetRootWindowSettings(root_window)->controller = NULL;
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
-  GetRootWindowSettings(root_window)->display_id =
-      display::Display::kInvalidDisplayID;
+  GetRootWindowSettings(root_window)->display_id = display::kInvalidDisplayId;
   ash_host_->PrepareForShutdown();
 
   system_wallpaper_.reset();

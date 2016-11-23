@@ -10,6 +10,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -255,7 +256,7 @@ bool ShouldRenderParentTitleArea(ui::Window* window) {
 int64_t GetInitialDisplayId(const ui::Window::SharedProperties& properties) {
   auto iter =
       properties.find(ui::mojom::WindowManager::kInitialDisplayId_Property);
-  return iter == properties.end() ? display::Display::kInvalidDisplayID
+  return iter == properties.end() ? display::kInvalidDisplayId
                                   : mojo::ConvertTo<int64_t>(iter->second);
 }
 

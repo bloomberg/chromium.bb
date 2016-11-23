@@ -17,6 +17,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -103,7 +104,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
   display::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
-                                       : display::Display::kInvalidDisplayID;
+                                       : display::kInvalidDisplayId;
   display::Displays display_list = display_manager->active_display_list();
   // Try to create a Warp region for all possible two displays combination.
   // The following code does it by poping the last element in the list
@@ -205,9 +206,8 @@ ExtendedMouseWarpController::CreateWarpRegion(const display::Display& a,
                                               int64_t drag_source_id) {
   gfx::Rect a_edge;
   gfx::Rect b_edge;
-  int snap_barrier = drag_source_id == display::Display::kInvalidDisplayID
-                         ? 0
-                         : kMaximumSnapHeight;
+  int snap_barrier =
+      drag_source_id == display::kInvalidDisplayId ? 0 : kMaximumSnapHeight;
 
   if (!display::ComputeBoundary(a, b, &a_edge, &b_edge))
     return nullptr;

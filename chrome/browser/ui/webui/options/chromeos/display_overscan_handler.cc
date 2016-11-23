@@ -19,6 +19,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 namespace options {
@@ -103,7 +104,7 @@ void DisplayOverscanHandler::OnDisplayMetricsChanged(const display::Display&,
                                                      uint32_t) {}
 
 void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
-  int64_t display_id = display::Display::kInvalidDisplayID;
+  int64_t display_id = display::kInvalidDisplayId;
   std::string id_value;
   if (!args->GetString(0, &id_value)) {
     LOG(ERROR) << "Can't find ID";
@@ -111,7 +112,7 @@ void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
   }
 
   if (!base::StringToInt64(id_value, &display_id) ||
-      display_id == display::Display::kInvalidDisplayID) {
+      display_id == display::kInvalidDisplayId) {
     LOG(ERROR) << "Invalid parameter: " << id_value;
     return;
   }

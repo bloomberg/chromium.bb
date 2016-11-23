@@ -16,6 +16,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_tracker.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -128,7 +129,7 @@ void CenterWindow(WmWindow* window) {
 void SetBoundsInScreen(WmWindow* window,
                        const gfx::Rect& bounds_in_screen,
                        const display::Display& display) {
-  DCHECK_NE(display::Display::kInvalidDisplayID, display.id());
+  DCHECK_NE(display::kInvalidDisplayId, display.id());
   // Don't move a window to other root window if:
   // a) the window is a transient window. It moves when its
   //    transient parent moves.

@@ -46,6 +46,7 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -238,11 +239,11 @@ WindowTreeHostManager::WindowTreeHostManager()
       focus_activation_store_(new FocusActivationStore()),
       cursor_window_controller_(new CursorWindowController()),
       mirror_window_controller_(new MirrorWindowController()),
-      cursor_display_id_for_restore_(display::Display::kInvalidDisplayID),
+      cursor_display_id_for_restore_(display::kInvalidDisplayId),
       weak_ptr_factory_(this) {
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
-  primary_display_id = display::Display::kInvalidDisplayID;
+  primary_display_id = display::kInvalidDisplayId;
 }
 
 WindowTreeHostManager::~WindowTreeHostManager() {}
@@ -293,7 +294,7 @@ void WindowTreeHostManager::CreatePrimaryHost(
   const display::Display& primary_candidate =
       GetDisplayManager()->GetPrimaryDisplayCandidate();
   primary_display_id = primary_candidate.id();
-  CHECK_NE(display::Display::kInvalidDisplayID, primary_display_id);
+  CHECK_NE(display::kInvalidDisplayId, primary_display_id);
   AddWindowTreeHostForDisplay(primary_candidate, init_params);
 }
 
@@ -324,7 +325,7 @@ void WindowTreeHostManager::RemoveObserver(Observer* observer) {
 
 // static
 int64_t WindowTreeHostManager::GetPrimaryDisplayId() {
-  CHECK_NE(display::Display::kInvalidDisplayID, primary_display_id);
+  CHECK_NE(display::kInvalidDisplayId, primary_display_id);
   return primary_display_id;
 }
 
@@ -395,8 +396,8 @@ WindowTreeHostManager::GetAllRootWindowControllers() {
 
 void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   // TODO(oshima): Move primary display management to DisplayManager.
-  DCHECK_NE(display::Display::kInvalidDisplayID, id);
-  if (id == display::Display::kInvalidDisplayID || primary_display_id == id ||
+  DCHECK_NE(display::kInvalidDisplayId, id);
+  if (id == display::kInvalidDisplayId || primary_display_id == id ||
       window_tree_hosts_.size() < 2) {
     return;
   }
@@ -561,7 +562,7 @@ bool WindowTreeHostManager::UpdateWorkAreaOfDisplayNearestWindow(
   const aura::Window* root_window = window->GetRootWindow();
   int64_t id = GetRootWindowSettings(root_window)->display_id;
   // if id is |kInvaildDisplayID|, it's being deleted.
-  DCHECK(id != display::Display::kInvalidDisplayID);
+  DCHECK(id != display::kInvalidDisplayId);
   return GetDisplayManager()->UpdateWorkAreaOfDisplay(id, insets);
 }
 
@@ -573,7 +574,7 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
       (GetRootWindowSettings(GetWindow(primary_tree_host_for_replace_))
                ->display_id == display::DisplayManager::kUnifiedDisplayId ||
        display.id() == display::DisplayManager::kUnifiedDisplayId)) {
-    DCHECK_EQ(display::Display::kInvalidDisplayID, primary_display_id);
+    DCHECK_EQ(display::kInvalidDisplayId, primary_display_id);
     primary_display_id = display.id();
 
     AshWindowTreeHost* ash_host =
@@ -632,7 +633,7 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
     SetDisplayPropertiesOnHost(ash_host, display);
   } else {
-    if (primary_display_id == display::Display::kInvalidDisplayID)
+    if (primary_display_id == display::kInvalidDisplayId)
       primary_display_id = display.id();
     DCHECK(!window_tree_hosts_.empty());
     AshWindowTreeHost* ash_host =
@@ -663,7 +664,7 @@ void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {
     // Temporarily store the primary root window in
     // |primary_root_window_for_replace_| when replacing the display.
     if (window_tree_hosts_.size() == 1) {
-      primary_display_id = display::Display::kInvalidDisplayID;
+      primary_display_id = display::kInvalidDisplayId;
       primary_tree_host_for_replace_ = host_to_delete;
       // Display for root window will be deleted when the Primary RootWindow
       // is deleted by the Shell.
@@ -676,7 +677,7 @@ void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {
         break;
       }
     }
-    CHECK_NE(display::Display::kInvalidDisplayID, primary_display_id);
+    CHECK_NE(display::kInvalidDisplayId, primary_display_id);
 
     AshWindowTreeHost* primary_host = host_to_delete;
     // Delete the other host instead.
@@ -779,8 +780,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange(
     layout_store->UpdateMultiDisplayState(
         list, display_manager->IsInMirrorMode(), layout.default_unified);
     if (display::Screen::GetScreen()->GetNumDisplays() > 1) {
-      SetPrimaryDisplayId(layout.primary_id ==
-                                  display::Display::kInvalidDisplayID
+      SetPrimaryDisplayId(layout.primary_id == display::kInvalidDisplayId
                               ? list[0]
                               : layout.primary_id);
     }

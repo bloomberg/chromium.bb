@@ -21,6 +21,7 @@
 #include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/fake_display_controller.h"
 
 namespace display {
@@ -65,7 +66,7 @@ class PlatformScreenOzone
     DisplayInfo(const DisplayInfo& other);
     ~DisplayInfo();
 
-    int64_t id = Display::kInvalidDisplayID;
+    int64_t id = kInvalidDisplayId;
     // Information about display viewport.
     ViewportMetrics metrics;
     // Last insets received from WM.
@@ -150,7 +151,7 @@ class PlatformScreenOzone
   bool wait_for_display_config_update_ = false;
 
   // TODO(kylechar): These values can/should be replaced by DisplayLayout.
-  int64_t primary_display_id_ = display::Display::kInvalidDisplayID;
+  int64_t primary_display_id_ = display::kInvalidDisplayId;
   std::vector<DisplayInfo> cached_displays_;
   gfx::Point next_display_origin_;
 

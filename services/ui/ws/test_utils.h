@@ -34,6 +34,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ui {
 namespace ws {
@@ -72,7 +73,7 @@ class TestPlatformScreen : public display::PlatformScreen {
 
  private:
   display::PlatformScreenDelegate* delegate_;
-  int64_t primary_display_id_ = display::Display::kInvalidDisplayID;
+  int64_t primary_display_id_ = display::kInvalidDisplayId;
   std::set<int64_t> display_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformScreen);

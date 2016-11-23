@@ -6,13 +6,13 @@
 
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/server_window.h"
-#include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ui {
 namespace ws {
 
 PlatformDisplayInitParams::PlatformDisplayInitParams()
-    : display_id(display::Display::kInvalidDisplayID) {}
+    : display_id(display::kInvalidDisplayId) {}
 
 PlatformDisplayInitParams::PlatformDisplayInitParams(
     const PlatformDisplayInitParams& other) = default;

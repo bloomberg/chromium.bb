@@ -14,6 +14,7 @@
 #include "components/quirks/quirks_manager.h"
 #include "third_party/qcms/src/qcms.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 
@@ -190,7 +191,7 @@ void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
 void DisplayColorManager::LoadCalibrationForDisplay(
     const ui::DisplaySnapshot* display) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (display->display_id() == display::Display::kInvalidDisplayID) {
+  if (display->display_id() == display::kInvalidDisplayId) {
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
     return;
   }

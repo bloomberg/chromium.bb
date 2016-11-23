@@ -28,6 +28,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ash {
 namespace launcher {
@@ -341,7 +342,7 @@ std::unique_ptr<base::DictionaryValue> CreateAppDict(
 
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
                                                    int64_t display_id) {
-  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
 
   // Don't show the shelf in app mode.
   if (chrome::IsRunningInAppMode())
@@ -356,7 +357,7 @@ ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
 void SetShelfAutoHideBehaviorPref(PrefService* prefs,
                                   int64_t display_id,
                                   ShelfAutoHideBehavior behavior) {
-  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
 
   const char* value = AutoHideBehaviorToPref(behavior);
   if (!value)
@@ -371,7 +372,7 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
 }
 
 ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
-  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
 
   // See comment in |kShelfAlignment| as to why we consider two prefs.
   return AlignmentFromPref(GetPerDisplayPref(
@@ -381,7 +382,7 @@ ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
 void SetShelfAlignmentPref(PrefService* prefs,
                            int64_t display_id,
                            ShelfAlignment alignment) {
-  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
 
   const char* value = AlignmentToPref(alignment);
   if (!value)

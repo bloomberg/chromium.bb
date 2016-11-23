@@ -6,7 +6,7 @@
 
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
-#include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::RootWindowSettings*);
 
@@ -17,7 +17,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(RootWindowSettings,
                                  NULL);
 
 RootWindowSettings::RootWindowSettings()
-    : display_id(display::Display::kInvalidDisplayID), controller(NULL) {}
+    : display_id(display::kInvalidDisplayId), controller(NULL) {}
 
 RootWindowSettings* InitRootWindowSettings(aura::Window* root) {
   RootWindowSettings* settings = new RootWindowSettings();

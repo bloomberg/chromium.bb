@@ -10,6 +10,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/user_display_manager_delegate.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ui {
 namespace ws {
@@ -161,7 +162,7 @@ void UserDisplayManager::CallOnDisplays(
   observer->OnDisplays(
       GetAllDisplays().PassStorage(),
       display::PlatformScreen::GetInstance()->GetPrimaryDisplayId(),
-      display::Display::kInvalidDisplayID);
+      display::kInvalidDisplayId);
 }
 
 void UserDisplayManager::AddObserver(

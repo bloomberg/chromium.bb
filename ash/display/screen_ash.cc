@@ -19,6 +19,7 @@
 #include "ui/display/display_finder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ash {
 
@@ -124,8 +125,8 @@ display::Display ScreenAsh::GetDisplayNearestWindow(
   const RootWindowSettings* rws = GetRootWindowSettings(root_window);
   int64_t id = rws->display_id;
   // if id is |kInvaildDisplayID|, it's being deleted.
-  DCHECK(id != display::Display::kInvalidDisplayID);
-  if (id == display::Display::kInvalidDisplayID)
+  DCHECK(id != display::kInvalidDisplayId);
+  if (id == display::kInvalidDisplayId)
     return GetPrimaryDisplay();
 
   display::DisplayManager* display_manager = GetDisplayManager();

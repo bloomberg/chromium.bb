@@ -608,7 +608,7 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
       .SetFirstDisplayAsInternalDisplay();
 
   int64_t internal_display_id = display::Display::InternalDisplayId();
-  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
+  display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
 
   EnableMaximizeMode(true);
 
@@ -617,7 +617,7 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
   EXPECT_FALSE(RotationLocked());
 
   // Should not crash, even though the invalid display id is requested.
-  SetDisplayRotationById(display::Display::kInvalidDisplayID,
+  SetDisplayRotationById(display::kInvalidDisplayId,
                          display::Display::ROTATE_180);
   EXPECT_FALSE(RotationLocked());
 

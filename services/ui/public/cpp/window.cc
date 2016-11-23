@@ -23,6 +23,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -599,7 +600,7 @@ Window::Window(WindowTreeClient* client, Id id)
       surface_id_handler_(nullptr),
       visible_(false),
       opacity_(1.0f),
-      display_id_(display::Display::kInvalidDisplayID),
+      display_id_(display::kInvalidDisplayId),
       cursor_id_(mojom::Cursor::CURSOR_NULL),
       parent_drawn_(false) {}
 

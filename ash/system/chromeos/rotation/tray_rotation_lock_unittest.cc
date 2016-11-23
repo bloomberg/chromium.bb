@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/view.h"
@@ -240,7 +241,7 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
 TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
   int64_t internal_display_id = display::Display::InternalDisplayId();
   TearDownViews();
-  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
+  display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
 
   std::unique_ptr<TrayRotationLock> tray(new TrayRotationLock(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->system_tray()));

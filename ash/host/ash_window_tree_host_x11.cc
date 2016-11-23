@@ -22,6 +22,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -193,7 +194,7 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
       // that if the event is within the bound of the root window. Note
       // that in multi-monitor case, the event position is in framebuffer
       // space so the bounds check will not work so well.
-      if (touch_display_id == display::Display::kInvalidDisplayID) {
+      if (touch_display_id == display::kInvalidDisplayId) {
         if (base::SysInfo::IsRunningOnChromeOS() &&
             !bounds().Contains(ui::EventLocationFromNative(xev)))
           return false;

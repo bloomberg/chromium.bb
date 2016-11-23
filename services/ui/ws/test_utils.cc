@@ -105,7 +105,7 @@ int64_t TestPlatformScreen::AddDisplay(
   delegate_->OnDisplayAdded(display_id, metrics);
 
   // First display added will be the primary display.
-  if (primary_display_id_ == display::Display::kInvalidDisplayID) {
+  if (primary_display_id_ == display::kInvalidDisplayId) {
     primary_display_id_ = display_id;
     delegate_->OnPrimaryDisplayChanged(display_id);
   }
@@ -130,7 +130,7 @@ void TestPlatformScreen::Init(display::PlatformScreenDelegate* delegate) {
   // Reset
   delegate_ = delegate;
   display_ids_.clear();
-  primary_display_id_ = display::Display::kInvalidDisplayID;
+  primary_display_id_ = display::kInvalidDisplayId;
 }
 
 int64_t TestPlatformScreen::GetPrimaryDisplayId() const {

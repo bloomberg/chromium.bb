@@ -28,6 +28,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -106,7 +107,7 @@ base::string16 GetExternalDisplayName() {
   display::DisplayManager* display_manager = GetDisplayManager();
   DCHECK(!display_manager->IsInMirrorMode());
 
-  int64_t external_id = display::Display::kInvalidDisplayID;
+  int64_t external_id = display::kInvalidDisplayId;
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     int64_t id = display_manager->GetDisplayAt(i).id();
     if (!display::Display::IsInternalDisplayId(id)) {
@@ -115,7 +116,7 @@ base::string16 GetExternalDisplayName() {
     }
   }
 
-  if (external_id == display::Display::kInvalidDisplayID)
+  if (external_id == display::kInvalidDisplayId)
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
   // The external display name may have an annotation of "(width x height)" in

@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/rect.h"
@@ -115,8 +114,7 @@ void PlatformScreenOzone::ToggleAddRemoveDisplay() {
   if (cached_displays_.size() == 1) {
     const gfx::Size& pixel_size = cached_displays_[0].metrics.pixel_size;
     wait_for_display_config_update_ =
-        fake_display_controller_->AddDisplay(pixel_size) !=
-        Display::kInvalidDisplayID;
+        fake_display_controller_->AddDisplay(pixel_size) != kInvalidDisplayId;
   } else if (cached_displays_.size() > 1) {
     wait_for_display_config_update_ =
         fake_display_controller_->RemoveDisplay(cached_displays_.back().id);
@@ -207,7 +205,7 @@ void PlatformScreenOzone::ProcessRemovedDisplays(
         current_ids.end()) {
       display.removed = true;
       if (primary_display_id_ == display.id)
-        primary_display_id_ = Display::kInvalidDisplayID;
+        primary_display_id_ = kInvalidDisplayId;
     }
   }
 }
@@ -287,7 +285,7 @@ void PlatformScreenOzone::AddNewDisplays(
     delegate_->OnDisplayAdded(display_info.id, display_info.metrics);
 
     // If we have no primary display then this one should be it.
-    if (primary_display_id_ == Display::kInvalidDisplayID) {
+    if (primary_display_id_ == kInvalidDisplayId) {
       primary_display_id_ = id;
       delegate_->OnPrimaryDisplayChanged(primary_display_id_);
     }
@@ -328,7 +326,7 @@ void PlatformScreenOzone::OnDisplayModeChanged(
 
   // If the primary display is marked as removed we'll try to find a new primary
   // display and update the delegate before removing the old primary display.
-  if (primary_display_id_ == Display::kInvalidDisplayID) {
+  if (primary_display_id_ == kInvalidDisplayId) {
     for (const DisplayInfo& display : cached_displays_) {
       if (!display.removed) {
         primary_display_id_ = display.id;

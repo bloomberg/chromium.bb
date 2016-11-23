@@ -656,7 +656,7 @@ TEST_P(DisplayManagerTest, TestNativeDisplaysChanged) {
           .SetFirstDisplayAsInternalDisplay();
   const int external_id = 10;
   const int mirror_id = 11;
-  const int64_t invalid_id = display::Display::kInvalidDisplayID;
+  const int64_t invalid_id = display::kInvalidDisplayId;
   const display::ManagedDisplayInfo internal_display_info =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
   const display::ManagedDisplayInfo external_display_info =

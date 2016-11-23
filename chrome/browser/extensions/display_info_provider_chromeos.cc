@@ -17,6 +17,7 @@
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -239,7 +240,7 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
   // and if should not be the same as the target display's id.
   if (info.mirroring_source_id && !info.mirroring_source_id->empty()) {
     int64_t mirroring_id = GetDisplay(*info.mirroring_source_id).id();
-    if (mirroring_id == display::Display::kInvalidDisplayID) {
+    if (mirroring_id == display::kInvalidDisplayId) {
       *error = "Display " + *info.mirroring_source_id + " not found.";
       return false;
     }
@@ -391,7 +392,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
 
   const display::Display target = GetDisplay(display_id_str);
 
-  if (target.id() == display::Display::kInvalidDisplayID) {
+  if (target.id() == display::kInvalidDisplayId) {
     *error = "Display not found.";
     return false;
   }
@@ -461,12 +462,12 @@ bool DisplayInfoProviderChromeOS::SetDisplayLayout(
   builder.ClearPlacements();
   for (const system_display::DisplayLayout& layout : layouts) {
     display::Display display = GetDisplay(layout.id);
-    if (display.id() == display::Display::kInvalidDisplayID) {
+    if (display.id() == display::kInvalidDisplayId) {
       LOG(ERROR) << "Invalid layout: display id not found: " << layout.id;
       return false;
     }
     display::Display parent = GetDisplay(layout.parent_id);
-    if (parent.id() == display::Display::kInvalidDisplayID) {
+    if (parent.id() == display::kInvalidDisplayId) {
       if (have_root) {
         LOG(ERROR) << "Invalid layout: multople roots.";
         return false;
@@ -568,7 +569,7 @@ DisplayInfoProviderChromeOS::GetDisplayLayout() {
     const display::DisplayPlacement placement =
         display_manager->GetCurrentDisplayLayout().FindPlacementById(
             display.id());
-    if (placement.display_id == display::Display::kInvalidDisplayID)
+    if (placement.display_id == display::kInvalidDisplayId)
       continue;
     system_display::DisplayLayout display_layout;
     display_layout.id = base::Int64ToString(placement.display_id);
@@ -584,7 +585,7 @@ bool DisplayInfoProviderChromeOS::OverscanCalibrationStart(
     const std::string& id) {
   VLOG(1) << "OverscanCalibrationStart: " << id;
   const display::Display display = GetDisplay(id);
-  if (display.id() == display::Display::kInvalidDisplayID)
+  if (display.id() == display::kInvalidDisplayId)
     return false;
   auto insets =
       ash::Shell::GetInstance()->window_tree_host_manager()->GetOverscanInsets(

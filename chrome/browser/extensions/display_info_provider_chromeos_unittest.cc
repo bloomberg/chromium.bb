@@ -21,6 +21,7 @@
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -55,7 +56,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
   bool DisplayExists(int64_t display_id) const {
     const display::Display& display =
         GetDisplayManager()->GetDisplayForId(display_id);
-    return display.id() != display::Display::kInvalidDisplayID;
+    return display.id() != display::kInvalidDisplayId;
   }
 
   display::DisplayManager* GetDisplayManager() const {

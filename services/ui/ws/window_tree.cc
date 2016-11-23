@@ -28,6 +28,7 @@
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/platform_window/mojo/ime_type_converters.h"
 #include "ui/platform_window/text_input_state.h"
 
@@ -104,8 +105,7 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
   GetUnknownWindowsFrom(root, &to_send);
 
   Display* display = GetDisplay(root);
-  int64_t display_id =
-      display ? display->GetId() : display::Display::kInvalidDisplayID;
+  int64_t display_id = display ? display->GetId() : display::kInvalidDisplayId;
   const ServerWindow* focused_window =
       display ? display->GetFocusedWindow() : nullptr;
   if (focused_window)
@@ -469,8 +469,7 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
       waiting_for_top_level_window_info->client_window_id;
   roots_.insert(window);
   Display* display = GetDisplay(window);
-  int64_t display_id =
-      display ? display->GetId() : display::Display::kInvalidDisplayID;
+  int64_t display_id = display ? display->GetId() : display::kInvalidDisplayId;
   const bool drawn = window->parent() && window->parent()->IsDrawn();
   client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window),
                               display_id, drawn);
