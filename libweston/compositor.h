@@ -2149,6 +2149,9 @@ weston_transformed_region(int width, int height,
 void *
 weston_load_module(const char *name, const char *entrypoint);
 
+size_t
+weston_module_path_from_env(const char *name, char *path, size_t path_len);
+
 int
 weston_parse_transform(const char *transform, uint32_t *out);
 

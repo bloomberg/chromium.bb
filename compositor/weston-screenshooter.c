@@ -117,12 +117,10 @@ screenshooter_binding(struct weston_keyboard *keyboard,
 {
 	struct screenshooter *shooter = data;
 	char *screenshooter_exe;
-	int ret;
 
-	ret = asprintf(&screenshooter_exe, "%s/%s",
-		       weston_config_get_libexec_dir(),
-		       "/weston-screenshooter");
-	if (ret < 0) {
+
+	screenshooter_exe = wet_get_binary_path("weston-screenshooter");
+	if (!screenshooter_exe) {
 		weston_log("Could not construct screenshooter path.\n");
 		return;
 	}

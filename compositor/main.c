@@ -652,7 +652,6 @@ weston_create_listening_socket(struct wl_display *display, const char *socket_na
 WL_EXPORT void *
 wet_load_module_entrypoint(const char *name, const char *entrypoint)
 {
-	const char *builddir = getenv("WESTON_BUILD_DIR");
 	char path[PATH_MAX];
 	void *module, *init;
 	size_t len;
@@ -661,10 +660,8 @@ wet_load_module_entrypoint(const char *name, const char *entrypoint)
 		return NULL;
 
 	if (name[0] != '/') {
-		if (builddir)
-			len = snprintf(path, sizeof path, "%s/.libs/%s", builddir,
-				       name);
-		else
+		len = weston_module_path_from_env(name, path, sizeof path);
+		if (len == 0)
 			len = snprintf(path, sizeof path, "%s/%s", MODULEDIR,
 				       name);
 	} else {
@@ -701,7 +698,6 @@ wet_load_module_entrypoint(const char *name, const char *entrypoint)
 	return init;
 }
 
-
 WL_EXPORT int
 wet_load_module(struct weston_compositor *compositor,
 	        const char *name, int *argc, char *argv[])
@@ -730,6 +726,24 @@ wet_load_shell(struct weston_compositor *compositor,
 	if (shell_init(compositor, argc, argv) < 0)
 		return -1;
 	return 0;
+}
+
+WL_EXPORT char *
+wet_get_binary_path(const char *name)
+{
+	char path[PATH_MAX];
+	size_t len;
+
+	len = weston_module_path_from_env(name, path, sizeof path);
+	if (len > 0)
+		return strdup(path);
+
+	len = snprintf(path, sizeof path, "%s/%s",
+		       weston_config_get_libexec_dir(), name);
+	if (len >= sizeof path)
+		return NULL;
+
+	return strdup(path);
 }
 
 static int

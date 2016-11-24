@@ -468,17 +468,12 @@ shell_configuration(struct desktop_shell *shell)
 {
 	struct weston_config_section *section;
 	char *s, *client;
-	int ret;
 	int allow_zap;
 
 	section = weston_config_get_section(wet_get_config(shell->compositor),
 					    "shell", NULL, NULL);
-	ret = asprintf(&client, "%s/%s", weston_config_get_libexec_dir(),
-		       WESTON_SHELL_CLIENT);
-	if (ret < 0)
-		client = NULL;
-	weston_config_section_get_string(section,
-					 "client", &s, client);
+	client = wet_get_binary_path(WESTON_SHELL_CLIENT);
+	weston_config_section_get_string(section, "client", &s, client);
 	free(client);
 	shell->client = s;
 
