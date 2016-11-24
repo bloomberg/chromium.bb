@@ -2,17 +2,17 @@
 <head>
 <title>Test animation shorthand property</title> 
 <style type="text/css">
-@-webkit-keyframes circle {    
-    from { transform:rotate(0deg); }    
+@keyframes circle {
+    from { transform:rotate(0deg); }
     to { transform:rotate(360deg); }
 }
-@-webkit-keyframes inner-circle {
+@keyframes inner-circle {
     from { transform:rotate(0deg); }
     to { transform:rotate(-360deg); }
 }
 
 div > div {
-    -webkit-animation: 5s linear normal none;
+    animation: 5s linear normal none;
 }
 
 div {
@@ -25,7 +25,7 @@ div > div {
     background-color:black;
     font-size:100px;
     line-height:1;
-    -webkit-animation-name: inner-circle;
+    animation-name: inner-circle;
 }
 </style>
   <script type="text/javascript" charset="utf-8">
@@ -33,13 +33,13 @@ div > div {
         testRunner.dumpAsText();
   
     const kProperties = [
-      "webkitAnimationName",
-      "webkitAnimationDuration",
-      "webkitAnimationTimingFunction",
-      "webkitAnimationDelay",
-      "webkitAnimationIterationCount",
-      "webkitAnimationDirection",
-      "webkitAnimationFillMode"
+      "animationName",
+      "animationDuration",
+      "animationTimingFunction",
+      "animationDelay",
+      "animationIterationCount",
+      "animationDirection",
+      "animationFillMode"
     ];
     const kExpectedResult =  { id: 'a',  values: [ "inner-circle", "5s", "linear", "0s", "1", "normal", "none" ] };
     

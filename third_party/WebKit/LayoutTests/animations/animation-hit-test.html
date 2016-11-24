@@ -12,10 +12,10 @@
       height: 200px;
       width: 200px;
       background-color: red;
-      -webkit-animation-duration: 4s;
-      -webkit-animation-timing-function: linear;
+      animation-duration: 4s;
+      animation-timing-function: linear;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 100px; }
         to { left: 300px; }
     }
@@ -70,8 +70,8 @@
                 testRunner.waitUntilDone();
             }
       
-            document.getElementById("target").style.webkitAnimationName = "anim";
-            document.addEventListener('webkitAnimationStart', doTest);
+            document.getElementById("target").style.animationName = "anim";
+            document.addEventListener('animationstart', doTest);
         }
    </script>
 </head>

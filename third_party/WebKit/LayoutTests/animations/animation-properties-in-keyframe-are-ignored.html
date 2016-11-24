@@ -3,36 +3,36 @@
 <head>
   <style type="text/css" media="screen">
     div#target {
-        -webkit-animation: 4s test;
+        animation: 4s test;
         background-color: red;
         position: relative;
         width: 100px;
         height: 100px;
     }
-    @-webkit-keyframes test {
+    @keyframes test {
         from {
             left: 0px;
-            -webkit-animation-timing-function: linear;
+            animation-timing-function: linear;
             /* These should be ignored */
-            -webkit-animation-name: bogus;
-            -webkit-animation-duration: 10s;
-            -webkit-animation-iteration-count: 10;
-            -webkit-animation-direction: reverse;
-            -webkit-animation-play-state: paused;
-            -webkit-animation-delay: 10s;
-            -webkit-animation-fill-mode: forwards;
+            animation-name: bogus;
+            animation-duration: 10s;
+            animation-iteration-count: 10;
+            animation-direction: reverse;
+            animation-play-state: paused;
+            animation-delay: 10s;
+            animation-fill-mode: forwards;
         }       
         to {
             left: 200px;
-            -webkit-animation-timing-function: linear;
+            animation-timing-function: linear;
             /* These should be ignored */
-            -webkit-animation-name: bogus;
-            -webkit-animation-duration: 10s;
-            -webkit-animation-iteration-count: 10;
-            -webkit-animation-direction: reverse;
-            -webkit-animation-play-state: paused;
-            -webkit-animation-delay: 10s;
-            -webkit-animation-fill-mode: forwards;
+            animation-name: bogus;
+            animation-duration: 10s;
+            animation-iteration-count: 10;
+            animation-direction: reverse;
+            animation-play-state: paused;
+            animation-delay: 10s;
+            animation-fill-mode: forwards;
         }
     }
   </style>

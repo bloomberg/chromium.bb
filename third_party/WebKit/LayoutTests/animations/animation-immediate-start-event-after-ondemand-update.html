@@ -1,10 +1,10 @@
 <!doctype html>
 <style>
 .animated {
-  -webkit-animation: test 10ms;
-  -webkit-animation-delay: -10ms;
+  animation: test 10ms;
+  animation-delay: -10ms;
 }
-@-webkit-keyframes test {
+@keyframes test {
   0% {}
 }
 </style>
@@ -20,7 +20,7 @@ onload = function() {
   // CSS Animation and Transition events to not be fired on the subseuquent
   // animation-frame timing update.
   test.classList.add('animated');
-  test.addEventListener('webkitAnimationStart', function() {
+  test.addEventListener('animationstart', function() {
     document.documentElement.textContent = 'PASS';
     if (window.testRunner)
       testRunner.notifyDone();

@@ -3,7 +3,7 @@
 
 <html lang="en">
 <head>
-  <title>Test hit testing of -webkit-transform property while animating</title>
+  <title>Test hit testing of transform property while animating</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <style>
     #target {
@@ -12,10 +12,10 @@
       height: 200px;
       width: 200px;
       background-color: red;
-      -webkit-animation-duration: 4s;
-      -webkit-animation-timing-function: linear;
+      animation-duration: 4s;
+      animation-timing-function: linear;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: translate(100px); }
         to { transform: translate(300px); }
     }
@@ -70,14 +70,14 @@
                 testRunner.waitUntilDone();
             }
       
-            document.getElementById("target").style.webkitAnimationName = "anim";
-            document.addEventListener('webkitAnimationStart', doTest);
+            document.getElementById("target").style.animationName = "anim";
+            document.addEventListener('animationstart', doTest);
         }
    </script>
 </head>
 <body onload="startTest()">
     <div>
-        This test starts an animation of the '-webkit-transform' property and then does elementFromPoint calls
+        This test starts an animation of the 'transform' property and then does elementFromPoint calls
         at the shown yellow dots to see if hit testing works
     </div>
     <div id="target"></div>

@@ -9,12 +9,12 @@
       height: 100px;
       width: 100px;
       background-color: blue;
-      -webkit-animation-duration: 3s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: rotate;
-      -webkit-animation-fill-mode: forwards;
+      animation-duration: 3s;
+      animation-timing-function: linear;
+      animation-name: rotate;
+      animation-fill-mode: forwards;
     }
-    @-webkit-keyframes rotate {
+    @keyframes rotate {
         from { transform: rotate(0); }
         to   { transform: rotate(540deg); }
     }
@@ -24,9 +24,9 @@
     
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [1, "box", "webkitTransform", [-1,0,0,-1,0,0], 0.2],
-      [2, "box", "webkitTransform", [1,0,0,1,0,0], 0.2],
-      [3, "box", "webkitTransform", [-1,0,0,-1,0,0], 0.2],
+      [1, "box", "transform", [-1,0,0,-1,0,0], 0.2],
+      [2, "box", "transform", [1,0,0,1,0,0], 0.2],
+      [3, "box", "transform", [-1,0,0,-1,0,0], 0.2],
     ];
     
     runAnimationTest(expectedValues);

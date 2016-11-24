@@ -3,9 +3,9 @@
 <head>
   <title>Test setting animation name to none</title>
   <style>
-    @-webkit-keyframes test {}
+    @keyframes test {}
     #test {
-      -webkit-animation-name: test;
+      animation-name: test;
     }
   </style>
   <script>
@@ -14,9 +14,9 @@
   </script>
 </head>
 <body>
-<div id="test">This tests setting -webkit-animation-name to none, it passes if it does not crash.</div>
+<div id="test">This tests setting animation-name to none, it passes if it does not crash.</div>
 <script>
-  document.querySelector('#test').style.webkitAnimationName = 'none'
+  document.querySelector('#test').style.animationName = 'none'
 </script>
 </body>
 </html>
