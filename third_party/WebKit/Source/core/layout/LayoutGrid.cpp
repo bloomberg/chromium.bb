@@ -1286,7 +1286,10 @@ LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child,
                                       : child.styleRef().logicalHeight();
   const Length& childMinSize = isRowAxis ? child.styleRef().logicalMinWidth()
                                          : child.styleRef().logicalMinHeight();
-  if (!childSize.isAuto() || childMinSize.isAuto())
+  bool overflowIsVisible =
+      isRowAxis ? child.styleRef().overflowInlineDirection() == OverflowVisible
+                : child.styleRef().overflowBlockDirection() == OverflowVisible;
+  if (!childSize.isAuto() || (childMinSize.isAuto() && overflowIsVisible))
     return minContentForChild(child, direction, sizingData);
 
   bool overrideSizeHasChanged =
