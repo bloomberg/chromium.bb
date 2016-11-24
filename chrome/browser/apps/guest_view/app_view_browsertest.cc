@@ -238,7 +238,15 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestWithInvalidInstanceID) {
   exit_observer.WaitUntilRenderProcessHostKilled();
 }
 
-IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
+#if defined(OS_LINUX)
+#define MAYBE_KillGuestCommunicatingWithWrongAppView \
+    DISABLED_KillGuestCommunicatingWithWrongAppView
+#else
+#define MAYBE_KillGuestCommunicatingWithWrongAppView \
+    KillGuestCommunicatingWithWrongAppView
+#endif
+IN_PROC_BROWSER_TEST_P(AppViewTest,
+                       MAYBE_KillGuestCommunicatingWithWrongAppView) {
   const extensions::Extension* host_app =
       LoadAndLaunchPlatformApp("app_view/host_app", "AppViewTest.LAUNCHED");
   const extensions::Extension* guest_app =
