@@ -753,6 +753,8 @@ int FtpNetworkTransaction::DoCtrlWriteUSER() {
 int FtpNetworkTransaction::ProcessResponseUSER(
     const FtpCtrlResponse& response) {
   switch (GetErrorClass(response.status_code)) {
+    case ERROR_CLASS_INITIATED:
+      return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_OK:
       next_state_ = STATE_CTRL_WRITE_SYST;
       break;
@@ -763,9 +765,6 @@ int FtpNetworkTransaction::ProcessResponseUSER(
     case ERROR_CLASS_PERMANENT_ERROR:
       response_.needs_auth = true;
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -784,6 +783,8 @@ int FtpNetworkTransaction::DoCtrlWritePASS() {
 int FtpNetworkTransaction::ProcessResponsePASS(
     const FtpCtrlResponse& response) {
   switch (GetErrorClass(response.status_code)) {
+    case ERROR_CLASS_INITIATED:
+      return Stop(ERR_INVALID_RESPONSE);
     case ERROR_CLASS_OK:
       next_state_ = STATE_CTRL_WRITE_SYST;
       break;
@@ -793,9 +794,6 @@ int FtpNetworkTransaction::ProcessResponsePASS(
     case ERROR_CLASS_PERMANENT_ERROR:
       response_.needs_auth = true;
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -853,9 +851,6 @@ int FtpNetworkTransaction::ProcessResponseSYST(
       // Server does not recognize the SYST command so proceed.
       next_state_ = STATE_CTRL_WRITE_PWD;
       break;
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -898,9 +893,6 @@ int FtpNetworkTransaction::ProcessResponsePWD(const FtpCtrlResponse& response) {
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     case ERROR_CLASS_PERMANENT_ERROR:
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -934,9 +926,6 @@ int FtpNetworkTransaction::ProcessResponseTYPE(
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     case ERROR_CLASS_PERMANENT_ERROR:
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -972,9 +961,6 @@ int FtpNetworkTransaction::ProcessResponseEPSV(
       use_epsv_ = false;
       next_state_ = STATE_CTRL_WRITE_PASV;
       return OK;
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -1009,9 +995,6 @@ int FtpNetworkTransaction::ProcessResponsePASV(
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     case ERROR_CLASS_PERMANENT_ERROR:
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
@@ -1045,9 +1028,6 @@ int FtpNetworkTransaction::ProcessResponseRETR(
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     case ERROR_CLASS_PERMANENT_ERROR:
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
 
   return OK;
@@ -1091,9 +1071,6 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
         return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
       }
       break;
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
 
   // If the resource is known beforehand to be a file, RETR should be issued,
@@ -1137,9 +1114,6 @@ int FtpNetworkTransaction::ProcessResponseCWD(const FtpCtrlResponse& response) {
         return ProcessResponseCWDNotADirectory();
 
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
 
   return OK;
@@ -1197,9 +1171,6 @@ int FtpNetworkTransaction::ProcessResponseLIST(
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
     case ERROR_CLASS_PERMANENT_ERROR:
       return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
-    default:
-      NOTREACHED();
-      return Stop(ERR_UNEXPECTED);
   }
   return OK;
 }
