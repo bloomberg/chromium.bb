@@ -68,6 +68,7 @@ class RietveldMock(object):
           'sender': 'john@chromium.org',
         },
       ],
+      'patchsets': [1, 20001],
     }
 
   @staticmethod
@@ -77,6 +78,16 @@ class RietveldMock(object):
   @staticmethod
   def get_patch(issue, patchset):
     return 'patch set from issue %s patchset %s' % (issue, patchset)
+
+  @staticmethod
+  def update_description(_issue, _description):
+    return 'Updated'
+
+  @staticmethod
+  def add_comment(_issue, _comment):
+    return 'Commented'
+
+
 
 
 class GitCheckoutMock(object):
@@ -796,6 +807,128 @@ class TestGitCl(TestCase):
         self._dcommit_calls_3())
     git_cl.main(['dcommit', '--bypass-hooks'])
 
+  def _land_rietveld_common(self, debug_stdout=False):
+    if not debug_stdout:
+      self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.mock(RietveldMock, 'update_description', staticmethod(
+              lambda i, d: self._mocked_call(['update_description', i, d])))
+    self.mock(RietveldMock, 'add_comment', staticmethod(
+              lambda i, c: self._mocked_call(['add_comment', i, c])))
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
+      ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
+      ((['git', 'config', '--local', '--get-regexp', '^svn-remote\\.'],),
+       CERR1),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', 'branch.feature.git-cl-similarity'],), CERR1),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', '--bool', 'branch.feature.git-find-copies'],),
+       CERR1),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
+      ((['git', 'config', 'rietveld.server'],),
+       'https://codereview.chromium.org'),
+      ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
+      ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+      ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
+      ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+      ((['git', 'rev-list', '--merges',
+         '--grep=^SVN changes up to revision [0-9]*$',
+         'refs/remotes/origin/master^!'],), ''),
+      ((['git', 'rev-list', '^feature', 'refs/remotes/origin/master'],),
+       ''),  # No commits to rebase, according to local view of origin.
+      ((['git', 'merge-base', 'refs/remotes/origin/master', 'HEAD'],),
+       'fake_ancestor_sha'),
+    ] + self._git_sanity_checks('fake_ancestor_sha', 'feature') + [
+      ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha'),
+      ((['git', 'diff', '--name-status', '--no-renames', '-r',
+         'fake_ancestor_sha...', '.'],),
+       'M\tfile1.cpp'),
+      ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
+      ((['git', 'config', 'branch.feature.rietveldserver'],),
+       'https://codereview.chromium.org'),
+      ((['git', 'config', 'user.email'],), 'user@e.mail'),
+      ((['git', 'config', 'rietveld.tree-status-url'],), CERR1),
+      ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
+         'fake_ancestor_sha', 'feature'],),
+       # This command just prints smth like this:
+       # file1.cpp   |  53 ++++++--
+       # 1 file changed, 33 insertions(+), 20 deletions(-)\n
+       ''),
+      ((['git', 'show-ref', '--quiet', '--verify',
+         'refs/heads/git-cl-commit'],),
+         ''),   # 0 return code means branch exists.
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'show-ref', '--quiet', '--verify',
+         'refs/heads/git-cl-cherry-pick'],),
+       CERR1),  # This means git-cl-cherry-pick branch does not exist.
+      ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
+      ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
+      ((['git', 'commit', '-m',
+         'Issue: 123\n\nR=john@chromium.org\n\n'
+         'Review URL: https://codereview.chromium.org/123 .'],), ''),
+      ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
+      ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+      ((['git', 'config', '--get', 'remote.origin.url'],),
+       'https://chromium.googlesource.com/infra/infra'),
+    ]
+
+  def test_land_rietveld(self):
+    self._land_rietveld_common()
+    self.calls += [
+      ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
+      ((['git', 'push', '--porcelain', 'origin', 'HEAD:refs/heads/master'],),
+       ''),
+      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha_rebased'),
+      ((['git', 'checkout', '-q', 'feature'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'config', 'rietveld.viewvc-url'],),
+       'https://chromium.googlesource.com/infra/infra/+/'),
+      ((['update_description', 123,
+         'Issue: 123\n\nR=john@chromium.org\n\nCommitted: '
+         'https://chromium.googlesource.com/infra/infra/+/fake_sha_rebased'],),
+       ''),
+      ((['add_comment', 123, 'Committed patchset #2 (id:20001) manually as '
+                             'fake_sha_rebased (presubmit successful).'],), ''),
+    ]
+    git_cl.main(['land'])
+
+  def test_land_rietveld_gnumbd(self):
+    self._land_rietveld_common()
+    self.mock(git_cl, 'WaitForRealCommit',
+              lambda *a: self._mocked_call(['WaitForRealCommit'] + list(a)))
+    self.calls += [
+      ((['git', 'config', 'rietveld.pending-ref-prefix'],), 'refs/pending/'),
+      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha_rebased'),
+      ((['git', 'retry', 'fetch', 'origin',
+         '+refs/pending/heads/master:refs/git-cl/pending/heads/master'],), ''),
+      ((['git', 'checkout', 'refs/git-cl/pending/heads/master'],), ''),
+      ((['git', 'cherry-pick', 'fake_sha_rebased'],), ''),
+
+      ((['git', 'retry', 'push', '--porcelain', 'origin',
+        'HEAD:refs/pending/heads/master'],),''),
+      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha_rebased_on_pending'),
+
+      ((['git', 'checkout', '-q', 'feature'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+
+      ((['WaitForRealCommit', 'origin', 'fake_sha_rebased_on_pending',
+         'refs/remotes/origin/master', 'refs/heads/master'],),
+         'fake_sha_gnumbded'),
+
+      ((['git', 'config', 'rietveld.viewvc-url'],),
+       'https://chromium.googlesource.com/infra/infra/+/'),
+      ((['update_description', 123,
+         'Issue: 123\n\nR=john@chromium.org\n\nCommitted: '
+         'https://chromium.googlesource.com/infra/infra/+/fake_sha_gnumbded'],),
+       ''),
+      ((['add_comment', 123, 'Committed patchset #2 (id:20001) manually as '
+                             'fake_sha_gnumbded (presubmit successful).'],),
+       ''),
+    ]
+    git_cl.main(['land'])
 
   @classmethod
   def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):

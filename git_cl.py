@@ -4226,8 +4226,8 @@ def SendUpstream(parser, args, cmd):
 
   Otherwise (in case of Rietveld):
     Squashes branch into a single commit.
-    Updates changelog with metadata (e.g. pointer to review).
-    Pushes/dcommits the code upstream.
+    Updates commit message with metadata (e.g. pointer to review).
+    Pushes the code upstream.
     Updates review and closes.
   """
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
@@ -4369,7 +4369,6 @@ def SendUpstream(parser, args, cmd):
   # Keep a separate copy for the commit message, because the commit message
   # contains the link to the Rietveld issue, while the Rietveld message contains
   # the commit viewvc url.
-  # Keep a separate copy for the commit message.
   if cl.GetIssue():
     change_desc.update_reviewers(cl.GetApprovingReviewers())
 
