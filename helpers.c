@@ -282,7 +282,7 @@ void drv_insert_supported_combination(struct driver *drv, uint32_t format,
 	int found = 0;
 	struct combination_list_element *elem;
 
-	pthread_mutex_lock(&drv->table_lock);
+	pthread_mutex_lock(&drv->driver_lock);
 
 	list_for_each_entry(struct combination_list_element,
 			    elem, &drv->backend->combinations, link) {
@@ -303,7 +303,7 @@ void drv_insert_supported_combination(struct driver *drv, uint32_t format,
 	LIST_ADD(&elem->link, &drv->backend->combinations);
 
 out:
-	pthread_mutex_unlock(&drv->table_lock);
+	pthread_mutex_unlock(&drv->driver_lock);
 }
 
 void drv_insert_combinations(struct driver *drv, struct supported_combination *combos,

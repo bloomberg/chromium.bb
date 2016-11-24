@@ -38,7 +38,7 @@ struct driver {
 	void *priv;
 	void *buffer_table;
 	void *map_table;
-	pthread_mutex_t table_lock;
+	pthread_mutex_t driver_lock;
 };
 
 struct map_info {

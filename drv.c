@@ -111,7 +111,7 @@ struct driver *drv_create(int fd)
 	if (!drv->backend)
 		goto free_driver;
 
-	if (pthread_mutex_init(&drv->table_lock, NULL))
+	if (pthread_mutex_init(&drv->driver_lock, NULL))
 		goto free_driver;
 
 	drv->buffer_table = drmHashCreate();
@@ -137,7 +137,7 @@ free_map_table:
 free_buffer_table:
 	drmHashDestroy(drv->buffer_table);
 free_lock:
-	pthread_mutex_destroy(&drv->table_lock);
+	pthread_mutex_destroy(&drv->driver_lock);
 free_driver:
 	free(drv);
 	return NULL;
@@ -145,7 +145,7 @@ free_driver:
 
 void drv_destroy(struct driver *drv)
 {
-	pthread_mutex_lock(&drv->table_lock);
+	pthread_mutex_lock(&drv->driver_lock);
 
 	if (drv->backend->close)
 		drv->backend->close(drv);
@@ -159,8 +159,8 @@ void drv_destroy(struct driver *drv)
 		free(elem);
 	}
 
-	pthread_mutex_unlock(&drv->table_lock);
-	pthread_mutex_destroy(&drv->table_lock);
+	pthread_mutex_unlock(&drv->driver_lock);
+	pthread_mutex_destroy(&drv->driver_lock);
 
 	free(drv);
 }
@@ -237,12 +237,12 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
 		return NULL;
 	}
 
-	pthread_mutex_lock(&drv->table_lock);
+	pthread_mutex_lock(&drv->driver_lock);
 
 	for (plane = 0; plane < bo->num_planes; plane++)
 		drv_increment_reference_count(drv, bo, plane);
 
-	pthread_mutex_unlock(&drv->table_lock);
+	pthread_mutex_unlock(&drv->driver_lock);
 
 	return bo;
 }
@@ -253,7 +253,7 @@ void drv_bo_destroy(struct bo *bo)
 	uintptr_t total = 0;
 	struct driver *drv = bo->drv;
 
-	pthread_mutex_lock(&drv->table_lock);
+	pthread_mutex_lock(&drv->driver_lock);
 
 	for (plane = 0; plane < bo->num_planes; plane++)
 		drv_decrement_reference_count(drv, bo, plane);
@@ -261,7 +261,7 @@ void drv_bo_destroy(struct bo *bo)
 	for (plane = 0; plane < bo->num_planes; plane++)
 		total += drv_get_reference_count(drv, bo, plane);
 
-	pthread_mutex_unlock(&drv->table_lock);
+	pthread_mutex_unlock(&drv->driver_lock);
 
 	if (total == 0)
 		bo->drv->backend->bo_destroy(bo);
@@ -310,9 +310,9 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 		bo->format_modifiers[plane] = data->format_modifiers[plane];
 		bo->total_size += data->sizes[plane];
 
-		pthread_mutex_lock(&drv->table_lock);
+		pthread_mutex_lock(&drv->driver_lock);
 		drv_increment_reference_count(drv, bo, plane);
-		pthread_mutex_unlock(&drv->table_lock);
+		pthread_mutex_unlock(&drv->driver_lock);
 	}
 
 	return bo;
@@ -331,7 +331,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
 	assert(x + width <= drv_bo_get_width(bo));
 	assert(y + height <= drv_bo_get_height(bo));
 
-	pthread_mutex_lock(&bo->drv->table_lock);
+	pthread_mutex_lock(&bo->drv->driver_lock);
 
 	if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
 		data = (struct map_info *) ptr;
@@ -344,7 +344,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width,
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;
 		free(data);
-		pthread_mutex_unlock(&bo->drv->table_lock);
+		pthread_mutex_unlock(&bo->drv->driver_lock);
 		return MAP_FAILED;
 	}
 
@@ -360,7 +360,7 @@ success:
 	offset += drv_stride_from_format(bo->format, x, plane);
 	addr = (uint8_t *) data->addr;
 	addr += drv_bo_get_plane_offset(bo, plane) + offset;
-	pthread_mutex_unlock(&bo->drv->table_lock);
+	pthread_mutex_unlock(&bo->drv->driver_lock);
 
 	return (void *) addr;
 }
@@ -373,7 +373,7 @@ int drv_bo_unmap(struct bo *bo, void *map_data)
 	assert(data);
 	assert(data->refcount >= 0);
 
-	pthread_mutex_lock(&bo->drv->table_lock);
+	pthread_mutex_lock(&bo->drv->driver_lock);
 
 	if (!--data->refcount) {
 		ret = munmap(data->addr, data->length);
@@ -381,7 +381,7 @@ int drv_bo_unmap(struct bo *bo, void *map_data)
 		free(data);
 	}
 
-	pthread_mutex_unlock(&bo->drv->table_lock);
+	pthread_mutex_unlock(&bo->drv->driver_lock);
 
 	return ret;
 }
