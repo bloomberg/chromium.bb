@@ -3,13 +3,13 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <title>-webkit-transform-origin vs. Transform Functions</title>
+    <title>transform-origin vs. Transform Functions</title>
     <style type="text/css" media="screen">
     #a {
       top: 0px;
       left: 0px;
       position: absolute;
-      -webkit-perspective: 800;
+      perspective: 800;
       width: 800px;
       height: 600px;
     }
@@ -20,12 +20,12 @@
       height: 200px;
       position: absolute;
       background-color: #282;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-iteration-count: infinite;
-      -webkit-animation-timing-function: linear;
-      -webkit-transform-origin: center center 200px;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+      transform-origin: center center 200px;
     }
-    @-webkit-keyframes b1 {
+    @keyframes b1 {
         from { transform: rotateY(0deg); }
         5%  { transform: rotateY(90deg); }
         20%  { transform: rotateY(90deg); }
@@ -40,11 +40,11 @@
       height: 200px;
       position: absolute;
       background-color: #282;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-iteration-count: infinite;
-      -webkit-animation-timing-function: linear;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
     }
-    @-webkit-keyframes b2 {
+    @keyframes b2 {
         from { transform: translateZ(200px) rotateY(0deg) translateZ(-200px) }
         5%  { transform: translateZ(200px) rotateY(90deg) translateZ(-200px) }
         20%  { transform: translateZ(200px) rotateY(90deg) translateZ(-200px) }
@@ -79,7 +79,7 @@
       function snapshot(id)
       {
           var e = document.getElementById(id);
-          var t = window.getComputedStyle(e).webkitTransform;
+          var t = window.getComputedStyle(e).transform;
           var a = t.split("(");
           var array = a[1].split(",");
           var pass = true;
@@ -111,11 +111,11 @@
       function startAnimation(id)
       {
           var element = document.getElementById(id);
-          element.addEventListener('webkitAnimationStart', function() {
+          element.addEventListener('animationstart', function() {
               // delay to give hardware animations a chance to start
               window.setTimeout("snapshotOnTimeout('" + id + "')", 0);
           }, false);
-          element.style.webkitAnimationName = id;
+          element.style.animationName = id;
       }
 
       function start()

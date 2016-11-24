@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>Test of -webkit-animation-direction on composited elements (opacity)</title>
+  <title>Test of animation-direction on composited elements (opacity)</title>
   <style>
     body {
       margin: 0;
@@ -14,44 +14,44 @@
       height: 50px;
       width: 250px;
       margin-bottom: 10px;
-      -webkit-animation-duration: 1s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-iteration-count: 8;
+      animation-duration: 1s;
+      animation-timing-function: linear;
+      animation-iteration-count: 8;
     }
     
     .fade1 {
-      -webkit-animation-name: fade1;
+      animation-name: fade1;
       background-color: blue;
       color: white;
     }
 
     .fade2 {
-      -webkit-animation-name: fade2;
+      animation-name: fade2;
       background-color: orange;
     }
 
     .normal {
-      -webkit-animation-direction: normal;
+      animation-direction: normal;
     }
 
     .alternate {
-      -webkit-animation-direction: alternate;
+      animation-direction: alternate;
     }
 
     .reverse {
-      -webkit-animation-direction: reverse;
+      animation-direction: reverse;
     }
 
     .alternate-reverse {
-      -webkit-animation-direction: alternate-reverse;
+      animation-direction: alternate-reverse;
     }
     
-    @-webkit-keyframes fade1 {
+    @keyframes fade1 {
       from { opacity: 0; }
       to { opacity: 1.0; }
     }
 
-    @-webkit-keyframes fade2 {
+    @keyframes fade2 {
       0% { opacity: 0.0; }
       40% { opacity: 0.8; }
       60% { opacity: 0.4; }

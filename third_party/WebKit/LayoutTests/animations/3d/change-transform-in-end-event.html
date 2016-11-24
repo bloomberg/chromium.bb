@@ -29,14 +29,14 @@
     }
 
     #container.moved .hardware {
-      -webkit-animation: move 300ms linear;
+      animation: move 300ms linear;
     }
 
     .hardware {
-      -webkit-transform-style: preserve-3d;
+      transform-style: preserve-3d;
     }
 
-    @-webkit-keyframes move {
+    @keyframes move {
       from { transform: translateX(0); }
       to   { transform: translateX(300px); }
     }
@@ -45,7 +45,7 @@
 
     function testEnded()
     {
-      document.getElementById('tester').style.webkitTransform = 'translateX(150px)';
+      document.getElementById('tester').style.transform = 'translateX(150px)';
       if (window.testRunner)
         testRunner.notifyDone();
     }
@@ -55,7 +55,7 @@
       if (window.testRunner)
         testRunner.waitUntilDone();
 
-      document.getElementById('tester').addEventListener('webkitAnimationEnd', testEnded, false);
+      document.getElementById('tester').addEventListener('animationend', testEnded, false);
       document.getElementById('container').className = 'moved';
     }
     

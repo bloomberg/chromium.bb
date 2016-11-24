@@ -10,19 +10,19 @@
     }
     
     #box {
-      -webkit-animation: anim 2s linear;
+      animation: anim 2s linear;
     }
     
     #box2 {
-      -webkit-animation: anim2 2s linear;
+      animation: anim2 2s linear;
     }
 
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: perspective(100px); }
         to   { transform: perspective(200px); }
     }
 
-    @-webkit-keyframes anim2 {
+    @keyframes anim2 {
         from { transform: perspective(1000px); }
         to   { transform: none; }
     }
@@ -38,7 +38,7 @@
     function setupTest()
     {
       var box = document.getElementById('box');
-      box.style.webkitTransform = 'perspective(1000px) rotateX(90deg)';
+      box.style.transform = 'perspective(1000px) rotateX(90deg)';
     }
     
     runAnimationTest(expectedValues);

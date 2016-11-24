@@ -9,12 +9,12 @@
       top: 10px;
       height: 100px;
       width: 100px;
-      -webkit-animation-duration: 0.001s;
-      -webkit-animation-name: anim;
+      animation-duration: 0.001s;
+      animation-name: anim;
       background-color: #999;
-      -webkit-animation-iteration-count: 2;
+      animation-iteration-count: 2;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
     }
@@ -27,8 +27,8 @@
   
     onload = function()
     {
-        document.addEventListener('webkitAnimationEnd', function() {
-            document.getElementById('result').innerHTML = 'PASS: got webkitAnimationEnd event';      
+        document.addEventListener('animationend', function() {
+            document.getElementById('result').innerHTML = 'PASS: got animationend event';
             if (window.testRunner)
                 testRunner.notifyDone();
         }, false);
@@ -41,8 +41,8 @@
   </script>
 </head>
 <body>
-Checks that we still end an animation properly (i.e. fire a webkitAnimationEnd
+Checks that we still end an animation properly (i.e. fire a animationend
 event) when using more than one iteration with very short durations.
-<pre id="result">FAIL: no webkitAnimationEnd event received</pre>
+<pre id="result">FAIL: no animationend event received</pre>
 </body>
 </html>

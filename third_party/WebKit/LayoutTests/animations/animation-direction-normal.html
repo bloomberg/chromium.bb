@@ -1,7 +1,7 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Test of -webkit-animation-direction</title>
+  <title>Test of animation-direction</title>
   <style type="text/css" media="screen">
     body {
       margin: 0;
@@ -15,11 +15,11 @@
       width: 100px;
       background-color: red;
       margin: 0;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-direction: normal;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: move1;
+      animation-duration: 2s;
+      animation-direction: normal;
+      animation-iteration-count: 2;
+      animation-timing-function: linear;
+      animation-name: move1;
     }
     #safezone {
       position: absolute;
@@ -29,7 +29,7 @@
       left: 30px;
       background-color: green;
     }
-    @-webkit-keyframes move1 {
+    @keyframes move1 {
       from { transform: translateX(0px); }
       to   { transform: translateX(200px); }
     }
@@ -38,14 +38,14 @@
   <script type="text/javascript" charset="utf-8">
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box", "webkitTransform", [1,0,0,1, 50,0], 20],
-      [1.0, "box", "webkitTransform", [1,0,0,1,100,0], 20],
-      [2.5, "box", "webkitTransform", [1,0,0,1, 50,0], 20],
+      [0.5, "box", "transform", [1,0,0,1, 50,0], 20],
+      [1.0, "box", "transform", [1,0,0,1,100,0], 20],
+      [2.5, "box", "transform", [1,0,0,1, 50,0], 20],
     ];
 
     function pauseAnimation()
     {
-        document.getElementById("box").style.webkitAnimationPlayState = "paused";
+        document.getElementById("box").style.animationPlayState = "paused";
     }
 
     function setTimers()
@@ -58,7 +58,7 @@
   </script>
 </head>
 <body>
-<!-- This tests the operation of -webkit-animation-direction. After 1 second the red boxes should be hidden by the green boxes. You should see no red boxes. -->
+<!-- This tests the operation of animation-direction. After 1 second the red boxes should be hidden by the green boxes. You should see no red boxes. -->
 <div id="box"></div>
 <div id="safezone"></div>
 <div id="result"></div>
