@@ -917,8 +917,9 @@ x11_output_enable(struct weston_output *base)
 			weston_log("Failed to create pixman renderer for output\n");
 			x11_output_deinit_shm(b, output);
 			goto err;
-		output->base.repaint = x11_output_repaint_shm;
 		}
+
+		output->base.repaint = x11_output_repaint_shm;
 	} else {
 		/* eglCreatePlatformWindowSurfaceEXT takes a Window*
 		 * but eglCreateWindowSurface takes a Window. */
