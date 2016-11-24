@@ -41,6 +41,27 @@ void TopDocumentRootScrollerController::didChangeRootScroller() {
   recomputeGlobalRootScroller();
 }
 
+void TopDocumentRootScrollerController::mainFrameViewResized() {
+  Element* rootScroller = globalRootScroller();
+  if (!rootScroller)
+    return;
+
+  ScrollableArea* area =
+      RootScrollerUtil::scrollableAreaForRootScroller(*rootScroller);
+
+  if (!area)
+    return;
+
+  if (PaintLayer* layer = area->layer()) {
+    layer->setNeedsCompositingInputsUpdate();
+
+    // This is needed if the root scroller is an iframe, since the iframe
+    // doesn't have a scrolling/clip layer, its PLC has a container layer that
+    // needs to be resized instead.
+    layer->compositor()->frameViewDidChangeSize();
+  }
+}
+
 Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {
   if (!topDocument())
     return nullptr;
@@ -72,7 +93,8 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
   if (!target || target == m_globalRootScroller)
     return;
 
-  ScrollableArea* targetScroller = RootScrollerUtil::scrollableAreaFor(*target);
+  ScrollableArea* targetScroller =
+      RootScrollerUtil::scrollableAreaForRootScroller(*target);
 
   if (!targetScroller)
     return;
@@ -95,9 +117,9 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
   setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
   ScrollableArea* oldRootScrollerArea =
-      m_globalRootScroller
-          ? RootScrollerUtil::scrollableAreaFor(*m_globalRootScroller.get())
-          : nullptr;
+      m_globalRootScroller ? RootScrollerUtil::scrollableAreaForRootScroller(
+                                 *m_globalRootScroller.get())
+                           : nullptr;
 
   m_globalRootScroller = target;
 
@@ -177,7 +199,7 @@ GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer() const {
     return nullptr;
 
   ScrollableArea* area =
-      RootScrollerUtil::scrollableAreaFor(*m_globalRootScroller);
+      RootScrollerUtil::scrollableAreaForRootScroller(*m_globalRootScroller);
 
   if (!area)
     return nullptr;
@@ -189,6 +211,10 @@ GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer() const {
   // the root scroller gets composited.
 
   return graphicsLayer;
+}
+
+PaintLayer* TopDocumentRootScrollerController::rootScrollerPaintLayer() const {
+  return RootScrollerUtil::paintLayerForRootScroller(m_globalRootScroller);
 }
 
 Element* TopDocumentRootScrollerController::globalRootScroller() const {

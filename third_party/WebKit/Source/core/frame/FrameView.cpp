@@ -522,13 +522,6 @@ void FrameView::setFrameRect(const IntRect& newRect) {
 
   updateParentScrollableAreaSet();
 
-  if (LayoutViewItem layoutView = this->layoutViewItem()) {
-    // TODO(majidvp): It seems that this only needs to be called when size
-    // is updated ignoring any change in the location.
-    if (layoutView.usesCompositing())
-      layoutView.compositor()->frameViewDidChangeSize();
-  }
-
   if (frameSizeChanged) {
     viewportSizeChanged(newRect.width() != oldRect.width(),
                         newRect.height() != oldRect.height());
@@ -1531,6 +1524,20 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object) {
 
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   DCHECK(widthChanged || heightChanged);
+
+  if (LayoutViewItem layoutView = this->layoutViewItem()) {
+    if (layoutView.usesCompositing())
+      layoutView.compositor()->frameViewDidChangeSize();
+  }
+
+  // Ensure the root scroller compositing layers update geometry in response to
+  // the URL bar resizing.
+  if (m_frame->isMainFrame()) {
+    m_frame->document()
+        ->frameHost()
+        ->globalRootScrollerController()
+        .mainFrameViewResized();
+  }
 
   showOverlayScrollbars();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
@@ -3544,7 +3551,7 @@ bool FrameView::visualViewportSuppliesScrollbars() {
   if (!controller.globalRootScroller())
     return false;
 
-  return RootScrollerUtil::scrollableAreaFor(
+  return RootScrollerUtil::scrollableAreaForRootScroller(
              *controller.globalRootScroller()) ==
          layoutViewportScrollableArea();
 }
@@ -3587,6 +3594,14 @@ void FrameView::didAddScrollbar(Scrollbar& scrollbar,
 
 void FrameView::setBrowserControlsViewportAdjustment(float adjustment) {
   m_browserControlsViewportAdjustment = adjustment;
+}
+
+PaintLayer* FrameView::layer() const {
+  LayoutViewItem layoutView = layoutViewItem();
+  if (layoutView.isNull() || !layoutView.compositor())
+    return nullptr;
+
+  return layoutView.compositor()->rootLayer();
 }
 
 IntSize FrameView::maximumScrollOffsetInt() const {

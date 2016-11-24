@@ -407,7 +407,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // TODO(ymalik): Remove box() and update callers to use layoutBox() instead.
   LayoutBox& box() const;
-  PaintLayer* layer() const;
+  PaintLayer* layer() const override;
 
   LayoutScrollbarPart* resizer() const override { return m_resizer; }
 

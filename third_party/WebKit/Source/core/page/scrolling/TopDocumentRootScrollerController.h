@@ -14,6 +14,7 @@ namespace blink {
 class Element;
 class FrameHost;
 class GraphicsLayer;
+class PaintLayer;
 class RootFrameViewport;
 class ScrollStateCallback;
 class ViewportScrollCallback;
@@ -50,11 +51,15 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // Returns the GraphicsLayer for the global root scroller.
   GraphicsLayer* rootScrollerLayer() const;
 
+  PaintLayer* rootScrollerPaintLayer() const;
+
   // Returns the Element that's the global root scroller.
   Element* globalRootScroller() const;
 
   // Called when the root scroller in any frames on the page has changed.
   void didChangeRootScroller();
+
+  void mainFrameViewResized();
 
  private:
   TopDocumentRootScrollerController(FrameHost&);

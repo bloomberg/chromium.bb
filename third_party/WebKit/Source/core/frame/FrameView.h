@@ -423,6 +423,7 @@ class CORE_EXPORT FrameView final
   bool scrollAnimatorEnabled() const override;
   bool usesCompositedScrolling() const override;
   bool shouldScrollOnMainThread() const override;
+  PaintLayer* layer() const override;
   GraphicsLayer* layerForScrolling() const override;
   GraphicsLayer* layerForHorizontalScrollbar() const override;
   GraphicsLayer* layerForVerticalScrollbar() const override;

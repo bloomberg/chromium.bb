@@ -126,7 +126,7 @@ bool RootScrollerController::isValidRootScroller(const Element& element) const {
   if (!element.layoutObject())
     return false;
 
-  if (!RootScrollerUtil::scrollableAreaFor(element))
+  if (!RootScrollerUtil::scrollableAreaForRootScroller(element))
     return false;
 
   if (!fillsViewport(element))
@@ -136,25 +136,7 @@ bool RootScrollerController::isValidRootScroller(const Element& element) const {
 }
 
 PaintLayer* RootScrollerController::rootScrollerPaintLayer() const {
-  if (!m_effectiveRootScroller || !m_effectiveRootScroller->layoutObject() ||
-      !m_effectiveRootScroller->layoutObject()->isBox())
-    return nullptr;
-
-  LayoutBox* box = toLayoutBox(m_effectiveRootScroller->layoutObject());
-  PaintLayer* layer = box->layer();
-
-  // If the root scroller is the <html> element we do a bit of a fake out
-  // because while <html> has a PaintLayer, scrolling for it is handled by the
-  // #document's PaintLayer (i.e. the PaintLayerCompositor's root layer). The
-  // reason the root scroller is the <html> layer and not #document is because
-  // the latter is a Node but not an Element.
-  if (m_effectiveRootScroller->isSameNode(m_document->documentElement())) {
-    if (!layer || !layer->compositor())
-      return nullptr;
-    return layer->compositor()->rootLayer();
-  }
-
-  return layer;
+  return RootScrollerUtil::paintLayerForRootScroller(m_effectiveRootScroller);
 }
 
 Element* RootScrollerController::defaultEffectiveRootScroller() {

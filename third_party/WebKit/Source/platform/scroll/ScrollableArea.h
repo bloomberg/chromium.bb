@@ -45,6 +45,7 @@ class GraphicsLayer;
 class HostWindow;
 class LayoutBox;
 class LayoutObject;
+class PaintLayer;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
 class ScrollAnchor;
@@ -203,6 +204,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual Scrollbar* horizontalScrollbar() const { return nullptr; }
   virtual Scrollbar* verticalScrollbar() const { return nullptr; }
+
+  virtual PaintLayer* layer() const { return nullptr; }
 
   // scrollPosition is the location of the top/left of the scroll viewport in
   // the coordinate system defined by the top/left of the overflow rect.

@@ -2375,6 +2375,8 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
                                               isSubtree);
   EXPECT_EQ(0u, needsLayoutObjects);
 
+  webViewImpl->updateAllLifecyclePhases();
+
   // Do a real resize to check for invalidations.
   document->view()->setTracksPaintInvalidations(true);
   webViewImpl->resizeWithBrowserControls(WebSize(pageWidth, smallestHeight),

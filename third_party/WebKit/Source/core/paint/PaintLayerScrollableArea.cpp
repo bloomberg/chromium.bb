@@ -1781,7 +1781,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
   if (!controller.globalRootScroller())
     return false;
 
-  return RootScrollerUtil::scrollableAreaFor(
+  return RootScrollerUtil::scrollableAreaForRootScroller(
              *controller.globalRootScroller()) == this;
 }
 

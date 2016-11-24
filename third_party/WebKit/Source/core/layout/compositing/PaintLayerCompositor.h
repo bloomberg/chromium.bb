@@ -246,6 +246,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   void applyOverlayFullscreenVideoAdjustmentIfNeeded();
 
+  void updateContainerSizes();
+
   // Checks the given graphics layer against the compositor's horizontal and
   // vertical scrollbar graphics layers, returning the associated Scrollbar
   // instance if any, else nullptr.

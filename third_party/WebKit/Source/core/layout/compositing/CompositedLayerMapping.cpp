@@ -52,6 +52,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
@@ -1259,6 +1260,17 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
   LayoutBox* layoutBox = toLayoutBox(layoutObject());
   IntRect overflowClipRect =
       pixelSnappedIntRect(layoutBox->overflowClipRect(LayoutPoint()));
+
+  const TopDocumentRootScrollerController& globalRootScrollerController =
+      layoutBox->document().frameHost()->globalRootScrollerController();
+
+  if (&m_owningLayer == globalRootScrollerController.rootScrollerPaintLayer()) {
+    LayoutRect clipRect =
+        layoutBox->document().layoutView()->overflowClipRect(LayoutPoint());
+    DCHECK(clipRect.size() == LayoutSize(pixelSnappedIntRect(clipRect).size()));
+    overflowClipRect.setSize(pixelSnappedIntRect(clipRect).size());
+  }
+
   FloatPoint scrollPosition =
       m_owningLayer.getScrollableArea()->scrollPosition();
   m_scrollingLayer->setPosition(FloatPoint(
