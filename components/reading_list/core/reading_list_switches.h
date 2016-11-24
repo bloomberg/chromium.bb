@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_SWITCHED_H_
-#define COMPONENTS_READING_LIST_READING_LIST_SWITCHED_H_
+#ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_SWITCHES_H_
+#define COMPONENTS_READING_LIST_CORE_READING_LIST_SWITCHES_H_
 
 namespace reading_list {
 namespace switches {
@@ -15,4 +15,4 @@ bool IsReadingListEnabled();
 }  // namespace switches
 }  // namespace reading_list
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_SWITCHED_H_
+#endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_SWITCHES_H_

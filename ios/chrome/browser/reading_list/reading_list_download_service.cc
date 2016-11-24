@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "components/reading_list/reading_list_entry.h"
-#include "components/reading_list/reading_list_model.h"
+#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/ios/reading_list_model.h"
 #include "ios/web/public/web_thread.h"
 
 namespace {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_STORE_H_
-#define COMPONENTS_READING_LIST_READING_LIST_STORE_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_
 
 #include "base/threading/non_thread_safe.h"
-#include "components/reading_list/reading_list_model_storage.h"
-#include "components/reading_list/reading_list_store_delegate.h"
+#include "components/reading_list/ios/reading_list_model_storage.h"
+#include "components/reading_list/ios/reading_list_store_delegate.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
@@ -135,4 +135,4 @@ class ReadingListStore : public syncer::ModelTypeSyncBridge,
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch_;
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_STORE_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_

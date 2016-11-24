@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/reading_list_store.h"
+#include "components/reading_list/ios/reading_list_store.h"
 
 #include <map>
 #include <set>
@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "components/reading_list/reading_list_model_impl.h"
+#include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

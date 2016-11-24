@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_MODEL_OBSERVER_H_
-#define COMPONENTS_READING_LIST_READING_LIST_MODEL_OBSERVER_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_OBSERVER_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_OBSERVER_H_
 
-#import <set>
-#import <vector>
+#include <set>
+#include <vector>
 
 class ReadingListModel;
 class ReadingListEntry;
@@ -76,4 +76,4 @@ class ReadingListModelObserver {
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelObserver);
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_MODEL_OBSERVER_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_OBSERVER_H_

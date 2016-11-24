@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/offline_url_utils.h"
+#include "components/reading_list/ios/offline_url_utils.h"
 
 #include "base/md5.h"
 #include "base/strings/stringprintf.h"

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("reading_list") {
+source_set("ios") {
   sources = [
     "offline_url_utils.cc",
     "offline_url_utils.h",
@@ -21,23 +21,18 @@ source_set("reading_list") {
     "reading_list_store.cc",
     "reading_list_store.h",
     "reading_list_store_delegate.h",
-    "reading_list_switches.cc",
-    "reading_list_switches.h",
   ]
   deps = [
     "//base",
     "//components/keyed_service/core",
-    "//components/keyed_service/ios",
-    "//components/pref_registry",
     "//components/prefs",
+    "//components/reading_list/core",
     "//components/sync",
-    "//components/sync/protocol",
-    "//ios/web",
     "//net",
     "//url",
   ]
   public_deps = [
-    "//components/reading_list/proto",
+    "//components/reading_list/ios/proto",
   ]
 }
 
@@ -46,16 +41,15 @@ source_set("unit_tests") {
   sources = [
     "offline_url_utils_unittest.cc",
     "reading_list_entry_unittest.cc",
-    "reading_list_model_unittest.cc",
-    "reading_list_store_unittest.cc",
+    "reading_list_model_unittest.mm",
+    "reading_list_store_unittest.mm",
   ]
   deps = [
-    ":reading_list",
+    ":ios",
     "//base",
     "//base/test:test_support",
+    "//components/sync",
     "//components/sync:test_support_model",
-    "//components/sync/protocol",
-    "//ios/web:test_support",
     "//testing/gtest",
     "//url",
   ]

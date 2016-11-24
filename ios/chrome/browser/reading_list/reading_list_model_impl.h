@@ -6,6 +6,6 @@
 #define IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_IMPL_H_
 
 // This is a temporary convenience file.
-#include "components/reading_list/reading_list_model_impl.h"
+#include "components/reading_list/ios/reading_list_model_impl.h"
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_IMPL_H_

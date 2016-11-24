@@ -3,13 +3,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_MODEL_BRIDGE_OBSERVER_H_
-#define COMPONENTS_READING_LIST_READING_LIST_MODEL_BRIDGE_OBSERVER_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_BRIDGE_OBSERVER_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_BRIDGE_OBSERVER_H_
 
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "components/reading_list/reading_list_model_observer.h"
+#include "components/reading_list/ios/reading_list_model_observer.h"
 
 // Protocol duplicating all Reading List Model Observer methods in Objective-C.
 @protocol ReadingListModelBridgeObserver<NSObject>
@@ -84,4 +84,4 @@ class ReadingListModelBridge : public ReadingListModelObserver {
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelBridge);
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_MODEL_BRIDGE_OBSERVER_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_BRIDGE_OBSERVER_H_

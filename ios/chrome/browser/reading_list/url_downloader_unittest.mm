@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "components/reading_list/offline_url_utils.h"
+#include "components/reading_list/ios/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"

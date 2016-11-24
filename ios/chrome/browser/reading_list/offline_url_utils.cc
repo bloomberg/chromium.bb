@@ -6,7 +6,7 @@
 
 #include "base/md5.h"
 #include "base/strings/stringprintf.h"
-#include "components/reading_list/offline_url_utils.h"
+#include "components/reading_list/ios/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 
 namespace reading_list {

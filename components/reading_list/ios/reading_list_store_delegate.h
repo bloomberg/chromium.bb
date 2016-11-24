@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_STORE_DELEGATE_H_
-#define COMPONENTS_READING_LIST_READING_LIST_STORE_DELEGATE_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_DELEGATE_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_DELEGATE_H_
 
 class ReadingListEntry;
 
@@ -31,4 +31,4 @@ class ReadingListStoreDelegate {
   virtual void SyncRemoveEntry(const GURL& url) = 0;
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_STORE_DELEGATE_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_DELEGATE_H_

@@ -4,7 +4,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/reading_list/reading_list_model.h"
+#include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/share_extension/share_extension_item_receiver.h"
 #include "ios/chrome/browser/share_extension/share_extension_service.h"
 

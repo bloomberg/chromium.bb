@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_MODEL_IMPL_H_
-#define COMPONENTS_READING_LIST_READING_LIST_MODEL_IMPL_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_IMPL_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_IMPL_H_
 
 #include <memory>
 
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/reading_list/reading_list_entry.h"
-#include "components/reading_list/reading_list_model.h"
-#include "components/reading_list/reading_list_model_storage.h"
-#include "components/reading_list/reading_list_store_delegate.h"
+#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/ios/reading_list_model.h"
+#include "components/reading_list/ios/reading_list_model_storage.h"
+#include "components/reading_list/ios/reading_list_store_delegate.h"
 
 class PrefService;
 
@@ -136,4 +136,4 @@ class ReadingListModelImpl : public ReadingListModel,
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelImpl);
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_MODEL_IMPL_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_IMPL_H_

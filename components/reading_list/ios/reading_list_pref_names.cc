@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/reading_list_pref_names.h"
+#include "components/reading_list/ios/reading_list_pref_names.h"
 
 namespace reading_list {
 namespace prefs {

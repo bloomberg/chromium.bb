@@ -436,6 +436,10 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return ProfileSyncServiceFactory::GetForProfile(profile_)
           ->GetDeviceInfoSyncBridge()
           ->AsWeakPtr();
+    case syncer::READING_LIST:
+      // Reading List is only supported on iOS at the moment.
+      NOTREACHED();
+      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();

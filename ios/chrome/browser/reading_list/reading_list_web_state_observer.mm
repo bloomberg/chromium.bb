@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/ptr_util.h"
-#include "components/reading_list/reading_list_model.h"
+#include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/reading_list/ios/reading_list_model.h"
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
-#include "components/reading_list/reading_list_model_impl.h"
-#include "components/reading_list/reading_list_model_storage.h"
+#include "components/reading_list/ios/reading_list_model_impl.h"
+#include "components/reading_list/ios/reading_list_model_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

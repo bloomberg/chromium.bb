@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_ENTRY_H_
-#define COMPONENTS_READING_LIST_READING_LIST_ENTRY_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_ENTRY_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_ENTRY_H_
 
 #include <string>
 
@@ -137,4 +137,4 @@ class ReadingListEntry {
   DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_ENTRY_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_ENTRY_H_

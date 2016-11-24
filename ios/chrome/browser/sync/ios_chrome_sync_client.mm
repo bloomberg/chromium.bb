@@ -25,7 +25,8 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_model_worker.h"
-#include "components/reading_list/reading_list_model.h"
+#include "components/reading_list/core/reading_list_switches.h"
+#include "components/reading_list/ios/reading_list_model.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/extensions_activity.h"
@@ -342,11 +343,10 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
           ->GetDeviceInfoSyncBridge()
           ->AsWeakPtr();
     case syncer::READING_LIST: {
+      DCHECK(reading_list::switches::IsReadingListEnabled());
       ReadingListModel* reading_list_model =
           ReadingListModelFactory::GetForBrowserState(browser_state_);
-      if (reading_list_model)
-        return reading_list_model->GetModelTypeSyncBridge()->AsWeakPtr();
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return reading_list_model->GetModelTypeSyncBridge()->AsWeakPtr();
     }
     default:
       NOTREACHED();

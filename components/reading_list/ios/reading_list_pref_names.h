@@ -4,8 +4,8 @@
 
 // Constants for the names of various reading list preferences.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_PREF_NAMES_H_
-#define COMPONENTS_READING_LIST_READING_LIST_PREF_NAMES_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_PREF_NAMES_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_PREF_NAMES_H_
 
 namespace reading_list {
 namespace prefs {
@@ -15,4 +15,4 @@ extern const char kReadingListHasUnseenEntries[];
 }  // namespace prefs
 }  // namespace reading_list
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_PREF_NAMES_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_PREF_NAMES_H_

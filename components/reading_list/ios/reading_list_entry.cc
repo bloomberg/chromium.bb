@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/reading_list_entry.h"
+#include "components/reading_list/ios/reading_list_entry.h"
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
-#include "components/reading_list/offline_url_utils.h"
-#include "components/reading_list/proto/reading_list.pb.h"
+#include "components/reading_list/ios/offline_url_utils.h"
+#include "components/reading_list/ios/proto/reading_list.pb.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "net/base/backoff_entry_serializer.h"
 

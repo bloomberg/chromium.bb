@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_READING_LIST_READING_LIST_MODEL_H_
-#define COMPONENTS_READING_LIST_READING_LIST_MODEL_H_
+#ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_H_
+#define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_H_
 
 #include <memory>
 #include <string>
@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/reading_list/reading_list_entry.h"
-#include "components/reading_list/reading_list_model_observer.h"
+#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/ios/reading_list_model_observer.h"
 
 class GURL;
 class ReadingListEntry;
@@ -153,4 +153,4 @@ class ReadingListModel : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(ReadingListModel);
 };
 
-#endif  // COMPONENTS_READING_LIST_READING_LIST_MODEL_H_
+#endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_H_

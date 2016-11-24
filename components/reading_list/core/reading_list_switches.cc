@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/reading_list/reading_list_switches.h"
+#include "components/reading_list/core/reading_list_switches.h"
 
+#include "build/build_config.h"
 #include "base/command_line.h"
 
 namespace reading_list {
@@ -15,9 +16,12 @@ const char kEnableReadingList[] = "enable-reading-list";
 const char kDisableReadingList[] = "disable-reading-list";
 
 bool IsReadingListEnabled() {
+  // Reading list is only enabled on iOS.
+#if defined(OS_IOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableReadingList)) {
     return true;
   }
+#endif
   return false;
 }
 }  // namespace switches
