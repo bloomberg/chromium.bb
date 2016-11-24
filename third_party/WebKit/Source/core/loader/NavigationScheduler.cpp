@@ -478,7 +478,7 @@ void NavigationScheduler::navigateTask() {
 
   if (!m_frame->page())
     return;
-  if (m_frame->page()->defersLoading()) {
+  if (m_frame->page()->suspended()) {
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     return;
   }

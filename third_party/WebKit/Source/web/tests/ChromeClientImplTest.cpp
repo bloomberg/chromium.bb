@@ -267,15 +267,15 @@ class CreateWindowTest : public testing::Test {
   Persistent<ChromeClientImpl> m_chromeClientImpl;
 };
 
-TEST_F(CreateWindowTest, CreateWindowFromDeferredPage) {
-  m_webView->page()->setDefersLoading(true);
+TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
+  m_webView->page()->setSuspended(true);
   LocalFrame* frame = toWebLocalFrameImpl(m_mainFrame)->frame();
   FrameLoadRequest request(frame->document());
   WindowFeatures features;
   EXPECT_EQ(nullptr,
             m_chromeClientImpl->createWindow(frame, request, features,
                                              NavigationPolicyNewForegroundTab));
-  m_webView->page()->setDefersLoading(false);
+  m_webView->page()->setSuspended(false);
 }
 
 }  // namespace blink

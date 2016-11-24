@@ -287,7 +287,7 @@ void DocumentLoader::notifyFinished(Resource* resource) {
 
 void DocumentLoader::finishedLoading(double finishTime) {
   DCHECK(m_frame->loader().stateMachine()->creatingInitialEmptyDocument() ||
-         !m_frame->page()->defersLoading() ||
+         !m_frame->page()->suspended() ||
          InspectorInstrumentation::isDebuggerPaused(m_frame));
 
   double responseEndTime = finishTime;
@@ -481,7 +481,7 @@ void DocumentLoader::responseReceived(
     }
   }
 
-  DCHECK(!m_frame->page()->defersLoading());
+  DCHECK(!m_frame->page()->suspended());
 
   m_response = response;
 
@@ -563,7 +563,7 @@ void DocumentLoader::dataReceived(Resource* resource,
   DCHECK(length);
   DCHECK_EQ(resource, m_mainResource);
   DCHECK(!m_response.isNull());
-  DCHECK(!m_frame->page()->defersLoading());
+  DCHECK(!m_frame->page()->suspended());
 
   if (m_inDataReceived) {
     // If this function is reentered, defer processing of the additional data to

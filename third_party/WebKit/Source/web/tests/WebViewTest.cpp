@@ -49,7 +49,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
-#include "core/page/ScopedPageLoadDeferrer.h"
+#include "core/page/ScopedPageSuspender.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -4142,18 +4142,18 @@ TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
   frame->setAutofillClient(0);
 }
 
-// Verify that a WebView created with a ScopedPageLoadDeferrer already on the
+// Verify that a WebView created with a ScopedPageSuspender already on the
 // stack defers its loads.
-TEST_P(WebViewTest, CreatedDuringLoadDeferral) {
+TEST_P(WebViewTest, CreatedDuringPageSuspension) {
   {
     WebViewImpl* webView = m_webViewHelper.initialize();
-    EXPECT_FALSE(webView->page()->defersLoading());
+    EXPECT_FALSE(webView->page()->suspended());
   }
 
   {
-    ScopedPageLoadDeferrer deferrer;
+    ScopedPageSuspender suspender;
     WebViewImpl* webView = m_webViewHelper.initialize();
-    EXPECT_TRUE(webView->page()->defersLoading());
+    EXPECT_TRUE(webView->page()->suspended());
   }
 }
 
@@ -4201,23 +4201,23 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
 
 // Verify that page loads are deferred until all ScopedPageLoadDeferrers are
 // destroyed.
-TEST_P(WebViewTest, NestedLoadDeferrals) {
+TEST_P(WebViewTest, NestedPageSuspensions) {
   WebViewImpl* webView = m_webViewHelper.initialize();
-  EXPECT_FALSE(webView->page()->defersLoading());
+  EXPECT_FALSE(webView->page()->suspended());
 
   {
-    ScopedPageLoadDeferrer deferrer;
-    EXPECT_TRUE(webView->page()->defersLoading());
+    ScopedPageSuspender suspender;
+    EXPECT_TRUE(webView->page()->suspended());
 
     {
-      ScopedPageLoadDeferrer deferrer2;
-      EXPECT_TRUE(webView->page()->defersLoading());
+      ScopedPageSuspender suspender2;
+      EXPECT_TRUE(webView->page()->suspended());
     }
 
-    EXPECT_TRUE(webView->page()->defersLoading());
+    EXPECT_TRUE(webView->page()->suspended());
   }
 
-  EXPECT_FALSE(webView->page()->defersLoading());
+  EXPECT_FALSE(webView->page()->suspended());
 }
 
 TEST_P(WebViewTest, ForceAndResetViewport) {

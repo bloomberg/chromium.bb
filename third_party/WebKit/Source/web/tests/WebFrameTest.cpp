@@ -74,7 +74,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/Page.h"
-#include "core/page/ScopedPageLoadDeferrer.h"
+#include "core/page/ScopedPageSuspender.h"
 #include "core/paint/PaintLayer.h"
 #include "core/testing/NullExecutionContext.h"
 #include "modules/mediastream/MediaStream.h"
@@ -9454,7 +9454,7 @@ TEST_P(ParameterizedWebFrameTest,
 }
 
 // See https://crbug.com/628942.
-TEST_P(ParameterizedWebFrameTest, DeferredPageLoadWithRemoteMainFrame) {
+TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
   // Prepare a page with a remote main frame.
   FrameTestHelpers::TestWebViewClient viewClient;
   FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
@@ -9463,30 +9463,30 @@ TEST_P(ParameterizedWebFrameTest, DeferredPageLoadWithRemoteMainFrame) {
   WebRemoteFrame* remoteRoot = view->mainFrame()->toWebRemoteFrame();
   remoteRoot->setReplicatedOrigin(SecurityOrigin::createUnique());
 
-  // Check that ScopedPageLoadDeferrer properly triggers deferred loading for
+  // Check that ScopedPageSuspender properly triggers deferred loading for
   // the current Page.
   Page* page = remoteRoot->toImplBase()->frame()->page();
-  EXPECT_FALSE(page->defersLoading());
+  EXPECT_FALSE(page->suspended());
   {
-    ScopedPageLoadDeferrer deferrer;
-    EXPECT_TRUE(page->defersLoading());
+    ScopedPageSuspender suspender;
+    EXPECT_TRUE(page->suspended());
   }
-  EXPECT_FALSE(page->defersLoading());
+  EXPECT_FALSE(page->suspended());
 
   // Repeat this for a page with a local child frame, and ensure that the
-  // child frame's loads are also deferred.
+  // child frame's loads are also suspended.
   WebLocalFrame* webLocalChild = FrameTestHelpers::createLocalChild(remoteRoot);
   registerMockedHttpURLLoad("foo.html");
   FrameTestHelpers::loadFrame(webLocalChild, m_baseURL + "foo.html");
   LocalFrame* localChild = toWebLocalFrameImpl(webLocalChild)->frame();
-  EXPECT_FALSE(page->defersLoading());
+  EXPECT_FALSE(page->suspended());
   EXPECT_FALSE(localChild->document()->fetcher()->defersLoading());
   {
-    ScopedPageLoadDeferrer deferrer;
-    EXPECT_TRUE(page->defersLoading());
+    ScopedPageSuspender suspender;
+    EXPECT_TRUE(page->suspended());
     EXPECT_TRUE(localChild->document()->fetcher()->defersLoading());
   }
-  EXPECT_FALSE(page->defersLoading());
+  EXPECT_FALSE(page->suspended());
   EXPECT_FALSE(localChild->document()->fetcher()->defersLoading());
 
   view->close();

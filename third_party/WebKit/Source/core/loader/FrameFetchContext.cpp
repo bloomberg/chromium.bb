@@ -791,7 +791,7 @@ bool FrameFetchContext::isMainFrame() const {
 }
 
 bool FrameFetchContext::defersLoading() const {
-  return frame()->page()->defersLoading();
+  return frame()->page()->suspended();
 }
 
 bool FrameFetchContext::isLoadComplete() const {

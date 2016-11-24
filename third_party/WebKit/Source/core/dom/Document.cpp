@@ -5772,7 +5772,7 @@ void Document::resumeScheduledTasks() {
 
 bool Document::tasksNeedSuspension() {
   Page* page = this->page();
-  return page && page->defersLoading();
+  return page && page->suspended();
 }
 
 void Document::addToTopLayer(Element* element, const Element* before) {

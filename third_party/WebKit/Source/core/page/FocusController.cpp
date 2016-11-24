@@ -346,7 +346,7 @@ inline void dispatchEventsOnWindowAndFocusedElement(Document* document,
   // Do not fire events while modal dialogs are up.  See
   // https://bugs.webkit.org/show_bug.cgi?id=33962
   if (Page* page = document->page()) {
-    if (page->defersLoading())
+    if (page->suspended())
       return;
   }
 

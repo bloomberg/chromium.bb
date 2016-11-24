@@ -367,7 +367,7 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame,
   if (!m_webView->client())
     return nullptr;
 
-  if (!frame->page() || frame->page()->defersLoading())
+  if (!frame->page() || frame->page()->suspended())
     return nullptr;
 
   WebNavigationPolicy policy =

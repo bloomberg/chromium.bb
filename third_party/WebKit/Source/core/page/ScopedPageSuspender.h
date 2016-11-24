@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef ScopedPageLoadDeferrer_h
-#define ScopedPageLoadDeferrer_h
+#ifndef ScopedPageSuspender_h
+#define ScopedPageSuspender_h
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
@@ -28,17 +28,17 @@ namespace blink {
 
 class Page;
 
-class CORE_EXPORT ScopedPageLoadDeferrer final {
-  WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
-  USING_FAST_MALLOC(ScopedPageLoadDeferrer);
+class CORE_EXPORT ScopedPageSuspender final {
+  WTF_MAKE_NONCOPYABLE(ScopedPageSuspender);
+  USING_FAST_MALLOC(ScopedPageSuspender);
 
  public:
-  explicit ScopedPageLoadDeferrer();
-  ~ScopedPageLoadDeferrer();
+  explicit ScopedPageSuspender();
+  ~ScopedPageSuspender();
 
   static bool isActive();
 };
 
 }  // namespace blink
 
-#endif  // ScopedPageLoadDeferrer_h
+#endif  // ScopedPageSuspender_h

@@ -29,7 +29,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/FrameTree.h"
-#include "core/page/ScopedPageLoadDeferrer.h"
+#include "core/page/ScopedPageSuspender.h"
 #include "core/page/WindowFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
@@ -90,10 +90,10 @@ static bool openJavaScriptDialog(LocalFrame* frame,
                                  const String& message,
                                  ChromeClient::DialogType dialogType,
                                  const Delegate& delegate) {
-  // Defer loads in case the client method runs a new event loop that would
+  // Suspend pages in case the client method runs a new event loop that would
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
-  ScopedPageLoadDeferrer deferrer;
+  ScopedPageSuspender suspender;
   InspectorInstrumentation::willRunJavaScriptDialog(frame, message, dialogType);
   bool result = delegate();
   InspectorInstrumentation::didRunJavaScriptDialog(frame, result);
@@ -209,10 +209,10 @@ bool ChromeClient::print(LocalFrame* frame) {
     return false;
   }
 
-  // Defer loads in case the client method runs a new event loop that would
+  // Suspend pages in case the client method runs a new event loop that would
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
-  ScopedPageLoadDeferrer deferrer;
+  ScopedPageSuspender suspender;
 
   printDelegate(frame);
   return true;
