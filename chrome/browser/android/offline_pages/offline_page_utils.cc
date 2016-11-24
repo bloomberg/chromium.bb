@@ -182,22 +182,23 @@ void OfflinePageUtils::CheckExistenceOfRequestsWithURL(
     content::BrowserContext* browser_context,
     const std::string name_space,
     const GURL& offline_page_url,
-    const base::Callback<void(bool)>& callback) {
+    const PagesExistCallback& callback) {
   RequestCoordinator* request_coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
 
   auto request_coordinator_continuation = [](
       const std::string& name_space, const GURL& offline_page_url,
-      const base::Callback<void(bool)>& callback,
+      const PagesExistCallback& callback,
       std::vector<std::unique_ptr<SavePageRequest>> requests) {
+    base::Time latest_request_time;
     for (auto& request : requests) {
       if (request->url() == offline_page_url &&
-          request->client_id().name_space == name_space) {
-        callback.Run(true);
-        return;
+          request->client_id().name_space == name_space &&
+          latest_request_time < request->creation_time()) {
+        latest_request_time = request->creation_time();
       }
     }
-    callback.Run(false);
+    callback.Run(!latest_request_time.is_null(), latest_request_time);
   };
 
   request_coordinator->GetAllRequests(

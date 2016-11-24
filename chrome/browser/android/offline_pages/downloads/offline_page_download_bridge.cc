@@ -113,8 +113,19 @@ void SavePageIfNotNavigatedAway(const GURL& original_url,
 void RequestQueueDuplicateCheckDone(
     const GURL& original_url,
     const ScopedJavaGlobalRef<jobject>& j_tab_ref,
-    bool has_duplicates) {
+    bool has_duplicates,
+    const base::Time& latest_request_time) {
   if (has_duplicates) {
+    base::TimeDelta time_since_most_recent_duplicate =
+        base::Time::Now() - latest_request_time;
+    // Using CUSTOM_COUNTS instead of time-oriented histogram to record
+    // samples in seconds rather than milliseconds.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.DownloadRequestTimeSinceDuplicateRequested",
+        time_since_most_recent_duplicate.InSeconds(),
+        base::TimeDelta::FromSeconds(1).InSeconds(),
+        base::TimeDelta::FromDays(7).InSeconds(), 50);
+
     // TODO(fgorski): Additionally we could update existing request's expiration
     // period, as it is still important. Alternative would be to actually take a
     // snapshot on the spot, but that would only work if the page is loaded

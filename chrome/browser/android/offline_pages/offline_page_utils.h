@@ -65,22 +65,27 @@ class OfflinePageUtils {
   // ID of the tab.
   static bool GetTabId(content::WebContents* web_contents, int* tab_id);
 
-  // Performs a check, whether pages with specified |url| is already saved in
-  // with a specified |name_space|. Result is returned in a |callback|, where
-  // first parameter indicates whether offline pages with |url| exit, while
-  // second is a helper value to report UMA, indicating the time the latest
-  // existing page with such URL was saved.
+  // Performs a check, whether pages with specified |url| and |name_space|
+  // already exist. Result is returned in a |callback|, where first parameter
+  // indicates whether offline pages exist, while second is a helper value to
+  // report UMA, indicating the time the latest existing page with such
+  // parameters was saved.
   static void CheckExistenceOfPagesWithURL(
       content::BrowserContext* browser_context,
       const std::string name_space,
       const GURL& url,
       const PagesExistCallback& callback);
 
+  // Performs a check, whether requests with specified |url| and |name_space|
+  // already exist. Result is returned in a |callback|, where first parameter
+  // indicates whether requests exist, while second is a helper value to report
+  // UMA, indicating the time the latest existing request with such parameters
+  // was created.
   static void CheckExistenceOfRequestsWithURL(
       content::BrowserContext* browser_context,
       const std::string name_space,
       const GURL& url,
-      const base::Callback<void(bool)>& callback);
+      const PagesExistCallback& callback);
 
   static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);
 };
