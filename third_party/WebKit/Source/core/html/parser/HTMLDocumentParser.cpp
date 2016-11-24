@@ -684,8 +684,13 @@ void HTMLDocumentParser::pumpTokenizer() {
       // http/tests/security/xssAuditor/dom-write-innerHTML.html
       if (std::unique_ptr<XSSInfo> xssInfo =
               m_xssAuditor.filterToken(FilterTokenRequest(
-                  token(), m_sourceTracker, m_tokenizer->shouldAllowCDATA())))
+                  token(), m_sourceTracker, m_tokenizer->shouldAllowCDATA()))) {
         m_xssAuditorDelegate.didBlockScript(*xssInfo);
+        // If we're in blocking mode, we might stop the parser in
+        // 'didBlockScript()'. In that case, exit early.
+        if (!isParsing())
+          return;
+      }
     }
 
     constructTreeFromHTMLToken();

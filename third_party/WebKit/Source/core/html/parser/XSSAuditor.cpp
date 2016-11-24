@@ -390,7 +390,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate) {
     m_xssProtection = xssProtectionHeader;
     if (m_xssProtection == ReflectedXSSInvalid ||
         m_xssProtection == ReflectedXSSUnset) {
-      m_xssProtection = FilterReflectedXSS;
+      m_xssProtection = BlockReflectedXSS;
     }
 
     if (auditorDelegate)

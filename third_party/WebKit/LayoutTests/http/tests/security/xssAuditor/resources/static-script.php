@@ -1,3 +1,4 @@
+<?php header("X-XSS-Protection: 1"); ?>
 <!DOCTYPE html>
 <html>
 <p>This is a page with a static script matching a post variable</p>

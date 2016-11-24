@@ -6,6 +6,8 @@ my $cgi = new CGI;
 
 if ($cgi->param('enable-full-block')) {
     print "X-XSS-Protection: 1; mode=block\n";
+} else {
+    print "X-XSS-Protection: 1\n";
 }
 print "Content-Type: text/html; charset=UTF-8\n\n";
 

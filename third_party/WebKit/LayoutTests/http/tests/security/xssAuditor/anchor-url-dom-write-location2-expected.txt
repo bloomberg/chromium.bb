@@ -1,2 +1,2 @@
-CONSOLE ERROR: line 6: The XSS Auditor refused to execute a script in 'http://localhost:8000/security/xssAuditor/resources/echo-dom-write-unescaped-location.html?#<script>alert('XS%41S')</script>' because its source code was found within the request. The auditor was enabled as the server did not send an 'X-XSS-Protection' header.
+CONSOLE ERROR: line 6: The XSS Auditor refused to execute a script in 'http://localhost:8000/security/xssAuditor/resources/echo-dom-write-unescaped-location.php?#<script>alert('XS%41S')</script>' because its source code was found within the request. The server sent an 'X-XSS-Protection' header requesting this behavior.
 
