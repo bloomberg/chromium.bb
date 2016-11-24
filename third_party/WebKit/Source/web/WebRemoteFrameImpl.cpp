@@ -93,13 +93,6 @@ WebVector<WebIconURL> WebRemoteFrameImpl::iconURLs(int iconTypesMask) const {
   return WebVector<WebIconURL>();
 }
 
-void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* webLayer) {
-  if (!frame())
-    return;
-
-  frame()->setRemotePlatformLayer(webLayer);
-}
-
 void WebRemoteFrameImpl::setSharedWorkerRepositoryClient(
     WebSharedWorkerRepositoryClient*) {
   NOTREACHED();
@@ -389,6 +382,13 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(
   return child;
 }
 
+void WebRemoteFrameImpl::setWebLayer(WebLayer* layer) {
+  if (!frame())
+    return;
+
+  frame()->setWebLayer(layer);
+}
+
 void WebRemoteFrameImpl::setCoreFrame(RemoteFrame* frame) {
   m_frame = frame;
 }
@@ -478,7 +478,7 @@ void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(
           isUniqueOriginPotentiallyTrustworthy);
 }
 
-void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() const {
+void WebRemoteFrameImpl::dispatchLoadEventOnFrameOwner() const {
   DCHECK(frame()->owner()->isLocal());
   frame()->owner()->dispatchLoad();
 }

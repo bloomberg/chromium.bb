@@ -339,7 +339,7 @@ void RenderFrameProxy::OnDidStopLoading() {
 }
 
 void RenderFrameProxy::OnDispatchLoad() {
-  web_frame_->DispatchLoadEventForFrameOwner();
+  web_frame_->dispatchLoadEventOnFrameOwner();
 }
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,

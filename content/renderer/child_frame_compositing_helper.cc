@@ -27,8 +27,8 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -56,7 +56,7 @@ ChildFrameCompositingHelper::CreateForRenderFrameProxy(
 
 ChildFrameCompositingHelper::ChildFrameCompositingHelper(
     const base::WeakPtr<BrowserPlugin>& browser_plugin,
-    blink::WebFrame* frame,
+    blink::WebRemoteFrame* frame,
     RenderFrameProxy* render_frame_proxy,
     int host_routing_id)
     : host_routing_id_(host_routing_id),
@@ -79,7 +79,7 @@ void ChildFrameCompositingHelper::UpdateWebLayer(
   if (GetContainer()) {
     GetContainer()->setWebLayer(layer.get());
   } else if (frame_) {
-    frame_->setRemoteWebLayer(layer.get());
+    frame_->setWebLayer(layer.get());
   }
   web_layer_ = std::move(layer);
 }

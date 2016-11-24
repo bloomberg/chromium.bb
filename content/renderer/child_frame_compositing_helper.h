@@ -27,9 +27,9 @@ class Layer;
 }
 
 namespace blink {
-class WebFrame;
-class WebPluginContainer;
 class WebLayer;
+class WebPluginContainer;
+class WebRemoteFrame;
 }
 
 namespace gfx {
@@ -67,7 +67,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
  private:
   ChildFrameCompositingHelper(
       const base::WeakPtr<BrowserPlugin>& browser_plugin,
-      blink::WebFrame* frame,
+      blink::WebRemoteFrame* frame,
       RenderFrameProxy* render_frame_proxy,
       int host_routing_id);
 
@@ -110,7 +110,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   std::unique_ptr<blink::WebLayer> web_layer_;
   cc::SurfaceId surface_id_;
-  blink::WebFrame* frame_;
+  blink::WebRemoteFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
 };

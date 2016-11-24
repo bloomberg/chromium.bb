@@ -39,7 +39,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
   WebString assignedName() const override;
   void setName(const WebString&) override;
   WebVector<WebIconURL> iconURLs(int iconTypesMask) const override;
-  void setRemoteWebLayer(WebLayer*) override;
   void setSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) override;
   void setCanHaveScrollbars(bool) override;
@@ -143,7 +142,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
                                     WebSandboxFlags,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
-
+  void setWebLayer(WebLayer*) override;
   void setReplicatedOrigin(const WebSecurityOrigin&) const override;
   void setReplicatedSandboxFlags(WebSandboxFlags) const override;
   void setReplicatedName(const WebString& name,
@@ -157,7 +156,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void setReplicatedInsecureRequestPolicy(
       WebInsecureRequestPolicy) const override;
   void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const override;
-  void DispatchLoadEventForFrameOwner() const override;
+  void dispatchLoadEventOnFrameOwner() const override;
 
   void didStartLoading() override;
   void didStopLoading() override;

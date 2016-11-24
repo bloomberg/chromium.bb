@@ -558,10 +558,6 @@ WebVector<WebIconURL> WebLocalFrameImpl::iconURLs(int iconTypesMask) const {
   return WebVector<WebIconURL>();
 }
 
-void WebLocalFrameImpl::setRemoteWebLayer(WebLayer* webLayer) {
-  NOTREACHED();
-}
-
 void WebLocalFrameImpl::setContentSettingsClient(
     WebContentSettingsClient* contentSettingsClient) {
   m_contentSettingsClient = contentSettingsClient;

@@ -14,6 +14,7 @@ namespace blink {
 
 enum class WebTreeScopeType;
 class WebFrameClient;
+class WebLayer;
 class WebRemoteFrameClient;
 class WebString;
 
@@ -43,6 +44,9 @@ class WebRemoteFrame : public WebFrame {
                                             WebSandboxFlags,
                                             WebRemoteFrameClient*,
                                             WebFrame* opener) = 0;
+
+  // Layer for the in-process compositor.
+  virtual void setWebLayer(WebLayer*) = 0;
 
   // Set security origin replicated from another process.
   virtual void setReplicatedOrigin(const WebSecurityOrigin&) const = 0;
@@ -75,7 +79,7 @@ class WebRemoteFrame : public WebFrame {
   // replicated from another process.
   virtual void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const = 0;
 
-  virtual void DispatchLoadEventForFrameOwner() const = 0;
+  virtual void dispatchLoadEventOnFrameOwner() const = 0;
 
   virtual void didStartLoading() = 0;
   virtual void didStopLoading() = 0;

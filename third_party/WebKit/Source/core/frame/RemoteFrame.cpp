@@ -29,11 +29,9 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                                 FrameHost* host,
                                 FrameOwner* owner)
     : Frame(client, host, owner),
-      m_view(nullptr),
       m_securityContext(RemoteSecurityContext::create()),
       m_domWindow(RemoteDOMWindow::create(*this)),
-      m_windowProxyManager(WindowProxyManager::create(*this)),
-      m_remotePlatformLayer(nullptr) {}
+      m_windowProxyManager(WindowProxyManager::create(*this)) {}
 
 RemoteFrame* RemoteFrame::create(RemoteFrameClient* client,
                                  FrameHost* host,
@@ -109,8 +107,8 @@ void RemoteFrame::detach(FrameDetachType type) {
   client()->willBeDetached();
   m_windowProxyManager->clearForClose();
   setView(nullptr);
-  if (m_remotePlatformLayer)
-    setRemotePlatformLayer(nullptr);
+  if (m_webLayer)
+    setWebLayer(nullptr);
   Frame::detach(type);
 }
 
@@ -178,12 +176,12 @@ RemoteFrameClient* RemoteFrame::client() const {
   return static_cast<RemoteFrameClient*>(Frame::client());
 }
 
-void RemoteFrame::setRemotePlatformLayer(WebLayer* layer) {
-  if (m_remotePlatformLayer)
-    GraphicsLayer::unregisterContentsLayer(m_remotePlatformLayer);
-  m_remotePlatformLayer = layer;
-  if (m_remotePlatformLayer)
-    GraphicsLayer::registerContentsLayer(layer);
+void RemoteFrame::setWebLayer(WebLayer* webLayer) {
+  if (m_webLayer)
+    GraphicsLayer::unregisterContentsLayer(m_webLayer);
+  m_webLayer = webLayer;
+  if (m_webLayer)
+    GraphicsLayer::registerContentsLayer(m_webLayer);
 
   ASSERT(owner());
   toHTMLFrameOwnerElement(owner())->setNeedsCompositingUpdate();

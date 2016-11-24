@@ -680,7 +680,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
     Frame* frame =
         toHTMLFrameOwnerElement(layoutObject->node())->contentFrame();
     if (frame->isRemoteFrame()) {
-      WebLayer* layer = toRemoteFrame(frame)->remotePlatformLayer();
+      WebLayer* layer = toRemoteFrame(frame)->webLayer();
       m_graphicsLayer->setContentsToPlatformLayer(layer);
     }
   } else if (layoutObject->isVideo()) {

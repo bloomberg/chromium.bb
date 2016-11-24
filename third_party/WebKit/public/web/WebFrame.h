@@ -142,11 +142,6 @@ class WebFrame {
   // URLs
   virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const = 0;
 
-  // For a WebFrame with contents being rendered in another process, this
-  // sets a layer for use by the in-process compositor. WebLayer should be
-  // null if the content is being rendered in the current process.
-  virtual void setRemoteWebLayer(WebLayer*) = 0;
-
   // Initializes the various client interfaces.
   virtual void setSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) = 0;

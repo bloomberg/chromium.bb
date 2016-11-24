@@ -53,8 +53,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   void visibilityChanged(bool visible);
 
-  void setRemotePlatformLayer(WebLayer*);
-  WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
+  void setWebLayer(WebLayer*);
+  WebLayer* webLayer() const { return m_webLayer; }
 
   void advanceFocus(WebFocusType, LocalFrame* source);
 
@@ -83,7 +83,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   Member<RemoteSecurityContext> m_securityContext;
   Member<RemoteDOMWindow> m_domWindow;
   Member<WindowProxyManager> m_windowProxyManager;
-  WebLayer* m_remotePlatformLayer;
+  WebLayer* m_webLayer = nullptr;
 };
 
 inline RemoteFrameView* RemoteFrame::view() const {
