@@ -1061,10 +1061,10 @@ void WebViewImpl::acceptLanguagesChanged() {
 }
 
 void WebViewImpl::ReportIntervention(const WebString& message) {
-  if (!mainFrame())
+  if (!mainFrameImpl())
     return;
   WebConsoleMessage consoleMessage(WebConsoleMessage::LevelWarning, message);
-  mainFrame()->addMessageToConsole(consoleMessage);
+  mainFrameImpl()->addMessageToConsole(consoleMessage);
 }
 
 float WebViewImpl::expensiveBackgroundThrottlingCPUBudget() {
