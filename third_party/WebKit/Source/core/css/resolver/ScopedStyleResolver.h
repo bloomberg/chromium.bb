@@ -57,7 +57,7 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   StyleRuleKeyframes* keyframeStylesForAnimation(
       const StringImpl* animationName);
 
-  void appendCSSStyleSheet(CSSStyleSheet&, const MediaQueryEvaluator&);
+  void appendCSSStyleSheet(CSSStyleSheet&);
   void appendActiveStyleSheets(unsigned index, const ActiveStyleSheetVector&);
   void collectMatchingAuthorRules(ElementRuleCollector&,
                                   CascadeOrder = ignoreCascadeOrder);
@@ -93,6 +93,8 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   Member<TreeScope> m_scope;
 
   HeapVector<Member<CSSStyleSheet>> m_authorStyleSheets;
+  MediaQueryResultList m_viewportDependentMediaQueryResults;
+  MediaQueryResultList m_deviceDependentMediaQueryResults;
 
   using KeyframesRuleMap =
       HeapHashMap<const StringImpl*, Member<StyleRuleKeyframes>>;

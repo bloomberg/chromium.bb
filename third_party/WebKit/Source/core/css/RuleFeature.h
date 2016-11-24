@@ -25,6 +25,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/MediaQueryEvaluator.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -105,6 +106,19 @@ class CORE_EXPORT RuleFeatureSet {
   const HeapVector<RuleFeature>& siblingRules() const { return m_siblingRules; }
   const HeapVector<RuleFeature>& uncommonAttributeRules() const {
     return m_uncommonAttributeRules;
+  }
+
+  const MediaQueryResultList& viewportDependentMediaQueryResults() const {
+    return m_viewportDependentMediaQueryResults;
+  }
+  const MediaQueryResultList& deviceDependentMediaQueryResults() const {
+    return m_deviceDependentMediaQueryResults;
+  }
+  MediaQueryResultList& viewportDependentMediaQueryResults() {
+    return m_viewportDependentMediaQueryResults;
+  }
+  MediaQueryResultList& deviceDependentMediaQueryResults() {
+    return m_deviceDependentMediaQueryResults;
   }
 
   // Collect descendant and sibling invalidation sets.
@@ -274,6 +288,8 @@ class CORE_EXPORT RuleFeatureSet {
   RefPtr<DescendantInvalidationSet> m_nthInvalidationSet;
   HeapVector<RuleFeature> m_siblingRules;
   HeapVector<RuleFeature> m_uncommonAttributeRules;
+  MediaQueryResultList m_viewportDependentMediaQueryResults;
+  MediaQueryResultList m_deviceDependentMediaQueryResults;
 
   friend class RuleFeatureSetTest;
 };

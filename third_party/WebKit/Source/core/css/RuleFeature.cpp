@@ -909,6 +909,10 @@ void RuleFeatureSet::add(const RuleFeatureSet& other) {
 
   m_siblingRules.appendVector(other.m_siblingRules);
   m_uncommonAttributeRules.appendVector(other.m_uncommonAttributeRules);
+  m_viewportDependentMediaQueryResults.appendVector(
+      other.m_viewportDependentMediaQueryResults);
+  m_deviceDependentMediaQueryResults.appendVector(
+      other.m_deviceDependentMediaQueryResults);
 }
 
 void RuleFeatureSet::clear() {
@@ -921,6 +925,8 @@ void RuleFeatureSet::clear() {
   m_pseudoInvalidationSets.clear();
   m_universalSiblingInvalidationSet.clear();
   m_nthInvalidationSet.clear();
+  m_viewportDependentMediaQueryResults.clear();
+  m_deviceDependentMediaQueryResults.clear();
 }
 
 void RuleFeatureSet::collectInvalidationSetsForClass(
@@ -1140,6 +1146,8 @@ void RuleFeatureSet::addFeaturesToUniversalSiblingInvalidationSet(
 DEFINE_TRACE(RuleFeatureSet) {
   visitor->trace(m_siblingRules);
   visitor->trace(m_uncommonAttributeRules);
+  visitor->trace(m_viewportDependentMediaQueryResults);
+  visitor->trace(m_deviceDependentMediaQueryResults);
 }
 
 void RuleFeatureSet::InvalidationSetFeatures::add(

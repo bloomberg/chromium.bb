@@ -27,8 +27,6 @@
 #include "core/animation/PropertyHandle.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/PseudoStyleRequest.h"
-#include "core/css/RuleFeature.h"
-#include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/resolver/CSSPropertyPriority.h"
@@ -54,6 +52,7 @@ class Element;
 class Interpolation;
 class MatchResult;
 class MediaQueryEvaluator;
+class RuleSet;
 class StylePropertySet;
 class StyleRule;
 class StyleRuleUsageTracker;
@@ -147,14 +146,6 @@ class CORE_EXPORT StyleResolver final
   StyleRuleList* styleRulesForElement(Element*, unsigned rulesToInclude);
 
   void computeFont(ComputedStyle*, const StylePropertySet&);
-
-  void addViewportDependentMediaQueries(const MediaQueryResultList&);
-  bool hasViewportDependentMediaQueries() const {
-    return !m_viewportDependentMediaQueryResults.isEmpty();
-  }
-  bool mediaQueryAffectedByViewportChange() const;
-  void addDeviceDependentMediaQueries(const MediaQueryResultList&);
-  bool mediaQueryAffectedByDeviceChange() const;
 
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
   void invalidateMatchedPropertiesCache();
@@ -282,10 +273,6 @@ class CORE_EXPORT StyleResolver final
   static ComputedStyle* s_styleNotYetAvailable;
 
   MatchedPropertiesCache m_matchedPropertiesCache;
-
-  MediaQueryResultList m_viewportDependentMediaQueryResults;
-  MediaQueryResultList m_deviceDependentMediaQueryResults;
-
   Member<Document> m_document;
   SelectorFilter m_selectorFilter;
 

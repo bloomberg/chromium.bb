@@ -197,6 +197,16 @@ void CSSStyleSheet::setMediaQueries(MediaQuerySet* mediaQueries) {
     m_mediaCSSOMWrapper->reattach(m_mediaQueries.get());
 }
 
+bool CSSStyleSheet::matchesMediaQueries(const MediaQueryEvaluator& evaluator) {
+  m_viewportDependentMediaQueryResults.clear();
+  m_deviceDependentMediaQueryResults.clear();
+
+  if (!m_mediaQueries)
+    return true;
+  return evaluator.eval(m_mediaQueries, &m_viewportDependentMediaQueryResults,
+                        &m_deviceDependentMediaQueryResults);
+}
+
 unsigned CSSStyleSheet::length() const {
   return m_contents->ruleCount();
 }
@@ -424,6 +434,8 @@ void CSSStyleSheet::setText(const String& text) {
 DEFINE_TRACE(CSSStyleSheet) {
   visitor->trace(m_contents);
   visitor->trace(m_mediaQueries);
+  visitor->trace(m_viewportDependentMediaQueryResults);
+  visitor->trace(m_deviceDependentMediaQueryResults);
   visitor->trace(m_ownerNode);
   visitor->trace(m_ownerRule);
   visitor->trace(m_mediaCSSOMWrapper);

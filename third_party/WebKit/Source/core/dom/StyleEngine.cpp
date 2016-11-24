@@ -447,6 +447,16 @@ void StyleEngine::setRuleUsageTracker(StyleRuleUsageTracker* tracker) {
     m_resolver->setRuleUsageTracker(m_tracker);
 }
 
+RuleSet* StyleEngine::ruleSetForSheet(CSSStyleSheet& sheet) {
+  if (!sheet.matchesMediaQueries(ensureMediaQueryEvaluator()))
+    return nullptr;
+
+  AddRuleFlags addRuleFlags = RuleHasNoSpecialState;
+  if (m_document->getSecurityOrigin()->canRequest(sheet.baseURL()))
+    addRuleFlags = RuleHasDocumentSecurityOrigin;
+  return &sheet.contents()->ensureRuleSet(*m_mediaQueryEvaluator, addRuleFlags);
+}
+
 void StyleEngine::createResolver() {
   m_resolver = StyleResolver::create(*m_document);
 
@@ -1174,6 +1184,28 @@ const MediaQueryEvaluator& StyleEngine::ensureMediaQueryEvaluator() {
       m_mediaQueryEvaluator = new MediaQueryEvaluator("all");
   }
   return *m_mediaQueryEvaluator;
+}
+
+bool StyleEngine::mediaQueryAffectedByViewportChange() {
+  const MediaQueryEvaluator& evaluator = ensureMediaQueryEvaluator();
+  const auto& results =
+      m_globalRuleSet.ruleFeatureSet().viewportDependentMediaQueryResults();
+  for (unsigned i = 0; i < results.size(); ++i) {
+    if (evaluator.eval(results[i]->expression()) != results[i]->result())
+      return true;
+  }
+  return false;
+}
+
+bool StyleEngine::mediaQueryAffectedByDeviceChange() {
+  const MediaQueryEvaluator& evaluator = ensureMediaQueryEvaluator();
+  const auto& results =
+      m_globalRuleSet.ruleFeatureSet().deviceDependentMediaQueryResults();
+  for (unsigned i = 0; i < results.size(); ++i) {
+    if (evaluator.eval(results[i]->expression()) != results[i]->result())
+      return true;
+  }
+  return false;
 }
 
 DEFINE_TRACE(StyleEngine) {

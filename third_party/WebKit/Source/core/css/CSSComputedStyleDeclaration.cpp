@@ -35,10 +35,10 @@
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/StyleEngine.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "wtf/text/StringBuilder.h"
@@ -400,7 +400,7 @@ const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(
       isLayoutDependent(propertyID, style, layoutObject) ||
       styledNode->isInShadowTree() ||
       (document.localOwner() &&
-       document.ensureStyleResolver().hasViewportDependentMediaQueries());
+       document.styleEngine().hasViewportDependentMediaQueries());
 
   if (forceFullLayout) {
     document.updateStyleAndLayoutIgnorePendingStylesheetsForNode(styledNode);

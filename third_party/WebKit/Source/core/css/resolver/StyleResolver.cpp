@@ -213,14 +213,6 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
          isSVGStyleElement(cssSheet.ownerNode()) ||
          cssSheet.ownerNode()->isConnected());
 
-  const MediaQueryEvaluator& evaluator =
-      document().styleEngine().ensureMediaQueryEvaluator();
-  if (cssSheet.mediaQueries() &&
-      !evaluator.eval(cssSheet.mediaQueries(),
-                      &m_viewportDependentMediaQueryResults,
-                      &m_deviceDependentMediaQueryResults))
-    return;
-
   TreeScope* treeScope = &cssSheet.ownerNode()->treeScope();
   // TODO(rune@opera.com): This is a workaround for crbug.com/559292
   // when we're in the middle of removing a subtree with a style element
@@ -236,8 +228,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
   // (m_document), so we override it for all document scoped sheets.
   if (treeScope->rootNode().isDocumentNode())
     treeScope = m_document;
-  treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(cssSheet,
-                                                             evaluator);
+  treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(cssSheet);
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets() {
@@ -1844,40 +1835,6 @@ void StyleResolver::computeFont(ComputedStyle* style,
   }
 }
 
-void StyleResolver::addViewportDependentMediaQueries(
-    const MediaQueryResultList& list) {
-  for (size_t i = 0; i < list.size(); ++i)
-    m_viewportDependentMediaQueryResults.append(list[i]);
-}
-
-void StyleResolver::addDeviceDependentMediaQueries(
-    const MediaQueryResultList& list) {
-  for (size_t i = 0; i < list.size(); ++i)
-    m_deviceDependentMediaQueryResults.append(list[i]);
-}
-
-bool StyleResolver::mediaQueryAffectedByViewportChange() const {
-  const MediaQueryEvaluator& evaluator =
-      document().styleEngine().ensureMediaQueryEvaluator();
-  for (unsigned i = 0; i < m_viewportDependentMediaQueryResults.size(); ++i) {
-    if (evaluator.eval(m_viewportDependentMediaQueryResults[i]->expression()) !=
-        m_viewportDependentMediaQueryResults[i]->result())
-      return true;
-  }
-  return false;
-}
-
-bool StyleResolver::mediaQueryAffectedByDeviceChange() const {
-  const MediaQueryEvaluator& evaluator =
-      document().styleEngine().ensureMediaQueryEvaluator();
-  for (unsigned i = 0; i < m_deviceDependentMediaQueryResults.size(); ++i) {
-    if (evaluator.eval(m_deviceDependentMediaQueryResults[i]->expression()) !=
-        m_deviceDependentMediaQueryResults[i]->result())
-      return true;
-  }
-  return false;
-}
-
 void StyleResolver::updateMediaType() {
   if (FrameView* view = document().view()) {
     m_printMediaType =
@@ -1887,8 +1844,6 @@ void StyleResolver::updateMediaType() {
 
 DEFINE_TRACE(StyleResolver) {
   visitor->trace(m_matchedPropertiesCache);
-  visitor->trace(m_viewportDependentMediaQueryResults);
-  visitor->trace(m_deviceDependentMediaQueryResults);
   visitor->trace(m_selectorFilter);
   visitor->trace(m_styleSharingLists);
   visitor->trace(m_pendingStyleSheets);

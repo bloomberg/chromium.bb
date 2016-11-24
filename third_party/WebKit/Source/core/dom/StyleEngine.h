@@ -119,6 +119,7 @@ class CORE_EXPORT StyleEngine final
     return m_globalRuleSet.watchedSelectorsRuleSet();
   }
 
+  RuleSet* ruleSetForSheet(CSSStyleSheet&);
   void mediaQueryAffectingValueChanged();
   void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
   void updateActiveStyleSheets(StyleResolverUpdateMode);
@@ -198,7 +199,13 @@ class CORE_EXPORT StyleEngine final
   void clearMasterResolver();
 
   StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
-  const MediaQueryEvaluator& ensureMediaQueryEvaluator();
+  bool mediaQueryAffectedByViewportChange();
+  bool mediaQueryAffectedByDeviceChange();
+  bool hasViewportDependentMediaQueries() const {
+    return !m_globalRuleSet.ruleFeatureSet()
+                .viewportDependentMediaQueryResults()
+                .isEmpty();
+  }
 
   CSSFontSelector* fontSelector() { return m_fontSelector; }
   void setFontSelector(CSSFontSelector*);
@@ -318,6 +325,7 @@ class CORE_EXPORT StyleEngine final
 
   void updateViewport();
   void updateActiveStyleSheets();
+  const MediaQueryEvaluator& ensureMediaQueryEvaluator();
 
   Member<Document> m_document;
   bool m_isMaster;

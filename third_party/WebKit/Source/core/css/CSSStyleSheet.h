@@ -24,6 +24,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSRule.h"
+#include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheet.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -101,6 +102,13 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Document* ownerDocument() const;
   MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
   void setMediaQueries(MediaQuerySet*);
+  bool matchesMediaQueries(const MediaQueryEvaluator&);
+  const MediaQueryResultList& viewportDependentMediaQueryResults() const {
+    return m_viewportDependentMediaQueryResults;
+  }
+  const MediaQueryResultList& deviceDependentMediaQueryResults() const {
+    return m_deviceDependentMediaQueryResults;
+  }
   void setTitle(const String& title) { m_title = title; }
   // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this
   // origin.
@@ -157,6 +165,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool m_loadCompleted = false;
   String m_title;
   Member<MediaQuerySet> m_mediaQueries;
+  MediaQueryResultList m_viewportDependentMediaQueryResults;
+  MediaQueryResultList m_deviceDependentMediaQueryResults;
 
   RefPtr<SecurityOrigin> m_allowRuleAccessFromOrigin;
 

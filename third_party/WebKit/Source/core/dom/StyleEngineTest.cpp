@@ -297,4 +297,28 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
             RuleSetInvalidationFullRecalc);
 }
 
+TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
+  document().body()->setInnerHTML(
+      "<style>div {}</style>"
+      "<style id='sheet' media='(min-width: 200px)'>"
+      "  div {}"
+      "</style>");
+
+  Element* styleElement = document().getElementById("sheet");
+
+  for (unsigned i = 0; i < 10; i++) {
+    document().body()->removeChild(styleElement);
+    document().view()->updateAllLifecyclePhases();
+    document().body()->appendChild(styleElement);
+    document().view()->updateAllLifecyclePhases();
+  }
+
+  EXPECT_TRUE(document().styleEngine().hasViewportDependentMediaQueries());
+
+  document().body()->removeChild(styleElement);
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_FALSE(document().styleEngine().hasViewportDependentMediaQueries());
+}
+
 }  // namespace blink

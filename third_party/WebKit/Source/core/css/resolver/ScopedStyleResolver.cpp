@@ -83,25 +83,22 @@ void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet) {
     document.styleResolver()->invalidateMatchedPropertiesCache();
 }
 
-void ScopedStyleResolver::appendCSSStyleSheet(
-    CSSStyleSheet& cssSheet,
-    const MediaQueryEvaluator& medium) {
+void ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
+  RuleSet* ruleSet =
+      treeScope().document().styleEngine().ruleSetForSheet(cssSheet);
+
+  m_viewportDependentMediaQueryResults.appendVector(
+      cssSheet.viewportDependentMediaQueryResults());
+  m_deviceDependentMediaQueryResults.appendVector(
+      cssSheet.deviceDependentMediaQueryResults());
+  if (!ruleSet)
+    return;
+
   unsigned index = m_authorStyleSheets.size();
   m_authorStyleSheets.append(&cssSheet);
-  StyleSheetContents* sheet = cssSheet.contents();
-  AddRuleFlags addRuleFlags =
-      treeScope().document().getSecurityOrigin()->canRequest(sheet->baseURL())
-          ? RuleHasDocumentSecurityOrigin
-          : RuleHasNoSpecialState;
-  const RuleSet& ruleSet = sheet->ensureRuleSet(medium, addRuleFlags);
-
-  addKeyframeRules(ruleSet);
-  addFontFaceRules(ruleSet);
-  addTreeBoundaryCrossingRules(ruleSet, &cssSheet, index);
-  treeScope().document().styleResolver()->addViewportDependentMediaQueries(
-      ruleSet.viewportDependentMediaQueryResults());
-  treeScope().document().styleResolver()->addDeviceDependentMediaQueries(
-      ruleSet.deviceDependentMediaQueryResults());
+  addKeyframeRules(*ruleSet);
+  addFontFaceRules(*ruleSet);
+  addTreeBoundaryCrossingRules(*ruleSet, &cssSheet, index);
 }
 
 void ScopedStyleResolver::appendActiveStyleSheets(
@@ -110,6 +107,10 @@ void ScopedStyleResolver::appendActiveStyleSheets(
   for (auto activeIterator = activeSheets.begin() + index;
        activeIterator != activeSheets.end(); activeIterator++) {
     CSSStyleSheet* sheet = activeIterator->first;
+    m_viewportDependentMediaQueryResults.appendVector(
+        sheet->viewportDependentMediaQueryResults());
+    m_deviceDependentMediaQueryResults.appendVector(
+        sheet->deviceDependentMediaQueryResults());
     if (!activeIterator->second)
       continue;
     const RuleSet& ruleSet = *activeIterator->second;
@@ -124,6 +125,11 @@ void ScopedStyleResolver::collectFeaturesTo(
     RuleFeatureSet& features,
     HeapHashSet<Member<const StyleSheetContents>>&
         visitedSharedStyleSheetContents) const {
+  features.viewportDependentMediaQueryResults().appendVector(
+      m_viewportDependentMediaQueryResults);
+  features.deviceDependentMediaQueryResults().appendVector(
+      m_deviceDependentMediaQueryResults);
+
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
     ASSERT(m_authorStyleSheets[i]->ownerNode());
     StyleSheetContents* contents = m_authorStyleSheets[i]->contents();
@@ -141,6 +147,8 @@ void ScopedStyleResolver::collectFeaturesTo(
 
 void ScopedStyleResolver::resetAuthorStyle() {
   m_authorStyleSheets.clear();
+  m_viewportDependentMediaQueryResults.clear();
+  m_deviceDependentMediaQueryResults.clear();
   m_keyframesRuleMap.clear();
   m_treeBoundaryCrossingRuleSet = nullptr;
   m_hasDeepOrShadowSelector = false;
@@ -263,6 +271,8 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector) {
 DEFINE_TRACE(ScopedStyleResolver) {
   visitor->trace(m_scope);
   visitor->trace(m_authorStyleSheets);
+  visitor->trace(m_viewportDependentMediaQueryResults);
+  visitor->trace(m_deviceDependentMediaQueryResults);
   visitor->trace(m_keyframesRuleMap);
   visitor->trace(m_treeBoundaryCrossingRuleSet);
 }

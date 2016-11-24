@@ -939,11 +939,10 @@ void FrameView::performPreLayoutTasks() {
   bool mainFrameRotation =
       m_frame->isMainFrame() && m_frame->settings() &&
       m_frame->settings()->mainFrameResizesAreOrientationChanges();
-  if (!document->styleResolver() ||
-      (wasResized &&
-       document->styleResolver()->mediaQueryAffectedByViewportChange()) ||
+  if ((wasResized &&
+       document->styleEngine().mediaQueryAffectedByViewportChange()) ||
       (wasResized && mainFrameRotation &&
-       document->styleResolver()->mediaQueryAffectedByDeviceChange())) {
+       document->styleEngine().mediaQueryAffectedByDeviceChange())) {
     document->mediaQueryAffectingValueChanged();
   } else if (wasResized) {
     document->evaluateMediaQueryList();
