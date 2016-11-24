@@ -262,10 +262,10 @@ CheckedAddImpl(T x, T y, T* result) {
 }
 
 template <typename T, typename U, class Enable = void>
-struct CheckedAdd {};
+struct CheckedAddOp {};
 
 template <typename T, typename U>
-struct CheckedAdd<
+struct CheckedAddOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -273,7 +273,7 @@ struct CheckedAdd<
   using result_type =
       typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
   template <typename V>
-  static bool Op(T x, U y, V* result) {
+  static bool Do(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
     return !__builtin_add_overflow(x, y, result);
 #else
@@ -316,10 +316,10 @@ CheckedSubImpl(T x, T y, T* result) {
 }
 
 template <typename T, typename U, class Enable = void>
-struct CheckedSub {};
+struct CheckedSubOp {};
 
 template <typename T, typename U>
-struct CheckedSub<
+struct CheckedSubOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -327,7 +327,7 @@ struct CheckedSub<
   using result_type =
       typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
   template <typename V>
-  static bool Op(T x, U y, V* result) {
+  static bool Do(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
     return !__builtin_sub_overflow(x, y, result);
 #else
@@ -407,10 +407,10 @@ CheckedMulImpl(T x, T y, T* result) {
 }
 
 template <typename T, typename U, class Enable = void>
-struct CheckedMul {};
+struct CheckedMulOp {};
 
 template <typename T, typename U>
-struct CheckedMul<
+struct CheckedMulOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -418,7 +418,7 @@ struct CheckedMul<
   using result_type =
       typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
   template <typename V>
-  static bool Op(T x, U y, V* result) {
+  static bool Do(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
 #if defined(__clang__)
     // TODO(jschuh): Get the Clang runtime library issues sorted out so we can
@@ -470,10 +470,10 @@ CheckedDivImpl(T x, T y, T* result) {
 }
 
 template <typename T, typename U, class Enable = void>
-struct CheckedDiv {};
+struct CheckedDivOp {};
 
 template <typename T, typename U>
-struct CheckedDiv<
+struct CheckedDivOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -481,7 +481,7 @@ struct CheckedDiv<
   using result_type =
       typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
   template <typename V>
-  static bool Op(T x, U y, V* result) {
+  static bool Do(T x, U y, V* result) {
     using Promotion =
         typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
     Promotion presult;
@@ -521,10 +521,10 @@ CheckedModImpl(T x, T y, T* result) {
 }
 
 template <typename T, typename U, class Enable = void>
-struct CheckedMod {};
+struct CheckedModOp {};
 
 template <typename T, typename U>
-struct CheckedMod<
+struct CheckedModOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
@@ -532,7 +532,7 @@ struct CheckedMod<
   using result_type =
       typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
   template <typename V>
-  static bool Op(T x, U y, V* result) {
+  static bool Do(T x, U y, V* result) {
     using Promotion =
         typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
     Promotion presult;
@@ -544,20 +544,20 @@ struct CheckedMod<
 };
 
 template <typename T, typename U, class Enable = void>
-struct CheckedLeftShift {};
+struct CheckedLshOp {};
 
 // Left shift. Shifts less than 0 or greater than or equal to the number
 // of bits in the promoted type are undefined. Shifts of negative values
 // are undefined. Otherwise it is defined when the result fits.
 template <typename T, typename U>
-struct CheckedLeftShift<
+struct CheckedLshOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
   using result_type = T;
   template <typename V>
-  static bool Op(T x, U shift, V* result) {
+  static bool Do(T x, U shift, V* result) {
     using ShiftType = typename UnsignedIntegerForSize<T>::type;
     static const ShiftType kBitWidth = CHAR_BIT * sizeof(T);
     const ShiftType real_shift = static_cast<ShiftType>(shift);
@@ -566,7 +566,7 @@ struct CheckedLeftShift<
       // Just use a multiplication because it's easy.
       // TODO(jschuh): This could probably be made more efficient.
       if (!std::is_signed<T>::value || real_shift != kBitWidth - 1)
-        return CheckedMul<T, T>::Op(x, static_cast<T>(1) << shift, result);
+        return CheckedMulOp<T, T>::Do(x, static_cast<T>(1) << shift, result);
       return !x;  // Special case zero for a full width signed shift.
     }
     return false;
@@ -574,20 +574,20 @@ struct CheckedLeftShift<
 };
 
 template <typename T, typename U, class Enable = void>
-struct CheckedRightShift {};
+struct CheckedRshOp {};
 
 // Right shift. Shifts less than 0 or greater than or equal to the number
 // of bits in the promoted type are undefined. Otherwise, it is always defined,
 // but a right shift of a negative value is implementation-dependent.
 template <typename T, typename U>
-struct CheckedRightShift<
+struct CheckedRshOp<
     T,
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
   using result_type = T;
   template <typename V = result_type>
-  static bool Op(T x, U shift, V* result) {
+  static bool Do(T x, U shift, V* result) {
     // Use the type conversion push negative values out of range.
     using ShiftType = typename UnsignedIntegerForSize<T>::type;
     if (static_cast<ShiftType>(shift) < (CHAR_BIT * sizeof(T))) {
@@ -669,21 +669,22 @@ SafeUnsignedAbs(T value) {
 
 // This is just boilerplate that wraps the standard floating point arithmetic.
 // A macro isn't the nicest solution, but it beats rewriting these repeatedly.
-#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                  \
-  template <typename T, typename U>                                          \
-  struct Checked##NAME<T, U, typename std::enable_if<                        \
-                                 std::numeric_limits<T>::is_iec559 ||        \
-                                 std::numeric_limits<U>::is_iec559>::type> { \
-    using result_type =                                                      \
-        typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;    \
-    template <typename V>                                                    \
-    static bool Op(T x, U y, V* result) {                                    \
-      using Promotion =                                                      \
-          typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;  \
-      Promotion presult = x OP y;                                            \
-      *result = static_cast<V>(presult);                                     \
-      return IsValueInRangeForNumericType<V>(presult);                       \
-    }                                                                        \
+#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                 \
+  template <typename T, typename U>                                         \
+  struct Checked##NAME##Op<                                                 \
+      T, U,                                                                 \
+      typename std::enable_if<std::numeric_limits<T>::is_iec559 ||          \
+                              std::numeric_limits<U>::is_iec559>::type> {   \
+    using result_type =                                                     \
+        typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;   \
+    template <typename V>                                                   \
+    static bool Do(T x, U y, V* result) {                                   \
+      using Promotion =                                                     \
+          typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type; \
+      Promotion presult = x OP y;                                           \
+      *result = static_cast<V>(presult);                                    \
+      return IsValueInRangeForNumericType<V>(presult);                      \
+    }                                                                       \
   };
 
 BASE_FLOAT_ARITHMETIC_OPS(Add, +)
@@ -803,6 +804,42 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
 
   constexpr bool is_valid() const { return std::isfinite(value_); }
   constexpr T value() const { return value_; }
+};
+
+// The following are helper templates used in the CheckedNumeric class.
+template <typename T>
+class CheckedNumeric;
+
+// Used to treat CheckedNumeric and arithmetic underlying types the same.
+template <typename T>
+struct UnderlyingType {
+  using type = T;
+  static const bool is_numeric = std::is_arithmetic<T>::value;
+  static const bool is_checked = false;
+};
+
+template <typename T>
+struct UnderlyingType<CheckedNumeric<T>> {
+  using type = T;
+  static const bool is_numeric = true;
+  static const bool is_checked = true;
+};
+
+template <typename L, typename R>
+struct IsCheckedOp {
+  static const bool value =
+      UnderlyingType<L>::is_numeric && UnderlyingType<R>::is_numeric &&
+      (UnderlyingType<L>::is_checked || UnderlyingType<R>::is_checked);
+};
+
+template <template <typename, typename, typename> class M,
+          typename L,
+          typename R>
+struct MathWrapper {
+  using math = M<typename UnderlyingType<L>::type,
+                 typename UnderlyingType<R>::type,
+                 void>;
+  using type = typename math::result_type;
 };
 
 }  // namespace internal

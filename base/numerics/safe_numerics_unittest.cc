@@ -21,6 +21,14 @@
 
 using std::numeric_limits;
 using base::CheckedNumeric;
+using base::CheckNum;
+using base::CheckAdd;
+using base::CheckSub;
+using base::CheckMul;
+using base::CheckDiv;
+using base::CheckMod;
+using base::CheckLsh;
+using base::CheckRsh;
 using base::checked_cast;
 using base::IsValueInRangeForNumericType;
 using base::IsValueNegative;
@@ -75,7 +83,7 @@ using base::internal::GetNumericValueForTest;
 
 // Helper macros to wrap displaying the conversion types and line numbers.
 #define TEST_EXPECTED_VALIDITY(expected, actual)                           \
-  EXPECT_EQ(expected, CheckedNumeric<Dst>(actual).IsValid())               \
+  EXPECT_EQ(expected, (actual).template Cast<Dst>().IsValid())             \
       << "Result test: Value " << GetNumericValueForTest(actual) << " as " \
       << dst << " on line " << line
 
@@ -84,7 +92,7 @@ using base::internal::GetNumericValueForTest;
 
 #define TEST_EXPECTED_VALUE(expected, actual)                              \
   EXPECT_EQ(static_cast<Dst>(expected),                                    \
-            CheckedNumeric<Dst>(actual).ValueOrDie())                      \
+            (actual).template Cast<Dst>().ValueOrDie())                    \
       << "Result test: Value " << GetNumericValueForTest(actual) << " as " \
       << dst << " on line " << line
 
@@ -817,4 +825,23 @@ TEST(SafeNumerics, CompoundNumericOperations) {
   EXPECT_FALSE(too_large.IsValid());
   too_large /= d;
   EXPECT_FALSE(too_large.IsValid());
+}
+
+TEST(SafeNumerics, VariadicNumericOperations) {
+  auto a = CheckAdd(1, 2UL, CheckNum(3LL), 4).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(a)>(10), a);
+  auto b = CheckSub(CheckNum(20.0), 2UL, 4).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(b)>(14.0), b);
+  auto c = CheckMul(20.0, CheckNum(1), 5, 3UL).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(c)>(300.0), c);
+  auto d = CheckDiv(20.0, 2.0, CheckNum(5LL), -4).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(d)>(-.5), d);
+  auto e = CheckMod(CheckNum(20), 3).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(e)>(2), e);
+  auto f = CheckLsh(1, CheckNum(2)).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(f)>(4), f);
+  auto g = CheckRsh(4, CheckNum(2)).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(g)>(1), g);
+  auto h = CheckRsh(CheckAdd(1, 1, 1, 1), CheckSub(4, 2)).ValueOrDie();
+  EXPECT_EQ(static_cast<decltype(h)>(1), h);
 }
