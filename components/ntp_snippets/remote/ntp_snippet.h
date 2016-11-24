@@ -20,29 +20,18 @@ class DictionaryValue;
 
 namespace ntp_snippets {
 
+// Exposed for tests.
 extern const int kArticlesRemoteId;
 
 class SnippetProto;
-
-struct SnippetSource {
-  SnippetSource(const GURL& url,
-                const std::string& publisher_name,
-                const GURL& amp_url)
-      : url(url), publisher_name(publisher_name), amp_url(amp_url) {}
-  GURL url;
-  std::string publisher_name;
-  GURL amp_url;
-};
 
 class NTPSnippet {
  public:
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
 
-  // Creates a new snippet with the given |id|.
-  // Public for testing only - create snippets using the Create* methods below.
-  // TODO(treib): Make this private and add a CreateSnippetForTest. The
-  // constructor can then also take the vector of ids as the handling of unique
-  // ids is then completely encapsulated inside the class.
+  // Public only so that MakeUnique will work. Don't use directly, call one of
+  // the CreateFrom* methods below instead.
+  // TODO(treib): Make the constructor take the vector of IDs and remove AddIDs.
   NTPSnippet(const std::string& id, int remote_category_id);
   ~NTPSnippet();
 
@@ -64,6 +53,14 @@ class NTPSnippet {
   // protocol buffer doesn't correspond to a valid snippet.
   static std::unique_ptr<NTPSnippet> CreateFromProto(const SnippetProto& proto);
 
+  // TODO(treib): Make tests use the public interface and remove this.
+  static std::unique_ptr<NTPSnippet> CreateForTesting(
+      const std::string& id,
+      int remote_category_id,
+      const GURL& url,
+      const std::string& publisher_name,
+      const GURL& amp_url);
+
   // Creates a protocol buffer corresponding to this snippet, for persisting.
   SnippetProto ToProto() const;
 
@@ -76,6 +73,15 @@ class NTPSnippet {
   // Title of the snippet.
   const std::string& title() const { return title_; }
   void set_title(const std::string& title) { title_ = title; }
+
+  // The main URL pointing to the content web page.
+  const GURL& url() const { return url_; }
+
+  // The name of the content's publisher.
+  const std::string& publisher_name() const { return publisher_name_; }
+
+  // Link to an AMP version of the content web page, if it exists.
+  const GURL& amp_url() const { return amp_url_; }
 
   // Summary or relevant extract from the content.
   const std::string& snippet() const { return snippet_; }
@@ -104,23 +110,11 @@ class NTPSnippet {
     expiry_date_ = expiry_date;
   }
 
-  // We should never construct an NTPSnippet object if we don't have any sources
-  // so this should never fail
-  const SnippetSource& best_source() const {
-    return sources_[best_source_index_];
-  }
-
-  // Adds a source to the snippet.
-  // TODO(tschumann): Remove this from the NTPSnippet interface
-  // (NTPSnippetsDatabaseTest is currently using it and should be changed).
-  void add_source(const SnippetSource& source) { sources_.push_back(source); }
-
   // If this snippet has all the data we need to show a full card to the user
   bool is_complete() const {
-    return !id().empty() && !sources().empty() && !title().empty() &&
-           !snippet().empty() && salient_image_url().is_valid() &&
-           !publish_date().is_null() && !expiry_date().is_null() &&
-           !best_source().publisher_name.empty();
+    return !id().empty() && !title().empty() && !snippet().empty() &&
+           salient_image_url().is_valid() && !publish_date().is_null() &&
+           !expiry_date().is_null() && !publisher_name().empty();
   }
 
   float score() const { return score_; }
@@ -138,13 +132,14 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  void InitBestSource();
   void AddIDs(const std::vector<std::string>& ids);
-  const std::vector<SnippetSource>& sources() const { return sources_; }
 
   // The first ID in the vector is the primary id.
   std::vector<std::string> ids_;
   std::string title_;
+  GURL url_;
+  std::string publisher_name_;
+  GURL amp_url_;
   GURL salient_image_url_;
   std::string snippet_;
   base::Time publish_date_;
@@ -152,10 +147,6 @@ class NTPSnippet {
   float score_;
   bool is_dismissed_;
   int remote_category_id_;
-
-  size_t best_source_index_;
-
-  std::vector<SnippetSource> sources_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippet);
 };

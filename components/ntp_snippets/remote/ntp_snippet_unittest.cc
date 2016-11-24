@@ -17,7 +17,7 @@ namespace {
 
 using ::testing::ElementsAre;
 using ::testing::IsNull;
-using ::testing::Not;
+using ::testing::NotNull;
 
 std::unique_ptr<NTPSnippet> SnippetFromContentSuggestionJSON(
     const std::string& json) {
@@ -46,7 +46,7 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
       "  \"score\": 9001\n"
       "}";
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr);
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
   EXPECT_EQ(snippet->id(), "http://localhost/foobar");
   EXPECT_EQ(snippet->title(), "Foo Barred from Baz");
@@ -58,9 +58,9 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
   EXPECT_FLOAT_EQ(unix_publish_date.InSecondsF(), 1467284497.000000f);
   EXPECT_FLOAT_EQ(expiry_duration.InSecondsF(), 86400.000000f);
 
-  EXPECT_EQ(snippet->best_source().publisher_name, "Foo News");
-  EXPECT_EQ(snippet->best_source().url, GURL("http://localhost/foobar"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL("http://localhost/amp"));
+  EXPECT_EQ(snippet->publisher_name(), "Foo News");
+  EXPECT_EQ(snippet->url(), GURL("http://localhost/foobar"));
+  EXPECT_EQ(snippet->amp_url(), GURL("http://localhost/amp"));
 }
 
 std::unique_ptr<NTPSnippet> SnippetFromChromeReaderDict(
@@ -108,14 +108,13 @@ std::unique_ptr<base::DictionaryValue> SnippetWithTwoSources() {
 
 TEST(NTPSnippetTest, TestMultipleSources) {
   auto snippet = SnippetFromChromeReaderDict(SnippetWithTwoSources());
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
   // Expect the first source to be chosen.
-  EXPECT_EQ(snippet->ToProto().sources_size(), 2);
   EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
-  EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL("http://source1.amp.com"));
+  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
+  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
+  EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
 }
 
 TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
@@ -131,13 +130,12 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
   source->Remove("ampUrl", nullptr);
 
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
-  EXPECT_EQ(snippet->ToProto().sources_size(), 2);
   EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->best_source().url, GURL("http://source2.com"));
-  EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 2"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL());
+  EXPECT_EQ(snippet->url(), GURL("http://source2.com"));
+  EXPECT_EQ(snippet->publisher_name(), std::string("Source 2"));
+  EXPECT_EQ(snippet->amp_url(), GURL());
 }
 
 TEST(NTPSnippetTest, TestMultipleIncompleteSources2) {
@@ -153,13 +151,12 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources2) {
   source->Remove("publisherData.sourceName", nullptr);
 
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
-  EXPECT_EQ(snippet->ToProto().sources_size(), 2);
   EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
-  EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL());
+  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
+  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
+  EXPECT_EQ(snippet->amp_url(), GURL());
 }
 
 TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
@@ -177,7 +174,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
   source->Remove("publisherData.sourceName", nullptr);
 
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
   ASSERT_FALSE(snippet->is_complete());
 }
 
@@ -232,16 +229,15 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources1) {
   source->Remove("publisherData.sourceName", nullptr);
 
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
-  EXPECT_EQ(snippet->ToProto().sources_size(), 3);
   EXPECT_EQ(snippet->id(), "http://url.com");
   EXPECT_THAT(snippet->GetAllIDs(),
               ElementsAre("http://url.com", "http://source1.com",
                           "http://source2.com", "http://source3.com"));
-  EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
-  EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL("http://source1.amp.com"));
+  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
+  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
+  EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
 }
 
 TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
@@ -254,26 +250,24 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
   source->Remove("publisherData.sourceName", nullptr);
 
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
-  EXPECT_EQ(snippet->ToProto().sources_size(), 3);
   EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->best_source().url, GURL("http://source2.com"));
-  EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 2"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL("http://source2.amp.com"));
+  EXPECT_EQ(snippet->url(), GURL("http://source2.com"));
+  EXPECT_EQ(snippet->publisher_name(), std::string("Source 2"));
+  EXPECT_EQ(snippet->amp_url(), GURL("http://source2.amp.com"));
 }
 
 TEST(NTPSnippetTest, TestMultipleCompleteSources3) {
   // Test 3 complete sources, we should choose the first complete source
   auto dict = SnippetWithThreeSources();
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
-  EXPECT_EQ(snippet->ToProto().sources_size(), 3);
   EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->best_source().url, GURL("http://source1.com"));
-  EXPECT_EQ(snippet->best_source().publisher_name, std::string("Source 1"));
-  EXPECT_EQ(snippet->best_source().amp_url, GURL("http://source1.amp.com"));
+  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
+  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
+  EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
 }
 
 TEST(NTPSnippetTest, ShouldSupportMultipleIdsFromContentSuggestionsServer) {
@@ -291,7 +285,7 @@ TEST(NTPSnippetTest, ShouldSupportMultipleIdsFromContentSuggestionsServer) {
       "  \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "}";
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr);
-  ASSERT_THAT(snippet, testing::NotNull());
+  ASSERT_THAT(snippet, NotNull());
 
   EXPECT_EQ(snippet->id(), "http://localhost/foobar");
   EXPECT_THAT(snippet->GetAllIDs(),
@@ -310,21 +304,19 @@ TEST(NTPSnippetTest, CreateFromProtoToProtoRoundtrip) {
   proto.set_score(0.1f);
   proto.set_dismissed(false);
   proto.set_remote_category_id(1);
-  auto source_1 = proto.add_sources();
-  source_1->set_url("http://cool-suggestions.com/");
-  source_1->set_publisher_name("Great Suggestions Inc.");
-  auto amp_source = proto.add_sources();
-  amp_source->set_url("http://foo/");
-  amp_source->set_amp_url("http://cdn.ampproject.org/c/foo/");
+  auto source = proto.add_sources();
+  source->set_url("http://cool-suggestions.com/");
+  source->set_publisher_name("Great Suggestions Inc.");
+  source->set_amp_url("http://cdn.ampproject.org/c/foo/");
 
   std::unique_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromProto(proto);
-  ASSERT_THAT(snippet, Not(IsNull()));
+  ASSERT_THAT(snippet, NotNull());
   // The snippet database relies on the fact that the first id in the protocol
   // buffer is considered the unique id.
   EXPECT_EQ(snippet->id(), "foo");
   // Unfortunately, we only have MessageLite protocol buffers in Chrome, so
   // comparing via DebugString() or MessageDifferencer is not working.
-  // So we either need to compare field-by-field (maintenenance heavy) or
+  // So we either need to compare field-by-field (maintenance heavy) or
   // compare the binary version (unusable diagnostic). Deciding for the latter.
   std::string proto_serialized, round_tripped_serialized;
   proto.SerializeToString(&proto_serialized);

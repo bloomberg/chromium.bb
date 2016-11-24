@@ -213,14 +213,12 @@ std::vector<ContentSuggestion> ConvertToContentSuggestions(
     if (!snippet->is_complete()) {
       continue;
     }
-    ContentSuggestion suggestion(category, snippet->id(),
-                                 snippet->best_source().url);
-    suggestion.set_amp_url(snippet->best_source().amp_url);
+    ContentSuggestion suggestion(category, snippet->id(), snippet->url());
+    suggestion.set_amp_url(snippet->amp_url());
     suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
     suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
     suggestion.set_publish_date(snippet->publish_date());
-    suggestion.set_publisher_name(
-        base::UTF8ToUTF16(snippet->best_source().publisher_name));
+    suggestion.set_publisher_name(base::UTF8ToUTF16(snippet->publisher_name()));
     suggestion.set_score(snippet->score());
     result.emplace_back(std::move(suggestion));
   }

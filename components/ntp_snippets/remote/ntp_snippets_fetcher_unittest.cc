@@ -88,9 +88,9 @@ MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
                      << category->snippets.size();
     return false;
   }
-  if (category->snippets[0]->best_source().url.spec() != url) {
+  if (category->snippets[0]->url().spec() != url) {
     *result_listener << "unexpected url, got: "
-                     << category->snippets[0]->best_source().url.spec();
+                     << category->snippets[0]->url().spec();
     return false;
   }
   return true;
@@ -684,13 +684,11 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
     const auto& articles = category.snippets;
     if (category.category.IsKnownCategory(KnownCategories::ARTICLES)) {
       ASSERT_THAT(articles.size(), Eq(1u));
-      EXPECT_THAT(articles[0]->best_source().url.spec(),
-                  Eq("http://localhost/foobar"));
+      EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foobar"));
       EXPECT_THAT(category.info, IsCategoryInfoForArticles());
     } else if (category.category == CategoryFactory().FromRemoteCategory(2)) {
       ASSERT_THAT(articles.size(), Eq(1u));
-      EXPECT_THAT(articles[0]->best_source().url.spec(),
-                  Eq("http://localhost/foo2"));
+      EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foo2"));
       EXPECT_THAT(category.info.has_more_action(), Eq(true));
       EXPECT_THAT(category.info.has_reload_action(), Eq(true));
       EXPECT_THAT(category.info.has_view_all_action(), Eq(false));
@@ -816,8 +814,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   EXPECT_THAT(category.category.id(),
               Eq(CategoryFactory().FromRemoteCategory(2).id()));
   ASSERT_THAT(category.snippets.size(), Eq(1u));
-  EXPECT_THAT(category.snippets[0]->best_source().url.spec(),
-              Eq("http://localhost/foo2"));
+  EXPECT_THAT(category.snippets[0]->url().spec(), Eq("http://localhost/foo2"));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {

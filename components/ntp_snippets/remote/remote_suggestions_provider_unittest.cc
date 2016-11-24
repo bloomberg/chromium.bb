@@ -1305,9 +1305,9 @@ TEST_F(RemoteSuggestionsProviderTest, TestSingleSource) {
   const NTPSnippet& snippet =
       *service->GetSnippetsForTesting(articles_category()).front();
   EXPECT_EQ(snippet.id(), kSnippetUrl);
-  EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
-  EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
-  EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
+  EXPECT_EQ(snippet.url(), GURL("http://source1.com"));
+  EXPECT_EQ(snippet.publisher_name(), std::string("Source 1"));
+  EXPECT_EQ(snippet.amp_url(), GURL("http://source1.amp.com"));
 }
 
 TEST_F(RemoteSuggestionsProviderTest, TestSingleSourceWithMalformedUrl) {
