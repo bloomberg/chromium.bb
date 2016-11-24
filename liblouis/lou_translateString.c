@@ -2070,7 +2070,7 @@ checkEmphasisChange(const int skip)
 {
 	int i;	
 	for(i = src + (skip + 1); i < src + transRule->charslen; i++)
-	if((emphasisBuffer[i] & ~CAPS_EMPHASIS) || transNoteBuffer[i])
+	if(emphasisBuffer[i] || transNoteBuffer[i])
 		return 1;
 	return 0;
 }
@@ -2219,11 +2219,27 @@ for_selectRule ()
 	  transCharslen = transRule->charslen;
 	  if (tryThis == 1 || ((transCharslen <= length) && validMatch ()))
 	    {
+			/*   check before emphasis match   */
+			if(transRule->before & CTC_EmpMatch)
+			{
+				if(   emphasisBuffer[src]
+				   || transNoteBuffer[src])
+					break;
+			}
+			
+			/*   check after emphasis match   */
+			if(transRule->after & CTC_EmpMatch)
+			{
+				if(   emphasisBuffer[src + transCharslen]
+				   || transNoteBuffer[src + transCharslen])
+					break;
+			}
+			
 	      /* check this rule */
 	      setAfter (transCharslen);
-	      if ((!transRule->after || (beforeAttributes
+	      if ((!(transRule->after & ~CTC_EmpMatch) || (beforeAttributes
 					 & transRule->after)) &&
-		  (!transRule->before || (afterAttributes
+		  (!(transRule->before & ~CTC_EmpMatch) || (afterAttributes
 					  & transRule->before)))
 		switch (transOpcode)
 		  {		/*check validity of this Translation */
@@ -2806,6 +2822,10 @@ resolveEmphasisWords(
 				word_start = i;
 				word_whole = 0;
 			}
+
+			/*   emphasis started on space   */
+			if(!(wordBuffer[i] & WORD_CHAR))
+				word_start = -1;
 		}
 		
 		/*   check if at end of emphasis   */
@@ -3529,7 +3549,7 @@ insertEmphasesAt(const int at)
 					EMPHASIS_END << (min * 4), EMPHASIS_WORD << (min * 4));
 		else
 			insertEmphasisEnd(
-				transNoteBuffer, at, emph6Rule + min,
+				transNoteBuffer, at, emph1Rule + min,
 					TRANSNOTE_END << (min * 4), TRANSNOTE_WORD << (min * 4));
 	}
 
@@ -3555,7 +3575,7 @@ insertEmphasesAt(const int at)
 		type_counts[max] = 0;
 		if (max >= 5)
 			insertEmphasisBegin(
-				transNoteBuffer, at, emph6Rule + max,
+				transNoteBuffer, at, emph1Rule + max,
 					TRANSNOTE_BEGIN << (max * 4), TRANSNOTE_END << (max * 4), TRANSNOTE_WORD << (max * 4));
 		else
 			insertEmphasisBegin(
