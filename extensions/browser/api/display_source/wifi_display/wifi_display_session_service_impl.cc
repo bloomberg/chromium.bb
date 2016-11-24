@@ -200,7 +200,7 @@ void WiFiDisplaySessionServiceImpl::OnDisconnectFailed(
 
 void WiFiDisplaySessionServiceImpl::OnClientConnectionError() {
   DLOG(ERROR) << "IPC connection error";
-  binding_.Close();
+  binding_->Close();
 }
 
 }  // namespace extensions

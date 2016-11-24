@@ -131,7 +131,7 @@ void WiFiDisplayMediaServiceImpl::OnSent(int code) {
   last_send_code_ = code;
   if (code < 0) {
     VLOG(1) << "Unrepairable UDP socket error.";
-    binding_.Close();
+    binding_->Close();
     return;
   }
   DCHECK(!write_buffers_.empty());
