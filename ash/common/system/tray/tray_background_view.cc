@@ -251,14 +251,18 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
   views::BoxLayout::Orientation orientation =
       is_horizontal ? views::BoxLayout::kHorizontal
                     : views::BoxLayout::kVertical;
-  const gfx::Insets insets(
-      ash::MaterialDesignController::IsShelfMaterial()
-          ? is_horizontal ? gfx::Insets(0, kHitRegionPadding, 0,
-                                        kHitRegionPadding + kSeparatorWidth)
-                          : gfx::Insets(kHitRegionPadding, 0,
-                                        kHitRegionPadding + kSeparatorWidth, 0)
-          : gfx::Insets(kBackgroundAdjustPadding));
-  SetBorder(views::CreateEmptyBorder(insets));
+
+  if (ash::MaterialDesignController::IsShelfMaterial()) {
+    const int hit_region_with_separator = kHitRegionPadding + kSeparatorWidth;
+    gfx::Insets insets(
+        is_horizontal
+            ? gfx::Insets(0, kHitRegionPadding, 0, hit_region_with_separator)
+            : gfx::Insets(kHitRegionPadding, 0, hit_region_with_separator, 0));
+    MirrorInsetsIfNecessary(&insets);
+    SetBorder(views::CreateEmptyBorder(insets));
+  } else {
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kBackgroundAdjustPadding)));
+  }
 
   int horizontal_margin = main_axis_margin_;
   int vertical_margin = cross_axis_margin_;
@@ -582,15 +586,17 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
       !is_separator_visible_) {
     return;
   }
-  // In the given |canvas|, draws a 1x32px separator line 4 pixel to the right
-  // of the TrayBackgroundView.
+  //  In the given |canvas|, for a horizontal shelf draw a separator line to the
+  //  right or left of the TrayBackgroundView when the system is LTR or RTL
+  //  aligned, respectively. For a vertical shelf draw the separator line
+  //  underneath the items instead.
   const bool horizontal_shelf = IsHorizontalAlignment(shelf_alignment_);
   const gfx::Rect local_bounds = GetLocalBounds();
   const int height = kTrayItemSize;
-  const int width = kSeparatorWidth;
   const int x =
-      (horizontal_shelf ? local_bounds.width() : local_bounds.height()) -
-      kSeparatorWidth;
+      horizontal_shelf
+          ? (base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth))
+          : (local_bounds.height() - kSeparatorWidth);
   const int y = (GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2;
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
@@ -598,11 +604,19 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   paint.setColor(kSeparatorColor);
   paint.setAntiAlias(true);
 
-  const gfx::Rect bounds = horizontal_shelf ? gfx::Rect(x, y, width, height)
-                                            : gfx::Rect(y, x, height, width);
+  const gfx::Rect bounds = horizontal_shelf
+                               ? gfx::Rect(x, y, kSeparatorWidth, height)
+                               : gfx::Rect(y, x, height, kSeparatorWidth);
   gfx::RectF rect(gfx::ScaleRect(gfx::RectF(bounds), scale));
-  canvas->DrawLine(horizontal_shelf ? rect.top_right() : rect.bottom_left(),
-                   rect.bottom_right(), paint);
+  gfx::PointF line_start =
+      horizontal_shelf
+          ? (base::i18n::IsRTL() ? rect.origin() : rect.top_right())
+          : rect.bottom_left();
+  gfx::PointF line_end =
+      (horizontal_shelf && base::i18n::IsRTL() ? rect.bottom_left()
+                                               : rect.bottom_right());
+
+  canvas->DrawLine(line_start, line_end, paint);
 }
 
 gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
