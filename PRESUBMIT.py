@@ -1584,34 +1584,6 @@ def _CheckMojoUsesNewWrapperTypes(input_api, output_api):
   return []
 
 
-def _CheckUselessForwardDeclarations(input_api, output_api):
-  """Checks that affected header files do not contain useless class
-     or struct forward declaration.
-  """
-  results = []
-  class_pattern = input_api.re.compile(r'^class\s+(\w+);$',
-                                       input_api.re.MULTILINE)
-  struct_pattern = input_api.re.compile(r'^struct\s+(\w+);$',
-                                        input_api.re.MULTILINE)
-  for f in input_api.AffectedFiles():
-    if not f.LocalPath().endswith('.h'):
-      continue
-
-    contents = input_api.ReadFile(f)
-    fwd_decls = input_api.re.findall(class_pattern, contents)
-    fwd_decls.extend(input_api.re.findall(struct_pattern, contents))
-
-    for decl in fwd_decls:
-      count = sum(1 for _ in input_api.re.finditer(
-        r'\b%s\b' % input_api.re.escape(decl), contents))
-      if count == 1:
-        results.append(output_api.PresubmitPromptWarning(
-          '%s: %s forward declaration seems to be useless' %
-          (f.LocalPath(), decl)))
-
-  return results
-
-
 def _CheckAndroidToastUsage(input_api, output_api):
   """Checks that code uses org.chromium.ui.widget.Toast instead of
      android.widget.Toast (Chromium Toast doesn't force hardware
@@ -2061,7 +2033,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckIpcOwners(input_api, output_api))
   results.extend(_CheckMojoUsesNewWrapperTypes(input_api, output_api))
-  results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
