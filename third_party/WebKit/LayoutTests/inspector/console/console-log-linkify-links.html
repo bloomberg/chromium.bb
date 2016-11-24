@@ -20,9 +20,11 @@ function test()
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
         var element = uiMessage.contentElement();
-        var hrefs = element.querySelectorAll(".webkit-html-resource-link");
-        for (var href of hrefs)
-            InspectorTest.addResult("linked url:" + href.href);
+        var links = element.querySelectorAll(".devtools-link");
+        for (var link of links) {
+            var info = Components.Linkifier._linkInfo(link);
+            InspectorTest.addResult("linked url:" + (info && info.url));
+        }
     }
 
     InspectorTest.completeTest();

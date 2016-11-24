@@ -75,7 +75,7 @@ function initialize_extensionsPanelTest()
 
         function clickOnMessage()
         {
-            var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]", Console.ConsoleView.instance()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
+            var xpathResult = document.evaluate("//span[starts-with(., 'extensions-panel.html')]", Console.ConsoleView.instance()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
 
             var click = document.createEvent("MouseEvent");
             click.initMouseEvent("click", true, true);

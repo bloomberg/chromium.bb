@@ -55,9 +55,9 @@ function test()
         uiSourceCode = Workspace.workspace.uiSourceCodeForURL(InspectorTest.mainTarget.inspectedURL());
         var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
         var fragment = Components.linkifyStringAsFragment(linkifyMe);
-        var anchor = fragment.querySelector('a');
-        InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + anchor.href);
+        var anchor = fragment.querySelector('.devtools-link');
         var info = Components.Linkifier._linkInfo(anchor);
+        InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + (info && info.url));
         InspectorTest.addResult("The lineNumber is " + (info && info.lineNumber));
         InspectorTest.addResult("The columnNumber is " + (info && info.columnNumber));
 

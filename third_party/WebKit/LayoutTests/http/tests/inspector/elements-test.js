@@ -398,7 +398,7 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
 
 function extractLinkText(element)
 {
-    var anchor = element.nodeName === "A" ? element : element.querySelector("a");
+    var anchor = element.querySelector(".devtools-link");
     if (!anchor)
         return element.textContent;
     var anchorText = anchor.textContent;

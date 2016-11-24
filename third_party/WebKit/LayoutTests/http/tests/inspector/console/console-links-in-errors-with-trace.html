@@ -20,7 +20,7 @@ function test()
     function step1()
     {
         var firstMessageEl = Console.ConsoleView.instance()._visibleViewMessages[0].element();
-        clickTarget = firstMessageEl.querySelectorAll(".console-message-text a")[1];
+        clickTarget = firstMessageEl.querySelectorAll(".console-message-text .devtools-link")[1];
         UI.inspectorView.showPanel("console").then(testClickTarget);
     }
 

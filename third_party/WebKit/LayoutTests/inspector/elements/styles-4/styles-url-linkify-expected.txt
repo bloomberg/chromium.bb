@@ -24,7 +24,7 @@ javascript:alert('foo');
 blob:http://example.com/f91b7b00-00-0000-0000-3b7c87055d7a
 blob:http://example.com/f91b7b00-00-0000-0000-3b7c87055d7a
 Link for a URI from CSS document:
-webkit-html-resource-link elements/styles/resources/fromcss.png
+devtools-link elements/styles/resources/fromcss.png
 Link for a URI from iframe inline stylesheet:
 elements/styles/resources/iframed.png
 

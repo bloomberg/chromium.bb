@@ -56,10 +56,8 @@ function test()
 
         var styleClass = "";
         if (dumpLinkClass) {
-            if (hrefNode.classList.contains("webkit-html-resource-link"))
-                styleClass += "webkit-html-resource-link ";
-            if (hrefNode.classList.contains("webkit-html-external-link"))
-                styleClass += "webkit-html-external-link ";
+            if (hrefNode.classList.contains("devtools-link"))
+                styleClass += "devtools-link ";
         }
 
         var href = hrefNode.href;

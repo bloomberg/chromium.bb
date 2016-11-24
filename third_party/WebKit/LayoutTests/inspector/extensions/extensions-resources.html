@@ -28,7 +28,7 @@ InspectorTest.clickOnURL = function()
 {
     UI.viewManager.showView("console").then(() => {
         Console.ConsoleView.instance()._updateMessageList();
-        var xpathResult = document.evaluate("//a[starts-with(., 'test-script.js')]",
+        var xpathResult = document.evaluate("//span[starts-with(., 'test-script.js')]",
                                             Console.ConsoleView.instance().element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
 
         var click = document.createEvent("MouseEvent");
