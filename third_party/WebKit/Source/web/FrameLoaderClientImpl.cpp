@@ -604,6 +604,11 @@ void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request,
       suggestedName, shouldReplaceCurrentEntry);
 }
 
+void FrameLoaderClientImpl::loadErrorPage(int reason) {
+  if (m_webFrame->client())
+    m_webFrame->client()->loadErrorPage(reason);
+}
+
 bool FrameLoaderClientImpl::navigateBackForward(int offset) const {
   WebViewImpl* webview = m_webFrame->viewImpl();
   if (!webview->client())

@@ -68,7 +68,7 @@ class CORE_EXPORT NavigationScheduler final
   void scheduleLocationChange(Document*,
                               const String& url,
                               bool replacesCurrentItem = true);
-  void schedulePageBlock(Document*);
+  void schedulePageBlock(Document*, int reason);
   void scheduleFormSubmission(Document*, FormSubmission*);
   void scheduleReload();
 

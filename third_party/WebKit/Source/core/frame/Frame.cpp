@@ -49,6 +49,7 @@
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
 #include "platform/feature_policy/FeaturePolicy.h"
+#include "platform/network/ResourceError.h"
 
 namespace blink {
 
@@ -195,9 +196,10 @@ bool Frame::canNavigate(const Frame& targetFrame) {
         "user gesture. See "
         "https://www.chromestatus.com/features/5851021045661696.";
     printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
-    if (isLocalFrame())
+    if (isLocalFrame()) {
       toLocalFrame(this)->navigationScheduler().schedulePageBlock(
-          toLocalFrame(this)->document());
+          toLocalFrame(this)->document(), ResourceError::ACCESS_DENIED);
+    }
     return false;
   }
   if (!isAllowedNavigation && !errorReason.isNull())

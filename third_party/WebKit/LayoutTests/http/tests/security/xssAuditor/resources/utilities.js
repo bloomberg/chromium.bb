@@ -17,6 +17,23 @@ function checkIfFrameLocationMatchesSrcAndCallDone(frameId)
     testRunner.notifyDone();
 }
 
+function checkFrameIsCrossOriginAndCallDone(frameId) {
+    if (!window.testRunner)
+        return;
+
+    var actualURL = 'unavailable', frame = document.getElementById(frameId);
+    try {
+        actualURL = frame.contentWindow.location.href;
+        console.log('FAIL: "' + frameId + '" loaded "' + actualURL + '".');
+    }
+    catch (e) {
+        actualURL = '[Location object access threw exception]';
+        console.log('PASS: "' + frameId + '" is cross-origin.');
+    }
+
+    testRunner.notifyDone();
+}
+
 function sendRequestFromIFrame(url, params, HTTPMethod, callbackWhenDone)
 {
     if (!params || !params.length)

@@ -278,29 +278,22 @@ class ScheduledReload final : public ScheduledNavigation {
   ScheduledReload() : ScheduledNavigation(0.0, nullptr, true, true) {}
 };
 
-class ScheduledPageBlock final : public ScheduledURLNavigation {
+class ScheduledPageBlock final : public ScheduledNavigation {
  public:
-  static ScheduledPageBlock* create(Document* originDocument,
-                                    const String& url) {
-    return new ScheduledPageBlock(originDocument, url);
+  static ScheduledPageBlock* create(Document* originDocument, int reason) {
+    return new ScheduledPageBlock(originDocument, reason);
   }
 
   void fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gestureIndicator =
-        createUserGestureIndicator();
-    SubstituteData substituteData(SharedBuffer::create(), "text/plain", "UTF-8",
-                                  KURL(), ForceSynchronousLoad);
-    FrameLoadRequest request(originDocument(), url(), substituteData);
-    request.setReplacesCurrentItem(true);
-    request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
-    maybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::ScheduledPageBlock, frame);
-    frame->loader().load(request);
+    frame->loader().client()->loadErrorPage(m_reason);
   }
 
  private:
-  ScheduledPageBlock(Document* originDocument, const String& url)
-      : ScheduledURLNavigation(0.0, originDocument, url, true, true) {}
+  ScheduledPageBlock(Document* originDocument, int reason)
+      : ScheduledNavigation(0.0, originDocument, true, true),
+        m_reason(reason) {}
+
+  int m_reason;
 };
 
 class ScheduledFormSubmission final : public ScheduledNavigation {
@@ -458,10 +451,10 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument,
                                            replacesCurrentItem));
 }
 
-void NavigationScheduler::schedulePageBlock(Document* originDocument) {
+void NavigationScheduler::schedulePageBlock(Document* originDocument,
+                                            int reason) {
   DCHECK(m_frame->page());
-  const KURL& url = m_frame->document()->url();
-  schedule(ScheduledPageBlock::create(originDocument, url));
+  schedule(ScheduledPageBlock::create(originDocument, reason));
 }
 
 void NavigationScheduler::scheduleFormSubmission(Document* document,

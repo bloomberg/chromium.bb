@@ -4,7 +4,12 @@ The navigation should fail and this iframe should be blocked. This text shouldn'
 <script>
 window.onload = function()
 {
-    top.location = "http://localhost:8000/security/frameNavigation/resources/navigation-changed-iframe.html";
+    try {
+        top.location = "http://localhost:8000/security/frameNavigation/resources/navigation-changed-iframe.html";
+        top.postMessage("FAIL", "*");
+    } catch(e) {
+        top.postMessage("PASS", "*");
+    }
 }
 </script>
 </body>

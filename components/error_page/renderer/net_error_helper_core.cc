@@ -497,6 +497,8 @@ bool NetErrorHelperCore::IsReloadableError(
          // handshake_failure alert.
          // https://crbug.com/431387
          info.error.reason != net::ERR_SSL_PROTOCOL_ERROR &&
+         // Do not trigger for XSS Auditor violations.
+         info.error.reason != net::ERR_BLOCKED_BY_XSS_AUDITOR &&
          !info.was_failed_post &&
          // Don't auto-reload non-http/https schemas.
          // https://crbug.com/471713

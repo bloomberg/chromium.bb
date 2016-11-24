@@ -288,6 +288,7 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
                          NavigationPolicy,
                          const String&,
                          bool) override {}
+  void loadErrorPage(int reason) override {}
 
   DocumentLoader* createDocumentLoader(LocalFrame*,
                                        const ResourceRequest&,

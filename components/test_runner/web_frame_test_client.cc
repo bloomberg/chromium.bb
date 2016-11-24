@@ -23,6 +23,7 @@
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
 #include "components/test_runner/web_widget_test_proxy.h"
+#include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -401,6 +402,13 @@ void WebFrameTestClient::loadURLExternally(
                               URLDescription(request.url()) + "\"\n");
     }
     delegate_->TestFinished();
+  }
+}
+
+void WebFrameTestClient::loadErrorPage(int reason) {
+  if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    delegate_->PrintMessage(base::StringPrintf(
+        "- loadErrorPage: %s\n", net::ErrorToString(reason).c_str()));
   }
 }
 

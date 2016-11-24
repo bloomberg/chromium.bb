@@ -274,6 +274,9 @@ class BLINK_EXPORT WebFrameClient {
                                  const WebString& downloadName,
                                  bool shouldReplaceCurrentEntry) {}
 
+  // The client should load an error page in the current frame.
+  virtual void loadErrorPage(int reason) {}
+
   // Navigational queries ------------------------------------------------
 
   // The client may choose to alter the navigation policy.  Otherwise,

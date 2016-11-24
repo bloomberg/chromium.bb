@@ -123,6 +123,7 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
                          NavigationPolicy,
                          const String& suggestedName,
                          bool shouldReplaceCurrentEntry) override;
+  void loadErrorPage(int reason) override;
   bool navigateBackForward(int offset) const override;
   void didAccessInitialDocument() override;
   void didDisplayInsecureContent() override;

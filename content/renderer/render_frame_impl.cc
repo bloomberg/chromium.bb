@@ -2482,6 +2482,23 @@ void RenderFrameImpl::LoadURLExternally(const blink::WebURLRequest& request,
   loadURLExternally(request, policy, WebString(), false);
 }
 
+void RenderFrameImpl::loadErrorPage(int reason) {
+  blink::WebURLError error;
+  error.unreachableURL = frame_->document().url();
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.reason = reason;
+
+  std::string error_html;
+  GetContentClient()->renderer()->GetNavigationErrorStrings(
+      this, frame_->dataSource()->request(), error, &error_html, nullptr);
+
+  frame_->loadData(error_html, WebString::fromUTF8("text/html"),
+                   WebString::fromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
+                   error.unreachableURL, true,
+                   blink::WebFrameLoadType::Standard, blink::WebHistoryItem(),
+                   blink::WebHistoryDifferentDocumentLoad, true);
+}
+
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   OnJavaScriptExecuteRequest(javascript, 0, false);
 }

@@ -133,6 +133,7 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
                                  NavigationPolicy,
                                  const String& suggestedName,
                                  bool replacesCurrentHistoryItem) = 0;
+  virtual void loadErrorPage(int reason) = 0;
 
   virtual bool navigateBackForward(int offset) const = 0;
 

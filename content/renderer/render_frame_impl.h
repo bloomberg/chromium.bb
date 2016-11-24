@@ -511,6 +511,7 @@ class CONTENT_EXPORT RenderFrameImpl
                          blink::WebNavigationPolicy policy,
                          const blink::WebString& suggested_name,
                          bool should_replace_current_entry) override;
+  void loadErrorPage(int reason) override;
   blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
   blink::WebHistoryItem historyItemForNewChildFrame() override;

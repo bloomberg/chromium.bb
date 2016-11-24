@@ -106,6 +106,9 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_BODY" desc="The detailed explanation body text displayed for SSL cipher and version errors.">
     The client and server don't support a common SSL protocol version or cipher suite.
   </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_NAVIGATE_TO_ORIGIN" desc="When a webpage fails to load, sometimes we suggest to the user that they might navigate to the page's origin.">
+    Try <ph name="BEGIN_LINK">&lt;a jsvalues="href:originURL;.jstdata:$this" onmousedown="linkClicked(this.jstdata)"&gt;</ph>visiting the site's homepage<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
   <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
     This site can’t be reached
   </message>
@@ -233,7 +236,7 @@
     It may have been moved or deleted.
   </message>
   <message name="IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING" desc="Heading in the error page for HTTP 5xx errors, which are considered to be server side errors. Also used for bad responses.">
-    The <ph name="HOST_NAME">&lt;span jscontent="hostName"&gt;&lt;/span&gt;<ex>www.whatever.com</ex></ph> page isn’t working
+    This page isn’t working
   </message>
 
   <message name="IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST" desc="Summary in the error page when the server returns a 501 or 505.">
@@ -267,6 +270,9 @@
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_EXTENSION" desc="Summary in the error page when an extension blocks a request.">
     Requests to the server have been blocked by an extension.
+  </message>
+  <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_XSS_AUDITOR" desc="Summary in the error page when the XSS Auditor blocks a response.">
+    Chrome detected unusual code on this page and blocked it to protect your personal information (for example, passwords, phone numbers, and credit cards).
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR" desc="Summary in the error page when an administrator policy blocks a request.">
     The person who set up this computer has chosen to block this site.

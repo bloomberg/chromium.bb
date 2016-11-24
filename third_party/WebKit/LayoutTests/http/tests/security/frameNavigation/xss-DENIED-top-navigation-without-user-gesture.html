@@ -4,10 +4,19 @@
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.dumpChildFramesAsText();
-    testRunner.setDumpConsoleMessages(false);
+    testRunner.setDumpConsoleMessages(true);
+    testRunner.waitUntilDone();
 }
+
 if (window.internals)
-    internals.runtimeFlags.setFramebustingNeedsSameOriginOrUserGesture(true);
+    internals.runtimeFlags.setFramebustingNeedsSameOriginOrUserGesture = true;
+
+window.addEventListener("message", e => {
+  if (e.data == "PASS")
+    testRunner.notifyDone();
+  else
+    testRunner.testFailed("'top.location' didn't throw.");
+});
 </script>
 </head>
 <body>

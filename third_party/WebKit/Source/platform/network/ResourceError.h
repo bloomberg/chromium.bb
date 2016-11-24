@@ -27,6 +27,7 @@
 #ifndef ResourceError_h
 #define ResourceError_h
 
+#include "net/base/net_errors.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
@@ -41,6 +42,11 @@ class PLATFORM_EXPORT ResourceError final {
   DISALLOW_NEW();
 
  public:
+  enum Error {
+    ACCESS_DENIED = net::ERR_ACCESS_DENIED,
+    BLOCKED_BY_XSS_AUDITOR = net::ERR_BLOCKED_BY_XSS_AUDITOR
+  };
+
   static ResourceError cancelledError(const String& failingURL);
   static ResourceError cancelledDueToAccessCheckError(const String& failingURL);
 
