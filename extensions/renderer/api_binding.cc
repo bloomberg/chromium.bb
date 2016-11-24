@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/api_binding.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -148,18 +150,43 @@ std::unique_ptr<base::ListValue> ParseArguments(
   return results;
 }
 
+struct APIPerContextData : public base::SupportsUserData::Data {
+  std::vector<std::unique_ptr<APIBinding::HandlerCallback>> context_callbacks;
+};
+
 void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
+
+  // If the current context (the in which this function was created) has been
+  // disposed, the per-context data has been deleted. Since it was the owner of
+  // the callback, we can no longer access that object.
+  v8::Local<v8::Context> context = args.isolate()->GetCurrentContext();
+  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
+  if (!per_context_data)
+    return;
+
   v8::Local<v8::External> external;
   CHECK(args.GetData(&external));
-  auto callback = static_cast<APIBinding::HandlerCallback*>(external->Value());
+  auto* callback = static_cast<APIBinding::HandlerCallback*>(external->Value());
+
+#if DCHECK_IS_ON()
+  // If there is per-context data, then it should own the callback that is about
+  // to be called. Double-check this in debug builds.
+  APIPerContextData* data = static_cast<APIPerContextData*>(
+      per_context_data->GetUserData(kExtensionAPIPerContextKey));
+  DCHECK(data);
+  DCHECK(std::any_of(
+      data->context_callbacks.begin(), data->context_callbacks.end(),
+      [callback](
+          const std::unique_ptr<APIBinding::HandlerCallback>& live_callback) {
+        return live_callback.get() == callback;
+      }));
+#endif  // DCHECK_IS_ON()
+
   callback->Run(&args);
 }
 
 }  // namespace
-
-APIBinding::APIPerContextData::APIPerContextData() {}
-APIBinding::APIPerContextData::~APIPerContextData() {}
 
 APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue& function_definitions,

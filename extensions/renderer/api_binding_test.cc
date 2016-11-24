@@ -38,29 +38,31 @@ void APIBindingTest::SetUp() {
 }
 
 void APIBindingTest::TearDown() {
-  // Check for leaks - a weak handle to a context is invalidated on context
-  // destruction, so resetting the context should reset the handle.
-  v8::Global<v8::Context> weak_context;
-  {
-    v8::HandleScope handle_scope(isolate());
-    v8::Local<v8::Context> context = ContextLocal();
-    weak_context.Reset(isolate(), context);
-    weak_context.SetWeak();
-    context->Exit();
-  }
-  context_holder_.reset();
+  if (context_holder_) {
+    // Check for leaks - a weak handle to a context is invalidated on context
+    // destruction, so resetting the context should reset the handle.
+    v8::Global<v8::Context> weak_context;
+    {
+      v8::HandleScope handle_scope(isolate());
+      v8::Local<v8::Context> context = ContextLocal();
+      weak_context.Reset(isolate(), context);
+      weak_context.SetWeak();
+      context->Exit();
+    }
+    context_holder_.reset();
 
-  // Garbage collect everything so that we find any issues where we might be
-  // double-freeing.
-  // '5' is a magic number stolen from Blink; arbitrarily large enough to
-  // hopefully clean up all the various paths.
-  for (int i = 0; i < 5; ++i) {
-    isolate()->RequestGarbageCollectionForTesting(
-        v8::Isolate::kFullGarbageCollection);
-  }
+    // Garbage collect everything so that we find any issues where we might be
+    // double-freeing.
+    // '5' is a magic number stolen from Blink; arbitrarily large enough to
+    // hopefully clean up all the various paths.
+    for (int i = 0; i < 5; ++i) {
+      isolate()->RequestGarbageCollectionForTesting(
+          v8::Isolate::kFullGarbageCollection);
+    }
 
-  // The context should have been deleted.
-  ASSERT_TRUE(weak_context.IsEmpty());
+    // The context should have been deleted.
+    ASSERT_TRUE(weak_context.IsEmpty());
+  }
 
   isolate()->Exit();
   isolate_holder_.reset();
@@ -68,6 +70,10 @@ void APIBindingTest::TearDown() {
 
 v8::Local<v8::Context> APIBindingTest::ContextLocal() {
   return context_holder_->context();
+}
+
+void APIBindingTest::DisposeContext() {
+  context_holder_.reset();
 }
 
 v8::Isolate* APIBindingTest::isolate() {

@@ -141,6 +141,7 @@ class APIBindingUnittest : public APIBindingTest {
     RunTest(object, script_source, false, std::string(), expected_error);
   }
 
+  bool HandlerWasInvoked() const { return arguments_ != nullptr; }
   const std::string& last_request_id() const { return last_request_id_; }
   APIRequestHandler* request_handler() { return request_handler_.get(); }
 
@@ -410,6 +411,34 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
       binding_object->Has(context, gin::StringToV8(isolate(), "onBaz"));
   EXPECT_TRUE(has_on_baz.IsJust());
   EXPECT_FALSE(has_on_baz.FromJust());
+}
+
+TEST_F(APIBindingUnittest, TestDisposedContext) {
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "test", *functions, nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      &refs);
+  EXPECT_TRUE(refs.empty());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  v8::Local<v8::Function> func =
+      FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
+  v8::Local<v8::Value> argv[] = {binding_object};
+  DisposeContext();
+  RunFunction(func, context, arraysize(argv), argv);
+  EXPECT_FALSE(HandlerWasInvoked());
+  // This test passes if this does not crash, even under AddressSanitizer
+  // builds.
 }
 
 }  // namespace extensions

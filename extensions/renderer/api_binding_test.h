@@ -31,6 +31,7 @@ class APIBindingTest : public testing::Test {
   void TearDown() override;
 
   v8::Local<v8::Context> ContextLocal();
+  void DisposeContext();
 
   // Returns the associated isolate. Defined out-of-line to avoid the include
   // for IsolateHolder in the header.

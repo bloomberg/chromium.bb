@@ -75,16 +75,6 @@ class APIBinding {
  private:
   using APISignature = std::vector<std::unique_ptr<ArgumentSpec>>;
 
-  // Per-context data that stores the callbacks that are used within the
-  // context. Since these callbacks are used within v8::Externals, v8 itself
-  // does not clean them up.
-  struct APIPerContextData : public base::SupportsUserData::Data {
-    APIPerContextData();
-    ~APIPerContextData() override;
-
-    std::vector<std::unique_ptr<HandlerCallback>> context_callbacks;
-  };
-
   // Handles a call an API method with the given |name| and matches the
   // arguments against |signature|.
   void HandleCall(const std::string& name,
