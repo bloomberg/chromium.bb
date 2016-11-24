@@ -6,7 +6,6 @@ module ui.mojom;
 
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/sync_token.mojom";
-import "services/ui/public/interfaces/gpu_memory_buffer.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 

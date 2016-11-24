@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/ui/gpu/gpu_main.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
-#include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace ui {
