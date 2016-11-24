@@ -102,9 +102,11 @@ ui::Window* RootWindowController::NewTopLevelWindow(
   if (GetRequestedContainer(window, &container_id)) {
     container_window = GetWindowByShellWindowId(container_id)->mus_window();
   } else {
-    // TODO(sky): window->bounds() isn't quite right.
+    gfx::Point origin = wm_root_window_controller_->ConvertPointToScreen(
+        WmWindowMus::Get(root_), gfx::Point());
+    gfx::Rect bounds_in_screen(origin, window->bounds().size());
     container_window = WmWindowMus::GetMusWindow(wm::GetDefaultParent(
-        WmWindowMus::Get(root_), WmWindowMus::Get(window), window->bounds()));
+        WmWindowMus::Get(root_), WmWindowMus::Get(window), bounds_in_screen));
   }
   DCHECK(WmWindowMus::Get(container_window)->IsContainer());
 

@@ -7,6 +7,7 @@
 #include "ash/common/test/ash_test.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/mus/test/wm_test_base.h"
 
 namespace ash {
 
@@ -18,6 +19,27 @@ TEST_F(RootWindowControllerTest, CreateFullscreenWindow) {
   window->SetFullscreen();
   WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
   EXPECT_EQ(root_window->GetBounds(), window->GetBounds());
+}
+
+using RootWindowControllerWmTest = mus::WmTestBase;
+
+TEST_F(RootWindowControllerWmTest, IsWindowShownInCorrectDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  EXPECT_NE(GetPrimaryDisplay().id(), GetSecondaryDisplay().id());
+
+  ui::Window* window_primary_display =
+      CreateFullscreenTestWindow(GetPrimaryDisplay().id());
+  ui::Window* window_secondary_display =
+      CreateFullscreenTestWindow(GetSecondaryDisplay().id());
+
+  DCHECK(window_primary_display);
+  DCHECK(window_secondary_display);
+
+  EXPECT_EQ(window_primary_display->display_id(), GetPrimaryDisplay().id());
+  EXPECT_EQ(window_secondary_display->display_id(), GetSecondaryDisplay().id());
 }
 
 }  // namespace ash

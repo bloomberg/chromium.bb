@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
 #include "ui/wm/public/window_types.h"
 
 namespace display {
@@ -58,7 +59,11 @@ class WmTestBase : public testing::Test {
   ui::Window* CreateTestWindow(const gfx::Rect& bounds);
   ui::Window* CreateTestWindow(const gfx::Rect& bounds,
                                ui::wm::WindowType window_type);
-  ui::Window* CreateFullscreenTestWindow();
+
+  // Creates a visibile fullscreen top level window on the display corresponding
+  // to the display_id provided.
+  ui::Window* CreateFullscreenTestWindow(
+      int64_t display_id = display::kInvalidDisplayId);
 
   // Creates a window parented to |parent|. The returned window is visible.
   ui::Window* CreateChildTestWindow(ui::Window* parent,

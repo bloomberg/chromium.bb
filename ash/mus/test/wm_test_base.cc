@@ -14,7 +14,6 @@
 #include "ash/mus/window_manager_application.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window_tree_client.h"
-#include "ui/display/display.h"
 
 namespace ash {
 namespace mus {
@@ -123,11 +122,17 @@ ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
   return window;
 }
 
-ui::Window* WmTestBase::CreateFullscreenTestWindow() {
+ui::Window* WmTestBase::CreateFullscreenTestWindow(int64_t display_id) {
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kShowState_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));
+
+  if (display_id != display::kInvalidDisplayId) {
+    properties[ui::mojom::WindowManager::kInitialDisplayId_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(display_id);
+  }
+
   ui::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
                            ->window_manager()
                            ->NewTopLevelWindow(&properties);
