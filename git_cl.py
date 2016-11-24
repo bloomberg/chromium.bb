@@ -4441,6 +4441,16 @@ def SendUpstream(parser, args, cmd):
       if not pending_prefix or branch.startswith(pending_prefix):
         # If not using refs/pending/heads/* at all, or target ref is already set
         # to pending, then push to the target ref directly.
+        # NB(tandrii): I think branch.startswith(pending_prefix) never happens
+        # in practise. I really tried to create a new branch tracking
+        # refs/pending/heads/master directly and git cl land failed long before
+        # reaching this. Disagree? Comment on http://crbug.com/642493.
+        if pending_prefix:
+          print('\n\nYOU GOT A CHANCE TO WIN A FREE GIFT!\n\n'
+                'Grab your .git/config, add instructions how to reproduce '
+                'this, and post it to http://crbug.com/642493.\n'
+                'The first reporter gets a free "Black Swan" book from '
+                'tandrii@\n\n')
         retcode, output = RunGitWithCode(
             ['push', '--porcelain', pushurl, 'HEAD:%s' % branch])
         pushed_to_pending = pending_prefix and branch.startswith(pending_prefix)
