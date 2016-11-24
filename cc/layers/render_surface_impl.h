@@ -31,6 +31,7 @@ class RenderPassId;
 class RenderPassSink;
 class LayerImpl;
 class LayerIterator;
+class LayerTreeImpl;
 
 struct AppendQuadsData;
 
@@ -124,7 +125,7 @@ class CC_EXPORT RenderSurfaceImpl {
   LayerImplList& layer_list() { return layer_list_; }
   void ClearLayerLists();
 
-  int OwningLayerId() const;
+  int id() const { return stable_effect_id_; }
 
   LayerImpl* MaskLayer();
   bool HasMask() const;
@@ -160,6 +161,9 @@ class CC_EXPORT RenderSurfaceImpl {
   const EffectNode* OwningEffectNode() const;
 
   LayerImpl* owning_layer_;
+
+  LayerTreeImpl* layer_tree_impl_;
+  int stable_effect_id_;
 
   // Container for properties that render surfaces need to compute before they
   // can be drawn.
