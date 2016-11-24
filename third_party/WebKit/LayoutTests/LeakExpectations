@@ -98,6 +98,7 @@ crbug.com/451577 [ Linux ] inspector/extensions/extensions-reload.html [ Slow ]
 crbug.com/451577 [ Linux ] inspector/extensions/extensions-sidebar.html [ Slow ]
 
 crbug.com/578297 [ Linux ] media/video-autoplay-experiment-modes.html [ Slow ]
+crbug.com/668479 [ Linux ] media/remoteplayback/prompt-twice-throws.html [ Leak ]
 crbug.com/578297 [ Linux ] virtual/threaded/printing/webgl-oversized-printing.html [ Slow ]
 crbug.com/578297 [ Linux ] http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Slow ]
 
