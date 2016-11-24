@@ -10492,6 +10492,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   EXPECT_TRUE(hitTestResult.URLElement());
   EXPECT_TRUE(hitTestResult.innerElement());
   EXPECT_TRUE(hitTestResult.scrollbar());
+  EXPECT_FALSE(hitTestResult.scrollbar()->isCustomScrollbar());
 
   // Mouse over link. Mouse cursor should be hand.
   PlatformMouseEvent mouseMoveOverLinkEvent(
@@ -10559,6 +10560,60 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
 
   document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
 }
+
+// Makes sure that mouse hover over an custom scrollbar doesn't change the
+// activate elements.
+TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
+  registerMockedHttpURLLoad("custom-scrollbar-hover.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initializeAndLoad(
+      m_baseURL + "custom-scrollbar-hover.html");
+
+  webViewHelper.resize(WebSize(200, 200));
+
+  webView->updateAllLifecyclePhases();
+
+  Document* document = toLocalFrame(webView->page()->mainFrame())->document();
+
+  Element* scrollbarDiv = document->getElementById("scrollbar");
+  EXPECT_TRUE(scrollbarDiv);
+
+  // Ensure hittest only has DIV
+  HitTestResult hitTestResult = webView->coreHitTestResultAt(WebPoint(1, 1));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_FALSE(hitTestResult.scrollbar());
+
+  // Mouse over DIV
+  PlatformMouseEvent mouseMoveOverDiv(
+      IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::NoButton,
+      PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
+      WTF::monotonicallyIncreasingTime());
+  document->frame()->eventHandler().handleMouseMoveEvent(mouseMoveOverDiv);
+
+  // DIV :hover
+  EXPECT_EQ(document->hoverNode(), scrollbarDiv);
+
+  // Ensure hittest has DIV and scrollbar
+  hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 1));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_TRUE(hitTestResult.scrollbar());
+  EXPECT_TRUE(hitTestResult.scrollbar()->isCustomScrollbar());
+
+  // Mouse over scrollbar
+  PlatformMouseEvent mouseMoveOverDivAndScrollbar(
+      IntPoint(175, 1), IntPoint(175, 1),
+      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
+      PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverDivAndScrollbar);
+
+  // Custom not change the DIV :hover
+  EXPECT_EQ(document->hoverNode(), scrollbarDiv);
+  EXPECT_EQ(hitTestResult.scrollbar()->hoveredPart(), ScrollbarPart::ThumbPart);
+}
+
 static void disableCompositing(WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
   settings->setPreferCompositingToLCDTextEnabled(false);

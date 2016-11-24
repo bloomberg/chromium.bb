@@ -812,7 +812,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
   // So we must force the hit-test to fail, while still clearing hover/active
   // state.
   if (forceLeave) {
-    m_frame->document()->updateHoverActiveState(request, nullptr, false);
+    m_frame->document()->updateHoverActiveState(request, nullptr, nullptr);
   } else {
     mev = EventHandlingUtil::performMouseEventHitTest(m_frame, request,
                                                       mouseEvent);
@@ -1526,13 +1526,13 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
       // If the old hovered frame is different from the new hovered frame.
       // we should clear the old hovered node from the old hovered frame.
       if (newHoverFrame != oldHoverFrame)
-        doc->updateHoverActiveState(request, nullptr, false);
+        doc->updateHoverActiveState(request, nullptr, nullptr);
     }
   }
 
   // Recursively set the new active/hover states on every frame in the chain of
   // innerElement.
-  m_frame->document()->updateHoverActiveState(request, innerElement, false);
+  m_frame->document()->updateHoverActiveState(request, innerElement, nullptr);
 }
 
 // Update the mouseover/mouseenter/mouseout/mouseleave events across all frames
@@ -1941,7 +1941,7 @@ void EventHandler::activeIntervalTimerFired(TimerBase*) {
     HitTestRequest request(HitTestRequest::TouchEvent |
                            HitTestRequest::Release);
     m_frame->document()->updateHoverActiveState(
-        request, m_lastDeferredTapElement.get(), false);
+        request, m_lastDeferredTapElement.get(), nullptr);
   }
   m_lastDeferredTapElement = nullptr;
 }
