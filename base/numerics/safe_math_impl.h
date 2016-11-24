@@ -599,6 +599,69 @@ struct CheckedRshOp<
   }
 };
 
+template <typename T, typename U, class Enable = void>
+struct CheckedAndOp {};
+
+// For simplicity we support only unsigned integers.
+template <typename T, typename U>
+struct CheckedAndOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value &&
+                                            !std::is_signed<T>::value &&
+                                            !std::is_signed<U>::value>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V = result_type>
+  static bool Do(T x, U y, V* result) {
+    result_type tmp = x & y;
+    *result = static_cast<V>(tmp);
+    return IsValueInRangeForNumericType<V>(tmp);
+  }
+};
+
+template <typename T, typename U, class Enable = void>
+struct CheckedOrOp {};
+
+// For simplicity we support only unsigned integers.
+template <typename T, typename U>
+struct CheckedOrOp<T,
+                   U,
+                   typename std::enable_if<std::is_integral<T>::value &&
+                                           std::is_integral<U>::value &&
+                                           !std::is_signed<T>::value &&
+                                           !std::is_signed<U>::value>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V = result_type>
+  static bool Do(T x, U y, V* result) {
+    result_type tmp = x | y;
+    *result = static_cast<V>(tmp);
+    return IsValueInRangeForNumericType<V>(tmp);
+  }
+};
+
+template <typename T, typename U, class Enable = void>
+struct CheckedXorOp {};
+
+// For simplicity we support only unsigned integers.
+template <typename T, typename U>
+struct CheckedXorOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value &&
+                                            !std::is_signed<T>::value &&
+                                            !std::is_signed<U>::value>::type> {
+  using result_type =
+      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  template <typename V = result_type>
+  static bool Do(T x, U y, V* result) {
+    result_type tmp = x ^ y;
+    *result = static_cast<V>(tmp);
+    return IsValueInRangeForNumericType<V>(tmp);
+  }
+};
+
 template <typename T>
 typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<T>::is_signed,
@@ -622,6 +685,15 @@ CheckedNeg(T value, T* result) {
     return true;
   }
   return false;
+}
+
+template <typename T>
+typename std::enable_if<std::numeric_limits<T>::is_integer &&
+                            !std::numeric_limits<T>::is_signed,
+                        bool>::type
+CheckedInv(T value, T* result) {
+  *result = ~value;
+  return true;
 }
 
 template <typename T>

@@ -19,7 +19,7 @@ namespace internal {
 // boundary conditions such as overflow, underflow, and invalid conversions.
 // The CheckedNumeric type implicitly converts from floating point and integer
 // data types, and contains overloads for basic arithmetic operations (i.e.: +,
-// -, *, /, %).
+// -, *, / for all types, % for integers, and &, |, ^ for unsigned integers).
 //
 // You may also use one of the variadic convenience functions, which accept
 // standard arithmetic or CheckedNumeric types, perform arithmetic operations,
@@ -57,15 +57,9 @@ namespace internal {
 //  CheckNum() - Creates a new CheckedNumeric from the underlying type of the
 //          supplied arithmetic or CheckedNumeric type.
 //
-// Bitwise operations are explicitly not supported, because correct
-// handling of some cases (e.g. sign manipulation) is ambiguous. Comparison
-// operations are explicitly not supported because they could result in a crash
-// on a CHECK condition. You should use patterns like the following for these
-// operations:
-// Bitwise operation:
-//     CheckedNumeric<int> checked_int = untrusted_input_value;
-//     int x = checked_int.ValueOrDefault(0) | kFlagValues;
-// Comparison:
+// Comparison operations are explicitly not supported because they could result
+// in a crash on an unexpected CHECK condition. You should use patterns like the
+// following for comparisons:
 //   CheckedNumeric<size_t> checked_size = untrusted_input_value;
 //   checked_size += HEADER LENGTH;
 //   if (checked_size.IsValid() && checked_size.ValueOrDie() < buffer_size)
@@ -158,12 +152,25 @@ class CheckedNumeric {
   CheckedNumeric& operator<<=(const Src rhs);
   template <typename Src>
   CheckedNumeric& operator>>=(const Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator&=(const Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator|=(const Src rhs);
+  template <typename Src>
+  CheckedNumeric& operator^=(const Src rhs);
 
   CheckedNumeric operator-() const {
     // Negation is always valid for floating point.
     T value = 0;
     bool is_valid = (std::numeric_limits<T>::is_iec559 || IsValid()) &&
                     CheckedNeg(state_.value(), &value);
+    return CheckedNumeric<T>(value, is_valid);
+  }
+
+  CheckedNumeric operator~() const {
+    static_assert(!std::is_signed<T>::value, "Type must be unsigned.");
+    T value = 0;
+    bool is_valid = IsValid() && CheckedInv(state_.value(), &value);
     return CheckedNumeric<T>(value, is_valid);
   }
 
@@ -343,6 +350,9 @@ BASE_NUMERIC_ARITHMETIC_OPERATORS(Div, /, /=)
 BASE_NUMERIC_ARITHMETIC_OPERATORS(Mod, %, %=)
 BASE_NUMERIC_ARITHMETIC_OPERATORS(Lsh, <<, <<=)
 BASE_NUMERIC_ARITHMETIC_OPERATORS(Rsh, >>, >>=)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(And, &, &=)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Or, |, |=)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Xor, ^, ^=)
 
 #undef BASE_NUMERIC_ARITHMETIC_OPERATORS
 
@@ -357,6 +367,9 @@ using internal::CheckDiv;
 using internal::CheckMod;
 using internal::CheckLsh;
 using internal::CheckRsh;
+using internal::CheckAnd;
+using internal::CheckOr;
+using internal::CheckXor;
 
 }  // namespace base
 

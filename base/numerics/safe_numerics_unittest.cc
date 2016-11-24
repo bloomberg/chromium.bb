@@ -210,6 +210,19 @@ static void TestSpecializedArithmetic(
   TEST_EXPECTED_VALUE(0,
                       CheckedNumeric<Dst>(1) >> (sizeof(Dst) * CHAR_BIT - 1));
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) >> negative_one);
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) & static_cast<Dst>(1));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) & static_cast<Dst>(0));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) & static_cast<Dst>(1));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) & static_cast<Dst>(0));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) | static_cast<Dst>(1));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) | static_cast<Dst>(0));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(0) | static_cast<Dst>(1));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) | static_cast<Dst>(0));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) ^ static_cast<Dst>(1));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) ^ static_cast<Dst>(0));
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(0) ^ static_cast<Dst>(1));
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) ^ static_cast<Dst>(0));
+  TEST_EXPECTED_VALUE(DstLimits::max(), ~CheckedNumeric<Dst>(0));
 }
 
 // Floating point arithmetic.
