@@ -112,6 +112,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    # Test that needs to be fixed in the WebGL CTS
+    # https://github.com/KhronosGroup/WebGL/issues/2173
+    self.Fail('conformance/misc/bad-arguments-test.html',
+        bug=2173) # WebGL issue number
+
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
@@ -419,8 +424,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
-    self.Flaky('conformance/misc/bad-arguments-test.html',
-              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=663066)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
