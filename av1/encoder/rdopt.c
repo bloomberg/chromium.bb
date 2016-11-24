@@ -9900,7 +9900,18 @@ PALETTE_EXIT:
       mode_ctx &= (mbmi_ext->mode_context[best_mbmode.ref_frame[1]] | 0x00ff);
 #endif  // !CONFIG_EXT_INTER
 
-    if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) best_mbmode.mode = ZEROMV;
+    if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
+      best_mbmode.mode = ZEROMV;
+#if CONFIG_GLOBAL_MOTION
+      best_mbmode.mv[0].as_int =
+          gm_get_motion_vector(&cm->global_motion[best_mbmode.ref_frame[0]])
+              .as_int;
+      if (best_mbmode.ref_frame[1] != NONE)
+        best_mbmode.mv[1].as_int =
+            gm_get_motion_vector(&cm->global_motion[best_mbmode.ref_frame[1]])
+                .as_int;
+#endif
+    }
   }
 #endif
 
