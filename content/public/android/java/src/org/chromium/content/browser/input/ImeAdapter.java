@@ -375,7 +375,14 @@ public class ImeAdapter {
         }
         // Detach input connection by returning null from onCreateInputConnection().
         if (mTextInputType == TextInputType.NONE && mInputConnection != null) {
-            restartInput();
+            ChromiumBaseInputConnection inputConnection = mInputConnection;
+            restartInput();  // resets mInputConnection
+            // crbug.com/666982: Restart input may not happen if view is detached from window, but
+            // we need to unblock in any case. We want to call this after restartInput() to
+            // ensure that there is no additional IME operation in the queue, except for
+            // moveCursorToSelectionEnd(), which block the IME thread unnecessarily and need
+            // refactoring anyways. (crbug.com/662908)
+            inputConnection.unblockOnUiThread();
         }
     }
 
