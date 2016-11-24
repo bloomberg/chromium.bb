@@ -299,7 +299,7 @@ class JsCheckerTest(SuperMoxTestBase):
         " /* @returns {Number} */",  # Should be /** @return {Number} */
         "* @param {!LocalStrings}"
         " Your type of Boolean is false!",
-        "  Then I parameterized her Number from her friend!",
+        "  Then I parameterized a Number from my friend!",
         "   A String of Pearls",
         "    types.params.aBoolean.typeString(someNumber)",
     ]

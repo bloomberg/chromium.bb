@@ -2077,7 +2077,7 @@ void BrowserOptionsHandler::SetupFontSizeSelector() {
       !default_font_size->IsUserModifiable() ||
       !default_fixed_font_size->IsUserModifiable());
 
-  // This is a poor man's version of CoreOptionsHandler::CreateValueForPref,
+  // This is a simplified version of CoreOptionsHandler::CreateValueForPref,
   // adapted to consider two prefs. It may be better to refactor
   // CreateValueForPref so it can be called from here.
   if (default_font_size->IsManaged() || default_fixed_font_size->IsManaged()) {

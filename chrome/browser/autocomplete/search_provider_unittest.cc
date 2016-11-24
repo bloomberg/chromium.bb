@@ -3486,7 +3486,7 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
   match3.answer_contents = base::ASCIIToUTF16("not to play");
   match3.answer_type = base::ASCIIToUTF16("1983");
   match5.answer = SuggestionAnswer::copy(&answer3);
-  match5.answer_contents = base::ASCIIToUTF16("a man");
+  match5.answer_contents = base::ASCIIToUTF16("a person");
   match5.answer_type = base::ASCIIToUTF16("423");
 
   matches.push_back(match1);
