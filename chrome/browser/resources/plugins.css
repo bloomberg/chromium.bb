@@ -229,10 +229,6 @@ body.show-tmi-mode .show-in-tmi-mode {
   margin-top: 0.2em;
 }
 
-.always-allow {
-  -webkit-margin-start: 30px;
-}
-
 button {
   font-size: 104%;
 }

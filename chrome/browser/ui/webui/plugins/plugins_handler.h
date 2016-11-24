@@ -30,9 +30,6 @@ class PluginsPageHandler : public MojoWebUIHandler,
   void GetShowDetails(const GetShowDetailsCallback& callback) override;
   void SaveShowDetailsToPrefs(bool details_mode) override;
   void SetPluginAlwaysAllowed(const std::string& plugin, bool allowed) override;
-  void SetPluginEnabled(const std::string& plugin_path, bool enable) override;
-  void SetPluginGroupEnabled(const std::string& group_name,
-                             bool enable) override;
   void SetClientPage(mojom::PluginsPagePtr page) override;
 
   // content::NotificationObserver implementation.

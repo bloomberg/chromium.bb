@@ -123,22 +123,6 @@
                           i18n-content="pluginDisabledByPolicy">(DISABLED_BY_POLICY)</span>
                       <span jsdisplay="enabled_mode == 'enabledByPolicy'"
                           i18n-content="pluginEnabledByPolicy">(ENABLED_BY_POLICY)</span>
-                      <span guest-visibility="disabled">
-                        <a
-                          class="disable-plugin-link"
-                          jsvalues=".path:path"
-                          jsdisplay="enabled_mode == 'enabledByUser'"
-                          href="#"
-                          i18n-content="disable"
-                          >DISABLE</a>
-                        <a
-                          class="enable-plugin-link"
-                          jsvalues=".path:path"
-                          jsdisplay="enabled_mode == 'disabledByUser'"
-                          href="#"
-                          i18n-content="enable"
-                          >ENABLE</a>
-                      </span>
                     </td>
                   </tr></table></div>
                   <table><tr jsdisplay="mime_types.length > 0">
@@ -172,22 +156,6 @@
             </div>
           </div>
           <div class="plugin-actions" guest-visibility="disabled">
-            <span>
-              <a
-                class="disable-group-link"
-                jsvalues=".path:name"
-                jsdisplay="enabled_mode == 'enabledByUser'"
-                href="#"
-                i18n-content="disable"
-                >DISABLE</a>
-              <a
-                class="enable-group-link"
-                jsvalues=".path:name"
-                jsdisplay="enabled_mode == 'disabledByUser'"
-                href="#"
-                i18n-content="enable"
-                >ENABLE</a>
-            </span>
             <input
                 class="always-allow" type="checkbox"
                 jsvalues=

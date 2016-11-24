@@ -113,16 +113,6 @@ PluginsPageHandler::PluginsPageHandler(
 
 PluginsPageHandler::~PluginsPageHandler() {}
 
-void PluginsPageHandler::SetPluginEnabled(const std::string& plugin_path,
-                                          bool enable) {
-  // TODO(http://crbug.com/615738): Remove this page altogether.
-}
-
-void PluginsPageHandler::SetPluginGroupEnabled(const std::string& group_name,
-                                               bool enable) {
-  // TODO(http://crbug.com/615738): Remove this page altogether.
-}
-
 void PluginsPageHandler::GetShowDetails(
     const GetShowDetailsCallback& callback) {
   callback.Run(show_details_.GetValue());

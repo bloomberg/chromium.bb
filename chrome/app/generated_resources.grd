@@ -5298,12 +5298,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS" desc="The label over the file extensions column in a plugin's MIME types table.">
           File extensions
         </message>
-        <message name="IDS_PLUGINS_DISABLE" desc="The link for disabling a plugin.">
-          Disable
-        </message>
-        <message name="IDS_PLUGINS_ENABLE" desc="The link for enabling a plugin.">
-          Enable
-        </message>
         <message name="IDS_PLUGINS_ALWAYS_ALLOWED" desc="The checkbox label for whitelisting a plugin for content settings.">
           Always allowed to run
         </message>

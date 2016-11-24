@@ -58,8 +58,6 @@ content::WebUIDataSource* CreatePluginsUIHTMLSource(Profile* profile) {
                              IDS_PLUGINS_MIME_TYPES_DESCRIPTION);
   source->AddLocalizedString("pluginMimeTypesFileExtensions",
                              IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS);
-  source->AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
-  source->AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
   source->AddLocalizedString("alwaysAllowed", IDS_PLUGINS_ALWAYS_ALLOWED);
   source->AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
 

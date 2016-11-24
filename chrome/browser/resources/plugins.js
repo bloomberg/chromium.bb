@@ -103,34 +103,6 @@ function returnPluginsData(pluginsData) {
   renderTemplate(pluginsData);
 
   // Add handlers to dynamically created HTML elements.
-  var links = document.getElementsByClassName('disable-plugin-link');
-  for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function() {
-      handleEnablePlugin(this, false, false);
-      return false;
-    };
-  }
-  links = document.getElementsByClassName('enable-plugin-link');
-  for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function() {
-      handleEnablePlugin(this, true, false);
-      return false;
-    };
-  }
-  links = document.getElementsByClassName('disable-group-link');
-  for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function() {
-      handleEnablePlugin(this, false, true);
-      return false;
-    };
-  }
-  links = document.getElementsByClassName('enable-group-link');
-  for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function() {
-      handleEnablePlugin(this, true, true);
-      return false;
-    };
-  }
   var checkboxes = document.getElementsByClassName('always-allow');
   for (var i = 0; i < checkboxes.length; i++) {
     checkboxes[i].onclick = function() {
@@ -170,20 +142,6 @@ function returnPluginsData(pluginsData) {
   bodyContainer.style.visibility = 'visible';
   body.className = tmiModeExpanded ?
      'show-tmi-mode-initial' : 'hide-tmi-mode-initial';
-}
-
-/**
- * Handles a 'enable' or 'disable' button getting clicked.
- * @param {HTMLElement} node The HTML element for the plugin being changed.
- * @param {boolean} enable Whether to enable or disable the plugin.
- * @param {boolean} isGroup True if we're enabling/disabling a plugin group,
- *     rather than a single plugin.
- */
-function handleEnablePlugin(node, enable, isGroup) {
-  if (isGroup)
-    browserProxy.setPluginGroupEnabled(node.path, enable);
-  else
-    browserProxy.setPluginEnabled(node.path, enable);
 }
 
 /*
