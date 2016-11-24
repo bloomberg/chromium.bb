@@ -108,7 +108,9 @@ class DocumentLoader {
   DataStream chunk_stream_;
   bool partial_loading_enabled_ = true;
   bool is_partial_loader_active_ = false;
-  char buffer_[DataStream::kChunkSize];
+
+  static constexpr uint32_t kReadBufferSize = 256 * 1024;
+  char buffer_[kReadBufferSize];
 
   Chunk chunk_;
   RangeSet pending_requests_;
