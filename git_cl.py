@@ -1016,7 +1016,7 @@ def ShouldGenerateGitNumberFooters():
     return False
   keyvals = gclient_utils.ParseCodereviewSettingsContent(
       cr_settings_file.read())
-  return keyvals.get('generate-git-number-footers', '').lower() == 'true'
+  return keyvals.get('GENERATE_GIT_NUMBER_FOOTERS', '').lower() == 'true'
 
 
 def ShortBranchName(branch):

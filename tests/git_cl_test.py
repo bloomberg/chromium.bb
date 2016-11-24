@@ -930,22 +930,22 @@ class TestGitCl(TestCase):
 
   def test_ShouldGenerateGitNumberFooters(self):
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
-      'generate-git-number-footers: true\n'
+      'GENERATE_GIT_NUMBER_FOOTERS: true\n'
     ))
     self.assertTrue(git_cl.ShouldGenerateGitNumberFooters())
 
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
-      'generate-git-number-footers: false\n'
+      'GENERATE_GIT_NUMBER_FOOTERS: false\n'
     ))
     self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
 
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
-      'generate-git-number-footers: anything but true is false\n'
+      'GENERATE_GIT_NUMBER_FOOTERS: anything but true is false\n'
     ))
     self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
 
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
-      "whatever: ignored"
+      'whatever: ignored'
     ))
     self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
 
