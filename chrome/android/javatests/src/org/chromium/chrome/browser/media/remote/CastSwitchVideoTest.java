@@ -8,7 +8,7 @@ import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -24,7 +24,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/623526")
+    @RetryOnFailure  // crbug.com/623526
     public void testPlayNewVideoInNewTab() throws InterruptedException, TimeoutException {
         checkPlaySecondVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
             @Override
@@ -41,7 +41,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    @FlakyTest
+    @RetryOnFailure  // crbug.com/623526
     public void testPlayNewVideoNewPageSameTab() throws InterruptedException, TimeoutException {
         checkPlaySecondVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
             @Override
@@ -58,7 +58,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    @FlakyTest
+    @RetryOnFailure  // crbug.com/623526
     public void testPlayTwoVideosSamePage() throws InterruptedException, TimeoutException {
         checkPlaySecondVideo(TWO_VIDEO_PAGE, VIDEO_ELEMENT_2, new Runnable() {
             @Override
@@ -74,7 +74,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/623526")
+    @RetryOnFailure  // crbug.com/623526
     public void testCastNewVideoInNewTab() throws InterruptedException, TimeoutException {
         checkCastSecondVideo(DEFAULT_VIDEO_PAGE, new Runnable() {
             @Override
@@ -91,7 +91,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    @FlakyTest
+    @RetryOnFailure  // crbug.com/623526
     public void testCastNewVideoNewPageSameTab() throws InterruptedException, TimeoutException {
         checkCastSecondVideo(DEFAULT_VIDEO_PAGE, new Runnable() {
             @Override
@@ -108,7 +108,7 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/623526")
+    @RetryOnFailure  // crbug.com/623526
     public void testCastTwoVideosSamePage() throws InterruptedException, TimeoutException {
         checkCastSecondVideo(TWO_VIDEO_PAGE, new Runnable() {
             @Override
@@ -121,6 +121,7 @@ public class CastSwitchVideoTest extends CastTestBase {
             }
         });
     }
+
     private void checkPlaySecondVideo(
             String firstVideoPage, String secondVideoId, final Runnable startSecondVideo)
                     throws InterruptedException, TimeoutException {

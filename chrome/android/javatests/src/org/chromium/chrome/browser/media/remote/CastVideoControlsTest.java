@@ -9,7 +9,6 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -29,7 +28,6 @@ public class CastVideoControlsTest extends CastTestBase {
      */
     @Feature({"VideoFling"})
     @LargeTest
-    @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/652872
     public void testPauseButton() throws InterruptedException, TimeoutException {

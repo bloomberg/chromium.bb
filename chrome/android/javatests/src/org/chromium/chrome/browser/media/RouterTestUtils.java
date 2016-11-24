@@ -147,7 +147,7 @@ public class RouterTestUtils {
         MotionEvent.PointerProperties properties[] = new MotionEvent.PointerProperties[1];
         properties[0] = new MotionEvent.PointerProperties();
         properties[0].id = 0;
-        properties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
+        properties[0].toolType = MotionEvent.TOOL_TYPE_FINGER;
         MotionEvent event = MotionEvent.obtain(downTime, eventTime, action, 1, properties, coords,
                 0, 0, 0.0f, 0.0f, 0, 0, 0, 0);
         instrumentation.sendPointerSync(event);
@@ -155,7 +155,7 @@ public class RouterTestUtils {
     }
 
     /**
-     * Sends (synchronously) a single mosue click to an absolute screen coordinates.
+     * Sends (synchronously) a single mouse click to an absolute screen coordinates.
      *
      * @param instrumentation Instrumentation object used by the test.
      * @param x Screen absolute x location.
