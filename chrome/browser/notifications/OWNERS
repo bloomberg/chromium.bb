@@ -8,3 +8,6 @@ yoshiki@chromium.org
 # Mac files
 per-file *_mac*=miguelg@chromium.org
 per-file *_mac*=rsesek@chromium.org
+
+# TEAM: push-notifications-dev@chromium.org
+# COMPONENT: UI>Notifications
