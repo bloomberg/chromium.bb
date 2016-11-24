@@ -10,22 +10,22 @@
       margin-bottom: 10px;
     }
     .animated {
-      -webkit-animation: test 1s linear;
+      animation: test 1s linear;
       animation: test 1s linear;
     }
     #negative-delay {
-      -webkit-animation-delay: -500ms;
+      animation-delay: -500ms;
       animation-delay: -500ms;
     }
     #zero-delay {
-      -webkit-animation-delay: 0ms;
+      animation-delay: 0ms;
       animation-delay: 0ms;
     }
     #positive-delay {
-      -webkit-animation-delay: 500ms;
+      animation-delay: 500ms;
       animation-delay: 500ms;
     }
-    @-webkit-keyframes test {
+    @keyframes test {
         from { left: 100px; }
         to   { left: 300px; }
     }
@@ -45,7 +45,7 @@
       requestAnimationFrame(function(t) {
         ['negative-delay', 'zero-delay', 'positive-delay'].forEach(function(id) {
           var target = document.getElementById(id);
-          target.addEventListener('webkitAnimationStart', onStartEventFired);
+          target.addEventListener('animationstart', onStartEventFired);
           target.classList.add('animated');
         });
         requestAnimationFrame(function() {

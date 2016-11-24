@@ -4,14 +4,14 @@
   width: 50px;
   height: 50px;
   background: red;
-  -webkit-animation: flash 0.2s infinite;
+  animation: flash 0.2s infinite;
 }
 
 .hideMe {
   display: none;
 }
 
-@-webkit-keyframes flash {
+@keyframes flash {
   0% {
     opacity: 1;
   }
@@ -29,7 +29,7 @@ if (window.testRunner) {
     testRunner.dumpAsText();
 }
 var firstCall = true;
-child.addEventListener('webkitAnimationStart', function(e) {
+child.addEventListener('animationstart', function(e) {
     if (firstCall) {
         container.classList.add('hideMe');
         container.offsetTop;

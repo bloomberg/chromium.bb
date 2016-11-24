@@ -13,36 +13,36 @@
       height: 100px;
       width: 100px;
       transform: translate3d(100px, 0, 0);
-      -webkit-animation-delay: 0.1s;
-      -webkit-animation-duration: 0.1s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: anim;
+      animation-delay: 0.1s;
+      animation-duration: 0.1s;
+      animation-timing-function: linear;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { transform: translate3d(200px, 0, 0); }
         to   { transform: translate3d(300px, 0, 0); }
     }
     #a {
       background-color: blue;
-      -webkit-animation-fill-mode: none;
+      animation-fill-mode: none;
     }
     #b {
       background-color: red;
-      -webkit-animation-fill-mode: backwards;
+      animation-fill-mode: backwards;
     }
     #c {
       background-color: green;
-      -webkit-animation-fill-mode: forwards;
+      animation-fill-mode: forwards;
     }
     #d {
       background-color: yellow;
-      -webkit-animation-fill-mode: both;
+      animation-fill-mode: both;
     }
     #e {
       background-color: #999;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-direction: alternate;
+      animation-fill-mode: both;
+      animation-iteration-count: 2;
+      animation-direction: alternate;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
@@ -75,7 +75,7 @@
         for (var i=0; i < expectedValues.length; i++) {
             var el = document.getElementById(expectedValues[i].id);
             var expectedValue = expectedValues[i].end;
-            var computedValue = window.getComputedStyle(el).webkitTransform;
+            var computedValue = window.getComputedStyle(el).transform;
             var realValue = parseFloat(computedValue.split("(")[1].split(",")[4]);
             if (Math.abs(expectedValue - realValue) < allowance) {
               result += "PASS";
@@ -94,7 +94,7 @@
       for (var i=0; i < expectedValues.length; i++) {
           var el = document.getElementById(expectedValues[i].id);
           var expectedValue = expectedValues[i].start;
-          var computedValue = window.getComputedStyle(el).webkitTransform;
+          var computedValue = window.getComputedStyle(el).transform;
           var realValue = parseFloat(computedValue.split("(")[1].split(",")[4]);
           if (Math.abs(expectedValue - realValue) < allowance) {
             result += "PASS";
@@ -103,7 +103,7 @@
           }
           result += " - start of animation - id: " + expectedValues[i].id + " expected: " + expectedValue + " actual: " + realValue + "<br>";
       }
-      document.addEventListener("webkitAnimationEnd", animationEnded, false);
+      document.addEventListener("animationend", animationEnded, false);
     };
 
   </script>

@@ -9,10 +9,10 @@
       background-color: blue;
     }
     .animated {
-      -webkit-animation: test 1s linear;
+      animation: test 1s linear;
       animation: test 1s linear;
     }
-    @-webkit-keyframes test {
+    @keyframes test {
         from { left: 100px; }
         to   { left: 200px; }
     }
@@ -36,13 +36,13 @@
     var target;
     function go() {
       target = document.getElementById('target');
-      target.addEventListener('webkitAnimationStart', onStart);
+      target.addEventListener('animationstart', onStart);
       target.classList.add('animated');
     }
 
     function onStart(e) {
       log('INFO: Start event fired');
-      target.removeEventListener('webkitAnimationStart', onStart);
+      target.removeEventListener('animationstart', onStart);
       requestAnimationFrame(function() {
         setTimeout(setDisplayNone, 100);
       });
@@ -58,7 +58,7 @@
     }
 
     function setDisplayBlock() {
-      target.addEventListener('webkitAnimationStart', onRestart);
+      target.addEventListener('animationstart', onRestart);
       target.style.display = 'block';
     }
 

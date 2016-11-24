@@ -5,9 +5,9 @@
   left: 0px;
   height: 100px;
   width: 100px;
-  -webkit-animation-name: anim;
-  -webkit-animation-duration: 1s;
-  -webkit-animation-timing-function: linear;
+  animation-name: anim;
+  animation-duration: 1s;
+  animation-timing-function: linear;
   background: blue;
 }
 #fillanim {
@@ -15,13 +15,13 @@
   left: 0px;
   height: 100px;
   width: 100px;
-  -webkit-animation-name: anim;
-  -webkit-animation-duration: 1s;
-  -webkit-animation-fill-mode: forwards;
-  -webkit-animation-timing-function: linear;
+  animation-name: anim;
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+  animation-timing-function: linear;
   background: blue;
 }
-@-webkit-keyframes anim {
+@keyframes anim {
   from { left: 200px; }
   to   { left: 300px; }
 }

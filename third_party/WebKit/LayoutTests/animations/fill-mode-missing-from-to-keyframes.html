@@ -12,81 +12,81 @@
       top: 10px;
       height: 30px;
       width: 200px;
-      -webkit-animation-delay: 0.1s;
-      -webkit-animation-duration: 0.1s;
-      -webkit-animation-timing-function: linear;
+      animation-delay: 0.1s;
+      animation-duration: 0.1s;
+      animation-timing-function: linear;
     }
-    @-webkit-keyframes anim1 {
+    @keyframes anim1 {
         from { left: 200px; }
         50% { left: 250px; }
         to   { left: 300px; }
     }
-    @-webkit-keyframes anim2 {
+    @keyframes anim2 {
         50% { left: 250px; }
         to   { left: 300px; }
     }
-    @-webkit-keyframes anim3 {
+    @keyframes anim3 {
         from { left: 200px; }
         50% { left: 250px; }
     }
-    @-webkit-keyframes anim4 {
+    @keyframes anim4 {
         50% { left: 250px; }
     }
 
     #a {
       background-color: blue;
-      -webkit-animation-fill-mode: none;
-      -webkit-animation-name: anim1;
+      animation-fill-mode: none;
+      animation-name: anim1;
     }
     #b {
       background-color: red;
-      -webkit-animation-fill-mode: backwards;
-      -webkit-animation-name: anim1;
+      animation-fill-mode: backwards;
+      animation-name: anim1;
     }
     #c {
       background-color: green;
-      -webkit-animation-fill-mode: forwards;
-      -webkit-animation-name: anim1;
+      animation-fill-mode: forwards;
+      animation-name: anim1;
     }
     #d {
       background-color: yellow;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-name: anim1;
+      animation-fill-mode: both;
+      animation-name: anim1;
     }
     #e {
       background-color: #999;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-direction: alternate;
-      -webkit-animation-name: anim1;
+      animation-fill-mode: both;
+      animation-iteration-count: 2;
+      animation-direction: alternate;
+      animation-name: anim1;
     }
 
     #f {
       background-color: blue;
-      -webkit-animation-fill-mode: none;
-      -webkit-animation-name: anim2;
+      animation-fill-mode: none;
+      animation-name: anim2;
     }
     #g {
       background-color: red;
-      -webkit-animation-fill-mode: backwards;
-      -webkit-animation-name: anim2;
+      animation-fill-mode: backwards;
+      animation-name: anim2;
     }
     #h {
       background-color: green;
-      -webkit-animation-fill-mode: forwards;
-      -webkit-animation-name: anim2;
+      animation-fill-mode: forwards;
+      animation-name: anim2;
     }
     #i {
       background-color: yellow;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-name: anim2;
+      animation-fill-mode: both;
+      animation-name: anim2;
     }
     #j {
       background-color: #999;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-direction: alternate;
-      -webkit-animation-name: anim2;
+      animation-fill-mode: both;
+      animation-iteration-count: 2;
+      animation-direction: alternate;
+      animation-name: anim2;
     }
 
   </style>
@@ -146,7 +146,7 @@
             }
             result += " - start of animation - id: " + expectedValues[i].id + " expected: " + expectedValue + " actual: " + realValue + "<br>";
         }
-        document.addEventListener("webkitAnimationEnd", animationEnded, false);
+        document.addEventListener("animationend", animationEnded, false);
     };
 
   </script>

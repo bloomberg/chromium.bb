@@ -1,4 +1,4 @@
 Test events when the animation has a short duration and is delayed.
-PASS: got webkitAnimationStart event
-PASS: got webkitAnimationEnd event
+PASS: got animationstart event
+PASS: got animationend event
 

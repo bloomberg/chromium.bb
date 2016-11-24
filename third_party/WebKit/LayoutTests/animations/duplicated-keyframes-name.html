@@ -13,20 +13,20 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        -webkit-animation-duration: 1s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
-        -webkit-animation-fill-mode: forwards;
+        animation-duration: 1s;
+        animation-timing-function: linear;
+        animation-name: anim;
+        animation-fill-mode: forwards;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 50px; }
         to   { left: 100px; }
     }
-    @-webkit-keyframes irrelevant {
+    @keyframes irrelevant {
         from { left: 150px; }
         to   { left: 2500px; }
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
     }

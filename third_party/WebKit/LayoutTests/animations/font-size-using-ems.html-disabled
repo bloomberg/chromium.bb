@@ -18,11 +18,11 @@
         height: 250px;
         width: 400px;
         border: 1px solid black;
-        -webkit-animation-duration: 1s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
+        animation-duration: 1s;
+        animation-timing-function: linear;
+        animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { font-size: 1em; }
         to   { font-size: 2em; }
     }
@@ -66,7 +66,7 @@
         }, 400);
     }
     
-    document.addEventListener('webkitAnimationStart', start, false);
+    document.addEventListener('animationstart', start, false);
     
   </script>
 </head>

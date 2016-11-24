@@ -9,46 +9,46 @@
       left: 100px;
       height: 100px;
       width: 100px;
-      -webkit-animation-delay: 0.1s;
-      -webkit-animation-duration: 0.1s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: anim;
+      animation-delay: 0.1s;
+      animation-duration: 0.1s;
+      animation-timing-function: linear;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
     }
     #none {
       background-color: blue;
-      -webkit-animation-fill-mode: none;
-      -webkit-animation-iteration-count: 1.4;
+      animation-fill-mode: none;
+      animation-iteration-count: 1.4;
     }
     #backwards {
       background-color: red;
-      -webkit-animation-fill-mode: backwards;
-      -webkit-animation-iteration-count: 0.4;
+      animation-fill-mode: backwards;
+      animation-iteration-count: 0.4;
     }
     #forwards {
       background-color: green;
-      -webkit-animation-fill-mode: forwards;
-      -webkit-animation-iteration-count: 1.4;
+      animation-fill-mode: forwards;
+      animation-iteration-count: 1.4;
     }
     #both {
       background-color: yellow;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 1.4;
+      animation-fill-mode: both;
+      animation-iteration-count: 1.4;
     }
     #both_iterating {
       background-color: cyan;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2.4;
-      -webkit-animation-direction: alternate;
+      animation-fill-mode: both;
+      animation-iteration-count: 2.4;
+      animation-direction: alternate;
     }
     #both_iterating_reverse {
       background-color: #999;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2.4;
-      -webkit-animation-direction: alternate-reverse;
+      animation-fill-mode: both;
+      animation-iteration-count: 2.4;
+      animation-direction: alternate-reverse;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
@@ -106,7 +106,7 @@
             var realValue = parseFloat(window.getComputedStyle(el).left);
             log(expectedValue, realValue, true, expectedValues[i].id);
         }
-        document.addEventListener("webkitAnimationEnd", animationEnded, false);
+        document.addEventListener("animationend", animationEnded, false);
     };
   </script>
 </head>

@@ -12,36 +12,36 @@
       top: 10px;
       height: 100px;
       width: 100px;
-      -webkit-animation-delay: 0.1s;
-      -webkit-animation-duration: 0.1s;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: anim;
+      animation-delay: 0.1s;
+      animation-duration: 0.1s;
+      animation-timing-function: linear;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
     }
     #a {
       background-color: blue;
-      -webkit-animation-fill-mode: none;
+      animation-fill-mode: none;
     }
     #b {
       background-color: red;
-      -webkit-animation-fill-mode: backwards;
+      animation-fill-mode: backwards;
     }
     #c {
       background-color: green;
-      -webkit-animation-fill-mode: forwards;
+      animation-fill-mode: forwards;
     }
     #d {
       background-color: yellow;
-      -webkit-animation-fill-mode: both;
+      animation-fill-mode: both;
     }
     #e {
       background-color: #999;
-      -webkit-animation-fill-mode: both;
-      -webkit-animation-iteration-count: 2;
-      -webkit-animation-direction: alternate;
+      animation-fill-mode: both;
+      animation-iteration-count: 2;
+      animation-direction: alternate;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
@@ -100,7 +100,7 @@
             }
             result += " - start of animation - id: " + expectedValues[i].id + " expected: " + expectedValue + " actual: " + realValue + "<br>";
         }
-        document.addEventListener("webkitAnimationEnd", animationEnded, false);
+        document.addEventListener("animationend", animationEnded, false);
     };
 
   </script>
