@@ -36,11 +36,10 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     int canvasId,
     int width,
     int height)
-    : m_surfaceId(
-          cc::FrameSinkId(clientId, sinkId),
-          cc::LocalFrameId(
-              localId,
-              base::UnguessableToken::Deserialize(nonceHigh, nonceLow))),
+    : m_frameSinkId(cc::FrameSinkId(clientId, sinkId)),
+      m_currentLocalFrameId(cc::LocalFrameId(
+          localId,
+          base::UnguessableToken::Deserialize(nonceHigh, nonceLow))),
       m_width(width),
       m_height(height),
       m_nextResourceId(1u),
@@ -50,7 +49,8 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
   mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
   Platform::current()->interfaceProvider()->getInterface(
       mojo::GetProxy(&provider));
-  provider->CreateCompositorFrameSink(m_surfaceId,
+  cc::SurfaceId surfaceId(m_frameSinkId, m_currentLocalFrameId);
+  provider->CreateCompositorFrameSink(surfaceId,
                                       m_binding.CreateInterfacePtrAndBind(),
                                       mojo::GetProxy(&m_sink));
 }
@@ -358,7 +358,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       NOTREACHED();
   }
 
-  m_sink->SubmitCompositorFrame(m_surfaceId.local_frame_id(), std::move(frame));
+  m_sink->SubmitCompositorFrame(m_currentLocalFrameId, std::move(frame));
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
@@ -399,6 +399,11 @@ bool OffscreenCanvasFrameDispatcherImpl::verifyImageSize(
   if (imageSize.width() == m_width && imageSize.height() == m_height)
     return true;
   return false;
+}
+
+void OffscreenCanvasFrameDispatcherImpl::reshape(int width, int height) {
+  m_width = width;
+  m_height = height;
 }
 
 }  // namespace blink

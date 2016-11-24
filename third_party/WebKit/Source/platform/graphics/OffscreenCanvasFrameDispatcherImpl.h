@@ -52,10 +52,13 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
     OffscreenCanvasCommitTypeCount,
   };
 
+  void reshape(int width, int height) override;
+
  private:
-  const cc::SurfaceId m_surfaceId;
-  const int m_width;
-  const int m_height;
+  const cc::FrameSinkId m_frameSinkId;
+  cc::LocalFrameId m_currentLocalFrameId;
+  int m_width;
+  int m_height;
 
   unsigned m_nextResourceId;
   HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;

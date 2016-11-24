@@ -51,6 +51,9 @@ void OffscreenCanvas::setSize(const IntSize& size) {
     }
   }
   m_size = size;
+  if (m_frameDispatcher) {
+    m_frameDispatcher->reshape(m_size.width(), m_size.height());
+  }
 }
 
 void OffscreenCanvas::setNeutered() {
@@ -183,7 +186,7 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
     // throughout the lifetime of this OffscreenCanvas.
     m_frameDispatcher = wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
         m_clientId, m_sinkId, m_localId, m_nonceHigh, m_nonceLow,
-        m_placeholderCanvasId, width(), height()));
+        m_placeholderCanvasId, m_size.width(), m_size.height()));
   }
   return m_frameDispatcher.get();
 }

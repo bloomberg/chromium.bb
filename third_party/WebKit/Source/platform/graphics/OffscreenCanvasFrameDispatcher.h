@@ -22,6 +22,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
                              bool isWebGLSoftwareRendering = false) = 0;
   virtual void reclaimResource(unsigned resourceId) = 0;
 
+  virtual void reshape(int width, int height) = 0;
+
   WeakPtr<OffscreenCanvasFrameDispatcher> createWeakPtr() {
     return m_weakPtrFactory.createWeakPtr();
   }
