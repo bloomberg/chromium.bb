@@ -22,6 +22,7 @@ import org.chromium.net.NetworkChangeNotifier;
 public class CronetLibraryLoader {
     // Synchronize initialization.
     private static final Object sLoadLock = new Object();
+    private static final String LIBRARY_NAME = "cronet";
     private static final String TAG = "CronetLibraryLoader";
     // Has library loading commenced?  Setting guarded by sLoadLock.
     private static volatile boolean sInitStarted = false;
@@ -41,9 +42,9 @@ public class CronetLibraryLoader {
             sInitStarted = true;
             ContextUtils.initApplicationContext(applicationContext);
             if (builder.libraryLoader() != null) {
-                builder.libraryLoader().loadLibrary(builder.libraryName());
+                builder.libraryLoader().loadLibrary(LIBRARY_NAME);
             } else {
-                System.loadLibrary(builder.libraryName());
+                System.loadLibrary(LIBRARY_NAME);
             }
             ContextUtils.initApplicationContextForNative();
             if (!ImplVersion.CRONET_VERSION.equals(nativeGetCronetVersion())) {

@@ -88,7 +88,6 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     private String mStoragePath;
     private boolean mLegacyModeEnabled;
     private CronetEngine.Builder.LibraryLoader mLibraryLoader;
-    private String mLibraryName;
     private boolean mQuicEnabled;
     private boolean mHttp2Enabled;
     private boolean mSdchEnabled;
@@ -110,7 +109,6 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
      */
     public CronetEngineBuilderImpl(Context context) {
         mApplicationContext = context.getApplicationContext();
-        setLibraryName("cronet");
         enableLegacyMode(false);
         enableQuic(false);
         enableHttp2(true);
@@ -156,20 +154,6 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
 
     private boolean legacyMode() {
         return mLegacyModeEnabled;
-    }
-
-    /**
-     * Overrides the name of the native library backing Cronet.
-     * @param libName the name of the native library backing Cronet.
-     * @return the builder to facilitate chaining.
-     */
-    public CronetEngineBuilderImpl setLibraryName(String libName) {
-        mLibraryName = libName;
-        return this;
-    }
-
-    String libraryName() {
-        return mLibraryName;
     }
 
     @Override
