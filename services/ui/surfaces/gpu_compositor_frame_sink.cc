@@ -40,7 +40,8 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
       surface_factory_(frame_sink_id_, display_compositor_->manager(), this),
       client_(std::move(client)),
       binding_(this, std::move(request)),
-      private_binding_(this, std::move(private_request)) {
+      private_binding_(this, std::move(private_request)),
+      weak_factory_(this) {
   display_compositor_->manager()->RegisterFrameSinkId(frame_sink_id_);
   display_compositor_->manager()->RegisterSurfaceFactoryClient(frame_sink_id_,
                                                                this);
@@ -92,7 +93,7 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
   surface_factory_.SubmitCompositorFrame(
       local_frame_id_, std::move(frame),
       base::Bind(&GpuCompositorFrameSink::DidReceiveCompositorFrameAck,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
   if (display_) {
     display_->SetLocalFrameId(local_frame_id_,
                               frame.metadata.device_scale_factor);

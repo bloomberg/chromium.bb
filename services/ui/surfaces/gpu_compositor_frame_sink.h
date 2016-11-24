@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/context_provider.h"
@@ -128,6 +129,8 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate> private_binding_;
+
+  base::WeakPtrFactory<GpuCompositorFrameSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };
