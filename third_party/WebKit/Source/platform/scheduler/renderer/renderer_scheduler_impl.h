@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_log.h"
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
 #include "platform/scheduler/base/queueing_time_estimator.h"
 #include "platform/scheduler/base/thread_load_tracker.h"
@@ -41,7 +42,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
       public SchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
       public TaskTimeObserver,
-      public QueueingTimeEstimator::Client {
+      public QueueingTimeEstimator::Client,
+      public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
   // Keep RendererScheduler::UseCaseToString in sync with this enum.
   enum class UseCase {
@@ -187,6 +189,10 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   TaskQueueThrottler* task_queue_throttler() const {
     return task_queue_throttler_.get();
   }
+
+  // base::trace_event::TraceLog::EnabledStateObserver implementation:
+  void OnTraceLogEnabled() override;
+  void OnTraceLogDisabled() override;
 
  private:
   friend class RendererSchedulerImplTest;

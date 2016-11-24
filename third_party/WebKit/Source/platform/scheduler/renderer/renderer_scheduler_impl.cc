@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
@@ -118,6 +119,13 @@ RendererSchedulerImpl::RendererSchedulerImpl(
 
   helper_.SetObserver(this);
   helper_.AddTaskTimeObserver(this);
+
+  // Register a tracing state observer unless we're running in a test without a
+  // task runner. Note that it's safe to remove a non-existent observer.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
+        weak_factory_.GetWeakPtr());
+  }
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
@@ -138,6 +146,9 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
     UnregisterTimeDomain(virtual_time_domain_.get());
 
   helper_.RemoveTaskTimeObserver(this);
+
+  base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
+      this);
 
   // Ensure the renderer scheduler was shut down explicitly, because otherwise
   // we could end up having stale pointers to the Blink heap which has been
@@ -1700,6 +1711,12 @@ TimeDomain* RendererSchedulerImpl::GetActiveTimeDomain() {
     return real_time_domain();
   }
 }
+
+void RendererSchedulerImpl::OnTraceLogEnabled() {
+  CreateTraceEventObjectSnapshot();
+}
+
+void RendererSchedulerImpl::OnTraceLogDisabled() {}
 
 // static
 const char* RendererSchedulerImpl::UseCaseToString(UseCase use_case) {
