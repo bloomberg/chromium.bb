@@ -17,6 +17,12 @@ namespace {
 // The base color used to compute the effective text colors.
 const SkColor kBaseTextColor = SK_ColorBLACK;
 
+// The color used for sub-section header row text and icons.
+const SkColor kProminentButtonColor = gfx::kGoogleBlue500;
+
+// The color for "Connected" status text.
+const SkColor kConnectedTextColor = gfx::kGoogleGreen700;
+
 const int kActiveTextAlpha = 0xDE;
 const int kInactiveTextAlpha = 0x8A;
 const int kDisabledTextAlpha = 0x61;
@@ -45,6 +51,8 @@ SkColor TrayPopupItemStyle::GetIconColor(const ui::NativeTheme* theme,
     case ColorStyle::CONNECTED:
       // Use a noticeable color to help notice undefined color styles for icons.
       return SK_ColorMAGENTA;
+    case ColorStyle::SUB_HEADER:
+      return kProminentButtonColor;
   }
   NOTREACHED();
   // Use a noticeable color to help notice unhandled cases.
@@ -60,7 +68,8 @@ TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
                                        FontStyle font_style)
     : theme_(theme),
       font_style_(font_style),
-      color_style_(ColorStyle::ACTIVE) {}
+      color_style_(font_style_ == FontStyle::SUB_HEADER ? ColorStyle::SUB_HEADER
+                                                        : ColorStyle::ACTIVE) {}
 
 TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style)
     : TrayPopupItemStyle(nullptr, font_style) {}
@@ -79,7 +88,9 @@ SkColor TrayPopupItemStyle::GetTextColor() const {
     case ColorStyle::DISABLED:
       return SkColorSetA(kBaseTextColor, kDisabledTextAlpha);
     case ColorStyle::CONNECTED:
-      return gfx::kGoogleGreen700;
+      return kConnectedTextColor;
+    case ColorStyle::SUB_HEADER:
+      return kProminentButtonColor;
   }
   NOTREACHED();
   // Use a noticeable color to help notice unhandled cases.
@@ -103,18 +114,23 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
       label->SetFontList(base_font_list.Derive(2, gfx::Font::NORMAL,
                                                gfx::Font::Weight::NORMAL));
       break;
+    case FontStyle::SUB_HEADER:
+      label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
+                                               gfx::Font::Weight::MEDIUM));
+      label->SetAutoColorReadabilityEnabled(false);
+      break;
     case FontStyle::DETAILED_VIEW_LABEL:
     case FontStyle::SYSTEM_INFO:
       label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
                                                gfx::Font::Weight::NORMAL));
       break;
-    case FontStyle::CAPTION:
-      label->SetFontList(base_font_list.Derive(0, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::NORMAL));
-      break;
     case FontStyle::BUTTON:
       label->SetFontList(base_font_list.Derive(0, gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
+      break;
+    case FontStyle::CAPTION:
+      label->SetFontList(base_font_list.Derive(0, gfx::Font::NORMAL,
+                                               gfx::Font::Weight::NORMAL));
       break;
   }
 }

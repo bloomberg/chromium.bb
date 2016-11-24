@@ -11,6 +11,7 @@
 #include "ash/common/system/chromeos/network/network_list_delegate.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -83,7 +84,12 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
                                                 public views::ButtonListener {
  public:
   explicit SectionHeaderRowView(int title_id)
-      : title_id_(title_id), container_(nullptr), toggle_(nullptr) {}
+      : title_id_(title_id),
+        container_(nullptr),
+        toggle_(nullptr),
+        style_(
+            new TrayPopupItemStyle(TrayPopupItemStyle::FontStyle::SUB_HEADER)) {
+  }
 
   ~SectionHeaderRowView() override {}
 
@@ -106,6 +112,7 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
   virtual void OnToggleToggled(bool is_on) = 0;
 
   views::View* container() const { return container_; }
+  TrayPopupItemStyle* style() const { return style_.get(); }
 
   // views::View:
   gfx::Size GetPreferredSize() const override {
@@ -144,15 +151,9 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     container_->SetLayoutManager(container_layout);
 
-    ui::NativeTheme* theme = GetNativeTheme();
-    const SkColor prominent_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::Label* label =
-        new views::Label(rb.GetLocalizedString(title_id_),
-                         rb.GetFontList(ui::ResourceBundle::MediumFont));
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(prominent_color);
+    views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+    style()->SetupLabel(label);
+    label->SetText(l10n_util::GetStringUTF16(title_id_));
     container_->AddChildView(label);
     container_layout->SetFlexForView(label, 1);
   }
@@ -173,6 +174,9 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
 
   // ToggleButton to toggle section on or off.
   views::ToggleButton* toggle_;
+
+  // TrayPopupItemStyle used to configure labels and buttons.
+  std::unique_ptr<TrayPopupItemStyle> style_;
 
   DISALLOW_COPY_AND_ASSIGN(SectionHeaderRowView);
 };
@@ -226,10 +230,7 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   }
 
   void AddExtraButtons(bool enabled) override {
-    ui::NativeTheme* theme = GetNativeTheme();
-    const SkColor prominent_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
-
+    const SkColor prominent_color = style()->GetIconColor();
     gfx::ImageSkia normal_image = network_icon::GetImageForNewWifiNetwork(
         SkColorSetA(prominent_color, kJoinIconAlpha),
         SkColorSetA(prominent_color, kJoinBadgeAlpha));

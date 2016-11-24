@@ -52,23 +52,27 @@ class TrayPopupItemStyle {
     DISABLED,
     // Color for "Connected" labels.
     CONNECTED,
+    // Color for sub-section header rows in detailed views.
+    SUB_HEADER,
   };
 
   // The different font styles that row text can have.
   enum class FontStyle {
-    // Header rows for default view and detailed view.
+    // Topmost header rows for default view and detailed view.
     TITLE,
     // Main text used by default view rows.
     DEFAULT_VIEW_LABEL,
+    // Text in sub-section header rows in detailed views.
+    SUB_HEADER,
     // Main text used by detailed view rows.
     DETAILED_VIEW_LABEL,
     // System information text (e.g. date/time, battery status, etc).
     SYSTEM_INFO,
-    // Sub text within a row (e.g. user name in user row).
-    CAPTION,
     // Child buttons within rows that have a visible border (e.g. Cast's
     // "Stop", etc).
     BUTTON,
+    // Sub text within a row (e.g. user name in user row).
+    CAPTION,
   };
 
   static SkColor GetIconColor(const ui::NativeTheme* theme,

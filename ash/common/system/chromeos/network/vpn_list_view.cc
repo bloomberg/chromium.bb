@@ -116,23 +116,17 @@ class VPNListProviderEntryMd : public views::ButtonListener,
     tri_view->SetContainerVisible(TriView::Container::START, false);
     AddChildView(tri_view);
 
-    const ui::NativeTheme* theme = GetNativeTheme();
-    const SkColor prominent_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();
-    TrayPopupItemStyle style(
-        theme, TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
     style.SetupLabel(label);
     label->SetText(base::ASCIIToUTF16(name));
-    label->SetEnabledColor(prominent_color);
     tri_view->AddView(TriView::Container::CENTER, label);
 
-    gfx::ImageSkia icon =
-        gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon, prominent_color);
+    gfx::ImageSkia icon = gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon,
+                                                style.GetIconColor());
     views::ImageButton* add_vpn_button =
         new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED, icon,
                              icon, button_accessible_name_id);
-    add_vpn_button->set_ink_drop_base_color(prominent_color);
     add_vpn_button->SetEnabled(true);
     tri_view->AddView(TriView::Container::END, add_vpn_button);
   }
