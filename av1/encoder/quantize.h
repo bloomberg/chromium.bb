@@ -21,19 +21,25 @@
 extern "C" {
 #endif
 
-typedef struct QUANT_PARAM { int log_scale; } QUANT_PARAM;
+typedef struct QUANT_PARAM {
+  int log_scale;
+#if CONFIG_NEW_QUANT
+  TX_SIZE tx_size;
+  int dq;
+#endif  // CONFIG_NEW_QUANT
+#if CONFIG_AOM_QM
+  const qm_val_t *qmatrix;
+  const qm_val_t *iqmatrix;
+#endif  // CONFIG_AOM_QM
+} QUANT_PARAM;
 
 typedef void (*AV1_QUANT_FACADE)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                                  const MACROBLOCK_PLANE *p,
                                  tran_low_t *qcoeff_ptr,
                                  const MACROBLOCKD_PLANE *pd,
                                  tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
-                                 const SCAN_ORDER *sc, const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-                                 ,
-                                 const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                                 );
+                                 const SCAN_ORDER *sc,
+                                 const QUANT_PARAM *qparam);
 
 typedef struct {
 #if CONFIG_NEW_QUANT
@@ -84,163 +90,88 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
                             const MACROBLOCKD_PLANE *pd,
                             tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
-                            const SCAN_ORDER *sc, const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-                            ,
-                            const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                            );
+                            const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                            const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
                            const MACROBLOCKD_PLANE *pd, tran_low_t *dqcoeff_ptr,
                            uint16_t *eob_ptr, const SCAN_ORDER *sc,
-                           const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-                           ,
-                           const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                           );
+                           const QUANT_PARAM *qparam);
 
 void av1_quantize_dc_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
                             const MACROBLOCKD_PLANE *pd,
                             tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
-                            const SCAN_ORDER *sc, const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-                            ,
-                            const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-                            );
+                            const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
 
 #if CONFIG_NEW_QUANT
-void quantize_dc_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                     int skip_block, const int16_t quant,
-                     const int16_t quant_shift, const int16_t dequant,
-                     const tran_low_t *cuml_bins_ptr,
-                     const tran_low_t *dequant_val, tran_low_t *qcoeff_ptr,
-                     tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-void quantize_dc_32x32_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                           int skip_block, const int16_t quant,
-                           const int16_t quant_shift, const int16_t dequant,
-                           const tran_low_t *cuml_bins_ptr,
-                           const tran_low_t *dequant_val,
-                           tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                           uint16_t *eob_ptr);
-#if CONFIG_TX64X64
-void quantize_dc_64x64_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                           int skip_block, const int16_t quant,
-                           const int16_t quant_shift, const int16_t dequant,
-                           const tran_low_t *cuml_bins_ptr,
-                           const tran_low_t *dequant_val,
-                           tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                           uint16_t *eob_ptr);
-#endif  // CONFIG_TX64X64
-void quantize_dc_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                        int skip_block, const int16_t quant,
-                        const int16_t dequant, const tran_low_t *cuml_bins_ptr,
-                        const tran_low_t *dequant_val, tran_low_t *qcoeff_ptr,
-                        tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-void quantize_dc_32x32_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                              int skip_block, const int16_t quant,
-                              const int16_t dequant,
-                              const tran_low_t *cuml_bins_ptr,
-                              const tran_low_t *dequant_val,
-                              tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                              uint16_t *eob_ptr);
-#if CONFIG_TX64X64
-void quantize_dc_64x64_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                              int skip_block, const int16_t quant,
-                              const int16_t dequant,
-                              const tran_low_t *cuml_bins_ptr,
-                              const tran_low_t *dequant_val,
-                              tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                              uint16_t *eob_ptr);
-#endif  // CONFIG_TX64X64
+void av1_quantize_fp_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                                const MACROBLOCK_PLANE *p,
+                                tran_low_t *qcoeff_ptr,
+                                const MACROBLOCKD_PLANE *pd,
+                                tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                                const SCAN_ORDER *sc,
+                                const QUANT_PARAM *qparam);
+
+void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                               const MACROBLOCK_PLANE *p,
+                               tran_low_t *qcoeff_ptr,
+                               const MACROBLOCKD_PLANE *pd,
+                               tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                               const SCAN_ORDER *sc, const QUANT_PARAM *qparam);
+
+void av1_quantize_dc_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                                const MACROBLOCK_PLANE *p,
+                                tran_low_t *qcoeff_ptr,
+                                const MACROBLOCKD_PLANE *pd,
+                                tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                                const SCAN_ORDER *sc,
+                                const QUANT_PARAM *qparam);
 #endif  // CONFIG_NEW_QUANT
 
 #if CONFIG_AOM_HIGHBITDEPTH
-void av1_highbd_quantize_fp_facade(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
-    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
-    const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-    ,
-    const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-    );
+void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
+                                   intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
+                                   tran_low_t *qcoeff_ptr,
+                                   const MACROBLOCKD_PLANE *pd,
+                                   tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                                   const SCAN_ORDER *sc,
+                                   const QUANT_PARAM *qparam);
 
-void av1_highbd_quantize_b_facade(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
-    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
-    const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-    ,
-    const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-    );
+void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
+                                  intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
+                                  tran_low_t *qcoeff_ptr,
+                                  const MACROBLOCKD_PLANE *pd,
+                                  tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                                  const SCAN_ORDER *sc,
+                                  const QUANT_PARAM *qparam);
 
-void av1_highbd_quantize_dc_facade(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
-    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
-    const QUANT_PARAM *qparam
-#if CONFIG_AOM_QM
-    ,
-    const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
-#endif
-    );
+void av1_highbd_quantize_dc_facade(const tran_low_t *coeff_ptr,
+                                   intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
+                                   tran_low_t *qcoeff_ptr,
+                                   const MACROBLOCKD_PLANE *pd,
+                                   tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,
+                                   const SCAN_ORDER *sc,
+                                   const QUANT_PARAM *qparam);
 
-void av1_highbd_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
-                            int skip_block, const int16_t *round_ptr,
-                            const int16_t quant, tran_low_t *qcoeff_ptr,
-                            tran_low_t *dqcoeff_ptr, const int16_t dequant_ptr,
-                            uint16_t *eob_ptr,
-#if CONFIG_AOM_QM
-                            const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr,
-#endif
-                            const int log_scale);
 #if CONFIG_NEW_QUANT
-void highbd_quantize_dc_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                            int skip_block, const int16_t quant,
-                            const int16_t quant_shift, const int16_t dequant,
-                            const tran_low_t *cuml_bins_ptr,
-                            const tran_low_t *dequant_val,
-                            tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                            uint16_t *eob_ptr);
-void highbd_quantize_dc_32x32_nuq(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
-    const int16_t quant, const int16_t quant_shift, const int16_t dequant,
-    const tran_low_t *cuml_bins_ptr, const tran_low_t *dequant_val,
-    tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-#if CONFIG_TX64X64
-void highbd_quantize_dc_64x64_nuq(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
-    const int16_t quant, const int16_t quant_shift, const int16_t dequant,
-    const tran_low_t *cuml_bins_ptr, const tran_low_t *dequant_val,
-    tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-#endif  // CONFIG_TX64X64
-void highbd_quantize_dc_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                               int skip_block, const int16_t quant,
-                               const int16_t dequant,
-                               const tran_low_t *cuml_bins_ptr,
-                               const tran_low_t *dequant_val,
-                               tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                               uint16_t *eob_ptr);
-void highbd_quantize_dc_32x32_fp_nuq(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
-    const int16_t quant, const int16_t dequant, const tran_low_t *cuml_bins_ptr,
-    const tran_low_t *dequant_val, tran_low_t *qcoeff_ptr,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-#if CONFIG_TX64X64
-void highbd_quantize_dc_64x64_fp_nuq(
-    const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
-    const int16_t quant, const int16_t dequant, const tran_low_t *cuml_bins_ptr,
-    const tran_low_t *dequant_val, tran_low_t *qcoeff_ptr,
-    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
-#endif  // CONFIG_TX64X64
+void av1_highbd_quantize_fp_nuq_facade(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
+    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
+    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
+    const QUANT_PARAM *qparam);
+
+void av1_highbd_quantize_b_nuq_facade(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
+    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
+    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
+    const QUANT_PARAM *qparam);
+
+void av1_highbd_quantize_dc_nuq_facade(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
+    tran_low_t *qcoeff_ptr, const MACROBLOCKD_PLANE *pd,
+    tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr, const SCAN_ORDER *sc,
+    const QUANT_PARAM *qparam);
 #endif  // CONFIG_NEW_QUANT
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 

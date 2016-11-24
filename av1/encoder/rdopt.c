@@ -1222,11 +1222,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   } else {
 // full forward transform and quantization
 #if CONFIG_NEW_QUANT
-    av1_xform_quant_fp_nuq(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                           tx_size, coeff_ctx);
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    AV1_XFORM_QUANT_FP);
+                    coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
 #if !CONFIG_PVQ
     if (x->plane[plane].eobs[block])
@@ -2065,11 +2065,11 @@ static int64_t rd_pick_intra4x4block(
             const int coeff_ctx =
                 combine_entropy_contexts(*(tempa + idx), *(templ + idy));
 #if CONFIG_NEW_QUANT
-            av1_xform_quant_fp_nuq(cm, x, 0, block, row + idy, col + idx,
-                                   BLOCK_8X8, TX_4X4, coeff_ctx);
+            av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
+                            TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
-                            TX_4X4, AV1_XFORM_QUANT_FP);
+                            TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
             ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,
                                      scan_order->scan, scan_order->neighbors,
@@ -2090,11 +2090,11 @@ static int64_t rd_pick_intra4x4block(
             const int coeff_ctx =
                 combine_entropy_contexts(*(tempa + idx), *(templ + idy));
 #if CONFIG_NEW_QUANT
-            av1_xform_quant_fp_nuq(cm, x, 0, block, row + idy, col + idx,
-                                   BLOCK_8X8, TX_4X4, coeff_ctx);
+            av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
+                            TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
-                            TX_4X4, AV1_XFORM_QUANT_FP);
+                            TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
             av1_optimize_b(cm, x, 0, block, TX_4X4, coeff_ctx);
             ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,
@@ -2229,11 +2229,11 @@ static int64_t rd_pick_intra4x4block(
           const int coeff_ctx =
               combine_entropy_contexts(*(tempa + idx), *(templ + idy));
 #if CONFIG_NEW_QUANT
-          av1_xform_quant_fp_nuq(cm, x, 0, block, row + idy, col + idx,
-                                 BLOCK_8X8, TX_4X4, coeff_ctx);
+          av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
+                          TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B_NUQ);
 #else
           av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
-                          TX_4X4, AV1_XFORM_QUANT_B);
+                          TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B);
 #endif  // CONFIG_NEW_QUANT
           ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,
                                    scan_order->scan, scan_order->neighbors,
@@ -2268,11 +2268,11 @@ static int64_t rd_pick_intra4x4block(
           const int coeff_ctx =
               combine_entropy_contexts(*(tempa + idx), *(templ + idy));
 #if CONFIG_NEW_QUANT
-          av1_xform_quant_fp_nuq(cm, x, 0, block, row + idy, col + idx,
-                                 BLOCK_8X8, TX_4X4, coeff_ctx);
+          av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
+                          TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
           av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
-                          TX_4X4, AV1_XFORM_QUANT_FP);
+                          TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
           av1_optimize_b(cm, x, 0, block, TX_4X4, coeff_ctx);
           ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,
@@ -3137,11 +3137,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   max_blocks_wide >>= tx_size_wide_log2[0];
 
 #if CONFIG_NEW_QUANT
-  av1_xform_quant_fp_nuq(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                         tx_size, coeff_ctx);
+  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                  coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  AV1_XFORM_QUANT_FP);
+                  coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
 
   // TODO(yushin) : If PVQ is enabled, this should not be called.
@@ -4590,11 +4590,11 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if !CONFIG_PVQ
       coeff_ctx = combine_entropy_contexts(*(ta + (k & 1)), *(tl + (k >> 1)));
 #if CONFIG_NEW_QUANT
-      av1_xform_quant_fp_nuq(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
-                             BLOCK_8X8, tx_size, coeff_ctx);
+      av1_xform_quant(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
+                      BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
 #else
       av1_xform_quant(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
-                      BLOCK_8X8, tx_size, AV1_XFORM_QUANT_FP);
+                      BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
       if (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0)
         av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);

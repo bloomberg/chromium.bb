@@ -39,8 +39,13 @@ typedef enum AV1_XFORM_QUANT {
   AV1_XFORM_QUANT_FP = 0,
   AV1_XFORM_QUANT_B = 1,
   AV1_XFORM_QUANT_DC = 2,
-  AV1_XFORM_QUANT_SKIP_QUANT = 3,
-  AV1_XFORM_QUANT_LAST = 4
+#if CONFIG_NEW_QUANT
+  AV1_XFORM_QUANT_FP_NUQ = 3,
+  AV1_XFORM_QUANT_B_NUQ = 4,
+  AV1_XFORM_QUANT_DC_NUQ = 5,
+#endif  // CONFIG_NEW_QUANT
+  AV1_XFORM_QUANT_SKIP_QUANT,
+  AV1_XFORM_QUANT_TYPES,
 } AV1_XFORM_QUANT;
 
 void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
@@ -50,21 +55,7 @@ void av1_encode_sb_supertx(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
-                     TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx);
-#if CONFIG_NEW_QUANT
-void av1_xform_quant_nuq(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
-                         int block, int blk_row, int blk_col,
-                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int ctx);
-void av1_xform_quant_dc_nuq(MACROBLOCK *x, int plane, int block, int blk_row,
-                            int blk_col, BLOCK_SIZE plane_bsize,
-                            TX_SIZE tx_size, int ctx);
-void av1_xform_quant_fp_nuq(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
-                            int block, int blk_row, int blk_col,
-                            BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int ctx);
-void av1_xform_quant_dc_fp_nuq(MACROBLOCK *x, int plane, int block, int blk_row,
-                               int blk_col, BLOCK_SIZE plane_bsize,
-                               TX_SIZE tx_size, int ctx);
-#endif
+                     TX_SIZE tx_size, int ctx, AV1_XFORM_QUANT xform_quant_idx);
 
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                    TX_SIZE tx_size, int ctx);
