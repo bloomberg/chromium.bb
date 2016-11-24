@@ -370,8 +370,6 @@ class TestGitCl(TestCase):
       ((['git', 'config', '--unset-all', 'rietveld.project'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.pending-ref-prefix'],),
         CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.git-number-footer'],),
-        CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.run-post-upload-hook'],),
         CERR1),
       ((['git', 'config', 'gerrit.host', 'true'],), ''),
@@ -929,6 +927,30 @@ class TestGitCl(TestCase):
        ''),
     ]
     git_cl.main(['land'])
+
+  def test_ShouldGenerateGitNumberFooters(self):
+    self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
+      'generate-git-number-footers: true\n'
+    ))
+    self.assertTrue(git_cl.ShouldGenerateGitNumberFooters())
+
+    self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
+      'generate-git-number-footers: false\n'
+    ))
+    self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
+
+    self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
+      'generate-git-number-footers: anything but true is false\n'
+    ))
+    self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
+
+    self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
+      "whatever: ignored"
+    ))
+    self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
+
+    self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: None)
+    self.assertFalse(git_cl.ShouldGenerateGitNumberFooters())
 
   @classmethod
   def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):
