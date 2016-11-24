@@ -1317,6 +1317,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // non-secure passwords fields are no longer visible.
   void incrementPasswordCount();
   void decrementPasswordCount();
+  unsigned passwordCount() const;
 
  protected:
   Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
@@ -1428,9 +1429,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   const OriginAccessEntry& accessEntryFromURL();
-
-  void sendSensitiveInputVisibility();
-  void sendSensitiveInputVisibilityInternal();
 
   DocumentLifecycle m_lifecycle;
 
@@ -1672,8 +1670,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<PropertyRegistry> m_propertyRegistry;
 
   unsigned m_passwordCount;
-
-  TaskHandle m_sensitiveInputVisibilityTask;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

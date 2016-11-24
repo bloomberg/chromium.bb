@@ -38,6 +38,8 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
+#include "public/platform/InterfaceProvider.h"
+#include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
@@ -91,11 +93,43 @@ void PasswordInputType::disableSecureTextInput() {
 }
 
 void PasswordInputType::onAttachWithLayoutObject() {
-  element().document().incrementPasswordCount();
+  Document& document = element().document();
+  DCHECK(document.frame());
+  if (document.isSecureContext()) {
+    // The browser process only cares about passwords on pages where the
+    // top-level URL is not secure. Secure contexts must have a top-level
+    // URL that is secure, so there is no need to send notifications for
+    // password fields in secure contexts.
+    return;
+  }
+
+  document.incrementPasswordCount();
+  if (document.passwordCount() > 1) {
+    // Only send a message on the first visible password field; the
+    // browser process doesn't care about the presence of additional
+    // password fields beyond that.
+    return;
+  }
+  mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
+  document.frame()->interfaceProvider()->getInterface(
+      mojo::GetProxy(&sensitiveInputServicePtr));
+  sensitiveInputServicePtr->PasswordFieldVisibleInInsecureContext();
 }
 
 void PasswordInputType::onDetachWithLayoutObject() {
-  element().document().decrementPasswordCount();
+  Document& document = element().document();
+  DCHECK(document.frame());
+  if (document.isSecureContext()) {
+    return;
+  }
+  document.decrementPasswordCount();
+  if (document.passwordCount() > 0)
+    return;
+
+  mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
+  document.frame()->interfaceProvider()->getInterface(
+      mojo::GetProxy(&sensitiveInputServicePtr));
+  sensitiveInputServicePtr->AllPasswordFieldsInInsecureContextInvisible();
 }
 
 }  // namespace blink
