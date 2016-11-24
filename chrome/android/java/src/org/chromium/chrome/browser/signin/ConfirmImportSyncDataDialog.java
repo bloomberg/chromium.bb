@@ -119,16 +119,7 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         View v = inflater.inflate(R.layout.confirm_import_sync_data, null);
 
         TextView prompt = (TextView) v.findViewById(R.id.sync_import_data_prompt);
-
-        if (importSyncType == ImportSyncType.SWITCHING_SYNC_ACCOUNTS) {
-            prompt.setText(getActivity().getString(
-                    R.string.sync_import_data_prompt_switching_accounts,
-                    newAccountName, oldAccountName));
-        } else {
-            prompt.setText(getActivity().getString(
-                    R.string.sync_import_data_prompt_existing_data,
-                    newAccountName, oldAccountName));
-        }
+        prompt.setText(getActivity().getString(R.string.sync_import_data_prompt, oldAccountName));
 
         mConfirmImportOption = (RadioButtonWithDescription)
                 v.findViewById(R.id.sync_confirm_import_choice);
@@ -137,11 +128,14 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
 
         mConfirmImportOption.setDescriptionText(getActivity().getString(
                 R.string.sync_import_existing_data_subtext, newAccountName));
-        mKeepSeparateOption.setDescriptionText(getActivity().getString(
-                (importSyncType == ImportSyncType.SWITCHING_SYNC_ACCOUNTS
-                        ? R.string.sync_keep_existing_data_separate_subtext_switching_accounts
-                        : R.string.sync_keep_existing_data_separate_subtext_existing_data),
-                newAccountName, oldAccountName));
+        if (importSyncType == ImportSyncType.SWITCHING_SYNC_ACCOUNTS) {
+            mKeepSeparateOption.setDescriptionText(getActivity().getString(
+                    R.string.sync_keep_existing_data_separate_subtext_switching_accounts,
+                    oldAccountName));
+        } else {
+            mKeepSeparateOption.setDescriptionText(getActivity().getString(
+                    R.string.sync_keep_existing_data_separate_subtext_existing_data));
+        }
 
         List<RadioButtonWithDescription> radioGroup =
                 Arrays.asList(mConfirmImportOption, mKeepSeparateOption);

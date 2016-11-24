@@ -1169,26 +1169,23 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_IMPORT_DATA_TITLE" desc="Preference title of screen to let user choose to switch sync accounts. [CHAR-LIMIT=24]">
         Import data?
       </message>
-      <message name="IDS_SYNC_IMPORT_DATA_PROMPT_SWITCHING_ACCOUNTS" desc="Prompt for the user to choose how they want to handle their existing sync data">
-        You’re switching sync accounts from <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph> to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. What do you want to do with your existing bookmarks, history, passwords and other settings?
-      </message>
-      <message name="IDS_SYNC_IMPORT_DATA_PROMPT_EXISTING_DATA" desc="Prompt for the user to choose how they want to handle their existing sync data">
-        You’re signing in to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. Some of your existing bookmarks, history, passwords, and other settings were previously synced to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>. What do you want to do with your existing data?
+      <message name="IDS_SYNC_IMPORT_DATA_PROMPT" desc="Prompt for the user to choose how they want to handle their existing sync data">
+         You have bookmarks, history, passwords, and other settings from <ph name ="FROM_ACCOUNT">%1$s<ex>johndoe@old.com</ex></ph>.
       </message>
       <message name="IDS_SYNC_IMPORT_EXISTING_DATA" desc="Option to import existing data to the newly selected sync account">
-        Import existing data
+        Combine my data
       </message>
       <message name="IDS_SYNC_IMPORT_EXISTING_DATA_SUBTEXT" desc="Subtext describing what happens if the user elects to import existing data to the newly selected sync account">
-        Keep existing data on your device and permanently import the data to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>.
+        Add existing data to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>.
       </message>
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE" desc="Option to keep the existing data separate from the newly selected sync account">
-        Keep existing data separate
+        Keep my data separate
       </message>
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT_EXISTING_DATA" desc="Subtext describing what happens if the user elects to keep the existing data separate signing into a new account after have previously being signed into a different account then signed out.">
-        Replace this device’s data with <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>, but data created since you signed out will be lost.
+        Delete existing data.
       </message>
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT_SWITCHING_ACCOUNTS" desc="Subtext describing what happens if the user elects to keep the existing data separate when switching sync accounts.">
-        Replace this device’s data with <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>.
+        Delete existing data. You can retrieve it by switching back to <ph name="FROM_ACCOUNT">%1$s<ex>johndoe@old.com</ex></ph>.
       </message>
 
       <!-- Bluetooth Picker UI strings -->
