@@ -55,25 +55,24 @@ std::string GetSourceHistogramName(NTPTileSource source) {
 
 }  // namespace
 
-void RecordTileImpression(int index, NTPTileSource source) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression",
-                            static_cast<int>(index), kMaxNumTiles);
-
-  std::string histogram =
-      base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
-                         GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(histogram, static_cast<int>(index), kMaxNumTiles);
-}
-
 void RecordPageImpression(
     const std::vector<std::pair<NTPTileSource, MostVisitedTileType>>& tiles) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", tiles.size());
 
   int counts_per_type[NUM_RECORDED_TILE_TYPES] = {0};
   bool have_tile_types = false;
-  for (const auto& tile : tiles) {
-    NTPTileSource source = tile.first;
-    MostVisitedTileType tile_type = tile.second;
+  for (int index = 0; index < static_cast<int>(tiles.size()); index++) {
+    NTPTileSource source = tiles[index].first;
+    MostVisitedTileType tile_type = tiles[index].second;
+
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression", index,
+                              kMaxNumTiles);
+
+    std::string source_name = GetSourceHistogramName(source);
+    std::string impression_histogram = base::StringPrintf(
+        "NewTabPage.SuggestionsImpression.%s", source_name.c_str());
+    LogHistogramEvent(impression_histogram, index, kMaxNumTiles);
+
     if (tile_type >= NUM_RECORDED_TILE_TYPES) {
       continue;
     }
@@ -84,9 +83,9 @@ void RecordPageImpression(
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type,
                               NUM_RECORDED_TILE_TYPES);
 
-    std::string histogram = base::StringPrintf(
-        "NewTabPage.TileType.%s", GetSourceHistogramName(source).c_str());
-    LogHistogramEvent(histogram, tile_type, NUM_RECORDED_TILE_TYPES);
+    std::string tile_type_histogram =
+        base::StringPrintf("NewTabPage.TileType.%s", source_name.c_str());
+    LogHistogramEvent(tile_type_histogram, tile_type, NUM_RECORDED_TILE_TYPES);
   }
 
   if (have_tile_types) {

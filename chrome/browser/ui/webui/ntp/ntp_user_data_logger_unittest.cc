@@ -72,79 +72,53 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   TestNTPUserDataLogger logger;
   logger.ntp_url_ = GURL("chrome://newtab/");
 
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
+
   // Impressions increment the associated bins.
-
   logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      IsEmpty());
-
   logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      IsEmpty());
+  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedImpression(4, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(5, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(6, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(7, NTPLoggingTileSource::CLIENT);
 
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      ElementsAre(Bucket(2, 1)));
-
-  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
-
-  // But once incremented, they don't increase again unless reset.
+  // Repeated impressions for the same bins are ignored.
   logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
   logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
   logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
   logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
 
   // Impressions are silently ignored for tiles >= 8.
   logger.LogMostVisitedImpression(8, NTPLoggingTileSource::SERVER);
   logger.LogMostVisitedImpression(9, NTPLoggingTileSource::CLIENT);
+
+  // The actual histograms are emitted only after the ALL_TILES_LOADED event, so
+  // at this point everything should still be empty.
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
+      IsEmpty());
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 1), Bucket(1, 1)));
+      IsEmpty());
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      ElementsAre(Bucket(2, 1), Bucket(3, 1)));
+      IsEmpty());
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1),
+                  Bucket(4, 1), Bucket(5, 1), Bucket(6, 1), Bucket(7, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
+      ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
+      ElementsAre(Bucket(4, 1), Bucket(5, 1), Bucket(6, 1), Bucket(7, 1)));
 
   // After navigating away from the NTP and back, we record again.
   logger.NavigatedFromURLToURL(GURL("chrome://newtab/"),
@@ -155,15 +129,19 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
   logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
   logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
+
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression"),
-      ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2)));
+      ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2),
+                  Bucket(4, 1), Bucket(5, 1), Bucket(6, 1), Bucket(7, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.server"),
-      ElementsAre(Bucket(0, 2), Bucket(1, 1), Bucket(2, 1)));
+      ElementsAre(Bucket(0, 2), Bucket(1, 1), Bucket(2, 2), Bucket(3, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpression.client"),
-      ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 2)));
+      ElementsAre(Bucket(1, 1), Bucket(3, 1), Bucket(4, 1), Bucket(5, 1),
+                  Bucket(6, 1), Bucket(7, 1)));
 }
 
 TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {

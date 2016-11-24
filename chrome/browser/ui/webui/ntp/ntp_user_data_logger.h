@@ -78,11 +78,9 @@ class NTPUserDataLogger
   // number of impressions for a source slightly out-of-sync with navigations.
   std::bitset<kNumMostVisited> impression_was_logged_;
 
-  // True if at least one iframe came from a server-side suggestion.
-  bool has_server_side_suggestions_;
-
-  // True if at least one iframe came from a client-side suggestion.
-  bool has_client_side_suggestions_;
+  // Stores the tile source for each impression. Entries are only valid if the
+  // corresponding entry in |impression_was_logged_| is true.
+  std::vector<NTPLoggingTileSource> impression_tile_source_;
 
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;

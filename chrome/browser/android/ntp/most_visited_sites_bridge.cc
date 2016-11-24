@@ -216,12 +216,8 @@ void MostVisitedSitesBridge::RecordPageImpression(
     NTPTileSource source = static_cast<NTPTileSource>(int_sources[i]);
     MostVisitedTileType tile_type =
         static_cast<MostVisitedTileType>(int_tile_types[i]);
-
     tiles.emplace_back(source, tile_type);
-
-    ntp_tiles::metrics::RecordTileImpression(static_cast<int>(i), source);
   }
-
   ntp_tiles::metrics::RecordPageImpression(tiles);
 }
 

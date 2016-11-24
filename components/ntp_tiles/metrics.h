@@ -36,11 +36,8 @@ enum MostVisitedTileType {
   THUMBNAIL,
 };
 
-// Records an impression of an individual tile.
-void RecordTileImpression(int index, NTPTileSource source);
-
-// Records an impression of the page itself, after all tiles have loaded,
-// including the visual types (see above) of all visible tiles.
+// Records an NTP impression, after all tiles have loaded.
+// Includes the visual types (see above) of all visible tiles.
 void RecordPageImpression(
     const std::vector<std::pair<NTPTileSource, MostVisitedTileType>>& tiles);
 
