@@ -2529,4 +2529,7 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnError,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnBufferReady,
                      uint32_t /* buffer */)
 
+// Sent by the PPAPI process to indicate that a field trial has been activated.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FieldTrialActivated, std::string /* name */)
+
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/variations/child_process_field_trial_syncer.h"
+#include "components/variations/child_process_field_trial_syncer.h"
 
 #include <string>
 #include <utility>
@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
 namespace {
 
@@ -55,7 +55,7 @@ TEST(ChildProcessFieldTrialSyncerTest, FieldTrialState) {
   base::MessageLoop message_loop;
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateTrialsFromCommandLine(
-     *base::CommandLine::ForCurrentProcess(), "field_trial_handle_switch");
+      *base::CommandLine::ForCurrentProcess(), "field_trial_handle_switch");
 
   base::FieldTrial* trial1 = base::FieldTrialList::CreateFieldTrial("A", "G1");
   base::FieldTrial* trial2 = base::FieldTrialList::CreateFieldTrial("B", "G2");
@@ -75,7 +75,8 @@ TEST(ChildProcessFieldTrialSyncerTest, FieldTrialState) {
 
   TestFieldTrialObserver observer;
   ChildProcessFieldTrialSyncer syncer(&observer);
-  syncer.InitFieldTrialObserving(*base::CommandLine::ForCurrentProcess());
+  syncer.InitFieldTrialObserving(*base::CommandLine::ForCurrentProcess(),
+                                 "single_process");
 
   // The observer should be notified of activated entries that were not activate
   // on the command line. In this case, trial 2. (Trial 1 was already active via
@@ -93,4 +94,4 @@ TEST(ChildProcessFieldTrialSyncerTest, FieldTrialState) {
   EXPECT_EQ(MakeStringPair("C", "G3"), observer.get_observed_entry(1));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

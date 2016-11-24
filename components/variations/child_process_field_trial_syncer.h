@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_VARIATIONS_CHILD_PROCESS_FIELD_TRIAL_SYNCER_H_
-#define CHROME_COMMON_VARIATIONS_CHILD_PROCESS_FIELD_TRIAL_SYNCER_H_
+#ifndef COMPONENTS_VARIATIONS_FIELD_TRIAL_SYNCER_H_
+#define COMPONENTS_VARIATIONS_FIELD_TRIAL_SYNCER_H_
 
 #include <string>
 
@@ -14,7 +14,7 @@ namespace base {
 class CommandLine;
 }
 
-namespace chrome_variations {
+namespace variations {
 
 // ChildProcessFieldTrialSyncer is a utility class that's responsible for
 // syncing the "activated" state of field trials between browser and child
@@ -31,8 +31,11 @@ class ChildProcessFieldTrialSyncer {
   ~ChildProcessFieldTrialSyncer();
 
   // Initializes field trial state change observation and notifies the browser
-  // of any field trials that might have already been activated.
-  void InitFieldTrialObserving(const base::CommandLine& command_line);
+  // of any field trials that might have already been activated. Takes the
+  // switch name for single process mode as a parameter, since that's not
+  // visible to the component.
+  void InitFieldTrialObserving(const base::CommandLine& command_line,
+                               const char* single_process_switch_name);
 
   // Handler for messages from the browser process notifying the child process
   // that a field trial was activated.
@@ -45,6 +48,6 @@ class ChildProcessFieldTrialSyncer {
   DISALLOW_COPY_AND_ASSIGN(ChildProcessFieldTrialSyncer);
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
-#endif  // CHROME_COMMON_VARIATIONS_CHILD_PROCESS_FIELD_TRIAL_SYNCER_H_
+#endif  // COMPONENTS_VARIATIONS_FIELD_TRIAL_SYNCER_H_

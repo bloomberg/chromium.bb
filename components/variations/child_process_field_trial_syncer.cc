@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/variations/child_process_field_trial_syncer.h"
+#include "components/variations/child_process_field_trial_syncer.h"
 
 #include <set>
 #include <utility>
@@ -10,9 +10,8 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "components/variations/variations_util.h"
-#include "content/public/common/content_switches.h"
 
-namespace chrome_variations {
+namespace variations {
 
 ChildProcessFieldTrialSyncer::ChildProcessFieldTrialSyncer(
     base::FieldTrialList::Observer* observer)
@@ -21,14 +20,15 @@ ChildProcessFieldTrialSyncer::ChildProcessFieldTrialSyncer(
 ChildProcessFieldTrialSyncer::~ChildProcessFieldTrialSyncer() {}
 
 void ChildProcessFieldTrialSyncer::InitFieldTrialObserving(
-    const base::CommandLine& command_line) {
+    const base::CommandLine& command_line,
+    const char* single_process_switch_name) {
   // In single-process mode, there is no need to synchronize trials to the
   // browser process (because it's the same process), so this class is a no-op.
-  if (command_line.HasSwitch(switches::kSingleProcess))
+  if (command_line.HasSwitch(single_process_switch_name))
     return;
 
   // Set up initial set of crash dump data for field trials in this process.
-  variations::SetVariationListCrashKeys();
+  SetVariationListCrashKeys();
 
   // Listen for field trial activations to report them to the browser.
   base::FieldTrialList::AddObserver(observer_);
@@ -60,7 +60,7 @@ void ChildProcessFieldTrialSyncer::OnSetFieldTrialGroup(
   // Ensure the trial is marked as "used" by calling group() on it if it is
   // marked as activated.
   trial->group();
-  variations::SetVariationListCrashKeys();
+  SetVariationListCrashKeys();
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

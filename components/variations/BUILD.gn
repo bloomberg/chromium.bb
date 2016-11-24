@@ -18,6 +18,8 @@ static_library("variations") {
     "android/variations_seed_bridge.h",
     "caching_permuted_entropy_provider.cc",
     "caching_permuted_entropy_provider.h",
+    "child_process_field_trial_syncer.cc",
+    "child_process_field_trial_syncer.h",
     "entropy_provider.cc",
     "entropy_provider.h",
     "experiment_labels.cc",
@@ -96,6 +98,7 @@ source_set("unit_tests") {
   sources = [
     "active_field_trials_unittest.cc",
     "caching_permuted_entropy_provider_unittest.cc",
+    "child_process_field_trial_syncer_unittest.cc",
     "entropy_provider_unittest.cc",
     "experiment_labels_unittest.cc",
     "metrics_util_unittest.cc",

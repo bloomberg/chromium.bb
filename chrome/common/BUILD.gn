@@ -150,8 +150,6 @@ static_library("common") {
     "url_constants.h",
     "v8_breakpad_support_win.cc",
     "v8_breakpad_support_win.h",
-    "variations/child_process_field_trial_syncer.cc",
-    "variations/child_process_field_trial_syncer.h",
     "web_application_info.cc",
     "web_application_info.h",
     "widevine_cdm_constants.cc",

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <queue>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -151,6 +152,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   // IPC message handlers.
   void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);
+  void OnFieldTrialActivated(const std::string& trial_name);
 
   // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;

@@ -377,6 +377,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               is_broker_ ? switches::kPpapiBrokerProcess
                                          : switches::kPpapiPluginProcess);
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(is_broker_ ? switches::kPrefetchArgumentPpapiBroker
@@ -402,7 +403,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
                                arraysize(kPluginForwardSwitches));
 
-    // Copy any flash args over and introduce field trials if necessary.
+    // Copy any flash args over if necessary.
     // TODO(vtl): Stop passing flash args in the command line, or windows is
     // going to explode.
     std::string existing_args =
@@ -479,6 +480,8 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiPluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ChannelCreated,
                         OnRendererPluginChannelCreated)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_FieldTrialActivated,
+                        OnFieldTrialActivated);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -496,6 +499,14 @@ void PpapiPluginProcessHost::OnChannelConnected(int32_t peer_pid) {
   for (size_t i = 0; i < pending_requests_.size(); i++)
     RequestPluginChannel(pending_requests_[i]);
   pending_requests_.clear();
+}
+
+void PpapiPluginProcessHost::OnFieldTrialActivated(
+    const std::string& trial_name) {
+  // Activate the trial in the browser process to match its state in the
+  // PPAPI process. This is done by calling FindFullName which finalizes the
+  // group and activates the trial.
+  base::FieldTrialList::FindFullName(trial_name);
 }
 
 // Called when the browser <--> plugin channel has an error. This normally

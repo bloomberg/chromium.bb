@@ -12,16 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/common/variations/child_process_field_trial_syncer.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/variations/child_process_field_trial_syncer.h"
 #include "content/public/renderer/render_thread_observer.h"
 
 class GURL;
 struct ContentSettings;
-
-namespace base {
-class CommandLine;
-}
 
 namespace content {
 class ResourceDispatcherDelegate;
@@ -52,10 +48,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   }
 
  private:
-  // Initializes field trial state change observation and notifies the browser
-  // of any field trials that might have already been activated.
-  void InitFieldTrialObserving(const base::CommandLine& command_line);
-
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void OnRenderProcessShutdown() override;
@@ -75,7 +67,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
-  chrome_variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
+  variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
 
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
 

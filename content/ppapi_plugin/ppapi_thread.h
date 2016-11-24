@@ -13,9 +13,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
+#include "components/variations/child_process_field_trial_syncer.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/pp_module.h"
@@ -50,7 +52,8 @@ class PpapiBlinkPlatformImpl;
 
 class PpapiThread : public ChildThreadImpl,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
-                    public ppapi::proxy::PluginProxyDelegate {
+                    public ppapi::proxy::PluginProxyDelegate,
+                    public base::FieldTrialList::Observer {
  public:
   PpapiThread(const base::CommandLine& command_line, bool is_broker);
   ~PpapiThread() override;
@@ -109,6 +112,10 @@ class PpapiThread : public ChildThreadImpl,
   void OnSetNetworkState(bool online);
   void OnCrash();
   void OnHang();
+
+  // base::FieldTrialList::Observer:
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                  const std::string& group_name) override;
 
   // Sets up the channel to the given renderer. If |renderer_pid| is
   // base::kNullProcessId, the channel is set up to the browser. On success,
@@ -171,6 +178,8 @@ class PpapiThread : public ChildThreadImpl,
   // Caches the handle to the peer process if this is a broker.
   base::win::ScopedHandle peer_handle_;
 #endif
+
+  variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };

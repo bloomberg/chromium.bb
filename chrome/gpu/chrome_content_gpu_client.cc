@@ -71,8 +71,9 @@ void ChromeContentGpuClient::Initialize(
   // No need for field trial syncer if we're in the browser process.
   if (!command_line.HasSwitch(switches::kInProcessGPU)) {
     field_trial_syncer_.reset(
-        new chrome_variations::ChildProcessFieldTrialSyncer(observer));
-    field_trial_syncer_->InitFieldTrialObserving(command_line);
+        new variations::ChildProcessFieldTrialSyncer(observer));
+    field_trial_syncer_->InitFieldTrialObserving(command_line,
+                                                 switches::kSingleProcess);
   }
 }
 

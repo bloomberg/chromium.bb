@@ -39,6 +39,7 @@
 #include "chrome/renderer/security_filter_peer.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -251,7 +252,8 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   media::SetLocalizedStringProvider(
       chrome_common_media::LocalizedStringProvider);
 
-  field_trial_syncer_.InitFieldTrialObserving(command_line);
+  field_trial_syncer_.InitFieldTrialObserving(command_line,
+                                              switches::kSingleProcess);
 
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
