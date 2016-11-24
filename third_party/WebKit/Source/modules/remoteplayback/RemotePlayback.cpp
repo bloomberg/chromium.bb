@@ -202,6 +202,7 @@ bool RemotePlayback::hasPendingActivity() const {
 
 void RemotePlayback::contextDestroyed() {
   m_availabilityCallbacks.clear();
+  m_promptPromiseResolver = nullptr;
 }
 
 void RemotePlayback::notifyInitialAvailability(int callbackId) {
