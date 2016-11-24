@@ -402,7 +402,10 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
   styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
                                     newStyleSheets);
 
-  EXPECT_FALSE(document().needsLayoutTreeUpdate());
+  EXPECT_FALSE(document().needsStyleRecalc());
+  EXPECT_FALSE(document().childNeedsStyleRecalc());
+  EXPECT_FALSE(document().needsStyleInvalidation());
+  EXPECT_FALSE(document().childNeedsStyleInvalidation());
 }
 
 TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
