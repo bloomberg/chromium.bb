@@ -296,4 +296,24 @@ TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
   EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
 }
 
+// Tests that only one Mojo message is sent for multiple password
+// visibility events within the same task.
+TEST(PasswordInputTypeTest, MultipleEventsInSameTask) {
+  MockInterfaceProvider interfaceProvider;
+  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create(
+      IntSize(2000, 2000), nullptr, nullptr, nullptr, &interfaceProvider);
+  pageHolder->document().body()->setInnerHTML("<input type='password'>");
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  // Make the password field invisible in the same task.
+  HTMLInputElement* input =
+      toHTMLInputElement(pageHolder->document().body()->firstChild());
+  input->setType("text");
+  pageHolder->document().view()->updateAllLifecyclePhases();
+  blink::testing::runPendingTasks();
+  // Only a single Mojo message should have been sent, with the latest state of
+  // the page (which is that no password fields are visible).
+  EXPECT_EQ(1u, interfaceProvider.numPasswordFieldsInvisibleCalls());
+  EXPECT_FALSE(interfaceProvider.passwordFieldVisibleCalled());
+}
+
 }  // namespace blink
