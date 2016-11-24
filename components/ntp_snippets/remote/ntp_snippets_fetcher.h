@@ -29,7 +29,6 @@ class PrefService;
 class SigninManagerBase;
 
 namespace base {
-class ListValue;
 class Value;
 }  // namespace base
 

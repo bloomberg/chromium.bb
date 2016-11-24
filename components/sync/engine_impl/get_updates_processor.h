@@ -16,7 +16,6 @@
 #include "components/sync/protocol/sync.pb.h"
 
 namespace sync_pb {
-class GetUpdatesMessage;
 class GetUpdatesResponse;
 }  // namespace sync_pb
 
@@ -26,11 +25,6 @@ class DebugInfoGetter;
 class GetUpdatesDelegate;
 class StatusController;
 class SyncCycle;
-class SyncCycleContext;
-
-namespace syncable {
-class Directory;
-}  // namespace syncable
 
 // This class manages the set of per-type syncer objects.
 //

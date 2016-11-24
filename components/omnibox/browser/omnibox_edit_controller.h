@@ -14,10 +14,6 @@
 
 class ToolbarModel;
 
-namespace gfx {
-class Image;
-}
-
 class OmniboxEditController {
  public:
   virtual void OnAutocompleteAccept(const GURL& destination_url,

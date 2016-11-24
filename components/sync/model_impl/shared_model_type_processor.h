@@ -27,7 +27,6 @@
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
-struct ActivationContext;
 class CommitQueue;
 class ProcessorEntityTracker;
 

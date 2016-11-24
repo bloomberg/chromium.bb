@@ -17,7 +17,6 @@
 class GURL;
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 }
 
@@ -29,7 +28,6 @@ class URLRequestContextGetter;
 
 namespace update_client {
 
-class Configurator;
 struct CrxComponent;
 struct CrxUpdateItem;
 

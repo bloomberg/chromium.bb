@@ -20,11 +20,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 
 namespace net {
-class HostPortPair;
 class HttpRequestHeaders;
-class HttpResponseHeaders;
-class ProxyServer;
-class URLRequest;
 }
 
 namespace data_reduction_proxy {

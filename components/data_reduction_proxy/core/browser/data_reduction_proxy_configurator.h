@@ -15,12 +15,8 @@
 
 namespace net {
 class NetLog;
-class ProxyInfo;
 class ProxyServer;
-class ProxyService;
 }
-
-class PrefService;
 
 namespace data_reduction_proxy {
 

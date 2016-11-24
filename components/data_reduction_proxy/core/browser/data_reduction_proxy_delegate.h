@@ -21,7 +21,6 @@ class NetLog;
 class ProxyConfig;
 class ProxyInfo;
 class ProxyService;
-class URLRequest;
 }
 
 namespace data_reduction_proxy {
@@ -30,7 +29,6 @@ class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
-class DataReductionProxyRequestOptions;
 
 class DataReductionProxyDelegate : public net::ProxyDelegate {
  public:

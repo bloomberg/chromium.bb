@@ -22,11 +22,9 @@
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
 
-class PrefService;
 class PrefRegistrySimple;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class TaskRunner;
 }

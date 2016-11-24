@@ -26,7 +26,6 @@ class RenderFrameHost;
 }
 
 namespace gfx {
-class Rect;
 class RectF;
 }
 
@@ -46,7 +45,6 @@ class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
 class PersonalDataManager;
-struct FormData;
 struct Suggestion;
 
 // A client interface that needs to be supplied to the Autofill component by the

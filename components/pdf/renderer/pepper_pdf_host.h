@@ -20,19 +20,12 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/serialized_structs.h"
 
-struct PP_ImageDataDesc;
-struct PP_Size;
-class SkBitmap;
-
 namespace content {
-class PepperPluginInstance;
 class RenderFrame;
 class RendererPpapiHost;
 }
 
 namespace ppapi {
-class HostResource;
-
 namespace host {
 struct HostMessageContext;
 }  // namespace host

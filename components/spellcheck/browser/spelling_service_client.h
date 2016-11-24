@@ -16,7 +16,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
-class TextCheckClientDelegate;
 struct SpellCheckResult;
 
 namespace content {

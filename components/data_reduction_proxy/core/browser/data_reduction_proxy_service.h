@@ -21,7 +21,6 @@
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 
-class GURL;
 class PrefService;
 
 namespace base {

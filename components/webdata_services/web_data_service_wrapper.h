@@ -24,7 +24,6 @@ class PasswordWebDataService;
 #endif
 
 namespace autofill {
-class AutofillWebDataBackend;
 class AutofillWebDataService;
 }  // namespace autofill
 

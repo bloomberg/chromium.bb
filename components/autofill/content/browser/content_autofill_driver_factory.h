@@ -20,7 +20,6 @@ class RenderFrameHost;
 
 namespace autofill {
 
-class AutofillDriver;
 class ContentAutofillDriver;
 
 // Manages lifetime of ContentAutofillDriver. One Factory per WebContents

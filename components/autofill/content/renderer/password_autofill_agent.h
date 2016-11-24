@@ -25,7 +25,6 @@
 
 namespace blink {
 class WebInputElement;
-class WebKeyboardEvent;
 class WebSecurityOrigin;
 }
 

@@ -19,7 +19,6 @@
 
 namespace sessions {
 class BaseSessionServiceDelegate;
-class SerializedNavigationEntry;
 class SessionCommand;
 class SessionBackend;
 

@@ -26,12 +26,10 @@ class SyncEntity;
 namespace syncer {
 
 class ServerConnectionManager;
-class SyncCycleContext;
 struct SyncProtocolError;
 
 namespace syncable {
 class Directory;
-class Entry;
 }
 
 // Returns the types to migrate from the data in |response|.

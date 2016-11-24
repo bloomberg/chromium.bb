@@ -19,10 +19,6 @@
 
 class GURL;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace url_matcher {
 
 // This class represents a single URL matching condition, e.g. a match on the

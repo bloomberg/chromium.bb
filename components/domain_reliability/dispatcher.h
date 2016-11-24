@@ -13,10 +13,6 @@
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
-
 namespace domain_reliability {
 
 class MockableTime;

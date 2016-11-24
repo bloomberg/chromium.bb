@@ -15,8 +15,6 @@ class PrefRegistrySyncable;
 
 namespace sync_preferences {
 
-class PrefModelAssociatorClient;
-
 // Test version of PrefServiceSyncable.
 class TestingPrefServiceSyncable
     : public TestingPrefServiceBase<PrefServiceSyncable,

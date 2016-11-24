@@ -21,7 +21,6 @@
 namespace webcrypto {
 
 class CryptoData;
-class GenerateKeyResult;
 class Status;
 
 // Returns the EVP_MD that corresponds with |hash_algorithm|, or nullptr on

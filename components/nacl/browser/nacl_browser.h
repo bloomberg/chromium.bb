@@ -21,9 +21,6 @@
 #include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/nacl_validation_cache.h"
 
-class URLPattern;
-class GURL;
-
 namespace base {
 class FileProxy;
 }

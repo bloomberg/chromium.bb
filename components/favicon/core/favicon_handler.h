@@ -23,10 +23,6 @@
 
 class SkBitmap;
 
-namespace base {
-class RefCountedMemory;
-}
-
 namespace favicon {
 
 class FaviconDriver;

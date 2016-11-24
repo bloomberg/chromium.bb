@@ -18,9 +18,6 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/translate_errors.h"
 
-class GURL;
-class PrefService;
-
 namespace metrics {
 class TranslateEventProto;
 }

@@ -27,10 +27,6 @@ class Clock;
 class DictionaryValue;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace content_settings {
 
 class RuleIterator;

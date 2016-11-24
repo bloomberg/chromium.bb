@@ -27,7 +27,6 @@ class TypedUrlSpecifics;
 
 namespace syncer {
 
-class Cryptographer;
 class WriteTransaction;
 
 namespace syncable {

@@ -23,10 +23,6 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "google/cacheinvalidation/include/types.h"
 
-namespace base {
-class TaskRunner;
-}  // namespace base
-
 namespace syncer {
 
 class INVALIDATION_EXPORT InvalidationStateTracker {

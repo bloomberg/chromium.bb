@@ -23,14 +23,9 @@
 
 class GURL;
 
-namespace base {
-class MessageLoop;
-}  // namespace base
-
 namespace syncer {
 
 class CancelationSignal;
-class ChangeProcessor;
 class HttpPostProviderFactory;
 class SyncFrontend;
 class SyncManagerFactory;

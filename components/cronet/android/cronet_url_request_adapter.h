@@ -23,13 +23,8 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace net {
 class HttpRequestHeaders;
-class HttpResponseHeaders;
 class SSLCertRequestInfo;
 class SSLInfo;
 class UploadDataStream;

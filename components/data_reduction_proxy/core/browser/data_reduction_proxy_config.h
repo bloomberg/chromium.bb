@@ -34,10 +34,8 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
-class HostPortPair;
 class NetLog;
 class ProxyServer;
-class URLFetcher;
 class URLRequest;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -52,7 +50,6 @@ typedef base::Callback<void(const std::string&,
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
-class DataReductionProxyService;
 class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
 

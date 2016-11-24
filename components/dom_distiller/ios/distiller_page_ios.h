@@ -19,7 +19,6 @@ class WebControllerProvider;
 
 namespace web {
 class BrowserState;
-class WebState;
 }
 
 namespace dom_distiller {

@@ -19,7 +19,6 @@ class BookmarkUndoService;
 class PrefService;
 
 namespace autofill {
-class AutocompleteSyncableService;
 class PersonalDataManager;
 }  // namespace autofill
 

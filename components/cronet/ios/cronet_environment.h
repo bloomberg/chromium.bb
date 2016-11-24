@@ -28,8 +28,6 @@ class WaitableEvent;
 
 namespace net {
 class CookieStore;
-class HttpCache;
-class NetworkChangeNotifier;
 class NetLog;
 class ProxyConfigService;
 class WriteToFileNetLogObserver;

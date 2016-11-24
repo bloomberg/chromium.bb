@@ -22,11 +22,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-class NavigationEntry;
-}
-
 namespace sessions {
 
 // SessionTab ----------------------------------------------------------------

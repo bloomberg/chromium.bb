@@ -30,13 +30,11 @@
 namespace pp {
 class CompletionCallback;
 class URLLoader;
-class URLUtil_Dev;
 }
 
 namespace plugin {
 
 class ErrorInfo;
-class Manifest;
 
 const PP_NaClFileInfo kInvalidNaClFileInfo = {
   PP_kInvalidFileHandle,

@@ -23,10 +23,6 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace gfx {
-class Image;
-}  // namespace gfx
-
 namespace ntp_snippets {
 
 // Provides recent tabs content suggestions from the offline pages model

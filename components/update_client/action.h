@@ -17,7 +17,6 @@
 
 namespace update_client {
 
-class Configurator;
 enum class Error;
 struct CrxUpdateItem;
 struct UpdateContext;

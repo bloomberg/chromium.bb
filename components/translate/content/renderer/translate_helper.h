@@ -19,7 +19,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebDocument;
 class WebLocalFrame;
 }
 

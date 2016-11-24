@@ -20,7 +20,6 @@ class PrefService;
 
 namespace base {
 class Clock;
-class DictionaryValue;
 }
 
 namespace user_prefs {

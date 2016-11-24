@@ -15,8 +15,6 @@ class BrowserState;
 
 namespace dom_distiller {
 
-class DistillerPageIOS;
-
 // DistillerPageFactoryIOS is an iOS-specific implementation of the
 // DistillerPageFactory interface allowing the creation of DistillerPage
 // instances.

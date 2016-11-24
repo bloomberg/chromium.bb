@@ -21,17 +21,9 @@
 #include "components/sync/base/cancelation_observer.h"
 #include "components/sync/syncable/syncable_id.h"
 
-namespace sync_pb {
-class ClientToServerMessage;
-}
-
 namespace syncer {
 
 class CancelationSignal;
-
-namespace syncable {
-class Directory;
-}
 
 static const int32_t kUnsetResponseCode = -1;
 static const int32_t kUnsetContentLength = -1;

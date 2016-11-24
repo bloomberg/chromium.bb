@@ -13,8 +13,6 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace sync_sessions {
 class SyncSessionsClient;
 }

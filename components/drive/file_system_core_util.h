@@ -14,10 +14,6 @@
 
 namespace drive {
 
-class DriveAppRegistry;
-class DriveServiceInterface;
-class FileSystemInterface;
-
 namespace util {
 
 // "drive" diretory's local ID is fixed to this value.

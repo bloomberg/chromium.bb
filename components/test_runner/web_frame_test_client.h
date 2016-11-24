@@ -13,7 +13,6 @@
 
 namespace test_runner {
 
-class AccessibilityController;
 class TestRunner;
 class WebFrameTestProxyBase;
 class WebTestDelegate;

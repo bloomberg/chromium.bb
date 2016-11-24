@@ -24,7 +24,6 @@ class WebView;
 }
 
 namespace gin {
-class ArrayBufferView;
 class Arguments;
 }
 

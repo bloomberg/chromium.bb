@@ -21,8 +21,6 @@ class Location;
 
 namespace syncer {
 
-struct ServerConnectionEvent;
-
 struct ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(

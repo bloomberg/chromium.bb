@@ -30,13 +30,11 @@
 
 namespace blink {
 class WebDragData;
-class WebFileChooserCompletion;
 class WebImage;
 class WebLocalFrame;
 class WebString;
 class WebView;
 class WebWidget;
-struct WebFileChooserParams;
 struct WebPoint;
 struct WebWindowFeatures;
 }

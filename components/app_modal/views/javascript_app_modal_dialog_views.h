@@ -11,13 +11,13 @@
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class JavaScriptAppModalDialog;
-
 namespace views {
 class MessageBoxView;
 }
 
 namespace app_modal {
+
+class JavaScriptAppModalDialog;
 
 class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
                                       public views::DialogDelegate {

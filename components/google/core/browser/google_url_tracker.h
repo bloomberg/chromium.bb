@@ -18,12 +18,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class PrefService;
-
-namespace infobars {
-class InfoBar;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

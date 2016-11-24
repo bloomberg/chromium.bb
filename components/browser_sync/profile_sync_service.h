@@ -77,7 +77,6 @@ class DeviceInfoSyncService;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 class NetworkResources;
-class SyncApiComponentFactory;
 class SyncClient;
 class SyncErrorController;
 class SyncTypePreferenceProvider;

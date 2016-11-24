@@ -38,7 +38,6 @@ class GURL;
 namespace base {
 class Clock;
 class SequencedTaskRunner;
-class TimeDelta;
 class TimeTicks;
 }  // namespace base
 

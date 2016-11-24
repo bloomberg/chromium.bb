@@ -21,12 +21,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrefService;
-class TestingPrefServiceSimple;
 
 namespace data_reduction_proxy {
 
 class DataReductionProxyTestContext;
-class MockDataReductionProxyConfig;
 
 template <class C>
 class MockDataReductionProxySettings : public C {

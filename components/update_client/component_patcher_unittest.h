@@ -16,7 +16,6 @@
 
 namespace update_client {
 
-class MockComponentPatcher;
 class ReadOnlyTestInstaller;
 
 const char binary_output_hash[] =

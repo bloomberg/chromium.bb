@@ -15,8 +15,6 @@ class PrefRegistrySimple;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
-class TaskRunner;
 }
 
 namespace user_manager {

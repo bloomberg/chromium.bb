@@ -19,11 +19,6 @@
 #include "components/update_client/update_checker.h"
 #include "components/update_client/update_client.h"
 
-namespace base {
-class SequencedTaskRunner;
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace update_client {
 
 class Configurator;
@@ -31,7 +26,6 @@ class PingManager;
 class Task;
 class UpdateEngine;
 enum class Error;
-struct TaskContext;
 
 class UpdateClientImpl : public UpdateClient {
  public:

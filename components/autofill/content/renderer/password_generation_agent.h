@@ -21,13 +21,8 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
 
-namespace blink {
-class WebDocument;
-}
-
 namespace autofill {
 
-struct FormData;
 struct PasswordForm;
 struct PasswordFormGenerationData;
 class PasswordAutofillAgent;

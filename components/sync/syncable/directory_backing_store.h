@@ -36,8 +36,6 @@ namespace syncable {
 extern const int32_t kCurrentDBVersion;
 extern const int32_t kCurrentPageSizeKB;
 
-struct ColumnSpec;
-
 // Interface that provides persistence for a syncable::Directory object. You can
 // load all the persisted data to prime a syncable::Directory on startup by
 // invoking Load.  The only other thing you (or more correctly, a Directory) can

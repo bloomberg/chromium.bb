@@ -19,11 +19,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
 
-namespace autofill {
-class AutofillManager;
-struct PasswordForm;
-}
-
 namespace content {
 class WebContents;
 }

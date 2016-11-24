@@ -14,8 +14,6 @@
 
 namespace leveldb {
 
-class MojoEnv;
-
 // The backing to a database object that we pass to our called.
 class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
  public:

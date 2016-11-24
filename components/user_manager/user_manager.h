@@ -17,17 +17,8 @@
 class AccountId;
 class PrefService;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace chromeos {
-class LoginState;
 class ScopedUserManagerEnabler;
-}
-
-namespace cryptohome {
-class AsyncMethodCaller;
 }
 
 namespace user_manager {

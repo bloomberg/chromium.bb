@@ -21,8 +21,6 @@
 
 namespace proximity_auth {
 
-class BluetoothConnection;
-
 // This ConnectionFinder implementation tries to find a Bluetooth connection to
 // the remote device by polling at a fixed interval.
 class BluetoothConnectionFinder : public ConnectionFinder,

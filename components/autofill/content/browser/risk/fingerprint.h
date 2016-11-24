@@ -20,8 +20,6 @@
 #include "base/callback_forward.h"
 #include "components/autofill/core/browser/autofill_client.h"
 
-class PrefService;
-
 namespace base {
 class Time;
 }

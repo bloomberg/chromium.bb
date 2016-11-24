@@ -35,10 +35,6 @@
 class GURL;
 class TestingPrefServiceSimple;
 
-namespace base {
-class MessageLoopForUI;
-}
-
 namespace net {
 class MockClientSocketFactory;
 class NetLog;
@@ -54,7 +50,6 @@ class DataReductionProxyEventCreator;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
-class DataReductionProxyCompressionStats;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
 class TestDataReductionProxyEventStorageDelegate;

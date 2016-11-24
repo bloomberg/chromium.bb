@@ -41,10 +41,6 @@ class ProcessMemoryDump;
 }  // namespace trace_event
 }  // namespace base
 
-namespace sync_pb {
-class EncryptedData;
-}  // namespace sync_pb
-
 namespace syncer {
 
 class BaseTransaction;
@@ -58,7 +54,6 @@ class JsEventHandler;
 class ProtocolEvent;
 class SyncCycleSnapshot;
 class SyncEncryptionHandler;
-class SyncScheduler;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct Experiments;

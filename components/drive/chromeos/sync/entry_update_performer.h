@@ -27,7 +27,6 @@ namespace drive {
 
 class FileChange;
 class JobScheduler;
-class ResourceEntry;
 struct ClientContext;
 
 namespace file_system {

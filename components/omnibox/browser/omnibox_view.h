@@ -28,7 +28,6 @@ class GURL;
 class OmniboxClient;
 class OmniboxEditController;
 class OmniboxViewMacTest;
-class ToolbarModel;
 class OmniboxEditModel;
 
 namespace gfx {

@@ -15,7 +15,6 @@
 
 namespace syncer {
 
-class DirectoryCommitContributor;
 class TypeDebugInfoObserver;
 
 // Supports various kinds of debugging requests for a certain directory type.

@@ -19,8 +19,6 @@ namespace syncer {
 class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeEncryptionHandler;
-class DataTypeStatusTable;
-class SyncClient;
 
 class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
  public:

@@ -26,7 +26,6 @@ class FilePath;
 
 namespace update_client {
 
-class UpdateChecker;
 enum class UnpackError;
 
 // Defines a template method design pattern for ActionUpdate. This class

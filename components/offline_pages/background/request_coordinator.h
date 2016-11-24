@@ -33,7 +33,6 @@ struct ClientId;
 class OfflinerPolicy;
 class OfflinerFactory;
 class Offliner;
-class RequestPicker;
 class RequestQueue;
 class SavePageRequest;
 class Scheduler;

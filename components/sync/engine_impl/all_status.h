@@ -20,7 +20,6 @@
 namespace syncer {
 
 class ScopedStatusLock;
-struct ServerConnectionEvent;
 struct SyncCycleEvent;
 
 // This class watches various sync engine components, updating its internal

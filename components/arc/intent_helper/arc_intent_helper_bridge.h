@@ -29,7 +29,6 @@ namespace arc {
 class ActivityIconLoader;
 class ArcBridgeService;
 class LocalActivityResolver;
-class SetWallpaperDelegate;
 
 // Receives intents from ARC.
 class ArcIntentHelperBridge

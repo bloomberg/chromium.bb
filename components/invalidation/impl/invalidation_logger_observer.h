@@ -14,7 +14,6 @@ class DictionaryValue;
 }  // namespace base
 
 namespace syncer {
-class InvalidationHandler;
 class ObjectIdInvalidationMap;
 }  // namespace syncer
 

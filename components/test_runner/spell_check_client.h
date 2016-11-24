@@ -16,7 +16,6 @@
 
 namespace blink {
 class WebTextCheckingCompletion;
-struct WebTextCheckingResult;
 }  // namespace blink
 
 namespace test_runner {

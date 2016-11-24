@@ -23,8 +23,6 @@
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "url/gurl.h"
 
-class XmlWriter;
-
 enum UploadRequired {
   UPLOAD_NOT_REQUIRED,
   UPLOAD_REQUIRED,
@@ -33,10 +31,6 @@ enum UploadRequired {
 
 namespace base {
 class TimeTicks;
-}
-
-namespace buzz {
-class XmlElement;
 }
 
 namespace rappor {

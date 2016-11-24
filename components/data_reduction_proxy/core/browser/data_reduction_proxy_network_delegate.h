@@ -25,13 +25,10 @@ class Value;
 }
 
 namespace net {
-class HttpResponseHeaders;
 class HttpRequestHeaders;
 class NetworkDelegate;
 class ProxyConfig;
 class ProxyInfo;
-class ProxyServer;
-class ProxyService;
 class URLRequest;
 }
 
@@ -39,7 +36,6 @@ namespace data_reduction_proxy {
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
-class DataReductionProxyExperimentsStats;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
 class DataUseGroupProvider;

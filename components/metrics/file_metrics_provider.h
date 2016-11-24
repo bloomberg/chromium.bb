@@ -21,8 +21,6 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
-class MemoryMappedFile;
-class PersistentMemoryAllocator;
 class TaskRunner;
 }
 

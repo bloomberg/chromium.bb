@@ -23,7 +23,6 @@ class TranslateEventProto;
 namespace translate {
 
 class TranslatePrefs;
-class TranslateRankerMetricsProvider;
 class TranslateURLFetcher;
 
 // Features used to enable ranker query, enforcement and logging. Note that

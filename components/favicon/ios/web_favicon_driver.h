@@ -11,7 +11,6 @@
 #include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
-struct FaviconStatus;
 class WebState;
 }
 

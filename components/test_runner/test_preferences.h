@@ -10,10 +10,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 
-namespace blink {
-class WebView;
-}
-
 namespace test_runner {
 
 struct TEST_RUNNER_EXPORT TestPreferences {

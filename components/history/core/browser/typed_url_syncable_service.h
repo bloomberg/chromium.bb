@@ -24,10 +24,6 @@
 
 class GURL;
 
-namespace base {
-class MessageLoop;
-};
-
 namespace sync_pb {
 class TypedUrlSpecifics;
 };

@@ -9,10 +9,6 @@
 
 class GURL;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace visitedlink {
 
 // Delegate class that clients of VisitedLinkMaster must implement.

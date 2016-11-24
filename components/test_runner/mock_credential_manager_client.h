@@ -14,7 +14,6 @@
 
 namespace blink {
 class WebCredential;
-class WebFrame;
 class WebURL;
 }
 

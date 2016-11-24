@@ -16,7 +16,6 @@
 #include "url/gurl.h"
 
 class PrefService;
-class SigninManagerBase;
 class TokenWebData;
 
 namespace content_settings {

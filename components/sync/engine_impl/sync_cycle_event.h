@@ -9,8 +9,6 @@
 
 namespace syncer {
 
-struct SyncProtocolError;
-
 struct SyncCycleEvent {
   enum EventCause {
     ////////////////////////////////////////////////////////////////

@@ -15,10 +15,6 @@
 #include "components/error_page/common/net_error_info.h"
 #include "url/gurl.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace blink {
 struct WebURLError;
 }

@@ -24,13 +24,11 @@
 
 class PrefHashStore;
 class PrefService;
-class PrefStore;
 class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class DictionaryValue;
 class Time;
-class Value;
 }  // namespace base
 
 namespace user_prefs {

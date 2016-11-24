@@ -23,10 +23,6 @@ class WebDatabaseTable;
 class WebDataRequest;
 class WebDataRequestManager;
 
-namespace tracked_objects {
-class Location;
-}
-
 // WebDatabaseBackend handles all database tasks posted by
 // WebDatabaseService. It is refcounted to allow asynchronous destruction on the
 // DB thread.

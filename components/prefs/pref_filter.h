@@ -14,7 +14,6 @@
 
 namespace base {
 class DictionaryValue;
-class Value;
 }  // namespace base
 
 // Filters preferences as they are loaded from disk or updated at runtime.

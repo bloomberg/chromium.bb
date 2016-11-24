@@ -12,9 +12,6 @@
 
 namespace policy {
 
-class ProxyMap;
-class ProxyErrorMap;
-
 // ConfigurationPolicyHandler for the proxy policies.
 class POLICY_EXPORT ProxyPolicyHandler : public ConfigurationPolicyHandler {
  public:

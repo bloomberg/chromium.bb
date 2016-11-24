@@ -17,10 +17,6 @@
 class ConfirmInfoBarDelegate;
 class GURL;
 
-namespace content {
-class WebContents;
-}
-
 namespace infobars {
 
 class InfoBar;

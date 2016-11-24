@@ -32,10 +32,6 @@ namespace image_fetcher {
 class ImageFetcher;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace suggestions {
 
 class ImageData;

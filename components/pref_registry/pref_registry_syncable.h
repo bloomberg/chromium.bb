@@ -14,9 +14,6 @@
 #include "components/prefs/pref_registry_simple.h"
 
 namespace base {
-class DictionaryValue;
-class FilePath;
-class ListValue;
 class Value;
 }
 

@@ -12,17 +12,10 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace history {
 
-class HistoryBackend;
 class HistoryBackendClient;
-class HistoryDatabase;
 class HistoryService;
-class ThumbnailDatabase;
 
 // This class abstracts operations that depend on the embedder's environment,
 // e.g. Chrome.

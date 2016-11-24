@@ -13,7 +13,6 @@
 #include "url/gurl.h"
 
 namespace content {
-struct FaviconStatus;
 struct FaviconURL;
 class WebContents;
 }

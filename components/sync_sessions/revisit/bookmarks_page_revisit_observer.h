@@ -14,7 +14,6 @@
 class GURL;
 
 namespace bookmarks {
-class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 

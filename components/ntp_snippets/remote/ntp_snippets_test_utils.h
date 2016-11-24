@@ -12,7 +12,6 @@
 
 class AccountTrackerService;
 class FakeSigninManagerBase;
-class MockSyncService;
 class TestingPrefServiceSimple;
 class TestSigninClient;
 

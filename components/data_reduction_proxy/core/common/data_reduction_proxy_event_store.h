@@ -18,7 +18,6 @@
 
 namespace base {
 class DictionaryValue;
-class TimeDelta;
 class Value;
 }
 

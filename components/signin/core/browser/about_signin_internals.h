@@ -26,7 +26,6 @@ class PrefRegistrySyncable;
 }
 
 class AccountTrackerService;
-class GaiaAuthFetcher;
 class ProfileOAuth2TokenService;
 class SigninClient;
 

@@ -30,15 +30,6 @@ class RenderFrameHost;
 class WebContents;
 }
 
-namespace gfx {
-class Point;
-}
-
-namespace blink {
-struct WebMediaPlayerAction;
-struct WebPluginAction;
-}
-
 class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
                                   public RenderViewContextMenuProxy {
  public:

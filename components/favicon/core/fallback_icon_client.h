@@ -10,8 +10,6 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 
-class GURL;
-
 namespace favicon {
 
 // This class abstracts operations that depend on the embedder's environment,

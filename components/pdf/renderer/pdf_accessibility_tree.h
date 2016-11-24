@@ -18,7 +18,6 @@
 
 namespace content {
 class RenderAccessibility;
-class RenderFrame;
 class RendererPpapiHost;
 }
 

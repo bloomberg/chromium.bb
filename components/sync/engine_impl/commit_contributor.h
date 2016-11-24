@@ -13,10 +13,6 @@ namespace syncer {
 
 class CommitContribution;
 
-namespace syncable {
-class Directory;
-}
-
 // This class represents a source of items to commit to the sync server.
 //
 // When asked, it can return CommitContribution objects that contain a set of

@@ -13,7 +13,6 @@
 
 namespace content {
 class NavigationManager;
-class NavigationEntry;
 }
 
 namespace sessions {

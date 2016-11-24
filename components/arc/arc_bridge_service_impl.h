@@ -18,11 +18,6 @@
 #include "components/arc/arc_session.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace base {
-class SequencedTaskRunner;
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace arc {
 
 // Real IPC based ArcBridgeService that is used in production.

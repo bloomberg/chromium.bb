@@ -25,11 +25,6 @@
 #include "components/webdata/common/webdata_export.h"
 
 class WebDatabaseBackend;
-class WebDataRequestManager;
-
-namespace content {
-class BrowserContext;
-}
 
 namespace tracked_objects {
 class Location;

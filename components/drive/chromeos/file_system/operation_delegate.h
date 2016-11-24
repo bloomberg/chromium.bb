@@ -7,10 +7,6 @@
 
 #include "components/drive/file_errors.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace drive {
 
 struct ClientContext;

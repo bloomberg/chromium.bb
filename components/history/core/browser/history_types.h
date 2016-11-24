@@ -35,7 +35,6 @@ namespace history {
 // Forward declaration for friend statements.
 class HistoryBackend;
 class PageUsageData;
-class URLDatabase;
 
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;

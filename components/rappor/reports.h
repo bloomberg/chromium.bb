@@ -11,8 +11,6 @@
 
 namespace rappor {
 
-struct RapporParameters;
-
 namespace internal {
 
 // Generate a randomized report for a single metric/field.

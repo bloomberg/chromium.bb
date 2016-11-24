@@ -20,11 +20,6 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class WebContents;
-}
-
-namespace gfx {
-class Size;
 }
 
 namespace guest_view {

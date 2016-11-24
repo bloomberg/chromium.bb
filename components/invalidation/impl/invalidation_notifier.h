@@ -27,10 +27,6 @@
 #include "components/invalidation/impl/sync_invalidation_listener.h"
 #include "components/invalidation/public/invalidation_export.h"
 
-namespace notifier {
-class PushClient;
-}  // namespace notifier
-
 namespace syncer {
 
 // This class must live on the IO thread.

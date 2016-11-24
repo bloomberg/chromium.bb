@@ -19,6 +19,8 @@ class WebContents;
 
 namespace autofill {
 
+class CardUnmaskPromptController;
+
 class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
  public:
   explicit CardUnmaskPromptViewAndroid(CardUnmaskPromptController* controller,

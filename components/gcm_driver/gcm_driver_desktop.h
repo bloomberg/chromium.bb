@@ -29,10 +29,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace extensions {
-class ExtensionGCMAppHandlerTest;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }

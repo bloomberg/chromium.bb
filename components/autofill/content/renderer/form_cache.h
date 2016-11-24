@@ -16,9 +16,6 @@
 #include "components/autofill/core/common/form_data.h"
 
 namespace blink {
-class WebDocument;
-class WebElement;
-class WebElementCollection;
 class WebFormControlElement;
 class WebFrame;
 class WebInputElement;

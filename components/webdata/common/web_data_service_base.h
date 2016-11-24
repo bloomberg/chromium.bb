@@ -15,12 +15,10 @@
 
 class WebDatabase;
 class WebDatabaseService;
-class WebDatabaseTable;
 
 namespace base {
 // TODO(skyostil): Migrate to SingleThreadTaskRunner (crbug.com/465354).
 class SingleThreadTaskRunner;
-class Thread;
 }
 
 // Base for WebDataService class hierarchy.

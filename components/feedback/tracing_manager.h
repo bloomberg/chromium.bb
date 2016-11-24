@@ -17,7 +17,6 @@
 namespace base {
 
 class RefCountedString;
-class FilePath;
 
 }
 // Callback used for getting the output of a trace.

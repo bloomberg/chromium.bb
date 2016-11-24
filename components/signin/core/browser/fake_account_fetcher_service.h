@@ -12,10 +12,6 @@
 
 class KeyedService;
 
-namespace content {
-class BrowserContext;
-}
-
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.  This fake class can be used in tests
 // to prevent AccountTrackerService from sending network requests.

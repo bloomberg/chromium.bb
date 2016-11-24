@@ -10,9 +10,7 @@
 
 namespace proximity_auth {
 
-class Authenticator;
 class Messenger;
-class ConnectionFinder;
 
 // Controls the life cycle of connecting and authenticating to a remote device.
 // After the life cycle is started, it can be in the following states:

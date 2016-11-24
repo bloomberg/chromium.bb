@@ -29,7 +29,6 @@ namespace base {
 class FilePath;
 }
 
-class HistoryQuickProviderTest;
 class InMemoryURLIndexTest;
 
 namespace history {

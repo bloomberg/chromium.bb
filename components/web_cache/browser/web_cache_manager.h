@@ -28,8 +28,6 @@ template<typename Type>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-class PrefRegistrySimple;
-
 namespace web_cache {
 
 // Note: memory usage uses uint64_t because potentially the browser could be

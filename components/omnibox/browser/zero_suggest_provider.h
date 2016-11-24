@@ -23,7 +23,6 @@ class AutocompleteProviderListener;
 class HistoryURLProvider;
 
 namespace base {
-class ListValue;
 class Value;
 }
 

@@ -28,10 +28,8 @@ class CommitContributor;
 class DataTypeDebugInfoEmitter;
 class DirectoryCommitContributor;
 class DirectoryUpdateHandler;
-class ModelTypeProcessor;
 class ModelTypeWorker;
 class UpdateHandler;
-struct ModelTypeState;
 
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
 typedef std::map<ModelType, CommitContributor*> CommitContributorMap;

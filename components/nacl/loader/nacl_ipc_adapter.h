@@ -29,7 +29,6 @@
 
 struct NaClDesc;
 struct NaClImcTypedMsgHdr;
-struct PP_Size;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -38,10 +37,6 @@ class SingleThreadTaskRunner;
 namespace IPC {
 class Channel;
 struct ChannelHandle;
-}
-
-namespace ppapi {
-class HostResource;
 }
 
 // Adapts a Chrome IPC channel to an IPC channel that we expose to Native

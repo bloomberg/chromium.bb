@@ -27,17 +27,10 @@ class DictionaryValue;
 }
 
 namespace sync_pb {
-class AppSpecifics;
-class AutofillSpecifics;
-class AutofillProfileSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
-class ExtensionSpecifics;
-class SessionSpecifics;
 class NigoriSpecifics;
-class PreferenceSpecifics;
 class PasswordSpecificsData;
-class ThemeSpecifics;
 class TypedUrlSpecifics;
 }  // namespace sync_pb
 

@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
 
 namespace autofill {
-class AutofillManager;
 struct PasswordForm;
 }
 
@@ -31,11 +30,6 @@ namespace content {
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
 class RenderFrameHost;
-class WebContents;
-}
-
-namespace IPC {
-class Message;
 }
 
 namespace password_manager {

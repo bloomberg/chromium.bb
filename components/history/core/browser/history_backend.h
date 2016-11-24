@@ -34,11 +34,8 @@
 #include "components/history/core/browser/visit_tracker.h"
 #include "sql/init_status.h"
 
-class HistoryURLProvider;
-struct HistoryURLProviderParams;
 class SkBitmap;
 class TestingProfile;
-struct ThumbnailScore;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -53,11 +50,11 @@ class HistoryBackendObserver;
 class HistoryBackendTest;
 class HistoryDatabase;
 struct HistoryDatabaseParams;
-struct HistoryDetails;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
 class TypedUrlSyncableService;
 class HistoryBackendHelper;
+class URLDatabase;
 
 // The maximum number of icons URLs per page which can be stored in the
 // thumbnail database.

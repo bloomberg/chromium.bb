@@ -34,7 +34,6 @@
 #include "net/url_request/url_request_status.h"
 
 namespace base {
-class ThreadChecker;
 class Value;
 }  // namespace base
 

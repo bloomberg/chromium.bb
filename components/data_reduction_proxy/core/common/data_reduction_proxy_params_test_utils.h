@@ -9,14 +9,8 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace net {
-class ProxyConfig;
 class ProxyServer;
-class URLRequest;
 }
 
 namespace data_reduction_proxy {

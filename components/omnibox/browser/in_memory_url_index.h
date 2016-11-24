@@ -40,10 +40,6 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
-namespace in_memory_url_index {
-class InMemoryURLIndexCacheItem;
-}
-
 namespace history {
 class HistoryDatabase;
 class HistoryService;

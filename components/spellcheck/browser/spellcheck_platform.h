@@ -16,10 +16,6 @@
 
 struct SpellCheckResult;
 
-namespace content {
-class BrowserMessageFilter;
-}  // namespace content
-
 namespace spellcheck_platform {
 
 typedef base::Callback<void(

@@ -18,13 +18,9 @@ namespace base {
 class Value;
 }
 
-class GURL;
 class HostContentSettingsMap;
 
 namespace content_settings {
-
-class ProviderInterface;
-class RuleIterator;
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 

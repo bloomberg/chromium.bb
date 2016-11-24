@@ -26,32 +26,22 @@ namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebFrame;
-class WebGamepad;
-class WebGamepads;
-class WebHistoryItem;
 class WebInputEvent;
-class WebLayer;
 class WebLocalFrame;
 class WebMediaStream;
 class WebPlugin;
 struct WebPluginParams;
-struct WebPoint;
-struct WebRect;
 struct WebSize;
-struct WebURLError;
 class WebURLResponse;
 class WebView;
 }
 
 namespace cc {
-class TextureLayer;
-class TextureLayerClient;
 class SharedBitmapManager;
 }
 
 namespace test_runner {
 
-class DeviceLightData;
 class GamepadController;
 class WebTask;
 class WebWidgetTestProxyBase;

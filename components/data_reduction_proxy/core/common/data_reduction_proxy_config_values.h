@@ -15,8 +15,6 @@ class ProxyServer;
 
 namespace data_reduction_proxy {
 
-struct DataReductionProxyTypeInfo;
-
 class DataReductionProxyConfigValues {
  public:
   virtual ~DataReductionProxyConfigValues() {}

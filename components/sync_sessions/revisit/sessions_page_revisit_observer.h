@@ -14,14 +14,8 @@
 
 class GURL;
 
-namespace sessions {
-struct SessionTab;
-}  // namespace sessions
-
 namespace sync_sessions {
 
-class CurrentTabMatcher;
-class OffsetTabMatcher;
 struct SyncedSession;
 
 // A simple interface to abstract away who is providing sessions.

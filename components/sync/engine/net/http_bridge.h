@@ -31,9 +31,7 @@ class HttpBridgeTest;
 
 namespace net {
 class HttpResponseHeaders;
-class HttpUserAgentSettings;
 class URLFetcher;
-class URLRequestJobFactory;
 }
 
 namespace syncer {

@@ -19,6 +19,7 @@ class BookmarkModel;
 namespace history {
 
 class HistoryDatabase;
+class URLDatabase;
 
 // The SQL handler for bookmarking_mapping table.
 class BookmarkModelSQLHandler : public SQLHandler {

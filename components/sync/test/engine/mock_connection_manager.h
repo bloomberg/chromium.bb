@@ -25,6 +25,10 @@
 
 namespace syncer {
 
+namespace syncable {
+class Directory;
+}
+
 // Mock ServerConnectionManager class for use in client unit tests.
 class MockConnectionManager : public ServerConnectionManager {
  public:

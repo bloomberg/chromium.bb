@@ -21,8 +21,6 @@ class WebState;
 
 namespace autofill {
 
-class AutofillManagerDelegate;
-
 // Class that drives autofill flow on iOS. There is one instance per
 // WebContents.
 class AutofillDriverIOS : public AutofillDriver,

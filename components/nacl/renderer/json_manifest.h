@@ -15,7 +15,6 @@
 
 namespace nacl {
 class JsonManifest;
-class NexeLoadManager;
 struct NaClResourcePrefetchRequest;
 
 class JsonManifest {

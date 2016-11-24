@@ -46,7 +46,6 @@ class DataReductionProxyIOData;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyService;
 
 typedef base::Callback<void(const std::string&)> ConfigStorer;
 

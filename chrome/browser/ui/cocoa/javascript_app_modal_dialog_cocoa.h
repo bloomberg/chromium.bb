@@ -14,6 +14,10 @@
 
 class AppModalDialogHelper;
 
+namespace app_modal {
+class JavaScriptAppModalDialog;
+}
+
 #if __OBJC__
 @class NSAlert;
 @class JavaScriptAppModalDialogHelper;

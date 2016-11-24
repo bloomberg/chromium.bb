@@ -14,9 +14,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 
 namespace autofill {
-class AutofillManager;
 struct FormData;
-struct FormFieldData;
 struct PasswordForm;
 struct PasswordFormGenerationData;
 struct PasswordFormFillData;

@@ -14,7 +14,6 @@
 
 namespace syncer {
 
-class AttachmentService;
 class GenericChangeProcessor;
 class SyncClient;
 class SyncMergeResult;

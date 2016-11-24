@@ -19,7 +19,6 @@
 namespace proximity_auth {
 
 class BluetoothThrottler;
-class BluetoothLowEnergyDeviceWhitelist;
 class Messenger;
 class Connection;
 class ConnectionFinder;

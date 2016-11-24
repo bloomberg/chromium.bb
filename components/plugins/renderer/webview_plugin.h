@@ -20,17 +20,12 @@
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace blink {
-class WebFrameWidget;
 class WebMouseEvent;
 }
 
 namespace content {
 class RenderView;
 struct WebPreferences;
-}
-
-namespace gfx {
-class Size;
 }
 
 // This class implements the WebPlugin interface by forwarding drawing and

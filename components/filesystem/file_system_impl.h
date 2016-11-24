@@ -20,7 +20,6 @@ class Identity;
 }
 
 namespace filesystem {
-class FileSystemApp;
 
 class LockTable;
 

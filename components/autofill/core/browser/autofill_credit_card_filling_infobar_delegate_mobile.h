@@ -13,10 +13,6 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-namespace infobars {
-class InfoBarManager;
-}
-
 namespace autofill {
 
 class CreditCard;

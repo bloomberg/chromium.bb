@@ -21,7 +21,6 @@ class GURL;
 
 namespace base {
 class TimeDelta;
-class Value;
 }
 
 namespace net {

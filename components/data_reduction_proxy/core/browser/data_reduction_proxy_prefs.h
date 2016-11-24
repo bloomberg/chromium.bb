@@ -12,7 +12,6 @@ class PrefRegistrySyncable;
 }
 
 class PrefRegistrySimple;
-class PrefService;
 
 namespace data_reduction_proxy {
 

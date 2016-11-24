@@ -13,10 +13,6 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
-
 namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation

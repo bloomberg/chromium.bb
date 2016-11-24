@@ -31,8 +31,6 @@ class SuggestionDeletionHandler;
 class TemplateURL;
 
 namespace base {
-class DictionaryValue;
-class ListValue;
 class Value;
 }
 

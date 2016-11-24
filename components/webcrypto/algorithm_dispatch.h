@@ -14,7 +14,6 @@
 
 namespace webcrypto {
 
-class AlgorithmImplementation;
 class CryptoData;
 class GenerateKeyResult;
 class Status;

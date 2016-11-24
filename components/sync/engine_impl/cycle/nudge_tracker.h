@@ -21,8 +21,6 @@
 
 namespace syncer {
 
-class ObjectIdInvalidationMap;
-
 // A class to track the outstanding work required to bring the client back into
 // sync with the server.
 class NudgeTracker {

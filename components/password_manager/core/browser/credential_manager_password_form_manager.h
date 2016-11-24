@@ -15,7 +15,6 @@ struct PasswordForm;
 
 namespace password_manager {
 
-class CredentialManagerDispatcher;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 

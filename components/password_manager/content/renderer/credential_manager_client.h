@@ -24,8 +24,6 @@ class RenderView;
 
 namespace password_manager {
 
-struct CredentialInfo;
-
 // The CredentialManagerClient implements the Blink platform interface
 // WebCredentialManagerClient, and acts as an intermediary between Blink-side
 // calls to 'navigator.credential.*' and the password manager internals which

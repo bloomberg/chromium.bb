@@ -19,7 +19,6 @@ typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
 
 namespace syncer {
 
-class ModelSafeWorker;
 class StatusController;
 
 // This class represents an entity that can request, receive, and apply updates

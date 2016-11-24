@@ -15,8 +15,6 @@
 
 namespace autofill {
 
-class AutofillType;
-
 // This class is an interface for the primary data models that back Autofill.
 // The information in objects of this class is managed by the
 // PersonalDataManager.

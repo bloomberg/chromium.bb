@@ -15,8 +15,6 @@ class EntitySpecifics;
 
 namespace syncer {
 
-class Cryptographer;
-
 namespace syncable {
 
 const char kEncryptedString[] = "encrypted";

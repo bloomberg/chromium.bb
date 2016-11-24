@@ -12,7 +12,9 @@
 #include "base/macros.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 
+namespace app_modal {
 class JavaScriptAppModalDialog;
+}
 
 class JavascriptAppModalDialogAndroid
     : public app_modal::NativeAppModalDialog {

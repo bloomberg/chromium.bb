@@ -17,8 +17,6 @@ namespace dom_distiller {
 
 class DomDistillerServiceInterface;
 class DomDistillerViewerSourceTest;
-class ViewerHandle;
-class ViewRequestDelegate;
 
 // Serves HTML and resources for viewing distilled articles.
 class DomDistillerViewerSource : public content::URLDataSource {

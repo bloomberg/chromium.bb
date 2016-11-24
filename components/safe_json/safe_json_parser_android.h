@@ -12,8 +12,6 @@
 
 namespace safe_json {
 
-class JsonSanitizer;
-
 class SafeJsonParserAndroid : public SafeJsonParser {
  public:
   SafeJsonParserAndroid(const std::string& unsafe_json,

@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 namespace net {
-class URLFetcher;
 class URLRequest;
 class URLRequestContextGetter;
 }  // namespace net

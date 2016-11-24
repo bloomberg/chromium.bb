@@ -18,7 +18,6 @@
 namespace ui {
 class Event;
 class MouseEvent;
-class MouseWheelEvent;
 }
 
 namespace views {

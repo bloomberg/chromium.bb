@@ -50,7 +50,6 @@ struct Feature;
 namespace variations {
 
 typedef int VariationID;
-class VariationsHttpHeaderProvider;
 
 const VariationID EMPTY_ID = 0;
 

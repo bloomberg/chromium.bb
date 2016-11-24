@@ -9,7 +9,6 @@
 
 namespace app_modal {
 
-class JavaScriptAppModalDialog;
 
 class NativeAppModalDialog {
  public:

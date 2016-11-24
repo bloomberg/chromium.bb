@@ -20,21 +20,9 @@
 
 class ComponentsUI;
 class PluginObserver;
-class SupervisedUserWhitelistService;
 
 namespace base {
-class DictionaryValue;
-class FilePath;
 class SequencedTaskRunner;
-}
-
-namespace content {
-class ResourceThrottle;
-}
-
-namespace net {
-class URLRequestContextGetter;
-class URLRequest;
 }
 
 namespace policy {

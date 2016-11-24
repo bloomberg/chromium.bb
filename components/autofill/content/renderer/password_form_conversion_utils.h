@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebDocument;
 class WebFormElement;
 class WebFormControlElement;
 class WebFrame;
@@ -24,8 +23,6 @@ class WebInputElement;
 
 namespace autofill {
 
-struct FormData;
-struct FormFieldData;
 struct PasswordForm;
 
 // Tests whether the given form is a GAIA reauthentication form. The form is

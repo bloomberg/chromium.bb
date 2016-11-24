@@ -19,7 +19,6 @@ class BookmarkModel;
 }
 
 namespace gfx {
-class Image;
 class Size;
 }
 
@@ -29,7 +28,6 @@ class HistoryService;
 
 namespace favicon {
 
-class FaviconDriverObserver;
 class FaviconHandler;
 class FaviconService;
 struct FaviconURL;

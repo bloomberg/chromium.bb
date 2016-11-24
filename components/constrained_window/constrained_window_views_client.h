@@ -7,10 +7,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace web_modal {
 class ModalDialogHost;
 }

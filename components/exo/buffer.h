@@ -27,10 +27,6 @@ namespace gfx {
 class GpuMemoryBuffer;
 }
 
-namespace gpu {
-struct SyncToken;
-}
-
 namespace exo {
 
 // This class provides the content for a Surface. The mechanism by which a

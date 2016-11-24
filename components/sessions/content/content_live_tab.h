@@ -14,8 +14,6 @@
 
 namespace content {
 class NavigationController;
-class NavigationEntry;
-class SessionStorageNamespace;
 }
 
 class PersistentTabRestoreServiceTest;

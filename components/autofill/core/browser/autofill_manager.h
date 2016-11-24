@@ -44,7 +44,6 @@
 #endif
 
 namespace gfx {
-class Rect;
 class RectF;
 }
 

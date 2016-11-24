@@ -22,10 +22,6 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
-namespace base {
-struct SingleThreadedTaskRunner;
-}  // namespace base
-
 namespace password_manager {
 
 class AffiliationService;

@@ -25,14 +25,6 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 
-namespace buzz {
-class XmppTaskParentInterface;
-}  // namespace buzz
-
-namespace notifier {
-class PushClient;
-}  // namespace notifier
-
 namespace syncer {
 
 class ObjectIdInvalidationMap;

@@ -10,10 +10,6 @@
 #include "content/public/browser/resource_throttle.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace web_restrictions {
 
 class WebRestrictionsClient;

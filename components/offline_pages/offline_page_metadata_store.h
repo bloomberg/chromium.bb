@@ -13,8 +13,6 @@
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_store_types.h"
 
-class GURL;
-
 namespace offline_pages {
 
 typedef StoreUpdateResult<OfflinePageItem> OfflinePagesUpdateResult;

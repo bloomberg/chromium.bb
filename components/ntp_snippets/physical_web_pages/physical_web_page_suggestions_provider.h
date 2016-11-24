@@ -16,10 +16,6 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
-namespace gfx {
-class Image;
-}  // namespace gfx
-
 namespace ntp_snippets {
 
 // TODO(vitaliii): remove when Physical Web C++ interface is provided.

@@ -32,6 +32,8 @@ class Throbber;
 
 namespace autofill {
 
+class CardUnmaskPromptController;
+
 class CardUnmaskPromptViews : public CardUnmaskPromptView,
                               public views::ComboboxListener,
                               public views::DialogDelegateView,

@@ -32,7 +32,6 @@ class PreferenceSpecifics;
 namespace sync_preferences {
 
 class PrefModelAssociatorClient;
-class PrefRegistrySyncable;
 class PrefServiceSyncable;
 
 // Contains all preference sync related logic.

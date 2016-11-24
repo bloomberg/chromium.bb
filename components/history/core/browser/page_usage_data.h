@@ -9,8 +9,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
-class SkBitmap;
-
 namespace history {
 
 /////////////////////////////////////////////////////////////////////////////

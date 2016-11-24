@@ -21,14 +21,11 @@
 class GURL;
 
 namespace base {
-class FilePath;
-class RefCountedBytes;
 class RefCountedMemory;
 }
 
 namespace history {
 
-class TopSitesCache;
 class TopSitesObserver;
 
 // PrepopulatedPage stores information for prepopulated page for the

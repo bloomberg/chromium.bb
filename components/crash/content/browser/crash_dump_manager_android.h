@@ -19,10 +19,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/process_type.h"
 
-namespace content {
-class RenderProcessHost;
-}
-
 namespace breakpad {
 
 // This class manages the crash minidumps.

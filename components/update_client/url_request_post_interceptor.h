@@ -22,10 +22,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace update_client {
 
 // Intercepts requests to a file path, counts them, and captures the body of

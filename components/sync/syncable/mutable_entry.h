@@ -17,8 +17,6 @@
 
 namespace syncer {
 
-class WriteNode;
-
 namespace syncable {
 
 enum Create { CREATE };

@@ -14,7 +14,6 @@
 namespace syncer {
 
 class AttachmentDownloader;
-class AttachmentStore;
 class AttachmentStoreForSync;
 class AttachmentUploader;
 class SyncData;

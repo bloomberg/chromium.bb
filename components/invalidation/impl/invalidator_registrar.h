@@ -14,10 +14,6 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_util.h"
 
-namespace invalidation {
-class ObjectId;
-}  // namespace invalidation
-
 namespace syncer {
 
 class ObjectIdInvalidationMap;

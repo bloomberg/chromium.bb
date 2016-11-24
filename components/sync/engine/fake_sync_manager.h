@@ -15,8 +15,6 @@
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/syncable/test_user_share.h"
 
-class GURL;
-
 namespace base {
 class SequencedTaskRunner;
 }

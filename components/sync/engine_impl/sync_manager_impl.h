@@ -33,15 +33,11 @@
 #include "components/sync/syncable/user_share.h"
 #include "net/base/network_change_notifier.h"
 
-class GURL;
-
 namespace syncer {
 
 class ModelTypeRegistry;
 class SyncCycleContext;
 class TypeDebugInfoObserver;
-class WriteNode;
-class WriteTransaction;
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same

@@ -34,10 +34,6 @@
 
 class GURL;
 
-namespace base {
-class MessageLoop;
-}  // base
-
 namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation

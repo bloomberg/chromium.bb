@@ -19,7 +19,6 @@
 
 namespace syncer {
 
-class DroppedInvalidationTracker;
 class AckHandler;
 
 // Represents a local invalidation, and is roughly analogous to

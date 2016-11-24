@@ -17,7 +17,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace syncer {

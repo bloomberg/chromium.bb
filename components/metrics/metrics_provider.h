@@ -15,7 +15,6 @@ namespace metrics {
 
 class ChromeUserMetricsExtension;
 class SystemProfileProto;
-class SystemProfileProto_Stability;
 
 // MetricsProvider is an interface allowing different parts of the UMA protos to
 // be filled out by different classes.

@@ -33,7 +33,6 @@ class OmniboxView;
 
 namespace gfx {
 class Image;
-class Rect;
 }
 
 // Reasons why the Omnibox could change into keyword mode.

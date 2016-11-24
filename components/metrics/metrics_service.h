@@ -38,17 +38,12 @@ class PrefService;
 class PrefRegistrySimple;
 
 namespace base {
-class DictionaryValue;
 class HistogramSamples;
 class PrefService;
 }
 
 namespace variations {
 struct ActiveGroupId;
-}
-
-namespace net {
-class URLFetcher;
 }
 
 namespace metrics {

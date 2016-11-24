@@ -19,8 +19,6 @@
 #include "components/version_info/version_info.h"
 
 class PrefService;
-class ProfileOAuth2TokenService;
-class SigninManagerBase;
 
 namespace base {
 class SequencedTaskRunner;
@@ -30,18 +28,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace gcm {
 
 class GCMClientFactory;
 class GCMDriver;
-
-#if defined(OS_CHROMEOS)
-class GCMConnectionObserver;
-#endif
 
 // Providing GCM service, via GCMDriver.
 class GCMProfileService : public KeyedService {

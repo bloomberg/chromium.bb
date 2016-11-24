@@ -28,7 +28,6 @@ class SingleThreadTaskRunner;
 
 namespace autofill {
 
-class AutofillChange;
 class AutofillEntry;
 class AutofillProfile;
 class AutofillWebDataBackend;

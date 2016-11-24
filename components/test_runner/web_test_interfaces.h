@@ -13,7 +13,6 @@
 
 namespace blink {
 class WebAudioDevice;
-class WebFrame;
 class WebFrameClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;

@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
-class BrowserContext;
 class RenderFrameHost;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;

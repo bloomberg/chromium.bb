@@ -12,8 +12,6 @@
 #include "base/time/time.h"
 #include "net/proxy/proxy_service.h"
 
-class GURL;
-
 namespace net {
 
 class HttpResponseHeaders;
@@ -21,8 +19,6 @@ class HttpResponseHeaders;
 }  // namespace net
 
 namespace data_reduction_proxy {
-
-class DataReductionProxyEventCreator;
 
 // Values of the UMA DataReductionProxy.BypassType{Primary|Fallback} and
 // DataReductionProxy.BlockType{Primary|Fallback} histograms. This enum must

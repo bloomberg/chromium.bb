@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_HISTORY_TEST_UTIL_H_
 #define COMPONENTS_OMNIBOX_BROWSER_HISTORY_TEST_UTIL_H_
 
-namespace sql {
-class Connection;
-}  // namespace sql
-
 namespace history {
 
 class HistoryDatabase;

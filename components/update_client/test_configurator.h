@@ -34,8 +34,6 @@ namespace update_client {
 #define POST_INTERCEPT_HOSTNAME "localhost2"
 #define POST_INTERCEPT_PATH "/update2"
 
-struct CrxComponent;
-
 // component 1 has extension id "jebgalgnebhfojomionfpkfelancnnkf", and
 // the RSA public key the following hash:
 const uint8_t jebg_hash[] = {0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec,

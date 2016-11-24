@@ -10,10 +10,6 @@
 #include "base/files/file.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
 
-namespace mojo {
-class String;
-}
-
 namespace filesystem {
 
 // Validation functions (typically used to check arguments; they return

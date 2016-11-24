@@ -23,10 +23,6 @@
 
 class PrefService;
 
-namespace base {
-class SeqencedTaskRunner;
-}
-
 namespace drive {
 
 class EventLogger;

@@ -25,7 +25,6 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class FileCacheEntry;
 class JobScheduler;
 class ResourceEntry;
 struct ClientContext;
@@ -37,7 +36,6 @@ class OperationDelegate;
 
 namespace internal {
 
-class ChangeListLoader;
 class EntryUpdatePerformer;
 class FileCache;
 class LoaderController;

@@ -18,12 +18,7 @@
 
 namespace syncer {
 
-namespace syncable {
-class Directory;
-}  // namespace syncable
-
 class CommitContributor;
-class CommitContribution;
 
 // This class manages the set of per-type committer objects.
 //

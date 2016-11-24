@@ -21,7 +21,6 @@ namespace policy {
 class ConfigurationPolicyHandler;
 class PolicyErrorMap;
 struct PolicyHandlerParameters;
-struct PolicyToPreferenceMapEntry;
 class Schema;
 
 // Converts policies to their corresponding preferences by applying a list of

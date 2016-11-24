@@ -26,7 +26,6 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
-class ExtensionService;
 class GURL;
 class PrefService;
 
@@ -39,6 +38,7 @@ namespace content_settings {
 class ObservableProvider;
 class ProviderInterface;
 class PrefProvider;
+class RuleIterator;
 class TestUtils;
 }
 

@@ -12,8 +12,6 @@
 namespace syncer {
 
 class JsEventHandler;
-template <typename T>
-class WeakHandle;
 
 // An interface for objects that JsEventHandlers directly interact
 // with.  JsEventHandlers can add themselves to receive events and

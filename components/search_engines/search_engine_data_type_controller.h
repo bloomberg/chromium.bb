@@ -12,8 +12,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
-class Profile;
-
 namespace browser_sync {
 
 // Controller for the SEARCH_ENGINES sync data type. This class tells sync

@@ -43,7 +43,6 @@ class SessionHeader;
 class SessionSpecifics;
 class SessionTab;
 class SessionWindow;
-class TabNavigation;
 }  // namespace sync_pb
 
 namespace extensions {

@@ -21,7 +21,6 @@ class SequencedTaskRunner;
 namespace drive {
 
 class FileChange;
-class ResourceEntry;
 
 namespace internal {
 class ResourceMetadata;

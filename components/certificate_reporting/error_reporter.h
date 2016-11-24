@@ -17,7 +17,6 @@
 
 namespace net {
 class URLRequestContext;
-class SSLInfo;
 }
 
 namespace certificate_reporting {

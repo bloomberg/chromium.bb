@@ -24,8 +24,6 @@
 
 namespace syncer {
 
-class ModelSafeWorker;
-class NudgeTracker;
 class ProtocolEvent;
 
 // A class representing an attempt to synchronize the local syncable data

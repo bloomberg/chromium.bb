@@ -20,8 +20,6 @@
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 
-class Profile;
-
 namespace base {
 class RefCountedMemory;
 }  // namespace base

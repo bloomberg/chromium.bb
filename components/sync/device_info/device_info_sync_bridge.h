@@ -26,7 +26,6 @@ class DeviceInfoSpecifics;
 
 namespace syncer {
 
-class ModelTypeChangeProcessor;
 class SyncError;
 
 // Sync bridge implementation for DEVICE_INFO model type. Handles storage of

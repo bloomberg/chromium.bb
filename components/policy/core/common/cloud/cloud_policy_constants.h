@@ -9,10 +9,6 @@
 
 #include "components/policy/policy_export.h"
 
-namespace enterprise_management {
-class PolicyData;
-}
-
 namespace policy {
 
 // Constants related to the device management protocol.

@@ -23,7 +23,6 @@
 #include "components/sync/protocol/sync.pb.h"
 
 class PrefService;
-class ProfileIOData;
 
 namespace user_prefs {
 class PrefRegistrySyncable;

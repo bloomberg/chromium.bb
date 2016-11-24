@@ -25,10 +25,6 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace syncer {
 
 class ModelTypeProcessor;

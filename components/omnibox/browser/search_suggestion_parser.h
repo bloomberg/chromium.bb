@@ -20,7 +20,6 @@ class AutocompleteInput;
 class AutocompleteSchemeClassifier;
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 

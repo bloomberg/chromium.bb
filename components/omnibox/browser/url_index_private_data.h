@@ -32,7 +32,6 @@ class InMemoryURLIndexCacheItem;
 namespace history {
 class HistoryDatabase;
 class InMemoryURLIndex;
-class RefCountedBool;
 }
 
 // Current version of the cache file.

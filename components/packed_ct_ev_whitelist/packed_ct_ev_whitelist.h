@@ -15,10 +15,6 @@
 #include "base/version.h"
 #include "net/cert/ct_ev_whitelist.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace packed_ct_ev_whitelist {
 
 // An implementation of the EVCertsWhitelist that gets its data packed using

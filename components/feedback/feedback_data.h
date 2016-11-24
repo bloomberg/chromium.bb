@@ -14,7 +14,6 @@
 #include "url/gurl.h"
 
 namespace base {
-class FilePath;
 class RefCountedString;
 }
 namespace content {

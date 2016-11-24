@@ -39,7 +39,6 @@ class HistoryBackendTestBase;
 class HistoryService;
 class InMemoryDatabase;
 class InMemoryHistoryBackendTest;
-class URLDatabase;
 class URLRow;
 
 class InMemoryHistoryBackend : public HistoryServiceObserver {

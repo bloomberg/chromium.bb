@@ -31,9 +31,7 @@
 class PrefFilter;
 
 namespace base {
-class Clock;
 class DictionaryValue;
-class FilePath;
 class JsonPrefStoreLossyWriteTest;
 class Value;
 }

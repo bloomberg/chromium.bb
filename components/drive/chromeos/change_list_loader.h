@@ -21,8 +21,6 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
-class GURL;
-
 namespace base {
 class CancellationFlag;
 class ScopedClosureRunner;
@@ -38,14 +36,12 @@ namespace drive {
 
 class EventLogger;
 class JobScheduler;
-class ResourceEntry;
 
 namespace internal {
 
 class ChangeList;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
-class DirectoryLoader;
 class ResourceMetadata;
 
 // Delays execution of tasks as long as more than one lock is alive.

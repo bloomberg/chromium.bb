@@ -14,7 +14,6 @@
 
 namespace autofill {
 class AutofillWebDataService;
-class PersonalDataManager;
 }  // namespace autofill
 
 namespace browser_sync {

@@ -22,12 +22,7 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
-class DictionaryValue;
 class HistogramSamples;
-}
-
-namespace content {
-struct WebPluginInfo;
 }
 
 namespace variations {

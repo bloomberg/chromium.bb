@@ -14,10 +14,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 
-namespace mojo {
-class Connector;
-}
-
 namespace filesystem {
 
 class FileSystemApp

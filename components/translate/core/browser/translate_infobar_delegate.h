@@ -29,7 +29,6 @@ class InfoBarManager;
 
 namespace translate {
 
-class TranslateClient;
 class TranslateDriver;
 class TranslateManager;
 

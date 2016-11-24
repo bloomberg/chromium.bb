@@ -12,7 +12,6 @@
 #include "base/macros.h"
 
 namespace cryptauth {
-class DeviceClassifier;
 class GetMyDevicesRequest;
 class GetMyDevicesResponse;
 class FindEligibleUnlockDevicesRequest;
@@ -27,14 +26,7 @@ class FinishEnrollmentRequest;
 class FinishEnrollmentResponse;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace cryptauth {
-
-class CryptAuthAccessTokenFetcher;
-class CryptAuthApiCallFlow;
 
 // Interface for making API requests to the CryptAuth service, which
 // manages cryptographic credentials (ie. public keys) for a user's devices.

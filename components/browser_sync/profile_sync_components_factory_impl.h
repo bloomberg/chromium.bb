@@ -18,7 +18,6 @@
 #include "url/gurl.h"
 
 class OAuth2TokenService;
-class Profile;
 
 namespace autofill {
 class AutofillWebDataService;

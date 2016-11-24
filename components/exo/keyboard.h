@@ -15,7 +15,6 @@
 
 namespace ui {
 enum class DomCode;
-class Event;
 class KeyEvent;
 }
 

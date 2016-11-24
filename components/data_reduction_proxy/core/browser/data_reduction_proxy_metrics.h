@@ -12,8 +12,6 @@ class ProxyConfig;
 class URLRequest;
 }
 
-class PrefService;
-
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;

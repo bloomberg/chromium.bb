@@ -22,10 +22,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-namespace base {
-class RefCountedMemory;
-}  // namespace base
-
 namespace net {
 class HttpResponseHeaders;
 }  // namespace net

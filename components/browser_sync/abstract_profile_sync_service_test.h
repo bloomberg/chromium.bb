@@ -19,10 +19,6 @@
 #include "components/sync/syncable/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
-struct UserShare;
-}  //  namespace syncer
-
 namespace browser_sync {
 
 class TestProfileSyncService;

@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "components/user_prefs/tracked/pref_hash_store.h"
 
-class HashStoreContents;
 class InterceptablePrefFilter;
 class PrefHashStore;
 

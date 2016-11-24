@@ -12,21 +12,10 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
-class GURL;
-
 namespace base {
 class CancellationFlag;
 class FilePath;
-class Value;
 }  // namespace base
-
-namespace google_apis {
-class ChangeList;
-class ChangeResource;
-class FileList;
-class FileResource;
-class ResourceEntry;
-}  // namespace google_apis
 
 namespace drive {
 namespace util {

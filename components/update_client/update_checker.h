@@ -16,8 +16,6 @@
 #include "components/update_client/update_response.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace update_client {
 
 class PersistedData;

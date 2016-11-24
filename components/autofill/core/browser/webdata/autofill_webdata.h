@@ -17,7 +17,6 @@ class Time;
 
 }  // namespace base
 
-class Profile;
 class WebDataServiceConsumer;
 
 namespace autofill {

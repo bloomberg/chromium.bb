@@ -9,16 +9,11 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 
-namespace blink {
-class WebWidget;
-}  // namespace blink
-
 namespace test_runner {
 
 class TestRunner;
 class TestRunnerForSpecificView;
 class WebTestDelegate;
-class WebViewTestProxyBase;
 class WebWidgetTestProxyBase;
 
 // WebWidgetTestClient implements WebWidgetClient interface, providing behavior

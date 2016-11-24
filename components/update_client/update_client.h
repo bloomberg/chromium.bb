@@ -130,7 +130,6 @@
 // as the CRX undergoes a series of state transitions in the process of
 // being checked for updates and applying the update.
 
-class ComponentsUI;
 class PrefRegistrySimple;
 
 namespace base {

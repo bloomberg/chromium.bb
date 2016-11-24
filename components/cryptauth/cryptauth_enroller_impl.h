@@ -17,7 +17,6 @@ namespace cryptauth {
 
 class CryptAuthClient;
 class CryptAuthClientFactory;
-class CryptAuthClientFactoryImpl;
 class SecureMessageDelegate;
 
 // Implementation of CryptAuthEnroller to perform enrollment in two steps:

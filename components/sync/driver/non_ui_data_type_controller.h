@@ -17,7 +17,6 @@
 namespace syncer {
 
 class SyncClient;
-class SyncableService;
 struct UserShare;
 
 class NonUIDataTypeController : public DirectoryDataTypeController {

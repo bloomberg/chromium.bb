@@ -11,13 +11,7 @@
 
 #include "components/safe_browsing_db/database_manager.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace safe_browsing {
-
-struct V4ProtocolConfig;
 
 // This is a non-pure-virtual implementation of the SafeBrowsingDatabaseManager
 // interface.  It's used in tests by overriding only the functions that get

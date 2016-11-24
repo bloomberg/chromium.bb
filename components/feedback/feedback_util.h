@@ -17,12 +17,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-class Profile;
-
-namespace content {
-class WebContents;
-}
-
 namespace chrome {
 extern const char kAppLauncherCategoryTag[];
 }  // namespace chrome

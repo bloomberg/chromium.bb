@@ -31,10 +31,6 @@
 class ProfileOAuth2TokenService;
 class SigninClient;
 
-namespace net {
-class CanonicalCookie;
-}
-
 class AccountReconcilor : public KeyedService,
                           public content_settings::Observer,
                           public GaiaCookieManagerService::Observer,

@@ -25,7 +25,6 @@ namespace syncer {
 class CommitProcessor;
 class StatusController;
 class SyncCycle;
-class Syncer;
 
 // This class wraps the actions related to building and executing a single
 // commit operation.

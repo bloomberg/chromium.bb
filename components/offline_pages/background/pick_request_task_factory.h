@@ -13,7 +13,6 @@
 
 namespace offline_pages {
 
-class DeviceContitions;
 class OfflinerPolicy;
 class RequestCoordinatorEventLogger;
 class RequestNotifier;

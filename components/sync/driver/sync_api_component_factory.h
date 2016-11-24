@@ -19,10 +19,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace history {
-class HistoryBackend;
-}
-
 namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
@@ -35,8 +31,6 @@ class DataTypeDebugInfoListener;
 class DataTypeEncryptionHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
-class DataTypeStatusTable;
-class GenericChangeProcessor;
 class LocalDeviceInfoProvider;
 class SyncBackendHost;
 class SyncClient;

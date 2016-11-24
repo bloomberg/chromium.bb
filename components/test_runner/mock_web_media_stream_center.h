@@ -10,12 +10,9 @@
 
 namespace blink {
 class WebAudioSourceProvider;
-class WebMediaStreamCenterClient;
 };
 
 namespace test_runner {
-
-class TestInterfaces;
 
 class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
  public:

@@ -9,7 +9,6 @@
 #include "ui/events/event_constants.h"
 
 namespace gfx {
-class Point;
 class PointF;
 class Vector2dF;
 }

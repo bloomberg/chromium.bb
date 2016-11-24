@@ -9,10 +9,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace web_modal {
 
 class WebContentsModalDialogHost;

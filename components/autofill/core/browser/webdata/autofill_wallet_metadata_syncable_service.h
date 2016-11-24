@@ -27,7 +27,6 @@ class ScopedPtrHashMap;
 
 namespace syncer {
 class SyncChangeProcessor;
-class SyncData;
 class SyncErrorFactory;
 }
 

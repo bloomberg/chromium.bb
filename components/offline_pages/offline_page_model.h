@@ -27,7 +27,6 @@ class Time;
 namespace offline_pages {
 
 struct ClientId;
-struct OfflinePageItem;
 
 // Service for saving pages offline, storing the offline copy and metadata, and
 // retrieving them upon request.

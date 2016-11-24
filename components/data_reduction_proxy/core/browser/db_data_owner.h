@@ -12,10 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace data_reduction_proxy {
 class DataStore;
 class DataUsageBucket;

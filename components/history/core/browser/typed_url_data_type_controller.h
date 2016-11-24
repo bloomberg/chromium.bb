@@ -14,13 +14,7 @@
 #include "components/sync/driver/non_ui_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 
-namespace history {
-class HistoryBackend;
-}
-
 namespace browser_sync {
-
-class ControlTask;
 
 // A class that manages the startup and shutdown of typed_url sync.
 class TypedUrlDataTypeController : public syncer::NonUIDataTypeController {

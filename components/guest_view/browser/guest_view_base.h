@@ -20,8 +20,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
-struct RendererContentSettingRules;
-
 namespace guest_view {
 
 class GuestViewEvent;

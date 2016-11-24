@@ -13,7 +13,6 @@
 
 namespace infobars {
 class InfoBar;
-class InfoBarManager;
 }
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to

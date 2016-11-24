@@ -34,8 +34,6 @@ namespace translate {
 class TranslateInfoBarDelegate;
 }
 
-class SearchGeolocationDisclosureInfoBarDelegate;
-
 namespace gfx {
 class Image;
 enum class VectorIconId;

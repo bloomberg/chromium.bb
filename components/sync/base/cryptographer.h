@@ -16,7 +16,6 @@
 
 namespace sync_pb {
 class NigoriKeyBag;
-class NigoriSpecifics;
 }
 
 namespace syncer {

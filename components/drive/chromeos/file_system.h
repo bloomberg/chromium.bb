@@ -36,7 +36,6 @@ class ResourceEntry;
 namespace drive {
 struct ClientContext;
 class EventLogger;
-class FileCacheEntry;
 class FileSystemObserver;
 class JobScheduler;
 

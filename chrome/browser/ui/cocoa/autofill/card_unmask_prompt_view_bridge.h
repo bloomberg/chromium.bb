@@ -19,6 +19,8 @@ class WebContents;
 
 namespace autofill {
 
+class CardUnmaskPromptController;
+
 class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
                                    public ConstrainedWindowMacDelegate {
  public:

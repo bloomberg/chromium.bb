@@ -14,12 +14,7 @@
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace net {
-class HostPortPair;
 class ProxyServer;
 }
 

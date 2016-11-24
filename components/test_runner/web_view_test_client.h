@@ -14,7 +14,6 @@ class WebView;
 
 namespace test_runner {
 
-class EventSender;
 class TestRunner;
 class WebTestDelegate;
 class WebViewTestProxyBase;

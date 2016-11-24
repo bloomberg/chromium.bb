@@ -10,14 +10,6 @@
 
 #include "base/macros.h"
 
-namespace chromeos {
-class UserContext;
-}
-
-namespace content {
-class BrowserContext;
-}
-
 namespace pairing_chromeos {
 
 class ControllerPairingController {

@@ -27,7 +27,6 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
-struct ListIdentifier;
 struct V4ProtocolConfig;
 class V4GetHashProtocolManager;
 

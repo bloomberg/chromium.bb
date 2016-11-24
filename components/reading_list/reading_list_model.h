@@ -18,12 +18,7 @@
 class GURL;
 class ReadingListEntry;
 class ReadingListModel;
-class ReadingListStore;
 class ScopedReadingListBatchUpdate;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace syncer {
 class ModelTypeSyncBridge;

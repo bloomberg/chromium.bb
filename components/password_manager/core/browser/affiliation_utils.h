@@ -60,10 +60,6 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
 namespace password_manager {
 
 // Encapsulates a facet URI in canonical form.

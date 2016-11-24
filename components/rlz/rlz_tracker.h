@@ -17,10 +17,6 @@
 #include "build/build_config.h"
 #include "rlz/lib/rlz_lib.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace rlz {
 
 class RLZTrackerDelegate;

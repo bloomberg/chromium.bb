@@ -25,7 +25,6 @@
 
 namespace syncer {
 
-class SyncApiComponentFactory;
 class SyncClient;
 class SyncData;
 class SyncableService;

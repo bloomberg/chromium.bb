@@ -20,7 +20,6 @@
 namespace translate {
 
 class LanguageState;
-class TranslateClient;
 class TranslateDriver;
 class TranslateManager;
 class TranslatePrefs;

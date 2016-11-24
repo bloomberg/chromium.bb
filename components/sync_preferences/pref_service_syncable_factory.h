@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "components/prefs/pref_service_factory.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;

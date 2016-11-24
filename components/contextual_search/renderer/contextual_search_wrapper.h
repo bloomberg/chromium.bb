@@ -16,10 +16,6 @@ namespace blink {
 class WebFrame;
 }
 
-namespace gin {
-class Arguments;
-}
-
 namespace contextual_search {
 
 // Wrapper for injecting Contextual Search JavaScript

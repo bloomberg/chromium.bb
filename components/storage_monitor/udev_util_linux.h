@@ -7,8 +7,6 @@
 
 #include <string>
 
-struct udev_device;
-
 namespace base {
 class FilePath;
 }

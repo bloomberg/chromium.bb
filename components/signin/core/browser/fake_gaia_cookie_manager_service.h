@@ -11,10 +11,6 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
-namespace content {
-class BrowserContext;
-}
-
 class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   FakeGaiaCookieManagerService(OAuth2TokenService* token_service,

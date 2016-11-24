@@ -20,12 +20,6 @@ namespace IPC {
 class Channel;
 }
 
-namespace mojo {
-namespace edk {
-class ScopedIPCSupport;
-}  // namespace edk
-}  // namespace mojo
-
 // The BrokerThread class represents the thread that handles the messages from
 // the browser process and starts NaCl loader processes.
 class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,

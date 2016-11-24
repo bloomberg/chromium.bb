@@ -17,8 +17,6 @@
 #include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
 
-class GURL;
-
 namespace previews {
 
 typedef std::unordered_map<std::string, std::unique_ptr<PreviewsBlackListItem>>

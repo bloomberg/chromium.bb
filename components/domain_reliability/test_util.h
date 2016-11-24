@@ -15,10 +15,6 @@
 #include "net/base/host_port_pair.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestStatus;
-}  // namespace net
-
 namespace domain_reliability {
 
 // A simple test callback that remembers whether it's been called.

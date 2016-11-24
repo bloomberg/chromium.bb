@@ -24,7 +24,6 @@ namespace password_manager {
 class LogManager;
 class PasswordFormManager;
 class PasswordManager;
-class PasswordManagerDriver;
 class PasswordStore;
 
 enum PasswordSyncState {

@@ -20,8 +20,6 @@
 
 template <class T> class scoped_refptr;
 
-class GURL;
-
 namespace base {
 class FilePath;
 class SequencedTaskRunner;

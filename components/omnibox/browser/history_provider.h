@@ -14,7 +14,6 @@
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 
 class AutocompleteInput;
-class Profile;
 struct AutocompleteMatch;
 
 // This class is a base class for the history autocomplete providers and

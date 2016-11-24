@@ -21,7 +21,6 @@ class SyncEntity;
 namespace syncer {
 
 namespace syncable {
-class BaseTransaction;
 class Entry;
 class Id;
 class BaseWriteTransaction;

@@ -17,7 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
-class PrefService;
 
 namespace base {
 class Value;

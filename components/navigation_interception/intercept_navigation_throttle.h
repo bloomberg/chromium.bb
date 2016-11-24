@@ -12,8 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 
-class GURL;
-
 namespace content {
 class NavigationHandle;
 class WebContents;

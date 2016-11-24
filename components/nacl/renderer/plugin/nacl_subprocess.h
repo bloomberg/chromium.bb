@@ -20,7 +20,6 @@
 
 namespace plugin {
 
-class Plugin;
 class ServiceRuntime;
 
 

@@ -40,7 +40,6 @@ class ResourceEntry;
 namespace internal {
 
 class AboutResourceLoader;
-class ChangeList;
 class ChangeListLoaderObserver;
 class DirectoryFetchInfo;
 class LoaderController;

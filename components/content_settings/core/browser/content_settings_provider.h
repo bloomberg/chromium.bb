@@ -18,7 +18,6 @@ class ContentSettingsPattern;
 
 namespace content_settings {
 
-struct Rule;
 class RuleIterator;
 
 class ProviderInterface {
