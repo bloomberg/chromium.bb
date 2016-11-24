@@ -29,7 +29,8 @@ $ npm config set -g prefix "$HOME/node_modules"
 Then install the required modules:
 
 ```bash
-$ npm install -g crisper vulcanize uglifyjs polymer-css-build
+$ npm install -g crisper@2.0.1 vulcanize@1.14.8 uglifyjs@2.4.10 \
+    polymer-css-build@0.0.6
 ```
 
 Ultimately, all that is required to run this script is that the node binaries
