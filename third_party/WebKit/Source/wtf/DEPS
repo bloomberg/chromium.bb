@@ -13,6 +13,7 @@ include_rules = [
     "+base/optional.h",
     "+base/rand_util.h",
     "+base/strings",
+    "+base/synchronization/spin_lock.h",
     "+base/threading/thread_checker.h",
     "+base/time/time.h",
     "+base/tuple.h",

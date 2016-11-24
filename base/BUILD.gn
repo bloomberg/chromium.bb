@@ -19,6 +19,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
+import("//build/config/arm.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
@@ -1212,6 +1213,15 @@ component("base") {
       "os_compat_nacl.h",
       "rand_util_nacl.cc",
       "synchronization/read_write_lock_nacl.cc",
+    ]
+  }
+
+  # SpinLock uses inline assembly that doesn't work on NaCl, and for which there
+  # is no code for ARMv6.
+  if (!is_nacl && (current_cpu != "arm" || arm_version >= 7)) {
+    sources += [
+      "synchronization/spin_lock.cc",
+      "synchronization/spin_lock.h",
     ]
   }
 
