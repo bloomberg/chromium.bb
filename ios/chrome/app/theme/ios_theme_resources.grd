@@ -44,6 +44,7 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING" file="controlled_setting_mandatory.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP_INCOGNITO" file="omnibox_http_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_OFFLINE" file="omnibox_offline.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH" file="omnibox_search.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH_INCOGNITO" file="omnibox_search_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR" file="omnibox_star.png" />
