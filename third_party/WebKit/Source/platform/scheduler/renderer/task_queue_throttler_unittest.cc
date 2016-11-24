@@ -1052,5 +1052,28 @@ TEST_F(TaskQueueThrottlerTest, AddQueueToBudgetPoolWhenThrottlingDisabled) {
                                      base::TimeDelta::FromMilliseconds(300)));
 }
 
+TEST_F(TaskQueueThrottlerTest,
+       TaskQueueThrottledAndDisabledTillPump_ThenManuallyEnabled) {
+  size_t count = 0;
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&AddOneTask, &count));
+
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  task_queue_throttler_->SetQueueEnabled(timer_queue_.get(), false);
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(0u, count);
+
+  task_queue_throttler_->SetQueueEnabled(timer_queue_.get(), true);
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  mock_task_runner_->RunUntilIdle();  // Wait until the pump.
+  EXPECT_EQ(1u, count);               // Task ran
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+}
+
 }  // namespace scheduler
 }  // namespace blink

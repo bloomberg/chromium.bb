@@ -315,13 +315,25 @@ TaskQueueThrottler::~TaskQueueThrottler() {
 }
 
 void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
+  // Both the TaskQueueThrottler and other systems want to enable and disable
+  // task queues. The policy we've adopted to deal with this is:
+  //
+  // A task queue is disabled if either the TaskQueueThrottler or the caller
+  // vote to disable it.
+  //
+  // A task queue is enabled only if both the TaskQueueThrottler and the caller
+  // vote to enable it.
   TaskQueueMap::iterator find_it = queue_details_.find(task_queue);
 
+  // If TaskQueueThrottler does not know about this queue, just call
+  // SetQueueEnabled directly.
   if (find_it == queue_details_.end()) {
     task_queue->SetQueueEnabled(enabled);
     return;
   }
 
+  // Remember the caller's preference so we know what to do when the task queue
+  // isn't throttled, or has budget to run.
   find_it->second.enabled = enabled;
 
   if (!IsThrottled(task_queue)) {
@@ -329,13 +341,14 @@ void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
     return;
   }
 
-  // We don't enable the queue here because it's throttled and there might be
-  // tasks in it's work queue that would execute immediatly rather than after
-  // PumpThrottledTasks runs.
-  if (!enabled) {
-    task_queue->SetQueueEnabled(false);
+  if (enabled) {
+    // If the task queue is throttled and we want to enable it, we can't
+    // do it immediately due to task alignment requirement and we should
+    // schedule a call to PumpThrottledTasks.
     MaybeSchedulePumpQueue(FROM_HERE, tick_clock_->NowTicks(), task_queue,
                            base::nullopt);
+  } else {
+    task_queue->SetQueueEnabled(false);
   }
 }
 
