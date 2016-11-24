@@ -3,6 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/shadow-dom.js"></script>
 <body>
+
   <div id="testroot">
     <div id="openhost">
       <template data-mode="open">
@@ -41,8 +42,30 @@
       </template>
     </div>
   </div>
+
+  <div id="testroot2">
+    <template data-mode="open">
+      <div id="div1">
+        <template data-mode="open">
+          <div id="div2">
+            <template data-mode="open">
+              <div id="div3">
+                <template data-mode="open" data-expose-as="deepestRoot">
+                  <div id="div4">
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+
 </body>
 <script>
+'use strict';
+
 convertTemplatesToShadowRootsWithin(testroot);
 test(() => {
   assert_equals(document.querySelectorAll('body >>> #inner-open').length, 1);
@@ -69,4 +92,16 @@ test(() => {
   assert_equals(document.querySelector('#testroot >>> #v0host').id, 'v0host');
 }, '>>> should match without piercing through shadow roots.');
 
+test(() => {
+  convertTemplatesToShadowRootsWithin(testroot2);
+  let div4 = deepestRoot.querySelector('#div4');
+
+  assert_equals(document.querySelector('body >>> #div1 >>> #div2 >>> #div3 >>> #div4'), div4);
+  assert_equals(document.querySelector('body >>> #div1 >>> #div2 >>> #div4'), div4);
+  assert_equals(document.querySelector('body >>> #div1 >>> #div3 >>> #div4'), div4);
+  assert_equals(document.querySelector('body >>> #div1 >>> #div4'), div4);
+  assert_equals(document.querySelector('body >>> #div2 >>> #div4'), div4);
+  assert_equals(document.querySelector('#div1 >>> #div2 >>> #div3 >>> #div4'), null,
+      'leftmost compound should match an element in the same node tree as context object.');
+}, 'Multiple >>>s in a selector should work.');
 </script>
