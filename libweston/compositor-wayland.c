@@ -128,6 +128,8 @@ struct wayland_output {
 
 	struct weston_mode mode;
 	uint32_t scale;
+
+	struct wl_callback *frame_cb;
 };
 
 struct wayland_parent_output {
@@ -342,10 +344,12 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 static void
 frame_done(void *data, struct wl_callback *callback, uint32_t time)
 {
-	struct weston_output *output = data;
+	struct wayland_output *output = data;
 	struct timespec ts;
 
+	assert(callback == output->frame_cb);
 	wl_callback_destroy(callback);
+	output->frame_cb = NULL;
 
 	/* XXX: use the presentation extension for proper timings */
 
@@ -356,8 +360,8 @@ frame_done(void *data, struct wl_callback *callback, uint32_t time)
 	 * we can, and pretend finish_frame time is when we process this
 	 * event.
 	 */
-	weston_compositor_read_presentation_clock(output->compositor, &ts);
-	weston_output_finish_frame(output, &ts, 0);
+	weston_compositor_read_presentation_clock(output->base.compositor, &ts);
+	weston_output_finish_frame(&output->base, &ts, 0);
 }
 
 static const struct wl_callback_listener frame_listener = {
@@ -458,7 +462,6 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *wb =
 		to_wayland_backend(output->base.compositor);
-	struct wl_callback *callback;
 
 	/* If this is the initial frame, we need to attach a buffer so that
 	 * the compositor can map the surface and include it in its render
@@ -471,8 +474,8 @@ wayland_output_start_repaint_loop(struct weston_output *output_base)
 		draw_initial_frame(output);
 	}
 
-	callback = wl_surface_frame(output->parent.surface);
-	wl_callback_add_listener(callback, &frame_listener, output);
+	output->frame_cb = wl_surface_frame(output->parent.surface);
+	wl_callback_add_listener(output->frame_cb, &frame_listener, output);
 	wl_surface_commit(output->parent.surface);
 	wl_display_flush(wb->parent.wl_display);
 }
@@ -483,10 +486,9 @@ wayland_output_repaint_gl(struct weston_output *output_base,
 {
 	struct wayland_output *output = to_wayland_output(output_base);
 	struct weston_compositor *ec = output->base.compositor;
-	struct wl_callback *callback;
 
-	callback = wl_surface_frame(output->parent.surface);
-	wl_callback_add_listener(callback, &frame_listener, output);
+	output->frame_cb = wl_surface_frame(output->parent.surface);
+	wl_callback_add_listener(output->frame_cb, &frame_listener, output);
 
 	wayland_output_update_gl_border(output);
 
@@ -692,6 +694,9 @@ wayland_output_destroy(struct weston_output *base)
 	wayland_output_disable(&output->base);
 
 	weston_output_destroy(&output->base);
+
+	if (output->frame_cb)
+		wl_callback_destroy(output->frame_cb);
 
 	free(output);
 }
