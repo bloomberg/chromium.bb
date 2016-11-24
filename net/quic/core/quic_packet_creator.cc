@@ -54,7 +54,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
 }
 
 QuicPacketCreator::~QuicPacketCreator() {
-  QuicUtils::DeleteFrames(&packet_.retransmittable_frames);
+  DeleteFrames(&packet_.retransmittable_frames);
 }
 
 void QuicPacketCreator::SetEncrypter(EncryptionLevel level,

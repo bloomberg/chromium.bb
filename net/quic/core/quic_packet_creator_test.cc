@@ -91,11 +91,11 @@ class MockDelegate : public QuicPacketCreator::DelegateInterface {
 
 class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
  public:
-  void ClearSerializedPacket(SerializedPacket* serialized_packet) {
+  void ClearSerializedPacketForTests(SerializedPacket* serialized_packet) {
     if (serialized_packet == nullptr) {
       return;
     }
-    QuicUtils::ClearSerializedPacket(serialized_packet);
+    ClearSerializedPacket(serialized_packet);
   }
 
   void SaveSerializedPacket(SerializedPacket* serialized_packet) {
@@ -104,8 +104,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     }
     delete[] serialized_packet_.encrypted_buffer;
     serialized_packet_ = *serialized_packet;
-    serialized_packet_.encrypted_buffer =
-        QuicUtils::CopyBuffer(*serialized_packet);
+    serialized_packet_.encrypted_buffer = CopyBuffer(*serialized_packet);
     serialized_packet->retransmittable_frames.clear();
   }
 
@@ -510,8 +509,8 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
       QuicFrame frame;
       QuicIOVector io_vector(MakeIOVector("testdata"));
       EXPECT_CALL(delegate_, OnSerializedPacket(_))
-          .WillRepeatedly(
-              Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+          .WillRepeatedly(Invoke(
+              this, &QuicPacketCreatorTest::ClearSerializedPacketForTests));
       ASSERT_TRUE(creator_.ConsumeData(kClientDataStreamId1, io_vector, 0u,
                                        kOffset, false, false, &frame));
       ASSERT_TRUE(frame.stream_frame);
@@ -848,7 +847,7 @@ TEST_P(QuicPacketCreatorTest, SetCurrentPath) {
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .Times(1)
       .WillRepeatedly(
-          Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+          Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacketForTests));
   creator_.Flush();
   EXPECT_FALSE(creator_.HasPendingFrames());
   creator_.SetCurrentPath(kPathId1, 1, 0);

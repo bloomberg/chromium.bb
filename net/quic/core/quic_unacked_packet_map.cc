@@ -28,7 +28,7 @@ QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   QuicPacketNumber index = least_unacked_;
   for (UnackedPacketMap::iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++index) {
-    QuicUtils::DeleteFrames(&it->retransmittable_frames);
+    DeleteFrames(&it->retransmittable_frames);
   }
 }
 
@@ -170,7 +170,7 @@ void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
     --pending_crypto_packet_count_;
     transmission_info->has_crypto_handshake = false;
   }
-  QuicUtils::DeleteFrames(&transmission_info->retransmittable_frames);
+  DeleteFrames(&transmission_info->retransmittable_frames);
 }
 
 void QuicUnackedPacketMap::IncreaseLargestObserved(
@@ -269,7 +269,7 @@ void QuicUnackedPacketMap::CancelRetransmissionsForStream(
     if (frames->empty()) {
       continue;
     }
-    QuicUtils::RemoveFramesForStream(frames, stream_id);
+    RemoveFramesForStream(frames, stream_id);
     if (frames->empty()) {
       RemoveRetransmittability(packet_number);
     }

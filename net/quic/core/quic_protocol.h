@@ -468,6 +468,13 @@ static_assert(sizeof(QuicFrame) <= 16,
 
 typedef std::vector<QuicFrame> QuicFrames;
 
+// Deletes all the sub-frames contained in |frames|.
+NET_EXPORT_PRIVATE void DeleteFrames(QuicFrames* frames);
+
+// Deletes all the QuicStreamFrames for the specified |stream_id|.
+NET_EXPORT_PRIVATE void RemoveFramesForStream(QuicFrames* frames,
+                                              QuicStreamId stream_id);
+
 class NET_EXPORT_PRIVATE QuicData {
  public:
   QuicData(const char* buffer, size_t length);
@@ -685,6 +692,14 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   // Optional notifiers which will be informed when this packet has been ACKed.
   std::list<AckListenerWrapper> listeners;
 };
+
+// Deletes and clears all the frames and the packet from serialized packet.
+NET_EXPORT_PRIVATE void ClearSerializedPacket(
+    SerializedPacket* serialized_packet);
+
+// Allocates a new char[] of size |packet.encrypted_length| and copies in
+// |packet.encrypted_buffer|.
+NET_EXPORT_PRIVATE char* CopyBuffer(const SerializedPacket& packet);
 
 struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Used by STL when assigning into a map.

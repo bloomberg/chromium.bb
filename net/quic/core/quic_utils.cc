@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "net/base/ip_address.h"
+#include "net/quic/core/quic_constants.h"
 #include "net/quic/core/quic_flags.h"
 
 using base::StringPiece;
@@ -190,72 +190,6 @@ string QuicUtils::PeerAddressChangeTypeToString(PeerAddressChangeType type) {
 }
 
 // static
-void QuicUtils::DeleteFrames(QuicFrames* frames) {
-  for (QuicFrame& frame : *frames) {
-    switch (frame.type) {
-      // Frames smaller than a pointer are inlined, so don't need to be deleted.
-      case PADDING_FRAME:
-      case MTU_DISCOVERY_FRAME:
-      case PING_FRAME:
-        break;
-      case STREAM_FRAME:
-        delete frame.stream_frame;
-        break;
-      case ACK_FRAME:
-        delete frame.ack_frame;
-        break;
-      case STOP_WAITING_FRAME:
-        delete frame.stop_waiting_frame;
-        break;
-      case RST_STREAM_FRAME:
-        delete frame.rst_stream_frame;
-        break;
-      case CONNECTION_CLOSE_FRAME:
-        delete frame.connection_close_frame;
-        break;
-      case GOAWAY_FRAME:
-        delete frame.goaway_frame;
-        break;
-      case BLOCKED_FRAME:
-        delete frame.blocked_frame;
-        break;
-      case WINDOW_UPDATE_FRAME:
-        delete frame.window_update_frame;
-        break;
-      case PATH_CLOSE_FRAME:
-        delete frame.path_close_frame;
-        break;
-      case NUM_FRAME_TYPES:
-        DCHECK(false) << "Cannot delete type: " << frame.type;
-    }
-  }
-  frames->clear();
-}
-
-// static
-void QuicUtils::RemoveFramesForStream(QuicFrames* frames,
-                                      QuicStreamId stream_id) {
-  QuicFrames::iterator it = frames->begin();
-  while (it != frames->end()) {
-    if (it->type != STREAM_FRAME || it->stream_frame->stream_id != stream_id) {
-      ++it;
-      continue;
-    }
-    delete it->stream_frame;
-    it = frames->erase(it);
-  }
-}
-
-// static
-void QuicUtils::ClearSerializedPacket(SerializedPacket* serialized_packet) {
-  if (!serialized_packet->retransmittable_frames.empty()) {
-    DeleteFrames(&serialized_packet->retransmittable_frames);
-  }
-  serialized_packet->encrypted_buffer = nullptr;
-  serialized_packet->encrypted_length = 0;
-}
-
-// static
 uint64_t QuicUtils::PackPathIdAndPacketNumber(QuicPathId path_id,
                                               QuicPacketNumber packet_number) {
   // Setting the nonce below relies on QuicPathId and QuicPacketNumber being
@@ -268,13 +202,6 @@ uint64_t QuicUtils::PackPathIdAndPacketNumber(QuicPathId path_id,
       (static_cast<uint64_t>(path_id) << 56) | packet_number;
   DCHECK(path_id != kDefaultPathId || path_id_packet_number == packet_number);
   return path_id_packet_number;
-}
-
-// static
-char* QuicUtils::CopyBuffer(const SerializedPacket& packet) {
-  char* dst_buffer = new char[packet.encrypted_length];
-  memcpy(dst_buffer, packet.encrypted_buffer, packet.encrypted_length);
-  return dst_buffer;
 }
 
 // static

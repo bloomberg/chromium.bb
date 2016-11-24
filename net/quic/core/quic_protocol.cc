@@ -241,6 +241,60 @@ QuicFrame::QuicFrame(QuicBlockedFrame* frame)
 QuicFrame::QuicFrame(QuicPathCloseFrame* frame)
     : type(PATH_CLOSE_FRAME), path_close_frame(frame) {}
 
+void DeleteFrames(QuicFrames* frames) {
+  for (QuicFrame& frame : *frames) {
+    switch (frame.type) {
+      // Frames smaller than a pointer are inlined, so don't need to be deleted.
+      case PADDING_FRAME:
+      case MTU_DISCOVERY_FRAME:
+      case PING_FRAME:
+        break;
+      case STREAM_FRAME:
+        delete frame.stream_frame;
+        break;
+      case ACK_FRAME:
+        delete frame.ack_frame;
+        break;
+      case STOP_WAITING_FRAME:
+        delete frame.stop_waiting_frame;
+        break;
+      case RST_STREAM_FRAME:
+        delete frame.rst_stream_frame;
+        break;
+      case CONNECTION_CLOSE_FRAME:
+        delete frame.connection_close_frame;
+        break;
+      case GOAWAY_FRAME:
+        delete frame.goaway_frame;
+        break;
+      case BLOCKED_FRAME:
+        delete frame.blocked_frame;
+        break;
+      case WINDOW_UPDATE_FRAME:
+        delete frame.window_update_frame;
+        break;
+      case PATH_CLOSE_FRAME:
+        delete frame.path_close_frame;
+        break;
+      case NUM_FRAME_TYPES:
+        DCHECK(false) << "Cannot delete type: " << frame.type;
+    }
+  }
+  frames->clear();
+}
+
+void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id) {
+  QuicFrames::iterator it = frames->begin();
+  while (it != frames->end()) {
+    if (it->type != STREAM_FRAME || it->stream_frame->stream_id != stream_id) {
+      ++it;
+      continue;
+    }
+    delete it->stream_frame;
+    it = frames->erase(it);
+  }
+}
+
 ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
   os << "{ least_unacked: " << sent_info.least_unacked << " }\n";
   return os;
@@ -681,6 +735,20 @@ TransmissionInfo::TransmissionInfo()
       has_crypto_handshake(false),
       num_padding_bytes(0),
       retransmission(0) {}
+
+void ClearSerializedPacket(SerializedPacket* serialized_packet) {
+  if (!serialized_packet->retransmittable_frames.empty()) {
+    DeleteFrames(&serialized_packet->retransmittable_frames);
+  }
+  serialized_packet->encrypted_buffer = nullptr;
+  serialized_packet->encrypted_length = 0;
+}
+
+char* CopyBuffer(const SerializedPacket& packet) {
+  char* dst_buffer = new char[packet.encrypted_length];
+  memcpy(dst_buffer, packet.encrypted_buffer, packet.encrypted_length);
+  return dst_buffer;
+}
 
 TransmissionInfo::TransmissionInfo(EncryptionLevel level,
                                    QuicPacketNumberLength packet_number_length,

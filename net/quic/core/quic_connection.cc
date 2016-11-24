@@ -314,7 +314,7 @@ void QuicConnection::ClearQueuedPackets() {
     // Delete the buffer before calling ClearSerializedPacket, which sets
     // encrypted_buffer to nullptr.
     delete[] it->encrypted_buffer;
-    QuicUtils::ClearSerializedPacket(&(*it));
+    ClearSerializedPacket(&(*it));
   }
   queued_packets_.clear();
 }
@@ -1171,13 +1171,13 @@ void QuicConnection::SendRstStream(QuicStreamId id,
       ++packet_iterator;
       continue;
     }
-    QuicUtils::RemoveFramesForStream(retransmittable_frames, id);
+    RemoveFramesForStream(retransmittable_frames, id);
     if (!retransmittable_frames->empty()) {
       ++packet_iterator;
       continue;
     }
     delete[] packet_iterator->encrypted_buffer;
-    QuicUtils::ClearSerializedPacket(&(*packet_iterator));
+    ClearSerializedPacket(&(*packet_iterator));
     packet_iterator = queued_packets_.erase(packet_iterator);
   }
 }
@@ -1434,7 +1434,7 @@ void QuicConnection::WriteQueuedPackets() {
   while (packet_iterator != queued_packets_.end() &&
          WritePacket(&(*packet_iterator))) {
     delete[] packet_iterator->encrypted_buffer;
-    QuicUtils::ClearSerializedPacket(&(*packet_iterator));
+    ClearSerializedPacket(&(*packet_iterator));
     packet_iterator = queued_packets_.erase(packet_iterator);
   }
 }
@@ -1562,7 +1562,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
           new std::vector<std::unique_ptr<QuicEncryptedPacket>>);
     }
     // Copy the buffer so it's owned in the future.
-    char* buffer_copy = QuicUtils::CopyBuffer(*packet);
+    char* buffer_copy = CopyBuffer(*packet);
     termination_packets_->push_back(std::unique_ptr<QuicEncryptedPacket>(
         new QuicEncryptedPacket(buffer_copy, encrypted_length, true)));
     // This assures we won't try to write *forced* packets when blocked.
@@ -1788,12 +1788,12 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
   // it's written in sequence number order.
   if (!queued_packets_.empty() || !WritePacket(packet)) {
     // Take ownership of the underlying encrypted packet.
-    packet->encrypted_buffer = QuicUtils::CopyBuffer(*packet);
+    packet->encrypted_buffer = CopyBuffer(*packet);
     queued_packets_.push_back(*packet);
     packet->retransmittable_frames.clear();
   }
 
-  QuicUtils::ClearSerializedPacket(packet);
+  ClearSerializedPacket(packet);
 }
 
 void QuicConnection::OnPingTimeout() {

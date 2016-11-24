@@ -58,10 +58,10 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface {
   void OnSerializedPacket(SerializedPacket* serialized_packet) override {
     // Make a copy of the serialized packet to send later.
     packets_.push_back(std::unique_ptr<QuicEncryptedPacket>(
-        new QuicEncryptedPacket(QuicUtils::CopyBuffer(*serialized_packet),
+        new QuicEncryptedPacket(CopyBuffer(*serialized_packet),
                                 serialized_packet->encrypted_length, true)));
     serialized_packet->encrypted_buffer = nullptr;
-    QuicUtils::DeleteFrames(&(serialized_packet->retransmittable_frames));
+    DeleteFrames(&(serialized_packet->retransmittable_frames));
     serialized_packet->retransmittable_frames.clear();
   }
 

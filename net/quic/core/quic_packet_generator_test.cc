@@ -116,12 +116,12 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   ~QuicPacketGeneratorTest() override {
     for (SerializedPacket& packet : packets_) {
       delete[] packet.encrypted_buffer;
-      QuicUtils::ClearSerializedPacket(&packet);
+      ClearSerializedPacket(&packet);
     }
   }
 
   void SavePacket(SerializedPacket* packet) {
-    packet->encrypted_buffer = QuicUtils::CopyBuffer(*packet);
+    packet->encrypted_buffer = CopyBuffer(*packet);
     packets_.push_back(*packet);
     packet->encrypted_buffer = nullptr;
     packet->retransmittable_frames.clear();
