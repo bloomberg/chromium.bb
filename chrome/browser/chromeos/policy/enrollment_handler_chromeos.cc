@@ -198,11 +198,6 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
   if (enrollment_step_ == STEP_REGISTRATION && client_->is_registered()) {
     SetStep(STEP_POLICY_FETCH);
     device_mode_ = client_->device_mode();
-    // TODO(rsorokin): remove after have proper test server.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableAd)) {
-      device_mode_ = DEVICE_MODE_ENTERPRISE_AD;
-    }
     if (device_mode_ != DEVICE_MODE_ENTERPRISE &&
         device_mode_ != DEVICE_MODE_ENTERPRISE_AD) {
       LOG(ERROR) << "Bad device mode " << device_mode_;
