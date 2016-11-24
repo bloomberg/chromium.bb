@@ -904,6 +904,10 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
     case WebInputEvent::GestureShowPress:
       m_client->cancelScheduledContentIntents();
     case WebInputEvent::GestureTapDown:
+      // Touch pinch zoom and scroll must hide the popup. In case of a touch
+      // scroll or pinch zoom, this function is called with GestureTapDown
+      // rather than a GSB/GSU/GSE or GPB/GPU/GPE.
+      hidePopups();
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTapUnconfirmed: {
       eventResult = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(

@@ -146,8 +146,23 @@ function test2AfterScrollEvent() {
     shouldNotBe('window.internals.pagePopupWindow', 'null');
     shouldBeEqualToString('menuElement2.value', '2');
 
-    finishJSTest();
+    test3();
 }
+
+function test3() {
+    debug("==> Test popup closes on outside GestureTapDawn");
+    eventSender.clearTouchPoints();
+    openPicker(menuElement, function () {
+        eventSender.gestureTapDown(300, 300);
+        shouldBeNull('window.internals.pagePopupWindow');
+        finishJSTest();
+    }, function () {
+        testFailed('picker didn\'t open')
+        finishJSTest();
+    });
+}
+
+
 </script>
 </body>
 </html>

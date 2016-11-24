@@ -19,6 +19,8 @@ PASS picker._selectElement.value is "3"
 PASS picker._selectElement.value is "0"
 PASS window.internals.pagePopupWindow is not null
 PASS menuElement2.value is "2"
+==> Test popup closes on outside GestureTapDawn
+PASS window.internals.pagePopupWindow is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
