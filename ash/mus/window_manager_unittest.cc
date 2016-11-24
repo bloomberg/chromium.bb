@@ -48,12 +48,7 @@ void OnEmbed(bool success) {
 // (ash::MaterialDesignController::IsShelfMaterial()). See
 // crbug.com/660194 and crbug.com/642879.
 // TODO(rockot): Reenable this test.
-#if defined(USE_OZONE)
-#define MAYBE_OpenWindow OpenWindow
-#else
-#define MAYBE_OpenWindow DISABLED_OpenWindow
-#endif  // defined(USE_OZONE)
-TEST_F(WindowManagerTest, MAYBE_OpenWindow) {
+TEST_F(WindowManagerTest, DISABLED_OpenWindow) {
   WindowTreeClientDelegate window_tree_delegate;
 
   connector()->Connect("ash");
