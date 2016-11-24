@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/pref_names.h"
 
 @implementation MemoryDebuggerManager {
-  UIView* debuggerParentView_;  // weak
+  __unsafe_unretained UIView* debuggerParentView_;  // weak
   base::scoped_nsobject<MemoryDebugger> memoryDebugger_;
   BooleanPrefMember showMemoryDebugger_;
 }

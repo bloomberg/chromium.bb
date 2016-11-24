@@ -69,7 +69,7 @@ enum BeaconType {
 
 @implementation PhysicalWebScanner {
   // Delegate that will be notified when the list of devices change.
-  id<PhysicalWebScannerDelegate> delegate_;
+  __unsafe_unretained id<PhysicalWebScannerDelegate> delegate_;
   // The value of |started_| is YES when the scanner has been started and NO
   // when it's been stopped. The initial value is NO.
   BOOL started_;

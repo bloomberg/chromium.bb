@@ -18,11 +18,11 @@
   BOOL _histogramUpdated;
   // Pointer to the load time record for this request. This will be created
   // and owned by |_manager|, and it will remain valid as long as |_manager| is.
-  PageLoadTimeRecord* _loadTimeRecord;
+  __unsafe_unretained PageLoadTimeRecord* _loadTimeRecord;
   // Pointer to the creating manager, which is owned by a tab. All network
   // requests for the tab are destroyed before the tab is, so this pointer
   // will always be valid as long as the owning client is alive.
-  MetricsNetworkClientManager* _manager;
+  __unsafe_unretained MetricsNetworkClientManager* _manager;
   // A pointer to the request, kept so it can be referred to later.
   scoped_refptr<net::HttpResponseHeaders> _nativeHeaders;
 }

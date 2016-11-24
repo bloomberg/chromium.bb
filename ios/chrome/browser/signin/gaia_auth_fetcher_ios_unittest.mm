@@ -35,7 +35,7 @@ class FakeGaiaAuthFetcherIOSBridge : public GaiaAuthFetcherIOSBridge {
     }
     return [mock_web_view_ retain];
   }
-  id mock_web_view_;
+  id mock_web_view_;  // strong
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {

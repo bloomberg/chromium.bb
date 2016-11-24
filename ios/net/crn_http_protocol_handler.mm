@@ -198,7 +198,7 @@ class HttpProtocolHandlerCore
   // ith client is responsible for managing the (i-1)th client.
   base::scoped_nsobject<NSMutableArray> clients_;
   // Weak. This is the last client in |clients_|.
-  id<CRNNetworkClientProtocol> top_level_client_;
+  __weak id<CRNNetworkClientProtocol> top_level_client_;
   scoped_refptr<IOBuffer> buffer_;
   base::scoped_nsobject<NSMutableURLRequest> request_;
   // Stream delegate to read the HTTPBodyStream.
@@ -925,8 +925,7 @@ void HttpProtocolHandlerCore::PushClients(NSArray* clients) {
 @implementation CRNHTTPProtocolHandler {
   scoped_refptr<net::HttpProtocolHandlerCore> _core;
   base::scoped_nsprotocol<id<CRNHTTPProtocolHandlerProxy>> _protocolProxy;
-  NSThread* _clientThread;
-  NSString* _clientRunLoopMode;
+  __weak NSThread* _clientThread;
   BOOL _supportedURL;
 }
 

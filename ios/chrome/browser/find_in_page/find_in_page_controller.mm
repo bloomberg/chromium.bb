@@ -72,8 +72,8 @@ static NSString* gSearchTerm;
 @implementation FindInPageController {
  @private
   // Object that manages find_in_page.js injection into the web view.
-  JsFindinpageManager* _findInPageJsManager;
-  id<FindInPageControllerDelegate> _delegate;
+  __unsafe_unretained JsFindinpageManager* _findInPageJsManager;
+  __unsafe_unretained id<FindInPageControllerDelegate> _delegate;
 
   // Access to the web view from the web state.
   base::scoped_nsprotocol<id<CRWWebViewProxy>> _webViewProxy;
