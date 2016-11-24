@@ -330,11 +330,6 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name,
   } else if (name == accesskeyAttr) {
     // FIXME: ignore for the moment.
     //
-  } else if (name == disabledAttr) {
-    HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
-    if (popupIsVisible())
-      hidePopup();
-
   } else {
     HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
   }
@@ -1078,6 +1073,8 @@ void HTMLSelectElement::dispatchBlurEvent(
   if (usesMenuList())
     dispatchInputAndChangeEventForMenuList();
   m_lastOnChangeSelection.clear();
+  if (popupIsVisible())
+    hidePopup();
   HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type,
                                                      sourceCapabilities);
 }
@@ -1375,11 +1372,6 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event) {
       }
     }
     event->setDefaultHandled();
-  }
-
-  if (event->type() == EventTypeNames::blur) {
-    if (popupIsVisible())
-      hidePopup();
   }
 }
 
