@@ -1,0 +1,74 @@
+// Copyright 2016 The LUCI Authors. All rights reserved.
+// Use of this source code is governed under the Apache License, Version 2.0
+// that can be found in the LICENSE file.
+
+// This describes the interface a Swarming bot can use to contact an Isolate
+// server over a gRPC proxy. It essentially duplicates the portions of the
+// "native" Isolate REST API that's used by the bot.
+//
+// This proto is *not yet stable* and *will* change over time in non-backward-
+// compatible ways.
+
+syntax = "proto3";
+
+package luci.swarming.bot;
+
+service BotFileService {
+  rpc Contains(ContainsRequest) returns (ContainsReply);
+  rpc PutBlobs(stream PutBlobsRequest) returns (PutBlobsReply);
+  rpc GetBlobs(GetBlobsRequest) returns (stream GetBlobsReply);
+}
+
+message ContainsRequest {
+  repeated ContentDigest digest = 1;
+}
+
+message ContainsReply {
+  BlobStatus status = 1;
+}
+
+message PutBlobsRequest {
+  BlobChunk data = 1;
+}
+
+message PutBlobsReply {
+  BlobStatus status = 1;
+}
+
+message GetBlobsRequest {
+  repeated ContentDigest digest = 1;
+}
+
+message GetBlobsReply {
+  BlobStatus status = 1;
+  BlobChunk data = 2;
+}
+
+message BlobChunk {
+  ContentDigest digest = 1;  // Present only in first chunk.
+  int64 offset = 2;
+  bytes data = 3;
+}
+
+message ContentDigest {
+  bytes digest = 1;
+  int64 size_bytes = 2;
+  int32 version = 3;
+}
+
+message BlobStatus {
+  bool succeeded = 1;
+  enum ErrorCode {
+    UNKNOWN = 0;
+    INVALID_ARGUMENT = 1; // The client behaved incorrectly. error_detail should
+                          // have more information.
+    MISSING_DIGEST = 2;   // Missing a node on tree download.
+    DIGEST_MISMATCH = 3;  // Upload only error, when requested digest does not
+                          // match the server side computed one.
+    NODE_PARSE_ERROR = 4; // Failed to parse digested data as node.
+  }
+  ErrorCode error = 2;
+  string error_detail = 3;
+  repeated ContentDigest missing_digest = 4;
+}
+
