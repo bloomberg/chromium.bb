@@ -59,15 +59,15 @@ static EDisplay equivalentBlockDisplay(EDisplay display) {
   switch (display) {
     case EDisplay::Block:
     case EDisplay::Table:
-    case EDisplay::Box:
+    case EDisplay::WebkitBox:
     case EDisplay::Flex:
     case EDisplay::Grid:
     case EDisplay::ListItem:
       return display;
     case EDisplay::InlineTable:
       return EDisplay::Table;
-    case EDisplay::InlineBox:
-      return EDisplay::Box;
+    case EDisplay::WebkitInlineBox:
+      return EDisplay::WebkitBox;
     case EDisplay::InlineFlex:
       return EDisplay::Flex;
     case EDisplay::InlineGrid:
@@ -106,7 +106,7 @@ static bool doesNotInheritTextDecoration(const ComputedStyle& style,
                                          const Element* element) {
   return style.display() == EDisplay::InlineTable ||
          style.display() == EDisplay::InlineBlock ||
-         style.display() == EDisplay::InlineBox ||
+         style.display() == EDisplay::WebkitInlineBox ||
          isAtShadowBoundary(element) || style.isFloating() ||
          style.hasOutOfFlowPosition() || isOutermostSVGElement(element) ||
          isHTMLRTElement(element);
@@ -364,8 +364,8 @@ static void adjustStyleForDisplay(ComputedStyle& style,
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
   if (style.getWritingMode() != TopToBottomWritingMode &&
-      (style.display() == EDisplay::Box ||
-       style.display() == EDisplay::InlineBox))
+      (style.display() == EDisplay::WebkitBox ||
+       style.display() == EDisplay::WebkitInlineBox))
     style.setWritingMode(TopToBottomWritingMode);
 
   if (parentStyle.isDisplayFlexibleOrGridBox()) {

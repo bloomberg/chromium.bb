@@ -164,7 +164,7 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
 
   EDisplay display = style.display();
   if (display == EDisplay::Grid || display == EDisplay::Flex ||
-      display == EDisplay::Box)
+      display == EDisplay::WebkitBox)
     return true;
 
   if (space.WritingMode() != FromPlatformWritingMode(style.getWritingMode()))

@@ -204,8 +204,8 @@ LayoutObject* LayoutObject::createObject(Element* element,
       return new LayoutTableCell(element);
     case EDisplay::TableCaption:
       return new LayoutTableCaption(element);
-    case EDisplay::Box:
-    case EDisplay::InlineBox:
+    case EDisplay::WebkitBox:
+    case EDisplay::WebkitInlineBox:
       return new LayoutDeprecatedFlexibleBox(*element);
     case EDisplay::Flex:
     case EDisplay::InlineFlex:

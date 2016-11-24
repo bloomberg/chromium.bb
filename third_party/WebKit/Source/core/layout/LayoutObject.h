@@ -709,7 +709,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // LayoutTextFragment are not LayoutBlocks and will return false.
     // See https://bugs.webkit.org/show_bug.cgi?id=56709.
     return isAnonymous() && (style()->display() == EDisplay::Block ||
-                             style()->display() == EDisplay::Box) &&
+                             style()->display() == EDisplay::WebkitBox) &&
            style()->styleType() == PseudoIdNone && isLayoutBlock() &&
            !isListMarker() && !isLayoutFlowThread() &&
            !isLayoutMultiColumnSet() && !isLayoutFullScreen() &&

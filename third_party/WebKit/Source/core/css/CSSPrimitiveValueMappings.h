@@ -1242,10 +1242,10 @@ inline CSSIdentifierValue::CSSIdentifierValue(EDisplay e)
     case EDisplay::TableCaption:
       m_valueID = CSSValueTableCaption;
       break;
-    case EDisplay::Box:
+    case EDisplay::WebkitBox:
       m_valueID = CSSValueWebkitBox;
       break;
-    case EDisplay::InlineBox:
+    case EDisplay::WebkitInlineBox:
       m_valueID = CSSValueWebkitInlineBox;
       break;
     case EDisplay::Flex:

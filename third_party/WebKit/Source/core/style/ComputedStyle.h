@@ -3885,7 +3885,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   static bool isDisplayReplacedType(EDisplay display) {
-    return display == EDisplay::InlineBlock || display == EDisplay::InlineBox ||
+    return display == EDisplay::InlineBlock ||
+           display == EDisplay::WebkitInlineBox ||
            display == EDisplay::InlineFlex ||
            display == EDisplay::InlineTable || display == EDisplay::InlineGrid;
   }
