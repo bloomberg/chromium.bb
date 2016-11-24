@@ -8,6 +8,10 @@
 #import "ios/chrome/browser/browsing_data/browsing_data_change_listening.h"
 #include "ios/web/public/web_thread.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 ChromeCookieStoreIOSClient::ChromeCookieStoreIOSClient(
     id<BrowsingDataChangeListening> browsing_data_change_listener)
     : browsing_data_change_listener_(browsing_data_change_listener) {

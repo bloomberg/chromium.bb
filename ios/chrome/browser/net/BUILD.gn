@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("net") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "chrome_cookie_store_ios_client.h",
     "chrome_cookie_store_ios_client.mm",

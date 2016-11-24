@@ -18,6 +18,10 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class WebpDecoderDelegate : public webp_transcode::WebpDecoder::Delegate {
@@ -55,7 +59,7 @@ base::scoped_nsobject<NSData> DecodeWebpImage(
       new webp_transcode::WebpDecoder(delegate.get()));
   decoder->OnDataReceived(webp_image);
   DLOG_IF(ERROR, !delegate->data()) << "WebP image decoding failed.";
-  return base::scoped_nsobject<NSData>([delegate->data() retain]);
+  return base::scoped_nsobject<NSData>(delegate->data());
 }
 
 }  // namespace
@@ -71,7 +75,6 @@ ImageFetcher::~ImageFetcher() {
   // Delete all the entries in the |downloads_in_progress_| map.  This will in
   // turn cancel all of the requests.
   for (const auto& pair : downloads_in_progress_) {
-    [pair.second release];
     delete pair.first;
   }
 }

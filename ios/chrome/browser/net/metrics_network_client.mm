@@ -14,6 +14,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface MetricsNetworkClient () {
   BOOL _histogramUpdated;
   // Pointer to the load time record for this request. This will be created

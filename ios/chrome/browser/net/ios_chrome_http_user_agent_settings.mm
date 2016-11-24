@@ -10,6 +10,10 @@
 #include "ios/web/public/web_thread.h"
 #include "net/http/http_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromeHttpUserAgentSettings::IOSChromeHttpUserAgentSettings(
     PrefService* prefs) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);

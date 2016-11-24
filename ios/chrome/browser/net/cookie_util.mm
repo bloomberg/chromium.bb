@@ -21,6 +21,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace cookie_util {
 
 namespace {
@@ -119,7 +123,7 @@ void ClearSessionCookies(ios::ChromeBrowserState* browser_state) {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browser_state->GetRequestContext();
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
         getter->GetURLRequestContext()
             ->cookie_store()
             ->DeleteSessionCookiesAsync(base::Bind(&DoNothing));

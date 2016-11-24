@@ -13,6 +13,10 @@
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface PageLoadTimeRecord ()
 
 @property(nonatomic, readonly) GURL url;
@@ -62,7 +66,7 @@
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _pageLoadTimes.reset([[NSMutableSet set] retain]);
+    _pageLoadTimes.reset([NSMutableSet set]);
   }
   return self;
 }
@@ -75,23 +79,23 @@
 
 - (CRNForwardingNetworkClient*)clientHandlingRequest:
         (const net::URLRequest&)request {
-  return [[[MetricsNetworkClient alloc] initWithManager:self] autorelease];
+  return [[MetricsNetworkClient alloc] initWithManager:self];
 }
 
 #pragma mark - public UI-thread methods
 
 - (void)pageLoadStarted:(GURL)url {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-    [self handlePageLoadStarted:url];
-  }));
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+                             [self handlePageLoadStarted:url];
+                           }));
 }
 
 - (void)pageLoadCompleted {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-    [self handlePageLoadCompleted];
-  }));
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+                             [self handlePageLoadCompleted];
+                           }));
 }
 
 #pragma mark - public IO-thread methods
