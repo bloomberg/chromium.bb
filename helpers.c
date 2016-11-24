@@ -348,9 +348,9 @@ int drv_add_kms_flags(struct driver *drv)
 	 * of ARGB unless it's an overlay plane.
 	 */
 	drv_modify_supported_combination(drv, DRM_FORMAT_XRGB8888,
-					 DRV_BO_USE_SCANOUT, 0);
+					 BO_USE_SCANOUT, 0);
 	drv_modify_supported_combination(drv, DRM_FORMAT_ARGB8888,
-					 DRV_BO_USE_SCANOUT, 0);
+					 BO_USE_SCANOUT, 0);
 
 	/*
 	 * The ability to return universal planes is only complete on
@@ -392,10 +392,10 @@ int drv_add_kms_flags(struct driver *drv)
 		switch (flag) {
 		case DRM_PLANE_TYPE_OVERLAY:
 		case DRM_PLANE_TYPE_PRIMARY:
-			usage = DRV_BO_USE_SCANOUT;
+			usage = BO_USE_SCANOUT;
 			break;
 		case DRM_PLANE_TYPE_CURSOR:
-			usage = DRV_BO_USE_CURSOR;
+			usage = BO_USE_CURSOR;
 			break;
 		default:
 			assert(0);

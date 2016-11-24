@@ -39,11 +39,11 @@ enum {
 };
 
 static struct supported_combination combos[5] = {
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
-	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
-	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_LINEAR},
-	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, DRV_BO_USE_RENDERING},
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, BO_USE_CURSOR | BO_USE_LINEAR},
+	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE, BO_USE_RENDERING},
+	{DRM_FORMAT_XBGR8888, DRM_FORMAT_MOD_NONE, BO_USE_RENDERING},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, BO_USE_LINEAR},
+	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, BO_USE_RENDERING},
 };
 
 static int amdgpu_set_metadata(int fd, uint32_t handle,
@@ -156,7 +156,7 @@ static int amdgpu_addrlib_compute(void *addrlib, uint32_t width,
 
 	/* Set the requested tiling mode. */
 	addr_surf_info_in.tileMode = ADDR_TM_2D_TILED_THIN1;
-	if (usage & (DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR))
+	if (usage & (BO_USE_CURSOR | BO_USE_LINEAR))
 		addr_surf_info_in.tileMode = ADDR_TM_LINEAR_ALIGNED;
 	if (width <= 16 || height <= 16)
 		addr_surf_info_in.tileMode = ADDR_TM_1D_TILED_THIN1;
@@ -174,7 +174,7 @@ static int amdgpu_addrlib_compute(void *addrlib, uint32_t width,
 	addr_surf_info_in.flags.noStencil = 1;
 
 	/* Set the micro tile type. */
-	if (usage & DRV_BO_USE_SCANOUT)
+	if (usage & BO_USE_SCANOUT)
 		addr_surf_info_in.tileType = ADDR_DISPLAYABLE;
 	else
 		addr_surf_info_in.tileType = ADDR_NON_DISPLAYABLE;

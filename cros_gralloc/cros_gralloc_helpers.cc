@@ -13,45 +13,45 @@
 
 uint64_t cros_gralloc_convert_flags(int flags)
 {
-	uint64_t usage = DRV_BO_USE_NONE;
+	uint64_t usage = BO_USE_NONE;
 
 	if (flags & GRALLOC_USAGE_CURSOR)
-		usage |= DRV_BO_USE_CURSOR;
+		usage |= BO_USE_CURSOR;
 	if ((flags & sw_read()) == GRALLOC_USAGE_SW_READ_RARELY)
-		usage |= DRV_BO_USE_SW_READ_RARELY;
+		usage |= BO_USE_SW_READ_RARELY;
 	if ((flags & sw_read()) == GRALLOC_USAGE_SW_READ_OFTEN)
-		usage |= DRV_BO_USE_SW_READ_OFTEN;
+		usage |= BO_USE_SW_READ_OFTEN;
 	if ((flags & sw_write()) == GRALLOC_USAGE_SW_WRITE_RARELY)
-		usage |= DRV_BO_USE_SW_WRITE_RARELY;
+		usage |= BO_USE_SW_WRITE_RARELY;
 	if ((flags & sw_write()) == GRALLOC_USAGE_SW_WRITE_OFTEN)
-		usage |= DRV_BO_USE_SW_WRITE_OFTEN;
+		usage |= BO_USE_SW_WRITE_OFTEN;
 	if (flags & GRALLOC_USAGE_HW_TEXTURE)
-		usage |= DRV_BO_USE_RENDERING;
+		usage |= BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_RENDER)
-		usage |= DRV_BO_USE_RENDERING;
+		usage |= BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_2D)
-		usage |= DRV_BO_USE_RENDERING;
+		usage |= BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_COMPOSER)
 	/* HWC wants to use display hardware, but can defer to OpenGL. */
-		usage |= DRV_BO_USE_SCANOUT | DRV_BO_USE_RENDERING;
+		usage |= BO_USE_SCANOUT | BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_FB)
-		usage |= DRV_BO_USE_SCANOUT;
+		usage |= BO_USE_SCANOUT;
 	if (flags & GRALLOC_USAGE_EXTERNAL_DISP)
 	/* We're ignoring this flag until we decide what to with display link */
-		usage |= DRV_BO_USE_NONE;
+		usage |= BO_USE_NONE;
 	if (flags & GRALLOC_USAGE_PROTECTED)
-		usage |= DRV_BO_USE_PROTECTED;
+		usage |= BO_USE_PROTECTED;
 	if (flags & GRALLOC_USAGE_HW_VIDEO_ENCODER)
 		/*HACK: See b/30054495 */
-		usage |= DRV_BO_USE_SW_READ_OFTEN;
+		usage |= BO_USE_SW_READ_OFTEN;
 	if (flags & GRALLOC_USAGE_HW_CAMERA_WRITE)
-		usage |= DRV_BO_USE_HW_CAMERA_WRITE;
+		usage |= BO_USE_HW_CAMERA_WRITE;
 	if (flags & GRALLOC_USAGE_HW_CAMERA_READ)
-		usage |= DRV_BO_USE_HW_CAMERA_READ;
+		usage |= BO_USE_HW_CAMERA_READ;
 	if (flags & GRALLOC_USAGE_HW_CAMERA_ZSL)
-		usage |= DRV_BO_USE_HW_CAMERA_ZSL;
+		usage |= BO_USE_HW_CAMERA_ZSL;
 	if (flags & GRALLOC_USAGE_RENDERSCRIPT)
-		usage |= DRV_BO_USE_RENDERSCRIPT;
+		usage |= BO_USE_RENDERSCRIPT;
 
 	return usage;
 }

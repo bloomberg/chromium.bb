@@ -17,25 +17,25 @@ extern "C" {
 #define DRV_MAX_PLANES 4
 
 /* Use flags */
-#define DRV_BO_USE_NONE				 0
-#define DRV_BO_USE_SCANOUT		(1ull << 0)
-#define DRV_BO_USE_CURSOR		(1ull << 1)
-#define DRV_BO_USE_CURSOR_64X64		DRV_BO_USE_CURSOR
-#define DRV_BO_USE_RENDERING		(1ull << 2)
-#define DRV_BO_USE_LINEAR		(1ull << 3)
-#define DRV_BO_USE_SW_READ_NEVER	(1ull << 4)
-#define DRV_BO_USE_SW_READ_RARELY	(1ull << 5)
-#define DRV_BO_USE_SW_READ_OFTEN	(1ull << 6)
-#define DRV_BO_USE_SW_WRITE_NEVER	(1ull << 7)
-#define DRV_BO_USE_SW_WRITE_RARELY	(1ull << 8)
-#define DRV_BO_USE_SW_WRITE_OFTEN	(1ull << 9)
-#define DRV_BO_USE_EXTERNAL_DISP	(1ull << 10)
-#define DRV_BO_USE_PROTECTED		(1ull << 11)
-#define DRV_BO_USE_HW_VIDEO_ENCODER	(1ull << 12)
-#define DRV_BO_USE_HW_CAMERA_WRITE	(1ull << 13)
-#define DRV_BO_USE_HW_CAMERA_READ	(1ull << 14)
-#define DRV_BO_USE_HW_CAMERA_ZSL	(1ull << 15)
-#define DRV_BO_USE_RENDERSCRIPT		(1ull << 16)
+#define BO_USE_NONE			0
+#define BO_USE_SCANOUT			(1ull << 0)
+#define BO_USE_CURSOR			(1ull << 1)
+#define BO_USE_CURSOR_64X64		BO_USE_CURSOR
+#define BO_USE_RENDERING		(1ull << 2)
+#define BO_USE_LINEAR			(1ull << 3)
+#define BO_USE_SW_READ_NEVER		(1ull << 4)
+#define BO_USE_SW_READ_RARELY		(1ull << 5)
+#define BO_USE_SW_READ_OFTEN		(1ull << 6)
+#define BO_USE_SW_WRITE_NEVER		(1ull << 7)
+#define BO_USE_SW_WRITE_RARELY		(1ull << 8)
+#define BO_USE_SW_WRITE_OFTEN		(1ull << 9)
+#define BO_USE_EXTERNAL_DISP		(1ull << 10)
+#define BO_USE_PROTECTED		(1ull << 11)
+#define BO_USE_HW_VIDEO_ENCODER		(1ull << 12)
+#define BO_USE_HW_CAMERA_WRITE		(1ull << 13)
+#define BO_USE_HW_CAMERA_READ		(1ull << 14)
+#define BO_USE_HW_CAMERA_ZSL		(1ull << 15)
+#define BO_USE_RENDERSCRIPT		(1ull << 16)
 
 /* This is our extension to <drm_fourcc.h>.  We need to make sure we don't step
  * on the namespace of already defined formats, which can be done by using invalid

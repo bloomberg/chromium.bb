@@ -35,13 +35,13 @@ enum nv_mem_kind
 
 static struct supported_combination combos[4] = {
 	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
 	{DRM_FORMAT_ARGB8888, DRM_FORMAT_MOD_NONE,
-		DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
+		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
 	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR | DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
 	{DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE,
-		DRV_BO_USE_RENDERING | DRV_BO_USE_SW_READ_RARELY | DRV_BO_USE_SW_WRITE_RARELY},
+		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
 };
 
 static int compute_block_height_log2(int height)
@@ -112,7 +112,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	struct drm_tegra_gem_create gem_create;
 	int ret;
 
-	if (flags & DRV_BO_USE_RENDERING)
+	if (flags & BO_USE_RENDERING)
 		compute_layout_blocklinear(width, height, format, &kind,
 					   &block_height_log2, &stride, &size);
 	else

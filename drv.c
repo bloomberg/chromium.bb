@@ -180,7 +180,7 @@ int drv_is_combination_supported(struct driver *drv, uint32_t format,
 			         uint64_t usage, uint64_t modifier)
 {
 
-	if (format == DRM_FORMAT_NONE || usage == DRV_BO_USE_NONE)
+	if (format == DRM_FORMAT_NONE || usage == BO_USE_NONE)
 		return 0;
 
 	list_for_each_entry(struct combination_list_element, elem,

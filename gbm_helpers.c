@@ -12,18 +12,18 @@
 
 uint64_t gbm_convert_flags(uint32_t flags)
 {
-	uint64_t usage = DRV_BO_USE_NONE;
+	uint64_t usage = BO_USE_NONE;
 
 	if (flags & GBM_BO_USE_SCANOUT)
-		usage |= DRV_BO_USE_SCANOUT;
+		usage |= BO_USE_SCANOUT;
 	if (flags & GBM_BO_USE_CURSOR)
-		usage |= DRV_BO_USE_CURSOR;
+		usage |= BO_USE_CURSOR;
 	if (flags & GBM_BO_USE_CURSOR_64X64)
-		usage |= DRV_BO_USE_CURSOR_64X64;
+		usage |= BO_USE_CURSOR_64X64;
 	if (flags & GBM_BO_USE_RENDERING)
-		usage |= DRV_BO_USE_RENDERING;
+		usage |= BO_USE_RENDERING;
 	if (flags & GBM_BO_USE_LINEAR)
-		usage |= DRV_BO_USE_LINEAR;
+		usage |= BO_USE_LINEAR;
 
 	return usage;
 }
