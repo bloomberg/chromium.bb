@@ -140,6 +140,7 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
 
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   void SetBorderFromLayout(ClockLayout clock_layout);
   void SetupLabels();

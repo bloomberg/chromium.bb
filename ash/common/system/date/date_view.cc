@@ -340,6 +340,14 @@ bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
   return false;
 }
 
+void TimeView::OnGestureEvent(ui::GestureEvent* event) {
+  // Skip gesture handling happening in CustomButton so that the container views
+  // receive and handle them properly.
+  // TODO(mohsen): Refactor TimeView/DateView classes so that they are not
+  // ActionableView anymore. Create an ActionableView as a container for when
+  // needed.
+}
+
 void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
   SetBorderFromLayout(clock_layout);
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
