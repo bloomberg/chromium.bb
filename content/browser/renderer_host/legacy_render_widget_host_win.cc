@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_switches.h"
-#include "ui/base/touch/touch_enabled.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
@@ -112,8 +111,7 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
 }
 
 bool LegacyRenderWidgetHostHWND::Init() {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      ui::AreTouchEventsEnabled())
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
   HRESULT hr = ::CreateStdAccessibleObject(

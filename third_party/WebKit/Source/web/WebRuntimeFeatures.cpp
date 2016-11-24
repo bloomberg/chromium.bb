@@ -234,8 +234,8 @@ void WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(bool enable) {
   RuntimeEnabledFeatures::setSpeculativeLaunchServiceWorkerEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableTouch(bool enable) {
-  RuntimeEnabledFeatures::setTouchEnabled(enable);
+void WebRuntimeFeatures::enableTouchEventAPI(bool enable) {
+  RuntimeEnabledFeatures::setTouchEventAPIEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableWebGLDraftExtensions(bool enable) {

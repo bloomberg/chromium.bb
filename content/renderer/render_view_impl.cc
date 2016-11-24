@@ -924,7 +924,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.should_clear_document_background);
   settings->setEnableScrollAnimator(prefs.enable_scroll_animator);
 
-  WebRuntimeFeatures::enableTouch(prefs.touch_enabled);
+  WebRuntimeFeatures::enableTouchEventAPI(prefs.touch_event_api_enabled);
   settings->setMaxTouchPoints(prefs.pointer_events_max_touch_points);
   settings->setAvailablePointerTypes(prefs.available_pointer_types);
   settings->setPrimaryPointerType(

@@ -86,8 +86,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/touch/touch_device.h"
-#include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/event_switches.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/image/image_skia.h"
@@ -450,10 +450,12 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.autoplay_experiment_mode = base::FieldTrialList::FindFullName(
       "MediaElementGestureOverrideExperiment");
 
-  prefs.touch_enabled = ui::AreTouchEventsEnabled();
-  prefs.device_supports_touch = prefs.touch_enabled &&
-      ui::GetTouchScreensAvailability() ==
-          ui::TouchScreensAvailability::ENABLED;
+  prefs.touch_event_api_enabled =
+      !command_line.HasSwitch(switches::kTouchEvents) ||
+      command_line.GetSwitchValueASCII(switches::kTouchEvents) !=
+          switches::kTouchEventsDisabled;
+  prefs.device_supports_touch = ui::GetTouchScreensAvailability() ==
+                                ui::TouchScreensAvailability::ENABLED;
   std::tie(prefs.available_pointer_types, prefs.available_hover_types) =
       ui::GetAvailablePointerAndHoverTypes();
   prefs.primary_pointer_type =

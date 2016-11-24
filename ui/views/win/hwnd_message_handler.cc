@@ -21,7 +21,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
-#include "ui/base/touch/touch_enabled.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/lock_state.h"
@@ -1344,8 +1343,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
 
-  if (ui::AreTouchEventsEnabled())
-    RegisterTouchWindow(hwnd(), TWF_WANTPALM);
+  RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
   // We need to allow the delegate to size its contents since the window may not
   // receive a size notification when its initial bounds are specified at window

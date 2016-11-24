@@ -27,25 +27,11 @@
 
 namespace ui {
 
-namespace {
-
-bool IsTouchEventsFlagDisabled() {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  bool touch_flag_status = command_line->HasSwitch(switches::kTouchEvents) &&
-      command_line->GetSwitchValueASCII(switches::kTouchEvents) ==
-          switches::kTouchEventsDisabled;
-  return touch_flag_status;
-}
-
-}  // namespace
-
-
 TouchFactory::TouchFactory()
     : pointer_device_lookup_(),
       touch_device_list_(),
       virtual_core_keyboard_device_(-1),
       id_generator_(0),
-      touch_events_flag_disabled_(IsTouchEventsFlagDisabled()),
       touch_screens_enabled_(true) {
   if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
@@ -158,8 +144,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
   XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(event);
 
-  const bool is_touch_disabled =
-      touch_events_flag_disabled_ && !touch_screens_enabled_;
+  const bool is_touch_disabled = !touch_screens_enabled_;
 
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
@@ -293,8 +278,7 @@ void TouchFactory::ReleaseSlotForTrackingID(uint32_t tracking_id) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
-  return !touch_events_flag_disabled_ &&
-      touch_screens_enabled_ &&
+  return touch_screens_enabled_ &&
       touch_device_lookup_.any();
 }
 
@@ -304,7 +288,6 @@ void TouchFactory::ResetForTest() {
   touch_device_list_.clear();
   touchscreen_ids_.clear();
   id_generator_.ResetForTest();
-  touch_events_flag_disabled_ = false;
   SetTouchscreensEnabled(true);
 }
 
@@ -318,7 +301,6 @@ void TouchFactory::SetTouchDeviceForTest(
     touch_device_lookup_[*iter] = true;
     touch_device_list_[*iter] = true;
   }
-  touch_events_flag_disabled_ = false;
   SetTouchscreensEnabled(true);
 }
 

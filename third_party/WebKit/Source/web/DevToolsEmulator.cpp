@@ -89,7 +89,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
               .mainFrameResizesAreOrientationChanges()),
       m_touchEventEmulationEnabled(false),
       m_doubleTapToZoomEnabled(false),
-      m_originalTouchEnabled(false),
+      m_originalTouchEventAPIEnabled(false),
       m_originalDeviceSupportsMouse(false),
       m_originalDeviceSupportsTouch(false),
       m_originalMaxTouchPoints(0),
@@ -446,7 +446,8 @@ void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled) {
   if (m_touchEventEmulationEnabled == enabled)
     return;
   if (!m_touchEventEmulationEnabled) {
-    m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
+    m_originalTouchEventAPIEnabled =
+        RuntimeEnabledFeatures::touchEventAPIEnabled();
     m_originalDeviceSupportsMouse =
         m_webViewImpl->page()->settings().deviceSupportsMouse();
     m_originalDeviceSupportsTouch =
@@ -454,8 +455,8 @@ void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled) {
     m_originalMaxTouchPoints =
         m_webViewImpl->page()->settings().maxTouchPoints();
   }
-  RuntimeEnabledFeatures::setTouchEnabled(enabled ? true
-                                                  : m_originalTouchEnabled);
+  RuntimeEnabledFeatures::setTouchEventAPIEnabled(
+      enabled ? true : m_originalTouchEventAPIEnabled);
   if (!m_originalDeviceSupportsTouch) {
     m_webViewImpl->page()->settings().setDeviceSupportsMouse(
         enabled ? false : m_originalDeviceSupportsMouse);

@@ -236,7 +236,7 @@ TimerThrottlingForHiddenFrames status=stable
 // like to enable this always but can't until more websites fix this bug.
 // Chromium sets this conditionally (eg. based on the presence of a
 // touchscreen) in ApplyWebPreferences.
-Touch status=stable
+TouchEventAPI status=stable
 TraceWrappables status=stable
 TrustedEventsDefaultAction status=stable
 UserSelectAll status=stable

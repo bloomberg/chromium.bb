@@ -260,17 +260,13 @@ void RecordTouchEventState() {
   const std::string touch_enabled_switch =
       command_line.HasSwitch(switches::kTouchEvents) ?
       command_line.GetSwitchValueASCII(switches::kTouchEvents) :
-      switches::kTouchEventsAuto;
+      switches::kTouchEventsEnabled;
 
   UMATouchEventsState state;
   if (touch_enabled_switch.empty() ||
-      touch_enabled_switch == switches::kTouchEventsEnabled) {
+      touch_enabled_switch == switches::kTouchEventsEnabled ||
+      touch_enabled_switch == switches::kTouchEventsAuto) {
     state = UMA_TOUCH_EVENTS_ENABLED;
-  } else if (touch_enabled_switch == switches::kTouchEventsAuto) {
-    state = (ui::GetTouchScreensAvailability() ==
-             ui::TouchScreensAvailability::ENABLED)
-                ? UMA_TOUCH_EVENTS_AUTO_ENABLED
-                : UMA_TOUCH_EVENTS_AUTO_DISABLED;
   } else if (touch_enabled_switch == switches::kTouchEventsDisabled) {
     state = UMA_TOUCH_EVENTS_DISABLED;
   } else {

@@ -158,7 +158,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool should_clear_document_background;
   bool enable_scroll_animator;
   bool css_variables_enabled;
-  bool touch_enabled;
+  bool touch_event_api_enabled;
   // TODO(mustaq): Nuke when the new API is ready
   bool device_supports_touch;
   // TODO(mustaq): Nuke when the new API is ready

@@ -142,10 +142,6 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   // Associate each device ID with its master device ID.
   std::map<int, int> device_master_id_list_;
 
-  // Indicates whether touch events are explicitly disabled by the flag
-  // #touch-events.
-  bool touch_events_flag_disabled_;
-
   // The status of the touch screens devices themselves.
   bool touch_screens_enabled_;
 

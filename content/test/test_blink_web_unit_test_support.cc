@@ -133,7 +133,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   blink::setLayoutTestMode(true);
   blink::WebRuntimeFeatures::enableDatabase(true);
   blink::WebRuntimeFeatures::enableNotifications(true);
-  blink::WebRuntimeFeatures::enableTouch(true);
+  blink::WebRuntimeFeatures::enableTouchEventAPI(true);
 
   // Initialize NetworkStateNotifier.
   blink::WebNetworkStateNotifier::setWebConnection(

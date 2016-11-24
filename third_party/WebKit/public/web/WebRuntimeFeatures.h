@@ -117,7 +117,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableSharedWorker(bool);
   BLINK_EXPORT static void enableSlimmingPaintV2(bool);
   BLINK_EXPORT static void enableSpeculativeLaunchServiceWorker(bool);
-  BLINK_EXPORT static void enableTouch(bool);
+  BLINK_EXPORT static void enableTouchEventAPI(bool);
   BLINK_EXPORT static void enableV8IdleTasks(bool);
   BLINK_EXPORT static void enableWebAssemblySerialization(bool);
   BLINK_EXPORT static void enableWebBluetooth(bool);

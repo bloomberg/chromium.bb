@@ -97,7 +97,7 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
       m_lastMainThreadScrollingReasons(0) {}
 
 ScrollingCoordinator::~ScrollingCoordinator() {
-  ASSERT(!m_page);
+  DCHECK(!m_page);
 }
 
 DEFINE_TRACE(ScrollingCoordinator) {
@@ -136,7 +136,7 @@ void ScrollingCoordinator::frameViewVisibilityDidChange() {
 }
 
 void ScrollingCoordinator::scrollableAreasDidChange() {
-  ASSERT(m_page);
+  DCHECK(m_page);
   if (!m_page->mainFrame()->isLocalFrame() ||
       !m_page->deprecatedLocalMainFrame()->view())
     return;
@@ -249,7 +249,7 @@ static void clearPositionConstraintExceptForLayer(GraphicsLayer* layer,
 
 static WebLayerPositionConstraint computePositionConstraint(
     const PaintLayer* layer) {
-  ASSERT(layer->hasCompositedLayerMapping());
+  DCHECK(layer->hasCompositedLayerMapping());
   do {
     if (layer->layoutObject()->style()->position() == FixedPosition) {
       const LayoutObject* fixedPositionObject = layer->layoutObject();
@@ -270,7 +270,7 @@ static WebLayerPositionConstraint computePositionConstraint(
 }
 
 void ScrollingCoordinator::updateLayerPositionConstraint(PaintLayer* layer) {
-  ASSERT(layer->hasCompositedLayerMapping());
+  DCHECK(layer->hasCompositedLayerMapping());
   CompositedLayerMapping* compositedLayerMapping =
       layer->compositedLayerMapping();
   GraphicsLayer* mainLayer = compositedLayerMapping->childForSuperlayers();
@@ -337,7 +337,7 @@ ScrollingCoordinator::createSolidColorScrollbarLayer(
 }
 
 static void detachScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer) {
-  ASSERT(scrollbarGraphicsLayer);
+  DCHECK(scrollbarGraphicsLayer);
 
   scrollbarGraphicsLayer->setContentsToPlatformLayer(nullptr);
   scrollbarGraphicsLayer->setDrawsContent(true);
@@ -346,8 +346,8 @@ static void detachScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer) {
 static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer,
                                 WebScrollbarLayer* scrollbarLayer,
                                 WebLayer* scrollLayer) {
-  ASSERT(scrollbarGraphicsLayer);
-  ASSERT(scrollbarLayer);
+  DCHECK(scrollbarGraphicsLayer);
+  DCHECK(scrollbarLayer);
 
   if (!scrollLayer) {
     detachScrollbarLayer(scrollbarGraphicsLayer);
@@ -412,7 +412,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(
 
       std::unique_ptr<WebScrollbarLayer> webScrollbarLayer;
       if (settings->useSolidColorScrollbars()) {
-        ASSERT(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
+        DCHECK(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
         webScrollbarLayer = createSolidColorScrollbarLayer(
             orientation, scrollbar.theme().thumbThickness(scrollbar),
             scrollbar.theme().trackPosition(scrollbar),
@@ -540,7 +540,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     const PaintLayer* compositedLayer =
         layerIter->key
             ->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-    ASSERT(compositedLayer);
+    DCHECK(compositedLayer);
 
     // Find the appropriate GraphicsLayer for the composited Layer.
     GraphicsLayer* graphicsLayer =
@@ -658,7 +658,7 @@ void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded() {
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
 
-  if (!RuntimeEnabledFeatures::touchEnabled())
+  if (!RuntimeEnabledFeatures::touchEventAPIEnabled())
     return;
 
   // TODO(chrishtr): implement touch event target rects for SPv2.
@@ -701,7 +701,7 @@ void ScrollingCoordinator::setTouchEventTargetRects(
       const PaintLayer* compositedLayer =
           layerRect.key
               ->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-      ASSERT(compositedLayer);
+      DCHECK(compositedLayer);
       m_layersWithTouchRects.add(compositedLayer);
     }
   }
@@ -729,10 +729,10 @@ void ScrollingCoordinator::setTouchEventTargetRects(
 }
 
 void ScrollingCoordinator::touchEventTargetRectsDidChange() {
-  if (!RuntimeEnabledFeatures::touchEnabled())
+  if (!RuntimeEnabledFeatures::touchEventAPIEnabled())
     return;
 
-  ASSERT(m_page);
+  DCHECK(m_page);
   if (!m_page->mainFrame()->isLocalFrame() ||
       !m_page->deprecatedLocalMainFrame()->view())
     return;
@@ -852,7 +852,7 @@ void ScrollingCoordinator::willCloseLayerTreeView(
 }
 
 void ScrollingCoordinator::willBeDestroyed() {
-  ASSERT(m_page);
+  DCHECK(m_page);
 
   m_page = nullptr;
   for (const auto& scrollbar : m_horizontalScrollbars)
@@ -863,7 +863,7 @@ void ScrollingCoordinator::willBeDestroyed() {
 
 bool ScrollingCoordinator::coordinatesScrollingForFrameView(
     FrameView* frameView) const {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   // We currently only support composited mode.
   LayoutViewItem layoutView = frameView->frame().contentLayoutItem();
@@ -942,7 +942,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
 
 static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
                                                     const Document* document) {
-  ASSERT(document);
+  DCHECK(document);
   const EventTargetSet* targets =
       document->frameHost()->eventHandlerRegistry().eventHandlerTargets(
           EventHandlerRegistry::TouchStartOrMoveEventBlocking);
@@ -1037,7 +1037,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
 void ScrollingCoordinator::computeTouchEventTargetRects(
     LayerHitTestRects& rects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::computeTouchEventTargetRects");
-  ASSERT(RuntimeEnabledFeatures::touchEnabled());
+  DCHECK(RuntimeEnabledFeatures::touchEventAPIEnabled());
 
   Document* document = m_page->deprecatedLocalMainFrame()->document();
   if (!document || !document->view())
@@ -1049,8 +1049,8 @@ void ScrollingCoordinator::computeTouchEventTargetRects(
 void ScrollingCoordinator::
     frameViewHasBackgroundAttachmentFixedObjectsDidChange(
         FrameView* frameView) {
-  ASSERT(isMainThread());
-  ASSERT(m_page);
+  DCHECK(isMainThread());
+  DCHECK(m_page);
 
   if (!coordinatesScrollingForFrameView(frameView))
     return;
@@ -1060,8 +1060,8 @@ void ScrollingCoordinator::
 
 void ScrollingCoordinator::frameViewFixedObjectsDidChange(
     FrameView* frameView) {
-  ASSERT(isMainThread());
-  ASSERT(m_page);
+  DCHECK(isMainThread());
+  DCHECK(m_page);
 
   if (!coordinatesScrollingForFrameView(frameView))
     return;
@@ -1092,8 +1092,8 @@ bool ScrollingCoordinator::isForMainFrame(
 }
 
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView) {
-  ASSERT(isMainThread());
-  ASSERT(m_page);
+  DCHECK(isMainThread());
+  DCHECK(m_page);
 
   if (!coordinatesScrollingForFrameView(frameView))
     return;
@@ -1104,7 +1104,7 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView) {
 #if OS(MACOSX)
 void ScrollingCoordinator::handleWheelEventPhase(
     PlatformWheelEventPhase phase) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   if (!m_page)
     return;
@@ -1125,8 +1125,8 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(
     return false;
 
   for (const LayoutObject* layoutObject : *viewportConstrainedObjects) {
-    ASSERT(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
-    ASSERT(layoutObject->style()->position() == FixedPosition ||
+    DCHECK(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
+    DCHECK(layoutObject->style()->position() == FixedPosition ||
            layoutObject->style()->position() == StickyPosition);
     PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
 
@@ -1210,7 +1210,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons()
 }
 
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const {
-  ASSERT(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >=
+  DCHECK(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >=
          DocumentLifecycle::CompositingClean);
   if (WebLayer* scrollLayer = toWebLayer(
           m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
