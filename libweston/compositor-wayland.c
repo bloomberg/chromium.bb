@@ -2372,10 +2372,6 @@ wayland_destroy(struct weston_compositor *ec)
 	if (b->parent.compositor)
 		wl_compositor_destroy(b->parent.compositor);
 
-	wl_registry_destroy(b->parent.registry);
-	wl_display_flush(b->parent.wl_display);
-	wl_display_disconnect(b->parent.wl_display);
-
 	if (b->theme)
 		theme_destroy(b->theme);
 
@@ -2383,6 +2379,10 @@ wayland_destroy(struct weston_compositor *ec)
 		cairo_device_destroy(b->frame_device);
 
 	wl_cursor_theme_destroy(b->cursor_theme);
+
+	wl_registry_destroy(b->parent.registry);
+	wl_display_flush(b->parent.wl_display);
+	wl_display_disconnect(b->parent.wl_display);
 
 	free(b);
 }
