@@ -233,7 +233,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
   }
 }
 
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
+#if BUILDFLAG(ENABLE_SWIFTSHADER) && defined(ARCH_CPU_X86)
 
 // Check if there already is a version of swiftshader installed,
 // and if so register it.
