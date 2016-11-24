@@ -105,8 +105,13 @@ WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {
 
 void WebAudioSourceProviderImpl::setClient(
     blink::WebAudioSourceProviderClient* client) {
+  // Skip taking the lock if unnecessary. This function is the only setter for
+  // |client_| so it's safe to check |client_| outside of the lock.
+  if (client_ == client)
+    return;
+
   base::AutoLock auto_lock(sink_lock_);
-  if (client && client != client_) {
+  if (client) {
     // Detach the audio renderer from normal playback.
     sink_->Stop();
 
@@ -122,15 +127,16 @@ void WebAudioSourceProviderImpl::setClient(
     // ensures we have the same locking order when calling into |client_|.
     if (tee_filter_->IsInitialized())
       base::ResetAndReturn(&set_format_cb_).Run();
-  } else if (!client && client_) {
-    // Restore normal playback.
-    client_ = nullptr;
-    sink_->SetVolume(volume_);
-    if (state_ >= kStarted)
-      sink_->Start();
-    if (state_ >= kPlaying)
-      sink_->Play();
+    return;
   }
+
+  // Restore normal playback.
+  client_ = nullptr;
+  sink_->SetVolume(volume_);
+  if (state_ >= kStarted)
+    sink_->Start();
+  if (state_ >= kPlaying)
+    sink_->Play();
 }
 
 void WebAudioSourceProviderImpl::provideInput(
