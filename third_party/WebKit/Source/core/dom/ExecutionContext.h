@@ -32,14 +32,12 @@
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/SecurityContext.h"
-#include "core/dom/SuspendableTask.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include <memory>
 
@@ -125,7 +123,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void suspendActiveDOMObjects();
   void resumeActiveDOMObjects();
   void stopActiveDOMObjects();
-  void postSuspendableTask(std::unique_ptr<SuspendableTask>);
   void notifyContextDestroyed() override;
 
   virtual void suspendScheduledTasks();
@@ -188,7 +185,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
  private:
   bool dispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);
-  void runSuspendableTasks();
 
   unsigned m_circularSequentialID;
 
@@ -205,9 +201,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
   // increment and decrement the counter.
   int m_windowInteractionTokens;
-
-  Deque<std::unique_ptr<SuspendableTask>> m_suspendedTasks;
-  bool m_isRunSuspendableTasksScheduled;
 
   ReferrerPolicy m_referrerPolicy;
 };

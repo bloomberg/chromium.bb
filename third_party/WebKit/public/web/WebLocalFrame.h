@@ -23,7 +23,6 @@ class WebFrameClient;
 class WebFrameWidget;
 class WebRange;
 class WebScriptExecutionCallback;
-class WebSuspendableTask;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;

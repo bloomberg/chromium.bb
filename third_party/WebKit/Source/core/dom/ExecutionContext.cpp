@@ -50,7 +50,6 @@ ExecutionContext::ExecutionContext()
       m_activeDOMObjectsAreSuspended(false),
       m_activeDOMObjectsAreStopped(false),
       m_windowInteractionTokens(0),
-      m_isRunSuspendableTasksScheduled(false),
       m_referrerPolicy(ReferrerPolicyDefault) {}
 
 ExecutionContext::~ExecutionContext() {}
@@ -67,24 +66,8 @@ void ExecutionContext::resumeActiveDOMObjects() {
   notifyResumingActiveDOMObjects();
 }
 
-void ExecutionContext::postSuspendableTask(
-    std::unique_ptr<SuspendableTask> task) {
-  m_suspendedTasks.append(std::move(task));
-  if (!m_activeDOMObjectsAreSuspended)
-    postTask(BLINK_FROM_HERE,
-             createSameThreadTask(&ExecutionContext::runSuspendableTasks,
-                                  wrapPersistent(this)));
-}
-
 void ExecutionContext::notifyContextDestroyed() {
   m_activeDOMObjectsAreStopped = true;
-
-  Deque<std::unique_ptr<SuspendableTask>> suspendedTasks;
-  suspendedTasks.swap(m_suspendedTasks);
-  for (Deque<std::unique_ptr<SuspendableTask>>::iterator it =
-           suspendedTasks.begin();
-       it != suspendedTasks.end(); ++it)
-    (*it)->contextDestroyed();
   ContextLifecycleNotifier::notifyContextDestroyed();
 }
 
@@ -96,14 +79,6 @@ void ExecutionContext::suspendScheduledTasks() {
 void ExecutionContext::resumeScheduledTasks() {
   resumeActiveDOMObjects();
   tasksWereResumed();
-  // We need finish stack unwiding before running next task because it can
-  // suspend this context.
-  if (m_isRunSuspendableTasksScheduled)
-    return;
-  m_isRunSuspendableTasksScheduled = true;
-  postTask(BLINK_FROM_HERE,
-           createSameThreadTask(&ExecutionContext::runSuspendableTasks,
-                                wrapPersistent(this)));
 }
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object) {
@@ -157,14 +132,6 @@ bool ExecutionContext::dispatchErrorEventInternal(
   target->dispatchEvent(errorEvent);
   m_inDispatchErrorEvent = false;
   return errorEvent->defaultPrevented();
-}
-
-void ExecutionContext::runSuspendableTasks() {
-  m_isRunSuspendableTasksScheduled = false;
-  while (!m_activeDOMObjectsAreSuspended && m_suspendedTasks.size()) {
-    std::unique_ptr<SuspendableTask> task = m_suspendedTasks.takeFirst();
-    task->run();
-  }
 }
 
 int ExecutionContext::circularSequentialID() {
