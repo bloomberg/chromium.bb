@@ -1423,6 +1423,7 @@
       'android/dummy_spnego_authenticator.h',
       'android/http_auth_negotiate_android_unittest.cc',
       'android/network_change_notifier_android_unittest.cc',
+      'android/network_library_unittest.cc',
       'android/traffic_stats_unittest.cc',
       'base/address_family_unittest.cc',
       'base/address_list_unittest.cc',
