@@ -51,6 +51,7 @@ CertReportHelper::CertReportHelper(
     const net::SSLInfo& ssl_info,
     certificate_reporting::ErrorReport::InterstitialReason interstitial_reason,
     bool overridable,
+    const base::Time& interstitial_time,
     security_interstitials::MetricsHelper* metrics_helper)
     : ssl_cert_reporter_(std::move(ssl_cert_reporter)),
       web_contents_(web_contents),
@@ -58,6 +59,7 @@ CertReportHelper::CertReportHelper(
       ssl_info_(ssl_info),
       interstitial_reason_(interstitial_reason),
       overridable_(overridable),
+      interstitial_time_(interstitial_time),
       metrics_helper_(metrics_helper) {}
 
 CertReportHelper::~CertReportHelper() {
@@ -118,7 +120,8 @@ void CertReportHelper::FinishCertCollection(
       interstitial_reason_, user_proceeded,
       overridable_
           ? certificate_reporting::ErrorReport::INTERSTITIAL_OVERRIDABLE
-          : certificate_reporting::ErrorReport::INTERSTITIAL_NOT_OVERRIDABLE);
+          : certificate_reporting::ErrorReport::INTERSTITIAL_NOT_OVERRIDABLE,
+      interstitial_time_);
 
   if (!report.Serialize(&serialized_report)) {
     LOG(ERROR) << "Failed to serialize certificate report.";

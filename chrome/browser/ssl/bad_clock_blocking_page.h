@@ -71,7 +71,6 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
 
   base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
-  const base::Time time_triggered_;
   const std::unique_ptr<ChromeControllerClient> controller_;
 
   const std::unique_ptr<CertReportHelper> cert_report_helper_;

@@ -88,7 +88,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     cert_report_helper_.reset(new CertReportHelper(
         std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
         certificate_reporting::ErrorReport::INTERSTITIAL_CAPTIVE_PORTAL, false,
-        nullptr));
+        base::Time::Now(), nullptr));
   }
 
   RecordUMA(SHOW_ALL);

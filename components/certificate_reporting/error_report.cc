@@ -100,7 +100,8 @@ bool ErrorReport::Serialize(std::string* output) const {
 void ErrorReport::SetInterstitialInfo(
     const InterstitialReason& interstitial_reason,
     const ProceedDecision& proceed_decision,
-    const Overridable& overridable) {
+    const Overridable& overridable,
+    const base::Time& interstitial_time) {
   CertLoggerInterstitialInfo* interstitial_info =
       cert_report_->mutable_interstitial_info();
 
@@ -121,6 +122,8 @@ void ErrorReport::SetInterstitialInfo(
 
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);
   interstitial_info->set_overridable(overridable == INTERSTITIAL_OVERRIDABLE);
+  interstitial_info->set_interstitial_created_time_usec(
+      interstitial_time.ToInternalValue());
 }
 
 void ErrorReport::AddNetworkTimeInfo(

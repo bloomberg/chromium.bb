@@ -72,7 +72,6 @@ BadClockBlockingPage::BadClockBlockingPage(
                                CreateMetricsHelper(web_contents, request_url)),
       callback_(callback),
       ssl_info_(ssl_info),
-      time_triggered_(time_triggered),
       cert_report_helper_(new CertReportHelper(
           std::move(ssl_cert_reporter),
           web_contents,
@@ -80,6 +79,7 @@ BadClockBlockingPage::BadClockBlockingPage(
           ssl_info,
           certificate_reporting::ErrorReport::INTERSTITIAL_CLOCK,
           false /* overridable */,
+          time_triggered,
           controller()->metrics_helper())),
       bad_clock_ui_(new security_interstitials::BadClockUI(request_url,
                                                            cert_error,

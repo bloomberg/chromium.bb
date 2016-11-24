@@ -42,6 +42,9 @@ message CertLoggerInterstitialInfo {
   optional bool user_proceeded = 2;
   // True if the user was shown an option to click through
   optional bool overridable = 3;
+  // The time (in usec since the Windows epoch) when the client created the
+  // interstitial.
+  optional int64 interstitial_created_time_usec = 4;
 }
 
 // Contains information about features that are enabled/disabled that
@@ -73,8 +76,7 @@ message CertLoggerRequest {
   // The certificate chain as a series of PEM-encoded certificates, including
   // intermediates but not necessarily the root.
   required string cert_chain = 2;
-  // The time (in usec since the epoch) when the client attempted to access the
-  // site generating the pinning error.
+  // The time (in usec since the epoch) when the client generated the report.
   required int64 time_usec = 3;
   // public_key_hash contains the string forms of the hashes calculated for
   // the chain. (I.e. "sha1/<base64 data>".)

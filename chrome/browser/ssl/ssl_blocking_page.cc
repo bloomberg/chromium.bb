@@ -210,6 +210,7 @@ SSLBlockingPage::SSLBlockingPage(
           ssl_info,
           certificate_reporting::ErrorReport::INTERSTITIAL_SSL,
           overridable_,
+          time_triggered,
           controller()->metrics_helper())),
       ssl_error_ui_(new SSLErrorUI(request_url,
                                    cert_error,

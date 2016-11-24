@@ -128,9 +128,10 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
       GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
   ErrorReport report(kDummyHostname, ssl_info);
 
-  report.SetInterstitialInfo(ErrorReport::INTERSTITIAL_CLOCK,
-                             ErrorReport::USER_PROCEEDED,
-                             ErrorReport::INTERSTITIAL_OVERRIDABLE);
+  const base::Time interstitial_time = base::Time::Now();
+  report.SetInterstitialInfo(
+      ErrorReport::INTERSTITIAL_CLOCK, ErrorReport::USER_PROCEEDED,
+      ErrorReport::INTERSTITIAL_OVERRIDABLE, interstitial_time);
 
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
@@ -153,6 +154,10 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
   EXPECT_THAT(
       deserialized_report.cert_error(),
       UnorderedElementsAre(kFirstReportedCertError, kSecondReportedCertError));
+
+  EXPECT_EQ(
+      interstitial_time.ToInternalValue(),
+      deserialized_report.interstitial_info().interstitial_created_time_usec());
 }
 
 // Test that a serialized report can be parsed.

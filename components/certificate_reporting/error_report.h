@@ -8,6 +8,10 @@
 #include <memory>
 #include <string>
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace network_time {
 class NetworkTimeTracker;
 }  // namespace network_time
@@ -62,7 +66,8 @@ class ErrorReport {
 
   void SetInterstitialInfo(const InterstitialReason& interstitial_reason,
                            const ProceedDecision& proceed_decision,
-                           const Overridable& overridable);
+                           const Overridable& overridable,
+                           const base::Time& interstitial_time);
 
   void AddNetworkTimeInfo(
       const network_time::NetworkTimeTracker* network_time_tracker);
