@@ -45,6 +45,7 @@ source_set("reading_list") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "offline_url_utils_unittest.cc",
