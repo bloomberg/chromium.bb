@@ -62,13 +62,13 @@ scoped_refptr<const Extension> CreateTestApp(
               .Set("permissions",
                    ListBuilder()
                        .Append("usb")
-                       .Append(
-                           DictionaryBuilder()
-                               .Set("usbDevice", ListBuilder()
-                                                     .Append(std::move(
-                                                         usb_device_permission))
-                                                     .Build())
-                               .Build())
+                       .Append(DictionaryBuilder()
+                                   .Set("usbDevices",
+                                        ListBuilder()
+                                            .Append(std::move(
+                                                usb_device_permission))
+                                            .Build())
+                                   .Build())
                        .Build())
               .Build())
       .Build();
