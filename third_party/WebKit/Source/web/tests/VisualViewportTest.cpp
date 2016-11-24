@@ -2285,7 +2285,8 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   // Without root-layer-scrolling, the LayoutView is the size of the document
   // content so invalidating it for background-attachment: fixed
   // overinvalidates as we should only need to invalidate the viewport size.
-  int expectedHeight = rootLayerScrolling ? 430 : 1000;
+  // With root-layer-scrolling, we should invalidate the entire viewport height.
+  int expectedHeight = rootLayerScrolling ? pageHeight : 1000;
 
   // The entire viewport should have been invalidated.
   EXPECT_EQ(1u, rasterInvalidations->size());

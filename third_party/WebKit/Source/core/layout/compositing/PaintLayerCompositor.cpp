@@ -831,7 +831,14 @@ void PaintLayerCompositor::setIsInWindow(bool isInWindow) {
 
 void PaintLayerCompositor::updateRootLayerPosition() {
   if (m_rootContentLayer) {
-    const IntRect& documentRect = m_layoutView.documentRect();
+    IntRect documentRect = m_layoutView.documentRect();
+
+    // Ensure the root content layer is at least the size of the outer viewport
+    // so that we don't end up clipping position: fixed elements if the
+    // document is smaller.
+    documentRect.unite(IntRect(documentRect.location(),
+                               m_layoutView.frameView()->visibleContentSize()));
+
     m_rootContentLayer->setSize(FloatSize(documentRect.size()));
     m_rootContentLayer->setPosition(documentRect.location());
   }

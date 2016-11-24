@@ -307,7 +307,9 @@ LayoutRect LayoutView::localVisualRect() const {
   // TODO(wangxianzhu): This is only required without rootLayerScrolls (though
   // it is also correct but unnecessary with rootLayerScrolls) because of the
   // special LayoutView overflow model.
-  return visualOverflowRect();
+  LayoutRect rect = visualOverflowRect();
+  rect.unite(LayoutRect(rect.location(), viewRect().size()));
+  return rect;
 }
 
 void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,

@@ -10368,6 +10368,76 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
             toImageDocument(document)->cachedImage()->getStatus());
 }
 
+// Ensure that the root layer -- whose size is ordinarily derived from the
+// content size -- maintains a minimum height matching the viewport in cases
+// where the content is smaller.
+TEST_F(WebFrameTest, RootLayerMinimumHeight) {
+  constexpr int viewportWidth = 320;
+  constexpr int viewportHeight = 640;
+  constexpr int browserControlsHeight = 100;
+
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initialize(true, nullptr, nullptr, nullptr,
+                           enableViewportSettings);
+  WebViewImpl* webView = webViewHelper.webView();
+  webView->resizeWithBrowserControls(
+      WebSize(viewportWidth, viewportHeight - browserControlsHeight),
+      browserControlsHeight, true);
+
+  initializeWithHTML(*webView->mainFrameImpl()->frame(),
+                     "<!DOCTYPE html>"
+                     "<style>"
+                     "  html, body {width:100%;height:540px;margin:0px}"
+                     "  #elem {"
+                     "    overflow: scroll;"
+                     "    width: 100px;"
+                     "    height: 10px;"
+                     "    position: fixed;"
+                     "    left: 0px;"
+                     "    bottom: 0px;"
+                     "  }"
+                     "</style>"
+                     "<div id='elem'></div>");
+  webView->updateAllLifecyclePhases();
+
+  Document* document = webView->mainFrameImpl()->frame()->document();
+  FrameView* frameView = webView->mainFrameImpl()->frameView();
+  PaintLayerCompositor* compositor = frameView->layoutViewItem().compositor();
+
+  EXPECT_EQ(viewportHeight - browserControlsHeight,
+            compositor->rootLayer()->boundingBoxForCompositing().height());
+
+  document->view()->setTracksPaintInvalidations(true);
+
+  webView->resizeWithBrowserControls(WebSize(viewportWidth, viewportHeight),
+                                     browserControlsHeight, false);
+
+  EXPECT_EQ(viewportHeight,
+            compositor->rootLayer()->boundingBoxForCompositing().height());
+  EXPECT_EQ(viewportHeight,
+            compositor->rootLayer()->graphicsLayerBacking()->size().height());
+  EXPECT_EQ(viewportHeight, compositor->rootGraphicsLayer()->size().height());
+
+  const RasterInvalidationTracking* invalidationTracking =
+      document->layoutView()
+          ->layer()
+          ->graphicsLayerBacking()
+          ->getRasterInvalidationTracking();
+  ASSERT_TRUE(invalidationTracking);
+  const auto* rasterInvalidations =
+      &invalidationTracking->trackedRasterInvalidations;
+
+  // The newly revealed content at the bottom of the screen should have been
+  // invalidated. There are additional invalidations for the position: fixed
+  // element.
+  EXPECT_GT(rasterInvalidations->size(), 0u);
+  EXPECT_TRUE((*rasterInvalidations)[0].rect.contains(
+      IntRect(0, viewportHeight - browserControlsHeight, viewportWidth,
+              browserControlsHeight)));
+
+  document->view()->setTracksPaintInvalidations(false);
+}
+
 // Load a page with display:none set and try to scroll it. It shouldn't crash
 // due to lack of layoutObject. crbug.com/653327.
 TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {

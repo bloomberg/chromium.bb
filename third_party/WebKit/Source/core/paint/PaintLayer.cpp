@@ -2427,7 +2427,14 @@ bool PaintLayer::intersectsDamageRect(const LayoutRect& layerBounds,
 }
 
 LayoutRect PaintLayer::logicalBoundingBox() const {
-  return layoutObject()->visualOverflowRect();
+  LayoutRect rect = layoutObject()->visualOverflowRect();
+
+  if (isRootLayer()) {
+    rect.unite(
+        LayoutRect(rect.location(), layoutObject()->view()->viewRect().size()));
+  }
+
+  return rect;
 }
 
 static inline LayoutRect flippedLogicalBoundingBox(
@@ -2544,8 +2551,15 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
     return LayoutRect();
 
   // Without composited scrolling, the root layer is the size of the document.
-  if (isRootLayer() && !needsCompositedScrolling())
-    return LayoutRect(m_layoutObject->view()->documentRect());
+  if (isRootLayer() && !needsCompositedScrolling()) {
+    IntRect documentRect = layoutObject()->view()->documentRect();
+
+    if (FrameView* frameView = layoutObject()->document().view()) {
+      documentRect.unite(IntRect(IntPoint(), frameView->visibleContentSize()));
+    }
+
+    return LayoutRect(documentRect);
+  }
 
   // The layer created for the LayoutFlowThread is just a helper for painting
   // and hit-testing, and should not contribute to the bounding box. The
