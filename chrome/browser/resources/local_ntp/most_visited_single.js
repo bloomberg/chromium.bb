@@ -296,7 +296,8 @@ var showTiles = function() {
 var addTile = function(args) {
   if (isFinite(args.rid)) {
     // If a valid number passed in |args.rid|: a local chrome suggestion.
-    var data = chrome.embeddedSearch.searchBox.getMostVisitedItemData(args.rid);
+    var data =
+        chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
     if (!data)
       return;
 

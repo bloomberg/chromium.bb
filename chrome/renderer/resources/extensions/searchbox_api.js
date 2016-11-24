@@ -13,7 +13,6 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                            Private functions
       // =======================================================================
-      native function GetMostVisitedItemData();
       native function GetQuery();
       native function GetSearchRequestParams();
       native function GetRightToLeft();
@@ -34,27 +33,6 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('value', GetQuery);
       Object.defineProperty(this, 'requestParams',
                             { get: GetSearchRequestParams });
-
-      // This method is restricted to chrome-search://most-visited pages by
-      // checking the invoking context's origin in searchbox_extension.cc.
-      // TODO(treib): Why is this in searchBox rather than newTabPage?
-      this.getMostVisitedItemData = function(restrictedId) {
-        var item = GetMostVisitedItemData(restrictedId);
-        if (item) {
-          var sizeInPx = Math.floor(48 * window.devicePixelRatio + 0.5);
-          // Populate large icon and fallback icon data, if they exist. We'll
-          // render everything here, once these become available by default.
-          if (item.largeIconUrl) {
-            item.largeIconUrl +=
-                sizeInPx + "/" + item.renderViewId + "/" + item.rid;
-          }
-          if (item.fallbackIconUrl) {
-            item.fallbackIconUrl +=
-                sizeInPx + ",,,,/" + item.renderViewId + "/" + item.rid;
-          }
-        }
-        return item;
-      };
 
       this.paste = function(value) {
         Paste(value);
@@ -82,6 +60,7 @@ if (!chrome.embeddedSearch) {
       native function CheckIsUserSignedInToChromeAs();
       native function CheckIsUserSyncingHistory();
       native function DeleteMostVisitedItem();
+      native function GetMostVisitedItemData();
       native function GetMostVisitedItems();
       native function GetThemeBackgroundInfo();
       native function IsInputInProgress();
@@ -122,16 +101,36 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('mostVisited', GetMostVisitedItemsWrapper);
       this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
 
-      this.deleteMostVisitedItem = function(restrictedId) {
-        DeleteMostVisitedItem(restrictedId);
-      };
-
       this.checkIsUserSignedIntoChromeAs = function(identity) {
         CheckIsUserSignedInToChromeAs(identity);
       };
 
       this.checkIsUserSyncingHistory = function() {
         CheckIsUserSyncingHistory();
+      };
+
+      this.deleteMostVisitedItem = function(restrictedId) {
+        DeleteMostVisitedItem(restrictedId);
+      };
+
+      // This method is restricted to chrome-search://most-visited pages by
+      // checking the invoking context's origin in searchbox_extension.cc.
+      this.getMostVisitedItemData = function(restrictedId) {
+        var item = GetMostVisitedItemData(restrictedId);
+        if (item) {
+          var sizeInPx = Math.floor(48 * window.devicePixelRatio + 0.5);
+          // Populate large icon and fallback icon data, if they exist. We'll
+          // render everything here, once these become available by default.
+          if (item.largeIconUrl) {
+            item.largeIconUrl +=
+                sizeInPx + "/" + item.renderViewId + "/" + item.rid;
+          }
+          if (item.fallbackIconUrl) {
+            item.fallbackIconUrl +=
+                sizeInPx + ",,,,/" + item.renderViewId + "/" + item.rid;
+          }
+        }
+        return item;
       };
 
       // This method is restricted to chrome-search://most-visited pages by
