@@ -3662,9 +3662,6 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
   // FIXME Investigate if this can be removed. crbug.com/370006
   child.setMayNeedPaintInvalidation();
 
-  LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection()
-                                          ? marginStartForChild(child)
-                                          : marginEndForChild(child);
   logicalTopMarginEdge = std::max(
       logicalTopMarginEdge, lowestFloatLogicalBottom(child.style()->clear()));
 
@@ -3678,16 +3675,13 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
     }
   }
 
+  LayoutUnit marginBefore = marginBeforeForChild(child);
+  LayoutUnit marginAfter = marginAfterForChild(child);
   LayoutPoint floatLogicalLocation =
       computeLogicalLocationForFloat(floatingObject, logicalTopMarginEdge);
   logicalTopMarginEdge = floatLogicalLocation.y();
 
-  setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
-
-  setLogicalLeftForChild(child,
-                         floatLogicalLocation.x() + childLogicalLeftMargin);
-  setLogicalTopForChild(child,
-                        logicalTopMarginEdge + marginBeforeForChild(child));
+  setLogicalTopForChild(child, logicalTopMarginEdge + marginBefore);
 
   SubtreeLayoutScope layoutScope(child);
   if (!child.needsLayout())
@@ -3702,12 +3696,7 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
       floatLogicalLocation = computeLogicalLocationForFloat(
           floatingObject, newLogicalTopMarginEdge);
       logicalTopMarginEdge = floatLogicalLocation.y();
-      setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
-
-      setLogicalLeftForChild(child,
-                             floatLogicalLocation.x() + childLogicalLeftMargin);
-      setLogicalTopForChild(child,
-                            logicalTopMarginEdge + marginBeforeForChild(child));
+      setLogicalTopForChild(child, logicalTopMarginEdge + marginBefore);
 
       if (child.isLayoutBlock())
         child.setChildNeedsLayout(MarkOnlyThis);
@@ -3715,11 +3704,15 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
     }
   }
 
+  LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection()
+                                          ? marginStartForChild(child)
+                                          : marginEndForChild(child);
+  setLogicalLeftForChild(child,
+                         floatLogicalLocation.x() + childLogicalLeftMargin);
+  setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
   setLogicalTopForFloat(floatingObject, logicalTopMarginEdge);
-
   setLogicalHeightForFloat(floatingObject, logicalHeightForChild(child) +
-                                               marginBeforeForChild(child) +
-                                               marginAfterForChild(child));
+                                               marginBefore + marginAfter);
 
   if (ShapeOutsideInfo* shapeOutside = child.shapeOutsideInfo())
     shapeOutside->setReferenceBoxLogicalSize(logicalSizeForChild(child));
