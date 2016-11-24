@@ -2029,12 +2029,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mImeAdapter.attach(nativeImeAdapterAndroid);
     }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void setTitle(String title) {
-        getContentViewClient().onUpdateTitle(title);
-    }
-
     /**
      * Called (from native) when the <select> popup needs to be shown.
      * @param anchorView View anchored for popup.

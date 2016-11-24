@@ -54,6 +54,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidFirstVisuallyNonEmptyPaint() override;
   void WasShown() override;
   void WasHidden() override;
+  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
   void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
                                        const GURL& validated_url,
                                        bool is_error_page,

@@ -395,11 +395,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public void onUpdateTitle(String title) {
-            updateTitle(title);
-        }
-
-        @Override
         public void onImeEvent() {
             // Some text was set in the page. Don't reuse it if a tab is
             // open from the same external application, we might lose some
@@ -2029,7 +2024,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * actually changed, and no notification is sent.
      * @param title Title of the page.
      */
-    private void updateTitle(String title) {
+    void updateTitle(String title) {
         if (TextUtils.equals(mTitle, title)) return;
 
         mIsTabStateDirty = true;

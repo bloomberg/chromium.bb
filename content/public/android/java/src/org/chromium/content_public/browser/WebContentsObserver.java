@@ -91,6 +91,12 @@ public abstract class WebContentsObserver {
     public void wasHidden() {}
 
     /**
+     * Title was set.
+     * @param title The updated title.
+     */
+    public void titleWasSet(String title) {}
+
+    /**
      * Similar to didNavigateMainFrame but also called on subframe navigations.
      * @param url The validated url for the page.
      * @param baseUrl The validated base url for the page.

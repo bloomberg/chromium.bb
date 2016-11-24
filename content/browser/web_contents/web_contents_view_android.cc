@@ -145,8 +145,7 @@ void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
-  if (content_view_core_)
-    content_view_core_->SetTitle(title);
+  // Do nothing.
 }
 
 void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {

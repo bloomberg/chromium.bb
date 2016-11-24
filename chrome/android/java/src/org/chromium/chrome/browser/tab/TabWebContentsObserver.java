@@ -184,6 +184,11 @@ public class TabWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
+    public void titleWasSet(String title) {
+        mTab.updateTitle(title);
+    }
+
+    @Override
     public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
             boolean isMainFrame, String validatedUrl, boolean isErrorPage,
             boolean isIframeSrcdoc) {

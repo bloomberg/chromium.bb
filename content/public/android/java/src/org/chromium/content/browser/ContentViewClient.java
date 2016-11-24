@@ -37,9 +37,6 @@ public class ContentViewClient {
     private static final String TEL_SCHEME = "tel";
     private static final String MAILTO_SCHEME = "mailto";
 
-    public void onUpdateTitle(String title) {
-    }
-
     /**
      * Called whenever the background color of the page changes as notified by WebKit.
      * @param color The new ARGB color of the page background.

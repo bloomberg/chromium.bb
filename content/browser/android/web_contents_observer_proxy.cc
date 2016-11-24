@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/media_metadata_android.h"
@@ -304,6 +305,16 @@ void WebContentsObserverProxy::WasHidden() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   Java_WebContentsObserverProxy_wasHidden(env, obj);
+}
+
+void WebContentsObserverProxy::TitleWasSet(NavigationEntry* entry,
+                                           bool explicit_set) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(java_observer_);
+  ScopedJavaLocalRef<jstring> jstring_title = ConvertUTF8ToJavaString(
+      env,
+      base::UTF16ToUTF8(web_contents()->GetTitle()));
+  Java_WebContentsObserverProxy_titleWasSet(env, obj, jstring_title);
 }
 
 void WebContentsObserverProxy::DidStartNavigationToPendingEntry(

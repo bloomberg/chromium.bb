@@ -336,7 +336,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                         int composition_end,
                         bool show_ime_if_needed,
                         bool is_non_ime_change);
-  void SetTitle(const base::string16& title);
   void OnBackgroundColorChanged(SkColor color);
 
   bool HasFocus();

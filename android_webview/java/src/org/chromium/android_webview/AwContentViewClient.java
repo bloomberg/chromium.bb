@@ -59,11 +59,6 @@ public class AwContentViewClient extends ContentViewClient {
     }
 
     @Override
-    public void onUpdateTitle(String title) {
-        mAwContentsClient.updateTitle(title, true);
-    }
-
-    @Override
     public boolean shouldOverrideKeyEvent(KeyEvent event) {
         if (mAwContentsClient.hasWebViewClient()) {
             // The check below is reflecting Chrome's behavior and is a workaround for

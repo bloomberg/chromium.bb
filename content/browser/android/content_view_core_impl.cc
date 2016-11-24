@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -441,16 +440,6 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       is_mobile_optimized_hint, has_insertion_marker,
       is_insertion_marker_visible, insertion_marker_horizontal,
       insertion_marker_top, insertion_marker_bottom);
-}
-
-void ContentViewCoreImpl::SetTitle(const base::string16& title) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  ScopedJavaLocalRef<jstring> jtitle =
-      ConvertUTF8ToJavaString(env, base::UTF16ToUTF8(title));
-  Java_ContentViewCore_setTitle(env, obj, jtitle);
 }
 
 void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {

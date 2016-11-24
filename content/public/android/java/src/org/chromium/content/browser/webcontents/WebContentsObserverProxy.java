@@ -146,6 +146,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void titleWasSet(String title) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().titleWasSet(title);
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didNavigateAnyFrame(url, baseUrl, isReload);

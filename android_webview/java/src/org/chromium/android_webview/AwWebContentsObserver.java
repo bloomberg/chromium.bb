@@ -80,6 +80,13 @@ public class AwWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
+    public void titleWasSet(String title) {
+        AwContentsClient client = mAwContentsClient.get();
+        if (client == null) return;
+        client.updateTitle(title, true);
+    }
+
+    @Override
     public void didNavigateMainFrame(final String url, String baseUrl,
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
         // Only invoke the onPageCommitVisible callback when navigating to a different page,
