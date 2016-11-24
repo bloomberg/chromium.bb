@@ -90,6 +90,7 @@ void ReadingListWebStateObserver::PageLoaded(
 
 void ReadingListWebStateObserver::WebStateDestroyed() {
   timer_.reset();
+  web_state()->RemoveUserData(kObserverKey);
 }
 
 void ReadingListWebStateObserver::StartCheckingProgress() {
