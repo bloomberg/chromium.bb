@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Newly-created Event 
-FAIL After stopPropagation() assert_equals: Propagation flag after first dispatch expected true but got false
-PASS Reinitialized after stopPropagation() 
-FAIL After stopImmediatePropagation() assert_equals: Propagation flag after first dispatch expected true but got false
-PASS Reinitialized after stopImmediatePropagation() 
-Harness: the test ran to completion.
-

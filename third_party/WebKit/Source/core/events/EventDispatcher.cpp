@@ -249,8 +249,15 @@ inline void EventDispatcher::dispatchEventAtBubbling() {
 inline void EventDispatcher::dispatchEventPostProcess(
     EventDispatchHandlingState* preDispatchEventHandlerResult) {
   m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
-  m_event->setCurrentTarget(nullptr);
+  // https://dom.spec.whatwg.org/#concept-event-dispatch
+  // 14. Unset event’s dispatch flag, stop propagation flag, and stop immediate
+  // propagation flag.
+  m_event->setStopPropagation(false);
+  m_event->setStopImmediatePropagation(false);
+  // 15. Set event’s eventPhase attribute to NONE.
   m_event->setEventPhase(0);
+  // 16. Set event’s currentTarget attribute to null.
+  m_event->setCurrentTarget(nullptr);
 
   // Pass the data from the preDispatchEventHandler to the
   // postDispatchEventHandler.

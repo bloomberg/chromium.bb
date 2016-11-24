@@ -159,7 +159,13 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   double platformTimeStamp() const { return m_platformTimeStamp; }
 
   void stopPropagation() { m_propagationStopped = true; }
+  void setStopPropagation(bool stopPropagation) {
+    m_propagationStopped = stopPropagation;
+  }
   void stopImmediatePropagation() { m_immediatePropagationStopped = true; }
+  void setStopImmediatePropagation(bool stopImmediatePropagation) {
+    m_immediatePropagationStopped = stopImmediatePropagation;
+  }
 
   // IE Extensions
   EventTarget* srcElement() const {
