@@ -340,6 +340,8 @@ table_files = \
 	unicodedefs.cti \
 	unicode.dis \
 	uni-text.dis \
+	ur-pk-g1.utb \
+	ur-pk-g2.ctb \
 	us-table.dis \
 	vi.ctb \
 	vi-g1.ctb \
