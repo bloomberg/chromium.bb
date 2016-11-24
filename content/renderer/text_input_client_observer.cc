@@ -53,22 +53,30 @@ bool TextInputClientObserver::Send(IPC::Message* message) {
 
 blink::WebFrameWidget* TextInputClientObserver::GetWebFrameWidget() const {
   blink::WebWidget* widget = render_widget_->GetWebWidget();
-  // We should always receive a WebFrameWidget in the call above. RenderViewImpl
-  // however might return a WebView if the main frame is destroyed, but as long
-  // as there is a rendered page, we should not be in that state and the RVImpl
-  // should be returning a frame widget.
-  DCHECK(widget->isWebFrameWidget());
-  return static_cast<blink::WebFrameWidget*>(render_widget_->GetWebWidget());
+  if (!widget->isWebFrameWidget()) {
+    // When a page navigation occurs, for a brief period
+    // RenderViewImpl::GetWebWidget() will return a WebViewImpl instead of a
+    // WebViewFrameWidget. Therefore, casting to WebFrameWidget is invalid and
+    // could cause crashes. Also, WebView::mainFrame() could be a remote frame
+    // which will yield a nullptr for localRoot() (https://crbug.com/664890).
+    return nullptr;
+  }
+  return static_cast<blink::WebFrameWidget*>(widget);
 }
 
 blink::WebLocalFrame* TextInputClientObserver::GetFocusedFrame() const {
-  blink::WebLocalFrame* focused =
-      RenderFrameImpl::FromWebFrame(GetWebFrameWidget()->localRoot())
-          ->render_view()
-          ->webview()
-          ->focusedFrame();
-  return focused->localRoot() == GetWebFrameWidget()->localRoot() ? focused
-                                                                  : nullptr;
+  if (auto* frame_widget = GetWebFrameWidget()) {
+    blink::WebLocalFrame* localRoot = frame_widget->localRoot();
+    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(localRoot);
+    if (!render_frame) {
+      // TODO(ekaramad): Can this ever be nullptr? (https://crbug.com/664890).
+      return nullptr;
+    }
+    blink::WebLocalFrame* focused =
+        render_frame->render_view()->webview()->focusedFrame();
+    return focused->localRoot() == localRoot ? focused : nullptr;
+  }
+  return nullptr;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -85,8 +93,12 @@ PepperPluginInstanceImpl* TextInputClientObserver::GetFocusedPepperPlugin()
 void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
 #if defined(OS_MACOSX)
   blink::WebPoint baselinePoint;
-  NSAttributedString* string = blink::WebSubstringUtil::attributedWordAtPoint(
-      GetWebFrameWidget(), point, baselinePoint);
+  NSAttributedString* string = nil;
+
+  if (auto* frame_widget = GetWebFrameWidget()) {
+    string = blink::WebSubstringUtil::attributedWordAtPoint(frame_widget, point,
+                                                   baselinePoint);
+  }
 
   std::unique_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
       mac::AttributedStringCoder::Encode(string));
@@ -99,8 +111,10 @@ void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
 
 void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
   blink::WebPoint web_point(point);
-  uint32_t index = static_cast<uint32_t>(
-      GetFocusedFrame()->characterIndexForPoint(web_point));
+  uint32_t index = 0U;
+  if (auto* frame = GetFocusedFrame())
+    index = static_cast<uint32_t>(frame->characterIndexForPoint(web_point));
+
   Send(new TextInputClientReplyMsg_GotCharacterIndexForPoint(
       render_widget_->routing_id(), index));
 }
