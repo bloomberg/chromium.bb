@@ -518,18 +518,6 @@
       ]
     },
     {
-      "name": "kevin-tpm2",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "gru",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "kip",
       "configs": [
         {
