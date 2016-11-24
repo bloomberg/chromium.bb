@@ -430,7 +430,7 @@ views::CustomButton* TrayDetailsView::CreateSettingsButton(LoginStatus status) {
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
   if (!TrayPopupUtils::CanOpenWebUISettings(status))
-    button->SetState(views::Button::STATE_DISABLED);
+    button->SetEnabled(false);
   return button;
 }
 
@@ -440,7 +440,7 @@ views::CustomButton* TrayDetailsView::CreateHelpButton(LoginStatus status) {
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   if (!TrayPopupUtils::CanOpenWebUISettings(status))
-    button->SetState(views::Button::STATE_DISABLED);
+    button->SetEnabled(false);
   return button;
 }
 

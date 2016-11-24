@@ -39,6 +39,10 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
 
   // Get/sets the current display state of the button.
   ButtonState state() const { return state_; }
+  // Clients passing in STATE_DISABLED should consider calling
+  // SetEnabled(false) instead because the enabled flag can affect other things
+  // like event dispatching, focus traversals, etc. Calling SetEnabled(false)
+  // will also set the state of |this| to STATE_DISABLED.
   void SetState(ButtonState state);
 
   // Starts throbbing. See HoverAnimation for a description of cycles_til_stop.

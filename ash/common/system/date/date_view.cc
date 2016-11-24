@@ -204,10 +204,8 @@ void DateView::SetAction(DateAction action) {
 
   // Disable |this| when not clickable so that the material design ripple is
   // not shown.
-  // TODO(tdanderson|bruthig): Add the material design ripple to |this|.
   if (UseMd()) {
-    SetState(action_ == DateAction::NONE ? views::Button::STATE_DISABLED
-                                         : views::Button::STATE_NORMAL);
+    SetEnabled(action_ != DateAction::NONE);
     if (action_ != DateAction::NONE)
       SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   }

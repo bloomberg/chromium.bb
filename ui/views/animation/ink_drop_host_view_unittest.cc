@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
@@ -19,6 +20,10 @@ namespace test {
 using InkDropMode = InkDropHostViewTestApi::InkDropMode;
 
 class InkDropHostViewColor : public InkDropHostView {
+ public:
+  // Accessors to InkDropHostView internals.
+  ui::EventHandler* GetTargetHandler() { return target_handler(); }
+
  protected:
   SkColor GetInkDropBaseColor() const override {
     return gfx::kPlaceholderColor;
@@ -82,6 +87,22 @@ TEST_F(InkDropHostViewTest, SetInkDropModeGestureHandler) {
 
   test_api_.SetInkDropMode(InkDropMode::OFF);
   EXPECT_FALSE(test_api_.HasGestureHandler());
+}
+
+// Verifies that ink drops are not shown when the host is disabled.
+TEST_F(InkDropHostViewTest,
+       GestureEventsDontTriggerInkDropsWhenHostIsDisabled) {
+  test_api_.SetInkDropMode(InkDropMode::ON);
+  host_view_.SetEnabled(false);
+
+  ui::GestureEvent gesture_event(
+      0.f, 0.f, 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+
+  host_view_.GetTargetHandler()->OnEvent(&gesture_event);
+
+  EXPECT_EQ(test_api_.GetInkDrop()->GetTargetInkDropState(),
+            InkDropState::HIDDEN);
 }
 
 #if defined(OS_WIN)

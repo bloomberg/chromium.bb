@@ -524,7 +524,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
       // creation flow) when session is started but UI flow continues within
       // login UI, i.e., no browser window is yet avaialable.
       if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
-        settings_button_md_->SetState(views::Button::STATE_DISABLED);
+        settings_button_md_->SetEnabled(false);
 
       tri_view()->AddView(TriView::Container::END, settings_button_md_);
     } else {
@@ -551,7 +551,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
     title_row()->AddViewToRowNonMd(button_wifi_, true);
     if (network_state_handler->IsTechnologyProhibited(
             NetworkTypePattern::WiFi())) {
-      button_wifi_->SetState(views::Button::STATE_DISABLED);
+      button_wifi_->SetEnabled(false);
       button_wifi_->SetToggledTooltipText(l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
     }
@@ -568,7 +568,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_MOBILE));
     if (network_state_handler->IsTechnologyProhibited(
             NetworkTypePattern::Cellular())) {
-      button_mobile_->SetState(views::Button::STATE_DISABLED);
+      button_mobile_->SetEnabled(false);
       button_mobile_->SetToggledTooltipText(l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
     }
@@ -630,7 +630,7 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_TURN_ON_WIFI));
     if (NetworkHandler::Get()->network_state_handler()->IsTechnologyProhibited(
             NetworkTypePattern::WiFi())) {
-      turn_on_wifi_->SetState(views::Button::STATE_DISABLED);
+      turn_on_wifi_->SetEnabled(false);
       turn_on_wifi_->SetTooltipText(l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
     }

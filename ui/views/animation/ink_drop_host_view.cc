@@ -51,6 +51,9 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
+    if (!host_view_->enabled())
+      return;
+
     InkDropState current_ink_drop_state =
         host_view_->GetInkDrop()->GetTargetInkDropState();
 

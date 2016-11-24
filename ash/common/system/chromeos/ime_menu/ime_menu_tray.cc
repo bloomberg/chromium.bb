@@ -124,7 +124,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
       settings_button_ = CreateImeMenuButton(
           this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
       if (IsInLoginOrLockScreen())
-        settings_button_->SetState(views::Button::STATE_DISABLED);
+        settings_button_->SetEnabled(false);
       AddChildView(settings_button_);
     }
   }
@@ -228,7 +228,7 @@ class ImeButtonsView : public views::View,
             IDS_ASH_STATUS_TRAY_IME_SETTINGS),
         gfx::ALIGN_LEFT, false /* highlight */);
     if (IsInLoginOrLockScreen())
-      one_settings_button_view_->SetState(views::Button::STATE_DISABLED);
+      one_settings_button_view_->SetEnabled(false);
     AddChildView(one_settings_button_view_);
   }
 

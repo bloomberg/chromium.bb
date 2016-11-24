@@ -68,7 +68,7 @@ void TilesDefaultView::Init() {
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
   if (disable_buttons || !shell->system_tray_delegate()->ShouldShowSettings())
-    settings_button_->SetState(views::Button::STATE_DISABLED);
+    settings_button_->SetEnabled(false);
   AddChildView(settings_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
@@ -83,7 +83,7 @@ void TilesDefaultView::Init() {
     help_button_->EnableCanvasFlippingForRTLUI(false);
   }
   if (disable_buttons)
-    help_button_->SetState(views::Button::STATE_DISABLED);
+    help_button_->SetEnabled(false);
   AddChildView(help_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
@@ -92,7 +92,7 @@ void TilesDefaultView::Init() {
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
   if (disable_buttons || !shell->GetSessionStateDelegate()->CanLockScreen())
-    lock_button_->SetState(views::Button::STATE_DISABLED);
+    lock_button_->SetEnabled(false);
 
   AddChildView(lock_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
