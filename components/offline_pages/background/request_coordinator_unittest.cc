@@ -20,14 +20,18 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/offline_pages/background/device_conditions.h"
+#include "components/offline_pages/background/network_quality_provider_stub.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/offliner_factory.h"
+#include "components/offline_pages/background/offliner_factory_stub.h"
 #include "components/offline_pages/background/offliner_policy.h"
+#include "components/offline_pages/background/offliner_stub.h"
 #include "components/offline_pages/background/pick_request_task_factory.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/background/scheduler.h"
+#include "components/offline_pages/background/scheduler_stub.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,135 +55,6 @@ const bool kPowerRequired = true;
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
 }  // namespace
-
-class SchedulerStub : public Scheduler {
- public:
-  SchedulerStub()
-      : schedule_called_(false),
-        backup_schedule_called_(false),
-        unschedule_called_(false),
-        schedule_delay_(0L),
-        conditions_(false, 0, false) {}
-
-  void Schedule(const TriggerConditions& trigger_conditions) override {
-    schedule_called_ = true;
-    conditions_ = trigger_conditions;
-  }
-
-  void BackupSchedule(const TriggerConditions& trigger_conditions,
-                      long delay_in_seconds) override {
-    backup_schedule_called_ = true;
-    schedule_delay_ = delay_in_seconds;
-    conditions_ = trigger_conditions;
-  }
-
-  // Unschedules the currently scheduled task, if any.
-  void Unschedule() override {
-    unschedule_called_ = true;
-  }
-
-  bool schedule_called() const { return schedule_called_; }
-
-  bool backup_schedule_called() const { return backup_schedule_called_;}
-
-  bool unschedule_called() const { return unschedule_called_; }
-
-  TriggerConditions const* conditions() const { return &conditions_; }
-
- private:
-  bool schedule_called_;
-  bool backup_schedule_called_;
-  bool unschedule_called_;
-  long schedule_delay_;
-  TriggerConditions conditions_;
-};
-
-class OfflinerStub : public Offliner {
- public:
-  OfflinerStub()
-      : request_(kRequestId1, kUrl1, kClientId1, base::Time::Now(),
-                 kUserRequested),
-        disable_loading_(false),
-        enable_callback_(false),
-        cancel_called_(false) {}
-
-  bool LoadAndSave(const SavePageRequest& request,
-                   const CompletionCallback& callback) override {
-    if (disable_loading_)
-      return false;
-
-    callback_ = callback;
-    request_ = request;
-    // Post the callback on the run loop.
-    if (enable_callback_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, request, Offliner::RequestStatus::SAVED));
-    }
-    return true;
-  }
-
-  void Cancel() override { cancel_called_ = true; }
-
-  void disable_loading() {
-    disable_loading_ = true;
-  }
-
-  void enable_callback(bool enable) {
-    enable_callback_ = enable;
-  }
-
-  bool cancel_called() { return cancel_called_; }
-
- private:
-  CompletionCallback callback_;
-  SavePageRequest request_;
-  bool disable_loading_;
-  bool enable_callback_;
-  bool cancel_called_;
-};
-
-class OfflinerFactoryStub : public OfflinerFactory {
- public:
-  OfflinerFactoryStub() : offliner_(nullptr) {}
-
-  Offliner* GetOffliner(const OfflinerPolicy* policy) override {
-    if (offliner_.get() == nullptr) {
-      offliner_.reset(new OfflinerStub());
-    }
-    return offliner_.get();
-  }
-
- private:
-  std::unique_ptr<OfflinerStub> offliner_;
-};
-
-class NetworkQualityEstimatorStub
-    : public net::NetworkQualityEstimator::NetworkQualityProvider {
- public:
-  NetworkQualityEstimatorStub()
-      : connection_type_(
-            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G) {}
-
-  net::EffectiveConnectionType GetEffectiveConnectionType() const override {
-    return connection_type_;
-  }
-
-  void AddEffectiveConnectionTypeObserver(
-      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
-      override {}
-
-  void RemoveEffectiveConnectionTypeObserver(
-      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
-      override {}
-
-  void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
-    connection_type_ = type;
-  }
-
- private:
-  net::EffectiveConnectionType connection_type_;
-};
 
 class ObserverStub : public RequestCoordinator::Observer {
  public:
@@ -400,7 +275,7 @@ class RequestCoordinatorTest
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  std::unique_ptr<NetworkQualityEstimatorStub> network_quality_estimator_;
+  std::unique_ptr<NetworkQualityProviderStub> network_quality_estimator_;
   std::unique_ptr<RequestCoordinator> coordinator_;
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
@@ -438,7 +313,7 @@ void RequestCoordinatorTest::SetUp() {
       store(new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
   std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
-  network_quality_estimator_.reset(new NetworkQualityEstimatorStub());
+  network_quality_estimator_.reset(new NetworkQualityProviderStub());
   coordinator_.reset(new RequestCoordinator(
       std::move(policy), std::move(offliner_factory), std::move(queue),
       std::move(scheduler_stub), network_quality_estimator_.get()));

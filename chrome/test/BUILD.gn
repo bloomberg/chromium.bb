@@ -3521,6 +3521,8 @@ test("unit_tests") {
       "../browser/android/offline_pages/request_coordinator_factory_unittest.cc",
       "../browser/android/offline_pages/test_offline_page_model_builder.cc",
       "../browser/android/offline_pages/test_offline_page_model_builder.h",
+      "../browser/android/offline_pages/test_request_coordinator_builder.cc",
+      "../browser/android/offline_pages/test_request_coordinator_builder.h",
     ]
     sources -= [ "../browser/policy/policy_path_parser_unittest.cc" ]
     deps += [
@@ -3528,6 +3530,7 @@ test("unit_tests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/offline_pages:test_support",
+      "//components/offline_pages/background:test_support",
       "//v8:v8_external_startup_data_assets",
     ]
     deps -= [ "//third_party/libaddressinput" ]

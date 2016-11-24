@@ -18,9 +18,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
+#include "chrome/browser/android/offline_pages/test_request_coordinator_builder.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/offline_pages/background/network_quality_provider_stub.h"
+#include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -42,6 +46,7 @@ const GURL kTestPage4Url("http://test.org/page4");
 const int64_t kTestFileSize = 876543LL;
 const char* kTestPage1ClientId = "1234";
 const char* kTestPage2ClientId = "5678";
+const char* kTestPage3ClientId = "7890";
 const char* kTestPage4ClientId = "9876";
 
 void HasDuplicatesCallback(bool* out_has_duplicates,
@@ -86,6 +91,7 @@ class OfflinePageUtilsTest
 
  private:
   void CreateOfflinePages();
+  void CreateRequests();
   std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(
       const GURL& url,
       const base::FilePath& file_name);
@@ -112,9 +118,15 @@ void OfflinePageUtilsTest::SetUp() {
       &profile_, BuildTestOfflinePageModel);
   RunUntilIdle();
 
-  // Make sure the store contains the right offline pages before the load
-  // happens.
+  NetworkQualityProviderStub::SetUserData(&profile_,
+                                          new NetworkQualityProviderStub());
+  RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, BuildTestRequestCoordinator);
+  RunUntilIdle();
+
+  // Make sure to create offline pages and requests.
   CreateOfflinePages();
+  CreateRequests();
 }
 
 void OfflinePageUtilsTest::RunUntilIdle() {
@@ -185,6 +197,19 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   RunUntilIdle();
 }
 
+void OfflinePageUtilsTest::CreateRequests() {
+  RequestCoordinator* request_coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(profile());
+
+  offline_pages::ClientId client_id;
+  client_id.name_space = kDownloadNamespace;
+  client_id.id = kTestPage3ClientId;
+  request_coordinator->SavePageLater(
+      kTestPage3Url, client_id, true,
+      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+  RunUntilIdle();
+}
+
 std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
     const GURL& url,
     const base::FilePath& file_name) {
@@ -205,7 +230,7 @@ TEST_F(OfflinePageUtilsTest, CheckExistenceOfPagesWithURL) {
                  base::Unretained(&latest_saved_time)));
   RunUntilIdle();
   EXPECT_TRUE(has_duplicates);
-  EXPECT_NE(base::Time(), latest_saved_time);
+  EXPECT_FALSE(latest_saved_time.is_null());
   // This one should be missing
   OfflinePageUtils::CheckExistenceOfPagesWithURL(
       profile(), kDownloadNamespace, kTestPage3Url,
@@ -213,7 +238,28 @@ TEST_F(OfflinePageUtilsTest, CheckExistenceOfPagesWithURL) {
                  base::Unretained(&latest_saved_time)));
   RunUntilIdle();
   EXPECT_FALSE(has_duplicates);
-  EXPECT_EQ(base::Time(), latest_saved_time);
+  EXPECT_TRUE(latest_saved_time.is_null());
+}
+
+TEST_F(OfflinePageUtilsTest, CheckExistenceOfRequestsWithURL) {
+  bool has_duplicates = false;
+  base::Time latest_saved_time;
+  // This page should be available.
+  OfflinePageUtils::CheckExistenceOfRequestsWithURL(
+      profile(), kDownloadNamespace, kTestPage3Url,
+      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
+                 base::Unretained(&latest_saved_time)));
+  RunUntilIdle();
+  EXPECT_TRUE(has_duplicates);
+  EXPECT_FALSE(latest_saved_time.is_null());
+  // This one should be missing
+  OfflinePageUtils::CheckExistenceOfRequestsWithURL(
+      profile(), kDownloadNamespace, kTestPage1Url,
+      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
+                 base::Unretained(&latest_saved_time)));
+  RunUntilIdle();
+  EXPECT_FALSE(has_duplicates);
+  EXPECT_TRUE(latest_saved_time.is_null());
 }
 
 }  // namespace offline_pages

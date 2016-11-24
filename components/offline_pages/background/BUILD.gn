@@ -58,6 +58,26 @@ static_library("background_offliner") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "network_quality_provider_stub.cc",
+    "network_quality_provider_stub.h",
+    "offliner_factory_stub.cc",
+    "offliner_factory_stub.h",
+    "offliner_stub.cc",
+    "offliner_stub.h",
+    "scheduler_stub.cc",
+    "scheduler_stub.h",
+  ]
+
+  deps = [
+    ":background_offliner",
+    "//base",
+    "//net",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -76,6 +96,7 @@ source_set("unit_tests") {
 
   deps = [
     ":background_offliner",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/offline_pages:offline_pages",
