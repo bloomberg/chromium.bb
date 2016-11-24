@@ -85,6 +85,17 @@ public class ContentViewClient {
     }
 
     /**
+     * Check whether the given scheme is one of the acceptable schemes for onStartContentIntent.
+     *
+     * @param scheme The scheme to check.
+     * @return true if the scheme is okay, false if it should be blocked.
+     */
+    protected boolean isAcceptableContentIntentScheme(String scheme) {
+        return GEO_SCHEME.equals(scheme) || TEL_SCHEME.equals(scheme)
+                || MAILTO_SCHEME.equals(scheme);
+    }
+
+    /**
      * Called when a new content intent is requested to be started.
      */
     public void onStartContentIntent(Context context, String intentUrl, boolean isMainFrame) {
@@ -94,8 +105,7 @@ public class ContentViewClient {
             intent = Intent.parseUri(intentUrl, Intent.URI_INTENT_SCHEME);
 
             String scheme = intent.getScheme();
-            if (!scheme.equals(GEO_SCHEME) && !scheme.equals(TEL_SCHEME)
-                    && !scheme.equals(MAILTO_SCHEME)) {
+            if (!isAcceptableContentIntentScheme(scheme)) {
                 Log.w(TAG, "Invalid scheme for URI %s", intentUrl);
                 return;
             }
