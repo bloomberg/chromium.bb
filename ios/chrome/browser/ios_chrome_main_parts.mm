@@ -33,6 +33,7 @@
 #include "components/variations/variations_switches.h"
 #include "ios/chrome/browser/about_flags.h"
 #include "ios/chrome/browser/application_context_impl.h"
+#include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_paths.h"
@@ -164,6 +165,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
       CreateClipboardRecentContentIOS().release());
 
   // Ensure that the browser state is initialized.
+  EnsureBrowserStateKeyedServiceFactoriesBuilt();
   ios::GetChromeBrowserProvider()->AssertBrowserContextKeyedFactoriesBuilt();
   ios::ChromeBrowserStateManager* browser_state_manager =
       application_context_->GetChromeBrowserStateManager();

@@ -14,6 +14,7 @@ class ChromiumVoiceSearchProvider : public VoiceSearchProvider {
 
   // VoiceSearchProvider.
   bool IsVoiceSearchEnabled() const override;
+  NSArray* GetAvailableLanguages() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromiumVoiceSearchProvider);
