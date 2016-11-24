@@ -718,6 +718,38 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   EXPECT_EQ(96, algorithm_.GetMemoryUsage());
 }
 
+TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutFrameDropping) {
+  TickGenerator tg(tick_clock_->NowTicks(), 50);
+
+  algorithm_.disable_frame_dropping();
+
+  ASSERT_EQ(0u, EffectiveFramesQueued());
+  time_source_.StartTicking();
+
+  for (size_t i = 0; i < 3; ++i) {
+    algorithm_.EnqueueFrame(CreateFrame(tg.interval(i)));
+    EXPECT_EQ(i + 1, EffectiveFramesQueued());
+    EXPECT_EQ(i + 1, frames_queued());
+  }
+
+  // Issue a render call and verify that undropped frames remain effective.
+  tg.step(2);
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> frame = RenderAndStep(&tg, &frames_dropped);
+  ASSERT_NE(nullptr, frame);
+  EXPECT_EQ(tg.interval(0), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+  EXPECT_EQ(2u, EffectiveFramesQueued());
+
+  // As the next frame is consumed, the count of effective frames is
+  // decremented.
+  frame = RenderAndStep(&tg, &frames_dropped);
+  ASSERT_NE(nullptr, frame);
+  EXPECT_EQ(tg.interval(1), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+  EXPECT_EQ(1u, EffectiveFramesQueued());
+}
+
 // The maximum acceptable drift should be updated once we have two frames.
 TEST_F(VideoRendererAlgorithmTest, AcceptableDriftUpdated) {
   TickGenerator tg(tick_clock_->NowTicks(), 50);

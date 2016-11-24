@@ -261,6 +261,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // ReadyFrame within the queue changes.
   void UpdateEffectiveFramesQueued();
 
+  // Computes the unclamped count of effective frames.  Used by
+  // UpdateEffectiveFramesQueued().
+  size_t CountEffectiveFramesQueued() const;
+
   // Queue of incoming frames waiting for rendering.
   using VideoFrameQueue = std::deque<ReadyFrame>;
   VideoFrameQueue frame_queue_;
