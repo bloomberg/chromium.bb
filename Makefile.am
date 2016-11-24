@@ -111,7 +111,7 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	shared/timespec-util.h				\
 	shared/zalloc.h					\
 	shared/platform.h				\
-	libweston/weston-egl-ext.h
+	shared/weston-egl-ext.h
 
 lib_LTLIBRARIES += libweston-desktop-@LIBWESTON_MAJOR@.la
 libweston_desktop_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
