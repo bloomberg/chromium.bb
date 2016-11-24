@@ -29,9 +29,10 @@ class FakeDB : public ProtoDatabase<T> {
   ~FakeDB() override;
 
   // ProtoDatabase implementation.
-  void Init(const char* client_name,
-            const base::FilePath& database_dir,
-            const typename ProtoDatabase<T>::InitCallback& callback) override;
+  void InitWithOptions(
+      const char* client_name,
+      const Options& options,
+      const typename ProtoDatabase<T>::InitCallback& callback) override;
   void UpdateEntries(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
@@ -95,10 +96,11 @@ template <typename T>
 FakeDB<T>::~FakeDB() {}
 
 template <typename T>
-void FakeDB<T>::Init(const char* client_name,
-                     const base::FilePath& database_dir,
-                     const typename ProtoDatabase<T>::InitCallback& callback) {
-  dir_ = database_dir;
+void FakeDB<T>::InitWithOptions(
+    const char* client_name,
+    const Options& options,
+    const typename ProtoDatabase<T>::InitCallback& callback) {
+  dir_ = options.database_dir;
   init_callback_ = callback;
 }
 

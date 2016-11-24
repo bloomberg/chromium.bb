@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/leveldb_proto/options.h"
 
 namespace base {
 class FilePath;
@@ -38,11 +39,18 @@ class ProtoDatabase {
 
   virtual ~ProtoDatabase() {}
 
-  // Asynchronously initializes the object. |callback| will be invoked on the
-  // calling thread when complete.
-  virtual void Init(const char* client_name,
-                    const base::FilePath& database_dir,
-                    const InitCallback& callback) = 0;
+  // Asynchronously initializes the object with default options. |callback| will
+  // be invoked on the calling thread when complete.
+  void Init(const char* client_name,
+            const base::FilePath& database_dir,
+            const InitCallback& callback) {
+    InitWithOptions(client_name, Options(database_dir), callback);
+  }
+
+  // Similar to Init, but takes additional options.
+  virtual void InitWithOptions(const char* client_name,
+                               const Options& options,
+                               const InitCallback& callback) = 0;
 
   // Asynchronously saves |entries_to_save| and deletes entries from
   // |keys_to_remove| from the database. |callback| will be invoked on the

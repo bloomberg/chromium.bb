@@ -85,17 +85,19 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
   return false;
 }
 
-bool LevelDB::Init(const base::FilePath& database_dir) {
-  leveldb::Options options;
-  options.create_if_missing = true;
-  options.max_open_files = 0;  // Use minimum.
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
-  if (database_dir.empty()) {
+bool LevelDB::Init(const leveldb_proto::Options& options) {
+  leveldb::Options leveldb_options;
+  leveldb_options.create_if_missing = true;
+  leveldb_options.max_open_files = 0;  // Use minimum.
+  leveldb_options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  if (options.write_buffer_size != 0)
+    leveldb_options.write_buffer_size = options.write_buffer_size;
+  if (options.database_dir.empty()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
-    options.env = env_.get();
+    leveldb_options.env = env_.get();
   }
 
-  return InitWithOptions(database_dir, options);
+  return InitWithOptions(options.database_dir, leveldb_options);
 }
 
 bool LevelDB::Save(const base::StringPairs& entries_to_save,

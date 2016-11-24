@@ -42,7 +42,7 @@ const char kTestLevelDBClientName[] = "Test";
 
 class MockDB : public LevelDB {
  public:
-  MOCK_METHOD1(Init, bool(const base::FilePath&));
+  MOCK_METHOD1(Init, bool(const leveldb_proto::Options& options));
   MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
   MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
@@ -67,6 +67,11 @@ class MockDatabaseCaller {
 };
 
 }  // namespace
+
+bool operator==(const Options& lhs, const Options& rhs) {
+  return lhs.database_dir == rhs.database_dir &&
+         lhs.write_buffer_size == rhs.write_buffer_size;
+}
 
 EntryMap GetSmallModel() {
   EntryMap model;
@@ -119,7 +124,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBInitSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
   MockDB* mock_db = new MockDB();
-  EXPECT_CALL(*mock_db, Init(path)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_db, Init(Options(path))).WillOnce(Return(true));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
@@ -135,7 +140,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBInitFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
   MockDB* mock_db = new MockDB();
-  EXPECT_CALL(*mock_db, Init(path)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Init(Options(path))).WillOnce(Return(false));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(false));
