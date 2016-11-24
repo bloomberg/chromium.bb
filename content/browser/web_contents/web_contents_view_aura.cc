@@ -564,7 +564,7 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
 
   // TODO(paulmeyer): In the OOPIF case, should |client_loc| be converted to
   // the coordinates local to |drag_start_rwh_|? See crbug.com/647249.
-  web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.x(),
+  web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.y(),
                                    screen_loc.x(), screen_loc.y(), ops,
                                    drag_start_rwh_.get());
 }
