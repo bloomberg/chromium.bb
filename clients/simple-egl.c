@@ -45,7 +45,7 @@
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include <sys/types.h>
 #include <unistd.h>
-#include "protocol/ivi-application-client-protocol.h"
+#include "ivi-application-client-protocol.h"
 #define IVI_SURFACE_ID 9000
 
 #include "shared/helpers.h"

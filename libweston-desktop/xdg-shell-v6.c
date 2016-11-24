@@ -33,7 +33,7 @@
 
 #include "compositor.h"
 #include "zalloc.h"
-#include "protocol/xdg-shell-unstable-v6-server-protocol.h"
+#include "xdg-shell-unstable-v6-server-protocol.h"
 
 #include "libweston-desktop.h"
 #include "internal.h"
