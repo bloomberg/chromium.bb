@@ -144,6 +144,7 @@ void ScopedStyleResolver::resetAuthorStyle() {
   m_keyframesRuleMap.clear();
   m_treeBoundaryCrossingRuleSet = nullptr;
   m_hasDeepOrShadowSelector = false;
+  m_needsAppendAllSheets = false;
 }
 
 StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(

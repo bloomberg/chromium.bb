@@ -302,6 +302,32 @@ TEST_F(ActiveStyleSheetsTest,
   EXPECT_EQ(&sheet3->contents()->ruleSet(), changedRuleSets[0]);
 }
 
+TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_ReorderedImportSheets) {
+  ActiveStyleSheetVector oldSheets;
+  ActiveStyleSheetVector newSheets;
+  HeapVector<Member<RuleSet>> changedRuleSets;
+
+  CSSStyleSheet* sheet1 = createSheet();
+  CSSStyleSheet* sheet2 = createSheet();
+
+  // It is possible to have CSSStyleSheet pointers re-orderered for html imports
+  // because their documents, and hence their stylesheets are persisted on
+  // remove / insert. This test is here to show that the active sheet comparison
+  // is not able to see that anything changed.
+  //
+  // Imports are handled by forcing re-append and recalc of the document scope
+  // when html imports are removed.
+  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+
+  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+
+  EXPECT_EQ(NoActiveSheetsChanged,
+            compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
+  EXPECT_EQ(0u, changedRuleSets.size());
+}
+
 TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
   document().view()->updateAllLifecyclePhases();
 

@@ -111,6 +111,7 @@ class CORE_EXPORT StyleEngine final
   void watchedSelectorsChanged();
   void initialViewportChanged();
   void viewportRulesChanged();
+  void importRemoved();
 
   void injectAuthorSheet(StyleSheetContents* authorSheet);
   CSSStyleSheet& ensureInspectorStyleSheet();

@@ -59,6 +59,7 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   bool hasLoaded() const override;
   DECLARE_VIRTUAL_TRACE();
   void ownerInserted() override;
+  void ownerRemoved() override;
 
   // HTMLImportChildClient
   void didFinish() override;

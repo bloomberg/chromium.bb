@@ -73,6 +73,8 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   void resetAuthorStyle();
   bool hasDeepOrShadowSelector() const { return m_hasDeepOrShadowSelector; }
   void setHasUnresolvedKeyframesRule() { m_hasUnresolvedKeyframesRule = true; }
+  bool needsAppendAllSheets() const { return m_needsAppendAllSheets; }
+  void setNeedsAppendAllSheets() { m_needsAppendAllSheets = true; }
   static void keyframesRulesAdded(const TreeScope&);
   static ContainerNode& invalidationRootForTreeScope(const TreeScope&);
 
@@ -119,6 +121,7 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   Member<CSSStyleSheetRuleSubSet> m_treeBoundaryCrossingRuleSet;
   bool m_hasDeepOrShadowSelector = false;
   bool m_hasUnresolvedKeyframesRule = false;
+  bool m_needsAppendAllSheets = false;
 };
 
 }  // namespace blink

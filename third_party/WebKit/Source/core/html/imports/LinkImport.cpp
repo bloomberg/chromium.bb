@@ -118,6 +118,11 @@ void LinkImport::ownerInserted() {
     m_child->ownerInserted();
 }
 
+void LinkImport::ownerRemoved() {
+  if (m_owner)
+    m_owner->document().styleEngine().importRemoved();
+}
+
 DEFINE_TRACE(LinkImport) {
   visitor->trace(m_child);
   HTMLImportChildClient::trace(visitor);

@@ -1039,6 +1039,29 @@ void StyleEngine::viewportRulesChanged() {
     m_viewportResolver->setNeedsCollectRules();
 }
 
+void StyleEngine::importRemoved() {
+  if (document().importLoader()) {
+    document().importsController()->master()->styleEngine().importRemoved();
+    return;
+  }
+
+  // When we remove an import link and re-insert it into the document, the
+  // import Document and CSSStyleSheet pointers are persisted. That means the
+  // comparison of active stylesheets is not able to figure out that the order
+  // of the stylesheets have changed after insertion.
+  //
+  // Fall back to re-add all sheets to the scoped resolver and recalculate style
+  // for the whole document if we remove an import in case it is re-inserted
+  // into the document. The assumption is that removing html imports is very
+  // rare.
+  if (ScopedStyleResolver* resolver = document().scopedStyleResolver()) {
+    resolver->setNeedsAppendAllSheets();
+    document().setNeedsStyleRecalc(
+        SubtreeStyleChange, StyleChangeReasonForTracing::create(
+                                StyleChangeReason::ActiveStylesheetsUpdate));
+  }
+}
+
 PassRefPtr<ComputedStyle> StyleEngine::findSharedStyle(
     const ElementResolveContext& elementResolveContext) {
   DCHECK(m_resolver);
@@ -1078,9 +1101,13 @@ void StyleEngine::applyRuleSetChanges(
     const ActiveStyleSheetVector& newStyleSheets) {
   HeapVector<Member<RuleSet>> changedRuleSets;
 
+  ScopedStyleResolver* scopedResolver = treeScope.scopedStyleResolver();
+  bool appendAllSheets =
+      scopedResolver && scopedResolver->needsAppendAllSheets();
+
   ActiveSheetsChange change =
       compareActiveStyleSheets(oldStyleSheets, newStyleSheets, changedRuleSets);
-  if (change == NoActiveSheetsChanged)
+  if (change == NoActiveSheetsChanged && !appendAllSheets)
     return;
 
   // With rules added or removed, we need to re-aggregate rule meta data.
@@ -1103,7 +1130,7 @@ void StyleEngine::applyRuleSetChanges(
   if (treeScope.scopedStyleResolver()) {
     if (newStyleSheets.isEmpty())
       resetAuthorStyle(treeScope);
-    else if (change == ActiveSheetsAppended)
+    else if (change == ActiveSheetsAppended && !appendAllSheets)
       appendStartIndex = oldStyleSheets.size();
     else
       treeScope.scopedStyleResolver()->resetAuthorStyle();
