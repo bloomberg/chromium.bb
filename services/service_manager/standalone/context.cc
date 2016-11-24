@@ -74,8 +74,6 @@ class Setup {
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
 
-const size_t kMaxBlockingPoolThreads = 3;
-
 std::unique_ptr<base::Thread> CreateIOThread(const char* name) {
   std::unique_ptr<base::Thread> thread(new base::Thread(name));
   base::Thread::Options options;
@@ -128,9 +126,8 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
     EnsureEmbedderIsInitialized();
 
   service_manager_runner_ = base::ThreadTaskRunnerHandle::Get();
-  blocking_pool_ =
-      new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool",
-                                    base::TaskPriority::USER_VISIBLE);
+  blocking_pool_ = new base::SequencedWorkerPool(
+      kThreadPoolMaxThreads, "blocking_pool", base::TaskPriority::USER_VISIBLE);
 
   init_edk_ = !init_params || init_params->init_edk;
   if (init_edk_) {

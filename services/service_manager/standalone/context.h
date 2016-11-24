@@ -27,6 +27,9 @@ class Store;
 }
 
 namespace service_manager {
+
+constexpr size_t kThreadPoolMaxThreads = 3;
+
 class NativeRunnerDelegate;
 
 // The "global" context for the service manager's main process.

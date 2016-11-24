@@ -24,6 +24,7 @@ source_set("mash") {
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:child_process_base",
     "//services/service_manager/runner/host:lib",
+    "//services/service_manager/standalone:lib",
     "//url",
   ]
   data_deps = [

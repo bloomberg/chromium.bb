@@ -15,6 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -35,6 +37,7 @@
 #include "services/service_manager/runner/host/child_process.h"
 #include "services/service_manager/runner/host/child_process_base.h"
 #include "services/service_manager/runner/init.h"
+#include "services/service_manager/standalone/context.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -127,6 +130,10 @@ int MashRunner::Run() {
 }
 
 void MashRunner::RunMain() {
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
+      service_manager::kThreadPoolMaxThreads);
+  base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
+
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
@@ -169,9 +176,16 @@ void MashRunner::RunMain() {
   // Ping mash_session to ensure an instance is brought up
   context_->connector()->Connect("mash_session");
   base::RunLoop().Run();
+
+  base::TaskScheduler::GetInstance()->Shutdown();
 }
 
 int MashRunner::RunChild() {
+  // TODO(fdoray): Add TaskScheduler initialization code in
+  // service_manager::ServiceRunner. TaskScheduler can't be initialized here
+  // because it wouldn't be visible to the service's dynamic library.
+  // https://crbug.com/664996
+
   base::FilePath path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kChildProcess);
