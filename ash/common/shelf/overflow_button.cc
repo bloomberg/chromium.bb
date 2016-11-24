@@ -27,6 +27,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 
 namespace ash {
 
@@ -108,6 +109,12 @@ bool OverflowButton::ShouldEnterPushedState(const ui::Event& event) {
 void OverflowButton::NotifyClick(const ui::Event& event) {
   CustomButton::NotifyClick(event);
   shelf_view_->ButtonPressed(this, event, GetInkDrop());
+}
+
+std::unique_ptr<views::InkDropMask> OverflowButton::CreateInkDropMask() const {
+  gfx::Insets insets = GetLocalBounds().InsetsFrom(CalculateButtonBounds());
+  return base::MakeUnique<views::RoundRectInkDropMask>(
+      size(), insets, kOverflowButtonCornerRadius);
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,

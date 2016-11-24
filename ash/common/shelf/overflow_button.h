@@ -34,6 +34,7 @@ class OverflowButton : public views::CustomButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void NotifyClick(const ui::Event& event) override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // Helper functions to paint the background and foreground of the button
   // at |bounds|.
