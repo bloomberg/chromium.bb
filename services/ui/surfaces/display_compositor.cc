@@ -17,11 +17,13 @@ DisplayCompositor::DisplayCompositor(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
     std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
+    cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client)
     : gpu_service_(std::move(gpu_service)),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
-      client_(std::move(client)) {
+      client_(std::move(client)),
+      binding_(this, std::move(request)) {
   manager_.AddObserver(this);
 }
 

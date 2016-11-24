@@ -17,6 +17,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ipc/ipc_channel_handle.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/surfaces/mus_gpu_memory_buffer_manager.h"
 
 namespace gpu {
@@ -46,6 +47,7 @@ class DisplayCompositor : public cc::SurfaceObserver,
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
       std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
+      cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtr client);
   ~DisplayCompositor() override;
 
@@ -88,11 +90,11 @@ class DisplayCompositor : public cc::SurfaceObserver,
   // destroyed in order to ensure that all other objects that depend on it have
   // access to a valid pointer for the entirety of their liftimes.
   cc::SurfaceManager manager_;
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
   std::unordered_map<cc::FrameSinkId,
                      std::unique_ptr<GpuCompositorFrameSink>,
                      cc::FrameSinkIdHash>
       compositor_frame_sinks_;
-  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
   cc::mojom::DisplayCompositorClientPtr client_;
@@ -106,6 +108,8 @@ class DisplayCompositor : public cc::SurfaceObserver,
                      std::vector<cc::LocalFrameId>,
                      cc::FrameSinkIdHash>
       temp_references_;
+
+  mojo::Binding<cc::mojom::DisplayCompositor> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
 };

@@ -41,16 +41,15 @@ GpuServiceInternal::GpuServiceInternal(
     const gpu::GPUInfo& gpu_info,
     std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> io_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_runner)
     : io_runner_(std::move(io_runner)),
+      compositor_runner_(std::move(compositor_runner)),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-      gpu_info_(gpu_info),
-      compositor_thread_("DisplayCompositorThread") {
-  compositor_thread_.Start();
-}
+      gpu_info_(gpu_info) {}
 
 GpuServiceInternal::~GpuServiceInternal() {
   bindings_.CloseAllBindings();
@@ -102,7 +101,7 @@ void GpuServiceInternal::CreateDisplayCompositor(
       gpu_channel_manager_->share_group());
   mojom::GpuServiceInternalPtr gpu_service_ptr;
   Add(mojo::GetProxy(&gpu_service_ptr));
-  compositor_thread_.task_runner()->PostTask(
+  compositor_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuServiceInternal::CreateDisplayCompositorOnCompositorThread,
                  base::Unretained(this),
@@ -114,7 +113,7 @@ void GpuServiceInternal::CreateDisplayCompositorOnCompositorThread(
     mojom::GpuServiceInternalPtrInfo gpu_service_info,
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtrInfo client_info) {
-  DCHECK(compositor_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(compositor_runner_->BelongsToCurrentThread());
   mojom::GpuServiceInternalPtr gpu_service_ptr;
   gpu_service_ptr.Bind(std::move(gpu_service_info));
 
@@ -128,12 +127,27 @@ void GpuServiceInternal::CreateDisplayCompositorOnCompositorThread(
   gpu::ImageFactory* image_factory =
       gpu_memory_buffer_factory_ ? gpu_memory_buffer_factory_->AsImageFactory()
                                  : nullptr;
-  mojo::MakeStrongBinding(
-      base::MakeUnique<DisplayCompositor>(gpu_command_service_,
-                                          std::move(gpu_memory_buffer_manager),
-                                          image_factory, std::move(client_ptr)),
-      std::move(request));
+  display_compositor_ = base::MakeUnique<DisplayCompositor>(
+      gpu_command_service_, std::move(gpu_memory_buffer_manager), image_factory,
+      std::move(request), std::move(client_ptr));
 }
+
+void GpuServiceInternal::DestroyDisplayCompositor() {
+  if (compositor_runner_->BelongsToCurrentThread()) {
+    DestroyDisplayCompositorOnCompositorThread();
+    return;
+  }
+  compositor_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &GpuServiceInternal::DestroyDisplayCompositorOnCompositorThread,
+          base::Unretained(this)));
+}
+
+void GpuServiceInternal::DestroyDisplayCompositorOnCompositorThread() {
+  display_compositor_.reset();
+}
+
 void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {
   NOTIMPLEMENTED();
 }

@@ -41,7 +41,10 @@ std::unique_ptr<base::MessagePump> CreateMessagePumpMac() {
 namespace ui {
 
 GpuMain::GpuMain()
-    : gpu_thread_("GpuThread"), io_thread_("GpuIOThread"), weak_factory_(this) {
+    : gpu_thread_("GpuThread"),
+      io_thread_("GpuIOThread"),
+      compositor_thread_("DisplayCompositorThread"),
+      weak_factory_(this) {
   base::Thread::Options thread_options;
 
 #if defined(OS_WIN)
@@ -73,10 +76,21 @@ GpuMain::GpuMain()
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
+
+  // Start the compositor thread.
+  compositor_thread_.Start();
 }
 
 GpuMain::~GpuMain() {
   // Unretained() is OK here since the thread/task runner is owned by |this|.
+  compositor_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuMain::TearDownOnCompositorThread, base::Unretained(this)));
+  // Block the main thread until the compositor thread terminates which blocks
+  // on the gpu thread. The Stop must be initiated from here instead of the gpu
+  // thread to avoid deadlock.
+  compositor_thread_.Stop();
+
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::TearDownOnGpuThread, base::Unretained(this)));
@@ -87,7 +101,8 @@ GpuMain::~GpuMain() {
 void GpuMain::OnStart() {
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&GpuMain::InitOnGpuThread, weak_factory_.GetWeakPtr()));
+      base::Bind(&GpuMain::InitOnGpuThread, weak_factory_.GetWeakPtr(),
+                 io_thread_.task_runner(), compositor_thread_.task_runner()));
 }
 
 void GpuMain::Create(mojom::GpuServiceInternalRequest request) {
@@ -97,7 +112,9 @@ void GpuMain::Create(mojom::GpuServiceInternalRequest request) {
                  base::Passed(std::move(request))));
 }
 
-void GpuMain::InitOnGpuThread() {
+void GpuMain::InitOnGpuThread(
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_runner) {
   gpu_init_.reset(new gpu::GpuInit());
   gpu_init_->set_sandbox_helper(this);
   bool success = gpu_init_->InitializeAndStartSandbox(
@@ -109,8 +126,13 @@ void GpuMain::InitOnGpuThread() {
     }
     gpu_service_internal_.reset(new GpuServiceInternal(
         gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
-        gpu_memory_buffer_factory_.get(), io_thread_.task_runner()));
+        gpu_memory_buffer_factory_.get(), io_runner, compositor_runner));
   }
+}
+
+void GpuMain::TearDownOnCompositorThread() {
+  if (gpu_service_internal_)
+    gpu_service_internal_->DestroyDisplayCompositor();
 }
 
 void GpuMain::TearDownOnGpuThread() {

@@ -28,7 +28,11 @@ class GpuMain : public gpu::GpuSandboxHelper {
   GpuServiceInternal* gpu_service() { return gpu_service_internal_.get(); }
 
  private:
-  void InitOnGpuThread();
+  void InitOnGpuThread(
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_runner);
+
+  void TearDownOnCompositorThread();
   void TearDownOnGpuThread();
   void CreateOnGpuThread(mojom::GpuServiceInternalRequest request);
 
@@ -46,6 +50,9 @@ class GpuMain : public gpu::GpuSandboxHelper {
 
   // The thread that handles IO events for GpuService.
   base::Thread io_thread_;
+
+  // The thread used for the display compositor.
+  base::Thread compositor_thread_;
 
   base::WeakPtrFactory<GpuMain> weak_factory_;
 

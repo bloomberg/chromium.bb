@@ -50,13 +50,17 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   void Add(mojom::GpuServiceInternalRequest request);
 
+  void DestroyDisplayCompositor();
+
  private:
   friend class GpuMain;
 
-  GpuServiceInternal(const gpu::GPUInfo& gpu_info,
-                     std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
-                     gpu::GpuMemoryBufferFactory* memory_buffer_factory,
-                     scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+  GpuServiceInternal(
+      const gpu::GPUInfo& gpu_info,
+      std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
+      gpu::GpuMemoryBufferFactory* memory_buffer_factory,
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner);
 
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
       gfx::GpuMemoryBufferHandle buffer_handle,
@@ -109,7 +113,10 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtrInfo client_info);
 
+  void DestroyDisplayCompositorOnCompositorThread();
+
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_runner_;
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
@@ -123,7 +130,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
-  base::Thread compositor_thread_;
+  std::unique_ptr<ui::DisplayCompositor> display_compositor_;
 
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
