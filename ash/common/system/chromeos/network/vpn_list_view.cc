@@ -124,9 +124,10 @@ class VPNListProviderEntryMd : public views::ButtonListener,
 
     gfx::ImageSkia icon = gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon,
                                                 style.GetIconColor());
-    views::ImageButton* add_vpn_button =
+    SystemMenuButton* add_vpn_button =
         new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED, icon,
                              icon, button_accessible_name_id);
+    add_vpn_button->SetInkDropColor(style.GetIconColor());
     add_vpn_button->SetEnabled(true);
     tri_view->AddView(TriView::Container::END, add_vpn_button);
   }

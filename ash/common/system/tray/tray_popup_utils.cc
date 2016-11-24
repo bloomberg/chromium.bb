@@ -326,7 +326,8 @@ std::unique_ptr<views::InkDrop> TrayPopupUtils::CreateInkDrop(
 std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
     TrayPopupInkDropStyle ink_drop_style,
     const views::View* host,
-    const gfx::Point& center_point) {
+    const gfx::Point& center_point,
+    SkColor color) {
   const gfx::Rect bounds =
       TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
   switch (ink_drop_style) {
@@ -336,14 +337,13 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
         return base::MakeUnique<views::SquareInkDropRipple>(
             bounds.size(), bounds.size().width() / 2, bounds.size(),
             bounds.size().width() / 2, center_point, bounds.CenterPoint(),
-            kTrayPopupInkDropBaseColor, kTrayPopupInkDropRippleOpacity);
+            color, kTrayPopupInkDropRippleOpacity);
       }
     // Intentional fall through.
     case TrayPopupInkDropStyle::INSET_BOUNDS:
     case TrayPopupInkDropStyle::FILL_BOUNDS:
       return base::MakeUnique<views::FloodFillInkDropRipple>(
-          bounds, center_point, kTrayPopupInkDropBaseColor,
-          kTrayPopupInkDropRippleOpacity);
+          bounds, center_point, color, kTrayPopupInkDropRippleOpacity);
   }
   // Required for some compilers.
   NOTREACHED();
@@ -352,13 +352,13 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
 
 std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
     TrayPopupInkDropStyle ink_drop_style,
-    const views::View* host) {
+    const views::View* host,
+    SkColor color) {
   const gfx::Rect bounds =
       TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(bounds.size(), 0,
-                                  gfx::PointF(bounds.CenterPoint()),
-                                  kTrayPopupInkDropBaseColor));
+                                  gfx::PointF(bounds.CenterPoint()), color));
   highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
   return highlight;
 }

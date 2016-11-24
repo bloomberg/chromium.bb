@@ -6,12 +6,12 @@
 #define ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 
 #include "ash/common/login_status.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_ink_drop_style.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "base/strings/string16.h"
 
 namespace views {
-class Border;
 class ButtonListener;
 class ImageView;
 class InkDrop;
@@ -21,7 +21,6 @@ class InkDropHostView;
 class InkDropMask;
 class Label;
 class LabelButton;
-class LayoutManager;
 class Separator;
 class Slider;
 class SliderListener;
@@ -142,7 +141,8 @@ class TrayPopupUtils {
   static std::unique_ptr<views::InkDropRipple> CreateInkDropRipple(
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host,
-      const gfx::Point& center_point);
+      const gfx::Point& center_point,
+      SkColor color = kTrayPopupInkDropBaseColor);
 
   // Creates in InkDropHighlight instance for |host| according to the
   // |ink_drop_style|.
@@ -151,7 +151,8 @@ class TrayPopupUtils {
   // InkDropHost::CreateInkDropHighlight() calls here.
   static std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
       TrayPopupInkDropStyle ink_drop_style,
-      const views::View* host);
+      const views::View* host,
+      SkColor color = kTrayPopupInkDropBaseColor);
 
   // Creates in InkDropMask instance for |host| according to the
   // |ink_drop_style|. May return null.

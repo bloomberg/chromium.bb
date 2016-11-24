@@ -240,7 +240,7 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
     join_ = new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                                  normal_image, disabled_image,
                                  IDS_ASH_STATUS_TRAY_OTHER_WIFI);
-    join_->set_ink_drop_base_color(prominent_color);
+    join_->SetInkDropColor(prominent_color);
     join_->SetEnabled(enabled);
 
     container()->AddChildView(join_);

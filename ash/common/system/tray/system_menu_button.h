@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/tray_popup_ink_drop_style.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -41,6 +42,11 @@ class SystemMenuButton : public views::ImageButton {
                    int accessible_name_id);
   ~SystemMenuButton() override;
 
+  // Explicity sets the ink drop color. Otherwise the default value will be used
+  // by TrayPopupUtils::CreateInkDropRipple() and
+  // TrayPopupUtils::CreateInkDropHighlight().
+  void SetInkDropColor(SkColor color);
+
   // views::ImageButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
@@ -54,6 +60,11 @@ class SystemMenuButton : public views::ImageButton {
 
   // Defines the flavor of ink drop ripple/highlight that should be constructed.
   TrayPopupInkDropStyle ink_drop_style_;
+
+  // The color to use when creating the ink drop. If null the default color is
+  // used as defined by TrayPopupUtils::CreateInkDropRipple() and
+  // TrayPopupUtils::CreateInkDropHighlight().
+  base::Optional<SkColor> ink_drop_color_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMenuButton);
 };
