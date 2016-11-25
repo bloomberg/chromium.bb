@@ -85,7 +85,6 @@ class MODULES_EXPORT Request final : public Body {
  private:
   Request(ScriptState*, FetchRequestData*, Headers*);
   Request(ScriptState*, FetchRequestData*);
-  Request(ScriptState*, const WebServiceWorkerRequest&);
 
   const FetchRequestData* request() const { return m_request; }
   static Request* createRequestWithRequestOrString(ScriptState*,

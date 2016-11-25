@@ -469,7 +469,8 @@ Request* Request::create(ScriptState* scriptState, FetchRequestData* request) {
 
 Request* Request::create(ScriptState* scriptState,
                          const WebServiceWorkerRequest& webRequest) {
-  return new Request(scriptState, webRequest);
+  FetchRequestData* request = FetchRequestData::create(scriptState, webRequest);
+  return new Request(scriptState, request);
 }
 
 Request::Request(ScriptState* scriptState,
@@ -485,10 +486,6 @@ Request::Request(ScriptState* scriptState, FetchRequestData* request)
     : Request(scriptState, request, Headers::create(request->headerList())) {
   m_headers->setGuard(Headers::RequestGuard);
 }
-
-Request::Request(ScriptState* scriptState,
-                 const WebServiceWorkerRequest& request)
-    : Request(scriptState, FetchRequestData::create(scriptState, request)) {}
 
 String Request::method() const {
   // "The method attribute's getter must return request's method."
