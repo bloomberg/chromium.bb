@@ -26,14 +26,20 @@ class VRServiceImpl : public mojom::VRService {
 
   mojom::VRServiceClient* client() { return client_.get(); }
 
-  VRDisplayImpl* GetVRDisplayImpl(VRDevice* device);
+  DEVICE_VR_EXPORT VRDisplayImpl* GetVRDisplayImpl(VRDevice* device);
+
+  // mojom::VRService implementation
+  void SetClient(mojom::VRServiceClientPtr service_client,
+                 const SetClientCallback& callback) override;
 
   bool listening_for_activate() { return listening_for_activate_; }
 
  private:
-  friend class VRServiceTestBinding;
+  friend class FakeVRServiceClient;
   friend class VRDeviceManagerTest;
   friend class VRDisplayImpl;
+  friend class VRDisplayImplTest;
+  friend class VRServiceImplTest;
 
   DEVICE_VR_EXPORT VRServiceImpl();
 
@@ -42,9 +48,6 @@ class VRServiceImpl : public mojom::VRService {
   void RemoveFromDeviceManager();
   void RemoveDevice(VRDevice* device);
 
-  // mojom::VRService implementation
-  void SetClient(mojom::VRServiceClientPtr service_client,
-                 const SetClientCallback& callback) override;
   void SetListeningForActivate(bool listening) override;
 
   using DisplayImplMap = std::map<VRDevice*, std::unique_ptr<VRDisplayImpl>>;

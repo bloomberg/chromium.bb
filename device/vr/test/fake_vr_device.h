@@ -34,9 +34,6 @@ class FakeVRDevice : public VRDevice {
   void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                          mojom::VRLayerBoundsPtr rightBounds) override;
 
-  void AddService(VRServiceImpl* service) override;
-  void RemoveService(VRServiceImpl* service) override;
-
  private:
   mojom::VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);
 

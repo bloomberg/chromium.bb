@@ -59,6 +59,7 @@ class DEVICE_VR_EXPORT VRDevice {
 
  protected:
   friend class VRDisplayImpl;
+  friend class VRDisplayImplTest;
 
   void SetPresentingService(VRServiceImpl* service);
 

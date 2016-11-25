@@ -4,69 +4,24 @@
 
 #include "device/vr/vr_service_impl.h"
 
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_device_provider.h"
+#include "device/vr/test/fake_vr_service_client.h"
 #include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_service.mojom.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-using ::testing::_;
-using ::testing::Mock;
+#include "device/vr/vr_service_impl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
-// TODO(shaobo.yan@intel.com) : Update the whole unittest.
-class MockVRServiceClient : public mojom::VRServiceClient {};
-
-class VRServiceTestBinding {
- public:
-  VRServiceTestBinding() {
-    auto request = mojo::GetProxy(&service_ptr_);
-    service_impl_.reset(new VRServiceImpl());
-    service_impl_->Bind(std::move(request));
-
-    client_binding_.reset(new mojo::Binding<mojom::VRServiceClient>(
-        mock_client_, mojo::GetProxy(&client_ptr_)));
-  }
-
-  void SetClient() {
-    service_impl_->SetClient(
-        std::move(client_ptr_),
-        base::Bind(&device::VRServiceTestBinding::SetNumberOfDevices,
-                   base::Unretained(this)));
-  }
-
-  void SetNumberOfDevices(unsigned int number_of_devices) {
-    number_of_devices_ = number_of_devices;
-  }
-
-  void Close() {
-    service_ptr_.reset();
-    service_impl_.reset();
-  }
-
-  MockVRServiceClient* client() { return mock_client_; }
-  VRServiceImpl* service() { return service_impl_.get(); }
-
- private:
-  mojom::VRServiceClientPtr client_ptr_;
-  std::unique_ptr<VRServiceImpl> service_impl_;
-  mojo::InterfacePtr<mojom::VRService> service_ptr_;
-
-  MockVRServiceClient* mock_client_;
-  std::unique_ptr<mojo::Binding<mojom::VRServiceClient>> client_binding_;
-  unsigned int number_of_devices_;
-
-  DISALLOW_COPY_AND_ASSIGN(VRServiceTestBinding);
-};
 
 class VRServiceImplTest : public testing::Test {
  public:
   VRServiceImplTest() {}
   ~VRServiceImplTest() override {}
+  void onDisplaySynced(unsigned int number_of_devices) {}
 
  protected:
   void SetUp() override {
@@ -74,18 +29,21 @@ class VRServiceImplTest : public testing::Test {
     device_manager_.reset(new VRDeviceManager(base::WrapUnique(provider_)));
   }
 
-  void TearDown() override { base::RunLoop().RunUntilIdle(); }
-
-  std::unique_ptr<VRServiceTestBinding> BindService() {
-    auto test_binding = base::WrapUnique(new VRServiceTestBinding());
-    test_binding->SetClient();
-    return test_binding;
+  std::unique_ptr<VRServiceImpl> BindService() {
+    mojom::VRServiceClientPtr proxy;
+    FakeVRServiceClient client(mojo::GetProxy(&proxy));
+    auto service = base::WrapUnique(new VRServiceImpl());
+    service->SetClient(std::move(proxy),
+                       base::Bind(&VRServiceImplTest::onDisplaySynced,
+                                  base::Unretained(this)));
+    return service;
   }
 
   size_t ServiceCount() { return device_manager_->services_.size(); }
 
+ private:
   base::MessageLoop message_loop_;
-  FakeVRDeviceProvider* provider_ = nullptr;
+  FakeVRDeviceProvider* provider_;
   std::unique_ptr<VRDeviceManager> device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VRServiceImplTest);
@@ -96,19 +54,19 @@ class VRServiceImplTest : public testing::Test {
 TEST_F(VRServiceImplTest, DeviceManagerRegistration) {
   EXPECT_EQ(0u, ServiceCount());
 
-  std::unique_ptr<VRServiceTestBinding> service_1 = BindService();
+  auto service_1 = BindService();
 
   EXPECT_EQ(1u, ServiceCount());
 
-  std::unique_ptr<VRServiceTestBinding> service_2 = BindService();
+  auto service_2 = BindService();
 
   EXPECT_EQ(2u, ServiceCount());
 
-  service_1->Close();
+  service_1.reset();
 
   EXPECT_EQ(1u, ServiceCount());
 
-  service_2->Close();
+  service_2.reset();
 
   EXPECT_EQ(0u, ServiceCount());
 }

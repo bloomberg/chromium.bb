@@ -24,6 +24,7 @@ class VRDisplayImpl : public mojom::VRDisplay {
   mojom::VRDisplayClient* client() { return client_.get(); }
 
  private:
+  friend class VRDisplayImplTest;
   friend class VRServiceImpl;
 
   void GetPose(const GetPoseCallback& callback) override;
