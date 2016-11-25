@@ -225,6 +225,14 @@ bool BrowserPolicyConnectorChromeOS::IsEnterpriseManaged() const {
   return install_attributes_ && install_attributes_->IsEnterpriseManaged();
 }
 
+bool BrowserPolicyConnectorChromeOS::IsCloudManaged() const {
+  return install_attributes_ && install_attributes_->IsCloudManaged();
+}
+
+bool BrowserPolicyConnectorChromeOS::IsActiveDirectoryManaged() const {
+  return install_attributes_ && install_attributes_->IsActiveDirectoryManaged();
+}
+
 std::string BrowserPolicyConnectorChromeOS::GetEnterpriseDomain() const {
   return install_attributes_ ? install_attributes_->GetDomain() : std::string();
 }

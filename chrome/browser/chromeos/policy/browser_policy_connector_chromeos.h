@@ -69,9 +69,14 @@ class BrowserPolicyConnectorChromeOS
 
   void Shutdown() override;
 
-  // Returns true if this device is managed by an enterprise (as opposed to
-  // a local owner).
+  // Checks whether this devices is under any kind of enterprise management.
   bool IsEnterpriseManaged() const;
+
+  // Checks whether this is a cloud (DM server) managed enterprise device.
+  bool IsCloudManaged() const;
+
+  // Checks whether this is an Active Directory managed enterprise device.
+  bool IsActiveDirectoryManaged() const;
 
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain() const;

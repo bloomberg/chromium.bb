@@ -74,7 +74,7 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
   policy::BrowserPolicyConnectorChromeOS* policy_connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
 
-  if (policy_connector->IsEnterpriseManaged()) {
+  if (policy_connector->IsCloudManaged()) {
     user_dict->SetString(kKeyEnterpriseDomain,
                          policy_connector->GetEnterpriseDomain());
   }
