@@ -2570,31 +2570,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
   GoBackToPageBeforePrerender();
 }
 
-// Checks that the control group works.  An XHR PUT cannot be detected in the
-// control group.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroup) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
-  DisableJavascriptCalls();
-  PrerenderTestURL("/prerender/prerender_xhr_put.html",
-                   FINAL_STATUS_WOULD_HAVE_BEEN_USED, 0);
-  NavigateToDestURL();
-}
-
-// Checks that the control group correctly hits WOULD_HAVE_BEEN_USED
-// renderer-initiated navigations. (This verifies that the ShouldFork logic
-// behaves correctly.)
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroupRendererInitiated) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
-  DisableJavascriptCalls();
-  PrerenderTestURL("/prerender/prerender_xhr_put.html",
-                   FINAL_STATUS_WOULD_HAVE_BEEN_USED, 0);
-  OpenDestURLViaClick();
-}
-
 // Checks that the referrer policy is used when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
   set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");

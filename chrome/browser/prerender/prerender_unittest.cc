@@ -298,16 +298,10 @@ DummyPrerenderContents::~DummyPrerenderContents() {
 void DummyPrerenderContents::StartPrerendering(
     const gfx::Rect& bounds,
     content::SessionStorageNamespace* session_storage_namespace) {
-  // In the base PrerenderContents implementation, StartPrerendering will
-  // be called even when the PrerenderManager is part of the control group,
-  // but it will early exit before actually creating a new RenderView if
-  // |is_control_group| is true;
   load_start_time_ = test_prerender_manager_->GetCurrentTimeTicks();
-  if (!test_prerender_manager_->IsControlGroup()) {
-    prerendering_has_started_ = true;
-    test_prerender_manager_->DummyPrerenderContentsStarted(-1, route_id_, this);
-    NotifyPrerenderStart();
-  }
+  prerendering_has_started_ = true;
+  test_prerender_manager_->DummyPrerenderContentsStarted(-1, route_id_, this);
+  NotifyPrerenderStart();
 }
 
 class PrerenderTest : public testing::Test {
@@ -912,21 +906,6 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
 
   // The pending prerender doesn't start.
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
-}
-
-// Tests that a PrerenderManager created for a browser session in the control
-// group works as expected.
-TEST_F(PrerenderTest, ControlGroup) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_FALSE(prerender_contents->prerendering_has_started());
 }
 
 // Tests that prerendering is cancelled when the source render view does not

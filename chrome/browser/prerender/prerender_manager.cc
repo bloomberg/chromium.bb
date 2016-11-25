@@ -182,19 +182,6 @@ PrerenderManager::PrerenderManager(Profile* profile)
       GetCurrentTimeTicks() -
       base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
 
-  // Certain experiments override our default config_ values.
-  switch (PrerenderManager::GetMode()) {
-    case PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP:
-      config_.max_link_concurrency = 4;
-      config_.max_link_concurrency_per_launcher = 2;
-      break;
-    case PrerenderManager::PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP:
-      config_.time_to_live = base::TimeDelta::FromMinutes(15);
-      break;
-    default:
-      break;
-  }
-
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(profile_));
@@ -447,15 +434,6 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
     return nullptr;
   }
 
-  // For bookkeeping purposes, we need to mark this WebContents to
-  // reflect that it would have been prerendered.
-  if (GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP) {
-    target_tab_helper->WouldHavePrerenderedNextLoad(
-        prerender_data->contents()->origin());
-    prerender_data->contents()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-    return nullptr;
-  }
-
   // At this point, we've determined that we will use the prerender.
   content::RenderProcessHost* process_host =
       prerender_data->contents()->GetRenderViewHost()->GetProcess();
@@ -631,21 +609,6 @@ bool PrerenderManager::IsPrerenderingPossible() {
 }
 
 // static
-bool PrerenderManager::ActuallyPrerendering() {
-  return IsPrerenderingPossible() && !IsControlGroup();
-}
-
-// static
-bool PrerenderManager::IsControlGroup() {
-  return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
-}
-
-// static
-bool PrerenderManager::IsNoUseGroup() {
-  return GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
-}
-
-// static
 bool PrerenderManager::IsNoStatePrefetch() {
   return GetMode() == PRERENDER_MODE_NOSTATE_PREFETCH;
 }
@@ -796,14 +759,6 @@ std::unique_ptr<base::DictionaryValue> PrerenderManager::GetAsValue() const {
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
-  if (IsControlGroup())
-    enabled_note += "(Control group: Not actually prerendering) ";
-  if (IsNoUseGroup())
-    enabled_note += "(No-use group: Not swapping in prerendered pages) ";
-  if (GetMode() == PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP) {
-    enabled_note +=
-        "(15 min TTL group: Extended prerender eviction to 15 mins) ";
-  }
   dict_value->SetString("enabled_note", enabled_note);
   return dict_value;
 }
@@ -928,8 +883,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   GURL url = url_arg;
   GURL alias_url;
-  if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url))
-    url = alias_url;
 
   // From here on, we will record a FinalStatus so we need to register with the
   // histogram tracking.
@@ -1023,11 +976,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
   prerender_contents_ptr->StartPrerendering(contents_bounds,
                                             session_storage_namespace);
 
-  DCHECK(IsControlGroup() ||
-         prerender_contents_ptr->prerendering_has_started());
-
-  if (GetMode() == PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP)
-    histograms_->RecordConcurrency(active_prerenders_.size());
+  DCHECK(prerender_contents_ptr->prerendering_has_started());
 
   StartSchedulingPeriodicCleanups();
   return prerender_handle;
@@ -1289,7 +1238,7 @@ void PrerenderManager::OnCreatingAudioStream(int render_process_id,
 void PrerenderManager::RecordNetworkBytes(Origin origin,
                                           bool used,
                                           int64_t prerender_bytes) {
-  if (!ActuallyPrerendering())
+  if (!IsPrerenderingPossible())
     return;
   int64_t recent_profile_bytes =
       profile_network_bytes_ - last_recorded_profile_network_bytes_;
@@ -1367,7 +1316,7 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64_t bytes) {
   DCHECK_GE(bytes, 0);
   if (GetPredictionStatus() == NetworkPredictionStatus::ENABLED &&
-      ActuallyPrerendering())
+      IsPrerenderingPossible())
     profile_network_bytes_ += bytes;
 }
 

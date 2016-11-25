@@ -80,19 +80,10 @@ class PrerenderManager : public content::NotificationObserver,
                          public KeyedService,
                          public MediaCaptureDevicesDispatcher::Observer {
  public:
-  // NOTE: New values need to be appended, since they are used in histograms.
   enum PrerenderManagerMode {
-    PRERENDER_MODE_DISABLED = 0,
-    PRERENDER_MODE_ENABLED = 1,
-    PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP = 2,
-    PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP = 3,
-    // Obsolete: PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP = 4,
-    PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP = 5,
-    PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP = 6,
-    PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP = 7,
-    // Obsolete: PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP = 8,
-    PRERENDER_MODE_NOSTATE_PREFETCH = 9,
-    PRERENDER_MODE_MAX = 10
+    PRERENDER_MODE_DISABLED,
+    PRERENDER_MODE_ENABLED,
+    PRERENDER_MODE_NOSTATE_PREFETCH
   };
 
   // One or more of these flags must be passed to ClearData() to specify just
@@ -230,9 +221,6 @@ class PrerenderManager : public content::NotificationObserver,
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
-  static bool ActuallyPrerendering();
-  static bool IsControlGroup();
-  static bool IsNoUseGroup();
   static bool IsNoStatePrefetch();
 
   // Query the list of current prerender pages to see if the given web contents

@@ -273,12 +273,6 @@ void PrerenderContents::StartPrerendering(
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
-  // Everything after this point sets up the WebContents object and associated
-  // RenderView for the prerender page. Don't do this for members of the
-  // control group.
-  if (prerender_manager_->IsControlGroup())
-    return;
-
   prerendering_has_started_ = true;
 
   prerender_contents_.reset(CreateWebContents(session_storage_namespace));
@@ -635,7 +629,7 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   prerender_manager_->AddToHistory(this);
   prerender_manager_->MoveEntryToPendingDelete(this, final_status);
 
-  if (!prerender_manager_->IsControlGroup() && prerendering_has_started())
+  if (prerendering_has_started())
     NotifyPrerenderStop();
 }
 

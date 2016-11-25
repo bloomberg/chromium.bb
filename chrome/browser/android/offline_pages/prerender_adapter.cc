@@ -26,7 +26,7 @@ PrerenderAdapter::~PrerenderAdapter() {
 }
 
 bool PrerenderAdapter::CanPrerender() const {
-  return prerender::PrerenderManager::ActuallyPrerendering();
+  return prerender::PrerenderManager::IsPrerenderingPossible();
 }
 
 bool PrerenderAdapter::StartPrerender(
