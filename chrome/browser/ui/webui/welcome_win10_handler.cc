@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
@@ -13,13 +16,58 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-WelcomeWin10Handler::WelcomeWin10Handler() : weak_ptr_factory_(this) {
+namespace {
+
+void RecordDefaultBrowserResult(
+    const std::string& histogram_suffix,
+    shell_integration::DefaultWebClientState default_browser_state) {
+  base::UmaHistogramBoolean(
+      base::StringPrintf("Welcome.Win10.DefaultPromptResult_%s",
+                         histogram_suffix.c_str()),
+      default_browser_state == shell_integration::IS_DEFAULT);
+}
+
+void RecordPinnedResult(const std::string& histogram_suffix,
+                        bool succeeded,
+                        bool is_pinned) {
+  if (!succeeded)
+    return;
+
+  base::UmaHistogramBoolean(
+      base::StringPrintf("Welcome.Win10.PinnedPromptResult_%s",
+                         histogram_suffix.c_str()),
+      is_pinned);
+}
+
+}  // namespace
+
+WelcomeWin10Handler::WelcomeWin10Handler(bool inline_style_variant)
+    : inline_style_variant_(inline_style_variant), weak_ptr_factory_(this) {
   // The check is started as early as possible because waiting for the page to
   // be fully loaded is unnecessarily wasting time.
   StartIsPinnedToTaskbarCheck();
 }
 
-WelcomeWin10Handler::~WelcomeWin10Handler() = default;
+WelcomeWin10Handler::~WelcomeWin10Handler() {
+  // The instructions for pinning Chrome to the taskbar were only displayed if
+  // Chrome wasn't pinned to the taskbar at page construction time.
+  bool pin_instructions_shown =
+      pinned_state_result_.has_value() && !pinned_state_result_.value();
+
+  std::string histogram_suffix;
+  histogram_suffix += inline_style_variant_ ? "Inline" : "Sectioned";
+  histogram_suffix += pin_instructions_shown ? "Combined" : "Default";
+
+  // Closing the page. Record whether the instructions were useful.
+  (new shell_integration::DefaultBrowserWorker(
+       base::Bind(&RecordDefaultBrowserResult, histogram_suffix)))
+      ->StartCheckIsDefault();
+
+  if (pin_instructions_shown) {
+    shell_integration::win::GetIsPinnedToTaskbarState(
+        base::Closure(), base::Bind(&RecordPinnedResult, histogram_suffix));
+  }
+}
 
 void WelcomeWin10Handler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -46,7 +94,7 @@ void WelcomeWin10Handler::HandleGetPinnedToTaskbarState(
   DCHECK(callback_id_found);
 
   // Send back the result if it is already available.
-  if (pinned_state_result_) {
+  if (pinned_state_result_.has_value()) {
     SendPinnedToTaskbarStateResult();
     return;
   }
@@ -63,6 +111,8 @@ void WelcomeWin10Handler::HandleGetPinnedToTaskbarState(
 }
 
 void WelcomeWin10Handler::HandleSetDefaultBrowser(const base::ListValue* args) {
+  base::RecordAction(
+      base::UserMetricsAction("Win10WelcomePage_SetAsDefaultBrowser"));
   // The worker owns itself.
   (new shell_integration::DefaultBrowserWorker(
        shell_integration::DefaultWebClientWorkerCallback()))
@@ -98,13 +148,14 @@ void WelcomeWin10Handler::OnIsPinnedToTaskbarDetermined(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Early exit if the pinned_state was already determined.
-  if (pinned_state_result_)
+  if (pinned_state_result_.has_value())
     return;
 
   // Stop the timer if it's still running.
   timer_.Stop();
 
-  pinned_state_result_ = is_pinned_to_taskbar;
+  // Cache the value.
+  pinned_state_result_.emplace(is_pinned_to_taskbar);
 
   // If the page already called getPinnedToTaskbarState(), the result can be
   // sent back.

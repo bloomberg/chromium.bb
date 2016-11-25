@@ -20,7 +20,7 @@ class ListValue;
 // Handles actions on the Windows 10 specific Welcome page.
 class WelcomeWin10Handler : public content::WebUIMessageHandler {
  public:
-  WelcomeWin10Handler();
+  explicit WelcomeWin10Handler(bool inline_style_variant);
   ~WelcomeWin10Handler() override;
 
   // content::WebUIMessageHandler:
@@ -57,6 +57,9 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
   // variable is used to determine if the result should be sent to the caller
   // when it is received, or wait for the call to happen.
   std::string pinned_state_callback_id_;
+
+  // Indicates if the inline style variant is displayed.
+  bool inline_style_variant_;
 
   base::WeakPtrFactory<WelcomeWin10Handler> weak_ptr_factory_;
 

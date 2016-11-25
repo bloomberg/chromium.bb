@@ -89,14 +89,14 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   static const char kCssFilePath[] = "welcome.css";
   static const char kJsFilePath[] = "welcome.js";
 
-  web_ui->AddMessageHandler(new WelcomeWin10Handler());
-
-  content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(url.host());
-
   // Determine which variation to show.
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
   bool is_inline_style = ShouldShowInlineStyleVariant(url);
+
+  web_ui->AddMessageHandler(new WelcomeWin10Handler(is_inline_style));
+
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::Create(url.host());
 
   AddLocalizedStrings(html_source, is_first_run);
 

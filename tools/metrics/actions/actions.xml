@@ -15734,6 +15734,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Win10WelcomePage_SetAsDefaultBrowser">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked &quot;Open Windows Settings&quot; in the Win10 version of
+    the Welcome page.
+  </description>
+</action>
+
 <action name="Win7ASHRestart">
   <owner>cpu@chromium.org</owner>
   <owner>ananta@chromium.org</owner>
