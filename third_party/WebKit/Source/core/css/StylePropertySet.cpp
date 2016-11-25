@@ -296,7 +296,7 @@ bool StylePropertySet::isPropertyImplicit(CSSPropertyID propertyID) const {
   return propertyAt(foundPropertyIndex).isImplicit();
 }
 
-bool MutableStylePropertySet::setProperty(
+MutableStylePropertySet::SetResult MutableStylePropertySet::setProperty(
     CSSPropertyID unresolvedProperty,
     const String& value,
     bool important,
@@ -306,8 +306,11 @@ bool MutableStylePropertySet::setProperty(
   // Setting the value to an empty string just removes the property in both IE
   // and Gecko. Setting it to null seems to produce less consistent results, but
   // we treat it just the same.
-  if (value.isEmpty())
-    return removeProperty(resolveCSSPropertyID(unresolvedProperty));
+  if (value.isEmpty()) {
+    bool didParse = true;
+    bool didChange = removeProperty(resolveCSSPropertyID(unresolvedProperty));
+    return SetResult{didParse, didChange};
+  }
 
   // When replacing an existing property value, this moves the property to the
   // end of the list. Firefox preserves the position, and MSIE moves the
@@ -316,14 +319,17 @@ bool MutableStylePropertySet::setProperty(
                                contextStyleSheet);
 }
 
-bool MutableStylePropertySet::setProperty(
+MutableStylePropertySet::SetResult MutableStylePropertySet::setProperty(
     const AtomicString& customPropertyName,
     const String& value,
     bool important,
     StyleSheetContents* contextStyleSheet,
     bool isAnimationTainted) {
-  if (value.isEmpty())
-    return removeProperty(customPropertyName);
+  if (value.isEmpty()) {
+    bool didParse = true;
+    bool didChange = removeProperty(customPropertyName);
+    return MutableStylePropertySet::SetResult{didParse, didChange};
+  }
   return CSSParser::parseValueForCustomProperty(this, customPropertyName, value,
                                                 important, contextStyleSheet,
                                                 isAnimationTainted);

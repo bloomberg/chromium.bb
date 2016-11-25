@@ -8,7 +8,6 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleRuleNamespace.h"
@@ -42,11 +41,12 @@ CSSParserImpl::CSSParserImpl(const CSSParserContext& context,
       m_styleSheet(styleSheet),
       m_observerWrapper(nullptr) {}
 
-bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration,
-                               CSSPropertyID unresolvedProperty,
-                               const String& string,
-                               bool important,
-                               const CSSParserContext& context) {
+MutableStylePropertySet::SetResult CSSParserImpl::parseValue(
+    MutableStylePropertySet* declaration,
+    CSSPropertyID unresolvedProperty,
+    const String& string,
+    bool important,
+    const CSSParserContext& context) {
   CSSParserImpl parser(context);
   StyleRule::RuleType ruleType = StyleRule::Style;
   if (declaration->cssParserMode() == CSSViewportRuleMode)
@@ -56,24 +56,33 @@ bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration,
   CSSTokenizer tokenizer(string);
   parser.consumeDeclarationValue(tokenizer.tokenRange(), unresolvedProperty,
                                  important, ruleType);
-  if (parser.m_parsedProperties.isEmpty())
-    return false;
-  return declaration->addParsedProperties(parser.m_parsedProperties);
+  bool didParse = false;
+  bool didChange = false;
+  if (!parser.m_parsedProperties.isEmpty()) {
+    didParse = true;
+    didChange = declaration->addParsedProperties(parser.m_parsedProperties);
+  }
+  return MutableStylePropertySet::SetResult{didParse, didChange};
 }
 
-bool CSSParserImpl::parseVariableValue(MutableStylePropertySet* declaration,
-                                       const AtomicString& propertyName,
-                                       const String& value,
-                                       bool important,
-                                       const CSSParserContext& context,
-                                       bool isAnimationTainted) {
+MutableStylePropertySet::SetResult CSSParserImpl::parseVariableValue(
+    MutableStylePropertySet* declaration,
+    const AtomicString& propertyName,
+    const String& value,
+    bool important,
+    const CSSParserContext& context,
+    bool isAnimationTainted) {
   CSSParserImpl parser(context);
   CSSTokenizer tokenizer(value);
   parser.consumeVariableValue(tokenizer.tokenRange(), propertyName, important,
                               isAnimationTainted);
-  if (parser.m_parsedProperties.isEmpty())
-    return false;
-  return declaration->addParsedProperties(parser.m_parsedProperties);
+  bool didParse = false;
+  bool didChange = false;
+  if (!parser.m_parsedProperties.isEmpty()) {
+    didParse = true;
+    didChange = declaration->addParsedProperties(parser.m_parsedProperties);
+  }
+  return MutableStylePropertySet::SetResult{didParse, didChange};
 }
 
 static inline void filterProperties(

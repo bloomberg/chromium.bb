@@ -224,16 +224,20 @@ class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
   bool addParsedProperties(const HeapVector<CSSProperty, 256>&);
   bool addRespectingCascade(const CSSProperty&);
 
+  struct SetResult {
+    bool didParse;
+    bool didChange;
+  };
   // These expand shorthand properties into multiple properties.
-  bool setProperty(CSSPropertyID unresolvedProperty,
-                   const String& value,
-                   bool important = false,
-                   StyleSheetContents* contextStyleSheet = 0);
-  bool setProperty(const AtomicString& customPropertyName,
-                   const String& value,
-                   bool important,
-                   StyleSheetContents* contextStyleSheet,
-                   bool isAnimationTainted);
+  SetResult setProperty(CSSPropertyID unresolvedProperty,
+                        const String& value,
+                        bool important = false,
+                        StyleSheetContents* contextStyleSheet = 0);
+  SetResult setProperty(const AtomicString& customPropertyName,
+                        const String& value,
+                        bool important,
+                        StyleSheetContents* contextStyleSheet,
+                        bool isAnimationTainted);
   void setProperty(CSSPropertyID, const CSSValue&, bool important = false);
 
   // These do not. FIXME: This is too messy, we can do better.

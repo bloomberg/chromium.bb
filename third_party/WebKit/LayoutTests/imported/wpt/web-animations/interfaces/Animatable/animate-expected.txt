@@ -1,3 +1,6 @@
+CONSOLE WARNING: line 77: Invalid keyframe value for property top: invalid
+CONSOLE WARNING: line 77: Invalid keyframe value for property left: invalid
+CONSOLE WARNING: line 77: Invalid keyframe value for property left: invalid
 This is a testharness.js-based test.
 PASS Element.animate() creates an Animation object 
 FAIL Element.animate() creates an Animation object in the relevant realm of the target element Cannot read property 'prototype' of undefined

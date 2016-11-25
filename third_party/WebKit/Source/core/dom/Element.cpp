@@ -3908,21 +3908,23 @@ bool Element::setInlineStyleProperty(CSSPropertyID propertyID,
                                      const String& value,
                                      bool important) {
   DCHECK(isStyledElement());
-  bool changes = ensureMutableInlineStyle().setProperty(
-      propertyID, value, important, document().elementSheet().contents());
-  if (changes)
+  bool didChange = ensureMutableInlineStyle()
+                       .setProperty(propertyID, value, important,
+                                    document().elementSheet().contents())
+                       .didChange;
+  if (didChange)
     inlineStyleChanged();
-  return changes;
+  return didChange;
 }
 
 bool Element::removeInlineStyleProperty(CSSPropertyID propertyID) {
   DCHECK(isStyledElement());
   if (!inlineStyle())
     return false;
-  bool changes = ensureMutableInlineStyle().removeProperty(propertyID);
-  if (changes)
+  bool didChange = ensureMutableInlineStyle().removeProperty(propertyID);
+  if (didChange)
     inlineStyleChanged();
-  return changes;
+  return didChange;
 }
 
 void Element::removeAllInlineStyleProperties() {

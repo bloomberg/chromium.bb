@@ -355,9 +355,10 @@ void SVGAnimateElement::applyResultsToTarget() {
     // property on the target.
     MutableStylePropertySet* propertySet =
         targetElement()->ensureAnimatedSMILStyleProperties();
-    if (propertySet->setProperty(m_animator.cssProperty(),
-                                 m_animatedProperty->valueAsString(), false,
-                                 0)) {
+    if (propertySet
+            ->setProperty(m_animator.cssProperty(),
+                          m_animatedProperty->valueAsString(), false, 0)
+            .didChange) {
       targetElement()->setNeedsStyleRecalc(
           LocalStyleChange,
           StyleChangeReasonForTracing::create(StyleChangeReason::Animation));

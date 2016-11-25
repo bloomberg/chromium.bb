@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
+#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/heap/Handle.h"
@@ -33,9 +34,7 @@ class StyleRulePage;
 class StyleRuleSupports;
 class StyleRuleViewport;
 class StyleSheetContents;
-class ImmutableStylePropertySet;
 class Element;
-class MutableStylePropertySet;
 
 class CSSParserImpl {
   STACK_ALLOCATED();
@@ -59,17 +58,18 @@ class CSSParserImpl {
     NoRules,     // For parsing at-rules inside declaration lists
   };
 
-  static bool parseValue(MutableStylePropertySet*,
-                         CSSPropertyID,
-                         const String&,
-                         bool important,
-                         const CSSParserContext&);
-  static bool parseVariableValue(MutableStylePropertySet*,
-                                 const AtomicString& propertyName,
-                                 const String&,
-                                 bool important,
-                                 const CSSParserContext&,
-                                 bool isAnimationTainted);
+  static MutableStylePropertySet::SetResult parseValue(MutableStylePropertySet*,
+                                                       CSSPropertyID,
+                                                       const String&,
+                                                       bool important,
+                                                       const CSSParserContext&);
+  static MutableStylePropertySet::SetResult parseVariableValue(
+      MutableStylePropertySet*,
+      const AtomicString& propertyName,
+      const String&,
+      bool important,
+      const CSSParserContext&,
+      bool isAnimationTainted);
   static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&,
                                                                 Element*);
   static bool parseDeclarationList(MutableStylePropertySet*,

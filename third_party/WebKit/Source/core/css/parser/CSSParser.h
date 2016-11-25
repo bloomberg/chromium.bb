@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
+#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "platform/graphics/Color.h"
 #include <memory>
@@ -19,7 +20,6 @@ class CSSParserTokenRange;
 class CSSSelectorList;
 class Element;
 class ImmutableStylePropertySet;
-class MutableStylePropertySet;
 class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleSheetContents;
@@ -46,19 +46,21 @@ class CORE_EXPORT CSSParser {
   static bool parseDeclarationList(const CSSParserContext&,
                                    MutableStylePropertySet*,
                                    const String&);
-  // Returns whether anything was changed.
-  static bool parseValue(MutableStylePropertySet*,
-                         CSSPropertyID unresolvedProperty,
-                         const String&,
-                         bool important,
-                         StyleSheetContents*);
 
-  static bool parseValueForCustomProperty(MutableStylePropertySet*,
-                                          const AtomicString& propertyName,
-                                          const String& value,
-                                          bool important,
-                                          StyleSheetContents*,
-                                          bool isAnimationTainted);
+  static MutableStylePropertySet::SetResult parseValue(
+      MutableStylePropertySet*,
+      CSSPropertyID unresolvedProperty,
+      const String&,
+      bool important,
+      StyleSheetContents*);
+
+  static MutableStylePropertySet::SetResult parseValueForCustomProperty(
+      MutableStylePropertySet*,
+      const AtomicString& propertyName,
+      const String& value,
+      bool important,
+      StyleSheetContents*,
+      bool isAnimationTainted);
   static ImmutableStylePropertySet* parseCustomPropertySet(CSSParserTokenRange);
 
   // This is for non-shorthands only
@@ -94,11 +96,12 @@ class CORE_EXPORT CSSParser {
                                                CSSParserObserver&);
 
  private:
-  static bool parseValue(MutableStylePropertySet*,
-                         CSSPropertyID unresolvedProperty,
-                         const String&,
-                         bool important,
-                         const CSSParserContext&);
+  static MutableStylePropertySet::SetResult parseValue(
+      MutableStylePropertySet*,
+      CSSPropertyID unresolvedProperty,
+      const String&,
+      bool important,
+      const CSSParserContext&);
 };
 
 }  // namespace blink

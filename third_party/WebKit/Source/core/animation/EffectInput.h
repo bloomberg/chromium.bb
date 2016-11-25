@@ -32,6 +32,7 @@ class CORE_EXPORT EffectInput {
  private:
   static EffectModel* convertArrayForm(Element&,
                                        const Vector<Dictionary>& keyframes,
+                                       ExecutionContext*,
                                        ExceptionState&);
   static EffectModel* convertObjectForm(Element&,
                                         const Dictionary& keyframe,

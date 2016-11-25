@@ -22,22 +22,27 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
           copyFrom.m_presentationAttributeMap->mutableCopy()),
       m_svgAttributeMap(copyFrom.m_svgAttributeMap) {}
 
-void StringKeyframe::setCSSPropertyValue(
+MutableStylePropertySet::SetResult StringKeyframe::setCSSPropertyValue(
     const AtomicString& propertyName,
     const String& value,
     StyleSheetContents* styleSheetContents) {
   bool isAnimationTainted = true;
-  m_cssPropertyMap->setProperty(propertyName, value, false, styleSheetContents,
-                                isAnimationTainted);
+  return m_cssPropertyMap->setProperty(propertyName, value, false,
+                                       styleSheetContents, isAnimationTainted);
 }
 
-void StringKeyframe::setCSSPropertyValue(
+MutableStylePropertySet::SetResult StringKeyframe::setCSSPropertyValue(
     CSSPropertyID property,
     const String& value,
     StyleSheetContents* styleSheetContents) {
   DCHECK_NE(property, CSSPropertyInvalid);
-  if (!CSSAnimations::isAnimationAffectingProperty(property))
-    m_cssPropertyMap->setProperty(property, value, false, styleSheetContents);
+  if (CSSAnimations::isAnimationAffectingProperty(property)) {
+    bool didParse = true;
+    bool didChange = false;
+    return MutableStylePropertySet::SetResult{didParse, didChange};
+  }
+  return m_cssPropertyMap->setProperty(property, value, false,
+                                       styleSheetContents);
 }
 
 void StringKeyframe::setCSSPropertyValue(CSSPropertyID property,

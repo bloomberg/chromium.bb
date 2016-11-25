@@ -22,12 +22,13 @@ class StringKeyframe : public Keyframe {
     return adoptRef(new StringKeyframe);
   }
 
-  void setCSSPropertyValue(const AtomicString& propertyName,
-                           const String& value,
-                           StyleSheetContents*);
-  void setCSSPropertyValue(CSSPropertyID,
-                           const String& value,
-                           StyleSheetContents*);
+  MutableStylePropertySet::SetResult setCSSPropertyValue(
+      const AtomicString& propertyName,
+      const String& value,
+      StyleSheetContents*);
+  MutableStylePropertySet::SetResult setCSSPropertyValue(CSSPropertyID,
+                                                         const String& value,
+                                                         StyleSheetContents*);
   void setCSSPropertyValue(CSSPropertyID, const CSSValue&);
   void setPresentationAttributeValue(CSSPropertyID,
                                      const String& value,

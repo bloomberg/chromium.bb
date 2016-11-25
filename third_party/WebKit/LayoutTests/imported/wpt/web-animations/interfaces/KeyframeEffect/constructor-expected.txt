@@ -1,3 +1,9 @@
+CONSOLE WARNING: line 128: Invalid keyframe value for property top: invalid
+CONSOLE WARNING: line 133: Invalid keyframe value for property top: invalid
+CONSOLE WARNING: line 128: Invalid keyframe value for property left: invalid
+CONSOLE WARNING: line 133: Invalid keyframe value for property left: invalid
+CONSOLE WARNING: line 128: Invalid keyframe value for property left: invalid
+CONSOLE WARNING: line 133: Invalid keyframe value for property left: invalid
 This is a testharness.js-based test.
 FAIL a KeyframeEffectReadOnly can be constructed with no frames (intermediate value).getKeyframes is not a function
 FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in a property-indexed keyframe effect.getKeyframes is not a function
