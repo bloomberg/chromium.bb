@@ -44,6 +44,9 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
     const JavaParamRef<jstring>& jsink_id) {
   std::unique_ptr<CreatePresentationConnectionRequest>
       create_connection_request = TakeCreateConnectionRequest();
+  if (!create_connection_request)
+    return;
+
   const PresentationRequest& presentation_request =
       create_connection_request->presentation_request();
 
@@ -88,7 +91,8 @@ void MediaRouterDialogControllerAndroid::OnDialogCancelled(
 void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
   std::unique_ptr<CreatePresentationConnectionRequest> request =
       TakeCreateConnectionRequest();
-  DCHECK(request);
+  if (!request)
+    return;
 
   request->InvokeErrorCallback(content::PresentationError(
       content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
