@@ -6,7 +6,7 @@
 #define WebGLTimerQueryEXT_h
 
 #include "modules/webgl/WebGLContextObject.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
+#include "platform/WebTaskRunner.h"
 
 namespace gpu {
 namespace gles2 {
@@ -15,8 +15,6 @@ class GLES2Interface;
 }
 
 namespace blink {
-
-class WebTaskRunner;
 
 class WebGLTimerQueryEXT : public WebGLContextObject {
   DEFINE_WRAPPERTYPEINFO();
@@ -55,7 +53,7 @@ class WebGLTimerQueryEXT : public WebGLContextObject {
   GLuint64 m_queryResult;
 
   std::unique_ptr<WebTaskRunner> m_taskRunner;
-  std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
+  TaskHandle m_taskHandle;
 };
 
 }  // namespace blink

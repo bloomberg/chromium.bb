@@ -7,10 +7,10 @@
 
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
-class CancellableTaskFactory;
 class WebLocalFrameImpl;
 class WebViewImpl;
 
@@ -55,7 +55,7 @@ class InspectorEmulationAgent final
 
   Member<WebLocalFrameImpl> m_webLocalFrameImpl;
   Client* m_client;
-  std::unique_ptr<CancellableTaskFactory> m_virtualTimeBudgetExpiredTask;
+  TaskHandle m_virtualTimeBudgetExpiredTaskHandle;
 };
 
 }  // namespace blink

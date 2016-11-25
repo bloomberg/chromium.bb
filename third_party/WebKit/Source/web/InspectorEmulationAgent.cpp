@@ -9,7 +9,6 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebThread.h"
@@ -39,11 +38,7 @@ InspectorEmulationAgent* InspectorEmulationAgent::create(
 InspectorEmulationAgent::InspectorEmulationAgent(
     WebLocalFrameImpl* webLocalFrameImpl,
     Client* client)
-    : m_webLocalFrameImpl(webLocalFrameImpl),
-      m_client(client),
-      m_virtualTimeBudgetExpiredTask(CancellableTaskFactory::create(
-          this,
-          &InspectorEmulationAgent::virtualTimeBudgetExpired)) {}
+    : m_webLocalFrameImpl(webLocalFrameImpl), m_client(client) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() {}
 
@@ -158,9 +153,12 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
     WebTaskRunner* taskRunner =
         Platform::current()->currentThread()->getWebTaskRunner();
     long long delayMillis = static_cast<long long>(budget.fromJust());
-    taskRunner->postDelayedTask(
-        BLINK_FROM_HERE, m_virtualTimeBudgetExpiredTask->cancelAndCreate(),
-        delayMillis);
+    m_virtualTimeBudgetExpiredTaskHandle =
+        taskRunner->postDelayedCancellableTask(
+            BLINK_FROM_HERE,
+            WTF::bind(&InspectorEmulationAgent::virtualTimeBudgetExpired,
+                      wrapWeakPersistent(this)),
+            delayMillis);
   }
   return Response::OK();
 }

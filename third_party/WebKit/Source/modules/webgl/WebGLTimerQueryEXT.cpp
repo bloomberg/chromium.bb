@@ -29,10 +29,7 @@ WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
       m_queryResult(0),
       m_taskRunner(TaskRunnerHelper::get(TaskType::Unthrottled,
                                          &ctx->canvas()->document())
-                       ->clone()),
-      m_cancellableTaskFactory(CancellableTaskFactory::create(
-          this,
-          &WebGLTimerQueryEXT::allowAvailabilityUpdate)) {
+                       ->clone()) {
   context()->contextGL()->GenQueriesEXT(1, &m_queryId);
 }
 
@@ -74,7 +71,7 @@ void WebGLTimerQueryEXT::updateCachedResult(gpu::gles2::GLES2Interface* gl) {
     GLuint64 result = 0;
     gl->GetQueryObjectui64vEXT(object(), GL_QUERY_RESULT_EXT, &result);
     m_queryResult = result;
-    m_cancellableTaskFactory->cancel();
+    m_taskHandle.cancel();
   } else {
     scheduleAllowAvailabilityUpdate();
   }
@@ -94,9 +91,11 @@ void WebGLTimerQueryEXT::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
 }
 
 void WebGLTimerQueryEXT::scheduleAllowAvailabilityUpdate() {
-  if (!m_cancellableTaskFactory->isPending())
-    m_taskRunner->postTask(BLINK_FROM_HERE,
-                           m_cancellableTaskFactory->cancelAndCreate());
+  if (m_taskHandle.isActive())
+    return;
+  m_taskHandle = m_taskRunner->postCancellableTask(
+      BLINK_FROM_HERE, WTF::bind(&WebGLTimerQueryEXT::allowAvailabilityUpdate,
+                                 wrapWeakPersistent(this)));
 }
 
 void WebGLTimerQueryEXT::allowAvailabilityUpdate() {

@@ -692,12 +692,6 @@ ScrollAnimatorBase* ScrollAnimatorBase::create(ScrollableArea* scrollableArea) {
 
 ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     : ScrollAnimatorBase(scrollableArea),
-      m_initialScrollbarPaintTaskFactory(CancellableTaskFactory::create(
-          this,
-          &ScrollAnimatorMac::initialScrollbarPaintTask)),
-      m_sendContentAreaScrolledTaskFactory(CancellableTaskFactory::create(
-          this,
-          &ScrollAnimatorMac::sendContentAreaScrolledTask)),
       m_taskRunner(Platform::current()
                        ->currentThread()
                        ->scheduler()
@@ -736,8 +730,8 @@ void ScrollAnimatorMac::dispose() {
   [m_scrollAnimationHelperDelegate.get() invalidate];
   END_BLOCK_OBJC_EXCEPTIONS;
 
-  m_initialScrollbarPaintTaskFactory->cancel();
-  m_sendContentAreaScrolledTaskFactory->cancel();
+  m_initialScrollbarPaintTaskHandle.cancel();
+  m_sendContentAreaScrolledTaskHandle.cancel();
 }
 
 ScrollResult ScrollAnimatorMac::userScroll(ScrollGranularity granularity,
@@ -1068,17 +1062,17 @@ void ScrollAnimatorMac::updateScrollerStyle() {
 }
 
 void ScrollAnimatorMac::startScrollbarPaintTimer() {
-  m_taskRunner->postDelayedTask(
-      BLINK_FROM_HERE, m_initialScrollbarPaintTaskFactory->cancelAndCreate(),
-      0.1);
+  m_initialScrollbarPaintTaskHandle = m_taskRunner->postCancellableTask(
+      BLINK_FROM_HERE, WTF::bind(&ScrollAnimatorMac::initialScrollbarPaintTask,
+                                 wrapWeakPersistent(this)));
 }
 
 bool ScrollAnimatorMac::scrollbarPaintTimerIsActive() const {
-  return m_initialScrollbarPaintTaskFactory->isPending();
+  return m_initialScrollbarPaintTaskHandle.isActive();
 }
 
 void ScrollAnimatorMac::stopScrollbarPaintTimer() {
-  m_initialScrollbarPaintTaskFactory->cancel();
+  m_initialScrollbarPaintTaskHandle.cancel();
 }
 
 void ScrollAnimatorMac::initialScrollbarPaintTask() {
@@ -1092,10 +1086,12 @@ void ScrollAnimatorMac::initialScrollbarPaintTask() {
 void ScrollAnimatorMac::sendContentAreaScrolledSoon(const ScrollOffset& delta) {
   m_contentAreaScrolledTimerScrollDelta = delta;
 
-  if (!m_sendContentAreaScrolledTaskFactory->isPending())
-    m_taskRunner->postTask(
-        BLINK_FROM_HERE,
-        m_sendContentAreaScrolledTaskFactory->cancelAndCreate());
+  if (m_sendContentAreaScrolledTaskHandle.isActive())
+    return;
+  m_sendContentAreaScrolledTaskHandle = m_taskRunner->postCancellableTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&ScrollAnimatorMac::sendContentAreaScrolledTask,
+                wrapWeakPersistent(this)));
 }
 
 void ScrollAnimatorMac::sendContentAreaScrolledTask() {
