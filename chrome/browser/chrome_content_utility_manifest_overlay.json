@@ -4,9 +4,9 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::ShellHandler",
           "mojom::ImageDecoder",
-          "mojom::ResourceUsageReporter",
           "net::interfaces::ProxyResolverFactory",
           "safe_json::mojom::SafeJsonParser"
         ]

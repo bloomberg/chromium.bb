@@ -31,7 +31,7 @@ namespace {
 // |render_process_host|.
 ProcessResourceUsage* CreateRendererResourcesSampler(
     content::RenderProcessHost* render_process_host) {
-  mojom::ResourceUsageReporterPtr service;
+  chrome::mojom::ResourceUsageReporterPtr service;
   render_process_host->GetRemoteInterfaces()->GetInterface(&service);
   return new ProcessResourceUsage(std::move(service));
 }

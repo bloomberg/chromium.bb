@@ -17,15 +17,16 @@
 
 // Provides resource usage information about a child process.
 //
-// This is a wrapper around the mojom::ResourceUsageReporter Mojo service that
-// exposes
+// This is a wrapper around the chrome::mojom::ResourceUsageReporter Mojo
+// service that exposes
 // information about resources used by a child process. Currently, this is only
 // V8 memory and Blink resource cache usage, but could be expanded to include
 // other resources.  This is intended for status viewers such as the task
 // manager.
 //
 // To create:
-// 1. Create a mojom::ResourceUsageReporterPtr and obtain an InterfaceRequest<>
+// 1. Create a chrome::mojom::ResourceUsageReporterPtr and obtain an
+//    InterfaceRequest<>
 // using
 //    mojo::GetProxy.
 // 2. Use the child process's service registry to connect to the service using
@@ -33,18 +34,18 @@
 //    must always be accessed from the same thread. However, InterfaceRequest<>
 //    can be passed safely between threads, and therefore a task can be posted
 //    to the ServiceRegistry thread to connect to the remote service.
-// 3. Pass the mojom::ResourceUsageReporterPtr to the constructor.
+// 3. Pass the chrome::mojom::ResourceUsageReporterPtr to the constructor.
 //
 // Example:
 //   void Foo::ConnectToService(
-//       mojo::InterfaceRequest<mojom::ResourceUsageReporter> req) {
+//       mojo::InterfaceRequest<chrome::mojom::ResourceUsageReporter> req) {
 //     content::ServiceRegistry* registry = host_->GetServiceRegistry();
 //     registry->ConnectToRemoteService(std::move(req));
 //   }
 //
 //   ...
-//     mojom::ResourceUsageReporterPtr service;
-//     mojo::InterfaceRequest<mojom::ResourceUsageReporter> request =
+//     chrome::mojom::ResourceUsageReporterPtr service;
+//     mojo::InterfaceRequest<chrome::mojom::ResourceUsageReporter> request =
 //         mojo::GetProxy(&service);
 //     content::BrowserThread::PostTask(
 //         content::BrowserThread::IO, FROM_HERE,
@@ -57,7 +58,8 @@
 class ProcessResourceUsage {
  public:
   // Must be called from the same thread that created |service|.
-  explicit ProcessResourceUsage(mojom::ResourceUsageReporterPtr service);
+  explicit ProcessResourceUsage(
+      chrome::mojom::ResourceUsageReporterPtr service);
   ~ProcessResourceUsage();
 
   // Refresh the resource usage information. |callback| is invoked when the
@@ -74,15 +76,15 @@ class ProcessResourceUsage {
 
  private:
   // Mojo IPC callback.
-  void OnRefreshDone(mojom::ResourceUsageDataPtr data);
+  void OnRefreshDone(chrome::mojom::ResourceUsageDataPtr data);
 
   void RunPendingRefreshCallbacks();
 
-  mojom::ResourceUsageReporterPtr service_;
+  chrome::mojom::ResourceUsageReporterPtr service_;
   bool update_in_progress_;
   std::deque<base::Closure> refresh_callbacks_;
 
-  mojom::ResourceUsageDataPtr stats_;
+  chrome::mojom::ResourceUsageDataPtr stats_;
 
   base::ThreadChecker thread_checker_;
 

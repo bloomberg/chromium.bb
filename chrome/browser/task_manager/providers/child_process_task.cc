@@ -116,7 +116,7 @@ base::string16 GetLocalizedTitle(const base::string16& title,
 // BrowserChildProcessHost whose unique ID is |unique_child_process_id|.
 void ConnectResourceReporterOnIOThread(
     int unique_child_process_id,
-    mojom::ResourceUsageReporterRequest resource_reporter) {
+    chrome::mojom::ResourceUsageReporterRequest resource_reporter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   content::BrowserChildProcessHost* host =
@@ -135,8 +135,9 @@ void ConnectResourceReporterOnIOThread(
 // |unique_child_process_id|.
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
-  mojom::ResourceUsageReporterPtr usage_reporter;
-  mojom::ResourceUsageReporterRequest request = mojo::GetProxy(&usage_reporter);
+  chrome::mojom::ResourceUsageReporterPtr usage_reporter;
+  chrome::mojom::ResourceUsageReporterRequest request =
+      mojo::GetProxy(&usage_reporter);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

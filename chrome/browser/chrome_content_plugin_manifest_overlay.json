@@ -4,7 +4,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "mojom::ResourceUsageReporter"
+          "chrome::mojom::ResourceUsageReporter"
         ]
       }
     }

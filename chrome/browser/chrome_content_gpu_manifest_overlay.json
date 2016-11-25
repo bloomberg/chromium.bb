@@ -6,7 +6,7 @@
         "browser": [
           "arc::mojom::VideoAcceleratorService",
           "arc::mojom::VideoAcceleratorServiceClient",
-          "mojom::ResourceUsageReporter"
+          "chrome::mojom::ResourceUsageReporter"
         ]
       }
     }
