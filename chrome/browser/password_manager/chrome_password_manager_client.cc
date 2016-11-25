@@ -270,21 +270,17 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   CredentialsCallback intercept =
       base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
                  base::Unretained(this), callback, local_forms.size() == 1);
-  std::vector<std::unique_ptr<autofill::PasswordForm>> dummy_federations;
 #if defined(OS_ANDROID)
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
   AccountChooserDialogAndroid* acccount_chooser_dialog =
       new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
-                                      std::move(dummy_federations), origin,
-                                      intercept);
+                                      origin, intercept);
   acccount_chooser_dialog->ShowDialog();
   return true;
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnChooseCredentials(std::move(local_forms),
-                            std::move(dummy_federations),
-                            origin, intercept);
+      ->OnChooseCredentials(std::move(local_forms), origin, intercept);
 #endif
 }
 

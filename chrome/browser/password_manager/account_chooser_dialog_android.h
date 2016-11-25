@@ -18,10 +18,6 @@ namespace content {
 class WebContents;
 }
 
-namespace password_manager {
-struct CredentialInfo;
-}
-
 // Native counterpart for the android dialog which allows users to select
 // credentials which will be passed to the web site in order to log in the user.
 class AccountChooserDialogAndroid : public content::WebContentsObserver {
@@ -29,7 +25,6 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
   AccountChooserDialogAndroid(
       content::WebContents* web_contents,
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      std::vector<std::unique_ptr<autofill::PasswordForm>> federation_providers,
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback);
 
@@ -46,7 +41,6 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
   void OnCredentialClicked(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            jint credential_item,
-                           jint credential_type,
                            jboolean sign_button_clicked);
 
   // Opens new tab with page which explains the Smart Lock branding.
@@ -62,9 +56,6 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
 
   const std::vector<std::unique_ptr<autofill::PasswordForm>>&
   local_credentials_forms() const;
-
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  federation_providers_forms() const;
 
   void ChooseCredential(size_t index,
                         password_manager::CredentialType type,

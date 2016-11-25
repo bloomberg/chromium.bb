@@ -39,16 +39,13 @@ class PasswordsClientUIDelegate {
       std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
 
   // Called when the site asks user to choose from credentials. This triggers
-  // the UI to prompt the user. |local_credentials| and |federated_credentials|
-  // shouldn't both be empty. |origin| is a URL of the site that requested a
-  // credential.
+  // the UI to prompt the user. |local_credentials| shouldn't be empty. |origin|
+  // is a URL of the site that requested a credential.
   // Returns true when the UI is shown. |callback| is called when the user made
   // a decision. If the UI isn't shown the method returns false and doesn't call
   // |callback|.
   virtual bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>
-          federated_credentials,
       const GURL& origin,
       const base::Callback<void(const autofill::PasswordForm*)>& callback) = 0;
 

@@ -49,10 +49,6 @@ class PasswordsModelDelegate {
   virtual const std::vector<std::unique_ptr<autofill::PasswordForm>>&
   GetCurrentForms() const = 0;
 
-  // Returns possible identity provider's credentials for the current site.
-  virtual const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  GetFederatedForms() const = 0;
-
   // For PENDING_PASSWORD_STATE state returns the current statistics for
   // the pending username.
   virtual const password_manager::InteractionsStats*

@@ -96,7 +96,6 @@ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
 
 bool ManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials,
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback) {
   DCHECK(!local_credentials.empty());
@@ -109,17 +108,14 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   PasswordDialogController::FormsVector locals;
   if (!local_credentials[0]->is_public_suffix_match)
     locals = CopyFormVector(local_credentials);
-  PasswordDialogController::FormsVector federations =
-      CopyFormVector(federated_credentials);
-  passwords_data_.OnRequestCredentials(
-      std::move(locals), std::move(federations), origin);
+  passwords_data_.OnRequestCredentials(std::move(locals), origin);
   passwords_data_.set_credentials_callback(callback);
   dialog_controller_.reset(new PasswordDialogControllerImpl(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
       this));
   dialog_controller_->ShowAccountChooser(
       CreateAccountChooser(dialog_controller_.get()),
-      std::move(local_credentials), std::move(federated_credentials));
+      std::move(local_credentials));
   UpdateBubbleAndIconVisibility();
   return true;
 }
@@ -239,11 +235,6 @@ bool ManagePasswordsUIController::IsPasswordOverridden() const {
 const std::vector<std::unique_ptr<autofill::PasswordForm>>&
 ManagePasswordsUIController::GetCurrentForms() const {
   return passwords_data_.GetCurrentForms();
-}
-
-const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-ManagePasswordsUIController::GetFederatedForms() const {
-  return passwords_data_.federation_providers_forms();
 }
 
 const password_manager::InteractionsStats*

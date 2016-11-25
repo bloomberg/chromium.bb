@@ -15,7 +15,6 @@ class PasswordDialogControllerMock : public PasswordDialogController {
   ~PasswordDialogControllerMock() override;
 
   MOCK_CONST_METHOD0(GetLocalForms, const FormsVector&());
-  MOCK_CONST_METHOD0(GetFederationsForms, const FormsVector&());
   MOCK_CONST_METHOD0(GetAccoutChooserTitle,
                      std::pair<base::string16, gfx::Range>());
   MOCK_CONST_METHOD0(ShouldShowSignInButton, bool());

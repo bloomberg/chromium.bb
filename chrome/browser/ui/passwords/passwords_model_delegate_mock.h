@@ -25,9 +25,6 @@ class PasswordsModelDelegateMock
   MOCK_CONST_METHOD0(
       GetCurrentForms,
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&());
-  MOCK_CONST_METHOD0(
-      GetFederatedForms,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>&());
   MOCK_CONST_METHOD0(GetCurrentInteractionStats,
                      password_manager::InteractionsStats*());
   MOCK_METHOD0(OnBubbleShown, void());

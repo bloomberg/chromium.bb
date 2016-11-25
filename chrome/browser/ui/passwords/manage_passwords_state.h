@@ -53,7 +53,6 @@ class ManagePasswordsState {
   // Move to CREDENTIAL_REQUEST_STATE.
   void OnRequestCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      std::vector<std::unique_ptr<autofill::PasswordForm>> federation_providers,
       const GURL& origin);
 
   // Move to AUTO_SIGNIN_STATE. |local_forms| can't be empty.
@@ -110,12 +109,6 @@ class ManagePasswordsState {
     return local_credentials_forms_;
   }
 
-  // Current federated forms.
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  federation_providers_forms() const {
-    return federation_providers_forms_;
-  }
-
  private:
   // Removes all the PasswordForms stored in this object.
   void ClearData();
@@ -138,10 +131,6 @@ class ManagePasswordsState {
 
   // Contains all the current forms.
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials_forms_;
-
-  // Federation providers for the CREDENTIAL_REQUEST_STATE.
-  std::vector<std::unique_ptr<autofill::PasswordForm>>
-      federation_providers_forms_;
 
   // A callback to be invoked when user selects a credential.
   CredentialsCallback credentials_callback_;

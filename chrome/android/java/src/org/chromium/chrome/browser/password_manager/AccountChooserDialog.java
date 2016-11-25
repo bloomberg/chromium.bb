@@ -227,7 +227,7 @@ public class AccountChooserDialog
         if (!mWasDismissedByNative) {
             if (mCredential != null) {
                 nativeOnCredentialClicked(mNativeAccountChooserDialog, mCredential.getIndex(),
-                        mCredential.getType(), mSigninButtonClicked);
+                        mSigninButtonClicked);
             } else {
                 nativeCancelDialog(mNativeAccountChooserDialog);
             }
@@ -236,7 +236,7 @@ public class AccountChooserDialog
     }
 
     private native void nativeOnCredentialClicked(long nativeAccountChooserDialogAndroid,
-            int credentialId, int credentialType, boolean signinButtonClicked);
+            int credentialId, boolean signinButtonClicked);
     private native void nativeCancelDialog(long nativeAccountChooserDialogAndroid);
     private native void nativeDestroy(long nativeAccountChooserDialogAndroid);
     private native void nativeOnLinkClicked(long nativeAccountChooserDialogAndroid);

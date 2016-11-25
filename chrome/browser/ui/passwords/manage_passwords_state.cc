@@ -99,11 +99,9 @@ void ManagePasswordsState::OnUpdatePassword(
 
 void ManagePasswordsState::OnRequestCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    std::vector<std::unique_ptr<autofill::PasswordForm>> federation_providers,
     const GURL& origin) {
   ClearData();
   local_credentials_forms_ = std::move(local_credentials);
-  federation_providers_forms_ = std::move(federation_providers);
   origin_ = origin;
   SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
 }
@@ -187,7 +185,6 @@ void ManagePasswordsState::TransitionToState(
       credentials_callback_.Run(nullptr);
       credentials_callback_.Reset();
     }
-    federation_providers_forms_.clear();
   }
   SetState(state);
 }
@@ -224,7 +221,6 @@ void ManagePasswordsState::ChooseCredential(
 void ManagePasswordsState::ClearData() {
   form_manager_.reset();
   local_credentials_forms_.clear();
-  federation_providers_forms_.clear();
   credentials_callback_.Reset();
 }
 
@@ -238,14 +234,11 @@ void ManagePasswordsState::AddForm(const autofill::PasswordForm& form) {
 }
 
 bool ManagePasswordsState::UpdateForm(const autofill::PasswordForm& form) {
-  bool updated_locals = UpdateFormInVector(form, &local_credentials_forms_);
-  return (UpdateFormInVector(form, &federation_providers_forms_) ||
-          updated_locals);
+  return UpdateFormInVector(form, &local_credentials_forms_);
 }
 
 void ManagePasswordsState::DeleteForm(const autofill::PasswordForm& form) {
   RemoveFormFromVector(form, &local_credentials_forms_);
-  RemoveFormFromVector(form, &federation_providers_forms_);
 }
 
 void ManagePasswordsState::SetState(password_manager::ui::State state) {

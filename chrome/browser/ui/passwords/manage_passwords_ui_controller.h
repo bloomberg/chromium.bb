@@ -53,8 +53,6 @@ class ManagePasswordsUIController
       override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>
-          federated_credentials,
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback) override;
   void OnAutoSignin(
@@ -93,8 +91,6 @@ class ManagePasswordsUIController
   bool IsPasswordOverridden() const override;
   const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
       const override;
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  GetFederatedForms() const override;
   const password_manager::InteractionsStats* GetCurrentInteractionStats()
       const override;
   void OnBubbleShown() override;

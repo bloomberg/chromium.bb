@@ -25,8 +25,7 @@ class PasswordDialogControllerImpl : public PasswordDialogController {
   ~PasswordDialogControllerImpl() override;
 
   // Pop up the account chooser dialog.
-  void ShowAccountChooser(AccountChooserPrompt* dialog,
-                          FormsVector locals, FormsVector federations);
+  void ShowAccountChooser(AccountChooserPrompt* dialog, FormsVector locals);
 
   // Pop up the autosignin first run dialog.
   void ShowAutosigninPrompt(AutoSigninFirstRunPrompt* dialog);
@@ -35,7 +34,6 @@ class PasswordDialogControllerImpl : public PasswordDialogController {
 
   // PasswordDialogController:
   const FormsVector& GetLocalForms() const override;
-  const FormsVector& GetFederationsForms() const override;
   std::pair<base::string16, gfx::Range> GetAccoutChooserTitle() const override;
   bool ShouldShowSignInButton() const override;
   base::string16 GetAutoSigninPromoTitle() const override;
@@ -58,7 +56,6 @@ class PasswordDialogControllerImpl : public PasswordDialogController {
   AccountChooserPrompt* account_chooser_dialog_;
   AutoSigninFirstRunPrompt* autosignin_dialog_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials_;
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDialogControllerImpl);
 };

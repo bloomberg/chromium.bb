@@ -519,7 +519,6 @@ TEST_F(ManagePasswordsUIControllerTest, AutomaticPasswordSave) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -528,7 +527,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   EXPECT_CALL(*controller(), HasBrowserWindow()).WillOnce(Return(true));
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      std::move(local_credentials), std::move(federated_credentials), origin,
+      std::move(local_credentials), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
@@ -538,7 +537,6 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
               ElementsAre(Pointee(test_local_form())));
   ASSERT_THAT(dialog_controller->GetLocalForms(),
               ElementsAre(Pointee(test_local_form())));
-  EXPECT_THAT(dialog_controller->GetFederationsForms(), testing::IsEmpty());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 
   EXPECT_CALL(dialog_prompt(), ControllerGone());
@@ -554,7 +552,6 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(
       new autofill::PasswordForm(test_federated_form()));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -563,7 +560,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   EXPECT_CALL(*controller(), HasBrowserWindow()).WillOnce(Return(true));
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      std::move(local_credentials), std::move(federated_credentials), origin,
+      std::move(local_credentials), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
@@ -573,7 +570,6 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
               ElementsAre(Pointee(test_federated_form())));
   ASSERT_THAT(dialog_controller->GetLocalForms(),
               ElementsAre(Pointee(test_federated_form())));
-  EXPECT_THAT(dialog_controller->GetFederationsForms(), testing::IsEmpty());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 
   EXPECT_CALL(dialog_prompt(), ControllerGone());
@@ -588,7 +584,6 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -597,7 +592,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   EXPECT_CALL(*controller(), HasBrowserWindow()).WillOnce(Return(true));
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      std::move(local_credentials), std::move(federated_credentials), origin,
+      std::move(local_credentials), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
@@ -614,14 +609,13 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPrefetch) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
 
   // Simulate requesting a credential during prefetch. The tab has no associated
   // browser. Nothing should happen.
   EXPECT_CALL(*controller(), HasBrowserWindow()).WillOnce(Return(false));
   EXPECT_FALSE(controller()->OnChooseCredentials(
-        std::move(local_credentials), std::move(federated_credentials), origin,
+        std::move(local_credentials), origin,
         base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                    base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
@@ -631,7 +625,6 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPSL) {
   test_local_form().is_public_suffix_match = true;
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -640,7 +633,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPSL) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   EXPECT_CALL(*controller(), HasBrowserWindow()).WillOnce(Return(true));
   EXPECT_TRUE(controller()->OnChooseCredentials(
-      std::move(local_credentials), std::move(federated_credentials), origin,
+      std::move(local_credentials), origin,
       base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                  base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
@@ -649,7 +642,6 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPSL) {
   EXPECT_THAT(controller()->GetCurrentForms(), IsEmpty());
   ASSERT_THAT(dialog_controller->GetLocalForms(),
               ElementsAre(Pointee(test_local_form())));
-  EXPECT_THAT(dialog_controller->GetFederationsForms(), testing::IsEmpty());
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 
   EXPECT_CALL(dialog_prompt(), ControllerGone());

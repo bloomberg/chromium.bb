@@ -26,9 +26,6 @@ class PasswordDialogController {
   // Returns forms from the password database for the current site.
   virtual const FormsVector& GetLocalForms() const = 0;
 
-  // Returns IDP's forms which can be used for logging in.
-  virtual const FormsVector& GetFederationsForms() const = 0;
-
   // Returns a title of the account chooser and a range of the Smart Lock
   // hyperlink if it exists. If the range is empty then no hyperlink is shown.
   virtual std::pair<base::string16, gfx::Range> GetAccoutChooserTitle() const

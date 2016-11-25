@@ -14,8 +14,7 @@
 base::android::ScopedJavaLocalRef<jobject> CreateNativeCredential(
     JNIEnv* env,
     const autofill::PasswordForm& password_form,
-    int position,
-    int type) {
+    int position) {
   using base::android::ConvertUTF16ToJavaString;
   using base::android::ConvertUTF8ToJavaString;
   std::string federation =
@@ -27,7 +26,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateNativeCredential(
   return Java_Credential_createCredential(
       env, ConvertUTF16ToJavaString(env, password_form.username_value),
       ConvertUTF16ToJavaString(env, password_form.display_name),
-      ConvertUTF8ToJavaString(env, federation), type, position);
+      ConvertUTF8ToJavaString(env, federation), position);
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray> CreateNativeCredentialArray(

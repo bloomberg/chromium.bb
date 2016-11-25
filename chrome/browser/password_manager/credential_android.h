@@ -17,8 +17,7 @@
 base::android::ScopedJavaLocalRef<jobject> CreateNativeCredential(
     JNIEnv* env,
     const autofill::PasswordForm& password_form,
-    int position,
-    int type);
+    int position);
 
 // Creates Java Credential[] array of size |size|.
 base::android::ScopedJavaLocalRef<jobjectArray> CreateNativeCredentialArray(

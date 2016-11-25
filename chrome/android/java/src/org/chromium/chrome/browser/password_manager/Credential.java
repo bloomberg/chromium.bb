@@ -16,7 +16,6 @@ public class Credential {
     private final String mUsername;
     private final String mDisplayName;
     private final String mFederation;
-    private final int mType;
     private final int mIndex;
     private Bitmap mAvatar;
 
@@ -26,15 +25,12 @@ public class Credential {
      * @param displayName user friendly name to show in the UI. It can be empty.
      *                    The value is PasswordForm::display_name.
      * @param federation Identity provider name for this credential (empty for local credentials).
-     * @param type type which should be either local or federated. The value corresponds to a
-     *             C++ enum CredentialType.
      * @param index position in array of credentials.
      */
-    public Credential(String username, String displayName, String federation, int type, int index) {
+    public Credential(String username, String displayName, String federation, int index) {
         mUsername = username;
         mDisplayName = displayName;
         mFederation = federation;
-        mType = type;
         mIndex = index;
         mAvatar = null;
     }
@@ -55,10 +51,6 @@ public class Credential {
         return mIndex;
     }
 
-    public int getType() {
-        return mType;
-    }
-
     public Bitmap getAvatar() {
         return mAvatar;
     }
@@ -69,8 +61,8 @@ public class Credential {
 
     @CalledByNative
     private static Credential createCredential(
-            String username, String displayName, String federation, int type, int index) {
-        return new Credential(username, displayName, federation, type, index);
+            String username, String displayName, String federation, int index) {
+        return new Credential(username, displayName, federation, index);
     }
 
     @CalledByNative

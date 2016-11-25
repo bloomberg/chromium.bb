@@ -39,13 +39,11 @@ namespace {
 void AddElementsToJavaCredentialArray(
     JNIEnv* env,
     ScopedJavaLocalRef<jobjectArray> java_credentials_array,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_forms,
-    password_manager::CredentialType type,
-    int indexStart = 0) {
-  int index = indexStart;
-  for (const auto& password_form : password_forms) {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms) {
+  int index = 0;
+  for (const auto& password_form : forms) {
     ScopedJavaLocalRef<jobject> java_credential = CreateNativeCredential(
-        env, *password_form, index - indexStart, static_cast<int>(type));
+        env, *password_form, index);
     env->SetObjectArrayElement(java_credentials_array.obj(), index,
                                java_credential.obj());
     index++;
@@ -107,7 +105,6 @@ void FetchAvatar(const base::android::ScopedJavaGlobalRef<jobject>& java_dialog,
 AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     content::WebContents* web_contents,
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
-    std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials,
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback)
     : content::WebContentsObserver(web_contents),
@@ -115,8 +112,7 @@ AccountChooserDialogAndroid::AccountChooserDialogAndroid(
       origin_(origin) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents_));
-  passwords_data_.OnRequestCredentials(
-      std::move(local_credentials), std::move(federated_credentials), origin);
+  passwords_data_.OnRequestCredentials(std::move(local_credentials), origin);
   passwords_data_.set_credentials_callback(callback);
 }
 
@@ -134,17 +130,10 @@ void AccountChooserDialogAndroid::ShowDialog() {
       is_smartlock_branding_enabled, local_credentials_forms().size() > 1,
       &title, &title_link_range);
   gfx::NativeWindow native_window = web_contents_->GetTopLevelNativeWindow();
-  size_t credential_array_size =
-      local_credentials_forms().size() + federation_providers_forms().size();
   ScopedJavaLocalRef<jobjectArray> java_credentials_array =
-      CreateNativeCredentialArray(env, credential_array_size);
+      CreateNativeCredentialArray(env, local_credentials_forms().size());
   AddElementsToJavaCredentialArray(
-      env, java_credentials_array, local_credentials_forms(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  AddElementsToJavaCredentialArray(
-      env, java_credentials_array, federation_providers_forms(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,
-      local_credentials_forms().size());
+      env, java_credentials_array, local_credentials_forms());
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_global;
   const std::string origin = password_manager::GetShownOrigin(origin_);
   base::string16 signin_button;
@@ -165,19 +154,16 @@ void AccountChooserDialogAndroid::ShowDialog() {
   int avatar_index = 0;
   for (const auto& form : local_credentials_forms())
     FetchAvatar(dialog_jobject_, form.get(), avatar_index++, request_context);
-  for (const auto& form : federation_providers_forms())
-    FetchAvatar(dialog_jobject_, form.get(), avatar_index++, request_context);
 }
 
 void AccountChooserDialogAndroid::OnCredentialClicked(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint credential_item,
-    jint credential_type,
     jboolean signin_button_clicked) {
   ChooseCredential(
       credential_item,
-      static_cast<password_manager::CredentialType>(credential_type),
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
       signin_button_clicked);
 }
 
@@ -224,11 +210,6 @@ AccountChooserDialogAndroid::local_credentials_forms() const {
   return passwords_data_.GetCurrentForms();
 }
 
-const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-AccountChooserDialogAndroid::federation_providers_forms() const {
-  return passwords_data_.federation_providers_forms();
-}
-
 void AccountChooserDialogAndroid::ChooseCredential(
     size_t index,
     password_manager::CredentialType type,
@@ -242,10 +223,7 @@ void AccountChooserDialogAndroid::ChooseCredential(
     action = signin_button_clicked
                  ? metrics_util::ACCOUNT_CHOOSER_SIGN_IN
                  : metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN;
-    const auto& credentials_forms =
-        (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
-            ? local_credentials_forms()
-            : federation_providers_forms();
+    const auto& credentials_forms = local_credentials_forms();
     if (index < credentials_forms.size()) {
       passwords_data_.ChooseCredential(credentials_forms[index].get());
     }
