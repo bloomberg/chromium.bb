@@ -229,7 +229,6 @@ TEST_F(SourceListDirectiveTest, RedirectMatching) {
 }
 
 TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
-  KURL base;
   String sources =
       "http://example1.com/foo/ http://*.example2.com/bar/ "
       "http://*.example3.com:*/bar/";
@@ -253,8 +252,8 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
       {"http://*.example1.com/foo/ http://foo.example2.com/bar/",
        "http://example1.com/foo/ http://foo.example2.com/bar/"},
       // Normalizing ports.
-      {"http://example1.com:80/foo/ http://example2.com/bar/",
-       "http://example1.com:80/foo/ http://example2.com/bar/"},
+      {"http://example1.com/foo/ http://example2.com/bar/",
+       "http://example1.com/foo/ http://example2.com/bar/"},
       {"http://example1.com/foo/ http://example2.com:90/bar/",
        "http://example1.com/foo/"},
       {"http://example1.com:*/foo/ http://example2.com/bar/",
@@ -288,6 +287,61 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
       Source b = {expected[i]->m_scheme,       expected[i]->m_host,
                   expected[i]->m_port,         expected[i]->m_path,
                   expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
+      EXPECT_TRUE(equalSources(a, b));
+    }
+  }
+}
+
+TEST_F(SourceListDirectiveTest, GetIntersectCSPSourcesSchemes) {
+  SourceListDirective listA("script-src",
+                            "http: http://example1.com/foo/ "
+                            "https://example1.com/foo/ "
+                            "http://example1.com/bar/page.html "
+                            "wss: ws://another.test/bar/",
+                            csp.get());
+  struct TestCase {
+    String sources;
+    String expected;
+    String expectedReversed;
+  } cases[] = {{"http:", "http:"},
+               {"https:", "https:"},
+               {"ws:", "wss: ws://another.test/bar/"},
+               {"wss:", "wss:"},
+               {"https: ws:", "wss: https: ws://another.test/bar/"},
+               {"https: http: wss:", "http: wss:"},
+               {"https: http: wss:", "http: wss:"},
+               {"https: http://another-example1.com/bar/",
+                "https: http://another-example1.com/bar/"},
+               {"http://*.example1.com/",
+                "http://*.example1.com/ http://example1.com/foo/ "
+                "https://example1.com/foo/ http://example1.com/bar/page.html"},
+               {"http://example1.com/foo/ https://example1.com/foo/",
+                "http://example1.com/foo/ https://example1.com/foo/ "
+                "http://example1.com/foo/ https://example1.com/foo/"},
+               {"https://example1.com/foo/ http://example1.com/foo/",
+                "https://example1.com/foo/ http://example1.com/foo/ "
+                "http://example1.com/foo/ https://example1.com/foo/"},
+               // If exaclty the same policy is specified, it is optimized.
+               {"http: http://example1.com/foo/ https://example1.com/foo/ "
+                "http://example1.com/bar/page.html wss: ws://another.test/bar/",
+                "http: wss: ws://another.test/bar/"}};
+
+  for (const auto& test : cases) {
+    SourceListDirective listB("script-src", test.sources, csp.get());
+    HeapVector<Member<CSPSource>> normalized =
+        listA.getIntersectCSPSources(listB.m_list);
+
+    SourceListDirective helperSourceList("script-src", test.expected,
+                                         csp.get());
+    HeapVector<Member<CSPSource>> expected = helperSourceList.m_list;
+    EXPECT_EQ(normalized.size(), expected.size());
+    for (size_t i = 0; i < expected.size(); i++) {
+      Source a = {expected[i]->m_scheme,       expected[i]->m_host,
+                  expected[i]->m_port,         expected[i]->m_path,
+                  expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
+      Source b = {normalized[i]->m_scheme,       normalized[i]->m_host,
+                  normalized[i]->m_port,         normalized[i]->m_path,
+                  normalized[i]->m_hostWildcard, normalized[i]->m_portWildcard};
       EXPECT_TRUE(equalSources(a, b));
     }
   }

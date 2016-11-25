@@ -145,6 +145,13 @@ CSPSource* CSPSource::intersect(CSPSource* other) {
     return nullptr;
 
   String scheme = other->schemeMatches(m_scheme) ? m_scheme : other->m_scheme;
+  if (isSchemeOnly() || other->isSchemeOnly()) {
+    CSPSource* stricter = isSchemeOnly() ? other : this;
+    return new CSPSource(m_policy, scheme, stricter->m_host, stricter->m_port,
+                         stricter->m_path, stricter->m_hostWildcard,
+                         stricter->m_portWildcard);
+  }
+
   String host = m_hostWildcard == NoWildcard ? m_host : other->m_host;
   String path = other->pathMatches(m_path) ? m_path : other->m_path;
   int port = (other->m_portWildcard == HasWildcard || !other->m_port)

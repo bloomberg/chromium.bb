@@ -28,6 +28,8 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
             const String& path,
             WildcardDisposition hostWildcard,
             WildcardDisposition portWildcard);
+  bool isSchemeOnly() const;
+  const String& getScheme() { return m_scheme; };
   bool matches(const KURL&,
                ResourceRequest::RedirectStatus =
                    ResourceRequest::RedirectStatus::NoRedirect) const;
@@ -49,13 +51,16 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IsSimilar);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest,
+                           GetIntersectCSPSourcesSchemes);
+  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, Intersect);
+  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IntersectSchemesOnly);
 
   bool schemeMatches(const String&) const;
   bool hostMatches(const String&) const;
   bool pathMatches(const String&) const;
   // Protocol is necessary to determine default port if it is zero.
   bool portMatches(int port, const String& protocol) const;
-  bool isSchemeOnly() const;
   bool isSimilar(CSPSource* other);
 
   Member<ContentSecurityPolicy> m_policy;

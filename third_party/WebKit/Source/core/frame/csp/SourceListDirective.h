@@ -51,6 +51,8 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest,
+                           GetIntersectCSPSourcesSchemes);
 
   bool parseSource(const UChar* begin,
                    const UChar* end,
@@ -86,8 +88,12 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   void addSourceHash(const ContentSecurityPolicyHashAlgorithm&,
                      const DigestValue& hash);
 
+  static void addSourceToMap(HashMap<String, CSPSource*>&, CSPSource*);
+
   bool hasSourceMatchInList(const KURL&, ResourceRequest::RedirectStatus) const;
   HeapVector<Member<CSPSource>> getIntersectCSPSources(
+      HeapVector<Member<CSPSource>> other);
+  HashMap<String, CSPSource*> getIntersectSchemesOnly(
       HeapVector<Member<CSPSource>> other);
 
   Member<ContentSecurityPolicy> m_policy;

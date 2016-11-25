@@ -19,6 +19,22 @@ class CSPSourceTest : public ::testing::Test {
 
  protected:
   Persistent<ContentSecurityPolicy> csp;
+  struct Source {
+    String scheme;
+    String host;
+    String path;
+    // port is 0 if it was not specified so the default port for a given scheme
+    // will be used.
+    const int port;
+    CSPSource::WildcardDisposition hostWildcard;
+    CSPSource::WildcardDisposition portWildcard;
+  };
+
+  bool equalSources(const Source& a, const Source& b) {
+    return a.scheme == b.scheme && a.host == b.host && a.port == b.port &&
+           a.path == b.path && a.hostWildcard == b.hostWildcard &&
+           a.portWildcard == b.portWildcard;
+  }
 };
 
 TEST_F(CSPSourceTest, BasicMatching) {
@@ -537,6 +553,193 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
     // subsume all current epxression in `listB`.
     listA.append(httpOnly);
     EXPECT_TRUE(CSPSource::firstSubsumesSecond(listA, listB));
+  }
+}
+
+TEST_F(CSPSourceTest, Intersect) {
+  struct TestCase {
+    const Source a;
+    const Source b;
+    const Source normalized;
+  } cases[] = {
+      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"ws", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"wss", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"wss", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      // Wildcards
+      {{"http", "example.com", "/", 0, CSPSource::HasWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::HasWildcard,
+        CSPSource::HasWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::HasWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::HasWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      // Ports
+      {{"http", "example.com", "/", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      // Paths
+      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/1.html", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/1.html", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/a/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/a/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/a/b/1.html", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/a/b/1.html", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      // Mixed
+      {{"http", "example.com", "/1.html", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/1.html", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+  };
+
+  for (const auto& test : cases) {
+    CSPSource* A =
+        new CSPSource(csp.get(), test.a.scheme, test.a.host, test.a.port,
+                      test.a.path, test.a.hostWildcard, test.a.portWildcard);
+    CSPSource* B =
+        new CSPSource(csp.get(), test.b.scheme, test.b.host, test.b.port,
+                      test.b.path, test.b.hostWildcard, test.b.portWildcard);
+
+    CSPSource* normalized = A->intersect(B);
+    Source intersectAB = {
+        normalized->m_scheme,       normalized->m_host,
+        normalized->m_path,         normalized->m_port,
+        normalized->m_hostWildcard, normalized->m_portWildcard};
+    EXPECT_TRUE(equalSources(intersectAB, test.normalized));
+
+    // Verify the same test with A and B swapped. The result should be
+    // identical.
+    normalized = B->intersect(A);
+    Source intersectBA = {
+        normalized->m_scheme,       normalized->m_host,
+        normalized->m_path,         normalized->m_port,
+        normalized->m_hostWildcard, normalized->m_portWildcard};
+    EXPECT_TRUE(equalSources(intersectBA, test.normalized));
+  }
+}
+
+TEST_F(CSPSourceTest, IntersectSchemesOnly) {
+  struct TestCase {
+    const Source a;
+    const Source b;
+    const Source normalized;
+  } cases[] = {
+      // Both sources are schemes only.
+      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard}},
+      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard}},
+      {{"ws", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"wss", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"wss", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard}},
+      // One source is a scheme only and the other one has no wildcards.
+      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"https", "example.com", "/", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"https", "example.com", "/", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::NoWildcard,
+        CSPSource::NoWildcard}},
+      // One source is a scheme only and the other has one or two wildcards.
+      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::HasWildcard,
+        CSPSource::NoWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::HasWildcard,
+        CSPSource::NoWildcard}},
+      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::NoWildcard,
+        CSPSource::HasWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::NoWildcard,
+        CSPSource::HasWildcard}},
+      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::HasWildcard,
+        CSPSource::HasWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::HasWildcard,
+        CSPSource::HasWildcard}},
+  };
+
+  for (const auto& test : cases) {
+    CSPSource* A =
+        new CSPSource(csp.get(), test.a.scheme, test.a.host, test.a.port,
+                      test.a.path, test.a.hostWildcard, test.a.portWildcard);
+
+    CSPSource* B =
+        new CSPSource(csp.get(), test.b.scheme, test.b.host, test.b.port,
+                      test.b.path, test.b.hostWildcard, test.b.portWildcard);
+
+    CSPSource* normalized = A->intersect(B);
+    Source intersectAB = {
+        normalized->m_scheme,       normalized->m_host,
+        normalized->m_path,         normalized->m_port,
+        normalized->m_hostWildcard, normalized->m_portWildcard};
+    EXPECT_TRUE(equalSources(intersectAB, test.normalized));
+
+    // Verify the same test with A and B swapped. The result should be
+    // identical.
+    normalized = B->intersect(A);
+    Source intersectBA = {
+        normalized->m_scheme,       normalized->m_host,
+        normalized->m_path,         normalized->m_port,
+        normalized->m_hostWildcard, normalized->m_portWildcard};
+    EXPECT_TRUE(equalSources(intersectBA, test.normalized));
   }
 }
 
