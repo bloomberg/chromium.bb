@@ -17,11 +17,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
-
-namespace {
-const int kStopButtonRightPadding = 18;
-}  // namespace
+#include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 namespace tray {
@@ -58,6 +54,15 @@ ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
       label_text_(label_text),
       stop_button_text_(stop_button_text) {
   CreateItems();
+  TriView* tri_view(TrayPopupUtils::CreateDefaultRowView());
+  SetLayoutManager(new views::FillLayout);
+  AddChildView(tri_view);
+  tri_view->AddView(TriView::Container::START, icon_);
+  tri_view->AddView(TriView::Container::CENTER, label_);
+  tri_view->AddView(TriView::Container::END, stop_button_);
+  tri_view->SetContainerBorder(
+      TriView::Container::END,
+      views::CreateEmptyBorder(0, 0, 0, kTrayPopupButtonEndMargin));
   if (screen_tray_item_)
     UpdateFromScreenTrayItem();
 }
@@ -73,43 +78,22 @@ void ScreenStatusView::ButtonPressed(views::Button* sender,
 
 void ScreenStatusView::CreateItems() {
   const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
-  if (!use_md)
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-
-  auto layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                           use_md ? kTrayPopupPaddingBetweenItems : 0);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(layout);
-  SetBorder(views::CreateEmptyBorder(
-      0, kTrayPopupPaddingHorizontal, 0,
-      use_md ? kTrayPopupButtonEndMargin : kStopButtonRightPadding));
-
   icon_ = TrayPopupUtils::CreateMainImageView();
-  if (use_md) {
-    icon_->SetImage(
-        gfx::CreateVectorIcon(kSystemMenuScreenShareIcon, kMenuIconColor));
-  } else {
+  icon_->SetImage(gfx::CreateVectorIcon(
+      kSystemMenuScreenShareIcon, TrayPopupItemStyle::GetIconColor(
+                                      TrayPopupItemStyle::ColorStyle::ACTIVE)));
+  if (!use_md) {
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     icon_->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK)
                         .ToImageSkia());
   }
-  AddChildView(icon_);
 
-  label_ = new views::Label;
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_ = TrayPopupUtils::CreateDefaultLabel();
   label_->SetMultiLine(true);
   label_->SetText(label_text_);
-  if (!use_md) {
-    label_->SetBorder(
-        views::CreateEmptyBorder(0, kTrayPopupPaddingBetweenItems, 0, 0));
-  }
-  AddChildView(label_);
-  layout->SetFlexForView(label_, 1);
 
   stop_button_ = TrayPopupUtils::CreateTrayPopupButton(this, stop_button_text_);
-  AddChildView(stop_button_);
 }
 
 void ScreenStatusView::UpdateFromScreenTrayItem() {
@@ -123,6 +107,7 @@ void ScreenStatusView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
     views::View::OnNativeThemeChanged(theme);
     return;
   }
+
   if (theme) {
     TrayPopupItemStyle style(theme,
                              TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);

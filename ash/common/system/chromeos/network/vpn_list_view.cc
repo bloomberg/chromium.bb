@@ -192,7 +192,8 @@ class VPNListNetworkEntry : public VPNListEntryBase,
 
 VPNListEntryBase::VPNListEntryBase(VPNListView* parent)
     : HoverHighlightView(parent) {
-  SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+  if (!UseMd())
+    SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
 }
 
 VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* parent,
@@ -282,22 +283,19 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
     if (UseMd()) {
       disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
           this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
-    } else {
-      disconnect_button_ = new DisconnectButton(this);
-    }
-    if (UseMd()) {
-      DCHECK(tri_view());
       tri_view()->AddView(TriView::Container::END, disconnect_button_);
       tri_view()->SetContainerVisible(TriView::Container::END, true);
+      tri_view()->SetContainerBorder(
+          TriView::Container::END,
+          views::CreateEmptyBorder(0, 0, 0, kTrayPopupButtonEndMargin));
     } else {
+      disconnect_button_ = new DisconnectButton(this);
       AddChildView(disconnect_button_);
+      SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 3));
     }
-
-    SetBorder(
-        views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
-                                 UseMd() ? kTrayPopupButtonEndMargin : 3));
   } else {
-    SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+    if (!UseMd())
+      SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   }
 
   if (!UseMd()) {
