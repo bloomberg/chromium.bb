@@ -91,9 +91,12 @@ public class ImpressionTracker
         ViewParent parent = mView.getParent();
         if (parent != null) {
             Rect rect = new Rect(0, 0, mView.getWidth(), mView.getHeight());
-            parent.getChildVisibleRect(mView, rect, null);
+
             // Track impression if at least 2/3 of the view is visible.
-            if (rect.height() >= 2 * mView.getHeight() / 3) {
+            // |getChildVisibleRect| returns false when the view is empty, which may happen when
+            // dismissing or reassigning a View. In this case |rect| appears to be invalid.
+            if (parent.getChildVisibleRect(mView, rect, null)
+                    && rect.height() >= 2 * mView.getHeight() / 3) {
                 mTriggered = true;
                 mListener.onImpression();
             }
