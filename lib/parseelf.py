@@ -83,9 +83,9 @@ def ParseELFSymbols(elf):
         continue
       symbol_name = stringtable.get_string(symbol.st_name)
       if symbol['st_shndx'] == 'SHN_UNDEF':
-        if symbol['st_info']['bind'] == 'STB_GLOBAL':
+        if symbol['st_info']['bind'] == 'STB_GLOBAL' and symbol_name:
           # Global undefined --> required symbols.
-          # We ignore weak undefined symbols.
+          # We ignore weak undefined symbols, and empty strings.
           imp.add(symbol_name)
       elif symbol['st_other']['visibility'] == 'STV_DEFAULT':
         # Exported symbols must have default visibility.
