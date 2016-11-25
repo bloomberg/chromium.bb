@@ -21,8 +21,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createInfo;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +31,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -63,9 +62,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testDismissSibling() {
         List<SnippetArticle> snippets = createDummySuggestions(3);
-        SuggestionsSection section;
+        SuggestionsSection section = createSectionWithReloadAction(true);
 
-        section = ContentSuggestionsTestUtils.createSection(true, mParent, mManager, mBridge);
         section.setStatus(CategoryStatus.AVAILABLE);
         assertNotNull(section.getActionItem());
 
@@ -87,7 +85,7 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        SuggestionsSection section = createSectionWithReloadAction(false);
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
         // the RecyclerView will be updated through notifyDataSetChanged.
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -105,7 +103,7 @@ public class SuggestionsSectionTest {
     public void testSetStatusNotification() {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
-        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        SuggestionsSection section = createSectionWithReloadAction(false);
 
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
         // the RecyclerView will be updated through notifyDataSetChanged.
@@ -133,7 +131,7 @@ public class SuggestionsSectionTest {
     @Test(expected = IndexOutOfBoundsException.class)
     @Feature({"Ntp"})
     public void testRemoveUnknownSuggestion() {
-        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        SuggestionsSection section = createSectionWithReloadAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
         section.removeSuggestion(createDummySuggestions(1).get(0));
     }
@@ -144,7 +142,7 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 2;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        SuggestionsSection section = createSectionWithReloadAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
         reset(mParent);
 
@@ -164,10 +162,13 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 2;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = new SuggestionsSection(mParent,
-                createInfo(42, /*hasMoreAction=*/true, /*hasReloadAction=*/true,
-                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true),
-                mManager, mBridge);
+        SuggestionsCategoryInfo info =
+                new CategoryInfoBuilder(42)
+                .withMoreAction()
+                .withReloadAction()
+                .showIfEmpty()
+                .build();
+        SuggestionsSection section = createSection(info);
         section.setStatus(CategoryStatus.AVAILABLE);
         reset(mParent);
         assertEquals(3, section.getItemCount()); // We have the header and status card and a button.
@@ -197,7 +198,7 @@ public class SuggestionsSectionTest {
         mBridge.setIsOfflinePageModelLoaded(true);
         mBridge.setItems(Arrays.asList(item0, item1));
 
-        SuggestionsSection section = createSection(true, mParent, mManager, mBridge);
+        SuggestionsSection section = createSectionWithReloadAction(true);
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         // Check that we pick up the correct information.
@@ -223,9 +224,13 @@ public class SuggestionsSectionTest {
 
         // Spy so that VerifyAction can check methods being called.
         SuggestionsCategoryInfo info =
-                spy(createInfo(42, /*hasMoreAction=*/true, /*hasReloadAction=*/true,
-                        /*hasViewAllAction=*/true, /*showIfEmpty=*/true));
-        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+                spy(new CategoryInfoBuilder(42)
+                        .withMoreAction()
+                        .withReloadAction()
+                        .withViewAllAction()
+                        .showIfEmpty()
+                        .build());
+        SuggestionsSection section = createSection(info);
 
         assertTrue(section.getActionItem().isVisible());
         verifyAction(section, ActionItem.ACTION_VIEW_ALL);
@@ -243,9 +248,13 @@ public class SuggestionsSectionTest {
         // Reload when we don't.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/true,
-                /*hasReloadAction=*/true, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
-        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+        SuggestionsCategoryInfo info =
+                spy(new CategoryInfoBuilder(42)
+                        .withMoreAction()
+                        .withReloadAction()
+                        .showIfEmpty()
+                        .build());
+        SuggestionsSection section = createSection(info);
 
         assertTrue(section.getActionItem().isVisible());
         verifyAction(section, ActionItem.ACTION_RELOAD);
@@ -262,9 +271,9 @@ public class SuggestionsSectionTest {
         // When only Reload is enabled, it only shows when we have no suggestions.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/false,
-                /*hasReloadAction=*/true, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
-        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+        SuggestionsCategoryInfo info =
+                spy(new CategoryInfoBuilder(42).withReloadAction().showIfEmpty().build());
+        SuggestionsSection section = createSection(info);
 
         assertTrue(section.getActionItem().isVisible());
         verifyAction(section, ActionItem.ACTION_RELOAD);
@@ -281,9 +290,9 @@ public class SuggestionsSectionTest {
         // When only FetchMore is enabled, it only shows when we have suggestions.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/true,
-                /*hasReloadAction=*/false, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
-        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+        SuggestionsCategoryInfo info =
+                spy(new CategoryInfoBuilder(42).withMoreAction().showIfEmpty().build());
+        SuggestionsSection section = createSection(info);
 
         assertFalse(section.getActionItem().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
@@ -300,9 +309,8 @@ public class SuggestionsSectionTest {
         // Test where no action is enabled.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/false,
-                /*hasReloadAction=*/false, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
-        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+        SuggestionsCategoryInfo info = spy(new CategoryInfoBuilder(42).showIfEmpty().build());
+        SuggestionsSection section = createSection(info);
 
         assertFalse(section.getActionItem().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
@@ -317,10 +325,9 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testFetchMoreProgressDisplay() {
         final int suggestionCount = 3;
-        SuggestionsSection section = new SuggestionsSection(mParent,
-                spy(createInfo(42, /*hasMoreAction=*/true, /*hasReloadAction=*/false,
-                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true)),
-                mManager, mBridge);
+        SuggestionsCategoryInfo info =
+                spy(new CategoryInfoBuilder(42).withMoreAction().showIfEmpty().build());
+        SuggestionsSection section = createSection(info);
         section.addSuggestions(createDummySuggestions(suggestionCount), CategoryStatus.AVAILABLE);
         assertFalse(section.getProgressItemForTesting().isVisible());
 
@@ -333,6 +340,16 @@ public class SuggestionsSectionTest {
         assertFalse(section.getProgressItemForTesting().isVisible());
     }
 
+    private SuggestionsSection createSectionWithReloadAction(boolean hasReloadAction) {
+        CategoryInfoBuilder builder = new CategoryInfoBuilder(42).showIfEmpty();
+        if (hasReloadAction) builder.withReloadAction();
+        return createSection(builder.build());
+    }
+
+    private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
+        return new SuggestionsSection(mParent, info, mManager, mBridge);
+    }
+
     private OfflinePageItem createOfflinePageItem(String url, long offlineId) {
         return new OfflinePageItem(url, offlineId, "", "", "", 0, 0, 0, 0);
     }
@@ -342,10 +359,8 @@ public class SuggestionsSectionTest {
         NewTabPageManager manager = mock(NewTabPageManager.class);
         when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
 
-        try {
+        if (action != ActionItem.ACTION_NONE) {
             section.getActionItem().performAction(manager);
-        } catch (AssertionError e) {
-            if (action != ActionItem.ACTION_NONE) throw e;
         }
 
         verify(section.getCategoryInfo(),

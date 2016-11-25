@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,23 +27,64 @@ public final class ContentSuggestionsTestUtils {
         return suggestions;
     }
 
-    @Deprecated
-    public static SuggestionsCategoryInfo createInfo(
-            @CategoryInt int category, boolean moreButton, boolean showIfEmpty) {
-        return createInfo(category, false, true, moreButton, showIfEmpty);
-    }
+    /**
+     * Uses the builder pattern to simplify constructing category info objects for tests.
+     */
+    public static class CategoryInfoBuilder {
+        @CategoryInt
+        private final int mCategory;
+        private boolean mHasMoreAction;
+        private boolean mHasViewAllAction;
+        private boolean mHasReloadAction;
+        private boolean mShowIfEmpty;
+        private String mTitle = "";
+        private String mNoSuggestionsMessage = "";
+        @ContentSuggestionsCardLayoutEnum
+        private int mCardLayout = ContentSuggestionsCardLayout.FULL_CARD;
 
-    public static SuggestionsCategoryInfo createInfo(@CategoryInt int category, boolean moreAction,
-            boolean reloadAction, boolean viewAllAction, boolean showIfEmpty) {
-        return new SuggestionsCategoryInfo(category, "", ContentSuggestionsCardLayout.FULL_CARD,
-                moreAction, reloadAction, viewAllAction, showIfEmpty, "");
-    }
+        public CategoryInfoBuilder(@CategoryInt int category) {
+            mCategory = category;
+        }
 
-    public static SuggestionsSection createSection(boolean hasReloadAction, NodeParent parent,
-            NewTabPageManager manager, OfflinePageBridge bridge) {
-        return new SuggestionsSection(parent,
-                createInfo(42, /*hasMoreAction=*/false, /*hasReloadAction=*/hasReloadAction,
-                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true),
-                manager, bridge);
+        public CategoryInfoBuilder withMoreAction() {
+            mHasMoreAction = true;
+            return this;
+        }
+
+        public CategoryInfoBuilder withViewAllAction() {
+            mHasViewAllAction = true;
+            return this;
+        }
+
+        public CategoryInfoBuilder withReloadAction() {
+            mHasReloadAction = true;
+            return this;
+        }
+
+        public CategoryInfoBuilder showIfEmpty() {
+            mShowIfEmpty = true;
+            return this;
+        }
+
+        public CategoryInfoBuilder withTitle(String title) {
+            mTitle = title;
+            return this;
+        }
+
+        public CategoryInfoBuilder withNoSuggestionsMessage(String message) {
+            mNoSuggestionsMessage = message;
+            return this;
+        }
+
+        public CategoryInfoBuilder withCardLayout(
+                @ContentSuggestionsCardLayoutEnum int cardLayout) {
+            mCardLayout = cardLayout;
+            return this;
+        }
+
+        public SuggestionsCategoryInfo build() {
+            return new SuggestionsCategoryInfo(mCategory, mTitle, mCardLayout, mHasMoreAction,
+                    mHasReloadAction, mHasViewAllAction, mShowIfEmpty, mNoSuggestionsMessage);
+        }
     }
 }

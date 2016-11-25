@@ -168,7 +168,7 @@ public class NewTabPage
     /**
      * Object that registered through the {@link NewTabPageManager}, and that will be notified when
      * the {@link NewTabPage} is destroyed.
-     * @see NewTabPageManager#setDestructionObserver(DestructionObserver)
+     * @see NewTabPageManager#addDestructionObserver(DestructionObserver)
      */
     public interface DestructionObserver { void onDestroy(); }
 

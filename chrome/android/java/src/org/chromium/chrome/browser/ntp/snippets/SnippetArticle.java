@@ -134,20 +134,22 @@ public class SnippetArticle {
     }
 
     /**
-     * @return the asset download path. May only be called if {@link mIsAssetDownload} is
-     * {@code true} and this snippet belongs to DOWNLOADS category.
+     * @return the asset download path. May only be called if {@link #mIsAssetDownload} is
+     * {@code true} (which implies that this snippet belongs to the DOWNLOADS category).
      */
     public File getAssetDownloadFile() {
         assert isDownload();
+        assert mIsAssetDownload;
         return mAssetDownloadFile;
     }
 
     /**
-     * @return the mime type of the asset download. May only be called if {@link mIsAssetDownload}
-     * is {@code true} and this snippet belongs to DOWNLOADS category.
+     * @return the mime type of the asset download. May only be called if {@link #mIsAssetDownload}
+     * is {@code true} (which implies that this snippet belongs to the DOWNLOADS category).
      */
     public String getAssetDownloadMimeType() {
         assert isDownload();
+        assert mIsAssetDownload;
         return mAssetDownloadMimeType;
     }
 

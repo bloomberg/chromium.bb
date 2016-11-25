@@ -49,8 +49,6 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     private static final int PEEKING_CARD_ANIMATION_TIME_MS = 1000;
     private static final int PEEKING_CARD_ANIMATION_START_DELAY_MS = 300;
 
-    private static final String PREF_ANIMATION_RUN_COUNT = "ntp_recycler_view_animation_run_count";
-
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
     private final int mToolbarHeight;
@@ -481,9 +479,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
     /**
      * Animates the card being swiped to the right as if the user had dismissed it. Any changes to
-     * the animation here should be reflected also in
-     * {@link #updateViewStateForDismiss(float, ViewHolder)} and reset in
-     * {@link CardViewHolder#onBindViewHolder()}.
+     * the animation here should be reflected also in {@link #updateViewStateForDismiss} and reset
+     * in {@link CardViewHolder#onBindViewHolder()}.
      */
     public void dismissItemWithAnimation(final ViewHolder viewHolder) {
         // We need to check the position, as the view holder might have been removed.

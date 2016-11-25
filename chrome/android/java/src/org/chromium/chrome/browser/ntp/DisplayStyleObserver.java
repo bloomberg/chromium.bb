@@ -8,7 +8,7 @@ package org.chromium.chrome.browser.ntp;
  * Gets notified of changes in the display style.
  *
  * @see UiConfig.DisplayStyle
- * @see UiConfig#getDisplayStyle()
+ * @see UiConfig#getCurrentDisplayStyle()
  * @see org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter
  */
 public interface DisplayStyleObserver {
