@@ -229,11 +229,8 @@ bool NGBlockNode::CanUseNewLayout() {
     return true;
   if (!layout_box_->isLayoutBlockFlow())
     return false;
-  if (RuntimeEnabledFeatures::layoutNGInlineEnabled())
-    return true;
-  if (HasInlineChildren())
-    return false;
-  return true;
+  return RuntimeEnabledFeatures::layoutNGInlineEnabled() ||
+         !HasInlineChildren();
 }
 
 bool NGBlockNode::HasInlineChildren() {
