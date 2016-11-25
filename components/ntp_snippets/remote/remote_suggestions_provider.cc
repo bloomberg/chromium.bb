@@ -294,7 +294,19 @@ void RemoteSuggestionsProvider::RegisterProfilePrefs(
   RemoteSuggestionsStatusService::RegisterProfilePrefs(registry);
 }
 
+void RemoteSuggestionsProvider::FetchSnippetsInTheBackground() {
+  FetchSnippets(/*interactive_request=*/false);
+}
+
+void RemoteSuggestionsProvider::FetchSnippetsForAllCategories() {
+  // TODO(markusheintz): Investigate whether we can call the Fetch method
+  // instead of the FetchSnippets.
+  FetchSnippets(/*interactive_request=*/true);
+}
+
 void RemoteSuggestionsProvider::FetchSnippets(bool interactive_request) {
+  // TODO(markusheintz): Merge the FetchSnippets into the
+  // FetchSnippetsInTheBackground method.
   if (ready()) {
     FetchSnippetsFromHosts(std::set<std::string>(), interactive_request);
   } else {

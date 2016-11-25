@@ -74,12 +74,12 @@ public class SnippetsBridge implements SuggestionsSource {
 
     public static void fetchRemoteSuggestionsFromBackground() {
         // Do not force regular background fetches.
-        nativeFetchSnippets(/* forceRequest = */ false);
+        nativeFetchRemoteSuggestionsInTheBackground();
     }
 
     @Override
     public void fetchRemoteSuggestions() {
-        nativeFetchSnippets(/* forceRequest = */ true);
+        nativeFetchRemoteSuggestions();
     }
 
     @Override
@@ -271,7 +271,8 @@ public class SnippetsBridge implements SuggestionsSource {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
-    private static native void nativeFetchSnippets(boolean forceRequest);
+    private static native void nativeFetchRemoteSuggestions();
+    private static native void nativeFetchRemoteSuggestionsInTheBackground();
     private static native void nativeRescheduleFetching();
     private native int[] nativeGetCategories(long nativeNTPSnippetsBridge);
     private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge, int category);

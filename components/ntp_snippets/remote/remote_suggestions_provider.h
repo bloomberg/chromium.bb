@@ -91,11 +91,15 @@ class RemoteSuggestionsProvider final
   // calls may trigger DCHECKs.
   bool initialized() const { return ready() || state_ == State::DISABLED; }
 
-  // Fetches snippets from the server and replaces old snippets by the new ones.
-  // Requests can be marked more important by setting |interactive_request| to
-  // true (such request might circumvent the daily quota for requests, etc.)
-  // Useful for requests triggered by the user.
-  void FetchSnippets(bool interactive_request);
+  // Fetchs content suggestions from the Content Suggestions server for all
+  // remote categories in the background.
+  void FetchSnippetsInTheBackground();
+
+  // Fetchs content suggestions from the Content Suggestions server for all
+  // remote categories. The request to the server is performed as an interactive
+  // request. Interactive requests are used for actions triggered by the user
+  // and request lower latency processing.
+  void FetchSnippetsForAllCategories();
 
   // Fetches snippets from the server for specified hosts and adds them to the
   // current ones. Only called from chrome://snippets-internals, DO NOT USE
@@ -234,6 +238,12 @@ class RemoteSuggestionsProvider final
     ~CategoryContent();
     CategoryContent& operator=(CategoryContent&&);
   };
+
+  // Fetches snippets from the server and replaces old snippets by the new ones.
+  // Requests can be marked more important by setting |interactive_request| to
+  // true (such request might circumvent the daily quota for requests, etc.)
+  // Useful for requests triggered by the user.
+  void FetchSnippets(bool interactive_request);
 
   // Returns the URL of the image of a snippet if it is among the current or
   // among the archived snippets in the matching category. Returns an empty URL

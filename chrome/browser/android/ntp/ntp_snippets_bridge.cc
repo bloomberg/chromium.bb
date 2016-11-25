@@ -100,6 +100,17 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
   return result;
 }
 
+ntp_snippets::RemoteSuggestionsProvider* GetRemoteSuggestionsProvider() {
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
+  if (!content_suggestions_service) {
+    return nullptr;
+  }
+  return content_suggestions_service->ntp_snippets_service();
+}
+
 }  // namespace
 
 static jlong Init(JNIEnv* env,
@@ -109,29 +120,29 @@ static jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(snippets_bridge);
 }
 
-static void FetchSnippets(JNIEnv* env,
-                          const JavaParamRef<jclass>& caller,
-                          jboolean j_force_request) {
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  // Temporary check while investigating crbug.com/647920.
-  CHECK(profile);
-
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-      ContentSuggestionsServiceFactory::GetForProfile(profile);
-
-  // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
-  if (!content_suggestions_service)
-    return;
-
-  ntp_snippets::RemoteSuggestionsProvider* service =
-      content_suggestions_service->ntp_snippets_service();
-
+static void FetchRemoteSuggestions(JNIEnv* env,
+                                   const JavaParamRef<jclass>& caller) {
+  ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider =
+      GetRemoteSuggestionsProvider();
   // Can be null if the feature has been disabled but the scheduler has not been
   // unregistered yet. The next start should unregister it.
-  if (!service)
+  if (!remote_suggestions_provider) {
     return;
+  }
+  remote_suggestions_provider->FetchSnippetsForAllCategories();
+}
 
-  service->FetchSnippets(j_force_request);
+static void FetchRemoteSuggestionsInTheBackground(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller) {
+  ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider =
+      GetRemoteSuggestionsProvider();
+  // Can be null if the feature has been disabled but the scheduler has not been
+  // unregistered yet. The next start should unregister it.
+  if (!remote_suggestions_provider) {
+    return;
+  }
+  remote_suggestions_provider->FetchSnippetsInTheBackground();
 }
 
 // Reschedules the fetching of snippets. If tasks are already scheduled, they
@@ -146,16 +157,18 @@ static void RescheduleFetching(JNIEnv* env,
       ContentSuggestionsServiceFactory::GetForProfile(profile);
 
   // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
-  if (!content_suggestions_service)
+  if (!content_suggestions_service) {
     return;
+  }
 
   ntp_snippets::RemoteSuggestionsProvider* service =
       content_suggestions_service->ntp_snippets_service();
 
   // Can be null if the feature has been disabled but the scheduler has not been
   // unregistered yet. The next start should unregister it.
-  if (!service)
+  if (!service) {
     return;
+  }
 
   service->RescheduleFetching(/*force=*/true);
 }
@@ -219,8 +232,9 @@ base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
   base::Optional<CategoryInfo> info =
       content_suggestions_service_->GetCategoryInfo(
           CategoryFromIDValue(j_category_id));
-  if (!info)
+  if (!info) {
     return base::android::ScopedJavaLocalRef<jobject>(env, nullptr);
+  }
   return Java_SnippetsBridge_createSuggestionsCategoryInfo(
       env, j_category_id, ConvertUTF16ToJavaString(env, info->title()),
       static_cast<int>(info->card_layout()), info->has_more_action(),
@@ -400,8 +414,9 @@ void NTPSnippetsBridge::OnMoreButtonClicked(JNIEnv* env,
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::OnNewSuggestions(Category category) {
-  if (observer_.is_null())
+  if (observer_.is_null()) {
     return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onNewSuggestions(env, observer_,
@@ -410,8 +425,9 @@ void NTPSnippetsBridge::OnNewSuggestions(Category category) {
 
 void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
                                                 CategoryStatus new_status) {
-  if (observer_.is_null())
+  if (observer_.is_null()) {
     return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onCategoryStatusChanged(env, observer_,
@@ -421,8 +437,9 @@ void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
 
 void NTPSnippetsBridge::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
-  if (observer_.is_null())
+  if (observer_.is_null()) {
     return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onSuggestionInvalidated(
@@ -447,9 +464,9 @@ void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
                                        const gfx::Image& image) {
   ScopedJavaLocalRef<jobject> j_bitmap;
-  if (!image.IsEmpty())
+  if (!image.IsEmpty()) {
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
-
+  }
   base::android::RunCallbackAndroid(callback, j_bitmap);
 }
 
