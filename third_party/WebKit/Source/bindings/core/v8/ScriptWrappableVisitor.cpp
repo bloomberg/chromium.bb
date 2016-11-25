@@ -33,21 +33,23 @@ void ScriptWrappableVisitor::TracePrologue() {
   CHECK(!ThreadState::current()->isGCForbidden());
   performCleanup();
 
-  DCHECK(!m_tracingInProgress);
-  DCHECK(!m_shouldCleanup);
-  DCHECK(m_headersToUnmark.isEmpty());
-  DCHECK(m_markingDeque.isEmpty());
-  DCHECK(m_verifierDeque.isEmpty());
+  CHECK(!m_tracingInProgress);
+  CHECK(!m_shouldCleanup);
+  CHECK(m_headersToUnmark.isEmpty());
+  CHECK(m_markingDeque.isEmpty());
+  CHECK(m_verifierDeque.isEmpty());
   m_tracingInProgress = true;
 }
 
 void ScriptWrappableVisitor::EnterFinalPause() {
   CHECK(ThreadState::current());
+  CHECK(!ThreadState::current()->isGCForbidden());
   ActiveScriptWrappable::traceActiveScriptWrappables(m_isolate, this);
 }
 
 void ScriptWrappableVisitor::TraceEpilogue() {
   CHECK(ThreadState::current());
+  CHECK(!ThreadState::current()->isGCForbidden());
   DCHECK(m_markingDeque.isEmpty());
 #if DCHECK_IS_ON()
   ScriptWrappableVisitorVerifier verifier;
@@ -183,8 +185,8 @@ bool ScriptWrappableVisitor::AdvanceTracing(
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
   CHECK(ThreadState::current());
-  DCHECK(!ThreadState::current()->isGCForbidden());
-  DCHECK(m_tracingInProgress);
+  CHECK(!ThreadState::current()->isGCForbidden());
+  CHECK(m_tracingInProgress);
   WTF::AutoReset<bool>(&m_advancingTracing, true);
   while (actions.force_completion ==
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION ||
