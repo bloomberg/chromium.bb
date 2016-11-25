@@ -375,10 +375,18 @@ void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
           : CreateMouseEventInWindow(window_, event->type(), event->location(),
                                      event->changed_button_flags());
 
-  if (owner_->targeting_application())
-    [NSApp sendEvent:ns_event];
-  else
-    EmulateSendEvent(window_, ns_event);
+  using Target = ui::test::EventGenerator::Target;
+  switch (owner_->target()) {
+    case Target::APPLICATION:
+      [NSApp sendEvent:ns_event];
+      break;
+    case Target::WINDOW:
+      [window_ sendEvent:ns_event];
+      break;
+    case Target::WIDGET:
+      EmulateSendEvent(window_, ns_event);
+      break;
+  }
 }
 
 void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
@@ -386,15 +394,22 @@ void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
   NSEvent* ns_event = cocoa_test_event_utils::SynthesizeKeyEvent(
       window_, event->type() == ui::ET_KEY_PRESSED, event->key_code(),
       modifiers, event->is_char() ? event->GetDomKey() : ui::DomKey::NONE);
-  if (owner_->targeting_application()) {
-    [NSApp sendEvent:ns_event];
-    return;
+
+  using Target = ui::test::EventGenerator::Target;
+  switch (owner_->target()) {
+    case Target::APPLICATION:
+      [NSApp sendEvent:ns_event];
+      break;
+    case Target::WINDOW:
+      [window_ sendEvent:ns_event];
+      break;
+    case Target::WIDGET:
+      if ([fake_menu_ performKeyEquivalent:ns_event])
+        return;
+
+      EmulateSendEvent(window_, ns_event);
+      break;
   }
-
-  if ([fake_menu_ performKeyEquivalent:ns_event])
-    return;
-
-  EmulateSendEvent(window_, ns_event);
 }
 
 void EventGeneratorDelegateMac::OnTouchEvent(ui::TouchEvent* event) {

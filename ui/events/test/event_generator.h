@@ -134,12 +134,23 @@ class EventGenerator {
   void set_async(bool async) { async_ = async; }
   bool async() const { return async_; }
 
-  // Dispatch events through the application instead of directly to the
-  // target window. Currently only supported on Mac.
-  void set_targeting_application(bool targeting_application) {
-    targeting_application_ = targeting_application;
-  }
-  bool targeting_application() const { return targeting_application_; }
+  // Events could be dispatched using different methods. The choice is a
+  // tradeoff between test robustness and coverage of OS internals that affect
+  // event dispatch.
+  // Currently only supported on Mac.
+  enum class Target {
+    // Dispatch through the application. Least robust.
+    APPLICATION,
+    // Dispatch directly to target NSWindow via -sendEvent:.
+    WINDOW,
+    // Default. Emulates default NSWindow dispatch: calls specific event handler
+    // based on event type. Most robust.
+    WIDGET,
+  };
+
+  // Selects dispatch method. Currently only supported on Mac.
+  void set_target(Target target) { target_ = target; }
+  Target target() const { return target_; }
 
   // Resets the event flags bitmask.
   void set_flags(int flags) { flags_ = flags; }
@@ -410,7 +421,7 @@ class EventGenerator {
   std::list<std::unique_ptr<Event>> pending_events_;
   // Set to true to cause events to be posted asynchronously.
   bool async_;
-  bool targeting_application_;
+  Target target_;
   std::unique_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGenerator);

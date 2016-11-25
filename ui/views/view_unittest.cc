@@ -30,6 +30,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/scoped_target_handler.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
@@ -2104,28 +2105,58 @@ bool TestView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
+namespace {
+
+// A Widget with a TestView in the view hierarchy. Used for accelerator tests.
+class TestViewWidget {
+ public:
+  TestViewWidget(const Widget::InitParams& create_params,
+                 ui::Accelerator* initial_accelerator,
+                 bool show_after_init = true)
+      : view_(new TestView) {
+    view_->Reset();
+
+    // Register a keyboard accelerator before the view is added to a window.
+    if (initial_accelerator) {
+      view_->AddAccelerator(*initial_accelerator);
+      EXPECT_EQ(view_->accelerator_count_map_[*initial_accelerator], 0);
+    }
+
+    // Create a window and add the view as its child.
+    Widget::InitParams params = create_params;
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 100, 100);
+    widget_.Init(params);
+    View* root = widget_.GetRootView();
+    root->AddChildView(view_);
+    if (show_after_init)
+      widget_.Show();
+
+    EXPECT_TRUE(widget_.GetFocusManager());
+  }
+
+  TestView* view() { return view_; }
+  Widget* widget() { return &widget_; }
+
+ private:
+  TestView* view_;
+  Widget widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestViewWidget);
+};
+
+}  // namespace
+
 // On non-ChromeOS aura there is extra logic to determine whether a view should
 // handle accelerators or not (see View::CanHandleAccelerators for details).
 // This test targets that extra logic, but should also work on other platforms.
 TEST_F(ViewTest, HandleAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
-  TestView* view = new TestView();
-  view->Reset();
-  view->AddAccelerator(return_accelerator);
-  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
-
-  // Create a window and add the view as its child.
-  std::unique_ptr<Widget> widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  widget->Init(params);
-  View* root = widget->GetRootView();
-  root->AddChildView(view);
-  widget->Show();
-
+  TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
+                             &return_accelerator);
+  TestView* view = test_widget.view();
+  Widget* widget = test_widget.widget();
   FocusManager* focus_manager = widget->GetFocusManager();
-  ASSERT_TRUE(focus_manager);
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   // When a non-child view is not active, it shouldn't handle accelerators.
@@ -2182,30 +2213,63 @@ TEST_F(ViewTest, HandleAccelerator) {
 #endif
 }
 
+// TODO(themblsha): Bring this up on non-Mac platforms. It currently fails
+// because TestView::AcceleratorPressed() is not called. See
+// http://crbug.com/667757.
+#if defined(OS_MACOSX)
+// Test that BridgedContentView correctly handles Accelerator key events when
+// subject to OS event dispatch.
+TEST_F(ViewTest, ActivateAcceleratorOnMac) {
+  // Cmd+1 translates to "noop:" command by interpretKeyEvents.
+  ui::Accelerator command_accelerator(ui::VKEY_1, ui::EF_COMMAND_DOWN);
+  TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
+                             &command_accelerator);
+  TestView* view = test_widget.view();
+
+  ui::test::EventGenerator event_generator(
+      test_widget.widget()->GetNativeWindow());
+  // Emulate normal event dispatch through -[NSWindow sendEvent:].
+  event_generator.set_target(ui::test::EventGenerator::Target::WINDOW);
+
+  event_generator.PressKey(command_accelerator.key_code(),
+                           command_accelerator.modifiers());
+  event_generator.ReleaseKey(command_accelerator.key_code(),
+                             command_accelerator.modifiers());
+  EXPECT_EQ(view->accelerator_count_map_[command_accelerator], 1);
+
+  // Without an _wantsKeyDownForEvent: override we'll only get a keyUp: event
+  // for this accelerator.
+  ui::Accelerator key_up_accelerator(ui::VKEY_TAB,
+                                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  view->AddAccelerator(key_up_accelerator);
+  event_generator.PressKey(key_up_accelerator.key_code(),
+                           key_up_accelerator.modifiers());
+  event_generator.ReleaseKey(key_up_accelerator.key_code(),
+                             key_up_accelerator.modifiers());
+  EXPECT_EQ(view->accelerator_count_map_[key_up_accelerator], 1);
+
+  // We should handle this accelerator inside keyDown: as it doesn't translate
+  // to any command by default.
+  ui::Accelerator key_down_accelerator(
+      ui::VKEY_L, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
+  view->AddAccelerator(key_down_accelerator);
+  event_generator.PressKey(key_down_accelerator.key_code(),
+                           key_down_accelerator.modifiers());
+  event_generator.ReleaseKey(key_down_accelerator.key_code(),
+                             key_down_accelerator.modifiers());
+  EXPECT_EQ(view->accelerator_count_map_[key_down_accelerator], 1);
+}
+#endif  // OS_MACOSX
+
 // TODO: these tests were initially commented out when getting aura to
-// run. Figure out if still valuable and either nuke or fix.
-#if 0
+// run. Figure out if still valuable and either nuke or fix. crbug.com/667757.
+#if defined(OS_MACOSX)
 TEST_F(ViewTest, ActivateAccelerator) {
-  // Register a keyboard accelerator before the view is added to a window.
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
-  TestView* view = new TestView();
-  view->Reset();
-  view->AddAccelerator(return_accelerator);
-  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
-
-  // Create a window and add the view as its child.
-  std::unique_ptr<Widget> widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  widget->Init(params);
-  View* root = widget->GetRootView();
-  root->AddChildView(view);
-  widget->Show();
-
-  // Get the focus manager.
-  FocusManager* focus_manager = widget->GetFocusManager();
-  ASSERT_TRUE(focus_manager);
+  TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
+                             &return_accelerator);
+  TestView* view = test_widget.view();
+  FocusManager* focus_manager = test_widget.widget()->GetFocusManager();
 
   // Hit the return key and see if it takes effect.
   EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
@@ -2246,55 +2310,29 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_FALSE(focus_manager->ProcessAccelerator(escape_accelerator));
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 2);
   EXPECT_EQ(view->accelerator_count_map_[escape_accelerator], 2);
-
-  widget->CloseNow();
 }
 
 TEST_F(ViewTest, HiddenViewWithAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
-  TestView* view = new TestView();
-  view->Reset();
-  view->AddAccelerator(return_accelerator);
-  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
-
-  std::unique_ptr<Widget> widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  widget->Init(params);
-  View* root = widget->GetRootView();
-  root->AddChildView(view);
-  widget->Show();
-
-  FocusManager* focus_manager = widget->GetFocusManager();
-  ASSERT_TRUE(focus_manager);
+  TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
+                             &return_accelerator);
+  TestView* view = test_widget.view();
+  FocusManager* focus_manager = test_widget.widget()->GetFocusManager();
 
   view->SetVisible(false);
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
 
   view->SetVisible(true);
   EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
-
-  widget->CloseNow();
 }
 
 TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
-  TestView* view = new TestView();
-  view->Reset();
-  view->AddAccelerator(return_accelerator);
-  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
-
-  std::unique_ptr<Widget> widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  widget->Init(params);
-  View* root = widget->GetRootView();
-  root->AddChildView(view);
-
-  FocusManager* focus_manager = widget->GetFocusManager();
-  ASSERT_TRUE(focus_manager);
+  TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),
+                             &return_accelerator, false);
+  TestView* view = test_widget.view();
+  Widget* widget = test_widget.widget();
+  FocusManager* focus_manager = test_widget.widget()->GetFocusManager();
 
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(0, view->accelerator_count_map_[return_accelerator]);
@@ -2306,10 +2344,12 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   widget->Hide();
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
-
-  widget->CloseNow();
 }
+#endif  // OS_MACOSX
 
+// TODO: these tests were initially commented out when getting aura to
+// run. Figure out if still valuable and either nuke or fix.
+#if 0
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting
 ////////////////////////////////////////////////////////////////////////////////

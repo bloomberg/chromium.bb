@@ -28,7 +28,7 @@ class EventMonitorTest : public WidgetTest {
       generator_.reset(new ui::test::EventGenerator(
           GetContext(), widget_->GetNativeWindow()));
     }
-    generator_->set_targeting_application(true);
+    generator_->set_target(ui::test::EventGenerator::Target::APPLICATION);
   }
   void TearDown() override {
     widget_->CloseNow();

@@ -275,6 +275,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // Passes |event| to the InputMethod for dispatch.
 - (void)handleKeyEvent:(ui::KeyEvent*)event;
 
+// Allows accelerators to be handled at different points in AppKit key event
+// dispatch. Checks for an unhandled event passed in to -keyDown: and passes it
+// to the Widget for processing. Returns YES if the Widget handles it.
+- (BOOL)handleUnhandledKeyDownAsKeyEvent;
+
 // Handles an NSResponder Action Message by mapping it to a corresponding text
 // editing command from ui_strings.grd and, when not being sent to a
 // TextInputClient, the keyCode that toolkit-views expects internally.
@@ -455,6 +460,16 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
 }
 
+- (BOOL)handleUnhandledKeyDownAsKeyEvent {
+  if (!keyDownEvent_)
+    return NO;
+
+  ui::KeyEvent event(keyDownEvent_);
+  [self handleKeyEvent:&event];
+  keyDownEvent_ = nil;
+  return event.handled();
+}
+
 - (void)handleAction:(ui::TextEditCommand)command
              keyCode:(ui::KeyboardCode)keyCode
              domCode:(ui::DomCode)domCode
@@ -512,6 +527,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     } else {
       textInputClient_->InsertText(base::SysNSStringToUTF16(text));
     }
+
+    keyDownEvent_ = nil;  // Handled.
     return;
   }
 
@@ -527,6 +544,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (isCharacterEvent) {
     ui::KeyEvent charEvent = GetCharacterEventFromNSEvent(keyDownEvent_);
     [self handleKeyEvent:&charEvent];
+    keyDownEvent_ = nil;  // Handled.
   }
 }
 
@@ -765,11 +783,27 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSResponder implementation.
 
+- (BOOL)_wantsKeyDownForEvent:(NSEvent*)event {
+  // This is a SPI that AppKit apparently calls after |performKeyEquivalent:|
+  // returned NO. If this function returns |YES|, Cocoa sends the event to
+  // |keyDown:| instead of doing other things with it. Ctrl-tab will be sent
+  // to us instead of doing key view loop control, ctrl-left/right get handled
+  // correctly, etc.
+  // (However, there are still some keys that Cocoa swallows, e.g. the key
+  // equivalent that Cocoa uses for toggling the input language. In this case,
+  // that's actually a good thing, though -- see http://crbug.com/26115 .)
+  return YES;
+}
+
 - (void)keyDown:(NSEvent*)theEvent {
   // Convert the event into an action message, according to OSX key mappings.
   keyDownEvent_ = theEvent;
   [self interpretKeyEvents:@[ theEvent ]];
-  keyDownEvent_ = nil;
+
+  // If |keyDownEvent_| wasn't cleared during -interpretKeyEvents:, it wasn't
+  // handled. Give Widget accelerators a chance to handle it.
+  [self handleUnhandledKeyDownAsKeyEvent];
+  DCHECK(!keyDownEvent_);
 }
 
 - (void)keyUp:(NSEvent*)theEvent {
@@ -1288,15 +1322,19 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)doCommandBySelector:(SEL)selector {
   // Like the renderer, handle insert action messages as a regular key dispatch.
   // This ensures, e.g., insertTab correctly changes focus between fields.
-  if (keyDownEvent_ && [NSStringFromSelector(selector) hasPrefix:@"insert"]) {
-    ui::KeyEvent event(keyDownEvent_);
-    [self handleKeyEvent:&event];
+  if (keyDownEvent_ && [NSStringFromSelector(selector) hasPrefix:@"insert"])
+    return;  // Handle in -keyDown:.
+
+  if ([self respondsToSelector:selector]) {
+    [self performSelector:selector withObject:nil];
+    keyDownEvent_ = nil;
     return;
   }
 
-  if ([self respondsToSelector:selector])
-    [self performSelector:selector withObject:nil];
-  else
+  // For events that AppKit sends via doCommandBySelector:, first attempt to
+  // handle as a Widget accelerator. Forward along the responder chain only if
+  // the Widget doesn't handle it.
+  if (![self handleUnhandledKeyDownAsKeyEvent])
     [[self nextResponder] doCommandBySelector:selector];
 }
 

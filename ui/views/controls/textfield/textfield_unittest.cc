@@ -447,6 +447,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
     event_generator_.reset(
         new ui::test::EventGenerator(widget_->GetNativeWindow()));
+    event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);
   }
   ui::MenuModel* GetContextMenuModel() {
     test_api_->UpdateContextMenu();
@@ -1252,13 +1253,7 @@ TEST_F(TextfieldTest, OnKeyPress) {
 
   // F20 key won't be handled.
   SendKeyEvent(ui::VKEY_F20);
-#if defined(OS_MACOSX)
-  // On Mac, key combinations that don't map to editing commands are forwarded
-  // on to the next responder, usually ending up at the window, which will beep.
-  EXPECT_FALSE(textfield_->key_received());
-#else
   EXPECT_TRUE(textfield_->key_received());
-#endif
   EXPECT_FALSE(textfield_->key_handled());
   textfield_->clear();
 }
