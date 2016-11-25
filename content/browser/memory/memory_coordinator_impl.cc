@@ -322,8 +322,9 @@ void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
 
   for (auto& iter : children()) {
     auto* render_process_host = RenderProcessHost::FromID(iter.first);
-    DCHECK(render_process_host);
-    DCHECK(render_process_host->GetHandle() != base::kNullProcessHandle);
+    if (!render_process_host ||
+        render_process_host->GetHandle() == base::kNullProcessHandle)
+      continue;
     auto metrics = base::ProcessMetrics::CreateProcessMetrics(
         render_process_host->GetHandle());
     metrics->GetWorkingSetKBytes(&working_set);
