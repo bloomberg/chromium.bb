@@ -95,7 +95,7 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
 FrameSelection::FrameSelection(LocalFrame* frame)
     : m_frame(frame),
       m_pendingSelection(PendingSelection::create(*this)),
-      m_selectionEditor(SelectionEditor::create(*this)),
+      m_selectionEditor(SelectionEditor::create(frame)),
       m_granularity(CharacterGranularity),
       m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation()),
       m_focused(frame->page() &&

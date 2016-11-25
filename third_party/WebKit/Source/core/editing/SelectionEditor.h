@@ -40,8 +40,8 @@ class SelectionEditor final
   WTF_MAKE_NONCOPYABLE(SelectionEditor);
 
  public:
-  static SelectionEditor* create(FrameSelection& frameSelection) {
-    return new SelectionEditor(frameSelection);
+  static SelectionEditor* create(LocalFrame* frame) {
+    return new SelectionEditor(frame);
   }
   virtual ~SelectionEditor();
   void dispose();
@@ -85,16 +85,16 @@ class SelectionEditor final
   DECLARE_TRACE();
 
  private:
-  explicit SelectionEditor(FrameSelection&);
+  explicit SelectionEditor(LocalFrame*);
 
   const Document& document() const;
-  LocalFrame* frame() const;
+  LocalFrame* frame() const { return m_frame.get(); }
 
   void clearVisibleSelection();
   bool shouldAlwaysUseDirectionalSelection() const;
 
   Member<Document> m_document;
-  Member<FrameSelection> m_frameSelection;
+  Member<LocalFrame> m_frame;
 
   VisibleSelection m_selection;
   VisibleSelectionInFlatTree m_selectionInFlatTree;
