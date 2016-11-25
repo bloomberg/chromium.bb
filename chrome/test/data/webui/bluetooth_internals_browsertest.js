@@ -158,15 +158,8 @@ BluetoothInternalsTest.prototype = {
   },
 };
 
-// Times out on chromium.mac/Mac10.11 Tests. See https://crbug.com/667970.
-GEN('#if defined(OS_MACOSX)');
-GEN('#define MAYBE_Startup_BluetoothInternals ' +
-    'DISABLED_Startup_BluetoothInternals');
-GEN('#else');
-GEN('#define MAYBE_Startup_BluetoothInternals Startup_BluetoothInternals');
-GEN('#endif');
-
-TEST_F('BluetoothInternalsTest', 'MAYBE_Startup_BluetoothInternals',
+// Times out. See https://crbug.com/667970.
+TEST_F('BluetoothInternalsTest', 'DISABLED_Startup_BluetoothInternals',
     function() {
   var fakeAdapterInfo = {
     address: '02:1C:7E:6A:11:5A',
