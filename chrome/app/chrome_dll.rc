@@ -33,63 +33,63 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // pick those up in the WM_APPCOMMAND message.
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    VK_BACK,        IDC_BACK,                   VIRTKEY
+    VK_LEFT,        IDC_BACK,                   VIRTKEY, ALT
 // This really should be using the buildflag but the resource compiler fails on
 // macro functions longer than 31 chars which this command produces. The BUILD
 // sets this regular define for this target only for this line to consume.
 #ifdef ENABLE_BASIC_PRINTING_FOR_RC  // #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     "P",            IDC_BASIC_PRINT,            VIRTKEY, CONTROL, SHIFT
 #endif  // ENABLE_BASIC_PRINTING_FOR_RC
-    VK_LEFT,        IDC_BACK,                   VIRTKEY, ALT
-    VK_BACK,        IDC_BACK,                   VIRTKEY
-    "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL
     "D",            IDC_BOOKMARK_ALL_TABS,      VIRTKEY, CONTROL, SHIFT
+    "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL
     VK_DELETE,      IDC_CLEAR_BROWSING_DATA,    VIRTKEY, CONTROL, SHIFT
-    VK_F4,          IDC_CLOSE_TAB,              VIRTKEY, CONTROL
     "W",            IDC_CLOSE_TAB,              VIRTKEY, CONTROL
+    VK_F4,          IDC_CLOSE_TAB,              VIRTKEY, CONTROL
     "W",            IDC_CLOSE_WINDOW,           VIRTKEY, CONTROL, SHIFT
+    "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
+    "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
+    "C",            IDC_DEV_TOOLS_INSPECT,      VIRTKEY, CONTROL, SHIFT
+    VK_F12,         IDC_DEV_TOOLS_TOGGLE,       VIRTKEY
     "F",            IDC_FIND,                   VIRTKEY, CONTROL
     "G",            IDC_FIND_NEXT,              VIRTKEY, CONTROL
     VK_F3,          IDC_FIND_NEXT,              VIRTKEY
     "G",            IDC_FIND_PREVIOUS,          VIRTKEY, CONTROL, SHIFT
     VK_F3,          IDC_FIND_PREVIOUS,          VIRTKEY, SHIFT
+    "B",            IDC_FOCUS_BOOKMARKS,        VIRTKEY, SHIFT, ALT
+    "A",            IDC_FOCUS_INFOBARS,         VIRTKEY, SHIFT, ALT
     "D",            IDC_FOCUS_LOCATION,         VIRTKEY, ALT
     "L",            IDC_FOCUS_LOCATION,         VIRTKEY, CONTROL
     VK_F10,         IDC_FOCUS_MENU_BAR,         VIRTKEY
     VK_MENU,        IDC_FOCUS_MENU_BAR,         VIRTKEY
     VK_F6,          IDC_FOCUS_NEXT_PANE,        VIRTKEY
     VK_F6,          IDC_FOCUS_PREVIOUS_PANE,    VIRTKEY, SHIFT
-    "K",            IDC_FOCUS_SEARCH,           VIRTKEY, CONTROL
     "E",            IDC_FOCUS_SEARCH,           VIRTKEY, CONTROL
+    "K",            IDC_FOCUS_SEARCH,           VIRTKEY, CONTROL
     "T",            IDC_FOCUS_TOOLBAR,          VIRTKEY, SHIFT, ALT
-    "B",            IDC_FOCUS_BOOKMARKS,        VIRTKEY, SHIFT, ALT
-    "A",            IDC_FOCUS_INFOBARS,         VIRTKEY, SHIFT, ALT
-    VK_RIGHT,       IDC_FORWARD,                VIRTKEY, ALT
     VK_BACK,        IDC_FORWARD,                VIRTKEY, SHIFT
+    VK_RIGHT,       IDC_FORWARD,                VIRTKEY, ALT
     VK_F11,         IDC_FULLSCREEN,             VIRTKEY
     VK_F1,          IDC_HELP_PAGE_VIA_KEYBOARD, VIRTKEY
-    "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
-    "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
-    "C",            IDC_DEV_TOOLS_INSPECT,      VIRTKEY, CONTROL, SHIFT
-    VK_F12,         IDC_DEV_TOOLS_TOGGLE,       VIRTKEY
+    VK_HOME,        IDC_HOME,                   VIRTKEY, ALT
     "N",            IDC_NEW_INCOGNITO_WINDOW,   VIRTKEY, CONTROL, SHIFT
     "T",            IDC_NEW_TAB,                VIRTKEY, CONTROL
     "N",            IDC_NEW_WINDOW,             VIRTKEY, CONTROL
     "O",            IDC_OPEN_FILE,              VIRTKEY, CONTROL
     "P",            IDC_PRINT,                  VIRTKEY, CONTROL
     "R",            IDC_RELOAD,                 VIRTKEY, CONTROL
-    "R",            IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, CONTROL, SHIFT
     VK_F5,          IDC_RELOAD,                 VIRTKEY
+    "R",            IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, CONTROL, SHIFT
     VK_F5,          IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, CONTROL
     VK_F5,          IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, SHIFT
-    VK_HOME,        IDC_HOME,                   VIRTKEY, ALT
     "T",            IDC_RESTORE_TAB,            VIRTKEY, CONTROL, SHIFT
     "S",            IDC_SAVE_PAGE,              VIRTKEY, CONTROL
     "9",            IDC_SELECT_LAST_TAB,        VIRTKEY, CONTROL
     VK_NUMPAD9,     IDC_SELECT_LAST_TAB,        VIRTKEY, CONTROL
-    VK_TAB,         IDC_SELECT_NEXT_TAB,        VIRTKEY, CONTROL
     VK_NEXT,        IDC_SELECT_NEXT_TAB,        VIRTKEY, CONTROL
-    VK_TAB,         IDC_SELECT_PREVIOUS_TAB,    VIRTKEY, CONTROL, SHIFT
+    VK_TAB,         IDC_SELECT_NEXT_TAB,        VIRTKEY, CONTROL
     VK_PRIOR,       IDC_SELECT_PREVIOUS_TAB,    VIRTKEY, CONTROL
+    VK_TAB,         IDC_SELECT_PREVIOUS_TAB,    VIRTKEY, CONTROL, SHIFT
     // NOTE: IDC_SELECT_TAB_N is bound to the key ctrl-(N+1), and selects the
     // tab at index N. For example, IDC_SELECT_TAB_0 is bound to ctrl-1, and
     // selects the tab at index 0.
@@ -109,13 +109,13 @@ BEGIN
     VK_NUMPAD7,     IDC_SELECT_TAB_6,           VIRTKEY, CONTROL
     "8",            IDC_SELECT_TAB_7,           VIRTKEY, CONTROL
     VK_NUMPAD8,     IDC_SELECT_TAB_7,           VIRTKEY, CONTROL
+    "E",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
+    "F",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
+    "M",            IDC_SHOW_AVATAR_MENU,       VIRTKEY, CONTROL, SHIFT
     "B",            IDC_SHOW_BOOKMARK_BAR,      VIRTKEY, CONTROL, SHIFT
     "O",            IDC_SHOW_BOOKMARK_MANAGER,  VIRTKEY, CONTROL, SHIFT
     "J",            IDC_SHOW_DOWNLOADS,         VIRTKEY, CONTROL
     "H",            IDC_SHOW_HISTORY,           VIRTKEY, CONTROL
-    "F",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
-    "E",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
-    "M",            IDC_SHOW_AVATAR_MENU,       VIRTKEY, CONTROL, SHIFT
     VK_ESCAPE,      IDC_STOP,                   VIRTKEY
     VK_ESCAPE,      IDC_TASK_MANAGER,           VIRTKEY, SHIFT
     "U",            IDC_VIEW_SOURCE,            VIRTKEY, CONTROL
@@ -124,9 +124,9 @@ BEGIN
     VK_SUBTRACT,    IDC_ZOOM_MINUS,             VIRTKEY, CONTROL
     "0",            IDC_ZOOM_NORMAL,            VIRTKEY, CONTROL
     VK_NUMPAD0,     IDC_ZOOM_NORMAL,            VIRTKEY, CONTROL
+    VK_ADD,         IDC_ZOOM_PLUS,              VIRTKEY, CONTROL
     VK_OEM_PLUS,    IDC_ZOOM_PLUS,              VIRTKEY, CONTROL
     VK_OEM_PLUS,    IDC_ZOOM_PLUS,              VIRTKEY, CONTROL, SHIFT
-    VK_ADD,         IDC_ZOOM_PLUS,              VIRTKEY, CONTROL
 END
 
 #ifdef APSTUDIO_INVOKED
