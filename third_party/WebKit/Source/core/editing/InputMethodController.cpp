@@ -182,7 +182,8 @@ Document& InputMethodController::document() const {
 }
 
 bool InputMethodController::hasComposition() const {
-  return m_hasComposition;
+  return m_hasComposition && !m_compositionRange->collapsed() &&
+         m_compositionRange->isConnected();
 }
 
 inline Editor& InputMethodController::editor() const {
@@ -313,6 +314,7 @@ bool InputMethodController::replaceCompositionAndMoveCaret(
   Element* rootEditableElement = frame().selection().rootEditableElement();
   if (!rootEditableElement)
     return false;
+  DCHECK(hasComposition());
   PlainTextRange compositionRange =
       PlainTextRange::create(*rootEditableElement, *m_compositionRange);
   if (compositionRange.isNull())

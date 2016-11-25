@@ -1062,4 +1062,25 @@ TEST_F(InputMethodControllerTest, CompositionEndEventWithNoSelection) {
   EXPECT_TRUE(controller().getSelectionOffsets().isNull());
 }
 
+TEST_F(InputMethodControllerTest, FinishCompositionRemovedRange) {
+  Element* inputA =
+      insertHTMLElement("<input id='a' /><br><input type='tel' id='b' />", "a");
+
+  EXPECT_EQ(WebTextInputTypeText, controller().textInputType());
+
+  // The test requires non-empty composition.
+  controller().setComposition("hello", Vector<CompositionUnderline>(), 5, 5);
+  EXPECT_EQ(WebTextInputTypeText, controller().textInputType());
+
+  // Remove element 'a'.
+  inputA->setOuterHTML("", ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(WebTextInputTypeNone, controller().textInputType());
+
+  document().getElementById("b")->focus();
+  EXPECT_EQ(WebTextInputTypeTelephone, controller().textInputType());
+
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  EXPECT_EQ(WebTextInputTypeTelephone, controller().textInputType());
+}
+
 }  // namespace blink
