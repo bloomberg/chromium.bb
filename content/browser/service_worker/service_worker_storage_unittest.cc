@@ -523,6 +523,21 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result;
   }
 
+  // Directly writes a registration using
+  // ServiceWorkerDatabase::WriteRegistration rather than
+  // ServiceWorkerStorage::StoreRegistration. Useful for simulating a
+  // registration written by an earlier version of Chrome.
+  void WriteRegistration(const RegistrationData& registration,
+                         const std::vector<ResourceRecord>& resources) {
+    ServiceWorkerDatabase::RegistrationData deleted_version;
+    std::vector<int64_t> newly_purgeable_resources;
+
+    ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+              storage()->database_->WriteRegistration(
+                  registration, resources, &deleted_version,
+                  &newly_purgeable_resources));
+  }
+
   // user_data_directory_ must be declared first to preserve destructor order.
   base::ScopedTempDir user_data_directory_;
   base::FilePath user_data_directory_path_;
@@ -1667,6 +1682,8 @@ TEST_P(ServiceWorkerStorageTestP, FindRegistration_LongestScopeMatch) {
   EXPECT_EQ(live_registration2, found_registration);
 }
 
+// Test fixture that uses disk storage, rather than memory. Useful for tests
+// that test persistence by simulating browser shutdown and restart.
 class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTestP {
  public:
   void SetUp() override {
@@ -1786,25 +1803,7 @@ TEST_P(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
 }
 
-class ServiceWorkerStorageOriginTrialsTest : public ServiceWorkerStorageTestP {
- public:
-  ServiceWorkerStorageOriginTrialsTest() {}
-  ~ServiceWorkerStorageOriginTrialsTest() override {}
-
- protected:
-  void WriteRegistration(const RegistrationData& registration,
-                         const std::vector<ResourceRecord>& resources) {
-    ServiceWorkerDatabase::RegistrationData deleted_version;
-    std::vector<int64_t> newly_purgeable_resources;
-
-    ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-              storage()->database_->WriteRegistration(
-                  registration, resources, &deleted_version,
-                  &newly_purgeable_resources));
-  }
-};
-
-TEST_P(ServiceWorkerStorageOriginTrialsTest, AbsentEntryAndEmptyEntry) {
+TEST_P(ServiceWorkerStorageTestP, OriginTrialsAbsentEntryAndEmptyEntry) {
   const GURL origin1("http://www1.example.com");
   const GURL scope1("http://www1.example.com/foo/");
   RegistrationData data1;
@@ -1986,6 +1985,129 @@ TEST_P(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   EXPECT_EQ(kFeature2Token2, found_tokens.at("Feature2")[1]);
 }
 
+// Tests loading a registration that has no navigation preload state.
+TEST_P(ServiceWorkerStorageTestP, AbsentNavigationPreloadState) {
+  const GURL origin1("http://www1.example.com");
+  const GURL scope1("http://www1.example.com/foo/");
+  RegistrationData data1;
+  data1.registration_id = 100;
+  data1.scope = scope1;
+  data1.script = GURL(origin1.spec() + "/script.js");
+  data1.version_id = 1000;
+  data1.is_active = true;
+  data1.resources_total_size_bytes = 100;
+  // Don't set navigation preload state to simulate old database entry.
+  std::vector<ServiceWorkerDatabase::ResourceRecord> resources1;
+  resources1.push_back(
+      ServiceWorkerDatabase::ResourceRecord(1, data1.script, 100));
+  WriteRegistration(data1, resources1);
+
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            FindRegistrationForDocument(scope1, &found_registration));
+  const NavigationPreloadState& registration_state =
+      found_registration->navigation_preload_state();
+  EXPECT_FALSE(registration_state.enabled);
+  EXPECT_EQ("true", registration_state.header);
+  ASSERT_TRUE(found_registration->active_version());
+  const NavigationPreloadState& state =
+      found_registration->active_version()->navigation_preload_state();
+  EXPECT_FALSE(state.enabled);
+  EXPECT_EQ("true", state.header);
+}
+
+// Tests loading a registration with a disabled navigation preload
+// state.
+TEST_P(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
+  LazyInitialize();
+  const GURL kScope("https://valid.example.com/scope");
+  const GURL kScript("https://valid.example.com/script.js");
+  const int64_t kRegistrationId = 1;
+  const int64_t kVersionId = 1;
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
+      registration.get(), kScript, kVersionId, context()->AsWeakPtr());
+
+  std::vector<ServiceWorkerDatabase::ResourceRecord> record;
+  record.push_back(ServiceWorkerDatabase::ResourceRecord(1, kScript, 100));
+  version->script_cache_map()->SetResources(record);
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration->SetActiveVersion(version);
+  registration->EnableNavigationPreload(false);
+
+  EXPECT_EQ(SERVICE_WORKER_OK, StoreRegistration(registration, version));
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  InitializeTestHelper();
+  LazyInitialize();
+
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            FindRegistrationForDocument(kScope, &found_registration));
+  const NavigationPreloadState& registration_state =
+      found_registration->navigation_preload_state();
+  EXPECT_FALSE(registration_state.enabled);
+  EXPECT_EQ("true", registration_state.header);
+  ASSERT_TRUE(found_registration->active_version());
+  const NavigationPreloadState& state =
+      found_registration->active_version()->navigation_preload_state();
+  EXPECT_FALSE(state.enabled);
+  EXPECT_EQ("true", state.header);
+}
+
+// Tests loading a registration with an enabled navigation preload state, as
+// well as a custom header value.
+TEST_P(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
+  LazyInitialize();
+  const GURL kScope("https://valid.example.com/scope");
+  const GURL kScript("https://valid.example.com/script.js");
+  const std::string kHeaderValue("custom header value");
+  const int64_t kRegistrationId = 1;
+  const int64_t kVersionId = 1;
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
+      registration.get(), kScript, kVersionId, context()->AsWeakPtr());
+
+  std::vector<ServiceWorkerDatabase::ResourceRecord> record;
+  record.push_back(ServiceWorkerDatabase::ResourceRecord(1, kScript, 100));
+  version->script_cache_map()->SetResources(record);
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration->SetActiveVersion(version);
+  registration->EnableNavigationPreload(true);
+  registration->SetNavigationPreloadHeader(kHeaderValue);
+
+  EXPECT_EQ(SERVICE_WORKER_OK, StoreRegistration(registration, version));
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  InitializeTestHelper();
+  LazyInitialize();
+
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            FindRegistrationForDocument(kScope, &found_registration));
+  const NavigationPreloadState& registration_state =
+      found_registration->navigation_preload_state();
+  EXPECT_TRUE(registration_state.enabled);
+  EXPECT_EQ(kHeaderValue, registration_state.header);
+  ASSERT_TRUE(found_registration->active_version());
+  const NavigationPreloadState& state =
+      found_registration->active_version()->navigation_preload_state();
+  EXPECT_TRUE(state.enabled);
+  EXPECT_EQ(kHeaderValue, state.header);
+}
+
 INSTANTIATE_TEST_CASE_P(ServiceWorkerResourceStorageDiskTest,
                         ServiceWorkerResourceStorageDiskTest,
                         testing::Bool());
@@ -1997,9 +2119,6 @@ INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageDiskTest,
                         testing::Bool());
 INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageOriginTrialsDiskTest,
                         ServiceWorkerStorageOriginTrialsDiskTest,
-                        testing::Bool());
-INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageOriginTrialsTest,
-                        ServiceWorkerStorageOriginTrialsTest,
                         testing::Bool());
 INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageTestP,
                         ServiceWorkerStorageTestP,

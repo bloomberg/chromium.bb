@@ -143,6 +143,17 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // registration->last_update_check().
   void UpdateLastUpdateCheckTime(ServiceWorkerRegistration* registration);
 
+  // Updates the specified registration's navigation preload state in storage.
+  // The caller is responsible for mutating the live registration's state.
+  void UpdateNavigationPreloadEnabled(int64_t registration_id,
+                                      const GURL& origin,
+                                      bool enable,
+                                      const StatusCallback& callback);
+  void UpdateNavigationPreloadHeader(int64_t registration_id,
+                                     const GURL& origin,
+                                     const std::string& value,
+                                     const StatusCallback& callback);
+
   // Deletes the registration data for |registration_id|. If the registration's
   // version is live, its script resources will remain available.
   // PurgeResources should be called when it's OK to delete them.

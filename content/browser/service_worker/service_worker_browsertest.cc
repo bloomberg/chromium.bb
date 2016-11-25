@@ -1561,7 +1561,7 @@ const std::string
 
 const std::string
     ServiceWorkerNavigationPreloadTest::kEnableNavigationPreloadScript(
-        "self.addEventListener('install', event => {\n"
+        "self.addEventListener('activate', event => {\n"
         "    event.waitUntil(self.registration.navigationPreload.enable());\n"
         "  });\n");
 

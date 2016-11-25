@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -47,6 +48,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   EmbeddedWorkerStatus running_status;
   ServiceWorkerVersion::Status status;
   ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence;
+  NavigationPreloadState navigation_preload_state;
   GURL script_url;
   int64_t registration_id;
   int64_t version_id;

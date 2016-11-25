@@ -17,6 +17,11 @@ message ServiceWorkerOriginTrialInfo {
   repeated ServiceWorkerOriginTrialFeature features = 1;
 }
 
+message ServiceWorkerNavigationPreloadState {
+  required bool enabled = 1;
+  optional string header = 2;
+}
+
 message ServiceWorkerRegistrationData {
   required int64 registration_id = 1;
   required string scope_url = 2;
@@ -43,6 +48,8 @@ message ServiceWorkerRegistrationData {
   // Service Worker and load the main script resource in ServiceWorkerStorage
   // to check the HTTP header.
   optional ServiceWorkerOriginTrialInfo origin_trial_tokens = 11;
+
+  optional ServiceWorkerNavigationPreloadState navigation_preload_state = 12;
 }
 
 message ServiceWorkerResourceRecord {

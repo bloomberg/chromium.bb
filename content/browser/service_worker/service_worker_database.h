@@ -22,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -73,6 +74,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     std::vector<GURL> foreign_fetch_scopes;
     std::vector<url::Origin> foreign_fetch_origins;
     base::Optional<TrialTokenValidator::FeatureToTokensMap> origin_trial_tokens;
+    NavigationPreloadState navigation_preload_state;
 
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
     int64_t resources_total_size_bytes;
@@ -163,6 +165,15 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   Status UpdateLastCheckTime(int64_t registration_id,
                              const GURL& origin,
                              const base::Time& time);
+
+  // Updates the navigation preload state for the specified registration.
+  // Returns OK if it's successfully updated. Otherwise, returns an error.
+  Status UpdateNavigationPreloadEnabled(int64_t registration_id,
+                                        const GURL& origin,
+                                        bool enable);
+  Status UpdateNavigationPreloadHeader(int64_t registration_id,
+                                       const GURL& origin,
+                                       const std::string& value);
 
   // Deletes a registration for |registration_id| and moves resource records
   // associated with it into the purgeable list. If deletion occurred, sets
@@ -271,6 +282,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       const std::string& serialized,
       RegistrationData* out);
 
+  // Populates |batch| with operations to write |registration|. It does not
+  // actually write to db yet.
   void WriteRegistrationDataInBatch(const RegistrationData& registration,
                                     leveldb::WriteBatch* batch);
 

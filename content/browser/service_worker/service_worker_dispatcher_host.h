@@ -259,6 +259,17 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       ProviderStatus* out_status,
       int provider_id);
 
+  void DidUpdateNavigationPreloadEnabled(int thread_id,
+                                         int request_id,
+                                         int registration_id,
+                                         bool enable,
+                                         ServiceWorkerStatusCode status);
+  void DidUpdateNavigationPreloadHeader(int thread_id,
+                                        int request_id,
+                                        int registration_id,
+                                        const std::string& value,
+                                        ServiceWorkerStatusCode status);
+
   const int render_process_id_;
   MessagePortMessageFilter* const message_port_message_filter_;
   ResourceContext* resource_context_;

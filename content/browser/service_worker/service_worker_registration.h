@@ -95,12 +95,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     return active_version() || waiting_version();
   }
 
-  bool is_navigation_preload_enabled() const {
-    return navigation_preload_state_.enabled;
-  }
-
-  const std::string& navigation_preload_header() const {
-    return navigation_preload_state_.header;
+  const NavigationPreloadState& navigation_preload_state() const {
+    return navigation_preload_state_;
   }
 
   ServiceWorkerVersion* GetNewestVersion() const;
