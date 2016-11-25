@@ -4410,6 +4410,9 @@ HTMLFrameOwnerElement* Document::localOwner() const {
 void Document::willChangeFrameOwnerProperties(int marginWidth,
                                               int marginHeight,
                                               ScrollbarMode scrollingMode) {
+  if (!body())
+    return;
+
   DCHECK(frame() && frame()->owner());
   FrameOwner* owner = frame()->owner();
 
@@ -4417,7 +4420,7 @@ void Document::willChangeFrameOwnerProperties(int marginWidth,
     body()->setIntegralAttribute(marginwidthAttr, marginWidth);
   if (marginHeight != owner->marginHeight())
     body()->setIntegralAttribute(marginheightAttr, marginHeight);
-  if (scrollingMode != owner->scrollingMode())
+  if (scrollingMode != owner->scrollingMode() && view())
     view()->setNeedsLayout();
 }
 
