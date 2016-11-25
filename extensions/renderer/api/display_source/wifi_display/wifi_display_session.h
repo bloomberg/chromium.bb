@@ -24,10 +24,10 @@ class WiFiDisplayMediaManager;
 // This class represents a single Wi-Fi Display session.
 // It manages life-cycle of the session and it is also responsible for
 // exchange of session controlling (RTSP) messages with the sink.
-class WiFiDisplaySession: public DisplaySourceSession,
-                          public WiFiDisplaySessionServiceClient,
-                          public wds::Peer::Delegate,
-                          public wds::Peer::Observer {
+class WiFiDisplaySession : public DisplaySourceSession,
+                           public mojom::WiFiDisplaySessionServiceClient,
+                           public wds::Peer::Delegate,
+                           public wds::Peer::Observer {
  public:
   explicit WiFiDisplaySession(
       const DisplaySourceSessionParams& params);
@@ -74,7 +74,7 @@ class WiFiDisplaySession: public DisplaySourceSession,
  private:
   std::unique_ptr<wds::Source> wfd_source_;
   std::unique_ptr<WiFiDisplayMediaManager> media_manager_;
-  WiFiDisplaySessionServicePtr service_;
+  mojom::WiFiDisplaySessionServicePtr service_;
   mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
   std::string local_ip_address_;
   std::map<int, std::unique_ptr<base::Timer>> timers_;

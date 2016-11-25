@@ -41,7 +41,7 @@ WiFiDisplayMediaServiceImpl::PacketIOBuffer::~PacketIOBuffer() {
 
 // static
 void WiFiDisplayMediaServiceImpl::Create(
-    WiFiDisplayMediaServiceRequest request) {
+    mojom::WiFiDisplayMediaServiceRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   auto* impl = new WiFiDisplayMediaServiceImpl();
   impl->binding_ =
@@ -50,7 +50,7 @@ void WiFiDisplayMediaServiceImpl::Create(
 
 // static
 void WiFiDisplayMediaServiceImpl::BindToRequest(
-    WiFiDisplayMediaServiceRequest request) {
+    mojom::WiFiDisplayMediaServiceRequest request) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(WiFiDisplayMediaServiceImpl::Create,
                                      base::Passed(std::move(request))));
@@ -88,7 +88,7 @@ void WiFiDisplayMediaServiceImpl::SetDesinationPoint(
 }
 
 void WiFiDisplayMediaServiceImpl::SendMediaPacket(
-    WiFiDisplayMediaPacketPtr packet) {
+    mojom::WiFiDisplayMediaPacketPtr packet) {
   DCHECK(rtp_socket_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 

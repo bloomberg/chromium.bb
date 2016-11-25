@@ -20,17 +20,17 @@ namespace extensions {
 // This class provides access to the network transport for the Wi-Fi Display
 // session (which is itself hosted in the sandboxed renderer process).
 class WiFiDisplaySessionServiceImpl
-    : public WiFiDisplaySessionService,
+    : public mojom::WiFiDisplaySessionService,
       public DisplaySourceConnectionDelegate::Observer {
  public:
   ~WiFiDisplaySessionServiceImpl() override;
   static void BindToRequest(
       content::BrowserContext* context,
-      mojo::InterfaceRequest<WiFiDisplaySessionService> request);
+      mojo::InterfaceRequest<mojom::WiFiDisplaySessionService> request);
 
  private:
   // WiFiDisplaySessionService overrides.
-  void SetClient(WiFiDisplaySessionServiceClientPtr client) override;
+  void SetClient(mojom::WiFiDisplaySessionServiceClientPtr client) override;
   void Connect(int32_t sink_id,
                int32_t auth_method,
                const std::string& auth_data) override;
@@ -56,14 +56,14 @@ class WiFiDisplaySessionServiceImpl
   // Mojo error callback.
   void OnClientConnectionError();
 
-  WiFiDisplaySessionServiceClientPtr client_;
+  mojom::WiFiDisplaySessionServiceClientPtr client_;
   DisplaySourceConnectionDelegate* delegate_;
 
   api::display_source::SinkState sink_state_;
   // Id of the sink of the session this object is associated with.
   int sink_id_;
 
-  mojo::StrongBindingPtr<WiFiDisplaySessionService> binding_;
+  mojo::StrongBindingPtr<mojom::WiFiDisplaySessionService> binding_;
   base::WeakPtrFactory<WiFiDisplaySessionServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplaySessionServiceImpl);

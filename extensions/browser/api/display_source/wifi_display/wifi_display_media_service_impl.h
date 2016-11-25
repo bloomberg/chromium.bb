@@ -17,18 +17,18 @@
 
 namespace extensions {
 
-class WiFiDisplayMediaServiceImpl : public WiFiDisplayMediaService {
+class WiFiDisplayMediaServiceImpl : public mojom::WiFiDisplayMediaService {
  public:
   ~WiFiDisplayMediaServiceImpl() override;
-  static void BindToRequest(WiFiDisplayMediaServiceRequest request);
+  static void BindToRequest(mojom::WiFiDisplayMediaServiceRequest request);
 
   void SetDesinationPoint(const std::string& ip_address,
                           int32_t port,
                           const SetDesinationPointCallback& callback) override;
-  void SendMediaPacket(WiFiDisplayMediaPacketPtr packet) override;
+  void SendMediaPacket(mojom::WiFiDisplayMediaPacketPtr packet) override;
 
  private:
-  static void Create(WiFiDisplayMediaServiceRequest request);
+  static void Create(mojom::WiFiDisplayMediaServiceRequest request);
   WiFiDisplayMediaServiceImpl();
   void Send();
   void OnSent(int code);
@@ -36,7 +36,7 @@ class WiFiDisplayMediaServiceImpl : public WiFiDisplayMediaService {
   class PacketIOBuffer;
   std::queue<scoped_refptr<PacketIOBuffer>> write_buffers_;
   int last_send_code_;
-  mojo::StrongBindingPtr<WiFiDisplayMediaService> binding_;
+  mojo::StrongBindingPtr<mojom::WiFiDisplayMediaService> binding_;
   base::WeakPtrFactory<WiFiDisplayMediaServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplayMediaServiceImpl);

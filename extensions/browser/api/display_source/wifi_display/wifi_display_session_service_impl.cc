@@ -47,7 +47,7 @@ void WiFiDisplaySessionServiceImpl::BindToRequest(
 }
 
 void WiFiDisplaySessionServiceImpl::SetClient(
-    WiFiDisplaySessionServiceClientPtr client) {
+    mojom::WiFiDisplaySessionServiceClientPtr client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = std::move(client);

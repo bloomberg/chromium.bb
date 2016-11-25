@@ -69,10 +69,10 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   void OnPlayerCreated(std::unique_ptr<WiFiDisplayMediaPipeline> player);
   void OnMediaPipelineInitialized(bool success);
   void RegisterMediaService(
-       const scoped_refptr<base::SingleThreadTaskRunner>& main_runner,
-       WiFiDisplayMediaServiceRequest service,
-       const base::Closure& on_completed);
-  void ConnectToRemoteService(WiFiDisplayMediaServiceRequest request);
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_runner,
+      mojom::WiFiDisplayMediaServiceRequest service,
+      const base::Closure& on_completed);
+  void ConnectToRemoteService(mojom::WiFiDisplayMediaServiceRequest request);
   blink::WebMediaStreamTrack video_track_;
   blink::WebMediaStreamTrack audio_track_;
 
