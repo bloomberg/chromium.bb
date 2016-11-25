@@ -344,13 +344,6 @@ ContentMetadataProvider.prototype.createError_ = function(
   item.contentImageTransformError = error;
   item.contentThumbnailTransformError = error;
   item.contentThumbnailUrlError = error;
-  item.exifLittleEndianError = error;
-  item.ifdError = error;
-  item.imageHeightError = error;
-  item.imageWidthError = error;
-  item.mediaArtistError = error;
-  item.mediaMimeTypeError = error;
-  item.mediaTitleError = error;
   return item;
 };
 
