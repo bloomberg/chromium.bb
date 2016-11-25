@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.payments.ui.Completable;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.FocusChangedObserver;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
@@ -67,7 +68,7 @@ import java.util.Set;
  */
 public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
         PaymentApp.InstrumentsCallback, PaymentInstrument.InstrumentDetailsCallback,
-        PaymentResponseHelper.PaymentResponseRequesterDelegate {
+        PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver {
     /**
      * A test-only observer for the PaymentRequest service implementation.
      */
@@ -373,6 +374,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             if (mUiShippingOptions.getSelectedItem() != null && !addresses.isEmpty()
                     && addresses.get(0).isComplete()) {
                 firstCompleteAddressIndex = 0;
+
+                // The initial label for the selected shipping address should not include the
+                // country.
+                addresses.get(firstCompleteAddressIndex).setShippingAddressLabelWithoutCountry();
             }
 
             mShippingAddressesSection =
@@ -437,6 +442,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mMerchantSupportsAutofillPaymentInstruments, mMerchantName, mOrigin,
                 new ShippingStrings(
                         options == null ? PaymentShippingType.SHIPPING : options.shippingType));
+
+        // Add the callback to change the label of shipping addresses depending on the focus.
+        if (requestShipping) mUI.setShippingAddressSectionFocusChangedObserver(this);
 
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
@@ -853,7 +861,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     providePaymentInformation();
                 } else {
                     // Set the shipping address label.
-                    completeAddress.setShippingAddressLabel();
+                    completeAddress.setShippingAddressLabelWithCountry();
 
                     if (toEdit == null) mShippingAddressesSection.addAndSelectItem(completeAddress);
                     mCardEditor.updateBillingAddressIfComplete(completeAddress);
@@ -1213,6 +1221,27 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient == null) return;
         mUI.onPayButtonProcessingCancelled();
         mPaymentAppRunning = false;
+    }
+
+    @Override
+    public void onFocusChanged(
+            @PaymentRequestUI.DataType int dataType, boolean willFocus) {
+        assert dataType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES;
+
+        if (mShippingAddressesSection.getSelectedItem() == null) return;
+
+        assert mShippingAddressesSection.getSelectedItem() instanceof AutofillAddress;
+        AutofillAddress selectedAddress =
+                (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+
+        // The label should only include the country if the view is focused.
+        if (willFocus) {
+            selectedAddress.setShippingAddressLabelWithCountry();
+        } else {
+            selectedAddress.setShippingAddressLabelWithoutCountry();
+        }
+
+        mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, mShippingAddressesSection);
     }
 
     /**

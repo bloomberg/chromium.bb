@@ -100,7 +100,16 @@ class PersonalDataManagerAndroid
   // label does not contain the full name or the email address. All other fields
   // are included in the label.
   base::android::ScopedJavaLocalRef<jstring>
-  GetShippingAddressLabelForPaymentRequest(
+  GetShippingAddressLabelWithCountryForPaymentRequest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jprofile);
+
+  // Returns the shipping label of the given profile for PaymentRequest. This
+  // label does not contain the full name, the email address or the country. All
+  // other fields are included in the label.
+  base::android::ScopedJavaLocalRef<jstring>
+  GetShippingAddressLabelWithoutCountryForPaymentRequest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jprofile);
@@ -353,6 +362,16 @@ class PersonalDataManagerAndroid
       bool include_organization_in_label,
       bool include_country_in_label,
       std::vector<AutofillProfile*> profiles);
+
+  // Returns the shipping label of the given profile for PaymentRequest. This
+  // label does not contain the full name or the email address but will include
+  // the country depending on the value of |include_country_in_label|. All other
+  // fields are included in the label.
+  base::android::ScopedJavaLocalRef<jstring>
+  GetShippingAddressLabelForPaymentRequest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jprofile,
+      bool inlude_country_in_label);
 
   // Pointer to the java counterpart.
   JavaObjectWeakGlobalRef weak_java_obj_;

@@ -833,6 +833,19 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         private boolean mCanAddItems = true;
 
         /**
+         * Observer to be notified when the OptionSection changes focus state.
+         */
+        public interface FocusChangedObserver {
+            /*
+             * Called when the OptionSection view gets or loses focus.
+             *
+             * @param dataType  The type of the data contained in the section.
+             * @param willFocus Whether the section is getting the focus.
+             */
+            void onFocusChanged(@PaymentRequestUI.DataType int dataType, boolean willFocus);
+        }
+
+        /**
          * Displays a row representing either a selectable option or some flavor text.
          *
          * + The "button" is on the left and shows either an icon or a radio button to represent th
@@ -1076,6 +1089,8 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         /** Indicates whether the summary should be a single line. */
         private boolean mSummaryInSingleLine = false;
 
+        private FocusChangedObserver mFocusChangedObserver;
+
         /**
          * Constructs an OptionSection.
          *
@@ -1090,6 +1105,15 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             mIconMaxWidth = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_logo_width);
             setSummaryText(null, null);
+        }
+
+        /**
+         * Registers the delegate to be notified when this OptionSection gains or loses focus.
+         *
+         * @param delegate The delegate to notify.
+         */
+        public void setOptionSectionFocusChangedObserver(FocusChangedObserver observer) {
+            mFocusChangedObserver = observer;
         }
 
         @Override
@@ -1125,6 +1149,12 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             if (!mayFocus && shouldFocus) {
                 setDisplayMode(PaymentRequestSection.DISPLAY_MODE_NORMAL);
                 return;
+            }
+
+            // Notify the observer that the focus is going to change.
+            if (mFocusChangedObserver != null) {
+                mFocusChangedObserver.onFocusChanged(
+                        mSectionInformation.getDataType(), shouldFocus);
             }
 
             super.focusSection(shouldFocus);

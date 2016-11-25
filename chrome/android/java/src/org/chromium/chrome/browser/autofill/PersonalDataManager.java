@@ -139,6 +139,26 @@ public class PersonalDataManager {
                     "" /* emailAddress */, "" /* languageCode */);
         }
 
+        /* Builds an AutofillProfile that is an exact copy of the one passed as parameter. */
+        public AutofillProfile(AutofillProfile profile) {
+            mGUID = profile.getGUID();
+            mOrigin = profile.getOrigin();
+            mIsLocal = profile.getIsLocal();
+            mFullName = profile.getFullName();
+            mCompanyName = profile.getCompanyName();
+            mStreetAddress = profile.getStreetAddress();
+            mRegion = profile.getRegion();
+            mLocality = profile.getLocality();
+            mDependentLocality = profile.getDependentLocality();
+            mPostalCode = profile.getPostalCode();
+            mSortingCode = profile.getSortingCode();
+            mCountryCode = profile.getCountryCode();
+            mPhoneNumber = profile.getPhoneNumber();
+            mEmailAddress = profile.getEmailAddress();
+            mLanguageCode = profile.getLanguageCode();
+            mLabel = profile.getLabel();
+        }
+
         /** TODO(estade): remove this constructor. */
         @VisibleForTesting
         public AutofillProfile(String guid, String origin, String fullName, String companyName,
@@ -686,8 +706,14 @@ public class PersonalDataManager {
         nativeClearUnmaskedCache(mPersonalDataManagerAndroid, guid);
     }
 
-    public String getShippingAddressLabelForPaymentRequest(AutofillProfile profile) {
-        return nativeGetShippingAddressLabelForPaymentRequest(mPersonalDataManagerAndroid, profile);
+    public String getShippingAddressLabelWithCountryForPaymentRequest(AutofillProfile profile) {
+        return nativeGetShippingAddressLabelWithCountryForPaymentRequest(
+                mPersonalDataManagerAndroid, profile);
+    }
+
+    public String getShippingAddressLabelWithoutCountryForPaymentRequest(AutofillProfile profile) {
+        return nativeGetShippingAddressLabelWithoutCountryForPaymentRequest(
+                mPersonalDataManagerAndroid, profile);
     }
 
     public String getBillingAddressLabelForPaymentRequest(AutofillProfile profile) {
@@ -865,7 +891,9 @@ public class PersonalDataManager {
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
     private native String nativeSetProfileToLocal(
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
-    private native String nativeGetShippingAddressLabelForPaymentRequest(
+    private native String nativeGetShippingAddressLabelWithCountryForPaymentRequest(
+            long nativePersonalDataManagerAndroid, AutofillProfile profile);
+    private native String nativeGetShippingAddressLabelWithoutCountryForPaymentRequest(
             long nativePersonalDataManagerAndroid, AutofillProfile profile);
     private native String nativeGetBillingAddressLabelForPaymentRequest(
             long nativePersonalDataManagerAndroid, AutofillProfile profile);

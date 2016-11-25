@@ -59,6 +59,9 @@ public class AutofillAddress extends PaymentOption {
     private Context mContext;
     private AutofillProfile mProfile;
     @Nullable private Pattern mLanguageScriptCodePattern;
+    @Nullable private String mShippingLabelWithCountry;
+    @Nullable private String mShippingLabelWithoutCountry;
+    @Nullable private String mBillingLabel;
 
     /**
      * Builds the autofill address.
@@ -86,6 +89,12 @@ public class AutofillAddress extends PaymentOption {
      * @param profile The new profile to use.
      */
     public void completeAddress(AutofillProfile profile) {
+        // Since the profile changed, our cached labels are now out of date. Set them to null so the
+        // labels are recomputed next time they are needed.
+        mShippingLabelWithCountry = null;
+        mShippingLabelWithoutCountry = null;
+        mBillingLabel = null;
+
         mProfile = profile;
         updateIdentifierAndLabels(mProfile.getGUID(), mProfile.getFullName(), mProfile.getLabel(),
                 mProfile.getPhoneNumber());
@@ -93,16 +102,37 @@ public class AutofillAddress extends PaymentOption {
         assert mIsComplete;
     }
 
-    /*
-     * Gets the shipping address label for the profile associated with this address and sets it as
-     * sublabel for this PaymentOption.
+    /**
+     * Gets the shipping address label which includes the country for the profile associated with
+     * this address and sets it as sublabel for this PaymentOption.
      */
-    public void setShippingAddressLabel() {
+    public void setShippingAddressLabelWithCountry() {
         assert mProfile != null;
 
-        mProfile.setLabel(
-                PersonalDataManager.getInstance().getShippingAddressLabelForPaymentRequest(
-                        mProfile));
+        if (mShippingLabelWithCountry == null) {
+            mShippingLabelWithCountry =
+                    PersonalDataManager.getInstance()
+                            .getShippingAddressLabelWithCountryForPaymentRequest(mProfile);
+        }
+
+        mProfile.setLabel(mShippingLabelWithCountry);
+        updateSublabel(mProfile.getLabel());
+    }
+
+    /**
+     * Gets the shipping address label which does not include the country for the profile associated
+     * with this address and sets it as sublabel for this PaymentOption.
+     */
+    public void setShippingAddressLabelWithoutCountry() {
+        assert mProfile != null;
+
+        if (mShippingLabelWithoutCountry == null) {
+            mShippingLabelWithoutCountry =
+                    PersonalDataManager.getInstance()
+                            .getShippingAddressLabelWithoutCountryForPaymentRequest(mProfile);
+        }
+
+        mProfile.setLabel(mShippingLabelWithoutCountry);
         updateSublabel(mProfile.getLabel());
     }
 
@@ -113,8 +143,13 @@ public class AutofillAddress extends PaymentOption {
     public void setBillingAddressLabel() {
         assert mProfile != null;
 
-        mProfile.setLabel(PersonalDataManager.getInstance().getBillingAddressLabelForPaymentRequest(
-                mProfile));
+        if (mBillingLabel == null) {
+            mBillingLabel =
+                    PersonalDataManager.getInstance().getBillingAddressLabelForPaymentRequest(
+                            mProfile);
+        }
+
+        mProfile.setLabel(mBillingLabel);
         updateSublabel(mProfile.getLabel());
     }
 

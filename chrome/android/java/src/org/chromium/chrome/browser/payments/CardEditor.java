@@ -339,7 +339,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // No matching profile was found. Add the new profile at the top of the list.
         billingAddress.setBillingAddressLabel();
-        mProfilesForBillingAddress.add(0, billingAddress.getProfile());
+        mProfilesForBillingAddress.add(0, new AutofillProfile(billingAddress.getProfile()));
     }
 
     /**

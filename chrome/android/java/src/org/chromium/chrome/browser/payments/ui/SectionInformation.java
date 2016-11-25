@@ -71,6 +71,15 @@ public class SectionInformation {
     }
 
     /**
+     * Returns the data type contained in this section.
+     *
+     * @return The data type contained in this section.
+     */
+    public int getDataType() {
+        return mDataType;
+    }
+
+    /**
      * Returns whether the section is empty.
      *
      * @return Whether the section is empty.
