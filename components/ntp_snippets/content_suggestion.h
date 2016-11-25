@@ -40,7 +40,7 @@ struct RecentTabSuggestionExtra {
   // Corresponding tab identifier.
   std::string tab_id;
   // Underlying offline page identifier.
-  int64_t offline_page_id;
+  int64_t offline_page_id = 0;
 };
 
 // A content suggestion for the new tab page, which can be an article or an

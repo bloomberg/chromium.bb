@@ -24,7 +24,7 @@ FakeOfflinePageModel::FakeOfflinePageModel() {
   is_loaded_ = true;
 }
 
-FakeOfflinePageModel::~FakeOfflinePageModel() {}
+FakeOfflinePageModel::~FakeOfflinePageModel() = default;
 
 void FakeOfflinePageModel::GetPagesMatchingQuery(
     std::unique_ptr<offline_pages::OfflinePageModelQuery> query,

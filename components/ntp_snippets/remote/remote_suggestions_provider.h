@@ -250,7 +250,7 @@ class RemoteSuggestionsProvider final
 
   // Callback for fetch-more requests with the NTPSnippetsFetcher.
   void OnFetchMoreFinished(
-      FetchDoneCallback fetching_callback,
+      const FetchDoneCallback& fetching_callback,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Callback for regular fetch requests with the NTPSnippetsFetcher.

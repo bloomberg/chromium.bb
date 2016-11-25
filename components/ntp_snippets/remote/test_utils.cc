@@ -47,24 +47,24 @@ syncer::ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
 }
 
 RemoteSuggestionsTestUtils::RemoteSuggestionsTestUtils()
-    : pref_service_(new TestingPrefServiceSimple()) {
+    : pref_service_(base::MakeUnique<TestingPrefServiceSimple>()) {
   pref_service_->registry()->RegisterStringPref(prefs::kGoogleServicesAccountId,
                                                 std::string());
   pref_service_->registry()->RegisterStringPref(
       prefs::kGoogleServicesLastAccountId, std::string());
   pref_service_->registry()->RegisterStringPref(
       prefs::kGoogleServicesLastUsername, std::string());
-  signin_client_.reset(new TestSigninClient(pref_service_.get()));
-  account_tracker_.reset(new AccountTrackerService());
-  fake_sync_service_.reset(new FakeSyncService());
+  signin_client_ = base::MakeUnique<TestSigninClient>(pref_service_.get());
+  account_tracker_ = base::MakeUnique<AccountTrackerService>();
+  fake_sync_service_ = base::MakeUnique<FakeSyncService>();
   ResetSigninManager();
 }
 
 RemoteSuggestionsTestUtils::~RemoteSuggestionsTestUtils() = default;
 
 void RemoteSuggestionsTestUtils::ResetSigninManager() {
-  fake_signin_manager_.reset(
-      new FakeSigninManagerBase(signin_client_.get(), account_tracker_.get()));
+  fake_signin_manager_ = base::MakeUnique<FakeSigninManagerBase>(
+      signin_client_.get(), account_tracker_.get());
 }
 
 }  // namespace test

@@ -228,7 +228,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(SigninManagerFactory::GetInstance());
 }
 
-ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() {}
+ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() = default;
 
 KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
@@ -246,8 +246,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   PrefService* pref_service = profile->GetPrefs();
-  ContentSuggestionsService* service = new ContentSuggestionsService(
-      state, signin_manager, history_service, pref_service);
+  auto* service = new ContentSuggestionsService(state, signin_manager,
+                                                history_service, pref_service);
   if (state == State::DISABLED) {
     // Since we won't initialise the services, they won't get a chance to
     // unschedule their tasks. We do it explicitly here instead.

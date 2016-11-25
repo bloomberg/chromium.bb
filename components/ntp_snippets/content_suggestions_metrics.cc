@@ -79,7 +79,7 @@ HistogramCategories GetHistogramCategory(Category category) {
   // cast from int to KnownCategories, even if the given value isn't listed in
   // the enumeration. The switch still makes sure that all known values are
   // listed here.
-  KnownCategories known_category = static_cast<KnownCategories>(category.id());
+  auto known_category = static_cast<KnownCategories>(category.id());
   switch (known_category) {
     case KnownCategories::RECENT_TABS:
       return HistogramCategories::RECENT_TABS;

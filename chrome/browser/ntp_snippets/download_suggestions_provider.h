@@ -154,13 +154,14 @@ class DownloadSuggestionsProvider
   void RemoveSuggestionFromCacheAndRetrieveMoreIfNeeded(
       const ntp_snippets::ContentSuggestion::ID& suggestion_id);
 
-  // Processes a list of offline pages (assuming that these are all the offline
-  // pages that currently exist), prunes dismissed IDs and updates internal
-  // cache. If |notify| is true, notifies
+  // Processes a list of offline pages (assuming that these are all the download
+  // offline pages that currently exist), prunes dismissed IDs and updates
+  // internal cache. If |notify| is true, notifies
   // |ContentSuggestionsProvider::Observer|.
   void UpdateOfflinePagesCache(
       bool notify,
-      const std::vector<offline_pages::OfflinePageItem>& all_offline_pages);
+      const std::vector<offline_pages::OfflinePageItem>&
+          all_download_offline_pages);
 
   // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
   // to the given |id_within_category| and clears it from the dismissed IDs

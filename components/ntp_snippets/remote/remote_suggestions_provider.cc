@@ -210,7 +210,8 @@ std::vector<ContentSuggestion> ConvertToContentSuggestions(
   return result;
 }
 
-void CallWithEmptyResults(FetchDoneCallback callback, Status status) {
+void CallWithEmptyResults(const FetchDoneCallback& callback,
+                          const Status& status) {
   if (callback.is_null()) {
     return;
   }
@@ -627,7 +628,7 @@ void RemoteSuggestionsProvider::OnDatabaseError() {
 }
 
 void RemoteSuggestionsProvider::OnFetchMoreFinished(
-    FetchDoneCallback fetching_callback,
+    const FetchDoneCallback& fetching_callback,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!fetched_categories) {
     // TODO(fhorschig): Disambiguate the kind of error that led here.
@@ -923,7 +924,7 @@ void RemoteSuggestionsProvider::NukeAllSnippets() {
 void RemoteSuggestionsProvider::OnSnippetImageFetchedFromDatabase(
     const ImageFetchedCallback& callback,
     const ContentSuggestion::ID& suggestion_id,
-    std::string data) {
+    std::string data) {  // SnippetImageCallback requires nonconst reference.
   // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
     image_decoder_->DecodeImage(

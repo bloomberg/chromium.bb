@@ -628,7 +628,7 @@ void DownloadSuggestionsProvider::
 void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
     bool notify,
     const std::vector<offline_pages::OfflinePageItem>&
-        downloads_offline_pages) {
+        all_download_offline_pages) {
   DCHECK(!offline_page_model_ || offline_page_model_->is_loaded());
 
   std::set<std::string> old_dismissed_ids =
@@ -636,7 +636,7 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
   std::set<std::string> retained_dismissed_ids;
   std::vector<const OfflinePageItem*> items;
   // Filtering out dismissed items and pruning dismissed IDs.
-  for (const OfflinePageItem& item : downloads_offline_pages) {
+  for (const OfflinePageItem& item : all_download_offline_pages) {
     std::string id_within_category =
         GetOfflinePagePerCategoryID(item.offline_id);
     if (!old_dismissed_ids.count(id_within_category)) {

@@ -10,7 +10,7 @@ using content::DownloadItem;
 
 namespace test {
 
-FakeDownloadItem::FakeDownloadItem() {}
+FakeDownloadItem::FakeDownloadItem() = default;
 
 FakeDownloadItem::~FakeDownloadItem() {
   NotifyDownloadRemoved();
