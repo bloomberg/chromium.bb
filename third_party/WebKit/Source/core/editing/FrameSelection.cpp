@@ -457,7 +457,7 @@ void FrameSelection::respondToNodeModification(Node& node,
     selection().start().document()->layoutViewItem().clearSelection();
 
   if (clearDOMTreeSelection)
-    setSelection(VisibleSelection(), DoNotSetFocus);
+    setSelection(SelectionInDOMTree(), DoNotSetFocus);
   m_frameCaret->setCaretRectNeedsUpdate();
 
   // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
@@ -693,7 +693,7 @@ void FrameSelection::clear() {
   m_granularity = CharacterGranularity;
   if (m_granularityStrategy)
     m_granularityStrategy->Clear();
-  setSelection(VisibleSelection());
+  setSelection(SelectionInDOMTree());
 }
 
 void FrameSelection::documentAttached(Document* document) {
@@ -847,6 +847,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
   // Focus on the parent frame, and then select from before this element to
   // after.
   VisibleSelection newSelection = createVisibleSelection(builder.build());
+  // TODO(yosin): We should call |FocusController::setFocusedFrame()| before
+  // |createVisibleSelection()|.
   page->focusController().setFocusedFrame(parent);
   // setFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
@@ -1296,13 +1298,12 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position) {
     String text =
         plainText(EphemeralRange(start.deepEquivalent(), end.deepEquivalent()));
     if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
-      setSelection(
-          createVisibleSelection(SelectionInDOMTree::Builder()
-                                     .collapse(start.toPositionWithAffinity())
-                                     .extend(end.deepEquivalent())
-                                     .build()),
-          CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded,
-          WordGranularity);
+      setSelection(SelectionInDOMTree::Builder()
+                       .collapse(start.toPositionWithAffinity())
+                       .extend(end.deepEquivalent())
+                       .build(),
+                   CloseTyping | ClearTypingStyle,
+                   CursorAlignOnScroll::IfNeeded, WordGranularity);
       return true;
     }
   }
