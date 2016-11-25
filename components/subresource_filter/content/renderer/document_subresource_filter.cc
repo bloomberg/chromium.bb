@@ -124,7 +124,7 @@ bool DocumentSubresourceFilter::allowLoad(
   TRACE_EVENT1("loader", "DocumentSubresourceFilter::allowLoad", "url",
                resourceUrl.string().utf8());
 
-  ++num_loads_total_;
+  ++statistics_.num_loads_total;
 
   if (filtering_disabled_for_document_)
     return true;
@@ -132,19 +132,19 @@ bool DocumentSubresourceFilter::allowLoad(
   if (resourceUrl.protocolIs(url::kDataScheme))
     return true;
 
-  ++num_loads_evaluated_;
+  ++statistics_.num_loads_evaluated;
   DCHECK(document_origin_);
   if (ruleset_matcher_.ShouldDisallowResourceLoad(
           GURL(resourceUrl), *document_origin_, ToElementType(request_context),
           generic_blocking_rules_disabled_)) {
-    ++num_loads_matching_rules_;
+    ++statistics_.num_loads_matching_rules;
     if (activation_state_ == ActivationState::ENABLED) {
       if (!first_disallowed_load_callback_.is_null()) {
-        DCHECK_EQ(num_loads_disallowed_, 0u);
+        DCHECK_EQ(statistics_.num_loads_disallowed, 0u);
         first_disallowed_load_callback_.Run();
         first_disallowed_load_callback_.Reset();
       }
-      ++num_loads_disallowed_;
+      ++statistics_.num_loads_disallowed;
       return false;
     }
   }

@@ -79,18 +79,19 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   DCHECK(filter_for_last_committed_load_);
+  const auto& statistics = filter_for_last_committed_load_->statistics();
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total",
-      filter_for_last_committed_load_->num_loads_total());
+      statistics.num_loads_total);
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated",
-      filter_for_last_committed_load_->num_loads_evaluated());
+      statistics.num_loads_evaluated);
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules",
-      filter_for_last_committed_load_->num_loads_matching_rules());
+      statistics.num_loads_matching_rules);
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed",
-      filter_for_last_committed_load_->num_loads_disallowed());
+      statistics.num_loads_disallowed);
 }
 
 void SubresourceFilterAgent::OnDestruct() {

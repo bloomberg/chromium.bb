@@ -84,10 +84,13 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
-  EXPECT_EQ(3u, filter.num_loads_total());
-  EXPECT_EQ(2u, filter.num_loads_evaluated());
-  EXPECT_EQ(1u, filter.num_loads_matching_rules());
-  EXPECT_EQ(0u, filter.num_loads_disallowed());
+
+  const auto& statistics = filter.statistics();
+  EXPECT_EQ(3u, statistics.num_loads_total);
+  EXPECT_EQ(2u, statistics.num_loads_evaluated);
+  EXPECT_EQ(1u, statistics.num_loads_matching_rules);
+  EXPECT_EQ(0u, statistics.num_loads_disallowed);
+
   EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
 }
 
@@ -99,10 +102,12 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
   EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
-  EXPECT_EQ(3u, filter.num_loads_total());
-  EXPECT_EQ(2u, filter.num_loads_evaluated());
-  EXPECT_EQ(1u, filter.num_loads_matching_rules());
-  EXPECT_EQ(1u, filter.num_loads_disallowed());
+
+  const auto& statistics = filter.statistics();
+  EXPECT_EQ(3u, statistics.num_loads_total);
+  EXPECT_EQ(2u, statistics.num_loads_evaluated);
+  EXPECT_EQ(1u, statistics.num_loads_matching_rules);
+  EXPECT_EQ(1u, statistics.num_loads_disallowed);
 }
 
 TEST_F(DocumentSubresourceFilterTest,
