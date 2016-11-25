@@ -58,6 +58,8 @@ class PageHandler : public NotificationObserver {
 
   Response Navigate(const std::string& url, FrameId* frame_id);
 
+  Response StopLoading();
+
   using NavigationEntries = std::vector<scoped_refptr<NavigationEntry>>;
   Response GetNavigationHistory(int* current_index,
                                 NavigationEntries* entries);

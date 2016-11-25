@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/content_switches.h"
@@ -64,7 +65,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
         devtools_client_(HeadlessDevToolsClient::Create()),
         web_contents_(nullptr),
         processed_page_ready_(false),
-        browser_context_(nullptr) {}
+        browser_context_(nullptr),
+        weak_factory_(this) {}
   ~HeadlessShell() override {}
 
   void OnStart(HeadlessBrowser* browser) {
@@ -163,7 +165,27 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     } else {
       PollReadyState();
     }
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTimeout)) {
+      std::string timeout_ms_ascii =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kTimeout);
+      int timeout_ms;
+      CHECK(base::StringToInt(timeout_ms_ascii, &timeout_ms))
+          << "Expected an integer value for --timeout=";
+      browser_->BrowserMainThread()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&HeadlessShell::FetchTimeout, weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(timeout_ms));
+    }
+
     // TODO(skyostil): Implement more features to demonstrate the devtools API.
+  }
+
+  void FetchTimeout() {
+    LOG(INFO) << "Timeout.";
+    devtools_client_->GetPage()->GetExperimental()->StopLoading(
+        page::StopLoadingParams::Builder().Build());
   }
 
   void OnTargetCrashed(const inspector::TargetCrashedParams& params) override {
@@ -177,7 +199,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     // be sure the expected page is ready.
     devtools_client_->GetRuntime()->Evaluate(
         "document.readyState + ' ' + document.location.href",
-        base::Bind(&HeadlessShell::OnReadyState, base::Unretained(this)));
+        base::Bind(&HeadlessShell::OnReadyState, weak_factory_.GetWeakPtr()));
   }
 
   void OnReadyState(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -236,7 +258,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void FetchDom() {
     devtools_client_->GetRuntime()->Evaluate(
         "document.body.innerHTML",
-        base::Bind(&HeadlessShell::OnDomFetched, base::Unretained(this)));
+        base::Bind(&HeadlessShell::OnDomFetched, weak_factory_.GetWeakPtr()));
   }
 
   void OnDomFetched(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -263,8 +285,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       return;
     }
     devtools_client_->GetRuntime()->Evaluate(
-        expression,
-        base::Bind(&HeadlessShell::OnExpressionResult, base::Unretained(this)));
+        expression, base::Bind(&HeadlessShell::OnExpressionResult,
+                               weak_factory_.GetWeakPtr()));
   }
 
   void OnExpressionResult(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -279,7 +301,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     devtools_client_->GetPage()->GetExperimental()->CaptureScreenshot(
         page::CaptureScreenshotParams::Builder().Build(),
         base::Bind(&HeadlessShell::OnScreenshotCaptured,
-                   base::Unretained(this)));
+                   weak_factory_.GetWeakPtr()));
   }
 
   void OnScreenshotCaptured(
@@ -297,7 +319,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
         file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
                        base::File::FLAG_ASYNC,
         base::Bind(&HeadlessShell::OnScreenshotFileOpened,
-                   base::Unretained(this), base::Passed(std::move(result)),
+                   weak_factory_.GetWeakPtr(), base::Passed(std::move(result)),
                    file_name));
     if (open_result != net::ERR_IO_PENDING) {
       // Operation could not be started.
@@ -324,7 +346,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     const int write_result = screenshot_file_stream_->Write(
         buf.get(), buf->size(),
         base::Bind(&HeadlessShell::OnScreenshotFileWritten,
-                   base::Unretained(this), file_name, buf->size()));
+                   weak_factory_.GetWeakPtr(), file_name, buf->size()));
     if (write_result != net::ERR_IO_PENDING) {
       // Operation may have completed successfully or failed.
       OnScreenshotFileWritten(file_name, buf->size(), write_result);
@@ -343,7 +365,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
                 << std::endl;
     }
     int close_result = screenshot_file_stream_->Close(base::Bind(
-        &HeadlessShell::OnScreenshotFileClosed, base::Unretained(this)));
+        &HeadlessShell::OnScreenshotFileClosed, weak_factory_.GetWeakPtr()));
     if (close_result != net::ERR_IO_PENDING) {
       // Operation could not be started.
       OnScreenshotFileClosed(close_result);
@@ -367,6 +389,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   std::unique_ptr<net::FileStream> screenshot_file_stream_;
   HeadlessBrowserContext* browser_context_;
   std::unique_ptr<DeterministicDispatcher> deterministic_dispatcher_;
+  base::WeakPtrFactory<HeadlessShell> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

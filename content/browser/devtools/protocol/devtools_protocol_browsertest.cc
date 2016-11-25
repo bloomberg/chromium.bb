@@ -1013,6 +1013,36 @@ class NavigationFinishedObserver : public content::WebContentsObserver {
 };
 }  // namespace
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageStopLoading) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to about:blank first so we can make sure there is a target page we
+  // can attach to, and have Page.setControlNavigations complete before we start
+  // the navigations we're interested in.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetBoolean("enabled", true);
+  SendCommand("Page.setControlNavigations", std::move(params), true);
+
+  NavigationFinishedObserver navigation_finished_observer(
+      shell()->web_contents());
+
+  // The page will try to navigate twice, however since
+  // Page.setControlNavigations is true, it'll wait for confirmation before
+  // committing to the navigation.
+  GURL test_url = embedded_test_server()->GetURL(
+      "/devtools/control_navigations/meta_tag.html");
+  shell()->LoadURL(test_url);
+
+  // Stop all navigations.
+  SendCommand("Page.stopLoading", nullptr);
+
+  // Wait for the initial navigation to finish.
+  navigation_finished_observer.WaitForNavigationsToFinish(1);
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ControlNavigationsMainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

@@ -463,6 +463,10 @@ Response InspectorPageAgent::navigate(const String& url, String* outFrameId) {
   return Response::OK();
 }
 
+Response InspectorPageAgent::stopLoading() {
+  return Response::OK();
+}
+
 static void cachedResourcesForDocument(Document* document,
                                        HeapVector<Member<Resource>>& result,
                                        bool skipXHRs) {

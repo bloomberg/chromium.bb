@@ -35,6 +35,10 @@ const char kRepl[] = "repl";
 // Save a screenshot of the loaded page.
 const char kScreenshot[] = "screenshot";
 
+// Issues a stop after the specified number of milliseconds.  This cancels all
+// navigation and causes the DOMContentLoaded event to fire.
+const char kTimeout[] = "timeout";
+
 // Sets the GL implementation to use. Use a blank string to disable GL
 // rendering.
 const char kUseGL[] = "use-gl";

@@ -259,6 +259,11 @@
                 "description": "Navigates current page to the given URL."
             },
             {
+                "name": "stopLoading",
+                "description": "Force the page stop all navigations and pending resource fetches.",
+                "experimental": true
+            },
+            {
               "name": "getNavigationHistory",
               "returns": [
                 { "name": "currentIndex", "type": "integer", "description": "Index of the current navigation history entry." },

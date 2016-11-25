@@ -14,6 +14,7 @@ extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];
 extern const char kRepl[];
 extern const char kScreenshot[];
+extern const char kTimeout[];
 extern const char kUseGL[];
 extern const char kUserDataDir[];
 extern const char kVirtualTimeBudget[];

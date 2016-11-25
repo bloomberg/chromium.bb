@@ -640,6 +640,14 @@ void PageHandler::OnColorPicked(int r, int g, int b, int a) {
   client_->ColorPicked(ColorPickedParams::Create()->set_color(color));
 }
 
+Response PageHandler::StopLoading() {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::InternalError("Could not connect to view");
+  web_contents->Stop();
+  return Response::OK();
+}
+
 }  // namespace page
 }  // namespace devtools
 }  // namespace content
