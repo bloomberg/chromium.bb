@@ -160,7 +160,9 @@ InputMethodEngineBase::InputMethodEngineBase()
       sent_key_event_(nullptr),
       profile_(nullptr),
       next_request_id_(1),
+      composition_changed_(false),
       text_(""),
+      commit_text_changed_(false),
       handling_key_event_(false) {}
 
 InputMethodEngineBase::~InputMethodEngineBase() {}
@@ -388,19 +390,21 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
   // and setComposition calls.
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
-  if (!text_.empty()) {
+  if (commit_text_changed_) {
     if (input_context) {
       input_context->CommitText(text_);
     }
     text_ = "";
+    commit_text_changed_ = false;
   }
 
-  if (!composition_.text.empty()) {
+  if (composition_changed_) {
     if (input_context) {
       input_context->UpdateCompositionText(
           composition_, composition_.selection.start(), true);
     }
     composition_.Clear();
+    composition_changed_ = false;
   }
 
   RequestMap::iterator request = request_map_.find(request_id);

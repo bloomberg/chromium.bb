@@ -150,6 +150,8 @@ void InputMethodEngine::UpdateComposition(
   if (input_context && !handling_key_event_) {
     input_context->UpdateCompositionText(composition_, cursor_pos, is_visible);
     composition_.Clear();
+  } else {
+    composition_changed_ = true;
   }
 }
 
@@ -166,6 +168,8 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
   if (input_context && !handling_key_event_) {
     input_context->CommitText(text_);
     text_ = "";
+  } else {
+    commit_text_changed_ = true;
   }
 }
 

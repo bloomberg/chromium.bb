@@ -177,9 +177,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
       const std::string& component_id,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
 
-  // Called when a key event is handled.
-  void KeyEventHandled();
-
  protected:
   // Notifies InputContextHandler that the composition is changed.
   virtual void UpdateComposition(const ui::CompositionText& composition_text,
@@ -229,9 +226,11 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   // The composition text to be set from calling input.ime.setComposition API.
   ui::CompositionText composition_;
+  bool composition_changed_;
 
   // The text to be committed from calling input.ime.commitText API.
   std::string text_;
+  bool commit_text_changed_;
 
   // Indicates whether the IME extension is currently handling a physical key
   // event. This is used in CommitText/UpdateCompositionText/etc.
