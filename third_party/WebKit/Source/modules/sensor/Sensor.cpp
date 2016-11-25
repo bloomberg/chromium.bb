@@ -99,8 +99,8 @@ static String ToString(Sensor::SensorState state) {
       return "idle";
     case Sensor::SensorState::Activating:
       return "activating";
-    case Sensor::SensorState::Active:
-      return "active";
+    case Sensor::SensorState::Activated:
+      return "activated";
     case Sensor::SensorState::Errored:
       return "errored";
     default:
@@ -115,7 +115,7 @@ String Sensor::state() const {
 }
 
 SensorReading* Sensor::reading() const {
-  if (m_state != Sensor::SensorState::Active)
+  if (m_state != Sensor::SensorState::Activated)
     return nullptr;
   DCHECK(m_sensorProxy);
   return m_sensorProxy->sensorReading();
@@ -170,7 +170,7 @@ void Sensor::initSensorProxyIfNeeded() {
 }
 
 void Sensor::contextDestroyed() {
-  if (m_state == Sensor::SensorState::Active ||
+  if (m_state == Sensor::SensorState::Activated ||
       m_state == Sensor::SensorState::Activating)
     stopListening();
 }
@@ -183,7 +183,7 @@ void Sensor::onSensorInitialized() {
 }
 
 void Sensor::onSensorReadingChanged() {
-  if (m_state == Sensor::SensorState::Active) {
+  if (m_state == Sensor::SensorState::Activated) {
     DCHECK(m_sensorUpdateNotifier);
     m_sensorUpdateNotifier->onSensorReadingChanged();
   }
@@ -215,7 +215,7 @@ void Sensor::onStartRequestCompleted(bool result) {
   DCHECK_GT(m_configuration->frequency, 0);
   m_sensorUpdateNotifier = SensorUpdateNotificationStrategy::create(
       m_configuration->frequency, std::move(updateCallback));
-  updateState(Sensor::SensorState::Active);
+  updateState(Sensor::SensorState::Activated);
 }
 
 void Sensor::startListening() {
@@ -256,7 +256,7 @@ void Sensor::stopListening() {
 }
 
 void Sensor::onSensorUpdateNotification() {
-  if (m_state != Sensor::SensorState::Active)
+  if (m_state != Sensor::SensorState::Activated)
     return;
 
   DCHECK(m_sensorProxy);
@@ -278,7 +278,7 @@ void Sensor::updateState(Sensor::SensorState newState) {
   if (newState == m_state)
     return;
 
-  if (newState == SensorState::Active && getExecutionContext()) {
+  if (newState == SensorState::Activated && getExecutionContext()) {
     DCHECK_EQ(SensorState::Activating, m_state);
     getExecutionContext()->postTask(
         BLINK_FROM_HERE, createSameThreadTask(&Sensor::notifyOnActivate,
