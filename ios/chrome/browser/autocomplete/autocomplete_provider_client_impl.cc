@@ -104,7 +104,7 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
   return nullptr;
 }
 
-PhysicalWebDataSource*
+physical_web::PhysicalWebDataSource*
 AutocompleteProviderClientImpl::GetPhysicalWebDataSource() {
   return GetApplicationContext()->GetPhysicalWebDataSource();
 }

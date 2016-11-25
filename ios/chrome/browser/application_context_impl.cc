@@ -286,7 +286,8 @@ CRLSetFetcher* ApplicationContextImpl::GetCRLSetFetcher() {
   return crl_set_fetcher_.get();
 }
 
-PhysicalWebDataSource* ApplicationContextImpl::GetPhysicalWebDataSource() {
+physical_web::PhysicalWebDataSource*
+ApplicationContextImpl::GetPhysicalWebDataSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!physical_web_data_source_) {
     physical_web_data_source_ = CreateIOSChromePhysicalWebDataSource();

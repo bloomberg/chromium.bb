@@ -386,7 +386,7 @@ TestingBrowserProcess::CachedDefaultWebClientState() {
   return shell_integration::UNKNOWN_DEFAULT;
 }
 
-PhysicalWebDataSource*
+physical_web::PhysicalWebDataSource*
 TestingBrowserProcess::GetPhysicalWebDataSource() {
   return nullptr;
 }

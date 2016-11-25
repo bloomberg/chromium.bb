@@ -49,7 +49,7 @@ class TestingApplicationContext : public ApplicationContext {
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   CRLSetFetcher* GetCRLSetFetcher() override;
-  PhysicalWebDataSource* GetPhysicalWebDataSource() override;
+  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
 
  private:
   base::ThreadChecker thread_checker_;

@@ -4,11 +4,15 @@
 
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
-const char kPhysicalWebDescriptionKey[] = "description";
-const char kPhysicalWebDistanceEstimateKey[] = "distanceEstimate";
-const char kPhysicalWebGroupIdKey[] = "groupId";
-const char kPhysicalWebIconUrlKey[] = "icon";
-const char kPhysicalWebResolvedUrlKey[] = "resolvedUrl";
-const char kPhysicalWebScanTimestampKey[] = "scanTimestamp";
-const char kPhysicalWebScannedUrlKey[] = "scannedUrl";
-const char kPhysicalWebTitleKey[] = "title";
+namespace physical_web {
+
+const char kDescriptionKey[] = "description";
+const char kDistanceEstimateKey[] = "distanceEstimate";
+const char kGroupIdKey[] = "groupId";
+const char kIconUrlKey[] = "icon";
+const char kResolvedUrlKey[] = "resolvedUrl";
+const char kScanTimestampKey[] = "scanTimestamp";
+const char kScannedUrlKey[] = "scannedUrl";
+const char kTitleKey[] = "title";
+
+}  // namespace physical_web

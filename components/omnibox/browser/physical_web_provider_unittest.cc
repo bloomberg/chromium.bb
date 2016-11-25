@@ -23,6 +23,9 @@
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
+using physical_web::PhysicalWebDataSource;
+using physical_web::PhysicalWebListener;
+
 namespace {
 
 // A mock implementation of the Physical Web data source that allows setting
@@ -122,12 +125,12 @@ class PhysicalWebProviderTest : public testing::Test {
       std::string item_id = base::SizeTToString(i);
       std::string url = "https://example.com/" + item_id;
       auto metadata_item = base::MakeUnique<base::DictionaryValue>();
-      metadata_item->SetString(kPhysicalWebScannedUrlKey, url);
-      metadata_item->SetString(kPhysicalWebResolvedUrlKey, url);
-      metadata_item->SetString(kPhysicalWebIconUrlKey, url);
-      metadata_item->SetString(kPhysicalWebTitleKey,
+      metadata_item->SetString(physical_web::kScannedUrlKey, url);
+      metadata_item->SetString(physical_web::kResolvedUrlKey, url);
+      metadata_item->SetString(physical_web::kIconUrlKey, url);
+      metadata_item->SetString(physical_web::kTitleKey,
                                "Example title " + item_id);
-      metadata_item->SetString(kPhysicalWebDescriptionKey,
+      metadata_item->SetString(physical_web::kDescriptionKey,
                                "Example description " + item_id);
       metadata_list->Append(std::move(metadata_item));
     }
@@ -282,10 +285,10 @@ TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
   base::DictionaryValue* metadata_item;
   EXPECT_TRUE(metadata_list->GetDictionary(0, &metadata_item));
   std::string resolved_url;
-  EXPECT_TRUE(metadata_item->GetString(kPhysicalWebResolvedUrlKey,
-                                       &resolved_url));
+  EXPECT_TRUE(
+      metadata_item->GetString(physical_web::kResolvedUrlKey, &resolved_url));
   std::string title;
-  EXPECT_TRUE(metadata_item->GetString(kPhysicalWebTitleKey, &title));
+  EXPECT_TRUE(metadata_item->GetString(physical_web::kTitleKey, &title));
 
   data_source->SetMetadata(std::move(metadata_list));
 
@@ -360,7 +363,8 @@ TEST_F(PhysicalWebProviderTest, TestLongPageTitleIsTruncatedInOverflowItem) {
   auto metadata_list = CreateMetadata(AutocompleteProvider::kMaxMatches + 1);
   base::DictionaryValue* metadata_item;
   EXPECT_TRUE(metadata_list->GetDictionary(0, &metadata_item));
-  metadata_item->SetString(kPhysicalWebTitleKey, "Extra long example title 0");
+  metadata_item->SetString(physical_web::kTitleKey,
+                           "Extra long example title 0");
 
   OverflowItemTestCase(CreateInputForNTP(), std::move(metadata_list),
                        "Extra long exa" + std::string(gfx::kEllipsis),
@@ -374,7 +378,7 @@ TEST_F(PhysicalWebProviderTest, TestEmptyPageTitleInOverflowItem) {
   auto metadata_list = CreateMetadata(AutocompleteProvider::kMaxMatches + 1);
   base::DictionaryValue* metadata_item;
   EXPECT_TRUE(metadata_list->GetDictionary(0, &metadata_item));
-  metadata_item->SetString(kPhysicalWebTitleKey, "");
+  metadata_item->SetString(physical_web::kTitleKey, "");
 
   OverflowItemTestCase(CreateInputForNTP(), std::move(metadata_list), "",
                        PhysicalWebProvider::kPhysicalWebMaxMatches, false,
@@ -386,7 +390,7 @@ TEST_F(PhysicalWebProviderTest, TestRTLPageTitleInOverflowItem) {
   auto metadata_list = CreateMetadata(AutocompleteProvider::kMaxMatches + 1);
   base::DictionaryValue* metadata_item;
   EXPECT_TRUE(metadata_list->GetDictionary(0, &metadata_item));
-  metadata_item->SetString(kPhysicalWebTitleKey, "ויקיפדיה");
+  metadata_item->SetString(physical_web::kTitleKey, "ויקיפדיה");
 
   OverflowItemTestCase(CreateInputForNTP(), std::move(metadata_list),
                        "ויקיפדיה", PhysicalWebProvider::kPhysicalWebMaxMatches,

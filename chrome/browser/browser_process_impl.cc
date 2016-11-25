@@ -787,7 +787,8 @@ BrowserProcessImpl::CachedDefaultWebClientState() {
   return cached_default_web_client_state_;
 }
 
-PhysicalWebDataSource* BrowserProcessImpl::GetPhysicalWebDataSource() {
+physical_web::PhysicalWebDataSource*
+BrowserProcessImpl::GetPhysicalWebDataSource() {
   DCHECK(CalledOnValidThread());
 #if defined(OS_ANDROID)
   if (!physical_web_data_source_) {

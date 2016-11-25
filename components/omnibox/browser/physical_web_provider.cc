@@ -65,7 +65,8 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  PhysicalWebDataSource* data_source = client_->GetPhysicalWebDataSource();
+  physical_web::PhysicalWebDataSource* data_source =
+      client_->GetPhysicalWebDataSource();
   if (!data_source) {
     done_ = true;
     nearby_url_count_ = 0;
@@ -127,8 +128,8 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
 
     std::string url_string;
     std::string title_string;
-    if (!metadata_item->GetString(kPhysicalWebResolvedUrlKey, &url_string) ||
-        !metadata_item->GetString(kPhysicalWebTitleKey, &title_string)) {
+    if (!metadata_item->GetString(physical_web::kResolvedUrlKey, &url_string) ||
+        !metadata_item->GetString(physical_web::kTitleKey, &title_string)) {
       continue;
     }
     base::string16 title =

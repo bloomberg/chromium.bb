@@ -191,11 +191,11 @@ enum BeaconType {
     std::string description = base::SysNSStringToUTF8([device description]);
 
     auto metadataItem = base::MakeUnique<base::DictionaryValue>();
-    metadataItem->SetString(kPhysicalWebScannedUrlKey, scannedUrl);
-    metadataItem->SetString(kPhysicalWebResolvedUrlKey, resolvedUrl);
-    metadataItem->SetString(kPhysicalWebIconUrlKey, icon);
-    metadataItem->SetString(kPhysicalWebTitleKey, title);
-    metadataItem->SetString(kPhysicalWebDescriptionKey, description);
+    metadataItem->SetString(physical_web::kScannedUrlKey, scannedUrl);
+    metadataItem->SetString(physical_web::kResolvedUrlKey, resolvedUrl);
+    metadataItem->SetString(physical_web::kIconUrlKey, icon);
+    metadataItem->SetString(physical_web::kTitleKey, title);
+    metadataItem->SetString(physical_web::kDescriptionKey, description);
     metadataList->Append(std::move(metadataItem));
   }
 

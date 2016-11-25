@@ -151,7 +151,7 @@ ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
 #endif
 }
 
-PhysicalWebDataSource*
+physical_web::PhysicalWebDataSource*
 ChromeAutocompleteProviderClient::GetPhysicalWebDataSource() {
   return nullptr;
 }

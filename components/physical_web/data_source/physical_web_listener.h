@@ -7,6 +7,8 @@
 
 #include <string>
 
+namespace physical_web {
+
 // Class for being notified when Physical Web data changes.
 class PhysicalWebListener {
  public:
@@ -22,5 +24,7 @@ class PhysicalWebListener {
   virtual void OnDistanceChanged(const std::string& url,
                                  double distance_estimate) = 0;
 };
+
+}  // namespace physical_web
 
 #endif // COMPONENTS_PHYSICAL_WEB_DATA_SOURCE_PHYSICAL_WEB_LISTENER_H_

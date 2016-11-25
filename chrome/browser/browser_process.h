@@ -33,7 +33,6 @@ class IOThread;
 class MediaFileSystemRegistry;
 class NotificationPlatformBridge;
 class NotificationUIManager;
-class PhysicalWebDataSource;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -96,6 +95,10 @@ class ChromeNetLog;
 
 namespace network_time {
 class NetworkTimeTracker;
+}
+
+namespace physical_web {
+class PhysicalWebDataSource;
 }
 
 namespace policy {
@@ -281,7 +284,7 @@ class BrowserProcess {
   CachedDefaultWebClientState() = 0;
 
   // Returns the Physical Web data source.
-  virtual PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
+  virtual physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

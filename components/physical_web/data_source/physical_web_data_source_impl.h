@@ -7,6 +7,8 @@
 #include "base/observer_list.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
+namespace physical_web {
+
 class PhysicalWebListener;
 
 class PhysicalWebDataSourceImpl : public PhysicalWebDataSource {
@@ -33,5 +35,7 @@ class PhysicalWebDataSourceImpl : public PhysicalWebDataSource {
  private:
   base::ObserverList<PhysicalWebListener> observer_list_;
 };
+
+}  // namespace physical_web
 
 #endif  // COMPONENTS_PHYSICAL_WEB_DATA_SOURCE_PHYSICAL_WEB_DATA_SOURCE_IMPL_H_

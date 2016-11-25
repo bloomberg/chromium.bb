@@ -155,4 +155,5 @@ TEST_F(PhysicalWebDataSourceImplTest, OnDistanceChangedNotRegistered) {
   EXPECT_FALSE(listener_.OnDistanceChangedNotified());
   EXPECT_TRUE(listener_.LastEventUrl().empty());
 }
+
 }  // namespace physical_web

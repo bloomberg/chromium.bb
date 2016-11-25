@@ -36,19 +36,20 @@ void PhysicalWebCollection::AppendMetadataItem(
     const JavaParamRef<jstring>& j_description,
     const JavaParamRef<jstring>& j_group_id) {
   auto metadata_item = new base::DictionaryValue();
-  metadata_item->SetString(kPhysicalWebScannedUrlKey,
+  metadata_item->SetString(physical_web::kScannedUrlKey,
                            ConvertJavaStringToUTF8(j_request_url));
-  metadata_item->SetDouble(kPhysicalWebDistanceEstimateKey, distance_estimate);
-  metadata_item->SetInteger(kPhysicalWebScanTimestampKey, scan_timestamp);
-  metadata_item->SetString(kPhysicalWebResolvedUrlKey,
+  metadata_item->SetDouble(physical_web::kDistanceEstimateKey,
+                           distance_estimate);
+  metadata_item->SetInteger(physical_web::kScanTimestampKey, scan_timestamp);
+  metadata_item->SetString(physical_web::kResolvedUrlKey,
                            ConvertJavaStringToUTF8(j_site_url));
-  metadata_item->SetString(kPhysicalWebIconUrlKey,
+  metadata_item->SetString(physical_web::kIconUrlKey,
                            ConvertJavaStringToUTF8(j_icon_url));
-  metadata_item->SetString(kPhysicalWebTitleKey,
+  metadata_item->SetString(physical_web::kTitleKey,
                            ConvertJavaStringToUTF8(j_title));
-  metadata_item->SetString(kPhysicalWebDescriptionKey,
+  metadata_item->SetString(physical_web::kDescriptionKey,
                            ConvertJavaStringToUTF8(j_description));
-  metadata_item->SetString(kPhysicalWebGroupIdKey,
+  metadata_item->SetString(physical_web::kGroupIdKey,
                            ConvertJavaStringToUTF8(j_group_id));
   metadata_list_->Append(std::move(metadata_item));
 }
@@ -130,7 +131,7 @@ bool PhysicalWebDataSourceAndroid::RegisterPhysicalWebDataSource(JNIEnv* env) {
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  PhysicalWebDataSource* data_source =
+  physical_web::PhysicalWebDataSource* data_source =
       g_browser_process->GetPhysicalWebDataSource();
   return reinterpret_cast<intptr_t>(data_source);
 }

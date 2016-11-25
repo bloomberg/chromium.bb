@@ -156,7 +156,7 @@ class BrowserProcessImpl : public BrowserProcess,
   memory::TabManager* GetTabManager() override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
-  PhysicalWebDataSource* GetPhysicalWebDataSource() override;
+  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -349,7 +349,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_;
 
-  std::unique_ptr<PhysicalWebDataSource> physical_web_data_source_;
+  std::unique_ptr<physical_web::PhysicalWebDataSource>
+      physical_web_data_source_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

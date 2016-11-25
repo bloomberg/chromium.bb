@@ -11,17 +11,19 @@ namespace base {
 class ListValue;
 }
 
+namespace physical_web {
+
 class PhysicalWebListener;
 
 // Dictionary keys for reading Physical Web URL metadata.
-extern const char kPhysicalWebDescriptionKey[];
-extern const char kPhysicalWebDistanceEstimateKey[];
-extern const char kPhysicalWebGroupIdKey[];
-extern const char kPhysicalWebIconUrlKey[];
-extern const char kPhysicalWebResolvedUrlKey[];
-extern const char kPhysicalWebScanTimestampKey[];
-extern const char kPhysicalWebScannedUrlKey[];
-extern const char kPhysicalWebTitleKey[];
+extern const char kDescriptionKey[];
+extern const char kDistanceEstimateKey[];
+extern const char kGroupIdKey[];
+extern const char kIconUrlKey[];
+extern const char kResolvedUrlKey[];
+extern const char kScanTimestampKey[];
+extern const char kScannedUrlKey[];
+extern const char kTitleKey[];
 
 // Helper class for accessing Physical Web metadata and controlling the scanner.
 class PhysicalWebDataSource {
@@ -55,5 +57,7 @@ class PhysicalWebDataSource {
   virtual void UnregisterListener(
       PhysicalWebListener* physical_web_listener) = 0;
 };
+
+}  // namespace physical_web
 
 #endif  // COMPONENTS_PHYSICAL_WEB_DATA_SOURCE_PHYSICAL_WEB_DATA_SOURCE_H_

@@ -45,7 +45,8 @@ class PhysicalWebCollection {
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebCollection);
 };
 
-class PhysicalWebDataSourceAndroid : public PhysicalWebDataSourceImpl {
+class PhysicalWebDataSourceAndroid
+    : public physical_web::PhysicalWebDataSourceImpl {
  public:
   PhysicalWebDataSourceAndroid();
   ~PhysicalWebDataSourceAndroid() override;

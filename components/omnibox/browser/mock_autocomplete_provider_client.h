@@ -47,7 +47,7 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
       KeywordProvider* keyword_provider) override {
     return nullptr;
   }
-  PhysicalWebDataSource* GetPhysicalWebDataSource() override {
+  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override {
     return nullptr;
   }
 
