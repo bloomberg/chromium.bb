@@ -1480,6 +1480,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/ntp/NativePageFactoryTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/TitleUtilTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/cards/ContentSuggestionsTestUtils.java",
+  "junit/src/org/chromium/chrome/browser/ntp/cards/FakeOfflinePageBridge.java",
   "junit/src/org/chromium/chrome/browser/ntp/cards/InnerNodeTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/cards/NewTabPageAdapterTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/cards/SuggestionsSectionTest.java",

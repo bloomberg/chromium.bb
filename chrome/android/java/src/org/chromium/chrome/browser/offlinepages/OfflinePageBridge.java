@@ -91,10 +91,9 @@ public class OfflinePageBridge {
 
     /**
      * Creates an offline page bridge for a given profile.
-     * Accessible by the package for testability.
      */
     @VisibleForTesting
-    OfflinePageBridge(long nativeOfflinePageBridge) {
+    protected OfflinePageBridge(long nativeOfflinePageBridge) {
         mNativeOfflinePageBridge = nativeOfflinePageBridge;
     }
 
@@ -433,7 +432,7 @@ public class OfflinePageBridge {
     }
 
     @CalledByNative
-    void offlinePageModelLoaded() {
+    protected void offlinePageModelLoaded() {
         mIsNativeOfflinePageModelLoaded = true;
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageModelLoaded();
@@ -441,7 +440,7 @@ public class OfflinePageBridge {
     }
 
     @CalledByNative
-    private void offlinePageModelChanged() {
+    protected void offlinePageModelChanged() {
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageModelChanged();
         }
@@ -451,7 +450,7 @@ public class OfflinePageBridge {
      * Removes references to the native OfflinePageBridge when it is being destroyed.
      */
     @CalledByNative
-    private void offlinePageBridgeDestroyed() {
+    protected void offlinePageBridgeDestroyed() {
         ThreadUtils.assertOnUiThread();
         assert mNativeOfflinePageBridge != 0;
 

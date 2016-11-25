@@ -11,8 +11,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -29,26 +27,20 @@ import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Unit tests for {@link SuggestionsSection}.
@@ -58,16 +50,13 @@ import java.util.Set;
 public class SuggestionsSectionTest {
 
     @Mock private NodeParent mParent;
-    @Mock
-    private OfflinePageBridge mBridge;
     @Mock private NewTabPageManager mManager;
-
-    // This is a member so we can initialize it with the annotation and capture the generic type.
-    @Captor ArgumentCaptor<Callback<Set<String>>> mCallbacks;
+    private FakeOfflinePageBridge mBridge;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mBridge = new FakeOfflinePageBridge();
     }
 
     @Test
@@ -203,29 +192,10 @@ public class SuggestionsSectionTest {
         assertNull(snippets.get(2).getOfflinePageOfflineId());
 
         final OfflinePageItem item0 = createOfflinePageItem(snippets.get(0).mUrl, 0L);
-        final OfflinePageItem item1 = createOfflinePageItem(snippets.get(1).mAmpUrl, 1L);
+        final OfflinePageItem item1 = createOfflinePageItem(snippets.get(1).mUrl, 1L);
 
-        // TODO(vitaliii): Create FakeOfflinePageBridge instead of using Mockito here.
-        when(mBridge.isOfflinePageModelLoaded()).thenReturn(true);
-        doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                String url = (String) args[0];
-                Callback<OfflinePageItem> callback = (Callback<OfflinePageItem>) args[2];
-                if (url.equals(snippets.get(0).mUrl) || url.equals(snippets.get(0).mAmpUrl)) {
-                    callback.onResult(item0);
-                    return null;
-                }
-                if (url.equals(snippets.get(1).mUrl) || url.equals(snippets.get(1).mAmpUrl)) {
-                    callback.onResult(item1);
-                    return null;
-                }
-                callback.onResult(null);
-                return null;
-            }
-        })
-                .when(mBridge)
-                .selectPageForOnlineUrl(any(String.class), eq(0), any(Callback.class));
+        mBridge.setIsOfflinePageModelLoaded(true);
+        mBridge.setItems(Arrays.asList(item0, item1));
 
         SuggestionsSection section = createSection(true, mParent, mManager, mBridge);
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
@@ -236,32 +206,11 @@ public class SuggestionsSectionTest {
         assertNull(snippets.get(2).getOfflinePageOfflineId());
 
         final OfflinePageItem item2 = createOfflinePageItem(snippets.get(2).mUrl, 2L);
-        doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                String url = (String) args[0];
-                Callback<OfflinePageItem> callback = (Callback<OfflinePageItem>) args[2];
-                if (url.equals(snippets.get(1).mUrl) || url.equals(snippets.get(1).mAmpUrl)) {
-                    callback.onResult(item1);
-                    return null;
-                }
-                if (url.equals(snippets.get(2).mUrl) || url.equals(snippets.get(2).mAmpUrl)) {
-                    callback.onResult(item2);
-                    return null;
-                }
-                callback.onResult(null);
-                return null;
-            }
-        })
-                .when(mBridge)
-                .selectPageForOnlineUrl(any(String.class), eq(0), any(Callback.class));
 
-        ArgumentCaptor<OfflinePageBridge.OfflinePageModelObserver> observer =
-                ArgumentCaptor.forClass(OfflinePageBridge.OfflinePageModelObserver.class);
-        verify(mBridge).addObserver(observer.capture());
+        mBridge.setItems(Arrays.asList(item1, item2));
 
         // Check that a change in OfflinePageBridge state forces an update.
-        observer.getValue().offlinePageModelLoaded();
+        mBridge.fireOfflinePageModelLoaded();
         assertNull(snippets.get(0).getOfflinePageOfflineId());
         assertEquals(Long.valueOf(1L), snippets.get(1).getOfflinePageOfflineId());
         assertEquals(Long.valueOf(2L), snippets.get(2).getOfflinePageOfflineId());
