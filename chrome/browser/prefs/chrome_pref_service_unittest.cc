@@ -2,32 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-
 #include "base/command_line.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
-#include "build/build_config.h"
-#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/policy/core/browser/configuration_policy_pref_store.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/test_renderer_host.h"
-#include "ui/base/test/data/resource.h"
 
 using content::RenderViewHostTester;
 using content::WebPreferences;
@@ -62,34 +47,6 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_TRUE(actual_bool_value);
 }
-
-class ChromePrefServiceUserFilePrefsTest : public testing::Test {
- protected:
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
-    data_dir_ = data_dir_.AppendASCII("pref_service");
-    ASSERT_TRUE(base::PathExists(data_dir_));
-  }
-
-  void ClearListValue(PrefService* prefs, const char* key) {
-    ListPrefUpdate updater(prefs, key);
-    updater->Clear();
-  }
-
-  void ClearDictionaryValue(PrefService* prefs, const char* key) {
-    DictionaryPrefUpdate updater(prefs, key);
-    updater->Clear();
-  }
-
-  // The path to temporary directory used to contain the test operations.
-  base::ScopedTempDir temp_dir_;
-  // The path to the directory where the test data is stored.
-  base::FilePath data_dir_;
-  // A message loop that we can use as the file thread message loop.
-  base::MessageLoop message_loop_;
-};
 
 class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
  protected:
