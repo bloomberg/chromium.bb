@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -68,6 +69,13 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
   return base::TimeTicks() + base::TimeDelta::FromSecondsD(
       monotonicTimeInSeconds);
 }
+
+std::string PointerToId(void* pointer) {
+  return base::StringPrintf(
+      "0x%" PRIx64,
+      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
+}
+
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -1389,6 +1397,15 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                        .timer_task_cost_estimator.expected_task_duration()
                        .InMillisecondsF());
   state->SetBoolean("is_audio_playing", MainThreadOnly().is_audio_playing);
+
+  state->BeginDictionary("web_view_schedulers");
+  for (WebViewSchedulerImpl* web_view_scheduler :
+       MainThreadOnly().web_view_schedulers) {
+    state->BeginDictionaryWithCopiedName(PointerToId(web_view_scheduler));
+    web_view_scheduler->AsValueInto(state.get());
+    state->EndDictionary();
+  }
+  state->EndDictionary();
 
   state->BeginDictionary("policy");
   MainThreadOnly().current_policy.AsValueInto(state.get());

@@ -17,6 +17,7 @@
 namespace base {
 namespace trace_event {
 class BlameContext;
+class TracedValue;
 }  // namespace trace_event
 }  // namespace base
 
@@ -47,6 +48,8 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void didStartLoading(unsigned long identifier) override;
   void didStopLoading(unsigned long identifier) override;
   void setDocumentParsingInBackground(bool background_parser_active) override;
+
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
   friend class WebViewSchedulerImpl;

@@ -4,6 +4,7 @@
 
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
@@ -17,6 +18,15 @@
 
 namespace blink {
 namespace scheduler {
+namespace {
+
+std::string PointerToId(void* pointer) {
+  return base::StringPrintf(
+      "0x%" PRIx64,
+      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
+}
+
+}  // namespace
 
 WebFrameSchedulerImpl::WebFrameSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler,
@@ -157,6 +167,30 @@ void WebFrameSchedulerImpl::setDocumentParsingInBackground(
     parent_web_view_scheduler_->IncrementBackgroundParserCount();
   else
     parent_web_view_scheduler_->DecrementBackgroundParserCount();
+}
+
+void WebFrameSchedulerImpl::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetBoolean("frame_visible", frame_visible_);
+  state->SetBoolean("page_visible", page_visible_);
+  state->SetBoolean("cross_origin", cross_origin_);
+  if (loading_task_queue_) {
+    state->SetString("loading_task_queue",
+                     PointerToId(loading_task_queue_.get()));
+  }
+  if (timer_task_queue_)
+    state->SetString("timer_task_queue", PointerToId(timer_task_queue_.get()));
+  if (unthrottled_task_queue_) {
+    state->SetString("unthrottled_task_queue",
+                     PointerToId(unthrottled_task_queue_.get()));
+  }
+  if (blame_context_) {
+    state->BeginDictionary("blame_context");
+    state->SetString(
+        "id_ref", PointerToId(reinterpret_cast<void*>(blame_context_->id())));
+    state->SetString("scope", blame_context_->scope());
+    state->EndDictionary();
+  }
 }
 
 void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {

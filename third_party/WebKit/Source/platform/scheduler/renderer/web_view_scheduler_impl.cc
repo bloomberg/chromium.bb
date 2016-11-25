@@ -81,6 +81,12 @@ base::TimeDelta GetInitialBudget(
   return base::TimeDelta::FromSecondsD(initial_budget);
 }
 
+std::string PointerToId(void* pointer) {
+  return base::StringPrintf(
+      "0x%" PRIx64,
+      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
+}
+
 }  // namespace
 
 WebViewSchedulerImpl::WebViewSchedulerImpl(
@@ -252,6 +258,32 @@ bool WebViewSchedulerImpl::IsAudioPlaying() const {
   return is_audio_playing_;
 }
 
+void WebViewSchedulerImpl::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetDouble("pending_loads", pending_loads_.size());
+  state->SetString("virtual_time_policy",
+                   VirtualTimePolicyToString(virtual_time_policy_));
+  state->SetDouble("background_parser_count", background_parser_count_);
+  state->SetBoolean("page_visible", page_visible_);
+  state->SetBoolean("disable_background_timer_throttling",
+                    disable_background_timer_throttling_);
+  state->SetBoolean("allow_virtual_time_to_advance",
+                    allow_virtual_time_to_advance_);
+  state->SetBoolean("have_seen_loading_task", have_seen_loading_task_);
+  state->SetBoolean("virtual_time", virtual_time_);
+  state->SetBoolean("is_audio_playing", is_audio_playing_);
+  state->SetBoolean("reported_background_throttling_since_navigation",
+                    reported_background_throttling_since_navigation_);
+
+  state->BeginDictionary("frame_schedulers");
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    state->BeginDictionaryWithCopiedName(PointerToId(frame_scheduler));
+    frame_scheduler->AsValueInto(state);
+    state->EndDictionary();
+  }
+  state->EndDictionary();
+}
+
 TaskQueueThrottler::TimeBudgetPool*
 WebViewSchedulerImpl::BackgroundTimeBudgetPool() {
   MaybeInitializeBackgroundTimeBudgetPool();
@@ -303,6 +335,22 @@ void WebViewSchedulerImpl::OnThrottlingReported(
       throttling_duration.InSecondsF());
 
   intervention_reporter_->ReportIntervention(WebString::fromUTF8(message));
+}
+
+// static
+const char* WebViewSchedulerImpl::VirtualTimePolicyToString(
+    VirtualTimePolicy virtual_time_policy) {
+  switch (virtual_time_policy) {
+    case VirtualTimePolicy::ADVANCE:
+      return "ADVANCE";
+    case VirtualTimePolicy::PAUSE:
+      return "PAUSE";
+    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      return "DETERMINISTIC_LOADING";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 }  // namespace scheduler

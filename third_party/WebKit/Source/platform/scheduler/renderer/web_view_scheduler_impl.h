@@ -19,6 +19,7 @@
 namespace base {
 namespace trace_event {
 class BlameContext;
+class TracedValue;
 }  // namespace trace_event
 }  // namespace base
 
@@ -62,6 +63,8 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
 
   bool IsAudioPlaying() const;
 
+  void AsValueInto(base::trace_event::TracedValue* state) const;
+
  private:
   friend class WebFrameSchedulerImpl;
 
@@ -72,6 +75,9 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void ApplyVirtualTimePolicy();
 
   void OnThrottlingReported(base::TimeDelta throttling_duration);
+
+  static const char* VirtualTimePolicyToString(
+      VirtualTimePolicy virtual_time_policy);
 
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::set<unsigned long> pending_loads_;

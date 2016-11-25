@@ -65,7 +65,8 @@ base::Optional<T> Max(const base::Optional<T>& a, const base::Optional<T>& b) {
 
 std::string PointerToId(void* pointer) {
   return base::StringPrintf(
-      "%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
+      "0x%" PRIx64,
+      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
 }
 
 }  // namespace
