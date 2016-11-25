@@ -81,7 +81,7 @@ class CORE_EXPORT Dictionary final {
   bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
   bool getPropertyNames(Vector<String>&) const;
 
-  bool hasProperty(const StringView&) const;
+  bool hasProperty(const StringView& key, ExceptionState&) const;
 
   v8::Isolate* isolate() const { return m_isolate; }
   v8::Local<v8::Context> v8Context() const {

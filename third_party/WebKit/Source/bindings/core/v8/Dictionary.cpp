@@ -57,15 +57,20 @@ Dictionary::Dictionary(v8::Isolate* isolate,
       "The dictionary provided is neither undefined, null nor an Object.");
 }
 
-bool Dictionary::hasProperty(const StringView& key) const {
+bool Dictionary::hasProperty(const StringView& key,
+                             ExceptionState& exceptionState) const {
   if (m_dictionaryObject.IsEmpty())
     return false;
 
-  // TODO(bashi,yukishiino): Should rethrow the exception.
-  // Has() on a revoked proxy will throw an exception.
-  // http://crbug.com/666661
-  return v8CallBoolean(
-      m_dictionaryObject->Has(v8Context(), v8String(m_isolate, key)));
+  v8::TryCatch tryCatch(m_isolate);
+  bool hasKey = false;
+  if (!m_dictionaryObject->Has(v8Context(), v8String(m_isolate, key))
+           .To(&hasKey)) {
+    exceptionState.rethrowV8Exception(tryCatch.Exception());
+    return false;
+  }
+
+  return hasKey;
 }
 
 DictionaryIterator Dictionary::getIterator(

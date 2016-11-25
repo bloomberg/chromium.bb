@@ -850,7 +850,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   Nullable<DOMTimeStamp> expires;
   if (keygenAlgorithm.isDictionary()) {
     Dictionary keygenAlgorithmDict = keygenAlgorithm.getAsDictionary();
-    if (keygenAlgorithmDict.hasProperty("expires")) {
+    if (keygenAlgorithmDict.hasProperty("expires", exceptionState)) {
       v8::Local<v8::Value> expiresValue;
       keygenAlgorithmDict.get("expires", expiresValue);
       if (expiresValue->IsNumber()) {
@@ -863,6 +863,9 @@ ScriptPromise RTCPeerConnection::generateCertificate(
         }
       }
     }
+  }
+  if (exceptionState.hadException()) {
+    return ScriptPromise();
   }
 
   // Convert from WebCrypto representation to recognized WebRTCKeyParams. WebRTC
