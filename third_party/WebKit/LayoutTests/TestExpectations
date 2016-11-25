@@ -70,6 +70,8 @@ crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
 crbug.com/606302 [ Linux Win Mac ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
+crbug.com/248938 [ Debug ] virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
+
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
