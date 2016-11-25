@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.permissions;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -152,8 +153,12 @@ public class MediaTest extends PermissionTestCaseBase {
      * Check the switch appears and that permission is granted with it toggled off.
      * @throws Exception
      */
-    @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_TOGGLE_FLAG})
+    /*
+     * @MediumTest
+     * @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_TOGGLE_FLAG})
+     * BUG=https://crbug.com/668700
+     */
+    @DisabledTest
     @Feature({"MediaPermissions"})
     public void testMicrophonePersistenceOffDialog() throws Exception {
         testMediaPermissionsPlumbing(
