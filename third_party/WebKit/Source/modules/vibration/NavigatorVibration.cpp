@@ -19,6 +19,7 @@
 
 #include "modules/vibration/NavigatorVibration.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -77,12 +78,18 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   if (!frame->page()->isPageVisible())
     return false;
 
-  if (frame->isCrossOriginSubframe()) {
-    // TODO(binlu): Once FeaturePolicy is ready, exploring using it to
-    // remove the API instead of having it return false.
-    frame->localDOMWindow()->printErrorMessage(
-        "A call of navigator.vibrate will be no-op inside cross-origin "
-        "iframes: https://www.chromestatus.com/feature/5682658461876224.");
+  // TODO(lunalu): When FeaturePolicy is ready, take out the check for the
+  // runtime flag.
+  if (!isFeatureEnabledInFrame(blink::kVibrateFeature, frame)) {
+    if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+      frame->localDOMWindow()->printErrorMessage(
+          "Navigator.vibrate() is not enabled in feature policy for this "
+          "frame.");
+    } else {
+      frame->localDOMWindow()->printErrorMessage(
+          "A call of navigator.vibrate will be no-op inside cross-origin "
+          "iframes: https://www.chromestatus.com/feature/5682658461876224.");
+    }
     return false;
   }
 

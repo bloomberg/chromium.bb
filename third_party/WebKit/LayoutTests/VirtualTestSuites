@@ -328,5 +328,10 @@
     "prefix": "layout_ng",
     "base": "fast/block/float",
     "args": ["--enable-blink-features=LayoutNG"]
+  },
+  {
+    "prefix": "feature-policy",
+    "base": "http/tests/feature-policy",
+    "args": ["--enable-blink-features=FeaturePolicy"]
   }
 ]

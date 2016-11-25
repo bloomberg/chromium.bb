@@ -1,0 +1,17 @@
+ 
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+This is a testharness.js-based test.
+PASS Any iframe may call navigator.vibrate when enabled. 
+Harness: the test ran to completion.
+
+
+--------
+Frame: '<!--framePath //<!--frame1-->-->'
+--------
+This is a testharness.js-based test.
+PASS Any iframe may call navigator.vibrate when enabled. 
+Harness: the test ran to completion.
+

@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 10: Navigator.vibrate() is not enabled in feature policy for this frame.
+

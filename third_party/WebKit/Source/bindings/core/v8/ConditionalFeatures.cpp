@@ -76,7 +76,9 @@ bool isFeatureEnabledInFrame(const FeaturePolicy::Feature& feature,
                              const LocalFrame* frame) {
   // If there is no frame, or if feature policy is disabled, use defaults.
   bool enabledByDefault =
-      (feature.defaultPolicy != FeaturePolicy::FeatureDefault::DisableForAll);
+      (feature.defaultPolicy == FeaturePolicy::FeatureDefault::EnableForAll ||
+       (feature.defaultPolicy == FeaturePolicy::FeatureDefault::EnableForSelf &&
+        !frame->isCrossOriginSubframe()));
   if (!RuntimeEnabledFeatures::featurePolicyEnabled() || !frame)
     return enabledByDefault;
   FeaturePolicy* featurePolicy = frame->securityContext()->getFeaturePolicy();
