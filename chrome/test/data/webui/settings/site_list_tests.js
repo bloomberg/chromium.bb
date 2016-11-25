@@ -32,26 +32,26 @@ cr.define('site_list', function() {
           cookies: [],
           geolocation: [
             {
-              embeddingOrigin: 'https://foo-allow.com:443',
-              origin: 'https://foo-allow.com:443',
-              setting: 'allow',
-              source: 'preference',
-            },
-            {
               embeddingOrigin: 'https://bar-allow.com:443',
               origin: 'https://bar-allow.com:443',
               setting: 'allow',
               source: 'preference',
             },
             {
-              embeddingOrigin: 'https://foo-block.com:443',
-              origin: 'https://foo-block.com:443',
-              setting: 'block',
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
               source: 'preference',
             },
             {
               embeddingOrigin: 'https://bar-block.com:443',
               origin: 'https://bar-block.com:443',
+              setting: 'block',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'https://foo-block.com:443',
+              origin: 'https://foo-block.com:443',
               setting: 'block',
               source: 'preference',
             },
@@ -84,6 +84,37 @@ cr.define('site_list', function() {
               embeddingOrigin: 'bar-allow.com',
               origin: 'bar-allow.com',
               setting: 'allow',
+              source: 'preference',
+            },
+          ]
+        }
+      };
+
+
+      /**
+       * An example pref with exceptions with origins and patterns from
+       * different providers.
+       * @type {SiteSettingsPref}
+       */
+      var prefsMixedProvider = {
+        exceptions: {
+          geolocation: [
+            {
+              embeddingOrigin: 'https://[*.]foo.com',
+              origin: 'https://[*.]foo.com',
+              setting: 'block',
+              source: 'policy',
+            },
+            {
+              embeddingOrigin: 'https://bar.foo.com',
+              origin: 'https://bar.foo.com',
+              setting: 'block',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'https://[*.]foo.com',
+              origin: 'https://[*.]foo.com',
+              setting: 'block',
               source: 'preference',
             },
           ]
@@ -259,14 +290,6 @@ cr.define('site_list', function() {
               setting: 'block',
               source: 'preference',
             },
-            // foo.com is allowed in incognito (overridden).
-            {
-              embeddingOrigin: 'http://foo.com',
-              incognito: true,
-              origin: 'http://foo.com',
-              setting: 'allow',
-              source: 'preference',
-            },
             // bar.com is an allowed incognito item without an embedder.
             {
               embeddingOrigin: '',
@@ -275,6 +298,15 @@ cr.define('site_list', function() {
               setting: 'allow',
               source: 'preference',
             },
+            // foo.com is allowed in incognito (overridden).
+            {
+              embeddingOrigin: 'http://foo.com',
+              incognito: true,
+              origin: 'http://foo.com',
+              setting: 'allow',
+              source: 'preference',
+            },
+
           ]
         }
       };
@@ -419,8 +451,10 @@ cr.define('site_list', function() {
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
               assertEquals(2, testElement.sites.length);
-              assertEquals(prefs.exceptions.geolocation[1].origin,
+              assertEquals(prefs.exceptions.geolocation[0].origin,
                   testElement.sites[0].origin);
+              assertEquals(prefs.exceptions.geolocation[1].origin,
+                  testElement.sites[1].origin);
               assertEquals(
                   settings.PermissionValues.ALLOW, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
@@ -428,6 +462,26 @@ cr.define('site_list', function() {
               assertMenu(['Block', 'Remove'], testElement);
 
               assertFalse(testElement.$.category.hidden);
+            });
+      });
+
+      test('exceptions are not reordered in non-ALL_SITES', function() {
+        setUpCategory(settings.ContentSettingsTypes.GEOLOCATION,
+            settings.PermissionValues.BLOCK, prefsMixedProvider);
+        return browserProxy.whenCalled('getExceptionList').then(
+            function(contentType) {
+              assertEquals(
+                  settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+              assertEquals(3, testElement.sites.length);
+              for(var i = 0; i < 3; i++) {
+                assertEquals(
+                    prefsMixedProvider.exceptions.geolocation[0].origin,
+                    testElement.sites[0].origin);
+                assertEquals(
+                    prefsMixedProvider.exceptions.geolocation[0].source,
+                    testElement.sites[0].source);
+              }
             });
       });
 
@@ -440,9 +494,10 @@ cr.define('site_list', function() {
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
               assertEquals(2, testElement.sites.length);
-              assertEquals(prefs.exceptions.geolocation[3].origin,
+              assertEquals(prefs.exceptions.geolocation[2].origin,
                   testElement.sites[0].origin);
-
+              assertEquals(prefs.exceptions.geolocation[3].origin,
+                  testElement.sites[1].origin);
               assertEquals(
                   settings.PermissionValues.BLOCK, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
@@ -516,9 +571,9 @@ cr.define('site_list', function() {
                   settings.ContentSettingsTypes.COOKIES, contentType);
 
               assertEquals(2, testElement.sites.length);
-              assertEquals(prefsIncognito.exceptions.cookies[2].origin,
-                  testElement.sites[0].origin);
               assertEquals(prefsIncognito.exceptions.cookies[1].origin,
+                  testElement.sites[0].origin);
+              assertEquals(prefsIncognito.exceptions.cookies[2].origin,
                   testElement.sites[1].origin);
 
               assertEquals(settings.PermissionValues.ALLOW,
@@ -558,8 +613,10 @@ cr.define('site_list', function() {
 
               // Validate that the sites gets populated from pre-canned prefs.
               assertEquals(2, testElement.sites.length);
-              assertEquals(prefs.exceptions.geolocation[1].origin,
+              assertEquals(prefs.exceptions.geolocation[0].origin,
                   testElement.sites[0].origin);
+              assertEquals(prefs.exceptions.geolocation[1].origin,
+                  testElement.sites[1].origin);
               assertEquals(undefined, testElement.selectedOrigin);
 
               // Validate that the sites are shown in UI and can be selected.
@@ -567,7 +624,7 @@ cr.define('site_list', function() {
               var clickable = firstItem.querySelector('.middle');
               assertNotEquals(undefined, clickable);
               MockInteractions.tap(clickable);
-              assertEquals(prefs.exceptions.geolocation[1].origin,
+              assertEquals(prefs.exceptions.geolocation[0].origin,
                   testElement.selectedSite.origin);
             });
       });

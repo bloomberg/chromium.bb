@@ -312,34 +312,39 @@ Polymer({
   },
 
   /**
-   * Converts an unordered site list to an ordered array, sorted by site name
-   * then protocol and de-duped (by origin).
-   * @param {!Array<SiteException>} sites A list of sites to sort and de-dupe.
-   * @return {!Array<SiteException>} Sorted and de-duped list.
+   * Converts a list of exceptions received from the C++ handler to
+   * full SiteException objects. If this site-list is used as an all sites
+   * view, the list is sorted by site name, then protocol and port and de-duped
+   * (by origin).
+   * @param {!Array<SiteException>} sites A list of sites to convert.
+   * @return {!Array<SiteException>} A list of full SiteExceptions. Sorted and
+   *    deduped if allSites is set.
    * @private
    */
   toSiteArray_: function(sites) {
     var self = this;
-    sites.sort(function(a, b) {
-      var url1 = self.toUrl(a.origin);
-      var url2 = self.toUrl(b.origin);
-      var comparison = url1.host.localeCompare(url2.host);
-      if (comparison == 0) {
-        comparison = url1.protocol.localeCompare(url2.protocol);
+    if (this.allSites) {
+      sites.sort(function(a, b) {
+        var url1 = self.toUrl(a.origin);
+        var url2 = self.toUrl(b.origin);
+        var comparison = url1.host.localeCompare(url2.host);
         if (comparison == 0) {
-          comparison = url1.port.localeCompare(url2.port);
+          comparison = url1.protocol.localeCompare(url2.protocol);
           if (comparison == 0) {
-            // Compare hosts for the embedding origins.
-            var host1 = self.toUrl(a.embeddingOrigin);
-            var host2 = self.toUrl(b.embeddingOrigin);
-            host1 = (host1 == null) ? '' : host1.host;
-            host2 = (host2 == null) ? '' : host2.host;
-            return host1.localeCompare(host2);
+            comparison = url1.port.localeCompare(url2.port);
+            if (comparison == 0) {
+              // Compare hosts for the embedding origins.
+              var host1 = self.toUrl(a.embeddingOrigin);
+              var host2 = self.toUrl(b.embeddingOrigin);
+              host1 = (host1 == null) ? '' : host1.host;
+              host2 = (host2 == null) ? '' : host2.host;
+              return host1.localeCompare(host2);
+            }
           }
         }
-      }
-      return comparison;
-    });
+        return comparison;
+      });
+    }
     var results = /** @type {!Array<SiteException>} */([]);
     var lastOrigin = '';
     var lastEmbeddingOrigin = '';
@@ -348,7 +353,7 @@ Polymer({
       var siteException = this.expandSiteException(sites[i]);
 
       // The All Sites category can contain duplicates (from other categories).
-      if (siteException.originForDisplay == lastOrigin &&
+      if (this.allSites && siteException.originForDisplay == lastOrigin &&
           siteException.embeddingOriginForDisplay == lastEmbeddingOrigin) {
         continue;
       }
