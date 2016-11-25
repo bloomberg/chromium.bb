@@ -14,14 +14,46 @@ var FilesMetadataBox = Polymer({
     mediaMimeType: String,
 
     // File type specific metadata below.
-    imageWidth: Number,
-    imageHeight: Number,
-    mediaAlbum: String,
-    mediaArtist: String,
-    mediaTitle: String,
+    imageWidth: {
+      type: Number,
+      observer: 'metadataUpdated_',
+    },
+    imageHeight: {
+      type: Number,
+      observer: 'metadataUpdated_',
+    },
+    mediaAlbum: {
+      type: String,
+      observer: 'metadataUpdated_',
+    },
+    mediaArtist: {
+      type: String,
+      observer: 'metadataUpdated_',
+    },
+    mediaDuration: {
+      type: Number,
+      observer: 'metadataUpdated_',
+    },
+    mediaGenre: {
+      type: String,
+      observer: 'metadataUpdated_',
+    },
+    mediaTitle: {
+      type: String,
+      observer: 'metadataUpdated_',
+    },
+    mediaTrack: {
+      type: Number,
+      observer: 'metadataUpdated_',
+    },
 
     // Whether the size is the middle of loading.
     isSizeLoading: Boolean,
+
+    /**
+     * @private
+     */
+    hasFileSpecificInfo_: Boolean,
   },
 
   // Clears fields.
@@ -37,6 +69,9 @@ var FilesMetadataBox = Polymer({
     this.mediaTitle = '';
     this.mediaArtist = '';
     this.mediaAlbum = '';
+    this.mediaDuration = 0;
+    this.mediaGenre = '';
+    this.mediaTrack = 0;
 
     this.isSizeLoading = false;
   },
@@ -66,18 +101,33 @@ var FilesMetadataBox = Polymer({
   isAudio_: function(type) { return type === 'audio'; },
 
   /**
-   * @param {number} imageWidth
-   * @param {number} imageHeight
-   * @param {string} mediaTitle
-   * @param {string} mediaArtist
-   * @return {boolean}
-   *
+   * Update private properties computed from metadata.
    * @private
    */
-  hasFileSpecificInfo_: function(
-      imageWidth, imageHeight, mediaTitle, mediaArtist) {
-    var result = (imageWidth && imageHeight) || mediaTitle || mediaArtist;
-    return !!result;
+  metadataUpdated_: function() {
+    this.hasFileSpecificInfo_ =
+        !!(this.imageWidth && this.imageHeight || this.mediaTitle ||
+           this.mediaArtist || this.mediaAlbum || this.mediaDuration ||
+           this.mediaGenre || this.mediaTrack);
+  },
+
+  /**
+   * Converts the duration into human friendly string.
+   * @param {number} time the duration in seconds.
+   * @return {string} String representation of the given duration.
+   **/
+  time2string_: function(time) {
+    if (!time)
+      return '';
+
+    var seconds = time % 60;
+    var minutes = Math.floor(time / 60) % 60;
+    var hours = Math.floor(time / 60 / 60);
+
+    if (hours === 0) {
+      return minutes + ':' + ('0' + seconds).slice(-2);
+    }
+    return hours + ':' + ('0' + minutes).slice(-2) + ('0' + seconds).slice(-2);
   },
 
   /**

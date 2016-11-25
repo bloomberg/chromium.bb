@@ -174,12 +174,28 @@ function MetadataItem() {
   /**
    * @public {string|undefined}
    */
-  this.mediaTitle;
+  this.mediaArtist;
+
+  /**
+   * Audio or video duration in seconds.
+   * @public {number|undefined}
+   */
+  this.mediaDuration;
 
   /**
    * @public {string|undefined}
    */
-  this.mediaArtist;
+  this.mediaGenre;
+
+  /**
+   * @public {string|undefined}
+   */
+  this.mediaTitle;
+
+  /**
+   * @public {number|undefined}
+   */
+  this.mediaTrack;
 
   /**
    * Mime type obtained by content provider based on URL.

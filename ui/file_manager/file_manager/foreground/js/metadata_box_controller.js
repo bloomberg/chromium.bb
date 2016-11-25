@@ -142,7 +142,10 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
                 'imageWidth',
                 'mediaAlbum',
                 'mediaArtist',
-                'mediaTitle'
+                'mediaDuration',
+                'mediaGenre',
+                'mediaTitle',
+                'mediaTrack',
               ])
           .then(function(items) {
             var item = items[0];
@@ -150,7 +153,10 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
             this.metadataBox_.imageWidth = item.imageWidth || 0;
             this.metadataBox_.mediaAlbum = item.mediaAlbum || '';
             this.metadataBox_.mediaArtist = item.mediaArtist || '';
+            this.metadataBox_.mediaDuration = item.mediaDuration || 0;
+            this.metadataBox_.mediaGenre = item.mediaGenre || '';
             this.metadataBox_.mediaTitle = item.mediaTitle || '';
+            this.metadataBox_.mediaTrack = item.mediaTrack || 0;
           }.bind(this));
     }
   }

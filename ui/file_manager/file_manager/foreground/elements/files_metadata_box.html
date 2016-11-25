@@ -46,7 +46,7 @@
       <files-metadata-entry i18n-values="key:METADATA_BOX_MODIFICATION_TIME" value="[[modificationTime]]"></files-metadata-entry>
       <files-metadata-entry i18n-values="key:METADATA_BOX_MEDIA_MIME_TYPE" value="[[mediaMimeType]]"></files-metadata-entry>
 
-      <div hidden="[[!hasFileSpecificInfo_(imageWidth, imageHeight, mediaTitle, mediaArtist)]]">
+      <div hidden="[[!hasFileSpecificInfo_]]">
         <hr>
         <div class="category" hidden="[[!isImage_(type)]]" i18n-content="METADATA_BOX_IMAGE_INFO"></div>
         <div class="category" hidden="[[!isAudio_(type)]]" i18n-content="METADATA_BOX_AUDIO_INFO"></div>
@@ -55,6 +55,9 @@
         <files-metadata-entry i18n-values="key:METADATA_BOX_ALBUM_TITLE" value="[[mediaAlbum]]"></files-metadata-entry>
         <files-metadata-entry i18n-values="key:METADATA_BOX_MEDIA_TITLE" value="[[mediaTitle]]"></files-metadata-entry>
         <files-metadata-entry i18n-values="key:METADATA_BOX_MEDIA_ARTIST" value="[[mediaArtist]]"></files-metadata-entry>
+        <files-metadata-entry i18n-values="key:METADATA_BOX_DURATION" value="[[time2string_(mediaDuration)]]"></files-metadata-entry>
+        <files-metadata-entry i18n-values="key:METADATA_BOX_GENRE" value="[[mediaGenre]]"></files-metadata-entry>
+        <files-metadata-entry i18n-values="key:METADATA_BOX_TRACK" value="[[mediaTrack]]"></files-metadata-entry>
       </div>
     </div>
   </template>

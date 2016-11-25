@@ -839,6 +839,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_METADATA_BOX_SOURCE" desc="Label for the device used to capture the image.">
     Source
   </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_TRACK" desc="Label for track number.">
+    Track
+  </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_VIDEO_INFO" desc="Category label for video file info.">
     Video Info
   </message>
