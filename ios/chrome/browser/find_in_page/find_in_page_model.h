@@ -15,7 +15,7 @@
 @property(nonatomic, assign) BOOL enabled;
 
 // The current search string.
-@property(nonatomic, readonly) NSString* text;
+@property(copy, nonatomic, readonly) NSString* text;
 
 // The number of matches for |text|.
 @property(nonatomic, readonly) NSUInteger matches;

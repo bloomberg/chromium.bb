@@ -5,6 +5,7 @@
 import("//ios/web/js_compile.gni")
 
 source_set("find_in_page") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "find_in_page_controller.h",
     "find_in_page_controller.mm",

@@ -9,7 +9,6 @@
 #include <CoreGraphics/CGGeometry.h>
 
 #include "base/ios/block_types.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
 // Data from find in page.
@@ -25,14 +24,10 @@ extern FindInPageEntry FindInPageEntryZero;
 @class FindInPageModel;
 
 // Manager for the injection of the Find In Page JavaScript.
-@interface JsFindinpageManager : CRWJSInjectionManager {
- @private
-  // Model for find in page.
-  base::scoped_nsobject<FindInPageModel> findInPageModel_;
-}
+@interface JsFindinpageManager : CRWJSInjectionManager
 
 // Find In Page model. TODO(justincohen) consider using find_tab_helper.cc.
-@property(nonatomic, readonly) FindInPageModel* findInPageModel;
+@property(strong, nonatomic, readonly) FindInPageModel* findInPageModel;
 
 // Sets the width and height of the window.
 - (void)setWidth:(CGFloat)width height:(CGFloat)height;

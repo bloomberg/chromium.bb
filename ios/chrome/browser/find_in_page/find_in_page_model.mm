@@ -4,20 +4,21 @@
 
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 
-#include "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-@implementation FindInPageModel {
-  base::scoped_nsobject<NSString> _text;
-}
+@interface FindInPageModel ()
+// Redefined as readwrite.
+@property(copy, nonatomic, readwrite) NSString* text;
+@end
 
+@implementation FindInPageModel
 @synthesize enabled = _enabled;
 @synthesize matches = _matches;
 @synthesize currentIndex = _currentIndex;
 @synthesize currentPoint = _currentPoint;
-
-- (NSString*)text {
-  return _text;
-}
+@synthesize text = _text;
 
 - (void)setEnabled:(BOOL)enabled {
   _enabled = enabled;
@@ -28,7 +29,7 @@
 
 - (void)updateQuery:(NSString*)query matches:(NSUInteger)matches {
   if (query)
-    _text.reset([query copy]);
+    self.text = query;
   _matches = matches;
   _currentIndex = 0;
 }

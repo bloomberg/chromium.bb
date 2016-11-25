@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
@@ -15,6 +14,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -75,11 +78,12 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 @end
 
 @implementation JsFindinpageManager
+@synthesize findInPageModel = _findInPageModel;
 
 - (FindInPageModel*)findInPageModel {
-  if (!findInPageModel_)
-    findInPageModel_.reset([[FindInPageModel alloc] init]);
-  return findInPageModel_.get();
+  if (!_findInPageModel)
+    _findInPageModel = [[FindInPageModel alloc] init];
+  return _findInPageModel;
 }
 
 - (void)setWidth:(CGFloat)width height:(CGFloat)height {
@@ -92,7 +96,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
     completionHandler:(void (^)(BOOL, CGPoint))completionHandler {
   DCHECK(completionHandler);
   // Save the query in the model before searching.
-  [findInPageModel_ updateQuery:query matches:0];
+  [self.findInPageModel updateQuery:query matches:0];
 
   // Escape |query| before passing to js.
   std::string escapedJSON;
@@ -100,7 +104,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
   NSString* JSONQuery =
       [NSString stringWithFormat:kFindInPageVerbatim,
                                  base::SysUTF8ToNSString(escapedJSON.c_str())];
-  base::WeakNSObject<JsFindinpageManager> weakSelf(self);
+  __weak JsFindinpageManager* weakSelf = self;
   [self executeJavaScript:JSONQuery
         completionHandler:^(id result, NSError* error) {
           [weakSelf processFindInPagePumpResult:result
@@ -110,7 +114,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (void)pumpWithCompletionHandler:(void (^)(BOOL, CGPoint))completionHandler {
   DCHECK(completionHandler);
-  base::WeakNSObject<JsFindinpageManager> weakSelf(self);
+  __weak JsFindinpageManager* weakSelf = self;
   [self executeJavaScript:kFindInPagePump
         completionHandler:^(id result, NSError* error) {
           // TODO(shreyasv): What to do here if this returns an NSError in the
@@ -134,10 +138,10 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 - (void)moveHighlightByEvaluatingJavaScript:(NSString*)script
                           completionHandler:
                               (void (^)(CGPoint))completionHandler {
-  base::WeakNSObject<JsFindinpageManager> weakSelf(self);
+  __weak JsFindinpageManager* weakSelf = self;
   [self executeJavaScript:script
         completionHandler:^(id result, NSError* error) {
-          base::WeakNSObject<JsFindinpageManager> strongSelf([weakSelf retain]);
+          JsFindinpageManager* strongSelf = weakSelf;
           if (!strongSelf)
             return;
           DCHECK(!error);
@@ -185,10 +189,10 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
         if (numHighlighted > 0) {
           base::ListValue* position;
           if (resultList->GetList(1, &position)) {
-            [findInPageModel_ updateQuery:nil matches:numHighlighted];
+            [self.findInPageModel updateQuery:nil matches:numHighlighted];
             // Scroll to first match.
             FindInPageEntry entry = [self entryForListValue:position];
-            [findInPageModel_ updateIndex:entry.index atPoint:entry.point];
+            [self.findInPageModel updateIndex:entry.index atPoint:entry.point];
             if (point)
               *point = entry.point;
           }
@@ -213,7 +217,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 }
 
 - (void)updateIndex:(NSInteger)index atPoint:(CGPoint)point {
-  [findInPageModel_ updateIndex:index atPoint:point];
+  [self.findInPageModel updateIndex:index atPoint:point];
 }
 
 - (FindInPageEntry)findInPageEntryForJson:(NSString*)jsonStr {

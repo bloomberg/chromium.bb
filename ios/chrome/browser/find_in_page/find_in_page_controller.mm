@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"
@@ -20,6 +19,10 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 NSString* const kFindBarTextFieldWillBecomeFirstResponderNotification =
     @"kFindBarTextFieldWillBecomeFirstResponderNotification";
@@ -38,9 +41,9 @@ static NSString* gSearchTerm;
 @interface FindInPageController () <DOMAltering, CRWWebStateObserver>
 // The find in page controller delegate.
 @property(nonatomic, readonly) id<FindInPageControllerDelegate> delegate;
-// The web view's scroll view.
-@property(nonatomic, readonly) CRWWebViewScrollViewProxy* webViewScrollView;
 
+// The web view's scroll view.
+- (CRWWebViewScrollViewProxy*)webViewScrollView;
 // Find in Page text field listeners.
 - (void)findBarTextFieldWillBecomeFirstResponder:(NSNotification*)note;
 - (void)findBarTextFieldDidResignFirstResponder:(NSNotification*)note;
@@ -76,7 +79,7 @@ static NSString* gSearchTerm;
   __unsafe_unretained id<FindInPageControllerDelegate> _delegate;
 
   // Access to the web view from the web state.
-  base::scoped_nsprotocol<id<CRWWebViewProxy>> _webViewProxy;
+  id<CRWWebViewProxy> _webViewProxy;
 
   // True when a find is in progress. Used to avoid running JavaScript during
   // disable when there is nothing to clear.
@@ -89,7 +92,6 @@ static NSString* gSearchTerm;
 @synthesize delegate = _delegate;
 
 + (void)setSearchTerm:(NSString*)string {
-  [gSearchTerm release];
   gSearchTerm = [string copy];
 }
 
@@ -108,7 +110,7 @@ static NSString* gSearchTerm;
     _delegate = delegate;
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
-    _webViewProxy.reset([webState->GetWebViewProxy() retain]);
+    _webViewProxy = webState->GetWebViewProxy();
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(findBarTextFieldWillBecomeFirstResponder:)
@@ -126,7 +128,6 @@ static NSString* gSearchTerm;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (FindInPageModel*)findInPageModel {
@@ -192,7 +193,7 @@ static NSString* gSearchTerm;
     // Keep track of whether a find is in progress so to avoid running
     // JavaScript during disable if unnecessary.
     _findStringStarted = YES;
-    base::WeakNSObject<FindInPageController> weakSelf(self);
+    __weak FindInPageController* weakSelf = self;
     [_findInPageJsManager findString:query
                    completionHandler:^(BOOL finished, CGPoint point) {
                      [weakSelf processPumpResult:finished
@@ -204,7 +205,7 @@ static NSString* gSearchTerm;
 }
 
 - (void)startPumpingWithCompletionHandler:(ProceduralBlock)completionHandler {
-  base::WeakNSObject<FindInPageController> weakSelf(self);
+  __weak FindInPageController* weakSelf = self;
   id completionHandlerBlock = ^void(BOOL findFinished) {
     if (findFinished) {
       // Pumping complete. Nothing else to do.
@@ -222,10 +223,10 @@ static NSString* gSearchTerm;
 
 - (void)pumpFindStringInPageWithCompletionHandler:
     (void (^)(BOOL))completionHandler {
-  base::WeakNSObject<FindInPageController> weakSelf(self);
+  __weak FindInPageController* weakSelf = self;
   [_findInPageJsManager pumpWithCompletionHandler:^(BOOL finished,
                                                     CGPoint point) {
-    base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
+    FindInPageController* strongSelf = weakSelf;
     if (finished) {
       [[strongSelf delegate] willAdjustScrollPosition];
       point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
@@ -239,9 +240,9 @@ static NSString* gSearchTerm;
 - (void)findNextStringInPageWithCompletionHandler:
     (ProceduralBlock)completionHandler {
   [self initFindInPage];
-  base::WeakNSObject<FindInPageController> weakSelf(self);
+  __weak FindInPageController* weakSelf = self;
   [_findInPageJsManager nextMatchWithCompletionHandler:^(CGPoint point) {
-    base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
+    FindInPageController* strongSelf = weakSelf;
     [[strongSelf delegate] willAdjustScrollPosition];
     point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
                                 atPoint:point];
@@ -255,9 +256,9 @@ static NSString* gSearchTerm;
 - (void)findPreviousStringInPageWithCompletionHandler:
     (ProceduralBlock)completionHandler {
   [self initFindInPage];
-  base::WeakNSObject<FindInPageController> weakSelf(self);
+  __weak FindInPageController* weakSelf = self;
   [_findInPageJsManager previousMatchWithCompletionHandler:^(CGPoint point) {
-    base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
+    FindInPageController* strongSelf = weakSelf;
     [[strongSelf delegate] willAdjustScrollPosition];
     point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
                                 atPoint:point];
@@ -274,11 +275,11 @@ static NSString* gSearchTerm;
     return;
   // Cancel any queued calls to |recurringPumpWithCompletionHandler|.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  base::WeakNSObject<FindInPageController> weakSelf(self);
+  __weak FindInPageController* weakSelf = self;
   ProceduralBlock handler = ^{
-    base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
+    FindInPageController* strongSelf = weakSelf;
     if (strongSelf) {
-      [strongSelf.get().findInPageModel setEnabled:NO];
+      [strongSelf.findInPageModel setEnabled:NO];
       web::WebState* webState = [strongSelf webState];
       if (webState)
         DOMAlteringLock::FromWebState(webState)->Release(strongSelf);
