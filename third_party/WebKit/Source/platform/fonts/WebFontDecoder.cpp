@@ -210,6 +210,7 @@ sk_sp<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer) {
     return nullptr;
   }
 
+  m_decodedSize = decodedLength;
   return typeface;
 }
 

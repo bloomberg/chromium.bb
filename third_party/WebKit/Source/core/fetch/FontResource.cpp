@@ -190,4 +190,15 @@ bool FontResource::isLowPriorityLoadingAllowedForRemoteFont() const {
   return true;
 }
 
+void FontResource::onMemoryDump(WebMemoryDumpLevelOfDetail level,
+                                WebProcessMemoryDump* memoryDump) const {
+  Resource::onMemoryDump(level, memoryDump);
+  if (!m_fontData)
+    return;
+  const String name = getMemoryDumpName() + "/decoded_webfont";
+  WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(name);
+  dump->addScalar("size", "bytes", m_fontData->dataSize());
+  memoryDump->addSuballocation(dump->guid(), "malloc");
+}
+
 }  // namespace blink

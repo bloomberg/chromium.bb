@@ -44,8 +44,9 @@
 
 namespace blink {
 
-FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface)
-    : m_typeface(typeface) {}
+FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
+                                               size_t dataSize)
+    : m_typeface(typeface), m_dataSize(dataSize) {}
 
 FontCustomPlatformData::~FontCustomPlatformData() {}
 
@@ -69,7 +70,8 @@ std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(
     otsParseMessage = decoder.getErrorString();
     return nullptr;
   }
-  return wrapUnique(new FontCustomPlatformData(std::move(typeface)));
+  return wrapUnique(
+      new FontCustomPlatformData(std::move(typeface), decoder.decodedSize()));
 }
 
 bool FontCustomPlatformData::supportsFormat(const String& format) {

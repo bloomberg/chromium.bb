@@ -47,6 +47,7 @@ class WebFontDecoder final {
   WebFontDecoder() {}
 
   sk_sp<SkTypeface> decode(SharedBuffer*);
+  size_t decodedSize() const { return m_decodedSize; }
 
   static bool supportsFormat(const String&);
   String getErrorString() const { return m_otsErrorString; }
@@ -57,6 +58,7 @@ class WebFontDecoder final {
   }
 
   String m_otsErrorString;
+  size_t m_decodedSize = 0;
 };
 
 }  // namespace blink

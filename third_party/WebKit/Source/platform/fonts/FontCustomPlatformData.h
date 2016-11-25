@@ -64,11 +64,13 @@ class PLATFORM_EXPORT FontCustomPlatformData {
       bool italic,
       FontOrientation = FontOrientation::Horizontal);
 
+  size_t dataSize() const { return m_dataSize; }
   static bool supportsFormat(const String&);
 
  private:
-  explicit FontCustomPlatformData(sk_sp<SkTypeface>);
+  FontCustomPlatformData(sk_sp<SkTypeface>, size_t dataSize);
   sk_sp<SkTypeface> m_typeface;
+  size_t m_dataSize;
 };
 
 }  // namespace blink

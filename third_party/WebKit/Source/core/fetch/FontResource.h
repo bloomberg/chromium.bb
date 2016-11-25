@@ -72,6 +72,9 @@ class CORE_EXPORT FontResource final : public Resource {
   // font is not needed for painting the text.
   bool isLowPriorityLoadingAllowedForRemoteFont() const;
 
+  void onMemoryDump(WebMemoryDumpLevelOfDetail,
+                    WebProcessMemoryDump*) const override;
+
  private:
   class FontResourceFactory : public ResourceFactory {
    public:
