@@ -8,7 +8,6 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.Context;
 import android.os.Build;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
@@ -16,6 +15,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -66,8 +66,12 @@ public class ToastHWATest extends DownloadTestBase {
         Utils.assertNoRenderThread();
     }
 
-    @MediumTest
-    @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+    /*
+     * @MediumTest
+     * @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+     * BUG=crbug.com/668217
+    */
+    @DisabledTest
     public void testDownloadingToast() throws Exception {
         loadUrl(mTestServer.getURL(URL_PATH));
         assertWaitForPageScaleFactorMatch(0.5f);
