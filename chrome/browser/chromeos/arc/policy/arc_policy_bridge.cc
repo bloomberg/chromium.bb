@@ -36,8 +36,11 @@ namespace {
 constexpr char kArcGlobalAppRestrictions[] = "globalAppRestrictions";
 constexpr char kArcCaCerts[] = "caCerts";
 constexpr char kNonComplianceDetails[] = "nonComplianceDetails";
+constexpr char kNonComplianceReason[] = "nonComplianceReason";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
 constexpr char kPolicyNonCompliantJson[] = "{ \"policyCompliant\": false }";
+// Value from CloudDPS NonComplianceDetail.NonComplianceReason enum.
+constexpr int kAppNotInstalled = 5;
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -324,10 +327,23 @@ void OnReportComplianceParseSuccess(
     return;
   }
 
+  // ChromeOS is 'compliant' with the report if all "nonComplianceDetails"
+  // entries have APP_NOT_INSTALLED reason.
+  bool compliant = true;
   const base::ListValue* value = nullptr;
   dict->GetList(kNonComplianceDetails, &value);
-  // Compliant when there is no "nonComplianceDetails" entries.
-  bool compliant = dict->empty() || !value || value->empty();
+  if (!dict->empty() && value && !value->empty()) {
+    for (const auto& entry : *value) {
+      const base::DictionaryValue* entry_dict;
+      int reason = 0;
+      if (entry->GetAsDictionary(&entry_dict) &&
+          entry_dict->GetInteger(kNonComplianceReason, &reason) &&
+          reason != kAppNotInstalled) {
+        compliant = false;
+        break;
+      }
+    }
+  }
   profile->GetPrefs()->SetBoolean(prefs::kArcPolicyCompliant, compliant);
   callback.Run(compliant ? kPolicyCompliantJson : kPolicyNonCompliantJson);
 }
