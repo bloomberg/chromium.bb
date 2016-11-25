@@ -329,10 +329,16 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   VerifyHostToIpMap();
 }
 
+// https://crbug.com/667784: The test is flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_SingleMetaRefreshRedirectTargetBlank DISABLED_SingleMetaRefreshRedirectTargetBlank
+#else
+#define MAYBE_SingleMetaRefreshRedirectTargetBlank SingleMetaRefreshRedirectTargetBlank
+#endif
 // Click on a link which navigates to a page then redirects to a download using
 // META HTTP-EQUIV="refresh". First navigation happens in target blank.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       SingleMetaRefreshRedirectTargetBlank) {
+                       MAYBE_SingleMetaRefreshRedirectTargetBlank) {
   ClickTestLink("single_meta_refresh_redirect_target_blank", 2);
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   GURL redirect_url = embedded_test_server()->GetURL(kRedirectURL);
