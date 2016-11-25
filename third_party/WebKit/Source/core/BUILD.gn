@@ -52,8 +52,7 @@ import("//build/config/pch.gni")
 
 config("blink_core_pch") {
   if (enable_precompiled_headers) {
-    # TODO(thakis): Enable for clang once it works, https://crbug.com/667891
-    if (is_win && !is_clang) {
+    if (is_win) {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
       # source code in quotes for an #include directive.
