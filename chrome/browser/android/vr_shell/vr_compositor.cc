@@ -46,7 +46,7 @@ void VrCompositor::SetLayer(content::WebContents* web_contents) {
     layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
   }
   layer_parent_ = layer_->parent();
-  compositor_->SetRootLayer(view_android->GetLayer());
+  compositor_->SetRootLayer(layer_);
 }
 
 void VrCompositor::SurfaceDestroyed() {
