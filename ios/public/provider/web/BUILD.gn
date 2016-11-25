@@ -7,6 +7,8 @@ source_set("web") {
   sources = [
     "web_controller_provider.h",
     "web_controller_provider.mm",
+    "web_controller_provider_factory.h",
+    "web_controller_provider_factory.mm",
   ]
 
   deps = [

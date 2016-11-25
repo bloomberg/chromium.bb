@@ -34,7 +34,6 @@ group("all") {
       "//ios/chrome/today_extension:packed_resources",
       "//ios/net:ios_net_unittests",
       "//ios/public/provider/chrome/browser",
-      "//ios/public/provider/web",
       "//ios/testing:ocmock_support_unittest",
       "//ios/third_party/earl_grey",
       "//ios/web:earl_grey_test_support",

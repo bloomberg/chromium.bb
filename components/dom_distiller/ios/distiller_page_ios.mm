@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "ios/public/provider/web/web_controller_provider.h"
+#include "ios/public/provider/web/web_controller_provider_factory.h"
 #include "ios/web/public/browser_state.h"
 
 namespace {

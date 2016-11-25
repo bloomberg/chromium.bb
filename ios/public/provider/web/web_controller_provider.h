@@ -7,6 +7,10 @@
 
 #include <memory>
 
+// TODO(sdefresne): remove includes of web_controller_provider_factory.h and
+// web_state_observer.h once downstream code has been fixed to use the correct
+// includes.
+#include "ios/public/provider/web/web_controller_provider_factory.h"
 #include "ios/web/public/block_types.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
@@ -52,17 +56,6 @@ class WebControllerProvider {
   // when there is no previously loaded page.
   virtual void InjectScript(const std::string& script,
                             web::JavaScriptResultBlock completion);
-};
-
-class WebControllerProviderFactory {
- public:
-  WebControllerProviderFactory();
-  virtual ~WebControllerProviderFactory();
-
-  // Vends WebControllerProviders created using |browser_state|, passing
-  // ownership to callers.
-  virtual std::unique_ptr<WebControllerProvider> CreateWebControllerProvider(
-      web::BrowserState* browser_state);
 };
 
 }  // namespace ios

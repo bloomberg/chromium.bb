@@ -68,7 +68,6 @@ source_set("browser") {
     "//components/favicon_base",
     "//components/metrics",
     "//components/sync_sessions",
-    "//ios/public/provider/web",
     "//ios/web",
     "//url",
   ]

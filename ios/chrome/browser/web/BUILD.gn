@@ -15,4 +15,24 @@ source_set("web") {
     "//ios/web",
     "//ui/base",
   ]
+  public_deps = [
+    ":web_arc",
+  ]
+}
+
+source_set("web_arc") {
+  visibility = [ ":web" ]
+  sources = [
+    "web_controller_provider_factory_impl.h",
+    "web_controller_provider_factory_impl.mm",
+    "web_controller_provider_impl.h",
+    "web_controller_provider_impl.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/public/provider/web",
+    "//ios/web",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
