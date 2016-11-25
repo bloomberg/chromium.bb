@@ -5410,7 +5410,9 @@
       'tags': ['system-security'],
       'desc': '''Disables automatic updates when set to True.
 
-      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices automatically check for updates when this setting is not configured or set to False.''',
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices automatically check for updates when this setting is not configured or set to False.
+
+      Warning: It is recommended to keep auto-updates enabled so that users receive software updates and critical security fixes. Turning off auto-updates might leave users at risk.''',
     },
     {
       'name': 'DeviceAutoUpdateP2PEnabled',
@@ -5447,7 +5449,9 @@
       "" (or not configured): update to latest version available.
       "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
       "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
-      "1412.24.34": update to this specific version only''',
+      "1412.24.34": update to this specific version only
+
+      Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version prefix might leave users at risk.''',
     },
     {
       'name': 'DeviceUpdateScatterFactor',
@@ -8580,14 +8584,16 @@
       'example_value': True,
       'id': 319,
       'caption': '''Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version''',
-      'tags': [],
+      'tags': ['system-security'],
       'desc': '''Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version.
 
       This policy controls whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version by declaring a required_platform_version in its manifest and use it as the auto update target version prefix.
 
       If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
 
-      If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.''',
+      If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.
+
+      Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version might leave users at risk.''',
       'arc_support': 'If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version, even if this policy is set to <ph name="TRUE">True</ph>.',
     },
     {
