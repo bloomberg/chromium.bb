@@ -115,5 +115,9 @@ void FakeWebTaskRunner::runUntilIdle() {
   }
 }
 
+std::deque<base::Closure> FakeWebTaskRunner::takePendingTasksForTesting() {
+  return std::move(data_->task_queue_);
+}
+
 }  // namespace scheduler
 }  // namespace blink

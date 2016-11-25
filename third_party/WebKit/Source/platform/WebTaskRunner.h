@@ -46,8 +46,9 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
   TaskHandle(TaskHandle&&);
   TaskHandle& operator=(TaskHandle&&);
 
- private:
   class Runner;
+
+ private:
   friend class WebTaskRunner;
 
   explicit TaskHandle(RefPtr<Runner>);

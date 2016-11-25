@@ -5,11 +5,13 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_TASK_RUNNER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_TASK_RUNNER_H_
 
+#include <deque>
+
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "platform/WebTaskRunner.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "base/memory/ref_counted.h"
 
 namespace blink {
 namespace scheduler {
@@ -35,6 +37,7 @@ class FakeWebTaskRunner : public WebTaskRunner {
   SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
 
   void runUntilIdle();
+  std::deque<base::Closure> takePendingTasksForTesting();
 
  private:
   class Data;

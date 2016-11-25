@@ -4,7 +4,28 @@
 
 #include "platform/WebTaskRunner.h"
 
+#include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
+
+namespace base {
+
+using RunnerMethodType =
+    void (blink::TaskHandle::Runner::*)(const blink::TaskHandle&);
+
+template <>
+struct CallbackCancellationTraits<
+    RunnerMethodType,
+    std::tuple<WTF::WeakPtr<blink::TaskHandle::Runner>, blink::TaskHandle>> {
+  static constexpr bool is_cancellable = true;
+
+  static bool IsCancelled(RunnerMethodType,
+                          const WTF::WeakPtr<blink::TaskHandle::Runner>&,
+                          const blink::TaskHandle& handle) {
+    return !handle.isActive();
+  }
+};
+
+}  // namespace base
 
 namespace blink {
 
@@ -15,7 +36,7 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
 
   WTF::WeakPtr<Runner> asWeakPtr() { return m_weakPtrFactory.createWeakPtr(); }
 
-  bool isActive() { return static_cast<bool>(m_task); }
+  bool isActive() const { return m_task && !m_task->isCancelled(); }
 
   void cancel() {
     std::unique_ptr<WTF::Closure> task = std::move(m_task);

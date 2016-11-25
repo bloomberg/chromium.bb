@@ -18,6 +18,23 @@ void getIsActive(bool* isActive, TaskHandle* handle) {
   *isActive = handle->isActive();
 }
 
+class CancellationTestHelper {
+ public:
+  CancellationTestHelper() : m_weakPtrFactory(this) {}
+
+  WeakPtr<CancellationTestHelper> createWeakPtr() {
+    return m_weakPtrFactory.createWeakPtr();
+  }
+
+  void revokeWeakPtrs() { m_weakPtrFactory.revokeAll(); }
+  void incrementCounter() { ++m_counter; }
+  int counter() const { return m_counter; }
+
+ private:
+  int m_counter = 0;
+  WeakPtrFactory<CancellationTestHelper> m_weakPtrFactory;
+};
+
 }  // namespace
 
 TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
@@ -96,6 +113,40 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
   EXPECT_TRUE(handle.isActive());
   taskRunner.runUntilIdle();
   EXPECT_FALSE(isActive);
+  EXPECT_FALSE(handle.isActive());
+}
+
+TEST(WebTaskRunnerTest, CancellationCheckerTest) {
+  scheduler::FakeWebTaskRunner taskRunner;
+
+  int count = 0;
+  TaskHandle handle = taskRunner.postCancellableTask(
+      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+  EXPECT_EQ(0, count);
+
+  // TaskHandle::isActive should detect the deletion of posted task.
+  auto queue = taskRunner.takePendingTasksForTesting();
+  ASSERT_EQ(1u, queue.size());
+  EXPECT_FALSE(queue[0].IsCancelled());
+  EXPECT_TRUE(handle.isActive());
+  queue.clear();
+  EXPECT_FALSE(handle.isActive());
+  EXPECT_EQ(0, count);
+
+  count = 0;
+  CancellationTestHelper helper;
+  handle = taskRunner.postCancellableTask(
+      BLINK_FROM_HERE, WTF::bind(&CancellationTestHelper::incrementCounter,
+                                 helper.createWeakPtr()));
+  EXPECT_EQ(0, helper.counter());
+
+  // The cancellation of the posted task should be propagated to TaskHandle.
+  queue = taskRunner.takePendingTasksForTesting();
+  ASSERT_EQ(1u, queue.size());
+  EXPECT_FALSE(queue[0].IsCancelled());
+  EXPECT_TRUE(handle.isActive());
+  helper.revokeWeakPtrs();
+  EXPECT_TRUE(queue[0].IsCancelled());
   EXPECT_FALSE(handle.isActive());
 }
 
