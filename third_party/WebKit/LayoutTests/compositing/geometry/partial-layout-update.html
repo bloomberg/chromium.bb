@@ -20,7 +20,7 @@
     height: 200px;
     z-index: 3;
     background-color: #bbb;
-    -webkit-transition: left 0.1s linear;
+    transition: left 0.1s linear;
   }
 
   .box {
@@ -47,7 +47,7 @@
     function startProgram()
     {
       var panel = document.getElementById("panel");
-      panel.addEventListener('webkitTransitionEnd', function() {
+      panel.addEventListener('transitionend', function() {
         if (window.testRunner)
           window.setTimeout(function() { testRunner.notifyDone(); }, 0);
       }, false);

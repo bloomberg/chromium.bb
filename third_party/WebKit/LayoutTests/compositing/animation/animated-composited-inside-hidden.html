@@ -17,10 +17,10 @@
     .inner {
       width: 80px;
       height: 80px;
-      -webkit-animation: spin 5s linear infinite;
+      animation: spin 5s linear infinite;
     }
 
-    @-webkit-keyframes spin {
+    @keyframes spin {
       0% { transform: rotate(0); }
       100% { transform: rotate(360deg); }
     }
@@ -29,7 +29,7 @@
       position: relative;
       left: 0;
       background-color: blue;
-      -webkit-transition: left 1s linear;
+      transition: left 1s linear;
     }
     
     #container.animating #transition-tester {

@@ -29,8 +29,8 @@
       }
       #container.over #translate {
         transform: translate(200px, 0px);
-        -webkit-transition-property: -webkit-transform;
-        -webkit-transition-duration: 0.1s;
+        transition-property: transform;
+        transition-duration: 0.1s;
       }
       #widen {
         top: 120px;
@@ -38,8 +38,8 @@
       }
       #container.over #widen {
         width: 400px;
-        -webkit-transition-property: width;
-        -webkit-transition-duration: 0.1s;
+        transition-property: width;
+        transition-duration: 0.1s;
       }
       
       #tester {
@@ -59,7 +59,7 @@
       function startTest()
       {
         var container = document.getElementById('container');
-        container.addEventListener('webkitTransitionEnd', function() {
+        container.addEventListener('transitionend', function() {
           container.className = '';
           if (window.testRunner)
             testRunner.notifyDone();

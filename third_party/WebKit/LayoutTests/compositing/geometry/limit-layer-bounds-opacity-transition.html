@@ -19,7 +19,7 @@
 
     #fading {
       opacity: 0;
-      -webkit-transition: opacity 0.1s;
+      transition: opacity 0.1s;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
@@ -33,7 +33,7 @@
       // At the end of this fade we are interested in the size of .test in the layer dump.
       // It should be constrained to the size of the view, so not tiled.
       var fader = document.getElementById('fading');
-      fader.addEventListener('webkitTransitionEnd', fadeDone, false);
+      fader.addEventListener('transitionend', fadeDone, false);
       document.getElementById('fading').style.opacity = 1;
     }
     

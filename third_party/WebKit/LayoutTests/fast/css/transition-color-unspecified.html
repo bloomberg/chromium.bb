@@ -1,5 +1,5 @@
 <style>
-    div#test { position: absolute; top: 0; left: 0; color: green; border: 50px solid; width: 0; -webkit-transition-duration: 1ms; }
+    div#test { position: absolute; top: 0; left: 0; color: green; border: 50px solid; width: 0; transition-duration: 1ms; }
     div#test.orange { border-color: orange; }
 </style>
 <div style="position: relative; background-color: red; width: 100px; height: 100px;">
@@ -12,7 +12,7 @@
     // Force a layout so that changing the classname below causes an animation.
     document.body.offsetHeight;
 
-    document.getElementById("test").addEventListener('webkitTransitionEnd', function() {
+    document.getElementById("test").addEventListener('transitionend', function() {
         if (window.testRunner)
             setTimeout("testRunner.notifyDone()", 0);
     }, false);
