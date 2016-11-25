@@ -18,7 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
@@ -86,9 +86,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     // Implementation of mojo interfaces.
     void StartWorker(
         const EmbeddedWorkerStartParams& params,
-        service_manager::mojom::InterfaceProviderPtr browser_interfaces,
-        service_manager::mojom::InterfaceProviderRequest renderer_request)
-        override;
+        mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) override;
     void StopWorker(const StopWorkerCallback& callback) override;
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
@@ -179,7 +177,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // interfaces the worker should expose to the browser.
   virtual void OnSetupMojo(
       int thread_id,
-      service_manager::InterfaceRegistry* interface_registry);
+      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request);
 
   // On*Event handlers. Called by the default implementation of
   // OnMessageToWorker when events are sent to the embedded
@@ -216,7 +214,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                 std::unique_ptr<service_manager::InterfaceProvider>>;
 
   class MockEmbeddedWorkerSetup;
-  class MockFetchEventDispatcher;
+  class MockServiceWorkerEventDispatcher;
 
   void OnStartWorkerStub(const EmbeddedWorkerStartParams& params);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
@@ -235,10 +233,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                         mojom::FetchEventPreloadHandlePtr preload_handle,
                         const FetchCallback& callback);
   void OnPushEventStub(int request_id, const PushEventPayload& payload);
-  void OnSetupMojoStub(
-      int thread_id,
-      service_manager::mojom::InterfaceProviderRequest services,
-      service_manager::mojom::InterfaceProviderPtr exposed_services);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 

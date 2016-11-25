@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
@@ -32,7 +33,7 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
-#include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -40,7 +41,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
-#include "content/renderer/background_sync/background_sync_client_impl.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
@@ -48,10 +48,6 @@
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -182,26 +178,22 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<blink::WebServiceWorkerClientCallbacks, IDMapOwnPointer>;
   using SkipWaitingCallbacksMap =
       IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>;
-  using SyncEventCallbacksMap =
-      IDMap<const base::Callback<void(blink::mojom::ServiceWorkerEventStatus,
-                                      base::Time /* dispatch_event_time */)>,
-            IDMapOwnPointer>;
-  using FetchEventCallbacksMap =
-      IDMap<const base::Callback<void(ServiceWorkerStatusCode,
-                                      base::Time /* dispatch_event_time */)>,
-            IDMapOwnPointer>;
+  using SyncEventCallbacksMap = IDMap<const SyncCallback, IDMapOwnPointer>;
+  using FetchEventCallbacksMap = IDMap<const FetchCallback, IDMapOwnPointer>;
   using NavigationPreloadRequestsMap =
       IDMap<ServiceWorkerContextClient::NavigationPreloadRequest,
             IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
-      : interface_registry(std::string()),
+      : event_dispatcher_binding(owner),
         weak_factory(owner),
         proxy_weak_factory(owner->proxy_) {}
 
   ~WorkerContextData() {
     DCHECK(thread_checker.CalledOnValidThread());
   }
+
+  mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
 
   // Pending callbacks for GetClientDocuments().
   ClientsCallbacksMap clients_callbacks;
@@ -223,11 +215,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending navigation preload requests.
   NavigationPreloadRequestsMap preload_requests;
-
-  service_manager::InterfaceRegistry interface_registry;
-  // This is not used when mojo for the service workers is enabled. At that
-  // time, remote interfaces are stored in EmbeddedWorkerInstanceClientImpl.
-  service_manager::InterfaceProvider remote_interfaces;
 
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
@@ -349,41 +336,6 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   bool result_reported_ = false;
 };
 
-class ServiceWorkerContextClient::FetchEventDispatcherImpl
-    : public NON_EXPORTED_BASE(mojom::FetchEventDispatcher) {
- public:
-  static void Create(mojom::FetchEventDispatcherRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<FetchEventDispatcherImpl>(),
-                            std::move(request));
-  }
-
-  FetchEventDispatcherImpl() {}
-
-  ~FetchEventDispatcherImpl() override {}
-
-  void DispatchFetchEvent(int fetch_event_id,
-                          const ServiceWorkerFetchRequest& request,
-                          mojom::FetchEventPreloadHandlePtr preload_handle,
-                          const DispatchFetchEventCallback& callback) override {
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client) {
-      callback.Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
-      return;
-    }
-    client->DispatchFetchEvent(
-        fetch_event_id, request,
-        preload_handle
-            ? base::MakeUnique<NavigationPreloadRequest>(
-                  fetch_event_id, request.url, std::move(preload_handle))
-            : nullptr,
-        callback);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FetchEventDispatcherImpl);
-};
-
 ServiceWorkerContextClient*
 ServiceWorkerContextClient::ThreadSpecificInstance() {
   return g_worker_client_tls.Pointer()->Get();
@@ -395,6 +347,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& service_worker_scope,
     const GURL& script_url,
     int worker_devtools_agent_route_id,
+    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
@@ -404,6 +357,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       proxy_(nullptr),
+      pending_dispatcher_request_(std::move(dispatcher_request)),
       embedded_worker_client_(std::move(embedded_worker_client)) {
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerContextClient::StartingWorkerContext",
@@ -414,6 +368,21 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       this,
       "PrepareWorker");
 }
+
+ServiceWorkerContextClient::ServiceWorkerContextClient(
+    int embedded_worker_id,
+    int64_t service_worker_version_id,
+    const GURL& service_worker_scope,
+    const GURL& script_url,
+    int worker_devtools_agent_route_id)
+    : ServiceWorkerContextClient::ServiceWorkerContextClient(
+          embedded_worker_id,
+          service_worker_version_id,
+          service_worker_scope,
+          script_url,
+          worker_devtools_agent_route_id,
+          mojom::ServiceWorkerEventDispatcherRequest(),
+          nullptr) {}
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
 
@@ -452,16 +421,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
-}
-
-void ServiceWorkerContextClient::BindInterfaceProviders(
-    service_manager::mojom::InterfaceProviderRequest request,
-    service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
-  context_->interface_registry.Bind(
-      std::move(request), service_manager::Identity(),
-      service_manager::InterfaceProviderSpec(), service_manager::Identity(),
-      service_manager::InterfaceProviderSpec());
-  context_->remote_interfaces.Bind(std::move(remote_interfaces));
 }
 
 blink::WebURL ServiceWorkerContextClient::scope() const {
@@ -559,16 +518,9 @@ void ServiceWorkerContextClient::workerContextStarted(
   DCHECK_NE(registration_info.registration_id,
             kInvalidServiceWorkerRegistrationId);
 
-  // Register Mojo interfaces.
-  context_->interface_registry.AddInterface(
-      base::Bind(&BackgroundSyncClientImpl::Create));
-  context_->interface_registry.AddInterface(
-      base::Bind(&FetchEventDispatcherImpl::Create));
-
   if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    DCHECK(embedded_worker_client_);
-    embedded_worker_client_->ExposeInterfacesToBrowser(
-        &context_->interface_registry);
+    DCHECK(pending_dispatcher_request_.is_pending());
+    BindEventDispatcher(std::move(pending_dispatcher_request_));
   }
 
   SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
@@ -615,8 +567,7 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   for (WorkerContextData::SyncEventCallbacksMap::iterator it(
            &context_->sync_event_callbacks);
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                              base::Time::Now());
+    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
   }
   // Aborts the all pending fetch event callbacks.
   for (WorkerContextData::FetchEventCallbacksMap::iterator it(
@@ -817,10 +768,10 @@ void ServiceWorkerContextClient::didHandleSyncEvent(
   if (!callback)
     return;
   if (result == blink::WebServiceWorkerEventResultCompleted) {
-    callback->Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+    callback->Run(SERVICE_WORKER_OK,
                   base::Time::FromDoubleT(event_dispatch_time));
   } else {
-    callback->Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
+    callback->Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
                   base::Time::FromDoubleT(event_dispatch_time));
   }
   context_->sync_event_callbacks.Remove(request_id);
@@ -933,17 +884,22 @@ void ServiceWorkerContextClient::registerForeignFetchScopes(
 
 void ServiceWorkerContextClient::DispatchSyncEvent(
     const std::string& tag,
-    blink::WebServiceWorkerContextProxy::LastChanceOption last_chance,
-    const SyncCallback& callback) {
+    blink::mojom::BackgroundSyncEventLastChance last_chance,
+    const DispatchSyncEventCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
   int request_id =
       context_->sync_event_callbacks.Add(new SyncCallback(callback));
 
+  // TODO(shimazu): Use typemap when this is moved to blink-side.
+  blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
+      mojo::ConvertTo<blink::WebServiceWorkerContextProxy::LastChanceOption>(
+          last_chance);
+
   // TODO(jkarlin): Make this blink::WebString::FromUTF8Lenient once
   // https://crrev.com/1768063002/ lands.
   proxy_->dispatchSyncEvent(request_id, blink::WebString::fromUTF8(tag),
-                            last_chance);
+                            web_last_chance);
 }
 
 void ServiceWorkerContextClient::Send(IPC::Message* message) {
@@ -1021,8 +977,13 @@ void ServiceWorkerContextClient::OnInstallEvent(int request_id) {
 void ServiceWorkerContextClient::DispatchFetchEvent(
     int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
-    std::unique_ptr<NavigationPreloadRequest> preload_request,
-    const FetchCallback& callback) {
+    mojom::FetchEventPreloadHandlePtr preload_handle,
+    const DispatchFetchEventCallback& callback) {
+  std::unique_ptr<NavigationPreloadRequest> preload_request =
+      preload_handle
+          ? base::MakeUnique<NavigationPreloadRequest>(
+                fetch_event_id, request.url, std::move(preload_handle))
+          : nullptr;
   const bool navigation_preload_sent = !!preload_request;
   blink::WebServiceWorkerRequest webRequest;
   TRACE_EVENT0("ServiceWorker",
@@ -1302,6 +1263,13 @@ void ServiceWorkerContextClient::OnNavigationPreloadError(
     int fetch_event_id,
     std::unique_ptr<blink::WebServiceWorkerError> error) {
   proxy_->onNavigationPreloadError(fetch_event_id, std::move(error));
+}
+
+void ServiceWorkerContextClient::BindEventDispatcher(
+    mojom::ServiceWorkerEventDispatcherRequest request) {
+  DCHECK(context_);
+  DCHECK(!context_->event_dispatcher_binding.is_bound());
+  context_->event_dispatcher_binding.Bind(std::move(request));
 }
 
 base::WeakPtr<ServiceWorkerContextClient>

@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/common/console_message_level.h"
 #include "url/gurl.h"
@@ -35,11 +36,6 @@
 
 namespace IPC {
 class Message;
-}
-
-namespace service_manager {
-class InterfaceProvider;
-class InterfaceRegistry;
 }
 
 namespace content {
@@ -113,6 +109,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // |params| should be populated with service worker version info needed
   // to start the worker.
   void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
+             mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
              const StatusCallback& callback);
 
   // Stops the worker. It is invalid to call this when the worker is
@@ -133,13 +130,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Resumes the worker if it paused after download.
   void ResumeAfterDownload();
-
-  // Returns the service_manager::InterfaceRegistry and
-  // service_manager::InterfaceProvider for this
-  // worker. It is invalid to call this when the worker is not in STARTING or
-  // RUNNING status.
-  service_manager::InterfaceRegistry* GetInterfaceRegistry();
-  service_manager::InterfaceProvider* GetRemoteInterfaces();
 
   int embedded_worker_id() const { return embedded_worker_id_; }
   EmbeddedWorkerStatus status() const { return status_; }
@@ -312,11 +302,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
   int thread_id_;
 
-  // These are connected to the renderer process after OnThreadStarted.
-  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
-  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   // |client_| is used to send messages to the renderer process.
   mojom::EmbeddedWorkerInstanceClientPtr client_;
+
+  // TODO(shimazu): Remove this after non-mojo StartWorker is removed.
+  mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;

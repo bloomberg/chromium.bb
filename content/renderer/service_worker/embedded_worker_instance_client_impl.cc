@@ -12,7 +12,6 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
 
@@ -24,15 +23,6 @@ void EmbeddedWorkerInstanceClientImpl::Create(
     mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request) {
   // This won't be leaked because the lifetime will be managed internally.
   new EmbeddedWorkerInstanceClientImpl(dispatcher, std::move(request));
-}
-
-void EmbeddedWorkerInstanceClientImpl::ExposeInterfacesToBrowser(
-    service_manager::InterfaceRegistry* interface_registry) {
-  DCHECK(renderer_request_.is_pending());
-  interface_registry->Bind(
-      std::move(renderer_request_), service_manager::Identity(),
-      service_manager::InterfaceProviderSpec(), service_manager::Identity(),
-      service_manager::InterfaceProviderSpec());
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted() {
@@ -49,23 +39,21 @@ void EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted() {
 
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
     const EmbeddedWorkerStartParams& params,
-    service_manager::mojom::InterfaceProviderPtr browser_interfaces,
-    service_manager::mojom::InterfaceProviderRequest renderer_request) {
+    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   embedded_worker_id_ = params.embedded_worker_id;
-  remote_interfaces_.Bind(std::move(browser_interfaces));
-  renderer_request_ = std::move(renderer_request);
 
   std::unique_ptr<EmbeddedWorkerDispatcher::WorkerWrapper> wrapper =
       dispatcher_->StartWorkerContext(
-          params, base::MakeUnique<ServiceWorkerContextClient>(
-                      params.embedded_worker_id,
-                      params.service_worker_version_id, params.scope,
-                      params.script_url, params.worker_devtools_agent_route_id,
-                      std::move(temporal_self_)));
+          params,
+          base::MakeUnique<ServiceWorkerContextClient>(
+              params.embedded_worker_id, params.service_worker_version_id,
+              params.scope, params.script_url,
+              params.worker_devtools_agent_route_id,
+              std::move(dispatcher_request), std::move(temporal_self_)));
   wrapper_ = wrapper.get();
   dispatcher_->RegisterWorker(params.embedded_worker_id, std::move(wrapper));
 }

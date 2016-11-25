@@ -408,32 +408,6 @@ class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTestP {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStallInStoppingTest);
 };
 
-class MessageReceiverMojoTestService : public MessageReceiver {
- public:
-  MessageReceiverMojoTestService() : MessageReceiver() {}
-  ~MessageReceiverMojoTestService() override {}
-
-  void OnSetupMojo(int thread_id,
-                   service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface(base::Bind(&TestServiceImpl::Create));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MessageReceiverMojoTestService);
-};
-
-class ServiceWorkerVersionWithMojoTest : public ServiceWorkerVersionTestP {
- protected:
-  ServiceWorkerVersionWithMojoTest() : ServiceWorkerVersionTestP() {}
-
-  std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::MakeUnique<MessageReceiverMojoTestService>();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionWithMojoTest);
-};
-
 TEST_P(ServiceWorkerVersionTestP, ConcurrentStartAndStop) {
   // Call StartWorker() multiple times.
   ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_FAILED;
@@ -1230,58 +1204,6 @@ TEST_P(ServiceWorkerVersionTestP, RendererCrashDuringEvent) {
                                        base::Time::Now()));
 }
 
-TEST_P(ServiceWorkerVersionWithMojoTest, MojoService) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
-
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->StartWorker(ServiceWorkerMetrics::EventType::SYNC,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-
-  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
-  int request_id = version_->StartRequest(
-      ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  base::WeakPtr<mojom::TestService> service =
-      version_->GetMojoServiceForRequest<mojom::TestService>(request_id);
-  service->DoSomething(runner->QuitClosure());
-  runner->Run();
-
-  // Mojo service does exist in worker, so error callback should not have been
-  // called and FinishRequest should return true.
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */,
-                                      base::Time::Now()));
-}
-
-TEST_P(ServiceWorkerVersionTestP, NonExistentMojoService) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
-
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->StartWorker(ServiceWorkerMetrics::EventType::SYNC,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-
-  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
-  int request_id = version_->StartRequest(
-      ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  base::WeakPtr<mojom::TestService> service =
-      version_->GetMojoServiceForRequest<mojom::TestService>(request_id);
-  service->DoSomething(runner->QuitClosure());
-  runner->Run();
-
-  // Mojo service doesn't exist in worker, so error callback should have been
-  // called and FinishRequest should return false.
-  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
-  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::Time::Now()));
-}
-
 TEST_P(ServiceWorkerVersionTestP, DispatchEvent) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
@@ -1797,8 +1719,4 @@ INSTANTIATE_TEST_CASE_P(ServiceWorkerNavigationHintUMATest,
 INSTANTIATE_TEST_CASE_P(ServiceWorkerStallInStoppingTest,
                         ServiceWorkerStallInStoppingTest,
                         testing::Bool());
-INSTANTIATE_TEST_CASE_P(ServiceWorkerVersionWithMojoTest,
-                        ServiceWorkerVersionWithMojoTest,
-                        testing::Bool());
-
 }  // namespace content

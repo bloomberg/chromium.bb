@@ -18,7 +18,7 @@
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -310,15 +310,12 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
       base::Bind(&ServiceWorkerFetchDispatcher::ResponseCallback::Run,
                  base::Owned(response_callback)));
 
-  base::WeakPtr<mojom::FetchEventDispatcher> dispatcher =
-      version_->GetMojoServiceForRequest<mojom::FetchEventDispatcher>(
-          event_finish_id);
-  // |dispatcher| is owned by |version_|. So it is safe to pass the unretained
-  // raw pointer of |version_| to OnFetchEventFinished callback.
+  // |event_dispatcher| is owned by |version_|. So it is safe to pass the
+  // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_factory_|, |url_Loader_| and |url_loader_client_| to the
   // callback to keep them alive while the FetchEvent is onging in the service
   // worker.
-  dispatcher->DispatchFetchEvent(
+  version_->event_dispatcher()->DispatchFetchEvent(
       fetch_event_id, *request_, std::move(preload_handle_),
       base::Bind(&OnFetchEventFinished, base::Unretained(version_.get()),
                  event_finish_id, base::Passed(std::move(url_loader_factory_)),

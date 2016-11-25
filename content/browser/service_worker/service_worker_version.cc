@@ -1478,8 +1478,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
 
-  std::unique_ptr<EmbeddedWorkerStartParams> params(
-      new EmbeddedWorkerStartParams());
+  auto params = base::MakeUnique<EmbeddedWorkerStartParams>();
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;
@@ -1487,7 +1486,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->pause_after_download = pause_after_download_;
 
   embedded_worker_->Start(
-      std::move(params),
+      std::move(params), mojo::GetProxy(&event_dispatcher_),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                  weak_factory_.GetWeakPtr()));
 }
@@ -1837,10 +1836,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   }
   pending_requests_.Clear();
   external_request_uuid_to_request_id_.clear();
-
-  // Close all mojo services. This will also fire and clear all callbacks
-  // for messages that are still outstanding for those services.
-  mojo_services_.clear();
+  event_dispatcher_.reset();
 
   // TODO(falken): Call SWURLRequestJob::ClearStream here?
   streaming_url_request_jobs_.clear();
@@ -1853,12 +1849,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
     for (auto& observer : listeners_)
       observer.OnNoWork(this);
   }
-}
-
-void ServiceWorkerVersion::OnMojoConnectionError(const char* service_name) {
-  // Simply deleting the service will cause error callbacks to be called from
-  // the destructor of the MojoServiceWrapper instance.
-  mojo_services_.erase(service_name);
 }
 
 void ServiceWorkerVersion::OnBeginEvent() {

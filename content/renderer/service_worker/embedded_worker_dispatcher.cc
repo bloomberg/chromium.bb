@@ -70,7 +70,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
       params, base::MakeUnique<ServiceWorkerContextClient>(
                   params.embedded_worker_id, params.service_worker_version_id,
                   params.scope, params.script_url,
-                  params.worker_devtools_agent_route_id, nullptr));
+                  params.worker_devtools_agent_route_id));
   RegisterWorker(params.embedded_worker_id, std::move(wrapper));
 }
 

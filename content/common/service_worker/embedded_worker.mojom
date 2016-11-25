@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/service_worker/service_worker_event_dispatcher.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "url/mojo/url.mojom";
 
@@ -13,7 +14,6 @@ struct EmbeddedWorkerStartParams;
 // Interface to control a renderer-side worker's environment.
 interface EmbeddedWorkerInstanceClient {
   StartWorker(EmbeddedWorkerStartParams params,
-              service_manager.mojom.InterfaceProvider browser_interfaces,
-              service_manager.mojom.InterfaceProvider& renderer_request);
+              ServiceWorkerEventDispatcher& dispatcher_request);
   StopWorker() => ();
 };

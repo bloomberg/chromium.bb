@@ -4,11 +4,10 @@
 
 module content.mojom;
 
+import "content/common/service_worker/service_worker_event_dispatcher.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 
 interface EmbeddedWorkerSetup {
-  ExchangeInterfaceProviders(
-      int32 thread_id,
-      service_manager.mojom.InterfaceProvider& remote_interfaces,
-      service_manager.mojom.InterfaceProvider local_interfaces);
+  AttachServiceWorkerEventDispatcher(
+      int32 thread_id, ServiceWorkerEventDispatcher& request);
 };

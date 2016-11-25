@@ -34,6 +34,7 @@
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
 #include "content/common/origin_trials/trial_token_validator.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
@@ -267,15 +268,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // was not found or the worker already terminated.
   bool FinishExternalRequest(const std::string& request_uuid);
 
-  // Connects to a specific mojo service exposed by the (running) service
-  // worker. If a connection to a service for the same Interface already exists
-  // this will return that existing connection. The |request_id| must be a value
-  // previously returned by StartRequest. If the connection to the service
-  // fails or closes before the request finished, the error callback associated
-  // with |request_id| is called.
-  // Only call GetMojoServiceForRequest once for a specific |request_id|.
-  template <typename Interface>
-  base::WeakPtr<Interface> GetMojoServiceForRequest(int request_id);
+  // This must be called when the worker is running.
+  mojom::ServiceWorkerEventDispatcher* event_dispatcher() {
+    DCHECK(event_dispatcher_.is_bound());
+    return event_dispatcher_.get();
+  }
 
   // Dispatches an event. If dispatching the event fails, all of the error
   // callbacks that were associated with |request_ids| via StartRequest are
@@ -755,13 +752,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   using RequestUUIDToRequestIDMap = std::map<std::string, int>;
   RequestUUIDToRequestIDMap external_request_uuid_to_request_id_;
 
-  // Stores all open connections to mojo services. Maps the service name to
-  // the actual interface pointer. When a connection is closed it is removed
-  // from this map.
-  // mojo_services_[Interface::Name_] is assumed to always contain a
-  // MojoServiceWrapper<Interface> instance.
-  base::ScopedPtrHashMap<const char*, std::unique_ptr<BaseMojoServiceWrapper>>
-      mojo_services_;
+  // Connected to ServiceWorkerContextClient while the worker is running.
+  mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 
@@ -823,31 +815,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
-
-template <typename Interface>
-base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
-    int request_id) {
-  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
-  PendingRequest* request = pending_requests_.Lookup(request_id);
-  DCHECK(request) << "Invalid request id";
-  DCHECK(!request->mojo_service)
-      << "Request is already associated with a mojo service";
-
-  MojoServiceWrapper<Interface>* service =
-      static_cast<MojoServiceWrapper<Interface>*>(
-          mojo_services_.get(Interface::Name_));
-  if (!service) {
-    mojo::InterfacePtr<Interface> interface_ptr;
-    embedded_worker_->GetRemoteInterfaces()->GetInterface(&interface_ptr);
-    interface_ptr.set_connection_error_handler(
-        base::Bind(&ServiceWorkerVersion::OnMojoConnectionError,
-                   weak_factory_.GetWeakPtr(), Interface::Name_));
-    service = new MojoServiceWrapper<Interface>(this, std::move(interface_ptr));
-    mojo_services_.add(Interface::Name_, base::WrapUnique(service));
-  }
-  request->mojo_service = Interface::Name_;
-  return service->GetWeakPtr();
-}
 
 template <typename ResponseMessage>
 void ServiceWorkerVersion::DispatchSimpleEvent(int request_id,

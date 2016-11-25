@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_START_PARAMS_H_
+#define CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_START_PARAMS_H_
+
 #include "content/common/content_export.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "url/gurl.h"
-
-#ifndef CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_START_PARAMS_H_
-#define CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_START_PARAMS_H_
 
 namespace content {
 

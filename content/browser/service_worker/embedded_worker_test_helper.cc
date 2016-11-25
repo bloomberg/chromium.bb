@@ -22,8 +22,9 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
-#include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -70,14 +71,12 @@ class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
                             std::move(request));
   }
 
-  void ExchangeInterfaceProviders(
+  void AttachServiceWorkerEventDispatcher(
       int32_t thread_id,
-      service_manager::mojom::InterfaceProviderRequest request,
-      service_manager::mojom::InterfaceProviderPtr remote_interfaces) override {
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     if (!helper_)
       return;
-    helper_->OnSetupMojoStub(thread_id, std::move(request),
-                             std::move(remote_interfaces));
+    helper_->OnSetupMojo(thread_id, std::move(request));
   }
 
  private:
@@ -94,8 +93,7 @@ EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
     const EmbeddedWorkerStartParams& params,
-    service_manager::mojom::InterfaceProviderPtr browser_interfaces,
-    service_manager::mojom::InterfaceProviderRequest renderer_request) {
+    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) {
   if (!helper_)
     return;
 
@@ -112,10 +110,9 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
                  params.embedded_worker_id, params.service_worker_version_id,
                  params.scope, params.script_url, params.pause_after_download));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnSetupMojoStub,
-                            helper_->AsWeakPtr(), worker->thread_id(),
-                            base::Passed(&renderer_request),
-                            base::Passed(&browser_interfaces)));
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnSetupMojo, helper_->AsWeakPtr(),
+                 worker->thread_id(), base::Passed(&dispatcher_request)));
 }
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker(
@@ -154,23 +151,23 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
     client->binding_.Bind(std::move(request));
 }
 
-class EmbeddedWorkerTestHelper::MockFetchEventDispatcher
-    : public NON_EXPORTED_BASE(mojom::FetchEventDispatcher) {
+class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
+    : public NON_EXPORTED_BASE(mojom::ServiceWorkerEventDispatcher) {
  public:
   static void Create(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
                      int thread_id,
-                     mojom::FetchEventDispatcherRequest request) {
+                     mojom::ServiceWorkerEventDispatcherRequest request) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<MockFetchEventDispatcher>(helper, thread_id),
+        base::MakeUnique<MockServiceWorkerEventDispatcher>(helper, thread_id),
         std::move(request));
   }
 
-  MockFetchEventDispatcher(
+  MockServiceWorkerEventDispatcher(
       const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
       int thread_id)
       : helper_(helper), thread_id_(thread_id) {}
 
-  ~MockFetchEventDispatcher() override {}
+  ~MockServiceWorkerEventDispatcher() override {}
 
   void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
@@ -180,6 +177,13 @@ class EmbeddedWorkerTestHelper::MockFetchEventDispatcher
       return;
     helper_->OnFetchEventStub(thread_id_, fetch_event_id, request,
                               std::move(preload_handle), callback);
+  }
+
+  void DispatchSyncEvent(
+      const std::string& tag,
+      blink::mojom::BackgroundSyncEventLastChance last_chance,
+      const DispatchSyncEventCallback& callback) override {
+    NOTIMPLEMENTED();
   }
 
  private:
@@ -313,10 +317,9 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
 
 void EmbeddedWorkerTestHelper::OnSetupMojo(
     int thread_id,
-    service_manager::InterfaceRegistry* interface_registry) {
-  interface_registry->AddInterface(base::Bind(&MockFetchEventDispatcher::Create,
-                                              weak_factory_.GetWeakPtr(),
-                                              thread_id));
+    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) {
+  MockServiceWorkerEventDispatcher::Create(AsWeakPtr(), thread_id,
+                                           std::move(dispatcher_request));
 }
 
 void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
@@ -524,26 +527,6 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
                             current_embedded_worker_id_, request_id, payload));
-}
-
-void EmbeddedWorkerTestHelper::OnSetupMojoStub(
-    int thread_id,
-    service_manager::mojom::InterfaceProviderRequest request,
-    service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
-  auto local =
-      base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
-  local->Bind(std::move(request), service_manager::Identity(),
-              service_manager::InterfaceProviderSpec(),
-              service_manager::Identity(),
-              service_manager::InterfaceProviderSpec());
-
-  std::unique_ptr<service_manager::InterfaceProvider> remote(
-      new service_manager::InterfaceProvider);
-  remote->Bind(std::move(remote_interfaces));
-
-  OnSetupMojo(thread_id, local.get());
-  InterfaceRegistryAndProvider pair(std::move(local), std::move(remote));
-  thread_id_service_registry_map_[thread_id] = std::move(pair);
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

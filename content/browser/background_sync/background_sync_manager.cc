@@ -22,7 +22,9 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_type_converters.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -148,15 +150,13 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
                          int request_id,
                          const ServiceWorkerVersion::StatusCallback& callback,
-                         blink::mojom::ServiceWorkerEventStatus status,
+                         ServiceWorkerStatusCode status,
                          base::Time dispatch_event_time) {
-  if (!active_version->FinishRequest(
-          request_id,
-          status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-          dispatch_event_time)) {
+  if (!active_version->FinishRequest(request_id, status == SERVICE_WORKER_OK,
+                                     dispatch_event_time)) {
     return;
   }
-  callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
+  callback.Run(status);
 }
 
 }  // namespace
@@ -766,14 +766,11 @@ void BackgroundSyncManager::DispatchSyncEvent(
       ServiceWorkerMetrics::EventType::SYNC, callback,
       parameters_->max_sync_event_duration,
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
-  base::WeakPtr<blink::mojom::BackgroundSyncServiceClient> client =
-      active_version
-          ->GetMojoServiceForRequest<blink::mojom::BackgroundSyncServiceClient>(
-              request_id);
 
-  client->Sync(tag, last_chance,
-               base::Bind(&OnSyncEventFinished, std::move(active_version),
-                          request_id, callback));
+  active_version->event_dispatcher()->DispatchSyncEvent(
+      tag, last_chance,
+      base::Bind(&OnSyncEventFinished, std::move(active_version), request_id,
+                 callback));
 }
 
 void BackgroundSyncManager::ScheduleDelayedTask(const base::Closure& callback,

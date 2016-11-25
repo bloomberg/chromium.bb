@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/url_loader.mojom";
 import "mojo/common/common_custom_types.mojom";
+import "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
 
 [Native]
@@ -16,9 +17,19 @@ struct FetchEventPreloadHandle {
   URLLoaderClient& url_loader_client_request;
 };
 
-interface FetchEventDispatcher {
+// Renderer-side interface bound to ServiceWorkerContextClient for dispatching
+// events.
+interface ServiceWorkerEventDispatcher {
+  // |fetch_event_id| is used internally when sending the response back to the
+  // browser process.
   DispatchFetchEvent(int32 fetch_event_id, ServiceWorkerFetchRequest request,
                      FetchEventPreloadHandle? preload_handle)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  // Arguments are passed to the event handler as parameters of SyncEvent.
+  // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
+  DispatchSyncEvent(string tag,
+                    blink.mojom.BackgroundSyncEventLastChance last_chance)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
 };

@@ -20,10 +20,11 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
@@ -63,11 +64,11 @@ class EmbeddedWorkerInstanceClientImpl;
 
 // This class provides access to/from an ServiceWorker's WorkerGlobalScope.
 // Unless otherwise noted, all methods are called on the worker thread.
-class ServiceWorkerContextClient
-    : public blink::WebServiceWorkerContextClient {
+class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
+                                   public mojom::ServiceWorkerEventDispatcher {
  public:
   using SyncCallback =
-      base::Callback<void(blink::mojom::ServiceWorkerEventStatus,
+      base::Callback<void(ServiceWorkerStatusCode,
                           base::Time /* dispatch_event_time */)>;
   using FetchCallback =
       base::Callback<void(ServiceWorkerStatusCode,
@@ -84,17 +85,21 @@ class ServiceWorkerContextClient
       const GURL& service_worker_scope,
       const GURL& script_url,
       int worker_devtools_agent_route_id,
+      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
+  ServiceWorkerContextClient(int embedded_worker_id,
+                             int64_t service_worker_version_id,
+                             const GURL& service_worker_scope,
+                             const GURL& script_url,
+                             int worker_devtools_agent_route_id);
   ~ServiceWorkerContextClient() override;
 
   void OnMessageReceived(int thread_id,
                          int embedded_worker_id,
                          const IPC::Message& message);
 
-  // Called some time after the worker has started.
-  void BindInterfaceProviders(
-      service_manager::mojom::InterfaceProviderRequest request,
-      service_manager::mojom::InterfaceProviderPtr remote_interfaces);
+  // Called after the worker has started.
+  void BindEventDispatcher(mojom::ServiceWorkerEventDispatcherRequest request);
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;
@@ -194,14 +199,8 @@ class ServiceWorkerContextClient
       const blink::WebVector<blink::WebURL>& sub_scopes,
       const blink::WebVector<blink::WebSecurityOrigin>& origins) override;
 
-  virtual void DispatchSyncEvent(
-      const std::string& tag,
-      blink::WebServiceWorkerContextProxy::LastChanceOption last_chance,
-      const SyncCallback& callback);
-
  private:
   struct WorkerContextData;
-  class FetchEventDispatcherImpl;
   class NavigationPreloadRequest;
 
   // Get routing_id for sending message to the ServiceWorkerVersion
@@ -214,16 +213,21 @@ class ServiceWorkerContextClient
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
 
+  // mojom::ServiceWorkerEventDispatcher
+  void DispatchFetchEvent(int fetch_event_id,
+                          const ServiceWorkerFetchRequest& request,
+                          mojom::FetchEventPreloadHandlePtr preload_handle,
+                          const DispatchFetchEventCallback& callback) override;
+  void DispatchSyncEvent(
+      const std::string& tag,
+      blink::mojom::BackgroundSyncEventLastChance last_chance,
+      const DispatchSyncEventCallback& callback) override;
+
   void OnActivateEvent(int request_id);
   void OnExtendableMessageEvent(
       int request_id,
       const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEvent(int request_id);
-  void DispatchFetchEvent(
-      int fetch_event_id,
-      const ServiceWorkerFetchRequest& request,
-      std::unique_ptr<NavigationPreloadRequest> preload_request,
-      const FetchCallback& callback);
   void OnNotificationClickEvent(
       int request_id,
       const std::string& notification_id,
@@ -277,6 +281,9 @@ class ServiceWorkerContextClient
 
   // Not owned; this object is destroyed when proxy_ becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;
+
+  // This is bound on the worker thread.
+  mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
 
   // Renderer-side object corresponding to WebEmbeddedWorkerInstance
   std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client_;
