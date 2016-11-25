@@ -248,9 +248,6 @@ const char kEnableMdOobe[] = "enable-md-oobe";
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
-// Enables storage manager in MD Settings.
-const char kEnableMdStorageManager[] = "enable-md-storage-manager";
-
 // Enables suggestions while typing on a physical keyboard.
 const char kEnablePhysicalKeyboardAutocorrect[] =
     "enable-physical-keyboard-autocorrect";

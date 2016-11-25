@@ -1163,9 +1163,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-fullscreen-app-list", IDS_FLAGS_FULLSCREEN_APP_LIST_NAME,
      IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableFullscreenAppList)},
-    {"enable-md-storage-manager", IDS_FLAGS_MD_STORAGE_MANAGER_NAME,
-     IDS_FLAGS_MD_STORAGE_MANAGER_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableMdStorageManager)},
 #endif  // OS_CHROMEOS
     {"enable-simple-cache-backend", IDS_FLAGS_SIMPLE_CACHE_BACKEND_NAME,
      IDS_FLAGS_SIMPLE_CACHE_BACKEND_DESCRIPTION,

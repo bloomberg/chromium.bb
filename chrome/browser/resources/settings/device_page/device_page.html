@@ -51,14 +51,12 @@
           <div class="middle">$i18n{displayTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
-        <template is="dom-if" if="[[showStorageManager_]]">
-          <div id="storageRow" class="settings-box" on-tap="onStorageTap_"
-              actionable>
-            <iron-icon icon="settings:storage"></iron-icon>
-            <div class="middle">$i18n{storageTitle}</div>
-            <button class="subpage-arrow" is="paper-icon-button-light"></button>
-          </div>
-        </template>
+        <div id="storageRow" class="settings-box" on-tap="onStorageTap_"
+            actionable>
+          <iron-icon icon="settings:storage"></iron-icon>
+          <div class="middle">$i18n{storageTitle}</div>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        </div>
       </neon-animatable>
       <template is="dom-if" route-path="/pointer-overlay">
         <settings-subpage
@@ -92,14 +90,12 @@
           <settings-display></settings-display>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[showStorageManager_]]">
-        <template is="dom-if" route-path="/storage">
-          <settings-subpage
-              associated-control="[[$$('#storageRow')]]"
-              page-title="$i18n{storageTitle}">
-            <settings-storage></settings-storage>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/storage">
+        <settings-subpage
+            associated-control="[[$$('#storageRow')]]"
+            page-title="$i18n{storageTitle}">
+          <settings-storage></settings-storage>
+        </settings-subpage>
       </template>
     </settings-animated-pages>
   </template>

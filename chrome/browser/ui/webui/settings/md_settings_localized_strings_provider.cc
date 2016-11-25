@@ -625,10 +625,6 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddString("naturalScrollLearnMoreLink",
                          base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL));
-
-  html_source->AddBoolean("showStorageManager",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              chromeos::switches::kEnableMdStorageManager));
 }
 #endif
 

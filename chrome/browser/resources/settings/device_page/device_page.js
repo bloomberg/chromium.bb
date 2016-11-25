@@ -42,15 +42,6 @@ Polymer({
       },
       readOnly: true,
     },
-
-    /** @private */
-    showStorageManager_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showStorageManager');
-      },
-      readOnly: true,
-    },
   },
 
   observers: [
