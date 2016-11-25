@@ -44,16 +44,15 @@ const bool kUseSharedMemoryForFieldTrials = true;
 const char kAllocatorName[] = "FieldTrialAllocator";
 const uint32_t kFieldTrialType = 0xABA17E13 + 2;  // SHA1(FieldTrialEntry) v2
 
-// We allocate 64 KiB to hold all the field trial data. This should be enough,
-// as currently we use ~8KiB for the field trials, and ~10KiB for experiment
-// parameters (as of 9/11/2016). This also doesn't allocate all 64 KiB at once
-// -- the pages only get mapped to physical memory when they are touched. If the
-// size of the allocated field trials does get larger than 64 KiB, then we will
-// drop some field trials in child processes, leading to an inconsistent view
-// between browser and child processes and possibly causing crashes (see
-// crbug.com/661617).
+// We allocate 128 KiB to hold all the field trial data. This should be enough,
+// as most people use 3 - 25 KiB for field trials (as of 11/25/2016).
+// This also doesn't allocate all 128 KiB at once -- the pages only get mapped
+// to physical memory when they are touched. If the size of the allocated field
+// trials does get larger than 128 KiB, then we will drop some field trials in
+// child processes, leading to an inconsistent view between browser and child
+// processes and possibly causing crashes (see crbug.com/661617).
 #if !defined(OS_NACL)
-const size_t kFieldTrialAllocationSize = 64 << 10;  // 64 KiB
+const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
 #endif
 
 // We create one FieldTrialEntry per field trial in shared memory, via
