@@ -9,7 +9,6 @@ noinst_DATA = \
 dist_noinst_DATA = wayland.doxygen.in
 
 scanned_src_files_shared = 				\
-	$(top_srcdir)/src/wayland-util.c	\
 	$(top_srcdir)/src/wayland-util.h
 
 scanned_src_files_Client = 				\
