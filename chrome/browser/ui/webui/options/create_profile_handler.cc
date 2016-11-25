@@ -218,7 +218,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(bool create_shortcut,
   if (should_open_new_window) {
     // Opening the new window must be the last action, after all callbacks
     // have been run, to give them a chance to initialize the profile.
-    webui::OpenNewWindowForProfile(profile, Profile::CREATE_STATUS_INITIALIZED);
+    webui::OpenNewWindowForProfile(profile);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }

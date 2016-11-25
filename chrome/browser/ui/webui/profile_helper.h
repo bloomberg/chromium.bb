@@ -15,7 +15,7 @@ class WebUI;
 
 namespace webui {
 
-void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status);
+void OpenNewWindowForProfile(Profile* profile);
 
 // Deletes the profile at the given |file_path|.
 void DeleteProfileAtPath(base::FilePath file_path,

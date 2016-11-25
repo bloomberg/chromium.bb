@@ -41,6 +41,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "PANEL";
     case KeepAliveOrigin::PANEL_VIEW:
       return out << "PANEL_VIEW";
+    case KeepAliveOrigin::PROFILE_HELPER:
+      return out << "PROFILE_HELPER";
     case KeepAliveOrigin::PROFILE_LOADER:
       return out << "PROFILE_LOADER";
     case KeepAliveOrigin::USER_MANAGER_VIEW:
