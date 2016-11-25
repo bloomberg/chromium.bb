@@ -109,7 +109,7 @@ AV1_CX_SRCS-yes += encoder/clpf_rdo.h
 AV1_CX_SRCS-yes += encoder/clpf_rdo_simd.h
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/clpf_rdo_sse2.c
 AV1_CX_SRCS-$(HAVE_SSSE3) += encoder/clpf_rdo_ssse3.c
-AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/clpf_rdo_sse4_1.c
+AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/clpf_rdo_sse4.c
 AV1_CX_SRCS-$(HAVE_NEON) += encoder/clpf_rdo_neon.c
 endif
 ifeq ($(CONFIG_PVQ),yes)
