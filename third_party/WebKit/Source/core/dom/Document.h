@@ -766,7 +766,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void didInsertText(Node*, unsigned offset, unsigned length);
   void didRemoveText(Node*, unsigned offset, unsigned length);
   void didMergeTextNodes(Text& oldNode, unsigned offset);
-  void didSplitTextNode(Text& oldNode);
+  void didSplitTextNode(const Text& oldNode);
 
   void clearDOMWindow() { m_domWindow = nullptr; }
   LocalDOMWindow* domWindow() const { return m_domWindow; }

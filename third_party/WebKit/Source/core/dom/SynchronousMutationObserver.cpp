@@ -12,7 +12,7 @@ namespace blink {
 SynchronousMutationObserver::SynchronousMutationObserver()
     : LifecycleObserver(nullptr) {}
 
-void SynchronousMutationObserver::didSplitTextNode(Text&) {}
+void SynchronousMutationObserver::didSplitTextNode(const Text&) {}
 void SynchronousMutationObserver::didUpdateCharacterData(CharacterData*,
                                                          unsigned,
                                                          unsigned,

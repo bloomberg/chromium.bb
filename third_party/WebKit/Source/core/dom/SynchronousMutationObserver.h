@@ -42,7 +42,7 @@ class CORE_EXPORT SynchronousMutationObserver
 
   // Called when |Text| node is split, next sibling |oldNode| contains
   // characters after split point.
-  virtual void didSplitTextNode(Text& oldNode);
+  virtual void didSplitTextNode(const Text& oldNode);
 
   // Called when |CharacterData| is updated at |offset|, |oldLength| is a
   // number of deleted character and |newLength| is a number of added

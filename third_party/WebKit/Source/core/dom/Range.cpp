@@ -1569,7 +1569,7 @@ void Range::updateOwnerDocumentIfNeeded() {
 }
 
 static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary,
-                                         Text& oldNode) {
+                                         const Text& oldNode) {
   Node* boundaryContainer = boundary.container();
   unsigned boundaryOffset = boundary.offset();
   if (boundary.childBefore() == &oldNode)
@@ -1579,7 +1579,7 @@ static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary,
     boundary.set(oldNode.nextSibling(), boundaryOffset - oldNode.length(), 0);
 }
 
-void Range::didSplitTextNode(Text& oldNode) {
+void Range::didSplitTextNode(const Text& oldNode) {
   DCHECK_EQ(oldNode.document(), m_ownerDocument);
   DCHECK(oldNode.parentNode());
   DCHECK(oldNode.nextSibling());

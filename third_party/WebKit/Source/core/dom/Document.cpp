@@ -4236,7 +4236,7 @@ void Document::didMergeTextNodes(Text& oldNode, unsigned offset) {
   // FIXME: This should update markers for spelling and grammar checking.
 }
 
-void Document::didSplitTextNode(Text& oldNode) {
+void Document::didSplitTextNode(const Text& oldNode) {
   for (Range* range : m_ranges)
     range->didSplitTextNode(oldNode);
 

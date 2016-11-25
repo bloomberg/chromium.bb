@@ -11,7 +11,7 @@ namespace blink {
 
 SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
-void SynchronousMutationNotifier::notifySplitTextNode(Text& node) {
+void SynchronousMutationNotifier::notifySplitTextNode(const Text& node) {
   for (SynchronousMutationObserver* observer : m_observers)
     observer->didSplitTextNode(node);
 }

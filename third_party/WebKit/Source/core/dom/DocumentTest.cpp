@@ -112,7 +112,7 @@ class TestSynchronousMutationObserver
     return m_removedNodes;
   }
 
-  const HeapVector<Member<Text>>& splitTextNodes() const {
+  const HeapVector<Member<const Text>>& splitTextNodes() const {
     return m_splitTextNodes;
   }
 
@@ -126,7 +126,7 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
-  void didSplitTextNode(Text&) final;
+  void didSplitTextNode(const Text&) final;
   void didUpdateCharacterData(CharacterData*,
                               unsigned offset,
                               unsigned oldLength,
@@ -137,7 +137,7 @@ class TestSynchronousMutationObserver
   int m_contextDestroyedCalledCounter = 0;
   HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
   HeapVector<Member<Node>> m_removedNodes;
-  HeapVector<Member<Text>> m_splitTextNodes;
+  HeapVector<Member<const Text>> m_splitTextNodes;
   HeapVector<Member<UpdateCharacterDataRecord>> m_updatedCharacterDataRecords;
 
   DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
@@ -152,7 +152,7 @@ void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
 }
 
-void TestSynchronousMutationObserver::didSplitTextNode(Text& node) {
+void TestSynchronousMutationObserver::didSplitTextNode(const Text& node) {
   m_splitTextNodes.append(&node);
 }
 

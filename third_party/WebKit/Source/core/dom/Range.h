@@ -155,7 +155,7 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   void didInsertText(Node*, unsigned offset, unsigned length);
   void didRemoveText(Node*, unsigned offset, unsigned length);
   void didMergeTextNodes(const NodeWithIndex& oldNode, unsigned offset);
-  void didSplitTextNode(Text& oldNode);
+  void didSplitTextNode(const Text& oldNode);
   void updateOwnerDocumentIfNeeded();
 
   // Expand range to a unit (word or sentence or block or document) boundary.
