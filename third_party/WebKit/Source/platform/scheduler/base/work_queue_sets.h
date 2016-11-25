@@ -49,6 +49,9 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   // Assumes |work_queue| contains the lowest enqueue order in the set.
   void OnPopQueue(WorkQueue* work_queue);
 
+  // O(log num queues)
+  void OnQueueBlocked(WorkQueue* work_queue);
+
   // O(1)
   bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;
 

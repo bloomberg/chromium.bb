@@ -172,12 +172,18 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Returns the queue's current TimeDomain.  Can be called from any thread.
   virtual TimeDomain* GetTimeDomain() const = 0;
 
-  // Inserts a barrier into the task queue which inhibits non-delayed tasks
-  // posted after this point, or delayed tasks which are not yet ready to run,
-  // from being executed until the fence is cleared.  If a fence already existed
-  // the one supersedes it and previously blocked tasks will now run up until
-  // the new fence is hit.
-  virtual void InsertFence() = 0;
+  enum class InsertFencePosition {
+    NOW,  // Tasks posted on the queue up till this point further may run.
+          // All further tasks are blocked.
+    BEGINNING_OF_TIME,  // No tasks posted on this queue may run.
+  };
+
+  // Inserts a barrier into the task queue which prevents tasks with an enqueue
+  // order greater than the fence from running until either the fence has been
+  // removed or a subsequent fence has unblocked some tasks within the queue.
+  // Note: delayed tasks get their enqueue order set once their delay has
+  // expired, and non-delayed tasks get their enqueue order set when posted.
+  virtual void InsertFence(InsertFencePosition position) = 0;
 
   // Removes any previously added fence and unblocks execution of any tasks
   // blocked by it.

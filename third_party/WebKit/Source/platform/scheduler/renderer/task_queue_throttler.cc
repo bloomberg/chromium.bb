@@ -99,7 +99,7 @@ void TaskQueueThrottler::TimeBudgetPool::AddQueue(base::TimeTicks now,
                                                   TaskQueue* queue) {
   std::pair<TaskQueueMap::iterator, bool> insert_result =
       task_queue_throttler_->queue_details_.insert(
-          std::make_pair(queue, Metadata(0, queue->IsQueueEnabled())));
+          std::make_pair(queue, Metadata()));
   Metadata& metadata = insert_result.first->second;
   DCHECK(!metadata.time_budget_pool);
   metadata.time_budget_pool = this;
@@ -109,7 +109,7 @@ void TaskQueueThrottler::TimeBudgetPool::AddQueue(base::TimeTicks now,
   if (!is_enabled_ || !task_queue_throttler_->IsThrottled(queue))
     return;
 
-  queue->SetQueueEnabled(false);
+  queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
 
   task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, now, queue,
                                                 GetNextAllowedRunTime());
@@ -261,7 +261,7 @@ void TaskQueueThrottler::TimeBudgetPool::BlockThrottledQueues(
     if (!task_queue_throttler_->IsThrottled(queue))
       continue;
 
-    queue->SetQueueEnabled(false);
+    queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
     task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, now, queue,
                                                   base::nullopt);
   }
@@ -280,8 +280,6 @@ void TaskQueueThrottler::TimeBudgetPool::EnforceBudgetLevelRestrictions() {
   }
 }
 
-// TODO(altimin): Control max_budget_level and max_throttling_duration
-// from Finch.
 TaskQueueThrottler::TaskQueueThrottler(
     RendererSchedulerImpl* renderer_scheduler,
     const char* tracing_category)
@@ -315,91 +313,55 @@ TaskQueueThrottler::~TaskQueueThrottler() {
   renderer_scheduler_->UnregisterTimeDomain(time_domain_.get());
 }
 
-void TaskQueueThrottler::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
-  // Both the TaskQueueThrottler and other systems want to enable and disable
-  // task queues. The policy we've adopted to deal with this is:
-  //
-  // A task queue is disabled if either the TaskQueueThrottler or the caller
-  // vote to disable it.
-  //
-  // A task queue is enabled only if both the TaskQueueThrottler and the caller
-  // vote to enable it.
-  TaskQueueMap::iterator find_it = queue_details_.find(task_queue);
-
-  // If TaskQueueThrottler does not know about this queue, just call
-  // SetQueueEnabled directly.
-  if (find_it == queue_details_.end()) {
-    task_queue->SetQueueEnabled(enabled);
-    return;
-  }
-
-  // Remember the caller's preference so we know what to do when the task queue
-  // isn't throttled, or has budget to run.
-  find_it->second.enabled = enabled;
-
-  if (!IsThrottled(task_queue)) {
-    task_queue->SetQueueEnabled(enabled);
-    return;
-  }
-
-  if (enabled) {
-    // If the task queue is throttled and we want to enable it, we can't
-    // do it immediately due to task alignment requirement and we should
-    // schedule a call to PumpThrottledTasks.
-    MaybeSchedulePumpQueue(FROM_HERE, tick_clock_->NowTicks(), task_queue,
-                           base::nullopt);
-  } else {
-    task_queue->SetQueueEnabled(false);
-  }
-}
-
 void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   DCHECK_NE(task_queue, task_runner_.get());
 
-  std::pair<TaskQueueMap::iterator, bool> insert_result = queue_details_.insert(
-      std::make_pair(task_queue, Metadata(0 /* ref_count */,
-                                          task_queue->IsQueueEnabled())));
-
-  if (insert_result.first->second.throttling_ref_count == 0) {
-    if (allow_throttling_) {
-      task_queue->SetTimeDomain(time_domain_.get());
-      task_queue->RemoveFence();
-      task_queue->SetQueueEnabled(false);
-
-      if (!task_queue->IsEmpty()) {
-        if (task_queue->HasPendingImmediateWork()) {
-          OnTimeDomainHasImmediateWork(task_queue);
-        } else {
-          OnTimeDomainHasDelayedWork(task_queue);
-        }
-      }
-    }
-
-    TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueThrottled",
-                 "task_queue", task_queue);
-  }
-
+  std::pair<TaskQueueMap::iterator, bool> insert_result =
+      queue_details_.insert(std::make_pair(task_queue, Metadata()));
   insert_result.first->second.throttling_ref_count++;
+
+  // If ref_count is 1, the task queue is newly throttled.
+  if (insert_result.first->second.throttling_ref_count != 1)
+    return;
+
+  TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueThrottled",
+               "task_queue", task_queue);
+
+  if (!allow_throttling_)
+    return;
+
+  task_queue->SetTimeDomain(time_domain_.get());
+  // This blocks any tasks from |task_queue| until PumpThrottledTasks() to
+  // enforce task alignment.
+  task_queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+
+  if (!task_queue->IsEmpty()) {
+    if (task_queue->HasPendingImmediateWork()) {
+      OnTimeDomainHasImmediateWork(task_queue);
+    } else {
+      OnTimeDomainHasDelayedWork(task_queue);
+    }
+  }
 }
 
 void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
   TaskQueueMap::iterator iter = queue_details_.find(task_queue);
 
-  if (iter != queue_details_.end() &&
-      --iter->second.throttling_ref_count == 0) {
-    bool enabled = iter->second.enabled;
-
-    MaybeDeleteQueueMetadata(iter);
-
-    if (allow_throttling_) {
-      task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
-      task_queue->RemoveFence();
-      task_queue->SetQueueEnabled(enabled);
-    }
-
-    TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUnthrottled",
-                 "task_queue", task_queue);
+  if (iter == queue_details_.end() ||
+      --iter->second.throttling_ref_count != 0) {
+    return;
   }
+
+  TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUnthrottled",
+               "task_queue", task_queue);
+
+  MaybeDeleteQueueMetadata(iter);
+
+  if (!allow_throttling_)
+    return;
+
+  task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
+  task_queue->RemoveFence();
 }
 
 bool TaskQueueThrottler::IsThrottled(TaskQueue* task_queue) const {
@@ -462,8 +424,7 @@ void TaskQueueThrottler::PumpThrottledTasks() {
 
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
     TaskQueue* task_queue = map_entry.first;
-    if (!map_entry.second.enabled || task_queue->IsEmpty() ||
-        !IsThrottled(task_queue))
+    if (task_queue->IsEmpty() || !IsThrottled(task_queue))
       continue;
 
     // Don't enable queues whose budget pool doesn't allow them to run now.
@@ -493,8 +454,9 @@ void TaskQueueThrottler::PumpThrottledTasks() {
     if (next_allowed_run_time > lazy_now.Now())
       continue;
 
-    task_queue->SetQueueEnabled(true);
-    task_queue->InsertFence();
+    // Remove previous fence and install a new one, allowing all tasks posted
+    // on |task_queue| up until this point to run and block all further tasks.
+    task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
   }
 
   // Maybe schedule a call to TaskQueueThrottler::PumpThrottledTasks if there is
@@ -593,7 +555,6 @@ void TaskQueueThrottler::AsValueInto(base::trace_event::TracedValue* state,
 
     state->SetInteger("throttling_ref_count",
                       map_entry.second.throttling_ref_count);
-    state->SetBoolean("enabled", map_entry.second.enabled);
 
     state->EndDictionary();
   }
@@ -650,7 +611,6 @@ void TaskQueueThrottler::DisableThrottling() {
     queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
 
     queue->RemoveFence();
-    queue->SetQueueEnabled(map_entry.second.enabled);
   }
 
   pump_throttled_tasks_closure_.Cancel();
@@ -673,7 +633,9 @@ void TaskQueueThrottler::EnableThrottling() {
 
     TaskQueue* queue = map_entry.first;
 
-    queue->SetQueueEnabled(false);
+    // Throttling is enabled and task queue should be blocked immediately
+    // to enforce task alignment.
+    queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
     queue->SetTimeDomain(time_domain_.get());
     MaybeSchedulePumpQueue(FROM_HERE, lazy_now.Now(), queue,
                            GetNextAllowedRunTime(lazy_now.Now(), queue));

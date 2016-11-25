@@ -611,13 +611,15 @@ void TaskQueueImpl::SetBlameContext(
   main_thread_only().blame_context = blame_context;
 }
 
-void TaskQueueImpl::InsertFence() {
+void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   if (!main_thread_only().task_queue_manager)
     return;
 
   EnqueueOrder previous_fence = main_thread_only().current_fence;
   main_thread_only().current_fence =
-      main_thread_only().task_queue_manager->GetNextSequenceNumber();
+      position == TaskQueue::InsertFencePosition::NOW
+          ? main_thread_only().task_queue_manager->GetNextSequenceNumber()
+          : static_cast<EnqueueOrder>(EnqueueOrderValues::BLOCKING_FENCE);
 
   // Tasks posted after this point will have a strictly higher enqueue order
   // and will be blocked from running.
@@ -626,7 +628,8 @@ void TaskQueueImpl::InsertFence() {
   task_unblocked |= main_thread_only().delayed_work_queue->InsertFence(
       main_thread_only().current_fence);
 
-  if (!task_unblocked && previous_fence) {
+  if (!task_unblocked && previous_fence &&
+      previous_fence < main_thread_only().current_fence) {
     base::AutoLock lock(any_thread_lock_);
     if (!any_thread().immediate_incoming_queue.empty() &&
         any_thread().immediate_incoming_queue.front().enqueue_order() >
@@ -699,6 +702,10 @@ bool TaskQueueImpl::BlockedByFenceLocked() const {
 
   return any_thread().immediate_incoming_queue.front().enqueue_order() >
          main_thread_only().current_fence;
+}
+
+EnqueueOrder TaskQueueImpl::GetFenceForTest() const {
+  return main_thread_only().current_fence;
 }
 
 // static

@@ -256,6 +256,27 @@ TEST_F(WorkQueueSetsTest, IsSetEmpty_Work) {
   EXPECT_TRUE(work_queue_sets_->IsSetEmpty(set));
 }
 
+TEST_F(WorkQueueSetsTest, BlockQueuesByFence) {
+  WorkQueue* queue1 = NewTaskQueue("queue1");
+  WorkQueue* queue2 = NewTaskQueue("queue2");
+
+  queue1->Push(FakeTaskWithEnqueueOrder(6));
+  queue2->Push(FakeTaskWithEnqueueOrder(7));
+  queue1->Push(FakeTaskWithEnqueueOrder(8));
+  queue2->Push(FakeTaskWithEnqueueOrder(9));
+
+  size_t set = TaskQueue::CONTROL_PRIORITY;
+
+  WorkQueue* selected_work_queue;
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
+  EXPECT_EQ(selected_work_queue, queue1);
+
+  queue1->InsertFence(1);
+
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
+  EXPECT_EQ(selected_work_queue, queue2);
+}
+
 }  // namespace internal
 }  // namespace scheduler
 }  // namespace blink

@@ -1140,8 +1140,7 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
     const TaskQueuePolicy& old_task_queue_policy,
     const TaskQueuePolicy& new_task_queue_policy) const {
   if (old_task_queue_policy.is_enabled != new_task_queue_policy.is_enabled) {
-    task_queue_throttler_->SetQueueEnabled(task_queue,
-                                           new_task_queue_policy.is_enabled);
+    task_queue->SetQueueEnabled(new_task_queue_policy.is_enabled);
   }
 
   if (old_task_queue_policy.priority != new_task_queue_policy.priority)

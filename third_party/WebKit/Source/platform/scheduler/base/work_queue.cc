@@ -131,7 +131,7 @@ void WorkQueue::AssignSetIndex(size_t work_queue_set_index) {
 
 bool WorkQueue::InsertFence(EnqueueOrder fence) {
   DCHECK_NE(fence, 0u);
-  DCHECK_GE(fence, fence_);
+  DCHECK(fence >= fence_ || fence == 1u);
   bool was_blocked_by_fence = BlockedByFence();
   fence_ = fence;
   // Moving the fence forward may unblock some tasks.
@@ -140,6 +140,9 @@ bool WorkQueue::InsertFence(EnqueueOrder fence) {
     work_queue_sets_->OnPushQueue(this);
     return true;
   }
+  // Fence insertion may have blocked all tasks in this work queue.
+  if (BlockedByFence())
+    work_queue_sets_->OnQueueBlocked(this);
   return false;
 }
 

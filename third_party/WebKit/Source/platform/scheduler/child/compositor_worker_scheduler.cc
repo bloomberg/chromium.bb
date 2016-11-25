@@ -39,7 +39,7 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
 
   void SetQueueEnabled(bool enabled) override { NOTREACHED(); }
 
-  void InsertFence() override { NOTREACHED(); }
+  void InsertFence(InsertFencePosition position) override { NOTREACHED(); }
 
   void RemoveFence() override { NOTREACHED(); }
 

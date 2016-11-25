@@ -359,6 +359,19 @@ TEST_F(WorkQueueTest, BlockedByFenceNewFenceUnblocks) {
   EXPECT_FALSE(work_queue_->BlockedByFence());
 }
 
+TEST_F(WorkQueueTest, InsertFenceAfterEnqueuing) {
+  work_queue_->Push(FakeTaskWithEnqueueOrder(2));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(3));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(4));
+  EXPECT_FALSE(work_queue_->BlockedByFence());
+
+  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_TRUE(work_queue_->BlockedByFence());
+
+  EnqueueOrder enqueue_order;
+  EXPECT_FALSE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
+}
+
 }  // namespace internal
 }  // namespace scheduler
 }  // namespace blink

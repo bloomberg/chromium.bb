@@ -84,6 +84,16 @@ void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
   }
 }
 
+void WorkQueueSets::OnQueueBlocked(WorkQueue* work_queue) {
+  DCHECK_EQ(this, work_queue->work_queue_sets());
+  HeapHandle heap_handle = work_queue->heap_handle();
+  if (!heap_handle.IsValid())
+    return;
+  size_t set_index = work_queue->work_queue_set_index();
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  work_queue_heaps_[set_index].erase(heap_handle);
+}
+
 bool WorkQueueSets::GetOldestQueueInSet(size_t set_index,
                                         WorkQueue** out_work_queue) const {
   DCHECK_LT(set_index, work_queue_heaps_.size());

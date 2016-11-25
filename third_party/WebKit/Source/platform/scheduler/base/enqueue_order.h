@@ -15,6 +15,16 @@ namespace internal {
 
 using EnqueueOrder = uint64_t;
 
+// TODO(scheduler-dev): Remove explicit casts when c++17 comes.
+enum class EnqueueOrderValues : EnqueueOrder {
+  // Invalid EnqueueOrder.
+  NONE = 0,
+
+  // Earliest possible EnqueueOrder, to be used for fence blocking.
+  BLOCKING_FENCE = 1,
+  FIRST = 2,
+};
+
 // A 64bit integer used to provide ordering of tasks. NOTE The scheduler assumes
 // these values will not overflow.
 class EnqueueOrderGenerator {

@@ -168,14 +168,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   void OnTimeDomainHasImmediateWork(TaskQueue*) override;
   void OnTimeDomainHasDelayedWork(TaskQueue*) override;
 
-  // The purpose of this method is to make sure throttling doesn't conflict with
-  // enabling/disabling the queue for policy reasons.
-  // If |task_queue| is throttled then the TaskQueueThrottler remembers the
-  // |enabled| setting.  In addition if |enabled| is false then the queue is
-  // immediatly disabled.  Otherwise if |task_queue| not throttled then
-  // TaskQueue::SetEnabled(enabled) is called.
-  void SetQueueEnabled(TaskQueue* task_queue, bool enabled);
-
   // Increments the throttled refcount and causes |task_queue| to be throttled
   // if its not already throttled.
   void IncreaseThrottleRefCount(TaskQueue* task_queue);
@@ -222,20 +214,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
  private:
   struct Metadata {
-    Metadata()
-        : throttling_ref_count(0), enabled(false), time_budget_pool(nullptr) {}
-
-    Metadata(size_t ref_count, bool is_enabled)
-        : throttling_ref_count(ref_count),
-          enabled(is_enabled),
-          time_budget_pool(nullptr) {}
+    Metadata() : throttling_ref_count(0), time_budget_pool(nullptr) {}
 
     size_t throttling_ref_count;
-    bool enabled;
 
     TimeBudgetPool* time_budget_pool;
-
-    void SetQueueEnabled(TaskQueue* task_queue);
   };
   using TaskQueueMap = std::unordered_map<TaskQueue*, Metadata>;
 

@@ -47,7 +47,8 @@ IdleHelper::IdleHelper(
   idle_task_runner_ = make_scoped_refptr(
       new SingleThreadIdleTaskRunner(idle_queue_, this, tracing_category));
 
-  idle_queue_->SetQueueEnabled(false);
+  // This fence will block any idle tasks from running.
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
   idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
 
   helper_->AddTaskObserver(this);
@@ -184,10 +185,9 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
   }
 
   TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
-  idle_queue_->SetQueueEnabled(true);
   // Use a fence to make sure any idle tasks posted after this point do not run
-  // until the next idle period.
-  idle_queue_->InsertFence();
+  // until the next idle period and unblock existing tasks.
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::NOW);
 
   state_.UpdateState(new_state, idle_period_deadline, now);
 }
@@ -206,7 +206,8 @@ void IdleHelper::EndIdlePeriod() {
   if (!IsInIdlePeriod(state_.idle_period_state()))
     return;
 
-  idle_queue_->SetQueueEnabled(false);
+  // This fence will block any idle tasks from running.
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
   state_.UpdateState(IdlePeriodState::NOT_IN_IDLE_PERIOD, base::TimeTicks(),
                      base::TimeTicks());
 }
