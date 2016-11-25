@@ -334,13 +334,6 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
         --------------------                --------------------
 
      */
-
-// Disable the test on Mac OSX until futher investigation.
-// Local build on Mac is OK but thes bot fails.
-#if OS(MACOSX)
-  return;
-#endif
-
   initializeWithAndroidSettings();
 
   registerMockedHttpURLLoad("200-by-800-viewport.html");
@@ -406,13 +399,6 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
         |                   |               |                   |
 
      */
-
-// Disable the test on Mac OSX until futher investigation.
-// Local build on Mac is OK but thes bot fails.
-#if OS(MACOSX)
-  return;
-#endif
-
   initializeWithAndroidSettings();
 
   registerMockedHttpURLLoad("200-by-800-viewport.html");
