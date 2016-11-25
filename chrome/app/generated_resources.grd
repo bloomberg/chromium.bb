@@ -9235,7 +9235,7 @@ I don't think this site should be blocked!
         <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>Automatically report<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
       <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE" desc="SafeBrowsing Scout label next to checkbox">
-        <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>Automatically send<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> some system information and page content to Google to help detect dangerous apps and sites. <ph name="PRIVACY_PAGE_LINK">$1</ph>
+        Automatically send some <ph name="BEGIN_WHITEPAPER_LINK">&lt;a href="#" id="whitepaper-link"&gt;</ph>system information and page content<ph name="END_WHITEPAPER_LINK">&lt;/a&gt;</ph> to Google to help detect dangerous apps and sites. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
 
       <!-- Harmful download interstitial V3 -->

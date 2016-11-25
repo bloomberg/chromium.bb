@@ -307,6 +307,10 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       web_contents()->OpenURL(params);
       break;
     }
+    case security_interstitials::CMD_OPEN_WHITEPAPER: {
+      controller()->OpenExtendedReportingWhitepaper();
+      break;
+    }
   }
 }
 

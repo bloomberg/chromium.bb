@@ -233,6 +233,9 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
       controller()->OpenExtendedReportingPrivacyPolicy();
       break;
+    case security_interstitials::CMD_OPEN_WHITEPAPER:
+      controller()->OpenExtendedReportingWhitepaper();
+      break;
     case security_interstitials::CMD_ERROR:
     case security_interstitials::CMD_TEXT_FOUND:
     case security_interstitials::CMD_TEXT_NOT_FOUND:
