@@ -379,10 +379,14 @@ public class NewTabPage
             }
 
             LoadUrlParams loadUrlParams;
-            // The snippet's offline page is ignored if the snippet is saved or opened in incognito.
-            if (article.getOfflinePageOfflineId() != null
-                    && windowOpenDisposition != WindowOpenDisposition.SAVE_TO_DISK
-                    && windowOpenDisposition != WindowOpenDisposition.OFF_THE_RECORD) {
+            // We explicitly open an offline page only for offline page downloads. For all other
+            // sections the URL is opened and it is up to Offline Pages whether to open its offline
+            // page (e.g. when offline).
+            if (article.isDownload() && !article.mIsAssetDownload) {
+                assert article.getOfflinePageOfflineId() != null;
+                assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
+                        || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
+                        || windowOpenDisposition == WindowOpenDisposition.NEW_FOREGROUND_TAB;
                 loadUrlParams = OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
                         article.mUrl, article.getOfflinePageOfflineId());
                 // Extra headers are not read in loadUrl, but verbatim headers are.
