@@ -111,7 +111,6 @@ MaterialHistoryItemTest.prototype = {
 };
 
 TEST_F('MaterialHistoryItemTest', 'All', function() {
-  md_history.history_item_test.registerTests();
   mocha.run();
 });
 
@@ -126,7 +125,6 @@ MaterialHistoryListTest.prototype = {
 };
 
 TEST_F('MaterialHistoryListTest', 'All', function() {
-  md_history.history_list_test.registerTests();
   mocha.run();
 });
 
@@ -141,7 +139,6 @@ MaterialHistoryMetricsTest.prototype = {
 };
 
 TEST_F('MaterialHistoryMetricsTest', 'All', function() {
-  md_history.history_metrics_test.registerTests();
   mocha.run();
 });
 
@@ -156,7 +153,6 @@ MaterialHistoryOverflowMenuTest.prototype = {
 };
 
 TEST_F('MaterialHistoryOverflowMenuTest', 'All', function() {
-  md_history.history_overflow_menu_test.registerTests();
   mocha.run();
 });
 
@@ -220,7 +216,6 @@ MaterialHistorySyncedTabsTest.prototype = {
 
 // Fails on Mac, http://crbug.com/640862
 TEST_F('MaterialHistorySyncedTabsTest', 'DISABLED_All', function() {
-  md_history.history_synced_tabs_test.registerTests();
   mocha.run();
 });
 
@@ -241,7 +236,6 @@ MaterialHistorySupervisedUserTest.prototype = {
 };
 
 TEST_F('MaterialHistorySupervisedUserTest', 'All', function() {
-  md_history.history_supervised_user_test.registerTests();
   mocha.run();
 });
 
