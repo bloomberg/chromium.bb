@@ -752,19 +752,20 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
     return false;
 
   // Classify the keysym and convert to DOM and VKEY representations.
-  if ((character == 0) &&
-      ((xkb_keysym != XKB_KEY_at) || (flags & EF_CONTROL_DOWN) == 0)) {
+  if (xkb_keysym != XKB_KEY_at || (flags & EF_CONTROL_DOWN) == 0) {
     // Non-character key. (We only support NUL as ^@.)
     *dom_key = NonPrintableXKeySymToDomKey(xkb_keysym);
-    if (*dom_key == DomKey::NONE) {
-      *dom_key = DomKey::UNIDENTIFIED;
-      *key_code = VKEY_UNKNOWN;
-    } else {
+    if (*dom_key != DomKey::NONE) {
       *key_code = NonPrintableDomKeyToKeyboardCode(*dom_key);
+      if (*key_code == VKEY_UNKNOWN)
+        *key_code = DomCodeToUsLayoutNonLocatedKeyboardCode(dom_code);
+      return true;
     }
-    if (*key_code == VKEY_UNKNOWN)
+    if (character == 0) {
+      *dom_key = DomKey::UNIDENTIFIED;
       *key_code = DomCodeToUsLayoutNonLocatedKeyboardCode(dom_code);
-    return true;
+      return true;
+    }
   }
 
   // Per UI Events rules for determining |key|, if the character is
