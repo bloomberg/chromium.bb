@@ -6698,12 +6698,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PERMISSIONS_BLACKLIST_DESCRIPTION" desc="Description for the flag to enable the permissions blacklist.">
         Enables the Permissions Blacklist, which blocks permissions for blacklisted sites for Safe Browsing users.
       </message>
-      <message name="IDS_FLAGS_SITE_ENGAGEMENT_SERVICE_NAME" desc="Title for the flag to enable the site engagement service.">
-        Site Engagement Service
-      </message>
-      <message name="IDS_FLAGS_SITE_ENGAGEMENT_SERVICE_DESCRIPTION" desc="Description for the flag to enable the site engagement service.">
-        Enables the Site Engagement Service, which records interaction with sites and allocates resources accordingly.
-      </message>
       <message name="IDS_FLAGS_THREADED_SCROLLING_NAME" desc="Title for the flag for threaded scrolling.">
         Threaded scrolling
       </message>

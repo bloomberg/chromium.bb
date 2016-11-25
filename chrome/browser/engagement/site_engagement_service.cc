@@ -87,19 +87,6 @@ double SiteEngagementService::GetMaxPoints() {
 
 // static
 bool SiteEngagementService::IsEnabled() {
-  // If the engagement service or any of its dependencies are force-enabled,
-  // return true immediately.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSiteEngagementService) ||
-      SiteEngagementEvictionPolicy::IsEnabled() ||
-      AppBannerSettingsHelper::ShouldUseSiteEngagementScore()) {
-    return true;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteEngagementService)) {
-    return false;
-  }
   const std::string group_name =
       base::FieldTrialList::FindFullName(kEngagementParams);
   return !base::StartsWith(group_name, "Disabled",

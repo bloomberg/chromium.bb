@@ -291,10 +291,6 @@ const char kDisableQuicPortSelection[] = "disable-quic-port-selection";
 // (see SettingsWindowEnabled() below).
 const char kDisableSettingsWindow[]          = "disable-settings-window";
 
-// Disables the Site Engagement service, which records interaction with sites
-// and allocates certain resources accordingly.
-const char kDisableSiteEngagementService[] = "disable-site-engagement-service";
-
 // Disables Web Notification custom layouts.
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
@@ -460,10 +456,6 @@ const char kEnableSiteEngagementAppBanner[] =
 // service.
 const char kEnableSiteEngagementEvictionPolicy[] =
     "enable-site-engagement-eviction-policy";
-
-// Enable the Site Engagement service, which records interaction with sites and
-// allocates certain resources accordingly.
-const char kEnableSiteEngagementService[]   = "enable-site-engagement-service";
 
 // Enables the site settings all sites list and site details pages in the Chrome
 // settings UI.
