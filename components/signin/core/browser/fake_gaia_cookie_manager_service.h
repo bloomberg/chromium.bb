@@ -40,8 +40,8 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
 
  private:
   std::string GetSourceForRequest(
-      const GaiaCookieManagerService::GaiaCookieRequest& request,
-      const std::string& source_default) override;
+      const GaiaCookieManagerService::GaiaCookieRequest& request) override;
+  std::string GetDefaultSourceForRequest() override;
 
   // Provide a fake response for calls to /ListAccounts.
   net::FakeURLFetcherFactory* url_fetcher_factory_;

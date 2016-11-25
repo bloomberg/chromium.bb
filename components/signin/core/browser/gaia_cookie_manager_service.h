@@ -242,8 +242,11 @@ class GaiaCookieManagerService : public KeyedService,
   // Returns the source value to use for GaiaFetcher requests.  This is
   // virtual to allow tests and fake classes to override.
   virtual std::string GetSourceForRequest(
-      const GaiaCookieManagerService::GaiaCookieRequest& request,
-      const std::string& source_default);
+      const GaiaCookieManagerService::GaiaCookieRequest& request);
+
+  // Returns the default source value to use for GaiaFetcher requests.  This is
+  // virtual to allow tests and fake classes to override.
+  virtual std::string GetDefaultSourceForRequest();
 
   // Called when a cookie changes. If the cookie relates to a GAIA APISID
   // cookie, then we call ListAccounts and fire OnGaiaAccountsInCookieUpdated.

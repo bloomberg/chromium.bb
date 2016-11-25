@@ -62,12 +62,20 @@ const int kMaxFetcherRetries = 8;
 // accounts have changed in the content-area.
 const char* kGaiaCookieName = "APISID";
 
+// String format appended to GAIA fetcher source if request context has changed.
+const char* kRequestContextChangedTag = "__changed_%d__";
+
 enum GaiaCookieRequestType {
   ADD_ACCOUNT,
   LOG_OUT_ALL_ACCOUNTS,
   LOG_OUT_ONE_ACCOUNT,
   LIST_ACCOUNTS
 };
+
+void AppendRequestContextChangedTagIfNeeded(std::string* source, int changes) {
+  if (changes != 0)
+    base::StringAppendF(source, kRequestContextChangedTag, changes);
+}
 
 }  // namespace
 
@@ -99,6 +107,7 @@ GaiaCookieManagerService::GaiaCookieRequest::CreateLogOutRequest(
       source);
 }
 
+// static
 GaiaCookieManagerService::GaiaCookieRequest
 GaiaCookieManagerService::GaiaCookieRequest::CreateListAccountsRequest(
     const std::string& source) {
@@ -134,7 +143,8 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
   results_.clear();
   helper_->gaia_auth_fetcher_.reset(
       helper_->signin_client_->CreateGaiaAuthFetcher(
-          this, helper_->source_, helper_->request_context()));
+          this, helper_->GetDefaultSourceForRequest(),
+          helper_->request_context()));
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
@@ -462,9 +472,20 @@ void GaiaCookieManagerService::CancelAll() {
 }
 
 std::string GaiaCookieManagerService::GetSourceForRequest(
-    const GaiaCookieManagerService::GaiaCookieRequest& request,
-    const std::string& source_default) {
-  return request.source().empty() ? source_default : request.source();
+    const GaiaCookieManagerService::GaiaCookieRequest& request) {
+  std::string source = request.source().empty() ? source_ : request.source();
+  AppendRequestContextChangedTagIfNeeded(
+      &source,
+      signin_client_->number_of_request_context_pointer_changes());
+  return source;
+}
+
+std::string GaiaCookieManagerService::GetDefaultSourceForRequest() {
+  std::string source = source_;
+  AppendRequestContextChangedTagIfNeeded(
+      &source,
+      signin_client_->number_of_request_context_pointer_changes());
+  return source;
 }
 
 void GaiaCookieManagerService::OnCookieChanged(
@@ -480,7 +501,7 @@ void GaiaCookieManagerService::OnCookieChanged(
   // cause an endless loop (see crbug.com/516070).
   if (requests_.empty()) {
     // Build gaia "source" based on cause to help track down channel id issues.
-    std::string source(source_);
+    std::string source(GetDefaultSourceForRequest());
     switch (cause) {
       case net::CookieStore::ChangeCause::INSERTED:
         source += "INSERTED";
@@ -700,7 +721,8 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().account_id();
   uber_token_fetcher_.reset(new UbertokenFetcher(
-      token_service_, this, source_, signin_client_->GetURLRequestContext(),
+      token_service_, this, GetDefaultSourceForRequest(),
+      signin_client_->GetURLRequestContext(),
       base::Bind(&SigninClient::CreateGaiaAuthFetcher,
                  base::Unretained(signin_client_))));
   if (access_token_.empty()) {
@@ -714,7 +736,7 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
 void GaiaCookieManagerService::StartFetchingMergeSession() {
   DCHECK(!uber_token_.empty());
   gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front(), source_),
+      this, GetSourceForRequest(requests_.front()),
       signin_client_->GetURLRequestContext()));
 
   gaia_auth_fetcher_->StartMergeSession(uber_token_,
@@ -725,7 +747,7 @@ void GaiaCookieManagerService::StartFetchingLogOut() {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::StartFetchingLogOut";
   gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front(), source_),
+      this, GetSourceForRequest(requests_.front()),
       signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartLogOut();
 }
@@ -733,7 +755,7 @@ void GaiaCookieManagerService::StartFetchingLogOut() {
 void GaiaCookieManagerService::StartFetchingListAccounts() {
   VLOG(1) << "GaiaCookieManagerService::ListAccounts";
   gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front(), source_),
+      this, GetSourceForRequest(requests_.front()),
       signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartListAccounts();
 }
