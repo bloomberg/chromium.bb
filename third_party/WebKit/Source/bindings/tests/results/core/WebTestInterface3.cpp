@@ -6,7 +6,6 @@
 // DO NOT MODIFY!
 
 // clang-format off
-// clang-format on
 
 #include "WebTestInterface3.h"
 

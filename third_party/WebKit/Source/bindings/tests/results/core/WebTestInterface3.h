@@ -6,6 +6,5 @@
 // DO NOT MODIFY!
 
 // clang-format off
-// clang-format on
 
 // TODO(dglazkov): Implement generating the header file.
