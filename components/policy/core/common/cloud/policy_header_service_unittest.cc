@@ -46,8 +46,7 @@ class PolicyHeaderServiceTest : public testing::Test {
   void SetUp() override {
     service_.reset(new PolicyHeaderService(kDMServerURL,
                                            kPolicyVerificationKeyHash,
-                                           &user_store_,
-                                           &device_store_));
+                                           &user_store_));
     helper_ = service_->CreatePolicyHeaderIOHelper(task_runner_);
   }
 
@@ -88,7 +87,6 @@ class PolicyHeaderServiceTest : public testing::Test {
   base::MessageLoop loop_;
   std::unique_ptr<PolicyHeaderService> service_;
   TestCloudPolicyStore user_store_;
-  TestCloudPolicyStore device_store_;
   std::unique_ptr<PolicyHeaderIOHelper> helper_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 };

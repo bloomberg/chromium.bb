@@ -32,8 +32,7 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
   // outlive this object.
   PolicyHeaderService(const std::string& server_url,
                       const std::string& verification_key_hash,
-                      CloudPolicyStore* user_policy_store,
-                      CloudPolicyStore* device_policy_store);
+                      CloudPolicyStore* user_policy_store);
   ~PolicyHeaderService() override;
 
   // Creates a PolicyHeaderIOHelper object to be run on the IO thread and
@@ -64,9 +63,8 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
   // Identifier for the verification key this Chrome instance is using.
   std::string verification_key_hash_;
 
-  // Weak pointers to User-/Device-level policy stores.
+  // Weak pointer to the User-level policy store.
   CloudPolicyStore* user_policy_store_;
-  CloudPolicyStore* device_policy_store_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyHeaderService);
 };

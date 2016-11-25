@@ -20,7 +20,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #else
@@ -103,18 +102,11 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
   if (!manager)
     return NULL;
   CloudPolicyStore* user_store = manager->core()->store();
-  CloudPolicyStore* device_store = NULL;
-#if defined(OS_CHROMEOS)
-  // TODO(tnagel): Add support for Active Directory management.
-  if (!connector->GetDeviceCloudPolicyManager())
-    return NULL;
-  device_store = connector->GetDeviceCloudPolicyManager()->core()->store();
-#endif
 
   std::unique_ptr<PolicyHeaderService> service =
       base::MakeUnique<PolicyHeaderService>(
           device_management_service->GetServerUrl(), kPolicyVerificationKeyHash,
-          user_store, device_store);
+          user_store);
   return new PolicyHeaderServiceWrapper(std::move(service));
 }
 

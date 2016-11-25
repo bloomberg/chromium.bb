@@ -22,21 +22,15 @@ namespace policy {
 PolicyHeaderService::PolicyHeaderService(
     const std::string& server_url,
     const std::string& verification_key_hash,
-    CloudPolicyStore* user_policy_store,
-    CloudPolicyStore* device_policy_store)
+    CloudPolicyStore* user_policy_store)
     : server_url_(server_url),
       verification_key_hash_(verification_key_hash),
-      user_policy_store_(user_policy_store),
-      device_policy_store_(device_policy_store) {
+      user_policy_store_(user_policy_store) {
   user_policy_store_->AddObserver(this);
-  if (device_policy_store_)
-    device_policy_store_->AddObserver(this);
 }
 
 PolicyHeaderService::~PolicyHeaderService() {
   user_policy_store_->RemoveObserver(this);
-  if (device_policy_store_)
-    device_policy_store_->RemoveObserver(this);
 }
 
 std::unique_ptr<PolicyHeaderIOHelper>
