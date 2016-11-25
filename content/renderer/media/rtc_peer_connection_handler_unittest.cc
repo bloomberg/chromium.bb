@@ -32,6 +32,7 @@
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
+#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -672,6 +673,8 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
+  WhitelistStatsForTesting(webrtc::RTCTestStats::kType);
+
   rtc::scoped_refptr<webrtc::RTCStatsReport> report =
       webrtc::RTCStatsReport::Create();
 

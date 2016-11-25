@@ -36,9 +36,9 @@ enum WebRTCStatsMemberType {
   WebRTCStatsMemberTypeSequenceString,  // WebVector<WebString>
 };
 
-class WebRTCStatsReport {
+class BLINK_PLATFORM_EXPORT WebRTCStatsReport {
  public:
-  virtual ~WebRTCStatsReport() {}
+  virtual ~WebRTCStatsReport();
   // Creates a new report object that is a handle to the same underlying stats
   // report (the stats are not copied). The new report's iterator is reset,
   // useful when needing multiple iterators.
@@ -50,9 +50,9 @@ class WebRTCStatsReport {
   virtual std::unique_ptr<WebRTCStats> next() = 0;
 };
 
-class WebRTCStats {
+class BLINK_PLATFORM_EXPORT WebRTCStats {
  public:
-  virtual ~WebRTCStats() {}
+  virtual ~WebRTCStats();
 
   virtual WebString id() const = 0;
   virtual WebString type() const = 0;
@@ -62,9 +62,9 @@ class WebRTCStats {
   virtual std::unique_ptr<WebRTCStatsMember> getMember(size_t) const = 0;
 };
 
-class WebRTCStatsMember {
+class BLINK_PLATFORM_EXPORT WebRTCStatsMember {
  public:
-  virtual ~WebRTCStatsMember() {}
+  virtual ~WebRTCStatsMember();
 
   virtual WebString name() const = 0;
   virtual WebRTCStatsMemberType type() const = 0;
@@ -89,9 +89,9 @@ class WebRTCStatsMember {
   virtual WebVector<WebString> valueSequenceString() const = 0;
 };
 
-class WebRTCStatsReportCallback {
+class BLINK_PLATFORM_EXPORT WebRTCStatsReportCallback {
  public:
-  virtual ~WebRTCStatsReportCallback() {}
+  virtual ~WebRTCStatsReportCallback();
 
   virtual void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport>) = 0;
 };

@@ -4,10 +4,55 @@
 
 #include "content/renderer/media/webrtc/rtc_stats.h"
 
+#include <set>
+#include <string>
+
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "third_party/webrtc/api/stats/rtcstats_objects.h"
 
 namespace content {
+
+namespace {
+
+class RTCStatsWhitelist {
+ public:
+  RTCStatsWhitelist() {
+    whitelisted_stats_types_.insert(webrtc::RTCCertificateStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCDataChannelStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCIceCandidatePairStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCIceCandidateStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCLocalIceCandidateStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCRemoteIceCandidateStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCPeerConnectionStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCRTPStreamStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCInboundRTPStreamStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCOutboundRTPStreamStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCTransportStats::kType);
+  }
+
+  bool IsWhitelisted(const webrtc::RTCStats& stats) {
+    return whitelisted_stats_types_.find(stats.type()) !=
+           whitelisted_stats_types_.end();
+  }
+
+  void WhitelistStatsForTesting(const char* type) {
+    whitelisted_stats_types_.insert(type);
+  }
+
+ private:
+  std::set<std::string> whitelisted_stats_types_;
+};
+
+base::LazyInstance<RTCStatsWhitelist>::Leaky
+    g_whitelisted_stats = LAZY_INSTANCE_INITIALIZER;
+
+bool IsWhitelistedStats(const webrtc::RTCStats& stats) {
+  return g_whitelisted_stats.Get().IsWhitelisted(stats);
+}
+
+}  // namespace
 
 RTCStatsReport::RTCStatsReport(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_report)
@@ -28,19 +73,22 @@ std::unique_ptr<blink::WebRTCStatsReport> RTCStatsReport::copyHandle() const {
 std::unique_ptr<blink::WebRTCStats> RTCStatsReport::getStats(
     blink::WebString id) const {
   const webrtc::RTCStats* stats = stats_report_->Get(id.utf8());
-  if (!stats)
+  if (!stats || !IsWhitelistedStats(*stats))
     return std::unique_ptr<blink::WebRTCStats>();
   return std::unique_ptr<blink::WebRTCStats>(
       new RTCStats(stats_report_, stats));
 }
 
 std::unique_ptr<blink::WebRTCStats> RTCStatsReport::next() {
-  if (it_ == end_)
-    return std::unique_ptr<blink::WebRTCStats>();
-  const webrtc::RTCStats& next = *it_;
-  ++it_;
-  return std::unique_ptr<blink::WebRTCStats>(
-      new RTCStats(stats_report_, &next));
+  while (it_ != end_) {
+    const webrtc::RTCStats& next = *it_;
+    ++it_;
+    if (IsWhitelistedStats(next)) {
+      return std::unique_ptr<blink::WebRTCStats>(
+          new RTCStats(stats_report_, &next));
+    }
+  }
+  return std::unique_ptr<blink::WebRTCStats>();
 }
 
 RTCStats::RTCStats(
@@ -222,6 +270,10 @@ blink::WebVector<blink::WebString> RTCStatsMember::valueSequenceString() const {
   for (size_t i = 0; i < sequence.size(); ++i)
     web_sequence[i] = blink::WebString::fromUTF8(sequence[i]);
   return web_sequence;
+}
+
+void WhitelistStatsForTesting(const char* type) {
+  g_whitelisted_stats.Get().WhitelistStatsForTesting(type);
 }
 
 }  // namespace content

@@ -6,13 +6,14 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_STATS_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebRTCStats.h"
 #include "third_party/webrtc/api/stats/rtcstats.h"
 #include "third_party/webrtc/api/stats/rtcstatsreport.h"
 
 namespace content {
 
-class RTCStatsReport : public blink::WebRTCStatsReport {
+class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
  public:
   RTCStatsReport(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_report);
@@ -29,7 +30,7 @@ class RTCStatsReport : public blink::WebRTCStatsReport {
   const webrtc::RTCStatsReport::ConstIterator end_;
 };
 
-class RTCStats : public blink::WebRTCStats {
+class CONTENT_EXPORT RTCStats : public blink::WebRTCStats {
  public:
   RTCStats(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
            const webrtc::RTCStats* stats);
@@ -51,7 +52,7 @@ class RTCStats : public blink::WebRTCStats {
   const std::vector<const webrtc::RTCStatsMemberInterface*> stats_members_;
 };
 
-class RTCStatsMember : public blink::WebRTCStatsMember {
+class CONTENT_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
  public:
   RTCStatsMember(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
                  const webrtc::RTCStatsMemberInterface* member);
@@ -82,6 +83,8 @@ class RTCStatsMember : public blink::WebRTCStatsMember {
   // Pointer to member of a stats object that is owned by |stats_owner_|.
   const webrtc::RTCStatsMemberInterface* const member_;
 };
+
+CONTENT_EXPORT void WhitelistStatsForTesting(const char* type);
 
 }  // namespace content
 

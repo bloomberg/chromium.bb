@@ -573,6 +573,7 @@ component("platform") {
     "exported/WebRTCOfferOptions.cpp",
     "exported/WebRTCSessionDescription.cpp",
     "exported/WebRTCSessionDescriptionRequest.cpp",
+    "exported/WebRTCStats.cpp",
     "exported/WebRTCStatsRequest.cpp",
     "exported/WebRTCStatsResponse.cpp",
     "exported/WebRTCVoidRequest.cpp",
