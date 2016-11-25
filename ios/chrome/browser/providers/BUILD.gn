@@ -17,7 +17,18 @@ source_set("providers") {
     "//base",
     "//ios/chrome/browser/providers/images",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser:provider_flags",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("provider_factory") {
+  sources = [
+    "chromium_browser_provider_factory.mm",
+  ]
+  deps = [
+    ":providers",
+    "//base",
+    "//ios/public/provider/chrome/browser",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

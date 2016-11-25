@@ -4,7 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 
-_default_ios_provider_target = "//ios/chrome/browser/providers"
+_default_ios_provider_target = "//ios/chrome/browser/providers:provider_factory"
 
 declare_args() {
   # Control the provider API implementation used by Chromium on iOS. Requires

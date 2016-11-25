@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
 #import "ios/chrome/browser/providers/images/chromium_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
-#include "ios/public/provider/chrome/browser/provider_flags.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
@@ -17,14 +16,6 @@
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
-#endif
-
-#if !BUILDFLAG(USE_IOS_INTERNAL_PROVIDER)
-namespace ios {
-std::unique_ptr<ChromeBrowserProvider> CreateChromeBrowserProvider() {
-  return base::MakeUnique<ChromiumBrowserProvider>();
-}
-}  // namespace ios
 #endif
 
 ChromiumBrowserProvider::ChromiumBrowserProvider()
