@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 
 #include <string>
 
@@ -23,10 +23,10 @@ const char kFetchingRequiresSigninDisabled[] = "false";
 
 }  // namespace
 
-NTPSnippetsStatusService::NTPSnippetsStatusService(
+RemoteSuggestionsStatusService::RemoteSuggestionsStatusService(
     SigninManagerBase* signin_manager,
     PrefService* pref_service)
-    : snippets_status_(SnippetsStatus::EXPLICITLY_DISABLED),
+    : status_(RemoteSuggestionsStatus::EXPLICITLY_DISABLED),
       require_signin_(false),
       signin_manager_(signin_manager),
       pref_service_(pref_service) {
@@ -41,72 +41,73 @@ NTPSnippetsStatusService::NTPSnippetsStatusService(
   }
 }
 
-NTPSnippetsStatusService::~NTPSnippetsStatusService() = default;
+RemoteSuggestionsStatusService::~RemoteSuggestionsStatusService() = default;
 
 // static
-void NTPSnippetsStatusService::RegisterProfilePrefs(
+void RemoteSuggestionsStatusService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableSnippets, true);
 }
 
-void NTPSnippetsStatusService::Init(
-    const SnippetsStatusChangeCallback& callback) {
-  DCHECK(snippets_status_change_callback_.is_null());
+void RemoteSuggestionsStatusService::Init(
+    const StatusChangeCallback& callback) {
+  DCHECK(status_change_callback_.is_null());
 
-  snippets_status_change_callback_ = callback;
+  status_change_callback_ = callback;
 
   // Notify about the current state before registering the observer, to make
   // sure we don't get a double notification due to an undefined start state.
-  SnippetsStatus old_snippets_status = snippets_status_;
-  snippets_status_ = GetSnippetsStatusFromDeps();
-  snippets_status_change_callback_.Run(old_snippets_status, snippets_status_);
+  RemoteSuggestionsStatus old_status = status_;
+  status_ = GetStatusFromDeps();
+  status_change_callback_.Run(old_status, status_);
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kEnableSnippets,
-      base::Bind(&NTPSnippetsStatusService::OnSnippetsEnabledChanged,
+      base::Bind(&RemoteSuggestionsStatusService::OnSnippetsEnabledChanged,
                  base::Unretained(this)));
 }
 
-void NTPSnippetsStatusService::OnSnippetsEnabledChanged() {
-  OnStateChanged(GetSnippetsStatusFromDeps());
+void RemoteSuggestionsStatusService::OnSnippetsEnabledChanged() {
+  OnStateChanged(GetStatusFromDeps());
 }
 
-void NTPSnippetsStatusService::OnStateChanged(
-    SnippetsStatus new_snippets_status) {
-  if (new_snippets_status == snippets_status_) {
+void RemoteSuggestionsStatusService::OnStateChanged(
+    RemoteSuggestionsStatus new_status) {
+  if (new_status == status_) {
     return;
   }
 
-  snippets_status_change_callback_.Run(snippets_status_, new_snippets_status);
-  snippets_status_ = new_snippets_status;
+  status_change_callback_.Run(status_, new_status);
+  status_ = new_status;
 }
 
-bool NTPSnippetsStatusService::IsSignedIn() const {
+bool RemoteSuggestionsStatusService::IsSignedIn() const {
   // TODO(dgn): remove the SigninManager dependency. It should be possible to
   // replace it by passing the new state via OnSignInStateChanged().
   return signin_manager_ && signin_manager_->IsAuthenticated();
 }
 
-void NTPSnippetsStatusService::OnSignInStateChanged() {
-  OnStateChanged(GetSnippetsStatusFromDeps());
+void RemoteSuggestionsStatusService::OnSignInStateChanged() {
+  OnStateChanged(GetStatusFromDeps());
 }
 
-SnippetsStatus NTPSnippetsStatusService::GetSnippetsStatusFromDeps() const {
+RemoteSuggestionsStatus RemoteSuggestionsStatusService::GetStatusFromDeps()
+    const {
   if (!pref_service_->GetBoolean(prefs::kEnableSnippets)) {
-    DVLOG(1) << "[GetNewSnippetsStatus] Disabled via pref";
-    return SnippetsStatus::EXPLICITLY_DISABLED;
+    DVLOG(1) << "[GetStatusFromDeps] Disabled via pref";
+    return RemoteSuggestionsStatus::EXPLICITLY_DISABLED;
   }
 
   if (require_signin_ && !IsSignedIn()) {
-    DVLOG(1) << "[GetNewSnippetsStatus] Signed out and disabled due to this.";
-    return SnippetsStatus::SIGNED_OUT_AND_DISABLED;
+    DVLOG(1) << "[GetStatusFromDeps] Signed out and disabled due to this.";
+    return RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED;
   }
 
-  DVLOG(1) << "[GetNewSnippetsStatus] Enabled, signed "
+  DVLOG(1) << "[GetStatusFromDeps] Enabled, signed "
            << (IsSignedIn() ? "in" : "out");
-  return IsSignedIn() ? SnippetsStatus::ENABLED_AND_SIGNED_IN
-                      : SnippetsStatus::ENABLED_AND_SIGNED_OUT;
+  return IsSignedIn() ? RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN
+                      : RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT;
 }
 
 }  // namespace ntp_snippets

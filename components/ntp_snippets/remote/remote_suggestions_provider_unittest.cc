@@ -32,8 +32,8 @@
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
-#include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
+#include "components/ntp_snippets/remote/test_utils.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -455,8 +455,8 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
         std::move(image_fetcher), std::move(image_decoder),
         base::MakeUnique<RemoteSuggestionsDatabase>(database_dir_.GetPath(),
                                                     task_runner),
-        base::MakeUnique<NTPSnippetsStatusService>(utils_.fake_signin_manager(),
-                                                   utils_.pref_service()));
+        base::MakeUnique<RemoteSuggestionsStatusService>(
+            utils_.fake_signin_manager(), utils_.pref_service()));
   }
 
   void WaitForSnippetsServiceInitialization(RemoteSuggestionsProvider* service,
@@ -534,7 +534,7 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
 
  private:
   variations::testing::VariationParamsManager params_manager_;
-  test::NTPSnippetsTestUtils utils_;
+  test::RemoteSuggestionsTestUtils utils_;
   base::MessageLoop message_loop_;
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Instantiation of factory automatically sets itself as URLFetcher's factory.
@@ -649,13 +649,13 @@ TEST_F(RemoteSuggestionsProviderTest, RescheduleOnStateChange) {
   auto service = MakeSnippetsService();
   ASSERT_TRUE(service->ready());
 
-  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_IN,
-                                   SnippetsStatus::EXPLICITLY_DISABLED);
+  service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
+                           RemoteSuggestionsStatus::EXPLICITLY_DISABLED);
   ASSERT_FALSE(service->ready());
   base::RunLoop().RunUntilIdle();
 
-  service->OnSnippetsStatusChanged(SnippetsStatus::EXPLICITLY_DISABLED,
-                                   SnippetsStatus::ENABLED_AND_SIGNED_OUT);
+  service->OnStatusChanged(RemoteSuggestionsStatus::EXPLICITLY_DISABLED,
+                           RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
   ASSERT_TRUE(service->ready());
   base::RunLoop().RunUntilIdle();
 }
@@ -1443,8 +1443,8 @@ TEST_F(RemoteSuggestionsProviderTest, StatusChanges) {
 
   // Simulate user signed out
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_IN,
-                                   SnippetsStatus::SIGNED_OUT_AND_DISABLED);
+  service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
+                           RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
@@ -1455,8 +1455,8 @@ TEST_F(RemoteSuggestionsProviderTest, StatusChanges) {
 
   // Simulate user sign in. The service should be ready again and load snippets.
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  service->OnSnippetsStatusChanged(SnippetsStatus::SIGNED_OUT_AND_DISABLED,
-                                   SnippetsStatus::ENABLED_AND_SIGNED_IN);
+  service->OnStatusChanged(RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED,
+                           RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE_LOADING));
 
@@ -1539,15 +1539,15 @@ TEST_F(RemoteSuggestionsProviderTest, SuggestionsFetchedOnSignInAndSignOut) {
   // |MakeSnippetsService()| creates a service where user is signed in already,
   // so we start by signing out.
   SetUpFetchResponse(GetTestJson({GetSnippetN(1)}));
-  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_IN,
-                                   SnippetsStatus::ENABLED_AND_SIGNED_OUT);
+  service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN,
+                           RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   // Sign in to check a transition from signed out to signed in.
   SetUpFetchResponse(GetTestJson({GetSnippetN(1), GetSnippetN(2)}));
-  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_OUT,
-                                   SnippetsStatus::ENABLED_AND_SIGNED_IN);
+  service->OnStatusChanged(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
+                           RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 }

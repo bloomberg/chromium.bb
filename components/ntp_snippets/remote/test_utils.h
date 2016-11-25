@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_TEST_UTILS_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_TEST_UTILS_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_TEST_UTILS_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_TEST_UTILS_H_
 
 #include <memory>
 
@@ -36,12 +36,12 @@ class FakeSyncService : public syncer::FakeSyncService {
   syncer::ModelTypeSet active_data_types_;
 };
 
-// Common utilities for snippet tests, handles initializing fakes for sync and
-// signin.
-class NTPSnippetsTestUtils {
+// Common utilities for remote suggestion tests, handles initializing fakes for
+// sync and signin.
+class RemoteSuggestionsTestUtils {
  public:
-  NTPSnippetsTestUtils();
-  ~NTPSnippetsTestUtils();
+  RemoteSuggestionsTestUtils();
+  ~RemoteSuggestionsTestUtils();
 
   void ResetSigninManager();
 
@@ -62,4 +62,4 @@ class NTPSnippetsTestUtils {
 }  // namespace test
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_TEST_UTILS_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_TEST_UTILS_H_

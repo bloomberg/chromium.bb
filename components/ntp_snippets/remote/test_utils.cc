@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
+#include "components/ntp_snippets/remote/test_utils.h"
 
 #include <memory>
 
@@ -46,7 +46,7 @@ syncer::ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
   return active_data_types_;
 }
 
-NTPSnippetsTestUtils::NTPSnippetsTestUtils()
+RemoteSuggestionsTestUtils::RemoteSuggestionsTestUtils()
     : pref_service_(new TestingPrefServiceSimple()) {
   pref_service_->registry()->RegisterStringPref(prefs::kGoogleServicesAccountId,
                                                 std::string());
@@ -60,9 +60,9 @@ NTPSnippetsTestUtils::NTPSnippetsTestUtils()
   ResetSigninManager();
 }
 
-NTPSnippetsTestUtils::~NTPSnippetsTestUtils() = default;
+RemoteSuggestionsTestUtils::~RemoteSuggestionsTestUtils() = default;
 
-void NTPSnippetsTestUtils::ResetSigninManager() {
+void RemoteSuggestionsTestUtils::ResetSigninManager() {
   fake_signin_manager_.reset(
       new FakeSigninManagerBase(signin_client_.get(), account_tracker_.get()));
 }

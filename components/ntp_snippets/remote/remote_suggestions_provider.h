@@ -26,7 +26,7 @@
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
-#include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
 
 class PrefRegistrySimple;
@@ -76,7 +76,7 @@ class RemoteSuggestionsProvider final
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       std::unique_ptr<RemoteSuggestionsDatabase> database,
-      std::unique_ptr<NTPSnippetsStatusService> status_service);
+      std::unique_ptr<RemoteSuggestionsStatusService> status_service);
 
   ~RemoteSuggestionsProvider() override;
 
@@ -312,10 +312,10 @@ class RemoteSuggestionsProvider final
                                         const std::string& id_within_category,
                                         const gfx::Image& image);
 
-  // Triggers a state transition depending on the provided snippets status. This
-  // method is called when a change is detected by |snippets_status_service_|.
-  void OnSnippetsStatusChanged(SnippetsStatus old_snippets_status,
-                               SnippetsStatus new_snippets_status);
+  // Triggers a state transition depending on the provided status. This method
+  // is called when a change is detected by |status_service_|.
+  void OnStatusChanged(RemoteSuggestionsStatus old_status,
+                       RemoteSuggestionsStatus new_status);
 
   // Verifies state transitions (see |State|'s documentation) and applies them.
   // Also updates the provider status. Does nothing except updating the provider
@@ -383,7 +383,7 @@ class RemoteSuggestionsProvider final
   base::TimeTicks database_load_start_;
 
   // The service that provides events and data about the signin and sync state.
-  std::unique_ptr<NTPSnippetsStatusService> snippets_status_service_;
+  std::unique_ptr<RemoteSuggestionsStatusService> status_service_;
 
   // Set to true if FetchSnippets is called while the service isn't ready.
   // The fetch will be executed once the service enters the READY state.

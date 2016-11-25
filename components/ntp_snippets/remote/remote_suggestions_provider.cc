@@ -245,7 +245,7 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
-    std::unique_ptr<NTPSnippetsStatusService> status_service)
+    std::unique_ptr<RemoteSuggestionsStatusService> status_service)
     : ContentSuggestionsProvider(observer, category_factory),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
@@ -258,7 +258,7 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
       image_fetcher_(std::move(image_fetcher)),
       image_decoder_(std::move(image_decoder)),
       database_(std::move(database)),
-      snippets_status_service_(std::move(status_service)),
+      status_service_(std::move(status_service)),
       fetch_when_ready_(false),
       nuke_when_initialized_(false),
       thumbnail_requests_throttler_(
@@ -305,7 +305,7 @@ void RemoteSuggestionsProvider::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalFallback,
                               0);
 
-  NTPSnippetsStatusService::RegisterProfilePrefs(registry);
+  RemoteSuggestionsStatusService::RegisterProfilePrefs(registry);
 }
 
 void RemoteSuggestionsProvider::FetchSnippets(bool interactive_request) {
@@ -501,7 +501,7 @@ void RemoteSuggestionsProvider::OnSignInStateChanged() {
     return;
   }
 
-  snippets_status_service_->OnSignInStateChanged();
+  status_service_->OnSignInStateChanged();
 }
 
 void RemoteSuggestionsProvider::GetDismissedSuggestionsForDebugging(
@@ -1038,7 +1038,7 @@ void RemoteSuggestionsProvider::EnterStateDisabled() {
 }
 
 void RemoteSuggestionsProvider::EnterStateError() {
-  snippets_status_service_.reset();
+  status_service_.reset();
 }
 
 void RemoteSuggestionsProvider::FinishInitialization() {
@@ -1058,9 +1058,8 @@ void RemoteSuggestionsProvider::FinishInitialization() {
 
   // Note: Initializing the status service will run the callback right away with
   // the current state.
-  snippets_status_service_->Init(
-      base::Bind(&RemoteSuggestionsProvider::OnSnippetsStatusChanged,
-                 base::Unretained(this)));
+  status_service_->Init(base::Bind(&RemoteSuggestionsProvider::OnStatusChanged,
+                                   base::Unretained(this)));
 
   // Always notify here even if we got nothing from the database, because we
   // don't know how long the fetch will take or if it will even complete.
@@ -1075,12 +1074,12 @@ void RemoteSuggestionsProvider::FinishInitialization() {
   }
 }
 
-void RemoteSuggestionsProvider::OnSnippetsStatusChanged(
-    SnippetsStatus old_snippets_status,
-    SnippetsStatus new_snippets_status) {
-  switch (new_snippets_status) {
-    case SnippetsStatus::ENABLED_AND_SIGNED_IN:
-      if (old_snippets_status == SnippetsStatus::ENABLED_AND_SIGNED_OUT) {
+void RemoteSuggestionsProvider::OnStatusChanged(
+    RemoteSuggestionsStatus old_status,
+    RemoteSuggestionsStatus new_status) {
+  switch (new_status) {
+    case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN:
+      if (old_status == RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT) {
         DCHECK(state_ == State::READY);
         // Clear nonpersonalized suggestions.
         NukeAllSnippets();
@@ -1092,8 +1091,8 @@ void RemoteSuggestionsProvider::OnSnippetsStatusChanged(
       }
       break;
 
-    case SnippetsStatus::ENABLED_AND_SIGNED_OUT:
-      if (old_snippets_status == SnippetsStatus::ENABLED_AND_SIGNED_IN) {
+    case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT:
+      if (old_status == RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN) {
         DCHECK(state_ == State::READY);
         // Clear personalized suggestions.
         NukeAllSnippets();
@@ -1105,12 +1104,12 @@ void RemoteSuggestionsProvider::OnSnippetsStatusChanged(
       }
       break;
 
-    case SnippetsStatus::EXPLICITLY_DISABLED:
+    case RemoteSuggestionsStatus::EXPLICITLY_DISABLED:
       EnterState(State::DISABLED);
       UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
 
-    case SnippetsStatus::SIGNED_OUT_AND_DISABLED:
+    case RemoteSuggestionsStatus::SIGNED_OUT_AND_DISABLED:
       EnterState(State::DISABLED);
       UpdateAllCategoryStatus(CategoryStatus::SIGNED_OUT);
       break;

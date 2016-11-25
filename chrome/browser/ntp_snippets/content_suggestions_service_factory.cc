@@ -35,9 +35,9 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
-#include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
 #include "components/prefs/pref_service.h"
@@ -78,9 +78,9 @@ using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::NTPSnippetsFetcher;
 using ntp_snippets::NTPSnippetsScheduler;
-using ntp_snippets::NTPSnippetsStatusService;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsProvider;
+using ntp_snippets::RemoteSuggestionsStatusService;
 using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
@@ -175,7 +175,8 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
                                          request_context.get()),
       base::MakeUnique<ImageDecoderImpl>(),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
-      base::MakeUnique<NTPSnippetsStatusService>(signin_manager, pref_service));
+      base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
+                                                       pref_service));
   service->set_ntp_snippets_service(provider.get());
   service->RegisterProvider(std::move(provider));
 }
