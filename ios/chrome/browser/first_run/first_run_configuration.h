@@ -10,8 +10,6 @@
 // This class holds the state of the first run flow.
 @interface FirstRunConfiguration : NSObject
 
-@property(nonatomic, assign) BOOL dataReductionEnabled;
-@property(nonatomic, assign) BOOL dataReductionSwitchToggled;
 @property(nonatomic, assign) BOOL signInAttempted;
 @property(nonatomic, assign) BOOL hasSSOAccount;
 

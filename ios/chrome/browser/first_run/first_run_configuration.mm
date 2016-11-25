@@ -6,8 +6,6 @@
 
 @implementation FirstRunConfiguration
 
-@synthesize dataReductionEnabled = _dataReductionEnabled;
-@synthesize dataReductionSwitchToggled = _dataReductionSwitchToggled;
 @synthesize signInAttempted = _signInAttempted;
 @synthesize hasSSOAccount = _hasSSOAccount;
 
