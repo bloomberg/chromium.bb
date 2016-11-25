@@ -44,7 +44,7 @@ namespace {
 std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
   // TODO(bruthig): Use constants instead of magic numbers.
   auto box_layout =
-      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 4, 8, 4);
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 4, 8, 0);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(

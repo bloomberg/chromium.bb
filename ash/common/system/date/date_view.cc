@@ -167,7 +167,8 @@ DateView::DateView(SystemTrayItem* owner)
   if (UseMd()) {
     // TODO(tdanderson): Tweak spacing and layout for material design.
     views::BoxLayout* box_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 8, 0, 0);
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    box_layout->set_inside_border_insets(gfx::Insets(0, 12, 0, 8));
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     box_layout->set_cross_axis_alignment(
