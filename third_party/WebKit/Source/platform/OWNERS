@@ -18,3 +18,7 @@ senorblanco@chromium.org
 thakis@chromium.org
 tkent@chromium.org
 vollick@chromium.org
+
+# In addition to the above, API_OWNERS are also adequate reviewers
+# for adding / changing the status of a feature.
+per-file RuntimeEnabledFeatures.in=file://third_party/WebKit/API_OWNERS
