@@ -6799,18 +6799,12 @@ class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
 
   const net::test_server::HttpRequest* FindAccumulatedRequest(
       const GURL& url_to_find) {
-    // net::test_server::HttpRequest::GetURL hardcodes "http://localhost/" part.
-    GURL::Replacements replacements;
-    replacements.SetHostStr("localhost");
-    replacements.ClearPort();
-    replacements.SetSchemeStr("http");
     DCHECK(url_to_find.SchemeIsHTTPOrHTTPS());
-    GURL canonical_url_to_find = url_to_find.ReplaceComponents(replacements);
 
     auto it = std::find_if(
         accumulated_requests_.begin(), accumulated_requests_.end(),
-        [&canonical_url_to_find](const net::test_server::HttpRequest& request) {
-          return request.GetURL() == canonical_url_to_find;
+        [&url_to_find](const net::test_server::HttpRequest& request) {
+          return request.GetURL() == url_to_find;
         });
     if (it == accumulated_requests_.end())
       return nullptr;

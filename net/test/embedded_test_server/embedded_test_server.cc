@@ -177,6 +177,7 @@ void EmbeddedTestServer::ShutdownOnIOThread() {
 void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                                        std::unique_ptr<HttpRequest> request) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+  request->base_url = base_url_;
 
   for (const auto& monitor : request_monitors_)
     monitor.Run(*request);
