@@ -545,7 +545,7 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
   stats->typing_noise_detected =
       (base::subtle::Acquire_Load(&typing_detected_) != false);
-  GetAecStats(audio_processing_.get()->echo_cancellation(), stats);
+  GetAudioProcessingStats(audio_processing_.get(), stats);
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(

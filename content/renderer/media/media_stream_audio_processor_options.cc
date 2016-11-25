@@ -480,47 +480,21 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing) {
   CHECK_EQ(err, 0);
 }
 
-void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
-                 webrtc::AudioProcessorInterface::AudioProcessorStats* stats) {
-  // These values can take on valid negative values, so use the lowest possible
-  // level as default rather than -1.
-  stats->echo_return_loss = -100;
-  stats->echo_return_loss_enhancement = -100;
+void GetAudioProcessingStats(
+    AudioProcessing* audio_processing,
+    webrtc::AudioProcessorInterface::AudioProcessorStats* stats) {
+  // TODO(ivoc): Change the APM stats to use rtc::Optional instead of default
+  //             values.
+  auto apm_stats = audio_processing->GetStatistics();
+  stats->echo_return_loss = apm_stats.echo_return_loss.instant();
+  stats->echo_return_loss_enhancement =
+      apm_stats.echo_return_loss_enhancement.instant();
+  stats->aec_divergent_filter_fraction = apm_stats.divergent_filter_fraction;
 
-  // The median value can also be negative, but in practice -1 is only used to
-  // signal insufficient data, since the resolution is limited to multiples
-  // of 4ms.
-  stats->echo_delay_median_ms = -1;
-  stats->echo_delay_std_ms = -1;
+  stats->echo_delay_median_ms = apm_stats.delay_median;
+  stats->echo_delay_std_ms = apm_stats.delay_standard_deviation;
 
-  // TODO(ajm): Re-enable this metric once we have a reliable implementation.
-  stats->aec_quality_min = -1.0f;
-
-  if (!echo_cancellation->are_metrics_enabled() ||
-      !echo_cancellation->is_delay_logging_enabled() ||
-      !echo_cancellation->is_enabled()) {
-    return;
-  }
-
-  // TODO(ajm): we may want to use VoECallReport::GetEchoMetricsSummary
-  // here, but it appears to be unsuitable currently. Revisit after this is
-  // investigated: http://b/issue?id=5666755
-  webrtc::EchoCancellation::Metrics echo_metrics;
-  if (!echo_cancellation->GetMetrics(&echo_metrics)) {
-    stats->echo_return_loss = echo_metrics.echo_return_loss.instant;
-    stats->echo_return_loss_enhancement =
-        echo_metrics.echo_return_loss_enhancement.instant;
-    stats->aec_divergent_filter_fraction =
-        echo_metrics.divergent_filter_fraction;
-  }
-
-  int median = 0, std = 0;
-  float dummy = 0;
-  if (echo_cancellation->GetDelayMetrics(&median, &std, &dummy) ==
-      webrtc::AudioProcessing::kNoError) {
-    stats->echo_delay_median_ms = median;
-    stats->echo_delay_std_ms = std;
-  }
+  stats->residual_echo_likelihood = apm_stats.residual_echo_likelihood;
 }
 
 std::vector<webrtc::Point> GetArrayGeometryPreferringConstraints(
