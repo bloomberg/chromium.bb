@@ -37,6 +37,9 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -703,8 +706,13 @@ class VirtualKeyboardRootWindowControllerTest
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
-    Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
+    keyboard::SetTouchKeyboardEnabled(true);
+    Shell::GetInstance()->CreateKeyboard();
+  }
+
+  void TearDown() override {
+    keyboard::SetTouchKeyboardEnabled(false);
+    test::AshTestBase::TearDown();
   }
 
  private:
@@ -743,9 +751,9 @@ class TargetHitTestEventHandler : public ui::test::TestEventHandler {
 };
 
 // Test for http://crbug.com/297858. Virtual keyboard container should only show
-// on primary root window.
+// on primary root window if no window has touch capability.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
-       VirtualKeyboardOnPrimaryRootWindowOnly) {
+       VirtualKeyboardOnPrimaryRootWindowDefault) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -761,6 +769,162 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
                                   kShellWindowId_VirtualKeyboardContainer));
   ASSERT_FALSE(Shell::GetContainer(secondary_root_window,
                                    kShellWindowId_VirtualKeyboardContainer));
+}
+
+// Test for http://crbug.com/303429. Virtual keyboard container should show on
+// a display which has touch capability.
+TEST_F(VirtualKeyboardRootWindowControllerTest,
+       VirtualKeyboardOnTouchableDisplayOnly) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x500,500x500");
+  display::Display secondary_display =
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetTouchSupport(secondary_display.id(),
+                       display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
+
+  // The primary display doesn't have touch capability and the secondary display
+  // does.
+  ASSERT_NE(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+            display::Screen::GetScreen()->GetPrimaryDisplay().touch_support());
+  ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+            Shell::GetInstance()
+                ->display_manager()
+                ->GetSecondaryDisplay()
+                .touch_support());
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* secondary_root_window = root_windows[0] == primary_root_window
+                                            ? root_windows[1]
+                                            : root_windows[0];
+
+  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
+  ASSERT_FALSE(Shell::GetContainer(primary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_TRUE(Shell::GetContainer(secondary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+
+  // Move the focus to the primary display.
+  aura::Window* focusable_window_in_primary_display =
+      CreateTestWindowInShellWithBounds(
+          primary_root_window->GetBoundsInScreen());
+  ASSERT_EQ(primary_root_window,
+            focusable_window_in_primary_display->GetRootWindow());
+  focusable_window_in_primary_display->Focus();
+  ASSERT_TRUE(focusable_window_in_primary_display->HasFocus());
+
+  // Virtual keyboard shows up on the secondary display even if a window in the
+  // primary screen has the focus.
+  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
+  EXPECT_FALSE(Shell::GetContainer(primary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+  EXPECT_TRUE(Shell::GetContainer(secondary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+}
+
+// Test for http://crbug.com/303429. If both of displays have touch capability,
+// virtual keyboard follows the input focus.
+TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x500,500x500");
+  const int64_t primary_display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetTouchSupport(primary_display_id,
+                       display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
+  const int64_t secondary_display_id =
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi(Shell::GetInstance()->display_manager())
+      .SetTouchSupport(secondary_display_id,
+                       display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE);
+
+  // Both of displays have touch capability.
+  ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+            display::Screen::GetScreen()->GetPrimaryDisplay().touch_support());
+  ASSERT_EQ(display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE,
+            Shell::GetInstance()
+                ->display_manager()
+                ->GetSecondaryDisplay()
+                .touch_support());
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* secondary_root_window = root_windows[0] == primary_root_window
+                                            ? root_windows[1]
+                                            : root_windows[0];
+  aura::Window* focusable_window_in_primary_display =
+      CreateTestWindowInShellWithBounds(
+          primary_root_window->GetBoundsInScreen());
+  ASSERT_EQ(primary_root_window,
+            focusable_window_in_primary_display->GetRootWindow());
+  aura::Window* focusable_window_in_secondary_display =
+      CreateTestWindowInShellWithBounds(
+          secondary_root_window->GetBoundsInScreen());
+  ASSERT_EQ(secondary_root_window,
+            focusable_window_in_secondary_display->GetRootWindow());
+
+  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
+  EXPECT_TRUE(Shell::GetContainer(primary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+  EXPECT_FALSE(Shell::GetContainer(secondary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+
+  // Move the focus to the secondary display.
+  focusable_window_in_secondary_display->Focus();
+  ASSERT_TRUE(focusable_window_in_secondary_display->HasFocus());
+
+  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
+  ASSERT_FALSE(Shell::GetContainer(primary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_TRUE(Shell::GetContainer(secondary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+
+  // Move back focus to the primary display.
+  focusable_window_in_primary_display->Focus();
+  ASSERT_TRUE(focusable_window_in_primary_display->HasFocus());
+
+  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
+  EXPECT_TRUE(Shell::GetContainer(primary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+  EXPECT_FALSE(Shell::GetContainer(secondary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+}
+
+// Test for http://crbug.com/303429. Even if both of display don't have touch
+// capability, the virtual keyboard shows up on the specified display.
+TEST_F(VirtualKeyboardRootWindowControllerTest,
+       VirtualKeyboardShowOnSpecifiedDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x500,500x500");
+  display::Display secondary_display =
+      Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* secondary_root_window = root_windows[0] == primary_root_window
+                                            ? root_windows[1]
+                                            : root_windows[0];
+
+  ASSERT_TRUE(Shell::GetContainer(primary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_FALSE(Shell::GetContainer(secondary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+
+  const int64_t secondary_display_id = secondary_display.id();
+  keyboard::KeyboardController::GetInstance()->ShowKeyboardInDisplay(
+      secondary_display_id);
+
+  EXPECT_FALSE(Shell::GetContainer(primary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
+  EXPECT_TRUE(Shell::GetContainer(secondary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
 }
 
 // Test for http://crbug.com/263599. Virtual keyboard should be able to receive

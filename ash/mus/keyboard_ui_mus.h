@@ -5,6 +5,8 @@
 #ifndef ASH_MUS_KEYBOARD_UI_MUS_H_
 #define ASH_MUS_KEYBOARD_UI_MUS_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "ash/common/keyboard/keyboard_ui.h"
@@ -30,6 +32,7 @@ class KeyboardUIMus : public KeyboardUI,
   // KeyboardUI:
   void Hide() override;
   void Show() override;
+  void ShowInDisplay(const int64_t display_id) override;
   bool IsEnabled() override;
 
   // keyboard::mojom::KeyboardObserver:

@@ -30,6 +30,10 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
   void Show() override {
     keyboard::KeyboardController::GetInstance()->ShowKeyboard(true);
   }
+  void ShowInDisplay(const int64_t display_id) override {
+    keyboard::KeyboardController::GetInstance()->ShowKeyboardInDisplay(
+        display_id);
+  }
   void Hide() override {
     // Do nothing as this is called from ash::Shell, which also calls through
     // to the appropriate keyboard functions.

@@ -9,14 +9,17 @@
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -27,7 +30,9 @@
 namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf), icon_(new views::ImageView) {
+    : TrayBackgroundView(wm_shelf),
+      icon_(new views::ImageView),
+      wm_shelf_(wm_shelf) {
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
     SetContentsBackground(false);
@@ -78,7 +83,9 @@ void VirtualKeyboardTray::HideBubbleWithView(
 void VirtualKeyboardTray::ClickedOutsideBubble() {}
 
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
-  WmShell::Get()->keyboard_ui()->Show();
+  const int64_t display_id =
+      wm_shelf_->GetWindow()->GetDisplayNearestWindow().id();
+  WmShell::Get()->keyboard_ui()->ShowInDisplay(display_id);
   // Normally, active status is set when virtual keyboard is shown/hidden,
   // however, showing virtual keyboard happens asynchronously and, especially
   // the first time, takes some time. We need to set active status here to

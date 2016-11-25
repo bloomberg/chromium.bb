@@ -138,6 +138,13 @@ bool DisplayManagerTestApi::SetDisplayUIScale(int64_t id, float ui_scale) {
   return display_manager_->SetDisplayMode(id, mode);
 }
 
+void DisplayManagerTestApi::SetTouchSupport(
+    int64_t display_id,
+    display::Display::TouchSupport touch_support) {
+  display_manager_->FindDisplayForId(display_id)
+      ->set_touch_support(touch_support);
+}
+
 ScopedDisable125DSFForUIScaling::ScopedDisable125DSFForUIScaling() {
   ManagedDisplayInfo::SetUse125DSFForUIScalingForTest(false);
 }

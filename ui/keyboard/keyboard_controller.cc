@@ -22,6 +22,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
@@ -165,12 +166,14 @@ void CallbackAnimationObserver::OnLayerAnimationAborted(
 // static
 KeyboardController* KeyboardController::instance_ = NULL;
 
-KeyboardController::KeyboardController(KeyboardUI* ui)
+KeyboardController::KeyboardController(KeyboardUI* ui,
+                                       KeyboardLayoutDelegate* delegate)
     : ui_(ui),
+      layout_delegate_(delegate),
       input_method_(NULL),
       keyboard_visible_(false),
       show_on_resize_(false),
-      lock_keyboard_(false),
+      keyboard_locked_(false),
       keyboard_mode_(FULL_WIDTH),
       type_(ui::TEXT_INPUT_TYPE_NONE),
       weak_factory_(this) {
@@ -243,7 +246,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
   NotifyKeyboardBoundsChanging(gfx::Rect());
 
-  set_lock_keyboard(false);
+  set_keyboard_locked(false);
 
   ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
   animation_observer_.reset(new CallbackAnimationObserver(
@@ -294,8 +297,13 @@ void KeyboardController::SetKeyboardMode(KeyboardMode mode) {
 }
 
 void KeyboardController::ShowKeyboard(bool lock) {
-  set_lock_keyboard(lock);
-  ShowKeyboardInternal();
+  set_keyboard_locked(lock);
+  ShowKeyboardInternal(display::kInvalidDisplayId);
+}
+
+void KeyboardController::ShowKeyboardInDisplay(int64_t display_id) {
+  set_keyboard_locked(true);
+  ShowKeyboardInternal(display_id);
 }
 
 void KeyboardController::OnWindowHierarchyChanged(
@@ -359,7 +367,7 @@ void KeyboardController::OnTextInputStateChanged(
 
   type_ = client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 
-  if (type_ == ui::TEXT_INPUT_TYPE_NONE && !lock_keyboard_) {
+  if (type_ == ui::TEXT_INPUT_TYPE_NONE && !keyboard_locked_) {
     if (keyboard_visible_) {
       // Set the visibility state here so that any queries for visibility
       // before the timer fires returns the correct future value.
@@ -392,11 +400,12 @@ void KeyboardController::OnInputMethodDestroyed(
 }
 
 void KeyboardController::OnShowImeIfNeeded() {
-  if (IsKeyboardEnabled())
-    ShowKeyboardInternal();
+  // Calling |ShowKeyboardInternal| may move the keyboard to another display.
+  if (IsKeyboardEnabled() && !keyboard_locked())
+    ShowKeyboardInternal(display::kInvalidDisplayId);
 }
 
-void KeyboardController::ShowKeyboardInternal() {
+void KeyboardController::ShowKeyboardInternal(int64_t display_id) {
   if (!container_.get())
     return;
 
@@ -409,6 +418,13 @@ void KeyboardController::ShowKeyboardInternal() {
   }
 
   ui_->ReloadKeyboardIfNeeded();
+
+  if (layout_delegate_ != nullptr) {
+    if (display_id != display::kInvalidDisplayId)
+      layout_delegate_->MoveKeyboardToDisplay(display_id);
+    else
+      layout_delegate_->MoveKeyboardToTouchableDisplay();
+  }
 
   if (keyboard_visible_) {
     return;

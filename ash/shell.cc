@@ -313,8 +313,6 @@ void Shell::OnRootWindowAdded(WmWindow* root_window) {
 }
 
 void Shell::CreateKeyboard() {
-  // TODO(bshe): Primary root window controller may not be the controller to
-  // attach virtual keyboard. See http://crbug.com/303429
   InitKeyboard();
   GetPrimaryRootWindowController()->ActivateKeyboard(
       keyboard::KeyboardController::GetInstance());
@@ -845,9 +843,17 @@ void Shell::InitKeyboard() {
             keyboard::KeyboardController::GetInstance());
       }
     }
+#if defined(OS_CHROMEOS)
     keyboard::KeyboardController::ResetInstance(
         new keyboard::KeyboardController(
-            wm_shell_->delegate()->CreateKeyboardUI()));
+            wm_shell_->delegate()->CreateKeyboardUI(),
+            virtual_keyboard_controller_.get()));
+#else
+    keyboard::KeyboardController::ResetInstance(
+        new keyboard::KeyboardController(
+            wm_shell_->delegate()->CreateKeyboardUI(), nullptr));
+
+#endif
   }
 }
 

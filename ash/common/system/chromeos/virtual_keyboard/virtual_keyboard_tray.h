@@ -49,6 +49,8 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
 
+  WmShelf* wm_shelf_;
+
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardTray);
 };
 

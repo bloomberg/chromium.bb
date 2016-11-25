@@ -389,7 +389,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   bool change_work_area =
       (!base::CommandLine::ForCurrentProcess()->HasSwitch(
            ::switches::kUseNewVirtualKeyboardBehavior) ||
-       keyboard::KeyboardController::GetInstance()->get_lock_keyboard());
+       keyboard::KeyboardController::GetInstance()->keyboard_locked());
 
   keyboard_bounds_ = new_bounds;
   LayoutShelfAndUpdateBounds(change_work_area);

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/display/display.h"
 #include "ui/display/display_export.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/types/display_constants.h"
@@ -55,6 +56,10 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Sets the UI scale for the |display_id|. Returns false if the
   // display_id is not an internal display.
   bool SetDisplayUIScale(int64_t display_id, float scale);
+
+  // Sets the touch support for |display_id|.
+  void SetTouchSupport(int64_t display_id,
+                       display::Display::TouchSupport touch_support);
 
  private:
   friend class ScopedSetInternalDisplayId;

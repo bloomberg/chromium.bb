@@ -140,7 +140,7 @@ bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
   if (!controller)
     return false;
 
-  keyboard::KeyboardController::GetInstance()->set_lock_keyboard(state);
+  keyboard::KeyboardController::GetInstance()->set_keyboard_locked(state);
   return true;
 }
 

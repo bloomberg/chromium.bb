@@ -6,15 +6,21 @@
 
 #include <vector>
 
+#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -28,6 +34,35 @@ bool IsSmartVirtualKeyboardEnabled() {
     return false;
   }
   return keyboard::IsSmartDeployEnabled();
+}
+
+void MoveKeyboardToDisplayInternal(const int64_t display_id) {
+  // Remove the keyboard from curent root window controller
+  WmShell::Get()->keyboard_ui()->Hide();
+  RootWindowController::ForWindow(
+      keyboard::KeyboardController::GetInstance()->GetContainerWindow())
+      ->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
+
+  for (RootWindowController* controller :
+       Shell::GetInstance()->GetAllRootWindowControllers()) {
+    if (display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(controller->GetRootWindow())
+            .id() == display_id) {
+      controller->ActivateKeyboard(keyboard::KeyboardController::GetInstance());
+      break;
+    }
+  }
+}
+
+void MoveKeyboardToFirstTouchableDisplay() {
+  // Move the keyboard to the first display with touch capability.
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    if (display.touch_support() ==
+        display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE) {
+      MoveKeyboardToDisplayInternal(display.id());
+      return;
+    }
+  }
 }
 
 }  // namespace
@@ -74,6 +109,53 @@ void VirtualKeyboardController::OnKeyboardDeviceConfigurationChanged() {
 void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
   ignore_external_keyboard_ = !ignore_external_keyboard_;
   UpdateKeyboardEnabled();
+}
+
+void VirtualKeyboardController::MoveKeyboardToDisplay(int64_t display_id) {
+  DCHECK(keyboard::KeyboardController::GetInstance() != nullptr);
+  DCHECK(display_id != display::kInvalidDisplayId);
+
+  aura::Window* container =
+      keyboard::KeyboardController::GetInstance()->GetContainerWindow();
+  DCHECK(container != nullptr);
+  const display::Screen* screen = display::Screen::GetScreen();
+  const display::Display current_display =
+      screen->GetDisplayNearestWindow(container);
+
+  if (display_id != current_display.id())
+    MoveKeyboardToDisplayInternal(display_id);
+}
+
+void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
+  DCHECK(keyboard::KeyboardController::GetInstance() != nullptr);
+
+  aura::Window* container =
+      keyboard::KeyboardController::GetInstance()->GetContainerWindow();
+  DCHECK(container != nullptr);
+
+  const display::Screen* screen = display::Screen::GetScreen();
+  const display::Display current_display =
+      screen->GetDisplayNearestWindow(container);
+
+  if (WmShell::Get()->GetFocusedWindow() != nullptr) {
+    // Move the virtual keyboard to the focused display if that display has
+    // touch capability or keyboard is locked
+    const display::Display focused_display =
+        WmShell::Get()->GetFocusedWindow()->GetDisplayNearestWindow();
+    if (current_display.id() != focused_display.id() &&
+        focused_display.id() != display::kInvalidDisplayId &&
+        focused_display.touch_support() ==
+            display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE) {
+      MoveKeyboardToDisplayInternal(focused_display.id());
+      return;
+    }
+  }
+
+  if (current_display.touch_support() !=
+      display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE) {
+    // The keyboard is currently on the display without touch capability.
+    MoveKeyboardToFirstTouchableDisplay();
+  }
 }
 
 void VirtualKeyboardController::UpdateDevices() {

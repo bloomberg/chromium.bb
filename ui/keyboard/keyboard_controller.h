@@ -15,6 +15,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_export.h"
+#include "ui/keyboard/keyboard_layout_delegate.h"
 
 namespace aura {
 class Window;
@@ -58,7 +59,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   };
 
   // Takes ownership of |ui|.
-  explicit KeyboardController(KeyboardUI* ui);
+  explicit KeyboardController(KeyboardUI* ui, KeyboardLayoutDelegate* delegate);
   ~KeyboardController() override;
 
   // Returns the container for the keyboard, which is owned by
@@ -87,9 +88,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   KeyboardUI* ui() { return ui_.get(); }
 
-  void set_lock_keyboard(bool lock) { lock_keyboard_ = lock; }
+  void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
 
-  bool get_lock_keyboard() const { return lock_keyboard_; }
+  bool keyboard_locked() const { return keyboard_locked_; }
 
   KeyboardMode keyboard_mode() const { return keyboard_mode_; }
 
@@ -98,6 +99,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Force the keyboard to show up if not showing and lock the keyboard if
   // |lock| is true.
   void ShowKeyboard(bool lock);
+
+  // Force the keyboard to show up in the specific display if not showing and
+  // lock the keyboard
+  void ShowKeyboardInDisplay(const int64_t display_id);
 
   // Sets the active keyboard controller. KeyboardController takes ownership of
   // the instance. Calling ResetIntance with a new instance destroys the
@@ -141,7 +146,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void OnShowImeIfNeeded() override;
 
   // Show virtual keyboard immediately with animation.
-  void ShowKeyboardInternal();
+  void ShowKeyboardInternal(int64_t display_id);
 
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
@@ -152,6 +157,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void HideAnimationFinished();
 
   std::unique_ptr<KeyboardUI> ui_;
+  KeyboardLayoutDelegate* layout_delegate_;
   std::unique_ptr<aura::Window> container_;
   // CallbackAnimationObserver should destructed before container_ because it
   // uses container_'s animator.
@@ -160,7 +166,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
   bool show_on_resize_;
-  bool lock_keyboard_;
+  // If true, the keyboard is always visible even if no window has input focus.
+  bool keyboard_locked_;
   KeyboardMode keyboard_mode_;
   ui::TextInputType type_;
 

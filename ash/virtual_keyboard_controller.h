@@ -5,17 +5,21 @@
 #ifndef ASH_VIRTUAL_KEYBOARD_CONTROLLER_H_
 #define ASH_VIRTUAL_KEYBOARD_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "ui/events/devices/input_device_event_observer.h"
+#include "ui/keyboard/keyboard_layout_delegate.h"
 
 namespace ash {
 
 // This class observes input device changes for the virtual keyboard.
 class ASH_EXPORT VirtualKeyboardController
     : public ShellObserver,
-      public ui::InputDeviceEventObserver {
+      public ui::InputDeviceEventObserver,
+      public keyboard::KeyboardLayoutDelegate {
  public:
   VirtualKeyboardController();
   ~VirtualKeyboardController() override;
@@ -32,6 +36,10 @@ class ASH_EXPORT VirtualKeyboardController
   // Toggles whether the presense of an external keyboard should be ignored
   // when determining whether or not to show the on-screen keyboard.
   void ToggleIgnoreExternalKeyboard();
+
+  // keyboard::KeyboardLayoutDelegate
+  void MoveKeyboardToDisplay(int64_t display_id) override;
+  void MoveKeyboardToTouchableDisplay() override;
 
  private:
   // Updates the list of active input devices.

@@ -166,6 +166,19 @@ class KeyboardContainerObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(KeyboardContainerObserver);
 };
 
+class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
+ public:
+  TestKeyboardLayoutDelegate() {}
+  ~TestKeyboardLayoutDelegate() override {}
+
+  // Overridden from keyboard::KeyboardLayoutDelegate
+  void MoveKeyboardToDisplay(int64_t /* display_id */) override {}
+  void MoveKeyboardToTouchableDisplay() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestKeyboardLayoutDelegate);
+};
+
 }  // namespace
 
 class KeyboardControllerTest : public testing::Test,
@@ -187,7 +200,8 @@ class KeyboardControllerTest : public testing::Test,
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
     ui_ = new TestKeyboardUI(aura_test_helper_->host()->GetInputMethod());
-    controller_.reset(new KeyboardController(ui_));
+    layout_delegate_.reset(new TestKeyboardLayoutDelegate());
+    controller_.reset(new KeyboardController(ui_, layout_delegate_.get()));
     controller()->AddObserver(this);
   }
 
@@ -266,6 +280,7 @@ class KeyboardControllerTest : public testing::Test,
   int number_of_calls_;
   gfx::Rect notified_bounds_;
   KeyboardUI* ui_;
+  std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<KeyboardController> controller_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   bool keyboard_closed_;
@@ -512,7 +527,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_TRUE(keyboard_container->IsVisible());
 
   // Lock keyboard.
-  controller()->set_lock_keyboard(true);
+  controller()->set_keyboard_locked(true);
 
   SetFocus(&no_input_client_0);
   // Keyboard should not try to hide itself as it is locked.
@@ -523,7 +538,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_TRUE(keyboard_container->IsVisible());
 
   // Unlock keyboard.
-  controller()->set_lock_keyboard(false);
+  controller()->set_keyboard_locked(false);
 
   // Keyboard should hide when focus on no input client.
   SetFocus(&no_input_client_1);

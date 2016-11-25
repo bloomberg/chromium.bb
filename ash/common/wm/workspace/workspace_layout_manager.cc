@@ -134,7 +134,7 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   bool change_work_area =
       (!base::CommandLine::ForCurrentProcess()->HasSwitch(
            ::switches::kUseNewVirtualKeyboardBehavior) ||
-       keyboard::KeyboardController::GetInstance()->get_lock_keyboard());
+       keyboard::KeyboardController::GetInstance()->keyboard_locked());
   if (!change_work_area)
     return;
 

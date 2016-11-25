@@ -190,11 +190,6 @@ void ChromeKeyboardUI::RenderViewCreated(
 }
 
 void ChromeKeyboardUI::ShowKeyboardContainer(aura::Window* container) {
-  // TODO(bshe): Implement logic to decide which root window should display
-  // virtual keyboard. http://crbug.com/303429
-  if (container->GetRootWindow() != ash::Shell::GetPrimaryRootWindow())
-    NOTIMPLEMENTED();
-
   KeyboardUIContent::ShowKeyboardContainer(container);
 }
 
