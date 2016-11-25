@@ -68,6 +68,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // instance. Encoded either as UTF-16 or latin-1 depending on content.
   String text_content_;
   Vector<NGLayoutInlineItem> items_;
+
+  // TODO(kojii): This should move to somewhere else when we move PrepareLayout
+  // to the correct place.
+  bool is_bidi_enabled_ = false;
 };
 
 // Class representing a single text node or styled inline element with text

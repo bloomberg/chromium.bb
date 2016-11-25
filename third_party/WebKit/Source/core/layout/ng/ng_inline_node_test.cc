@@ -41,12 +41,6 @@ class NGInlineNodeForTest : public NGInlineNode {
 
 class NGInlineBoxTest : public ::testing::Test {};
 
-TEST_F(NGInlineBoxTest, SegmentEmpty) {
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
-  NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
-  box->SegmentText();
-}
-
 TEST_F(NGInlineBoxTest, SegmentASCII) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());

@@ -50,7 +50,8 @@ void NGInlineNode::PrepareLayout() {
     last_inline_ = curr;
 
   CollectInlines(start_inline_, last_inline_);
-  SegmentText();
+  if (is_bidi_enabled_)
+    SegmentText();
   ShapeText();
 }
 
@@ -64,6 +65,9 @@ void NGInlineNode::CollectInlines(LayoutObject* start, LayoutObject* last) {
   CollectInlines(start, last, &builder);
   builder.ExitBlock();
   text_content_ = builder.ToString();
+
+  is_bidi_enabled_ = !text_content_.isEmpty() &&
+                     !(text_content_.is8Bit() && !builder.HasBidiControls());
 }
 
 void NGInlineNode::CollectInlines(LayoutObject* start,
@@ -110,20 +114,21 @@ void NGInlineNode::CollectInlines(LayoutObject* start,
 }
 
 void NGInlineNode::SegmentText() {
-  if (text_content_.isEmpty())
-    return;
   // TODO(kojii): Move this to caller, this will be used again after line break.
   NGBidiParagraph bidi;
   text_content_.ensure16Bit();
   if (!bidi.SetParagraph(text_content_, block_style_.get())) {
     // On failure, give up bidi resolving and reordering.
     NOTREACHED();
+    is_bidi_enabled_ = false;
     return;
   }
-  UBiDiDirection direction = bidi.Direction();
-  if (direction != UBIDI_MIXED) {
-    // TODO(kojii): Only LTR or RTL, we can have an optimized code path.
+  if (bidi.Direction() == UBIDI_LTR) {
+    // All runs are LTR, no need to reorder.
+    is_bidi_enabled_ = false;
+    return;
   }
+
   unsigned item_index = 0;
   for (unsigned start = 0; start < text_content_.length();) {
     UBiDiLevel level;

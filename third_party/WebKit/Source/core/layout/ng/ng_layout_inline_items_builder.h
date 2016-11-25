@@ -39,6 +39,9 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
 
   void SetIsSVGText(bool value) { is_svgtext_ = value; }
 
+  // Returns whether the items contain any Bidi controls.
+  bool HasBidiControls() const { return has_bidi_controls_; }
+
   // Append a string.
   // When appending, spaces are collapsed according to CSS Text, The white space
   // processing rules
@@ -76,6 +79,7 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   bool is_last_collapsible_space_ = true;
   bool has_pending_newline_ = false;
   bool is_svgtext_ = false;
+  bool has_bidi_controls_ = false;
 
   // Because newlines may be removed depends on following characters, newlines
   // at the end of input string is not added to |text_| but instead

@@ -253,6 +253,7 @@ void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
 void NGLayoutInlineItemsBuilder::Enter(LayoutObject* node,
                                        UChar character_to_exit) {
   exits_.append(OnExitNode{node, character_to_exit});
+  has_bidi_controls_ = true;
 }
 
 void NGLayoutInlineItemsBuilder::ExitBlock() {
