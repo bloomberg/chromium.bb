@@ -1784,6 +1784,7 @@
       'quic/core/quic_time_test.cc',
       'quic/core/quic_unacked_packet_map_test.cc',
       'quic/core/quic_utils_test.cc',
+      'quic/core/quic_versions_test.cc',
       'quic/core/quic_write_blocked_list_test.cc',
       'quic/core/spdy_utils_test.cc',
       'quic/quartc/quartc_alarm_factory_test.cc',

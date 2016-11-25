@@ -47,119 +47,6 @@ TEST(QuicProtocolTest, IsAwaitingPacket) {
   EXPECT_TRUE(IsAwaitingPacket(ack_frame2, 50u, 20u));
 }
 
-TEST(QuicProtocolTest, QuicVersionToQuicTag) {
-// If you add a new version to the QuicVersion enum you will need to add a new
-// case to QuicVersionToQuicTag, otherwise this test will fail.
-
-// TODO(rtenneti): Enable checking of Log(ERROR) messages.
-#if 0
-  // Any logs would indicate an unsupported version which we don't expect.
-  ScopedMockLog log(kDoNotCaptureLogsYet);
-  EXPECT_CALL(log, Log(_, _, _)).Times(0);
-  log.StartCapturingLogs();
-#endif
-
-  // Explicitly test a specific version.
-  EXPECT_EQ(MakeQuicTag('Q', '0', '3', '4'),
-            QuicVersionToQuicTag(QUIC_VERSION_34));
-
-  // Loop over all supported versions and make sure that we never hit the
-  // default case (i.e. all supported versions should be successfully converted
-  // to valid QuicTags).
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    QuicVersion version = kSupportedQuicVersions[i];
-    EXPECT_LT(0u, QuicVersionToQuicTag(version));
-  }
-}
-
-TEST(QuicProtocolTest, QuicVersionToQuicTagUnsupported) {
-// TODO(rtenneti): Enable checking of Log(ERROR) messages.
-#if 0
-  // TODO(rjshade): Change to DFATAL once we actually support multiple versions,
-  // and QuicConnectionTest::SendVersionNegotiationPacket can be changed to use
-  // mis-matched versions rather than relying on QUIC_VERSION_UNSUPPORTED.
-  ScopedMockLog log(kDoNotCaptureLogsYet);
-  EXPECT_CALL(log, Log(base_logging::ERROR, _, "Unsupported QuicVersion: 0"))
-      .Times(1);
-  log.StartCapturingLogs();
-#endif
-
-  EXPECT_EQ(0u, QuicVersionToQuicTag(QUIC_VERSION_UNSUPPORTED));
-}
-
-TEST(QuicProtocolTest, QuicTagToQuicVersion) {
-// If you add a new version to the QuicVersion enum you will need to add a new
-// case to QuicTagToQuicVersion, otherwise this test will fail.
-
-// TODO(rtenneti): Enable checking of Log(ERROR) messages.
-#if 0
-  // Any logs would indicate an unsupported version which we don't expect.
-  ScopedMockLog log(kDoNotCaptureLogsYet);
-  EXPECT_CALL(log, Log(_, _, _)).Times(0);
-  log.StartCapturingLogs();
-#endif
-
-  // Explicitly test specific versions.
-  EXPECT_EQ(QUIC_VERSION_34,
-            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '3', '4')));
-
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    QuicVersion version = kSupportedQuicVersions[i];
-
-    // Get the tag from the version (we can loop over QuicVersions easily).
-    QuicTag tag = QuicVersionToQuicTag(version);
-    EXPECT_LT(0u, tag);
-
-    // Now try converting back.
-    QuicVersion tag_to_quic_version = QuicTagToQuicVersion(tag);
-    EXPECT_EQ(version, tag_to_quic_version);
-    EXPECT_NE(QUIC_VERSION_UNSUPPORTED, tag_to_quic_version);
-  }
-}
-
-TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
-// TODO(rtenneti): Enable checking of Log(ERROR) messages.
-#if 0
-  ScopedMockLog log(kDoNotCaptureLogsYet);
-#ifndef NDEBUG
-  EXPECT_CALL(log,
-              Log(base_logging::INFO, _, "Unsupported QuicTag version: FAKE"))
-      .Times(1);
-#endif
-  log.StartCapturingLogs();
-#endif
-
-  EXPECT_EQ(QUIC_VERSION_UNSUPPORTED,
-            QuicTagToQuicVersion(MakeQuicTag('F', 'A', 'K', 'E')));
-}
-
-TEST(QuicProtocolTest, QuicVersionToString) {
-  EXPECT_EQ("QUIC_VERSION_34", QuicVersionToString(QUIC_VERSION_34));
-  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED",
-            QuicVersionToString(QUIC_VERSION_UNSUPPORTED));
-
-  QuicVersion single_version[] = {QUIC_VERSION_34};
-  QuicVersionVector versions_vector;
-  for (size_t i = 0; i < arraysize(single_version); ++i) {
-    versions_vector.push_back(single_version[i]);
-  }
-  EXPECT_EQ("QUIC_VERSION_34", QuicVersionVectorToString(versions_vector));
-
-  QuicVersion multiple_versions[] = {QUIC_VERSION_UNSUPPORTED, QUIC_VERSION_34};
-  versions_vector.clear();
-  for (size_t i = 0; i < arraysize(multiple_versions); ++i) {
-    versions_vector.push_back(multiple_versions[i]);
-  }
-  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED,QUIC_VERSION_34",
-            QuicVersionVectorToString(versions_vector));
-
-  // Make sure that all supported versions are present in QuicVersionToString.
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    QuicVersion version = kSupportedQuicVersions[i];
-    EXPECT_NE("QUIC_VERSION_UNSUPPORTED", QuicVersionToString(version));
-  }
-}
-
 TEST(QuicProtocolTest, AckFrameToString) {
   QuicAckFrame frame;
   frame.largest_observed = 2;
@@ -260,41 +147,6 @@ TEST(QuicProtocolTest, PathCloseFrameToString) {
   EXPECT_EQ("{ path_id: 1 }\n", stream.str());
 }
 
-TEST(QuicProtocolTest, FilterSupportedVersions) {
-  QuicFlagSaver flags;
-  QuicVersionVector all_versions = {QUIC_VERSION_34, QUIC_VERSION_35,
-                                    QUIC_VERSION_36};
-
-  FLAGS_quic_enable_version_36_v3 = false;
-
-  QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
-  ASSERT_EQ(2u, filtered_versions.size());
-  EXPECT_EQ(QUIC_VERSION_34, filtered_versions[0]);
-}
-
-TEST(QuicProtocolTest, FilterSupportedVersionsAllVersions) {
-  QuicFlagSaver flags;
-  QuicVersionVector all_versions = {QUIC_VERSION_34, QUIC_VERSION_35,
-                                    QUIC_VERSION_36};
-
-  FLAGS_quic_enable_version_36_v3 = true;
-
-  QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
-  ASSERT_EQ(all_versions, filtered_versions);
-}
-
-TEST(QuicProtocolTest, FilterSupportedVersionsNo36) {
-  QuicFlagSaver flags;
-  QuicVersionVector all_versions = {QUIC_VERSION_34, QUIC_VERSION_35,
-                                    QUIC_VERSION_36};
-
-  FLAGS_quic_enable_version_36_v3 = false;
-
-  all_versions.pop_back();  // Remove 36
-
-  ASSERT_EQ(all_versions, FilterSupportedVersions(all_versions));
-}
-
 TEST(QuicProtocolTest, QuicVersionManager) {
   QuicFlagSaver flags;
   FLAGS_quic_enable_version_36_v3 = false;
@@ -306,19 +158,6 @@ TEST(QuicProtocolTest, QuicVersionManager) {
             manager.GetSupportedVersions());
   EXPECT_EQ(QUIC_VERSION_36, manager.GetSupportedVersions()[0]);
   EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[1]);
-}
-
-TEST(QuicProtocolTest, LookUpVersionByIndex) {
-  QuicVersionVector all_versions = {QUIC_VERSION_34, QUIC_VERSION_35,
-                                    QUIC_VERSION_36};
-  int version_count = all_versions.size();
-  for (int i = -5; i <= version_count + 1; ++i) {
-    if (i >= 0 && i < version_count) {
-      EXPECT_EQ(all_versions[i], VersionOfIndex(all_versions, i)[0]);
-    } else {
-      EXPECT_EQ(QUIC_VERSION_UNSUPPORTED, VersionOfIndex(all_versions, i)[0]);
-    }
-  }
 }
 
 // Tests that a queue contains the expected data after calls to Add().
