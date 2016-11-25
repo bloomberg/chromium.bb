@@ -5814,9 +5814,7 @@
       'tags': [],
       'supported_on': ['chrome_os:54-'],
       'caption': '''Treat external storage devices as read-only.''',
-      'desc': '''Treat external storage devices as read-only.
-
-      This policy is effective only when ExternalStorageDisabled is set to false or not configured.
+      'desc': '''This policy is effective only when ExternalStorageDisabled is set to false or not configured.
 
       When this policy is set to true, users cannot write anything to external storage devices.
 
