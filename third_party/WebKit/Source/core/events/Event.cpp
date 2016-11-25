@@ -225,28 +225,9 @@ void Event::preventDefault() {
 
     const LocalDOMWindow* window =
         m_eventPath ? m_eventPath->windowEventContext().window() : 0;
-    if (window) {
-      const char* devToolsMsg = nullptr;
-      switch (m_handlingPassive) {
-        case PassiveMode::NotPassive:
-        case PassiveMode::NotPassiveDefault:
-          NOTREACHED();
-          break;
-        case PassiveMode::Passive:
-        case PassiveMode::PassiveDefault:
-          devToolsMsg =
-              "Unable to preventDefault inside passive event listener "
-              "invocation.";
-          break;
-        case PassiveMode::PassiveForcedDocumentLevel:
-          devToolsMsg =
-              "Unable to preventDefault inside passive event listener due to "
-              "target being treated as passive. See "
-              "https://www.chromestatus.com/features/5093566007214080";
-          break;
-      }
-      if (devToolsMsg)
-        window->printErrorMessage(devToolsMsg);
+    if (window && m_handlingPassive == PassiveMode::Passive) {
+      window->printErrorMessage(
+          "Unable to preventDefault inside passive event listener invocation.");
     }
     return;
   }

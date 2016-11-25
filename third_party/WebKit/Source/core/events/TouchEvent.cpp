@@ -199,7 +199,8 @@ void logTouchTargetHistogram(EventTarget* eventTarget,
 TouchEvent::TouchEvent()
     : m_causesScrollingIfUncanceled(false),
       m_firstTouchMoveOrStart(false),
-      m_defaultPreventedBeforeCurrentTarget(false) {}
+      m_defaultPreventedBeforeCurrentTarget(false),
+      m_currentTouchAction(TouchActionAuto) {}
 
 TouchEvent::TouchEvent(TouchList* touches,
                        TouchList* targetTouches,
@@ -240,7 +241,8 @@ TouchEvent::TouchEvent(const AtomicString& type,
       m_changedTouches(TouchList::create(initializer.changedTouches())),
       m_causesScrollingIfUncanceled(false),
       m_firstTouchMoveOrStart(false),
-      m_defaultPreventedBeforeCurrentTarget(false) {}
+      m_defaultPreventedBeforeCurrentTarget(false),
+      m_currentTouchAction(TouchActionAuto) {}
 
 TouchEvent::~TouchEvent() {}
 
@@ -258,14 +260,36 @@ void TouchEvent::preventDefault() {
   // A common developer error is to wait too long before attempting to stop
   // scrolling by consuming a touchmove event. Generate a warning if this
   // event is uncancelable.
-  if (!cancelable() && handlingPassive() == PassiveMode::NotPassive && view() &&
-      view()->isLocalDOMWindow() && view()->frame()) {
+  String warningMessage;
+  switch (handlingPassive()) {
+    case PassiveMode::NotPassive:
+      if (!cancelable()) {
+        warningMessage = "Ignored attempt to cancel a " + type() +
+                         " event with cancelable=false, for example "
+                         "because scrolling is in progress and "
+                         "cannot be interrupted.";
+      }
+      break;
+    case PassiveMode::PassiveForcedDocumentLevel:
+      // Only enable the warning when the current touch action is auto because
+      // an author may use touch action but call preventDefault for interop with
+      // browsers that don't support touch-action.
+      if (m_currentTouchAction == TouchActionAuto) {
+        warningMessage =
+            "Unable to preventDefault inside passive event listener due to "
+            "target being treated as passive. See "
+            "https://www.chromestatus.com/features/5093566007214080";
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (!warningMessage.isEmpty() && view() && view()->isLocalDOMWindow() &&
+      view()->frame()) {
     toLocalDOMWindow(view())->frame()->console().addMessage(
         ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
-                               "Ignored attempt to cancel a " + type() +
-                                   " event with cancelable=false, for example "
-                                   "because scrolling is in progress and "
-                                   "cannot be interrupted."));
+                               warningMessage));
   }
 
   if ((type() == EventTypeNames::touchstart ||
