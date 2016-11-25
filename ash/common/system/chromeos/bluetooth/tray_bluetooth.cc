@@ -34,6 +34,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -328,8 +329,14 @@ class BluetoothDetailedView : public TrayDetailsView {
                                       bluetooth_enabled);
     AppendSameTypeDevicesToScrollList(paired_not_connected_devices_, false,
                                       false, bluetooth_enabled);
-    if (discovered_not_paired_devices_.size() > 0)
-      AddScrollSeparator();
+    if (discovered_not_paired_devices_.size() > 0) {
+      if (UseMd()) {
+        scroll_content()->AddChildView(
+            TrayPopupUtils::CreateListItemSeparator(false));
+      } else {
+        AddScrollSeparator();
+      }
+    }
     AppendSameTypeDevicesToScrollList(discovered_not_paired_devices_, false,
                                       false, bluetooth_enabled);
 
