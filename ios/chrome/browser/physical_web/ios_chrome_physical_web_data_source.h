@@ -17,7 +17,8 @@ class PhysicalWebListener;
 @class PhysicalWebScanner;
 
 // iOS implementation of PhysicalWebDataSource
-class IOSChromePhysicalWebDataSource : public PhysicalWebDataSourceImpl {
+class IOSChromePhysicalWebDataSource
+    : public physical_web::PhysicalWebDataSourceImpl {
  public:
   IOSChromePhysicalWebDataSource();
   ~IOSChromePhysicalWebDataSource() override;
