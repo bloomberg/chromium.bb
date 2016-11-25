@@ -100,6 +100,22 @@ TEST(NGUnitsTest, ConvertPhysicalStrutToLogical) {
   EXPECT_EQ(right, logical.block_start);
 }
 
+TEST(NGUnitsTest, ShrinkToFit) {
+  MinAndMaxContentSizes sizes;
+
+  sizes.min_content = LayoutUnit(100);
+  sizes.max_content = LayoutUnit(200);
+  EXPECT_EQ(LayoutUnit(200), sizes.ShrinkToFit(LayoutUnit(300)));
+
+  sizes.min_content = LayoutUnit(100);
+  sizes.max_content = LayoutUnit(300);
+  EXPECT_EQ(LayoutUnit(200), sizes.ShrinkToFit(LayoutUnit(200)));
+
+  sizes.min_content = LayoutUnit(200);
+  sizes.max_content = LayoutUnit(300);
+  EXPECT_EQ(LayoutUnit(200), sizes.ShrinkToFit(LayoutUnit(100)));
+}
+
 }  // namespace
 
 }  // namespace blink

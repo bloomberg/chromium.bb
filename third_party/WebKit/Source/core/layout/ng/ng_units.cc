@@ -9,6 +9,7 @@
 namespace blink {
 
 LayoutUnit MinAndMaxContentSizes::ShrinkToFit(LayoutUnit available_size) const {
+  DCHECK_GE(max_content, min_content);
   return std::min(max_content, std::max(min_content, available_size));
 }
 
