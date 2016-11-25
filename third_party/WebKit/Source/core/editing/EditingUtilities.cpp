@@ -272,8 +272,10 @@ int comparePositions(const VisiblePosition& a, const VisiblePosition& b) {
 
 enum EditableLevel { Editable, RichlyEditable };
 static bool hasEditableLevel(const Node& node, EditableLevel editableLevel) {
-  // TODO(yoichio): We should have this check.
-  // DCHECK(!needsLayoutTreeUpdate(node));
+  DCHECK(node.document().isActive());
+  // TODO(editing-dev): We should have this check:
+  // DCHECK_GE(node.document().lifecycle().state(),
+  //           DocumentLifecycle::StyleClean);
   if (node.isPseudoElement())
     return false;
 
@@ -301,10 +303,24 @@ static bool hasEditableLevel(const Node& node, EditableLevel editableLevel) {
 }
 
 bool hasEditableStyle(const Node& node) {
+  // TODO(editing-dev): We shouldn't check editable style in inactive documents.
+  // We should hoist this check in the call stack, replace it by a DCHECK of
+  // active document and ultimately cleanup the code paths with inactive
+  // documents.  See crbug.com/667681
+  if (!node.document().isActive())
+    return false;
+
   return hasEditableLevel(node, Editable);
 }
 
 bool hasRichlyEditableStyle(const Node& node) {
+  // TODO(editing-dev): We shouldn't check editable style in inactive documents.
+  // We should hoist this check in the call stack, replace it by a DCHECK of
+  // active document and ultimately cleanup the code paths with inactive
+  // documents.  See crbug.com/667681
+  if (!node.document().isActive())
+    return false;
+
   return hasEditableLevel(node, RichlyEditable);
 }
 
