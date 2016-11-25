@@ -3,27 +3,27 @@
 <head>
   <style type="text/css" media="screen">
     div#target {
-        -webkit-animation-name: animation1, animation2;
-        -webkit-animation-duration: 2s;
-        -webkit-animation-timing-function: steps(2);
+        animation-name: animation1, animation2;
+        animation-duration: 2s;
+        animation-timing-function: steps(2);
         background-color: red;
         position: relative;
         width: 100px;
         height: 100px;
     }
-    @-webkit-keyframes animation1 {
+    @keyframes animation1 {
         from {
             left: 0px;
-            -webkit-animation-timing-function: linear;
+            animation-timing-function: linear;
         }       
         to {
             left: 200px;
         }
     }
-    @-webkit-keyframes animation2 {
+    @keyframes animation2 {
         from {
             top: 0px;
-            -webkit-animation-timing-function: linear;
+            animation-timing-function: linear;
         }
         to {
             top: 200px;

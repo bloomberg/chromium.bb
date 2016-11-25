@@ -13,14 +13,14 @@
       height: 100px;
       width: 100px;
       background-color: blue;
-      -webkit-animation-duration: 2s;
-      -webkit-animation-timing-function: ease-in;
-      -webkit-animation-name: anim;
+      animation-duration: 2s;
+      animation-timing-function: ease-in;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { left: 10px; top: 10px; }
-        40% { left: 30px; width: 300px; -webkit-animation-timing-function: ease-out; }
-        60% { top: 40px; height: 400px; -webkit-animation-timing-function: ease-in-out; }
+        40% { left: 30px; width: 300px; animation-timing-function: ease-out; }
+        60% { top: 40px; height: 400px; animation-timing-function: ease-in-out; }
         to  { left: 20px; top: 0px; }
     }
   </style>

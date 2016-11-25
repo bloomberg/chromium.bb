@@ -12,7 +12,7 @@
         }
 
         #movers.moved > .box {
-            -webkit-animation: move 1s 1s linear; /* Note 1 sec delay */
+            animation: move 1s 1s linear; /* Note 1 sec delay */
         }
 
         /* Test that we fetch the current style, not the one snapshotted when the animation started */
@@ -22,10 +22,10 @@
 
         /* Test that fill-mode: backwards works */
         #movers.moved > #filledbox {
-            -webkit-animation: move 1s 1s linear backwards;
+            animation: move 1s 1s linear backwards;
         }
         
-        @-webkit-keyframes move {
+        @keyframes move {
             from { transform: translateX(100px);   }
             to   { transform: translateX(400px); }
         }
@@ -48,9 +48,9 @@
         onload = function() {
             document.getElementById('movers').className = 'moved';
             document.body.offsetTop;
-            check('default', 'matrix(1, 0, 0, 1, 0, 0)', getComputedStyle(document.querySelector('#testbox')).webkitTransform);
-            check('changed style', 'matrix(1, 0, 0, 1, 50, 0)', getComputedStyle(document.querySelector('#changedbox')).webkitTransform);
-            check('backwards fill', 'matrix(1, 0, 0, 1, 100, 0)', getComputedStyle(document.querySelector('#filledbox')).webkitTransform);
+            check('default', 'matrix(1, 0, 0, 1, 0, 0)', getComputedStyle(document.querySelector('#testbox')).transform);
+            check('changed style', 'matrix(1, 0, 0, 1, 50, 0)', getComputedStyle(document.querySelector('#changedbox')).transform);
+            check('backwards fill', 'matrix(1, 0, 0, 1, 100, 0)', getComputedStyle(document.querySelector('#filledbox')).transform);
             document.body.innerHTML = results.join('<br>');
             if (window.testRunner)
                 testRunner.notifyDone();

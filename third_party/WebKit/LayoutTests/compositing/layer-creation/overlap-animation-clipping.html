@@ -35,19 +35,19 @@
     }
     
     .animating1 {
-      -webkit-animation: translate1 2s linear infinite alternate;
+      animation: translate1 2s linear infinite alternate;
     }
 
     .animating2 {
-      -webkit-animation: translate2 2s linear infinite alternate;
+      animation: translate2 2s linear infinite alternate;
     }
     
-    @-webkit-keyframes translate1 {
+    @keyframes translate1 {
       from { transform: translate(0px, -110px); }
       to   { transform: translate(0px, 590px); }
     }
 
-    @-webkit-keyframes translate2 {
+    @keyframes translate2 {
       from { transform: translate(0px, -220px); }
       to   { transform: translate(0px, 110px); }
     }
@@ -61,7 +61,7 @@
     function queueBoxForAnimation(elementId, animationClass, callback) {
       var box = document.getElementById(elementId);
       if (callback)
-        box.addEventListener('webkitAnimationStart', callback, false);
+        box.addEventListener('animationstart', callback, false);
       box.classList.add(animationClass);
     }
       

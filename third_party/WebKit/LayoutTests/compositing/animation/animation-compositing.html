@@ -10,10 +10,10 @@
     }
     
     .spinning {
-      -webkit-animation: spin 2s infinite linear;
+      animation: spin 2s infinite linear;
     }
     
-    @-webkit-keyframes spin {
+    @keyframes spin {
       from { transform: rotate(0); }
       to   { transform: rotate(360deg); }
     }
@@ -27,7 +27,7 @@
     function doTest()
     {
       var box = document.getElementById('box');
-      box.addEventListener('webkitAnimationStart', function() {
+      box.addEventListener('animationstart', function() {
         if (window.testRunner) {
             var layers = window.internals.layerTreeAsText(document);
             var result;

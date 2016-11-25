@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <style>
-  @-webkit-keyframes rotate {
-    0% { -webkit-transform: rotate(0deg) }
+  @keyframes rotate {
+    0% { transform: rotate(0deg) }
   }
 
   img {
-    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
   }
 </style>
 
@@ -18,13 +18,13 @@ function rotate(element) {
   if (window.testRunner)
     setTimeout(function() { testRunner.setColorProfile('sRGB', new Function()) }, 0);
 
-  element.addEventListener('webkitAnimationStart', start, false);
-  element.addEventListener('webkitAnimationEnd', end, false);
+  element.addEventListener('animationstart', start, false);
+  element.addEventListener('animationend', end, false);
 
   if (window.testRunner)
-    element.style.cssText += '-webkit-animation: rotate linear 1s';
+    element.style.cssText += 'animation: rotate linear 1s';
   else
-    element.style.cssText += '-webkit-animation: rotate linear 4s';
+    element.style.cssText += 'animation: rotate linear 4s';
 }
 
 function start(event) {

@@ -2,7 +2,7 @@
 <html>
 <head>
 <style>
-@-webkit-keyframes anim {
+@keyframes anim {
     from {
         background-color: red;
     }
@@ -28,9 +28,9 @@ description('Test if @keyframes works for shadow host when using :host. i.e. crb
 
 var host = document.getElementById('host');
 var sr = host.createShadowRoot();
-sr.innerHTML = '<style>@-webkit-keyframes anim {'
+sr.innerHTML = '<style>@keyframes anim {'
     + 'from { color: red; } to { color: green; } }'
-    + ':host { -webkit-animation: anim 0.5s both; color: red; }</style>'
+    + ':host { animation: anim 0.5s both; color: red; }</style>'
     + 'I should become green';
 
 window.setTimeout(function() {
