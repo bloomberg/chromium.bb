@@ -1895,3 +1895,25 @@ TEST_F(TemplateURLTest, MatchesData) {
   TemplateURL url(data);
   EXPECT_TRUE(TemplateURL::MatchesData(&url, &data, search_terms_data_));
 }
+
+// Test for correct replacement of GoogleInstantExtendedEnabledKey param.
+TEST_F(TemplateURLTest, GoogleInstantExtendedEnabledReplacement) {
+  TemplateURLData data;
+  data.SetURL(
+      "{google:baseURL}search/"
+      "?{google:instantExtendedEnabledKey}&q={searchTerms}");
+  data.SetShortName(ASCIIToUTF16("Google"));
+  data.SetKeyword(ASCIIToUTF16("google.com"));
+  data.search_terms_replacement_key = "{google:instantExtendedEnabledKey}";
+  TemplateURL turl(data);
+  EXPECT_TRUE(TemplateURL::MatchesData(&turl, &data, search_terms_data_));
+  // Expect that replacement of search_terms_replacement_key in TemplateURL
+  // constructor is correct.
+  EXPECT_EQ("espv", turl.search_terms_replacement_key());
+  // Expect that replacement of {google:instantExtendedEnabledKey} in search url
+  // is correct.
+  GURL search_generated = turl.GenerateSearchURL(search_terms_data_);
+  EXPECT_EQ("http://www.google.com/search/?espv&q=blah.blah.blah.blah.blah",
+            search_generated.spec());
+  EXPECT_TRUE(turl.HasSearchTermsReplacementKey(search_generated));
+}
