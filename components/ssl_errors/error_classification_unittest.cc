@@ -213,7 +213,8 @@ TEST(ErrorClassification, LevenshteinDistance) {
   EXPECT_EQ(7u, ssl_errors::GetLevenshteinDistance("xxxxxxx", "yyy"));
 }
 
-TEST_F(SSLErrorClassificationTest, GetClockState) {
+// Flaky, see https://bugs.chromium.org/p/chromium/issues/detail?id=668539.
+TEST_F(SSLErrorClassificationTest, DISABLED_GetClockState) {
   // This test aims to obtain all possible return values of
   // |GetClockState|.
   const char kBuildTimeHistogram[] = "interstitial.ssl.clockstate.build_time";
