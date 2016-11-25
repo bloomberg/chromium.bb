@@ -1,4 +1,6 @@
-#  Copyright (C) 2012 Braille Section Team, Anna Centenary Library, Chennai Shankar <brailleacl@gmail.com>
+
+#  Copyright (C) 2012 Shankar Subbiah S <shankar@agateinfotek.in>
+#  Copyright (C) 2012 Navarasan
 #  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
 #  Copyright (C) 2012 DINAKAR T.D. <td.dinkar@gmail.com>
 #  Copyright (C) 2014 National Institute for Visually Handicapped, 116, Rajpur Road, Dehradun, Uttrakhand, India
@@ -18,6 +20,10 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
+
+# The Liblouis table for Tamil was developed by Shankar, Navarasan,
+# Mesar Hameed and Dinakar. The table was tested on the Braille
+# display that was available in the Anna Centinary Library, Chennai.
 
 include text_nabcc.dis
 include braille-patterns.cti # unicode braille.
