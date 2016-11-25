@@ -346,12 +346,15 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
   return webConfiguration;
 }
 
-RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options) {
+RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options,
+                                           ExceptionState& exceptionState) {
   if (options.isUndefinedOrNull())
-    return 0;
+    return nullptr;
 
-  Vector<String> propertyNames;
-  options.getPropertyNames(propertyNames);
+  const Vector<String>& propertyNames =
+      options.getPropertyNames(exceptionState);
+  if (exceptionState.hadException())
+    return nullptr;
 
   // Treat |options| as MediaConstraints if it is empty or has "optional" or
   // "mandatory" properties for compatibility.
@@ -359,7 +362,7 @@ RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options) {
   // client code is ready.
   if (propertyNames.isEmpty() || propertyNames.contains("optional") ||
       propertyNames.contains("mandatory"))
-    return 0;
+    return nullptr;
 
   int32_t offerToReceiveVideo = -1;
   int32_t offerToReceiveAudio = -1;
@@ -573,7 +576,8 @@ ScriptPromise RTCPeerConnection::createOffer(
     ScriptState* scriptState,
     RTCSessionDescriptionCallback* successCallback,
     RTCPeerConnectionErrorCallback* errorCallback,
-    const Dictionary& rtcOfferOptions) {
+    const Dictionary& rtcOfferOptions,
+    ExceptionState& exceptionState) {
   DCHECK(successCallback);
   DCHECK(errorCallback);
   ExecutionContext* context = scriptState->getExecutionContext();
@@ -582,7 +586,10 @@ ScriptPromise RTCPeerConnection::createOffer(
   if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
     return ScriptPromise::castUndefined(scriptState);
 
-  RTCOfferOptionsPlatform* offerOptions = parseOfferOptions(rtcOfferOptions);
+  RTCOfferOptionsPlatform* offerOptions =
+      parseOfferOptions(rtcOfferOptions, exceptionState);
+  if (exceptionState.hadException())
+    return ScriptPromise();
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestImpl::create(getExecutionContext(), this,
                                                successCallback, errorCallback);

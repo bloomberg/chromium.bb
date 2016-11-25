@@ -78,8 +78,9 @@ class CORE_EXPORT Dictionary final {
   }
   bool get(const StringView& key, Dictionary&) const;
 
-  bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
-  bool getPropertyNames(Vector<String>&) const;
+  HashMap<String, String> getOwnPropertiesAsStringHashMap(
+      ExceptionState&) const;
+  Vector<String> getPropertyNames(ExceptionState&) const;
 
   bool hasProperty(const StringView& key, ExceptionState&) const;
 

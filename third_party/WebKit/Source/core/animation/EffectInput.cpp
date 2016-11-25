@@ -242,8 +242,10 @@ EffectModel* EffectInput::convertArrayForm(
       keyframe->setEasing(timingFunction);
     }
 
-    Vector<String> keyframeProperties;
-    keyframeDictionary.getPropertyNames(keyframeProperties);
+    const Vector<String>& keyframeProperties =
+        keyframeDictionary.getPropertyNames(exceptionState);
+    if (exceptionState.hadException())
+      return nullptr;
     for (const auto& property : keyframeProperties) {
       if (property == "offset" || property == "composite" ||
           property == "easing") {
@@ -341,8 +343,10 @@ EffectModel* EffectInput::convertObjectForm(
   String compositeString;
   DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
 
-  Vector<String> keyframeProperties;
-  keyframeDictionary.getPropertyNames(keyframeProperties);
+  const Vector<String>& keyframeProperties =
+      keyframeDictionary.getPropertyNames(exceptionState);
+  if (exceptionState.hadException())
+    return nullptr;
   for (const auto& property : keyframeProperties) {
     if (property == "offset" || property == "composite" ||
         property == "easing") {

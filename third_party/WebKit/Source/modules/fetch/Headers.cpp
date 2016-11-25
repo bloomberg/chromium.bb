@@ -284,9 +284,8 @@ void Headers::fillWith(const Vector<Vector<String>>& object,
 void Headers::fillWith(const Dictionary& object,
                        ExceptionState& exceptionState) {
   ASSERT(!m_headerList->size());
-  Vector<String> keys;
-  object.getPropertyNames(keys);
-  if (!keys.size())
+  const Vector<String>& keys = object.getPropertyNames(exceptionState);
+  if (exceptionState.hadException() || !keys.size())
     return;
 
   // "3. Otherwise, if |object| is an open-ended dictionary, then for each

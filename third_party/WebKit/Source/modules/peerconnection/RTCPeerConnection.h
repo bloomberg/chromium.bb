@@ -81,7 +81,8 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   ScriptPromise createOffer(ScriptState*,
                             RTCSessionDescriptionCallback*,
                             RTCPeerConnectionErrorCallback*,
-                            const Dictionary&);
+                            const Dictionary&,
+                            ExceptionState&);
 
   ScriptPromise createAnswer(ScriptState*, const RTCAnswerOptions&);
   ScriptPromise createAnswer(ScriptState*,

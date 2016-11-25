@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "DictionaryTest.h"
+#include "core/testing/DictionaryTest.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/testing/InternalDictionary.h"
@@ -68,10 +68,10 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary) {
         testingDictionary.doubleOrStringSequenceMember();
   m_eventTargetOrNullMember = testingDictionary.eventTargetOrNullMember();
   if (testingDictionary.hasDictionaryMember()) {
-    HashMap<String, String> properties;
-    testingDictionary.dictionaryMember().getOwnPropertiesAsStringHashMap(
-        properties);
-    m_dictionaryMemberProperties = properties;
+    NonThrowableExceptionState exceptionState;
+    m_dictionaryMemberProperties =
+        testingDictionary.dictionaryMember().getOwnPropertiesAsStringHashMap(
+            exceptionState);
   }
 }
 

@@ -358,14 +358,15 @@ bool validatePaymentDetails(const PaymentDetails& details,
   return keepShippingOptions;
 }
 
-void maybeSetAndroidPayMethodata(
+void maybeSetAndroidPayMethodData(
     const ScriptValue& input,
-    payments::mojom::blink::PaymentMethodDataPtr& output) {
+    payments::mojom::blink::PaymentMethodDataPtr& output,
+    ExceptionState& exceptionState) {
   AndroidPayMethodData androidPay;
-  TrackExceptionState exceptionState;
+  TrackExceptionState trackExceptionState;
   V8AndroidPayMethodData::toImpl(input.isolate(), input.v8Value(), androidPay,
-                                 exceptionState);
-  if (exceptionState.hadException())
+                                 trackExceptionState);
+  if (trackExceptionState.hadException())
     return;
 
   if (androidPay.hasEnvironment() && androidPay.environment() == "TEST")
@@ -406,8 +407,10 @@ void maybeSetAndroidPayMethodata(
     }
 
     if (tokenization.hasParameters()) {
-      Vector<String> keys;
-      tokenization.parameters().getPropertyNames(keys);
+      const Vector<String>& keys =
+          tokenization.parameters().getPropertyNames(exceptionState);
+      if (exceptionState.hadException())
+        return;
       output->parameters.resize(keys.size());
       size_t numberOfParameters = 0;
       String value;
@@ -469,7 +472,10 @@ void validateAndConvertPaymentMethodData(
     output[i] = payments::mojom::blink::PaymentMethodData::New();
     output[i]->supported_methods = paymentMethodData.supportedMethods();
     output[i]->stringified_data = stringifiedData;
-    maybeSetAndroidPayMethodata(paymentMethodData.data(), output[i]);
+    maybeSetAndroidPayMethodData(paymentMethodData.data(), output[i],
+                                 exceptionState);
+    if (exceptionState.hadException())
+      return;
   }
 }
 

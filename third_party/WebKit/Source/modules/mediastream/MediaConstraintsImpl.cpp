@@ -151,10 +151,11 @@ const char kTestConstraint2[] = "valid_and_supported_2";
 static bool parseMandatoryConstraintsDictionary(
     const Dictionary& mandatoryConstraintsDictionary,
     Vector<NameValueStringConstraint>& mandatory) {
-  HashMap<String, String> mandatoryConstraintsHashMap;
-  bool ok = mandatoryConstraintsDictionary.getOwnPropertiesAsStringHashMap(
-      mandatoryConstraintsHashMap);
-  if (!ok)
+  TrackExceptionState exceptionState;
+  const HashMap<String, String>& mandatoryConstraintsHashMap =
+      mandatoryConstraintsDictionary.getOwnPropertiesAsStringHashMap(
+          exceptionState);
+  if (exceptionState.hadException())
     return false;
 
   for (const auto& iter : mandatoryConstraintsHashMap)
@@ -165,15 +166,16 @@ static bool parseMandatoryConstraintsDictionary(
 static bool parseOptionalConstraintsVectorElement(
     const Dictionary& constraint,
     Vector<NameValueStringConstraint>& optionalConstraintsVector) {
-  Vector<String> localNames;
-  bool ok = constraint.getPropertyNames(localNames);
-  if (!ok)
+  TrackExceptionState exceptionState;
+  const Vector<String>& localNames =
+      constraint.getPropertyNames(exceptionState);
+  if (exceptionState.hadException())
     return false;
   if (localNames.size() != 1)
     return false;
   const String& key = localNames[0];
   String value;
-  ok = DictionaryHelper::get(constraint, key, value);
+  bool ok = DictionaryHelper::get(constraint, key, value);
   if (!ok)
     return false;
   optionalConstraintsVector.append(NameValueStringConstraint(key, value));
@@ -187,16 +189,17 @@ static bool parse(const Dictionary& constraintsDictionary,
   if (constraintsDictionary.isUndefinedOrNull())
     return true;
 
-  Vector<String> names;
-  bool ok = constraintsDictionary.getPropertyNames(names);
-  if (!ok)
+  TrackExceptionState exceptionState;
+  const Vector<String>& names =
+      constraintsDictionary.getPropertyNames(exceptionState);
+  if (exceptionState.hadException())
     return false;
 
   String mandatoryName("mandatory");
   String optionalName("optional");
 
-  for (Vector<String>::iterator it = names.begin(); it != names.end(); ++it) {
-    if (*it != mandatoryName && *it != optionalName)
+  for (const auto& name : names) {
+    if (name != mandatoryName && name != optionalName)
       return false;
   }
 
