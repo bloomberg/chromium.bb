@@ -11,7 +11,9 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "device/nfc/nfc.mojom-blink.h"
+#include "modules/nfc/MessageCallback.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "wtf/HashMap.h"
 
 namespace blink {
 
@@ -64,9 +66,17 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  // Returns promise with DOMException if feature is not supported
+  // or when context is not secure. Otherwise, returns empty promise.
+  ScriptPromise rejectIfNotSupported(ScriptState*);
+
   void OnRequestCompleted(ScriptPromiseResolver*,
                           device::nfc::mojom::blink::NFCErrorPtr);
   void OnConnectionError();
+  void OnWatchRegistered(MessageCallback*,
+                         ScriptPromiseResolver*,
+                         uint32_t id,
+                         device::nfc::mojom::blink::NFCErrorPtr);
 
   // device::nfc::mojom::blink::NFCClient implementation.
   void OnWatch(const WTF::Vector<uint32_t>& ids,
@@ -77,6 +87,8 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   device::nfc::mojom::blink::NFCPtr m_nfc;
   mojo::Binding<device::nfc::mojom::blink::NFCClient> m_client;
   HeapHashSet<Member<ScriptPromiseResolver>> m_requests;
+  using WatchCallbacksMap = HeapHashMap<uint32_t, Member<MessageCallback>>;
+  WatchCallbacksMap m_callbacks;
 };
 
 }  // namespace blink

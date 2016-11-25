@@ -10,12 +10,19 @@
 namespace blink {
 
 class NFCMessage;
+class ScriptState;
 
 class MessageCallback : public GarbageCollectedFinalized<MessageCallback> {
  public:
   virtual ~MessageCallback() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void handleMessage(const NFCMessage&) = 0;
+
+  void setScriptState(ScriptState* scriptState) { m_scriptState = scriptState; }
+  ScriptState* getScriptState() const { return m_scriptState.get(); }
+
+ private:
+  RefPtr<ScriptState> m_scriptState;
 };
 
 }  // namespace blink
