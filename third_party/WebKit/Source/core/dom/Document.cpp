@@ -4230,6 +4230,7 @@ void Document::didMergeTextNodes(Text& oldNode, unsigned offset) {
       range->didMergeTextNodes(oldNodeWithIndex, offset);
   }
 
+  notifyMergeTextNodes(oldNode, offset);
   if (m_frame)
     m_frame->selection().didMergeTextNodes(oldNode, offset);
 

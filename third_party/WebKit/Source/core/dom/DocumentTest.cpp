@@ -78,6 +78,16 @@ class TestSynchronousMutationObserver
   USING_GARBAGE_COLLECTED_MIXIN(TestSynchronousMutationObserver);
 
  public:
+  struct MergeTextNodesRecord : GarbageCollected<MergeTextNodesRecord> {
+    Member<Text> m_node;
+    unsigned m_offset = 0;
+
+    MergeTextNodesRecord(Text* node, unsigned offset)
+        : m_node(node), m_offset(offset) {}
+
+    DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
+  };
+
   struct UpdateCharacterDataRecord
       : GarbageCollected<UpdateCharacterDataRecord> {
     Member<CharacterData> m_node;
@@ -104,6 +114,11 @@ class TestSynchronousMutationObserver
     return m_contextDestroyedCalledCounter;
   }
 
+  const HeapVector<Member<MergeTextNodesRecord>>& mergeTextNodesRecords()
+      const {
+    return m_mergeTextNodesRecords;
+  }
+
   const HeapVector<Member<ContainerNode>>& removedChildrenNodes() const {
     return m_removedChildrenNodes;
   }
@@ -126,6 +141,7 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
+  void didMergeTextNodes(Text&, unsigned) final;
   void didSplitTextNode(const Text&) final;
   void didUpdateCharacterData(CharacterData*,
                               unsigned offset,
@@ -135,6 +151,7 @@ class TestSynchronousMutationObserver
   void nodeWillBeRemoved(Node&) final;
 
   int m_contextDestroyedCalledCounter = 0;
+  HeapVector<Member<MergeTextNodesRecord>> m_mergeTextNodesRecords;
   HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
   HeapVector<Member<Node>> m_removedNodes;
   HeapVector<Member<const Text>> m_splitTextNodes;
@@ -150,6 +167,11 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
 
 void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
+}
+
+void TestSynchronousMutationObserver::didMergeTextNodes(Text& node,
+                                                        unsigned offset) {
+  m_mergeTextNodesRecords.append(new MergeTextNodesRecord(&node, offset));
 }
 
 void TestSynchronousMutationObserver::didSplitTextNode(const Text& node) {
@@ -175,6 +197,7 @@ void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
 }
 
 DEFINE_TRACE(TestSynchronousMutationObserver) {
+  visitor->trace(m_mergeTextNodesRecords);
   visitor->trace(m_removedChildrenNodes);
   visitor->trace(m_removedNodes);
   visitor->trace(m_splitTextNodes);
@@ -444,6 +467,23 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   document().shutdown();
   EXPECT_EQ(observer.lifecycleContext(), nullptr);
   EXPECT_EQ(observer.countContextDestroyedCalled(), 1);
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+
+  Text* mergeSampleA = document().createTextNode("a123456789");
+  document().body()->appendChild(mergeSampleA);
+
+  Text* mergeSampleB = document().createTextNode("b123456789");
+  document().body()->appendChild(mergeSampleB);
+
+  EXPECT_EQ(observer.mergeTextNodesRecords().size(), 0u);
+  document().body()->normalize();
+
+  ASSERT_EQ(observer.mergeTextNodesRecords().size(), 1u);
+  EXPECT_EQ(observer.mergeTextNodesRecords()[0]->m_node, mergeSampleB);
+  EXPECT_EQ(observer.mergeTextNodesRecords()[0]->m_offset, 10u);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {

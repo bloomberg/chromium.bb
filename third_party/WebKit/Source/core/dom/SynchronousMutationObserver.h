@@ -38,7 +38,11 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didMoveTreeToNewDocument(const Node& root);
   //  - didInsertText(Node*, unsigned offset, unsigned length);
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
-  //  - didMergeTextNodes(Text& oldNode, unsigned offset);
+
+  // TODO(yosin): We should use |const Text& oldNode|.
+  // Called after characters in |oldNode| is appended at |offset| in
+  // |oldNdoe->previousSibling()|.
+  virtual void didMergeTextNodes(Text& oldNode, unsigned offset);
 
   // Called when |Text| node is split, next sibling |oldNode| contains
   // characters after split point.

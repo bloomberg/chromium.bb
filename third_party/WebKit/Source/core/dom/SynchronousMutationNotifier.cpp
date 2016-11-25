@@ -11,6 +11,12 @@ namespace blink {
 
 SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
+void SynchronousMutationNotifier::notifyMergeTextNodes(Text& node,
+                                                       unsigned offset) {
+  for (SynchronousMutationObserver* observer : m_observers)
+    observer->didMergeTextNodes(node, offset);
+}
+
 void SynchronousMutationNotifier::notifySplitTextNode(const Text& node) {
   for (SynchronousMutationObserver* observer : m_observers)
     observer->didSplitTextNode(node);
