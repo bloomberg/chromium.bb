@@ -591,6 +591,13 @@ template("test_runner_script") {
       "--script-output-path",
       rebase_path(generated_script, root_build_dir),
     ]
+    if (defined(android_test_runner_script)) {
+      args += [
+        "--test-runner-path",
+        android_test_runner_script,
+      ]
+    }
+
     args += test_runner_args
   }
 }
