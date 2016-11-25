@@ -222,6 +222,7 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
+  // Note: the in-memory MetricsService::execution_phase_ is not updated.
   local_state->SetInteger(prefs::kStabilityExecutionPhase,
                           MetricsService::SHUTDOWN_COMPLETE);
   // Start writing right away (write happens on a different thread).
@@ -480,6 +481,9 @@ void MetricsService::OnAppEnterBackground() {
 
 void MetricsService::OnAppEnterForeground() {
   clean_exit_beacon_.WriteBeaconValue(false);
+  // Restore the execution phase stored in prefs. It was altered in
+  // OnAppEnterBackground by a call to MarkAppCleanShutdownAndCommit.
+  local_state_->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
   StartSchedulerIfNecessary();
 }
 #else
@@ -521,8 +525,6 @@ void MetricsService::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityDebuggerPresent, 0);
   local_state_->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
-  local_state_->SetInteger(prefs::kStabilityExecutionPhase,
-                           UNINITIALIZED_PHASE);
   local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
   local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
   local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
@@ -582,6 +584,13 @@ void MetricsService::InitializeMetricsState() {
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     clean_exit_beacon_.WriteBeaconValue(true);
+    // TODO(rtenneti): On windows, consider saving/getting execution_phase from
+    // the registry.
+    int execution_phase =
+        local_state_->GetInteger(prefs::kStabilityExecutionPhase);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
+                                execution_phase);
+    SetExecutionPhase(UNINITIALIZED_PHASE, local_state_);
   }
 
   // ProvidersHaveInitialStabilityMetrics is called first to ensure it is never
@@ -591,13 +600,6 @@ void MetricsService::InitializeMetricsState() {
       !clean_exit_beacon_.exited_cleanly();
   bool has_initial_stability_log = false;
   if (is_initial_stability_log_required) {
-    // TODO(rtenneti): On windows, consider saving/getting execution_phase from
-    // the registry.
-    int execution_phase =
-        local_state_->GetInteger(prefs::kStabilityExecutionPhase);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
-                                execution_phase);
-
     // If the previous session didn't exit cleanly, or if any provider
     // explicitly requests it, prepare an initial stability log -
     // provided UMA is enabled.
@@ -1211,8 +1213,7 @@ void MetricsService::LogCleanShutdown() {
   client_->OnLogCleanShutdown();
   clean_exit_beacon_.WriteBeaconValue(true);
   RecordCurrentState(local_state_);
-  local_state_->SetInteger(prefs::kStabilityExecutionPhase,
-                           MetricsService::SHUTDOWN_COMPLETE);
+  SetExecutionPhase(MetricsService::SHUTDOWN_COMPLETE, local_state_);
 }
 
 void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
