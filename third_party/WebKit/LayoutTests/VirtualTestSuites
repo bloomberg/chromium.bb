@@ -183,11 +183,6 @@
     "args": ["--enable-blink-features=ScrollCustomization"]
   },
   {
-    "prefix": "smoothscrolling",
-    "base": "fast/events/touch/gesture",
-    "args": ["--enable-smooth-scrolling"]
-  },
-  {
     "prefix": "mse-1mb-buffers",
     "base": "http/tests/media/media-source/stream_memory_tests",
     "args": ["--mse-audio-buffer-size-limit=1048576",
