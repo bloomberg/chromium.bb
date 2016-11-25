@@ -59,6 +59,10 @@ class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
                             const IntRect&) override;
   void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
+  void paintScrollCorner(GraphicsContext&,
+                         const DisplayItemClient&,
+                         const IntRect& cornerRect) override;
+
  private:
   bool isMockTheme() const final { return true; }
 };

@@ -75,4 +75,16 @@ void ScrollbarThemeMock::paintThumb(GraphicsContext& context,
   context.fillRect(thumbRect, Color::darkGray);
 }
 
+void ScrollbarThemeMock::paintScrollCorner(GraphicsContext& context,
+                                           const DisplayItemClient& scrollbar,
+                                           const IntRect& cornerRect) {
+  if (DrawingRecorder::useCachedDrawingIfPossible(
+          context, scrollbar, DisplayItem::kScrollbarCorner))
+    return;
+
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarCorner,
+                           cornerRect);
+  context.fillRect(cornerRect, Color::white);
+}
+
 }  // namespace blink

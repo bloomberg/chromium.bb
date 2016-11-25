@@ -73,12 +73,21 @@ bool ScrollbarThemeOverlay::usesOverlayScrollbars() const {
 }
 
 double ScrollbarThemeOverlay::overlayScrollbarFadeOutDelaySeconds() const {
+  // TODO(bokan): Unit tests run without a theme engine. This is normally fine
+  // because they expect to use ScrollbarThemeMock which doesn't use a theme
+  // engine.  If overlays are turned on though, this class is used even if mock
+  // scrollbars are on. We should either provide mock out a web theme engine for
+  // unit tests or provide a mock version of this class.
+  if (!Platform::current()->themeEngine())
+    return 0.0;
   WebThemeEngine::ScrollbarStyle style;
   Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
   return style.fadeOutDelaySeconds;
 }
 
 double ScrollbarThemeOverlay::overlayScrollbarFadeOutDurationSeconds() const {
+  if (!Platform::current()->themeEngine())
+    return 0.0;
   WebThemeEngine::ScrollbarStyle style;
   Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
   return style.fadeOutDurationSeconds;
@@ -157,7 +166,7 @@ void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context,
       thumbRect.setX(thumbRect.x() + m_scrollbarMargin);
   }
 
-  if (m_useSolidColor) {
+  if (m_useSolidColor || !Platform::current()->themeEngine()) {
     context.fillRect(thumbRect, m_color);
     return;
   }
