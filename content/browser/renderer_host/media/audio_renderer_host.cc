@@ -44,15 +44,6 @@ namespace {
 base::LazyInstance<media::AudioStreamsTracker> g_audio_streams_tracker =
     LAZY_INSTANCE_INITIALIZER;
 
-std::pair<int, std::pair<bool, std::string>> MakeAuthorizationData(
-    int stream_id,
-    bool authorized,
-    const std::string& device_unique_id) {
-  return std::make_pair(stream_id,
-                        std::make_pair(authorized, device_unique_id));
-}
-
-
 void NotifyRenderProcessHostThatAudioStateChanged(int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -199,7 +190,10 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       salt_(salt),
       validate_render_frame_id_function_(&ValidateRenderFrameId),
       max_simultaneous_streams_(0),
-      authorization_handler_(media_stream_manager, render_process_id_, salt) {
+      authorization_handler_(audio_manager_,
+                             media_stream_manager,
+                             render_process_id_,
+                             salt) {
   DCHECK(audio_manager_);
 }
 
@@ -387,7 +381,10 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
            << ", security_origin=" << security_origin << ")";
   if (LookupById(stream_id) || IsAuthorizationStarted(stream_id))
     return;
-  authorizations_.insert(MakeAuthorizationData(stream_id, false, device_id));
+
+  authorizations_.insert(
+      std::make_pair(stream_id, std::make_pair(false, std::string())));
+
   // Unretained is ok here since |this| owns |authorization_handler_| and
   // |authorization_handler_| owns the callback.
   authorization_handler_.RequestDeviceAuthorization(

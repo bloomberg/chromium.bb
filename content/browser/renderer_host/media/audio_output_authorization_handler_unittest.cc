@@ -101,6 +101,8 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
     return media_stream_manager_.get();
   }
 
+  media::AudioManager* GetAudioManager() { return audio_manager_.get(); }
+
   void SyncWithAllThreads() {
     // New tasks might be posted while we are syncing, but in
     // every iteration at least one task will be run. 20 iterations should be
@@ -172,7 +174,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -194,7 +196,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -216,7 +218,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockListener listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -248,7 +250,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockListener listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -279,8 +281,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       base::MakeUnique<MockRenderProcessHost>(context.get());
   MockListener listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(GetMediaStreamManager(),
-                                                        RPH->GetID(), kSalt);
+      base::MakeUnique<AudioOutputAuthorizationHandler>(
+          GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
   EXPECT_EQ(RPH->bad_msg_count(), 0);
 
   EXPECT_CALL(listener, MockAuthorizationCallback(_, _, _, _)).Times(0);
@@ -310,8 +312,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       base::MakeUnique<MockRenderProcessHost>(context.get());
   MockListener listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(GetMediaStreamManager(),
-                                                        RPH->GetID(), kSalt);
+      base::MakeUnique<AudioOutputAuthorizationHandler>(
+          GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
 
   EXPECT_EQ(RPH->bad_msg_count(), 0);
   EXPECT_CALL(listener, MockAuthorizationCallback(_, _, _, _)).Times(0);
@@ -335,7 +337,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   MockListener listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
-          GetMediaStreamManager(), kRenderProcessId, kSalt);
+          GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   EXPECT_CALL(listener,
               MockAuthorizationCallback(media::OUTPUT_DEVICE_STATUS_OK, false,
