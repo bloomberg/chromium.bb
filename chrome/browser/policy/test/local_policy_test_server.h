@@ -44,6 +44,11 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   bool SetSigningKeyAndSignature(const crypto::RSAPrivateKey* key,
                                  const std::string& signature);
 
+  // Enables the automatic rotation of the policy signing keys with each policy
+  // fetch request. This must be called before starting the server, and only
+  // works when the server serves from a temporary directory.
+  void EnableAutomaticRotationOfSigningKeys();
+
   // Pre-configures a registered client so the server returns policy without the
   // client having to make a registration call. This must be called before
   // starting the server, and only works when the server serves from a temporary
@@ -93,6 +98,7 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   base::FilePath policy_key_;
   base::DictionaryValue clients_;
   base::ScopedTempDir server_data_dir_;
+  bool automatic_rotation_of_signing_keys_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LocalPolicyTestServer);
 };

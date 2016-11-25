@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/rsa_private_key.h"
@@ -112,6 +113,10 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
       signature.size());
 
   return bytes_written == static_cast<int>(signature.size());
+}
+
+void LocalPolicyTestServer::EnableAutomaticRotationOfSigningKeys() {
+  automatic_rotation_of_signing_keys_enabled_ = true;
 }
 
 void LocalPolicyTestServer::RegisterClient(const std::string& dm_token,
@@ -237,6 +242,10 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
   arguments->SetString("config-file", config_file_.AsUTF8Unsafe());
   if (!policy_key_.empty())
     arguments->SetString("policy-key", policy_key_.AsUTF8Unsafe());
+  if (automatic_rotation_of_signing_keys_enabled_) {
+    arguments->Set("rotate-policy-keys-automatically",
+                   base::Value::CreateNullValue());
+  }
   if (server_data_dir_.IsValid()) {
     arguments->SetString("data-dir", server_data_dir_.GetPath().AsUTF8Unsafe());
 

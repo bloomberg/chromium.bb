@@ -881,17 +881,22 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response.error_message = 'Request not allowed for the token used'
       return
 
-    # Sign with 'current_key_index', defaulting to key 0.
-    signing_key = None
-    req_key = None
-    current_key_index = policy.get('current_key_index', 0)
-    nkeys = len(self.server.keys)
-    if (msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and
-        current_key_index in range(nkeys)):
-      signing_key = self.server.keys[current_key_index]
-      if msg.public_key_version in range(1, nkeys + 1):
-        # requested key exists, use for signing and rotate.
-        req_key = self.server.keys[msg.public_key_version - 1]['private_key']
+    # Determine the current key on the client.
+    client_key_version = None
+    client_key = None
+    if msg.HasField('public_key_version'):
+      client_key_version = msg.public_key_version
+      client_key = self.server.GetKeyByVersion(client_key_version)
+      if client_key is None:
+        response.error_code = 400
+        response.error_message = 'Invalid public key version'
+        return
+
+    # Choose the key for signing the policy.
+    signing_key_version = self.server.GetKeyVersionForSigning(
+        client_key_version)
+    signing_key = self.server.GetKeyByVersion(signing_key_version)
+    assert signing_key is not None
 
     # Fill the policy data protobuf.
     policy_data = dm.PolicyData()
@@ -915,8 +920,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if invalidation_name is not None:
       policy_data.invalidation_name = invalidation_name.encode('ascii')
 
-    if signing_key:
-      policy_data.public_key_version = current_key_index + 1
+    if msg.signature_type != dm.PolicyFetchRequest.NONE:
+      policy_data.public_key_version = signing_key_version
 
     if username:
       policy_data.username = username
@@ -935,13 +940,13 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if user_affiliation_ids:
       policy_data.user_affiliation_ids.extend(user_affiliation_ids)
 
-    signed_data = policy_data.SerializeToString()
+    response.policy_data = policy_data.SerializeToString()
 
-    response.policy_data = signed_data
-    if signing_key:
-      response.policy_data_signature = (
-          bytes(signing_key['private_key'].hashAndSign(signed_data)))
-      if msg.public_key_version != current_key_index + 1:
+    # Sign the serialized policy data
+    if msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA:
+      response.policy_data_signature = bytes(
+          signing_key['private_key'].hashAndSign(response.policy_data))
+      if msg.public_key_version != signing_key_version:
         response.new_public_key = signing_key['public_key']
 
         # Set the verification signature appropriate for the policy domain.
@@ -957,9 +962,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             response.new_public_key_verification_signature_deprecated = (
                 verification_sig)
 
-        if req_key:
-          response.new_public_key_signature = (
-              bytes(req_key.hashAndSign(response.new_public_key)))
+        if client_key is not None:
+          response.new_public_key_signature = bytes(
+              client_key['private_key'].hashAndSign(response.new_public_key))
 
     return (200, response.SerializeToString())
 
@@ -1025,13 +1030,17 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
   """Handles requests and keeps global service state."""
 
   def __init__(self, server_address, data_dir, policy_path, client_state_file,
-               private_key_paths, server_base_url):
+               private_key_paths, rotate_keys_automatically, server_base_url):
     """Initializes the server.
 
     Args:
       server_address: Server host and port.
       policy_path: Names the file to read JSON-formatted policy from.
       private_key_paths: List of paths to read private keys from.
+      rotate_keys_automatically: Whether the keys should be rotated in a
+        round-robin fashion for each policy request (by default, either the
+        key specified in the config or the first key will be used for all
+        requests).
     """
     testserver_base.StoppableHTTPServer.__init__(self, server_address,
                                                  PolicyRequestHandler)
@@ -1039,6 +1048,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     self.data_dir = data_dir
     self.policy_path = policy_path
     self.client_state_file = client_state_file
+    self.rotate_keys_automatically = rotate_keys_automatically
     self.server_base_url = server_base_url
 
     self.keys = []
@@ -1116,6 +1126,48 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       except IOError:
         logging.error('Failed to load policies from %s' % self.policy_path)
     return policy
+
+  def GetKeyByVersion(self, key_version):
+    """Obtains the object containing key properties, given the key version.
+
+    Args:
+      key_version: Integer key version.
+
+    Returns:
+      The object containing key properties, or None if the key is not found.
+    """
+    # Convert the policy key version, which has to be positive according to the
+    # policy protocol definition, to an index in the keys list.
+    key_index = key_version - 1
+    if key_index < 0:
+      return None
+    if key_index >= len(self.keys):
+      if self.rotate_keys_automatically:
+        key_index %= len(self.keys)
+      else:
+        return None
+    return self.keys[key_index]
+
+  def GetKeyVersionForSigning(self, client_key_version):
+    """Determines the version of the key that should be used for signing policy.
+
+    Args:
+      client_key_version: Either an integer representing the current key version
+        provided by the client, or None if the client didn't provide any.
+
+    Returns:
+      An integer representing the signing key version.
+    """
+    if self.rotate_keys_automatically and client_key_version is not None:
+      # Return the incremented version, which means that the key should be
+      # rotated.
+      return client_key_version + 1
+    # Return the version that is specified by the config, defaulting to using
+    # the very first key. Note that incrementing here is done due to conversion
+    # between indices in the keys list and the key versions transmitted to the
+    # client (where the latter have to be positive according to the policy
+    # protocol definition).
+    return self.GetPolicies().get('current_key_index', 0) + 1
 
   def ResolveUser(self, auth_token):
     """Tries to resolve an auth token to the corresponding user name.
@@ -1382,6 +1434,7 @@ class PolicyServerRunner(testserver_base.TestServerRunner):
                               data_dir, config_file,
                               self.options.client_state_file,
                               self.options.policy_keys,
+                              self.options.rotate_keys_automatically,
                               self.options.server_base_url)
     server_data['port'] = server.server_port
     return server
@@ -1399,18 +1452,24 @@ class PolicyServerRunner(testserver_base.TestServerRunner):
                                   help='Specify a path to a PEM-encoded '
                                   'private key to use for policy signing. May '
                                   'be specified multiple times in order to '
-                                  'load multiple keys into the server. If the '
-                                  'server has multiple keys, it will rotate '
-                                  'through them in at each request in a '
-                                  'round-robin fashion. The server will '
-                                  'use a canned key if none is specified '
-                                  'on the command line. The test server will '
-                                  'also look for a verification signature file '
-                                  'in the same location: <filename>.sig and if '
-                                  'present will add the signature to the '
-                                  'policy blob as appropriate via the '
+                                  'load multiple keys into the server. The '
+                                  'server will use a canned key if none is '
+                                  'specified on the command line. The test '
+                                  'server will also look for a verification '
+                                  'signature file in the same location: '
+                                  '<filename>.sig and if present will add the '
+                                  'signature to the policy blob as appropriate '
+                                  'via the '
                              'new_public_key_verification_signature_deprecated '
                                   'field.')
+    self.option_parser.add_option('--rotate-policy-keys-automatically',
+                                  action='store_true',
+                                  dest='rotate_keys_automatically',
+                                  help='If present, then the policy keys will '
+                                  'be rotated in a round-robin fashion for '
+                                  'each policy request (by default, either the '
+                                  'key specified in the config or the first '
+                                  'key will be used for all requests).')
     self.option_parser.add_option('--log-level', dest='log_level',
                                   default='WARN',
                                   help='Log level threshold to use.')
