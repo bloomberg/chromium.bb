@@ -48,8 +48,8 @@ class CORE_EXPORT NGLayoutAlgorithm
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width. max-width or width properties into
-  // account. Implementations can return NotImpplemented in which case the
-  // caller is expected ot synthesize this value from the overflow rect returned
+  // account. Implementations can return NotImplemented, in which case the
+  // caller is expected to synthesize this value from the overflow rect returned
   // from Layout called with a available width of 0 and LayoutUnit::max(),
   // respectively.
   // A Pending return value has the same meaning as a false return from layout,
