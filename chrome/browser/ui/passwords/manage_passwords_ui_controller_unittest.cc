@@ -41,6 +41,7 @@
 
 using ::testing::DoAll;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -624,6 +625,41 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPrefetch) {
         base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
                    base::Unretained(this))));
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPSL) {
+  test_local_form().is_public_suffix_match = true;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
+  GURL origin("http://example.com");
+  PasswordDialogController* dialog_controller = nullptr;
+  EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
+      DoAll(SaveArg<0>(&dialog_controller), Return(&dialog_prompt())));
+  EXPECT_CALL(dialog_prompt(), ShowAccountChooser());
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  EXPECT_CALL(*controller(), HasBrowserWindow()).WillOnce(Return(true));
+  EXPECT_TRUE(controller()->OnChooseCredentials(
+      std::move(local_credentials), std::move(federated_credentials), origin,
+      base::Bind(&ManagePasswordsUIControllerTest::CredentialCallback,
+                 base::Unretained(this))));
+  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
+            controller()->GetState());
+  EXPECT_EQ(origin, controller()->GetOrigin());
+  EXPECT_THAT(controller()->GetCurrentForms(), IsEmpty());
+  ASSERT_THAT(dialog_controller->GetLocalForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(dialog_controller->GetFederationsForms(), testing::IsEmpty());
+  ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
+
+  EXPECT_CALL(dialog_prompt(), ControllerGone());
+  EXPECT_CALL(*this, CredentialCallback(Pointee(test_local_form())));
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  dialog_controller->OnChooseCredentials(
+      *dialog_controller->GetLocalForms()[0],
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
+  EXPECT_THAT(controller()->GetCurrentForms(), IsEmpty());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, AutoSignin) {

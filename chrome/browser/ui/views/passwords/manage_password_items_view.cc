@@ -271,9 +271,8 @@ ManagePasswordItemsView::ManagePasswordItemsView(
     : model_(manage_passwords_bubble_model) {
   int fixed_height = PasswordFormRow::GetFixedHeight(model_->state());
   for (const auto& password_form : *password_forms) {
-    if (!password_form.is_public_suffix_match)
-      password_forms_rows_.push_back(base::MakeUnique<PasswordFormRow>(
-          this, &password_form, fixed_height));
+    password_forms_rows_.push_back(base::MakeUnique<PasswordFormRow>(
+        this, &password_form, fixed_height));
   }
   AddRows();
 }
