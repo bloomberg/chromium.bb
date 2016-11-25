@@ -10,7 +10,6 @@
 
 namespace ui {
 class Event;
-class MenuModel;
 }
 
 namespace ash {

@@ -28,10 +28,6 @@ namespace gfx {
 class Vector3dF;
 }
 
-namespace ui {
-class EventHandler;
-}
-
 namespace ash {
 
 class MaximizeModeControllerTest;

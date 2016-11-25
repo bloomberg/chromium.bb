@@ -18,7 +18,6 @@ class ThrobAnimation;
 
 namespace views {
 class View;
-class Widget;
 }
 
 namespace ash {

@@ -16,7 +16,6 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace app_list {
-class ApplicationDragAndDropHost;
 class AppListPresenter;
 class AppListView;
 class AppListViewDelegateFactory;
@@ -27,10 +26,6 @@ class LocatedEvent;
 }
 
 namespace ash {
-
-namespace test {
-class AppListPresenterAshTestApi;
-}
 
 // Non-Mus+ash implementation of AppListPresetnerDelegate.
 // Responsible for laying out the app list UI as well as updating the Shelf

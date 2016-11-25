@@ -13,7 +13,6 @@
 namespace ash {
 namespace tray {
 class CastTrayView;
-class CastSelectDefaultView;
 class CastDetailedView;
 class CastDuplexView;
 }  // namespace tray

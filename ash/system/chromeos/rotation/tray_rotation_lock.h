@@ -12,10 +12,6 @@
 
 namespace ash {
 
-namespace tray {
-class RotationLockDefaultView;
-}  // namespace tray
-
 // TrayRotationLock is a provider of views for the SystemTray. Both a tray view
 // and a default view are provided. Each view indicates the current state of
 // the rotation lock for the display which it appears on. The default view can

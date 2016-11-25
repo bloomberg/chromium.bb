@@ -11,8 +11,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
-class Window;
-
 template <typename T>
 struct WindowProperty;
 }

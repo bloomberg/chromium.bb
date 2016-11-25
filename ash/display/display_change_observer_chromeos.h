@@ -18,7 +18,6 @@
 
 namespace ash {
 
-class DisplayMode;
 class DisplaySnapshot;
 
 // An object that observes changes in display configuration and

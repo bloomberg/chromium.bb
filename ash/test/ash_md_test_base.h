@@ -11,7 +11,6 @@
 
 namespace ash {
 namespace test {
-class MaterialDesignControllerTestAPI;
 
 class AshMDTestBase
     : public AshTestBase,

@@ -11,13 +11,6 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
-class SkBitmap;
-
-namespace gfx {
-class Image;
-class ImageSkia;
-}
-
 namespace message_center {
 class MessageCenter;
 }

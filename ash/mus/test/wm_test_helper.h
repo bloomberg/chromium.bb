@@ -16,12 +16,7 @@ class MessageLoop;
 class SequencedWorkerPoolOwner;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
-class Window;
 class WindowTreeClientPrivate;
 }
 

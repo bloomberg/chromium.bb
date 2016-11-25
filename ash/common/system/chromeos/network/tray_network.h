@@ -15,10 +15,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace chromeos {
-class NetworkState;
-}
-
 namespace ash {
 namespace tray {
 class NetworkDefaultView;

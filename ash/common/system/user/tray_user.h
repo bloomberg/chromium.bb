@@ -17,7 +17,6 @@ class Size;
 }
 
 namespace views {
-class ImageView;
 class Label;
 }
 

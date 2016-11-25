@@ -25,7 +25,6 @@
 #endif
 
 namespace aura {
-class RootWindow;
 class Window;
 class WindowDelegate;
 }  // namespace aura

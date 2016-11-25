@@ -10,17 +10,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 
 class WmWindow;
-
-namespace wm {
-class WindowState;
-}
 
 struct ASH_EXPORT DragDetails {
   DragDetails(WmWindow* window,

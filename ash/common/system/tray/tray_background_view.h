@@ -17,7 +17,6 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
-class ShelfLayoutManager;
 class TrayEventFilter;
 class TrayBackground;
 class WmShelf;

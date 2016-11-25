@@ -12,8 +12,6 @@
 
 namespace ash {
 
-class WmShelf;
-
 // Delegate shared by all shelf instances.
 class ASH_EXPORT ShelfDelegate {
  public:

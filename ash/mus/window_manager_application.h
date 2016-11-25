@@ -35,7 +35,6 @@ class SurfaceContextFactory;
 }
 
 namespace ui {
-class Event;
 class GpuService;
 class WindowTreeClient;
 }

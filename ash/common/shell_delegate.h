@@ -16,7 +16,6 @@ class GURL;
 
 namespace app_list {
 class AppListPresenter;
-class AppListViewDelegate;
 }
 
 namespace gfx {
@@ -33,10 +32,6 @@ class Connector;
 
 namespace ui {
 class MenuModel;
-}
-
-namespace views {
-class Widget;
 }
 
 namespace ash {

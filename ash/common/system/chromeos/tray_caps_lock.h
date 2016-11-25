@@ -11,7 +11,6 @@
 #include "ui/events/event_handler.h"
 
 namespace views {
-class ImageView;
 class View;
 }
 

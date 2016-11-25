@@ -19,10 +19,6 @@ class GestureEvent;
 class TouchEvent;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace ash {
 
 // Records some touch/gesture event specific details (e.g. what gestures are

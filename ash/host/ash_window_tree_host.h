@@ -11,18 +11,14 @@
 #include "base/callback_forward.h"
 
 namespace aura {
-class Window;
 class WindowTreeHost;
 }
 
 namespace gfx {
 class Insets;
-class Rect;
 }
 
 namespace ui {
-class EventSource;
-class KeyEvent;
 class LocatedEvent;
 }
 

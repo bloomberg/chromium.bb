@@ -7,12 +7,7 @@
 
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ui {
-class GestureEvent;
 class ScrollEvent;
 }
 

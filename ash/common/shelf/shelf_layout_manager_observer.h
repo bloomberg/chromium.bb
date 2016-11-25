@@ -9,10 +9,6 @@
 #include "ash/common/wm/background_animator.h"
 #include "ash/public/cpp/shelf_types.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 
 class ASH_EXPORT ShelfLayoutManagerObserver {

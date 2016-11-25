@@ -21,10 +21,6 @@ class KeyEvent;
 class MouseEvent;
 }  // namespace ui
 
-namespace aura {
-class Window;
-}  // namespace aura
-
 namespace ash {
 
 class StickyKeysOverlay;

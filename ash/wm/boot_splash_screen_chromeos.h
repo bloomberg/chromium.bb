@@ -17,7 +17,6 @@ class WindowTreeHost;
 
 namespace ui {
 class Layer;
-class LayerDelegate;
 }
 
 namespace ash {

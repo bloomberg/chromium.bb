@@ -17,15 +17,6 @@
 #include "base/timer/timer.h"
 #include "ui/aura/window_tree_host_observer.h"
 
-namespace gfx {
-class Rect;
-class Size;
-}
-
-namespace ui {
-class Layer;
-}
-
 namespace ash {
 
 class ShutdownController;

@@ -17,8 +17,6 @@
 
 namespace ash {
 
-class DisplayView;
-
 // ScreenLayoutObserver is responsible to send notification to users when screen
 // resolution changes or screen rotation changes.
 class ASH_EXPORT ScreenLayoutObserver : public WmDisplayObserver {

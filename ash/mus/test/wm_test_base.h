@@ -29,7 +29,6 @@ namespace ash {
 namespace mus {
 
 class AshTestImplMus;
-class RootWindowController;
 class WmTestHelper;
 
 // Base class for window manager tests that want to configure

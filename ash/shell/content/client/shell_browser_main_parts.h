@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_main_parts.h"
 
-namespace base {
-class Thread;
-}
-
 namespace content {
 class ShellBrowserContext;
 struct MainFunctionParams;

@@ -13,10 +13,6 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
-namespace views {
-class Label;
-}
-
 namespace ash {
 class DateDefaultView;
 #if defined(OS_CHROMEOS)

@@ -12,11 +12,6 @@
 #include "content/public/app/content_main_delegate.h"
 #include "content/shell/common/shell_content_client.h"
 
-namespace content {
-class ShellContentRendererClient;
-class ShellContentUtilityClient;
-}
-
 namespace ash {
 namespace shell {
 

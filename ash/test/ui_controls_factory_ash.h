@@ -5,10 +5,6 @@
 #ifndef ASH_TEST_UI_CONTROLS_FACTORY_ASH_H_
 #define ASH_TEST_UI_CONTROLS_FACTORY_ASH_H_
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ui_controls {
 class UIControlsAura;
 }

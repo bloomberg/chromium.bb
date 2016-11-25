@@ -18,8 +18,6 @@ class NetworkState;
 namespace ash {
 namespace network_icon {
 
-class AnimationObserver;
-
 // Type of icon which dictates color theme and VPN badging
 enum IconType {
   ICON_TYPE_TRAY,          // light icons with VPN badges

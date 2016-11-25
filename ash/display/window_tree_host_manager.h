@@ -30,12 +30,6 @@ namespace aura {
 class WindowTreeHost;
 }
 
-namespace base {
-class Value;
-template <typename T>
-class JSONValueConverter;
-}
-
 namespace gfx {
 class Insets;
 }

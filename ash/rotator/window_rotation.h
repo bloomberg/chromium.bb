@@ -17,10 +17,6 @@ class InterpolatedTransform;
 class Layer;
 }
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ash {
 
 // A window rotation represents a single transition from one window orientation

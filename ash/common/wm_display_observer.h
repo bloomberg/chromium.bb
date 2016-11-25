@@ -9,8 +9,6 @@
 
 namespace ash {
 
-class WmWindow;
-
 // Used to track changes in display configuration.
 class ASH_EXPORT WmDisplayObserver {
  public:

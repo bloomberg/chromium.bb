@@ -16,7 +16,6 @@
 
 namespace ash {
 class RootWindowTransformer;
-class MouseCursorEventFilter;
 
 class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
                                         public aura::WindowTreeHostX11,

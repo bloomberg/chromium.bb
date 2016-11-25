@@ -20,14 +20,7 @@ namespace chromeos {
 FORWARD_DECLARE_TEST(DisplayPreferencesTest, PreventStore);
 }  // namespace chromeos
 
-namespace views {
-class Label;
-class Widget;
-}  // namespace views
-
 namespace ash {
-
-class DisplayMode;
 
 // A class which manages the notification of display resolution change and
 // also manages the timeout in case the new resolution is unusable.

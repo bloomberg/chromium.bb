@@ -15,10 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
-class SkBitmap;
-
 namespace aura {
-class EventFilter;
 class Window;
 }
 
@@ -39,8 +36,6 @@ class Widget;
 }
 
 namespace wm {
-class InputMethodEventFilter;
-class RootWindowEventFilter;
 class ScopedCaptureClient;
 }
 
@@ -52,14 +47,12 @@ class PanelLayoutManager;
 class ShelfLayoutManager;
 class StackingController;
 class StatusAreaWidget;
-class SystemModalContainerLayoutManager;
 class SystemTray;
 class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WmRootWindowControllerAura;
 class WmShelfAura;
-class WmWindow;
 class WorkspaceController;
 
 #if defined(OS_CHROMEOS)

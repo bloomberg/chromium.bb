@@ -12,9 +12,7 @@
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
-class ShellBrowserContext;
 class ShellBrowserMainParts;
-class ShellResourceDispatcherHostDelegate;
 }
 
 namespace ash {

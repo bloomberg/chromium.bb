@@ -24,7 +24,6 @@ class BoxLayout;
 class CustomButton;
 class Label;
 class ProgressBar;
-class ScrollView;
 }  // namespace views
 
 namespace ash {

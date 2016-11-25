@@ -22,8 +22,6 @@ class Connector;
 
 namespace ash {
 
-class WorkspaceLayoutManager;
-
 namespace mus {
 
 class LayoutManager;

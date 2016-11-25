@@ -13,10 +13,6 @@ namespace ui {
 class PointerEvent;
 }
 
-namespace views {
-class View;
-}
-
 namespace ash {
 class OverflowBubbleView;
 class OverflowButton;

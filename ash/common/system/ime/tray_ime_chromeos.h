@@ -14,16 +14,11 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
-namespace views {
-class Label;
-}
-
 namespace ash {
 
 namespace tray {
 class IMEDefaultView;
 class IMEDetailedView;
-class IMENotificationView;
 }
 
 class TrayItemView;

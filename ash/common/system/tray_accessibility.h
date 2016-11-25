@@ -28,7 +28,6 @@ struct VectorIcon;
 namespace views {
 class Button;
 class CustomButton;
-class ImageView;
 class Label;
 class View;
 }

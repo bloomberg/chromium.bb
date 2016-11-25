@@ -16,7 +16,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 class SlideAnimation;
 }

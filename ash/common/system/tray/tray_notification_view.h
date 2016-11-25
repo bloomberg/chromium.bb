@@ -10,10 +10,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/slide_out_view.h"
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace views {
 class ImageView;
 }

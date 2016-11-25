@@ -13,10 +13,6 @@
 
 namespace ash {
 
-namespace mojom {
-class ShutdownClient;
-}
-
 namespace test {
 
 // Helper class used by tests to access internal state.

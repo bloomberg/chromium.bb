@@ -17,15 +17,6 @@
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
-namespace gfx {
-class Rect;
-class Size;
-}
-
-namespace ui {
-class Layer;
-}
-
 namespace ash {
 
 class LockStateController;

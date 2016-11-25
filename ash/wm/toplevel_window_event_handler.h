@@ -23,7 +23,6 @@ class RunLoop;
 
 namespace ash {
 namespace wm {
-class WmGloblals;
 }
 
 class ASH_EXPORT ToplevelWindowEventHandler

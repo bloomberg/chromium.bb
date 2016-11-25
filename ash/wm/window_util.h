@@ -13,19 +13,11 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Point;
-class Rect;
-class Size;
-}
-
 namespace ui {
 class Event;
 }
 
 namespace ash {
-
-class WmWindow;
 
 namespace wm {
 

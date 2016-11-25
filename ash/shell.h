@@ -26,7 +26,6 @@
 #include "ui/wm/core/cursor_manager.h"
 
 namespace aura {
-class EventFilter;
 class RootWindow;
 class Window;
 namespace client {
@@ -44,13 +43,11 @@ class DisplayManager;
 }
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 }
 
 namespace ui {
 class DisplayConfigurator;
-class Layer;
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
 }
@@ -82,7 +79,6 @@ class DisplayConfigurationController;
 class DisplayErrorObserver;
 class DragDropController;
 class EventClientImpl;
-class EventRewriterEventFilter;
 class EventTransformationHandler;
 class FirstRunHelper;
 class GPUSupport;
@@ -103,7 +99,6 @@ class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
 class ScopedOverviewAnimationSettingsFactoryAura;
-class ScreenAsh;
 class ScreenOrientationController;
 class ScreenshotController;
 class ScreenPinningController;
@@ -111,15 +106,12 @@ class ScreenPositionController;
 class SessionStateDelegate;
 class ShellDelegate;
 struct ShellInitParams;
-class SlowAnimationEventFilter;
-class StatusAreaWidget;
 class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
-class TouchObserverHUD;
 class ScreenLayoutObserver;
 class VirtualKeyboardController;
 class VideoActivityNotifier;

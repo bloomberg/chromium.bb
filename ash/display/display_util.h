@@ -16,7 +16,6 @@ class Window;
 
 namespace display {
 class DisplayManager;
-class ManagedDisplayInfo;
 }
 
 namespace gfx {

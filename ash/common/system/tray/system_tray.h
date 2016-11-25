@@ -32,7 +32,6 @@ class TrayDate;
 class TraySystemInfo;
 class TrayTiles;
 class TrayUpdate;
-class TrayUser;
 class WebNotificationTray;
 
 // There are different methods for creating bubble views.

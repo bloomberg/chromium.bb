@@ -17,7 +17,6 @@
 #include "ui/display/chromeos/display_configurator.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }  // namespace aura
 

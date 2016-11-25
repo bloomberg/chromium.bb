@@ -9,9 +9,7 @@
 #include "ash/common/frame/caption_buttons/caption_button_types.h"
 
 namespace gfx {
-class Insets;
 class Point;
-class Vector2d;
 }
 
 namespace ash {

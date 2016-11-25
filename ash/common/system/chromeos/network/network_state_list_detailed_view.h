@@ -31,9 +31,9 @@ class ImageButton;
 }
 
 namespace ash {
-class HoverHighlightView;
 class SystemTrayItem;
 class ThrobberView;
+class TrayPopupHeaderButton;
 class TrayPopupLabelButton;
 
 namespace tray {

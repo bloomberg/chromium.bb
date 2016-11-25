@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
-namespace ui {
-class Reflector;
-}
-
 namespace ash {
 
 // A WTH used for unified desktop mode. This creates an offscreen

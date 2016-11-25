@@ -16,12 +16,10 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
 namespace ash {
-class DisplayEdgeController;
 class MouseWarpController;
 
 namespace test {

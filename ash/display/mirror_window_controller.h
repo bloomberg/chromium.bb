@@ -39,7 +39,6 @@ class Reflector;
 
 namespace ash {
 class AshWindowTreeHost;
-class RootWindowTransformer;
 
 namespace test {
 class MirrorWindowTestApi;

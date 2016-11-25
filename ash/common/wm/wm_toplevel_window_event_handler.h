@@ -24,7 +24,6 @@ class GestureEvent;
 
 namespace ash {
 
-class WindowResizer;
 class WmShell;
 class WmWindow;
 

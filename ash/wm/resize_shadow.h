@@ -15,9 +15,6 @@ class Window;
 namespace gfx {
 class Rect;
 }
-namespace ui {
-class Layer;
-}
 namespace wm {
 class ImageGrid;
 }

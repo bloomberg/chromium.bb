@@ -11,8 +11,6 @@
 
 namespace ash {
 
-class UserMetricsRecorder;
-
 // Tracks metrics for task switches caused by the user activating a task window
 // by clicking or tapping on it.
 class ASH_EXPORT DesktopTaskSwitchMetricRecorder

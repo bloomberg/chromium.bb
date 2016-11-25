@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace ui {
-class EventHandler;
-}
-
 namespace ash {
 
 class WindowCycleEventFilter;

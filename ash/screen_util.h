@@ -12,13 +12,8 @@ namespace aura {
 class Window;
 }
 
-namespace display {
-class Display;
-}
-
 namespace gfx {
 class Rect;
-class Point;
 }
 
 namespace ash {

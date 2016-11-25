@@ -18,7 +18,6 @@ class ManagedDisplayInfo;
 
 namespace gfx {
 class Rect;
-class Transform;
 }
 
 namespace ash {

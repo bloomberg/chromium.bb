@@ -17,7 +17,6 @@ class Point;
 }
 
 namespace ash {
-class RootWindowTransformer;
 
 namespace test {
 

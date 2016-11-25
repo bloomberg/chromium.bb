@@ -13,9 +13,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-class ThrobberView;
-class TrayItemView;
-class TrayPopupHeaderButton;
 class ViewClickListener;
 
 // Not used in material design. This class represents the bottom row of

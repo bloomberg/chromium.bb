@@ -17,7 +17,6 @@ class TrayNetworkStateObserver;
 namespace tray {
 class NetworkDetailedView;
 class VpnDefaultView;
-class VpnDetailedView;
 }
 
 class TrayVPN : public SystemTrayItem,

@@ -14,7 +14,6 @@ class TrayBubbleView;
 
 namespace ash {
 class TrayBackgroundView;
-class TrayEventFilter;
 
 // Creates and manages the Widget and EventFilter components of a bubble.
 

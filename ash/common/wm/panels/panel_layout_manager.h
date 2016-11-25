@@ -23,10 +23,6 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
-namespace aura {
-class Window;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -37,7 +33,6 @@ class Widget;
 
 namespace ash {
 class PanelCalloutWidget;
-class ShelfLayoutManager;
 class WmShelf;
 
 namespace wm {

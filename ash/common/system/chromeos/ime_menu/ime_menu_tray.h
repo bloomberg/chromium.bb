@@ -21,8 +21,6 @@ class Label;
 
 namespace ash {
 class ImeListView;
-class StatusAreaWidget;
-class WmWindow;
 
 // The tray item for IME menu, which shows the detailed view of a null single
 // item.

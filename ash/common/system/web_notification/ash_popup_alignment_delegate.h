@@ -23,7 +23,6 @@ class Screen;
 namespace ash {
 
 class AshPopupAlignmentDelegateTest;
-class ShelfLayoutManager;
 class WebNotificationTrayTest;
 class WmShelf;
 

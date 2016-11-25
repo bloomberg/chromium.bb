@@ -17,9 +17,6 @@ class Widget;
 namespace ui {
 class MouseEvent;
 class KeyEvent;
-class TouchEvent;
-class GestureEvent;
-class ScrollEvent;
 }
 
 namespace ash {

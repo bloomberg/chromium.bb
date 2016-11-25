@@ -21,7 +21,6 @@ class Screen;
 }
 
 namespace views {
-class Label;
 class Widget;
 }
 

@@ -12,10 +12,6 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace aura {
-class Window;
-}
-
 namespace gfx {
 class Point;
 }

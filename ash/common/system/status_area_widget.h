@@ -14,7 +14,6 @@
 
 namespace ash {
 class OverviewButtonTray;
-class ShellDelegate;
 class StatusAreaWidgetDelegate;
 class SystemTray;
 class TrayBackgroundView;

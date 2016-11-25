@@ -16,8 +16,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string16.h"
 
-class AccountId;
-
 namespace base {
 class TimeDelta;
 class TimeTicks;

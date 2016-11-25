@@ -8,10 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/common/system/chromeos/palette/common_palette_tool.h"
 
-namespace base {
-class Timer;
-}
-
 namespace ash {
 
 // Controller for the laser pointer functionality.

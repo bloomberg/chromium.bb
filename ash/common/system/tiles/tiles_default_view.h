@@ -16,7 +16,6 @@ class CustomButton;
 }
 
 namespace ash {
-class SystemMenuButton;
 class SystemTrayItem;
 
 // The container view for the tiles in the bottom row of the system menu

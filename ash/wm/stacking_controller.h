@@ -11,7 +11,6 @@
 #include "ui/aura/client/window_parenting_client.h"
 
 namespace ash {
-class AlwaysOnTopController;
 
 class ASH_EXPORT StackingController
     : public aura::client::WindowParentingClient {

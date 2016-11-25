@@ -12,8 +12,6 @@
 
 namespace ash {
 
-class PanelFrameView;
-
 // Example Class for panel windows (Widget::InitParams::TYPE_PANEL).
 // Instances of PanelWindow will get added to the PanelContainer top level
 // window which manages the panel layout through PanelLayoutManager.

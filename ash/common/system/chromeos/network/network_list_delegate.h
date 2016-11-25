@@ -6,7 +6,6 @@
 #define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_
 
 namespace chromeos {
-class NetworkState;
 class NetworkTypePattern;
 }
 

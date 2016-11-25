@@ -13,8 +13,6 @@
 
 namespace ash {
 
-class Shell;
-
 class FirstRunHelperImpl : public FirstRunHelper,
                            public OverlayEventFilter::Delegate {
  public:
