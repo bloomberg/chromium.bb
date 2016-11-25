@@ -22,6 +22,7 @@ namespace ntp_snippets {
 
 // Exposed for tests.
 extern const int kArticlesRemoteId;
+extern const int kChromeReaderDefaultExpiryTimeMins;
 
 class SnippetProto;
 
@@ -72,7 +73,6 @@ class NTPSnippet {
 
   // Title of the snippet.
   const std::string& title() const { return title_; }
-  void set_title(const std::string& title) { title_ = title; }
 
   // The main URL pointing to the content web page.
   const GURL& url() const { return url_; }
@@ -85,30 +85,20 @@ class NTPSnippet {
 
   // Summary or relevant extract from the content.
   const std::string& snippet() const { return snippet_; }
-  void set_snippet(const std::string& snippet) { snippet_ = snippet; }
 
   // Link to an image representative of the content. Do not fetch this image
   // directly. If initialized by CreateFromChromeReaderDictionary() the relevant
   // key is 'thumbnailUrl'
   const GURL& salient_image_url() const { return salient_image_url_; }
-  void set_salient_image_url(const GURL& salient_image_url) {
-    salient_image_url_ = salient_image_url;
-  }
 
   // When the page pointed by this snippet was published.  If initialized by
   // CreateFromChromeReaderDictionary() the relevant key is
   // 'creationTimestampSec'
   const base::Time& publish_date() const { return publish_date_; }
-  void set_publish_date(const base::Time& publish_date) {
-    publish_date_ = publish_date;
-  }
 
   // After this expiration date this snippet should no longer be presented to
   // the user.
   const base::Time& expiry_date() const { return expiry_date_; }
-  void set_expiry_date(const base::Time& expiry_date) {
-    expiry_date_ = expiry_date;
-  }
 
   // If this snippet has all the data we need to show a full card to the user
   bool is_complete() const {
@@ -118,7 +108,6 @@ class NTPSnippet {
   }
 
   float score() const { return score_; }
-  void set_score(float score) { score_ = score; }
 
   bool is_dismissed() const { return is_dismissed_; }
   void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }

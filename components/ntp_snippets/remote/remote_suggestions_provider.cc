@@ -64,8 +64,6 @@ const char* kFetchingIntervalParamNameActiveSuggestionsConsumer[] = {
     "fetching_interval_hours-fallback-active_suggestions_consumer",
     "fetching_interval_hours-wifi-active_suggestions_consumer"};
 
-const int kDefaultExpiryTimeMins = 3 * 24 * 60;
-
 // Keys for storing CategoryContent info in prefs.
 const char kCategoryContentId[] = "id";
 const char kCategoryContentTitle[] = "title";
@@ -163,19 +161,6 @@ void RemoveNullPointers(NTPSnippet::PtrVector* snippets) {
           snippets->begin(), snippets->end(),
           [](const std::unique_ptr<NTPSnippet>& snippet) { return !snippet; }),
       snippets->end());
-}
-
-void AssignExpiryAndPublishDates(NTPSnippet::PtrVector* snippets) {
-  for (std::unique_ptr<NTPSnippet>& snippet : *snippets) {
-    if (snippet->publish_date().is_null()) {
-      snippet->set_publish_date(base::Time::Now());
-    }
-    if (snippet->expiry_date().is_null()) {
-      snippet->set_expiry_date(
-          snippet->publish_date() +
-          base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
-    }
-  }
 }
 
 void RemoveIncompleteSnippets(NTPSnippet::PtrVector* snippets) {
@@ -805,7 +790,6 @@ void RemoteSuggestionsProvider::SanitizeReceivedSnippets(
     NTPSnippet::PtrVector* snippets) {
   DCHECK(ready());
   EraseMatchingSnippets(snippets, dismissed);
-  AssignExpiryAndPublishDates(snippets);
   RemoveIncompleteSnippets(snippets);
 }
 

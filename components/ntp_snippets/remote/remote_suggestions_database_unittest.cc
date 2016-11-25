@@ -213,8 +213,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Update) {
   db()->SaveSnippet(*snippet);
 
   // Change it.
-  const std::string text("some text");
-  snippet->set_snippet(text);
+  snippet->set_dismissed(true);
   db()->SaveSnippet(*snippet);
 
   // Make sure we get the updated version.

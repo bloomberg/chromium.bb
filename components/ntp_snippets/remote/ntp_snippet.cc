@@ -78,6 +78,8 @@ static_assert(
         kArticlesRemoteId,
     "kArticlesRemoteId has a wrong value?!");
 
+const int kChromeReaderDefaultExpiryTimeMins = 3 * 24 * 60;
+
 NTPSnippet::NTPSnippet(const std::string& id, int remote_category_id)
     : ids_(1, id),
       score_(0),
@@ -104,24 +106,34 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
 
   std::string title;
   if (content->GetString("title", &title)) {
-    snippet->set_title(title);
+    snippet->title_ = title;
   }
   std::string salient_image_url;
   if (content->GetString("thumbnailUrl", &salient_image_url)) {
-    snippet->set_salient_image_url(GURL(salient_image_url));
+    snippet->salient_image_url_ = GURL(salient_image_url);
   }
   std::string snippet_str;
   if (content->GetString("snippet", &snippet_str)) {
-    snippet->set_snippet(snippet_str);
+    snippet->snippet_ = snippet_str;
   }
   // The creation and expiry timestamps are uint64s which are stored as strings.
   std::string creation_timestamp_str;
   if (content->GetString("creationTimestampSec", &creation_timestamp_str)) {
-    snippet->set_publish_date(TimeFromJsonString(creation_timestamp_str));
+    snippet->publish_date_ = TimeFromJsonString(creation_timestamp_str);
   }
   std::string expiry_timestamp_str;
   if (content->GetString("expiryTimestampSec", &expiry_timestamp_str)) {
-    snippet->set_expiry_date(TimeFromJsonString(expiry_timestamp_str));
+    snippet->expiry_date_ = TimeFromJsonString(expiry_timestamp_str);
+  }
+
+  // If publish and/or expiry date are missing, fill in reasonable defaults.
+  if (snippet->publish_date_.is_null()) {
+    snippet->publish_date_ = base::Time::Now();
+  }
+  if (snippet->expiry_date_.is_null()) {
+    snippet->expiry_date_ =
+        snippet->publish_date() +
+        base::TimeDelta::FromMinutes(kChromeReaderDefaultExpiryTimeMins);
   }
 
   const base::ListValue* corpus_infos_list = nullptr;
@@ -189,7 +201,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
 
   double score;
   if (dict.GetDouble("score", &score)) {
-    snippet->set_score(score);
+    snippet->score_ = score;
   }
 
   return snippet;
@@ -234,7 +246,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
 
   double score;
   if (dict.GetDouble("score", &score)) {
-    snippet->set_score(score);
+    snippet->score_ = score;
   }
 
   return snippet;
@@ -256,14 +268,13 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
   snippet->AddIDs(
       std::vector<std::string>(proto.ids().begin() + 1, proto.ids().end()));
 
-  snippet->set_title(proto.title());
-  snippet->set_snippet(proto.snippet());
-  snippet->set_salient_image_url(GURL(proto.salient_image_url()));
-  snippet->set_publish_date(
-      base::Time::FromInternalValue(proto.publish_date()));
-  snippet->set_expiry_date(base::Time::FromInternalValue(proto.expiry_date()));
-  snippet->set_score(proto.score());
-  snippet->set_dismissed(proto.dismissed());
+  snippet->title_ = proto.title();
+  snippet->snippet_ = proto.snippet();
+  snippet->salient_image_url_ = GURL(proto.salient_image_url());
+  snippet->publish_date_ = base::Time::FromInternalValue(proto.publish_date());
+  snippet->expiry_date_ = base::Time::FromInternalValue(proto.expiry_date());
+  snippet->score_ = proto.score();
+  snippet->is_dismissed_ = proto.dismissed();
 
   std::vector<SnippetSource> sources;
   for (int i = 0; i < proto.sources_size(); ++i) {
@@ -357,6 +368,7 @@ base::Time NTPSnippet::TimeFromJsonString(const std::string& timestamp_str) {
   if (!base::StringToInt64(timestamp_str, &timestamp)) {
     // Even if there's an error in the conversion, some garbage data may still
     // be written to the output var, so reset it.
+    DLOG(WARNING) << "Invalid json timestamp: " << timestamp_str;
     timestamp = 0;
   }
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(timestamp);

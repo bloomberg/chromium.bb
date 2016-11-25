@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -71,16 +72,19 @@ std::unique_ptr<NTPSnippet> SnippetFromChromeReaderDict(
   return NTPSnippet::CreateFromChromeReaderDictionary(*dict);
 }
 
+const char kChromeReaderCreationTimestamp[] = "1234567890";
+const char kChromeReaderExpiryTimestamp[] = "2345678901";
+
 std::unique_ptr<base::DictionaryValue> SnippetWithTwoSources() {
-  const std::string kJsonStr =
+  const std::string kJsonStr = base::StringPrintf(
       "{\n"
       "  \"contentInfo\": {\n"
       "    \"url\":                   \"http://url.com\",\n"
       "    \"title\":                 \"Source 1 Title\",\n"
       "    \"snippet\":               \"Source 1 Snippet\",\n"
       "    \"thumbnailUrl\":          \"http://url.com/thumbnail\",\n"
-      "    \"creationTimestampSec\":  1234567890,\n"
-      "    \"expiryTimestampSec\":    2345678901,\n"
+      "    \"creationTimestampSec\":  \"%s\",\n"
+      "    \"expiryTimestampSec\":    \"%s\",\n"
       "    \"sourceCorpusInfo\": [{\n"
       "      \"corpusId\":            \"http://source1.com\",\n"
       "      \"publisherData\": {\n"
@@ -96,7 +100,8 @@ std::unique_ptr<base::DictionaryValue> SnippetWithTwoSources() {
       "    }]\n"
       "  },\n"
       "  \"score\": 5.0\n"
-      "}\n";
+      "}\n",
+      kChromeReaderCreationTimestamp, kChromeReaderExpiryTimestamp);
 
   auto json_value = base::JSONReader::Read(kJsonStr);
   base::DictionaryValue* json_dict;
@@ -178,16 +183,85 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
   ASSERT_FALSE(snippet->is_complete());
 }
 
+TEST(NTPSnippetTest, ShouldFillInCreation) {
+  auto dict = SnippetWithTwoSources();
+  ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
+  auto snippet = SnippetFromChromeReaderDict(std::move(dict));
+  ASSERT_THAT(snippet, NotNull());
+
+  // Publish date should have been filled with "now" - just make sure it's not
+  // empty and not the test default value.
+  base::Time publish_date = snippet->publish_date();
+  EXPECT_FALSE(publish_date.is_null());
+  EXPECT_NE(publish_date,
+            NTPSnippet::TimeFromJsonString(kChromeReaderCreationTimestamp));
+  // Expiry date should have kept the test default value.
+  base::Time expiry_date = snippet->expiry_date();
+  EXPECT_FALSE(expiry_date.is_null());
+  EXPECT_EQ(expiry_date,
+            NTPSnippet::TimeFromJsonString(kChromeReaderExpiryTimestamp));
+}
+
+TEST(NTPSnippetTest, ShouldFillInExpiry) {
+  auto dict = SnippetWithTwoSources();
+  ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
+  auto snippet = SnippetFromChromeReaderDict(std::move(dict));
+  ASSERT_THAT(snippet, NotNull());
+
+  base::Time publish_date = snippet->publish_date();
+  ASSERT_FALSE(publish_date.is_null());
+  // Expiry date should have been filled with creation date + offset.
+  base::Time expiry_date = snippet->expiry_date();
+  EXPECT_FALSE(expiry_date.is_null());
+  EXPECT_EQ(publish_date + base::TimeDelta::FromMinutes(
+                               kChromeReaderDefaultExpiryTimeMins),
+            expiry_date);
+}
+
+TEST(NTPSnippetTest, ShouldFillInCreationAndExpiry) {
+  auto dict = SnippetWithTwoSources();
+  ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
+  ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
+  auto snippet = SnippetFromChromeReaderDict(std::move(dict));
+  ASSERT_THAT(snippet, NotNull());
+
+  // Publish date should have been filled with "now" - just make sure it's not
+  // empty and not the test default value.
+  base::Time publish_date = snippet->publish_date();
+  EXPECT_FALSE(publish_date.is_null());
+  EXPECT_NE(publish_date,
+            NTPSnippet::TimeFromJsonString(kChromeReaderCreationTimestamp));
+  // Expiry date should have been filled with creation date + offset.
+  base::Time expiry_date = snippet->expiry_date();
+  EXPECT_FALSE(expiry_date.is_null());
+  EXPECT_EQ(publish_date + base::TimeDelta::FromMinutes(
+                               kChromeReaderDefaultExpiryTimeMins),
+            expiry_date);
+}
+
+TEST(NTPSnippetTest, ShouldNotOverwriteExpiry) {
+  auto dict = SnippetWithTwoSources();
+  ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
+  auto snippet = SnippetFromChromeReaderDict(std::move(dict));
+  ASSERT_THAT(snippet, NotNull());
+
+  // Expiry date should have kept the test default value.
+  base::Time expiry_date = snippet->expiry_date();
+  EXPECT_FALSE(expiry_date.is_null());
+  EXPECT_EQ(expiry_date,
+            NTPSnippet::TimeFromJsonString(kChromeReaderExpiryTimestamp));
+}
+
 std::unique_ptr<base::DictionaryValue> SnippetWithThreeSources() {
-  const std::string kJsonStr =
+  const std::string kJsonStr = base::StringPrintf(
       "{\n"
       "  \"contentInfo\": {\n"
       "    \"url\":                   \"http://url.com\",\n"
       "    \"title\":                 \"Source 1 Title\",\n"
       "    \"snippet\":               \"Source 1 Snippet\",\n"
       "    \"thumbnailUrl\":          \"http://url.com/thumbnail\",\n"
-      "    \"creationTimestampSec\":  1234567890,\n"
-      "    \"expiryTimestampSec\":    2345678901,\n"
+      "    \"creationTimestampSec\":  \"%s\",\n"
+      "    \"expiryTimestampSec\":    \"%s\",\n"
       "    \"sourceCorpusInfo\": [{\n"
       "      \"corpusId\":            \"http://source1.com\",\n"
       "      \"publisherData\": {\n"
@@ -209,7 +283,8 @@ std::unique_ptr<base::DictionaryValue> SnippetWithThreeSources() {
       "    }]\n"
       "  },\n"
       "  \"score\": 5.0\n"
-      "}\n";
+      "}\n",
+      kChromeReaderCreationTimestamp, kChromeReaderExpiryTimestamp);
 
   auto json_value = base::JSONReader::Read(kJsonStr);
   base::DictionaryValue* json_dict;
