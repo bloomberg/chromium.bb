@@ -50,6 +50,12 @@ class ManagePasswordsStateTest : public testing::Test {
     test_local_form_.username_element = base::ASCIIToUTF16("username_element");
     test_local_form_.password_value = base::ASCIIToUTF16("12345");
 
+    test_psl_form_.origin = GURL("http://1.example.com");
+    test_psl_form_.username_value = base::ASCIIToUTF16("username_psl");
+    test_psl_form_.username_element = base::ASCIIToUTF16("username_element");
+    test_psl_form_.password_value = base::ASCIIToUTF16("12345");
+    test_psl_form_.is_public_suffix_match = true;
+
     test_submitted_form_ = test_local_form_;
     test_submitted_form_.username_value = base::ASCIIToUTF16("new one");
     test_submitted_form_.password_value = base::ASCIIToUTF16("asdfjkl;");
@@ -65,6 +71,7 @@ class ManagePasswordsStateTest : public testing::Test {
   }
 
   autofill::PasswordForm& test_local_form() { return test_local_form_; }
+  autofill::PasswordForm& test_psl_form() { return test_psl_form_; }
   autofill::PasswordForm& test_submitted_form() { return test_submitted_form_; }
   autofill::PasswordForm& test_local_federated_form() {
     return test_local_federated_form_;
@@ -106,6 +113,7 @@ class ManagePasswordsStateTest : public testing::Test {
 
   ManagePasswordsState passwords_data_;
   autofill::PasswordForm test_local_form_;
+  autofill::PasswordForm test_psl_form_;
   autofill::PasswordForm test_submitted_form_;
   autofill::PasswordForm test_local_federated_form_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> test_stored_forms_;
@@ -260,6 +268,8 @@ TEST_F(ManagePasswordsStateTest, DefaultState) {
 TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
   test_stored_forms().push_back(
       base::MakeUnique<autofill::PasswordForm>(test_local_form()));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_psl_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
@@ -355,6 +365,8 @@ TEST_F(ManagePasswordsStateTest, AutoSignin) {
 }
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_psl_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
@@ -425,12 +437,8 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofillWithSavedFederations) {
 
 TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
   std::map<base::string16, const autofill::PasswordForm*> password_form_map;
-  password_form_map.insert(
-      std::make_pair(test_local_form().username_value, &test_local_form()));
-  autofill::PasswordForm psl_matched_test_form = test_local_form();
-  psl_matched_test_form.is_public_suffix_match = true;
-  password_form_map.insert(std::make_pair(psl_matched_test_form.username_value,
-                                          &psl_matched_test_form));
+  password_form_map[test_local_form().username_value] = &test_local_form();
+  password_form_map[test_psl_form().username_value] = &test_psl_form();
   GURL origin("https://example.com");
   passwords_data().OnPasswordAutofilled(password_form_map, origin, nullptr);
 
@@ -443,13 +451,10 @@ TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
 }
 
 TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
-  autofill::PasswordForm psl_matched_test_form = test_local_form();
-  psl_matched_test_form.is_public_suffix_match = true;
   std::map<base::string16, const autofill::PasswordForm*> password_form_map;
-  password_form_map.insert(std::make_pair(psl_matched_test_form.username_value,
-                                          &psl_matched_test_form));
+  password_form_map[test_psl_form().username_value] = &test_psl_form();
   passwords_data().OnPasswordAutofilled(
-      password_form_map, GURL("https://m.example.com/"), nullptr);
+      password_form_map, GURL("https://example.com/"), nullptr);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, passwords_data().state());
@@ -549,6 +554,8 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
 TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
   test_stored_forms().push_back(
       base::MakeUnique<autofill::PasswordForm>(test_local_form()));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_psl_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
