@@ -221,7 +221,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   SetupPeerconnectionWithLocalStream(right_tab_);
   NegotiateCall(left_tab_, right_tab_);
 
-  VerifyStatsGeneratedPromise(left_tab_);
+  std::set<std::string> missing_expected_stats;
+  for (const std::string& type : GetWhitelistedStatsTypes(left_tab_)) {
+    missing_expected_stats.insert(type);
+  }
+  for (const std::string& type : VerifyStatsGeneratedPromise(left_tab_)) {
+    missing_expected_stats.erase(type);
+  }
+  // TODO(hbos): When all stats are ready and returned by "getStats":
+  // EXPECT_TRUE(missing_expected_stats.empty());
+  // crbug.com/627816
 
   DetectVideoAndHangUp();
 }

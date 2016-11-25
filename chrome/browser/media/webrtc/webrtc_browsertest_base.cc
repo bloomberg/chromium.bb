@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -119,6 +120,26 @@ class PermissionRequestObserver : public PermissionRequestManager::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
 };
+
+std::vector<std::string> JsonArrayToVectorOfStrings(
+    const std::string& json_array) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_array);
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->IsType(base::Value::TYPE_LIST));
+  std::unique_ptr<base::ListValue> list =
+      base::ListValue::From(std::move(value));
+  std::vector<std::string> vector;
+  vector.reserve(list->GetSize());
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    base::Value* item;
+    EXPECT_TRUE(list->Get(i, &item));
+    EXPECT_TRUE(item->IsType(base::Value::TYPE_STRING));
+    std::string item_str;
+    EXPECT_TRUE(item->GetAsString(&item_str));
+    vector.push_back(std::move(item_str));
+  }
+  return vector;
+}
 
 }  // namespace
 
@@ -460,10 +481,17 @@ void WebRtcTestBase::VerifyStatsGeneratedCallback(
   EXPECT_EQ("ok-got-stats", ExecuteJavascript("verifyStatsGenerated()", tab));
 }
 
-void WebRtcTestBase::VerifyStatsGeneratedPromise(
+std::vector<std::string> WebRtcTestBase::VerifyStatsGeneratedPromise(
     content::WebContents* tab) const {
-  EXPECT_EQ("ok-got-stats",
-            ExecuteJavascript("verifyStatsGeneratedPromise()", tab));
+  std::string result = ExecuteJavascript("verifyStatsGeneratedPromise()", tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
+  return JsonArrayToVectorOfStrings(result.substr(3));
+}
+
+std::vector<std::string> WebRtcTestBase::GetWhitelistedStatsTypes(
+    content::WebContents* tab) const {
+  return JsonArrayToVectorOfStrings(
+      ExecuteJavascript("getWhitelistedStatsTypes()", tab));
 }
 
 void WebRtcTestBase::SetDefaultVideoCodec(
