@@ -422,11 +422,8 @@ void NavigationHandleImpl::WillStartRequest(
     bool is_external_protocol,
     RequestContextType request_context_type,
     const ThrottleChecksFinishedCallback& callback) {
-  // |method != "POST"| should imply absence of |resource_request_body|.
-  if (method != "POST" && resource_request_body) {
-    NOTREACHED();
-    resource_request_body = nullptr;
-  }
+  if (method != "POST")
+    DCHECK(!resource_request_body);
 
   // Update the navigation parameters.
   method_ = method;
