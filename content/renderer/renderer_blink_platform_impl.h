@@ -114,6 +114,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                            long long size) override;
   blink::WebString databaseCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
+  cc::FrameSinkId generateFrameSinkId() override;
 
   blink::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,

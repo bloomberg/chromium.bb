@@ -618,6 +618,11 @@ WebString RendererBlinkPlatformImpl::databaseCreateOriginIdentifier(
       WebSecurityOriginToGURL(origin)));
 }
 
+cc::FrameSinkId RendererBlinkPlatformImpl::generateFrameSinkId() {
+  return cc::FrameSinkId(RenderThread::Get()->GetClientId(),
+                         RenderThread::Get()->GenerateRoutingID());
+}
+
 bool RendererBlinkPlatformImpl::isThreadedCompositingEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   // thread can be NULL in tests.

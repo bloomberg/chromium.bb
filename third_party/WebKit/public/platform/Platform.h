@@ -55,6 +55,7 @@
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 #include "cc/resources/shared_bitmap.h"
+#include "cc/surfaces/frame_sink_id.h"
 
 class GrContext;
 
@@ -320,6 +321,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns a unique identifier for a process. This may not necessarily be
   // the process's process ID.
   virtual uint32_t getUniqueIdForProcess() { return 0; }
+
+  // Returns a unique FrameSinkID for the current renderer process
+  virtual cc::FrameSinkId generateFrameSinkId() { return cc::FrameSinkId(); }
 
   // Message Ports -------------------------------------------------------
 
