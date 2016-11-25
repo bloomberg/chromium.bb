@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
@@ -20,6 +21,7 @@ class URLRequest;
 
 namespace prerender {
 class PrerenderContents;
+class PrerenderThrottleInfo;
 
 // This class implements policy on resource requests in prerenders.  It cancels
 // prerenders on certain requests.  It also defers certain requests until after
@@ -32,6 +34,8 @@ class PrerenderResourceThrottle
       public base::SupportsWeakPtr<PrerenderResourceThrottle> {
  public:
   explicit PrerenderResourceThrottle(net::URLRequest* request);
+
+  ~PrerenderResourceThrottle() override;
 
   // content::ResourceThrottle implementation:
   void WillStartRequest(bool* defer) override;
@@ -57,7 +61,8 @@ class PrerenderResourceThrottle
       content::ResourceType resource_type,
       int render_process_id,
       int render_frame_id,
-      const GURL& url);
+      const GURL& url,
+      scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info);
 
   static void WillRedirectRequestOnUI(
       const base::WeakPtr<PrerenderResourceThrottle>& throttle,
@@ -69,11 +74,13 @@ class PrerenderResourceThrottle
       int render_frame_id,
       const GURL& new_url);
 
-  static void WillProcessResponseOnUI(bool is_main_resource,
-                                      bool is_no_store,
-                                      int redirect_count,
-                                      int render_process_id,
-                                      int render_frame_id);
+  static void WillProcessResponseOnUI(
+      bool is_main_resource,
+      bool is_no_store,
+      int redirect_count,
+      int render_process_id,
+      int render_frame_id,
+      scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info);
 
   // Helper to return the PrerenderContents given a render frame id. May return
   // NULL if it's gone.
@@ -81,6 +88,8 @@ class PrerenderResourceThrottle
       int render_process_id, int render_frame_id);
 
   net::URLRequest* request_;
+
+  scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceThrottle);
 };

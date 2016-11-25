@@ -356,6 +356,8 @@ class PrerenderManager : public content::NotificationObserver,
     return IsPrerenderSilenceExperiment(origin);
   }
 
+  base::WeakPtr<PrerenderManager> AsWeakPtr();
+
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:

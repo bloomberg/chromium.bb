@@ -1396,6 +1396,10 @@ void PrerenderManager::RenderProcessHostDestroyed(
   DCHECK_EQ(1u, erased);
 }
 
+base::WeakPtr<PrerenderManager> PrerenderManager::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void PrerenderManager::SetPrerenderContentsFactoryForTest(
     PrerenderContents::Factory* prerender_contents_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
