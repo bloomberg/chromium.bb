@@ -141,8 +141,7 @@ void SourceListDirective::parse(const UChar* begin, const UChar* end) {
       // list itself.
       if (scheme.isEmpty() && host.isEmpty())
         continue;
-      if (ContentSecurityPolicy::getDirectiveType(host) !=
-          ContentSecurityPolicy::DirectiveType::Undefined)
+      if (m_policy->isDirectiveName(host))
         m_policy->reportDirectiveAsSourceExpression(m_directiveName, host);
       m_list.append(new CSPSource(m_policy, scheme, host, port, path,
                                   hostWildcard, portWildcard));
