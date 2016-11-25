@@ -54,6 +54,7 @@ std::vector<OfflinePageItem> CreateDummyRecentTabs(
 
 OfflinePageItem CreateDummyRecentTab(int id, base::Time time) {
   OfflinePageItem item = CreateDummyRecentTab(id);
+  item.creation_time = time;
   item.last_access_time = time;
   return item;
 }
@@ -122,13 +123,16 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldConvertToSuggestions) {
   FireOfflinePageModelChanged(CreateDummyRecentTabs({1, 2, 3}));
 }
 
-TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByMostRecentlyVisited) {
+TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByCreationTime) {
   base::Time now = base::Time::Now();
   base::Time yesterday = now - base::TimeDelta::FromDays(1);
   base::Time tomorrow = now + base::TimeDelta::FromDays(1);
   std::vector<OfflinePageItem> offline_pages = {
       CreateDummyRecentTab(1, now), CreateDummyRecentTab(2, yesterday),
       CreateDummyRecentTab(3, tomorrow)};
+
+  offline_pages[1].last_access_time =
+      offline_pages[0].last_access_time + base::TimeDelta::FromHours(1);
 
   EXPECT_CALL(
       *observer(),
@@ -238,6 +242,26 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldClearDismissedOnFetch) {
 
   FireOfflinePageModelChanged(std::vector<OfflinePageItem>());
   EXPECT_THAT(ReadDismissedIDsFromPrefs(), IsEmpty());
+}
+
+TEST_F(RecentTabSuggestionsProviderTest, ShouldNotShowSameUrlMutlipleTimes) {
+  base::Time now = base::Time::Now();
+  base::Time yesterday = now - base::TimeDelta::FromDays(1);
+  base::Time tomorrow = now + base::TimeDelta::FromDays(1);
+  std::vector<OfflinePageItem> offline_pages = {
+      CreateDummyRecentTab(1, yesterday), CreateDummyRecentTab(2, now),
+      CreateDummyRecentTab(3, tomorrow)};
+
+  // We leave IDs different, but make the URLs the same.
+  offline_pages[2].url = offline_pages[0].url;
+
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, recent_tabs_category(),
+                  UnorderedElementsAre(
+                      Property(&ContentSuggestion::publish_date, now),
+                      Property(&ContentSuggestion::publish_date, tomorrow))));
+  FireOfflinePageModelChanged(offline_pages);
 }
 
 }  // namespace ntp_snippets

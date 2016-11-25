@@ -43,10 +43,20 @@ int GetMaxSuggestionsCount() {
                        kDefaultMaxSuggestionsCount);
 }
 
-struct OrderOfflinePagesByMostRecentlyVisitedFirst {
+struct OrderOfflinePagesByMostRecentlyCreatedFirst {
   bool operator()(const OfflinePageItem* left,
                   const OfflinePageItem* right) const {
-    return left->last_access_time > right->last_access_time;
+    return left->creation_time > right->creation_time;
+  }
+};
+
+struct OrderOfflinePagesByUrlAndThenMostRecentlyCreatedFirst {
+  bool operator()(const OfflinePageItem* left,
+                  const OfflinePageItem* right) const {
+    if (left->url != right->url) {
+      return left->url < right->url;
+    }
+    return left->creation_time > right->creation_time;
   }
 };
 
@@ -222,7 +232,7 @@ void RecentTabSuggestionsProvider::
 
   observer()->OnNewSuggestions(
       this, provided_category_,
-      GetMostRecentlyVisited(std::move(recent_tab_items)));
+      GetMostRecentlyCreatedWithoutDuplicates(std::move(recent_tab_items)));
   if (new_dismissed_ids.size() != old_dismissed_ids.size()) {
     StoreDismissedIDsToPrefs(new_dismissed_ids);
   }
@@ -281,10 +291,21 @@ ContentSuggestion RecentTabSuggestionsProvider::ConvertOfflinePage(
 }
 
 std::vector<ContentSuggestion>
-RecentTabSuggestionsProvider::GetMostRecentlyVisited(
+RecentTabSuggestionsProvider::GetMostRecentlyCreatedWithoutDuplicates(
     std::vector<const OfflinePageItem*> offline_page_items) const {
+  // |std::unique| only removes duplicates that immediately follow each other.
+  // Thus, first, we have to sort by URL and creation time and only then remove
+  // duplicates and sort the remaining items by creation time.
   std::sort(offline_page_items.begin(), offline_page_items.end(),
-            OrderOfflinePagesByMostRecentlyVisitedFirst());
+            OrderOfflinePagesByUrlAndThenMostRecentlyCreatedFirst());
+  std::vector<const OfflinePageItem*>::iterator new_end = std::unique(
+      offline_page_items.begin(), offline_page_items.end(),
+      [](const OfflinePageItem* left, const OfflinePageItem* right) {
+        return left->url == right->url;
+      });
+  offline_page_items.erase(new_end, offline_page_items.end());
+  std::sort(offline_page_items.begin(), offline_page_items.end(),
+            OrderOfflinePagesByMostRecentlyCreatedFirst());
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem* offline_page_item : offline_page_items) {
     suggestions.push_back(ConvertOfflinePage(*offline_page_item));

@@ -87,10 +87,11 @@ class RecentTabSuggestionsProvider
   ContentSuggestion ConvertOfflinePage(
       const offline_pages::OfflinePageItem& offline_page) const;
 
-  // Gets the |kMaxSuggestionsCount| most recently visited OfflinePageItems from
-  // the list, orders them by last visit date and converts them to
-  // ContentSuggestions for the |provided_category_|.
-  std::vector<ContentSuggestion> GetMostRecentlyVisited(
+  // Removes duplicates for the same URL leaving only the most recently created
+  // items, returns at most |GetMaxSuggestionsCount()| ContentSuggestions
+  // corresponding to the remaining items, sorted by creation time (newer
+  // first).
+  std::vector<ContentSuggestion> GetMostRecentlyCreatedWithoutDuplicates(
       std::vector<const offline_pages::OfflinePageItem*> offline_page_items)
       const;
 
