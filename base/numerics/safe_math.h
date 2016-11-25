@@ -100,27 +100,52 @@ class CheckedNumeric {
       : state_(static_cast<Src>(value)) {}
 
   // IsValid() is the public API to test if a CheckedNumeric is currently valid.
-  constexpr bool IsValid() const { return state_.is_valid(); }
+  // A range checked destination type can be supplied using the Dst template
+  // parameter, which will trigger a CHECK if the value is not in bounds for
+  // the destination.
+  template <typename Dst = T>
+  constexpr bool IsValid() const {
+    return state_.is_valid() &&
+           IsValueInRangeForNumericType<Dst>(state_.value());
+  }
 
   // ValueOrDie() The primary accessor for the underlying value. If the current
   // state is not valid it will CHECK and crash.
-  constexpr T ValueOrDie() const {
-    return IsValid() ? state_.value() : CheckOnFailure::HandleFailure<T>();
+  // A range checked destination type can be supplied using the Dst template
+  // parameter, which will trigger a CHECK if the value is not in bounds for
+  // the destination.
+  // The CHECK behavior can be overridden by supplying a handler as a
+  // template parameter, for test code, etc. However, the handler cannot access
+  // the underlying value, and it is not available through other means.
+  template <typename Dst = T, class CheckHandler = CheckOnFailure>
+  constexpr Dst ValueOrDie() const {
+    return IsValid<Dst>() ? state_.value()
+                          : CheckHandler::template HandleFailure<Dst>();
   }
 
   // ValueOrDefault(T default_value) A convenience method that returns the
   // current value if the state is valid, and the supplied default_value for
   // any other state.
-  constexpr T ValueOrDefault(T default_value) const {
-    return IsValid() ? state_.value() : default_value;
+  // A range checked destination type can be supplied using the Dst template
+  // parameter. WARNING: This function may fail to compile or CHECK at runtime
+  // if the supplied default_value is not within range of the destination type.
+  template <typename Dst = T, typename Src>
+  constexpr Dst ValueOrDefault(const Src default_value) const {
+    return IsValid<Dst>() ? state_.value() : checked_cast<Dst>(default_value);
   }
 
   // ValueFloating() - Since floating point values include their validity state,
   // we provide an easy method for extracting them directly, without a risk of
   // crashing on a CHECK.
-  constexpr T ValueFloating() const {
-    static_assert(std::numeric_limits<T>::is_iec559, "Argument must be float.");
-    return state_.value();
+  // A range checked destination type can be supplied using the Dst template
+  // parameter.
+  template <typename Dst = T>
+  constexpr Dst ValueFloating() const {
+    static_assert(std::numeric_limits<T>::is_iec559,
+                  "Type must be floating point.");
+    static_assert(std::numeric_limits<Dst>::is_iec559,
+                  "Type must be floating point.");
+    return static_cast<Dst>(state_.value());
   }
 
   // Returns a checked numeric of the specified type, cast from the current

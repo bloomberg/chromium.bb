@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/test/gtest_util.h"
@@ -81,6 +82,15 @@ U GetNumericValueForTest(const CheckedNumeric<U>& src) {
 
 using base::internal::GetNumericValueForTest;
 
+// Logs the ValueOrDie() failure instead of crashing.
+struct LogOnFailure {
+  template <typename T>
+  static T HandleFailure() {
+    LOG(WARNING) << "ValueOrDie() failed unexpectedly.";
+    return T();
+  }
+};
+
 // Helper macros to wrap displaying the conversion types and line numbers.
 #define TEST_EXPECTED_VALIDITY(expected, actual)                           \
   EXPECT_EQ(expected, (actual).template Cast<Dst>().IsValid())             \
@@ -92,7 +102,9 @@ using base::internal::GetNumericValueForTest;
 
 #define TEST_EXPECTED_VALUE(expected, actual)                              \
   EXPECT_EQ(static_cast<Dst>(expected),                                    \
-            (actual).template Cast<Dst>().ValueOrDie())                    \
+            ((actual)                                                      \
+                 .template Cast<Dst>()                                     \
+                 .template ValueOrDie<Dst, LogOnFailure>()))               \
       << "Result test: Value " << GetNumericValueForTest(actual) << " as " \
       << dst << " on line " << line
 
@@ -730,6 +742,28 @@ TEST(SafeNumerics, CastTests) {
                        std::numeric_limits<float>::infinity();
   EXPECT_TRUE(std::isnan(not_a_number));
   EXPECT_EQ(0, saturated_cast<int>(not_a_number));
+
+  // Test the CheckedNumeric value extractions functions.
+  auto int8_min = CheckNum(numeric_limits<int8_t>::min());
+  auto int8_max = CheckNum(numeric_limits<int8_t>::max());
+  auto double_max = CheckNum(numeric_limits<double>::max());
+  static_assert(
+      std::is_same<int16_t, decltype(int8_min.ValueOrDie<int16_t>())>::value,
+      "ValueOrDie returning incorrect type.");
+  static_assert(
+      std::is_same<int16_t,
+                   decltype(int8_min.ValueOrDefault<int16_t>(0))>::value,
+      "ValueOrDefault returning incorrect type.");
+  static_assert(
+      std::is_same<float, decltype(double_max.ValueFloating<float>())>::value,
+      "ValueFloating returning incorrect type.");
+  EXPECT_FALSE(int8_min.template IsValid<uint8_t>());
+  EXPECT_TRUE(int8_max.template IsValid<uint8_t>());
+  EXPECT_EQ(static_cast<int>(numeric_limits<int8_t>::min()),
+            int8_min.template ValueOrDie<int>());
+  EXPECT_TRUE(int8_max.template IsValid<uint32_t>());
+  EXPECT_EQ(static_cast<int>(numeric_limits<int8_t>::max()),
+            int8_max.template ValueOrDie<int>());
 }
 
 TEST(SafeNumerics, SaturatedCastChecks) {
