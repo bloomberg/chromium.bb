@@ -42,6 +42,9 @@ namespace internal {
 // The following methods convert from CheckedNumeric to standard numeric values:
 //  IsValid() - Returns true if the underlying numeric value is valid (i.e. has
 //          has not wrapped and is not the result of an invalid conversion).
+// AssignIfValid() - Assigns the underlying value to the supplied destination
+//          pointer if the value is currently valid and within the range
+//          supported by the destination type. Returns true on success.
 //  ValueOrDie() - Returns the underlying value. If the state is not valid this
 //          call will crash on a CHECK.
 //  ValueOrDefault() - Returns the current value, or the supplied default if the
@@ -99,18 +102,26 @@ class CheckedNumeric {
       StrictNumeric<Src> value)  // NOLINT(runtime/explicit)
       : state_(static_cast<Src>(value)) {}
 
-  // IsValid() is the public API to test if a CheckedNumeric is currently valid.
+  // IsValid() - The public API to test if a CheckedNumeric is currently valid.
   // A range checked destination type can be supplied using the Dst template
-  // parameter, which will trigger a CHECK if the value is not in bounds for
-  // the destination.
+  // parameter.
   template <typename Dst = T>
   constexpr bool IsValid() const {
     return state_.is_valid() &&
            IsValueInRangeForNumericType<Dst>(state_.value());
   }
 
-  // ValueOrDie() The primary accessor for the underlying value. If the current
-  // state is not valid it will CHECK and crash.
+  // AssignIfValid(Dst) - Assigns the underlying value if it is currently valid
+  // and is within the range supported by the destination type. Returns true if
+  // successful and false otherwise.
+  template <typename Dst>
+  constexpr bool AssignIfValid(Dst* result) const {
+    return IsValid<Dst>() ? ((*result = static_cast<Dst>(state_.value())), true)
+                          : false;
+  }
+
+  // ValueOrDie() - The primary accessor for the underlying value. If the
+  // current state is not valid it will CHECK and crash.
   // A range checked destination type can be supplied using the Dst template
   // parameter, which will trigger a CHECK if the value is not in bounds for
   // the destination.
@@ -123,7 +134,7 @@ class CheckedNumeric {
                           : CheckHandler::template HandleFailure<Dst>();
   }
 
-  // ValueOrDefault(T default_value) A convenience method that returns the
+  // ValueOrDefault(T default_value) - A convenience method that returns the
   // current value if the state is valid, and the supplied default_value for
   // any other state.
   // A range checked destination type can be supplied using the Dst template

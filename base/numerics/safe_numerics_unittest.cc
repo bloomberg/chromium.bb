@@ -764,6 +764,20 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_TRUE(int8_max.template IsValid<uint32_t>());
   EXPECT_EQ(static_cast<int>(numeric_limits<int8_t>::max()),
             int8_max.template ValueOrDie<int>());
+  uint8_t uint8_dest = 0;
+  int16_t int16_dest = 0;
+  double double_dest = 0;
+  EXPECT_TRUE(int8_max.AssignIfValid(&uint8_dest));
+  EXPECT_EQ(static_cast<uint8_t>(numeric_limits<int8_t>::max()), uint8_dest);
+  EXPECT_FALSE(int8_min.AssignIfValid(&uint8_dest));
+  EXPECT_TRUE(int8_max.AssignIfValid(&int16_dest));
+  EXPECT_EQ(static_cast<int16_t>(numeric_limits<int8_t>::max()), int16_dest);
+  EXPECT_TRUE(int8_min.AssignIfValid(&int16_dest));
+  EXPECT_EQ(static_cast<int16_t>(numeric_limits<int8_t>::min()), int16_dest);
+  EXPECT_FALSE(double_max.AssignIfValid(&uint8_dest));
+  EXPECT_FALSE(double_max.AssignIfValid(&int16_dest));
+  EXPECT_TRUE(double_max.AssignIfValid(&double_dest));
+  EXPECT_EQ(numeric_limits<double>::max(), double_dest);
 }
 
 TEST(SafeNumerics, SaturatedCastChecks) {
