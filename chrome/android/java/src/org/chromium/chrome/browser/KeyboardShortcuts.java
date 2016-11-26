@@ -4,7 +4,12 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.os.Build;
 import android.view.KeyEvent;
+import android.view.KeyboardShortcutGroup;
+import android.view.KeyboardShortcutInfo;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
@@ -12,6 +17,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentViewCore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements app-level keyboard shortcuts for ChromeTabbedActivity and DocumentActivity.
@@ -91,6 +99,85 @@ public class KeyboardShortcuts {
         }
 
         return null;
+    }
+
+    /**
+     * This method should be called when overriding from
+     * {@link android.app.Activity#onProvideKeyboardShortcuts(List, android.view.Menu, int)}
+     * in an activity. It will return a list of the possible shortcuts. If
+     * someone adds a shortcut they also need to add an explanation in the
+     * appropriate group in this method so the user can see it when this method
+     * is called.
+     *
+     * @param context We need an activity so we can call the strings from our
+     *            resource.
+     * @return a list of shortcuts organized into groups.
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    public static List<KeyboardShortcutGroup> createShortcutGroup(Context context) {
+
+        final int ctrlShift = KeyEvent.META_CTRL_ON | KeyEvent.META_SHIFT_ON;
+
+        List<KeyboardShortcutGroup> shortcutGroups = new ArrayList<>();
+
+        KeyboardShortcutGroup tabShortcutGroup = new KeyboardShortcutGroup(
+                context.getString(R.string.keyboard_shortcut_tab_group_header));
+        addShortcut(context, tabShortcutGroup, R.string.keyboard_shortcut_open_new_tab,
+                KeyEvent.KEYCODE_N, KeyEvent.META_CTRL_ON);
+        addShortcut(context, tabShortcutGroup, R.string.keyboard_shortcut_reopen_new_tab,
+                KeyEvent.KEYCODE_T, ctrlShift);
+        addShortcut(context, tabShortcutGroup, R.string.keyboard_shortcut_new_incognito_tab,
+                KeyEvent.KEYCODE_N, ctrlShift);
+        addShortcut(context, tabShortcutGroup, R.string.keyboard_shortcut_next_tab,
+                KeyEvent.KEYCODE_TAB, KeyEvent.META_CTRL_ON);
+        addShortcut(context, tabShortcutGroup, R.string.keyboard_shortcut_prev_tab,
+                KeyEvent.KEYCODE_TAB, ctrlShift);
+        addShortcut(context, tabShortcutGroup, R.string.keyboard_shortcut_close_tab,
+                KeyEvent.KEYCODE_W, KeyEvent.META_CTRL_ON);
+        shortcutGroups.add(tabShortcutGroup);
+
+        KeyboardShortcutGroup chromeFeatureShortcutGroup = new KeyboardShortcutGroup(
+                context.getString(R.string.keyboard_shortcut_chrome_feature_group_header));
+        addShortcut(context, chromeFeatureShortcutGroup, R.string.keyboard_shortcut_open_menu,
+                KeyEvent.KEYCODE_E, KeyEvent.META_ALT_ON);
+        addShortcut(context, chromeFeatureShortcutGroup,
+                R.string.keyboard_shortcut_bookmark_manager, KeyEvent.KEYCODE_B, ctrlShift);
+        addShortcut(context, chromeFeatureShortcutGroup, R.string.keyboard_shortcut_history_manager,
+                KeyEvent.KEYCODE_H, KeyEvent.META_CTRL_ON);
+        addShortcut(context, chromeFeatureShortcutGroup, R.string.keyboard_shortcut_find_bar,
+                KeyEvent.KEYCODE_F, KeyEvent.META_CTRL_ON);
+        addShortcut(context, chromeFeatureShortcutGroup, R.string.keyboard_shortcut_address_bar,
+                KeyEvent.KEYCODE_L, KeyEvent.META_CTRL_ON);
+        shortcutGroups.add(chromeFeatureShortcutGroup);
+
+        KeyboardShortcutGroup webpageShortcutGroup = new KeyboardShortcutGroup(
+                context.getString(R.string.keyboard_shortcut_webpage_group_header));
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_print_page,
+                KeyEvent.KEYCODE_P, KeyEvent.META_CTRL_ON);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_reload_page,
+                KeyEvent.KEYCODE_R, KeyEvent.META_CTRL_ON);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_reload_no_cache,
+                KeyEvent.KEYCODE_R, ctrlShift);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_bookmark_page,
+                KeyEvent.KEYCODE_D, KeyEvent.META_CTRL_ON);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_zoom_in,
+                KeyEvent.KEYCODE_PLUS, KeyEvent.META_CTRL_ON);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_zoom_out,
+                KeyEvent.KEYCODE_MINUS, KeyEvent.META_CTRL_ON);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_reset_zoom,
+                KeyEvent.KEYCODE_0, KeyEvent.META_CTRL_ON);
+        addShortcut(context, webpageShortcutGroup, R.string.keyboard_shortcut_help_center,
+                KeyEvent.KEYCODE_SLASH, ctrlShift);
+        shortcutGroups.add(webpageShortcutGroup);
+
+        return shortcutGroups;
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
+    private static void addShortcut(Context context,
+            KeyboardShortcutGroup shortcutGroup, int resId, int keyCode, int keyModifier) {
+        shortcutGroup.addItem(new KeyboardShortcutInfo(context.getString(resId), keyCode,
+                keyModifier));
     }
 
     /**

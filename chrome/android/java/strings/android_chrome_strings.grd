@@ -2753,6 +2753,74 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_WEBAPK_UNKNOWN_SOURCES_SETTINGS_BUTTON" desc="Button label for opening Android Settings from dialog warning user that installation from Unknown sources is required for WebAPK experiment.">
         Settings
       </message>
+      
+      <!-- Keyboard shortcuts in Android N-->
+      <message name="IDS_KEYBOARD_SHORTCUT_OPEN_NEW_TAB" desc="A text label that appears next to the keyboard shortcut to open a new tab in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open a new tab
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_REOPEN_NEW_TAB" desc="A text label that appears next to the keyboard shortcut for reopening the last tab in the chrome app. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Reopen the last closed tab
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_NEW_INCOGNITO_TAB" desc="A text label that appears next to a keyboard shortcut to open a new tab in incognito mode in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open a new tab in Incognito mode
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_OPEN_MENU" desc="A text label that appears next to a keyboard shortcut that opens the overflow menu in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open the menu
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_NEXT_TAB" desc="A text label that appears next to the keyboard shortcut that will move the user to the next tab in the Chrome app. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Jump to the next tab
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_PREV_TAB" desc="A text label that appears next to the keyboard shortcut that will move the user to the previous tab in the Chrome app. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Jump to the previous tab
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_CLOSE_TAB" desc="A text label that appears next to the keyboard shortcut that will close the current tab in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Close current tab
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_FIND_BAR" desc="A text label that appears next to the keyboard shortcut that will open the find bar that searches what is on the screen. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open the Find Bar
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_ADDRESS_BAR" desc="A text label that appears next to the keyboard that will let you focus on the address bar on the screen. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Jump to the address bar
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_BOOKMARK_MANAGER" desc="A text label that appears next to the keyboard shortcut that will open the bookmarks manager in Chrome. On a tablet this is a new tab, on the phone this is a new activity. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open the bookmarks manager
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_BOOKMARK_PAGE" desc="A text label that appears next to the keyboard shortcut that will bookmark the page that is currently on screen. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Bookmark the current page
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_HISTORY_MANAGER" desc="A text label that appears next to the keyboard shorcut that will open up the history page. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open the history page
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_PRINT_PAGE" desc="A text label that appears next to the keyboard shortcut that will open the print page. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open options to print page
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_ZOOM_IN" desc="A text label that appears next to the keyboard shortcut that will increase everything on the page. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Make everything on the page bigger
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_ZOOM_OUT" desc="A text label that appears next to the keyboard shortcut that will decrease everything on the page. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Make everything on the page smaller
+      </message> 
+      <message name="IDS_KEYBOARD_SHORTCUT_RESET_ZOOM" desc="A text label that appears next to the keyboard shortcut that will reset the zoom back to the original size. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Return everything on the page to default size
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_RELOAD_PAGE" desc="A text label that appears next to the keyboard shortcut that will reload the current page. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Reload the current page
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_RELOAD_NO_CACHE" desc="A text label that appears next to the keyboard shortcut that will reload the current page without a cache. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Reload the current page, ignoring cached content
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_HELP_CENTER" desc="A text label that appears next to the keyboard shortcut that will open the Google Chrome Help Center in a new tab. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
+        Open the Chrome Help Center in a new tab
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_TAB_GROUP_HEADER" desc="A text label that appears above a list of shortcuts that are related to the tab window. This group is part of several groups of keyboard shortcuts all shown in a dialog.">
+        Tab and window shortcuts
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_CHROME_FEATURE_GROUP_HEADER" desc="A text label that appears above a list of shortcuts that are related to the Chrome app features. This group is part of several groups of keyboard shortcuts all shown in a dialog.">
+        Google Chrome feature shortcuts
+      </message>
+      <message name="IDS_KEYBOARD_SHORTCUT_WEBPAGE_GROUP_HEADER" desc="A text label that appears above a list of shortcuts that are related to manipulation of the current tab window. This group is part of several groups of keyboard shortcuts all shown in a dialog.">
+        Webpage shortcuts
+      </message> 
     </messages>
   </release>
 </grit>

@@ -21,6 +21,8 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
+import android.view.KeyboardShortcutGroup;
+import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -1473,6 +1475,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 && (!isTablet() || getCurrentTabModel().getCount() != 0);
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
                 || super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, Menu menu,
+            int deviceId) {
+        data.addAll(KeyboardShortcuts.createShortcutGroup(this));
     }
 
     @VisibleForTesting
