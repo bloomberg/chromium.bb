@@ -16,14 +16,14 @@ There should be no red visible.
 <div class="target" id="transform">F</div>
 <script>
 var timing = {fill: 'forwards', iterations: 0.75};
-rotateAdd.style.rotate = '90deg 1 0 0';
+rotateAdd.style.rotate = '1 0 0 90deg';
 rotateAdd.animate([
-  {rotate: '-180deg 0 1 0', composite: 'add'},
-  {rotate: '90deg 0 0 1'},
+  {rotate: '0 1 0 -180deg', composite: 'add'},
+  {rotate: '0 0 1 90deg'},
 ], timing);
 rotateReplace.animate([
-  {rotate: '180deg 0 -0.707107 -0.707107'},
-  {rotate: '90deg 0 0 1'},
+  {rotate: '0 -0.707107 -0.707107 180deg'},
+  {rotate: '0 0 1 90deg'},
 ], timing);
 transform.animate([
   {transform: 'rotate3d(1, 0, 0, 90deg) rotate3d(0, 1, 0, -180deg)'},

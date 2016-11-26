@@ -731,20 +731,20 @@ static CSSValueList* consumeRotation(CSSParserTokenRange& range) {
   ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
   CSSValueList* list = CSSValueList::createSpaceSeparated();
 
+  for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
+    CSSValue* dimension = consumeNumber(range, ValueRangeAll);
+    if (!dimension) {
+      if (i == 0)
+        break;
+      return nullptr;
+    }
+    list->append(*dimension);
+  }
+
   CSSValue* rotation = consumeAngle(range);
   if (!rotation)
     return nullptr;
   list->append(*rotation);
-
-  if (range.atEnd())
-    return list;
-
-  for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
-    CSSValue* dimension = consumeNumber(range, ValueRangeAll);
-    if (!dimension)
-      return nullptr;
-    list->append(*dimension);
-  }
 
   return list;
 }

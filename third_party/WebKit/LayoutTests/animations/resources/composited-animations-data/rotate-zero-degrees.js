@@ -4,7 +4,7 @@ var rotateZeroDegreesTests = {
     animateRotateNoFromAxis: {
       keyframes: [
         { rotate: '0deg' },
-        { rotate: '90deg 0 1 0' },
+        { rotate: '0 1 0 90deg' },
       ],
       style: 'background: magenta;',
       samples: getLinearSamples(20, 0, 1)
@@ -12,7 +12,7 @@ var rotateZeroDegreesTests = {
 
     animateRotateNoToAxis: {
       keyframes: [
-        { rotate: '0deg 1 0 0' },
+        { rotate: '1 0 0 0deg' },
         { rotate: '90deg' },
       ],
       style: 'background: yellow;',
@@ -21,8 +21,8 @@ var rotateZeroDegreesTests = {
 
     animateRotateFromZeroUnder360: {
       keyframes: [
-        { rotate: '0deg 1 0 0' },
-        { rotate: '90deg 0 1 0' },
+        { rotate: '1 0 0 0deg' },
+        { rotate: '0 1 0 90deg' },
       ],
       style: 'background: cyan;',
       samples: getLinearSamples(20, 0, 1)
@@ -30,8 +30,8 @@ var rotateZeroDegreesTests = {
 
     animateRotateToZeroUnder360: {
       keyframes: [
-        { rotate: '90deg 0 1 0' },
-        { rotate: '0deg 1 0 0' },
+        { rotate: '0 1 0 90deg' },
+        { rotate: '1 0 0 0deg' },
       ],
       style: 'background: indigo;',
       samples: getLinearSamples(20, 0, 1)
@@ -39,8 +39,8 @@ var rotateZeroDegreesTests = {
 
     animateRotateFromZero: {
       keyframes: [
-        { rotate: '0deg 1 0 0' },
-        { rotate: '450deg 0 1 0' },
+        { rotate: '1 0 0 0deg' },
+        { rotate: '0 1 0 450deg' },
       ],
       style: 'background: green;',
       samples: getLinearSamples(20, 0, 1)
@@ -48,8 +48,8 @@ var rotateZeroDegreesTests = {
 
     animateRotateToZero: {
       keyframes: [
-        { rotate: '450deg 0 1 0' },
-        { rotate: '0deg 1 0 0' },
+        { rotate: '0 1 0 450deg' },
+        { rotate: '1 0 0 0deg' },
       ],
       style: 'background: red;',
       samples: getLinearSamples(20, 0, 1)
@@ -57,8 +57,8 @@ var rotateZeroDegreesTests = {
 
     animateRotateFromAndToZero: {
       keyframes: [
-        { rotate: '0deg 0 1 0' },
-        { rotate: '0deg 1 0 0' },
+        { rotate: '0 1 0 0deg' },
+        { rotate: '1 0 0 0deg' },
       ],
       style: 'background: blue;',
       samples: getLinearSamples(20, 0, 1)

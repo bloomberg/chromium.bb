@@ -3552,8 +3552,6 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                          CSSPrimitiveValue::UnitType::Degrees);
 
       CSSValueList* list = CSSValueList::createSpaceSeparated();
-      list->append(*CSSPrimitiveValue::create(
-          style.rotate()->angle(), CSSPrimitiveValue::UnitType::Degrees));
       if (style.rotate()->x() != 0 || style.rotate()->y() != 0 ||
           style.rotate()->z() != 1) {
         list->append(*CSSPrimitiveValue::create(
@@ -3563,6 +3561,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
         list->append(*CSSPrimitiveValue::create(
             style.rotate()->z(), CSSPrimitiveValue::UnitType::Number));
       }
+      list->append(*CSSPrimitiveValue::create(
+          style.rotate()->angle(), CSSPrimitiveValue::UnitType::Degrees));
       return list;
     }
     case CSSPropertyScale: {

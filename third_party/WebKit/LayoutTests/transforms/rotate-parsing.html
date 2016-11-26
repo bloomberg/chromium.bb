@@ -10,24 +10,24 @@ expect('initial').parsesAs('initial').isComputedTo('0deg');
 expect('inherit').parsesAs('inherit');
 
 expect('10deg').parsesAs('10deg').isComputedTo('10deg');
-expect('10deg 0 0 1').parsesAs('10deg 0 0 1').isComputedTo('10deg');
-expect('10deg -1.5 2 3').parsesAs('10deg -1.5 2 3').isComputedTo('10deg -1.5 2 3');
+expect('0 0 1 10deg').parsesAs('0 0 1 10deg').isComputedTo('10deg');
+expect('-1.5 2 3 10deg').parsesAs('-1.5 2 3 10deg').isComputedTo('-1.5 2 3 10deg');
 
 expect('200grad').parsesAs('200grad').isComputedTo('180deg');
 expect('1rad').parsesAs('1rad').isComputedTo('57.2958deg');
-expect('0.25turn 0 2 0').parsesAs('0.25turn 0 2 0').isComputedTo('90deg 0 2 0');
+expect('0 2 0 0.25turn').parsesAs('0 2 0 0.25turn').isComputedTo('0 2 0 90deg');
 
 expect('calc(1turn - 270deg)').parsesAs('calc(90deg)').isComputedTo('90deg');
-expect('calc(1turn - 270deg + 400grad) 0 calc(0.5 + 0.5) 1').parsesAs('calc(450deg) 0 1 1').isComputedTo('450deg 0 1 1');
+expect('0 calc(0.5 + 0.5) 1 calc(1turn - 270deg + 400grad)').parsesAs('0 1 1 calc(450deg)').isComputedTo('0 1 1 450deg');
 
 expect('2').isInvalid();
 expect('none').isInvalid();
-expect('2deg 1').isInvalid();
-expect('45deg 1 2').isInvalid();
-expect('45deg 1 2 3 4').isInvalid();
-expect('1 2 3 45deg').isInvalid();
+expect('1 2deg').isInvalid();
+expect('1 2 45deg').isInvalid();
+expect('1 2 3 4 45deg').isInvalid();
+expect('45deg 1 2 3').isInvalid();
 expect('10%').isInvalid();
-expect('10% 0 0 1').isInvalid();
+expect('0 0 1 10%').isInvalid();
 expect('calc(1 + 2)').isInvalid();
-expect('20deg calc(20deg) 0 0').isInvalid()
+expect('calc(20deg) 0 0 20deg').isInvalid()
 </script>
