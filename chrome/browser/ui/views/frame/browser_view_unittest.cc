@@ -21,6 +21,12 @@
 
 namespace {
 
+#if defined(OS_MACOSX)
+const ui::EventFlags kPlatformModifier = ui::EF_COMMAND_DOWN;
+#else
+const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
+#endif  // OS_MACOSX
+
 // Tab strip bounds depend on the window frame sizes.
 gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
   gfx::Rect tabstrip_bounds(
@@ -166,12 +172,12 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 // by IsCommandRepeatable() in chrome/browser/ui/views/accelerator_table.h.
 TEST_F(BrowserViewTest, RepeatedAccelerators) {
   // A non-repeated Ctrl-L accelerator should be processed.
-  const ui::Accelerator kLocationAccel(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  const ui::Accelerator kLocationAccel(ui::VKEY_L, kPlatformModifier);
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kLocationAccel));
 
   // If the accelerator is repeated, it should be ignored.
   const ui::Accelerator kLocationRepeatAccel(
-      ui::VKEY_L, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
+      ui::VKEY_L, kPlatformModifier | ui::EF_IS_REPEAT);
   EXPECT_FALSE(browser_view()->AcceleratorPressed(kLocationRepeatAccel));
 
   // A repeated Ctrl-Tab accelerator should be processed.
