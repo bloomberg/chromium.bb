@@ -13,6 +13,7 @@ namespace devtools {
 
 namespace {
 using namespace ui::devtools::protocol;
+// TODO(mhashmi): Make ids reusable
 DOM::NodeId node_ids = 1;
 
 std::unique_ptr<DOM::Node> BuildNode(
@@ -56,7 +57,6 @@ std::unique_ptr<Array<std::string>> GetAttributes(const views::View* view) {
   return attributes;
 }
 
-
 WmWindow* FindPreviousSibling(WmWindow* window) {
   std::vector<WmWindow*> siblings = window->GetParent()->GetChildren();
   std::vector<WmWindow*>::iterator it =
@@ -98,7 +98,7 @@ void AshDevToolsDOMAgent::OnWindowTreeChanging(WmWindow* window,
   // Finally, We only trigger this  0 or 1 times as an old_parent will
   // either exist and only call this callback once, or not at all.
   if (window == params.old_parent)
-    RemoveWindowNode(params.target);
+    RemoveWindowTree(params.target, true);
 }
 
 // Handles adding windows.
@@ -110,12 +110,12 @@ void AshDevToolsDOMAgent::OnWindowTreeChanged(WmWindow* window,
   // If there is only a new_parent, OnWindowTreeChanging is never called and
   // the window is only added here.
   if (window == params.new_parent)
-    AddWindowNode(params.target);
+    AddWindowTree(params.target);
 }
 
 void AshDevToolsDOMAgent::OnWindowStackingChanged(WmWindow* window) {
-  RemoveWindowNode(window);
-  AddWindowNode(window);
+  RemoveWindowTree(window, false);
+  AddWindowTree(window);
 }
 
 WmWindow* AshDevToolsDOMAgent::GetWindowFromNodeId(int nodeId) {
@@ -148,59 +148,61 @@ int AshDevToolsDOMAgent::GetNodeIdFromView(views::View* view) {
   return view_to_node_id_map_[view];
 }
 
-std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForView(
-    views::View* view) {
+std::unique_ptr<ui::devtools::protocol::DOM::Node>
+AshDevToolsDOMAgent::BuildInitialTree() {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
-  for (int i = 0, count = view->child_count(); i < count; i++) {
-    children->addItem(BuildTreeForView(view->child_at(i)));
-  }
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
-      BuildNode("View", GetAttributes(view), std::move(children));
-  view_to_node_id_map_[view] = node->getNodeId();
-  node_id_to_view_map_[node->getNodeId()] = view;
-  return node;
-}
-
-std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForRootWidget(
-    views::Widget* widget) {
-  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
-  children->addItem(BuildTreeForView(widget->GetRootView()));
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
-      BuildNode("Widget", GetAttributes(widget), std::move(children));
-  widget_to_node_id_map_[widget] = node->getNodeId();
-  node_id_to_widget_map_[node->getNodeId()] = widget;
-  return node;
+  for (ash::WmWindow* window : shell_->GetAllRootWindows())
+    children->addItem(BuildTreeForWindow(window));
+  return BuildNode("root", nullptr, std::move(children));
 }
 
 std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForWindow(
     ash::WmWindow* window) {
+  DCHECK(!window_to_node_id_map_.count(window));
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
   views::Widget* widget = window->GetInternalWidget();
   if (widget)
     children->addItem(BuildTreeForRootWidget(widget));
-  for (ash::WmWindow* child : window->GetChildren()) {
+  for (ash::WmWindow* child : window->GetChildren())
     children->addItem(BuildTreeForWindow(child));
-  }
+
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("Window", GetAttributes(window), std::move(children));
-  // Only add as observer if window is not in map
-  if (!window_to_node_id_map_.count(window))
+  if (!window->HasObserver(this))
     window->AddObserver(this);
   window_to_node_id_map_[window] = node->getNodeId();
   node_id_to_window_map_[node->getNodeId()] = window;
   return node;
 }
 
-std::unique_ptr<ui::devtools::protocol::DOM::Node>
-AshDevToolsDOMAgent::BuildInitialTree() {
+std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForRootWidget(
+    views::Widget* widget) {
+  DCHECK(!widget_to_node_id_map_.count(widget));
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
-  for (ash::WmWindow* window : shell_->GetAllRootWindows()) {
-    children->addItem(BuildTreeForWindow(window));
-  }
-  return BuildNode("root", nullptr, std::move(children));
+  children->addItem(BuildTreeForView(widget->GetRootView()));
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
+      BuildNode("Widget", GetAttributes(widget), std::move(children));
+  // TODO(mhashmi): Add WidgetRemovalsObserver here
+  widget_to_node_id_map_[widget] = node->getNodeId();
+  node_id_to_widget_map_[node->getNodeId()] = widget;
+  return node;
 }
 
-void AshDevToolsDOMAgent::AddWindowNode(WmWindow* window) {
+std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForView(
+    views::View* view) {
+  DCHECK(!view_to_node_id_map_.count(view));
+  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
+  for (int i = 0, count = view->child_count(); i < count; i++)
+    children->addItem(BuildTreeForView(view->child_at(i)));
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
+      BuildNode("View", GetAttributes(view), std::move(children));
+  // TODO(mhashmi): Add ViewObserver here
+  view_to_node_id_map_[view] = node->getNodeId();
+  node_id_to_view_map_[node->getNodeId()] = view;
+  return node;
+}
+
+void AshDevToolsDOMAgent::AddWindowTree(WmWindow* window) {
   DCHECK(window_to_node_id_map_.count(window->GetParent()));
   WmWindow* prev_sibling = FindPreviousSibling(window);
   frontend()->childNodeInserted(
@@ -209,31 +211,48 @@ void AshDevToolsDOMAgent::AddWindowNode(WmWindow* window) {
       BuildTreeForWindow(window));
 }
 
-void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window) {
-  WmWindow* parent = window->GetParent();
-  DCHECK(parent);
+void AshDevToolsDOMAgent::RemoveWindowTree(WmWindow* window,
+                                           bool remove_observer) {
+  DCHECK(window);
+  if (window->GetInternalWidget())
+    RemoveWidgetTree(window->GetInternalWidget(), remove_observer);
+
+  for (ash::WmWindow* child : window->GetChildren())
+    RemoveWindowTree(child, remove_observer);
+
+  RemoveWindowNode(window, remove_observer);
+}
+
+void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window,
+                                           bool remove_observer) {
   WindowToNodeIdMap::iterator window_to_node_id_it =
       window_to_node_id_map_.find(window);
   DCHECK(window_to_node_id_it != window_to_node_id_map_.end());
 
   int node_id = window_to_node_id_it->second;
-  int parent_id = GetNodeIdFromWindow(parent);
+  int parent_id = GetNodeIdFromWindow(window->GetParent());
 
   NodeIdToWindowMap::iterator node_id_to_window_it =
       node_id_to_window_map_.find(node_id);
   DCHECK(node_id_to_window_it != node_id_to_window_map_.end());
 
-  views::Widget* widget = window->GetInternalWidget();
-  if (widget)
-    RemoveWidgetNode(widget);
-
-  window->RemoveObserver(this);
+  if (remove_observer)
+    window->RemoveObserver(this);
   node_id_to_window_map_.erase(node_id_to_window_it);
   window_to_node_id_map_.erase(window_to_node_id_it);
   frontend()->childNodeRemoved(parent_id, node_id);
 }
 
-void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget) {
+void AshDevToolsDOMAgent::RemoveWidgetTree(views::Widget* widget,
+                                           bool remove_observer) {
+  DCHECK(widget);
+  if (widget->GetRootView())
+    RemoveViewTree(widget->GetRootView(), nullptr, remove_observer);
+  RemoveWidgetNode(widget, remove_observer);
+}
+
+void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget,
+                                           bool remove_observer) {
   WidgetToNodeIdMap::iterator widget_to_node_id_it =
       widget_to_node_id_map_.find(widget);
   DCHECK(widget_to_node_id_it != widget_to_node_id_map_.end());
@@ -242,7 +261,8 @@ void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget) {
   int parent_id =
       GetNodeIdFromWindow(WmLookup::Get()->GetWindowForWidget(widget));
 
-  RemoveViewNode(widget->GetRootView());
+  // TODO(mhashmi): Add WidgetRemovalsObserver and remove it here based on
+  // |remove_observer|
 
   NodeIdToWidgetMap::iterator node_id_to_widget_it =
       node_id_to_widget_map_.find(node_id);
@@ -253,9 +273,39 @@ void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget) {
   frontend()->childNodeRemoved(parent_id, node_id);
 }
 
-void AshDevToolsDOMAgent::RemoveViewNode(views::View* view) {
-  // TODO(mhashmi): Add observers to views/widgets so new views exist
-  // in the map and can be removed here
+void AshDevToolsDOMAgent::RemoveViewTree(views::View* view,
+                                         views::View* parent,
+                                         bool remove_observer) {
+  DCHECK(view);
+  for (int i = 0, count = view->child_count(); i < count; i++)
+    RemoveViewTree(view->child_at(i), view, remove_observer);
+  RemoveViewNode(view, parent, remove_observer);
+}
+
+void AshDevToolsDOMAgent::RemoveViewNode(views::View* view,
+                                         views::View* parent,
+                                         bool remove_observer) {
+  ViewToNodeIdMap::iterator view_to_node_id_it =
+      view_to_node_id_map_.find(view);
+  DCHECK(view_to_node_id_it != view_to_node_id_map_.end());
+
+  int node_id = view_to_node_id_it->second;
+  int parent_id = 0;
+  if (parent)
+    parent_id = GetNodeIdFromView(parent);
+  else  // views::RootView
+    parent_id = GetNodeIdFromWidget(view->GetWidget());
+
+  // TODO(mhashmi): Add ViewObserver and remove it here based on
+  // |remove_observer|
+
+  NodeIdToViewMap::iterator node_id_to_view_it =
+      node_id_to_view_map_.find(node_id);
+  DCHECK(node_id_to_view_it != node_id_to_view_map_.end());
+
+  view_to_node_id_map_.erase(view_to_node_id_it);
+  node_id_to_view_map_.erase(node_id_to_view_it);
+  frontend()->childNodeRemoved(parent_id, node_id);
 }
 
 void AshDevToolsDOMAgent::RemoveObserverFromAllWindows() {

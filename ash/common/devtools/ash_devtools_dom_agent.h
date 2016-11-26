@@ -45,19 +45,33 @@ class ASH_EXPORT AshDevToolsDOMAgent
   int GetNodeIdFromView(views::View* view);
 
  private:
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForView(
-      views::View* view);
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForRootWidget(
-      views::Widget* widget);
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForWindow(
       WmWindow* window);
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
-  void AddWindowNode(WmWindow* window);
-  void RemoveWindowNode(WmWindow* window);
-  void RemoveWidgetNode(views::Widget* widget);
-  void RemoveViewNode(views::View* view);
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForRootWidget(
+      views::Widget* widget);
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForView(
+      views::View* view);
+
+  void AddWindowTree(WmWindow* window);
+  // |remove_observer| ensures that we don't add a duplicate observer in any
+  // observer callback. For example, |remove_observer| is false when rebuilding
+  // the tree in OnWindowStackingChanged so that the observer is not removed and
+  // re-added, thus causing endless calls on the observer.
+  void RemoveWindowTree(WmWindow* window, bool remove_observer);
+  void RemoveWindowNode(WmWindow* window, bool remove_observer);
+
+  void RemoveWidgetTree(views::Widget* widget, bool remove_observer);
+  void RemoveWidgetNode(views::Widget* widget, bool remove_observer);
+
+  void RemoveViewTree(views::View* view,
+                      views::View* parent,
+                      bool remove_observer);
+  void RemoveViewNode(views::View* view,
+                      views::View* parent,
+                      bool remove_observer);
+
   void RemoveObserverFromAllWindows();
-  void AddRootWindowObservers();
   void Reset();
 
   ash::WmShell* shell_;
