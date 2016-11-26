@@ -1123,7 +1123,9 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     int route_id,
     int request_id,
     const ResourceRequest& request_data,
-    LoaderMap::iterator iter) {
+    LoaderMap::iterator iter,
+    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderClientAssociatedPtr url_loader_client) {
   ResourceRequestInfoImpl* info = iter->second->GetRequestInfo();
   GlobalFrameRoutingId old_routing_id(request_data.transferred_request_child_id,
                                       info->GetRenderFrameID());
@@ -1151,7 +1153,8 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   // the info object when a transfer occurs.
   info->UpdateForTransfer(child_id, route_id, request_data.render_frame_id,
                           request_data.origin_pid, request_id,
-                          filter_->GetWeakPtr());
+                          filter_->GetWeakPtr(), std::move(mojo_request),
+                          std::move(url_loader_client));
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
@@ -1201,7 +1204,9 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
 void ResourceDispatcherHostImpl::CompleteTransfer(
     int request_id,
     const ResourceRequest& request_data,
-    int route_id) {
+    int route_id,
+    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderClientAssociatedPtr url_loader_client) {
   // Caller should ensure that |request_data| is associated with a transfer.
   DCHECK(request_data.transferred_request_child_id != -1 ||
          request_data.transferred_request_request_id != -1);
@@ -1245,7 +1250,8 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
   // If the request is transferring to a new process, we can update our
   // state and let it resume with its existing ResourceHandlers.
   UpdateRequestForTransfer(filter_->child_id(), route_id, request_id,
-                           request_data, it);
+                           request_data, it, std::move(mojo_request),
+                           std::move(url_loader_client));
   pending_loader->CompleteTransfer();
 }
 
@@ -1295,10 +1301,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // we want to reuse and resume the old loader rather than start a new one.
   if (request_data.transferred_request_child_id != -1 ||
       request_data.transferred_request_request_id != -1) {
-    // TODO(yhirano): Make mojo work for this case.
-    DCHECK(!url_loader_client);
-
-    CompleteTransfer(request_id, request_data, route_id);
+    CompleteTransfer(request_id, request_data, route_id,
+                     std::move(mojo_request), std::move(url_loader_client));
     return;
   }
 

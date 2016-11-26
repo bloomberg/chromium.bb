@@ -252,6 +252,7 @@ specific_include_rules = {
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/common/content_export.h",
     "+content/common/resource_request_body_impl.h",
+    "+content/common/url_loader.mojom.h",
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_request_info.h",
     "+content/public/common/referrer.h",

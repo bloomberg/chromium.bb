@@ -338,13 +338,21 @@ void ResourceRequestInfoImpl::UpdateForTransfer(
     int render_frame_id,
     int origin_pid,
     int request_id,
-    base::WeakPtr<ResourceMessageFilter> filter) {
+    base::WeakPtr<ResourceMessageFilter> filter,
+    mojom::URLLoaderAssociatedRequest url_loader_request,
+    mojom::URLLoaderClientAssociatedPtr url_loader_client) {
   child_id_ = child_id;
   route_id_ = route_id;
   render_frame_id_ = render_frame_id;
   origin_pid_ = origin_pid;
   request_id_ = request_id;
   filter_ = filter;
+
+  // on_transfer_ is non-null only when MojoAsyncResourceHandler is used.
+  if (on_transfer_) {
+    on_transfer_.Run(std::move(url_loader_request),
+                     std::move(url_loader_client));
+  }
 }
 
 void ResourceRequestInfoImpl::ResetBody() {

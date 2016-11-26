@@ -35,7 +35,9 @@ crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-main-frame-
 
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/585188 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/585188 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
 # https://crbug.com/601584 - No OOPIF support for UserGestureIndicator triggers
 #                            cross-origin-iframe.html layout test failure
@@ -91,15 +93,6 @@ crbug.com/623265 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 # https://crbug.com/645641 - test_runner.cc(1863) Check failed:
 # layout_test_runtime_flags_.have_top_loading_frame()
 crbug.com/645641 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
-
-# https://crbug.com/659917: with experimental mojo-loading feature:
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/origin-exact-matching [ Crash ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Crash ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/detaching-frame-2.html [ Crash ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Crash ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/document-domain-set.html [ Crash ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/access-control-preflight-request-must-not-contain-cookie.html [ Crash ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses-with-subdomains.html [ Crash ]
 
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]

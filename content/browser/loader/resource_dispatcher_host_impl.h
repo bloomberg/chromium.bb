@@ -544,17 +544,22 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Update the ResourceRequestInfo and internal maps when a request is
   // transferred from one process to another.
-  void UpdateRequestForTransfer(int child_id,
-                                int route_id,
-                                int request_id,
-                                const ResourceRequest& request_data,
-                                LoaderMap::iterator iter);
+  void UpdateRequestForTransfer(
+      int child_id,
+      int route_id,
+      int request_id,
+      const ResourceRequest& request_data,
+      LoaderMap::iterator iter,
+      mojom::URLLoaderAssociatedRequest mojo_request,
+      mojom::URLLoaderClientAssociatedPtr url_loader_client);
 
   // If |request_data| is for a request being transferred from another process,
   // then CompleteTransfer method can be used to complete the transfer.
   void CompleteTransfer(int request_id,
                         const ResourceRequest& request_data,
-                        int route_id);
+                        int route_id,
+                        mojom::URLLoaderAssociatedRequest mojo_request,
+                        mojom::URLLoaderClientAssociatedPtr url_loader_client);
 
   void BeginRequest(
       int request_id,

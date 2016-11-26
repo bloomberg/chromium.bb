@@ -111,13 +111,17 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
     : ResourceHandler(request),
       rdh_(rdh),
       binding_(this, std::move(mojo_request)),
-      url_loader_client_(std::move(url_loader_client)) {
+      url_loader_client_(std::move(url_loader_client)),
+      weak_factory_(this) {
   DCHECK(url_loader_client_);
   InitializeResourceBufferConstants();
   // This unretained pointer is safe, because |binding_| is owned by |this| and
   // the callback will never be called after |this| is destroyed.
   binding_.set_connection_error_handler(
       base::Bind(&MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
+
+  GetRequestInfo()->set_on_transfer(base::Bind(
+      &MojoAsyncResourceHandler::OnTransfer, weak_factory_.GetWeakPtr()));
 }
 
 MojoAsyncResourceHandler::~MojoAsyncResourceHandler() {
@@ -436,6 +440,16 @@ void MojoAsyncResourceHandler::Cancel() {
 
 void MojoAsyncResourceHandler::ReportBadMessage(const std::string& error) {
   mojo::ReportBadMessage(error);
+}
+
+void MojoAsyncResourceHandler::OnTransfer(
+    mojom::URLLoaderAssociatedRequest mojo_request,
+    mojom::URLLoaderClientAssociatedPtr url_loader_client) {
+  binding_.Unbind();
+  binding_.Bind(std::move(mojo_request));
+  binding_.set_connection_error_handler(
+      base::Bind(&MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
+  url_loader_client_ = std::move(url_loader_client);
 }
 
 }  // namespace content
