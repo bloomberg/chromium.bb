@@ -2,7 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
-    LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 517x19
-          text run at (0,0) width 517: "This test ensures that we preserve the user-specified zoom level of the page on reload."
+    LayoutBlockFlow {BODY} at (23.88,23.88) size 752.25x528.36
+      LayoutBlockFlow {P} at (0,0) size 752.25x171
+        LayoutText {#text} at (0,1) size 708x169
+          text run at (0,1) width 708: "This test ensures that we preserve the"
+          text run at (0,58) width 704: "user-specified zoom level of the page"
+          text run at (0,115) width 187: "on reload."
