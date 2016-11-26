@@ -64,28 +64,31 @@ AshDevToolsCSSAgent::AshDevToolsCSSAgent(AshDevToolsDOMAgent* dom_agent)
 AshDevToolsCSSAgent::~AshDevToolsCSSAgent() {}
 
 ui::devtools::protocol::Response AshDevToolsCSSAgent::getMatchedStylesForNode(
-    int nodeId,
+    int node_id,
     ui::devtools::protocol::Maybe<ui::devtools::protocol::CSS::CSSStyle>*
         inlineStyle) {
-  *inlineStyle = GetStylesForNode(nodeId);
+  *inlineStyle = GetStylesForNode(node_id);
+  if (!inlineStyle) {
+    return ui::devtools::protocol::Response::Error(
+        "Node with that id not found");
+  }
   return ui::devtools::protocol::Response::OK();
 }
 
 std::unique_ptr<ui::devtools::protocol::CSS::CSSStyle>
-AshDevToolsCSSAgent::GetStylesForNode(int nodeId) {
-  WmWindow* window = dom_agent_->GetWindowFromNodeId(nodeId);
+AshDevToolsCSSAgent::GetStylesForNode(int node_id) {
+  WmWindow* window = dom_agent_->GetWindowFromNodeId(node_id);
   if (window)
     return BuildStyles(window);
 
-  views::Widget* widget = dom_agent_->GetWidgetFromNodeId(nodeId);
+  views::Widget* widget = dom_agent_->GetWidgetFromNodeId(node_id);
   if (widget)
     return BuildStyles(widget);
 
-  views::View* view = dom_agent_->GetViewFromNodeId(nodeId);
+  views::View* view = dom_agent_->GetViewFromNodeId(node_id);
   if (view)
     return BuildStyles(view);
 
-  NOTREACHED();
   return nullptr;
 }
 
