@@ -39,6 +39,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -3860,5 +3861,55 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   content::SimulateTouchPressAt(GetEmbedderWebContents(),
                                 guest_rect.CenterPoint());
   EXPECT_TRUE(aura_webview->HasFocus());
+}
+#endif
+
+// This runs the chrome://chrome-signin page which includes an OOPIF-<webview>
+// of accounts.google.com.
+class ChromeSignInWebViewTest : public WebViewTestBase {
+ public:
+  ChromeSignInWebViewTest() {}
+  ~ChromeSignInWebViewTest() override {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kEnableFeatures,
+        ::features::kGuestViewCrossProcessFrames.name);
+  }
+
+  void WaitForWebViewInDom() {
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    auto* script =
+        "var count = 10;"
+        "var interval;"
+        "interval = setInterval(function(){"
+        "  if (document.getElementsByTagName('webview').length) {"
+        "    document.title = 'success';"
+        "    console.log('FOUND webview');"
+        "    clearInterval(interval);"
+        "  } else if (count == 0) {"
+        "    document.title = 'error';"
+        "    clearInterval(interval);"
+        "  } else {"
+        "    count -= 1;"
+        "  }"
+        "}, 1000);";
+    ExecuteScriptWaitForTitle(web_contents, script, "success");
+  }
+};
+
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX) || \
+     defined(OS_WIN)
+// This verifies the fix for http://crbug.com/667708.
+IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
+                       ClosingChromeSignInShouldNotCrash) {
+  GURL signin_url{"chrome://chrome-signin"};
+
+  AddTabAtIndex(0, signin_url, ui::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(1, signin_url, ui::PAGE_TRANSITION_TYPED);
+  WaitForWebViewInDom();
+
+  chrome::CloseTab(browser());
 }
 #endif

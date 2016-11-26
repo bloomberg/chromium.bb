@@ -2480,7 +2480,7 @@ void WebContentsImpl::SendScreenRects() {
         MSG_ROUTING_NONE, rwhv->GetBoundsInRootWindow()));
   }
 
-  if (browser_plugin_embedder_)
+  if (browser_plugin_embedder_ && !is_being_destroyed_)
     browser_plugin_embedder_->DidSendScreenRects();
 }
 
