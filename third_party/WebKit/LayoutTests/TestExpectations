@@ -1440,6 +1440,15 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
+# SK_ANALYTIC_AA
+crbug.com/662722 css1/basic/grouping.html [ NeedsRebaseline ]
+crbug.com/662722 css1/box_properties/border_left_width.html [ NeedsRebaseline ]
+crbug.com/662722 css1/box_properties/border_top_inline.html [ NeedsRebaseline ]
+crbug.com/662722 css1/pseudo/anchor.html [ NeedsRebaseline ]
+crbug.com/662722 css3/filters/effect-contrast-hw.html [ NeedsRebaseline ]
+crbug.com/662722 svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
+crbug.com/662722 svg/wicd/test-scalable-background-image2.xhtml [ NeedsRebaseline ]
+
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
