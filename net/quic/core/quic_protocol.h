@@ -608,17 +608,6 @@ class NET_EXPORT_PRIVATE QuicAckListenerInterface
   virtual ~QuicAckListenerInterface() {}
 };
 
-// Pure virtual class to close connection on unrecoverable errors.
-class NET_EXPORT_PRIVATE QuicConnectionCloseDelegateInterface {
- public:
-  virtual ~QuicConnectionCloseDelegateInterface() {}
-
-  // Called when an unrecoverable error is encountered.
-  virtual void OnUnrecoverableError(QuicErrorCode error,
-                                    const std::string& error_details,
-                                    ConnectionCloseSource source) = 0;
-};
-
 // Used to generate filtered supported versions based on flags.
 class NET_EXPORT_PRIVATE QuicVersionManager {
  public:

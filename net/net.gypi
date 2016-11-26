@@ -1026,6 +1026,7 @@
       'quic/core/quic_config.h',
       'quic/core/quic_connection.cc',
       'quic/core/quic_connection.h',
+      'quic/core/quic_connection_close_delegate_interface.h',
       'quic/core/quic_connection_stats.cc',
       'quic/core/quic_connection_stats.h',
       'quic/core/quic_constants.cc',

@@ -23,6 +23,7 @@
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_connection.h"
+#include "net/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_iovector.h"
 #include "net/quic/core/quic_protocol.h"

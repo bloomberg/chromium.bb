@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "net/base/net_export.h"
+#include "net/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_sent_packet_manager_interface.h"
@@ -30,7 +31,7 @@ class NET_EXPORT_PRIVATE QuicMultipathSentPacketManager
     : public QuicSentPacketManagerInterface {
  public:
   // Multipath sent packet manager takes ownership of |manager|.
-  explicit QuicMultipathSentPacketManager(
+  QuicMultipathSentPacketManager(
       QuicSentPacketManagerInterface* manager,
       QuicConnectionCloseDelegateInterface* delegate);
   ~QuicMultipathSentPacketManager() override;
