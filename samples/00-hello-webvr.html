@@ -11,6 +11,9 @@ found in the LICENSE file.
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
+    <!--Chrome origin trial header-->
+    <meta http-equiv="origin-trial" content="AmsYsWL751NCxAz0diFlXTfTlIi8umTOfnJZtYNN/Sl+HSXqUwFvbxPTaEvWZY1W4pvzCnI22w88tqd+3quLSgoAAABOeyJvcmlnaW4iOiAiaHR0cHM6Ly93ZWJ2ci5pbmZvOjQ0MyIsICJmZWF0dXJlIjogIldlYlZSIiwgImV4cGlyeSI6IDE0ODE5MDc2NTN9">
+
     <title>00 - Hello WebVR!</title>
 
     <!--
@@ -40,8 +43,13 @@ found in the LICENSE file.
     If you want to use the polyfill in your app, just include the js file and
     everything will work the way you want it to by default. -->
     <script>
-      // Prevents the polyfill from initializing automatically.
-      var WebVRConfig = { DEFER_INITIALIZATION: true }
+      var WebVRConfig = {
+        // Prevents the polyfill from initializing automatically.
+        DEFER_INITIALIZATION: true,
+        // Ensures the polyfill is always active when initialized, even if the
+        // native API is available. This is probably NOT what most pages want.
+        POLYFILL_MODE: "ALWAYS",
+      }
     </script>
     <script src="js/third-party/webvr-polyfill.js"></script>
     <script src="js/third-party/wglu/wglu-url.js"></script>

@@ -297,27 +297,20 @@ VRDisplay.prototype.requestPresent = function(layers) {
     var rightBounds = incomingLayer.rightBounds || defaultRightBounds;
     if (wasPresenting) {
       // Already presenting, just changing configuration
-      var changed = false;
       var layer = self.layer_;
       if (layer.source !== incomingLayer.source) {
         layer.source = incomingLayer.source;
-        changed = true;
       }
 
       for (var i = 0; i < 4; i++) {
         if (layer.leftBounds[i] !== leftBounds[i]) {
           layer.leftBounds[i] = leftBounds[i];
-          changed = true;
         }
         if (layer.rightBounds[i] !== rightBounds[i]) {
           layer.rightBounds[i] = rightBounds[i];
-          changed = true;
         }
       }
 
-      if (changed) {
-        self.fireVRDisplayPresentChange_();
-      }
       resolve();
       return;
     }
@@ -425,7 +418,7 @@ VRDisplay.prototype.getLayers = function() {
 };
 
 VRDisplay.prototype.fireVRDisplayPresentChange_ = function() {
-  var event = new CustomEvent('vrdisplaypresentchange', {detail: {vrdisplay: this}});
+  var event = new CustomEvent('vrdisplaypresentchange', {detail: {display: this}});
   window.dispatchEvent(event);
 };
 
@@ -437,17 +430,27 @@ VRDisplay.prototype.addFullscreenListeners_ = function(element, changeHandler, e
   this.fullscreenErrorHandler_ = errorHandler;
 
   if (changeHandler) {
-    element.addEventListener('fullscreenchange', changeHandler, false);
-    element.addEventListener('webkitfullscreenchange', changeHandler, false);
-    document.addEventListener('mozfullscreenchange', changeHandler, false);
-    element.addEventListener('msfullscreenchange', changeHandler, false);
+    if (document.fullscreenEnabled) {
+      element.addEventListener('fullscreenchange', changeHandler, false);
+    } else if (document.webkitFullscreenEnabled) {
+      element.addEventListener('webkitfullscreenchange', changeHandler, false);
+    } else if (document.mozFullScreenEnabled) {
+      document.addEventListener('mozfullscreenchange', changeHandler, false);
+    } else if (document.msFullscreenEnabled) {
+      element.addEventListener('msfullscreenchange', changeHandler, false);
+    }
   }
 
   if (errorHandler) {
-    element.addEventListener('fullscreenerror', errorHandler, false);
-    element.addEventListener('webkitfullscreenerror', errorHandler, false);
-    document.addEventListener('mozfullscreenerror', errorHandler, false);
-    element.addEventListener('msfullscreenerror', errorHandler, false);
+    if (document.fullscreenEnabled) {
+      element.addEventListener('fullscreenerror', errorHandler, false);
+    } else if (document.webkitFullscreenEnabled) {
+      element.addEventListener('webkitfullscreenerror', errorHandler, false);
+    } else if (document.mozFullScreenEnabled) {
+      document.addEventListener('mozfullscreenerror', errorHandler, false);
+    } else if (document.msFullscreenEnabled) {
+      element.addEventListener('msfullscreenerror', errorHandler, false);
+    }
   }
 };
 
@@ -781,6 +784,7 @@ CardboardDistorter.prototype.patch = function() {
       },
       set: function(value) {
         self.bufferWidth = value;
+        self.realCanvasWidth.set.call(canvas, value);
         self.onResize();
       }
     });
@@ -793,6 +797,7 @@ CardboardDistorter.prototype.patch = function() {
       },
       set: function(value) {
         self.bufferHeight = value;
+        self.realCanvasHeight.set.call(canvas, value);
         self.onResize();
       }
     });
@@ -1575,7 +1580,7 @@ CardboardVRDisplay.prototype.onDeviceParamsUpdated_ = function(newParams) {
   this.deviceInfo_.updateDeviceParams(newParams);
 
   if (this.distorter_) {
-    this.distorter.updateDeviceInfo(this.deviceInfo_);
+    this.distorter_.updateDeviceInfo(this.deviceInfo_);
   }
 };
 
@@ -3774,7 +3779,19 @@ module.exports = Emitter;
  */
 var Util = _dereq_('./util.js');
 var WebVRPolyfill = _dereq_('./webvr-polyfill.js').WebVRPolyfill;
-var InstallWebVRSpecShim = _dereq_('./webvr-polyfill.js').InstallWebVRSpecShim;
+
+window.WebVRPolyfillMode = {
+  // Provide a polyfilled VRDisplay only when the native API is missing.
+  // This is the default mode.
+  NO_NATIVE_API: 0,
+  // Provide a polyfilled VRDisplay if the native API is missing or is present
+  // but does not provide a VRDisplay.
+  NO_NATIVE_DISPLAY: 1,
+  // Always provide a polyfilled VRDisplay, even when the native API also
+  // provides one. The polyfilled display will always be the last one in the
+  // list.
+  ALWAYS: 2
+};
 
 // Initialize a WebVRConfig just in case.
 window.WebVRConfig = Util.extend({
@@ -3787,8 +3804,8 @@ window.WebVRConfig = Util.extend({
   // How far into the future to predict during fast motion (in seconds).
   PREDICTION_TIME_S: 0.040,
 
-  // Flag to disable touch panner. In case you have your own touch controls.
-  TOUCH_PANNER_DISABLED: false,
+  // Flag to enable touch panner. In case you have your own touch controls.
+  TOUCH_PANNER_DISABLED: true,
 
   // Flag to disabled the UI in VR Mode.
   CARDBOARD_UI_DISABLED: false, // Default: false
@@ -3824,20 +3841,23 @@ window.WebVRConfig = Util.extend({
   // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
   // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
   // and gl.TEXTURE_BINDING_2D for texture unit 0.
-  DIRTY_SUBMIT_FRAME_BINDINGS: false
+  DIRTY_SUBMIT_FRAME_BINDINGS: false,
+
+  // Determines when the polyfill is activated. See the enumeration above for
+  // details of each mode.
+  POLYFILL_MODE: "NO_NATIVE_API"
 }, window.WebVRConfig);
+
+// Convert the polyfill mode to a numeric enum
+if (typeof window.WebVRConfig.POLYFILL_MODE == "string") {
+  window.WebVRConfig.POLYFILL_MODE = window.WebVRPolyfillMode[window.WebVRConfig.POLYFILL_MODE];
+}
 
 if (!window.WebVRConfig.DEFER_INITIALIZATION) {
   new WebVRPolyfill();
 } else {
   window.InitializeWebVRPolyfill = function() {
     new WebVRPolyfill();
-  }
-  // Call this if you want to use the shim without the rest of the polyfill.
-  // InitializeWebVRPolyfill() will install the shim automatically when needed,
-  // so this should rarely be used.
-  window.InitializeSpecShim = function() {
-    InstallWebVRSpecShim();
   }
 }
 
@@ -4541,9 +4561,6 @@ module.exports = RotateInstructions;
  * limitations under the License.
  */
 
-/**
- * TODO: Fix up all "new THREE" instantiations to improve performance.
- */
 var SensorSample = _dereq_('./sensor-sample.js');
 var MathUtil = _dereq_('../math-util.js');
 var Util = _dereq_('../util.js');
@@ -4572,9 +4589,14 @@ function ComplementaryFilter(kFilter) {
   this.currentGyroMeasurement = new SensorSample();
   this.previousGyroMeasurement = new SensorSample();
 
-  // Set the quaternion to be looking in the -z direction by default.
-  this.filterQ = new MathUtil.Quaternion(1, 0, 0, 1);
+  // Set default look direction to be in the correct direction.
+  if (Util.isIOS()) {
+    this.filterQ = new MathUtil.Quaternion(-1, 0, 0, 1);
+  } else {
+    this.filterQ = new MathUtil.Quaternion(1, 0, 0, 1);
+  }
   this.previousFilterQ = new MathUtil.Quaternion();
+  this.previousFilterQ.copy(this.filterQ);
 
   // Orientation based on the accelerometer.
   this.accelQ = new MathUtil.Quaternion();
@@ -4953,6 +4975,7 @@ PosePredictor.prototype.getPrediction = function(currentQ, gyro, timestampS) {
   this.outQ.multiply(this.deltaQ);
 
   this.previousQ.copy(currentQ);
+  this.previousTimestampS = timestampS;
 
   return this.outQ;
 };
@@ -5370,7 +5393,7 @@ Util.frameDataFromPose = (function() {
     return out;
   };
 
-  mat4_invert = function(out, a) {
+  function mat4_invert(out, a) {
     var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
         a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -5762,9 +5785,13 @@ function WebVRPolyfill() {
   this.devicesPopulated = false;
   this.nativeWebVRAvailable = this.isWebVRAvailable();
   this.nativeLegacyWebVRAvailable = this.isDeprecatedWebVRAvailable();
+  this.nativeGetVRDisplaysFunc = this.nativeWebVRAvailable ?
+                                 navigator.getVRDisplays :
+                                 null;
 
   if (!this.nativeLegacyWebVRAvailable) {
-    if (!this.nativeWebVRAvailable) {
+    if (!this.nativeWebVRAvailable ||
+        WebVRConfig.POLYFILL_MODE != WebVRPolyfillMode.NO_NATIVE_API) {
       this.enablePolyfill();
     }
     if (WebVRConfig.ENABLE_DEPRECATED_API) {
@@ -5831,8 +5858,23 @@ WebVRPolyfill.prototype.enablePolyfill = function() {
 
   // Provide the VRDisplay object.
   window.VRDisplay = VRDisplay;
-  // Provide the VRFrameData object.
-  window.VRFrameData = VRFrameData;
+
+  // Provide navigator.vrEnabled.
+  var self = this;
+  Object.defineProperty(navigator, 'vrEnabled', {
+    get: function () {
+      return self.isCardboardCompatible() &&
+        (document.fullscreenEnabled ||
+          document.mozFullScreenEnabled ||
+          document.webkitFullscreenEnabled ||
+          false);
+    }
+  });
+
+  if (!'VRFrameData' in window) {
+    // Provide the VRFrameData object.
+    window.VRFrameData = VRFrameData;
+  }
 };
 
 WebVRPolyfill.prototype.enableDeprecatedPolyfill = function() {
@@ -5846,14 +5888,26 @@ WebVRPolyfill.prototype.enableDeprecatedPolyfill = function() {
 
 WebVRPolyfill.prototype.getVRDisplays = function() {
   this.populateDevices();
-  var displays = this.displays;
-  return new Promise(function(resolve, reject) {
-    try {
-      resolve(displays);
-    } catch (e) {
-      reject(e);
-    }
-  });
+  var polyfillDisplays = this.displays;
+
+  if (this.nativeWebVRAvailable &&
+      WebVRConfig.POLYFILL_MODE != WebVRPolyfillMode.NO_NATIVE_API) {
+    return this.nativeGetVRDisplaysFunc.call(navigator).then(function(nativeDisplays) {
+      if (WebVRConfig.POLYFILL_MODE == WebVRPolyfillMode.NO_NATIVE_DISPLAY) {
+        return nativeDisplays.length > 0 ? nativeDisplays : polyfillDisplays;
+      } else {
+        return nativeDisplays.concat(polyfillDisplays);
+      }
+    });
+  } else {
+    return new Promise(function(resolve, reject) {
+      try {
+        resolve(polyfillDisplays);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
 };
 
 WebVRPolyfill.prototype.getVRDevices = function() {
@@ -5934,6 +5988,5 @@ function InstallWebVRSpecShim() {
 };
 
 module.exports.WebVRPolyfill = WebVRPolyfill;
-module.exports.InstallWebVRSpecShim = InstallWebVRSpecShim;
 
 },{"./base.js":2,"./cardboard-vr-display.js":5,"./display-wrappers.js":8,"./mouse-keyboard-vr-display.js":15,"./util.js":22}]},{},[13]);

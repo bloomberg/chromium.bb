@@ -39,7 +39,13 @@ found in the LICENSE file.
     everything will work the way you want it to by default. -->
     <script>
       // Prevents the polyfill from initializing automatically.
-      var WebVRConfig = { DEFER_INITIALIZATION: true }
+      var WebVRConfig = {
+        // Prevents the polyfill from initializing automatically.
+        DEFER_INITIALIZATION: true,
+        // Ensures the polyfill is always active when initialized, even if the
+        // native API is available. This is probably NOT what most pages want.
+        POLYFILL_MODE: "ALWAYS",
+      }
     </script>
     <script src="js/third-party/webvr-polyfill.js"></script>
     <script src="js/third-party/wglu/wglu-url.js"></script>
@@ -134,11 +140,14 @@ found in the LICENSE file.
         frameData = new VRFrameData();
 
         navigator.getVRDisplays().then(function (displays) {
-          // Use the first display in the array if one is available. If multiple
-          // displays are present you may want to present the user with a way to
-          // select which display they wish to use.
+          // Pick a display out of the array to use, if one is available.
+          // These samples use the last display in the array to select the
+          // polyfilled display when it's provided, but most applications will
+          // be fine using the first display in the array. If multiple displays
+          // are present you may want to present the user with a way to select
+          // which display they wish to use.
           if (displays.length > 0) {
-            vrDisplay = displays[0];
+            vrDisplay = displays[displays.length - 1];
 
             // Being able to re-center your view is a useful thing in VR. It's
             // good practice to provide your users with a simple way to do so.

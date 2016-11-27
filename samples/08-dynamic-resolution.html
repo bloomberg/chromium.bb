@@ -52,6 +52,9 @@ found in the LICENSE file.
       var WebVRConfig = {
         // Prevents the polyfill from initializing automatically.
         DEFER_INITIALIZATION: true,
+        // Ensures the polyfill is always active when initialized, even if the
+        // native API is available. This is probably NOT what most pages want.
+        POLYFILL_MODE: "ALWAYS",
         // Polyfill optimizations
         DIRTY_SUBMIT_FRAME_BINDINGS: true,
         BUFFER_SCALE: 0.75,
@@ -182,7 +185,7 @@ found in the LICENSE file.
 
         navigator.getVRDisplays().then(function (displays) {
           if (displays.length > 0) {
-            vrDisplay = displays[0];
+            vrDisplay = displays[displays.length - 1];
             VRSamplesUtil.addButton("Reset Pose", "R", null, function () { vrDisplay.resetPose(); });
 
             if (vrDisplay.capabilities.canPresent)

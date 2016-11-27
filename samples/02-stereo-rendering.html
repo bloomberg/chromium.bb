@@ -38,7 +38,13 @@ found in the LICENSE file.
     everything will work the way you want it to by default. -->
     <script>
       // Prevents the polyfill from initializing automatically.
-      var WebVRConfig = { DEFER_INITIALIZATION: true }
+      var WebVRConfig = {
+        // Prevents the polyfill from initializing automatically.
+        DEFER_INITIALIZATION: true,
+        // Ensures the polyfill is always active when initialized, even if the
+        // native API is available. This is probably NOT what most pages want.
+        POLYFILL_MODE: "ALWAYS",
+      }
     </script>
     <script src="js/third-party/webvr-polyfill.js"></script>
     <script src="js/third-party/wglu/wglu-url.js"></script>
@@ -116,7 +122,7 @@ found in the LICENSE file.
 
         navigator.getVRDisplays().then(function (displays) {
           if (displays.length > 0) {
-            vrDisplay = displays[0];
+            vrDisplay = displays[displays.length - 1];
             VRSamplesUtil.addButton("Reset Pose", "R", null, function () { vrDisplay.resetPose(); });
           } else {
             VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
